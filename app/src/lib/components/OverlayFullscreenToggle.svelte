@@ -42,6 +42,8 @@
 				);
 			case overlayKey.enum['goal-iooi']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
+			case overlayKey.enum['measure-iooi']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
 			case overlayKey.enum['indicators']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', routeParams);
 			case overlayKey.enum['measure-monitoring']:

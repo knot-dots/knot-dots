@@ -2,7 +2,13 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { type AnyContainer, isGoalContainer, payloadTypes, predicates } from '$lib/models';
+import {
+	type AnyContainer,
+	isGoalContainer,
+	isMeasureContainer,
+	payloadTypes,
+	predicates
+} from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -19,7 +25,10 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		if (!isGoalContainer(container)) {
+		const isGoal = isGoalContainer(container);
+		const isMeasure = isMeasureContainer(container);
+
+		if (!isGoal && !isMeasure) {
 			error(404, { message: t('error.not_found') });
 		}
 
@@ -27,8 +36,14 @@ export const load = (async ({ depends, locals, params, url }) => {
 			getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				[predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
-				{ type: [payloadTypes.enum.goal, payloadTypes.enum.objective] },
+				isGoal
+					? [predicates.enum['is-part-of'], predicates.enum['is-objective-for']]
+					: [predicates.enum['is-part-of'], predicates.enum['is-measured-by']],
+				{
+					type: isGoal
+						? [payloadTypes.enum.goal, payloadTypes.enum.objective, payloadTypes.enum.resource_data]
+						: [payloadTypes.enum.measure, payloadTypes.enum.effect, payloadTypes.enum.resource_data]
+				},
 				url.searchParams.get('sort') ?? ''
 			)
 		);
