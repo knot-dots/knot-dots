@@ -36,10 +36,35 @@ jobs:
       - run: npm run check
       - run: npm run lint
 
-  test:
+  build-test-image:
     needs: check
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Cache Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: "{{defaultContext}}:app"
+          target: production
+          push: false
+          tags: app:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  test:
+    needs: build-test-image
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
     defaults:
       run:
         working-directory: app
@@ -65,22 +90,21 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Pre-build image using Buildx to populate the Cache
-      # 'load: true' makes the image available to the docker client for the next step
-      - name: Build Docker Image (Test)
+      # Load pre-built image from cache (built in build-test-image job)
+      - name: Load Docker Image from Cache
         uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:app"
           target: production
           load: true
-          tags: app:test # Tag used locally for testing
+          tags: app:test
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Add keycloak entry to /etc/hosts
         run: echo "127.0.0.1 keycloak" | sudo tee -a /etc/hosts
 
-      - run: npx playwright test
+      - name: Run Playwright Tests
+        run: npx playwright test --shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
         env:
           TEST_IMAGE: app:test # Use the pre-built image for tests
 
