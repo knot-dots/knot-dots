@@ -22,9 +22,10 @@ import {
 	type TaskCollectionContainer,
 	type TaskContainer
 } from '$lib/models';
-import { DotsBoard, TaskStatusBoard } from './boards';
+import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 
 type MyFixtures = {
+	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	taskStatusBoard: TaskStatusBoard;
 };
@@ -112,6 +113,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ auto: true, scope: 'worker' }
 	],
+	categoriesBoard: async ({ page }, use) => {
+		await use(new CategoriesBoard(page));
+	},
 	dotsBoard: async ({ page }, use) => {
 		await use(new DotsBoard(page));
 	},
