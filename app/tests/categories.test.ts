@@ -73,6 +73,7 @@ test.describe('Categories', () => {
 
 	test('assigns created term to a goal and filter by term', async ({ dotsBoard, testGoal }) => {
 		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.page.waitForTimeout(100);
 		await dotsBoard.card(testGoal.payload.title).click();
 		await expect(dotsBoard.overlay.title).toHaveText(testGoal.payload.title);
 
@@ -98,6 +99,7 @@ test.describe('Categories', () => {
 
 	test('cleans up created category via UI', async ({ categoriesBoard, testOrganization }) => {
 		await categoriesBoard.goto(`/${testOrganization.guid}`);
+		await categoriesBoard.page.waitForTimeout(100);
 		await categoriesBoard.column('Categories').card(sharedCategoryTitle).click();
 		await expect(categoriesBoard.overlay.title).toHaveText(sharedCategoryTitle);
 		await categoriesBoard.overlay.editModeToggle.check();
