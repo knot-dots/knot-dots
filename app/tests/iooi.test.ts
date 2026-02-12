@@ -272,6 +272,7 @@ test.describe('Measure IOOI Board', () => {
 		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
 		await dotsBoard.overlay.editModeToggle.check();
 		await section.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
 		await dotsBoard.overlay.deleteSection(section);
 	});

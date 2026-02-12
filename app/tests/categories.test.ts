@@ -1,8 +1,5 @@
 import { expect, test } from './fixtures';
 
-let sharedCategoryTitle: string;
-let sharedTermNames: string[] = [];
-
 test.describe('Categories', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
@@ -29,14 +26,18 @@ test.describe('Categories', () => {
 		await expect(defaultCategories).toHaveCount(4);
 	});
 
-	test('creates category with two terms', async ({ categoriesBoard, testOrganization }) => {
-		sharedCategoryTitle = `E2E Category ${test.info().project.name}`;
-		sharedTermNames = [
+	test('custom categories can be created and used as filter', async ({
+		categoriesBoard,
+		dotsBoard,
+		testGoal
+	}) => {
+		const sharedCategoryTitle = `E2E Category ${test.info().project.name}`;
+		const sharedTermNames = [
 			`E2E Term A ${test.info().project.name}`,
 			`E2E Term B ${test.info().project.name}`
 		];
 
-		await categoriesBoard.goto(`/${testOrganization.guid}`);
+		await categoriesBoard.goto(`/${testGoal.organization}`);
 		await categoriesBoard
 			.column('Categories')
 			.locator.getByRole('button', { name: 'Add item' })
@@ -69,9 +70,7 @@ test.describe('Categories', () => {
 		for (const termName of sharedTermNames) {
 			await expect(categoriesBoard.column('Terms').card(termName)).toBeVisible();
 		}
-	});
 
-	test('assigns created term to a goal and filter by term', async ({ dotsBoard, testGoal }) => {
 		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.page.waitForTimeout(100);
 		await dotsBoard.card(testGoal.payload.title).click();
@@ -95,10 +94,8 @@ test.describe('Categories', () => {
 		await dotsBoard.page.getByRole('checkbox', { name: sharedTermNames[1] }).check();
 		await secondFilterResponse;
 		await expect(dotsBoard.card(testGoal.payload.title)).not.toBeVisible();
-	});
 
-	test('cleans up created category via UI', async ({ categoriesBoard, testOrganization }) => {
-		await categoriesBoard.goto(`/${testOrganization.guid}`);
+		await categoriesBoard.goto(`/${testGoal.organization}`);
 		await categoriesBoard.page.waitForTimeout(100);
 		await categoriesBoard.column('Categories').card(sharedCategoryTitle).click();
 		await expect(categoriesBoard.overlay.title).toHaveText(sharedCategoryTitle);
