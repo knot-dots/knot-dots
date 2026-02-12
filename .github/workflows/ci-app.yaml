@@ -155,7 +155,7 @@ jobs:
           context: "."
           file: "./app/Dockerfile"
           target: production
-          push: false
+          push: true
           tags: |
             ${{ env.REGISTRY }}/app:${{ github.sha }}
             ${{ env.REGISTRY }}/app:latest
