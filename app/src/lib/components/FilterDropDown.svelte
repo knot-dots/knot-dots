@@ -44,6 +44,7 @@
 		['federalState', 'administrative_area.basic_data.federal_state'],
 		['member', 'member_filter.label'],
 		['type', 'payload_type'],
+		['payloadType', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],

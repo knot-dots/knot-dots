@@ -2,6 +2,7 @@ const KNOWN_FILTER_KEYS = new Set([
 	'assignee',
 	'indicatorCategory',
 	'indicatorType',
+	'payloadType',
 	'included',
 	'member',
 	'organization',
