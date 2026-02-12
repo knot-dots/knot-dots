@@ -380,7 +380,7 @@ if (browser) {
 					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
 						audience: hashParams.getAll('audience'),
-						category: hashParams.getAll('category'),
+						sdg: hashParams.getAll('sdg'),
 						organization: [container.organization],
 						...(hashParams.has('related-to')
 							? { relationType: [predicates.enum['is-part-of']] }
@@ -406,7 +406,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
@@ -427,7 +427,8 @@ if (browser) {
 				hashParams.get(overlayKey.enum['measures']) as string,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
+					measureType: hashParams.getAll('measureType'),
 					organization: [container.organization],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
@@ -615,14 +616,14 @@ if (browser) {
 			}
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];
 			const indicators = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				organization: [values.data.currentOrganization.guid],
@@ -637,7 +638,7 @@ if (browser) {
 			});
 		} else if (hashParams.has(overlayKey.enum['new-indicator-catalog'])) {
 			const containers = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
@@ -657,7 +658,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }

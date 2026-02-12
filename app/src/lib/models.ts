@@ -120,6 +120,26 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+const categoryObjectTypeValues = [
+	payloadTypes.enum.goal,
+	payloadTypes.enum.program,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.task,
+	payloadTypes.enum.indicator,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.objective
+] as const;
+
+export const categoryObjectTypes = z.enum(categoryObjectTypeValues);
+
+export type CategoryObjectType = z.infer<typeof categoryObjectTypes>;
+
+const defaultCategoryObjectTypes = [...categoryObjectTypes.options] as CategoryObjectType[];
+
 export const chapterTypeOptions = [
 	payloadTypes.enum.goal,
 	payloadTypes.enum.knowledge,
@@ -630,6 +650,7 @@ const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
 const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+	sdg: z.array(sustainableDevelopmentGoals).default([]),
 	category: z.array(z.string().trim().min(1)).default([]),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
@@ -643,6 +664,8 @@ const basePayload = z.object({
 const categoryPayloadBaseShape = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
+	level: z.number().int().nonnegative().default(0),
+	objectTypes: z.array(categoryObjectTypes).default(defaultCategoryObjectTypes),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])
@@ -750,6 +773,7 @@ const customCollectionPayload = z
 			.object({
 				audience: z.array(audience).default([]),
 				category: z.array(sustainableDevelopmentGoals).default([]),
+				sdg: z.array(sustainableDevelopmentGoals).default([]),
 				indicatorCategory: z.array(indicatorCategories).default([]),
 				type: z.array(payloadTypes).default([]),
 				policyFieldBNK: z.array(policyFieldBNK).default([]),
@@ -758,6 +782,7 @@ const customCollectionPayload = z
 			.default({
 				audience: [],
 				category: [],
+				sdg: [],
 				indicatorCategory: [],
 				policyFieldBNK: [],
 				topic: [],
@@ -1244,6 +1269,7 @@ const teaserPayload = z
 		audience: z.array(audience).default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
 		bodyRight: z.string().trim().optional(),
+		category: z.array(z.string().trim().min(1)).default([]),
 		cardStyle: z.string().optional(),
 		colSize: teaserColSizes.default('33-66'),
 		description: z.string().optional(),
@@ -1259,17 +1285,21 @@ const teaserPayload = z
 		linkRight: z.string().optional(),
 		linkCaption: z.string().optional(),
 		linkCaptionRight: z.string().optional(),
+		policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+		sdg: z.array(sustainableDevelopmentGoals).default([]),
 		textEnable: z.boolean().default(false),
 		textEnableRight: z.boolean().default(true),
 		title: z.string().trim(),
 		titleEnable: z.boolean().default(false),
 		titleEnableRight: z.boolean().default(true),
 		titleRight: z.string().trim().optional(),
+		topic: z.array(z.string().trim().min(1)).default([]),
 		type: z.literal(payloadTypes.enum.teaser),
 		style: z.string().optional().default('default'),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict(); // means no extra fields allowed
+	.strict()
+	.catchall(z.array(z.string().trim().min(1))); // allow custom category keys
 
 // For creating new empty teasers (title optional during creation)
 const initialTeaserPayload = teaserPayload.partial({ title: true });
@@ -2261,6 +2291,16 @@ export function isContainerWithBody(
 	container: AnyContainer | NewContainer
 ): container is ContainerWithBody {
 	return hasProperty(container.payload, 'body');
+}
+
+export type ContainerWithSdg = Omit<AnyContainer, 'payload'> & {
+	payload: AnyPayload & { sdg: SustainableDevelopmentGoal[] };
+};
+
+export function isContainerWithSdg(
+	container: AnyContainer | NewContainer
+): container is ContainerWithSdg {
+	return hasProperty(container.payload, 'sdg');
 }
 
 export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {

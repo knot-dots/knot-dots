@@ -95,7 +95,7 @@ export const POST = (async ({ locals, request }) => {
 									organizational_unit: container.organizational_unit,
 									payload: {
 										aiSuggestion: true,
-										category: project.sdg,
+										sdg: project.sdg,
 										description: project.description,
 										editorialState: editorialState.enum['editorial_state.draft'],
 										...('goalType' in project ? { goalType: project.goalType } : undefined),

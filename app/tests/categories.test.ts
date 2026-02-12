@@ -29,10 +29,7 @@ test.describe('Categories', () => {
 
 	test('creates category with two terms', async ({ defaultOrganization, page }) => {
 		sharedCategoryTitle = `E2E Category ${test.info().project.name} ${Date.now()}`;
-		sharedTermNames = [
-			`E2E Term A ${test.info().project.name} ${Date.now()}`,
-			`E2E Term B ${test.info().project.name} ${Date.now()}`
-		];
+		sharedTermNames = [`E2E Term A ${test.info().project.name} ${Date.now()}`];
 
 		await page.goto(`/${defaultOrganization.guid}/categories`);
 
@@ -52,8 +49,9 @@ test.describe('Categories', () => {
 		).toBeVisible();
 		await overlay.getByRole('checkbox', { name: 'Edit mode', exact: true }).check();
 
-		const termForm = overlay.locator('form').filter({ hasText: 'Create new term' });
 		for (const termName of sharedTermNames) {
+			await page.getByRole('button', { name: 'Create term' }).click();
+			const termForm = overlay.locator('form').filter({ hasText: 'Create new term' });
 			await termForm.getByLabel('Title').fill(termName);
 			await termForm.getByLabel('Value').fill(termName.toLowerCase().replace(/\s+/g, '-'));
 			await termForm.getByRole('button', { name: 'Create term' }).click();

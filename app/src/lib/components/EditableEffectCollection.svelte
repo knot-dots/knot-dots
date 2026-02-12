@@ -49,9 +49,9 @@
 			['alreadyInUse', '']
 		]);
 
-		if ('category' in parentContainer.payload) {
-			for (const category of parentContainer.payload.category) {
-				params.append('category', category);
+		if ('sdg' in parentContainer.payload) {
+			for (const sdg of parentContainer.payload.sdg) {
+				params.append('sdg', sdg);
 			}
 		}
 

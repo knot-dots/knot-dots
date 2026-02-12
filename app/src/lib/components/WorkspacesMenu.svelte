@@ -22,6 +22,7 @@
 	import Objects from '~icons/knotdots/objects';
 	import Program from '~icons/knotdots/program';
 	import Star from '~icons/knotdots/star';
+	import Tag from '~icons/knotdots/tag';
 	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -164,7 +165,7 @@
 
 	interface Option {
 		exists: boolean;
-		icon: Component<SvelteHTMLElements['svg']>;
+		icon: Component<SvelteHTMLElements['svg']> | string;
 		label: string;
 		recommended: boolean;
 		value: string;
@@ -220,7 +221,7 @@
 			? [
 					{
 						exists: true,
-						icon: Grid,
+						icon: Tag,
 						label: $_('workspace.type.categories'),
 						recommended: false,
 						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
@@ -356,7 +357,11 @@
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" onchange={handleChange} type="button" use:menu.button>
 			{#if selected?.icon}
-				<selected.icon />
+				{#if typeof selected.icon === 'string'}
+					<img class="menu-icon" src={selected.icon} alt={selected.label} />
+				{:else}
+					<svelte:component this={selected.icon} />
+				{/if}
 			{/if}
 			<span class="is-visually-hidden">
 				{selected?.label ?? $_('workspaces')}
@@ -374,7 +379,11 @@
 							class:menu-item--selected={option.value === selected?.value}
 						>
 							<button type="button" use:menu.item={{ value: pathnamePrefix + option.value }}>
-								<option.icon />
+								{#if typeof option.icon === 'string'}
+									<img class="menu-icon" src={option.icon} alt={option.label} />
+								{:else}
+									<svelte:component this={option.icon} />
+								{/if}
 								{#if option.recommended}
 									<span class="recommendation">
 										<Star />
@@ -448,6 +457,11 @@
 	.dropdown-group > .dropdown:last-child > .dropdown-button {
 		border-bottom-left-radius: 0;
 		border-top-left-radius: 0;
+	}
+
+	.menu-icon {
+		height: 1.125rem;
+		width: 1.125rem;
 	}
 
 	@layer visually-hidden {

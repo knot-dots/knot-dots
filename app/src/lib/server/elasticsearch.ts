@@ -36,7 +36,7 @@ export function getManyContainersWithES(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		indicator?: string;
@@ -64,8 +64,7 @@ export function getManyContainersWithES(
 			});
 		}
 		if (filters.type?.length) filter.push({ terms: { type: filters.type } });
-		if (filters.categories?.length)
-			filter.push({ terms: { 'payload.category': filters.categories } });
+		if (filters.sdg?.length) filter.push({ terms: { 'payload.category': filters.sdg } });
 		if (filters.topics?.length) filter.push({ terms: { 'payload.topic': filters.topics } });
 		if (filters.audience?.length) filter.push({ terms: { 'payload.audience': filters.audience } });
 		if (filters.policyFieldsBNK?.length)
@@ -151,7 +150,7 @@ export async function getFacetAggregationsForGuids(
 	const query = { terms: { guid: guids } } as const;
 	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {
 		audience: { terms: { field: 'payload.audience', size: 50 } },
-		category: { terms: { field: 'payload.category', size: 100 } },
+		sdg: { terms: { field: 'payload.sdg', size: 100 } },
 		topic: { terms: { field: 'payload.topic', size: 100 } },
 		policyFieldBNK: { terms: { field: 'payload.policyFieldBNK', size: 100 } },
 		programType: { terms: { field: 'payload.programType', size: 20 } },
@@ -188,7 +187,7 @@ export async function getFacetAggregationsForGuids(
 	const aggMap = aggregations as Record<string, estypes.AggregationsAggregate> | undefined;
 	if (aggMap) {
 		facets.audience = toCounts(aggMap.audience);
-		facets.category = toCounts(aggMap.category);
+		facets.sdg = toCounts(aggMap.sdg);
 		facets.topic = toCounts(aggMap.topic);
 		facets.policyFieldBNK = toCounts(aggMap.policyFieldBNK);
 		facets.programType = toCounts(aggMap.programType);

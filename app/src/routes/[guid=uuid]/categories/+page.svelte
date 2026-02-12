@@ -125,7 +125,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		{#key page.url.searchParams}
+		{#key page.url.searchParams.toString()}
 			<Board>
 				<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
 					<div class="vertical-scroll-wrapper">

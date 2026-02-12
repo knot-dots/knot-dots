@@ -17,13 +17,6 @@
 	import { ability } from '$lib/stores';
 	import EditableLinkStyle from './EditableLinkStyle.svelte';
 
-	type LegacyPayload = {
-		category: string[];
-		topic: string[];
-		policyFieldBNK: string[];
-		audience: string[];
-	};
-
 	interface Props {
 		container: TeaserContainer;
 		editable?: boolean;
@@ -31,24 +24,14 @@
 	}
 
 	let { container = $bindable(), editable = false, revisions }: Props = $props();
-	let legacyPayload = $state<LegacyPayload | null>(null);
 
 	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
-	$effect(() => {
-		if (featureDecisions.useCustomCategories()) {
-			legacyPayload = null;
-			return;
-		}
-
-		const payload = container.payload as Partial<LegacyPayload>;
-		legacyPayload = {
-			category: payload.category ?? [],
-			topic: payload.topic ?? [],
-			policyFieldBNK: payload.policyFieldBNK ?? [],
-			audience: payload.audience ?? []
-		};
-	});
+	const payload = container.payload as typeof container.payload & {
+		sdg: string[];
+		topic: string[];
+		policyFieldBNK: string[];
+	};
 </script>
 
 <PropertyGrid>
@@ -89,11 +72,11 @@
 
 		{#if featureDecisions.useCustomCategories()}
 			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{:else if legacyPayload}
-			<EditableCategory {editable} bind:value={legacyPayload.category} />
-			<EditableTopic {editable} bind:value={legacyPayload.topic} />
-			<EditablePolicyFieldBNK {editable} bind:value={legacyPayload.policyFieldBNK} />
-			<EditableAudience {editable} bind:value={legacyPayload.audience} />
+		{:else}
+			<EditableCategory {editable} bind:value={payload.sdg} />
+			<EditableTopic {editable} bind:value={payload.topic} />
+			<EditablePolicyFieldBNK {editable} bind:value={payload.policyFieldBNK} />
+			<EditableAudience {editable} bind:value={container.payload.audience} />
 		{/if}
 
 		{#if $ability.can('update', container, 'visibility')}

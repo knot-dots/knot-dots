@@ -111,7 +111,7 @@ export const actions = {
 											.map((t: string) => reverseTranslationMap.get(t))
 									}
 								: {}),
-							category: record.category?.toLowerCase().split(', ') ?? [],
+							sdg: record.category?.toLowerCase().split(', ') ?? [],
 							description: record.description,
 							...(record.endDate ? { endDate: record.endDate } : {}),
 							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),

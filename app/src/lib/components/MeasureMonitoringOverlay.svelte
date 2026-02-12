@@ -33,7 +33,7 @@
 		computeFacetCount(
 			new Map([
 				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 			]),

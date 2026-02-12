@@ -29,7 +29,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 				container.guid,
 				[predicates.enum['is-part-of-program']],
 				{
-					categories: url.searchParams.getAll('category'),
+					sdg: url.searchParams.getAll('sdg'),
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					taskCategories: url.searchParams.getAll('taskCategory'),
 					terms: url.searchParams.get('terms') ?? '',

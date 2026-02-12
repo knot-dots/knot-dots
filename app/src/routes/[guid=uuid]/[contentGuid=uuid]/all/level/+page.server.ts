@@ -30,7 +30,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 				[predicates.enum['is-part-of']],
 				{
 					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
+					sdg: url.searchParams.getAll('sdg'),
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					terms: url.searchParams.get('terms') ?? '',
 					topics: url.searchParams.getAll('topic')

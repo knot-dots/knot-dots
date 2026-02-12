@@ -141,11 +141,11 @@
 		</div>
 	{:else if col === 'category'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'category' in container.payload}
+			{#if 'sdg' in container.payload}
 				<CategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
-					bind:value={container.payload.category}
+					bind:value={container.payload.sdg}
 				/>
 			{/if}
 		</div>
@@ -275,7 +275,9 @@
 		>
 			{#if isContainerWithEditorialState(container) && $ability.can('read', container, 'payload.editorialState')}
 				<EditorialStateDropdown
-					aiSuggestion={'aiSuggestion' in container.payload && container.payload.aiSuggestion}
+					aiSuggestion={'aiSuggestion' in container.payload
+						? Boolean(container.payload.aiSuggestion)
+						: undefined}
 					editable={editable && $ability.can('update', container, 'payload.editorialState')}
 					bind:value={container.payload.editorialState}
 				/>

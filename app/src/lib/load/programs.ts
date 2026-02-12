@@ -35,6 +35,7 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	defaultOrganizationGuid: string | null;
 };
 
 export default (async function load({ depends, locals, parent, url }: LoadInput) {
@@ -43,15 +44,25 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 	let containers: Container[];
 	let subordinateOrganizationalUnits: string[] = [];
 	const customCategories = extractCustomCategoryFilters(url);
-	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
+	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
+		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+
+	const organizationScope = Array.from(
+		new Set(
+			[currentOrganization.guid, defaultOrganizationGuid].filter((guid): guid is string =>
+				Boolean(guid)
+			)
+		)
+	);
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
 				connect: locals.pool.connect,
-				organizationScope: [currentOrganization.guid],
+				organizationScope,
 				fallbackScope: [],
-				user: locals.user
+				user: locals.user,
+				objectTypes: [payloadTypes.enum.program]
 			})
 		: null;
 
@@ -88,7 +99,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
@@ -102,7 +113,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
@@ -158,10 +169,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',

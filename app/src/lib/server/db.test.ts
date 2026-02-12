@@ -287,7 +287,7 @@ test.for([
 	},
 	{
 		name: 'goal with categories',
-		filters: { type: [payloadTypes.enum.goal], categories: ['sdg.11', 'sdg.13'] as string[] },
+		filters: { type: [payloadTypes.enum.goal], sdg: ['sdg.11', 'sdg.13'] as string[] },
 		sort: 'alpha'
 	},
 	{
@@ -312,7 +312,7 @@ test.for([
 	},
 	{
 		name: 'knowledge with categories',
-		filters: { type: [payloadTypes.enum.knowledge], categories: ['sdg.11'] as string[] },
+		filters: { type: [payloadTypes.enum.knowledge], sdg: ['sdg.11'] as string[] },
 		sort: 'modified'
 	},
 	{
@@ -336,7 +336,7 @@ test.for([
 	},
 	{
 		name: 'objective with categories',
-		filters: { type: [payloadTypes.enum.objective], categories: ['sdg.13'] as string[] },
+		filters: { type: [payloadTypes.enum.objective], sdg: ['sdg.13'] as string[] },
 		sort: 'alpha'
 	},
 	{
@@ -361,7 +361,7 @@ test.for([
 		name: 'resource with categories and topics',
 		filters: {
 			type: [payloadTypes.enum.resource],
-			categories: ['sdg.11'] as string[],
+			sdg: ['sdg.11'] as string[],
 			topics: ['topic.environment'] as string[]
 		},
 		sort: 'alpha'
@@ -383,7 +383,7 @@ test.for([
 	},
 	{
 		name: 'task with categories',
-		filters: { type: [payloadTypes.enum.task], categories: ['sdg.13'] as string[] },
+		filters: { type: [payloadTypes.enum.task], sdg: ['sdg.13'] as string[] },
 		sort: 'modified'
 	},
 	{
