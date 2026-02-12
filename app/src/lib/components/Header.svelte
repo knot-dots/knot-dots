@@ -119,7 +119,6 @@
 		return params.get('sort') ?? 'alpha';
 	});
 
-
 	let activeFilters = $derived.by(() => {
 		let count = 0;
 		const params = overlay ? paramsFromFragment(page.url) : page.url.searchParams;
@@ -381,7 +380,7 @@
 				{/if}
 			{/each}
 
-			{#if showSaveWorkspace}
+			{#if showSaveWorkspace && !$overlayStore?.key}
 				<div class="filterbar-actions dropdown" use:workspaceMenuRef>
 					<button
 						class="dropdown-button dropdown-button--command"
@@ -401,10 +400,7 @@
 							use:workspaceMenuContent={workspaceMenuOpts}
 						>
 							<div class="workspace-menu">
-								<SaveWorkspaceButton
-									mode="create"
-									defaultPayloadType={savePayloadType}
-								/>
+								<SaveWorkspaceButton mode="create" defaultPayloadType={savePayloadType} />
 							</div>
 						</fieldset>
 					{/if}
@@ -418,12 +414,7 @@
 			{#each sortOptions as [label, value] (value)}
 				{@const Icon = sortIcons.get(value)}
 				<label class="sort-option">
-					<input
-						onchange={applySort}
-						type="radio"
-						{value}
-						checked={value === currentSortParam}
-					/>
+					<input onchange={applySort} type="radio" {value} checked={value === currentSortParam} />
 					<Icon />
 					{label}
 				</label>

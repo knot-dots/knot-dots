@@ -90,9 +90,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 	];
 	const selectedPayloadTypes = url.searchParams
 		.getAll('payloadType')
-		.filter((value): value is PayloadType =>
-			allowedPayloadTypes.includes(value as PayloadType)
-		);
+		.filter((value): value is PayloadType => allowedPayloadTypes.includes(value as PayloadType));
 	const typeFilters = selectedPayloadTypes.length ? selectedPayloadTypes : allowedPayloadTypes;
 
 	if (url.searchParams.has('related-to')) {

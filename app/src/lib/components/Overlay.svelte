@@ -16,6 +16,7 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
+	import WorkspaceOverlay from '$lib/components/WorkspaceOverlay.svelte';
 	import { isGoalContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
@@ -99,6 +100,14 @@
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
 		<EditableDetailView container={data.container} {layout} revisions={data.revisions} />
+	{:else if data.key === overlayKey.enum.workspace}
+		<WorkspaceOverlay
+			container={data.container}
+			containers={data.containers}
+			facets={data.facets}
+			facetLabels={data.facetLabels}
+			categoryOptions={data.categoryOptions}
+		/>
 	{/if}
 </section>
 

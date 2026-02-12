@@ -32,13 +32,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{filterBarInitiallyOpen}
-			{facets}
-			search
-			{showSaveWorkspace}
-			{savePayloadType}
-		/>
+		<Header {filterBarInitiallyOpen} {facets} search {showSaveWorkspace} {savePayloadType} />
 	{/snippet}
 
 	{#snippet main()}

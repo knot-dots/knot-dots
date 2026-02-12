@@ -65,6 +65,14 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
+		const applyFilterDefaults = (key: string) => {
+			const values = params.getAll(key).filter(Boolean);
+			if (!values.length) return;
+			const payload = container.payload as Record<string, unknown>;
+			if (!(key in payload)) return;
+			payload[key] = Array.isArray(payload[key]) ? values : values[0];
+		};
+
 		if (isOrganizationalUnitContainer(container) && params.has('level')) {
 			container.payload.level = parseInt(params.get('level') as string);
 		} else if (isRuleContainer(container) && params.has('ruleStatus')) {
@@ -88,6 +96,16 @@
 				container.payload.programStatus = params.get('programStatus') as ProgramStatus;
 			}
 		}
+
+		applyFilterDefaults('audience');
+		applyFilterDefaults('category');
+		applyFilterDefaults('indicatorCategory');
+		applyFilterDefaults('indicatorType');
+		applyFilterDefaults('measureType');
+		applyFilterDefaults('policyFieldBNK');
+		applyFilterDefaults('programType');
+		applyFilterDefaults('taskCategory');
+		applyFilterDefaults('topic');
 
 		container.relation = [
 			...params.getAll(predicates.enum['is-part-of']).map(

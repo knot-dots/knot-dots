@@ -1473,6 +1473,7 @@ const workspaceFilterPayload = z
 		payloadType: z.array(payloadTypes).default([]),
 		policyFieldBNK: z.array(policyFieldBNK).default([]),
 		programType: z.array(programTypes).default([]),
+		taskCategory: z.array(taskCategories).default([]),
 		relationType: z.array(predicates).default([]),
 		relatedTo: z.string().uuid().optional(),
 		sort: workspaceSort.default(workspaceSort.enum.alpha),

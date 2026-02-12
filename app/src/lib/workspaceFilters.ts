@@ -1,4 +1,10 @@
-import { payloadTypes, predicates, workspaceSort, workspaceView, type PayloadType } from '$lib/models';
+import {
+	payloadTypes,
+	predicates,
+	workspaceSort,
+	workspaceView,
+	type PayloadType
+} from '$lib/models';
 
 export type WorkspaceFilters = {
 	audience: string[];
@@ -9,12 +15,13 @@ export type WorkspaceFilters = {
 	payloadType: PayloadType[];
 	policyFieldBNK: string[];
 	programType: string[];
+	taskCategory: string[];
 	relationType: string[];
 	relatedTo?: string;
-	sort: typeof workspaceSort.enum[keyof typeof workspaceSort.enum];
+	sort: (typeof workspaceSort.enum)[keyof typeof workspaceSort.enum];
 	terms: string;
 	topic: string[];
-	view: typeof workspaceView.enum[keyof typeof workspaceView.enum];
+	view: (typeof workspaceView.enum)[keyof typeof workspaceView.enum];
 };
 
 function viewFromUrl(url: URL): WorkspaceFilters['view'] {
@@ -37,7 +44,10 @@ export function filtersFromUrl(url: URL): WorkspaceFilters {
 		payloadType: (params.getAll('payloadType') as PayloadType[]).filter(Boolean),
 		policyFieldBNK: params.getAll('policyFieldBNK'),
 		programType: params.getAll('programType'),
-		relationType: params.getAll('relationType').filter((r) => predicates.options.includes(r as any)),
+		taskCategory: params.getAll('taskCategory'),
+		relationType: params
+			.getAll('relationType')
+			.filter((r) => predicates.options.includes(r as any)),
 		relatedTo: params.get('related-to') ?? undefined,
 		sort: (params.get('sort') as WorkspaceFilters['sort']) ?? workspaceSort.enum.alpha,
 		terms: params.get('terms') ?? '',
@@ -49,7 +59,17 @@ export function filtersFromUrl(url: URL): WorkspaceFilters {
 export function filtersToQuery(filters: WorkspaceFilters): URLSearchParams {
 	const query = new URLSearchParams();
 
-	for (const key of ['audience','category','indicatorCategory','indicatorType','measureType','policyFieldBNK','programType','topic'] as const) {
+	for (const key of [
+		'audience',
+		'category',
+		'indicatorCategory',
+		'indicatorType',
+		'measureType',
+		'policyFieldBNK',
+		'programType',
+		'taskCategory',
+		'topic'
+	] as const) {
 		filters[key].forEach((value) => query.append(key, value));
 	}
 
@@ -58,7 +78,8 @@ export function filtersToQuery(filters: WorkspaceFilters): URLSearchParams {
 	if (filters.relatedTo) query.append('related-to', filters.relatedTo);
 	if (filters.sort && filters.sort !== workspaceSort.enum.alpha) query.append('sort', filters.sort);
 	if (filters.terms) query.append('terms', filters.terms);
-	if (filters.view && filters.view !== workspaceView.enum.catalog) query.append('view', filters.view);
+	if (filters.view && filters.view !== workspaceView.enum.catalog)
+		query.append('view', filters.view);
 
 	return query;
 }

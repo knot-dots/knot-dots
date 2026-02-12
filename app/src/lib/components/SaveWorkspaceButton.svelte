@@ -116,7 +116,11 @@
 	}
 </script>
 
-<button class="button button-primary button-xs" on:click={() => dialogRef.showModal()} type="button">
+<button
+	class="button button-primary button-xs"
+	on:click={() => dialogRef.showModal()}
+	type="button"
+>
 	{#if mode === 'create'}
 		<Plus /> {$_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })}
 	{:else}
@@ -142,7 +146,7 @@
 			label={$_('workspace.description', { default: 'Beschreibung' })}
 			bind:value={description}
 		/>
-		
+
 		{#if errorMessage}
 			<p class="error">{errorMessage}</p>
 		{/if}
@@ -184,7 +188,6 @@
 		padding: 0.5rem 0.625rem;
 		width: 100%;
 	}
-
 
 	.dialog__footer {
 		display: flex;
