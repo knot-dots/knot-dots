@@ -14,7 +14,7 @@ import {
 import { Client as ESClient } from '@elastic/elasticsearch';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
-import { toDoc } from '@knot-dots/shared/indexing.ts';
+import { toDoc } from '@knot-dots/shared/src/indexing.ts';
 
 const envSchema = z
   .object({

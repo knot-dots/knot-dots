@@ -57,7 +57,7 @@ services:
     volumes:
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
       - ./import/src:/srv/knot-dots/import/src
-      - ./shared:/srv/knot-dots/shared
+      - ./shared/src:/srv/knot-dots/shared/src
 
   migrate:
     build:
@@ -139,7 +139,7 @@ services:
       - ROARR_LOG=true
     volumes:
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
-      - ./shared:/srv/knot-dots/shared
+      - ./shared/src:/srv/knot-dots/shared/src
       - ./worker/src:/srv/knot-dots/worker/src
     healthcheck:
       test: ["CMD-SHELL", "ps -o pid= 1 >/dev/null || exit 1"]
