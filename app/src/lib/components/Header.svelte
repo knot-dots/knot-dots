@@ -114,6 +114,8 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
+	const featureDecisions = $derived.by(() => createFeatureDecisions(page.data.features));
+
 	const currentSortParam = $derived.by(() => {
 		const params = overlay ? paramsFromFragment(page.url) : page.url.searchParams;
 		return params.get('sort') ?? 'alpha';
@@ -228,7 +230,7 @@
 			<ProgramWorkspaces {container} />
 		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
 			<MeasureWorkspaces {container} />
-		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
+		{:else if isGoalContainer(container) && featureDecisions.useIOOI()}
 			<GoalWorkspaces {container} />
 		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
 			<WorkspacesMenu />
@@ -305,7 +307,7 @@
 			</a>
 		{/if}
 
-		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
+		{#if featureDecisions.useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
 			<button
 				aria-label={$_('favorite')}
 				class="action-button action-button--size-l action-button--favorite"
@@ -380,7 +382,7 @@
 				{/if}
 			{/each}
 
-			{#if showSaveWorkspace && !$overlayStore?.key}
+			{#if showSaveWorkspace && featureDecisions.useCustomWorkspaces() && !$overlayStore?.key}
 				<div class="filterbar-actions dropdown" use:workspaceMenuRef>
 					<button
 						class="dropdown-button dropdown-button--command"
