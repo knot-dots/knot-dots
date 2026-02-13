@@ -122,7 +122,7 @@
 	type="button"
 >
 	{#if mode === 'create'}
-		<Plus /> {$_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })}
+		<Plus /> {$_('workspace.save_as_workspace')}
 	{:else}
 		<Check /> {$_('workspace.save_changes', { default: 'Änderungen speichern' })}
 	{/if}
@@ -132,7 +132,7 @@
 	<form method="dialog" class="workspace-dialog" on:submit|preventDefault={save}>
 		<h2>
 			{mode === 'create'
-				? $_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })
+				? $_('workspace.save_as_workspace')
 				: $_('workspace.save_changes', { default: 'Änderungen speichern' })}
 		</h2>
 

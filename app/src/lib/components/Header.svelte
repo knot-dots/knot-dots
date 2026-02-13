@@ -98,7 +98,7 @@
 	let sortBar = createDisclosure({ label: $_('sort') });
 
 	const workspaceMenu = createPopover({
-		label: $_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })
+		label: $_('workspace.save_as_workspace')
 	});
 
 	const [workspaceMenuRef, workspaceMenuContent] = createPopperActions({
@@ -389,7 +389,7 @@
 					>
 						<Ellipsis />
 						<span class="is-visually-hidden">
-							{$_('workspace.save_as_page', { default: 'Als Arbeitsbereich speichern' })}
+							{$_('workspace.save_as_workspace')}
 						</span>
 					</button>
 
