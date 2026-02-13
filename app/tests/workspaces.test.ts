@@ -5,6 +5,8 @@ test.describe('Workspaces', () => {
 
 	test('Save filtered workspace and open it', async ({
 		page,
+		dotsBoard,
+		defaultOrganization,
 		testOrganization,
 		isMobile,
 		testGoal,
@@ -12,12 +14,21 @@ test.describe('Workspaces', () => {
 	}) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
+		await dotsBoard.goto(`/${defaultOrganization.guid}`);
+		await dotsBoard.sidebar.openProfileSettings();
+		await dotsBoard.page.getByLabel('CustomWorkspaces').check();
+		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
+		await response;
+
 		const workspaceTitle = `E2E Workspace ${test.info().project.name} ${Date.now()}`;
 		const baseUrl = `/${testOrganization.guid}/goals/table`;
 
 		await page.goto(baseUrl);
 
 		await page.getByRole('button', { name: 'Filter' }).click();
+
+		await page.waitForTimeout(500);
 
 		const filterPanel = page.locator('.filter-and-sort fieldset');
 		await filterPanel.getByRole('button', { name: 'Category' }).click();
