@@ -86,17 +86,17 @@
 
 <style>
 	.logo {
-		height: 2.25rem;
+		height: var(--logo-height, 3rem);
 	}
 
 	.logo-upload {
 		border: 2px solid var(--color-gray-200);
 		border-radius: 4px;
 		display: grid;
-		height: 3rem;
+		height: var(--logo-height, 3rem);
 		padding: 0.375rem;
 		place-content: center;
-		width: 3rem;
+		width: var(--logo-height, 3rem);
 	}
 
 	label > :global(svg:first-of-type) {

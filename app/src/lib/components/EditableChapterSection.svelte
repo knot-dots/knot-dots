@@ -110,14 +110,16 @@
 	}
 
 	.heading {
+		--logo-height: 2.5rem;
+
 		align-items: start;
 		display: flex;
 		gap: 0.75rem;
+		min-height: var(--logo-height);
 	}
 
 	.heading > :global(:first-child) {
 		flex-shrink: 0;
-		flex-basis: 2.25rem;
 	}
 
 	.heading button {
