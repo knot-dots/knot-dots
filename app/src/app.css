@@ -1193,7 +1193,7 @@ label > input[type='checkbox'].toggle {
 	padding-inline-start: 1.5rem;
 }
 
-.markdown-body p,
+.markdown-body > p,
 .milkdown .editor > p,
 .milkdown .editor > ul,
 .milkdown .editor > ol {
