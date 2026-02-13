@@ -32,6 +32,7 @@ import {
 	type User as UserRecord,
 	type WorkspaceContainer
 } from '$lib/models';
+import type { CategoryOptions } from '$lib/client/categoryOptions';
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
@@ -209,7 +210,7 @@ export type OverlayData =
 			containers: Container[];
 			facets?: Map<string, Map<string, number>>;
 			facetLabels?: Map<string, string>;
-			categoryOptions?: Record<string, unknown> | null;
+			categoryOptions?: CategoryOptions | null;
 	  }
 	| {
 			key: 'view';
@@ -683,7 +684,7 @@ if (browser) {
 				containers: Container[];
 				facets?: Record<string, Record<string, number>>;
 				facetLabels?: Record<string, string>;
-				categoryOptions?: Record<string, unknown> | null;
+				categoryOptions?: CategoryOptions | null;
 			};
 			const containers = data.containers ?? [];
 			const facets = data.facets

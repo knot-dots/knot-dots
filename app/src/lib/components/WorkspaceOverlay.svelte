@@ -10,6 +10,7 @@
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import { page } from '$app/state';
+	import { SvelteSet, SvelteURLSearchParams } from 'svelte/reactivity';
 	import {
 		audience,
 		computeFacetCount,
@@ -37,13 +38,14 @@
 		topics,
 		type WorkspaceContainer
 	} from '$lib/models';
+	import type { CategoryOptions } from '$lib/client/categoryOptions';
 
 	interface Props {
 		container: WorkspaceContainer;
 		containers: Container[];
 		facets?: Map<string, Map<string, number>>;
 		facetLabels?: Map<string, string>;
-		categoryOptions?: Record<string, unknown> | null;
+		categoryOptions?: CategoryOptions | null;
 	}
 
 	let {
@@ -100,7 +102,7 @@
 
 	const createFilterParams = $derived.by(() => {
 		const rawFilters = savedFilters as Record<string, unknown>;
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 		const appendAll = (key: string, values: unknown) => {
 			if (!Array.isArray(values)) return;
 			values.forEach((value) => {
@@ -124,7 +126,7 @@
 	});
 
 	function buildCreateUrl(payloadType: string, extraParams: Record<string, string> = {}) {
-		const params = new URLSearchParams(createFilterParams);
+		const params = new SvelteURLSearchParams(createFilterParams);
 		params.append('create', payloadType);
 		for (const [key, value] of Object.entries(extraParams)) {
 			params.set(key, value);
@@ -135,7 +137,7 @@
 	const filteredContainers = $derived.by(() => containers);
 
 	const hiddenKeys = $derived.by(() => {
-		const keys = new Set<string>();
+		const keys = new SvelteSet<string>();
 		const rawFilters = savedFilters;
 		const filters = {
 			audience: Array.isArray(rawFilters.audience) ? rawFilters.audience : [],
@@ -176,20 +178,21 @@
 		return Array.isArray(raw) ? raw.map((value) => String(value)).filter(Boolean) : [];
 	});
 
+	const payloadTypeValues = payloadTypes.options as readonly string[];
+	const payloadTypeSet = new Set(payloadTypeValues);
+
 	const catalogPayloadTypes = $derived.by(() => {
 		const values = resolvedPayloadTypes.length ? resolvedPayloadTypes : payloadTypeOptions;
 		return values.filter((value) =>
-			payloadTypes.options.includes(value as any)
+			payloadTypeSet.has(value)
 		) as (typeof payloadTypes.enum)[keyof typeof payloadTypes.enum][];
 	});
-
-	const catalogFallback = $derived.by(() => selectedView !== 'catalog');
 
 	const statusType = $derived.by(() => {
 		if (resolvedPayloadTypes.length === 1) return resolvedPayloadTypes[0];
 		if (!resolvedPayloadTypes.length) return undefined;
 		const allowed = new Set([payloadTypes.enum.measure, payloadTypes.enum.simple_measure]);
-		const onlyMeasures = resolvedPayloadTypes.every((value) => allowed.has(value as any));
+		const onlyMeasures = resolvedPayloadTypes.every((value) => allowed.has(value));
 		return onlyMeasures ? payloadTypes.enum.measure : undefined;
 	});
 
@@ -209,7 +212,7 @@
 				payloadTypes.enum.measure,
 				payloadTypes.enum.rule,
 				payloadTypes.enum.simple_measure
-			].includes(value as any)
+			].includes(value)
 		);
 	});
 

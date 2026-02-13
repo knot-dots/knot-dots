@@ -1,9 +1,9 @@
 import {
-	payloadTypes,
 	predicates,
 	workspaceSort,
 	workspaceView,
-	type PayloadType
+	type PayloadType,
+	type Predicate
 } from '$lib/models';
 
 export type WorkspaceFilters = {
@@ -24,10 +24,17 @@ export type WorkspaceFilters = {
 	view: (typeof workspaceView.enum)[keyof typeof workspaceView.enum];
 };
 
+const predicateValues = predicates.options as readonly string[];
+
+function isPredicate(value: string): value is Predicate {
+	return predicateValues.includes(value);
+}
+
 function viewFromUrl(url: URL): WorkspaceFilters['view'] {
 	const segments = url.pathname.split('/').filter(Boolean);
 	const last = segments[segments.length - 1];
-	return workspaceView.options.includes(last as any)
+	const viewOptions = workspaceView.options as WorkspaceFilters['view'][];
+	return viewOptions.includes(last as WorkspaceFilters['view'])
 		? (last as WorkspaceFilters['view'])
 		: workspaceView.enum.catalog;
 }
@@ -45,9 +52,7 @@ export function filtersFromUrl(url: URL): WorkspaceFilters {
 		policyFieldBNK: params.getAll('policyFieldBNK'),
 		programType: params.getAll('programType'),
 		taskCategory: params.getAll('taskCategory'),
-		relationType: params
-			.getAll('relationType')
-			.filter((r) => predicates.options.includes(r as any)),
+		relationType: params.getAll('relationType').filter(isPredicate),
 		relatedTo: params.get('related-to') ?? undefined,
 		sort: (params.get('sort') as WorkspaceFilters['sort']) ?? workspaceSort.enum.alpha,
 		terms: params.get('terms') ?? '',

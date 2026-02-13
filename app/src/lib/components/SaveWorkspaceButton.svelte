@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import Check from '~icons/flowbite/check-circle-solid';
@@ -79,7 +78,6 @@
 					throw new Error(await created.text());
 				}
 
-				const container = (await created.json()) as WorkspaceContainer;
 				dialogRef.close();
 			} else if (workspace) {
 				const updatedPayload = {
