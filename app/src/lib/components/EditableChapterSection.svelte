@@ -117,7 +117,6 @@
 
 	.heading > :global(:first-child) {
 		flex-shrink: 0;
-		flex-basis: 2.25rem;
 	}
 
 	.heading button {
