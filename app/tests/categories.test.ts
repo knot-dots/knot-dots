@@ -3,15 +3,6 @@ import { expect, test } from './fixtures';
 test.describe('Categories', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test.beforeEach(async ({ defaultOrganization, dotsBoard }) => {
-		await dotsBoard.goto(`/${defaultOrganization.guid}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('CustomCategories').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-	});
-
 	test('shows four default categories', async ({ defaultOrganization, page }) => {
 		await page.goto(`/${defaultOrganization.guid}/categories`);
 

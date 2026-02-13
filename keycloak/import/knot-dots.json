@@ -543,6 +543,7 @@
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
+        "alpha-testing",
         "default-roles-knot-dots"
       ],
       "notBefore": 0,
