@@ -10,15 +10,8 @@ test.describe('Goal IOOI Board', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable IOOI feature flag
-		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('IOOI').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open goal overlay
+		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
 
 		// Navigate to IOOI workspace
@@ -40,15 +33,8 @@ test.describe('Goal IOOI Board', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable IOOI feature flag
-		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('IOOI').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open goal overlay
+		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
 
 		// Navigate to IOOI workspace
@@ -69,15 +55,8 @@ test.describe('Goal IOOI Board', () => {
 		}) => {
 			test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-			// Enable IOOI feature flag
-			await dotsBoard.goto(`/${testGoal.organization}`);
-			await dotsBoard.sidebar.openProfileSettings();
-			await dotsBoard.page.getByLabel('IOOI').check();
-			const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-			await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-			await response;
-
 			// Open goal overlay and enable edit mode
+			await dotsBoard.goto(`/${testGoal.organization}`);
 			await dotsBoard.card(testGoal.payload.title).click();
 			await dotsBoard.overlay.editModeToggle.check();
 
@@ -117,15 +96,8 @@ test.describe('Measure IOOI Board', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable IOOI feature flag
-		await dotsBoard.goto(`/${testMeasure.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('IOOI').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open measure overlay
+		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 
 		// Navigate to IOOI workspace
@@ -147,15 +119,8 @@ test.describe('Measure IOOI Board', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable IOOI feature flag
-		await dotsBoard.goto(`/${testMeasure.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('IOOI').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open measure overlay
+		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 
 		// Navigate to IOOI workspace
@@ -176,15 +141,8 @@ test.describe('Measure IOOI Board', () => {
 		}) => {
 			test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-			// Enable IOOI feature flag
-			await dotsBoard.goto(`/${testMeasure.organization}`);
-			await dotsBoard.sidebar.openProfileSettings();
-			await dotsBoard.page.getByLabel('IOOI').check();
-			const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-			await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-			await response;
-
 			// Open measure overlay and enable edit mode
+			await dotsBoard.goto(`/${testMeasure.organization}`);
 			await dotsBoard.card(testMeasure.payload.title).click();
 			await dotsBoard.overlay.editModeToggle.check();
 
@@ -221,16 +179,8 @@ test.describe('Measure IOOI Board', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable IOOI and ResourcesV2 feature flags
-		await dotsBoard.goto(`/${testMeasure.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('IOOI').check();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -272,6 +222,7 @@ test.describe('Measure IOOI Board', () => {
 		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
 		await dotsBoard.overlay.editModeToggle.check();
 		await section.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
 		await dotsBoard.overlay.deleteSection(section);
 	});

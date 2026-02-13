@@ -30,6 +30,12 @@ export class Board {
 	}
 }
 
+export class CategoriesBoard extends Board {
+	async goto(baseURL: string) {
+		await this.page.goto(`${baseURL}/categories`);
+	}
+}
+
 export class DotsBoard extends Board {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/all/level`);

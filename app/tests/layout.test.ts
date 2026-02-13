@@ -27,17 +27,13 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 test.describe(() => {
 	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('badge is not editable by Bob', async ({ page, testGoal }) => {
-		await page.goto('/');
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
-		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
+	test('badge is not editable by Bob', async ({ dotsBoard, testGoal }) => {
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
 
-		// Edit switch
-		const overlay = page.locator('.overlay');
-		await overlay.getByRole('checkbox', { name: 'Edit mode', exact: true }).check();
+		await dotsBoard.overlay.editModeToggle.check();
 
-		const badgeList = page.locator('ul.badges');
+		const badgeList = dotsBoard.overlay.locator.locator('ul.badges');
 		const badgeButtons = badgeList.getByRole('button');
 
 		if ((await badgeButtons.count()) > 0) {
@@ -45,36 +41,28 @@ test.describe(() => {
 		}
 	});
 
-	test('progress is not editable by Bob', async ({ page, testGoal }) => {
-		await page.goto('/');
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
-		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
+	test('progress is not editable by Bob', async ({ dotsBoard, testGoal }) => {
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
 
-		// Edit switch
-		const overlay = page.locator('.overlay');
-		await overlay.getByRole('checkbox', { name: 'Edit mode', exact: true }).check();
+		await dotsBoard.overlay.editModeToggle.check();
 
-		const slider = page.getByRole('slider', { name: 'Progress' });
+		const slider = dotsBoard.overlay.locator.getByRole('slider', { name: 'Progress' });
 
 		if ((await slider.count()) > 0) {
 			await expect(slider).not.toBeEditable();
 		}
 	});
 
-	test('task badge shows category', async ({ page, testGoal, testTask }) => {
-		await page.goto('/');
+	test('task badge shows category', async ({ dotsBoard, testGoal, testTask }) => {
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
+		await dotsBoard.overlay.locator.getByText(testTask.payload.title).click();
 
-		// Go to goal
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
-		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
-
-		// Open task
-		await page.getByRole('article', { name: testTask.payload.title, exact: true }).click();
+		await dotsBoard.overlay.editModeToggle.check();
 
 		// Get badges in heading and expect to have 'Design' badge
-		const badges = page
+		const badges = dotsBoard.overlay.locator
 			.locator('.details-section')
 			.filter({ hasText: testTask.payload.title })
 			.locator('.badges');

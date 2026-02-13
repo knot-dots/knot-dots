@@ -133,60 +133,61 @@ test.describe('Permissions', () => {
 		test.use({ storageState: 'tests/.auth/admin.json' });
 
 		test('change the organizational unit of a measure', async ({
-			page,
+			dotsBoard,
 			testOrganizationalUnit,
 			testProgram,
 			testMeasure
 		}) => {
-			const overlay = page.locator('.overlay');
-			const dialog = page.getByRole('dialog');
-
-			await page.goto(`/${testMeasure.organization}/all/level`);
-
-			await page.getByRole('link', { name: testMeasure.payload.title }).click();
-			await overlay.getByRole('checkbox', { name: 'Edit mode' }).check();
+			await dotsBoard.goto(`/${testMeasure.organization}`);
+			await dotsBoard.card(testMeasure.payload.title).click();
+			await dotsBoard.overlay.editModeToggle.check();
 
 			// Add a goal to this measure via the goals section
-			await overlay.getByRole('button', { name: 'Add section' }).click();
-			await overlay.getByRole('menuitem', { name: 'Goals' }).click();
-			const section = overlay
-				.locator('.sections section')
-				.filter({ has: page.getByRole('heading', { name: 'Goals' }) })
-				.first();
+			const dialog = dotsBoard.page.getByRole('dialog');
+			const section = await dotsBoard.overlay.addSection('Goals');
 			await expect(section).toBeVisible();
 			const titleOfFirstGoal = 'First goal';
 			await section.getByRole('button', { name: 'Add item' }).click();
+
 			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
 				testMeasure.payload.title
 			);
 			await dialog.getByRole('textbox', { name: 'Title' }).fill(titleOfFirstGoal);
 			await dialog.getByRole('button', { name: 'Save' }).click();
-			await expect(overlay.getByRole('heading', { name: titleOfFirstGoal })).toBeVisible();
+			await expect(
+				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })
+			).toBeVisible();
 
 			// Change the organizational unit of the measure
-			await overlay.getByRole('button', { name: 'Back' }).click();
-			await expect(overlay.getByRole('heading', { name: testMeasure.payload.title })).toBeVisible();
-			await overlay.getByLabel('Organizational unit').click();
-			await overlay.getByLabel(testOrganizationalUnit.payload.name).click();
-			await page.waitForTimeout(2100);
+			await dotsBoard.overlay.backButton.click();
+			await expect(
+				dotsBoard.overlay.locator.getByRole('heading', { name: testMeasure.payload.title })
+			).toBeVisible();
+			await dotsBoard.overlay.locator.getByLabel('Organizational unit').click();
+			const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
+			await dotsBoard.overlay.locator.getByLabel(testOrganizationalUnit.payload.name).click();
+			await invalidateRequest;
 
 			// Assert descendant goal' organizational unit is updated, too
 			await section.getByRole('link', { name: titleOfFirstGoal }).click();
-			await expect(overlay.getByRole('heading', { name: titleOfFirstGoal })).toBeVisible();
-			await expect(page.getByRole('button', { name: 'Organizational unit' })).toHaveText(
+			await expect(
+				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })
+			).toBeVisible();
+			await expect(dotsBoard.page.getByRole('button', { name: 'Organizational unit' })).toHaveText(
 				testOrganizationalUnit.payload.name
 			);
 
 			// Assert program is not affected by changing the organizational unit of its descendant measure
-			await overlay.getByRole('link', { name: 'Close' }).click();
-			await page.getByRole('link', { name: testProgram.payload.title }).click();
-			await expect(overlay.getByRole('heading', { name: testProgram.payload.title })).toBeVisible();
-			await expect(overlay.getByRole('button', { name: 'Organizational unit' })).toHaveText(
-				'Empty'
-			);
+			await dotsBoard.overlay.closeButton.click();
+			await dotsBoard.card(testProgram.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+			await expect(
+				dotsBoard.overlay.locator.getByRole('button', { name: 'Organizational unit' })
+			).toHaveText('Empty');
 
 			// Assert newly added goals inherit the organizational unit of the measure
-			await page.getByRole('link', { name: testMeasure.payload.title }).click();
+			await dotsBoard.card(testMeasure.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
 			await section.getByRole('button', { name: 'Add item' }).click();
 			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
 				testMeasure.payload.title

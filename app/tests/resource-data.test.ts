@@ -10,15 +10,8 @@ test.describe('Resource Data Collections', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable ResourcesV2 feature flag
-		await dotsBoard.goto(`/${testMeasure.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -42,15 +35,8 @@ test.describe('Resource Data Collections', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testMeasure.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -85,6 +71,7 @@ test.describe('Resource Data Collections', () => {
 
 		// Clean up - delete the created item
 		await section.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
 		await dotsBoard.overlay.deleteSection(section);
 	});
@@ -97,15 +84,8 @@ test.describe('Resource Data Collections', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testMeasure.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -161,6 +141,7 @@ test.describe('Resource Data Collections', () => {
 
 		// Clean up - delete the created item and section
 		await section.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
 		await dotsBoard.overlay.deleteSection(section);
 	});
@@ -172,15 +153,8 @@ test.describe('Resource Data Collections in Goals', () => {
 	test('add Budget section to goal', async ({ dotsBoard, isMobile, testGoal }) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable ResourcesV2 feature flag
-		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open goal overlay and enable edit mode
+		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -202,15 +176,8 @@ test.describe('Resource Data Collections in Goals', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open goal overlay and enable edit mode
+		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -245,6 +212,7 @@ test.describe('Resource Data Collections in Goals', () => {
 
 		// Clean up - delete the created item
 		await section.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
 		await dotsBoard.overlay.deleteSection(section);
 	});
@@ -257,15 +225,8 @@ test.describe('Resource Data Collections in Goals', () => {
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Open goal overlay and enable edit mode
+		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -321,6 +282,7 @@ test.describe('Resource Data Collections in Goals', () => {
 
 		// Clean up - delete the created item and section
 		await section.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
 		await dotsBoard.overlay.deleteSection(section);
 	});
