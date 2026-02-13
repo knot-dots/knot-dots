@@ -3,13 +3,19 @@
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
-	import { isIndicatorContainer, isIndicatorTemplateContainer } from '$lib/models';
+	import { isIndicatorContainer, isIndicatorTemplateContainer, payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<IndicatorsPage {data}>
+<IndicatorsPage
+	{data}
+	showSaveWorkspace
+	savePayloadType={data.useNewIndicators
+		? [payloadTypes.enum.indicator_template]
+		: [payloadTypes.enum.indicator]}
+>
 	<Table
 		columns={[
 			{ heading: $_('title'), key: 'title' },

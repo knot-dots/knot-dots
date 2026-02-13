@@ -3,12 +3,13 @@
 	import Help from '$lib/components/Help.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<TasksPage {data}>
+<TasksPage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.task]}>
 	<Table
 		columns={[
 			{ heading: $_('title'), key: 'title' },

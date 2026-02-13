@@ -23,13 +23,16 @@ import {
 	type MeasureContainer,
 	type NewContainer,
 	overlayKey,
+	isOverlayKey,
 	type HelpContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
 	predicates,
-	type User as UserRecord
+	type User as UserRecord,
+	type WorkspaceContainer
 } from '$lib/models';
+import type { CategoryOptions } from '$lib/client/categoryOptions';
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
@@ -206,6 +209,14 @@ export type OverlayData =
 			key: 'teasers';
 			container: AnyContainer;
 			containers: Container[];
+	  }
+	| {
+			key: 'workspace';
+			container: WorkspaceContainer;
+			containers: Container[];
+			facets?: Map<string, Map<string, number>>;
+			facetLabels?: Map<string, string>;
+			categoryOptions?: CategoryOptions | null;
 	  }
 	| {
 			key: 'view';
@@ -647,6 +658,86 @@ if (browser) {
 				key: overlayKey.enum['new-indicator-catalog'],
 				container: undefined,
 				containers
+			});
+		} else if (hashParams.has(overlayKey.enum.workspace)) {
+			const revisions = (await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum.workspace) as string
+			)) as WorkspaceContainer[];
+			const container = revisions[revisions.length - 1];
+			const rawFilters = (container.payload.filters ?? {}) as Record<string, unknown>;
+			const workspaceQuery = new URLSearchParams();
+			const filterEntries = Array.from(hashParams.entries()).filter(
+				([key]) => !isOverlayKey(key) && key !== 'view'
+			);
+			const hashFilterKeys = new Set(filterEntries.map(([key]) => key));
+			for (const [key, value] of filterEntries) {
+				workspaceQuery.append(key, value);
+			}
+			const appendAll = (key: string, values: unknown) => {
+				if (!Array.isArray(values)) return;
+				if (hashFilterKeys.has(key)) return;
+				values.forEach((value) => {
+					if (value !== undefined && value !== null && `${value}` !== '') {
+						workspaceQuery.append(key, String(value));
+					}
+				});
+			};
+
+			if (!hashFilterKeys.has('related-to')) {
+				if (typeof rawFilters.relatedTo === 'string' && rawFilters.relatedTo) {
+					workspaceQuery.append('related-to', rawFilters.relatedTo);
+				}
+			}
+			if (!hashFilterKeys.has('terms')) {
+				if (typeof rawFilters.terms === 'string' && rawFilters.terms) {
+					workspaceQuery.append('terms', rawFilters.terms);
+				}
+			}
+			if (!hashFilterKeys.has('sort')) {
+				if (typeof rawFilters.sort === 'string' && rawFilters.sort) {
+					workspaceQuery.append('sort', rawFilters.sort);
+				}
+			}
+
+			for (const [key, value] of Object.entries(rawFilters)) {
+				if (hashFilterKeys.has(key)) continue;
+				if (Array.isArray(value)) {
+					appendAll(key, value);
+				}
+			}
+
+			workspaceQuery.set('organizationGuid', values.data.currentOrganization.guid);
+			if (values.data.currentOrganizationalUnit?.guid) {
+				workspaceQuery.set('organizationalUnitGuid', values.data.currentOrganizationalUnit.guid);
+			}
+
+			const res = await fetch(`/workspace/containers?${workspaceQuery.toString()}`);
+			if (!res.ok) {
+				throw new Error(await res.text());
+			}
+			const data = (await res.json()) as {
+				containers: Container[];
+				facets?: Record<string, Record<string, number>>;
+				facetLabels?: Record<string, string>;
+				categoryOptions?: CategoryOptions | null;
+			};
+			const containers = data.containers ?? [];
+			const facets = data.facets
+				? new Map(
+						Object.entries(data.facets).map(([key, values]) => [
+							key,
+							new Map(Object.entries(values))
+						])
+					)
+				: undefined;
+			const facetLabels = data.facetLabels ? new Map(Object.entries(data.facetLabels)) : undefined;
+			setOverlayIfLatest({
+				key: overlayKey.enum.workspace,
+				container,
+				containers,
+				facets,
+				facetLabels,
+				categoryOptions: data.categoryOptions ?? null
 			});
 		} else if (hashParams.has(overlayKey.enum.teasers)) {
 			const revisions = await fetchContainerRevisions(

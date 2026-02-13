@@ -5,14 +5,14 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
-	import { programStatus } from '$lib/models';
+	import { payloadTypes, programStatus } from '$lib/models';
 	import { programStatusBackgrounds, programStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.program]}>
 	<Board>
 		{#each programStatus.options as statusOption (statusOption)}
 			<BoardColumn

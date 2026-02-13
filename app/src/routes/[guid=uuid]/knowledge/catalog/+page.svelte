@@ -8,7 +8,12 @@
 	let { data }: PageProps = $props();
 </script>
 
-<KnowledgePage {data} filterBarInitiallyOpen>
+<KnowledgePage
+	{data}
+	filterBarInitiallyOpen
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.knowledge]}
+>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.knowledge]} />
 	<Help slug="knowledge-catalog" />
 </KnowledgePage>

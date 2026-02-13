@@ -2,6 +2,7 @@
 	import { type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import type { PayloadType } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
@@ -9,9 +10,17 @@
 		children: Snippet;
 		data: PageData;
 		filterBarInitiallyOpen?: boolean;
+		showSaveWorkspace?: boolean;
+		savePayloadType?: PayloadType[];
 	}
 
-	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
+	let {
+		children,
+		data,
+		filterBarInitiallyOpen = false,
+		showSaveWorkspace = false,
+		savePayloadType = []
+	}: Props = $props();
 
 	let facets = $derived(data.facets);
 </script>
@@ -24,6 +33,8 @@
 			{filterBarInitiallyOpen}
 			categoryOptions={data.categoryOptions ?? null}
 			search
+			{showSaveWorkspace}
+			{savePayloadType}
 		/>
 	{/snippet}
 
