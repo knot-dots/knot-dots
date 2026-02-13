@@ -1096,6 +1096,10 @@ label > input[type='checkbox'].toggle {
 	min-height: 2rem;
 }
 
+.details-section header {
+	margin-bottom: 0.5rem;
+}
+
 #dnd-action-dragged-el .details-section {
 	background: var(--color-primary-050);
 	outline: solid 1px var(--color-primary-700);
@@ -1198,7 +1202,7 @@ label > input[type='checkbox'].toggle {
 
 .markdown-body > *:first-child,
 .milkdown .editor > *:first-child {
-	margin-top: 0;
+	margin-top: 0.5rem;
 }
 
 .markdown-body > *:last-child,
