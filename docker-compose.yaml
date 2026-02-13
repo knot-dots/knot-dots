@@ -1,7 +1,8 @@
 services:
   app:
     build:
-      context: app
+      context: .
+      dockerfile: app/Dockerfile
       target: dev
     depends_on:
       elasticsearch:
@@ -20,7 +21,7 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./app/src:/srv/app/src
+      - ./app/src:/srv/knot-dots/app/src
 
   db:
     build:
@@ -41,8 +42,8 @@ services:
       context: .
       dockerfile: import/Dockerfile
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       elasticsearch:
         condition: service_healthy
     env_file:
@@ -54,9 +55,9 @@ services:
     profiles:
       - import
     volumes:
-      - ./import/src:/srv/app/src
-      - ./shared:/srv/app/shared
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
+      - ./import/src:/srv/knot-dots/import/src
+      - ./shared/src:/srv/knot-dots/shared/src
 
   migrate:
     build:
@@ -137,8 +138,9 @@ services:
       - DE_LABELS_PATH=/opt/labels/de.json
       - ROARR_LOG=true
     volumes:
-      - ./shared:/srv/app/shared
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
+      - ./shared/src:/srv/knot-dots/shared/src
+      - ./worker/src:/srv/knot-dots/worker/src
     healthcheck:
       test: ["CMD-SHELL", "ps -o pid= 1 >/dev/null || exit 1"]
       interval: 10s
@@ -149,7 +151,8 @@ services:
     # Use the variable TEST_IMAGE if provided, otherwise build locally
     image: ${TEST_IMAGE:-preview-local}
     build:
-      context: app
+      context: .
+      dockerfile: app/Dockerfile
       target: production
     depends_on:
       keycloak:

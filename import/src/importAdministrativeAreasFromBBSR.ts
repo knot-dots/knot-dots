@@ -1,8 +1,8 @@
 import { parse } from 'csv-parse';
 import * as fs from 'node:fs';
 import { from } from 'rxjs';
-import { administrativeAreaBBSR, getPool, insertIntoAdministrativeAreaBBSR } from './db';
 import { bufferCount, map } from 'rxjs/operators';
+import { administrativeAreaBBSR, getPool, insertIntoAdministrativeAreaBBSR } from './db.ts';
 
 function readFromCSV$(path: fs.PathLike) {
 	const csvStream = fs.createReadStream(path);

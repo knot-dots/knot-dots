@@ -7,7 +7,7 @@ import {
 	indicatorDataWegweiserKommune,
 	insertIntoIndicatorDataWegweiserKommune,
 	updateContainer
-} from './db';
+} from './db.ts';
 import assert from 'node:assert';
 import { from } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';

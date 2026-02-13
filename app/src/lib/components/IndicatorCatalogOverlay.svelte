@@ -92,7 +92,11 @@
 	async function select(container: IndicatorContainer | IndicatorTemplateContainer) {
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
-				const effect = await createEffect($addEffectState.target, container);
+				const effect = await createEffect(
+					$addEffectState.target,
+					container,
+					$addEffectState.iooiType
+				);
 				const params = new URLSearchParams([[overlayKey.enum.view, effect.guid]]);
 				$addEffectState = {};
 				await goto(`#${params.toString()}`);

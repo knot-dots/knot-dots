@@ -33,12 +33,7 @@
 	}
 </script>
 
-<TasksPage
-	{data}
-	sortOptions={[]}
-	showSaveWorkspace
-	savePayloadType={[payloadTypes.enum.task]}
->
+<TasksPage {data} sortOptions={[]} showSaveWorkspace savePayloadType={[payloadTypes.enum.task]}>
 	<Board>
 		{#if data.relatedContainers.length > 0}
 			<BoardColumn

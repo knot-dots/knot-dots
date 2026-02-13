@@ -30,17 +30,48 @@
 		}
 	}
 
-	function handleAmountInput(event: Event, entry: { year: number; amount: number }) {
+	function handleAmountInput(
+		event: Event,
+		entry: { year: number; amount: number },
+		locale: string = navigator.language
+	) {
 		const input = event.currentTarget as HTMLInputElement;
+
+		// Get the decimal and thousand separators for the locale
+		const parts = new Intl.NumberFormat(locale).formatToParts(1000.1);
+		const decimalSeparator = parts.find((part) => part.type === 'decimal')?.value ?? '.';
+		const thousandSeparator = parts.find((part) => part.type === 'group')?.value ?? ',';
+
+		// Escape separators for use in regex
+		const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const escapedDecimal = escapeRegex(decimalSeparator);
+		const escapedThousand = escapeRegex(thousandSeparator);
+
+		// Validate the input matches locale-specific number format before normalization
+		// Pattern: optional minus, digits with optional thousand separators, optional decimal part
+		const localePattern = new RegExp(`^-?\\d+(${escapedThousand}\\d+)*(${escapedDecimal}\\d+)?$`);
+		const isValidFormat = localePattern.test(input.value);
+
+		// Remove thousand separators and replace decimal separator with dot
+		const normalized = input.value
+			.replace(new RegExp(`\\${thousandSeparator}`, 'g'), '')
+			.replace(new RegExp(`\\${decimalSeparator}`), '.');
+
+		const parsed = parseFloat(normalized);
+
+		// Set custom validity for visual feedback
+		if (input.value && (!isValidFormat || Number.isNaN(parsed))) {
+			input.setCustomValidity($_('invalid_number'));
+		} else {
+			input.setCustomValidity('');
+		}
 
 		if (!input.validity.valid) {
 			event.stopPropagation();
 			return;
 		}
 
-		// Handle both comma and period as decimal separators
-		const normalized = input.value.replace(',', '.');
-		const parsed = parseFloat(normalized);
+		// Update the entry if the parsed number is valid
 		if (!Number.isNaN(parsed)) {
 			entry.amount = parsed;
 		}
@@ -71,7 +102,7 @@
 	function formatNumber(value: number): string {
 		return $number(value, {
 			minimumFractionDigits: 0,
-			maximumFractionDigits: 2
+			maximumFractionDigits: 10
 		});
 	}
 </script>
@@ -155,7 +186,6 @@
 										oninput={(e) => handleAmountInput(e, entry)}
 										class="resource-data__value-input"
 										inputmode="decimal"
-										pattern="-?[0-9]*([.,]([0-9]+)?)?"
 										type="text"
 									/>
 								{:else}

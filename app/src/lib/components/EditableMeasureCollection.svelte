@@ -89,7 +89,10 @@
 <header>
 	<svelte:element this={heading} class="details-heading">
 		{#if isMeasureContainer(parentContainer)}
-			{titleForMeasureCollection(items as MeasureContainer[])}
+			{titleForMeasureCollection(
+				items as MeasureContainer[],
+				parentContainer.payload.hierarchyLevel + 1
+			)}
 		{:else}
 			{$_('measures')}
 		{/if}

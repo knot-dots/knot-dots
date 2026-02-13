@@ -14,9 +14,8 @@
 	import {
 		audience,
 		computeFacetCount,
-		computeColumnTitleForGoals,
 		goalStatus,
-		goalsByHierarchyLevel,
+		containersByHierarchyLevel,
 		isGoalContainer,
 		isProgramContainer,
 		isTaskContainer,
@@ -25,6 +24,7 @@
 		indicatorTypes,
 		measureTypes,
 		paramsFromFragment,
+		isPayloadType,
 		payloadTypes,
 		policyFieldBNK,
 		programStatus,
@@ -34,9 +34,11 @@
 		sustainableDevelopmentGoals,
 		taskStatus,
 		taskCategories,
+		titleForGoalCollection,
 		titleForProgramCollection,
 		topics,
-		type WorkspaceContainer
+		type WorkspaceContainer,
+		type PayloadType
 	} from '$lib/models';
 	import type { CategoryOptions } from '$lib/client/categoryOptions';
 
@@ -180,6 +182,36 @@
 
 	const payloadTypeValues = payloadTypes.options as readonly string[];
 	const payloadTypeSet = new Set(payloadTypeValues);
+	const resolvedPayloadTypeValues = $derived.by(() =>
+		resolvedPayloadTypes
+			.filter((value) => payloadTypeSet.has(value))
+			.filter((value): value is PayloadType => isPayloadType(value))
+			.filter((value) => value !== payloadTypes.enum.undefined)
+	);
+
+	type MeasurePayload = typeof payloadTypes.enum.measure | typeof payloadTypes.enum.simple_measure;
+	const measurePayloadTypes = new Set<MeasurePayload>([
+		payloadTypes.enum.measure,
+		payloadTypes.enum.simple_measure
+	]);
+	const isMeasurePayload = (value: PayloadType): value is MeasurePayload =>
+		measurePayloadTypes.has(value as MeasurePayload);
+
+	type LevelPayload =
+		| typeof payloadTypes.enum.program
+		| typeof payloadTypes.enum.goal
+		| typeof payloadTypes.enum.measure
+		| typeof payloadTypes.enum.rule
+		| typeof payloadTypes.enum.simple_measure;
+	const levelPayloadTypes = new Set<LevelPayload>([
+		payloadTypes.enum.program,
+		payloadTypes.enum.goal,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure
+	]);
+	const isLevelPayload = (value: PayloadType): value is LevelPayload =>
+		levelPayloadTypes.has(value as LevelPayload);
 
 	const catalogPayloadTypes = $derived.by(() => {
 		const values = resolvedPayloadTypes.length ? resolvedPayloadTypes : payloadTypeOptions;
@@ -189,15 +221,14 @@
 	});
 
 	const statusType = $derived.by(() => {
-		if (resolvedPayloadTypes.length === 1) return resolvedPayloadTypes[0];
-		if (!resolvedPayloadTypes.length) return undefined;
-		const allowed = new Set([payloadTypes.enum.measure, payloadTypes.enum.simple_measure]);
-		const onlyMeasures = resolvedPayloadTypes.every((value) => allowed.has(value));
+		if (resolvedPayloadTypeValues.length === 1) return resolvedPayloadTypeValues[0];
+		if (!resolvedPayloadTypeValues.length) return undefined;
+		const onlyMeasures = resolvedPayloadTypeValues.every(isMeasurePayload);
 		return onlyMeasures ? payloadTypes.enum.measure : undefined;
 	});
 
 	const goalsByLevel = $derived.by(() =>
-		goalsByHierarchyLevel(filteredContainers.filter(isGoalContainer))
+		containersByHierarchyLevel(filteredContainers.filter(isGoalContainer))
 	);
 
 	const programContainers = $derived.by(() => filteredContainers.filter(isProgramContainer));
@@ -205,15 +236,7 @@
 	const showLevelView = $derived.by(() => {
 		if (selectedView !== 'level') return false;
 		if (!resolvedPayloadTypes.length) return true;
-		return resolvedPayloadTypes.some((value) =>
-			[
-				payloadTypes.enum.program,
-				payloadTypes.enum.goal,
-				payloadTypes.enum.measure,
-				payloadTypes.enum.rule,
-				payloadTypes.enum.simple_measure
-			].includes(value)
-		);
+		return resolvedPayloadTypeValues.some(isLevelPayload);
 	});
 
 	const localFacets = $derived.by(() => {
@@ -251,9 +274,6 @@
 <Header {facets} {facetLabels} {categoryOptions} search />
 
 <div class="content-details">
-	{#if container.payload.description}
-		<p class="workspace-description">{container.payload.description}</p>
-	{/if}
 	{#if selectedView === 'table'}
 		<Table
 			columns={[
@@ -281,7 +301,12 @@
 				<MaybeDragZone containers={programContainers} />
 			</BoardColumn>
 			{#each Array.from(goalsByLevel.entries()).toSorted() as [hierarchyLevel, items] (hierarchyLevel)}
-				<BoardColumn title={computeColumnTitleForGoals(items)}>
+				<BoardColumn
+					title={titleForGoalCollection(
+						items,
+						Array.from(goalsByLevel.keys()).length > 1 ? hierarchyLevel : 0
+					)}
+				>
 					<MaybeDragZone containers={items} />
 				</BoardColumn>
 			{/each}

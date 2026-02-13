@@ -12,7 +12,7 @@
 	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronUp from '~icons/flowbite/chevron-up-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
 	import StarSolid from '~icons/flowbite/star-solid';
@@ -101,7 +101,7 @@
 >
 	<li>
 		<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationMenu.button>
-			{#if $organizationMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+			{#if $organizationMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 			<span>
 				{page.data.currentOrganization.payload.name}
 			</span>
@@ -171,7 +171,7 @@
 	>
 		<li>
 			<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationalUnitMenu.button>
-				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 				<span>
 					{currentOrganizationalUnit.payload.name}
 				</span>
@@ -272,7 +272,7 @@
 >
 	<li>
 		<button class="sidebar-menu-item sidebar-menu-item--toggle" use:platformMenu.button>
-			{#if $platformMenu.expanded}<ChevronDown />{:else}<ChevronUp />{/if}
+			{#if $platformMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 			<span>
 				{$_('about')}
 			</span>
@@ -498,9 +498,10 @@
 		flex-grow: 1;
 		gap: 0.375rem;
 		line-height: 1.5;
+		max-width: 100%;
+		min-width: 0;
 		padding: 0.25rem;
 		text-wrap: nowrap;
-		width: 100%;
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--toggle {
@@ -588,6 +589,10 @@
 
 		.sidebar-menu:not(.collapsed) {
 			max-width: var(--sidebar-max-width);
+		}
+
+		.sidebar-menu:not(.collapsed) .sidebar-menu {
+			max-width: 100%;
 		}
 
 		.sidebar-menu:not(.collapsed) .sidebar-menu-item > span {

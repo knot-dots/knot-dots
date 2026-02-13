@@ -8,6 +8,7 @@
 	import {
 		containerOfType,
 		type GoalStatus,
+		isContainerWithHierarchyLevel,
 		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
@@ -81,13 +82,8 @@
 			container.payload.status = params.get('status') as Status;
 		} else if (isTaskContainer(container) && params.has('taskStatus')) {
 			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
-		} else if (isGoalContainer(container)) {
-			if (params.has('hierarchyLevel')) {
-				container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
-			}
-			if (params.has('goalStatus')) {
-				container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
-			}
+		} else if (isGoalContainer(container) && params.has('goalStatus')) {
+			container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
 		} else if (isProgramContainer(container)) {
 			if (params.has('level')) {
 				container.payload.level = params.get('level') as Level;
@@ -95,6 +91,8 @@
 			if (params.has('programStatus')) {
 				container.payload.programStatus = params.get('programStatus') as ProgramStatus;
 			}
+		} else if (isContainerWithHierarchyLevel(container) && params.has('hierarchyLevel')) {
+			container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
 		}
 
 		applyFilterDefaults('audience');

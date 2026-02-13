@@ -47,6 +47,7 @@
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isReportContainer,
@@ -118,7 +119,8 @@
 	);
 
 	let mayAddResourceCollection = $derived(
-		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
+		!createFeatureDecisions(page.data.features).useResourcePlanning() &&
+			(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isResourceCollectionContainer)
 	);
 
@@ -161,13 +163,16 @@
 
 	let mayAddTeaserCollection = $derived(
 		createFeatureDecisions(page.data.features).useTeaserCollection() &&
-			(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))
+			(isOrganizationContainer(parentContainer) ||
+				isOrganizationalUnitContainer(parentContainer) ||
+				isPageContainer(parentContainer))
 	);
 
 	let mayAddContentPartnerCollection = $derived(
 		createFeatureDecisions(page.data.features).useContentPartner() &&
 			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer)) &&
+				isOrganizationalUnitContainer(parentContainer) ||
+				isPageContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
 	);
 

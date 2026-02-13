@@ -17,6 +17,7 @@ export const overlayKey = z.enum([
 	'indicator-catalog',
 	'new-indicator-catalog',
 	'indicators',
+	'measure-iooi',
 	'measure-monitoring',
 	'measures',
 	'members',
@@ -311,12 +312,7 @@ const measureTypeValues = [
 	'measure_type.partial_project',
 	'measure_type.project',
 	'measure_type.sub_measure',
-	'measure_type.sub_project',
-	'measure_type.network_infrastructure',
-	'measure_type.digital_twin',
-	'measure_type.sensory',
-	'measure_type.digital_platform',
-	'measure_type.user_participation'
+	'measure_type.sub_project'
 ] as const;
 
 export const measureTypes = z.enum(measureTypeValues);
@@ -1105,6 +1101,7 @@ const effectPayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
 		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		type: z.literal(payloadTypes.enum.effect)
 	});
@@ -2368,6 +2365,16 @@ export function isContainerWithFulfillmentDate(
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
+export type ContainerWithHierarchyLevel = Omit<AnyContainer, 'payload'> & {
+	payload: AnyPayload & { hierarchyLevel: number };
+};
+
+export function isContainerWithHierarchyLevel(
+	container: AnyContainer | NewContainer
+): container is ContainerWithHierarchyLevel {
+	return hasProperty(container.payload, 'hierarchyLevel');
+}
+
 export type ContainerWithName = Omit<AnyContainer, 'payload'> & {
 	payload: AnyPayload & { name: string | undefined };
 };
@@ -3043,23 +3050,30 @@ export function createCopyOf(
 	return copy;
 }
 
-export function goalsByHierarchyLevel(containers: GoalContainer[]) {
-	const goalsByHierarchyLevel = new Map<number, GoalContainer[]>([[1, []]]);
+/**
+ * This function is used for creating columns for goals and measures based on
+ * their hierarchy level. Objects without a hierarchy level like rules
+ * might be mixed with measures in some boards. Those are assigned level 1.
+ */
+export function containersByHierarchyLevel<T extends Container>(containers: T[]) {
+	const containersByHierarchyLevel = new Map<number, T[]>([[1, []]]);
 
 	for (const container of containers) {
-		const hierarchyLevel = container.payload.hierarchyLevel;
+		const hierarchyLevel = isContainerWithHierarchyLevel(container)
+			? container.payload.hierarchyLevel
+			: 1;
 
-		if (goalsByHierarchyLevel.has(hierarchyLevel)) {
-			goalsByHierarchyLevel.set(hierarchyLevel, [
-				...(goalsByHierarchyLevel.get(hierarchyLevel) as GoalContainer[]),
+		if (containersByHierarchyLevel.has(hierarchyLevel)) {
+			containersByHierarchyLevel.set(hierarchyLevel, [
+				...(containersByHierarchyLevel.get(hierarchyLevel) as T[]),
 				container
 			]);
 		} else {
-			goalsByHierarchyLevel.set(hierarchyLevel, [container]);
+			containersByHierarchyLevel.set(hierarchyLevel, [container]);
 		}
 	}
 
-	return goalsByHierarchyLevel;
+	return containersByHierarchyLevel;
 }
 
 export function titleForProgramCollection(containers: ProgramContainer[]) {
@@ -3067,39 +3081,63 @@ export function titleForProgramCollection(containers: ProgramContainer[]) {
 
 	if (programTypes.size == 1) {
 		const programType = programTypes.values().next().value;
-		return unwrapFunctionStore(_)(`${programType}.plural`);
+		if (programType === undefined) {
+			return unwrapFunctionStore(_)('programs');
+		} else {
+			return unwrapFunctionStore(_)(`${programType}.plural`);
+		}
 	} else {
 		return unwrapFunctionStore(_)('programs');
 	}
 }
 
-export function computeColumnTitleForGoals(containers: GoalContainer[]) {
+export function titleForGoalCollection(containers: GoalContainer[], hierarchyLevel: number) {
 	const goalTypes = new Set(containers.map((c) => c.payload.goalType));
 
 	if (goalTypes.size == 1) {
 		const goalType = goalTypes.values().next().value;
-		return unwrapFunctionStore(_)(goalType ? `${goalType}.plural` : 'goals');
-	} else if (goalTypes.size >= 1) {
+		if (goalType === undefined) {
+			if (hierarchyLevel) {
+				return unwrapFunctionStore(_)('goals_by_hierarchy_level', {
+					values: { level: hierarchyLevel }
+				});
+			} else {
+				return unwrapFunctionStore(_)('goals');
+			}
+		} else {
+			return unwrapFunctionStore(_)(goalType ? `${goalType}.plural` : 'goals');
+		}
+	} else if (hierarchyLevel) {
 		return unwrapFunctionStore(_)('goals_by_hierarchy_level', {
-			values: { level: containers[0].payload.hierarchyLevel }
+			values: { level: hierarchyLevel }
 		});
 	} else {
 		return unwrapFunctionStore(_)('goals');
 	}
 }
 
-export function titleForMeasureCollection(containers: MeasureContainer[]) {
+export function titleForMeasureCollection(containers: MeasureContainer[], hierarchyLevel: number) {
 	const measureTypes = new Set(containers.map(({ payload }) => payload.measureType));
 
 	if (measureTypes.size == 1) {
 		const measureType = measureTypes.values().next().value;
-		return unwrapFunctionStore(_)(`${measureType}.plural`);
-	} else if (measureTypes.size >= 1) {
-		return unwrapFunctionStore(_)('measures_by_hierarchy_level', {
-			values: { level: containers[0].payload.hierarchyLevel }
+		if (measureType === undefined) {
+			if (hierarchyLevel) {
+				return unwrapFunctionStore(_)('measure_by_hierarchy_level', {
+					values: { level: hierarchyLevel }
+				});
+			} else {
+				return unwrapFunctionStore(_)('measures');
+			}
+		} else {
+			return unwrapFunctionStore(_)(`${measureType}.plural`);
+		}
+	} else if (hierarchyLevel) {
+		return unwrapFunctionStore(_)('measure_by_hierarchy_level', {
+			values: { level: hierarchyLevel }
 		});
 	} else {
-		return unwrapFunctionStore(_)('measures');
+		return unwrapFunctionStore(_)('payload_group.implementation');
 	}
 }
 
