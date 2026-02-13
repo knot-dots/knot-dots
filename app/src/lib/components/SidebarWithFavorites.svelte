@@ -24,8 +24,10 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import tooltip from '$lib/attachments/tooltip';
+	import saveContainer from '$lib/client/saveContainer';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
+	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
@@ -34,15 +36,7 @@
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
-	let currentOrganization = $derived.by(() => {
-		let _ = $state(page.data.currentOrganization);
-		return _;
-	});
-
-	let currentOrganizationalUnit = $derived.by(() => {
-		let _ = $state(page.data.currentOrganizationalUnit);
-		return _;
-	});
+	let favoriteList = getFavoriteListContext();
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
@@ -68,6 +62,28 @@
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
+	}
+
+	function updateFavorite(
+		container: OrganizationContainer | OrganizationalUnitContainer,
+		favorite: Favorite[]
+	) {
+		return async () => {
+			const response = await saveContainer({
+				...container,
+				payload: {
+					...container.payload,
+					favorite
+				}
+			});
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.revision = updatedContainer.revision;
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		};
 	}
 </script>
 
@@ -125,7 +141,7 @@
 					</a>
 				</li>
 
-				{#each currentOrganization.payload.favorite as favorite, index (favorite.href)}
+				{#each favoriteList.organization as favorite, index (favorite.href)}
 					{@const href = page.url.searchParams.size
 						? `${page.url.pathname}?${page.url.searchParams.toString()}`
 						: page.url.pathname}
@@ -143,7 +159,10 @@
 
 							<span>{favorite.title}</span>
 						</a>
-						<EditableFavorite bind:container={currentOrganization} {index} />
+						<EditableFavorite
+							bind:favorite={favoriteList.organization[index]}
+							onchange={updateFavorite(page.data.currentOrganization, favoriteList.organization)}
+						/>
 					</li>
 				{/each}
 			</ul>
@@ -154,15 +173,16 @@
 		<a
 			{@attach tooltip($_('landing_page'))}
 			class="sidebar-menu-item sidebar-menu-item--collapsed"
-			class:sidebar-menu-item--active={landingPageURL(currentOrganization) === page.url.toString()}
-			href={landingPageURL(currentOrganization)}
+			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+				page.url.toString()}
+			href={landingPageURL(page.data.currentOrganization)}
 		>
 			<Home />
 		</a>
 	</li>
 </ul>
 
-{#if currentOrganizationalUnit}
+{#if page.data.currentOrganizationalUnit}
 	<ul
 		class="sidebar-menu"
 		class:collapsed={sidebarExpanded === false}
@@ -173,7 +193,7 @@
 			<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationalUnitMenu.button>
 				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 				<span>
-					{currentOrganizationalUnit.payload.name}
+					{page.data.currentOrganizationalUnit.payload.name}
 				</span>
 			</button>
 		</li>
@@ -184,9 +204,10 @@
 					<li>
 						<a
 							class="sidebar-menu-item sidebar-menu-item--secondary"
-							class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
-								page.url.toString()}
-							href={landingPageURL(currentOrganizationalUnit)}
+							class:sidebar-menu-item--active={landingPageURL(
+								page.data.currentOrganizationalUnit
+							) === page.url.toString()}
+							href={landingPageURL(page.data.currentOrganizationalUnit)}
 						>
 							<OrganizationalUnit />
 							<span>
@@ -195,7 +216,7 @@
 						</a>
 					</li>
 
-					{#each currentOrganizationalUnit.payload.favorite as favorite, index (favorite.href)}
+					{#each favoriteList.organizationalUnit as favorite, index (favorite.href)}
 						{@const href = page.url.searchParams.size
 							? `${page.url.pathname}?${page.url.searchParams.toString()}`
 							: page.url.pathname}
@@ -213,7 +234,13 @@
 
 								<span>{favorite.title}</span>
 							</a>
-							<EditableFavorite bind:container={currentOrganizationalUnit} {index} />
+							<EditableFavorite
+								bind:favorite={favoriteList.organizationalUnit[index]}
+								onchange={updateFavorite(
+									page.data.currentOrganizationalUnit,
+									favoriteList.organizationalUnit
+								)}
+							/>
 						</li>
 					{/each}
 				</ul>
@@ -224,9 +251,9 @@
 			<a
 				{@attach tooltip($_('overview'))}
 				class="sidebar-menu-item sidebar-menu-item--collapsed"
-				class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
+				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
 					page.url.toString()}
-				href={landingPageURL(currentOrganizationalUnit)}
+				href={landingPageURL(page.data.currentOrganizationalUnit)}
 			>
 				<OrganizationalUnit />
 			</a>

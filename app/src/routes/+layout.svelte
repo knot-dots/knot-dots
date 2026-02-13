@@ -9,6 +9,7 @@
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
+	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
 
@@ -42,6 +43,13 @@
 	}
 
 	setToastContext(addToast);
+
+	let favoriteList = $state({
+		organization: page.data.currentOrganization.payload.favorite,
+		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? []
+	});
+
+	setFavoriteListContext(favoriteList);
 
 	const workspaceTranslated = $derived.by(() => {
 		const segments = page.url.pathname.split('/');
