@@ -115,6 +115,7 @@
 		align-items: start;
 		display: flex;
 		gap: 0.75rem;
+		min-height: var(--logo-height);
 	}
 
 	.heading > :global(:first-child) {
