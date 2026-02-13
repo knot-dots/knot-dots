@@ -110,6 +110,8 @@
 	}
 
 	.heading {
+		--logo-height: 2.5rem;
+
 		align-items: start;
 		display: flex;
 		gap: 0.75rem;
