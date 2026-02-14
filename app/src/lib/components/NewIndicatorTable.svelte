@@ -250,6 +250,7 @@
 
 	table {
 		border: solid 1px var(--color-gray-200);
+		width: fit-content;
 	}
 
 	thead {
@@ -298,10 +299,10 @@
 		border: none;
 		border-radius: 0;
 		display: block;
+		field-sizing: content;
 		line-height: 1.5;
 		padding: 0.75rem 0.5rem;
 		text-align: right;
-		width: 100%;
 	}
 
 	.control {
