@@ -133,19 +133,9 @@
 
 <div>
 	<table>
-		{#if actualDataContainer.some(({ payload }) => payload.source)}
-			<caption>
-				{#each actualDataContainer as container, i (container.guid)}
-					{#if container.payload.source}
-						<sup>{i + 1}</sup> {$_('indicator.source')}: {container.payload.source}
-					{/if}
-				{/each}
-			</caption>
-		{/if}
-
 		<thead>
 			<tr>
-				<th></th>
+				<th>&nbsp;</th>
 				{#if editable && customActualDataContainer}
 					<th class="control control--prepend">
 						<button
@@ -160,7 +150,7 @@
 				{/if}
 
 				{#each years as year (year)}
-					<th>{year}</th>
+					<th class="data">{year}</th>
 				{/each}
 
 				{#if editable && customActualDataContainer && years.length > 0}
@@ -179,12 +169,24 @@
 		</thead>
 
 		<tbody>
+			<tr>
+				<th
+					colspan={editable
+						? years.length + 1 + (customActualDataContainer ? Math.max(years.length + 1, 2) : 0)
+						: years.length + 1}
+					scope="col"
+				>
+					{$_('indicator.table.actual_data')}
+				</th>
+			</tr>
+
 			{#each actualValuesByYear as valuesByYear, i (i)}
-				<tr class="actual-values">
+				<tr>
 					<th scope="row">
-						{$_('indicator.table.actual_values')}
 						{#if actualDataContainer[i].payload.source}
-							<sup>{i + 1}</sup>
+							{actualDataContainer[i].payload.source}
+						{:else}
+							{$_('indicator.table.custom_actual_data')}
 						{/if}
 					</th>
 
@@ -193,7 +195,7 @@
 					{/if}
 
 					{#each years as year (year)}
-						<td>
+						<td class="data">
 							{#if editable && !actualDataContainer[i].payload.source}
 								<input
 									inputmode="decimal"
@@ -212,86 +214,78 @@
 					{/if}
 				</tr>
 			{/each}
+
+			{#if editable && !customActualDataContainer}
+				<tr>
+					<td colspan={years.length + 1}>
+						<button disabled={addingCustomActualData} onclick={addCustomActualData} type="button">
+							{#if addingCustomActualData}
+								<span class="loader"></span>
+							{:else}
+								<Plus />
+								{$_('indicator.table.add_custom_actual_data')}
+							{/if}
+						</button>
+					</td>
+				</tr>
+			{/if}
 		</tbody>
 	</table>
-
-	{#if editable}
-		<p>
-			{#if !customActualDataContainer}
-				<button
-					disabled={addingCustomActualData}
-					onclick={addCustomActualData}
-					type="button"
-					{@attach tooltip($_('indicator.add_custom_actual_data'))}
-				>
-					{#if addingCustomActualData}
-						<span class="loader"></span>
-					{:else}
-						{$_('indicator.add_custom_actual_data')}
-					{/if}
-				</button>
-			{/if}
-		</p>
-	{/if}
 </div>
 
 <style>
-	div {
-		overflow-x: scroll;
-	}
-
-	table {
-		caption-side: bottom;
-	}
-
-	caption {
-		color: var(--color-gray-500);
-		margin-top: 0.25rem;
-		text-align: left;
-	}
-
-	thead {
-		background-color: white;
-		text-align: right;
-	}
-
-	tr:hover {
-		background-color: var(--color-gray-050);
-	}
-
-	th {
-		color: var(--color-gray-900);
-		font-weight: 500;
+	button {
 		white-space: nowrap;
 	}
 
-	th[scope='row']::before {
-		background-color: var(--indicator-color, var(--color-gray-900));
-		border-radius: 1rem;
-		content: '';
-		display: inline-block;
-		height: 0.75rem;
-		margin-right: 0.25rem;
-		vertical-align: middle;
-		width: 0.75rem;
+	div {
+		overflow-x: scroll;
+		padding: 0 0 1px;
 	}
 
-	td {
+	table {
+		border: solid 1px var(--color-gray-200);
+	}
+
+	thead {
+		background-color: var(--color-gray-100);
+	}
+
+	td,
+	th {
+		border: solid 1px var(--color-gray-200);
+		padding: 0.75rem 0.5rem;
+	}
+
+	th {
+		white-space: nowrap;
+	}
+
+	thead th {
+		border-top: none;
 		color: var(--color-gray-700);
 		font-weight: 400;
-		text-align: right;
+		padding: 0.5rem;
 	}
 
-	td:hover {
-		background-color: var(--color-gray-100);
+	tbody th[scope='col'] {
+		background-color: var(--color-gray-025);
+		color: var(--color-gray-600);
+		font-weight: 500;
+	}
+
+	tbody th[scope='row'] {
+		background-color: var(--color-white);
+		color: var(--color-gray-800);
+		font-weight: 500;
+	}
+
+	tbody td {
+		background: var(--color-white);
 	}
 
 	td:has(input) {
 		padding: 0;
-	}
-
-	.actual-values {
-		--indicator-color: var(--color-gray-200);
 	}
 
 	input {
@@ -303,5 +297,22 @@
 		padding: 0.75rem 0.5rem;
 		text-align: right;
 		width: 100%;
+	}
+
+	.control {
+		min-width: 2.5rem;
+		width: 2.5rem;
+	}
+
+	.control--prepend {
+		border-left: none;
+	}
+
+	th:has(+ .control--prepend) {
+		border-right: none;
+	}
+
+	.data {
+		text-align: right;
 	}
 </style>
