@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { _, number } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { invalidate } from '$app/navigation';
@@ -23,6 +24,8 @@
 	}
 
 	let { container, editable = false, relatedContainers = [] }: Props = $props();
+
+	let tableContainer: HTMLDivElement;
 
 	let actualDataContainer = $derived(
 		relatedContainers
@@ -116,8 +119,10 @@
 	}
 
 	function append(container: ActualDataContainer) {
-		return () => {
+		return async () => {
 			container.payload.values = [...container.payload.values, [Math.max(...years) + 1, 0]];
+			await tick();
+			tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
 		};
 	}
 
@@ -131,7 +136,7 @@
 	}
 </script>
 
-<div>
+<div bind:this={tableContainer}>
 	<table>
 		<thead>
 			<tr>
