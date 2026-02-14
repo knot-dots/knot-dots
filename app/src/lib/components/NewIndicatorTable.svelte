@@ -206,10 +206,14 @@
 									inputmode="decimal"
 									oninput={updateCustomActualData(actualDataContainer[i], year)}
 									type="text"
-									value={valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
+									value={valuesByYear.has(year)
+										? $number(valuesByYear.get(year)!, { style: 'decimal', useGrouping: false })
+										: ''}
 								/>
 							{:else}
-								{valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
+								{valuesByYear.has(year)
+									? $number(valuesByYear.get(year)!, { style: 'decimal', useGrouping: false })
+									: ''}
 							{/if}
 						</td>
 					{/each}
