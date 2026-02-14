@@ -14,8 +14,9 @@
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
-	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
+	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
+	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
 	import GoalWorkspaces from '$lib/components/GoalWorkspaces.svelte';
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
@@ -189,6 +190,7 @@
 	{:else}
 		<OrganizationMenu />
 		<DotsBoardButton />
+		<BackToOverlayButton />
 	{/if}
 
 	{#if workspaceOptions}

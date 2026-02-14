@@ -27,6 +27,10 @@ export default class Overlay {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 
+	get fullScreenButton() {
+		return this.locator.getByRole('link', { name: 'Full screen' });
+	}
+
 	get sections() {
 		return this.locator.locator('.sections section');
 	}
