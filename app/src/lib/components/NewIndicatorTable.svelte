@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
-	import { env } from '$env/dynamic/public';
+	import Plus from '~icons/knotdots/plus';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
 		type ActualDataContainer,
@@ -13,7 +15,6 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -57,7 +58,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<ActualDataContainer, 'payload'>;
+		) as Omit<NewContainer, 'payload'> & Pick<ActualDataContainer, 'payload'>;
 
 		newActualDataContainer.payload = {
 			...newActualDataContainer.payload,
@@ -77,6 +78,8 @@
 			}
 		} catch (error: unknown) {
 			console.error(error);
+		} finally {
+			addingCustomActualData = false;
 		}
 	}
 
@@ -111,6 +114,21 @@
 			}, 2000);
 		};
 	}
+
+	function append(container: ActualDataContainer) {
+		return () => {
+			container.payload.values = [...container.payload.values, [Math.max(...years) + 1, 0]];
+		};
+	}
+
+	function prepend(container: ActualDataContainer) {
+		return () => {
+			container.payload.values = [
+				[years.length ? Math.min(...years) - 1 : new Date().getFullYear(), 0],
+				...container.payload.values
+			];
+		};
+	}
 </script>
 
 <div>
@@ -128,9 +146,35 @@
 		<thead>
 			<tr>
 				<th></th>
+				{#if editable && customActualDataContainer}
+					<th class="control control--prepend">
+						<button
+							{@attach tooltip($_('indicator.table.add_column'))}
+							class="action-button action-button--size-s action-button--padding-tight"
+							onclick={prepend(customActualDataContainer)}
+							type="button"
+						>
+							<Plus />
+						</button>
+					</th>
+				{/if}
+
 				{#each years as year (year)}
 					<th>{year}</th>
 				{/each}
+
+				{#if editable && customActualDataContainer && years.length > 0}
+					<th class="control">
+						<button
+							{@attach tooltip($_('indicator.table.add_column'))}
+							class="action-button action-button--size-s action-button--padding-tight"
+							onclick={append(customActualDataContainer)}
+							type="button"
+						>
+							<Plus />
+						</button>
+					</th>
+				{/if}
 			</tr>
 		</thead>
 
@@ -143,6 +187,11 @@
 							<sup>{i + 1}</sup>
 						{/if}
 					</th>
+
+					{#if editable && customActualDataContainer}
+						<td class="control control--prepend"></td>
+					{/if}
+
 					{#each years as year (year)}
 						<td>
 							{#if editable && !actualDataContainer[i].payload.source}
@@ -157,6 +206,10 @@
 							{/if}
 						</td>
 					{/each}
+
+					{#if editable && customActualDataContainer && years.length > 0}
+						<td></td>
+					{/if}
 				</tr>
 			{/each}
 		</tbody>
