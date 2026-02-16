@@ -22,6 +22,7 @@
 	import Objects from '~icons/knotdots/objects';
 	import Program from '~icons/knotdots/program';
 	import Star from '~icons/knotdots/star';
+	import Tag from '~icons/knotdots/tag';
 	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -220,7 +221,7 @@
 			? [
 					{
 						exists: true,
-						icon: Grid,
+						icon: Tag,
 						label: $_('workspace.type.categories'),
 						recommended: false,
 						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
