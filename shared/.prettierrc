@@ -1,0 +1,13 @@
+{
+  "overrides": [
+    {
+      "files": "src/indexing.ts",
+      "options": {
+        "useTabs": true,
+        "singleQuote": true,
+        "trailingComma": "none",
+        "printWidth": 100
+      }
+    }
+  ]
+}
