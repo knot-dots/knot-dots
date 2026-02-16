@@ -457,7 +457,7 @@
 								class:resource-table__cell--empty={!hasValue(value)}
 								class:resource-table__cell--editable={isEditMode}
 							>
-								{value ?? ''}
+								{hasValue(value) ? formatNumber(value) : ''}
 							</td>
 						{/each}
 						{#if isEditMode}
@@ -470,7 +470,9 @@
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.sum')}</th>
 					{#each years as year (year)}
 						<td class="resource-table__cell" class:resource-table__cell--editable={isEditMode}>
-							{budgetSumByYear.get(year) ?? 0}
+							{hasValue(budgetSumByYear.get(year))
+								? formatNumber(budgetSumByYear.get(year) as number)
+								: ''}
 						</td>
 					{/each}
 					{#if isEditMode}
@@ -507,7 +509,7 @@
 								class:resource-table__cell--empty={!hasValue(value)}
 								class:resource-table__cell--editable={isEditMode}
 							>
-								{value ?? ''}
+								{hasValue(value) ? formatNumber(value) : ''}
 							</td>
 						{/each}
 						{#if isEditMode}
@@ -520,7 +522,9 @@
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.sum')}</th>
 					{#each years as year (year)}
 						<td class="resource-table__cell" class:resource-table__cell--editable={isEditMode}>
-							{plannedSumByYear.get(year) ?? 0}
+							{hasValue(plannedSumByYear.get(year))
+								? formatNumber(plannedSumByYear.get(year) as number)
+								: ''}
 						</td>
 					{/each}
 					{#if isEditMode}
@@ -557,7 +561,7 @@
 								class:resource-table__cell--empty={!hasValue(value)}
 								class:resource-table__cell--editable={isEditMode}
 							>
-								{value ?? ''}
+								{hasValue(value) ? formatNumber(value) : ''}
 							</td>
 						{/each}
 						{#if isEditMode}
@@ -570,7 +574,9 @@
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.sum')}</th>
 					{#each years as year (year)}
 						<td class="resource-table__cell" class:resource-table__cell--editable={isEditMode}>
-							{actualSumByYear.get(year) ?? 0}
+							{hasValue(actualSumByYear.get(year))
+								? formatNumber(actualSumByYear.get(year) as number)
+								: ''}
 						</td>
 					{/each}
 					{#if isEditMode}
