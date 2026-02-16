@@ -39,6 +39,7 @@
 	"benefit.high": "Groß",
 	"benefit.low": "Klein",
 	"benefit.medium": "Mittel",
+	"binary_indicator": "Binär-Indikator",
 	"board": {
 		"chapters": "Programm-Board",
 		"elements": "dots",

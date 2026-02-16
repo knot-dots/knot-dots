@@ -64,6 +64,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'binary_indicator',
 	'category',
 	'chapter',
 	'col_content',
@@ -654,6 +655,16 @@ const basePayload = z.object({
 	topic: z.array(z.string().trim().min(1)).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
 });
+
+const binaryIndicatorPayload = basePayload
+	.extend({
+		indicatorCategory: z.array(indicatorCategories).default([]),
+		indicatorType: z.array(indicatorTypes).default([]),
+		type: z.literal(payloadTypes.enum.binary_indicator)
+	})
+	.strict();
+
+const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
 const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
@@ -1447,6 +1458,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	binaryIndicatorPayload,
 	chapterPayload,
 	categoryPayload,
 	colContentPayload,
@@ -1581,6 +1593,16 @@ export function isAdministrativeAreaBasicDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+}
+
+const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
+
+export type BinaryIndicatorContainer = z.infer<typeof binaryIndicatorContainer>;
+
+export function isBinaryIndicatorContainer(
+	container: AnyContainer | EmptyContainer
+): container is BinaryIndicatorContainer {
+	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
 
 const chapterContainer = container.extend({
@@ -2396,6 +2418,7 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
+		initialBinaryIndicatorPayload,
 		initialChapterPayload,
 		initialCategoryPayload,
 		initialColContentPayload,

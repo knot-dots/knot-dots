@@ -39,6 +39,7 @@
 	"type": "Type",
 	"benefit.low": "Low",
 	"benefit.medium": "Medium",
+	"binary_indicator": "Binary indicator",
 	"board": {
 		"chapters": "Chapters",
 		"elements": "Elements",
