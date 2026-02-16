@@ -99,8 +99,8 @@
 	// Holds years that have been added by the user in the UI
 	let additionalYears: number[] = $state([]);
 
-	let years = $derived(
-		Array.from(
+	let years = $derived.by(() => {
+		const allYears = Array.from(
 			new Set([
 				...budgetContainers.flatMap((c) => c.payload.entries.map((e) => e.year)),
 				...plannedContainers.flatMap((c) => c.payload.entries.map((e) => e.year)),
@@ -109,8 +109,11 @@
 				...(prognosisContainer?.payload.entries.map((e) => e.year) ?? []),
 				...additionalYears
 			])
-		).sort((a, b) => a - b)
-	);
+		).sort((a, b) => a - b);
+		return allYears.length > 0 ? allYears : [new Date().getFullYear()];
+	});
+
+	$inspect(years);
 
 	function getRelatedMeasureOrGoal(resourceDataContainer: Container) {
 		const ancestors = findAncestors(resourceDataContainer, relatedContainers, [
