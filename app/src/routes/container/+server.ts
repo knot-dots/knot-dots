@@ -474,7 +474,7 @@ export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
-		category: z.array(sustainableDevelopmentGoals).default([]),
+		sdg: z.array(sustainableDevelopmentGoals).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		isPartOfMeasure: z.array(z.string().uuid()).default([]),
@@ -510,7 +510,7 @@ export const GET = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
 				audience: parseResult.data.audience,
-				categories: parseResult.data.category,
+				sdg: parseResult.data.sdg,
 				policyFieldsBNK: parseResult.data.policyFieldBNK,
 				terms: parseResult.data.terms[0],
 				topics: parseResult.data.topic,
@@ -554,7 +554,7 @@ export const GET = (async ({ locals, url }) => {
 				parseResult.data.organization,
 				{
 					audience: parseResult.data.audience,
-					categories: parseResult.data.category,
+					sdg: parseResult.data.sdg,
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
 					organizationalUnits: parseResult.data.organizationalUnit,

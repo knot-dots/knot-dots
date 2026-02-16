@@ -115,7 +115,7 @@ export const fetchContainersRelatedToProgram = query(
 		guid: z.string().uuid(),
 		params: z.object({
 			audience: z.array(z.string()),
-			category: z.array(z.string()),
+			sdg: z.array(z.string()),
 			policyFieldBNK: z.array(z.string()),
 			terms: z.string().optional(),
 			topic: z.array(z.string())
@@ -126,7 +126,7 @@ export const fetchContainersRelatedToProgram = query(
 		const relatedContainers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(guid, {
 				audience: params.audience,
-				categories: params.category,
+				sdg: params.sdg,
 				policyFieldsBNK: params.policyFieldBNK,
 				...(params.terms ? { terms: params.terms } : undefined),
 				topics: params.topic

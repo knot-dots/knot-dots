@@ -67,7 +67,7 @@ export const load = (async ({ locals, url, parent }) => {
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							topics: url.searchParams.getAll('topic'),
@@ -81,7 +81,7 @@ export const load = (async ({ locals, url, parent }) => {
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							topics: url.searchParams.getAll('topic'),
@@ -117,7 +117,7 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const _facets = new Map<string, Map<string, number>>([
 		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg)],
 		['topic', fromCounts(topics.options as string[], data?.topic)],
 		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
 		['programType', fromCounts(programTypes.options as string[], data?.programType)]

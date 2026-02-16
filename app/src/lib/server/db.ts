@@ -527,7 +527,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
-	categories?: string[];
+	sdg?: string[];
 	customCategories?: Record<string, string[]>;
 	indicatorCategories?: string[];
 	indicator?: string;
@@ -553,10 +553,8 @@ function prepareWhereCondition(filters: {
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
-	if (filters.categories?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'category' ?| ${sql.array(filters.categories, 'text')}`
-		);
+	if (filters.sdg?.length) {
+		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {
@@ -701,7 +699,7 @@ export function getManyContainers(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		indicator?: string;
@@ -920,7 +918,7 @@ export function getAllRelatedContainers(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		organizationalUnits?: string[];
@@ -1030,7 +1028,7 @@ export function getAllRelatedContainersByProgramType(
 	filters: {
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
-		categories?: string[];
+		sdg?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1162,7 +1160,7 @@ export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
 		topics?: string[];
@@ -1247,7 +1245,7 @@ export function getAllContainersRelatedToMeasure(
 	guid: string,
 	filters: {
 		assignees?: string[];
-		categories?: string[];
+		sdg?: string[];
 		policyFieldsBNK?: string[];
 		taskCategories?: string[];
 		terms?: string;
@@ -1579,7 +1577,7 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 			const containerResult =
 				container.payload.type == payloadTypes.enum.program
 					? await getAllContainersRelatedToProgram(container.guid, {
-							categories: [],
+							sdg: [],
 							topics: [],
 							type: [
 								payloadTypes.enum.goal,

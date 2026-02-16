@@ -32,6 +32,7 @@ export interface IndicatorFilters {
 	indicatorCategories: string[];
 	indicatorTypes: string[];
 	included: string[];
+	sdg: string[];
 }
 
 export interface IndicatorLoadResult {
@@ -89,6 +90,7 @@ export async function getIndicatorsData(params: {
 				customCategories: filters.customCategories,
 				indicatorCategories: filters.indicatorCategories,
 				indicatorTypes: filters.indicatorTypes,
+				sdg: filters.sdg,
 				...(restrictOrgUnits ? { organizationalUnits } : {}),
 				type: [payloadTypes.enum.indicator]
 			},
@@ -113,6 +115,7 @@ export async function getIndicatorsData(params: {
 						customCategories: filters.customCategories,
 						indicatorCategories: filters.indicatorCategories,
 						indicatorTypes: filters.indicatorTypes,
+						sdg: filters.sdg,
 						type: [payloadTypes.enum.indicator_template]
 					},
 					'alpha'
@@ -163,7 +166,8 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
-		included: url.searchParams.getAll('included')
+		included: url.searchParams.getAll('included'),
+		sdg: url.searchParams.getAll('sdg')
 	} as const;
 
 	const result = await getIndicatorsData({
@@ -197,10 +201,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',
