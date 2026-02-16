@@ -69,7 +69,7 @@
 		const facets = new Map([
 			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 			['audience', new Map(audience.options.map((v) => [v as string, 0]))]
@@ -100,7 +100,7 @@
 	const savedResource = resource(
 		[
 			() => container.payload.filter.audience,
-			() => container.payload.filter.category,
+			() => container.payload.filter.sdg,
 			() => container.payload.filter.indicatorCategory,
 			() => container.payload.filter.policyFieldBNK,
 			() => container.payload.filter.topic,
@@ -112,13 +112,13 @@
 			() => container.payload.terms
 		],
 		async (
-			[audience, category, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
+			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
 			_,
 			{ signal }
 		) => {
 			const params = new URLSearchParams([
 				...audience.map((v) => ['audience', v]),
-				...category.map((v) => ['category', v]),
+				...sdg.map((v) => ['sdg', v]),
 				...indicatorCategory.map((v) => ['indicatorCategory', v]),
 				['organization', page.data.currentOrganization.guid],
 				...policyFieldBNK.map((v) => ['policyFieldBNK', v]),
@@ -136,7 +136,7 @@
 	const searchResource = resource(
 		[
 			() => filter.audience,
-			() => filter.category,
+			() => filter.sdg,
 			() => filter.indicatorCategory,
 			() => filter.policyFieldBNK,
 			() => filter.topic,
@@ -145,13 +145,13 @@
 			() => terms
 		],
 		async (
-			[audience, category, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
+			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
 			_,
 			{ signal }
 		) => {
 			const params = new URLSearchParams([
 				...audience.map((v) => ['audience', v]),
-				...category.map((v) => ['category', v]),
+				...sdg.map((v) => ['sdg', v]),
 				...indicatorCategory.map((v) => ['indicatorCategory', v]),
 				['organization', page.data.currentOrganization.guid],
 				...policyFieldBNK.map((v) => ['policyFieldBNK', v]),
@@ -201,6 +201,7 @@
 		filter = {
 			audience: [],
 			category: [],
+			sdg: [],
 			indicatorCategory: [],
 			type: [],
 			policyFieldBNK: [],

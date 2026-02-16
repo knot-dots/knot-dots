@@ -5,7 +5,7 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 
 const envSchema = z.object({
-  DE_LABELS_PATH: z.string().default('/opt/labels/de.json')
+  DE_LABELS_PATH: z.string().default('/opt/labels/de.json'),
 });
 
 const env = envSchema.parse(process.env);
@@ -21,7 +21,7 @@ let deLabels: Record<string, any> = {};
   } catch (e) {
     log.warn(
       { labelsPath, error: isErrorLike(e) ? serializeError(e) : String(e) },
-      '[shared:indexing] Failed to load labels'
+      '[shared:indexing] Failed to load labels',
     );
     deLabels = {};
   }
@@ -37,15 +37,15 @@ export function createIndexWithMappings(client: Client, index: string) {
         analyzer: {
           // Default to German so stemming and stop words match our labels/content
           default: { type: 'german' },
-          default_search: { type: 'german' }
+          default_search: { type: 'german' },
         },
         normalizer: {
           title_norm: {
             type: 'custom',
-            filter: ['lowercase', 'asciifolding']
-          }
-        }
-      }
+            filter: ['lowercase', 'asciifolding'],
+          },
+        },
+      },
     },
     mappings: {
       dynamic_templates: [
@@ -53,9 +53,9 @@ export function createIndexWithMappings(client: Client, index: string) {
           payload_strings: {
             path_match: 'payload.*',
             match_mapping_type: 'string',
-            mapping: { type: 'keyword', ignore_above: 2048 }
-          }
-        }
+            mapping: { type: 'keyword', ignore_above: 2048 },
+          },
+        },
       ],
       dynamic: true,
       date_detection: false,
@@ -72,12 +72,16 @@ export function createIndexWithMappings(client: Client, index: string) {
         title: {
           type: 'text',
           fields: {
-            keyword: { type: 'keyword', normalizer: 'title_norm', ignore_above: 2048 }
-          }
+            keyword: {
+              type: 'keyword',
+              normalizer: 'title_norm',
+              ignore_above: 2048,
+            },
+          },
         },
         visibility: { type: 'keyword' },
         text: { type: 'text' },
-        category_labels: { type: 'text' },
+        sdg_labels: { type: 'text' },
         topic_labels: { type: 'text' },
         audience_labels: { type: 'text' },
         policy_field_labels: { type: 'text' },
@@ -91,7 +95,7 @@ export function createIndexWithMappings(client: Client, index: string) {
         payload: {
           properties: {
             audience: { type: 'keyword' },
-            category: { type: 'keyword' },
+            sdg: { type: 'keyword' },
             topic: { type: 'keyword' },
             level: { type: 'keyword' },
             policyFieldBNK: { type: 'keyword' },
@@ -100,11 +104,11 @@ export function createIndexWithMappings(client: Client, index: string) {
             indicatorType: { type: 'keyword' },
             taskCategory: { type: 'keyword' },
             resourceCategory: { type: 'keyword' },
-            resourceUnit: { type: 'keyword' }
-          }
-        }
-      }
-    }
+            resourceUnit: { type: 'keyword' },
+          },
+        },
+      },
+    },
   });
 }
 
@@ -137,8 +141,16 @@ function sanitizeDates(obj: any) {
 export function normalizePayload(payload: any) {
   const normalized = { ...payload };
   for (const key of [
-    'category', 'topic', 'audience', 'policyFieldBNK', 'programType',
-    'indicatorCategory', 'indicatorType', 'taskCategory', 'resourceCategory', 'resourceUnit'
+    'sdg',
+    'topic',
+    'audience',
+    'policyFieldBNK',
+    'programType',
+    'indicatorCategory',
+    'indicatorType',
+    'taskCategory',
+    'resourceCategory',
+    'resourceUnit',
   ]) {
     const value = normalized[key];
     if (value === undefined || value === null) normalized[key] = [];
@@ -150,19 +162,28 @@ export function normalizePayload(payload: any) {
 }
 
 export function toDoc(row: {
-  guid: string; revision: number; realm: string; organization: string;
-  organizational_unit?: string | null; managed_by: string; payload: any;
-  valid_from?: string | Date | null; priority?: number | null;
+  guid: string;
+  revision: number;
+  realm: string;
+  organization: string;
+  organizational_unit?: string | null;
+  managed_by: string;
+  payload: any;
+  valid_from?: string | Date | null;
+  priority?: number | null;
 }) {
   const normalized = normalizePayload(row.payload || {});
   const type: string | undefined = normalized?.type;
   const title: string | undefined = normalized?.title ?? normalized?.name;
   const description: string | undefined = normalized?.description;
   const visibility: string | undefined = normalized?.visibility;
-  const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
+  const validFrom = row.valid_from
+    ? new Date(row.valid_from).toISOString()
+    : undefined;
   const priority = row.priority ?? undefined;
 
-  const mapLabels = (arr?: string[]) => (arr || []).map(resolveLabel).filter(Boolean) as string[];
+  const mapLabels = (arr?: string[]) =>
+    (arr || []).map(resolveLabel).filter(Boolean) as string[];
   const topicLabels = mapLabels(normalized.topic);
   const audienceLabels = mapLabels(normalized.audience);
   const policyFieldLabels = mapLabels(normalized.policyFieldBNK);
@@ -172,11 +193,11 @@ export function toDoc(row: {
   const taskCategoryLabels = mapLabels(normalized.taskCategory);
   const resourceCategoryLabels = mapLabels(normalized.resourceCategory);
   const resourceUnitLabels = mapLabels(normalized.resourceUnit);
-  const categoryLabels = mapLabels(normalized.category);
+  const sdgLabels = mapLabels(normalized.sdg);
 
   const additionalText = Object.entries(normalized)
     .filter(([, value]) => Array.isArray(value))
-    .flatMap(([, value]) => (value as unknown[]))
+    .flatMap(([, value]) => value as unknown[])
     .filter((value): value is string => typeof value === 'string');
 
   return {
@@ -192,7 +213,7 @@ export function toDoc(row: {
     validFrom,
     priority,
     payload: normalized,
-    category_labels: categoryLabels,
+    sdg_labels: sdgLabels,
     topic_labels: topicLabels,
     audience_labels: audienceLabels,
     policy_field_labels: policyFieldLabels,
@@ -203,8 +224,9 @@ export function toDoc(row: {
     resource_category_labels: resourceCategoryLabels,
     resource_unit_labels: resourceUnitLabels,
     text: [
-      title, description,
-      ...categoryLabels,
+      title,
+      description,
+      ...sdgLabels,
       ...topicLabels,
       ...audienceLabels,
       ...policyFieldLabels,
@@ -214,7 +236,9 @@ export function toDoc(row: {
       ...taskCategoryLabels,
       ...resourceCategoryLabels,
       ...resourceUnitLabels,
-      ...additionalText
-    ].filter(Boolean).join(' ')
+      ...additionalText,
+    ]
+      .filter(Boolean)
+      .join(' '),
   } as const;
 }
