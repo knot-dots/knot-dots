@@ -11,7 +11,7 @@
 			value: string;
 			guid?: string;
 			icon?: string;
-			subterms?: Array<{ label: string; value: string; guid?: string; icon?: string }>;
+			subOptions?: Array<{ label: string; value: string; guid?: string; icon?: string }>;
 		}>;
 		value?: string[];
 	}
@@ -38,7 +38,7 @@
 			? options.map((option) => ({
 					...option,
 					guid: option.guid ?? option.value,
-					subterms: option.subterms?.map((sub) => ({
+					subOptions: option.subOptions?.map((sub) => ({
 						...sub,
 						guid: sub.guid ?? sub.value
 					}))

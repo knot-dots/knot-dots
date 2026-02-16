@@ -15,7 +15,7 @@
 			label: string;
 			value: string;
 			icon?: string;
-			subterms?: Array<{ label: string; value: string; icon?: string }>;
+			subOptions?: Array<{ label: string; value: string; icon?: string }>;
 		}>;
 		value: string[];
 	}
@@ -40,7 +40,7 @@
 	};
 
 	let panelEl = $state<HTMLElement | null>(null);
-	let hoveredSubterms = $state<
+	let hoveredSubOptions = $state<
 		Array<{ label: string; value: string; icon?: string }> | undefined
 	>();
 	let flyoutPlacement = $state<'left' | 'right'>('right');
@@ -49,14 +49,14 @@
 
 	function showSubtermsAt(
 		anchor: HTMLElement,
-		option: { subterms?: { label: string; value: string; icon?: string }[] }
+		option: { subOptions?: { label: string; value: string; icon?: string }[] }
 	) {
-		if (!option.subterms?.length) {
-			hoveredSubterms = undefined;
+		if (!option.subOptions?.length) {
+			hoveredSubOptions = undefined;
 			return;
 		}
 
-		hoveredSubterms = option.subterms;
+		hoveredSubOptions = option.subOptions;
 
 		const optionRect = anchor.getBoundingClientRect();
 		const panelRect = panelEl?.getBoundingClientRect();
@@ -69,7 +69,7 @@
 
 	function handleOptionEnter(
 		event: MouseEvent,
-		option: { subterms?: { label: string; value: string; icon?: string }[] }
+		option: { subOptions?: { label: string; value: string; icon?: string }[] }
 	) {
 		window.clearTimeout(hideFlyoutTimeout);
 		showSubtermsAt(event.currentTarget as HTMLElement, option);
@@ -77,7 +77,7 @@
 
 	function handleOptionLeave() {
 		hideFlyoutTimeout = window.setTimeout(() => {
-			hoveredSubterms = undefined;
+			hoveredSubOptions = undefined;
 		}, 120);
 	}
 
@@ -87,7 +87,7 @@
 
 	function handleChevronClick(
 		event: MouseEvent,
-		option: { subterms?: { label: string; value: string; icon?: string }[] }
+		option: { subOptions?: { label: string; value: string; icon?: string }[] }
 	) {
 		event.preventDefault();
 		event.stopPropagation();
@@ -151,10 +151,10 @@
 								{option.label}
 							</span>
 						</label>
-						{#if option.subterms?.length}
+						{#if option.subOptions?.length}
 							<button
 								type="button"
-								class="subterm-button"
+								class="suboption-button"
 								onclick={(event) => handleChevronClick(event, option)}
 								onkeydown={(event) =>
 									event.key === 'Enter' || event.key === ' '
@@ -163,25 +163,25 @@
 										: undefined}
 								aria-label={$_('filter.show_subterms')}
 							>
-								<ChevronRight class="subterm-indicator" aria-hidden="true" />
+								<ChevronRight class="suboption-indicator" aria-hidden="true" />
 							</button>
 						{/if}
 					</div>
 				{/each}
 			</div>
 
-			{#if hoveredSubterms?.length}
+			{#if hoveredSubOptions?.length}
 				<div
-					class="subterms-flyout"
-					class:subterms-flyout--left={flyoutPlacement === 'left'}
+					class="suboptions-flyout"
+					class:suboptions-flyout--left={flyoutPlacement === 'left'}
 					style={`top:${flyoutTop}px;`}
 					role="presentation"
 					onmouseenter={handleFlyoutEnter}
 					onmouseleave={handleOptionLeave}
 				>
-					{#each hoveredSubterms as sub (sub.value)}
+					{#each hoveredSubOptions as sub (sub.value)}
 						{@const subIcon = iconURL(sub.icon)}
-						<label class="option option--subterm">
+						<label class="option option--suboption">
 							<input type="checkbox" value={sub.value} bind:group={value} />
 							<span class="option-label">
 								{#if subIcon}
@@ -246,13 +246,13 @@
 		justify-content: space-between;
 	}
 
-	.subterm-indicator {
+	.suboption-indicator {
 		color: var(--color-gray-700);
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.subterm-button {
+	.suboption-button {
 		align-items: center;
 		background: transparent;
 		border: none;
@@ -263,7 +263,7 @@
 		padding: 0.25rem;
 	}
 
-	.subterm-button:focus-visible {
+	.suboption-button:focus-visible {
 		outline: 2px solid var(--color-primary-500);
 		outline-offset: 2px;
 	}
@@ -273,7 +273,7 @@
 		overflow: visible;
 	}
 
-	.subterms-flyout {
+	.suboptions-flyout {
 		background: white;
 		border-radius: 10px;
 		box-shadow: var(--shadow-md);
@@ -291,12 +291,12 @@
 		z-index: 10;
 	}
 
-	.subterms-flyout--left {
+	.suboptions-flyout--left {
 		left: auto;
 		right: calc(100% - 0.25rem);
 	}
 
-	.option--subterm {
+	.option--suboption {
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;

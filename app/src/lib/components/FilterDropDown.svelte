@@ -16,7 +16,7 @@
 		label: string;
 		guid?: string;
 		icon?: string;
-		subterms?: OptionWithSub[];
+		subOptions?: OptionWithSub[];
 	};
 
 	interface Props {
@@ -98,18 +98,18 @@
 		}
 	}
 	let panelEl = $state<HTMLElement | null>(null);
-	let hoveredSubterms = $state<OptionWithSub['subterms']>();
+	let hoveredSubterms = $state<OptionWithSub['subOptions']>();
 	let flyoutPlacement = $state<'left' | 'right'>('right');
 	let flyoutTop = $state(0);
 	let hideFlyoutTimeout: number | undefined;
 
 	function showSubtermsAt(anchor: HTMLElement, option: OptionWithSub) {
-		if (!option.subterms?.length) {
+		if (!option.subOptions?.length) {
 			hoveredSubterms = undefined;
 			return;
 		}
 
-		hoveredSubterms = option.subterms;
+		hoveredSubterms = option.subOptions;
 
 		const optionRect = anchor.getBoundingClientRect();
 		const panelRect = panelEl?.getBoundingClientRect();
@@ -176,7 +176,7 @@
 								{#if option.count !== undefined}
 									<span class="counter">({option.count})</span>
 								{/if}
-								{#if option.subterms?.length}
+								{#if option.subOptions?.length}
 									<button
 										type="button"
 										class="subterm-button"
@@ -208,7 +208,7 @@
 							<span class="badge badge--gray">
 								{option.label}
 								<span class="counter">({option.count})</span>
-								{#if option.subterms?.length}
+								{#if option.subOptions?.length}
 									<button
 										type="button"
 										class="subterm-button"
