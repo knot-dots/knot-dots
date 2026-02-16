@@ -98,18 +98,18 @@
 		}
 	}
 	let panelEl = $state<HTMLElement | null>(null);
-	let hoveredSubterms = $state<OptionWithSub['subOptions']>();
+	let hoveredSubOptions = $state<OptionWithSub['subOptions']>();
 	let flyoutPlacement = $state<'left' | 'right'>('right');
 	let flyoutTop = $state(0);
 	let hideFlyoutTimeout: number | undefined;
 
-	function showSubtermsAt(anchor: HTMLElement, option: OptionWithSub) {
+	function showSubOptionsAt(anchor: HTMLElement, option: OptionWithSub) {
 		if (!option.subOptions?.length) {
-			hoveredSubterms = undefined;
+			hoveredSubOptions = undefined;
 			return;
 		}
 
-		hoveredSubterms = option.subOptions;
+		hoveredSubOptions = option.subOptions;
 
 		const optionRect = anchor.getBoundingClientRect();
 		const panelRect = panelEl?.getBoundingClientRect();
@@ -122,12 +122,12 @@
 
 	function handleOptionEnter(event: MouseEvent, option: OptionWithSub) {
 		window.clearTimeout(hideFlyoutTimeout);
-		showSubtermsAt(event.currentTarget as HTMLElement, option);
+		showSubOptionsAt(event.currentTarget as HTMLElement, option);
 	}
 
 	function handleOptionLeave() {
 		hideFlyoutTimeout = window.setTimeout(() => {
-			hoveredSubterms = undefined;
+			hoveredSubOptions = undefined;
 		}, 120);
 	}
 
@@ -141,7 +141,7 @@
 		window.clearTimeout(hideFlyoutTimeout);
 		const anchor = (event.currentTarget as HTMLElement).closest('.option') as HTMLElement | null;
 		if (!anchor) return;
-		showSubtermsAt(anchor, option);
+		showSubOptionsAt(anchor, option);
 	}
 </script>
 
@@ -179,16 +179,16 @@
 								{#if option.subOptions?.length}
 									<button
 										type="button"
-										class="subterm-button"
+										class="suboption-button"
 										onclick={(event) => handleChevronClick(event, option)}
 										onkeydown={(event) =>
 											event.key === 'Enter' || event.key === ' '
 												? (event.preventDefault(),
 													handleChevronClick(event as unknown as MouseEvent, option))
 												: undefined}
-										aria-label={$_('filter.show_subterms')}
+										aria-label={$_('filter.show_suboptions')}
 									>
-										<ChevronRight class="subterm-indicator" aria-hidden="true" />
+										<ChevronRight class="suboption-indicator" aria-hidden="true" />
 									</button>
 								{/if}
 							</span>
@@ -211,16 +211,16 @@
 								{#if option.subOptions?.length}
 									<button
 										type="button"
-										class="subterm-button"
+										class="suboption-button"
 										onclick={(event) => handleChevronClick(event, option)}
 										onkeydown={(event) =>
 											event.key === 'Enter' || event.key === ' '
 												? (event.preventDefault(),
 													handleChevronClick(event as unknown as MouseEvent, option))
 												: undefined}
-										aria-label={$_('filter.show_subterms')}
+										aria-label={$_('filter.show_suboptions')}
 									>
-										<ChevronRight class="subterm-indicator" aria-hidden="true" />
+										<ChevronRight class="suboption-indicator" aria-hidden="true" />
 									</button>
 								{/if}
 							</span>
@@ -229,17 +229,17 @@
 				{/each}
 			</div>
 
-			{#if hoveredSubterms?.length}
+			{#if hoveredSubOptions?.length}
 				<div
-					class="subterms-flyout"
-					class:subterms-flyout--left={flyoutPlacement === 'left'}
+					class="suboptions-flyout"
+					class:suboptions-flyout--left={flyoutPlacement === 'left'}
 					style={`top:${flyoutTop}px;`}
 					role="presentation"
 					onmouseenter={handleFlyoutEnter}
 					onmouseleave={handleOptionLeave}
 				>
-					{#each hoveredSubterms as sub (sub.value)}
-						<label class="option option--subterm">
+					{#each hoveredSubOptions as sub (sub.value)}
+						<label class="option option--suboption">
 							<input onchange={apply} type="checkbox" value={sub.value} bind:group={selected} />
 							<span class="badge badge--gray">
 								{sub.label}
@@ -260,13 +260,13 @@
 		color: var(--color-gray-500);
 	}
 
-	.subterm-indicator {
+	.suboption-indicator {
 		height: 1rem;
 		width: 1rem;
 		color: var(--color-gray-500);
 	}
 
-	.subterm-button {
+	.suboption-button {
 		background: none;
 		border: none;
 		padding: 0;
@@ -307,11 +307,11 @@
 		position: relative;
 	}
 
-	.option--subterm {
+	.option--suboption {
 		opacity: 0.85;
 	}
 
-	.subterms-flyout {
+	.suboptions-flyout {
 		position: absolute;
 		top: 0;
 		left: calc(100% - 0.25rem);
@@ -328,7 +328,7 @@
 		z-index: 3;
 	}
 
-	.subterms-flyout--left {
+	.suboptions-flyout--left {
 		left: auto;
 		right: calc(100% - 0.25rem);
 	}

@@ -150,6 +150,7 @@
 	"files": "Dateien",
 	"filter": "Filtern",
 	"filter.no_results": "Keine Ergebnisse",
+	"filter.show_suboptions": "Unteroptionen anzeigen",
 	"fulfillment_date": "Erfüllungsdatum",
 	"full_screen": "Vollbild",
 	"given_name": "Vorname",

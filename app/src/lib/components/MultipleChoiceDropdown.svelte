@@ -161,7 +161,7 @@
 										? (event.preventDefault(),
 											handleChevronClick(event as unknown as MouseEvent, option))
 										: undefined}
-								aria-label={$_('filter.show_subterms')}
+								aria-label={$_('filter.show_suboptions')}
 							>
 								<ChevronRight class="suboption-indicator" aria-hidden="true" />
 							</button>
