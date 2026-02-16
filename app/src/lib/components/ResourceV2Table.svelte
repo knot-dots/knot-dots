@@ -23,7 +23,6 @@
 		payloadTypes,
 		resourceDataTypes,
 		isResourceDataContainer,
-		etag,
 		visibility
 	} from '$lib/models';
 	import { ability, applicationState, mayCreateContainer } from '$lib/stores';
@@ -112,8 +111,6 @@
 		).sort((a, b) => a - b);
 		return allYears.length > 0 ? allYears : [new Date().getFullYear()];
 	});
-
-	$inspect(years);
 
 	function getRelatedMeasureOrGoal(resourceDataContainer: Container) {
 		const ancestors = findAncestors(resourceDataContainer, relatedContainers, [
@@ -340,7 +337,7 @@
 									<button
 										class="resource-table__head-action"
 										type="button"
-									aria-label={$_('resource_table.add_year')}
+										aria-label={$_('resource_table.add_year')}
 										onclick={addEntryLeft}
 									>
 										+
@@ -362,7 +359,7 @@
 							<button
 								class="resource-table__head-action"
 								type="button"
-							aria-label={$_('resource_table.add_year')}
+								aria-label={$_('resource_table.add_year')}
 								onclick={addEntryRight}
 							>
 								+
