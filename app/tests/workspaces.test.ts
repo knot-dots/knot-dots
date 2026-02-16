@@ -25,16 +25,17 @@ test.describe('Workspaces', () => {
 		const baseUrl = `/${testOrganization.guid}/goals/table`;
 
 		await page.goto(baseUrl);
+		await expect(page.locator('body')).toContainText(testGoal.payload.title);
+		await expect(page.locator('body')).toContainText(testGoalWithSDG.payload.title);
 
 		await page.getByRole('button', { name: 'Filter' }).click();
 
-		await page.waitForTimeout(500);
-
-		const filterPanel = page.locator('.filter-and-sort fieldset');
-		await filterPanel.getByRole('button', { name: 'Category' }).click();
+		await expect(page.locator('.filter-and-sort fieldset')).toBeVisible();
+		await page.getByRole('button', { name: 'Category' }).click();
+		const filterPanel = page.locator('.filter-and-sort');
+		const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
 		await filterPanel.locator('input[type="checkbox"][value="sdg.01"]').check();
-
-		await page.waitForTimeout(500);
+		await invalidateRequest;
 
 		await filterPanel.getByRole('button', { name: 'Save as workspace' }).click();
 
@@ -45,20 +46,24 @@ test.describe('Workspaces', () => {
 
 		const dialog = page.getByRole('dialog');
 		await dialog.getByLabel('Titel').fill(workspaceTitle);
-		await dialog.getByRole('button', { name: 'Save' }).click();
+		await Promise.all([
+			page.waitForResponse(/\/container/),
+			dialog.getByRole('button', { name: 'Save' }).click()
+		]);
 		await expect(dialog).toBeHidden();
 
 		await page.goto(`/${testOrganization.guid}/all/catalog?payloadType=workspace`);
 
 		const workspaceCard = page.getByRole('article', { name: workspaceTitle }).first();
 		await expect(workspaceCard).toBeVisible();
-		await workspaceCard.click();
-
-		await page.waitForTimeout(500);
-
-		await page.waitForSelector('.overlay', { state: 'visible' });
-
 		const overlay = page.locator('.overlay');
+		const workspaceLink = workspaceCard.getByRole('link', { name: workspaceTitle });
+		await workspaceLink.scrollIntoViewIfNeeded();
+		await Promise.all([
+			page.waitForURL((url) => url.hash.includes('workspace=')),
+			workspaceLink.click()
+		]);
+		await overlay.waitFor({ state: 'visible' });
 		await expect(overlay).toBeVisible();
 		await expect(overlay.getByRole('link', { name: workspaceTitle })).toBeVisible();
 		await expect(overlay.locator('.table-head')).toBeVisible();
