@@ -43,3 +43,17 @@ export function sectionOf<T extends AnyContainer>(
 ): T | undefined {
 	return relatedObjectNodesByPredicate(container, predicates.enum['is-section-of'], containers)[0];
 }
+
+export function hasPart<T extends AnyContainer>(
+	container: { guid: string; relation: Relation[] },
+	containers: T[]
+): T[] {
+	return relatedSubjectNodesByPredicate(container, predicates.enum['is-part-of'], containers);
+}
+
+export function isPartOf<T extends AnyContainer>(
+	container: { guid: string; relation: Relation[] },
+	containers: T[]
+): T | undefined {
+	return relatedObjectNodesByPredicate(container, predicates.enum['is-part-of'], containers)[0];
+}

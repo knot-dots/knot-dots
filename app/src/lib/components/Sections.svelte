@@ -56,7 +56,7 @@
 
 	function createAddSectionHandler(position: number) {
 		return async (event: Event) => {
-			const payloadType = payloadTypes.safeParse((event as CustomEvent).detail.selected).data;
+			const payloadType = payloadTypes.safeParse((event as CustomEvent).detail.selected?.type).data;
 
 			if (!payloadType) {
 				return;
@@ -77,6 +77,16 @@
 					predicate: predicates.enum['is-section-of']
 				}
 			];
+
+			// Handle resource data collections with resourceDataType
+			if (
+				payloadType === payloadTypes.enum.resource_data_collection &&
+				(event as CustomEvent).detail.selected.resourceDataType
+			) {
+				(newContainer.payload as { resourceDataType?: string }).resourceDataType = (
+					event as CustomEvent
+				).detail.selected.resourceDataType;
+			}
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
 				newContainer.payload.title = '';

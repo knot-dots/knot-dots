@@ -6,4 +6,8 @@ export default class Column {
 	card(title: string) {
 		return this.locator.getByTitle(title);
 	}
+
+	get addItemButton() {
+		return this.locator.getByRole('button', { name: 'Add item' }).first();
+	}
 }

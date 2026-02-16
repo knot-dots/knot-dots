@@ -16,7 +16,6 @@
 	import {
 		audience,
 		computeFacetCount,
-		measureTypes,
 		isCategoryContainer,
 		policyFieldBNK,
 		payloadTypes,
@@ -34,7 +33,6 @@
 		{ label: $_('workspace.profile.tasks'), value: '/me/tasks' },
 		{ label: $_('workspace.profile.measures'), value: '/me/measures' }
 	];
-
 	let categoryFacets = $state(new Map<string, Map<string, number>>());
 	let facetLabels = $state(new Map<string, string>());
 	let categoryOptions = $state<CategoryOptions | null>(null);
@@ -119,8 +117,6 @@
 				new Map<string, number>(audience.options.map((v) => [v as string, 0]))
 			]);
 		}
-
-		entries.push(['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))]);
 
 		return computeFacetCount(new Map<string, Map<string, number>>(entries), data.containers);
 	});

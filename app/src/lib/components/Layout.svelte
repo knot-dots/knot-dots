@@ -2,13 +2,15 @@
 	import { setContext, type Snippet } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
+	import { createFeatureDecisions } from '$lib/features';
 	import { overlay } from '$lib/stores';
 
 	interface Props {
@@ -48,6 +50,8 @@
 	<nav>
 		{#if sidebar}
 			{@render sidebar()}
+		{:else if createFeatureDecisions(page.data.features).useFavoriteList()}
+			<SidebarWithFavorites />
 		{:else}
 			<Sidebar />
 		{/if}
@@ -63,7 +67,7 @@
 		{#if header}
 			{@render header()}
 		{:else}
-			<Header filterBarInitiallyOpen={$page.data.filterBarInitiallyOpen} />
+			<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
 		{/if}
 
 		<main in:fly={transitionIn} out:fly={transitionOut}>
@@ -105,8 +109,15 @@
 	}
 
 	main {
+		display: flex;
 		flex: 1;
+		flex-direction: column;
 		min-height: 0;
+		overflow-y: auto;
+	}
+
+	main > :global(:is(:not(aside))) {
+		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
 	}
 
 	.toasts {

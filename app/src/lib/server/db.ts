@@ -39,6 +39,33 @@ import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
+// Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
+const INDEXABLE_TYPES = new Set<string>([
+	'effect',
+	'goal',
+	'help',
+	'indicator',
+	'indicator_template',
+	'knowledge',
+	'measure',
+	'objective',
+	'organization',
+	'organizational_unit',
+	'page',
+	'program',
+	'report',
+	'resource',
+	'resource_data',
+	'resource_v2',
+	'rule',
+	'simple_measure',
+	'task'
+]);
+
+function shouldIndexType(type: PayloadType): boolean {
+	return INDEXABLE_TYPES.has(type);
+}
+
 const createResultParserInterceptor = (): Interceptor => {
 	return {
 		// If you are not going to transform results using Zod, then you should use `afterQueryExecution` instead.
@@ -102,7 +129,7 @@ const typeAliases = {
 	void: z.object({}).strict()
 };
 
-const sql = createSqlTag({ typeAliases });
+export const sql = createSqlTag({ typeAliases });
 
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection): Promise<AnyContainer> => {
@@ -170,7 +197,10 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+			if (
+				createFeatureDecisions(getFeatures()).useElasticsearch() &&
+				shouldIndexType(containerResult.payload.type)
+			) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -243,7 +273,10 @@ export function updateContainer(container: ModifiedContainer) {
 				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 			}
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+			if (
+				createFeatureDecisions(getFeatures()).useElasticsearch() &&
+				shouldIndexType(containerResult.payload.type)
+			) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -300,7 +333,10 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch()) {
+			if (
+				createFeatureDecisions(getFeatures()).useElasticsearch() &&
+				shouldIndexType(container.payload.type)
+			) {
 				await enqueueIndexingEvent({
 					action: 'delete',
 					guid: container.guid,
@@ -496,7 +532,6 @@ function prepareWhereCondition(filters: {
 	indicatorCategories?: string[];
 	indicator?: string;
 	indicatorTypes?: string[];
-	measureTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
 	policyFieldsBNK?: string[];
@@ -543,11 +578,6 @@ function prepareWhereCondition(filters: {
 	if (filters.indicatorTypes?.length) {
 		conditions.push(
 			sql.fragment`c.payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
-		);
-	}
-	if (filters.measureTypes?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'measureType' ?| ${sql.array(filters.measureTypes, 'text')}`
 		);
 	}
 	if (filters.organizations?.length) {
@@ -610,16 +640,16 @@ function prepareWhereCondition(filters: {
 }
 
 function prepareOrderByExpression(sort: string) {
-	let order_by = sql.fragment`c.payload->>'title' COLLATE human_sort`;
+	let order_by = sql.fragment`(c.payload->>'title')COLLATE human_sort, c.guid`;
 	if (sort == 'modified') {
-		order_by = sql.fragment`c.valid_from DESC`;
+		order_by = sql.fragment`c.valid_from DESC, c.guid`;
 	} else if (sort == 'priority') {
-		order_by = sql.fragment`priority`;
+		order_by = sql.fragment`priority, c.guid`;
 	}
 	return order_by;
 }
 
-async function withUserAndRelation<T extends AnyContainer>(
+export async function withUserAndRelation<T extends AnyContainer>(
 	connection: DatabaseConnection,
 	containerResult: Readonly<Array<Omit<T, 'user' | 'relation'>>>
 ) {
@@ -665,6 +695,7 @@ async function withUserAndRelation<T extends AnyContainer>(
 	}));
 }
 
+// Get containers using pure SQL (no Elasticsearch)
 export function getManyContainers(
 	organizations: string[],
 	filters: {
@@ -673,7 +704,6 @@ export function getManyContainers(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		indicator?: string;
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
@@ -698,7 +728,6 @@ export function getManyContainers(
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
     `);
-
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
@@ -894,7 +923,6 @@ export function getAllRelatedContainers(
 		categories?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
@@ -1003,7 +1031,6 @@ export function getAllRelatedContainersByProgramType(
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		categories?: string[];
-		measureTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1423,12 +1450,12 @@ export function createUser(user: User) {
 	};
 }
 
-export function createOrUpdateUser(user: User) {
+export function createOrUpdateUser(user: User, ignoreSettingsOnUpdate: boolean = false) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
 			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
 			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)})
-			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name}, settings = ${sql.jsonb(<SerializableValue>user.settings)}
+			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name} ${ignoreSettingsOnUpdate ? sql.fragment`` : sql.fragment`, settings = ${sql.jsonb(<SerializableValue>user.settings)}`}
 			RETURNING *
 		`);
 	};
@@ -1593,7 +1620,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 		const taskPriorityValues = taskPriority.map(({ priority, task }) => [priority, task]);
 		const tasks = taskPriority.map(({ task }) => task);
 
-		return connection.transaction(async (txConnection) => {
+		await connection.transaction(async (txConnection) => {
 			await txConnection.query(sql.typeAlias('void')`
 				DELETE FROM task_priority WHERE task IN (${sql.join(tasks, sql.fragment`,`)})
 			`);
@@ -1603,6 +1630,19 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 				FROM ${sql.unnest(taskPriorityValues, ['int4', 'uuid'])}
 			`);
 		});
+
+		if (
+			createFeatureDecisions(getFeatures()).useElasticsearch() &&
+			shouldIndexType(payloadTypes.enum.task)
+		) {
+			for (const taskGuid of new Set(tasks)) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid: taskGuid,
+					timestamp: new Date().toISOString()
+				});
+			}
+		}
 	};
 }
 
@@ -1668,6 +1708,7 @@ export function setUp(name: string, realm: string) {
 				boards: [],
 				default: true,
 				description: '',
+				favorite: [],
 				name,
 				type: payloadTypes.enum.organization,
 				visibility: visibility.enum.public

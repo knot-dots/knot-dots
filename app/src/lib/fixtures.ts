@@ -7,7 +7,8 @@ export interface Fixtures {
 }
 
 export const test = base.extend<Fixtures>({
-	connection: async (_, use) => {
+	// eslint-disable-next-line no-empty-pattern
+	connection: async ({}, use) => {
 		const pool = await getPool();
 		try {
 			await pool.transaction(async (connection) => {

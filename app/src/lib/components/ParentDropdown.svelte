@@ -96,7 +96,7 @@
 				({ organizational_unit }) =>
 					!container.organizational_unit || organizational_unit === container.organizational_unit
 			)
-			.filter(({ relation }) =>
+			.filter(({ payload, relation }) =>
 				programGuid
 					? relation.some(
 							({ object, predicate }) =>
@@ -106,7 +106,7 @@
 						? relation.some(
 								({ object, predicate }) =>
 									predicate === predicates.enum['is-part-of-measure'] && object === measureGuid
-							)
+							) || payload.type === payloadTypes.enum.measure
 						: true
 			)
 			.map(({ guid, payload }) => ({

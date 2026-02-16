@@ -4,12 +4,17 @@ import {
 	containerOfType,
 	type EmptyEffectContainer,
 	type IndicatorContainer,
+	type IooiType,
 	payloadTypes,
 	predicates
 } from '$lib/models';
 import saveContainer from '$lib/client/saveContainer';
 
-export default async function createEffect(target: Container, indicator: IndicatorContainer) {
+export default async function createEffect(
+	target: Container,
+	indicator: IndicatorContainer,
+	iooiType?: IooiType
+) {
 	const newEffect = containerOfType(
 		payloadTypes.enum.effect,
 		target.organization,
@@ -19,7 +24,11 @@ export default async function createEffect(target: Container, indicator: Indicat
 	) as EmptyEffectContainer;
 	const response = await saveContainer({
 		...newEffect,
-		payload: { ...newEffect.payload, title: indicator.payload.title },
+		payload: {
+			...newEffect.payload,
+			title: indicator.payload.title,
+			...(iooiType ? { iooiType } : {})
+		},
 		relation: [
 			{
 				object: indicator.guid,

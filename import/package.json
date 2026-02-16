@@ -1,6 +1,8 @@
 {
-  "name": "knotdots-import",
-  "version": "1.0.0",
+  "name": "@knot-dots/import",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
   "scripts": {
     "administrative-areas-from-open-street-map": "tsx src/importAdministrativeAreasFromOpenStreetMap.ts",
     "administrative-areas-from-wikidata": "tsx src/importAdministrativeAreasFromWikidata.ts",
@@ -10,11 +12,8 @@
     "indicator-data-from-wegweiser-kommune": "tsx src/importIndicatorDataFromWegweiserKommune.ts",
     "index-containers-to-elasticsearch": "tsx src/indexContainersToElasticsearch.ts"
   },
-  "author": "",
-  "license": "AGPL-3.0-or-later",
-  "description": "",
   "dependencies": {
-    "@elastic/elasticsearch": "^8.15.1",
+    "@elastic/elasticsearch": "^9.3.1",
     "csv-parse": "^6.1.0",
     "osmtogeojson": "^3.0.0-beta.5",
     "overpass-ql-ts": "^1.11.0",
@@ -26,6 +25,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.9.2",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6"

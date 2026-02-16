@@ -155,12 +155,7 @@ export const fetchContainersRelatedToResource = query(
 				getManyContainers(
 					[],
 					{
-						type: [
-							payloadTypes.enum.resource_data_expected_expenses,
-							payloadTypes.enum.resource_data_historical_expenses,
-							payloadTypes.enum.resource_data_expected_income,
-							payloadTypes.enum.resource_data_historical_income
-						],
+						type: [payloadTypes.enum.resource_data],
 						resource: [guid]
 					},
 					'alpha'

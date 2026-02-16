@@ -13,7 +13,7 @@ export function createIsPartOfOptionsRequest(
 	let targetPayloadTypes: PayloadType[] | undefined;
 	if (measureGuid) {
 		// Parent for a measure is a goal
-		targetPayloadTypes = [payloadTypes.enum.goal];
+		targetPayloadTypes = [payloadTypes.enum.goal, payloadTypes.enum.measure];
 	} else if (programGuid) {
 		// Parent for knowledge remains knowledge; otherwise goal
 		targetPayloadTypes =

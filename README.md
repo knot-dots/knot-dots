@@ -44,6 +44,19 @@ docker compose run --rm migrate create -ext sql NAME
 This will produce two empty files in the migrate/sql folder,
 one for upgrading the schema and one for restoring the current state.
 
+## Elasticsearch
+
+We use Elasticsearch for fast full-text search and faceted filtering.
+The Elasticsearch feature is controlled by the `Elasticsearch` feature flag (configured in `app/src/lib/features.ts`).
+
+To index containers to Elasticsearch, run:
+
+```bash
+docker-compose run --rm import index-containers-to-elasticsearch
+```
+
+This will create a new index with a timestamp (e.g., `containers-20251218102418`) and point the `containers` alias to it for zero-downtime reindexing.
+
 ## Tests
 
 For end-to-end tests, we use [Playwright](https://playwright.dev/).

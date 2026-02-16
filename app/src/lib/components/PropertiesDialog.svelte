@@ -7,7 +7,8 @@
 	import {
 		type AnyContainer,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer
+		type OrganizationContainer,
+		type PageContainer
 	} from '$lib/models';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -16,7 +17,7 @@
 
 	interface Props {
 		children: Snippet;
-		container: OrganizationContainer | OrganizationalUnitContainer;
+		container: OrganizationContainer | OrganizationalUnitContainer | PageContainer;
 		relatedContainers: AnyContainer[];
 		dialog: HTMLDialogElement;
 		title: string;
@@ -37,7 +38,7 @@
 			if (container.guid == container.organization) {
 				window.location.href = env.PUBLIC_BASE_URL + '/all/page';
 			} else {
-				await goto(resolve('/[[guid=uuid]]/all/page', { guid: container.organization }));
+				await goto(resolve('/[guid=uuid]/all/page', { guid: container.organization }));
 				await invalidateAll();
 			}
 			confirmDelete = false;
@@ -74,7 +75,7 @@
 				<h2>
 					{$_('confirm_delete_dialog.heading', {
 						values: {
-							title: container.payload.name
+							title: 'title' in container.payload ? container.payload.title : container.payload.name
 						}
 					})}
 				</h2>
@@ -90,7 +91,7 @@
 				<button class="button-primary button-xs" type="submit">
 					{$_('confirm_delete_dialog.button', {
 						values: {
-							title: container.payload.name
+							title: 'title' in container.payload ? container.payload.title : container.payload.name
 						}
 					})}
 				</button>
@@ -118,7 +119,12 @@
 						type="button"
 					>
 						<TrashBin />
-						{$_('delete.name', { values: { name: container.payload.name } })}
+						{$_('delete.name', {
+							values: {
+								name:
+									'title' in container.payload ? container.payload.title : container.payload.name
+							}
+						})}
 					</button>
 				</footer>
 			</div>

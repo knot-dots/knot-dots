@@ -6,7 +6,7 @@ let sharedTermNames: string[] = [];
 test.describe('Categories', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('shows four default categories', async ({ page, dotsBoard, defaultOrganization }) => {
+	test('shows four default categories', async ({ defaultOrganization, dotsBoard, page }) => {
 		await dotsBoard.goto(`/${defaultOrganization.guid}`);
 		await dotsBoard.sidebar.openProfileSettings();
 		await dotsBoard.page.getByLabel('CustomCategories').check();
@@ -14,10 +14,7 @@ test.describe('Categories', () => {
 		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
 		await response;
 
-		await page.goto('/');
-
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Categories' }).click();
+		await page.goto(`/${defaultOrganization.guid}/categories`);
 
 		const rootColumn = page
 			.locator('section')
@@ -30,16 +27,14 @@ test.describe('Categories', () => {
 		await expect(defaultCategories).toHaveCount(4);
 	});
 
-	test('creates category with two terms', async ({ page }) => {
+	test('creates category with two terms', async ({ defaultOrganization, page }) => {
 		sharedCategoryTitle = `E2E Category ${test.info().project.name} ${Date.now()}`;
 		sharedTermNames = [
 			`E2E Term A ${test.info().project.name} ${Date.now()}`,
 			`E2E Term B ${test.info().project.name} ${Date.now()}`
 		];
 
-		await page.goto('/');
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Categories' }).click();
+		await page.goto(`/${defaultOrganization.guid}/categories`);
 
 		const rootColumn = page
 			.locator('section')
@@ -67,12 +62,14 @@ test.describe('Categories', () => {
 		await expect(rootColumn.getByRole('article', { name: sharedCategoryTitle })).toHaveCount(1);
 	});
 
-	test('assigns created term to a goal and filter by term', async ({ page, testGoal }) => {
+	test('assigns created term to a goal and filter by term', async ({
+		defaultOrganization,
+		page,
+		testGoal
+	}) => {
 		const termName = sharedTermNames[0];
 
-		await page.goto('/');
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
+		await page.goto(`/${defaultOrganization.guid}/goals/level`);
 
 		await page.getByRole('article', { name: testGoal.payload.title }).first().click();
 
@@ -105,10 +102,8 @@ test.describe('Categories', () => {
 		await expect(page.getByRole('article', { name: testGoal.payload.title })).toBeVisible();
 	});
 
-	test('cleans up created category via UI', async ({ page }) => {
-		await page.goto('/');
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Categories' }).click();
+	test('cleans up created category via UI', async ({ defaultOrganization, page }) => {
+		await page.goto(`/${defaultOrganization.guid}/categories`);
 
 		const rootColumn = page
 			.locator('section')

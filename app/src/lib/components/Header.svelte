@@ -4,12 +4,15 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
+	import StarOutline from '~icons/flowbite/star-outline';
+	import StarSolid from '~icons/flowbite/star-solid';
 	import Close from '~icons/knotdots/close';
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
@@ -30,9 +33,12 @@
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
 		isMeasureContainer,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
 		overlayKey,
@@ -42,7 +48,6 @@
 	import { ability, user, overlay as overlayStore } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
-	import { createFeatureDecisions } from '$lib/features';
 
 	type FilterOption = {
 		count: number;
@@ -103,6 +108,16 @@
 		return count;
 	});
 
+	let href = $derived(
+		page.url.searchParams.size
+			? `${page.url.pathname}?${page.url.searchParams.toString()}`
+			: page.url.pathname
+	);
+
+	let isFavorite = $derived(
+		selectedContext.payload.favorite.findIndex((f) => f.href === href) > -1
+	);
+
 	function applySort() {
 		if (overlay) {
 			const query = new URLSearchParams(page.url.hash.substring(1));
@@ -136,6 +151,32 @@
 			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 		}
 	}
+
+	async function toggleFavorite() {
+		let index = selectedContext.payload.favorite.findIndex((f) => f.href === href);
+
+		const response = await saveContainer({
+			...selectedContext,
+			payload: {
+				...selectedContext.payload,
+				favorite:
+					index > -1
+						? selectedContext.payload.favorite.filter((_, i) => i !== index)
+						: [
+								...selectedContext.payload.favorite,
+								{ href, title: page.data.title ?? $_('new_favorite') }
+							]
+			}
+		});
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			selectedContext.revision = updatedContainer.revision;
+			await invalidate(selectedContext.payload.type);
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
 </script>
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
@@ -152,13 +193,17 @@
 
 	{#if workspaceOptions}
 		<Workspaces options={workspaceOptions} />
-	{:else if overlay && $overlayStore?.container}
-		{#if isProgramContainer($overlayStore.container)}
-			<ProgramWorkspaces container={$overlayStore.container} />
-		{:else if isMeasureContainer($overlayStore.container) || isSimpleMeasureContainer($overlayStore.container)}
-			<MeasureWorkspaces container={$overlayStore.container} />
-		{:else if isGoalContainer($overlayStore.container) && createFeatureDecisions(page.data.features).useIOOI()}
-			<GoalWorkspaces container={$overlayStore.container} />
+	{:else if (overlay && $overlayStore?.container) || (!overlay && page.data.container)}
+		{@const container =
+			overlay && $overlayStore?.container ? $overlayStore.container : page.data.container}
+		{#if isProgramContainer(container)}
+			<ProgramWorkspaces {container} />
+		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+			<MeasureWorkspaces {container} />
+		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
+			<GoalWorkspaces {container} />
+		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+			<WorkspacesMenu />
 		{/if}
 	{:else}
 		<WorkspacesMenu />
@@ -207,16 +252,40 @@
 			>
 				<Users />
 			</a>
+		{:else if !overlay && !$overlayStore?.key && page.data.container && (isProgramContainer(page.data.container) || isMeasureContainer(page.data.container) || isSimpleMeasureContainer(page.data.container)) && $ability.can('invite-members', page.data.container)}
+			<div class="divider"></div>
+
+			<a
+				class="action-button action-button--size-l"
+				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
+					guid: selectedContext.guid,
+					contentGuid: page.data.container.guid
+				})}
+				{@attach tooltip($_('members'))}
+			>
+				<Users />
+			</a>
 		{:else if !overlay && !$overlayStore?.key && $ability.can('invite-members', selectedContext)}
 			<div class="divider"></div>
 
 			<a
 				class="action-button action-button--size-l"
-				href={resolve('/[[guid=uuid]]/members', { guid: selectedContext.guid })}
+				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />
 			</a>
+		{/if}
+
+		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
+			<button
+				aria-label={$_('favorite')}
+				class="action-button action-button--size-l action-button--favorite"
+				onclick={toggleFavorite}
+				type="button"
+			>
+				{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
+			</button>
 		{/if}
 	</form>
 
@@ -346,6 +415,10 @@
 
 	.commands > .divider:first-child {
 		display: none;
+	}
+
+	.action-button--favorite {
+		--icon-color: var(--color-yellow-400);
 	}
 
 	.divider {

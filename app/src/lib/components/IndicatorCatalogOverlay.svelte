@@ -21,7 +21,6 @@
 		type IndicatorTemplateContainer,
 		indicatorTypes,
 		isIndicatorContainer,
-		measureTypes,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -93,7 +92,11 @@
 	async function select(container: IndicatorContainer | IndicatorTemplateContainer) {
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
-				const effect = await createEffect($addEffectState.target, container);
+				const effect = await createEffect(
+					$addEffectState.target,
+					container,
+					$addEffectState.iooiType
+				);
 				const params = new URLSearchParams([[overlayKey.enum.view, effect.guid]]);
 				$addEffectState = {};
 				await goto(`#${params.toString()}`);
@@ -136,7 +139,6 @@
 				['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
 				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-				['measureType', new Map(measureTypes.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))]
 			]),

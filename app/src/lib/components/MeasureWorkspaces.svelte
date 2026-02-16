@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
+	import { type Component, getContext } from 'svelte';
 	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -12,7 +12,9 @@
 	import LandingPage from '~icons/knotdots/landing-page';
 	import Objects from '~icons/knotdots/objects';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 
 	interface Props {
@@ -21,10 +23,15 @@
 
 	let { container }: Props = $props();
 
+	let overlay = getContext('overlay');
+
 	const workspacesLeft: Record<string, Record<string, string>> = {
 		all: {
 			monitoring: '/all/monitoring',
 			page: '/'
+		},
+		iooi: {
+			board: '/iooi/board'
 		},
 		tasks: {
 			status: '/tasks/status'
@@ -43,15 +50,29 @@
 		}
 	};
 
-	let selectedItem = $derived.by(() => {
-		const params = paramsFromFragment(page.url);
+	let selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
 
-		if (params.has('measure-monitoring')) {
-			return ['all', 'monitoring'];
-		} else if (params.has('tasks')) {
-			return ['tasks', 'status'];
+	let selectedItem = $derived.by(() => {
+		if (overlay) {
+			const params = paramsFromFragment(page.url);
+
+			if (params.has('measure-iooi')) {
+				return ['iooi', 'board'];
+			} else if (params.has('measure-monitoring')) {
+				return ['all', 'monitoring'];
+			} else if (params.has('tasks')) {
+				return ['tasks', 'status'];
+			} else {
+				return ['all', 'page'];
+			}
 		} else {
-			return ['all', 'page'];
+			const pathnameWithoutContextSegments = page.url.pathname.split('/').slice(3);
+
+			if (pathnameWithoutContextSegments.length == 2) {
+				return pathnameWithoutContextSegments;
+			} else {
+				return ['all', 'page'];
+			}
 		}
 	});
 
@@ -69,6 +90,16 @@
 			label: $_('workspace.type.all'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/monitoring'
 		},
+		...(createFeatureDecisions(page.data.features).useIOOI()
+			? [
+					{
+						exists: true,
+						icon: ColumnSolid,
+						label: $_('workspace.iooi'),
+						value: workspacesLeft.iooi[selectedItem[1]] ?? '/iooi/board'
+					}
+				]
+			: []),
 		{
 			exists: true,
 			icon: ClipboardCheck,
@@ -100,38 +131,90 @@
 		}
 	]);
 
-	function pathFromParams(params: URLSearchParams) {
-		if (params.has('measure-monitoring')) {
-			return '/all/monitoring';
-		} else if (params.has('tasks')) {
-			return '/tasks/status';
+	function currentPath(url: URL) {
+		if (overlay) {
+			const params = paramsFromFragment(url);
+
+			if (params.has('measure-iooi')) {
+				return '/iooi/board';
+			} else if (params.has('measure-monitoring')) {
+				return '/all/monitoring';
+			} else if (params.has('tasks')) {
+				return '/tasks/status';
+			} else {
+				return '/';
+			}
 		} else {
-			return '/';
+			return '/' + (url.pathname.split('/').slice(3).join('/') ?? '');
 		}
 	}
 
 	const leftMenu = createMenu({
-		selected: pathFromParams(paramsFromFragment(page.url))
+		selected: currentPath(page.url)
 	});
 
 	const rightMenu = createMenu({
-		selected: pathFromParams(paramsFromFragment(page.url))
+		selected: currentPath(page.url)
 	});
 
 	function handleChange(url: URL, container: AnyContainer) {
 		return (event: Event) => {
 			const detail = (event as CustomEvent).detail;
 
-			if (detail.selected) {
-				const selected =
-					detail.selected === '/' ? ['all', 'page'] : detail.selected.split('/').slice(1, 3);
+			if (!detail.selected) {
+				return;
+			}
 
-				if (selected[0] == 'all' && selected[1] == 'monitoring') {
+			const selected: [string, string] =
+				detail.selected === '/' ? ['all', 'page'] : detail.selected.split('/').slice(1, 3);
+
+			if (selected.every((v, i) => v === selectedItem[i])) {
+				return;
+			}
+
+			if (selected[0] == 'iooi' && selected[1] == 'board') {
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum['measure-iooi'], container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
+			} else if (selected[0] == 'all' && selected[1] == 'monitoring') {
+				if (overlay) {
 					goto(overlayURL(url, overlayKey.enum['measure-monitoring'], container.guid));
-				} else if (selected[0] == 'tasks' && selected[1] == 'status') {
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/all/monitoring', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
+			} else if (selected[0] == 'tasks' && selected[1] == 'status') {
+				if (overlay) {
 					goto(overlayURL(url, overlayKey.enum.tasks, container.guid));
 				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/tasks/status', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
+			} else {
+				if (overlay) {
 					goto(overlayURL(url, overlayKey.enum.view, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
 				}
 			}
 		};
@@ -151,9 +234,7 @@
 	{@const extraOpts = {
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	}}
-	{@const selected = options.find(
-		({ value }) => value === pathFromParams(paramsFromFragment(page.url))
-	)}
+	{@const selected = options.find(({ value }) => value === currentPath(page.url))}
 	<div class="dropdown" use:popperRef>
 		<button
 			class="dropdown-button"

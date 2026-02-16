@@ -6,7 +6,7 @@ import {
 	indicatorWegweiserKommune,
 	insertIntoIndicatorWegweiserKommune,
 	updateContainer
-} from './db';
+} from './db.ts';
 import assert from 'node:assert';
 import { fromFetch } from 'rxjs/fetch';
 import { map, mergeMap, tap } from 'rxjs/operators';

@@ -42,7 +42,6 @@
 		['indicatorType', 'indicator_type'],
 		['indicatorCategory', 'indicator_category'],
 		['federalState', 'administrative_area.basic_data.federal_state'],
-		['measureType', 'measure_type'],
 		['member', 'member_filter.label'],
 		['type', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],

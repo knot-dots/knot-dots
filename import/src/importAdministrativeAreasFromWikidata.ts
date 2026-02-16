@@ -7,7 +7,7 @@ import {
 	AdministrativeAreaWikidata,
 	getPool,
 	insertIntoAdministrativeAreaWikidata
-} from './db';
+} from './db.ts';
 
 type WdqsValue = { type: string; value: string };
 

@@ -15,7 +15,7 @@
 <Card
 	--height="100%"
 	{container}
-	href={() => resolve('/[[guid=uuid]]/all/page', { guid: container.guid })}
+	href={() => resolve('/[guid=uuid]/all/page', { guid: container.guid })}
 >
 	{#snippet body()}
 		{#if container.payload.image}

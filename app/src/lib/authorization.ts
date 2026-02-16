@@ -16,16 +16,16 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const specialTypes: PayloadType[] = [
+	payloadTypes.enum.category,
+	payloadTypes.enum.indicator,
+	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.program,
-	payloadTypes.enum.indicator,
-	payloadTypes.enum.indicator_template
+	payloadTypes.enum.term
 ];
 
 const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
-
-const taxonomyTypes: PayloadType[] = [payloadTypes.enum.category, payloadTypes.enum.term];
 
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
@@ -111,20 +111,18 @@ export default function defineAbilityFor(user: User) {
 		});
 		can(
 			'delete-recursively',
-			[
-				payloadTypes.enum.goal,
-				payloadTypes.enum.program,
-				payloadTypes.enum.measure,
-				payloadTypes.enum.category,
-				payloadTypes.enum.term
-			],
+			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
 			{
 				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 			}
 		);
-		can(['create', 'update', 'delete'], payloadTypes.enum.indicator, {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		can(
+			['create', 'update', 'delete', 'delete-recursively'],
+			[payloadTypes.enum.category, payloadTypes.enum.term],
+			{
+				managed_by: { $in: [...user.adminOf, ...user.headOf] }
+			}
+		);
 		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
@@ -196,7 +194,6 @@ export default function defineAbilityFor(user: User) {
 			managed_by: { $in: user.memberOf }
 		});
 		cannot('update', payloadTypes.enum.indicator, ['indicatorCategory']);
-		cannot(['create', 'update', 'delete'], taxonomyTypes);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }

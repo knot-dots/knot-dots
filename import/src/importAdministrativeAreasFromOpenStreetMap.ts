@@ -10,7 +10,7 @@ import {
 	insertIntoAdministrativeAreaOpenStreetMap,
 	insertIntoSpatialFeature,
 	spatialFeature
-} from './db';
+} from './db.ts';
 
 type State = {
 	relId: number;
@@ -47,14 +47,14 @@ const envSchema = z
 		THROTTLE_MS: z.coerce.number().int().default(DEFAULT_THROTTLE_MS),
 		LEVELS_PER_STATE: z
 			.string()
-			.transform((value) => value.split(','))
-			.pipe(z.coerce.number().array())
-			.default(DEFAULT_LEVELS_PER_STATE.join(',')),
+			.default(DEFAULT_LEVELS_PER_STATE.join(','))
+			.transform((value) => value.split(',').map((s) => parseInt(s)))
+			.pipe(z.number().array()),
 		INCLUDED_STATES: z
 			.string()
+			.default(DEFAULT_INCLUDED_STATES.join(','))
 			.transform((value) => value.split(','))
 			.pipe(z.string().array())
-			.default(DEFAULT_INCLUDED_STATES.join(','))
 	})
 	.transform((value) => ({
 		timeoutSeconds: value.TIMEOUT_SECONDS,

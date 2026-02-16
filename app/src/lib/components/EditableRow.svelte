@@ -6,11 +6,11 @@
 	import { page } from '$app/state';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
+	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
 	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
 	import GoalTypeDropdown from '$lib/components/GoalTypeDropdown.svelte';
-	import EditableHierarchyLevel from '$lib/components/EditableHierarchyLevel.svelte';
 	import IndicatorCategoryDropdown from '$lib/components/IndicatorCategoryDropdown.svelte';
 	import IndicatorTypeDropdown from '$lib/components/IndicatorTypeDropdown.svelte';
 	import IndicatorUnitDropdown from '$lib/components/IndicatorUnitDropdown.svelte';
@@ -317,7 +317,7 @@
 		class:cell--locked={editable && $ability.cannot('update', container, 'payload.hierarchyLevel')}
 	>
 		{#if isGoalContainer(container)}
-			<EditableHierarchyLevel
+			<EditableGoalHierarchyLevel
 				editable={editable && $ability.can('update', container, 'payload.hierarchyLevel')}
 				showLabel={false}
 				bind:value={container.payload.hierarchyLevel}

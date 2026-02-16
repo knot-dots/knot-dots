@@ -4,6 +4,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import { type Container, isSimpleMeasureContainer } from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
@@ -53,3 +54,5 @@
 		{@render data?.()}
 	</article>
 </form>
+
+<Help slug={`${container.payload.type.replace('_', '-')}-view`} />

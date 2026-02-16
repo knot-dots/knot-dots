@@ -7,7 +7,6 @@
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import {
-		type GoalType,
 		type Container,
 		isContainerWithStatus,
 		isGoalContainer,
@@ -16,8 +15,7 @@
 		isSuggestedByAI,
 		isTaskContainer,
 		programTypes,
-		type ProgramType,
-		type TaskCategory
+		isResourceDataContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -33,14 +31,19 @@
 		{#if container.payload.type === 'category'}
 			{$_('categories.columns.root')}
 		{:else if 'goalType' in container.payload && container.payload.goalType}
-			{@const goalType = container.payload.goalType as GoalType}
-			{$_(goalType)}
+			{$_(container.payload.goalType as string)}
+		{:else if 'measureType' in container.payload && container.payload.measureType?.length}
+			{$_(
+				(Array.isArray(container.payload.measureType)
+					? container.payload.measureType[0]
+					: container.payload.measureType) as string
+			)}
 		{:else if 'programType' in container.payload && container.payload.programType !== programTypes.enum['program_type.misc']}
-			{@const programType = container.payload.programType as ProgramType}
-			{$_(programType)}
+			{$_(container.payload.programType as string)}
 		{:else if 'taskCategory' in container.payload && container.payload.taskCategory}
-			{@const taskCategory = container.payload.taskCategory as TaskCategory}
-			{$_(taskCategory)}
+			{$_(container.payload.taskCategory as string)}
+		{:else if isResourceDataContainer(container)}
+			{$_(container.payload.resourceDataType)}
 		{:else}
 			{$_(container.payload.type)}
 		{/if}

@@ -301,6 +301,7 @@ body {
 	font-weight: 400;
 	line-height: 1.5;
 	min-height: 100vh;
+	overflow-x: hidden;
 	text-rendering: optimizeSpeed;
 }
 
@@ -972,24 +973,7 @@ label > input[type='checkbox'].toggle {
 	width: auto;
 }
 
-/* Container detail page content */
-.detail-page-content {
-	background-color: white;
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	overflow: auto;
-}
-
-.content-header {
-	padding: 1.5rem 1.5rem 0;
-}
-
-.content-header a,
-.content-header button {
-	float: right;
-}
-
+/* Main and overlay content */
 .content-details {
 	flex-grow: 1;
 	overflow-y: auto;
@@ -1112,6 +1096,10 @@ label > input[type='checkbox'].toggle {
 	min-height: 2rem;
 }
 
+.details-section header {
+	margin-bottom: 0.5rem;
+}
+
 #dnd-action-dragged-el .details-section {
 	background: var(--color-primary-050);
 	outline: solid 1px var(--color-primary-700);
@@ -1205,7 +1193,7 @@ label > input[type='checkbox'].toggle {
 	padding-inline-start: 1.5rem;
 }
 
-.markdown-body p,
+.markdown-body > p,
 .milkdown .editor > p,
 .milkdown .editor > ul,
 .milkdown .editor > ol {
@@ -1214,7 +1202,7 @@ label > input[type='checkbox'].toggle {
 
 .markdown-body > *:first-child,
 .milkdown .editor > *:first-child {
-	margin-top: 0;
+	margin-top: 0.5rem;
 }
 
 .markdown-body > *:last-child,

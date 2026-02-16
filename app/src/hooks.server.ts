@@ -40,13 +40,16 @@ const { handle: withAuthentication } = SvelteKitAuth({
 				token.sub = sub;
 				const pool = await getPool();
 				await pool.connect(
-					createOrUpdateUser({
-						family_name: family_name,
-						given_name: given_name,
-						guid: sub,
-						realm: env.PUBLIC_KC_REALM ?? '',
-						settings: {}
-					})
+					createOrUpdateUser(
+						{
+							family_name: family_name,
+							given_name: given_name,
+							guid: sub,
+							realm: env.PUBLIC_KC_REALM ?? '',
+							settings: {}
+						},
+						true
+					)
 				);
 			}
 			return token;
