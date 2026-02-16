@@ -133,7 +133,7 @@
 			use:popover.panel
 			bind:this={panelEl}
 		>
-			<div>
+			<div class="dropdown-panel-scroll">
 				{#each options as option (option.value)}
 					{@const iconSrc = iconURL(option.icon)}
 					<div
@@ -271,6 +271,11 @@
 	.dropdown-panel {
 		position: relative;
 		overflow: visible;
+	}
+
+	.dropdown-panel-scroll {
+		overflow-y: auto;
+		overflow-x: visible;
 	}
 
 	.suboptions-flyout {
