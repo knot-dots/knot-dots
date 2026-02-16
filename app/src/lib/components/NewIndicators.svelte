@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import {
 		type DndEvent,
@@ -10,6 +11,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import {
 		type Container,
@@ -25,9 +27,7 @@
 		predicates,
 		units
 	} from '$lib/models';
-	import { ability, dragged, overlay, newContainer } from '$lib/stores';
-	import { getContext } from 'svelte';
-	import { env } from '$env/dynamic/public';
+	import { ability, dragged, mayCreateContainer, newContainer, overlay } from '$lib/stores';
 
 	interface Props {
 		containers: Container[];
@@ -62,6 +62,10 @@
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
+
+	let managedBy = $derived(
+		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -122,7 +126,7 @@
 </script>
 
 <div class="indicators">
-	{#if $ability.can('create', payloadTypes.enum.indicator)}
+	{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy)}
 		<p>
 			<button
 				class="button button-xs button-primary"
