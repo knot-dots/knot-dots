@@ -274,6 +274,8 @@
 	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
 	"indicator_form.create_custom": "Eigenen Indikator anlegen",
 	"indicator_form.with_historical_values": "Mit Ist-Werten und Prognose ohne Intervention",
+	"indicator_picker.title": "Indikatoren einbinden",
+	"indicator_picker.import": "{count, plural, one {Einen Indikator} other {# Indikatoren}} einbinden",
 	"indicator_template": "Indikator-Vorlage",
 	"indicator_template.select": "Vorlage benutzen",
 	"indicator_type": "Art des Indikators",
@@ -281,6 +283,8 @@
 	"indicator_type.key": "Schlüsselindikator",
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
+	"indicators.activate_selected": "Indikatoren einbinden",
+	"indicators.create_custom": "Eigenen Indikator anlegen",
 	"info_box": "Infobox",
 	"invite": {
 		"email": "E-Mail-Adresse",
@@ -554,6 +558,7 @@
 		"17": "17 - Partnerschaften zur Erreichung der Ziele"
 	},
 	"search": "Suchen",
+	"select_all": "Alle auswählen",
 	"show_all_organizations": "Alle Organisationen anzeigen",
 	"show_relations": "Beziehungen anzeigen",
 	"signup_dialog.family_name": "Name",

@@ -1748,7 +1748,7 @@ export function isIndicatorCollectionContainer(
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
 
-const indicatorTemplateContainer = container.extend({
+export const indicatorTemplateContainer = container.extend({
 	payload: indicatorTemplatePayload
 });
 

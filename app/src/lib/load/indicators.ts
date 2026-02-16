@@ -110,7 +110,7 @@ export async function getIndicatorsData(params: {
 		const [templates, actualData] = await Promise.all([
 			connect(
 				getManyContainers(
-					[organizationGuid],
+					[],
 					{
 						customCategories: filters.customCategories,
 						indicatorCategories: filters.indicatorCategories,
