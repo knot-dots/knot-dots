@@ -124,8 +124,6 @@ export function getManyContainersWithES(
 
 		if (guids.length === 0) return [];
 
-		console.log('------');
-
 		const containerResult = await connection.any(sql.typeAlias('container')`
 				SELECT c.*
 				FROM container c
