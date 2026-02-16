@@ -536,6 +536,8 @@ function prepareWhereCondition(filters: {
 	organizationalUnits?: string[];
 	policyFieldsBNK?: string[];
 	programTypes?: string[];
+	resource?: string[];
+	resourceCategories?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
@@ -604,6 +606,16 @@ function prepareWhereCondition(filters: {
 				filters.programTypes,
 				sql.fragment`, `
 			)})`
+		);
+	}
+	if (filters.resource?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'resource' IN (${sql.join(filters.resource, sql.fragment`, `)})`
+		);
+	}
+	if (filters.resourceCategories?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
 	}
 	if (filters.taskCategories?.length) {
