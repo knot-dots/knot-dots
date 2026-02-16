@@ -28,7 +28,14 @@
 		predicates,
 		units
 	} from '$lib/models';
-	import { ability, dragged, mayCreateContainer, newContainer, overlay } from '$lib/stores';
+	import {
+		ability,
+		applicationState,
+		dragged,
+		mayCreateContainer,
+		newContainer,
+		overlay
+	} from '$lib/stores';
 
 	interface Props {
 		containers: Container[];
@@ -130,7 +137,7 @@
 </script>
 
 <div class="indicators">
-	{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy)}
+	{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy) && $applicationState.containerDetailView.editable}
 		<p>
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
 				<button
