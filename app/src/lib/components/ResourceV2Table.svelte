@@ -22,8 +22,7 @@
 		containerOfType,
 		payloadTypes,
 		resourceDataTypes,
-		isResourceDataContainer,
-		visibility
+		isResourceDataContainer
 	} from '$lib/models';
 	import { ability, applicationState, mayCreateContainer } from '$lib/stores';
 
@@ -53,33 +52,31 @@
 			| 'resource_data_type.total_budget_forecast',
 		title: string
 	): ResourceDataContainer {
-		return {
-			guid: 'TEMPORARY_NEW',
-			revision: 1,
-			user: [],
-			payload: {
-				type: payloadTypes.enum.resource_data,
-				resourceDataType,
-				title,
-				resource: container.guid,
-				entries: [],
-				visibility: visibility.enum.organization
-			},
-			organization: container.organization,
-			organizational_unit: container.organizational_unit,
-			managed_by: container.managed_by,
-			realm: container.realm,
-			relation: [
+		let c = containerOfType(
+			payloadTypes.enum.resource_data,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as ResourceDataContainer;
+
+		// Set guid to a temporary value to identify this as a stub for the container we're trying to create
+		c.guid = 'TEMPORARY_NEW';
+		c.payload.title = title;
+		c.payload.resourceDataType = resourceDataType;
+		c.payload.resource = container.guid;
+
+		// Set relations to the parent container
+		c.relation = [
 				{
 					object: container.guid,
 					subject: 'TEMPORARY_NEW',
 					position: 0,
 					predicate: predicates.enum['is-part-of']
 				}
-			],
-			valid_from: new Date(),
-			valid_currently: true
-		} as ResourceDataContainer;
+		];
+
+		return c;
 	}
 
 	// Initialize local state for budgetTotal and prognosis containers with stubs
