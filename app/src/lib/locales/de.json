@@ -515,9 +515,9 @@
 	"resource_table.in_years": "in Jahren",
 	"resource_table.add_year": "Jahr hinzufügen",
 	"resource_table.past_years": "Vergangene Jahre",
-	"resource_table.prognosis": "Prognose",
 	"resource_table.sum": "Summe",
 	"resource_table.total_budget": "Gesamt-Budget",
+	"resource_table.total_budget_forecast": "Gesamt-Budget (Prognose)",
 	"role": {
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",

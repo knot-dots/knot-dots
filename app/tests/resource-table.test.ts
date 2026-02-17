@@ -243,9 +243,9 @@ test.describe('Resource V2 Table', () => {
 		const currentYear = new Date().getFullYear();
 		await expect(table.getByRole('columnheader', { name: String(currentYear + 1) })).toBeVisible();
 
-		// Locate the "Prognosis" row input for the current year
+		// Locate the "Total budget forecast" row input for the current year
 		const prognosisRow = table.locator('tbody tr', {
-			has: table.page().getByRole('rowheader', { name: 'Prognosis' })
+			has: table.page().getByRole('rowheader', { name: 'Total budget forecast' })
 		});
 		const prognosisInput = prognosisRow.locator('input[inputmode="decimal"]').last();
 
@@ -259,7 +259,7 @@ test.describe('Resource V2 Table', () => {
 
 		const tableAfterReload = dotsBoard.overlay.locator.locator('.resource-table__table');
 		const prognosisRowAfterReload = tableAfterReload.locator('tbody tr', {
-			has: tableAfterReload.page().getByRole('rowheader', { name: 'Prognosis' })
+			has: tableAfterReload.page().getByRole('rowheader', { name: 'Total budget forecast' })
 		});
 		const prognosisInputAfterReload = prognosisRowAfterReload
 			.locator('input[inputmode="decimal"]')
@@ -340,7 +340,9 @@ test.describe('Resource V2 Table', () => {
 			.locator('input[inputmode="decimal"]')
 			.first();
 		const prognosisInput = table
-			.locator('tbody tr', { has: table.page().getByRole('rowheader', { name: 'Prognosis' }) })
+			.locator('tbody tr', {
+				has: table.page().getByRole('rowheader', { name: 'Total budget forecast' })
+			})
 			.locator('input[inputmode="decimal"]')
 			.first();
 

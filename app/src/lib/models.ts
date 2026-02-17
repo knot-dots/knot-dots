@@ -532,8 +532,8 @@ export const resourceDataTypes = z.enum([
 	'resource_data_type.actual_resource_allocation',
 	'resource_data_type.planned_resource_allocation',
 	'resource_data_type.budget',
-	'resource_data_type.budget_total',
-	'resource_data_type.prognosis'
+	'resource_data_type.total_budget',
+	'resource_data_type.total_budget_forecast'
 ] as const);
 
 export type ResourceDataType = z.infer<typeof resourceDataTypes>;
@@ -1964,21 +1964,22 @@ export function isResourceDataBudgetContainer(
 	);
 }
 
-export function isResourceDataBudgetTotalContainer(
+export function isResourceDataTotalBudgetContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
-		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget_total']
+		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
 	);
 }
 
-export function isResourceDataPrognosisContainer(
+export function isResourceDataTotalBudgetForecastContainer(
 	container: AnyContainer | EmptyContainer
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
-		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.prognosis']
+		container.payload.resourceDataType ===
+			resourceDataTypes.enum['resource_data_type.total_budget_forecast']
 	);
 }
 

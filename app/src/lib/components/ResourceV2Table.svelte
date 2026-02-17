@@ -11,8 +11,8 @@
 		isResourceDataBudgetContainer,
 		isResourceDataPlannedResourceAllocationContainer,
 		isResourceDataActualResourceAllocationContainer,
-		isResourceDataBudgetTotalContainer,
-		isResourceDataPrognosisContainer,
+		isResourceDataTotalBudgetContainer,
+		isResourceDataTotalBudgetForecastContainer,
 		findAncestors,
 		predicates,
 		overlayKey,
@@ -41,12 +41,16 @@
 	let actualContainers = $derived(
 		relatedContainers.filter(isResourceDataActualResourceAllocationContainer)
 	);
-	let budgetTotalContainer = $derived(relatedContainers.find(isResourceDataBudgetTotalContainer));
-	let prognosisContainer = $derived(relatedContainers.find(isResourceDataPrognosisContainer));
+	let budgetTotalContainer = $derived(relatedContainers.find(isResourceDataTotalBudgetContainer));
+	let prognosisContainer = $derived(
+		relatedContainers.find(isResourceDataTotalBudgetForecastContainer)
+	);
 
 	// Helper to create a stub container for optimistic UI
 	function createStub(
-		resourceDataType: 'resource_data_type.budget_total' | 'resource_data_type.prognosis',
+		resourceDataType:
+			| 'resource_data_type.total_budget'
+			| 'resource_data_type.total_budget_forecast',
 		title: string
 	): ResourceDataContainer {
 		return {
@@ -80,10 +84,10 @@
 
 	// Initialize local state for budgetTotal and prognosis containers with stubs
 	let budgetTotalState = $state(
-		createStub(resourceDataTypes.enum['resource_data_type.budget_total'], 'Budget Total')
+		createStub(resourceDataTypes.enum['resource_data_type.total_budget'], 'Budget Total')
 	);
 	let prognosisState = $state(
-		createStub(resourceDataTypes.enum['resource_data_type.prognosis'], 'Prognosis')
+		createStub(resourceDataTypes.enum['resource_data_type.total_budget_forecast'], 'Prognosis')
 	);
 
 	// Initialize state and sync from server when needed
@@ -400,7 +404,9 @@
 				</tr>
 
 				<tr>
-					<th scope="row" class="resource-table__row-label">{$_('resource_table.prognosis')}</th>
+					<th scope="row" class="resource-table__row-label"
+						>{$_('resource_table.total_budget_forecast')}</th
+					>
 					{#each years as year (year)}
 						{@const value = prognosisByYear.get(year)}
 						<td
