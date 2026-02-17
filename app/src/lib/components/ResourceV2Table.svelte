@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { tick } from 'svelte';
 	import { _, number } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
@@ -177,12 +178,17 @@
 	// Debounce timers
 	let saveTimers: Record<string, ReturnType<typeof setTimeout> | undefined> = {};
 
+	let tableContainer = $state<HTMLDivElement | null>(null);
+
 	function addEntryLeft() {
 		additionalYears.push(years[0] - 1);
 	}
 
-	function addEntryRight() {
+	async function addEntryRight() {
 		additionalYears.push(years[years.length - 1] + 1);
+
+		await tick();
+		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
 	}
 
 	function formatNumber(value: number): string {
@@ -323,7 +329,7 @@
 		</div>
 	</div>
 
-	<div class="resource-table__wrapper">
+	<div class="resource-table__wrapper" bind:this={tableContainer}>
 		<table class="resource-table__table">
 			<thead class="resource-table__head">
 				<tr>
@@ -633,9 +639,7 @@
 	}
 
 	.resource-table__table {
-		min-width: 100%;
-		width: max-content;
-		table-layout: fixed;
+		width: fit-content;
 		border-collapse: separate;
 		border-spacing: 0;
 		border-radius: 1rem;
@@ -767,6 +771,7 @@
 		border: none;
 		box-sizing: border-box;
 		color: inherit;
+		field-sizing: content;
 		min-width: 0;
 		padding: 0;
 		text-align: right;
