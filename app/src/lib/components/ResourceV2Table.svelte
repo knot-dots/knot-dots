@@ -285,8 +285,6 @@
 					}
 				];
 
-				console.log('Creating new container:', newContainer);
-
 				response = await saveContainer(newContainer);
 			} else {
 				// Update existing container (PUT)
@@ -355,7 +353,7 @@
 						</th>
 					{/each}
 					{#if isEditMode}
-						<th class="resource-table__head-year resource-table__head-year--action">
+						<th class="resource-table__head-year">
 							<button
 								class="resource-table__head-action"
 								type="button"
@@ -371,20 +369,19 @@
 
 			<!-- Gesamt-Budgets Section -->
 			<tbody>
-				<tr class="resource-table__section-row">
+				<tr>
 					<th class="resource-table__section-header" colspan={columnCount}>
 						{$_('resource_table.total_budget')}
 					</th>
 				</tr>
 
-				<tr class="resource-table__budget-total-row">
+				<tr>
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.past_years')}</th>
 					{#each years as year (year)}
 						{@const value = budgetTotalByYear.get(year)}
 						<td
 							class="resource-table__cell focus-indicator"
 							class:resource-table__cell--empty={!hasValue(value)}
-							class:resource-table__cell--locked={!editableBudgetTotal}
 						>
 							<input
 								class="resource-table__input"
@@ -402,14 +399,13 @@
 					{/if}
 				</tr>
 
-				<tr class="resource-table__prognosis-row">
+				<tr>
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.prognosis')}</th>
 					{#each years as year (year)}
 						{@const value = prognosisByYear.get(year)}
 						<td
 							class="resource-table__cell focus-indicator"
 							class:resource-table__cell--empty={!hasValue(value)}
-							class:resource-table__cell--locked={!editablePrognosis}
 						>
 							<input
 								class="resource-table__input"
@@ -428,7 +424,7 @@
 				</tr>
 
 				<!-- Budgets Section -->
-				<tr class="resource-table__section-row">
+				<tr>
 					<th class="resource-table__section-header" colspan={columnCount}>
 						{$_('resource_table.budgets')}
 					</th>
@@ -463,7 +459,7 @@
 					</tr>
 				{/each}
 
-				<tr class="resource-table__budget-sum-row resource-table__sum-row">
+				<tr class="resource-table__sum-row">
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.sum')}</th>
 					{#each years as year (year)}
 						<td class="resource-table__cell" class:resource-table__cell--editable={isEditMode}>
@@ -480,7 +476,7 @@
 
 			<!-- Erwarteter Ressourcenbedarf Section -->
 			<tbody>
-				<tr class="resource-table__section-row">
+				<tr>
 					<th class="resource-table__section-header" colspan={columnCount}>
 						{$_('resource_data_type.planned_resource_allocation')}
 					</th>
@@ -515,7 +511,7 @@
 					</tr>
 				{/each}
 
-				<tr class="resource-table__planned-sum-row resource-table__sum-row">
+				<tr class="resource-table__sum-row">
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.sum')}</th>
 					{#each years as year (year)}
 						<td class="resource-table__cell" class:resource-table__cell--editable={isEditMode}>
@@ -532,7 +528,7 @@
 
 			<!-- Verwendete Ressourcen Section -->
 			<tbody>
-				<tr class="resource-table__section-row">
+				<tr>
 					<th class="resource-table__section-header" colspan={columnCount}>
 						{$_('resource_data_type.actual_resource_allocation')}
 					</th>
@@ -567,7 +563,7 @@
 					</tr>
 				{/each}
 
-				<tr class="resource-table__actual-sum-row resource-table__sum-row">
+				<tr class="resource-table__sum-row">
 					<th scope="row" class="resource-table__row-label">{$_('resource_table.sum')}</th>
 					{#each years as year (year)}
 						<td class="resource-table__cell" class:resource-table__cell--editable={isEditMode}>
@@ -761,18 +757,13 @@
 		background-color: var(--color-red-050);
 	}
 
-	.resource-table__cell--locked {
-		color: var(--color-gray-500);
-		cursor: not-allowed;
-	}
-
 	/* Input */
 	.resource-table__input {
+		font-weight: 600;
 		background: transparent;
 		border: none;
 		box-sizing: border-box;
 		color: inherit;
-		font: inherit;
 		min-width: 0;
 		padding: 0;
 		text-align: right;
@@ -786,7 +777,6 @@
 	.resource-table__input:focus-visible {
 		outline: 2px solid var(--focus-color);
 		outline-offset: 2px;
-		outline-style: none;
 	}
 
 	/* Row type indicators */

@@ -78,7 +78,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(budgetRow.locator('td').nth(1)).toContainText('15,000');
 
 		// Verify Budget sum row
-		const budgetSumRow = table.locator('.resource-table__budget-sum-row');
+		const budgetSumRow = table.locator('.resource-table__sum-row').first();
 		await expect(budgetSumRow.locator('td').nth(0)).toContainText('10,000');
 		await expect(budgetSumRow.locator('td').nth(1)).toContainText('15,000');
 
@@ -91,7 +91,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(plannedRow.locator('td').nth(1)).toContainText('12,000');
 
 		// Verify Planned sum row
-		const plannedSumRow = table.locator('.resource-table__planned-sum-row');
+		const plannedSumRow = table.locator('.resource-table__sum-row').nth(1);
 		await expect(plannedSumRow.locator('td').nth(0)).toContainText('8,000');
 		await expect(plannedSumRow.locator('td').nth(1)).toContainText('12,000');
 
@@ -104,7 +104,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(actualRow.locator('td').nth(1)).toContainText('11,000');
 
 		// Verify Actual sum row
-		const actualSumRow = table.locator('.resource-table__actual-sum-row');
+		const actualSumRow = table.locator('.resource-table__sum-row').nth(2);
 		await expect(actualSumRow.locator('td').nth(0)).toContainText('7,500');
 		await expect(actualSumRow.locator('td').nth(1)).toContainText('11,000');
 	});
@@ -187,7 +187,9 @@ test.describe('Resource V2 Table', () => {
 		await expect(table.getByRole('columnheader', { name: String(currentYear + 1) })).toBeVisible();
 
 		// Locate the "Past years" (budget total) row input for the current year
-		const budgetTotalRow = table.locator('.resource-table__budget-total-row');
+		const budgetTotalRow = table.locator('tbody tr', {
+			has: table.page().getByRole('rowheader', { name: 'Past years' })
+		});
 		const budgetTotalInput = budgetTotalRow.locator('input[inputmode="decimal"]').last();
 
 		// Type a value and wait for debounced save
@@ -197,10 +199,11 @@ test.describe('Resource V2 Table', () => {
 
 		// Reload and verify persistence
 		await dotsBoard.page.reload();
-		// await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
 
 		const tableAfterReload = dotsBoard.overlay.locator.locator('.resource-table__table');
-		const budgetTotalRowAfterReload = tableAfterReload.locator('.resource-table__budget-total-row');
+		const budgetTotalRowAfterReload = tableAfterReload.locator('tbody tr', {
+			has: tableAfterReload.page().getByRole('rowheader', { name: 'Past years' })
+		});
 		const budgetTotalInputAfterReload = budgetTotalRowAfterReload
 			.locator('input[inputmode="decimal"]')
 			.last();
@@ -241,7 +244,9 @@ test.describe('Resource V2 Table', () => {
 		await expect(table.getByRole('columnheader', { name: String(currentYear + 1) })).toBeVisible();
 
 		// Locate the "Prognosis" row input for the current year
-		const prognosisRow = table.locator('.resource-table__prognosis-row');
+		const prognosisRow = table.locator('tbody tr', {
+			has: table.page().getByRole('rowheader', { name: 'Prognosis' })
+		});
 		const prognosisInput = prognosisRow.locator('input[inputmode="decimal"]').last();
 
 		// Type a value and wait for debounced save
@@ -251,10 +256,11 @@ test.describe('Resource V2 Table', () => {
 
 		// Reload and verify persistence
 		await dotsBoard.page.reload();
-		// await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
 
 		const tableAfterReload = dotsBoard.overlay.locator.locator('.resource-table__table');
-		const prognosisRowAfterReload = tableAfterReload.locator('.resource-table__prognosis-row');
+		const prognosisRowAfterReload = tableAfterReload.locator('tbody tr', {
+			has: tableAfterReload.page().getByRole('rowheader', { name: 'Prognosis' })
+		});
 		const prognosisInputAfterReload = prognosisRowAfterReload
 			.locator('input[inputmode="decimal"]')
 			.last();
@@ -330,11 +336,11 @@ test.describe('Resource V2 Table', () => {
 
 		// Verify budget total and prognosis inputs are disabled
 		const budgetTotalInput = table
-			.locator('.resource-table__budget-total-row')
+			.locator('tbody tr', { has: table.page().getByRole('rowheader', { name: 'Past years' }) })
 			.locator('input[inputmode="decimal"]')
 			.first();
 		const prognosisInput = table
-			.locator('.resource-table__prognosis-row')
+			.locator('tbody tr', { has: table.page().getByRole('rowheader', { name: 'Prognosis' }) })
 			.locator('input[inputmode="decimal"]')
 			.first();
 
