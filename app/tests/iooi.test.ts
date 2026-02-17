@@ -69,7 +69,10 @@ test.describe('Goal IOOI Board', () => {
 			await column.getByRole('button', { name: 'Add item' }).first().click();
 
 			// Select indicator from catalog
-			await dotsBoard.overlay.locator.getByRole('button', { name: 'Select this template' }).click();
+			await dotsBoard.overlay.locator
+				.getByRole('article', { name: testIndicator.payload.title })
+				.getByRole('button', { name: 'Select this template' })
+				.click();
 
 			// Verify the objective was created and overlay is showing it
 			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
@@ -155,7 +158,10 @@ test.describe('Measure IOOI Board', () => {
 			await column.getByRole('button', { name: 'Add item' }).first().click();
 
 			// Select indicator from catalog
-			await dotsBoard.overlay.locator.getByRole('button', { name: 'Select this template' }).click();
+			await dotsBoard.overlay.locator
+				.getByRole('article', { name: testIndicator.payload.title })
+				.getByRole('button', { name: 'Select this template' })
+				.click();
 
 			// Verify the effect was created and overlay is showing it
 			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);

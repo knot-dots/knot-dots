@@ -7,11 +7,11 @@ export default class Header {
 		this.locator = page.getByRole('banner');
 	}
 
-	get filterButton() {
-		return this.locator.getByRole('button', { name: 'Filter' });
+	get editModeToggle() {
+		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 
-	async enableEditMode() {
-		await this.locator.getByRole('checkbox', { name: 'Edit mode' }).check();
+	get filterButton() {
+		return this.locator.getByRole('button', { name: 'Filter' });
 	}
 }

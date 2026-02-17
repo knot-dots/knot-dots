@@ -8,6 +8,7 @@ import {
 	etag,
 	type GoalContainer,
 	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	type MeasureContainer,
 	type NewContainer,
 	type ObjectiveContainer,
@@ -27,11 +28,14 @@ import {
 	type TermContainer
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
+import { IndicatorCatalog } from './catalogs';
 
 type MyFixtures = {
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
+	indicatorCatalog: IndicatorCatalog;
 	taskStatusBoard: TaskStatusBoard;
+	testIndicatorTemplate: IndicatorTemplateContainer;
 	testCategoryWithTerms: {
 		category: CategoryContainer;
 		terms: TermContainer[];
@@ -131,6 +135,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	dotsBoard: async ({ page }, use) => {
 		await use(new DotsBoard(page));
 	},
+	indicatorCatalog: async ({ page }, use) => {
+		await use(new IndicatorCatalog(page));
+	},
 	taskStatusBoard: async ({ page }, use) => {
 		await use(new TaskStatusBoard(page));
 	},
@@ -194,7 +201,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newOrganization.payload,
 					name: `Test Organization ${workerInfo.workerIndex}`,
-					boards: ['board.organizational_units']
+					boards: ['board.indicators', 'board.organizational_units']
 				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
@@ -304,6 +311,28 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	testIndicatorTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newIndicatorTemplate = containerOfType(
+			payloadTypes.enum.indicator_template,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as IndicatorContainer;
+		const testIndicatorTemplate = await createContainer(adminContext, {
+			...newIndicatorTemplate,
+			payload: {
+				...newIndicatorTemplate.payload,
+				title: `Test Indicator Template ${workerInfo.workerIndex}`,
+				indicatorCategory: ['indicator_category.wegweiser_kommune'],
+				unit: 'unit.km'
+			} as IndicatorContainer['payload']
+		});
+
+		await use(testIndicatorTemplate);
+
+		await deleteContainer(adminContext, testIndicatorTemplate);
+	},
 	testObjective: [
 		async ({ adminContext, testOrganization, testGoal, testIndicator }, use, workerInfo) => {
 			const newObjective = containerOfType(
