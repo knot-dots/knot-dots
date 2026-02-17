@@ -68,12 +68,12 @@
 
 		// Set relations to the parent container
 		c.relation = [
-				{
-					object: container.guid,
-					subject: 'TEMPORARY_NEW',
-					position: 0,
-					predicate: predicates.enum['is-part-of']
-				}
+			{
+				object: container.guid,
+				subject: 'TEMPORARY_NEW',
+				position: 0,
+				predicate: predicates.enum['is-part-of']
+			}
 		];
 
 		return c;
@@ -587,33 +587,33 @@
 <style>
 	.resource-table {
 		background: var(--color-white);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 16px;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-		padding: 16px;
+		border: 0.0625rem solid var(--color-gray-200);
+		border-radius: 1rem;
+		box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.08);
+		padding: 1rem;
 	}
 
 	/* Header */
 	.resource-table__header {
-		padding: 8px;
+		padding: 0.5rem;
 	}
 
 	.resource-table__heading {
 		display: flex;
 		align-items: baseline;
-		gap: 8px;
+		gap: 0.5rem;
 	}
 
 	.resource-table__title {
 		color: var(--color-gray-900);
-		font-size: 18px;
+		font-size: 1.125rem;
 		font-weight: 500;
 		line-height: 1.25;
 	}
 
 	.resource-table__title-muted,
 	.resource-table__title-unit {
-		font-size: 14px;
+		font-size: 0.875rem;
 		font-weight: 500;
 		line-height: 1.25;
 	}
@@ -629,7 +629,7 @@
 	/* Table */
 	.resource-table__wrapper {
 		overflow: auto;
-		padding: 8px;
+		padding: 0.5rem;
 	}
 
 	.resource-table__table {
@@ -638,16 +638,16 @@
 		table-layout: fixed;
 		border-collapse: separate;
 		border-spacing: 0;
-		border-radius: 16px;
+		border-radius: 1rem;
 		overflow: hidden;
 	}
 
 	.resource-table__table th,
 	.resource-table__table td {
-		border: 1px solid var(--color-gray-200);
-		font-size: 14px;
+		border: 0.0625rem solid var(--color-gray-200);
+		font-size: 0.875rem;
 		line-height: 1.5;
-		padding: 12px 8px;
+		padding: 0.75rem 0.5rem;
 		white-space: nowrap;
 	}
 
@@ -659,24 +659,24 @@
 	}
 
 	.resource-table__head th:first-child {
-		border-radius: 16px 0 0 0;
+		border-radius: 1rem 0 0 0;
 		overflow: hidden;
 	}
 	.resource-table__head th:last-child {
-		border-radius: 0 16px 0 0;
+		border-radius: 0 1rem 0 0;
 		overflow: hidden;
 	}
 	.resource-table__table tbody:last-of-type tr:last-child th:first-child {
-		border-radius: 0 0 0 16px;
+		border-radius: 0 0 0 1rem;
 		overflow: hidden;
 	}
 	.resource-table__table tbody:last-of-type tr:last-child td:last-child {
-		border-radius: 0 0 16px 0;
+		border-radius: 0 0 1rem 0;
 		overflow: hidden;
 	}
 
 	.resource-table__head-label {
-		min-width: 300px;
+		min-width: 18.75rem;
 		text-align: left;
 	}
 
@@ -689,21 +689,21 @@
 	.resource-table__head-years {
 		display: inline-flex;
 		align-items: center;
-		gap: 4px;
+		gap: 0.25rem;
 	}
 
 	.resource-table__head-action {
 		font-weight: 600;
 		font-size: large;
 		background: transparent;
-		border: 1px solid transparent;
-		border-radius: 8px;
+		border: 0.0625rem solid transparent;
+		border-radius: 0.5rem;
 		cursor: pointer;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		height: 28px;
-		width: 28px;
+		height: 1.75rem;
+		width: 1.75rem;
 		padding: 0;
 	}
 
@@ -715,7 +715,7 @@
 		background: var(--color-gray-050);
 		color: var(--color-gray-600);
 		text-align: right;
-		width: 120px;
+		width: 7.5rem;
 	}
 
 	.resource-table__head-year.resource-table__head-year--current {
@@ -773,13 +773,8 @@
 		width: 100%;
 	}
 
-	.resource-table__input:disabled {
-		cursor: not-allowed;
-	}
-
 	.resource-table__input:focus-visible {
-		outline: 2px solid var(--focus-color);
-		outline-offset: 2px;
+		outline: none;
 	}
 
 	/* Row type indicators */
@@ -788,10 +783,10 @@
 	.resource-table__actual-row .resource-table__row-label::before {
 		content: '';
 		display: inline-block;
-		width: 10px;
-		height: 10px;
+		width: 0.625rem;
+		height: 0.625rem;
 		border-radius: 50%;
-		margin-right: 8px;
+		margin-right: 0.5rem;
 		vertical-align: middle;
 	}
 
@@ -807,13 +802,13 @@
 		background: var(--color-red-400);
 	}
 
-	@media (max-width: 900px) {
+	@media (max-width: 56.25rem) {
 		.resource-table__head-label {
-			min-width: 220px;
+			min-width: 13.75rem;
 		}
 
 		.resource-table__title {
-			font-size: 16px;
+			font-size: 1rem;
 		}
 	}
 </style>
