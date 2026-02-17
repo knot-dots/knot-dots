@@ -47,7 +47,7 @@
 	let flyoutTop = $state(0);
 	let hideFlyoutTimeout: number | undefined;
 
-	function showSubtermsAt(
+	function showSubOptionsAt(
 		anchor: HTMLElement,
 		option: { subOptions?: { label: string; value: string; icon?: string }[] }
 	) {
@@ -72,7 +72,7 @@
 		option: { subOptions?: { label: string; value: string; icon?: string }[] }
 	) {
 		window.clearTimeout(hideFlyoutTimeout);
-		showSubtermsAt(event.currentTarget as HTMLElement, option);
+		showSubOptionsAt(event.currentTarget as HTMLElement, option);
 	}
 
 	function handleOptionLeave() {
@@ -94,7 +94,7 @@
 		window.clearTimeout(hideFlyoutTimeout);
 		const anchor = (event.currentTarget as HTMLElement).closest('.option') as HTMLElement | null;
 		if (!anchor) return;
-		showSubtermsAt(anchor, option);
+		showSubOptionsAt(anchor, option);
 	}
 
 	function iconURL(origin?: string) {
