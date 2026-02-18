@@ -246,6 +246,8 @@
 	}
 
 	let currentBudgetByYear = $derived(getAmountByYear(currentBudget));
+
+	let colspan = $derived(editable ? years.length + 2 : years.length + 1);
 </script>
 
 <div class="resource-table">
@@ -305,10 +307,7 @@
 			<tbody>
 				<!-- Current Budget Section -->
 				<tr>
-					<th
-						class="resource-table__section-header"
-						colspan={editable ? years.length + 2 : years.length + 1}
-					>
+					<th class="resource-table__section-header" {colspan}>
 						{$_('resource_table.current_budget')}
 					</th>
 				</tr>
@@ -343,10 +342,7 @@
 					</tr>
 				{:else}
 					<tr>
-						<td
-							colspan={editable ? years.length + 2 : years.length + 1}
-							class="resource-table__empty"
-						>
+						<td {colspan} class="resource-table__empty">
 							{$_('resource_table.no_parent_goal')}
 						</td>
 					</tr>
@@ -356,20 +352,14 @@
 			<tbody>
 				<!-- Subordinate Goals Section -->
 				<tr>
-					<th
-						class="resource-table__section-header"
-						colspan={editable ? years.length + 2 : years.length + 1}
-					>
+					<th class="resource-table__section-header" {colspan}>
 						{$_('resource_table.subordinate_goals')}
 					</th>
 				</tr>
 
 				{#if subordinateGoals.length === 0}
 					<tr>
-						<td
-							colspan={editable ? years.length + 2 : years.length + 1}
-							class="resource-table__empty"
-						>
+						<td {colspan} class="resource-table__empty">
 							{$_('resource_table.no_subordinate_goals')}
 						</td>
 					</tr>
@@ -412,16 +402,12 @@
 										{goal.payload.title}
 									</a>
 								</th>
-								{#each years as _year}
-									<td
-										class="resource-table__cell resource-table__cell--empty"
-										class:resource-table__cell--editable={editable}
-									>
-									</td>
-								{/each}
-								{#if editable}
-									<td class="resource-table__cell"> </td>
-								{/if}
+								<td
+									colspan={years.length + (editable ? 1 : 0)}
+									class="resource-table__cell resource-table__cell--empty"
+									class:resource-table__cell--editable={editable}
+								>
+								</td>
 							</tr>
 						{/if}
 					{/each}
@@ -431,20 +417,14 @@
 			<tbody>
 				<!-- Subordinate Measures Section -->
 				<tr>
-					<th
-						class="resource-table__section-header"
-						colspan={editable ? years.length + 2 : years.length + 1}
-					>
+					<th class="resource-table__section-header" {colspan}>
 						{$_('resource_table.subordinate_measures')}
 					</th>
 				</tr>
 
 				{#if subordinateMeasures.length === 0}
 					<tr>
-						<td
-							colspan={editable ? years.length + 2 : years.length + 1}
-							class="resource-table__empty"
-						>
+						<td {colspan} class="resource-table__empty">
 							{$_('resource_table.no_subordinate_measures')}
 						</td>
 					</tr>
@@ -487,16 +467,12 @@
 										{measure.payload.title}
 									</a>
 								</th>
-								{#each years as _year}
-									<td
-										class="resource-table__cell resource-table__cell--empty"
-										class:resource-table__cell--editable={editable}
-									>
-									</td>
-								{/each}
-								{#if editable}
-									<td class="resource-table__cell"> </td>
-								{/if}
+								<td
+									colspan={years.length + (editable ? 1 : 0)}
+									class="resource-table__cell resource-table__cell--empty"
+									class:resource-table__cell--editable={editable}
+								>
+								</td>
 							</tr>
 						{/if}
 					{/each}
