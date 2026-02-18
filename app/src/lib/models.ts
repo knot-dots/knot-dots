@@ -531,7 +531,9 @@ export type ResourceUnit = z.infer<typeof resourceUnits>;
 export const resourceDataTypes = z.enum([
 	'resource_data_type.actual_resource_allocation',
 	'resource_data_type.planned_resource_allocation',
-	'resource_data_type.budget'
+	'resource_data_type.budget',
+	'resource_data_type.total_budget',
+	'resource_data_type.total_budget_forecast'
 ] as const);
 
 export type ResourceDataType = z.infer<typeof resourceDataTypes>;
@@ -625,6 +627,7 @@ const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
 const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+	sdg: z.array(sustainableDevelopmentGoals).default([]),
 	category: z.array(z.string().trim().min(1)).default([]),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
@@ -745,6 +748,7 @@ const customCollectionPayload = z
 			.object({
 				audience: z.array(audience).default([]),
 				category: z.array(sustainableDevelopmentGoals).default([]),
+				sdg: z.array(sustainableDevelopmentGoals).default([]),
 				indicatorCategory: z.array(indicatorCategories).default([]),
 				type: z.array(payloadTypes).default([]),
 				policyFieldBNK: z.array(policyFieldBNK).default([]),
@@ -753,6 +757,7 @@ const customCollectionPayload = z
 			.default({
 				audience: [],
 				category: [],
+				sdg: [],
 				indicatorCategory: [],
 				policyFieldBNK: [],
 				topic: [],
@@ -1962,6 +1967,25 @@ export function isResourceDataBudgetContainer(
 	);
 }
 
+export function isResourceDataTotalBudgetContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataContainer {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
+	);
+}
+
+export function isResourceDataTotalBudgetForecastContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataContainer {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType ===
+			resourceDataTypes.enum['resource_data_type.total_budget_forecast']
+	);
+}
+
 const resourceDataCollectionContainer = container.extend({
 	payload: resourceDataCollectionPayload
 });
@@ -2256,6 +2280,16 @@ export function isContainerWithBody(
 	container: AnyContainer | NewContainer
 ): container is ContainerWithBody {
 	return hasProperty(container.payload, 'body');
+}
+
+export type ContainerWithSdg = Omit<AnyContainer, 'payload'> & {
+	payload: AnyPayload & { sdg: SustainableDevelopmentGoal[] };
+};
+
+export function isContainerWithSdg(
+	container: AnyContainer | NewContainer
+): container is ContainerWithSdg {
+	return hasProperty(container.payload, 'sdg');
 }
 
 export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {

@@ -195,7 +195,7 @@ export const organizationalUnitPayload = z.object({
 export const indicatorTemplatePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(z.string()).default(['audience.citizens']),
-	category: z.array(z.string()).default([]),
+	sdg: z.array(z.string()).default([]),
 	description: z.string().trim().optional(),
 	editorialState: z.string().optional(),
 	externalReference: z.string().url().optional(),

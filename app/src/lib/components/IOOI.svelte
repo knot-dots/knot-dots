@@ -94,9 +94,9 @@
 				['iooiType', iooiType]
 			]);
 
-			if ('category' in container.payload) {
-				for (const category of container.payload.category) {
-					params.append('category', category);
+			if ('sdg' in container.payload) {
+				for (const sdg of container.payload.sdg) {
+					params.append('sdg', sdg);
 				}
 			}
 

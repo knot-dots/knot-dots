@@ -14,6 +14,7 @@
 	import { type AnyContainer, predicates, type ResourceV2Container } from '$lib/models';
 	import { fetchContainersRelatedToResource } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
+	import ResourceV2Table from './ResourceV2Table.svelte';
 
 	interface Props {
 		container: ResourceV2Container;
@@ -43,7 +44,7 @@
 		})
 	);
 
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
+	const relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>
 
 {#snippet header()}
@@ -69,6 +70,8 @@
 					bind:value={container.payload.description}
 				/>
 			{/key}
+
+			<ResourceV2Table {container} {relatedContainers} />
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}

@@ -17,7 +17,7 @@
 
 	let w = $state(0);
 
-	const handleSubmit = autoSave(container, 2000);
+	const handleSubmit = $derived(autoSave(container, 2000));
 </script>
 
 <form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>

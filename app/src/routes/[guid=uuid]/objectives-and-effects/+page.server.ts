@@ -29,7 +29,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 					[currentOrganization.guid],
 					{
 						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
+						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
 						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 						indicatorTypes: url.searchParams.getAll('indicatorType'),
@@ -43,7 +43,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 					[currentOrganization.guid],
 					{
 						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
+						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
 						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 						indicatorTypes: url.searchParams.getAll('indicatorType'),
@@ -72,7 +72,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
 		],
 		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg)],
 		['topic', fromCounts(topics.options as string[], data?.topic)],
 		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
 	]);

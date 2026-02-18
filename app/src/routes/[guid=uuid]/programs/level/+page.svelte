@@ -131,7 +131,7 @@
 			}
 		} else {
 			entries.push([
-				'category',
+				'sdg',
 				new Map<string, number>(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))
 			]);
 			entries.push(['topic', new Map<string, number>(topics.options.map((v) => [v as string, 0]))]);
