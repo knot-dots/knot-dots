@@ -65,24 +65,22 @@
 				/>
 			{/key}
 
-			{#if relatedContainers.length > 0}
-				<div class="details-section">
-					<select class="view-mode" oninput={(e) => e.stopPropagation()} bind:value={viewMode}>
-						<option value="chart">{$_('indicator.view_mode.chart')}</option>
-						<option value="table">{$_('indicator.view_mode.table')}</option>
-					</select>
+			<div class="details-section">
+				<select class="view-mode" oninput={(e) => e.stopPropagation()} bind:value={viewMode}>
+					<option value="chart">{$_('indicator.view_mode.chart')}</option>
+					<option value="table">{$_('indicator.view_mode.table')}</option>
+				</select>
 
-					{#if viewMode === 'chart'}
-						<NewIndicatorChart {container} {relatedContainers} />
-					{:else}
-						<NewIndicatorTable
-							{container}
-							editable={$applicationState.containerDetailView.editable}
-							{relatedContainers}
-						/>
-					{/if}
-				</div>
-			{/if}
+				{#if viewMode === 'chart'}
+					<NewIndicatorChart {container} {relatedContainers} />
+				{:else}
+					<NewIndicatorTable
+						{container}
+						editable={$applicationState.containerDetailView.editable}
+						{relatedContainers}
+					/>
+				{/if}
+			</div>
 		{/snippet}
 	</EditableContainerDetailView>
 

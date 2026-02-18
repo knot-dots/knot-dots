@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { _, number } from 'svelte-i18n';
-	import { env } from '$env/dynamic/public';
+	import Plus from '~icons/knotdots/plus';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import {
 		type ActualDataContainer,
@@ -13,7 +16,6 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -23,11 +25,21 @@
 
 	let { container, editable = false, relatedContainers = [] }: Props = $props();
 
+	let tableContainer: HTMLDivElement;
+
 	let actualDataContainer = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
 			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
+			.map((c) => {
+				let _ = $state(c);
+				return _;
+			})
+	);
+
+	let customActualDataContainer = $derived(
+		actualDataContainer.find(({ payload }) => !payload.source)
 	);
 
 	let actualValuesByYear = $derived(
@@ -35,14 +47,7 @@
 	);
 
 	let years = $derived(
-		Array.from(
-			Array(
-				Math.max(...actualValuesByYear.flatMap((m) => [...m.keys()])) -
-					Math.min(...actualValuesByYear.flatMap((m) => [...m.keys()])) +
-					1
-			).keys(),
-			(_, i) => i + Math.min(...actualValuesByYear.flatMap((m) => [...m.keys()]))
-		)
+		Array.from(new Set(actualValuesByYear.flatMap((m) => [...m.keys()]))).toSorted()
 	);
 
 	let addingCustomActualData = $state(false);
@@ -56,7 +61,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<ActualDataContainer, 'payload'>;
+		) as Omit<NewContainer, 'payload'> & Pick<ActualDataContainer, 'payload'>;
 
 		newActualDataContainer.payload = {
 			...newActualDataContainer.payload,
@@ -68,13 +73,16 @@
 		try {
 			const response = await saveContainer(newActualDataContainer);
 			if (response.ok) {
-				actualDataContainer = [...actualDataContainer, await response.json()];
+				let _ = $state(await response.json());
+				actualDataContainer = [...actualDataContainer, _];
 			} else {
 				const error = await response.json();
 				alert(error.message);
 			}
 		} catch (error: unknown) {
 			console.error(error);
+		} finally {
+			addingCustomActualData = false;
 		}
 	}
 
@@ -109,136 +117,185 @@
 			}, 2000);
 		};
 	}
+
+	function append(container: ActualDataContainer) {
+		return async () => {
+			container.payload.values = [...container.payload.values, [Math.max(...years) + 1, 0]];
+			await tick();
+			tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
+		};
+	}
+
+	function prepend(container: ActualDataContainer) {
+		return () => {
+			container.payload.values = [
+				[years.length ? Math.min(...years) - 1 : new Date().getFullYear(), 0],
+				...container.payload.values
+			];
+		};
+	}
 </script>
 
-{#if actualDataContainer}
-	<div>
-		<table>
-			{#if actualDataContainer.some(({ payload }) => payload.source)}
-				<caption>
-					{#each actualDataContainer as container, i (container.guid)}
-						{#if container.payload.source}
-							<sup>{i + 1}</sup> {$_('indicator.source')}: {container.payload.source}
-						{/if}
-					{/each}
-				</caption>
-			{/if}
-
-			<thead>
-				<tr>
-					<th></th>
-					{#each years as year (year)}
-						<th>{year}</th>
-					{/each}
-				</tr>
-			</thead>
-
-			<tbody>
-				{#each actualValuesByYear as valuesByYear, i (i)}
-					<tr class="actual-values">
-						<th scope="row">
-							{$_('indicator.table.actual_values')}
-							{#if actualDataContainer[i].payload.source}
-								<sup>{i + 1}</sup>
-							{/if}
-						</th>
-						{#each years as year (year)}
-							<td>
-								{#if editable && !actualDataContainer[i].payload.source}
-									<input
-										inputmode="decimal"
-										oninput={updateCustomActualData(actualDataContainer[i], year)}
-										type="text"
-										value={valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
-									/>
-								{:else}
-									{valuesByYear.has(year) ? $number(valuesByYear.get(year)!) : ''}
-								{/if}
-							</td>
-						{/each}
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-
-		{#if editable}
-			<p>
-				{#if actualDataContainer.some(({ payload }) => payload.source) && actualDataContainer.length === 1}
-					<button
-						disabled={addingCustomActualData}
-						onclick={addCustomActualData}
-						type="button"
-						{@attach tooltip($_('indicator.add_custom_actual_data'))}
-					>
-						{#if addingCustomActualData}
-							<span class="loader"></span>
-						{:else}
-							{$_('indicator.add_custom_actual_data')}
-						{/if}
-					</button>
+<div bind:this={tableContainer}>
+	<table>
+		<thead>
+			<tr>
+				<th>&nbsp;</th>
+				{#if editable && customActualDataContainer}
+					<th class="control control--prepend">
+						<button
+							{@attach tooltip($_('indicator.table.add_column'))}
+							class="action-button action-button--size-s action-button--padding-tight"
+							onclick={prepend(customActualDataContainer)}
+							type="button"
+						>
+							<Plus />
+						</button>
+					</th>
 				{/if}
-			</p>
-		{/if}
-	</div>
-{/if}
+
+				{#each years as year (year)}
+					<th class="data">{year}</th>
+				{/each}
+
+				{#if editable && customActualDataContainer && years.length > 0}
+					<th class="control">
+						<button
+							{@attach tooltip($_('indicator.table.add_column'))}
+							class="action-button action-button--size-s action-button--padding-tight"
+							onclick={append(customActualDataContainer)}
+							type="button"
+						>
+							<Plus />
+						</button>
+					</th>
+				{/if}
+			</tr>
+		</thead>
+
+		<tbody>
+			<tr>
+				<th
+					colspan={editable
+						? years.length + 1 + (customActualDataContainer ? Math.max(years.length + 1, 2) : 0)
+						: years.length + 1}
+					scope="col"
+				>
+					{$_('indicator.table.actual_data')}
+				</th>
+			</tr>
+
+			{#each actualValuesByYear as valuesByYear, i (i)}
+				<tr>
+					<th scope="row">
+						{#if actualDataContainer[i].payload.source}
+							{actualDataContainer[i].payload.source}
+						{:else}
+							{$_('indicator.table.custom_actual_data')}
+						{/if}
+					</th>
+
+					{#if editable && customActualDataContainer}
+						<td class="control control--prepend"></td>
+					{/if}
+
+					{#each years as year (year)}
+						<td class="data">
+							{#if editable && !actualDataContainer[i].payload.source}
+								<input
+									inputmode="decimal"
+									oninput={updateCustomActualData(actualDataContainer[i], year)}
+									type="text"
+									value={valuesByYear.has(year)
+										? $number(valuesByYear.get(year)!, { style: 'decimal', useGrouping: false })
+										: ''}
+								/>
+							{:else}
+								{valuesByYear.has(year)
+									? $number(valuesByYear.get(year)!, { style: 'decimal', useGrouping: false })
+									: ''}
+							{/if}
+						</td>
+					{/each}
+
+					{#if editable && customActualDataContainer && years.length > 0}
+						<td></td>
+					{/if}
+				</tr>
+			{/each}
+
+			{#if editable && !customActualDataContainer}
+				<tr>
+					<td colspan={years.length + 1}>
+						<button disabled={addingCustomActualData} onclick={addCustomActualData} type="button">
+							{#if addingCustomActualData}
+								<span class="loader"></span>
+							{:else}
+								<Plus />
+								{$_('indicator.table.add_custom_actual_data')}
+							{/if}
+						</button>
+					</td>
+				</tr>
+			{/if}
+		</tbody>
+	</table>
+</div>
 
 <style>
-	div {
-		overflow-x: scroll;
-	}
-
-	table {
-		caption-side: bottom;
-	}
-
-	caption {
-		color: var(--color-gray-500);
-		margin-top: 0.25rem;
-		text-align: left;
-	}
-
-	thead {
-		background-color: white;
-		text-align: right;
-	}
-
-	tr:hover {
-		background-color: var(--color-gray-050);
-	}
-
-	th {
-		color: var(--color-gray-900);
-		font-weight: 500;
+	button {
 		white-space: nowrap;
 	}
 
-	th[scope='row']::before {
-		background-color: var(--indicator-color, var(--color-gray-900));
-		border-radius: 1rem;
-		content: '';
-		display: inline-block;
-		height: 0.75rem;
-		margin-right: 0.25rem;
-		vertical-align: middle;
-		width: 0.75rem;
+	div {
+		overflow-x: scroll;
+		padding: 0 0 1px;
 	}
 
-	td {
+	table {
+		border: solid 1px var(--color-gray-200);
+		width: fit-content;
+	}
+
+	thead {
+		background-color: var(--color-gray-100);
+	}
+
+	td,
+	th {
+		border: solid 1px var(--color-gray-200);
+		padding: 0.75rem 0.5rem;
+	}
+
+	th {
+		white-space: nowrap;
+	}
+
+	thead th {
+		border-top: none;
 		color: var(--color-gray-700);
 		font-weight: 400;
-		text-align: right;
+		padding: 0.5rem;
 	}
 
-	td:hover {
-		background-color: var(--color-gray-100);
+	tbody th[scope='col'] {
+		background-color: var(--color-gray-025);
+		color: var(--color-gray-600);
+		font-weight: 500;
+	}
+
+	tbody th[scope='row'] {
+		background-color: var(--color-white);
+		color: var(--color-gray-800);
+		font-weight: 500;
+	}
+
+	tbody td {
+		background: var(--color-white);
 	}
 
 	td:has(input) {
 		padding: 0;
-	}
-
-	.actual-values {
-		--indicator-color: var(--color-gray-200);
 	}
 
 	input {
@@ -246,9 +303,26 @@
 		border: none;
 		border-radius: 0;
 		display: block;
+		field-sizing: content;
 		line-height: 1.5;
 		padding: 0.75rem 0.5rem;
 		text-align: right;
-		width: 100%;
+	}
+
+	.control {
+		min-width: 2.5rem;
+		width: 2.5rem;
+	}
+
+	.control--prepend {
+		border-left: none;
+	}
+
+	th:has(+ .control--prepend) {
+		border-right: none;
+	}
+
+	.data {
+		text-align: right;
 	}
 </style>

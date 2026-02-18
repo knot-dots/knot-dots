@@ -53,6 +53,8 @@
 	// svelte-ignore non_reactive_update
 	let checkbox: HTMLInputElement;
 
+	const id = crypto.randomUUID();
+
 	function handleClick(event: MouseEvent) {
 		if (checkbox == event.target) {
 			return;
@@ -82,13 +84,13 @@
 							(value = v ? [...value, container.guid] : value.filter((id) => id !== container.guid))
 					}
 					bind:this={checkbox}
-					id={crypto.randomUUID()}
+					{id}
 					name="item"
 					type="checkbox"
 					value={container.guid}
 				/>
 			{/if}
-			<label for={checkbox?.id}>
+			<label for={id}>
 				{#if 'title' in container.payload}
 					{container.payload.title}
 				{:else if 'name' in container.payload}
