@@ -83,35 +83,37 @@
 	});
 
 	let termItems = $derived.by((): TermDragItem[] => buildTermItems(terms));
-	let creating = $state(false);
 	let removingGuid = $state<string | null>(null);
-	let formError = $state('');
 	let reordering = $state(false);
 	let reorderError = $state('');
 
-	let newTitle = $state('');
-	let newValue = $state('');
-	let newDescription = $state('');
-	let newFilterLabel = $state('');
-	let newIcon = $state('');
+	let formState = $state({
+		title: '',
+		value: '',
+		description: '',
+		filterLabel: '',
+		icon: '',
+		error: '',
+		creating: false,
+		form: null as HTMLFormElement | null
+	});
 	let showCreateFormFor = $state<string | null>(null);
-	let createForm = $state<HTMLFormElement | null>(null);
 
 	function resetForm() {
-		newTitle = '';
-		newValue = '';
-		newDescription = '';
-		newFilterLabel = '';
-		newIcon = '';
-		formError = '';
+		formState.title = '';
+		formState.value = '';
+		formState.description = '';
+		formState.filterLabel = '';
+		formState.icon = '';
+		formState.error = '';
 		showCreateFormFor = null;
 	}
 
 	async function focusCreateForm(anchor?: string) {
 		showCreateFormFor = anchor ?? 'header';
 		await tick();
-		createForm?.querySelector<HTMLInputElement>('input')?.focus();
-		createForm?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		formState.form?.querySelector<HTMLInputElement>('input')?.focus();
+		formState.form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 
 	const buildTermItems = (items: TermContainer[]): TermDragItem[] =>
@@ -224,20 +226,20 @@
 		if (!event.submitter) {
 			return;
 		}
-		if (creating) {
+		if (formState.creating) {
 			return;
 		}
 
-		const title = newTitle.trim();
-		const value = newValue.trim();
+		const title = formState.title.trim();
+		const value = formState.value.trim();
 
 		if (!title || !value) {
-			formError = get(_)('category.terms.required');
+			formState.error = get(_)('category.terms.required');
 			return;
 		}
 
-		creating = true;
-		formError = '';
+		formState.creating = true;
+		formState.error = '';
 		try {
 			const insertIndex = (() => {
 				if (showCreateFormFor === 'header') {
@@ -257,14 +259,14 @@
 			const termPayload = newTerm.payload as TermContainer['payload'];
 			termPayload.title = title;
 			termPayload.value = value;
-			if (newDescription.trim()) {
-				termPayload.description = newDescription.trim();
+			if (formState.description.trim()) {
+				termPayload.description = formState.description.trim();
 			}
-			if (newFilterLabel.trim()) {
-				termPayload.filterLabel = newFilterLabel.trim();
+			if (formState.filterLabel.trim()) {
+				termPayload.filterLabel = formState.filterLabel.trim();
 			}
-			if (newIcon.trim()) {
-				termPayload.icon = newIcon.trim();
+			if (formState.icon.trim()) {
+				termPayload.icon = formState.icon.trim();
 			}
 			newTerm.relation = [
 				{
@@ -296,9 +298,9 @@
 			await invalidateAll();
 			resetForm();
 		} catch (error) {
-			formError = error instanceof Error ? error.message : String(error);
+			formState.error = error instanceof Error ? error.message : String(error);
 		} finally {
-			creating = false;
+			formState.creating = false;
 		}
 	}
 
@@ -391,14 +393,7 @@
 						{reordering}
 						{removingGuid}
 						{overlayHref}
-						{formError}
-						{creating}
-						bind:createForm
-						bind:newTitle
-						bind:newValue
-						bind:newDescription
-						bind:newFilterLabel
-						bind:newIcon
+						bind:formState
 						onAdd={focusCreateForm}
 						onRemove={detachTerm}
 						onSubmit={handleCreateTerm}

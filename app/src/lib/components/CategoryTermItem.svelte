@@ -17,14 +17,16 @@
 		canEdit?: boolean;
 		reordering?: boolean;
 		removingGuid?: string | null;
-		createForm?: HTMLFormElement | null;
-		newTitle?: string;
-		newValue?: string;
-		newDescription?: string;
-		newFilterLabel?: string;
-		newIcon?: string;
-		formError?: string;
-		creating?: boolean;
+		formState?: {
+			title: string;
+			value: string;
+			description: string;
+			filterLabel: string;
+			icon: string;
+			error: string;
+			creating: boolean;
+			form: HTMLFormElement | null;
+		};
 		overlayHref?: string;
 		onAdd?: (guid: string) => void;
 		onRemove?: (term: TermContainer) => void;
@@ -38,14 +40,16 @@
 		canEdit = false,
 		reordering = false,
 		removingGuid = null,
-		createForm = $bindable(null),
-		newTitle = $bindable(''),
-		newValue = $bindable(''),
-		newDescription = $bindable(''),
-		newFilterLabel = $bindable(''),
-		newIcon = $bindable(''),
-		formError = '',
-		creating = false,
+		formState = $bindable({
+			title: '',
+			value: '',
+			description: '',
+			filterLabel: '',
+			icon: '',
+			error: '',
+			creating: false,
+			form: null
+		}),
 		overlayHref = '',
 		onAdd = () => {},
 		onRemove = () => {},
@@ -63,10 +67,10 @@
 			.replace(/^-+|-+$/g, '');
 	}
 
-	let nextSlug = $derived.by(() => slugify(newTitle));
+	let nextSlug = $derived.by(() => slugify(formState.title));
 
 	$effect(() => {
-		if (!newTitle && !newValue) {
+		if (!formState.title && !formState.value) {
 			valueTouched = false;
 			lastAutoValue = '';
 			return;
@@ -74,11 +78,11 @@
 		if (valueTouched) {
 			return;
 		}
-		if (newValue && newValue !== lastAutoValue) {
+		if (formState.value && formState.value !== lastAutoValue) {
 			valueTouched = true;
 			return;
 		}
-		newValue = nextSlug;
+		formState.value = nextSlug;
 		lastAutoValue = nextSlug;
 	});
 </script>
@@ -89,22 +93,22 @@
 	class:category-terms__item--placeholder={isShadow}
 >
 	{#if isCreateForm}
-		<form class="category-terms__form" onsubmit={onSubmit} bind:this={createForm}>
+		<form class="category-terms__form" onsubmit={onSubmit} bind:this={formState.form}>
 			<h3>{$_('category.terms.create_title')}</h3>
 
-			<EditablePlainText editable required label={$_('title')} bind:value={newTitle} />
+			<EditablePlainText editable required label={$_('title')} bind:value={formState.title} />
 
 			<EditablePlainText
 				editable
 				required
 				label={$_('category.terms.value_label')}
-				bind:value={newValue}
+				bind:value={formState.value}
 			/>
 
 			<EditablePlainText
 				editable
 				label={$_('category.terms.filter_label')}
-				bind:value={newFilterLabel}
+				bind:value={formState.filterLabel}
 			/>
 
 			<EditableImage
@@ -112,18 +116,22 @@
 				allowedFileTypes={['image/svg+xml']}
 				help={$_('upload.image.svg_only_help')}
 				label={$_('category.terms.icon')}
-				bind:value={newIcon}
+				bind:value={formState.icon}
 			/>
 
 			<div class="category-terms__formatted">
-				<EditableFormattedText editable label={$_('description')} bind:value={newDescription} />
+				<EditableFormattedText
+					editable
+					label={$_('description')}
+					bind:value={formState.description}
+				/>
 			</div>
 
-			{#if formError}
-				<p class="category-terms__error">{formError}</p>
+			{#if formState.error}
+				<p class="category-terms__error">{formState.error}</p>
 			{/if}
 
-			<button class="button button-primary" type="submit" disabled={creating}>
+			<button class="button button-primary" type="submit" disabled={formState.creating}>
 				{$_('category.terms.create_button')}
 			</button>
 		</form>
