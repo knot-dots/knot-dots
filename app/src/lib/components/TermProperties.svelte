@@ -82,3 +82,10 @@
 		<AuthoredBy {container} {revisions} />
 	{/snippet}
 </PropertyGrid>
+
+<style>
+	:global(input[type='file'].is-visually-hidden) {
+		width: 1px;
+		max-width: 1px;
+	}
+</style>
