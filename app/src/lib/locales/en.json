@@ -526,6 +526,13 @@
 	"resource_table.sum": "Sum",
 	"resource_table.total_budget": "Total budget",
 	"resource_table.total_budget_forecast": "Total budget forecast",
+	"resource_table.subordinate_goals_budget": "Subordinate goals budget",
+	"resource_table.current_budget": "Current budget",
+	"resource_table.subordinate_goals": "Subordinate goals",
+	"resource_table.no_parent_goal": "No parent goal defined",
+	"resource_table.no_subordinate_goals": "No subordinate goals",
+	"resource_table.subordinate_measures": "Subordinate measures",
+	"resource_table.no_subordinate_measures": "No subordinate measures",
 	"role": {
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
