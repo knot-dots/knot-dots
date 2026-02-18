@@ -2,6 +2,7 @@ import { type BrowserContext, test as base } from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
 	type AnyContainer,
+	type CategoryContainer,
 	containerOfType,
 	type EffectContainer,
 	etag,
@@ -20,7 +21,8 @@ import {
 	type ReportContainer,
 	type ResourceV2Container,
 	type TaskCollectionContainer,
-	type TaskContainer
+	type TaskContainer,
+	type TermContainer
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 
@@ -28,6 +30,11 @@ type MyFixtures = {
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	taskStatusBoard: TaskStatusBoard;
+	categoryWithTerms: {
+		category: CategoryContainer;
+		terms: TermContainer[];
+		termNames: string[];
+	};
 };
 
 type MyWorkerFixtures = {
@@ -121,6 +128,55 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	taskStatusBoard: async ({ page }, use) => {
 		await use(new TaskStatusBoard(page));
+	},
+	categoryWithTerms: async ({ adminContext, testGoal }, use, workerInfo) => {
+		const categoryTitle = `E2E Category ${workerInfo.project.name}`;
+		const termNames = [
+			`E2E Term A ${workerInfo.project.name}`,
+			`E2E Term B ${workerInfo.project.name}`
+		];
+
+		const newCategory = containerOfType(
+			payloadTypes.enum.category,
+			testGoal.organization,
+			null,
+			testGoal.organization,
+			'knot-dots'
+		) as NewContainer;
+		(newCategory.payload as CategoryContainer['payload']).title = categoryTitle;
+
+		const category = (await createContainer(adminContext, newCategory)) as CategoryContainer;
+
+		const terms: TermContainer[] = [];
+		for (const [index, termName] of termNames.entries()) {
+			const newTerm = containerOfType(
+				payloadTypes.enum.term,
+				testGoal.organization,
+				null,
+				testGoal.organization,
+				'knot-dots'
+			) as NewContainer;
+			const termPayload = newTerm.payload as TermContainer['payload'];
+			termPayload.title = termName;
+			termPayload.value = termName.toLowerCase().replace(/\s+/g, '-');
+			newTerm.relation = [
+				{
+					object: category.guid,
+					position: index,
+					predicate: predicates.enum['is-part-of-category']
+				}
+			];
+
+			const term = (await createContainer(adminContext, newTerm)) as TermContainer;
+			terms.push(term);
+		}
+
+		await use({ category, terms, termNames });
+
+		for (const term of terms) {
+			await deleteContainer(adminContext, term);
+		}
+		await deleteContainer(adminContext, category);
 	},
 	testOrganization: [
 		async ({ adminContext, defaultOrganization }, use, workerInfo) => {

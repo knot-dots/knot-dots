@@ -20,37 +20,15 @@ test.describe('Categories', () => {
 	test('custom categories can be created and used as filter', async ({
 		categoriesBoard,
 		dotsBoard,
-		testGoal
+		testGoal,
+		categoryWithTerms
 	}) => {
-		const sharedCategoryTitle = `E2E Category ${test.info().project.name}`;
-		const sharedTermNames = [
-			`E2E Term A ${test.info().project.name}`,
-			`E2E Term B ${test.info().project.name}`
-		];
+		const sharedCategoryTitle = categoryWithTerms.category.payload.title;
+		const sharedTermNames = categoryWithTerms.termNames;
 
 		await categoriesBoard.goto(`/${testGoal.organization}`);
-		await categoriesBoard
-			.column('Categories')
-			.locator.getByRole('button', { name: 'Add item' })
-			.first()
-			.click();
-		const dialog = categoriesBoard.page.getByRole('dialog');
-		await dialog.getByPlaceholder('Title').fill(sharedCategoryTitle);
-		await dialog.getByRole('button', { name: 'Save' }).click();
+		await categoriesBoard.column('Categories').card(sharedCategoryTitle).click();
 		await expect(categoriesBoard.overlay.title).toHaveText(sharedCategoryTitle);
-
-		await categoriesBoard.overlay.editModeToggle.check();
-		const termForm = categoriesBoard.overlay.locator
-			.locator('form')
-			.filter({ hasText: 'Create new term' });
-		for (const termName of sharedTermNames) {
-			await termForm.getByLabel('Title').fill(termName);
-			await termForm.getByLabel('Value').fill(termName.toLowerCase().replace(/\s+/g, '-'));
-			const response = categoriesBoard.page.waitForResponse(/container/);
-			await termForm.getByRole('button', { name: 'Create term' }).click();
-			await response;
-		}
-
 		await categoriesBoard.overlay.closeButton.click();
 		await expect(categoriesBoard.column('Categories').card(sharedCategoryTitle)).toBeVisible();
 		await categoriesBoard
@@ -58,6 +36,7 @@ test.describe('Categories', () => {
 			.card(sharedCategoryTitle)
 			.getByRole('button', { name: 'Show relations' })
 			.click();
+		await categoriesBoard.page.waitForURL(/\/categories\?related-to=/);
 		for (const termName of sharedTermNames) {
 			await expect(categoriesBoard.column('Terms').card(termName)).toBeVisible();
 		}
