@@ -30,7 +30,7 @@ type MyFixtures = {
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	taskStatusBoard: TaskStatusBoard;
-	categoryWithTerms: {
+	testCategoryWithTerms: {
 		category: CategoryContainer;
 		terms: TermContainer[];
 		termNames: string[];
@@ -129,7 +129,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	taskStatusBoard: async ({ page }, use) => {
 		await use(new TaskStatusBoard(page));
 	},
-	categoryWithTerms: async ({ adminContext, testGoal }, use, workerInfo) => {
+	testCategoryWithTerms: async ({ adminContext, testGoal }, use, workerInfo) => {
 		const categoryTitle = `E2E Category ${workerInfo.project.name}`;
 		const termNames = [
 			`E2E Term A ${workerInfo.project.name}`,
@@ -173,9 +173,6 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		await use({ category, terms, termNames });
 
-		for (const term of terms) {
-			await deleteContainer(adminContext, term);
-		}
 		await deleteContainer(adminContext, category);
 	},
 	testOrganization: [

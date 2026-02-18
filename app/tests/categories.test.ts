@@ -21,10 +21,10 @@ test.describe('Categories', () => {
 		categoriesBoard,
 		dotsBoard,
 		testGoal,
-		categoryWithTerms
+		testCategoryWithTerms
 	}) => {
-		const sharedCategoryTitle = categoryWithTerms.category.payload.title;
-		const sharedTermNames = categoryWithTerms.termNames;
+		const sharedCategoryTitle = testCategoryWithTerms.category.payload.title;
+		const sharedTermNames = testCategoryWithTerms.termNames;
 
 		await categoriesBoard.goto(`/${testGoal.organization}`);
 		await categoriesBoard.column('Categories').card(sharedCategoryTitle).click();
