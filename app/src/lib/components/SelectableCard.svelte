@@ -9,11 +9,12 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import {
 		isContainerWithEffect,
-		isContainerWithProgress,
 		isContainerWithObjective,
+		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isPartOf,
 		isResourceContainer,
@@ -56,7 +57,10 @@
 	const id = crypto.randomUUID();
 
 	function handleClick(event: MouseEvent) {
-		if (checkbox == event.target) {
+		if (
+			checkbox == event.target ||
+			checkbox.labels?.values().some((label) => label == event.target)
+		) {
 			return;
 		}
 		const isTextSelected = window.getSelection()?.toString();
@@ -119,6 +123,13 @@
 					<span class="badge">{$_(indicatorType)}</span>
 				{/each}
 
+				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
+					<span class="badge">{$_(indicatorCategory)}</span>
+				{/each}
+			</p>
+		{:else if isIndicatorTemplateContainer(container)}
+			<Summary {container} />
+			<p class="badges">
 				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
 					<span class="badge">{$_(indicatorCategory)}</span>
 				{/each}
