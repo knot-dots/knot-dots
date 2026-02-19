@@ -11,10 +11,15 @@
 
 	interface Props {
 		editable?: boolean;
+		allowedFileTypes?: string[];
 		value: string | undefined;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let {
+		editable = false,
+		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml'],
+		value = $bindable()
+	}: Props = $props();
 
 	let uploadInProgress = $state(false);
 
@@ -73,7 +78,7 @@
 			<Plus />
 		</label>
 		<input
-			accept="image/png,image/jpeg,image/svg+xml"
+			accept={allowedFileTypes.join(',')}
 			class="is-visually-hidden"
 			{id}
 			oninput={upload}

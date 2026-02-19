@@ -6,7 +6,7 @@
 	import CategoryTermMenu from '$lib/components/CategoryTermMenu.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableImage from '$lib/components/EditableImage.svelte';
+	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import transformFileURL from '$lib/transformFileURL';
 	import type { TermContainer } from '$lib/models';
 
@@ -111,13 +111,11 @@
 				bind:value={formState.filterLabel}
 			/>
 
-			<EditableImage
-				editable
-				allowedFileTypes={['image/svg+xml']}
-				help={$_('upload.image.svg_only_help')}
-				label={$_('category.terms.icon')}
-				bind:value={formState.icon}
-			/>
+			<div class="category-terms__logo-field">
+				<label class="category-terms__logo-label">{$_('category.terms.icon')}</label>
+				<EditableLogo editable allowedFileTypes={['image/svg+xml']} bind:value={formState.icon} />
+				<p class="category-terms__logo-help">{$_('upload.image.svg_only_help')}</p>
+			</div>
 
 			<div class="category-terms__formatted">
 				<EditableFormattedText
@@ -327,6 +325,24 @@
 
 	.category-terms__error {
 		color: var(--color-red-600);
+		margin: 0;
+	}
+
+	.category-terms__logo-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	.category-terms__logo-label {
+		color: var(--color-gray-700);
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	.category-terms__logo-help {
+		color: var(--color-gray-600);
+		font-size: 0.85rem;
 		margin: 0;
 	}
 

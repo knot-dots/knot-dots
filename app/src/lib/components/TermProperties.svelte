@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableImage from '$lib/components/EditableImage.svelte';
+	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
@@ -23,10 +23,9 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditableImage
+		<div class="label">{$_('category.terms.icon')}</div>
+		<EditableLogo
 			{editable}
-			label={$_('category.terms.icon')}
-			help={$_('upload.image.svg_only_help')}
 			allowedFileTypes={['image/svg+xml']}
 			bind:value={container.payload.icon}
 		/>
@@ -52,10 +51,9 @@
 			bind:value={container.payload.filterLabel}
 		/>
 
-		<EditableImage
+		<div class="label">{$_('category.terms.icon')}</div>
+		<EditableLogo
 			{editable}
-			label={$_('category.terms.icon')}
-			help={$_('upload.image.svg_only_help')}
 			allowedFileTypes={['image/svg+xml']}
 			bind:value={container.payload.icon}
 		/>
