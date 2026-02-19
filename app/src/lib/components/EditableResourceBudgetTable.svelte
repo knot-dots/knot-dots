@@ -60,13 +60,13 @@
 		return findDescendants(parentGoal, goalContainers, [predicates.enum['is-part-of']]);
 	});
 
-	// Find subordinate measures
+	// Find subordinate measures (includes measures for parent goal and all subordinate goals)
 	let subordinateMeasures = $derived.by(() => {
-		if (subordinateGoals.length === 0) return [];
-		const subordinateGoalGuids = new Set(subordinateGoals.map((g) => g.guid));
+		if (!parentGoal) return [];
+		const goalGuids = new Set([parentGoal.guid, ...subordinateGoals.map((g) => g.guid)]);
 		return measureContainers.filter((measure) =>
 			measure.relation.some(
-				(r) => r.predicate === predicates.enum['is-part-of'] && subordinateGoalGuids.has(r.object)
+				(r) => r.predicate === predicates.enum['is-part-of'] && goalGuids.has(r.object)
 			)
 		);
 	});
