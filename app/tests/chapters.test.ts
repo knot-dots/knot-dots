@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'chapters' });
+
 test.describe('Chapters', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

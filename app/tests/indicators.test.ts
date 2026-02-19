@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'indicators' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test('create custom indicator with actual data', async ({ indicatorCatalog, testOrganization }) => {

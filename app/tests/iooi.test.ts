@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'iooi' });
+
 test.describe('Goal IOOI Board', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

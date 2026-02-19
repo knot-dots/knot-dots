@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'layout' });
+
 test('home screen has expected regions', async ({ page }) => {
 	await page.goto('/');
 	await expect(page.getByRole('banner')).toBeVisible();
