@@ -16,7 +16,8 @@
 		isGoalContainer,
 		isMeasureContainer,
 		isResourceDataBudgetContainer,
-		findDescendants
+		findDescendants,
+		isResourceDataContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -87,22 +88,20 @@
 			},
 			'alpha'
 		).then((containers) => {
-			allResourceDataContainers = containers.filter(
-				(c): c is ResourceDataContainer => c.payload.type === payloadTypes.enum.resource_data
-			);
+			allResourceDataContainers = containers.filter(isResourceDataContainer);
 		});
 	});
 
 	// Derive budget containers for subordinate goals
 	let allBudgetContainers = $derived.by(() => {
 		const subordinateGoalGuids = new Set(subordinateGoals.map((g) => g.guid));
-		return allResourceDataContainers.filter(
-			(c) =>
-				isResourceDataBudgetContainer(c) &&
+		return allResourceDataContainers
+			.filter(isResourceDataBudgetContainer)
+			.filter((c) =>
 				c.relation.some(
 					(r) => r.predicate === predicates.enum['is-part-of'] && subordinateGoalGuids.has(r.object)
 				)
-		);
+			);
 	});
 
 	// Holds years that have been added by the user in the UI
