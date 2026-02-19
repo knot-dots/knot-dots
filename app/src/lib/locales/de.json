@@ -525,6 +525,13 @@
 	"resource_table.sum": "Summe",
 	"resource_table.total_budget": "Gesamt-Budget",
 	"resource_table.total_budget_forecast": "Gesamt-Budget (Prognose)",
+	"resource_table.subordinate_goals_budget": "Budget nachgeordneter Ziele",
+	"resource_table.current_budget": "Aktuelles Budget",
+	"resource_table.subordinate_goals": "Nachgeordnete Ziele",
+	"resource_table.no_parent_goal": "Kein übergeordnetes Ziel definiert",
+	"resource_table.no_subordinate_goals": "Keine nachgeordneten Ziele",
+	"resource_table.subordinate_measures": "Nachgeordnete Maßnahmen",
+	"resource_table.no_subordinate_measures": "Keine nachgeordneten Maßnahmen",
 	"role": {
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",

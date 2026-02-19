@@ -2,10 +2,13 @@
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableResourceDataTable from '$lib/components/EditableResourceDataTable.svelte';
+	import EditableResourceBudgetTable from '$lib/components/EditableResourceBudgetTable.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import {
+		isResourceDataBudgetContainer,
 		predicates,
 		type AnyContainer,
+		type Container,
 		type ResourceDataContainer,
 		type ResourceV2Container
 	} from '$lib/models';
@@ -30,7 +33,9 @@
 
 	let organization = $derived(container.organization);
 
-	let relatedContainersQuery = $derived(
+	let relatedContainers = $state<Container[]>([]);
+
+	$effect(() => {
 		fetchRelatedContainers({
 			guid,
 			params: {
@@ -46,10 +51,10 @@
 					predicates.enum['is-section-of']
 				]
 			}
-		})
-	);
-
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
+		}).then((containers) => {
+			relatedContainers = containers;
+		});
+	});
 
 	let currentResource = $state<ResourceV2Container | undefined>(undefined);
 
@@ -58,6 +63,8 @@
 			currentResource = (revisions[revisions.length - 1] as ResourceV2Container) ?? undefined;
 		});
 	});
+
+	const isBudgetContainer = $derived(isResourceDataBudgetContainer(container));
 </script>
 
 {#snippet header()}
@@ -84,14 +91,24 @@
 				/>
 			{/key}
 
-			<EditableResourceDataTable
-				{container}
-				editable={Boolean(
-					$applicationState.containerDetailView.editable && $ability.can('update', container)
-				)}
-				title={$_(container.payload.resourceDataType)}
-				unit={$_(currentResource?.payload.resourceUnit ?? 'undefined')}
-			/>
+			{#if isBudgetContainer}
+				<EditableResourceBudgetTable
+					currentBudget={container}
+					resourceContainer={currentResource}
+					editable={Boolean(
+						$applicationState.containerDetailView.editable && $ability.can('update', container)
+					)}
+				/>
+			{:else}
+				<EditableResourceDataTable
+					{container}
+					editable={Boolean(
+						$applicationState.containerDetailView.editable && $ability.can('update', container)
+					)}
+					title={$_(container.payload.resourceDataType)}
+					unit={$_(currentResource?.payload.resourceUnit ?? 'undefined')}
+				/>
+			{/if}
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}
