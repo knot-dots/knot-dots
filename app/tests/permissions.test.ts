@@ -1,5 +1,7 @@
 import { test, expect } from './fixtures';
 
+test.use({ suiteId: 'permissions' });
+
 let suborgTitle: string;
 let suborg2Title: string;
 let editableTask: string;

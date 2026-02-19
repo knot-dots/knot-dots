@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'resource-data' });
+
 test.describe('Resource Data Collections', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

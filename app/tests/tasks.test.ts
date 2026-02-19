@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'tasks' });
+
 test.describe('Task status board', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
