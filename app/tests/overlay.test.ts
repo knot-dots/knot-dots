@@ -39,6 +39,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	// Change description of the second goal
 	await dotsBoard.card(titleOfSecondGoal).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfSecondGoal);
+	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveCount(1);
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
 	const secondInvalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
