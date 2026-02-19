@@ -357,7 +357,7 @@
 					</th>
 				</tr>
 
-				{#if subordinateGoals.length === 0}
+				{#if subordinateGoals.length === 0 || allBudgetContainers.length === 0}
 					<tr>
 						<td {colspan} class="resource-table__empty">
 							{$_('resource_table.no_subordinate_goals')}
@@ -395,20 +395,6 @@
 									{/if}
 								</tr>
 							{/each}
-						{:else}
-							<tr class="resource-table__budget-row">
-								<th scope="row" class="resource-table__row-label">
-									<a href={overlayURL(page.url, overlayKey.enum.view, goal.guid)}>
-										{goal.payload.title}
-									</a>
-								</th>
-								<td
-									colspan={years.length + (editable ? 1 : 0)}
-									class="resource-table__cell resource-table__cell--empty"
-									class:resource-table__cell--editable={editable}
-								>
-								</td>
-							</tr>
 						{/if}
 					{/each}
 				{/if}
@@ -422,7 +408,7 @@
 					</th>
 				</tr>
 
-				{#if subordinateMeasures.length === 0}
+				{#if subordinateMeasures.length === 0 || !subordinateMeasures.some((m) => getResourceDataForMeasure(m).length > 0)}
 					<tr>
 						<td {colspan} class="resource-table__empty">
 							{$_('resource_table.no_subordinate_measures')}
@@ -460,20 +446,6 @@
 									{/if}
 								</tr>
 							{/each}
-						{:else}
-							<tr class="resource-table__measure-row">
-								<th scope="row" class="resource-table__row-label">
-									<a href={overlayURL(page.url, overlayKey.enum.view, measure.guid)}>
-										{measure.payload.title}
-									</a>
-								</th>
-								<td
-									colspan={years.length + (editable ? 1 : 0)}
-									class="resource-table__cell resource-table__cell--empty"
-									class:resource-table__cell--editable={editable}
-								>
-								</td>
-							</tr>
 						{/if}
 					{/each}
 				{/if}
