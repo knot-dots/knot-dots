@@ -57,7 +57,10 @@
 	const id = crypto.randomUUID();
 
 	function handleClick(event: MouseEvent) {
-		if (checkbox == event.target) {
+		if (
+			checkbox == event.target ||
+			checkbox.labels?.values().some((label) => label == event.target)
+		) {
 			return;
 		}
 		const isTextSelected = window.getSelection()?.toString();
