@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'resources-overlay' });
+
 test.describe('Resources overlay', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

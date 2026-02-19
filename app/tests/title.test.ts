@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'title' });
+
 // These tests verify that the document title updates correctly
 // based on the organization and workspace context.
 

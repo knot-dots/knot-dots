@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'budget-table' });
+
 test.describe('Budget Table in Goal Detail View', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

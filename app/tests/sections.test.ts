@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'sections' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test('adding and removing a summary sections updates the card', async ({

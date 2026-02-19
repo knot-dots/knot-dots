@@ -32,6 +32,7 @@ import { IndicatorCatalog, ResourceCatalog } from './catalogs';
 import { LandingPage } from './pages';
 
 type MyFixtures = {
+	suiteId: string;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
@@ -115,6 +116,7 @@ async function inviteUser(
 }
 
 export const test = base.extend<MyFixtures, MyWorkerFixtures>({
+	suiteId: ['not-specified', { option: true }],
 	adminContext: [
 		async ({ browser }, use, workerInfo) => {
 			const adminContext = await browser.newContext({

@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'programs' });
+
 test.describe('Level board', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

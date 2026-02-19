@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'setup' });
+
 // This test project tests the initial user and object setup
 
 test.describe(() => {
