@@ -23,18 +23,22 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<div class="label">{$_('category.terms.icon')}</div>
-		<EditableLogo
-			{editable}
-			allowedFileTypes={['image/svg+xml']}
-			bind:value={container.payload.icon}
-		/>
-
 		<EditablePlainText
 			{editable}
 			label={$_('category.terms.filter_label')}
 			bind:value={container.payload.filterLabel}
 		/>
+
+		<div class="label">{$_('category.terms.icon')}</div>
+		{#if !editable && !container.payload.icon}
+			<div class="logo-placeholder" aria-hidden="true"></div>
+		{:else}
+			<EditableLogo
+				{editable}
+				allowedFileTypes={['image/svg+xml']}
+				bind:value={container.payload.icon}
+			/>
+		{/if}
 	{/snippet}
 
 	{#snippet general()}
@@ -52,11 +56,15 @@
 		/>
 
 		<div class="label">{$_('category.terms.icon')}</div>
-		<EditableLogo
-			{editable}
-			allowedFileTypes={['image/svg+xml']}
-			bind:value={container.payload.icon}
-		/>
+		{#if !editable && !container.payload.icon}
+			<div class="logo-placeholder" aria-hidden="true"></div>
+		{:else}
+			<EditableLogo
+				{editable}
+				allowedFileTypes={['image/svg+xml']}
+				bind:value={container.payload.icon}
+			/>
+		{/if}
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
@@ -85,5 +93,14 @@
 	:global(input[type='file'].is-visually-hidden) {
 		width: 1px;
 		max-width: 1px;
+	}
+
+	.logo-placeholder {
+		--logo-height: 3rem;
+		border: 2px dashed var(--color-gray-200);
+		border-radius: 4px;
+		height: var(--logo-height);
+		width: var(--logo-height);
+		background: var(--color-gray-050);
 	}
 </style>
