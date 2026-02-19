@@ -33,7 +33,7 @@
 
 	let filter = $state({
 		sdg: [],
-		indicatorCategory: [indicatorCategories.enum['indicator_category.wegweiser_kommune']],
+		indicatorCategory: [],
 		indicatorType: []
 	});
 
