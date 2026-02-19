@@ -5,7 +5,6 @@ test.describe('Budget Table in Goal Detail View', () => {
 
 	test('displays budget table with three sections on budget resource data detail view', async ({
 		dotsBoard,
-		isMobile,
 		testGoal,
 		testGoalBudget,
 		testSubordinateGoal, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -13,15 +12,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		testSubordinateMeasure, // eslint-disable-line @typescript-eslint/no-unused-vars
 		testSubordinateMeasureResourceData // eslint-disable-line @typescript-eslint/no-unused-vars
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.card(testGoal.payload.title).click();
@@ -62,7 +53,6 @@ test.describe('Budget Table in Goal Detail View', () => {
 
 	test('displays subordinate goal and measure data with correct values', async ({
 		dotsBoard,
-		isMobile,
 		testGoal,
 		testGoalBudget,
 		testSubordinateGoal,
@@ -70,15 +60,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		testSubordinateMeasure,
 		testSubordinateMeasureResourceData // eslint-disable-line @typescript-eslint/no-unused-vars
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.card(testGoal.payload.title).click();
@@ -131,19 +113,10 @@ test.describe('Budget Table in Goal Detail View', () => {
 
 	test('edit current budget values with debounced save', async ({
 		dotsBoard,
-		isMobile,
 		testGoal,
 		testGoalBudget
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.card(testGoal.payload.title).click();
@@ -203,19 +176,10 @@ test.describe('Budget Table in Goal Detail View', () => {
 
 	test('add year columns via + buttons in edit mode', async ({
 		dotsBoard,
-		isMobile,
 		testGoal,
 		testGoalBudget
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.card(testGoal.payload.title).click();
@@ -256,7 +220,6 @@ test.describe('Budget Table in Goal Detail View', () => {
 
 	test('subordinate goal and measure rows link to their detail views', async ({
 		dotsBoard,
-		isMobile,
 		testGoal,
 		testGoalBudget,
 		testSubordinateGoal,
@@ -264,15 +227,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		testSubordinateMeasure,
 		testSubordinateMeasureResourceData // eslint-disable-line @typescript-eslint/no-unused-vars
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.card(testGoal.payload.title).click();
@@ -313,19 +268,10 @@ test.describe('Budget Table in Goal Detail View', () => {
 
 	test('current budget inputs are disabled when not in edit mode', async ({
 		dotsBoard,
-		isMobile,
 		testGoal,
 		testGoalBudget
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
 		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
 
 		// Open goal overlay and enable edit mode to add section
 		await dotsBoard.card(testGoal.payload.title).click();
