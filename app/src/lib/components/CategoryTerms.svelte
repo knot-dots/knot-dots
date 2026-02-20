@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import { tick } from 'svelte';
-	import { dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
+	import { dragHandleZone } from 'svelte-dnd-action';
 	import Plus from '~icons/knotdots/plus';
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
@@ -42,7 +42,6 @@
 		guid: string;
 		term?: TermContainer;
 		isCreateForm?: boolean;
-		[SHADOW_ITEM_MARKER_PROPERTY_NAME]?: boolean;
 	};
 
 	let terms = $derived.by((): TermContainer[] => {
@@ -380,12 +379,10 @@
 			>
 				{#each displayItems as dragItem (dragItem.guid)}
 					{@const term = dragItem.term}
-					{@const isShadow = dragItem[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
 					{@const isCreateForm = dragItem.isCreateForm}
 					{@const overlayHref = term ? overlayURL(page.url, overlayKey.enum.view, term.guid) : ''}
 					<CategoryTermItem
 						{term}
-						{isShadow}
 						{isCreateForm}
 						{canEdit}
 						{reordering}

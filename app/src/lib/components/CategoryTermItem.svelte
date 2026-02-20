@@ -11,7 +11,6 @@
 
 	interface Props {
 		term?: TermContainer;
-		isShadow?: boolean;
 		isCreateForm?: boolean;
 		canEdit?: boolean;
 		reordering?: boolean;
@@ -34,7 +33,6 @@
 
 	let {
 		term,
-		isShadow = false,
 		isCreateForm = false,
 		canEdit = false,
 		reordering = false,
@@ -56,7 +54,7 @@
 	}: Props = $props();
 </script>
 
-<li class="category-terms__item details-section" class:category-terms__item--placeholder={isShadow}>
+<li class="category-terms__item details-section">
 	{#if isCreateForm}
 		<form class="category-terms__form" onsubmit={onSubmit} bind:this={formState.form}>
 			<h3>{$_('category.terms.create_title')}</h3>
@@ -95,7 +93,7 @@
 				{$_('category.terms.create_button')}
 			</button>
 		</form>
-	{:else if term && !isShadow}
+	{:else if term}
 		{#if canEdit}
 			<DraggableActionBar className="category-terms__actions">
 				{#snippet actions()}
@@ -132,8 +130,6 @@
 				{/if}
 			</p>
 		</a>
-	{:else}
-		<span class="category-terms__placeholder-hint" aria-hidden="true">⋯⋯</span>
 	{/if}
 </li>
 
@@ -211,15 +207,6 @@
 		gap: 0.35rem;
 	}
 
-	.category-terms__item--placeholder {
-		align-items: center;
-		background: transparent;
-		border: 1px dashed var(--color-gray-300);
-		color: var(--color-gray-400);
-		justify-content: center;
-		min-height: 3.25rem;
-	}
-
 	.category-terms__item:hover {
 		box-shadow: var(--shadow-sm);
 	}
@@ -244,11 +231,6 @@
 	.category-terms__title-input:empty::before {
 		color: var(--color-gray-400);
 		content: attr(data-placeholder);
-	}
-
-	.category-terms__placeholder-hint {
-		font-size: 1.25rem;
-		letter-spacing: 0.25rem;
 	}
 
 	.dropdown.dropdown--compact {
