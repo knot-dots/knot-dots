@@ -102,17 +102,19 @@
 	{:else if term && !isShadow}
 		{#if canEdit}
 			<DraggableActionBar className="category-terms__actions">
-				<div class="dropdown dropdown--compact">
-					<button
-						type="button"
-						class="dropdown-button"
-						onclick={() => onAdd(term.guid)}
-						aria-label={$_('category.terms.create_button')}
-					>
-						<Plus />
-						<span class="is-visually-hidden">{$_('add_section')}</span>
-					</button>
-				</div>
+				{#snippet actions()}
+					<div class="dropdown dropdown--compact">
+						<button
+							type="button"
+							class="dropdown-button"
+							onclick={() => onAdd(term.guid)}
+							aria-label={$_('category.terms.create_button')}
+						>
+							<Plus />
+							<span class="is-visually-hidden">{$_('add_section')}</span>
+						</button>
+					</div>
+				{/snippet}
 			</DraggableActionBar>
 			<CategoryTermMenu
 				disabled={removingGuid === term.guid || reordering}

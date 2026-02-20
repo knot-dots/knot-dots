@@ -111,9 +111,11 @@
 <section class="details-section">
 	{#if $applicationState.containerDetailView.editable}
 		<DraggableActionBar>
-			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
-			{/if}
+			{#snippet actions()}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
+				{/if}
+			{/snippet}
 		</DraggableActionBar>
 	{/if}
 

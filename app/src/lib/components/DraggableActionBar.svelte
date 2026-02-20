@@ -1,12 +1,14 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { dragHandle } from 'svelte-dnd-action';
 	import DragHandle from '~icons/knotdots/draghandle';
 
 	export let className = '';
+	export let actions: Snippet | undefined = undefined;
 </script>
 
 <div class={`actions is-visible-on-hover ${className}`.trim()}>
-	<slot />
+	{#if actions}{@render actions()}{/if}
 	<span class="drag-handle" use:dragHandle>
 		<DragHandle />
 	</span>
