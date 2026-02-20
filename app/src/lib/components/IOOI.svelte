@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -10,6 +11,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import {
 		type Container,
+		containerOfType,
 		type EffectContainer,
 		type GoalContainer,
 		type IooiType,
@@ -20,10 +22,14 @@
 		isObjectiveContainer,
 		isResourceDataContainer,
 		type MeasureContainer,
+		type NewContainer,
 		type ObjectiveContainer,
-		overlayKey
+		overlayKey,
+		payloadTypes,
+		predicates,
+		resourceDataTypes
 	} from '$lib/models';
-	import { ability, addEffectState, addObjectiveState } from '$lib/stores';
+	import { ability, addEffectState, addObjectiveState, newContainer } from '$lib/stores';
 	import ResourceDataCard from './ResourceDataCard.svelte';
 
 	interface Props {
@@ -32,6 +38,10 @@
 	}
 
 	let { container, containers }: Props = $props();
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
 
 	const { itemType, itemFilterFn, addItemState } = $derived.by(() => {
 		if (isGoalContainer(container)) {
@@ -66,6 +76,31 @@
 		[iooiTypes.enum['iooi.outcome'], 'hsl(280, 70%, 50%)'],
 		[iooiTypes.enum['iooi.impact'], 'hsl(30, 70%, 50%)']
 	]);
+
+	// Define create options for resource data based on container type
+	let resourceDataCreateOptions = $derived.by(() => {
+		if (isMeasureContainer(container)) {
+			// Measures can have both planned and actual resource allocation
+			return [
+				{
+					value: resourceDataTypes.enum['resource_data_type.planned_resource_allocation'],
+					label: $_(resourceDataTypes.enum['resource_data_type.planned_resource_allocation'])
+				},
+				{
+					value: resourceDataTypes.enum['resource_data_type.actual_resource_allocation'],
+					label: $_(resourceDataTypes.enum['resource_data_type.actual_resource_allocation'])
+				}
+			];
+		} else {
+			// Goals only have budget
+			return [
+				{
+					value: resourceDataTypes.enum['resource_data_type.budget'],
+					label: $_(resourceDataTypes.enum['resource_data_type.budget'])
+				}
+			];
+		}
+	});
 
 	type IooiItem = ObjectiveContainer | EffectContainer;
 
@@ -112,6 +147,42 @@
 		};
 	}
 
+	function addResourceDataItem() {
+		return (selectedType?: string) => {
+			if (!container) {
+				return;
+			}
+
+			// Use selectedType if provided, otherwise determine based on container type
+			const resourceDataType =
+				selectedType ||
+				(isMeasureContainer(container)
+					? resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
+					: resourceDataTypes.enum['resource_data_type.budget']);
+
+			// Create new resource_data container
+			const item = containerOfType(
+				payloadTypes.enum.resource_data,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
+
+			// Set the resourceDataType
+			(item.payload as { resourceDataType?: string }).resourceDataType = resourceDataType;
+
+			// Set relations to the parent container
+			item.relation = [
+				{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+			];
+
+			$newContainer = item;
+
+			createContainerDialog.getElement().showModal();
+		};
+	}
+
 	function handleDndConsider(iooiType: IooiType) {
 		return (e: CustomEvent<DndEvent<IooiItem>>) => {
 			itemsByIooiType.set(iooiType, e.detail.items);
@@ -151,7 +222,10 @@
 	<BoardColumn
 		--background={iooiBackgrounds.get(iooiTypes.enum['iooi.input'])}
 		--hover-border-color={iooiHoverColors.get(iooiTypes.enum['iooi.input'])}
+		addItemUrl={`#create=resource_data`}
+		createOptions={resourceDataCreateOptions}
 		title={$_(iooiTypes.enum['iooi.input'])}
+		onCreateContainer={addResourceDataItem()}
 	>
 		<div class="vertical-scroll-wrapper">
 			{#each resourceData as rd (rd.guid)}
