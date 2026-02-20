@@ -147,8 +147,7 @@
 		--actions-top: 0.5rem;
 	}
 
-	.category-terms__content,
-	:global(#dnd-action-dragged-el .category-terms__content) {
+	.category-terms__content {
 		color: inherit;
 		display: flex;
 		flex-direction: column;
@@ -187,8 +186,7 @@
 		margin: 0;
 	}
 
-	.category-terms__icon,
-	:global(#dnd-action-dragged-el .category-terms__icon) {
+	.category-terms__icon {
 		height: 1.4rem;
 		width: 1.4rem;
 		object-fit: contain;
@@ -207,8 +205,7 @@
 		transition: box-shadow 120ms ease;
 	}
 
-	.category-terms__item :global(.details-heading),
-	:global(#dnd-action-dragged-el .details-heading) {
+	.category-terms__item :global(.details-heading) {
 		color: var(--color-gray-800);
 		font-size: 1rem;
 		font-weight: 600;
@@ -269,24 +266,6 @@
 	.dropdown.dropdown--compact {
 		--dropdown-button-border-radius: 4px;
 		--dropdown-button-padding: 0.25rem;
-	}
-
-	:global(#dnd-action-dragged-el) {
-		background: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 12px;
-		box-shadow: var(--shadow-sm);
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem 1.25rem;
-		box-sizing: border-box;
-		text-align: left;
-	}
-
-	:global(#dnd-action-dragged-el .details-heading) {
-		align-self: flex-start;
-		text-align: left;
 	}
 
 	@media (hover: hover) {
