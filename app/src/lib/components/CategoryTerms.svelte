@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import { tick } from 'svelte';
-	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
+	import { dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import Plus from '~icons/knotdots/plus';
 	import { _ } from 'svelte-i18n';
 	import saveContainer from '$lib/client/saveContainer';
@@ -367,7 +367,7 @@
 		{:else}
 			<ul
 				class="category-terms__list"
-				use:dndzone={{
+				use:dragHandleZone={{
 					items: displayItems,
 					flipDurationMs: 150,
 					morphDisabled: true,
