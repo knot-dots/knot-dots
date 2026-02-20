@@ -88,6 +88,76 @@ test.describe('Goal IOOI Board', () => {
 			await dotsBoard.overlay.delete();
 		});
 	});
+
+	test('Input column shows add button for budget in goal IOOI board', async ({
+		dotsBoard,
+		isMobile,
+		testGoal
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open goal overlay and enable edit mode
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Verify Input column has add item button (not dropdown since goals only have one option)
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		await expect(inputColumn.getByRole('button', { name: 'Add item' }).first()).toBeVisible();
+	});
+
+	test('can create budget resource data in Input column for goal', async ({
+		dotsBoard,
+		isMobile,
+		testGoal,
+		testResourceV2
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open goal overlay and enable edit mode
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Create new resource data in Input column
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		await inputColumn.getByRole('button', { name: 'Add item' }).first().click();
+
+		// Select the resource from the grouped dropdown
+		const dialog = dotsBoard.page.getByRole('dialog');
+		await dialog.getByLabel('Resource').click();
+		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+
+		// Fill in the title
+		const resourceDataTitle = `Budget Item ${Date.now()}`;
+		await dialog.getByRole('textbox', { name: 'Title' }).fill(resourceDataTitle);
+
+		// Save the item
+		await dialog.getByRole('button', { name: 'Save' }).click();
+
+		// Verify redirect to resource data overlay
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+
+		// Navigate back to IOOI board
+		await dotsBoard.page.goto(`/${testGoal.organization}#goal-iooi=${testGoal.guid}`);
+
+		// Verify resource data appears in Input column
+		await expect(inputColumn.getByTitle(resourceDataTitle)).toBeVisible();
+
+		// Clean up - delete the created resource data
+		await inputColumn.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.delete();
+	});
 });
 
 test.describe('Measure IOOI Board', () => {
@@ -177,6 +247,146 @@ test.describe('Measure IOOI Board', () => {
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});
+	});
+
+	test('Input column shows dropdown menu for resource data types in measure IOOI board', async ({
+		dotsBoard,
+		isMobile,
+		testMeasure
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
+		await dotsBoard.card(testMeasure.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Verify Input column has dropdown button (measures have two resource data types)
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		const addButton = inputColumn.getByRole('button', { name: 'Add item' }).first();
+		await expect(addButton).toBeVisible();
+
+		// Click to reveal dropdown options
+		await addButton.click();
+
+		// Verify both options are available
+		await expect(
+			dotsBoard.page.getByRole('menuitem', { name: 'Planned resource allocation' })
+		).toBeVisible();
+		await expect(
+			dotsBoard.page.getByRole('menuitem', { name: 'Actual resource allocation' })
+		).toBeVisible();
+
+		// Close dropdown
+		await dotsBoard.page.keyboard.press('Escape');
+	});
+
+	test('can create planned resource allocation in Input column for measure', async ({
+		dotsBoard,
+		isMobile,
+		testMeasure,
+		testResourceV2
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
+		await dotsBoard.card(testMeasure.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Create new resource data in Input column
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		await inputColumn.getByRole('button', { name: 'Add item' }).first().click();
+
+		// Select "Planned resource allocation" from dropdown
+		await dotsBoard.page.getByRole('menuitem', { name: 'Planned resource allocation' }).click();
+
+		// Select the resource from the grouped dropdown
+		const dialog = dotsBoard.page.getByRole('dialog');
+		await dialog.getByLabel('Resource').click();
+		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+
+		// Fill in the title
+		const resourceDataTitle = `Planned Resource ${Date.now()}`;
+		await dialog.getByRole('textbox', { name: 'Title' }).fill(resourceDataTitle);
+
+		// Save the item
+		await dialog.getByRole('button', { name: 'Save' }).click();
+
+		// Verify redirect to resource data overlay
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+
+		// Navigate back to IOOI board
+		await dotsBoard.page.goto(`/${testMeasure.organization}#measure-iooi=${testMeasure.guid}`);
+
+		// Verify resource data appears in Input column
+		await expect(inputColumn.getByTitle(resourceDataTitle)).toBeVisible();
+
+		// Clean up - delete the created resource data
+		await inputColumn.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.delete();
+	});
+
+	test('can create actual resource allocation in Input column for measure', async ({
+		dotsBoard,
+		isMobile,
+		testMeasure,
+		testResourceV2
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
+		await dotsBoard.card(testMeasure.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Create new resource data in Input column
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		await inputColumn.getByRole('button', { name: 'Add item' }).first().click();
+
+		// Select "Actual resource allocation" from dropdown
+		await dotsBoard.page.getByRole('menuitem', { name: 'Actual resource allocation' }).click();
+
+		// Select the resource from the grouped dropdown
+		const dialog = dotsBoard.page.getByRole('dialog');
+		await dialog.getByLabel('Resource').click();
+		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+
+		// Fill in the title
+		const resourceDataTitle = `Actual Resource ${Date.now()}`;
+		await dialog.getByRole('textbox', { name: 'Title' }).fill(resourceDataTitle);
+
+		// Save the item
+		await dialog.getByRole('button', { name: 'Save' }).click();
+
+		// Verify redirect to resource data overlay
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+
+		// Navigate back to IOOI board
+		await dotsBoard.page.goto(`/${testMeasure.organization}#measure-iooi=${testMeasure.guid}`);
+
+		// Verify resource data appears in Input column
+		await expect(inputColumn.getByTitle(resourceDataTitle)).toBeVisible();
+
+		// Clean up - delete the created resource data
+		await inputColumn.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.delete();
 	});
 
 	test('Input column shows resource data', async ({
