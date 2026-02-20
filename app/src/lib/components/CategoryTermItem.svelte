@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
+	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import CategoryTermMenu from '$lib/components/CategoryTermMenu.svelte';
 	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
@@ -52,24 +53,31 @@
 		onRemove = () => {},
 		onSubmit = () => {}
 	}: Props = $props();
+
+	const idForTitle = crypto.randomUUID();
 </script>
 
-<li class="category-terms__item details-section">
+<li>
 	{#if isCreateForm}
-		<form class="category-terms__form" onsubmit={onSubmit} bind:this={formState.form}>
-			<h3>{$_('category.terms.create_title')}</h3>
-
-			<div class="category-terms__header category-terms__header--small-logo">
+		<form class="details-section" onsubmit={onSubmit} bind:this={formState.form}>
+			<header>
 				<EditableLogo editable allowedFileTypes={['image/svg+xml']} bind:value={formState.icon} />
-				<h1
-					class="category-terms__title-input"
-					contenteditable="plaintext-only"
-					bind:textContent={formState.title}
-					data-placeholder={$_('title')}
-					aria-label={$_('title')}
-					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-				></h1>
-			</div>
+
+				<h2 class="details-heading">
+					<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
+					<AutoresizingTextarea
+						bind:value={formState.title}
+						id={idForTitle}
+						onkeydown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault();
+							}
+						}}
+						placeholder={$_('title')}
+						rows={1}
+					/>
+				</h2>
+			</header>
 
 			<EditablePlainText
 				editable
@@ -80,146 +88,76 @@
 			<Editor label={$_('description')} bind:value={formState.description} />
 
 			{#if formState.error}
-				<p class="category-terms__error">{formState.error}</p>
+				<p class="error">{formState.error}</p>
 			{/if}
 
-			<button class="button button-primary" type="submit" disabled={formState.creating}>
+			<button class="button-primary" disabled={formState.creating} type="submit">
 				{$_('category.terms.create_button')}
 			</button>
 		</form>
 	{:else if term}
-		{#if canEdit}
-			<DraggableActionBar className="category-terms__actions">
-				{#snippet actions()}
-					<div class="dropdown dropdown--compact">
-						<button
-							type="button"
-							class="dropdown-button"
-							onclick={() => onAdd(term.guid)}
-							aria-label={$_('category.terms.create_button')}
-						>
-							<Plus />
-							<span class="is-visually-hidden">{$_('add_section')}</span>
-						</button>
-					</div>
-				{/snippet}
-			</DraggableActionBar>
-			<CategoryTermMenu
-				disabled={removingGuid === term.guid || reordering}
-				onRemove={() => onRemove(term)}
-			/>
-		{/if}
-		<a class="category-terms__content" href={overlayHref}>
-			<h3 class="details-heading">
+		<div class="details-section">
+			{#if canEdit}
+				<DraggableActionBar>
+					{#snippet actions()}
+						<div class="dropdown dropdown--compact">
+							<button
+								type="button"
+								class="dropdown-button"
+								onclick={() => onAdd(term.guid)}
+								aria-label={$_('category.terms.create_button')}
+							>
+								<Plus />
+								<span class="is-visually-hidden">{$_('add_section')}</span>
+							</button>
+						</div>
+					{/snippet}
+				</DraggableActionBar>
+			{/if}
+			<header>
 				{#if term.payload.icon}
-					<img src={transformFileURL(term.payload.icon)} alt="" class="category-terms__icon" />
+					<img src={transformFileURL(term.payload.icon)} class="logo" alt="" />
 				{/if}
-				{term.payload.title}
-			</h3>
-			<p class="category-terms__description">
+
+				<h2 class="details-heading">
+					<a href={overlayHref}>
+						{term.payload.title}
+					</a>
+				</h2>
+
+				{#if canEdit}
+					<CategoryTermMenu
+						disabled={removingGuid === term.guid || reordering}
+						onRemove={() => onRemove(term)}
+					/>
+				{/if}
+			</header>
+
+			<p>
 				{#if term.payload.description}
 					{term.payload.description}
 				{:else}
 					&nbsp;
 				{/if}
 			</p>
-		</a>
+		</div>
 	{/if}
 </li>
 
 <style>
-	:global(.category-terms__actions) {
-		--actions-left: -3.5rem;
-		--actions-top: 0.5rem;
-	}
-
-	.category-terms__content {
-		color: inherit;
+	form {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
-		text-decoration: none;
+		gap: 0.75rem;
 	}
 
-	.category-terms__content:focus-visible {
-		outline: 2px solid var(--color-primary-500);
-		outline-offset: 3px;
+	.button-primary {
+		width: fit-content;
 	}
 
-	.category-terms__description {
-		color: var(--color-gray-700);
-		margin: 0;
-	}
-
-	.category-terms__error {
+	.error {
 		color: var(--color-red-600);
 		margin: 0;
-	}
-
-	.category-terms__form {
-		background: white;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.category-terms__form h3 {
-		margin: 0;
-	}
-
-	.category-terms__icon {
-		height: 1.4rem;
-		width: 1.4rem;
-		object-fit: contain;
-		margin-right: 0.15rem;
-	}
-
-	.category-terms__item {
-		position: relative;
-		background: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 12px;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem 1.25rem;
-		transition: box-shadow 120ms ease;
-	}
-
-	.category-terms__item :global(.details-heading) {
-		color: var(--color-gray-800);
-		font-size: 1rem;
-		font-weight: 600;
-		margin: 0;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-	}
-
-	.category-terms__item:hover {
-		box-shadow: var(--shadow-sm);
-	}
-
-	.category-terms__header {
-		align-items: center;
-		display: flex;
-		gap: 0.75rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.category-terms__header--small-logo {
-		--logo-height: 2.25rem;
-	}
-
-	.category-terms__title-input {
-		flex-grow: 1;
-		margin: 0;
-		min-height: 2.5rem;
-	}
-
-	.category-terms__title-input:empty::before {
-		color: var(--color-gray-400);
-		content: attr(data-placeholder);
 	}
 
 	.dropdown.dropdown--compact {
@@ -227,8 +165,32 @@
 		--dropdown-button-padding: 0.25rem;
 	}
 
+	.details-section {
+		position: relative;
+	}
+
+	.details-section > header {
+		--logo-height: 2.5rem;
+
+		align-items: start;
+		display: flex;
+		gap: 0.75rem;
+		min-height: var(--logo-height);
+	}
+
+	.details-section > header > :global(img:first-child) {
+		flex-shrink: 0;
+		height: var(--logo-height);
+	}
+
+	.details-heading {
+		color: var(--color-gray-800);
+		font-size: 1.875rem;
+		font-weight: 600;
+	}
+
 	@media (hover: hover) {
-		.category-terms__item:hover {
+		.details-section:hover {
 			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
 			--is-visible-on-hover-visibility: visible;
 		}

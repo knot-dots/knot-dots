@@ -28,14 +28,12 @@
 		container: CategoryContainer | TermContainer;
 		relatedContainers: AnyContainer[];
 		predicate?: Predicate;
-		headingKey?: string;
 	}
 
 	let {
 		container = $bindable(),
 		relatedContainers = $bindable(),
-		predicate = predicates.enum['is-part-of-category'],
-		headingKey = 'category.terms.heading'
+		predicate = predicates.enum['is-part-of-category']
 	}: Props = $props();
 
 	type TermDragItem = {
@@ -345,27 +343,22 @@
 </script>
 
 {#if !isSubterm}
-	<div class="category-terms details-section">
-		<div class="category-terms__header">
-			<h2>{$_(headingKey)} ({terms.length})</h2>
-		</div>
-
+	<div class="sections">
 		{#if terms.length === 0 && !showCreateFormFor}
 			{#if canEdit}
-				<button
-					type="button"
-					class="button button-sm button-primary category-terms__header-add"
-					onclick={() => focusCreateForm('header')}
-				>
-					<Plus />
-					<span>{$_('category.terms.create_button')}</span>
-				</button>
-			{:else}
-				<p class="category-terms__empty">{$_('category.terms.empty')}</p>
+				<div class="details-section">
+					<button
+						type="button"
+						class="button button-sm button-primary"
+						onclick={() => focusCreateForm('header')}
+					>
+						<Plus />
+						<span>{$_('category.terms.create_button')}</span>
+					</button>
+				</div>
 			{/if}
 		{:else}
 			<ul
-				class="category-terms__list"
 				use:dragHandleZone={{
 					items: displayItems,
 					flipDurationMs: 150,
@@ -396,62 +389,14 @@
 				{/each}
 			</ul>
 			{#if reorderError}
-				<p class="category-terms__error" role="alert">{reorderError}</p>
+				<p class="error" role="alert">{reorderError}</p>
 			{/if}
 		{/if}
 	</div>
 {/if}
 
 <style>
-	.category-terms {
-		display: flex;
-		flex-direction: column;
-		gap: 1.25rem;
-	}
-
-	.category-terms__header {
-		align-items: center;
-		display: flex;
-		gap: 0.75rem;
-		justify-content: space-between;
-	}
-
-	.category-terms__header h2 {
-		margin: 0;
-	}
-
-	.category-terms__header-add {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.35rem;
-		color: var(--dropdown-button-default-color);
-		background: transparent;
-		border-color: transparent;
-		box-shadow: none;
-		padding-left: 0;
-		padding-right: 0;
-	}
-
-	.category-terms__list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.category-terms__list[data-reordering='true'] {
-		opacity: 0.75;
-	}
-
-	.category-terms__empty,
-	.category-terms__error {
-		margin: 0;
-		color: var(--color-gray-600);
-	}
-
-	.category-terms__error {
+	.error {
 		color: var(--color-red-600);
 	}
 </style>
