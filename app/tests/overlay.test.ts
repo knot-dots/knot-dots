@@ -53,3 +53,62 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	await dotsBoard.card(titleOfSecondGoal).click();
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText(typeOfSecondGoal);
 });
+
+test.describe('Full-screen', () => {
+	test.use({ storageState: 'tests/.auth/admin.json' });
+
+	test('switch between full-screen and overlay', async ({ dotsBoard, testProgram }) => {
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
+		await expect(dotsBoard.page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText(
+			testProgram.payload.title
+		);
+
+		await dotsBoard.page.getByRole('link', { name: 'Back to overlay' }).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+	});
+
+	test('go back to overlay after navigating to another workspace', async ({
+		dotsBoard,
+		testProgram
+	}) => {
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
+		await expect(dotsBoard.page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText(
+			testProgram.payload.title
+		);
+
+		await dotsBoard.page.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.page.getByRole('menuitem', { name: 'Measures' }).click();
+
+		await expect(dotsBoard.page.getByRole('button', { name: 'Measures' })).toBeVisible();
+		await dotsBoard.page.getByRole('link', { name: 'Back to overlay' }).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+	});
+
+	test('back-to-overlay button disappears after navigating somewhere else', async ({
+		dotsBoard,
+		testProgram
+	}) => {
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
+		await expect(dotsBoard.page.getByRole('main').getByRole('heading', { level: 1 })).toHaveText(
+			testProgram.payload.title
+		);
+
+		await dotsBoard.page.getByRole('link', { name: 'My workspace' }).click();
+		await expect(dotsBoard.page.getByRole('link', { name: 'Back to overlay' })).not.toBeVisible();
+	});
+});
