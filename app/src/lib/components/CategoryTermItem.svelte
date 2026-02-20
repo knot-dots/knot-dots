@@ -16,9 +16,8 @@
 		canEdit?: boolean;
 		reordering?: boolean;
 		removingGuid?: string | null;
-		formState?: {
+		formState: {
 			title: string;
-			value: string;
 			description: string;
 			filterLabel: string;
 			icon: string;
@@ -38,16 +37,7 @@
 		canEdit = false,
 		reordering = false,
 		removingGuid = null,
-		formState = $bindable({
-			title: '',
-			value: '',
-			description: '',
-			filterLabel: '',
-			icon: '',
-			error: '',
-			creating: false,
-			form: null
-		}),
+		formState = $bindable(),
 		overlayHref = '',
 		onAdd = () => {},
 		onRemove = () => {},
