@@ -56,11 +56,7 @@
 	}: Props = $props();
 </script>
 
-<li
-	class="category-terms__item details-section"
-	class:category-terms__item--draggable={canEdit && !isShadow && !isCreateForm}
-	class:category-terms__item--placeholder={isShadow}
->
+<li class="category-terms__item details-section" class:category-terms__item--placeholder={isShadow}>
 	{#if isCreateForm}
 		<form class="category-terms__form" onsubmit={onSubmit} bind:this={formState.form}>
 			<h3>{$_('category.terms.create_title')}</h3>
@@ -213,14 +209,6 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-	}
-
-	.category-terms__item--draggable {
-		cursor: grab;
-	}
-
-	.category-terms__item--draggable:active {
-		cursor: grabbing;
 	}
 
 	.category-terms__item--placeholder {
