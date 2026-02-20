@@ -681,30 +681,68 @@ const enforceCategoryKeyIfProvided = (
 	enforceCategoryKey(value, ctx);
 };
 
+const enforceTermValue = (value: { title?: string; value?: string }, ctx: z.RefinementCtx) => {
+	const title = value.title?.trim();
+	const rawValue = value.value?.trim();
+	const slug = rawValue
+		? normalizeCategoryKey(rawValue, { lowerCase: true })
+		: normalizeCategoryKey(title || '', { lowerCase: true });
+
+	if (!slug) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'term title is required to derive value'
+		});
+		return;
+	}
+
+	if (slug.length > 128) {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			message: 'term value must be 128 characters or fewer'
+		});
+		return;
+	}
+
+	value.value = slug;
+};
+
+const enforceTermValueIfProvided = (
+	value: { title?: string; value?: string },
+	ctx: z.RefinementCtx
+) => {
+	if (!value.title && !value.value) return;
+	enforceTermValue(value, ctx);
+};
+
 const categoryPayload = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
 
 const initialCategoryPayload = categoryPayloadBaseShape
 	.partial({ key: true, title: true })
 	.superRefine(enforceCategoryKeyIfProvided);
 
-const termPayload = z
+const termPayloadBase = z
 	.object({
 		description: z.string().trim().optional(),
 		filterLabel: z.string().trim().max(256).optional(),
 		title: z.string().trim(),
-		value: z.string().trim(),
+		value: z.string().trim().optional(),
 		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term),
 		visibility: visibility.default(visibility.enum['public'])
 	})
 	.strict();
 
-const initialTermPayload = termPayload.partial({
-	filterLabel: true,
-	icon: true,
-	title: true,
-	value: true
-});
+const termPayload = termPayloadBase.superRefine(enforceTermValue);
+
+const initialTermPayload = termPayloadBase
+	.partial({
+		filterLabel: true,
+		icon: true,
+		title: true,
+		value: true
+	})
+	.superRefine(enforceTermValueIfProvided);
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),

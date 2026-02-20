@@ -54,36 +54,6 @@
 		onRemove = () => {},
 		onSubmit = () => {}
 	}: Props = $props();
-
-	let valueTouched = $state(false);
-	let lastAutoValue = $state('');
-
-	function slugify(source: string) {
-		return source
-			.trim()
-			.toLowerCase()
-			.replace(/[^a-z0-9_.-]+/g, '-')
-			.replace(/^-+|-+$/g, '');
-	}
-
-	let nextSlug = $derived.by(() => slugify(formState.title));
-
-	$effect(() => {
-		if (!formState.title && !formState.value) {
-			valueTouched = false;
-			lastAutoValue = '';
-			return;
-		}
-		if (valueTouched) {
-			return;
-		}
-		if (formState.value && formState.value !== lastAutoValue) {
-			valueTouched = true;
-			return;
-		}
-		formState.value = nextSlug;
-		lastAutoValue = nextSlug;
-	});
 </script>
 
 <li

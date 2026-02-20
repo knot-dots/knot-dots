@@ -44,13 +44,6 @@
 	{#snippet general()}
 		<EditablePlainText
 			{editable}
-			label={$_('category.terms.value_label')}
-			required
-			bind:value={container.payload.value}
-		/>
-
-		<EditablePlainText
-			{editable}
 			label={$_('category.terms.filter_label')}
 			bind:value={container.payload.filterLabel}
 		/>

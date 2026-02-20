@@ -231,9 +231,8 @@
 		}
 
 		const title = formState.title.trim();
-		const value = formState.value.trim();
 
-		if (!title || !value) {
+		if (!title) {
 			formState.error = get(_)('category.terms.required');
 			return;
 		}
@@ -258,7 +257,6 @@
 			) as NewContainer;
 			const termPayload = newTerm.payload as TermContainer['payload'];
 			termPayload.title = title;
-			termPayload.value = value;
 			if (formState.description.trim()) {
 				termPayload.description = formState.description.trim();
 			}
