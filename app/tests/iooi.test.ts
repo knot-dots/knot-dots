@@ -83,6 +83,7 @@ test.describe('Goal IOOI Board', () => {
 
 			// Delete the created objective
 			await column.getByTitle(testIndicator.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});
@@ -172,6 +173,7 @@ test.describe('Measure IOOI Board', () => {
 
 			// Delete the created effect
 			await column.getByTitle(testIndicator.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});

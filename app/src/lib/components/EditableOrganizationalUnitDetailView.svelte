@@ -54,7 +54,7 @@
 {#snippet main()}
 	{#if container.payload.cover}
 		<div class="cover-section">
-			<img alt={$_('logo')} class="cover" src={transformFileURL(container.payload.cover)} />
+			<img alt={$_('cover')} class="cover" src={transformFileURL(container.payload.cover)} />
 		</div>
 	{/if}
 	<article>
