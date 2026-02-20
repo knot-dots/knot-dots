@@ -30,9 +30,11 @@ function findTermsForCategory(category: CategoryContainer, terms: TermContainer[
 }
 
 function toOption(term: TermContainer): CategoryOption {
+	const value = term.payload.value ?? term.payload.title ?? term.guid;
+	const label = term.payload.filterLabel ?? term.payload.title ?? value;
 	return {
-		label: term.payload.filterLabel ?? term.payload.title ?? term.payload.value,
-		value: term.payload.value,
+		label,
+		value,
 		guid: term.guid,
 		icon: term.payload.icon
 	};

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
-	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { type CategoryContainer } from '$lib/models';
