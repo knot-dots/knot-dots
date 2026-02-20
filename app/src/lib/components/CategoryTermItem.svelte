@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { dragHandle } from 'svelte-dnd-action';
-	import DragHandle from '~icons/knotdots/draghandle';
 	import Plus from '~icons/knotdots/plus';
 	import { _ } from 'svelte-i18n';
 	import CategoryTermMenu from '$lib/components/CategoryTermMenu.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
+	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
 	import transformFileURL from '$lib/transformFileURL';
 	import type { TermContainer } from '$lib/models';
 
@@ -135,21 +134,19 @@
 		</form>
 	{:else if term && !isShadow}
 		{#if canEdit}
-			<div
-				class="actions is-visible-on-hover category-terms__actions category-terms__actions--left"
-			>
-				<button
-					type="button"
-					class="category-terms__add-button"
-					onclick={() => onAdd(term.guid)}
-					aria-label={$_('category.terms.create_button')}
-				>
-					<Plus />
-				</button>
-				<span class="drag-handle" use:dragHandle>
-					<DragHandle />
-				</span>
-			</div>
+			<DraggableActionBar className="category-terms__actions">
+				<div class="dropdown dropdown--compact">
+					<button
+						type="button"
+						class="dropdown-button"
+						onclick={() => onAdd(term.guid)}
+						aria-label={$_('category.terms.create_button')}
+					>
+						<Plus />
+						<span class="is-visually-hidden">{$_('add_section')}</span>
+					</button>
+				</div>
+			</DraggableActionBar>
 			<CategoryTermMenu
 				disabled={removingGuid === term.guid || reordering}
 				onRemove={() => onRemove(term)}
