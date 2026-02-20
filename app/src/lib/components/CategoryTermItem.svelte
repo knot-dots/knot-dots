@@ -1,13 +1,13 @@
 <script lang="ts">
-	import Plus from '~icons/knotdots/plus';
 	import { _ } from 'svelte-i18n';
+	import Plus from '~icons/knotdots/plus';
 	import CategoryTermMenu from '$lib/components/CategoryTermMenu.svelte';
-	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
-	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
-	import transformFileURL from '$lib/transformFileURL';
+	import EditableLogo from '$lib/components/EditableLogo.svelte';
+	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import type { TermContainer } from '$lib/models';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		term?: TermContainer;
@@ -77,13 +77,7 @@
 				bind:value={formState.filterLabel}
 			/>
 
-			<div class="category-terms__formatted">
-				<EditableFormattedText
-					editable
-					label={$_('description')}
-					bind:value={formState.description}
-				/>
-			</div>
+			<Editor label={$_('description')} bind:value={formState.description} />
 
 			{#if formState.error}
 				<p class="category-terms__error">{formState.error}</p>
@@ -160,11 +154,6 @@
 	.category-terms__error {
 		color: var(--color-red-600);
 		margin: 0;
-	}
-
-	.category-terms__formatted :global(.details-section) {
-		padding-left: 0;
-		padding-right: 0;
 	}
 
 	.category-terms__form {
