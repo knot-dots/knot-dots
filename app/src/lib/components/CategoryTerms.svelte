@@ -42,8 +42,8 @@
 		isCreateForm?: boolean;
 	};
 
-	let terms = $derived.by((): TermContainer[] => {
-		const relatedTerms = relatedContainers
+	let terms: TermContainer[] = $derived(
+		relatedContainers
 			.filter(isTermContainer)
 			.filter(({ guid }) => guid !== container.guid)
 			.map((term) => {
@@ -64,10 +64,8 @@
 			.map(({ term }) => {
 				let _ = $state(term);
 				return _;
-			});
-
-		return relatedTerms;
-	});
+			})
+	);
 
 	let termItems = $derived.by((): TermDragItem[] => buildTermItems(terms));
 	let removingGuid = $state<string | null>(null);
