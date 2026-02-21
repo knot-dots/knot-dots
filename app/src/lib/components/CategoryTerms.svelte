@@ -45,10 +45,8 @@
 	let terms = $derived.by((): TermContainer[] => {
 		const relatedTerms = relatedContainers
 			.filter(isTermContainer)
+			.filter(({ guid }) => guid !== container.guid)
 			.map((term) => {
-				if (term.guid === container.guid) {
-					return null;
-				}
 				const membership = term.relation.find(
 					({ object, predicate: p, subject }) =>
 						object === container.guid && subject === term.guid && p === predicate
