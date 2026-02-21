@@ -69,7 +69,6 @@
 	let termItems = $derived.by((): TermDragItem[] => buildTermItems(terms));
 	let removingGuid = $state<string | null>(null);
 	let reordering = $state(false);
-	let reorderError = $state('');
 
 	let formState = $state({
 		title: '',
@@ -77,10 +76,10 @@
 		description: '',
 		filterLabel: '',
 		icon: '',
-		error: '',
 		creating: false,
 		form: null as HTMLFormElement | null
 	});
+
 	let showCreateFormFor = $state<string | null>(null);
 
 	function resetForm() {
@@ -89,7 +88,6 @@
 		formState.description = '';
 		formState.filterLabel = '';
 		formState.icon = '';
-		formState.error = '';
 		showCreateFormFor = null;
 	}
 
@@ -173,7 +171,6 @@
 			return;
 		}
 
-		reorderError = '';
 		termItems = event.detail.items;
 	}
 
@@ -193,11 +190,10 @@
 		const previousTerms = terms;
 		terms = orderedTerms;
 		reordering = true;
-		reorderError = '';
 		try {
 			await syncParentRelations(orderedTerms);
 		} catch (error) {
-			reorderError = error instanceof Error ? error.message : String(error);
+			alert(error instanceof Error ? error.message : String(error));
 			terms = previousTerms;
 		} finally {
 			reordering = false;
@@ -214,15 +210,7 @@
 			return;
 		}
 
-		const title = formState.title.trim();
-
-		if (!title) {
-			formState.error = $_('category.terms.required');
-			return;
-		}
-
 		formState.creating = true;
-		formState.error = '';
 		try {
 			const insertIndex = (() => {
 				if (showCreateFormFor === 'header') {
@@ -239,7 +227,7 @@
 				container.managed_by,
 				container.realm
 			) as Omit<NewContainer, 'payload'> & Pick<TermContainer, 'payload'>;
-			newTerm.payload.title = title;
+			newTerm.payload.title = formState.title;
 			newTerm.payload.description = formState.description;
 			newTerm.payload.filterLabel = formState.filterLabel;
 			newTerm.payload.icon = formState.icon;
@@ -273,7 +261,7 @@
 			await invalidateAll();
 			resetForm();
 		} catch (error) {
-			formState.error = error instanceof Error ? error.message : String(error);
+			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			formState.creating = false;
 		}
@@ -368,15 +356,6 @@
 					/>
 				{/each}
 			</ul>
-			{#if reorderError}
-				<p class="error" role="alert">{reorderError}</p>
-			{/if}
 		{/if}
 	</div>
 {/if}
-
-<style>
-	.error {
-		color: var(--color-red-600);
-	}
-</style>

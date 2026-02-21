@@ -21,7 +21,6 @@
 			description: string;
 			filterLabel: string;
 			icon: string;
-			error: string;
 			creating: boolean;
 			form: HTMLFormElement | null;
 		};
@@ -58,12 +57,20 @@
 					<AutoresizingTextarea
 						bind:value={formState.title}
 						id={idForTitle}
+						oninput={(e) => {
+							if (e.currentTarget.value.trim().length === 0) {
+								e.currentTarget.setCustomValidity($_('category.terms.required'));
+							} else {
+								e.currentTarget.setCustomValidity('');
+							}
+						}}
 						onkeydown={(e) => {
 							if (e.key === 'Enter') {
 								e.preventDefault();
 							}
 						}}
 						placeholder={$_('title')}
+						required
 						rows={1}
 					/>
 				</h2>
@@ -76,10 +83,6 @@
 			/>
 
 			<Editor label={$_('description')} bind:value={formState.description} />
-
-			{#if formState.error}
-				<p class="error">{formState.error}</p>
-			{/if}
 
 			<button class="button-primary" disabled={formState.creating} type="submit">
 				{$_('category.terms.create_button')}
@@ -143,11 +146,6 @@
 
 	.button-primary {
 		width: fit-content;
-	}
-
-	.error {
-		color: var(--color-red-600);
-		margin: 0;
 	}
 
 	.dropdown.dropdown--compact {
