@@ -238,12 +238,11 @@
 				container.organizational_unit,
 				container.managed_by,
 				container.realm
-			) as NewContainer;
-			const termPayload = newTerm.payload as TermContainer['payload'];
-			termPayload.title = title;
-			termPayload.description = formState.description;
-			termPayload.filterLabel = formState.filterLabel;
-			termPayload.icon = formState.icon;
+			) as Omit<NewContainer, 'payload'> & Pick<TermContainer, 'payload'>;
+			newTerm.payload.title = title;
+			newTerm.payload.description = formState.description;
+			newTerm.payload.filterLabel = formState.filterLabel;
+			newTerm.payload.icon = formState.icon;
 			newTerm.relation = [
 				{
 					object: container.guid,
