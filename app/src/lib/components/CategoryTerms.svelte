@@ -1,28 +1,27 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { invalidateAll } from '$app/navigation';
-	import { get } from 'svelte/store';
 	import { tick } from 'svelte';
 	import { dragHandleZone } from 'svelte-dnd-action';
-	import Plus from '~icons/knotdots/plus';
 	import { _ } from 'svelte-i18n';
+	import Plus from '~icons/knotdots/plus';
+	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
-	import { ability, applicationState } from '$lib/stores';
 	import {
+		type AnyContainer,
+		type CategoryContainer,
 		container as containerSchema,
 		containerOfType,
 		isTermContainer,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
-		predicates,
-		type AnyContainer,
-		type CategoryContainer,
-		type NewContainer,
 		type Predicate,
+		predicates,
 		type TermContainer
 	} from '$lib/models';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: CategoryContainer | TermContainer;
@@ -218,7 +217,7 @@
 		const title = formState.title.trim();
 
 		if (!title) {
-			formState.error = get(_)('category.terms.required');
+			formState.error = $_('category.terms.required');
 			return;
 		}
 
