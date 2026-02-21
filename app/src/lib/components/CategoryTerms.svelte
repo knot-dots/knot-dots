@@ -59,15 +59,8 @@
 					term
 				};
 			})
-			.filter((entry): entry is { position: number; term: TermContainer } => Boolean(entry))
-			.toSorted((a, b) => {
-				if (a.position !== b.position) {
-					return a.position - b.position;
-				}
-				return a.term.payload.title.localeCompare(b.term.payload.title, undefined, {
-					sensitivity: 'base'
-				});
-			})
+			.filter((entry): entry is { position: number; term: TermContainer } => entry !== null)
+			.toSorted((a, b) => a.position - b.position)
 			.map(({ term }) => term)
 			.map((term) => {
 				let _ = $state(term);
