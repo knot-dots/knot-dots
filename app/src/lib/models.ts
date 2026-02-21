@@ -615,14 +615,13 @@ export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'i
 
 export type IooiType = z.infer<typeof iooiTypes>;
 
-const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
-	const cleaned = source
+export function slugify(source: string) {
+	return source
 		.trim()
 		.replace(/[^a-zA-Z0-9_.-]+/g, '-')
-		.replace(/^-+|-+$/g, '');
-
-	return lowerCase ? cleaned.toLowerCase() : cleaned;
-};
+		.replace(/^-+|-+$/g, '')
+		.substring(0, 128);
+}
 
 const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
@@ -638,94 +637,27 @@ const basePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-const categoryPayloadBaseShape = z.object({
+const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
-	title: z.string().trim(),
+	title: z.string().trim().min(1),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])
 });
 
-const enforceCategoryKey = (value: { key?: string; title?: string }, ctx: z.RefinementCtx) => {
-	const title = value.title?.trim();
-	const key = value.key?.trim();
-	const slug = key
-		? normalizeCategoryKey(key, { lowerCase: false })
-		: normalizeCategoryKey(title || '', { lowerCase: true });
-
-	if (!slug) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: 'category title is required to derive key'
-		});
-		return;
+const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
+	if (payload.title) {
+		payload.key = slugify(payload.title);
 	}
+});
 
-	if (slug.length > 128) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: 'category key must be 128 characters or fewer'
-		});
-		return;
-	}
+const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
 
-	value.key = slug;
-};
-
-const enforceCategoryKeyIfProvided = (
-	value: { key?: string; title?: string },
-	ctx: z.RefinementCtx
-) => {
-	// For partial inputs, skip when both title and key are missing; creation code fills them later.
-	if (!value.title && !value.key) return;
-	enforceCategoryKey(value, ctx);
-};
-
-const enforceTermValue = (value: { title?: string; value?: string }, ctx: z.RefinementCtx) => {
-	const title = value.title?.trim();
-	const rawValue = value.value?.trim();
-	const slug = rawValue
-		? normalizeCategoryKey(rawValue, { lowerCase: true })
-		: normalizeCategoryKey(title || '', { lowerCase: true });
-
-	if (!slug) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: 'term title is required to derive value'
-		});
-		return;
-	}
-
-	if (slug.length > 128) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: 'term value must be 128 characters or fewer'
-		});
-		return;
-	}
-
-	value.value = slug;
-};
-
-const enforceTermValueIfProvided = (
-	value: { title?: string; value?: string },
-	ctx: z.RefinementCtx
-) => {
-	if (!value.title && !value.value) return;
-	enforceTermValue(value, ctx);
-};
-
-const categoryPayload = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
-
-const initialCategoryPayload = categoryPayloadBaseShape
-	.partial({ key: true, title: true })
-	.superRefine(enforceCategoryKeyIfProvided);
-
-const termPayloadBase = z
+const unrefinedTermPayload = z
 	.object({
 		description: z.string().trim().optional(),
 		filterLabel: z.string().trim().max(256).optional(),
-		title: z.string().trim(),
+		title: z.string().trim().min(1),
 		value: z.string().trim().optional(),
 		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term),
@@ -733,16 +665,13 @@ const termPayloadBase = z
 	})
 	.strict();
 
-const termPayload = termPayloadBase.superRefine(enforceTermValue);
+const termPayload = unrefinedTermPayload.superRefine((payload) => {
+	if (payload.title) {
+		payload.value = slugify(payload.title);
+	}
+});
 
-const initialTermPayload = termPayloadBase
-	.partial({
-		filterLabel: true,
-		icon: true,
-		title: true,
-		value: true
-	})
-	.superRefine(enforceTermValueIfProvided);
+const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
