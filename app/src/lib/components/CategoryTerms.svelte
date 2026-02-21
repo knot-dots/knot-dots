@@ -62,7 +62,7 @@
 			})
 	);
 
-	let termItems = $derived.by((): TermDragItem[] => buildTermItems(terms));
+	let termItems: TermDragItem[] = $derived(terms.map((term) => ({ guid: term.guid, term })));
 	let removingGuid = $state<string | null>(null);
 	let reordering = $state(false);
 
@@ -89,9 +89,6 @@
 	async function showForm(position: number) {
 		showCreateFormAt = position;
 	}
-
-	const buildTermItems = (items: TermContainer[]): TermDragItem[] =>
-		items.map((term) => ({ guid: term.guid, term }));
 
 	const displayItems = $derived.by(() => {
 		if (showCreateFormAt == -1) {
