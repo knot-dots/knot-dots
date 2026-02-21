@@ -55,7 +55,7 @@
 					return null;
 				}
 				return {
-					position: membership.position ?? Number.MAX_SAFE_INTEGER,
+					position: membership.position,
 					term
 				};
 			})
@@ -132,7 +132,7 @@
 	});
 
 	async function syncParentRelations(nextTerms: TermContainer[]) {
-		const currentRelations = container.relation ?? [];
+		const currentRelations = container.relation;
 		container.relation = [
 			...nextTerms.map(({ guid }, index) => ({
 				object: container.guid,
@@ -145,7 +145,7 @@
 
 		nextTerms.forEach((term, index) => {
 			term.relation = [
-				...(term.relation ?? []).filter(
+				...term.relation.filter(
 					({ object, predicate: p }) => !(object === container.guid && p === predicate)
 				),
 				{
@@ -333,7 +333,7 @@
 	);
 
 	const isSubterm = $derived(
-		(container.relation ?? []).some(
+		container.relation.some(
 			({ predicate: p, subject }) =>
 				p === predicates.enum['is-part-of'] && subject === container.guid
 		)
