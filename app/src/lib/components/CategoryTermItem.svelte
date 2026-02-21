@@ -25,7 +25,7 @@
 			icon: string;
 			creating: boolean;
 		};
-		onAdd?: (guid: string) => void;
+		onAdd?: () => void;
 		onRemove?: (term: TermContainer) => void;
 		onSubmit?: (event: SubmitEvent) => void;
 	}
@@ -104,7 +104,7 @@
 							<button
 								type="button"
 								class="dropdown-button"
-								onclick={() => onAdd(term.guid)}
+								onclick={onAdd}
 								aria-label={$_('category.terms.create_button')}
 							>
 								<Plus />

@@ -2,7 +2,7 @@
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
@@ -75,7 +75,7 @@
 		creating: false
 	});
 
-	let showCreateFormFor = $state<string | null>(null);
+	let showCreateFormAt = $state(-1);
 
 	function resetForm() {
 		formState.title = '';
@@ -83,31 +83,26 @@
 		formState.description = '';
 		formState.filterLabel = '';
 		formState.icon = '';
-		showCreateFormFor = null;
+		showCreateFormAt = -1;
 	}
 
-	async function showForm(anchor?: string) {
-		showCreateFormFor = anchor ?? 'header';
+	async function showForm(position: number) {
+		showCreateFormAt = position;
 	}
 
 	const buildTermItems = (items: TermContainer[]): TermDragItem[] =>
 		items.map((term) => ({ guid: term.guid, term }));
 
 	const displayItems = $derived.by(() => {
-		if (!showCreateFormFor) {
+		if (showCreateFormAt == -1) {
 			return termItems;
 		}
-		const createItem: TermDragItem = { guid: '__create-form__', isCreateForm: true };
-		if (showCreateFormFor === 'header') {
-			return [createItem, ...termItems];
-		}
-		const anchorIndex = termItems.findIndex(({ guid }) => guid === showCreateFormFor);
-		if (anchorIndex === -1) {
-			return [...termItems, createItem];
-		}
-		const nextItems = [...termItems];
-		nextItems.splice(anchorIndex + 1, 0, createItem);
-		return nextItems;
+
+		return [
+			...termItems.slice(0, showCreateFormAt),
+			{ guid: '__create-form__', isCreateForm: true },
+			...termItems.slice(showCreateFormAt)
+		];
 	});
 
 	async function syncParentRelations(nextTerms: TermContainer[]) {
@@ -194,35 +189,28 @@
 			return;
 		}
 
+		const previousTerms = terms;
+		const newTerm = containerOfType(
+			payloadTypes.enum.term,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as Omit<NewContainer, 'payload'> & Pick<TermContainer, 'payload'>;
+		newTerm.payload.title = formState.title;
+		newTerm.payload.description = formState.description;
+		newTerm.payload.filterLabel = formState.filterLabel;
+		newTerm.payload.icon = formState.icon;
+		newTerm.relation = [
+			{
+				object: container.guid,
+				position: showCreateFormAt,
+				predicate
+			}
+		];
 		formState.creating = true;
+
 		try {
-			const insertIndex = (() => {
-				if (showCreateFormFor === 'header') {
-					return 0;
-				}
-				const anchorIndex = terms.findIndex(({ guid }) => guid === showCreateFormFor);
-				return anchorIndex === -1 ? terms.length : anchorIndex + 1;
-			})();
-
-			const newTerm = containerOfType(
-				payloadTypes.enum.term,
-				container.organization,
-				container.organizational_unit,
-				container.managed_by,
-				container.realm
-			) as Omit<NewContainer, 'payload'> & Pick<TermContainer, 'payload'>;
-			newTerm.payload.title = formState.title;
-			newTerm.payload.description = formState.description;
-			newTerm.payload.filterLabel = formState.filterLabel;
-			newTerm.payload.icon = formState.icon;
-			newTerm.relation = [
-				{
-					object: container.guid,
-					position: insertIndex,
-					predicate
-				}
-			];
-
 			const response = await saveContainer(newTerm);
 			const payload = await response.json();
 			if (!response.ok) {
@@ -233,18 +221,13 @@
 				throw new Error('Unexpected response while creating term');
 			}
 
-			const created = parsed.data;
-			const nextTerms = [...terms];
-			nextTerms.splice(insertIndex, 0, created);
-			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => guid !== created.guid),
-				created
-			];
-			await syncParentRelations(nextTerms);
-			// refresh workspace columns/catalog data without full reload
-			await invalidateAll();
+			terms = [...terms.slice(0, showCreateFormAt), parsed.data, ...terms.slice(showCreateFormAt)];
+
+			await syncParentRelations(terms);
+			await invalidate('containers');
 			resetForm();
 		} catch (error) {
+			terms = previousTerms;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			formState.creating = false;
@@ -296,14 +279,10 @@
 
 {#if !isSubterm}
 	<div class="sections">
-		{#if terms.length === 0 && !showCreateFormFor}
+		{#if terms.length === 0 && showCreateFormAt < 0}
 			{#if canEdit}
 				<div class="details-section">
-					<button
-						type="button"
-						class="button button-sm button-primary"
-						onclick={() => showForm('header')}
-					>
+					<button type="button" class="button button-sm button-primary" onclick={() => showForm(0)}>
 						<Plus />
 						<span>{$_('category.terms.create_button')}</span>
 					</button>
@@ -316,13 +295,13 @@
 					flipDurationMs: 150,
 					morphDisabled: true,
 					dropFromOthersDisabled: true,
-					dragDisabled: !canEdit || reordering || Boolean(showCreateFormFor)
+					dragDisabled: !canEdit || reordering || showCreateFormAt > -1
 				}}
 				onconsider={handleDndConsider}
 				onfinalize={handleDndFinalize}
 				data-reordering={reordering}
 			>
-				{#each displayItems as dragItem (dragItem.guid)}
+				{#each displayItems as dragItem, index (dragItem.guid)}
 					{@const term = dragItem.term}
 					{@const isCreateForm = dragItem.isCreateForm}
 					<CategoryTermItem
@@ -332,7 +311,7 @@
 						{reordering}
 						{removingGuid}
 						bind:formState
-						onAdd={showForm}
+						onAdd={() => showForm(index + 1)}
 						onRemove={detachTerm}
 						onSubmit={handleCreateTerm}
 					/>
