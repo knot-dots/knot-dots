@@ -61,8 +61,7 @@
 			})
 			.filter((entry): entry is { position: number; term: TermContainer } => entry !== null)
 			.toSorted((a, b) => a.position - b.position)
-			.map(({ term }) => term)
-			.map((term) => {
+			.map(({ term }) => {
 				let _ = $state(term);
 				return _;
 			});
