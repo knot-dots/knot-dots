@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { tick } from 'svelte';
 	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
@@ -14,8 +12,6 @@
 		containerOfType,
 		isTermContainer,
 		type NewContainer,
-		overlayKey,
-		overlayURL,
 		payloadTypes,
 		type Predicate,
 		predicates,
@@ -76,8 +72,7 @@
 		description: '',
 		filterLabel: '',
 		icon: '',
-		creating: false,
-		form: null as HTMLFormElement | null
+		creating: false
 	});
 
 	let showCreateFormFor = $state<string | null>(null);
@@ -91,11 +86,8 @@
 		showCreateFormFor = null;
 	}
 
-	async function focusCreateForm(anchor?: string) {
+	async function showForm(anchor?: string) {
 		showCreateFormFor = anchor ?? 'header';
-		await tick();
-		formState.form?.querySelector<HTMLInputElement>('input')?.focus();
-		formState.form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 
 	const buildTermItems = (items: TermContainer[]): TermDragItem[] =>
@@ -310,7 +302,7 @@
 					<button
 						type="button"
 						class="button button-sm button-primary"
-						onclick={() => focusCreateForm('header')}
+						onclick={() => showForm('header')}
 					>
 						<Plus />
 						<span>{$_('category.terms.create_button')}</span>
@@ -333,16 +325,14 @@
 				{#each displayItems as dragItem (dragItem.guid)}
 					{@const term = dragItem.term}
 					{@const isCreateForm = dragItem.isCreateForm}
-					{@const overlayHref = term ? overlayURL(page.url, overlayKey.enum.view, term.guid) : ''}
 					<CategoryTermItem
 						{term}
 						{isCreateForm}
 						{canEdit}
 						{reordering}
 						{removingGuid}
-						{overlayHref}
 						bind:formState
-						onAdd={focusCreateForm}
+						onAdd={showForm}
 						onRemove={detachTerm}
 						onSubmit={handleCreateTerm}
 					/>

@@ -1,13 +1,15 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
+	import { page } from '$app/state';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import CategoryTermMenu from '$lib/components/CategoryTermMenu.svelte';
 	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import Editor from '$lib/components/Editor.svelte';
-	import type { TermContainer } from '$lib/models';
+	import { overlayKey, overlayURL, type TermContainer } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
@@ -22,9 +24,7 @@
 			filterLabel: string;
 			icon: string;
 			creating: boolean;
-			form: HTMLFormElement | null;
 		};
-		overlayHref?: string;
 		onAdd?: (guid: string) => void;
 		onRemove?: (term: TermContainer) => void;
 		onSubmit?: (event: SubmitEvent) => void;
@@ -37,24 +37,31 @@
 		reordering = false,
 		removingGuid = null,
 		formState = $bindable(),
-		overlayHref = '',
 		onAdd = () => {},
 		onRemove = () => {},
 		onSubmit = () => {}
 	}: Props = $props();
 
 	const idForTitle = crypto.randomUUID();
+
+	const overlayHref = $derived(term ? overlayURL(page.url, overlayKey.enum.view, term.guid) : '');
+
+	const init: Attachment<HTMLTextAreaElement> = (element) => {
+		element.focus();
+		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	};
 </script>
 
 <li>
 	{#if isCreateForm}
-		<form class="details-section" onsubmit={onSubmit} bind:this={formState.form}>
+		<form class="details-section" onsubmit={onSubmit}>
 			<header>
 				<EditableLogo editable allowedFileTypes={['image/svg+xml']} bind:value={formState.icon} />
 
 				<h2 class="details-heading">
 					<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
 					<AutoresizingTextarea
+						{@attach init}
 						bind:value={formState.title}
 						id={idForTitle}
 						oninput={(e) => {
