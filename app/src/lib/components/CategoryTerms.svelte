@@ -167,18 +167,10 @@
 	}
 
 	function handleDndConsider(event: CustomEvent<{ items: TermDragItem[] }>) {
-		if (!canEdit || reordering || showCreateFormFor) {
-			return;
-		}
-
 		termItems = event.detail.items;
 	}
 
 	async function handleDndFinalize(event: CustomEvent<{ items: TermDragItem[] }>) {
-		if (!canEdit || reordering || showCreateFormFor) {
-			return;
-		}
-
 		const orderedTerms = event.detail.items
 			.map(({ term }) => term)
 			.filter((term): term is TermContainer => Boolean(term));
