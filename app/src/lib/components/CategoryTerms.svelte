@@ -161,8 +161,8 @@
 		const orderedTerms = event.detail.items
 			.map(({ term }) => term)
 			.filter((term): term is TermContainer => Boolean(term));
+
 		if (hasSameOrder(orderedTerms)) {
-			termItems = buildTermItems(terms);
 			return;
 		}
 
