@@ -241,15 +241,9 @@
 			) as NewContainer;
 			const termPayload = newTerm.payload as TermContainer['payload'];
 			termPayload.title = title;
-			if (formState.description.trim()) {
-				termPayload.description = formState.description.trim();
-			}
-			if (formState.filterLabel.trim()) {
-				termPayload.filterLabel = formState.filterLabel.trim();
-			}
-			if (formState.icon.trim()) {
-				termPayload.icon = formState.icon.trim();
-			}
+			termPayload.description = formState.description;
+			termPayload.filterLabel = formState.filterLabel;
+			termPayload.icon = formState.icon;
 			newTerm.relation = [
 				{
 					object: container.guid,
