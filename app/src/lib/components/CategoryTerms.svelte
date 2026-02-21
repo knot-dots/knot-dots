@@ -62,7 +62,20 @@
 			})
 	);
 
-	let termItems: TermDragItem[] = $derived(terms.map((term) => ({ guid: term.guid, term })));
+	let termItems: TermDragItem[] = $derived.by(() => {
+		const termItems = terms.map((term) => ({ guid: term.guid, term }));
+
+		if (showCreateFormAt == -1) {
+			return termItems;
+		} else {
+			return [
+				...termItems.slice(0, showCreateFormAt),
+				{ guid: '__create-form__', isCreateForm: true },
+				...termItems.slice(showCreateFormAt)
+			];
+		}
+	});
+
 	let removingGuid = $state<string | null>(null);
 	let reordering = $state(false);
 
@@ -89,18 +102,6 @@
 	async function showForm(position: number) {
 		showCreateFormAt = position;
 	}
-
-	const displayItems = $derived.by(() => {
-		if (showCreateFormAt == -1) {
-			return termItems;
-		}
-
-		return [
-			...termItems.slice(0, showCreateFormAt),
-			{ guid: '__create-form__', isCreateForm: true },
-			...termItems.slice(showCreateFormAt)
-		];
-	});
 
 	async function syncParentRelations(nextTerms: TermContainer[]) {
 		const currentRelations = container.relation;
@@ -289,7 +290,7 @@
 		{:else}
 			<ul
 				use:dragHandleZone={{
-					items: displayItems,
+					items: termItems,
 					flipDurationMs: 150,
 					morphDisabled: true,
 					dropFromOthersDisabled: true,
@@ -299,7 +300,7 @@
 				onfinalize={handleDndFinalize}
 				data-reordering={reordering}
 			>
-				{#each displayItems as dragItem, index (dragItem.guid)}
+				{#each termItems as dragItem, index (dragItem.guid)}
 					{@const term = dragItem.term}
 					{@const isCreateForm = dragItem.isCreateForm}
 					<CategoryTermItem
