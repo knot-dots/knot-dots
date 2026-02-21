@@ -239,7 +239,9 @@
 			return;
 		}
 
+		const previousTerms = terms;
 		removingGuid = term.guid;
+
 		try {
 			const updatedTerm = {
 				...term,
@@ -254,11 +256,10 @@
 				throw new Error(body.message ?? 'Failed to remove term');
 			}
 
-			const nextTerms = terms.filter(({ guid }) => guid !== term.guid);
-			terms = nextTerms;
-			relatedContainers = relatedContainers.filter(({ guid }) => guid !== term.guid);
-			await syncParentRelations(nextTerms);
+			terms = terms.filter(({ guid }) => guid !== term.guid);
+			await syncParentRelations(terms);
 		} catch (error) {
+			terms = previousTerms;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			removingGuid = null;
