@@ -76,7 +76,7 @@
 	let allResourceDataContainers = $state<ResourceDataContainer[]>([]);
 
 	$effect(() => {
-		if (subordinateGoals.length === 0) {
+		if (!parentGoal) {
 			allResourceDataContainers = [];
 			return;
 		}
