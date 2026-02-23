@@ -8,7 +8,7 @@ test.describe('Goal IOOI Board', () => {
 		isMobile,
 		testGoal
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open goal overlay
 		await dotsBoard.goto(`/${testGoal.organization}`);
@@ -31,7 +31,7 @@ test.describe('Goal IOOI Board', () => {
 		testGoal,
 		testObjective
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open goal overlay
 		await dotsBoard.goto(`/${testGoal.organization}`);
@@ -53,7 +53,7 @@ test.describe('Goal IOOI Board', () => {
 			testGoal,
 			testIndicator
 		}) => {
-			test.skip(isMobile, 'Feature cannot be enabled on mobile');
+			test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 			// Open goal overlay and enable edit mode
 			await dotsBoard.goto(`/${testGoal.organization}`);
@@ -94,7 +94,7 @@ test.describe('Goal IOOI Board', () => {
 		isMobile,
 		testGoal
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.goto(`/${testGoal.organization}`);
@@ -116,7 +116,7 @@ test.describe('Goal IOOI Board', () => {
 		testGoal,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.goto(`/${testGoal.organization}`);
@@ -175,7 +175,7 @@ test.describe('Goal IOOI Board', () => {
 		testGoal,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open goal overlay and enable edit mode
 		await dotsBoard.goto(`/${testGoal.organization}`);
@@ -241,7 +241,7 @@ test.describe('Measure IOOI Board', () => {
 		isMobile,
 		testMeasure
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay
 		await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -264,7 +264,7 @@ test.describe('Measure IOOI Board', () => {
 		testMeasure,
 		testEffect
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay
 		await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -286,7 +286,7 @@ test.describe('Measure IOOI Board', () => {
 			testMeasure,
 			testIndicator
 		}) => {
-			test.skip(isMobile, 'Feature cannot be enabled on mobile');
+			test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 			// Open measure overlay and enable edit mode
 			await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -327,7 +327,7 @@ test.describe('Measure IOOI Board', () => {
 		isMobile,
 		testMeasure
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay and enable edit mode
 		await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -364,7 +364,7 @@ test.describe('Measure IOOI Board', () => {
 		testMeasure,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay and enable edit mode
 		await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -426,7 +426,7 @@ test.describe('Measure IOOI Board', () => {
 		testMeasure,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay and enable edit mode
 		await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -488,7 +488,7 @@ test.describe('Measure IOOI Board', () => {
 		testMeasure,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay and enable edit mode
 		await dotsBoard.goto(`/${testMeasure.organization}`);
@@ -560,7 +560,7 @@ test.describe('Measure IOOI Board', () => {
 		testMeasure,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		// Open measure overlay and enable edit mode
 		await dotsBoard.goto(`/${testMeasure.organization}`);
