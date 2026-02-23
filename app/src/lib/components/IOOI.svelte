@@ -181,7 +181,15 @@
 	type IooiItem = ObjectiveContainer | EffectContainer;
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
-	let resourceData = $derived((containers ?? []).filter(isResourceDataContainer));
+	let resourceData = $derived(
+		(containers ?? [])
+			.filter(isResourceDataContainer)
+			.filter((rd) =>
+				rd.relation.some(
+					(r) => r.object === container?.guid && r.predicate === predicates.enum['is-part-of']
+				)
+			)
+	);
 
 	// Items filtered by IOOI type (for output, outcome, impact columns)
 	let itemsByIooiType = $derived.by(() => {
