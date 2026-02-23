@@ -70,7 +70,6 @@
 			{/key}
 
 			<CategoryTerms
-				headingKey="category.subterms.heading"
 				predicate={predicates.enum['is-part-of']}
 				bind:container
 				bind:relatedContainers

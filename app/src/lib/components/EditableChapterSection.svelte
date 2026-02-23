@@ -118,7 +118,7 @@
 		min-height: var(--logo-height);
 	}
 
-	.heading > :global(:first-child) {
+	.heading > :global(img:first-child) {
 		flex-shrink: 0;
 	}
 

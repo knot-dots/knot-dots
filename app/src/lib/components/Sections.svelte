@@ -197,7 +197,7 @@
 </script>
 
 <div class="sections">
-	{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length == 0}
+	{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length === 0}
 		<div class="details-section">
 			<AddSectionMenu
 				bind:relatedContainers

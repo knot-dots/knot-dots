@@ -1,72 +1,47 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { invalidateAll } from '$app/navigation';
-	import { get } from 'svelte/store';
-	import { dndzone, dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
-	import DragHandle from '~icons/knotdots/draghandle';
+	import { dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
+	import Plus from '~icons/knotdots/plus';
+	import { invalidate } from '$app/navigation';
 	import saveContainer from '$lib/client/saveContainer';
-	import EditableImage from '$lib/components/EditableImage.svelte';
-	import { ability, applicationState } from '$lib/stores';
+	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
+		type AnyContainer,
+		type CategoryContainer,
 		container as containerSchema,
 		containerOfType,
 		isTermContainer,
-		overlayKey,
-		overlayURL,
-		payloadTypes,
-		predicates,
-		type AnyContainer,
-		type CategoryContainer,
 		type NewContainer,
+		payloadTypes,
 		type Predicate,
+		predicates,
 		type TermContainer
 	} from '$lib/models';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: CategoryContainer | TermContainer;
 		relatedContainers: AnyContainer[];
 		predicate?: Predicate;
-		headingKey?: string;
 	}
 
 	let {
 		container = $bindable(),
 		relatedContainers = $bindable(),
-		predicate = predicates.enum['is-part-of-category'],
-		headingKey = 'category.terms.heading'
+		predicate = predicates.enum['is-part-of-category']
 	}: Props = $props();
 
 	type TermDragItem = {
 		guid: string;
 		term?: TermContainer;
-		[SHADOW_ITEM_MARKER_PROPERTY_NAME]?: boolean;
+		isCreateForm?: boolean;
 	};
 
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let terms = $state([] as TermContainer[]);
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let termItems = $state([] as TermDragItem[]);
-	let creating = $state(false);
-	let removingGuid = $state<string | null>(null);
-	let formError = $state('');
-	let reordering = $state(false);
-	let reorderError = $state('');
-
-	let newTitle = $state('');
-	let newValue = $state('');
-	let newDescription = $state('');
-	let newFilterLabel = $state('');
-	let newIcon = $state('');
-	let valueTouched = $state(false);
-
-	$effect(() => {
-		const relatedTerms = relatedContainers
+	let terms: TermContainer[] = $derived(
+		relatedContainers
 			.filter(isTermContainer)
+			.filter(({ guid }) => guid !== container.guid)
 			.map((term) => {
-				if (term.guid === container.guid) {
-					return null;
-				}
 				const membership = term.relation.find(
 					({ object, predicate: p, subject }) =>
 						object === container.guid && subject === term.guid && p === predicate
@@ -75,54 +50,61 @@
 					return null;
 				}
 				return {
-					position: membership.position ?? Number.MAX_SAFE_INTEGER,
+					position: membership.position,
 					term
 				};
 			})
-			.filter((entry): entry is { position: number; term: TermContainer } => Boolean(entry))
-			.toSorted((a, b) => {
-				if (a.position !== b.position) {
-					return a.position - b.position;
-				}
-				return a.term.payload.title.localeCompare(b.term.payload.title, undefined, {
-					sensitivity: 'base'
-				});
+			.filter((entry): entry is { position: number; term: TermContainer } => entry !== null)
+			.toSorted((a, b) => a.position - b.position)
+			.map(({ term }) => {
+				let _ = $state(term);
+				return _;
 			})
-			.map(({ term }) => term);
+	);
 
-		terms = relatedTerms;
-	});
+	let termItems: TermDragItem[] = $derived.by(() => {
+		const termItems = terms.map((term) => ({ guid: term.guid, term }));
 
-	$effect(() => {
-		termItems = terms.map((term) => ({ guid: term.guid, term }));
-	});
-
-	function slugify(source: string) {
-		return source
-			.trim()
-			.toLowerCase()
-			.replace(/[^a-z0-9_.-]+/g, '-')
-			.replace(/^-+|-+$/g, '');
-	}
-
-	$effect(() => {
-		if (!valueTouched) {
-			newValue = slugify(newTitle);
+		if (showCreateFormAt == -1) {
+			return termItems;
+		} else {
+			return [
+				...termItems.slice(0, showCreateFormAt),
+				{ guid: '__create-form__', isCreateForm: true },
+				...termItems.slice(showCreateFormAt)
+			];
 		}
 	});
 
+	let removingGuid = $state<string | null>(null);
+	let reordering = $state(false);
+
+	let formState = $state({
+		title: '',
+		value: '',
+		description: '',
+		filterLabel: '',
+		icon: '',
+		creating: false
+	});
+
+	let showCreateFormAt = $state(-1);
+
 	function resetForm() {
-		newTitle = '';
-		newValue = '';
-		newDescription = '';
-		newFilterLabel = '';
-		newIcon = '';
-		valueTouched = false;
-		formError = '';
+		formState.title = '';
+		formState.value = '';
+		formState.description = '';
+		formState.filterLabel = '';
+		formState.icon = '';
+		showCreateFormAt = -1;
+	}
+
+	async function showForm(position: number) {
+		showCreateFormAt = position;
 	}
 
 	async function syncParentRelations(nextTerms: TermContainer[]) {
-		const currentRelations = container.relation ?? [];
+		const currentRelations = container.relation;
 		container.relation = [
 			...nextTerms.map(({ guid }, index) => ({
 				object: container.guid,
@@ -135,7 +117,7 @@
 
 		nextTerms.forEach((term, index) => {
 			term.relation = [
-				...(term.relation ?? []).filter(
+				...term.relation.filter(
 					({ object, predicate: p }) => !(object === container.guid && p === predicate)
 				),
 				{
@@ -170,22 +152,14 @@
 	}
 
 	function handleDndConsider(event: CustomEvent<{ items: TermDragItem[] }>) {
-		if (!canEdit || reordering) {
-			return;
-		}
-
-		reorderError = '';
 		termItems = event.detail.items;
 	}
 
 	async function handleDndFinalize(event: CustomEvent<{ items: TermDragItem[] }>) {
-		if (!canEdit || reordering) {
-			return;
-		}
-
 		const orderedTerms = event.detail.items
 			.map(({ term }) => term)
 			.filter((term): term is TermContainer => Boolean(term));
+
 		if (hasSameOrder(orderedTerms)) {
 			return;
 		}
@@ -193,11 +167,10 @@
 		const previousTerms = terms;
 		terms = orderedTerms;
 		reordering = true;
-		reorderError = '';
 		try {
 			await syncParentRelations(orderedTerms);
 		} catch (error) {
-			reorderError = error instanceof Error ? error.message : String(error);
+			alert(error instanceof Error ? error.message : String(error));
 			terms = previousTerms;
 		} finally {
 			reordering = false;
@@ -210,48 +183,32 @@
 		if (!event.submitter) {
 			return;
 		}
-		if (creating) {
+		if (formState.creating) {
 			return;
 		}
 
-		const title = newTitle.trim();
-		const value = newValue.trim();
+		const previousTerms = terms;
+		const newTerm = containerOfType(
+			payloadTypes.enum.term,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as Omit<NewContainer, 'payload'> & Pick<TermContainer, 'payload'>;
+		newTerm.payload.title = formState.title;
+		newTerm.payload.description = formState.description;
+		newTerm.payload.filterLabel = formState.filterLabel;
+		newTerm.payload.icon = formState.icon;
+		newTerm.relation = [
+			{
+				object: container.guid,
+				position: showCreateFormAt,
+				predicate
+			}
+		];
+		formState.creating = true;
 
-		if (!title || !value) {
-			formError = get(_)('category.terms.required');
-			return;
-		}
-
-		creating = true;
-		formError = '';
 		try {
-			const newTerm = containerOfType(
-				payloadTypes.enum.term,
-				container.organization,
-				container.organizational_unit,
-				container.managed_by,
-				container.realm
-			) as NewContainer;
-			const termPayload = newTerm.payload as TermContainer['payload'];
-			termPayload.title = title;
-			termPayload.value = value;
-			if (newDescription.trim()) {
-				termPayload.description = newDescription.trim();
-			}
-			if (newFilterLabel.trim()) {
-				termPayload.filterLabel = newFilterLabel.trim();
-			}
-			if (newIcon.trim()) {
-				termPayload.icon = newIcon.trim();
-			}
-			newTerm.relation = [
-				{
-					object: container.guid,
-					position: terms.length,
-					predicate
-				}
-			];
-
 			const response = await saveContainer(newTerm);
 			const payload = await response.json();
 			if (!response.ok) {
@@ -262,21 +219,16 @@
 				throw new Error('Unexpected response while creating term');
 			}
 
-			const created = parsed.data;
-			const nextTerms = [...terms, created];
-			terms = nextTerms; // show immediately in overlay list
-			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => guid !== created.guid),
-				created
-			];
-			await syncParentRelations(nextTerms);
-			// refresh workspace columns/catalog data without full reload
-			await invalidateAll();
+			terms = [...terms.slice(0, showCreateFormAt), parsed.data, ...terms.slice(showCreateFormAt)];
+
+			await syncParentRelations(terms);
+			await invalidate('containers');
 			resetForm();
 		} catch (error) {
-			formError = error instanceof Error ? error.message : String(error);
+			terms = previousTerms;
+			alert(error instanceof Error ? error.message : String(error));
 		} finally {
-			creating = false;
+			formState.creating = false;
 		}
 	}
 
@@ -285,7 +237,9 @@
 			return;
 		}
 
+		const previousTerms = terms;
 		removingGuid = term.guid;
+
 		try {
 			const updatedTerm = {
 				...term,
@@ -300,11 +254,10 @@
 				throw new Error(body.message ?? 'Failed to remove term');
 			}
 
-			const nextTerms = terms.filter(({ guid }) => guid !== term.guid);
-			terms = nextTerms;
-			relatedContainers = relatedContainers.filter(({ guid }) => guid !== term.guid);
-			await syncParentRelations(nextTerms);
+			terms = terms.filter(({ guid }) => guid !== term.guid);
+			await syncParentRelations(terms);
 		} catch (error) {
+			terms = previousTerms;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			removingGuid = null;
@@ -316,7 +269,7 @@
 	);
 
 	const isSubterm = $derived(
-		(container.relation ?? []).some(
+		container.relation.some(
 			({ predicate: p, subject }) =>
 				p === predicates.enum['is-part-of'] && subject === container.guid
 		)
@@ -324,283 +277,45 @@
 </script>
 
 {#if !isSubterm}
-	<div class="category-terms details-section">
-		<div class="category-terms__header">
-			<h2>{$_(headingKey)}</h2>
-		</div>
-
-		{#if terms.length === 0}
-			<p class="category-terms__empty">{$_('category.terms.empty')}</p>
+	<div class="sections">
+		{#if terms.length === 0 && showCreateFormAt < 0}
+			{#if canEdit}
+				<div class="details-section">
+					<button type="button" class="button button-sm button-primary" onclick={() => showForm(0)}>
+						<Plus />
+						<span>{$_('category.terms.create_button')}</span>
+					</button>
+				</div>
+			{/if}
 		{:else}
 			<ul
-				class="category-terms__list"
-				use:dndzone={{
+				use:dragHandleZone={{
 					items: termItems,
 					flipDurationMs: 150,
+					morphDisabled: true,
 					dropFromOthersDisabled: true,
-					dragDisabled: !canEdit || reordering
+					dragDisabled: !canEdit || reordering || showCreateFormAt > -1
 				}}
 				onconsider={handleDndConsider}
 				onfinalize={handleDndFinalize}
 				data-reordering={reordering}
 			>
-				{#each termItems as dragItem (dragItem.guid)}
+				{#each termItems as dragItem, index (dragItem.guid)}
 					{@const term = dragItem.term}
-					{@const isShadow = dragItem[SHADOW_ITEM_MARKER_PROPERTY_NAME]}
-					<li
-						class="category-terms__item"
-						class:category-terms__item--draggable={canEdit && !isShadow}
-						class:category-terms__item--placeholder={isShadow}
-					>
-						{#if term && !isShadow}
-							{#if canEdit}
-								<div class="actions is-visible-on-hover category-terms__actions">
-									<span class="drag-handle" use:dragHandle>
-										<DragHandle />
-									</span>
-								</div>
-							{/if}
-							<a
-								class="category-terms__link"
-								href={overlayURL(page.url, overlayKey.enum.view, term.guid)}
-							>
-								<h3 class="details-heading">{term.payload.title}</h3>
-								<p class="category-terms__value">
-									{$_('category.terms.value_label')}: {term.payload.value}
-								</p>
-							</a>
-
-							{#if canEdit}
-								<button
-									type="button"
-									class="button button-xs button-alternative"
-									onclick={() => detachTerm(term)}
-									disabled={removingGuid === term.guid || reordering}
-								>
-									{$_('category.terms.remove_button')}
-								</button>
-							{/if}
-						{:else}
-							<span class="category-terms__placeholder-hint" aria-hidden="true">⋯⋯</span>
-						{/if}
-					</li>
+					{@const isCreateForm = dragItem.isCreateForm}
+					<CategoryTermItem
+						{term}
+						{isCreateForm}
+						{canEdit}
+						{reordering}
+						{removingGuid}
+						bind:formState
+						onAdd={() => showForm(index + 1)}
+						onRemove={detachTerm}
+						onSubmit={handleCreateTerm}
+					/>
 				{/each}
 			</ul>
-			{#if reorderError}
-				<p class="category-terms__error" role="alert">{reorderError}</p>
-			{/if}
-		{/if}
-
-		{#if canEdit && !isSubterm}
-			<form class="category-terms__form" onsubmit={handleCreateTerm}>
-				<h3>{$_('category.terms.create_title')}</h3>
-
-				<label>
-					<span>{$_('title')}</span>
-					<input type="text" placeholder={$_('title')} required bind:value={newTitle} />
-				</label>
-
-				<label>
-					<span>{$_('category.terms.value_label')}</span>
-					<input
-						type="text"
-						placeholder={$_('category.terms.value_label')}
-						required
-						bind:value={newValue}
-						oninput={() => (valueTouched = true)}
-					/>
-				</label>
-
-				<label>
-					<span>{$_('description')}</span>
-					<textarea
-						rows="2"
-						placeholder={$_('category.terms.description_placeholder')}
-						bind:value={newDescription}
-					></textarea>
-				</label>
-
-				<label>
-					<span>{$_('category.terms.filter_label')}</span>
-					<input
-						type="text"
-						placeholder={$_('category.terms.filter_label')}
-						bind:value={newFilterLabel}
-					/>
-				</label>
-
-				<EditableImage
-					editable
-					allowedFileTypes={['image/svg+xml']}
-					help={$_('upload.image.svg_only_help')}
-					label={$_('category.terms.icon')}
-					bind:value={newIcon}
-				/>
-
-				{#if formError}
-					<p class="category-terms__error">{formError}</p>
-				{/if}
-
-				<button class="button button-primary" type="submit" disabled={creating}>
-					{$_('category.terms.create_button')}
-				</button>
-			</form>
 		{/if}
 	</div>
 {/if}
-
-<style>
-	.category-terms {
-		gap: 1rem;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.category-terms__list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.category-terms__item {
-		align-items: center;
-		background: var(--color-gray-050);
-		border-radius: 8px;
-		display: flex;
-		justify-content: space-between;
-		padding: 0.75rem;
-		gap: 1rem;
-		position: relative;
-	}
-
-	.category-terms__actions {
-		--dropdown-button-icon-default-color: var(--color-gray-700);
-		--dropdown-button-icon-size: 1rem;
-
-		align-items: center;
-		background: white;
-		border-radius: 12px;
-		box-shadow: var(--shadow-sm);
-		display: flex;
-		gap: 0.25rem;
-		left: -2.75rem;
-		padding: 0.25rem;
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 1;
-	}
-
-	.category-terms__actions .drag-handle {
-		padding: 0.25rem;
-	}
-
-	.category-terms__actions .drag-handle :global(svg) {
-		color: var(--dropdown-button-icon-default-color);
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.category-terms__link {
-		color: inherit;
-		display: block;
-		flex: 1;
-		text-decoration: none;
-	}
-
-	.category-terms__link:focus-visible {
-		outline: 2px solid var(--color-primary-500);
-		outline-offset: 2px;
-	}
-
-	.category-terms__item--draggable {
-		cursor: grab;
-	}
-
-	.category-terms__item--draggable:active {
-		cursor: grabbing;
-	}
-
-	.category-terms__item--placeholder {
-		opacity: 0.6;
-		border: 1px dashed var(--color-gray-400);
-		background: transparent;
-		justify-content: center;
-		min-height: 2.5rem;
-	}
-
-	.category-terms__item--placeholder .category-terms__actions {
-		display: none;
-	}
-
-	.category-terms__placeholder-hint {
-		font-size: 1.25rem;
-		letter-spacing: 0.25rem;
-		color: var(--color-gray-400);
-	}
-
-	.category-terms__list[data-reordering='true'] {
-		opacity: 0.7;
-	}
-
-	@media (hover: hover) {
-		.category-terms__item:hover {
-			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
-			--is-visible-on-hover-visibility: visible;
-		}
-	}
-
-	.category-terms__title {
-		font-weight: 600;
-		margin: 0;
-	}
-
-	.category-terms__value,
-	.category-terms__filter,
-	.category-terms__description {
-		margin: 0.125rem 0 0;
-		color: var(--color-gray-600);
-		font-size: 0.875rem;
-	}
-
-	.category-terms__form {
-		background: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 12px;
-		padding: 1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-	}
-
-	.category-terms__form h3,
-	.category-terms__header h2 {
-		margin: 0;
-	}
-
-	.category-terms__form label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.category-terms__form input,
-	.category-terms__form textarea {
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		padding: 0.5rem;
-	}
-
-	.category-terms__empty,
-	.category-terms__error {
-		margin: 0;
-		color: var(--color-gray-600);
-	}
-
-	.category-terms__error {
-		color: var(--color-red-600);
-	}
-</style>
