@@ -5,10 +5,10 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
-	import ChevronRight from '~icons/heroicons/chevron-right-16-solid';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { paramsFromFragment } from '$lib/models';
+	import FilterDisclosureOption from '$lib/components/FilterDisclosureOption.svelte';
 
 	type OptionWithSub = {
 		count?: number;
@@ -98,52 +98,6 @@
 			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 		}
 	}
-	let panelEl = $state<HTMLElement | null>(null);
-	let hoveredSubOptions = $state<OptionWithSub['subOptions']>();
-	let flyoutPlacement = $state<'left' | 'right'>('right');
-	let flyoutTop = $state(0);
-	let hideFlyoutTimeout: number | undefined;
-
-	function showSubOptionsAt(anchor: HTMLElement, option: OptionWithSub) {
-		if (!option.subOptions?.length) {
-			hoveredSubOptions = undefined;
-			return;
-		}
-
-		hoveredSubOptions = option.subOptions;
-
-		const optionRect = anchor.getBoundingClientRect();
-		const panelRect = panelEl?.getBoundingClientRect();
-		if (panelRect) {
-			flyoutTop = optionRect.top - panelRect.top;
-			const spaceRight = window.innerWidth - panelRect.right;
-			flyoutPlacement = spaceRight < 260 ? 'left' : 'right';
-		}
-	}
-
-	function handleOptionEnter(event: MouseEvent, option: OptionWithSub) {
-		window.clearTimeout(hideFlyoutTimeout);
-		showSubOptionsAt(event.currentTarget as HTMLElement, option);
-	}
-
-	function handleOptionLeave() {
-		hideFlyoutTimeout = window.setTimeout(() => {
-			hoveredSubOptions = undefined;
-		}, 120);
-	}
-
-	function handleFlyoutEnter() {
-		window.clearTimeout(hideFlyoutTimeout);
-	}
-
-	function handleChevronClick(event: MouseEvent, option: OptionWithSub) {
-		event.preventDefault();
-		event.stopPropagation();
-		window.clearTimeout(hideFlyoutTimeout);
-		const anchor = (event.currentTarget as HTMLElement).closest('.option') as HTMLElement | null;
-		if (!anchor) return;
-		showSubOptionsAt(anchor, option);
-	}
 </script>
 
 <div class="dropdown" use:popperRef>
@@ -156,128 +110,21 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset
-			class="dropdown-panel"
-			use:popperContent={extraOpts}
-			use:popover.panel
-			bind:this={panelEl}
-		>
+		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 			<div class="options">
 				{#each options.filter(({ count }) => count === undefined || count > 0) as option (option.value)}
-					<div
-						class="option"
-						role="presentation"
-						onmouseenter={(event) => handleOptionEnter(event, option)}
-						onmouseleave={handleOptionLeave}
-					>
-						<label>
-							<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
-							<span class="badge badge--gray">
-								{option.label}
-								{#if option.count !== undefined}
-									<span class="counter">({option.count})</span>
-								{/if}
-								{#if option.subOptions?.length}
-									<button
-										type="button"
-										class="suboption-button"
-										onclick={(event) => handleChevronClick(event, option)}
-										onkeydown={(event) =>
-											event.key === 'Enter' || event.key === ' '
-												? (event.preventDefault(),
-													handleChevronClick(event as unknown as MouseEvent, option))
-												: undefined}
-										aria-label={$_('filter.show_suboptions')}
-									>
-										<ChevronRight class="suboption-indicator" aria-hidden="true" />
-									</button>
-								{/if}
-							</span>
-						</label>
-					</div>
+					<FilterDisclosureOption {option} bind:selected {apply} />
 				{/each}
 				<p>{$_('filter.no_results')}</p>
 				{#each options.filter(({ count }) => count !== undefined && count === 0) as option (option.value)}
-					<div
-						class="option"
-						role="presentation"
-						onmouseenter={(event) => handleOptionEnter(event, option)}
-						onmouseleave={handleOptionLeave}
-					>
-						<label>
-							<input onchange={apply} type="checkbox" value={option.value} bind:group={selected} />
-							<span class="badge badge--gray">
-								{option.label}
-								<span class="counter">({option.count})</span>
-								{#if option.subOptions?.length}
-									<button
-										type="button"
-										class="suboption-button"
-										onclick={(event) => handleChevronClick(event, option)}
-										onkeydown={(event) =>
-											event.key === 'Enter' || event.key === ' '
-												? (event.preventDefault(),
-													handleChevronClick(event as unknown as MouseEvent, option))
-												: undefined}
-										aria-label={$_('filter.show_suboptions')}
-									>
-										<ChevronRight class="suboption-indicator" aria-hidden="true" />
-									</button>
-								{/if}
-							</span>
-						</label>
-					</div>
+					<FilterDisclosureOption {option} bind:selected {apply} />
 				{/each}
 			</div>
-
-			{#if hoveredSubOptions?.length}
-				<div
-					class="suboptions-flyout"
-					class:suboptions-flyout--left={flyoutPlacement === 'left'}
-					style={`top:${flyoutTop}px;`}
-					role="presentation"
-					onmouseenter={handleFlyoutEnter}
-					onmouseleave={handleOptionLeave}
-				>
-					{#each hoveredSubOptions as sub (sub.value)}
-						<label class="option option--suboption">
-							<input onchange={apply} type="checkbox" value={sub.value} bind:group={selected} />
-							<span class="badge badge--gray">
-								{sub.label}
-								{#if sub.count !== undefined}
-									<span class="counter">({sub.count})</span>
-								{/if}
-							</span>
-						</label>
-					{/each}
-				</div>
-			{/if}
 		</fieldset>
 	{/if}
 </div>
 
 <style>
-	.counter {
-		color: var(--color-gray-500);
-	}
-
-	.suboption-indicator {
-		height: 1rem;
-		width: 1rem;
-		color: var(--color-gray-500);
-	}
-
-	.suboption-button {
-		background: none;
-		border: none;
-		padding: 0;
-		margin-left: auto;
-		display: inline-flex;
-		align-items: center;
-		color: var(--color-gray-500);
-		cursor: pointer;
-	}
-
 	.dropdown {
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-active-background: var(--color-primary-100);
@@ -294,6 +141,7 @@
 		z-index: 2;
 		position: relative;
 		overflow: visible;
+		min-width: 16rem;
 	}
 
 	.options {
@@ -302,36 +150,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
-	}
-
-	.option {
-		position: relative;
-	}
-
-	.option--suboption {
-		opacity: 0.85;
-	}
-
-	.suboptions-flyout {
-		position: absolute;
-		top: 0;
-		left: calc(100% - 0.25rem);
-		min-width: 220px;
-		max-width: 260px;
-		background: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		padding: 0.5rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		z-index: 3;
-	}
-
-	.suboptions-flyout--left {
-		left: auto;
-		right: calc(100% - 0.25rem);
 	}
 
 	.dropdown-panel > div > p:last-child {
