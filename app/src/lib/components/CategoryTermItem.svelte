@@ -161,7 +161,9 @@
 	}
 
 	.details-section {
+		border: solid 1px var(--color-gray-200);
 		position: relative;
+		margin-bottom: 1rem;
 	}
 
 	.details-section > header {
