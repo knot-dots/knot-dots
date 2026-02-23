@@ -9,7 +9,6 @@
 		count?: number;
 		value: string;
 		label: string;
-		guid?: string;
 		icon?: string;
 		subOptions?: OptionWithSub[];
 	};
