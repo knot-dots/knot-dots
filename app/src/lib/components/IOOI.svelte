@@ -302,24 +302,8 @@
 </script>
 
 <Board>
-	<!-- Input Column: Display Resource Data -->
-	<BoardColumn
-		--background={iooiBackgrounds.get(iooiTypes.enum['iooi.input'])}
-		--hover-border-color={iooiHoverColors.get(iooiTypes.enum['iooi.input'])}
-		addItemUrl="#create=resource_data"
-		createOptions={resourceDataCreateOptions}
-		title={$_(iooiTypes.enum['iooi.input'])}
-		onCreateContainer={addResourceDataItem()}
-	>
-		<div class="vertical-scroll-wrapper">
-			{#each resourceData as rd (rd.guid)}
-				<ResourceDataCard container={rd} />
-			{/each}
-		</div>
-	</BoardColumn>
-
-	<!-- Output, Outcome, Impact Columns: Display Items -->
-	{#each [iooiTypes.enum['iooi.output'], iooiTypes.enum['iooi.outcome'], iooiTypes.enum['iooi.impact']] as iooiType (iooiType)}
+	<!-- Impact, Outcome, Output Columns: Display Items -->
+	{#each [iooiTypes.enum['iooi.impact'], iooiTypes.enum['iooi.outcome'], iooiTypes.enum['iooi.output']] as iooiType (iooiType)}
 		<BoardColumn
 			--background={iooiBackgrounds.get(iooiType)}
 			--hover-border-color={iooiHoverColors.get(iooiType)}
@@ -347,4 +331,20 @@
 			{/if}
 		</BoardColumn>
 	{/each}
+
+	<!-- Input Column: Display Resource Data -->
+	<BoardColumn
+		--background={iooiBackgrounds.get(iooiTypes.enum['iooi.input'])}
+		--hover-border-color={iooiHoverColors.get(iooiTypes.enum['iooi.input'])}
+		addItemUrl="#create=resource_data"
+		createOptions={resourceDataCreateOptions}
+		title={$_(iooiTypes.enum['iooi.input'])}
+		onCreateContainer={addResourceDataItem()}
+	>
+		<div class="vertical-scroll-wrapper">
+			{#each resourceData as rd (rd.guid)}
+				<ResourceDataCard container={rd} />
+			{/each}
+		</div>
+	</BoardColumn>
 </Board>
