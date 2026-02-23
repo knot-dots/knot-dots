@@ -3,7 +3,11 @@
 	import { dragHandle } from 'svelte-dnd-action';
 	import DragHandle from '~icons/knotdots/draghandle';
 
-	export let actions: Snippet | undefined = undefined;
+	type Props = {
+		actions?: Snippet;
+	};
+
+	let { actions }: Props = $props();
 </script>
 
 <div class="actions is-visible-on-hover">
