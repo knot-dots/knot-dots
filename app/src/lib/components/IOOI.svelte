@@ -20,6 +20,7 @@
 		isGoalContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
+		isResourceDataCollectionContainer,
 		isResourceDataContainer,
 		type MeasureContainer,
 		type NewContainer,
@@ -29,7 +30,13 @@
 		predicates,
 		resourceDataTypes
 	} from '$lib/models';
-	import { ability, addEffectState, addObjectiveState, newContainer } from '$lib/stores';
+	import {
+		ability,
+		addEffectState,
+		addObjectiveState,
+		lastCreatedContainer,
+		newContainer
+	} from '$lib/stores';
 	import ResourceDataCard from './ResourceDataCard.svelte';
 
 	interface Props {
@@ -42,6 +49,75 @@
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
 	);
+
+	$inspect('Related containers:', containers);
+
+	// Watch for successfully created resourceData containers and create collection if needed
+	$effect(() => {
+		const created = $lastCreatedContainer;
+
+		console.log('Last created container:', created);
+
+		if (created && isResourceDataContainer(created) && container) {
+			// Check if this resourceData belongs to our container
+			const belongsToThisContainer = created.relation.some(
+				(r) => r.object === container.guid && r.predicate === predicates.enum['is-part-of']
+			);
+
+			if (belongsToThisContainer) {
+				createResourceDataCollectionIfNeeded(created.payload.resourceDataType);
+			}
+		}
+	});
+
+	// Function to check if collection exists and create it if not
+	async function createResourceDataCollectionIfNeeded(resourceDataType: string) {
+		if (!container) return;
+
+		// Check if a collection with this resourceDataType already exists
+		const collectionExists = containers.some(
+			(c) =>
+				isResourceDataCollectionContainer(c) &&
+				c.payload.resourceDataType === resourceDataType &&
+				c.relation.some(
+					(r) => r.object === container.guid && r.predicate === predicates.enum['is-section-of']
+				)
+		);
+
+		if (!collectionExists) {
+			// Create the collection
+			const collection = containerOfType(
+				payloadTypes.enum.resource_data_collection,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
+
+			// Set the resourceDataType
+			(collection.payload as { resourceDataType?: string }).resourceDataType = resourceDataType;
+
+			// Set relation as a section of the container
+			collection.relation = [
+				{
+					object: container.guid,
+					position: containers.filter((c) =>
+						c.relation.some(
+							(r) => r.object === container.guid && r.predicate === predicates.enum['is-section-of']
+						)
+					).length,
+					predicate: predicates.enum['is-section-of']
+				}
+			];
+
+			// Save the collection
+			const response = await saveContainer(collection);
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('Failed to create resource data collection:', error.message);
+			}
+		}
+	}
 
 	const { itemType, itemFilterFn, addItemState } = $derived.by(() => {
 		if (isGoalContainer(container)) {
@@ -222,7 +298,7 @@
 	<BoardColumn
 		--background={iooiBackgrounds.get(iooiTypes.enum['iooi.input'])}
 		--hover-border-color={iooiHoverColors.get(iooiTypes.enum['iooi.input'])}
-		addItemUrl={`#create=resource_data`}
+		addItemUrl="#create=resource_data"
 		createOptions={resourceDataCreateOptions}
 		title={$_(iooiTypes.enum['iooi.input'])}
 		onCreateContainer={addResourceDataItem()}
