@@ -50,13 +50,9 @@
 		'createContainerDialog'
 	);
 
-	$inspect('Related containers:', containers);
-
 	// Watch for successfully created resourceData containers and create collection if needed
 	$effect(() => {
 		const created = $lastCreatedContainer;
-
-		console.log('Last created container:', created);
 
 		if (created && isResourceDataContainer(created) && container) {
 			// Check if this resourceData belongs to our container
