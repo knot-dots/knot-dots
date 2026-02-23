@@ -36,7 +36,6 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 	depends('containers');
 
 	let containers: Container[];
-	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
 	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
@@ -49,6 +48,9 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 				user: locals.user
 			})
 		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(

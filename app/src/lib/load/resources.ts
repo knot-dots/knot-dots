@@ -37,7 +37,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
 			(await parent()) as ParentData;
 		const features = createFeatureDecisions(locals.features);
-		const customCategories = extractCustomCategoryFilters(url);
 		const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 		const categoryContext = features.useCustomCategories()
 			? await loadCategoryContext({
@@ -47,6 +46,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 					user: locals.user
 				})
 			: null;
+		const customCategories = features.useCustomCategories()
+			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+			: {};
 
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
 

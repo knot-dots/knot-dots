@@ -150,7 +150,6 @@ export async function getIndicatorsData(params: {
 export default (async function load({ depends, locals, parent, url }: LoadInput) {
 	depends('containers');
 
-	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
 		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
@@ -164,6 +163,9 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 				user: locals.user
 			})
 		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	const filters = {
 		customCategories,
