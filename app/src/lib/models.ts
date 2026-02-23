@@ -915,8 +915,11 @@ const initialMeasureCollectionPayload = measureCollectionPayload;
 const objectivePayload = basePayload
 	.omit({ category: true, summary: true, topic: true })
 	.extend({
-		type: z.literal(payloadTypes.enum.objective),
 		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+		trendValue: z
+			.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
+			.optional(),
+		type: z.literal(payloadTypes.enum.objective),
 		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
 	})
 	.strict();
@@ -1065,6 +1068,7 @@ const effectPayload = measureMonitoringBasePayload
 		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
 		type: z.literal(payloadTypes.enum.effect)
 	});
 
