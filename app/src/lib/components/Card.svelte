@@ -11,6 +11,7 @@
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import Tendency from '$lib/components/Tendency.svelte';
 	import {
 		findAncestors,
 		isContainerWithProgress,
@@ -278,7 +279,11 @@
 		{:else if isEffectContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				<EffectChart {container} {relatedContainers} />
+				{#if container.payload.plannedValues.length > 0}
+					<EffectChart {container} {relatedContainers} />
+				{:else if 'trendValue' in container.payload}
+					<Tendency {container} />
+				{/if}
 			{/if}
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
@@ -299,7 +304,11 @@
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				<ObjectiveChart {container} {relatedContainers} />
+				{#if container.payload.wantedValues.length > 0}
+					<ObjectiveChart {container} {relatedContainers} />
+				{:else if 'trendValue' in container.payload}
+					<Tendency {container} />
+				{/if}
 			{/if}
 		{:else if isContentPartnerContainer(container)}
 			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
