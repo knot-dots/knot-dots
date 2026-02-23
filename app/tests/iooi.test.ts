@@ -152,11 +152,84 @@ test.describe('Goal IOOI Board', () => {
 		// Verify resource data appears in Input column
 		await expect(inputColumn.getByTitle(resourceDataTitle)).toBeVisible();
 
-		// Clean up - delete the created resource data
+		// Clean up - delete the created resource data and auto-created section
 		await inputColumn.getByTitle(resourceDataTitle).click();
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
+
+		// Go to main overlay view to delete the auto-created section
+		await dotsBoard.page.goto(`/${testGoal.organization}#view=${testGoal.guid}`);
+		await dotsBoard.overlay.editModeToggle.check();
+		const budgetSection = dotsBoard.overlay.sections.filter({
+			hasText: 'Budget'
+		});
+		if ((await budgetSection.count()) > 0) {
+			await dotsBoard.overlay.deleteSection(budgetSection.first());
+		}
+	});
+
+	test('automatically creates resource data collection section when adding resource data from Input column', async ({
+		dotsBoard,
+		isMobile,
+		testGoal,
+		testResourceV2
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open goal overlay and enable edit mode
+		await dotsBoard.goto(`/${testGoal.organization}`);
+		await dotsBoard.card(testGoal.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Clean up any existing budget section to ensure clean test state
+		const existingBudgetSection = dotsBoard.overlay.sections.filter({ hasText: 'Budget' });
+		if ((await existingBudgetSection.count()) > 0) {
+			await dotsBoard.overlay.deleteSection(existingBudgetSection.first());
+		}
+
+		// Verify no budget section exists now
+		await expect(dotsBoard.overlay.sections.filter({ hasText: 'Budget' })).toHaveCount(0);
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Create new resource data in Input column
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		await inputColumn.getByRole('button', { name: 'Add item' }).first().click();
+
+		// Select the resource from the grouped dropdown
+		const dialog = dotsBoard.page.getByRole('dialog');
+		await dialog.getByLabel('Resource').click();
+		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+
+		// Fill in the title
+		const resourceDataTitle = `Budget Item ${Date.now()}`;
+		await dialog.getByRole('textbox', { name: 'Title' }).fill(resourceDataTitle);
+
+		// Save the item
+		await dialog.getByRole('button', { name: 'Save' }).click();
+
+		// Wait for redirect to resource data overlay
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+
+		// Navigate back to main overlay view
+		await dotsBoard.page.goto(`/${testGoal.organization}#view=${testGoal.guid}`);
+
+		// Verify budget section was automatically created
+		const budgetSection = dotsBoard.overlay.sections.filter({ hasText: 'Budget' });
+		await expect(budgetSection).toHaveCount(1);
+
+		// Verify the resource data item is in the section
+		await expect(budgetSection.getByTitle(resourceDataTitle)).toBeVisible();
+
+		// Clean up - delete the resource data and section
+		await budgetSection.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.delete();
+		await dotsBoard.overlay.deleteSection(budgetSection);
 	});
 });
 
@@ -330,11 +403,21 @@ test.describe('Measure IOOI Board', () => {
 		// Verify resource data appears in Input column
 		await expect(inputColumn.getByTitle(resourceDataTitle)).toBeVisible();
 
-		// Clean up - delete the created resource data
+		// Clean up - delete the created resource data and auto-created section
 		await inputColumn.getByTitle(resourceDataTitle).click();
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
+
+		// Go to main overlay view to delete the auto-created section
+		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
+		await dotsBoard.overlay.editModeToggle.check();
+		const plannedSection = dotsBoard.overlay.sections.filter({
+			hasText: 'Planned resource allocation'
+		});
+		if ((await plannedSection.count()) > 0) {
+			await dotsBoard.overlay.deleteSection(plannedSection.first());
+		}
 	});
 
 	test('can create actual resource allocation in Input column for measure', async ({
@@ -382,11 +465,93 @@ test.describe('Measure IOOI Board', () => {
 		// Verify resource data appears in Input column
 		await expect(inputColumn.getByTitle(resourceDataTitle)).toBeVisible();
 
-		// Clean up - delete the created resource data
+		// Clean up - delete the created resource data and auto-created section
 		await inputColumn.getByTitle(resourceDataTitle).click();
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
+
+		// Go to main overlay view to delete the auto-created section
+		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
+		await dotsBoard.overlay.editModeToggle.check();
+		const actualSection = dotsBoard.overlay.sections.filter({
+			hasText: 'Actual resource allocation'
+		});
+		if ((await actualSection.count()) > 0) {
+			await dotsBoard.overlay.deleteSection(actualSection.first());
+		}
+	});
+
+	test('automatically creates resource data collection section when adding resource data from Input column for measure', async ({
+		dotsBoard,
+		isMobile,
+		testMeasure,
+		testResourceV2
+	}) => {
+		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+
+		// Open measure overlay and enable edit mode
+		await dotsBoard.goto(`/${testMeasure.organization}`);
+		await dotsBoard.card(testMeasure.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		// Clean up any existing planned resource allocation section to ensure clean test state
+		const existingPlannedSection = dotsBoard.overlay.sections.filter({
+			hasText: 'Planned resource allocation'
+		});
+		if ((await existingPlannedSection.count()) > 0) {
+			await dotsBoard.overlay.deleteSection(existingPlannedSection.first());
+		}
+
+		// Verify no planned resource allocation section exists now
+		await expect(
+			dotsBoard.overlay.sections.filter({ hasText: 'Planned resource allocation' })
+		).toHaveCount(0);
+
+		// Navigate to IOOI workspace
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+
+		// Create new planned resource allocation in Input column
+		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
+		await inputColumn.getByRole('button', { name: 'Add item' }).first().click();
+
+		// Select "Planned resource allocation" from dropdown
+		await dotsBoard.page.getByRole('menuitem', { name: 'Planned resource allocation' }).click();
+
+		// Select the resource from the grouped dropdown
+		const dialog = dotsBoard.page.getByRole('dialog');
+		await dialog.getByLabel('Resource').click();
+		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+
+		// Fill in the title
+		const resourceDataTitle = `Planned Resource ${Date.now()}`;
+		await dialog.getByRole('textbox', { name: 'Title' }).fill(resourceDataTitle);
+
+		// Save the item
+		await dialog.getByRole('button', { name: 'Save' }).click();
+
+		// Wait for redirect to resource data overlay
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+
+		// Navigate back to main overlay view
+		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
+
+		// Verify planned resource allocation section was automatically created
+		const plannedSection = dotsBoard.overlay.sections.filter({
+			hasText: 'Planned resource allocation'
+		});
+		await expect(plannedSection).toHaveCount(1);
+
+		// Verify the resource data item is in the section
+		await expect(plannedSection.getByTitle(resourceDataTitle)).toBeVisible();
+
+		// Clean up - delete the resource data and section
+		await plannedSection.getByTitle(resourceDataTitle).click();
+		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
+		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.delete();
+		await dotsBoard.overlay.deleteSection(plannedSection);
 	});
 
 	test('Input column shows resource data', async ({
@@ -402,8 +567,15 @@ test.describe('Measure IOOI Board', () => {
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
-		// Add resource data section
-		const section = await dotsBoard.overlay.addSection('Actual resource allocation');
+		// Check if section already exists, otherwise create it
+		let section = dotsBoard.overlay.sections.filter({
+			hasText: 'Actual resource allocation'
+		});
+		if ((await section.count()) === 0) {
+			section = await dotsBoard.overlay.addSection('Actual resource allocation');
+		} else {
+			section = section.first();
+		}
 
 		// Create a resource data item
 		const resourceDataTitle = `Resource Data ${Date.now()}`;
