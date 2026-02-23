@@ -140,6 +140,9 @@ export const addObjectiveState = writable<AddObjectiveState>({});
 
 export const newContainer = writable<NewContainer | undefined>();
 
+// Store to track last successfully created container
+export const lastCreatedContainer = writable<Container | undefined>(undefined);
+
 export type OverlayData =
 	| {
 			key: 'chapters';
@@ -500,9 +503,14 @@ if (browser) {
 						payloadType: [
 							payloadTypes.enum.goal,
 							payloadTypes.enum.objective,
-							payloadTypes.enum.resource_data
+							payloadTypes.enum.resource_data,
+							payloadTypes.enum.resource_data_collection
 						],
-						relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
+						relationType: [
+							predicates.enum['is-part-of'],
+							predicates.enum['is-objective-for'],
+							predicates.enum['is-section-of']
+						],
 						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'
@@ -526,9 +534,14 @@ if (browser) {
 						payloadTypes.enum.measure,
 						payloadTypes.enum.simple_measure,
 						payloadTypes.enum.effect,
-						payloadTypes.enum.resource_data
+						payloadTypes.enum.resource_data,
+						payloadTypes.enum.resource_data_collection
 					],
-					relationType: [predicates.enum['is-part-of'], predicates.enum['is-measured-by']],
+					relationType: [
+						predicates.enum['is-part-of'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-section-of']
+					],
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
