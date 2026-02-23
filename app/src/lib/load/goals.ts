@@ -34,7 +34,7 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string | null;
+	defaultOrganizationGuid: string;
 };
 
 export default (async function load({ depends, locals, parent, url }: LoadInput) {
@@ -47,13 +47,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
 
-	const organizationScope = Array.from(
-		new Set(
-			[currentOrganization.guid, defaultOrganizationGuid].filter((guid): guid is string =>
-				Boolean(guid)
-			)
-		)
-	);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
