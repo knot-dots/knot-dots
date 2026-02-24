@@ -16,6 +16,7 @@ declare global {
 		interface PageData {
 			currentOrganization: OrganizationContainer;
 			currentOrganizationalUnit?: OrganizationalUnitContainer;
+			defaultOrganizationGuid: string;
 			features: string[];
 			organizations: OrganizationContainer[];
 			organizationalUnits: OrganizationalUnitContainer[];
