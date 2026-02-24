@@ -229,7 +229,11 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, containers, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		containers: filtered,

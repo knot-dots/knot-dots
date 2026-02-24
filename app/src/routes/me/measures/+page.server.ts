@@ -40,7 +40,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
 	]);
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, filtered, { useCategoryPayload: features.useCustomCategories() });
 
 	return {
 		containers: filtered,

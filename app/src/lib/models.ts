@@ -627,7 +627,7 @@ const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
 	sdg: z.array(sustainableDevelopmentGoals).default([]),
-	category: z.array(z.string().trim().min(1)).default([]),
+	category: z.record(z.string(), z.array(z.string().trim().min(1))).default({}),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
 	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
@@ -2260,7 +2260,7 @@ export function isContainerWithSdg(
 }
 
 export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { category: SustainableDevelopmentGoal[] };
+	payload: AnyPayload & { category: Record<string, string[]> };
 };
 
 export function isContainerWithCategory(
@@ -3083,8 +3083,10 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
-	containers: AnyContainer[]
+	containers: AnyContainer[],
+	options?: { useCategoryPayload?: boolean }
 ) {
+	const useCategoryPayload = options?.useCategoryPayload ?? false;
 	const normalizeValue = (value: unknown): string => {
 		if (value === null || value === undefined) return '';
 		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
@@ -3100,16 +3102,25 @@ export function computeFacetCount(
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
-			if (key in container.payload) {
+			const categoryPayload = useCategoryPayload
+				? (container.payload as { category?: Record<string, unknown> }).category
+				: undefined;
+			const hasCategoryValue = categoryPayload && key in categoryPayload;
+			const hasPayloadValue = key in container.payload;
+			const valueSource = hasCategoryValue
+				? categoryPayload?.[key]
+				: hasPayloadValue
+					? container.payload[key as keyof typeof container.payload]
+					: undefined;
+			if (valueSource !== undefined) {
 				const foci = facets.get(key) as Map<string, number>;
-				if (Array.isArray(container.payload[key as keyof typeof container.payload])) {
-					for (const value of container.payload[key as keyof typeof container.payload]) {
+				if (Array.isArray(valueSource)) {
+					for (const value of valueSource) {
 						const normalized = normalizeValue(value);
 						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 					}
 				} else {
-					const value = container.payload[key as keyof typeof container.payload];
-					const normalized = normalizeValue(value);
+					const normalized = normalizeValue(valueSource);
 					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 				}
 			}

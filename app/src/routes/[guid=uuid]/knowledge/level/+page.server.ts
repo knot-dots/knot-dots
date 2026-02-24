@@ -161,7 +161,9 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const facets = features.useElasticsearch()
 		? _facets
-		: computeFacetCount(_facets, [...filtered, ...filteredPrograms]);
+		: computeFacetCount(_facets, [...filtered, ...filteredPrograms], {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		containers: filtered,

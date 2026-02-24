@@ -34,7 +34,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)]
 	]);
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, filtered, { useCategoryPayload: features.useCustomCategories() });
 
 	return {
 		containers: filtered,
