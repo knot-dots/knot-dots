@@ -26,15 +26,16 @@ export async function loadCategoryContext(params: {
 	scope: Scope;
 	user: User;
 }): Promise<CategoryContext | null> {
-	const [categories, terms] = await Promise.all([
-		params.connect(
-			getManyContainers(params.scope, { type: [payloadTypes.enum.category] }, 'alpha')
-		),
-		params.connect(getManyContainers(params.scope, { type: [payloadTypes.enum.term] }, 'alpha'))
-	]);
+	const containers = await params.connect(
+		getManyContainers(
+			params.scope,
+			{ type: [payloadTypes.enum.category, payloadTypes.enum.term] },
+			'alpha'
+		)
+	);
 
-	const visibleCategories = filterVisible(categories, params.user).filter(isCategoryContainer);
-	const visibleTerms = filterVisible(terms, params.user).filter(isTermContainer);
+	const visibleCategories = filterVisible(containers.filter(isCategoryContainer), params.user);
+	const visibleTerms = filterVisible(containers.filter(isTermContainer), params.user);
 
 	const options = buildCategoryOptionsFromContainers(visibleCategories, visibleTerms);
 	const keys = getCategoryKeys(options);
