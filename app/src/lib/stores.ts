@@ -501,7 +501,6 @@ if (browser) {
 					{
 						organization: [container.organization],
 						payloadType: [
-							payloadTypes.enum.goal,
 							payloadTypes.enum.indicator,
 							payloadTypes.enum.objective,
 							payloadTypes.enum.resource_data,
@@ -528,8 +527,6 @@ if (browser) {
 				{
 					organization: [container.organization],
 					payloadType: [
-						payloadTypes.enum.measure,
-						payloadTypes.enum.simple_measure,
 						payloadTypes.enum.effect,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.resource_data,

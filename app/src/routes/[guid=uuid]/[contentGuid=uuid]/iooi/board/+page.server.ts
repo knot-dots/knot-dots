@@ -38,22 +38,12 @@ export const load = (async ({ depends, locals, params, url }) => {
 				container.guid,
 				[predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 				{
-					type: isGoal
-						? [
-								payloadTypes.enum.goal,
-
-								payloadTypes.enum.indicator,
-								payloadTypes.enum.objective,
-								payloadTypes.enum.resource_data,
-								payloadTypes.enum.resource_data_collection
-							]
-						: [
-								payloadTypes.enum.measure,
-								payloadTypes.enum.effect,
-								payloadTypes.enum.indicator,
-								payloadTypes.enum.resource_data,
-								payloadTypes.enum.resource_data_collection
-							]
+					type: [
+						payloadTypes.enum.indicator,
+						payloadTypes.enum.objective,
+						payloadTypes.enum.resource_data,
+						payloadTypes.enum.resource_data_collection
+					]
 				},
 				url.searchParams.get('sort') ?? ''
 			)
