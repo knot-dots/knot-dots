@@ -34,10 +34,10 @@ export async function loadCategoryContext(params: {
 		)
 	);
 
-	const visibleCategories = filterVisible(containers.filter(isCategoryContainer), params.user);
-	const visibleTerms = filterVisible(containers.filter(isTermContainer), params.user);
-
-	const options = buildCategoryOptionsFromContainers(visibleCategories, visibleTerms);
+	const options = buildCategoryOptionsFromContainers(
+		filterVisible(containers.filter(isCategoryContainer), params.user),
+		filterVisible(containers.filter(isTermContainer), params.user)
+	);
 	const keys = getCategoryKeys(options);
 
 	if (keys.length > 0) {
