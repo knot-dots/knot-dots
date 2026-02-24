@@ -106,7 +106,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 
 	const categoryContext = await loadCategoryContext({
 		connect: locals.pool.connect,
-		organizationScope: [currentOrganization.guid, defaultOrganizationGuid],
+		scope: [currentOrganization.guid, defaultOrganizationGuid],
 		user: locals.user
 	});
 

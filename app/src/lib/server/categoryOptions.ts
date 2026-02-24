@@ -39,14 +39,12 @@ async function fetchOptionsForScope(params: { connect: Connect; scope: Scope; us
 
 export async function loadCategoryContext(params: {
 	connect: Connect;
-	organizationScope: Scope;
+	scope: Scope;
 	user: User;
 }): Promise<CategoryContext | null> {
-	const scope = params.organizationScope;
-
 	const result = await fetchOptionsForScope({
 		connect: params.connect,
-		scope,
+		scope: params.scope,
 		user: params.user
 	});
 	if (result) {
