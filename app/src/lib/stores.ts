@@ -502,15 +502,12 @@ if (browser) {
 						organization: [container.organization],
 						payloadType: [
 							payloadTypes.enum.goal,
+							payloadTypes.enum.indicator,
 							payloadTypes.enum.objective,
 							payloadTypes.enum.resource_data,
 							payloadTypes.enum.resource_data_collection
 						],
-						relationType: [
-							predicates.enum['is-part-of'],
-							predicates.enum['is-objective-for'],
-							predicates.enum['is-section-of']
-						],
+						relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'
@@ -534,14 +531,11 @@ if (browser) {
 						payloadTypes.enum.measure,
 						payloadTypes.enum.simple_measure,
 						payloadTypes.enum.effect,
+						payloadTypes.enum.indicator,
 						payloadTypes.enum.resource_data,
 						payloadTypes.enum.resource_data_collection
 					],
-					relationType: [
-						predicates.enum['is-part-of'],
-						predicates.enum['is-measured-by'],
-						predicates.enum['is-section-of']
-					],
+					relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'

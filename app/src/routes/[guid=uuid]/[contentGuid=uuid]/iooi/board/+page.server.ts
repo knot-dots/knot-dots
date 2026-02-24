@@ -36,21 +36,13 @@ export const load = (async ({ depends, locals, params, url }) => {
 			getAllRelatedContainers(
 				[container.organization],
 				container.guid,
-				isGoal
-					? [
-							predicates.enum['is-part-of'],
-							predicates.enum['is-objective-for'],
-							predicates.enum['is-section-of']
-						]
-					: [
-							predicates.enum['is-part-of'],
-							predicates.enum['is-measured-by'],
-							predicates.enum['is-section-of']
-						],
+				[predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 				{
 					type: isGoal
 						? [
 								payloadTypes.enum.goal,
+
+								payloadTypes.enum.indicator,
 								payloadTypes.enum.objective,
 								payloadTypes.enum.resource_data,
 								payloadTypes.enum.resource_data_collection
@@ -58,6 +50,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 						: [
 								payloadTypes.enum.measure,
 								payloadTypes.enum.effect,
+								payloadTypes.enum.indicator,
 								payloadTypes.enum.resource_data,
 								payloadTypes.enum.resource_data_collection
 							]
