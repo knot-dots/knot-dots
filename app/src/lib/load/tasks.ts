@@ -3,17 +3,17 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
+	computeFacetCount,
 	filterOrganizationalUnits,
+	fromCounts,
 	type GoalContainer,
 	isGoalContainer,
 	isPartOf,
 	isTaskContainer,
 	payloadTypes,
 	predicates,
-	type TaskContainer,
-	computeFacetCount,
-	fromCounts,
-	taskCategories
+	taskCategories,
+	type TaskContainer
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -21,19 +21,7 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
-import type { ServerLoad } from '@sveltejs/kit';
-
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: import('$lib/models').OrganizationContainer;
-	currentOrganizationalUnit: import('$lib/models').OrganizationalUnitContainer | null;
-};
+import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
 
 function filterRelated(
 	containers: GoalContainer[],
@@ -43,14 +31,14 @@ function filterRelated(
 }
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
-	return (async ({ depends, locals, parent, url }: LoadInput) => {
+	return (async ({ depends, locals, parent, url }) => {
 		depends('containers');
 
 		let taskContainers: TaskContainer[];
 		let otherContainers: GoalContainer[];
 		let subordinateOrganizationalUnits: string[] = [];
 
-		const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
+		const { currentOrganization, currentOrganizationalUnit } = await parent();
 		const features = createFeatureDecisions(locals.features);
 
 		if (currentOrganization.payload.default) {
@@ -166,5 +154,5 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 				});
 
 		return { containers, relatedContainers, facets };
-	}) satisfies ServerLoad;
+	}) satisfies PageServerLoad;
 }

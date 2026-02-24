@@ -10,8 +10,7 @@ import {
 	policyFieldBNK,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationContainer
+	topics
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -24,11 +23,6 @@ import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	defaultOrganizationGuid: string;
-};
-
 function isRelatedToSome(containers: Container[]) {
 	return ({ relation }: Container) =>
 		relation.some(
@@ -40,7 +34,7 @@ function isRelatedToSome(containers: Container[]) {
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
-	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
+	const { currentOrganization, defaultOrganizationGuid } = await parent();
 	const features = createFeatureDecisions(locals.features);
 	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 

@@ -7,9 +7,7 @@ import {
 	fromCounts,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
@@ -18,18 +16,12 @@ import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
-
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
 	let subordinateOrganizationalUnits: string[] = [];
 	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		(await parent()) as ParentData;
+		await parent();
 	const features = createFeatureDecisions(locals.features);
 	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 

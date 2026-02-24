@@ -10,33 +10,18 @@ import {
 	predicates,
 	sustainableDevelopmentGoals,
 	topics,
-	type Container,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	type Container
 } from '$lib/models';
 import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
 import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
 import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
-import type { ServerLoad } from '@sveltejs/kit';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
-
-export default (async function load({ depends, locals, parent, url }: LoadInput) {
+export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
 	let containers: Container[];
-	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
+	const { currentOrganization, defaultOrganizationGuid } = await parent();
 	const features = createFeatureDecisions(locals.features);
 	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
@@ -144,4 +129,4 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options ?? null
 	};
-} satisfies ServerLoad);
+} satisfies PageServerLoad);

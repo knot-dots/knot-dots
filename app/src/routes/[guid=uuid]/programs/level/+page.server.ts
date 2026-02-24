@@ -10,9 +10,7 @@ import {
 	policyFieldBNK,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -23,18 +21,12 @@ import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/serv
 import { createFeatureDecisions } from '$lib/features';
 import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import type { ServerLoad } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
-
-export const load: ServerLoad = async ({ locals, url, parent }) => {
+export const load: PageServerLoad = async ({ locals, url, parent }) => {
 	let containers: Container[];
 	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		(await parent()) as ParentData;
+		await parent();
 	const features = createFeatureDecisions(locals.features);
 	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
