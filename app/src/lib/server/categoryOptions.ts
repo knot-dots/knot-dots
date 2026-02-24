@@ -3,8 +3,8 @@ import {
 	buildCategoryFacets,
 	buildCategoryLabels,
 	buildCategoryOptionsFromContainers,
-	getCategoryKeys,
-	type CategoryOptions
+	type CategoryOptions,
+	getCategoryKeys
 } from '$lib/categoryOptions';
 import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models';
 import type { User } from '$lib/stores';
@@ -20,10 +20,6 @@ export type CategoryContext = {
 type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 
 type Scope = string[];
-
-function dedupe(values: Scope) {
-	return Array.from(new Set(values.filter(Boolean)));
-}
 
 async function fetchOptionsForScope(params: { connect: Connect; scope: Scope; user: User }) {
 	const { connect, scope, user } = params;
@@ -46,21 +42,19 @@ export async function loadCategoryContext(params: {
 	organizationScope: Scope;
 	user: User;
 }): Promise<CategoryContext | null> {
-	const scope = dedupe(params.organizationScope);
+	const scope = params.organizationScope;
 
-	if (scope.length > 0) {
-		const result = await fetchOptionsForScope({
-			connect: params.connect,
-			scope,
-			user: params.user
-		});
-		if (result) {
-			return {
-				options: result.options,
-				labels: buildCategoryLabels(result.options),
-				keys: result.keys
-			};
-		}
+	const result = await fetchOptionsForScope({
+		connect: params.connect,
+		scope,
+		user: params.user
+	});
+	if (result) {
+		return {
+			options: result.options,
+			labels: buildCategoryLabels(result.options),
+			keys: result.keys
+		};
 	}
 
 	return null;
