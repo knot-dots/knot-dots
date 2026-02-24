@@ -44,14 +44,11 @@ async function fetchOptionsForScope(params: { connect: Connect; scope: Scope; us
 export async function loadCategoryContext(params: {
 	connect: Connect;
 	organizationScope: Scope;
-	fallbackScope?: Scope;
 	user: User;
 }): Promise<CategoryContext | null> {
-	const scopes = [dedupe(params.organizationScope), dedupe(params.fallbackScope ?? [])].filter(
-		(scope) => scope.length > 0
-	);
+	const scope = dedupe(params.organizationScope);
 
-	for (const scope of scopes) {
+	if (scope.length > 0) {
 		const result = await fetchOptionsForScope({
 			connect: params.connect,
 			scope,
