@@ -128,6 +128,10 @@
 		justify-content: space-between;
 	}
 
+	.option > label {
+		width: 100%;
+	}
+
 	.option-count {
 		color: var(--color-gray-600);
 		font-size: 0.875rem;
