@@ -9,7 +9,7 @@ import {
 	resourceUnits,
 	type ResourceV2Container
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { getManyContainers } from '$lib/server/db';
 import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -19,18 +19,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }) => {
 		depends('containers');
 
-		const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-			await parent();
+		const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 		const features = createFeatureDecisions(locals.features);
-		const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
-		const categoryContext = features.useCustomCategories()
-			? await loadCategoryContext({
-					connect: locals.pool.connect,
-					organizationScope,
-					fallbackScope: [],
-					user: locals.user
-				})
-			: null;
+
 		const customCategories = features.useCustomCategories()
 			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 			: {};

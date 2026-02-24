@@ -13,6 +13,7 @@ import {
 	type OrganizationContainer,
 	payloadTypes
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
@@ -103,6 +104,12 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 	const defaultOrganizationGuid =
 		organizations.find(({ payload }) => payload.default)?.guid ?? currentOrganization.guid;
 
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		organizationScope: [currentOrganization.guid, defaultOrganizationGuid],
+		user: locals.user
+	});
+
 	if (url.searchParams.has('signup')) {
 		try {
 			const foundUser = await findUserById(url.searchParams.get('signup') as string);
@@ -115,6 +122,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 	}
 
 	return {
+		categoryContext,
 		currentOrganization,
 		currentOrganizationalUnit,
 		defaultOrganizationGuid,

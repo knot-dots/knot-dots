@@ -22,7 +22,7 @@ import {
 } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/measures/$types';
 
 export default (async function load({ depends, locals, parent, url }) {
@@ -30,19 +30,9 @@ export default (async function load({ depends, locals, parent, url }) {
 
 	let containers: Container[];
 	let subordinateOrganizationalUnits: string[] = [];
-	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		await parent();
+	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				user: locals.user
-			})
-		: null;
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};

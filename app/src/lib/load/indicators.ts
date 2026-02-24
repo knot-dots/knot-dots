@@ -21,7 +21,7 @@ import {
 } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';
@@ -136,19 +136,9 @@ export async function getIndicatorsData(params: {
 export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
-	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		await parent();
+	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				user: locals.user
-			})
-		: null;
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
