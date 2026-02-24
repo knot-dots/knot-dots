@@ -30,22 +30,22 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfFirstGoal);
 	await dotsBoard.overlay.editModeToggle.check();
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
-	const firstInvalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
+	const firstInvalidateResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
 	const typeOfFirstGoal = 'Vision';
 	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfFirstGoal }).check();
-	await firstInvalidateRequest;
+	await firstInvalidateResponse;
 
 	// Change description of the second goal
 	await dotsBoard.card(titleOfSecondGoal).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfSecondGoal);
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveCount(1);
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
-	const secondInvalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
+	const secondInvalidateResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
 	const typeOfSecondGoal = 'Strategic goal';
 	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfSecondGoal }).check();
-	await secondInvalidateRequest;
+	await secondInvalidateResponse;
 
 	// Verify goal and measure descriptions are persisted
 	await dotsBoard.card(titleOfFirstGoal).click();
