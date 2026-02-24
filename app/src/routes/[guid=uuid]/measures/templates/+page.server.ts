@@ -7,21 +7,43 @@ import {
 	fromCounts,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics
+	topics,
+	type OrganizationContainer,
+	type OrganizationalUnitContainer
 } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
+import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
+
+type ParentData = {
+	currentOrganization: OrganizationContainer;
+	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	defaultOrganizationGuid: string;
+};
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
 	let subordinateOrganizationalUnits: string[] = [];
-	const customCategories = extractCustomCategoryFilters(url);
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
+		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
+
+	const categoryContext = features.useCustomCategories()
+		? await loadCategoryContext({
+				connect: locals.pool.connect,
+				organizationScope,
+				fallbackScope: [],
+				user: locals.user
+			})
+		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -68,27 +90,46 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		filterVisible(containers, locals.user),
 		url,
 		subordinateOrganizationalUnits,
-		currentOrganizationalUnit
+		currentOrganizationalUnit ?? undefined
 	);
 
 	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		? await getFacetAggregationsForGuids(
+				filtered.map((c) => c.guid),
+				categoryContext?.keys ?? []
+			)
 		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 			[string, Map<string, number>]
-		>),
-		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg)],
-		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
+		>)
 	]);
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(
+			categoryContext.options,
+			data ? Object.fromEntries(Object.entries(data)) : {}
+		);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
+		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
+		_facets.set(
+			'policyFieldBNK',
+			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
+		);
+	}
 
 	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
 
 	return {
 		containers: filtered,
-		facets
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
 	};
 }) satisfies PageServerLoad;

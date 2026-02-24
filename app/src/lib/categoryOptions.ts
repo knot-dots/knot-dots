@@ -31,7 +31,8 @@ function findTermsForCategory(category: CategoryContainer, terms: TermContainer[
 
 function toOption(term: TermContainer): CategoryOption {
 	const value = term.payload.value ?? term.payload.title ?? term.guid;
-	const label = term.payload.filterLabel ?? term.payload.title ?? value;
+	const filterLabel = term.payload.filterLabel?.trim();
+	const label = filterLabel ? filterLabel : (term.payload.title ?? value);
 	return {
 		label,
 		value,

@@ -52,6 +52,7 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	defaultOrganizationGuid: string;
 };
 
 /**
@@ -149,18 +150,22 @@ export async function getIndicatorsData(params: {
 export default (async function load({ depends, locals, parent, url }: LoadInput) {
 	depends('containers');
 
-	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
-	const customCategories = extractCustomCategoryFilters(url);
+	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
+		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
 				connect: locals.pool.connect,
-				organizationScope: [currentOrganization.guid],
+				organizationScope,
 				fallbackScope: [],
 				user: locals.user
 			})
 		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	const filters = {
 		customCategories,

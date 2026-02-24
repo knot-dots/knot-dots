@@ -29,24 +29,28 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	defaultOrganizationGuid: string;
 };
 
 export default (async function load({ depends, locals, parent, url }: LoadInput) {
 	depends('containers');
 
 	let containers: Container[];
-	const customCategories = extractCustomCategoryFilters(url);
-	const { currentOrganization } = (await parent()) as ParentData;
+	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
 				connect: locals.pool.connect,
-				organizationScope: [currentOrganization.guid],
+				organizationScope,
 				fallbackScope: [],
 				user: locals.user
 			})
 		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
