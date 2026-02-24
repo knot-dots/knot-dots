@@ -35,9 +35,43 @@ export function createIndexWithMappings(client: Client, index: string) {
 			number_of_replicas: 0,
 			analysis: {
 				analyzer: {
-					// Default to German so stemming and stop words match our labels/content
-					default: { type: 'german' },
-					default_search: { type: 'german' }
+					default: {
+						type: 'custom',
+						tokenizer: 'standard',
+						filter: [
+							'lowercase',
+							'german_stop_words_filter',
+							'german_decompounder',
+							'german_normalization',
+							'german_stemmer'
+						]
+					},
+					default_search: {
+						type: 'custom',
+						tokenizer: 'standard',
+						filter: [
+							'lowercase',
+							'german_stop_words_filter',
+							'german_decompounder',
+							'german_normalization',
+							'german_stemmer'
+						]
+					}
+				},
+				filter: {
+					german_stop_words_filter: {
+						type: 'stop',
+						stopwords: '_german_'
+					},
+					german_decompounder: {
+						only_longest_match: 'true',
+						word_list_path: 'dictionary/dictionary.txt',
+						type: 'dictionary_decompounder'
+					},
+					german_stemmer: {
+						type: 'stemmer',
+						language: 'light_german'
+					}
 				},
 				normalizer: {
 					title_norm: {
