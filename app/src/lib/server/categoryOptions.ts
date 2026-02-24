@@ -21,37 +21,29 @@ type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promis
 
 type Scope = string[];
 
-async function fetchOptionsForScope(params: { connect: Connect; scope: Scope; user: User }) {
-	const { connect, scope, user } = params;
-	const [categories, terms] = await Promise.all([
-		connect(getManyContainers(scope, { type: [payloadTypes.enum.category] }, 'alpha')),
-		connect(getManyContainers(scope, { type: [payloadTypes.enum.term] }, 'alpha'))
-	]);
-
-	const visibleCategories = filterVisible(categories, user).filter(isCategoryContainer);
-	const visibleTerms = filterVisible(terms, user).filter(isTermContainer);
-
-	const options = buildCategoryOptionsFromContainers(visibleCategories, visibleTerms);
-	const keys = getCategoryKeys(options);
-
-	return keys.length > 0 ? { options, keys } : null;
-}
-
 export async function loadCategoryContext(params: {
 	connect: Connect;
 	scope: Scope;
 	user: User;
 }): Promise<CategoryContext | null> {
-	const result = await fetchOptionsForScope({
-		connect: params.connect,
-		scope: params.scope,
-		user: params.user
-	});
-	if (result) {
+	const [categories, terms] = await Promise.all([
+		params.connect(
+			getManyContainers(params.scope, { type: [payloadTypes.enum.category] }, 'alpha')
+		),
+		params.connect(getManyContainers(params.scope, { type: [payloadTypes.enum.term] }, 'alpha'))
+	]);
+
+	const visibleCategories = filterVisible(categories, params.user).filter(isCategoryContainer);
+	const visibleTerms = filterVisible(terms, params.user).filter(isTermContainer);
+
+	const options = buildCategoryOptionsFromContainers(visibleCategories, visibleTerms);
+	const keys = getCategoryKeys(options);
+
+	if (keys.length > 0) {
 		return {
-			options: result.options,
-			labels: buildCategoryLabels(result.options),
-			keys: result.keys
+			options: options,
+			labels: buildCategoryLabels(options),
+			keys: keys
 		};
 	}
 
