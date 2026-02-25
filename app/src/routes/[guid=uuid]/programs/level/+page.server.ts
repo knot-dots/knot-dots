@@ -178,7 +178,11 @@ export const load: ServerLoad = async ({ locals, url, parent }) => {
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, containers, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		containers,

@@ -132,7 +132,11 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		);
 	}
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, containers, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		containers: filtered,

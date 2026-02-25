@@ -568,7 +568,7 @@ function prepareWhereCondition(filters: {
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {
 			if (!values?.length) continue;
-			conditions.push(sql.fragment`c.payload->${key} ?| ${sql.array(values, 'text')}`);
+			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
 		}
 	}
 	if (filters.indicatorCategories?.length) {

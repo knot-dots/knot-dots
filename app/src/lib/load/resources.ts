@@ -109,7 +109,11 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			}
 		}
 
-		const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+		const facets = features.useElasticsearch()
+			? _facets
+			: computeFacetCount(_facets, containers, {
+					useCategoryPayload: features.useCustomCategories()
+				});
 
 		return {
 			containers,

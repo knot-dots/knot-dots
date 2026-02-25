@@ -222,7 +222,9 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 
 	const facets = features.useElasticsearch()
 		? _facets
-		: computeFacetCount(_facets, result.combined);
+		: computeFacetCount(_facets, result.combined, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
