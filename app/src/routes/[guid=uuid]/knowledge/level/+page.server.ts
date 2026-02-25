@@ -49,6 +49,7 @@ export const load = (async ({ locals, url, parent }) => {
 				connect: locals.pool.connect,
 				organizationScope,
 				fallbackScope: [],
+				objectTypes: [payloadTypes.enum.knowledge],
 				user: locals.user
 			})
 		: null;

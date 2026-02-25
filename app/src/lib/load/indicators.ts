@@ -160,6 +160,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 				connect: locals.pool.connect,
 				organizationScope,
 				fallbackScope: [],
+				objectTypes: [payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
 				user: locals.user
 			})
 		: null;

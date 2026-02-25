@@ -55,6 +55,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 				connect: locals.pool.connect,
 				organizationScope,
 				fallbackScope: [],
+				objectTypes: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 				user: locals.user
 			})
 		: null;
