@@ -82,7 +82,7 @@ export function getManyContainersWithES(
 		if (filters.customCategories) {
 			for (const [key, values] of Object.entries(filters.customCategories)) {
 				if (!values?.length) continue;
-				filter.push({ terms: { [`payload.${key}`]: values } });
+				filter.push({ terms: { [`payload.category.${key}`]: values } });
 			}
 		}
 		if (filters.assignees?.length)
@@ -147,12 +147,35 @@ export async function getFacetAggregationsForGuids(
 	if (guids.length === 0) {
 		return {} as Record<string, Record<string, number>>;
 	}
+	const useCategoryFields = new Set(customCategoryKeys);
 	const query = { terms: { guid: guids } } as const;
 	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {
-		audience: { terms: { field: 'payload.audience', size: 50 } },
-		sdg: { terms: { field: 'payload.sdg', size: 100 } },
-		topic: { terms: { field: 'payload.topic', size: 100 } },
-		policyFieldBNK: { terms: { field: 'payload.policyFieldBNK', size: 100 } },
+		audience: {
+			terms: {
+				field: useCategoryFields.has('audience') ? 'payload.category.audience' : 'payload.audience',
+				size: 50
+			}
+		},
+		sdg: {
+			terms: {
+				field: useCategoryFields.has('sdg') ? 'payload.category.sdg' : 'payload.sdg',
+				size: 100
+			}
+		},
+		topic: {
+			terms: {
+				field: useCategoryFields.has('topic') ? 'payload.category.topic' : 'payload.topic',
+				size: 100
+			}
+		},
+		policyFieldBNK: {
+			terms: {
+				field: useCategoryFields.has('policyFieldBNK')
+					? 'payload.category.policyFieldBNK'
+					: 'payload.policyFieldBNK',
+				size: 100
+			}
+		},
 		programType: { terms: { field: 'payload.programType', size: 20 } },
 		measureType: { terms: { field: 'payload.measureType', size: 20 } },
 		indicatorCategory: { terms: { field: 'payload.indicatorCategory', size: 100 } },
@@ -165,7 +188,7 @@ export async function getFacetAggregationsForGuids(
 	const reserved = new Set(Object.keys(aggs));
 	for (const key of customCategoryKeys) {
 		if (!key || reserved.has(key)) continue;
-		aggs[key] = { terms: { field: `payload.${key}`, size: 200 } };
+		aggs[key] = { terms: { field: `payload.category.${key}`, size: 200 } };
 	}
 
 	const { aggregations } = await es.search<unknown, estypes.SearchRequest>({

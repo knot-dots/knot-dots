@@ -50,6 +50,13 @@ export function createIndexWithMappings(client: Client, index: string) {
 		mappings: {
 			dynamic_templates: [
 				{
+					payload_category_values: {
+						path_match: 'payload.category.*',
+						match_mapping_type: 'string',
+						mapping: { type: 'keyword', ignore_above: 2048 }
+					}
+				},
+				{
 					payload_strings: {
 						path_match: 'payload.*',
 						match_mapping_type: 'string',
@@ -104,7 +111,8 @@ export function createIndexWithMappings(client: Client, index: string) {
 						indicatorType: { type: 'keyword' },
 						taskCategory: { type: 'keyword' },
 						resourceCategory: { type: 'keyword' },
-						resourceUnit: { type: 'keyword' }
+						resourceUnit: { type: 'keyword' },
+						category: { type: 'object', dynamic: true }
 					}
 				}
 			}
@@ -157,6 +165,20 @@ export function normalizePayload(payload: any) {
 		else if (Array.isArray(value)) normalized[key] = value;
 		else normalized[key] = [value];
 	}
+	const category = normalized.category;
+	if (!category || typeof category !== 'object' || Array.isArray(category)) {
+		normalized.category = {};
+	} else {
+		const normalizedCategory: Record<string, string[]> = {};
+		for (const [key, value] of Object.entries(category as Record<string, unknown>)) {
+			if (value === undefined || value === null) normalizedCategory[key] = [];
+			else if (Array.isArray(value))
+				normalizedCategory[key] = value.filter((v): v is string => typeof v === 'string');
+			else if (typeof value === 'string') normalizedCategory[key] = [value];
+			else normalizedCategory[key] = [];
+		}
+		normalized.category = normalizedCategory;
+	}
 	sanitizeDates(normalized);
 	return normalized;
 }
@@ -196,6 +218,9 @@ export function toDoc(row: {
 		.filter(([, value]) => Array.isArray(value))
 		.flatMap(([, value]) => value as unknown[])
 		.filter((value): value is string => typeof value === 'string');
+	const categoryValues = Object.values(
+		(normalized.category as Record<string, string[]>) ?? {}
+	).flat();
 
 	return {
 		guid: row.guid,
@@ -233,7 +258,8 @@ export function toDoc(row: {
 			...taskCategoryLabels,
 			...resourceCategoryLabels,
 			...resourceUnitLabels,
-			...additionalText
+			...additionalText,
+			...categoryValues
 		]
 			.filter(Boolean)
 			.join(' ')
