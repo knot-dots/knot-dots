@@ -76,6 +76,20 @@ export default function defineAbilityFor(user: User) {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(
+			['create', 'update', 'delete'],
+			[payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+			{
+				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
+		can(
+			['create', 'update', 'delete'],
+			[payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+			{
+				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
+		can(
 			'invite-members',
 			[
 				payloadTypes.enum.measure,
