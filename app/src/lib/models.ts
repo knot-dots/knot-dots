@@ -646,7 +646,7 @@ const unrefinedCategoryPayload = z.object({
 });
 
 const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
-	if (payload.title) {
+	if (payload.title && !payload.key) {
 		payload.key = slugify(payload.title);
 	}
 });
@@ -666,7 +666,7 @@ const unrefinedTermPayload = z
 	.strict();
 
 const termPayload = unrefinedTermPayload.superRefine((payload) => {
-	if (payload.title) {
+	if (payload.title && !payload.value) {
 		payload.value = slugify(payload.title);
 	}
 });
