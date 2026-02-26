@@ -48,6 +48,7 @@
 		isTaskContainer,
 		isTeaserContainer,
 		isTextContainer,
+		isWorkspaceContainer,
 		type NewContainer,
 		overlayKey,
 		overlayURL
@@ -70,6 +71,12 @@
 				await goto(`#view=${effect.guid}`);
 			} else if (isOrganizationalUnitContainer(savedContainer)) {
 				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
+			} else if (isWorkspaceContainer(savedContainer)) {
+				await goto(
+					overlayURL(page.url, overlayKey.enum.workspace, savedContainer.guid, [
+						['fullscreen', '1']
+					])
+				);
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 			}

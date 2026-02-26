@@ -667,7 +667,7 @@ if (browser) {
 			const rawFilters = (container.payload.filters ?? {}) as Record<string, unknown>;
 			const workspaceQuery = new URLSearchParams();
 			const filterEntries = Array.from(hashParams.entries()).filter(
-				([key]) => !isOverlayKey(key) && key !== 'view'
+				([key]) => !isOverlayKey(key) && key !== 'view' && key !== 'fullscreen'
 			);
 			const hashFilterKeys = new Set(filterEntries.map(([key]) => key));
 			for (const [key, value] of filterEntries) {
