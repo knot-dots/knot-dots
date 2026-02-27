@@ -70,7 +70,10 @@ test.describe('Resource V2 Table', () => {
 		await expect(table.getByRole('columnheader', { name: '2026' })).toBeVisible();
 
 		// Verify Budget section contains the measure with correct amounts
-		const budgetRow = table.locator('.resource-table__budget-row', {
+		const budgetSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Budgets' })
+		});
+		const budgetRow = budgetSection.locator('tr', {
 			has: dotsBoard.page.getByRole('link', { name: testMeasure.payload.title })
 		});
 		await expect(budgetRow).toBeVisible();
@@ -83,7 +86,10 @@ test.describe('Resource V2 Table', () => {
 		await expect(budgetSumRow.locator('td').nth(1)).toContainText('15,000');
 
 		// Verify Planned section contains correct amounts
-		const plannedRow = table.locator('.resource-table__planned-row', {
+		const plannedSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Planned resource allocation' })
+		});
+		const plannedRow = plannedSection.locator('tr', {
 			has: dotsBoard.page.getByRole('link', { name: testMeasure.payload.title })
 		});
 		await expect(plannedRow).toBeVisible();
@@ -96,7 +102,10 @@ test.describe('Resource V2 Table', () => {
 		await expect(plannedSumRow.locator('td').nth(1)).toContainText('12,000');
 
 		// Verify Actual section contains correct amounts
-		const actualRow = table.locator('.resource-table__actual-row', {
+		const actualSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Actual resource allocation' })
+		});
+		const actualRow = actualSection.locator('tr', {
 			has: dotsBoard.page.getByRole('link', { name: testMeasure.payload.title })
 		});
 		await expect(actualRow).toBeVisible();
@@ -197,18 +206,16 @@ test.describe('Resource V2 Table', () => {
 		await budgetTotalInput.fill('5000');
 		await invalidateRequest;
 
-		// Reload and verify persistence
+		// Reload and verify persistence (data should be visible even when not in edit mode)
 		await dotsBoard.page.reload();
 
 		const tableAfterReload = dotsBoard.overlay.locator.locator('.resource-table__table');
 		const budgetTotalRowAfterReload = tableAfterReload.locator('tbody tr', {
 			has: tableAfterReload.page().getByRole('rowheader', { name: 'Past years' })
 		});
-		const budgetTotalInputAfterReload = budgetTotalRowAfterReload
-			.locator('input[inputmode="decimal"]')
-			.last();
+		const budgetTotalCellAfterReload = budgetTotalRowAfterReload.locator('td').last();
 
-		await expect(budgetTotalInputAfterReload).toHaveValue('5,000');
+		await expect(budgetTotalCellAfterReload).toContainText('5,000');
 	});
 
 	test('edit prognosis values with debounced save', async ({
@@ -254,18 +261,16 @@ test.describe('Resource V2 Table', () => {
 		await prognosisInput.fill('3000');
 		await invalidateRequest;
 
-		// Reload and verify persistence
+		// Reload and verify persistence (data should be visible even when not in edit mode)
 		await dotsBoard.page.reload();
 
 		const tableAfterReload = dotsBoard.overlay.locator.locator('.resource-table__table');
 		const prognosisRowAfterReload = tableAfterReload.locator('tbody tr', {
 			has: tableAfterReload.page().getByRole('rowheader', { name: 'Total budget forecast' })
 		});
-		const prognosisInputAfterReload = prognosisRowAfterReload
-			.locator('input[inputmode="decimal"]')
-			.last();
+		const prognosisCellAfterReload = prognosisRowAfterReload.locator('td').last();
 
-		await expect(prognosisInputAfterReload).toHaveValue('3,000');
+		await expect(prognosisCellAfterReload).toContainText('3,000');
 	});
 
 	test('budget/planned/actual rows link to related measure', async ({
@@ -292,9 +297,10 @@ test.describe('Resource V2 Table', () => {
 		const table = dotsBoard.overlay.locator.locator('.resource-table__table');
 
 		// Verify the budget row has a link to the measure
-		const budgetRowLink = table
-			.locator('.resource-table__budget-row')
-			.getByRole('link', { name: testMeasure.payload.title });
+		const budgetSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Budgets' })
+		});
+		const budgetRowLink = budgetSection.getByRole('link', { name: testMeasure.payload.title });
 		await expect(budgetRowLink).toBeVisible();
 
 		// Click the link to open the measure overlay
@@ -334,19 +340,15 @@ test.describe('Resource V2 Table', () => {
 		await expect(leftAddButton).not.toBeVisible();
 		await expect(rightAddButton).not.toBeVisible();
 
-		// Verify budget total and prognosis inputs are disabled
-		const budgetTotalInput = table
-			.locator('tbody tr', { has: table.page().getByRole('rowheader', { name: 'Past years' }) })
-			.locator('input[inputmode="decimal"]')
-			.first();
-		const prognosisInput = table
-			.locator('tbody tr', {
-				has: table.page().getByRole('rowheader', { name: 'Total budget forecast' })
-			})
-			.locator('input[inputmode="decimal"]')
-			.first();
+		// Verify budget total and prognosis inputs are not rendered (read-only mode shows text, not inputs)
+		const budgetTotalRow = table.locator('tbody tr', {
+			has: table.page().getByRole('rowheader', { name: 'Past years' })
+		});
+		const prognosisRow = table.locator('tbody tr', {
+			has: table.page().getByRole('rowheader', { name: 'Total budget forecast' })
+		});
 
-		await expect(budgetTotalInput).toBeDisabled();
-		await expect(prognosisInput).toBeDisabled();
+		await expect(budgetTotalRow.locator('input[inputmode="decimal"]')).not.toBeVisible();
+		await expect(prognosisRow.locator('input[inputmode="decimal"]')).not.toBeVisible();
 	});
 });
