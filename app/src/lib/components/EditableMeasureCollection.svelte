@@ -2,10 +2,12 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
+	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		titleForMeasureCollection,
@@ -58,10 +60,17 @@
 		) as Omit<NewContainer, 'payload'> & Pick<MeasureContainer, 'payload'>;
 
 		if (isMeasureContainer(parentContainer)) {
+			if (createFeatureDecisions(page.data.features).useCustomCategories()) {
+				item.payload.category = parentContainer.payload.category;
+			} else {
+				item.payload.audience = parentContainer.payload.audience;
+				item.payload.policyFieldBNK = parentContainer.payload.policyFieldBNK;
+				item.payload.sdg = parentContainer.payload.sdg;
+				item.payload.topic = parentContainer.payload.topic;
+			}
 			item.payload.hierarchyLevel = parentContainer.payload.hierarchyLevel + 1;
-		}
-
-		if (isMeasureContainer(parentContainer)) {
+			item.payload.status = parentContainer.payload.status;
+			item.payload.visibility = parentContainer.payload.visibility;
 			item.relation = [
 				{
 					object: parentContainer.guid,
