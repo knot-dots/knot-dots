@@ -1,14 +1,30 @@
 <script lang="ts">
+	import { invalidate } from '$app/navigation';
+	import { page } from '$app/state';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableResourceDataTable from '$lib/components/EditableResourceDataTable.svelte';
-	import EditableResourceBudgetTable from '$lib/components/EditableResourceBudgetTable.svelte';
+	import EditableTable from '$lib/components/EditableTable.svelte';
+	import type {
+		ResourceTableRow,
+		ResourceTableSection
+	} from '$lib/components/EditableTable.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
+	import saveContainer from '$lib/client/saveContainer';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import {
 		isResourceDataBudgetContainer,
+		isResourceDataContainer,
+		isGoalContainer,
+		isMeasureContainer,
 		predicates,
+		overlayKey,
+		overlayURL,
+		payloadTypes,
+		findDescendants,
 		type AnyContainer,
 		type Container,
+		type GoalContainer,
+		type MeasureContainer,
 		type ResourceDataContainer,
 		type ResourceV2Container
 	} from '$lib/models';
@@ -65,6 +81,208 @@
 	});
 
 	const isBudgetContainer = $derived(isResourceDataBudgetContainer(container));
+
+	const resourceUnit = $derived(currentResource?.payload.resourceUnit ?? 'undefined');
+
+	// --- Budget table data fetching ---
+
+	let goalContainers = $state<GoalContainer[]>([]);
+	let measureContainers = $state<MeasureContainer[]>([]);
+
+	$effect(() => {
+		if (!isBudgetContainer) return;
+
+		fetchContainers(
+			{
+				organization: [organization],
+				payloadType: [payloadTypes.enum.goal, payloadTypes.enum.measure]
+			},
+			'alpha'
+		).then((containers) => {
+			goalContainers = containers.filter(isGoalContainer);
+			measureContainers = containers.filter(isMeasureContainer);
+		});
+	});
+
+	let parentGoal = $derived.by(() => {
+		if (!isBudgetContainer) return undefined;
+		const parentGuid = container.relation.find(
+			(r) => r.predicate === predicates.enum['is-part-of'] && r.subject === container.guid
+		)?.object;
+		return goalContainers.find((g) => g.guid === parentGuid);
+	});
+
+	let subordinateGoals = $derived.by(() => {
+		if (!parentGoal) return [];
+		return findDescendants(parentGoal, goalContainers, [predicates.enum['is-part-of']]);
+	});
+
+	let subordinateMeasures = $derived.by(() => {
+		if (!parentGoal) return [];
+		const goalGuids = new Set([parentGoal.guid, ...subordinateGoals.map((g) => g.guid)]);
+		return measureContainers.filter((measure) =>
+			measure.relation.some(
+				(r) => r.predicate === predicates.enum['is-part-of'] && goalGuids.has(r.object)
+			)
+		);
+	});
+
+	let allResourceDataContainers = $state<ResourceDataContainer[]>([]);
+
+	$effect(() => {
+		if (!isBudgetContainer || !parentGoal) {
+			allResourceDataContainers = [];
+			return;
+		}
+
+		fetchContainers(
+			{
+				organization: [organization],
+				payloadType: [payloadTypes.enum.resource_data]
+			},
+			'alpha'
+		).then((containers) => {
+			allResourceDataContainers = containers.filter(isResourceDataContainer);
+		});
+	});
+
+	let allBudgetContainers = $derived.by(() => {
+		const subordinateGoalGuids = new Set(subordinateGoals.map((g) => g.guid));
+		return allResourceDataContainers
+			.filter(isResourceDataBudgetContainer)
+			.filter((c) =>
+				c.relation.some(
+					(r) => r.predicate === predicates.enum['is-part-of'] && subordinateGoalGuids.has(r.object)
+				)
+			);
+	});
+
+	function getBudgetsForGoal(goal: GoalContainer): ResourceDataContainer[] {
+		return allBudgetContainers.filter((budget) =>
+			budget.relation.some(
+				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === goal.guid
+			)
+		);
+	}
+
+	function getResourceDataForMeasure(measure: MeasureContainer): ResourceDataContainer[] {
+		return allResourceDataContainers.filter((rd) =>
+			rd.relation.some(
+				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === measure.guid
+			)
+		);
+	}
+
+	// --- Sections for EditableTable ---
+
+	const sections = $derived.by((): ResourceTableSection[] => {
+		if (!isBudgetContainer) {
+			// Simple data table: single section, single editable row
+			return [
+				{
+					heading: '',
+					rows: [
+						{
+							container,
+							label: '',
+							editable: true
+						}
+					]
+				}
+			];
+		}
+
+		// Budget table: multiple sections
+		const result: ResourceTableSection[] = [];
+
+		// Section 1: Current Budget
+		if (parentGoal) {
+			result.push({
+				heading: $_('resource_table.current_budget'),
+				rows: [
+					{
+						container,
+						label: parentGoal.payload.title,
+						href: overlayURL(page.url, overlayKey.enum.view, parentGoal.guid),
+						editable: true
+					}
+				]
+			});
+		} else {
+			result.push({
+				heading: $_('resource_table.current_budget'),
+				rows: [],
+				emptyMessage: $_('resource_table.no_parent_goal')
+			});
+		}
+
+		// Section 2: Subordinate Goals
+		const subordinateGoalRows: ResourceTableRow[] = [];
+		for (const goal of subordinateGoals) {
+			const budgets = getBudgetsForGoal(goal);
+			for (const budget of budgets) {
+				subordinateGoalRows.push({
+					container: budget,
+					label: goal.payload.title,
+					href: overlayURL(page.url, overlayKey.enum.view, goal.guid),
+					subtitle: budget.payload.title || undefined,
+					dotColor: 'var(--color-primary-300)',
+					editable: false
+				});
+			}
+		}
+		result.push({
+			heading: $_('resource_table.subordinate_goals'),
+			rows: subordinateGoalRows,
+			emptyMessage:
+				subordinateGoals.length === 0 || allBudgetContainers.length === 0
+					? $_('resource_table.no_subordinate_goals')
+					: undefined
+		});
+
+		// Section 3: Subordinate Measures
+		const subordinateMeasureRows: ResourceTableRow[] = [];
+		for (const measure of subordinateMeasures) {
+			const resourceDataContainers = getResourceDataForMeasure(measure);
+			for (const resourceData of resourceDataContainers) {
+				subordinateMeasureRows.push({
+					container: resourceData,
+					label: measure.payload.title,
+					href: overlayURL(page.url, overlayKey.enum.view, measure.guid),
+					subtitle: resourceData.payload.title || undefined,
+					dotColor: 'var(--color-orange-300)',
+					editable: false
+				});
+			}
+		}
+		const hasMeasuresWithData = subordinateMeasures.some(
+			(m) => getResourceDataForMeasure(m).length > 0
+		);
+		result.push({
+			heading: $_('resource_table.subordinate_measures'),
+			rows: subordinateMeasureRows,
+			emptyMessage:
+				subordinateMeasures.length === 0 || !hasMeasuresWithData
+					? $_('resource_table.no_subordinate_measures')
+					: undefined
+		});
+
+		return result;
+	});
+
+	// onSave callback for EditableTable
+	async function handleSave(
+		containerToSave: ResourceDataContainer
+	): Promise<{ guid: string; revision: number }> {
+		const response = await saveContainer(containerToSave);
+		if (!response.ok) {
+			const error = await response.json();
+			throw new Error(error.message);
+		}
+		const updated = await response.json();
+		await invalidate('containers');
+		return { guid: updated.guid, revision: updated.revision };
+	}
 </script>
 
 {#snippet header()}
@@ -91,24 +309,16 @@
 				/>
 			{/key}
 
-			{#if isBudgetContainer}
-				<EditableResourceBudgetTable
-					currentBudget={container}
-					resourceContainer={currentResource}
-					editable={Boolean(
-						$applicationState.containerDetailView.editable && $ability.can('update', container)
-					)}
-				/>
-			{:else}
-				<EditableResourceDataTable
-					{container}
-					editable={Boolean(
-						$applicationState.containerDetailView.editable && $ability.can('update', container)
-					)}
-					title={$_(container.payload.resourceDataType)}
-					unit={$_(currentResource?.payload.resourceUnit ?? 'undefined')}
-				/>
-			{/if}
+			<EditableTable
+				title={isBudgetContainer
+					? $_('resource_table.subordinate_goals_budget')
+					: $_(container.payload.resourceDataType)}
+				titleUnit={$_(resourceUnit)}
+				columnLabel={isBudgetContainer ? $_('goal') : ''}
+				{sections}
+				fillYearGaps={isBudgetContainer}
+				onSave={handleSave}
+			/>
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}
