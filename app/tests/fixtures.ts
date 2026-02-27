@@ -29,11 +29,13 @@ import {
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog } from './catalogs';
+import { LandingPage } from './pages';
 
 type MyFixtures = {
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
+	landingPage: LandingPage;
 	taskStatusBoard: TaskStatusBoard;
 	testIndicatorTemplate: IndicatorTemplateContainer;
 	testCategoryWithTerms: {
@@ -142,6 +144,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	indicatorCatalog: async ({ page }, use) => {
 		await use(new IndicatorCatalog(page));
+	},
+	landingPage: async ({ page }, use) => {
+		await use(new LandingPage(page));
 	},
 	taskStatusBoard: async ({ page }, use) => {
 		await use(new TaskStatusBoard(page));

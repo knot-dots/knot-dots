@@ -40,10 +40,12 @@
 	}: Props = $props();
 
 	let items = $derived(
-		hasPart(
-			parentContainer,
-			relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
-		)
+		isMeasureContainer(parentContainer)
+			? hasPart(
+					parentContainer,
+					relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
+				)
+			: relatedContainers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
 	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
