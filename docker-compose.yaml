@@ -105,7 +105,10 @@ services:
       - CONFIG_FILE=/opt/elasticmq.conf
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
+    build:
+      args:
+        - ELASTICSEARCH_VERSION=9.2.3
+      context: elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -118,8 +121,6 @@ services:
       retries: 5
     ports:
       - "9200:9200"
-    volumes:
-      - ./shared/src/dictionary:/usr/share/elasticsearch/config/dictionary:ro
 
   indexing-worker:
     build:
