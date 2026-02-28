@@ -64,7 +64,8 @@ export function createIndexWithMappings(client: Client, index: string) {
 						stopwords: '_german_'
 					},
 					german_decompounder: {
-						only_longest_match: 'true',
+						min_subword_size: 4,
+						only_longest_match: true,
 						word_list_path: 'dictionary/dictionary.txt',
 						type: 'dictionary_decompounder'
 					},
