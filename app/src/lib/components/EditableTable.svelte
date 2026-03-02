@@ -96,7 +96,7 @@
 
 	let tableContainer = $state<HTMLDivElement | null>(null);
 
-	function addEntryLeft() {
+	async function addEntryLeft() {
 		// If we're showing only the placeholder year, commit it to additionalYears first
 		if (additionalYears.length === 0 && dataYears.length === 0) {
 			additionalYears.push(new Date().getFullYear());
@@ -104,6 +104,14 @@
 
 		const newYear = years[0] - 1;
 		additionalYears.push(newYear);
+
+		await tick();
+
+		// Focus the new input
+		const firstInput = tableContainer?.querySelector(
+			`input[data-year="${newYear}"]`
+		) as HTMLInputElement;
+		firstInput?.focus();
 	}
 
 	async function addEntryRight() {
@@ -116,7 +124,15 @@
 		additionalYears.push(newYear);
 
 		await tick();
+
+		// Scroll to the rightmost edge to show the newly added year input
 		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
+
+		// Focus the new input
+		const firstInput = tableContainer?.querySelector(
+			`input[data-year="${newYear}"]`
+		) as HTMLInputElement;
+		firstInput?.focus();
 	}
 
 	function formatNumber(value: number): string {
@@ -309,6 +325,7 @@
 												class="editable-table__input"
 												type="text"
 												inputmode="decimal"
+												data-year={year}
 												value={hasValue(value) ? formatNumber(value) : ''}
 												placeholder="0"
 												oninput={(e) => handleInput(year, e, row.container, timerKey)}
