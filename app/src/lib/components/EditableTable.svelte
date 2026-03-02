@@ -31,23 +31,31 @@
 
 	let { title, titleUnit, columnLabel, sections, fillYearGaps = false, onSave }: Props = $props();
 
-	// Holds years that have been added by the user in the UI
+	// Derived list of all years present in the data, used for rendering columns
+	const dataYears = $derived(
+		sections.flatMap((s) => s.rows.flatMap((r) => r.container.payload.entries.map((e) => e.year)))
+	);
+
+	// Holds years that have been added by the user in the UI or "locked in" from data
 	let additionalYears: number[] = $state([]);
 
+	// Lock in any years that appear in data so they stay visible even if data is deleted
+	$effect(() => {
+		for (const year of dataYears) {
+			if (!additionalYears.includes(year)) {
+				additionalYears.push(year);
+			}
+		}
+	});
+
+	// All years to render as columns, sorted and with optional gap filling
 	let years = $derived.by(() => {
-		const dataYears = sections.flatMap((s) =>
-			s.rows.flatMap((r) => r.container.payload.entries.map((e) => e.year))
-		);
+		const allYears = Array.from(new Set([...dataYears, ...additionalYears])).sort((a, b) => a - b);
 
-		// If there are no data years and no additional years, show the current year
-		// If there are no data years but there are additional years, include the current year
-		const currentYear = new Date().getFullYear();
-		const yearsToInclude =
-			dataYears.length === 0 && additionalYears.length > 0
-				? [currentYear, ...additionalYears]
-				: [...dataYears, ...additionalYears];
-
-		const allYears = Array.from(new Set(yearsToInclude)).sort((a, b) => a - b);
+		// If no years at all, show current year as placeholder
+		if (allYears.length === 0) {
+			return [new Date().getFullYear()];
+		}
 
 		// Fill year gaps if requested (for budget mode)
 		if (fillYearGaps && allYears.length > 0) {
@@ -60,7 +68,7 @@
 			return filledYears;
 		}
 
-		return allYears.length > 0 ? allYears : [currentYear];
+		return allYears;
 	});
 
 	function getAmountByYear(container: ResourceDataContainer): Map<number, number> {
@@ -80,7 +88,7 @@
 
 	const isEditMode = $derived($applicationState.containerDetailView.editable);
 
-	// Column count for CSS grid - depends on number of years and whether we're in edit mode (which shows the add year buttons)
+	// Column count for table - depends on number of years and whether we're in edit mode (which shows the add year buttons)
 	const columnCount = $derived(isEditMode ? years.length + 2 : years.length + 1);
 
 	// Debounce timers
@@ -89,11 +97,23 @@
 	let tableContainer = $state<HTMLDivElement | null>(null);
 
 	function addEntryLeft() {
-		additionalYears.push(years[0] - 1);
+		// If we're showing only the placeholder year, commit it to additionalYears first
+		if (additionalYears.length === 0 && dataYears.length === 0) {
+			additionalYears.push(new Date().getFullYear());
+		}
+
+		const newYear = years[0] - 1;
+		additionalYears.push(newYear);
 	}
 
 	async function addEntryRight() {
-		additionalYears.push(years[years.length - 1] + 1);
+		// If we're showing only the placeholder year, commit it to additionalYears first
+		if (additionalYears.length === 0 && dataYears.length === 0) {
+			additionalYears.push(new Date().getFullYear());
+		}
+
+		const newYear = years[years.length - 1] + 1;
+		additionalYears.push(newYear);
 
 		await tick();
 		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
