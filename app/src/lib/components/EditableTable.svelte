@@ -511,7 +511,10 @@
 		background-color: white;
 		font-weight: 500;
 		text-align: left;
-		white-space: normal;
+		max-width: 18.75rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	tr:hover .editable-table__row-label {
