@@ -1073,6 +1073,12 @@ label > input[type='checkbox'].toggle {
 	padding: var(--details-section-padding-y, 1rem) var(--details-section-padding-x, 1.5rem);
 }
 
+.details .editable-table {
+	margin-left: calc(-1 * (var(--details-padding-left) - 2rem));
+	margin-right: calc(-1 * (var(--details-padding-right) - 2rem));
+	max-width: 90rem;
+}
+
 .details-section header {
 	align-items: start;
 	display: flex;
