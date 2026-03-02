@@ -11,7 +11,7 @@ import {
 } from '$lib/models';
 import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { getManyContainers } from '$lib/server/db';
-import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/resources/$types';
 
@@ -28,27 +28,37 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
 
-		const resourceContainers = (await locals.pool.connect(
-			features.useElasticsearch()
-				? getManyContainersWithES(
-						scope,
-						{
-							customCategories,
-							resourceCategories: url.searchParams.getAll('resourceCategory'),
-							type: [payloadTypes.enum.resource_v2]
-						},
-						url.searchParams.get('sort') ?? defaultSort
-					)
-				: getManyContainers(
-						scope,
-						{
-							customCategories,
-							resourceCategories: url.searchParams.getAll('resourceCategory'),
-							type: [payloadTypes.enum.resource_v2]
-						},
-						url.searchParams.get('sort') ?? defaultSort
-					)
-		)) as ResourceV2Container[];
+		let resourceContainers: ResourceV2Container[];
+		let data: Record<string, Record<string, number>> | undefined;
+		if (features.useElasticsearch()) {
+			const esResult = await locals.pool.connect(
+				getManyContainersWithES(
+					scope,
+					{
+						customCategories,
+						resourceCategories: url.searchParams.getAll('resourceCategory'),
+						type: [payloadTypes.enum.resource_v2]
+					},
+					url.searchParams.get('sort') ?? defaultSort,
+					undefined,
+					{ customCategoryKeys: categoryContext?.keys ?? [] }
+				)
+			);
+			resourceContainers = esResult.containers as ResourceV2Container[];
+			data = esResult.facets;
+		} else {
+			resourceContainers = (await locals.pool.connect(
+				getManyContainers(
+					scope,
+					{
+						customCategories,
+						resourceCategories: url.searchParams.getAll('resourceCategory'),
+						type: [payloadTypes.enum.resource_v2]
+					},
+					url.searchParams.get('sort') ?? defaultSort
+				)
+			)) as ResourceV2Container[];
+		}
 
 		const containers = filterOrganizationalUnits(
 			filterVisible(resourceContainers, locals.user),
@@ -56,13 +66,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			[],
 			currentOrganizationalUnit ?? undefined
 		);
-
-		const data = features.useElasticsearch()
-			? await getFacetAggregationsForGuids(
-					containers.map((c) => c.guid),
-					categoryContext?.keys ?? []
-				)
-			: undefined;
 
 		const _facets = new Map<string, Map<string, number>>([
 			...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
