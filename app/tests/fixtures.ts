@@ -2,11 +2,13 @@ import { type BrowserContext, test as base } from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
 	type AnyContainer,
+	type CategoryContainer,
 	containerOfType,
 	type EffectContainer,
 	etag,
 	type GoalContainer,
 	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	type MeasureContainer,
 	type NewContainer,
 	type ObjectiveContainer,
@@ -18,15 +20,27 @@ import {
 	type ProgramContainer,
 	quantities,
 	type ReportContainer,
+	type ResourceDataContainer,
+	resourceDataTypes,
 	type ResourceV2Container,
 	type TaskCollectionContainer,
-	type TaskContainer
+	type TaskContainer,
+	type TermContainer
 } from '$lib/models';
-import { DotsBoard, TaskStatusBoard } from './boards';
+import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
+import { IndicatorCatalog } from './catalogs';
 
 type MyFixtures = {
+	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
+	indicatorCatalog: IndicatorCatalog;
 	taskStatusBoard: TaskStatusBoard;
+	testIndicatorTemplate: IndicatorTemplateContainer;
+	testCategoryWithTerms: {
+		category: CategoryContainer;
+		terms: TermContainer[];
+		termNames: string[];
+	};
 };
 
 type MyWorkerFixtures = {
@@ -36,12 +50,19 @@ type MyWorkerFixtures = {
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
-	testGoalWithSDG: GoalContainer;
+	testSubordinateGoal: GoalContainer;
 	testIndicator: IndicatorContainer;
 	testObjective: ObjectiveContainer;
 	testMeasure: MeasureContainer;
+	testSubordinateMeasure: MeasureContainer;
 	testEffect: EffectContainer;
 	testResourceV2: ResourceV2Container;
+	testResourceDataBudget: ResourceDataContainer;
+	testResourceDataPlanned: ResourceDataContainer;
+	testResourceDataActual: ResourceDataContainer;
+	testGoalBudget: ResourceDataContainer;
+	testSubordinateGoalBudget: ResourceDataContainer;
+	testSubordinateMeasureResourceData: ResourceDataContainer;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: ReportContainer;
@@ -113,11 +134,63 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ auto: true, scope: 'worker' }
 	],
+	categoriesBoard: async ({ page }, use) => {
+		await use(new CategoriesBoard(page));
+	},
 	dotsBoard: async ({ page }, use) => {
 		await use(new DotsBoard(page));
 	},
+	indicatorCatalog: async ({ page }, use) => {
+		await use(new IndicatorCatalog(page));
+	},
 	taskStatusBoard: async ({ page }, use) => {
 		await use(new TaskStatusBoard(page));
+	},
+	testCategoryWithTerms: async ({ adminContext, testGoal }, use, workerInfo) => {
+		const categoryTitle = `E2E Category ${workerInfo.project.name}`;
+		const termNames = [
+			`E2E Term A ${workerInfo.project.name}`,
+			`E2E Term B ${workerInfo.project.name}`
+		];
+
+		const newCategory = containerOfType(
+			payloadTypes.enum.category,
+			testGoal.organization,
+			null,
+			testGoal.organization,
+			'knot-dots'
+		) as NewContainer;
+		(newCategory.payload as CategoryContainer['payload']).title = categoryTitle;
+
+		const category = (await createContainer(adminContext, newCategory)) as CategoryContainer;
+
+		const terms: TermContainer[] = [];
+		for (const [index, termName] of termNames.entries()) {
+			const newTerm = containerOfType(
+				payloadTypes.enum.term,
+				testGoal.organization,
+				null,
+				testGoal.organization,
+				'knot-dots'
+			) as NewContainer;
+			const termPayload = newTerm.payload as TermContainer['payload'];
+			termPayload.title = termName;
+			termPayload.value = termName.toLowerCase().replace(/\s+/g, '-');
+			newTerm.relation = [
+				{
+					object: category.guid,
+					position: index,
+					predicate: predicates.enum['is-part-of-category']
+				}
+			];
+
+			const term = (await createContainer(adminContext, newTerm)) as TermContainer;
+			terms.push(term);
+		}
+
+		await use({ category, terms, termNames });
+
+		await deleteContainer(adminContext, category);
 	},
 	testOrganization: [
 		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
@@ -133,7 +206,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newOrganization.payload,
 					name: `Test Organization ${workerInfo.workerIndex}`,
-					boards: ['board.organizational_units']
+					boards: ['board.indicators', 'board.organizational_units']
 				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
@@ -217,8 +290,8 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
-	testGoalWithSDG: [
-		async ({ adminContext, testOrganization }, use, workerInfo) => {
+	testSubordinateGoal: [
+		async ({ adminContext, testOrganization, testGoal }, use, workerInfo) => {
 			const newGoal = containerOfType(
 				payloadTypes.enum.goal,
 				testOrganization.guid,
@@ -226,18 +299,24 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				testOrganization.guid,
 				'knot-dots'
 			) as GoalContainer;
-			const testGoalWithSDG = await createContainer(adminContext, {
+			const testSubordinateGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {
 					...(newGoal.payload as GoalContainer['payload']),
-					title: `Test Goal SDG 01 ${workerInfo.workerIndex}`,
-					category: ['sdg.01']
-				} as GoalContainer['payload']
+					title: `Subordinate Goal ${workerInfo.workerIndex}`
+				} as GoalContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testGoal.guid
+					}
+				]
 			});
 
-			await use(testGoalWithSDG);
+			await use(testSubordinateGoal);
 
-			await deleteContainer(adminContext, testGoalWithSDG);
+			await deleteContainer(adminContext, testSubordinateGoal);
 		},
 		{ scope: 'worker' }
 	],
@@ -267,6 +346,28 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	testIndicatorTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newIndicatorTemplate = containerOfType(
+			payloadTypes.enum.indicator_template,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as IndicatorContainer;
+		const testIndicatorTemplate = await createContainer(adminContext, {
+			...newIndicatorTemplate,
+			payload: {
+				...newIndicatorTemplate.payload,
+				title: `Test Indicator Template ${workerInfo.workerIndex}`,
+				indicatorCategory: ['indicator_category.wegweiser_kommune'],
+				unit: 'unit.km'
+			} as IndicatorContainer['payload']
+		});
+
+		await use(testIndicatorTemplate);
+
+		await deleteContainer(adminContext, testIndicatorTemplate);
+	},
 	testObjective: [
 		async ({ adminContext, testOrganization, testGoal, testIndicator }, use, workerInfo) => {
 			const newObjective = containerOfType(
@@ -333,6 +434,45 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	testSubordinateMeasure: [
+		async (
+			{ adminContext, testOrganization, testProgram, testSubordinateGoal },
+			use,
+			workerInfo
+		) => {
+			const newMeasure = containerOfType(
+				payloadTypes.enum.measure,
+				testOrganization.guid,
+				null,
+				testProgram.guid,
+				'knot-dots'
+			) as MeasureContainer;
+			const testSubordinateMeasure = await createContainer(adminContext, {
+				...newMeasure,
+				payload: {
+					...newMeasure.payload,
+					title: `Subordinate Measure ${workerInfo.workerIndex}`
+				} as MeasureContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testSubordinateGoal.guid
+					},
+					{
+						position: 1,
+						predicate: predicates.enum['is-part-of-program'],
+						object: testProgram.guid
+					}
+				]
+			});
+
+			await use(testSubordinateMeasure);
+
+			await deleteContainer(adminContext, testSubordinateMeasure);
+		},
+		{ scope: 'worker' }
+	],
 	testEffect: [
 		async ({ adminContext, testOrganization, testMeasure, testIndicator }, use, workerInfo) => {
 			const newEffect = containerOfType(
@@ -391,6 +531,231 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testResourceV2);
 
 			await deleteContainer(adminContext, testResourceV2);
+		},
+		{ scope: 'worker' }
+	],
+	testResourceDataBudget: [
+		async ({ adminContext, testOrganization, testMeasure, testResourceV2 }, use, workerInfo) => {
+			const newResourceData = containerOfType(
+				payloadTypes.enum.resource_data,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceDataContainer;
+			const testResourceDataBudget = await createContainer(adminContext, {
+				...newResourceData,
+				payload: {
+					...newResourceData.payload,
+					title: `Test Budget ${workerInfo.workerIndex}`,
+					resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+					resource: testResourceV2.guid,
+					entries: [
+						{ year: 2025, amount: 10000 },
+						{ year: 2026, amount: 15000 }
+					]
+				} as ResourceDataContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testMeasure.guid
+					}
+				]
+			});
+
+			await use(testResourceDataBudget);
+
+			await deleteContainer(adminContext, testResourceDataBudget);
+		},
+		{ scope: 'worker' }
+	],
+	testResourceDataPlanned: [
+		async ({ adminContext, testOrganization, testMeasure, testResourceV2 }, use, workerInfo) => {
+			const newResourceData = containerOfType(
+				payloadTypes.enum.resource_data,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceDataContainer;
+			const testResourceDataPlanned = await createContainer(adminContext, {
+				...newResourceData,
+				payload: {
+					...newResourceData.payload,
+					title: `Test Planned ${workerInfo.workerIndex}`,
+					resourceDataType:
+						resourceDataTypes.enum['resource_data_type.planned_resource_allocation'],
+					resource: testResourceV2.guid,
+					entries: [
+						{ year: 2025, amount: 8000 },
+						{ year: 2026, amount: 12000 }
+					]
+				} as ResourceDataContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testMeasure.guid
+					}
+				]
+			});
+
+			await use(testResourceDataPlanned);
+
+			await deleteContainer(adminContext, testResourceDataPlanned);
+		},
+		{ scope: 'worker' }
+	],
+	testResourceDataActual: [
+		async ({ adminContext, testOrganization, testMeasure, testResourceV2 }, use, workerInfo) => {
+			const newResourceData = containerOfType(
+				payloadTypes.enum.resource_data,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceDataContainer;
+			const testResourceDataActual = await createContainer(adminContext, {
+				...newResourceData,
+				payload: {
+					...newResourceData.payload,
+					title: `Test Actual ${workerInfo.workerIndex}`,
+					resourceDataType: resourceDataTypes.enum['resource_data_type.actual_resource_allocation'],
+					resource: testResourceV2.guid,
+					entries: [
+						{ year: 2025, amount: 7500 },
+						{ year: 2026, amount: 11000 }
+					]
+				} as ResourceDataContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testMeasure.guid
+					}
+				]
+			});
+
+			await use(testResourceDataActual);
+
+			await deleteContainer(adminContext, testResourceDataActual);
+		},
+		{ scope: 'worker' }
+	],
+	testGoalBudget: [
+		async ({ adminContext, testOrganization, testGoal, testResourceV2 }, use, workerInfo) => {
+			const newResourceData = containerOfType(
+				payloadTypes.enum.resource_data,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceDataContainer;
+			const testGoalBudget = await createContainer(adminContext, {
+				...newResourceData,
+				payload: {
+					...newResourceData.payload,
+					title: `Goal Budget ${workerInfo.workerIndex}`,
+					resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+					resource: testResourceV2.guid,
+					entries: [
+						{ year: 2025, amount: 50000 },
+						{ year: 2026, amount: 60000 }
+					]
+				} as ResourceDataContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testGoal.guid
+					}
+				]
+			});
+
+			await use(testGoalBudget);
+
+			await deleteContainer(adminContext, testGoalBudget);
+		},
+		{ scope: 'worker' }
+	],
+	testSubordinateGoalBudget: [
+		async (
+			{ adminContext, testOrganization, testSubordinateGoal, testResourceV2 },
+			use,
+			workerInfo
+		) => {
+			const newResourceData = containerOfType(
+				payloadTypes.enum.resource_data,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceDataContainer;
+			const testSubordinateGoalBudget = await createContainer(adminContext, {
+				...newResourceData,
+				payload: {
+					...newResourceData.payload,
+					title: `Sub Goal Budget ${workerInfo.workerIndex}`,
+					resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+					resource: testResourceV2.guid,
+					entries: [
+						{ year: 2025, amount: 20000 },
+						{ year: 2026, amount: 25000 }
+					]
+				} as ResourceDataContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testSubordinateGoal.guid
+					}
+				]
+			});
+
+			await use(testSubordinateGoalBudget);
+
+			await deleteContainer(adminContext, testSubordinateGoalBudget);
+		},
+		{ scope: 'worker' }
+	],
+	testSubordinateMeasureResourceData: [
+		async (
+			{ adminContext, testOrganization, testSubordinateMeasure, testResourceV2 },
+			use,
+			workerInfo
+		) => {
+			const newResourceData = containerOfType(
+				payloadTypes.enum.resource_data,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ResourceDataContainer;
+			const testSubordinateMeasureResourceData = await createContainer(adminContext, {
+				...newResourceData,
+				payload: {
+					...newResourceData.payload,
+					title: `Sub Measure Data ${workerInfo.workerIndex}`,
+					resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+					resource: testResourceV2.guid,
+					entries: [
+						{ year: 2025, amount: 5000 },
+						{ year: 2026, amount: 7000 }
+					]
+				} as ResourceDataContainer['payload'],
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testSubordinateMeasure.guid
+					}
+				]
+			});
+
+			await use(testSubordinateMeasureResourceData);
+
+			await deleteContainer(adminContext, testSubordinateMeasureResourceData);
 		},
 		{ scope: 'worker' }
 	],

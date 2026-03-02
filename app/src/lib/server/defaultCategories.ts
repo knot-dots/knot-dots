@@ -66,7 +66,7 @@ type CategorySeed = {
 
 const defaultCategorySeeds: CategorySeed[] = [
 	{
-		key: 'category',
+		key: 'sdg',
 		title: translate('category'),
 		terms: sustainableDevelopmentGoals.options.map((value) => ({
 			title: translate(value),

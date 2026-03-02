@@ -27,23 +27,28 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	defaultOrganizationGuid: string;
 };
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }: LoadInput) => {
 		depends('containers');
 
-		const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
+		const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
+			(await parent()) as ParentData;
 		const features = createFeatureDecisions(locals.features);
-		const customCategories = extractCustomCategoryFilters(url);
+		const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 		const categoryContext = features.useCustomCategories()
 			? await loadCategoryContext({
 					connect: locals.pool.connect,
-					organizationScope: [currentOrganization.guid],
+					organizationScope,
 					fallbackScope: [],
 					user: locals.user
 				})
 			: null;
+		const customCategories = features.useCustomCategories()
+			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+			: {};
 
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
 
@@ -104,7 +109,11 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			}
 		}
 
-		const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+		const facets = features.useElasticsearch()
+			? _facets
+			: computeFacetCount(_facets, containers, {
+					useCategoryPayload: features.useCustomCategories()
+				});
 
 		return {
 			containers,

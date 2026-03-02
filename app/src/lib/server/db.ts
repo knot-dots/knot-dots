@@ -112,6 +112,13 @@ const typeAliases = {
 		spatial_reference: z.string().uuid().optional().nullable(),
 		source: z.string()
 	}),
+	indicatorDataWithGuidAndTitle: z.object({
+		actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
+		indicator_guid: z.string().uuid(),
+		indicator_title: z.string(),
+		spatial_reference: z.string().uuid().optional().nullable(),
+		source: z.string()
+	}),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	organizationalUnitContainer,
 	relation,
@@ -527,7 +534,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
-	categories?: string[];
+	sdg?: string[];
 	customCategories?: Record<string, string[]>;
 	indicatorCategories?: string[];
 	indicator?: string;
@@ -536,6 +543,8 @@ function prepareWhereCondition(filters: {
 	organizationalUnits?: string[];
 	policyFieldsBNK?: string[];
 	programTypes?: string[];
+	resource?: string[];
+	resourceCategories?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
@@ -553,15 +562,13 @@ function prepareWhereCondition(filters: {
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
-	if (filters.categories?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'category' ?| ${sql.array(filters.categories, 'text')}`
-		);
+	if (filters.sdg?.length) {
+		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {
 			if (!values?.length) continue;
-			conditions.push(sql.fragment`c.payload->${key} ?| ${sql.array(values, 'text')}`);
+			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
 		}
 	}
 	if (filters.indicatorCategories?.length) {
@@ -604,6 +611,16 @@ function prepareWhereCondition(filters: {
 				filters.programTypes,
 				sql.fragment`, `
 			)})`
+		);
+	}
+	if (filters.resource?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'resource' IN (${sql.join(filters.resource, sql.fragment`, `)})`
+		);
+	}
+	if (filters.resourceCategories?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
 	}
 	if (filters.taskCategories?.length) {
@@ -701,7 +718,7 @@ export function getManyContainers(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		indicator?: string;
@@ -920,7 +937,7 @@ export function getAllRelatedContainers(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		organizationalUnits?: string[];
@@ -1030,7 +1047,7 @@ export function getAllRelatedContainersByProgramType(
 	filters: {
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
-		categories?: string[];
+		sdg?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1162,7 +1179,7 @@ export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		audience?: string[];
-		categories?: string[];
+		sdg?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
 		topics?: string[];
@@ -1247,7 +1264,7 @@ export function getAllContainersRelatedToMeasure(
 	guid: string,
 	filters: {
 		assignees?: string[];
-		categories?: string[];
+		sdg?: string[];
 		policyFieldsBNK?: string[];
 		taskCategories?: string[];
 		terms?: string;
@@ -1579,7 +1596,7 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 			const containerResult =
 				container.payload.type == payloadTypes.enum.program
 					? await getAllContainersRelatedToProgram(container.guid, {
-							categories: [],
+							sdg: [],
 							topics: [],
 							type: [
 								payloadTypes.enum.goal,
@@ -1693,6 +1710,21 @@ export function getIndicatorDataWegweiserKommune(spatialReference: string, frien
 			JOIN indicator_wegweiser_kommune i ON i.id = d.indicator_id
 			WHERE d.spatial_reference = ${spatialReference}
 			  AND i.friendly_url = ${friendlyUrl}
+			ORDER BY d.indicator_id, d.valid_from DESC
+		`);
+	};
+}
+
+export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.typeAlias('indicatorDataWithGuidAndTitle')`
+			SELECT DISTINCT ON (d.indicator_id) d.*, i.source, c.guid AS indicator_guid, c.payload->>'title' AS indicator_title
+			FROM indicator_data_wegweiser_kommune d
+			JOIN indicator_wegweiser_kommune i ON i.id = d.indicator_id
+			JOIN container c ON split_part(c.payload->>'externalReference', '/', -1) = i.friendly_url
+				AND c.payload->>'type' = ${payloadTypes.enum.indicator_template}
+				AND c.valid_currently
+			WHERE d.spatial_reference = ${spatialReference}
 			ORDER BY d.indicator_id, d.valid_from DESC
 		`);
 	};

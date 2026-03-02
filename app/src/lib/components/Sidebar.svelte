@@ -95,6 +95,7 @@
 	{#if $user.isAuthenticated}
 		<li>
 			<a
+				aria-label={$_('workspace.profile')}
 				class="sidebar-menu-item"
 				class:sidebar-menu-item--active={'/me' === page.url.pathname}
 				href="/me"

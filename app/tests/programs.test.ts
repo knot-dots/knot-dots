@@ -3,10 +3,10 @@ import { expect, test } from './fixtures';
 test.describe('Level board', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('create goals', async ({ dotsBoard, isMobile, testOrganization, testProgram }) => {
+	test('create goals', async ({ dotsBoard, isMobile, testProgram }) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
-		await dotsBoard.goto(`/${testOrganization.guid}`);
+		await dotsBoard.goto(`/${testProgram.organization}`);
 
 		await dotsBoard.card(testProgram.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();

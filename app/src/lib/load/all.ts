@@ -36,7 +36,7 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string | null;
+	defaultOrganizationGuid: string;
 };
 
 export default (async function load({ depends, locals, url, parent }: LoadInput) {
@@ -44,18 +44,11 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 
 	let containers;
 	let subordinateOrganizationalUnits: string[] = [];
-	const customCategories = extractCustomCategoryFilters(url);
 	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
 		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
 
-	const organizationScope = Array.from(
-		new Set(
-			[currentOrganization.guid, defaultOrganizationGuid].filter((guid): guid is string =>
-				Boolean(guid)
-			)
-		)
-	);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
@@ -65,6 +58,9 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 				user: locals.user
 			})
 		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = (await locals.pool.connect(
@@ -121,7 +117,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 				url.searchParams.getAll('programType'),
 				{
 					audience: url.searchParams.getAll('audience'),
-					categories: url.searchParams.getAll('category'),
+					sdg: url.searchParams.getAll('sdg'),
 					customCategories,
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					terms: url.searchParams.get('terms') ?? '',
@@ -138,7 +134,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
@@ -152,7 +148,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
 						{
 							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
+							sdg: url.searchParams.getAll('sdg'),
 							customCategories,
 							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
@@ -209,10 +205,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',
@@ -223,7 +216,11 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 	_facets.set('payloadType', fromCounts(allowedPayloadTypes as string[], data?.payloadType));
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, containers, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		containers: filtered,

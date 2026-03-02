@@ -143,6 +143,9 @@ export const addObjectiveState = writable<AddObjectiveState>({});
 
 export const newContainer = writable<NewContainer | undefined>();
 
+// Store to track last successfully created container
+export const lastCreatedContainer = writable<Container | undefined>(undefined);
+
 export type OverlayData =
 	| {
 			key: 'chapters';
@@ -391,7 +394,7 @@ if (browser) {
 					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
 						audience: hashParams.getAll('audience'),
-						category: hashParams.getAll('category'),
+						sdg: hashParams.getAll('sdg'),
 						organization: [container.organization],
 						...(hashParams.has('related-to')
 							? { relationType: [predicates.enum['is-part-of']] }
@@ -417,7 +420,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
@@ -438,7 +441,7 @@ if (browser) {
 				hashParams.get(overlayKey.enum['measures']) as string,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
@@ -511,9 +514,14 @@ if (browser) {
 						payloadType: [
 							payloadTypes.enum.goal,
 							payloadTypes.enum.objective,
-							payloadTypes.enum.resource_data
+							payloadTypes.enum.resource_data,
+							payloadTypes.enum.resource_data_collection
 						],
-						relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
+						relationType: [
+							predicates.enum['is-part-of'],
+							predicates.enum['is-objective-for'],
+							predicates.enum['is-section-of']
+						],
 						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'
@@ -537,9 +545,14 @@ if (browser) {
 						payloadTypes.enum.measure,
 						payloadTypes.enum.simple_measure,
 						payloadTypes.enum.effect,
-						payloadTypes.enum.resource_data
+						payloadTypes.enum.resource_data,
+						payloadTypes.enum.resource_data_collection
 					],
-					relationType: [predicates.enum['is-part-of'], predicates.enum['is-measured-by']],
+					relationType: [
+						predicates.enum['is-part-of'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-section-of']
+					],
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
@@ -626,14 +639,14 @@ if (browser) {
 			}
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];
 			const indicators = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				organization: [values.data.currentOrganization.guid],
@@ -648,7 +661,7 @@ if (browser) {
 			});
 		} else if (hashParams.has(overlayKey.enum['new-indicator-catalog'])) {
 			const containers = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
@@ -748,7 +761,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }

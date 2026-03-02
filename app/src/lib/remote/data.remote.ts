@@ -115,7 +115,7 @@ export const fetchContainersRelatedToProgram = query(
 		guid: z.string().uuid(),
 		params: z.object({
 			audience: z.array(z.string()),
-			category: z.array(z.string()),
+			sdg: z.array(z.string()),
 			policyFieldBNK: z.array(z.string()),
 			terms: z.string().optional(),
 			topic: z.array(z.string())
@@ -126,7 +126,7 @@ export const fetchContainersRelatedToProgram = query(
 		const relatedContainers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(guid, {
 				audience: params.audience,
-				categories: params.category,
+				sdg: params.sdg,
 				policyFieldsBNK: params.policyFieldBNK,
 				...(params.terms ? { terms: params.terms } : undefined),
 				topics: params.topic
@@ -147,30 +147,33 @@ export const fetchContainersRelatedToResource = query(
 	async ({ guid, params }) => {
 		const { locals } = getRequestEvent();
 
-		const [related, resourceData] = await Promise.all([
-			locals.pool.connect(
-				getAllRelatedContainers(params.organization, guid, params.relationType, {}, 'alpha')
-			),
-			locals.pool.connect(
-				getManyContainers(
-					[],
-					{
-						type: [payloadTypes.enum.resource_data],
-						resource: [guid]
-					},
-					'alpha'
+		// Fetch the resource data container(s) for the given resource GUID
+		const resourceData = await locals.pool.connect(
+			getManyContainers(
+				[],
+				{
+					type: [payloadTypes.enum.resource_data],
+					resource: [guid]
+				},
+				'alpha'
+			)
+		);
+
+		// Fetch containers related to each resourceData object (e.g., Goals, Measures)
+		const relatedToResourceData = await Promise.all(
+			resourceData.map((rd) =>
+				locals.pool.connect(
+					getAllRelatedContainers(params.organization, rd.guid, params.relationType, {}, 'alpha')
 				)
 			)
-		]);
+		);
 
-		const merged = [
-			...related,
-			...resourceData.filter(
-				(r) => !related.some((existing: { guid: string }) => existing.guid === r.guid)
-			)
-		];
+		// Flatten and deduplicate all results
+		const allContainers = [...resourceData, ...relatedToResourceData.flat()];
 
-		return filterVisible(merged, locals.user);
+		const uniqueContainers = Array.from(new Map(allContainers.map((c) => [c.guid, c])).values());
+
+		return filterVisible(uniqueContainers, locals.user);
 	}
 );
 

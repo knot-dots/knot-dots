@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Uppy from '@uppy/core';
-	import German from '@uppy/locales/lib/de_DE';
-	import ImageEditor from '@uppy/image-editor';
-	import requestSubmit from '$lib/client/requestSubmit';
-	import XHRUpload from '@uppy/xhr-upload';
 	import { onDestroy } from 'svelte';
-	import { _ } from 'svelte-i18n';
-	import { openDashboard, closeDashboard } from '$lib/uppyStore';
+	import { _, locale } from 'svelte-i18n';
+	import Uppy from '@uppy/core';
+	import ImageEditor from '@uppy/image-editor';
+	import German from '@uppy/locales/lib/de_DE';
+	import XHRUpload from '@uppy/xhr-upload';
 	import UploadIcon from '~icons/flowbite/upload-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import requestSubmitElement from '$lib/client/requestSubmitElement';
+	import { openDashboard, closeDashboard } from '$lib/uppyStore';
 
 	interface Props {
 		value: string | undefined;
@@ -40,23 +40,27 @@
 	const uppy = new Uppy({
 		allowMultipleUploadBatches: false,
 		autoProceed: false,
-		locale: {
-			...German,
-			strings: {
-				...German.strings,
-				uploadXFiles: {
-					'0': 'Datei hochladen',
-					'1': 'Datei hochladen',
-					'2': 'Dateien hochladen'
-				},
-				uploadXNewFiles: {
-					'0': 'Datei hochladen',
-					'1': 'Datei hochladen',
-					'2': 'Dateien hochladen'
-				},
-				uploadSelectedFiles: 'Datei hochladen'
-			}
-		},
+		...($locale?.startsWith('de')
+			? {
+					locale: {
+						...German,
+						strings: {
+							...German.strings,
+							uploadXFiles: {
+								'0': 'Datei hochladen',
+								'1': 'Datei hochladen',
+								'2': 'Dateien hochladen'
+							},
+							uploadXNewFiles: {
+								'0': 'Datei hochladen',
+								'1': 'Datei hochladen',
+								'2': 'Dateien hochladen'
+							},
+							uploadSelectedFiles: 'Datei hochladen'
+						}
+					}
+				}
+			: undefined),
 		restrictions: {
 			allowedFileTypes: allowedFileTypes,
 			maxNumberOfFiles: 1

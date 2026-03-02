@@ -32,6 +32,7 @@ export interface IndicatorFilters {
 	indicatorCategories: string[];
 	indicatorTypes: string[];
 	included: string[];
+	sdg: string[];
 }
 
 export interface IndicatorLoadResult {
@@ -51,6 +52,7 @@ type LoadInput = {
 type ParentData = {
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	defaultOrganizationGuid: string;
 };
 
 /**
@@ -89,6 +91,7 @@ export async function getIndicatorsData(params: {
 				customCategories: filters.customCategories,
 				indicatorCategories: filters.indicatorCategories,
 				indicatorTypes: filters.indicatorTypes,
+				sdg: filters.sdg,
 				...(restrictOrgUnits ? { organizationalUnits } : {}),
 				type: [payloadTypes.enum.indicator]
 			},
@@ -108,11 +111,12 @@ export async function getIndicatorsData(params: {
 		const [templates, actualData] = await Promise.all([
 			connect(
 				getManyContainers(
-					[organizationGuid],
+					[],
 					{
 						customCategories: filters.customCategories,
 						indicatorCategories: filters.indicatorCategories,
 						indicatorTypes: filters.indicatorTypes,
+						sdg: filters.sdg,
 						type: [payloadTypes.enum.indicator_template]
 					},
 					'alpha'
@@ -146,24 +150,29 @@ export async function getIndicatorsData(params: {
 export default (async function load({ depends, locals, parent, url }: LoadInput) {
 	depends('containers');
 
-	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
-	const customCategories = extractCustomCategoryFilters(url);
+	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
+		(await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
 	const categoryContext = features.useCustomCategories()
 		? await loadCategoryContext({
 				connect: locals.pool.connect,
-				organizationScope: [currentOrganization.guid],
+				organizationScope,
 				fallbackScope: [],
 				user: locals.user
 			})
 		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	const filters = {
 		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
-		included: url.searchParams.getAll('included')
+		included: url.searchParams.getAll('included'),
+		sdg: url.searchParams.getAll('sdg')
 	} as const;
 
 	const result = await getIndicatorsData({
@@ -202,10 +211,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',
@@ -221,7 +227,9 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 
 	const facets = features.useElasticsearch()
 		? _facets
-		: computeFacetCount(_facets, filteredCombined);
+		: computeFacetCount(_facets, result.combined, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,

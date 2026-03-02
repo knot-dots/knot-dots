@@ -53,7 +53,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { addEffectState, newContainer } from '$lib/stores';
+	import { addEffectState, lastCreatedContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -65,6 +65,10 @@
 		const response = await saveContainer(container);
 		if (response.ok) {
 			const savedContainer = await response.json();
+
+			// Signal that a container was successfully created
+			$lastCreatedContainer = savedContainer;
+
 			if (isIndicatorContainer(savedContainer) && $addEffectState.target) {
 				const effect = await createEffect($addEffectState.target, savedContainer);
 				$addEffectState = {};

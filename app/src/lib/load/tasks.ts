@@ -161,7 +161,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 
 		const facets = features.useElasticsearch()
 			? _facets
-			: computeFacetCount(_facets, taskContainers);
+			: computeFacetCount(_facets, taskContainers, {
+					useCategoryPayload: features.useCustomCategories()
+				});
 
 		return { containers, relatedContainers, facets };
 	}) satisfies ServerLoad;

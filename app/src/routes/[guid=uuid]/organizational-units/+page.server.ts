@@ -64,7 +64,9 @@ export const load = (async ({ locals, parent, url }) => {
 		]
 	]);
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, filtered, { useCategoryPayload: features.useCustomCategories() });
 
 	return { containers: filtered, facets };
 }) satisfies PageServerLoad;

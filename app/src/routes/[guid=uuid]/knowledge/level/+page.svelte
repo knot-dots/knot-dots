@@ -61,8 +61,7 @@
 		return knowledgeByLevel;
 	});
 
-	const toFacetKey = (key: string) =>
-		key === 'sdg' ? 'category' : key === 'policy_field_bnk' ? 'policyFieldBNK' : key;
+	const toFacetKey = (key: string) => (key === 'policy_field_bnk' ? 'policyFieldBNK' : key);
 
 	$effect(() => {
 		const organizationScope = Array.from(
@@ -154,7 +153,7 @@
 			}
 		} else {
 			entries.push([
-				'category',
+				'sdg',
 				new Map<string, number>(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))
 			]);
 			entries.push(['topic', new Map<string, number>(topics.options.map((v) => [v as string, 0]))]);

@@ -16,8 +16,9 @@
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
-	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
+	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
+	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
 	import GoalWorkspaces from '$lib/components/GoalWorkspaces.svelte';
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
@@ -59,7 +60,7 @@
 		value: string;
 		guid?: string;
 		icon?: string;
-		subterms?: FilterOption[];
+		subOptions?: FilterOption[];
 	};
 
 	interface Props {
@@ -219,6 +220,7 @@
 	{:else}
 		<OrganizationMenu />
 		<DotsBoardButton />
+		<BackToOverlayButton />
 	{/if}
 
 	{#if workspaceOptions}
@@ -350,7 +352,7 @@
 								...option,
 								count:
 									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
-								subterms: option.subterms?.map((sub) => ({
+								subOptions: option.subOptions?.map((sub) => ({
 									...sub,
 									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
 								}))
@@ -360,7 +362,7 @@
 									count: v,
 									label: facetLabels.get(k) ?? $_(k),
 									value: k,
-									subterms: undefined
+									subOptions: undefined
 								}))
 								.toSorted((a, b) =>
 									a.label.localeCompare(b.label, undefined, {
@@ -377,7 +379,7 @@
 					<RelationTypeFilterDropDown {options} />
 				{:else if key === 'member'}
 					<MemberFilterDropDown {options} />
-				{:else if options.some(({ count, subterms }: FilterOption) => (count ?? 0) > 0 || subterms?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
+				{:else if options.some(({ count, subOptions }: FilterOption) => (count ?? 0) > 0 || subOptions?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 					<FilterDropDown {key} {options} label={labelOverride} />
 				{/if}
 			{/each}

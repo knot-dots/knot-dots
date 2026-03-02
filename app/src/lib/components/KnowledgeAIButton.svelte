@@ -20,7 +20,7 @@
 
 	let params = $derived({
 		audience: paramsFromFragment(page.url).getAll('audience'),
-		category: paramsFromFragment(page.url).getAll('category'),
+		sdg: paramsFromFragment(page.url).getAll('sdg'),
 		policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
 		terms: paramsFromFragment(page.url).get('terms') ?? '',
 		topic: paramsFromFragment(page.url).getAll('topic')

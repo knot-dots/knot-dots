@@ -5,7 +5,7 @@ export type CategoryOption = {
 	value: string;
 	guid: string;
 	icon?: string;
-	subterms?: CategoryOption[];
+	subOptions?: CategoryOption[];
 };
 
 export type CategoryOptions = Record<string, CategoryOption[]> & {
@@ -30,9 +30,12 @@ function findTermsForCategory(category: CategoryContainer, terms: TermContainer[
 }
 
 function toOption(term: TermContainer): CategoryOption {
+	const value = term.payload.value ?? term.payload.title ?? term.guid;
+	const filterLabel = term.payload.filterLabel?.trim();
+	const label = filterLabel ? filterLabel : (term.payload.title ?? value);
 	return {
-		label: term.payload.filterLabel ?? term.payload.title ?? term.payload.value,
-		value: term.payload.value,
+		label,
+		value,
 		guid: term.guid,
 		icon: term.payload.icon
 	};
@@ -67,7 +70,7 @@ export function buildCategoryOptionsFromContainers(
 				({ guid }) => guid !== term.guid
 			);
 			if (subterms.length) {
-				option.subterms = sortOptions(subterms.map(toOption));
+				option.subOptions = sortOptions(subterms.map(toOption));
 			}
 			return option;
 		});
@@ -108,7 +111,7 @@ export function buildCategoryFacets(
 
 		facetMap.set(option.value, count);
 		if (option.guid) facetMap.set(option.guid, count);
-		option.subterms?.forEach((sub) => applyCounts(sub, countsForFacet, facetMap));
+		option.subOptions?.forEach((sub) => applyCounts(sub, countsForFacet, facetMap));
 	};
 
 	for (const [rawKey, list] of Object.entries(options)) {
@@ -138,7 +141,7 @@ export function buildCategoryLabels(options: CategoryOptions) {
 			const resolved = option.label ?? option.value;
 			labels.set(option.value, resolved);
 			if (option.guid) labels.set(option.guid, resolved);
-			option.subterms?.forEach(addOption);
+			option.subOptions?.forEach(addOption);
 		};
 
 		list.forEach(addOption);

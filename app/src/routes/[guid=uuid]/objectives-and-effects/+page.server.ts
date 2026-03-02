@@ -10,26 +10,46 @@ import {
 	indicatorTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics
+	topics,
+	type OrganizationContainer
 } from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
+
+type ParentData = {
+	currentOrganization: OrganizationContainer;
+	defaultOrganizationGuid: string;
+};
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	const { currentOrganization } = await parent();
-	const customCategories = extractCustomCategoryFilters(url);
+	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
 	const features = createFeatureDecisions(locals.features);
+	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
+
+	const categoryContext = features.useCustomCategories()
+		? await loadCategoryContext({
+				connect: locals.pool.connect,
+				organizationScope,
+				fallbackScope: [],
+				user: locals.user
+			})
+		: null;
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
+
 	const containers = (await locals.pool.connect(
 		features.useElasticsearch()
 			? getManyContainersWithES(
 					[currentOrganization.guid],
 					{
 						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
+						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
 						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 						indicatorTypes: url.searchParams.getAll('indicatorType'),
@@ -43,7 +63,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 					[currentOrganization.guid],
 					{
 						audience: url.searchParams.getAll('audience'),
-						categories: url.searchParams.getAll('category'),
+						sdg: url.searchParams.getAll('sdg'),
 						customCategories,
 						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 						indicatorTypes: url.searchParams.getAll('indicatorType'),
@@ -62,7 +82,10 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);
 
 	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
+		? await getFacetAggregationsForGuids(
+				filtered.map((c) => c.guid),
+				categoryContext?.keys ?? []
+			)
 		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
@@ -70,18 +93,34 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		[
 			'indicatorCategory',
 			fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
-		],
-		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
-		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
+		]
 	]);
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(
+			categoryContext.options,
+			data ? Object.fromEntries(Object.entries(data)) : {}
+		);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
+		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
+		_facets.set(
+			'policyFieldBNK',
+			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
+		);
+	}
 
 	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
 
 	return {
 		container: currentOrganization,
 		containers: filtered,
-		facets
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
 	};
 }) satisfies PageServerLoad;

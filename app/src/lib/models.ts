@@ -533,7 +533,9 @@ export type ResourceUnit = z.infer<typeof resourceUnits>;
 export const resourceDataTypes = z.enum([
 	'resource_data_type.actual_resource_allocation',
 	'resource_data_type.planned_resource_allocation',
-	'resource_data_type.budget'
+	'resource_data_type.budget',
+	'resource_data_type.total_budget',
+	'resource_data_type.total_budget_forecast'
 ] as const);
 
 export type ResourceDataType = z.infer<typeof resourceDataTypes>;
@@ -623,19 +625,19 @@ export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'i
 
 export type IooiType = z.infer<typeof iooiTypes>;
 
-const normalizeCategoryKey = (source: string, { lowerCase = true } = {}) => {
-	const cleaned = source
+export function slugify(source: string) {
+	return source
 		.trim()
 		.replace(/[^a-zA-Z0-9_.-]+/g, '-')
-		.replace(/^-+|-+$/g, '');
-
-	return lowerCase ? cleaned.toLowerCase() : cleaned;
-};
+		.replace(/^-+|-+$/g, '')
+		.substring(0, 128);
+}
 
 const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
-	category: z.array(z.string().trim().min(1)).default([]),
+	sdg: z.array(sustainableDevelopmentGoals).default([]),
+	category: z.record(z.string(), z.array(z.string().trim().min(1))).default({}),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
 	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
@@ -645,73 +647,41 @@ const basePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-const categoryPayloadBaseShape = z.object({
+const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
-	title: z.string().trim(),
+	title: z.string().trim().min(1),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])
 });
 
-const enforceCategoryKey = (value: { key?: string; title?: string }, ctx: z.RefinementCtx) => {
-	const title = value.title?.trim();
-	const key = value.key?.trim();
-	const slug = key
-		? normalizeCategoryKey(key, { lowerCase: false })
-		: normalizeCategoryKey(title || '', { lowerCase: true });
-
-	if (!slug) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: 'category title is required to derive key'
-		});
-		return;
+const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
+	if (payload.title && !payload.key) {
+		payload.key = slugify(payload.title);
 	}
+});
 
-	if (slug.length > 128) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			message: 'category key must be 128 characters or fewer'
-		});
-		return;
-	}
+const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
 
-	value.key = slug;
-};
-
-const enforceCategoryKeyIfProvided = (
-	value: { key?: string; title?: string },
-	ctx: z.RefinementCtx
-) => {
-	// For partial inputs, skip when both title and key are missing; creation code fills them later.
-	if (!value.title && !value.key) return;
-	enforceCategoryKey(value, ctx);
-};
-
-const categoryPayload = categoryPayloadBaseShape.superRefine(enforceCategoryKey);
-
-const initialCategoryPayload = categoryPayloadBaseShape
-	.partial({ key: true, title: true })
-	.superRefine(enforceCategoryKeyIfProvided);
-
-const termPayload = z
+const unrefinedTermPayload = z
 	.object({
 		description: z.string().trim().optional(),
 		filterLabel: z.string().trim().max(256).optional(),
-		title: z.string().trim(),
-		value: z.string().trim(),
+		title: z.string().trim().min(1),
+		value: z.string().trim().optional(),
 		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term),
 		visibility: visibility.default(visibility.enum['public'])
 	})
 	.strict();
 
-const initialTermPayload = termPayload.partial({
-	filterLabel: true,
-	icon: true,
-	title: true,
-	value: true
+const termPayload = unrefinedTermPayload.superRefine((payload) => {
+	if (payload.title && !payload.value) {
+		payload.value = slugify(payload.title);
+	}
 });
+
+const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -755,6 +725,7 @@ const customCollectionPayload = z
 			.object({
 				audience: z.array(audience).default([]),
 				category: z.array(sustainableDevelopmentGoals).default([]),
+				sdg: z.array(sustainableDevelopmentGoals).default([]),
 				indicatorCategory: z.array(indicatorCategories).default([]),
 				type: z.array(payloadTypes).default([]),
 				policyFieldBNK: z.array(policyFieldBNK).default([]),
@@ -763,6 +734,7 @@ const customCollectionPayload = z
 			.default({
 				audience: [],
 				category: [],
+				sdg: [],
 				indicatorCategory: [],
 				policyFieldBNK: [],
 				topic: [],
@@ -1788,7 +1760,7 @@ export function isIndicatorCollectionContainer(
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
 
-const indicatorTemplateContainer = container.extend({
+export const indicatorTemplateContainer = container.extend({
 	payload: indicatorTemplatePayload
 });
 
@@ -2016,6 +1988,25 @@ export function isResourceDataBudgetContainer(
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+	);
+}
+
+export function isResourceDataTotalBudgetContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataContainer {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
+	);
+}
+
+export function isResourceDataTotalBudgetForecastContainer(
+	container: AnyContainer | EmptyContainer
+): container is ResourceDataContainer {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType ===
+			resourceDataTypes.enum['resource_data_type.total_budget_forecast']
 	);
 }
 
@@ -2315,8 +2306,18 @@ export function isContainerWithBody(
 	return hasProperty(container.payload, 'body');
 }
 
+export type ContainerWithSdg = Omit<AnyContainer, 'payload'> & {
+	payload: AnyPayload & { sdg: SustainableDevelopmentGoal[] };
+};
+
+export function isContainerWithSdg(
+	container: AnyContainer | NewContainer
+): container is ContainerWithSdg {
+	return hasProperty(container.payload, 'sdg');
+}
+
 export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { category: SustainableDevelopmentGoal[] };
+	payload: AnyPayload & { category: Record<string, string[]> };
 };
 
 export function isContainerWithCategory(
@@ -3143,8 +3144,10 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
-	containers: AnyContainer[]
+	containers: AnyContainer[],
+	options?: { useCategoryPayload?: boolean }
 ) {
+	const useCategoryPayload = options?.useCategoryPayload ?? false;
 	const normalizeValue = (value: unknown): string => {
 		if (value === null || value === undefined) return '';
 		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
@@ -3160,21 +3163,25 @@ export function computeFacetCount(
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
-			const foci = facets.get(key) as Map<string, number>;
-			if (key === 'payloadType') {
-				const normalized = normalizeValue(container.payload.type);
-				foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
-				continue;
-			}
-			if (key in container.payload) {
-				if (Array.isArray(container.payload[key as keyof typeof container.payload])) {
-					for (const value of container.payload[key as keyof typeof container.payload]) {
+			const categoryPayload = useCategoryPayload
+				? (container.payload as { category?: Record<string, unknown> }).category
+				: undefined;
+			const hasCategoryValue = categoryPayload && key in categoryPayload;
+			const hasPayloadValue = key in container.payload;
+			const valueSource = hasCategoryValue
+				? categoryPayload?.[key]
+				: hasPayloadValue
+					? container.payload[key as keyof typeof container.payload]
+					: undefined;
+			if (valueSource !== undefined) {
+				const foci = facets.get(key) as Map<string, number>;
+				if (Array.isArray(valueSource)) {
+					for (const value of valueSource) {
 						const normalized = normalizeValue(value);
 						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 					}
 				} else {
-					const value = container.payload[key as keyof typeof container.payload];
-					const normalized = normalizeValue(value);
+					const normalized = normalizeValue(valueSource);
 					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
 				}
 			}

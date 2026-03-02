@@ -35,12 +35,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const _facets = new Map<string, Map<string, number>>([
 		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
+		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg)],
 		['topic', fromCounts(topics.options as string[], data?.topic)],
 		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)]
 	]);
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
+	const facets = features.useElasticsearch()
+		? _facets
+		: computeFacetCount(_facets, filtered, { useCategoryPayload: features.useCustomCategories() });
 
 	return {
 		containers: filtered,
