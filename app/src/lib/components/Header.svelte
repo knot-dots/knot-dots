@@ -35,6 +35,7 @@
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import SaveWorkspaceButton from '$lib/components/SaveWorkspaceButton.svelte';
+	import { getCategoryKeys } from '$lib/categoryOptions';
 	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -404,7 +405,10 @@
 							use:workspaceMenuContent={workspaceMenuOpts}
 						>
 							<div class="workspace-menu">
-								<SaveWorkspaceButton mode="create" defaultPayloadType={savePayloadType} />
+								<SaveWorkspaceButton
+									defaultPayloadType={savePayloadType}
+									customCategoryKeys={categoryOptions ? getCategoryKeys(categoryOptions) : []}
+								/>
 							</div>
 						</fieldset>
 					{/if}
