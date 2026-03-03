@@ -72,12 +72,10 @@ function addFacetFilter(map: FacetFilterMap, key: string, clause: estypes.QueryD
 }
 
 function buildFacetAggregations(params: {
-	must: estypes.QueryDslQueryContainer[];
-	nonFacetFilters: estypes.QueryDslQueryContainer[];
 	facetFilters: FacetFilterMap;
 	customCategoryKeys: string[];
 }) {
-	const { must, nonFacetFilters, facetFilters, customCategoryKeys } = params;
+	const { facetFilters, customCategoryKeys } = params;
 	const facetKeys = new Set<string>([...defaultFacetKeys, ...customCategoryKeys]);
 
 	for (const key of Object.keys(facetFilters)) {
@@ -100,20 +98,8 @@ function buildFacetAggregations(params: {
 		}
 
 		aggs[key] = {
-			filter: {
-				bool: {
-					must,
-					filter: [...nonFacetFilters, ...filtersExceptKey]
-				}
-			},
-			aggs: {
-				values: {
-					terms: {
-						field,
-						size
-					}
-				}
-			}
+			filter: { bool: { filter: filtersExceptKey } },
+			aggs: { values: { terms: { field, size } } }
 		};
 	}
 
