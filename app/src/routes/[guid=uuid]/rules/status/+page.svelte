@@ -5,14 +5,14 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
-	import { ruleStatus } from '$lib/models';
+	import { payloadTypes, ruleStatus } from '$lib/models';
 	import { ruleStatusBackgrounds, ruleStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<RulesPage {data}>
+<RulesPage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.rule]}>
 	<Board>
 		{#each ruleStatus.options as statusOption (statusOption)}
 			<BoardColumn

@@ -12,7 +12,8 @@ import {
 	sustainableDevelopmentGoals,
 	topics,
 	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	type OrganizationalUnitContainer,
+	type PayloadType
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -70,6 +71,24 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 			.map((unit) => unit.guid);
 	}
 
+	const allowedPayloadTypes: PayloadType[] = [
+		payloadTypes.enum.effect,
+		payloadTypes.enum.goal,
+		payloadTypes.enum.image,
+		payloadTypes.enum.indicator,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.program,
+		payloadTypes.enum.report,
+		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure,
+		payloadTypes.enum.workspace,
+		...(features.usePage() ? [payloadTypes.enum.page] : [])
+	];
+	const selectedPayloadTypes = url.searchParams
+		.getAll('payloadType')
+		.filter((value): value is PayloadType => allowedPayloadTypes.includes(value as PayloadType));
+	const typeFilters = selectedPayloadTypes.length ? selectedPayloadTypes : allowedPayloadTypes;
+
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
 			getAllRelatedContainers(
@@ -86,17 +105,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 					: url.searchParams.getAll('relationType'),
 				{
 					customCategories,
-					type: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.goal,
-						payloadTypes.enum.image,
-						payloadTypes.enum.indicator,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.program,
-						payloadTypes.enum.report,
-						payloadTypes.enum.rule,
-						payloadTypes.enum.simple_measure
-					]
+					type: typeFilters
 				},
 				url.searchParams.get('sort') ?? ''
 			)
@@ -113,35 +122,12 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 					terms: url.searchParams.get('terms') ?? '',
 					topics: url.searchParams.getAll('topic'),
-					type: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.goal,
-						payloadTypes.enum.image,
-						payloadTypes.enum.indicator,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.program,
-						payloadTypes.enum.report,
-						payloadTypes.enum.rule,
-						payloadTypes.enum.simple_measure
-					]
+					type: typeFilters
 				},
 				url.searchParams.get('sort') ?? ''
 			)
 		);
 	} else {
-		const typeFilters = [
-			payloadTypes.enum.effect,
-			payloadTypes.enum.goal,
-			payloadTypes.enum.image,
-			payloadTypes.enum.indicator,
-			payloadTypes.enum.measure,
-			payloadTypes.enum.program,
-			payloadTypes.enum.report,
-			payloadTypes.enum.rule,
-			payloadTypes.enum.simple_measure,
-			...(features.usePage() ? [payloadTypes.enum.page] : [])
-		];
-
 		containers = await locals.pool.connect(
 			features.useElasticsearch()
 				? getManyContainersWithES(
@@ -228,6 +214,7 @@ export default (async function load({ depends, locals, url, parent }: LoadInput)
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
+	_facets.set('payloadType', fromCounts(allowedPayloadTypes as string[], data?.payloadType));
 
 	const facets = features.useElasticsearch()
 		? _facets

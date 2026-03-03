@@ -12,6 +12,7 @@
 		isReportContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
+		isWorkspaceContainer,
 		payloadTypes
 	} from '$lib/models';
 	import type { PageProps } from './$types';
@@ -33,7 +34,8 @@
 					isProgramContainer(c) ||
 					isReportContainer(c) ||
 					isRuleContainer(c) ||
-					isSimpleMeasureContainer(c)
+					isSimpleMeasureContainer(c) ||
+					isWorkspaceContainer(c)
 			)
 			.slice(0, browser ? undefined : 20)}
 		payloadType={[

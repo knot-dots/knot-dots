@@ -8,7 +8,12 @@
 	let { data }: PageProps = $props();
 </script>
 
-<GoalsPage {data} filterBarInitiallyOpen>
+<GoalsPage
+	{data}
+	filterBarInitiallyOpen
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.goal]}
+>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.goal]} />
 	<Help slug="goals-catalog" />
 </GoalsPage>

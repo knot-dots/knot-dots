@@ -183,9 +183,14 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		connect: locals.pool.connect
 	});
 
+	const requestedPayloadTypes = url.searchParams.getAll('payloadType');
+	const filteredCombined = requestedPayloadTypes.length
+		? result.combined.filter((container) => requestedPayloadTypes.includes(container.payload.type))
+		: result.combined;
+
 	const data = features.useElasticsearch()
 		? await getFacetAggregationsForGuids(
-				result.combined.map((c) => c.guid),
+				filteredCombined.map((c) => c.guid),
 				categoryContext?.keys ?? []
 			)
 		: undefined;
@@ -228,7 +233,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: result.combined,
+		containers: filteredCombined,
 		filters,
 		useNewIndicators: result.useNewIndicators,
 		facets,

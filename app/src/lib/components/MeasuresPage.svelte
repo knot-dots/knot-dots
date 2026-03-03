@@ -2,7 +2,7 @@
 	import { setContext, type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { predicates } from '$lib/models';
+	import { predicates, type PayloadType } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/measures/catalog/$types';
 
@@ -10,9 +10,17 @@
 		children: Snippet;
 		data: PageData;
 		filterBarInitiallyOpen?: boolean;
+		showSaveWorkspace?: boolean;
+		savePayloadType?: PayloadType[];
 	}
 
-	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
+	let {
+		children,
+		data,
+		filterBarInitiallyOpen = false,
+		showSaveWorkspace = false,
+		savePayloadType = []
+	}: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -34,6 +42,8 @@
 			facetLabels={data.facetLabels ?? undefined}
 			categoryOptions={data.categoryOptions ?? null}
 			search
+			{showSaveWorkspace}
+			{savePayloadType}
 		/>
 	{/snippet}
 

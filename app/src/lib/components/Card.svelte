@@ -26,6 +26,7 @@
 		isTeaserContainer,
 		isKnowledgeContainer,
 		isTaskContainer,
+		isWorkspaceContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
@@ -123,6 +124,8 @@
 		const hashParams = paramsFromFragment(url);
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			return '#';
+		} else if (isWorkspaceContainer(container)) {
+			return overlayURL(url, 'workspace', container.guid);
 		} else if (hashParams.has('indicators')) {
 			return overlayURL(url, 'view', container.guid, [
 				['program', hashParams.get('indicators') as string]

@@ -45,6 +45,7 @@
 		['sdg', 'indicator_category.sdg'],
 		['member', 'member_filter.label'],
 		['type', 'payload_type'],
+		['payloadType', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
