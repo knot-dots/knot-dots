@@ -224,7 +224,6 @@
 	<div class="editable-table__header">
 		<div class="editable-table__heading">
 			<span class="editable-table__title">{title}</span>
-			<span class="editable-table__title-muted">{$_('preposition.in')}</span>
 			<span class="editable-table__title-unit">{titleUnit}</span>
 		</div>
 	</div>
