@@ -1090,12 +1090,25 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-heading {
-	color: var(--color-gray-700);
+	color: var(--color-gray-800);
 	flex-grow: 1;
-	font-size: 1.5rem;
-	font-weight: 600;
 	line-height: 1.25;
 	min-height: 2rem;
+}
+
+h2.details-heading {
+	font-size: 1.875rem;
+	font-weight: 600;
+}
+
+h3.details-heading {
+	font-size: 1.875rem;
+	font-weight: 400;
+}
+
+h4.details-heading {
+	font-size: 1.5rem;
+	font-weight: 600;
 }
 
 .details-section header {
