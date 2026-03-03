@@ -7,45 +7,21 @@ import {
 	payloadTypes,
 	resourceCategories,
 	resourceUnits,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer,
 	type ResourceV2Container
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { getManyContainers } from '$lib/server/db';
 import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import type { ServerLoad } from '@sveltejs/kit';
-
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
+import type { PageServerLoad } from '../../routes/[guid=uuid]/resources/$types';
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
-	return (async ({ depends, locals, parent, url }: LoadInput) => {
+	return (async ({ depends, locals, parent, url }) => {
 		depends('containers');
 
-		const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-			(await parent()) as ParentData;
+		const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 		const features = createFeatureDecisions(locals.features);
-		const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
-		const categoryContext = features.useCustomCategories()
-			? await loadCategoryContext({
-					connect: locals.pool.connect,
-					organizationScope,
-					fallbackScope: [],
-					user: locals.user
-				})
-			: null;
+
 		const customCategories = features.useCustomCategories()
 			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 			: {};
@@ -121,5 +97,5 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			facetLabels: categoryContext?.labels,
 			categoryOptions: categoryContext?.options ?? null
 		};
-	}) satisfies ServerLoad;
+	}) satisfies PageServerLoad;
 }

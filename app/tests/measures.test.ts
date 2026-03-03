@@ -47,7 +47,7 @@ test.describe('Measure monitoring', () => {
 	});
 });
 
-test.describe('Sub-measure creation', () => {
+test.describe('Measures section', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
 	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
@@ -76,5 +76,19 @@ test.describe('Sub-measure creation', () => {
 		await dotsBoard.page.reload();
 		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
 		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
+	});
+
+	test('measures can be displayed in section on organization page', async ({
+		landingPage,
+		testMeasure
+	}) => {
+		await landingPage.goto(`/${testMeasure.organization}`);
+		await landingPage.header.editModeToggle.check();
+		await landingPage.addSection('Measures');
+		await expect(
+			landingPage.sections
+				.filter({ has: landingPage.page.getByRole('heading', { level: 2, name: 'Measures' }) })
+				.getByRole('heading', { name: testMeasure.payload.title })
+		).toBeVisible();
 	});
 });

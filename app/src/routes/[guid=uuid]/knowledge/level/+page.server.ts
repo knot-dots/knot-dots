@@ -10,8 +10,7 @@ import {
 	policyFieldBNK,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationContainer
+	topics
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -20,14 +19,9 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	defaultOrganizationGuid: string;
-};
 
 function isRelatedToSome(containers: Container[]) {
 	return ({ relation }: Container) =>
@@ -40,18 +34,9 @@ function isRelatedToSome(containers: Container[]) {
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
-	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
+	const { categoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				user: locals.user
-			})
-		: null;
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};

@@ -3,17 +3,16 @@ import { filterVisible } from '$lib/authorization';
 import {
 	audience,
 	computeFacetCount,
+	type Container,
 	fromCounts,
 	indicatorCategories,
+	type IndicatorContainer,
 	indicatorTypes,
+	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics,
-	type Container,
-	type IndicatorContainer,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
@@ -22,10 +21,10 @@ import {
 } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
-import type { ServerLoad } from '@sveltejs/kit';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';
 
 export interface IndicatorFilters {
 	customCategories: Record<string, string[]>;
@@ -41,19 +40,6 @@ export interface IndicatorLoadResult {
 	combined: Container[]; // visible + related merged after filtering
 	useNewIndicators: boolean;
 }
-
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
 
 /**
  * Fetch indicators for an organization/org unit with fallback to templates + actual data when none exist.
@@ -147,22 +133,12 @@ export async function getIndicatorsData(params: {
 	};
 }
 
-export default (async function load({ depends, locals, parent, url }: LoadInput) {
+export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
-	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		(await parent()) as ParentData;
+	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				user: locals.user
-			})
-		: null;
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
@@ -235,4 +211,4 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options ?? null
 	};
-} satisfies ServerLoad);
+} satisfies PageServerLoad);

@@ -3,6 +3,7 @@ import { filterVisible } from '$lib/authorization';
 import {
 	audience,
 	computeFacetCount,
+	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
 	payloadTypes,
@@ -10,10 +11,7 @@ import {
 	predicates,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics,
-	type Container,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -22,40 +20,17 @@ import {
 } from '$lib/server/db';
 import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
-import type { ServerLoad } from '@sveltejs/kit';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/programs/$types';
 
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
-
-export default (async function load({ depends, locals, parent, url }: LoadInput) {
+export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
 	let containers: Container[];
 	let subordinateOrganizationalUnits: string[] = [];
-	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		(await parent()) as ParentData;
+	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				user: locals.user
-			})
-		: null;
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
@@ -185,4 +160,4 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options ?? null
 	};
-} satisfies ServerLoad);
+} satisfies PageServerLoad);
