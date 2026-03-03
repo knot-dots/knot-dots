@@ -221,14 +221,7 @@ export function getManyContainersWithES(
 			bool: { must, filter: [...nonFacetFilters] }
 		};
 		const postFilter: estypes.QueryDslQueryContainer | undefined =
-			allFacetFilters.length > 0
-				? {
-						bool: {
-							must: [],
-							filter: [...allFacetFilters]
-						}
-					}
-				: undefined;
+			allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 		const esSortClauses = buildElasticsearchSortClause(sort);
 		const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
 		const aggs = options?.includeFacets
