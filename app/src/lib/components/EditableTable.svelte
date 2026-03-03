@@ -357,7 +357,8 @@
 									</td>
 								{/each}
 								{#if isEditMode}
-									<td class="editable-table__cell"> </td>
+									<td class="editable-table__cell" class:editable-table__cell--locked={isEditMode}>
+									</td>
 								{/if}
 							</tr>
 						{/if}
@@ -375,6 +376,8 @@
 		border-radius: 1rem;
 		box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.08);
 		padding: 1rem;
+		margin-left: var(--editable-table-margin-left, 0);
+		margin-right: var(--editable-table-margin-right, 0);
 	}
 
 	/* Header */
