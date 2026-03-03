@@ -18,20 +18,20 @@
 	interface Props {
 		workspace?: WorkspaceContainer;
 		defaultPayloadType?: PayloadType[];
+		customCategoryKeys?: string[];
 	}
 
-	let { workspace = undefined, defaultPayloadType = [] }: Props = $props();
+	let { workspace = undefined, defaultPayloadType = [], customCategoryKeys = [] }: Props = $props();
 
 	let title = $state('');
 	let description = $state('');
 	let favorite = $state(false);
 
-	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
-		'createContainerDialog'
-	);
+	const createContainerDialog =
+		getContext<{ getElement: () => HTMLDialogElement }>('createContainerDialog') ?? null;
 
 	function currentFilters(): WorkspaceFilters {
-		const fromUrl = filtersFromUrl(new URL(page.url));
+		const fromUrl = filtersFromUrl(new URL(page.url), customCategoryKeys);
 		if (fromUrl.payloadType.length === 0 && defaultPayloadType.length > 0) {
 			return { ...fromUrl, payloadType: defaultPayloadType };
 		}
@@ -60,7 +60,7 @@
 		};
 
 		$newContainer = base;
-		createContainerDialog.getElement().showModal();
+		createContainerDialog?.getElement().showModal();
 	}
 </script>
 

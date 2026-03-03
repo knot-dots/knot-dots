@@ -62,7 +62,7 @@
 
 	const activeFilters = $derived.by(() => ({
 		audience: activeParams.getAll('audience'),
-		category: activeParams.getAll('category'),
+		sdg: activeParams.getAll('sdg'),
 		indicatorCategory: activeParams.getAll('indicatorCategory'),
 		indicatorType: activeParams.getAll('indicatorType'),
 		measureType: activeParams.getAll('measureType'),
@@ -79,6 +79,11 @@
 	const savedFilters = $derived.by(
 		() => (container.payload.filters ?? {}) as Record<string, unknown>
 	);
+
+	const customCategoryKeys = $derived.by(() => {
+		if (!categoryOptions) return [];
+		return Object.keys(categoryOptions).filter((key) => key !== '__categoryLabels__');
+	});
 
 	const selectedView = $derived.by(() => {
 		const fromParams = activeFilters.view;
@@ -104,6 +109,17 @@
 
 	const createFilterParams = $derived.by(() => {
 		const rawFilters = savedFilters as Record<string, unknown>;
+		const sdgValues = Array.isArray(rawFilters.sdg)
+			? rawFilters.sdg
+			: Array.isArray(rawFilters.category)
+				? rawFilters.category
+				: [];
+		const customCategories =
+			rawFilters.category &&
+			typeof rawFilters.category === 'object' &&
+			!Array.isArray(rawFilters.category)
+				? (rawFilters.category as Record<string, unknown>)
+				: {};
 		const params = new SvelteURLSearchParams();
 		const appendAll = (key: string, values: unknown) => {
 			if (!Array.isArray(values)) return;
@@ -115,7 +131,7 @@
 		};
 
 		appendAll('audience', rawFilters.audience);
-		appendAll('category', rawFilters.category);
+		appendAll('sdg', sdgValues);
 		appendAll('indicatorCategory', rawFilters.indicatorCategory);
 		appendAll('indicatorType', rawFilters.indicatorType);
 		appendAll('measureType', rawFilters.measureType);
@@ -123,6 +139,10 @@
 		appendAll('programType', rawFilters.programType);
 		appendAll('taskCategory', rawFilters.taskCategory);
 		appendAll('topic', rawFilters.topic);
+
+		for (const [key, value] of Object.entries(customCategories)) {
+			appendAll(key, value);
+		}
 
 		return params;
 	});
@@ -136,14 +156,42 @@
 		return `#${params.toString()}`;
 	}
 
-	const filteredContainers = $derived.by(() => containers);
+	const normalizeValues = (values: unknown): string[] =>
+		Array.isArray(values) ? values.map((value) => String(value)).filter(Boolean) : [];
+
+	const categoryValueFor = (payload: Record<string, unknown>, key: string) => {
+		const category = payload.category;
+		if (!category || typeof category !== 'object' || Array.isArray(category)) return undefined;
+		return (category as Record<string, unknown>)[key];
+	};
+
+	const matchesFilter = (values: string[], field: unknown) => {
+		if (!values.length) return true;
+		if (Array.isArray(field)) {
+			const fieldValues = field.map((value) => String(value));
+			return values.some((value) => fieldValues.includes(String(value)));
+		}
+		if (field === undefined || field === null) return false;
+		return values.includes(String(field));
+	};
 
 	const hiddenKeys = $derived.by(() => {
 		const keys = new SvelteSet<string>();
 		const rawFilters = savedFilters;
+		const sdgValues = Array.isArray((rawFilters as { sdg?: unknown }).sdg)
+			? (rawFilters as { sdg: unknown[] }).sdg
+			: Array.isArray((rawFilters as { category?: unknown }).category)
+				? (rawFilters as { category: unknown[] }).category
+				: [];
+		const customCategories =
+			rawFilters.category &&
+			typeof rawFilters.category === 'object' &&
+			!Array.isArray(rawFilters.category)
+				? (rawFilters.category as Record<string, unknown>)
+				: {};
 		const filters = {
 			audience: Array.isArray(rawFilters.audience) ? rawFilters.audience : [],
-			category: Array.isArray(rawFilters.category) ? rawFilters.category : [],
+			sdg: sdgValues,
 			indicatorCategory: Array.isArray(rawFilters.indicatorCategory)
 				? rawFilters.indicatorCategory
 				: [],
@@ -157,7 +205,7 @@
 		};
 
 		if (filters.audience.length) keys.add('audience');
-		if (filters.category.length) keys.add('category');
+		if (filters.sdg.length) keys.add('sdg');
 		if (filters.indicatorCategory.length) keys.add('indicatorCategory');
 		if (filters.indicatorType.length) keys.add('indicatorType');
 		if (filters.measureType.length) keys.add('measureType');
@@ -166,6 +214,11 @@
 		if (filters.programType.length) keys.add('programType');
 		if (filters.taskCategory.length) keys.add('taskCategory');
 		if (filters.topic.length) keys.add('topic');
+		for (const [key, value] of Object.entries(customCategories)) {
+			if (Array.isArray(value) && value.length) {
+				keys.add(key);
+			}
+		}
 
 		return keys;
 	});
@@ -187,6 +240,96 @@
 			.filter((value) => payloadTypeSet.has(value))
 			.filter((value): value is PayloadType => isPayloadType(value))
 			.filter((value) => value !== payloadTypes.enum.undefined)
+	);
+
+	const resolvedFilters = $derived.by(() => {
+		const rawFilters = savedFilters as Record<string, unknown>;
+		const sdgValues = Array.isArray(rawFilters.sdg)
+			? rawFilters.sdg
+			: Array.isArray(rawFilters.category)
+				? rawFilters.category
+				: [];
+		const savedCustomCategories =
+			rawFilters.category &&
+			typeof rawFilters.category === 'object' &&
+			!Array.isArray(rawFilters.category)
+				? (rawFilters.category as Record<string, unknown>)
+				: {};
+
+		const resolveArray = (active: string[], saved: unknown) =>
+			active.length ? active : normalizeValues(saved);
+
+		const customCategories: Record<string, string[]> = {};
+		for (const key of customCategoryKeys) {
+			const activeValues = activeParams.getAll(key).filter(Boolean);
+			const values = activeValues.length
+				? activeValues
+				: normalizeValues(savedCustomCategories[key]);
+			if (values.length) {
+				customCategories[key] = values;
+			}
+		}
+
+		return {
+			audience: resolveArray(activeFilters.audience, rawFilters.audience),
+			sdg: resolveArray(activeFilters.sdg, sdgValues),
+			indicatorCategory: resolveArray(
+				activeFilters.indicatorCategory,
+				rawFilters.indicatorCategory
+			),
+			indicatorType: resolveArray(activeFilters.indicatorType, rawFilters.indicatorType),
+			measureType: resolveArray(activeFilters.measureType, rawFilters.measureType),
+			policyFieldBNK: resolveArray(activeFilters.policyFieldBNK, rawFilters.policyFieldBNK),
+			programType: resolveArray(activeFilters.programType, rawFilters.programType),
+			taskCategory: resolveArray(activeFilters.taskCategory, rawFilters.taskCategory),
+			topic: resolveArray(activeFilters.topic, rawFilters.topic),
+			terms: activeFilters.terms || (typeof rawFilters.terms === 'string' ? rawFilters.terms : ''),
+			customCategories
+		};
+	});
+
+	const useCategoryFields = $derived.by(() => new Set(customCategoryKeys));
+
+	const filteredContainers = $derived.by(() =>
+		containers.filter((container) => {
+			const payload = container.payload as Record<string, unknown>;
+			const audienceValues = useCategoryFields.has('audience')
+				? categoryValueFor(payload, 'audience')
+				: payload.audience;
+			const sdgValues = useCategoryFields.has('sdg')
+				? categoryValueFor(payload, 'sdg')
+				: payload.sdg;
+			const topicValues = useCategoryFields.has('topic')
+				? categoryValueFor(payload, 'topic')
+				: payload.topic;
+			const policyFieldValues = useCategoryFields.has('policyFieldBNK')
+				? categoryValueFor(payload, 'policyFieldBNK')
+				: payload.policyFieldBNK;
+
+			if (!matchesFilter(resolvedFilters.audience, audienceValues)) return false;
+			if (!matchesFilter(resolvedFilters.sdg, sdgValues)) return false;
+			if (!matchesFilter(resolvedFilters.topic, topicValues)) return false;
+			if (!matchesFilter(resolvedFilters.policyFieldBNK, policyFieldValues)) return false;
+			if (!matchesFilter(resolvedFilters.indicatorCategory, payload.indicatorCategory))
+				return false;
+			if (!matchesFilter(resolvedFilters.indicatorType, payload.indicatorType)) return false;
+			if (!matchesFilter(resolvedFilters.measureType, payload.measureType)) return false;
+			if (!matchesFilter(resolvedFilters.programType, payload.programType)) return false;
+			if (!matchesFilter(resolvedFilters.taskCategory, payload.taskCategory)) return false;
+			if (resolvedPayloadTypeValues.length) {
+				const payloadType = payload.type;
+				if (!isPayloadType(payloadType) || payloadType === payloadTypes.enum.undefined) {
+					return false;
+				}
+				if (!resolvedPayloadTypeValues.includes(payloadType)) return false;
+			}
+
+			for (const [key, values] of Object.entries(resolvedFilters.customCategories)) {
+				if (!matchesFilter(values, categoryValueFor(payload, key))) return false;
+			}
+
+			return true;
+		})
 	);
 
 	type MeasurePayload = typeof payloadTypes.enum.measure | typeof payloadTypes.enum.simple_measure;
@@ -232,6 +375,14 @@
 	);
 
 	const programContainers = $derived.by(() => filteredContainers.filter(isProgramContainer));
+	const implementationContainers = $derived.by(() =>
+		filteredContainers.filter(
+			(c) =>
+				c.payload.type === payloadTypes.enum.measure ||
+				c.payload.type === payloadTypes.enum.rule ||
+				c.payload.type === payloadTypes.enum.simple_measure
+		)
+	);
 
 	const showLevelView = $derived.by(() => {
 		if (selectedView !== 'level') return false;
@@ -242,7 +393,7 @@
 	const localFacets = $derived.by(() => {
 		const base = new Map<string, Map<string, number>>([
 			['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-			['category', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
 			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 			['payloadType', new Map(payloadTypeOptions.map((v) => [v as string, 0]))],
 			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
@@ -271,7 +422,14 @@
 	});
 </script>
 
-<Header {facets} {facetLabels} {categoryOptions} search />
+<Header
+	{facets}
+	{facetLabels}
+	{categoryOptions}
+	search
+	showSaveWorkspace
+	savePayloadType={payloadTypeOptions}
+/>
 
 <div class="content-details">
 	{#if selectedView === 'table'}
@@ -297,9 +455,11 @@
 		/>
 	{:else if showLevelView}
 		<Board>
-			<BoardColumn title={titleForProgramCollection(programContainers)}>
-				<MaybeDragZone containers={programContainers} />
-			</BoardColumn>
+			{#if programContainers.length}
+				<BoardColumn title={titleForProgramCollection(programContainers)}>
+					<MaybeDragZone containers={programContainers} />
+				</BoardColumn>
+			{/if}
 			{#each Array.from(goalsByLevel.entries()).toSorted() as [hierarchyLevel, items] (hierarchyLevel)}
 				<BoardColumn
 					title={titleForGoalCollection(
@@ -310,16 +470,11 @@
 					<MaybeDragZone containers={items} />
 				</BoardColumn>
 			{/each}
-			<BoardColumn title={$_('payload_group.implementation')}>
-				<MaybeDragZone
-					containers={filteredContainers.filter(
-						(c) =>
-							c.payload.type === payloadTypes.enum.measure ||
-							c.payload.type === payloadTypes.enum.rule ||
-							c.payload.type === payloadTypes.enum.simple_measure
-					)}
-				/>
-			</BoardColumn>
+			{#if implementationContainers.length}
+				<BoardColumn title={$_('payload_group.implementation')}>
+					<MaybeDragZone containers={implementationContainers} />
+				</BoardColumn>
+			{/if}
 		</Board>
 	{:else if selectedView === 'status'}
 		{#if statusType === payloadTypes.enum.task}
@@ -419,11 +574,6 @@
 </footer>
 
 <style>
-	.workspace-description {
-		color: var(--color-gray-700);
-		margin: 0.5rem 1.5rem 1rem;
-	}
-
 	.content-details {
 		padding-top: 1rem;
 	}

@@ -8,7 +8,8 @@ import {
 
 export type WorkspaceFilters = {
 	audience: string[];
-	category: string[];
+	sdg: string[];
+	category: Record<string, string[]>;
 	indicatorCategory: string[];
 	indicatorType: string[];
 	measureType: string[];
@@ -39,12 +40,22 @@ function viewFromUrl(url: URL): WorkspaceFilters['view'] {
 		: workspaceView.enum.catalog;
 }
 
-export function filtersFromUrl(url: URL): WorkspaceFilters {
+export function filtersFromUrl(url: URL, customCategoryKeys: string[] = []): WorkspaceFilters {
 	const params = url.searchParams;
+	const sdg = params.getAll('sdg');
+	const legacyCategory = params.getAll('category');
+	const category: Record<string, string[]> = {};
+	for (const key of customCategoryKeys) {
+		const values = params.getAll(key).filter((value) => value !== '');
+		if (values.length) {
+			category[key] = values;
+		}
+	}
 
 	return {
 		audience: params.getAll('audience'),
-		category: params.getAll('category'),
+		sdg: sdg.length ? sdg : legacyCategory,
+		category,
 		indicatorCategory: params.getAll('indicatorCategory'),
 		indicatorType: params.getAll('indicatorType'),
 		measureType: params.getAll('measureType'),
@@ -66,7 +77,7 @@ export function filtersToQuery(filters: WorkspaceFilters): URLSearchParams {
 
 	for (const key of [
 		'audience',
-		'category',
+		'sdg',
 		'indicatorCategory',
 		'indicatorType',
 		'measureType',
@@ -76,6 +87,10 @@ export function filtersToQuery(filters: WorkspaceFilters): URLSearchParams {
 		'topic'
 	] as const) {
 		filters[key].forEach((value) => query.append(key, value));
+	}
+
+	for (const [key, values] of Object.entries(filters.category)) {
+		values.forEach((value) => query.append(key, value));
 	}
 
 	filters.payloadType.forEach((value) => query.append('payloadType', value));

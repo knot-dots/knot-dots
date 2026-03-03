@@ -1432,25 +1432,37 @@ const organizationalUnitPayload = z.object({
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
 
-const workspaceFilterPayload = z
-	.object({
-		audience: z.array(audience).default([]),
-		category: z.array(sustainableDevelopmentGoals).default([]),
-		indicatorCategory: z.array(indicatorCategories).default([]),
-		indicatorType: z.array(indicatorTypes).default([]),
-		measureType: z.array(measureTypes).default([]),
-		payloadType: z.array(payloadTypes).default([]),
-		policyFieldBNK: z.array(policyFieldBNK).default([]),
-		programType: z.array(programTypes).default([]),
-		taskCategory: z.array(taskCategories).default([]),
-		relationType: z.array(predicates).default([]),
-		relatedTo: z.string().uuid().optional(),
-		sort: workspaceSort.default(workspaceSort.enum.alpha),
-		terms: z.string().default(''),
-		topic: z.array(topics).default([]),
-		view: workspaceView.default(workspaceView.enum.catalog)
-	})
-	.strict();
+const workspaceFilterPayload = z.preprocess(
+	(value) => {
+		if (!value || typeof value !== 'object') return value;
+		const v = value as Record<string, unknown>;
+		if ('category' in v && Array.isArray(v.category)) {
+			const { category, ...rest } = v;
+			return { ...rest, sdg: 'sdg' in v ? v.sdg : category };
+		}
+		return v;
+	},
+	z
+		.object({
+			audience: z.array(audience).default([]),
+			sdg: z.array(sustainableDevelopmentGoals).default([]),
+			category: z.record(z.string(), z.array(z.string())).default({}),
+			indicatorCategory: z.array(indicatorCategories).default([]),
+			indicatorType: z.array(indicatorTypes).default([]),
+			measureType: z.array(measureTypes).default([]),
+			payloadType: z.array(payloadTypes).default([]),
+			policyFieldBNK: z.array(policyFieldBNK).default([]),
+			programType: z.array(programTypes).default([]),
+			taskCategory: z.array(taskCategories).default([]),
+			relationType: z.array(predicates).default([]),
+			relatedTo: z.string().uuid().optional(),
+			sort: workspaceSort.default(workspaceSort.enum.alpha),
+			terms: z.string().default(''),
+			topic: z.array(topics).default([]),
+			view: workspaceView.default(workspaceView.enum.catalog)
+		})
+		.strict()
+);
 
 const workspacePayload = z
 	.object({
