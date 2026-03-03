@@ -11,6 +11,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableTendency from '$lib/components/EditableTendency.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import EffectProperties from '$lib/components/EffectProperties.svelte';
@@ -147,6 +148,15 @@
 				{relatedContainers}
 				{revisions}
 			/>
+
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
 
 			{#if indicator}
 				<div class="details-section">
