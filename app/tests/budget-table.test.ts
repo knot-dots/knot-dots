@@ -24,15 +24,16 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		// Verify the budget table is visible
-		const table = dotsBoard.overlay.locator.locator('.editable-table');
+		// Verify the budget table component is visible
+		const component = dotsBoard.overlay.locator.locator('.editable-table');
+		const table = component.getByRole('table');
 		await expect(table).toBeVisible();
 
 		// Verify table header shows subordinate goals budget title
-		await expect(table.getByText('Subordinate goals budget')).toBeVisible();
+		await expect(component.getByText('Subordinate goals budget')).toBeVisible();
 
 		// Verify table header shows resource unit
-		await expect(table.getByText('€')).toBeVisible();
+		await expect(component.getByText('€')).toBeVisible();
 
 		// Verify section headers are present
 		await expect(table.getByText('Current budget')).toBeVisible();
@@ -72,7 +73,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify year columns are present
 		await expect(table.getByRole('columnheader', { name: '2025' })).toBeVisible();
@@ -132,7 +133,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
 		const rightAddButton = table.locator('thead th:last-child button');
@@ -164,7 +165,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		});
 		await sectionAfterReload.getByTitle(testGoalBudget.payload.title).click();
 
-		const tableAfterReload = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const tableAfterReload = dotsBoard.overlay.locator.getByRole('table');
 		const currentBudgetSectionAfterReload = tableAfterReload.locator('tbody', {
 			has: dotsBoard.page.getByRole('columnheader', { name: 'Current budget' })
 		});
@@ -195,7 +196,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are visible in edit mode
 		const leftAddButton = table.locator('.editable-table__head-years button');
@@ -243,7 +244,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify the subordinate goal row has a link
 		const goalLink = table.getByRole('link', { name: testSubordinateGoal.payload.title });
@@ -290,7 +291,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are not visible
 		const leftAddButton = table.locator('.editable-table__head-years button');

@@ -22,12 +22,13 @@ test.describe('Resource V2 Table', () => {
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
 
-		// Verify the resource table is visible
-		const table = dotsBoard.overlay.locator.locator('.editable-table');
+		// Verify the resource table component is visible
+		const component = dotsBoard.overlay.locator.locator('.editable-table');
+		const table = component.getByRole('table');
 		await expect(table).toBeVisible();
 
 		// Verify table header shows resource unit
-		await expect(table.getByText('€')).toBeVisible();
+		await expect(component.getByText('€')).toBeVisible();
 
 		// Verify section headers are present
 		await expect(table.getByRole('columnheader', { name: 'Total budget' })).toBeVisible();
@@ -63,7 +64,7 @@ test.describe('Resource V2 Table', () => {
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify year columns are present
 		await expect(table.getByRole('columnheader', { name: '2025' })).toBeVisible();
@@ -141,7 +142,7 @@ test.describe('Resource V2 Table', () => {
 		// Enable edit mode
 		await dotsBoard.overlay.editModeToggle.check();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are visible in edit mode
 		const leftAddButton = table.locator('.editable-table__head-years button');
@@ -185,7 +186,7 @@ test.describe('Resource V2 Table', () => {
 		// Enable edit mode
 		await dotsBoard.overlay.editModeToggle.check();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
 		const rightAddButton = table.locator('thead th:last-child button');
@@ -209,7 +210,7 @@ test.describe('Resource V2 Table', () => {
 		// Reload and verify persistence (data should be visible even when not in edit mode)
 		await dotsBoard.page.reload();
 
-		const tableAfterReload = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const tableAfterReload = dotsBoard.overlay.locator.getByRole('table');
 		const budgetTotalRowAfterReload = tableAfterReload.locator('tbody tr', {
 			has: tableAfterReload.page().getByRole('rowheader', { name: 'Past years' })
 		});
@@ -240,7 +241,7 @@ test.describe('Resource V2 Table', () => {
 		// Enable edit mode
 		await dotsBoard.overlay.editModeToggle.check();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
 		const rightAddButton = table.locator('thead th:last-child button');
@@ -264,7 +265,7 @@ test.describe('Resource V2 Table', () => {
 		// Reload and verify persistence (data should be visible even when not in edit mode)
 		await dotsBoard.page.reload();
 
-		const tableAfterReload = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const tableAfterReload = dotsBoard.overlay.locator.getByRole('table');
 		const prognosisRowAfterReload = tableAfterReload.locator('tbody tr', {
 			has: tableAfterReload.page().getByRole('rowheader', { name: 'Total budget forecast' })
 		});
@@ -294,7 +295,7 @@ test.describe('Resource V2 Table', () => {
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify the budget row has a link to the measure
 		const budgetSection = table.locator('tbody', {
@@ -332,7 +333,7 @@ test.describe('Resource V2 Table', () => {
 		// Ensure edit mode is off
 		await dotsBoard.overlay.editModeToggle.uncheck();
 
-		const table = dotsBoard.overlay.locator.locator('.editable-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are not visible
 		const leftAddButton = table.locator('.editable-table__head-years button');
