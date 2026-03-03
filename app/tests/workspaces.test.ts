@@ -31,7 +31,7 @@ test.describe('Workspaces', () => {
 		await page.getByRole('button', { name: 'Filter' }).click();
 
 		await expect(page.locator('.filter-and-sort fieldset')).toBeVisible();
-		await page.getByRole('button', { name: 'Category' }).click();
+		await page.getByRole('button', { name: 'SDG' }).first().click();
 		const filterPanel = page.locator('.filter-and-sort');
 		const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
 		await filterPanel.locator('input[type="checkbox"][value="sdg.01"]').check();
@@ -45,7 +45,7 @@ test.describe('Workspaces', () => {
 			.click();
 
 		const dialog = page.getByRole('dialog');
-		await dialog.getByLabel('Titel').fill(workspaceTitle);
+		await dialog.getByLabel('Title').fill(workspaceTitle);
 		await Promise.all([
 			page.waitForResponse(/\/container/),
 			dialog.getByRole('button', { name: 'Save' }).click()

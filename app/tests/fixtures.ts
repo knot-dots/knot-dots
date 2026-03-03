@@ -300,13 +300,14 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				testOrganization.guid,
 				'knot-dots'
 			) as GoalContainer;
+			const payload = newGoal.payload as GoalContainer['payload'];
+			payload.title = `Test Goal SDG ${workerInfo.workerIndex}`;
+			payload.category = { sdg: ['sdg.01'] };
+			payload.sdg = ['sdg.01'];
+
 			const testGoalWithSDG = await createContainer(adminContext, {
 				...newGoal,
-				payload: {
-					...(newGoal.payload as GoalContainer['payload']),
-					title: `Test Goal SDG ${workerInfo.workerIndex}`,
-					sdg: ['sdg.01']
-				} as GoalContainer['payload']
+				payload
 			});
 
 			await use(testGoalWithSDG);

@@ -148,6 +148,7 @@
 						<textarea
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
+							aria-label={$_('title')}
 							placeholder={$_('title')}
 							required
 							rows="1"
@@ -158,6 +159,7 @@
 						<textarea
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
+							aria-label={$_('title')}
 							placeholder={$_('title')}
 							required
 							rows="1"
