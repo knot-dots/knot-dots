@@ -25,15 +25,13 @@ test.describe('Budget Table in Goal Detail View', () => {
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
 		// Verify the budget table component is visible
-		const component = dotsBoard.overlay.locator.locator('.editable-table');
-		const table = component.getByRole('table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 		await expect(table).toBeVisible();
 
-		// Verify table header shows subordinate goals budget title
-		await expect(component.getByText('Subordinate goals budget')).toBeVisible();
-
-		// Verify table header shows resource unit
-		await expect(component.getByText('€')).toBeVisible();
+		// Verify table header shows subordinate goals budget title and unit
+		await expect(
+			dotsBoard.overlay.locator.getByRole('heading', { name: 'Subordinate goals budget €' })
+		).toBeVisible();
 
 		// Verify section headers are present
 		await expect(table.getByText('Current budget')).toBeVisible();

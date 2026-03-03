@@ -220,13 +220,11 @@
 	}
 </script>
 
-<div class="editable-table">
-	<div class="editable-table__header">
-		<div class="editable-table__heading">
-			<span class="editable-table__title">{title}</span>
-			<span class="editable-table__title-unit">{titleUnit}</span>
-		</div>
-	</div>
+<div class="details-section">
+	<h2 class="details-heading">
+		{title}
+		<small>{titleUnit}</small>
+	</h2>
 
 	<div class="editable-table__wrapper" bind:this={tableContainer}>
 		<table class="editable-table__table">
@@ -369,53 +367,20 @@
 </div>
 
 <style>
-	.editable-table {
-		background: var(--color-white);
-		border: 0.0625rem solid var(--color-gray-200);
-		border-radius: 1rem;
-		box-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.08);
-		padding: 1rem;
-		margin-left: var(--editable-table-margin-left, 0);
-		margin-right: var(--editable-table-margin-right, 0);
-	}
-
-	/* Header */
-	.editable-table__header {
-		padding: 0.5rem;
-	}
-
-	.editable-table__heading {
-		display: flex;
-		align-items: baseline;
-		gap: 0.5rem;
-	}
-
-	.editable-table__title {
-		color: var(--color-gray-900);
-		font-size: 1.125rem;
-		font-weight: 500;
-		line-height: 1.25;
-	}
-
-	.editable-table__title-muted,
-	.editable-table__title-unit {
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.25;
-	}
-
-	.editable-table__title-muted {
+	.details-heading > small {
 		color: var(--color-gray-500);
-	}
-
-	.editable-table__title-unit {
-		color: var(--color-gray-900);
+		font-size: 1.25rem;
+		font-weight: 400;
+		line-height: 1.25;
 	}
 
 	/* Table */
 	.editable-table__wrapper {
+		margin-left: var(--editable-table-margin-left, 0);
+		margin-right: var(--editable-table-margin-right, 0);
+		margin-top: 1.25rem;
 		overflow: auto;
-		padding: 0.5rem;
+		padding-left: calc(var(--carousel-margin-left) * -1);
 	}
 
 	.editable-table__table {
@@ -612,10 +577,6 @@
 
 		.editable-table__row-label {
 			max-width: 13.75rem;
-		}
-
-		.editable-table__title {
-			font-size: 1rem;
 		}
 	}
 </style>

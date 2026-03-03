@@ -22,13 +22,12 @@ test.describe('Resource V2 Table', () => {
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
 
-		// Verify the resource table component is visible
-		const component = dotsBoard.overlay.locator.locator('.editable-table');
-		const table = component.getByRole('table');
+		// Verify the budget table component is visible
+		const table = dotsBoard.overlay.locator.getByRole('table');
 		await expect(table).toBeVisible();
 
 		// Verify table header shows resource unit
-		await expect(component.getByText('€')).toBeVisible();
+		await expect(dotsBoard.overlay.locator.getByRole('heading', { name: '€' })).toBeVisible();
 
 		// Verify section headers are present
 		await expect(table.getByRole('columnheader', { name: 'Total budget' })).toBeVisible();

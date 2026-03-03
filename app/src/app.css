@@ -1059,8 +1059,12 @@ label > input[type='checkbox'].toggle {
 	--carousel-margin-right: calc(
 		var(--details-padding-right) * -1 - var(--details-section-padding-x)
 	);
-	--editable-table-margin-left: calc(-1 * (var(--details-padding-left) - 2rem));
-	--editable-table-margin-right: calc(-1 * (var(--details-padding-right) - 2rem));
+	--editable-table-margin-left: calc(
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+	);
+	--editable-table-margin-right: calc(
+		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
