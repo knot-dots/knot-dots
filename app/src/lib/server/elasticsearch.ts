@@ -231,15 +231,12 @@ export function getManyContainersWithES(
 				: undefined;
 		const esSortClauses = buildElasticsearchSortClause(sort);
 		const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
-		const aggs =
-			options?.includeFacets === false
-				? undefined
-				: buildFacetAggregations({
-						must,
-						nonFacetFilters,
-						facetFilters,
-						customCategoryKeys: options?.customCategoryKeys ?? []
-					});
+		const aggs = options?.includeFacets
+			? buildFacetAggregations({
+					facetFilters,
+					customCategoryKeys: options?.customCategoryKeys ?? []
+				})
+			: undefined;
 
 		const searchParams: estypes.SearchRequest = {
 			index: privateEnv.ELASTICSEARCH_INDEX_ALIAS ?? 'containers',
