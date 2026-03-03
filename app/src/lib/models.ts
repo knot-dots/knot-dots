@@ -3175,6 +3175,13 @@ export function computeFacetCount(
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
+			if (key === 'payloadType') {
+				const payloadType = container.payload.type;
+				const normalized = normalizeValue(payloadType);
+				const foci = facets.get(key) as Map<string, number>;
+				foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+				continue;
+			}
 			const categoryPayload = useCategoryPayload
 				? (container.payload as { category?: Record<string, unknown> }).category
 				: undefined;
