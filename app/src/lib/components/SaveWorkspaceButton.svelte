@@ -16,12 +16,11 @@
 	import { filtersFromUrl } from '$lib/workspaceFilters';
 
 	interface Props {
-		workspace?: WorkspaceContainer;
 		defaultPayloadType?: PayloadType[];
 		customCategoryKeys?: string[];
 	}
 
-	let { workspace = undefined, defaultPayloadType = [], customCategoryKeys = [] }: Props = $props();
+	let { defaultPayloadType = [], customCategoryKeys = [] }: Props = $props();
 
 	let title = $state('');
 	let description = $state('');
