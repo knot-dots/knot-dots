@@ -4,6 +4,7 @@
     "app",
     "import",
     "worker",
-    "shared"
+    "shared",
+    "mcp-server"
   ]
 }

@@ -1,6 +1,6 @@
 import Keycloak from '@auth/core/providers/keycloak';
 import { SvelteKitAuth } from '@auth/sveltekit';
-import { redirect } from '@sveltejs/kit';
+import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
@@ -20,6 +20,49 @@ import { withLogger } from '$lib/server/logger';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
+
+const withApiKey: Handle = async ({ event, resolve }) => {
+	const apiKey = privateEnv.MCP_API_KEY;
+	const authHeader = event.request.headers.get('Authorization');
+
+	if (apiKey && authHeader === `Bearer ${apiKey}`) {
+		const mcpUserGuid = privateEnv.MCP_USER_GUID || '00000000-0000-0000-0000-000000000001';
+		const pool = await getPool();
+
+		try {
+			const [user, containerUserRelations] = await Promise.all([
+				pool.connect(getUser(mcpUserGuid)),
+				pool.connect(getAllMembershipRelationsOfUser(mcpUserGuid))
+			]);
+
+			event.locals.user = {
+				adminOf: containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+					.map(({ object }) => object),
+				collaboratorOf: containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
+					.map(({ object }) => object),
+				familyName: user.family_name,
+				givenName: user.given_name,
+				guid: user.guid,
+				headOf: containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
+					.map(({ object }) => object),
+				isAuthenticated: true,
+				memberOf: containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+					.map(({ object }) => object),
+				roles: ['sysadmin'], // Give the MCP server sysadmin roles for the prototype
+				settings: user.settings
+			};
+		} catch {
+			log.error({ mcpUserGuid }, 'MCP API Key provided but user not found in DB');
+		}
+	}
+
+	return resolve(event);
+};
+
 const { handle: withAuthentication } = SvelteKitAuth({
 	callbacks: {
 		async jwt({ token, account }) {
@@ -113,6 +156,7 @@ const { handle: withAuthentication } = SvelteKitAuth({
 
 export const handle = sequence(
 	withLogger,
+	withApiKey,
 	withAuthentication,
 	async ({ event, resolve }) => {
 		const lang = event.request.headers.get('accept-language')?.split(',')[0];
@@ -122,25 +166,27 @@ export const handle = sequence(
 		event.locals.pool = pool;
 		await ensureDefaultCategoryTerms(pool);
 
-		const session = await event.locals.auth();
-		if (session) {
-			event.locals.user = {
-				...session.user,
-				isAuthenticated: true
-			};
-		} else {
-			event.locals.user = {
-				adminOf: [],
-				collaboratorOf: [],
-				familyName: '',
-				givenName: '',
-				guid: '',
-				headOf: [],
-				isAuthenticated: false,
-				memberOf: [],
-				roles: [],
-				settings: {}
-			};
+		if (!event.locals.user?.isAuthenticated) {
+			const session = await event.locals.auth();
+			if (session) {
+				event.locals.user = {
+					...session.user,
+					isAuthenticated: true
+				};
+			} else {
+				event.locals.user = {
+					adminOf: [],
+					collaboratorOf: [],
+					familyName: '',
+					givenName: '',
+					guid: '',
+					headOf: [],
+					isAuthenticated: false,
+					memberOf: [],
+					roles: [],
+					settings: {}
+				};
+			}
 		}
 
 		if (
