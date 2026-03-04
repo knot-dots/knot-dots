@@ -211,6 +211,11 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
+			key: 'resources';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
 			key: 'view';
 			container: AnyContainer;
 			revisions: AnyContainer[];
@@ -626,6 +631,30 @@ if (browser) {
 					containers: relatedContainers
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum.resources)) {
+			const programGuid = hashParams.get(overlayKey.enum.resources) as string;
+			const result = await preloadData(
+				resolve('/[guid=uuid]/resources/catalog', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid
+				}) +
+					'?program=' +
+					programGuid +
+					'&' +
+					hashParams.toString()
+			);
+
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+
+			const revisions = (await fetchContainerRevisions(programGuid)) as Container[];
+			const container = revisions[revisions.length - 1];
+
+			setOverlayIfLatest({
+				key: overlayKey.enum.resources,
+				container,
+				containers: result.data.containers
+			});
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
 				sdg: hashParams.getAll('sdg'),
