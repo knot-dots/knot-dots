@@ -94,6 +94,8 @@
 		paramsFromFragment(page.url).has('table') ? 'view_mode.table' : 'view_mode.preview'
 	);
 
+	let overlay = getContext('overlay');
+
 	$effect(() => {
 		if (relatedContainersQuery.current) {
 			relatedContainers = relatedContainersQuery.current;
@@ -107,7 +109,7 @@
 	});
 
 	function byPayloadType(payloadType: PayloadType, url: URL) {
-		const params = paramsFromFragment(url);
+		const params = overlay ? paramsFromFragment(url) : page.url.searchParams;
 		return !params.has('type') || params.getAll('type').includes(payloadType);
 	}
 
