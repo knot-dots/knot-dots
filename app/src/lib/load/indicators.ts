@@ -97,7 +97,7 @@ export async function getIndicatorsData(params: {
 				},
 				'alpha',
 				undefined,
-				{ customCategoryKeys: customCategoryKeys ?? [] }
+				{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
 			)
 		);
 		indicators = esResult.containers as IndicatorContainer[];

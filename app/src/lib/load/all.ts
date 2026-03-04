@@ -134,7 +134,7 @@ export default (async function load({ depends, locals, url, parent }) {
 					},
 					url.searchParams.get('sort') ?? '',
 					undefined,
-					{ customCategoryKeys: categoryContext?.keys ?? [] }
+					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 				)
 			);
 			containers = esResult.containers;
