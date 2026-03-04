@@ -23,10 +23,20 @@ export const load = (async ({ depends, locals, parent, url }) => {
 
 	const { categoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const useCustomCategories = features.useCustomCategories();
 
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	let containers: IndicatorContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
@@ -35,13 +45,10 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainersWithES(
 				[currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
+					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
 				},
 				'',
@@ -56,13 +63,10 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				[currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
+					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
 				},
 				''

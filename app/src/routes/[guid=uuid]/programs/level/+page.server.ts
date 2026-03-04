@@ -28,10 +28,20 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 	let data: Record<string, Record<string, number>> | undefined;
 	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const useCustomCategories = features.useCustomCategories();
 
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	async function filterOrganizationalUnitsAsync<T extends Container>(promise: Promise<Array<T>>) {
 		let subordinateOrganizationalUnits: string[] = [];
@@ -84,13 +94,10 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 				getManyContainersWithES(
 					[],
 					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
+						...coreCategoryFilters,
 						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
-						topics: url.searchParams.getAll('topic'),
 						type: [payloadTypes.enum.program]
 					},
 					url.searchParams.get('sort') ?? '',
@@ -106,13 +113,10 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 					getManyContainers(
 						[],
 						{
-							audience: url.searchParams.getAll('audience'),
-							sdg: url.searchParams.getAll('sdg'),
+							...coreCategoryFilters,
 							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 							programTypes: url.searchParams.getAll('programType'),
 							terms: url.searchParams.get('terms') ?? '',
-							topics: url.searchParams.getAll('topic'),
 							type: [payloadTypes.enum.program]
 						},
 						url.searchParams.get('sort') ?? ''
