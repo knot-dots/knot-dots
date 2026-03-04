@@ -9,16 +9,17 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import { type CategoryContainer, predicates } from '$lib/models';
+	import { type AnyContainer, type CategoryContainer, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: CategoryContainer;
 		layout: Snippet<[Snippet, Snippet]>;
+		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout }: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -57,6 +58,7 @@
 				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
+				{relatedContainers} {revisions}	
 			/>
 
 			{#key container.guid}
