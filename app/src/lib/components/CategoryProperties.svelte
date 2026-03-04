@@ -2,7 +2,7 @@
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import {  type AnyContainer, type Container, type CategoryContainer } from '$lib/models';
+	import { type AnyContainer, type CategoryContainer, type Container } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 

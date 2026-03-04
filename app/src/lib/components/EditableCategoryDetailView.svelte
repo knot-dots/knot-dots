@@ -58,7 +58,8 @@
 				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				{relatedContainers} {revisions}	
+				{relatedContainers}
+				{revisions}
 			/>
 
 			{#key container.guid}

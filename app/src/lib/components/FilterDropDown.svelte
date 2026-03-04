@@ -101,9 +101,8 @@
 
 	function hasMatchingSubOptions(option: OptionWithSub) {
 		return (
-			option.subOptions?.some(
-				(sub) => (sub.count ?? 0) > 0 || selected.includes(sub.value)
-			) ?? false
+			option.subOptions?.some((sub) => (sub.count ?? 0) > 0 || selected.includes(sub.value)) ??
+			false
 		);
 	}
 </script>
