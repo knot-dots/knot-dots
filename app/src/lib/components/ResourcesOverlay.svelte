@@ -13,6 +13,6 @@
 
 <Header search />
 
-<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} />
+<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} editable={false} />
 
 <Help slug="resources-catalog" />
