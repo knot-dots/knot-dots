@@ -1059,6 +1059,12 @@ label > input[type='checkbox'].toggle {
 	--carousel-margin-right: calc(
 		var(--details-padding-right) * -1 - var(--details-section-padding-x)
 	);
+	--editable-table-margin-left: calc(
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+	);
+	--editable-table-margin-right: calc(
+		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
@@ -1088,12 +1094,25 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-heading {
-	color: var(--color-gray-700);
+	color: var(--color-gray-800);
 	flex-grow: 1;
-	font-size: 1.5rem;
-	font-weight: 600;
 	line-height: 1.25;
 	min-height: 2rem;
+}
+
+h2.details-heading {
+	font-size: 1.875rem;
+	font-weight: 600;
+}
+
+h3.details-heading {
+	font-size: 1.875rem;
+	font-weight: 400;
+}
+
+h4.details-heading {
+	font-size: 1.5rem;
+	font-weight: 600;
 }
 
 .details-section header {
