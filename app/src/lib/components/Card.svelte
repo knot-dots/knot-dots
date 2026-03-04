@@ -281,7 +281,7 @@
 			{#if indicator}
 				{#if container.payload.plannedValues.length > 0}
 					<EffectChart {container} {relatedContainers} />
-				{:else if 'trendValue' in container.payload}
+				{:else}
 					<Tendency {container} />
 				{/if}
 			{/if}

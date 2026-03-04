@@ -18,15 +18,17 @@
 	);
 </script>
 
-<p>
-	{#if container.payload.trendValue == 1}
-		<ArrowCircleUpSolid />
-		<span>{trendValueUpLabel}</span>
-	{:else}
-		<ArrowCircleDownSolid />
-		<span>{trendValueDownLabel}</span>
-	{/if}
-</p>
+{#if 'trendValue' in container.payload}}
+	<p>
+		{#if container.payload.trendValue === 1}
+			<ArrowCircleUpSolid />
+			<span>{trendValueUpLabel}</span>
+		{:else}
+			<ArrowCircleDownSolid />
+			<span>{trendValueDownLabel}</span>
+		{/if}
+	</p>
+{/if}
 
 <style>
 	p {
