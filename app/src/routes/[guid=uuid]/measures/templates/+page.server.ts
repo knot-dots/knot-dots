@@ -10,7 +10,7 @@ import {
 	topics
 } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
-import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
 import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -36,37 +36,47 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			.map(({ guid }) => guid);
 	}
 
-	const containers = await locals.pool.connect(
-		features.useElasticsearch()
-			? getManyContainersWithES(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
-						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						template: true,
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.measure]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-			: getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
-						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						template: true,
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.measure]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-	);
+	let containers;
+	let data: Record<string, Record<string, number>> | undefined;
+	if (features.useElasticsearch()) {
+		const esResult = await locals.pool.connect(
+			getManyContainersWithES(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				{
+					audience: url.searchParams.getAll('audience'),
+					sdg: url.searchParams.getAll('sdg'),
+					customCategories,
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					topics: url.searchParams.getAll('topic'),
+					template: true,
+					terms: url.searchParams.get('terms') ?? '',
+					type: [payloadTypes.enum.measure]
+				},
+				url.searchParams.get('sort') ?? '',
+				undefined,
+				{ customCategoryKeys: categoryContext?.keys ?? [] }
+			)
+		);
+		containers = esResult.containers;
+		data = esResult.facets;
+	} else {
+		containers = await locals.pool.connect(
+			getManyContainers(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				{
+					audience: url.searchParams.getAll('audience'),
+					sdg: url.searchParams.getAll('sdg'),
+					customCategories,
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					topics: url.searchParams.getAll('topic'),
+					template: true,
+					terms: url.searchParams.get('terms') ?? '',
+					type: [payloadTypes.enum.measure]
+				},
+				url.searchParams.get('sort') ?? ''
+			)
+		);
+	}
 
 	const filtered = filterOrganizationalUnits(
 		filterVisible(containers, locals.user),
@@ -74,13 +84,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		subordinateOrganizationalUnits,
 		currentOrganizationalUnit ?? undefined
 	);
-
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(
-				filtered.map((c) => c.guid),
-				categoryContext?.keys ?? []
-			)
-		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<

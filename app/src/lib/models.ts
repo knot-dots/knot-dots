@@ -878,16 +878,6 @@ const measurePayload = basePayload
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
-		resource: z
-			.array(
-				z.object({
-					description: z.string(),
-					amount: z.coerce.number(),
-					unit: z.string(),
-					fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
-				})
-			)
-			.default([]),
 		result: z.string().trim().optional(),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
