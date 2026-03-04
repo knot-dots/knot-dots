@@ -197,7 +197,7 @@
 					'description',
 					'visibility',
 					'status',
-					'category',
+					'sdg',
 					'topic',
 					'policyFieldBNK',
 					'audience',
