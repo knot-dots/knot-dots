@@ -381,6 +381,7 @@
 		margin-top: 1.25rem;
 		overflow: auto;
 		padding-left: calc(var(--carousel-margin-left) * -1);
+		padding-right: 4rem;
 	}
 
 	.editable-table__table {
