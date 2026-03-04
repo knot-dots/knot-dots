@@ -41,7 +41,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 					},
 					url.searchParams.get('sort') ?? defaultSort,
 					undefined,
-					{ customCategoryKeys: categoryContext?.keys ?? [] }
+					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 				)
 			);
 			resourceContainers = esResult.containers as ResourceV2Container[];

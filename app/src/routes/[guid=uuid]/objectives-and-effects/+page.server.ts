@@ -46,7 +46,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				},
 				'',
 				undefined,
-				{ customCategoryKeys: categoryContext?.keys ?? [] }
+				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			)
 		);
 		containers = esResult.containers as IndicatorContainer[];
