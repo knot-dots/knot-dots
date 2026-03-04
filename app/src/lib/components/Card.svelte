@@ -127,6 +127,10 @@
 			return overlayURL(url, 'view', container.guid, [
 				['program', hashParams.get('indicators') as string]
 			]);
+		} else if (hashParams.has('resources')) {
+			return overlayURL(url, 'view', container.guid, [
+				['program', hashParams.get('resources') as string]
+			]);
 		} else {
 			return overlayURL(url, 'view', container.guid);
 		}

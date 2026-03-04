@@ -35,11 +35,15 @@
 		isResourceDataTotalBudgetForecastContainer,
 		overlayKey,
 		overlayURL,
+		paramsFromFragment,
 		payloadTypes,
 		predicates,
 		resourceDataTypes
 	} from '$lib/models';
-	import { fetchContainersRelatedToResource } from '$lib/remote/data.remote';
+	import {
+		fetchContainersRelatedToProgram,
+		fetchContainersRelatedToResource
+	} from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -52,6 +56,13 @@
 
 	let guid = $derived(container.guid);
 
+	// Read program parameter from URL hash to filter related containers
+	const programGuid = $derived.by(() => {
+		const hashParams = paramsFromFragment(page.url);
+		return hashParams.get('program');
+	});
+
+	// Fetch resource-related containers
 	let relatedContainersQuery = $derived(
 		fetchContainersRelatedToResource({
 			guid,
@@ -70,7 +81,48 @@
 		})
 	);
 
-	const relatedContainers = $derived(relatedContainersQuery.current ?? []);
+	// Fetch program hierarchy containers if program is specified
+	let programContainersQuery = $derived(
+		programGuid
+			? fetchContainersRelatedToProgram({
+					guid: programGuid,
+					params: {
+						audience: [],
+						sdg: [],
+						policyFieldBNK: [],
+						topic: []
+					}
+				})
+			: null
+	);
+
+	const allRelatedContainers = $derived(relatedContainersQuery.current ?? []);
+	const programContainers = $derived(programContainersQuery?.current ?? []);
+
+	// Filter related containers by program if program parameter is present
+	const relatedContainers = $derived.by(() => {
+		if (!programGuid || programContainers.length === 0) return allRelatedContainers;
+
+		// Build a set of all container GUIDs that are part of the program hierarchy
+		const programContainerGuids = new Set<string>([
+			programGuid,
+			...programContainers.map((c) => c.guid)
+		]);
+
+		// Filter resource_data to only those that are part of containers in the program
+		return allRelatedContainers.filter((c) => {
+			if (c.payload.type === payloadTypes.enum.resource_data) {
+				// Resource data is included if it's part of a container in the program
+				return c.relation.some(
+					(r) =>
+						r.predicate === predicates.enum['is-part-of'] && programContainerGuids.has(r.object)
+				);
+			} else {
+				// Other containers (goals, measures) are included if they're in the program
+				return programContainerGuids.has(c.guid);
+			}
+		});
+	});
 
 	// --- ResourceV2Table logic ---
 

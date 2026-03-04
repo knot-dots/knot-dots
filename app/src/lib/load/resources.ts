@@ -5,12 +5,14 @@ import {
 	filterOrganizationalUnits,
 	fromCounts,
 	payloadTypes,
+	predicates,
 	resourceCategories,
 	resourceUnits,
+	type ResourceDataContainer,
 	type ResourceV2Container
 } from '$lib/models';
 import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
-import { getManyContainers } from '$lib/server/db';
+import { getAllContainersRelatedToProgram, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/resources/$types';
@@ -60,8 +62,54 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			)) as ResourceV2Container[];
 		}
 
+		// Filter by program if specified
+		let filteredResourceContainers = resourceContainers;
+
+		if (url.searchParams.has('program')) {
+			const programGuid = url.searchParams.get('program') as string;
+
+			// Get all containers related to the program (goals, measures, etc.)
+			const relatedContainers = await locals.pool.connect(
+				getAllContainersRelatedToProgram(programGuid, {
+					type: [
+						payloadTypes.enum.goal,
+						payloadTypes.enum.measure,
+						payloadTypes.enum.simple_measure
+					]
+				})
+			);
+
+			// Get all resource_data containers linked to those goals/measures
+			const resourceDataContainers = (await locals.pool.connect(
+				getManyContainers(
+					scope,
+					{
+						type: [payloadTypes.enum.resource_data]
+						// Resource data links to goals/measures via their guid
+					},
+					'alpha'
+				)
+			)) as ResourceDataContainer[];
+
+			// Filter resource_data to only those that are part of related containers
+			const relatedGuids = new Set(relatedContainers.map((c) => c.guid));
+			const usedResourceData = resourceDataContainers.filter((rd) =>
+				rd.relation.some(
+					(r) => r.predicate === predicates.enum['is-part-of'] && relatedGuids.has(r.object)
+				)
+			);
+
+			// Extract unique resource GUIDs
+			const usedResourceGuids = new Set(
+				usedResourceData.map((rd) => rd.payload.resource).filter(Boolean)
+			);
+
+			// Filter to only resources that are actually used
+			filteredResourceContainers = resourceContainers.filter((r) => usedResourceGuids.has(r.guid));
+		}
+
 		const containers = filterOrganizationalUnits(
-			filterVisible(resourceContainers, locals.user),
+			filterVisible(filteredResourceContainers, locals.user),
 			url,
 			[],
 			currentOrganizationalUnit ?? undefined
