@@ -98,6 +98,14 @@
 			goto(`?${query.toString()}${page.url.hash}`, { keepFocus: true });
 		}
 	}
+
+	function hasMatchingSubOptions(option: OptionWithSub) {
+		return (
+			option.subOptions?.some(
+				(sub) => (sub.count ?? 0) > 0 || selected.includes(sub.value)
+			) ?? false
+		);
+	}
 </script>
 
 <div class="dropdown" use:popperRef>
@@ -112,11 +120,11 @@
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 			<div class="options">
-				{#each options.filter(({ count }) => count === undefined || count > 0) as option (option.value)}
+				{#each options.filter((option) => option.count === undefined || option.count > 0 || hasMatchingSubOptions(option)) as option (option.value)}
 					<FilterDisclosureOption {option} bind:selected {apply} />
 				{/each}
 				<p>{$_('filter.no_results')}</p>
-				{#each options.filter(({ count }) => count !== undefined && count === 0) as option (option.value)}
+				{#each options.filter((option) => option.count !== undefined && option.count === 0 && !hasMatchingSubOptions(option)) as option (option.value)}
 					<FilterDisclosureOption {option} bind:selected {apply} />
 				{/each}
 			</div>
@@ -142,6 +150,7 @@
 		position: relative;
 		overflow: visible;
 		min-width: 16rem;
+		max-width: 24rem;
 	}
 
 	.options {

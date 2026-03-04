@@ -57,7 +57,7 @@
 			{#if iconSrc}
 				<img alt="" class="option-icon" src={iconSrc} />
 			{/if}
-			{option.label}
+			<span class="option-text">{option.label}</span>
 			{#if option.count !== undefined}
 				<span class="option-count">({option.count})</span>
 			{/if}
@@ -67,6 +67,7 @@
 		<button
 			type="button"
 			class="suboption-button"
+			class:suboption-button--active={$disclosure.expanded}
 			data-option-index={optionIndex}
 			data-role="option-toggle"
 			use:disclosure.button
@@ -104,7 +105,7 @@
 					{#if subIcon}
 						<img alt="" class="option-icon" src={subIcon} />
 					{/if}
-					{sub.label}
+					<span class="option-text">{sub.label}</span>
 					{#if sub.count !== undefined}
 						<span class="option-count">({sub.count})</span>
 					{/if}
@@ -118,7 +119,15 @@
 	.option-label {
 		align-items: center;
 		display: inline-flex;
-		gap: 0.35rem;
+		gap: 0.25rem;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.option-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.option {
@@ -129,7 +138,12 @@
 	}
 
 	.option > label {
-		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.option-count {
@@ -138,9 +152,9 @@
 	}
 
 	:global(.suboption-indicator) {
-		color: var(--color-gray-700);
-		height: 1rem;
-		width: 1rem;
+		color: var(--color-gray-500);
+		height: 1.25rem;
+		width: 1.25rem;
 	}
 
 	.suboption-dot {
@@ -149,6 +163,11 @@
 		height: 0.5rem;
 		width: 0.5rem;
 		border: 1px solid transparent;
+		position: absolute;
+		left: -6px;
+		top: 50%;
+		transform: translateY(-50%);
+		pointer-events: none;
 	}
 
 	.suboption-dot--active {
@@ -160,16 +179,41 @@
 		align-items: center;
 		background: transparent;
 		border: none;
-		border-radius: 6px;
-		color: inherit;
+		border-radius: 4px;
+		box-shadow: none;
+		color: var(--color-gray-500);
 		cursor: pointer;
 		display: inline-flex;
-		padding: 0.25rem;
+		height: 1.5rem;
+		padding: 0.125rem;
+		position: relative;
+	}
+
+	.suboption-button:hover {
+		background-color: var(--color-gray-100);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.suboption-button:active {
+		background-color: var(--color-gray-300);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.suboption-button--active {
+		background-color: transparent;
+		box-shadow: none;
 	}
 
 	.suboption-button:focus-visible {
-		outline: 2px solid var(--color-primary-500);
-		outline-offset: 2px;
+		background-color: var(--color-gray-100);
+		box-shadow: var(--shadow-sm);
+		outline: 2px solid var(--color-primary-700);
+		outline-offset: 0;
+	}
+
+	.suboption-button:disabled {
+		cursor: not-allowed;
+		opacity: 0.5;
 	}
 
 	.suboptions-list {
@@ -186,6 +230,7 @@
 	}
 
 	.option-icon {
+		flex-shrink: 0;
 		height: 1.25rem;
 		width: 1.25rem;
 		object-fit: contain;

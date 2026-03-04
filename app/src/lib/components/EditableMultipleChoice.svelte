@@ -96,7 +96,7 @@
 				{#if icon}
 					<img alt="" class="value-icon" src={icon} />
 				{/if}
-				{entry.option.label}
+				<span class="option-text">{entry.option.label}</span>
 			</li>
 		{/each}
 		{#if selectedEntries.length === 0}
@@ -115,9 +115,15 @@
 		display: flex;
 		gap: 0.35rem;
 		list-style: none;
+		min-width: 0;
 		padding: 0;
 		text-align: left;
-		text-wrap: nowrap;
+	}
+
+	.option-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.value > li + li {
@@ -129,6 +135,7 @@
 	}
 
 	.value-icon {
+		flex-shrink: 0;
 		height: 1.25rem;
 		margin-right: 0.35rem;
 		object-fit: contain;
