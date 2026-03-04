@@ -106,11 +106,12 @@
 	);
 
 	let mayAddEffectCollection = $derived(
-		isGoalContainer(parentContainer) &&
-			!hasSection(parentContainer, relatedContainers).some(isEffectCollectionContainer) &&
-			parentContainer.relation.some(
-				({ predicate }) => predicate == predicates.enum['is-part-of-measure']
-			)
+		(isMeasureContainer(parentContainer) ||
+			(isGoalContainer(parentContainer) &&
+				parentContainer.relation.some(
+					({ predicate }) => predicate == predicates.enum['is-part-of-measure']
+				))) &&
+			!hasSection(parentContainer, relatedContainers).some(isEffectCollectionContainer)
 	);
 
 	let mayAddGoalCollection = $derived(

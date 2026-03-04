@@ -39,6 +39,7 @@ export default function defineAbilityFor(user: User) {
 		can('relate', [
 			payloadTypes.enum.indicator,
 			payloadTypes.enum.program,
+			payloadTypes.enum.category,
 			payloadTypes.enum.term,
 			...commonTypes
 		]);
