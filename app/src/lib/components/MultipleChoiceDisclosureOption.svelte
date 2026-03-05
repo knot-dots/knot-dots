@@ -57,7 +57,7 @@
 			{#if iconSrc}
 				<img alt="" class="option-icon" src={iconSrc} />
 			{/if}
-			<span class="option-text">{option.label}</span>
+			<span class="truncated">{option.label}</span>
 			{#if option.count !== undefined}
 				<span class="option-count">({option.count})</span>
 			{/if}
@@ -105,7 +105,7 @@
 					{#if subIcon}
 						<img alt="" class="option-icon" src={subIcon} />
 					{/if}
-					<span class="option-text">{sub.label}</span>
+					<span class="truncated">{sub.label}</span>
 					{#if sub.count !== undefined}
 						<span class="option-count">({sub.count})</span>
 					{/if}
@@ -122,12 +122,6 @@
 		gap: 0.25rem;
 		min-width: 0;
 		overflow: hidden;
-	}
-
-	.option-text {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	.option {
