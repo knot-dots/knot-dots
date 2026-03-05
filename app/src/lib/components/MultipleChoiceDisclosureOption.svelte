@@ -66,7 +66,7 @@
 	{#if option.subOptions?.length}
 		<button
 			type="button"
-			class="suboption-button"
+			class="action-button action-button--size-l action-button--padding-tight suboption-button"
 			class:suboption-button--active={$disclosure.expanded}
 			data-option-index={optionIndex}
 			data-role="option-toggle"
@@ -171,43 +171,8 @@
 
 	.suboption-button {
 		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 4px;
-		box-shadow: none;
-		color: var(--color-gray-500);
-		cursor: pointer;
 		display: inline-flex;
-		height: 1.5rem;
-		padding: 0.125rem;
 		position: relative;
-	}
-
-	.suboption-button:hover {
-		background-color: var(--color-gray-100);
-		box-shadow: var(--shadow-sm);
-	}
-
-	.suboption-button:active {
-		background-color: var(--color-gray-300);
-		box-shadow: var(--shadow-sm);
-	}
-
-	.suboption-button--active {
-		background-color: transparent;
-		box-shadow: none;
-	}
-
-	.suboption-button:focus-visible {
-		background-color: var(--color-gray-100);
-		box-shadow: var(--shadow-sm);
-		outline: 2px solid var(--color-primary-700);
-		outline-offset: 0;
-	}
-
-	.suboption-button:disabled {
-		cursor: not-allowed;
-		opacity: 0.5;
 	}
 
 	.suboptions-list {
