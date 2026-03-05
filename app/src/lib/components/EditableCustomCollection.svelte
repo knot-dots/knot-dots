@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resource } from 'runed';
+	import { IsInViewport, resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
@@ -97,6 +97,10 @@
 
 	const idForTitle = crypto.randomUUID();
 
+	let header = $state<HTMLElement>();
+
+	const inViewport = new IsInViewport(() => header);
+
 	const savedResource = resource(
 		[
 			() => container.payload.filter.audience,
@@ -109,7 +113,8 @@
 					? container.payload.filter.type
 					: defaultPayloadType,
 			() => container.payload.sort,
-			() => container.payload.terms
+			() => container.payload.terms,
+			() => inViewport.current
 		],
 		async (
 			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
@@ -130,7 +135,8 @@
 				sort,
 				{ signal }
 			);
-		}
+		},
+		{ lazy: true, once: true }
 	);
 
 	const searchResource = resource(
@@ -142,7 +148,8 @@
 			() => filter.topic,
 			() => (filter.type.length > 0 ? filter.type : defaultPayloadType),
 			() => sort,
-			() => terms
+			() => terms,
+			() => inViewport.current
 		],
 		async (
 			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
@@ -165,7 +172,8 @@
 			);
 		},
 		{
-			debounce: 300
+			debounce: 300,
+			lazy: true
 		}
 	);
 
@@ -232,7 +240,7 @@
 	}
 </script>
 
-<header>
+<header bind:this={header}>
 	<svelte:element this={heading} class="details-heading">
 		{#if editable && $ability.can('update', container)}
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
