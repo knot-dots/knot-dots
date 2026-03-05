@@ -11,6 +11,7 @@
 	import Filter from '~icons/knotdots/filter';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -21,7 +22,6 @@
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
 		actualDataContainer,
-		anyContainer,
 		type AnyContainer,
 		audience,
 		computeFacetCount,
@@ -116,20 +116,20 @@
 			_,
 			{ signal }
 		) => {
-			const params = new URLSearchParams([
-				...audience.map((v) => ['audience', v]),
-				...sdg.map((v) => ['sdg', v]),
-				...indicatorCategory.map((v) => ['indicatorCategory', v]),
-				['organization', page.data.currentOrganization.guid],
-				...policyFieldBNK.map((v) => ['policyFieldBNK', v]),
-				['terms', terms],
-				...topic.map((v) => ['topic', v]),
-				...type.map((v) => ['payloadType', v]),
-				['sort', sort]
-			]);
-
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z.array(anyContainer).parse(await response.json());
+			return fetchContainers(
+				{
+					audience,
+					sdg,
+					indicatorCategory,
+					organization: [page.data.currentOrganization.guid],
+					policyFieldBNK,
+					terms,
+					topic,
+					payloadType: type
+				},
+				sort,
+				{ signal }
+			);
 		}
 	);
 
@@ -149,20 +149,20 @@
 			_,
 			{ signal }
 		) => {
-			const params = new URLSearchParams([
-				...audience.map((v) => ['audience', v]),
-				...sdg.map((v) => ['sdg', v]),
-				...indicatorCategory.map((v) => ['indicatorCategory', v]),
-				['organization', page.data.currentOrganization.guid],
-				...policyFieldBNK.map((v) => ['policyFieldBNK', v]),
-				['terms', terms],
-				...topic.map((v) => ['topic', v]),
-				...type.map((v) => ['payloadType', v]),
-				['sort', sort]
-			]);
-
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z.array(anyContainer).parse(await response.json());
+			return fetchContainers(
+				{
+					audience,
+					sdg,
+					indicatorCategory,
+					organization: [page.data.currentOrganization.guid],
+					policyFieldBNK,
+					terms,
+					topic,
+					payloadType: type
+				},
+				sort,
+				{ signal }
+			);
 		},
 		{
 			debounce: 300
@@ -170,17 +170,18 @@
 	);
 
 	const actualDataResource = resource([], async (_, __, { signal }) => {
-		const params = new URLSearchParams([
-			['organization', page.data.currentOrganization.guid],
-			...(page.data.currentOrganizationalUnit
-				? [['organizationalUnit', page.data.currentOrganizationalUnit.guid]]
-				: []),
-			['payloadType', payloadTypes.enum.actual_data],
-			['sort', 'alpha']
-		]);
-
-		const response = await fetch(`/container?${params.toString()}`, { signal });
-		return z.array(actualDataContainer).parse(await response.json());
+		const response = await fetchContainers(
+			{
+				organization: [page.data.currentOrganization.guid],
+				...(page.data.currentOrganizationalUnit
+					? { organizationalUnit: [page.data.currentOrganizationalUnit.guid] }
+					: undefined),
+				payloadType: [payloadTypes.enum.actual_data]
+			},
+			'alpha',
+			{ signal }
+		);
+		return z.array(actualDataContainer).parse(response);
 	});
 
 	let items = $derived.by(() => {

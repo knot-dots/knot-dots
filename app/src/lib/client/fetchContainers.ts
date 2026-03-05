@@ -31,7 +31,8 @@ export default async function fetchContainers(
 		terms?: string;
 		topic?: string[];
 	},
-	sort?: string
+	sort?: string,
+	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
 	for (const value of filters.assignee ?? []) {
@@ -112,10 +113,7 @@ export default async function fetchContainers(
 		promise: Promise.resolve([] as AnyContainer[]) // placeholder, replaced immediately
 	};
 	entry.promise = (async () => {
-		const response = await fetch(url, {
-			cache: 'default',
-			credentials: 'same-origin'
-		});
+		const response = await fetch(url, init);
 		const data = await response.json();
 		const parsed = z.array(anyContainer).parse(data);
 		entry.result = parsed; // store resolved data for TTL reuse
