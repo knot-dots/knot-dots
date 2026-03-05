@@ -32,3 +32,9 @@ export class IndicatorCatalog extends Catalog {
 		await this.page.goto(`${baseURL}/indicators/catalog`);
 	}
 }
+
+export class ResourceCatalog extends Catalog {
+	async goto(baseURL: string) {
+		await this.page.goto(`${baseURL}/resources/catalog`);
+	}
+}
