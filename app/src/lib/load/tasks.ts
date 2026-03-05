@@ -3,37 +3,25 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
+	computeFacetCount,
 	filterOrganizationalUnits,
+	fromCounts,
 	type GoalContainer,
 	isGoalContainer,
 	isPartOf,
 	isTaskContainer,
 	payloadTypes,
 	predicates,
-	type TaskContainer,
-	computeFacetCount,
-	fromCounts,
-	taskCategories
+	taskCategories,
+	type TaskContainer
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
-import type { ServerLoad } from '@sveltejs/kit';
-
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: import('$lib/models').OrganizationContainer;
-	currentOrganizationalUnit: import('$lib/models').OrganizationalUnitContainer | null;
-};
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
 
 function filterRelated(
 	containers: GoalContainer[],
@@ -43,14 +31,14 @@ function filterRelated(
 }
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
-	return (async ({ depends, locals, parent, url }: LoadInput) => {
+	return (async ({ depends, locals, parent, url }) => {
 		depends('containers');
 
 		let taskContainers: TaskContainer[];
 		let otherContainers: GoalContainer[];
 		let subordinateOrganizationalUnits: string[] = [];
 
-		const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
+		const { currentOrganization, currentOrganizationalUnit } = await parent();
 		const features = createFeatureDecisions(locals.features);
 
 		if (currentOrganization.payload.default) {
@@ -66,6 +54,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 				.map((unit) => unit.guid);
 		}
 
+		let data: Record<string, Record<string, number>> | undefined;
 		if (url.searchParams.has('related-to')) {
 			const containers = await locals.pool.connect(
 				getAllRelatedContainers(
@@ -79,48 +68,62 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			taskContainers = containers.filter(isTaskContainer);
 			otherContainers = containers.filter(isGoalContainer);
 		} else {
-			[taskContainers, otherContainers] = (await Promise.all([
-				locals.pool.connect(
-					features.useElasticsearch()
-						? getManyContainersWithES(
-								currentOrganization.payload.default ? [] : [currentOrganization.guid],
-								{
-									assignees: url.searchParams.getAll('assignee'),
-									taskCategories: url.searchParams.getAll('taskCategory'),
-									terms: url.searchParams.get('terms') ?? '',
-									type: [payloadTypes.enum.task]
-								},
-								url.searchParams.get('sort') ?? defaultSort
-							)
-						: getManyContainers(
-								currentOrganization.payload.default ? [] : [currentOrganization.guid],
-								{
-									assignees: url.searchParams.getAll('assignee'),
-									taskCategories: url.searchParams.getAll('taskCategory'),
-									terms: url.searchParams.get('terms') ?? '',
-									type: [payloadTypes.enum.task]
-								},
-								url.searchParams.get('sort') ?? defaultSort
-							)
-				),
-				locals.pool.connect(
-					features.useElasticsearch()
-						? getManyContainersWithES(
-								currentOrganization.payload.default ? [] : [currentOrganization.guid],
-								{
-									type: [payloadTypes.enum.goal]
-								},
-								'alpha'
-							)
-						: getManyContainers(
-								currentOrganization.payload.default ? [] : [currentOrganization.guid],
-								{
-									type: [payloadTypes.enum.goal]
-								},
-								'alpha'
-							)
-				)
-			])) as [TaskContainer[], GoalContainer[]];
+			if (features.useElasticsearch()) {
+				const [taskResult, otherResult] = await Promise.all([
+					locals.pool.connect(
+						getManyContainersWithES(
+							currentOrganization.payload.default ? [] : [currentOrganization.guid],
+							{
+								assignees: url.searchParams.getAll('assignee'),
+								taskCategories: url.searchParams.getAll('taskCategory'),
+								terms: url.searchParams.get('terms') ?? '',
+								type: [payloadTypes.enum.task]
+							},
+							url.searchParams.get('sort') ?? defaultSort
+						)
+					),
+					locals.pool.connect(
+						getManyContainersWithES(
+							currentOrganization.payload.default ? [] : [currentOrganization.guid],
+							{
+								type: [payloadTypes.enum.goal]
+							},
+							'alpha',
+							undefined,
+							{ includeFacets: false }
+						)
+					)
+				]);
+				taskContainers = taskResult.containers as TaskContainer[];
+				otherContainers = otherResult.containers as GoalContainer[];
+				data = taskResult.facets;
+			} else {
+				const [taskResult, otherResult] = await Promise.all([
+					locals.pool.connect(
+						getManyContainers(
+							currentOrganization.payload.default ? [] : [currentOrganization.guid],
+							{
+								assignees: url.searchParams.getAll('assignee'),
+								taskCategories: url.searchParams.getAll('taskCategory'),
+								terms: url.searchParams.get('terms') ?? '',
+								type: [payloadTypes.enum.task]
+							},
+							url.searchParams.get('sort') ?? defaultSort
+						)
+					),
+					locals.pool.connect(
+						getManyContainers(
+							currentOrganization.payload.default ? [] : [currentOrganization.guid],
+							{
+								type: [payloadTypes.enum.goal]
+							},
+							'alpha'
+						)
+					)
+				]);
+				taskContainers = taskResult as TaskContainer[];
+				otherContainers = otherResult as GoalContainer[];
+			}
 		}
 
 		const containers = filterOrganizationalUnits(
@@ -135,10 +138,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit ?? undefined
 		);
-
-		const data = features.useElasticsearch()
-			? await getFacetAggregationsForGuids(containers.map((c) => c.guid))
-			: undefined;
 
 		const _facets = new Map<string, Map<string, number>>([
 			...((url.searchParams.has('related-to')
@@ -159,12 +158,11 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			['assignee', new Map()]
 		]);
 
-		const facets = features.useElasticsearch()
-			? _facets
-			: computeFacetCount(_facets, taskContainers, {
-					useCategoryPayload: features.useCustomCategories()
-				});
+		const computedFacets = computeFacetCount(_facets, taskContainers, {
+			useCategoryPayload: features.useCustomCategories()
+		});
+		const facets = features.useElasticsearch() && data ? _facets : computedFacets;
 
 		return { containers, relatedContainers, facets };
-	}) satisfies ServerLoad;
+	}) satisfies PageServerLoad;
 }

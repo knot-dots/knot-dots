@@ -112,6 +112,13 @@ const typeAliases = {
 		spatial_reference: z.string().uuid().optional().nullable(),
 		source: z.string()
 	}),
+	indicatorDataWithGuidAndTitle: z.object({
+		actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
+		indicator_guid: z.string().uuid(),
+		indicator_title: z.string(),
+		spatial_reference: z.string().uuid().optional().nullable(),
+		source: z.string()
+	}),
 	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
 	organizationalUnitContainer,
 	relation,
@@ -1703,6 +1710,21 @@ export function getIndicatorDataWegweiserKommune(spatialReference: string, frien
 			JOIN indicator_wegweiser_kommune i ON i.id = d.indicator_id
 			WHERE d.spatial_reference = ${spatialReference}
 			  AND i.friendly_url = ${friendlyUrl}
+			ORDER BY d.indicator_id, d.valid_from DESC
+		`);
+	};
+}
+
+export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.typeAlias('indicatorDataWithGuidAndTitle')`
+			SELECT DISTINCT ON (d.indicator_id) d.*, i.source, c.guid AS indicator_guid, c.payload->>'title' AS indicator_title
+			FROM indicator_data_wegweiser_kommune d
+			JOIN indicator_wegweiser_kommune i ON i.id = d.indicator_id
+			JOIN container c ON split_part(c.payload->>'externalReference', '/', -1) = i.friendly_url
+				AND c.payload->>'type' = ${payloadTypes.enum.indicator_template}
+				AND c.valid_currently
+			WHERE d.spatial_reference = ${spatialReference}
 			ORDER BY d.indicator_id, d.valid_from DESC
 		`);
 	};

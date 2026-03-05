@@ -38,8 +38,7 @@ const config: PlaywrightTestConfig = {
 		port: 3000,
 		reuseExistingServer: !process.env.CI,
 		timeout: 180 * 1000
-	},
-	workers: process.env.CI ? 4 : undefined
+	}
 };
 
 export default config;

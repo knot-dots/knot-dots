@@ -11,6 +11,8 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableTendency from '$lib/components/EditableTendency.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import EffectProperties from '$lib/components/EffectProperties.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -147,8 +149,29 @@
 				{revisions}
 			/>
 
-			<div class="details-section">
-				{#if indicator}
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+
+			{#if indicator}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('effect.tendency')}</h2>
+
+					<EditableTendency
+						{container}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
+				</div>
+			{/if}
+
+			{#if indicator}
+				<div class="details-section">
 					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 						<div class="disclosure">
 							<button class="disclosure-button" type="button" use:disclosure.button>
@@ -244,8 +267,8 @@
 					{/if}
 
 					<EffectChart {container} {relatedContainers} showLegend />
-				{/if}
-			</div>
+				</div>
+			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 

@@ -899,16 +899,6 @@ const measurePayload = basePayload
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
-		resource: z
-			.array(
-				z.object({
-					description: z.string(),
-					amount: z.coerce.number(),
-					unit: z.string(),
-					fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
-				})
-			)
-			.default([]),
 		result: z.string().trim().optional(),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
@@ -936,8 +926,11 @@ const initialMeasureCollectionPayload = measureCollectionPayload;
 const objectivePayload = basePayload
 	.omit({ category: true, summary: true, topic: true })
 	.extend({
-		type: z.literal(payloadTypes.enum.objective),
 		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+		trendValue: z
+			.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
+			.optional(),
+		type: z.literal(payloadTypes.enum.objective),
 		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
 	})
 	.strict();
@@ -1080,14 +1073,13 @@ const measureMonitoringBasePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-const effectPayload = measureMonitoringBasePayload
-	.omit({ description: true, summary: true })
-	.extend({
-		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-		type: z.literal(payloadTypes.enum.effect)
-	});
+const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
+	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
+	type: z.literal(payloadTypes.enum.effect)
+});
 
 const initialEffectPayload = effectPayload.partial({ title: true });
 
@@ -1736,7 +1728,7 @@ export function isIndicatorCollectionContainer(
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
 
-const indicatorTemplateContainer = container.extend({
+export const indicatorTemplateContainer = container.extend({
 	payload: indicatorTemplatePayload
 });
 

@@ -7,7 +7,6 @@ import {
 	fromCounts
 } from '$lib/models';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
-import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
@@ -53,20 +52,12 @@ export const load = (async ({ locals, parent, url }) => {
 	const filtered = filterVisible(containers, locals.user);
 
 	const features = createFeatureDecisions(locals.features);
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-		: undefined;
-
 	const _facets = new Map<string, Map<string, number>>([
-		[
-			'administrativeType',
-			fromCounts(administrativeTypes.options as string[], data?.administrativeType)
-		]
+		['administrativeType', fromCounts(administrativeTypes.options as string[])]
 	]);
-
-	const facets = features.useElasticsearch()
-		? _facets
-		: computeFacetCount(_facets, filtered, { useCategoryPayload: features.useCustomCategories() });
+	const facets = computeFacetCount(_facets, filtered, {
+		useCategoryPayload: features.useCustomCategories()
+	});
 
 	return { containers: filtered, facets };
 }) satisfies PageServerLoad;

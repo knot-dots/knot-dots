@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import {
 		type DndEvent,
@@ -10,6 +11,8 @@
 	import Plus from '~icons/knotdots/plus';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import {
 		type Container,
@@ -25,9 +28,14 @@
 		predicates,
 		units
 	} from '$lib/models';
-	import { ability, dragged, overlay, newContainer } from '$lib/stores';
-	import { getContext } from 'svelte';
-	import { env } from '$env/dynamic/public';
+	import {
+		ability,
+		applicationState,
+		dragged,
+		mayCreateContainer,
+		newContainer,
+		overlay
+	} from '$lib/stores';
 
 	interface Props {
 		containers: Container[];
@@ -62,6 +70,13 @@
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
+
+	let managedBy = $derived(
+		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
+	);
+
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -122,16 +137,24 @@
 </script>
 
 <div class="indicators">
-	{#if $ability.can('create', payloadTypes.enum.indicator)}
+	{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy) && $applicationState.containerDetailView.editable}
 		<p>
-			<button
-				class="button button-xs button-primary"
-				type="button"
-				onclick={createCustomIndicatorTemplate}
-			>
-				<Plus />
-				{$_('indicator_form.create_custom')}
-			</button>
+			{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
+				<button
+					class="button button-xs button-primary"
+					onclick={() => dialog.showModal()}
+					type="button"
+				>
+					{$_('indicators.activate_selected')}
+				</button>
+			{/if}
+
+			{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy)}
+				<button class="button button-xs" type="button" onclick={createCustomIndicatorTemplate}>
+					<Plus />
+					{$_('indicators.create_custom')}
+				</button>
+			{/if}
 		</p>
 	{/if}
 
@@ -144,10 +167,12 @@
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = containers
 					.filter(isActualDataContainer)
-					.filter(({ payload }) => payload.indicator == container.guid)}
-				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
-				</li>
+					.filter(({ payload }) => payload.indicator === container.guid)}
+				{#if relatedContainers.length > 0}
+					<li>
+						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	{:else}
@@ -155,14 +180,20 @@
 			{#each items as { guid, container } (guid)}
 				{@const relatedContainers = containers
 					.filter(isActualDataContainer)
-					.filter(({ payload }) => payload.indicator == container.guid)}
-				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
-				</li>
+					.filter(({ payload }) => payload.indicator === container.guid)}
+				{#if relatedContainers.length > 0}
+					<li>
+						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	{/if}
 </div>
+
+{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
+	<IndicatorPicker bind:dialog />
+{/if}
 
 <style>
 	div {
@@ -173,6 +204,8 @@
 	}
 
 	p {
+		display: flex;
+		gap: 0.5rem;
 		margin-bottom: 1.5rem;
 	}
 

@@ -10,88 +10,71 @@ import {
 	indicatorTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationContainer
+	topics
 } from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
-import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
+import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	defaultOrganizationGuid: string;
-};
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
+	const { categoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
 
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				objectTypes: [
-					payloadTypes.enum.objective,
-					payloadTypes.enum.effect,
-					payloadTypes.enum.indicator
-				],
-				user: locals.user
-			})
-		: null;
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
 
-	const containers = (await locals.pool.connect(
-		features.useElasticsearch()
-			? getManyContainersWithES(
-					[currentOrganization.guid],
-					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
-						customCategories,
-						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
-						indicatorTypes: url.searchParams.getAll('indicatorType'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						type: [payloadTypes.enum.indicator]
-					},
-					''
-				)
-			: getManyContainers(
-					[currentOrganization.guid],
-					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
-						customCategories,
-						indicatorCategories: url.searchParams.getAll('indicatorCategory'),
-						indicatorTypes: url.searchParams.getAll('indicatorType'),
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
-						type: [payloadTypes.enum.indicator]
-					},
-					''
-				)
-	)) as IndicatorContainer[];
+	let containers: IndicatorContainer[];
+	let data: Record<string, Record<string, number>> | undefined;
+	if (features.useElasticsearch()) {
+		const esResult = await locals.pool.connect(
+			getManyContainersWithES(
+				[currentOrganization.guid],
+				{
+					audience: url.searchParams.getAll('audience'),
+					sdg: url.searchParams.getAll('sdg'),
+					customCategories,
+					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+					indicatorTypes: url.searchParams.getAll('indicatorType'),
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					topics: url.searchParams.getAll('topic'),
+					type: [payloadTypes.enum.indicator]
+				},
+				'',
+				undefined,
+				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			)
+		);
+		containers = esResult.containers as IndicatorContainer[];
+		data = esResult.facets;
+	} else {
+		containers = (await locals.pool.connect(
+			getManyContainers(
+				[currentOrganization.guid],
+				{
+					audience: url.searchParams.getAll('audience'),
+					sdg: url.searchParams.getAll('sdg'),
+					customCategories,
+					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+					indicatorTypes: url.searchParams.getAll('indicatorType'),
+					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+					topics: url.searchParams.getAll('topic'),
+					type: [payloadTypes.enum.indicator]
+				},
+				''
+			)
+		)) as IndicatorContainer[];
+	}
 
 	const relatedContainers = await locals.pool.connect(
 		getAllContainersRelatedToIndicators(containers, {})
 	);
 
 	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);
-
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(
-				filtered.map((c) => c.guid),
-				categoryContext?.keys ?? []
-			)
-		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
 		['indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType)],
@@ -119,7 +102,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		);
 	}
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
+	const facets =
+		features.useElasticsearch() && data ? _facets : computeFacetCount(_facets, filtered);
 
 	return {
 		container: currentOrganization,

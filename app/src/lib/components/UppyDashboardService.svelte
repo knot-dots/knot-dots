@@ -141,12 +141,6 @@
 		color: var(--color-primary-700) !important;
 	}
 
-	:global(.uppy-DashboardItem-action--edit::after) {
-		content: 'Bild bearbeiten';
-		font-size: 0.875rem;
-		font-weight: 600;
-	}
-
 	:global(.uppy-DashboardItem-action--edit svg) {
 		width: 1.125rem !important;
 		height: 1.125rem !important;
@@ -186,12 +180,6 @@
 
 	:global(.uppy-Dashboard-Item-action--edit:hover) {
 		background-color: var(--color-gray-200) !important;
-	}
-
-	:global(.uppy-Dashboard-Item-action--edit::after) {
-		content: 'Bild bearbeiten';
-		font-size: 0.75rem;
-		margin-left: 0.5rem;
 	}
 
 	:global(.uppy-Dashboard-Item-action--edit svg) {

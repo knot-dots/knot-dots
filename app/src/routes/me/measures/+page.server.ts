@@ -5,31 +5,20 @@ import {
 	computeFacetCount,
 	audience,
 	fromCounts,
-	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics,
-	type OrganizationContainer
+	topics
 } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
-import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	defaultOrganizationGuid: string;
-};
-
-export const load: PageServerLoad = async ({ locals, parent }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
-
-	const { currentOrganization, defaultOrganizationGuid } = (await parent()) as ParentData;
 
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
@@ -39,51 +28,18 @@ export const load: PageServerLoad = async ({ locals, parent }) => {
 	);
 
 	const features = createFeatureDecisions(locals.features);
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				objectTypes: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
-				user: locals.user
-			})
-		: null;
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(
-				filtered.map((c) => c.guid),
-				categoryContext?.keys ?? []
-			)
-		: undefined;
-
-	const _facets = new Map<string, Map<string, number>>();
-
-	if (features.useCustomCategories() && categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
-	}
-
-	const facets = features.useElasticsearch()
-		? _facets
-		: computeFacetCount(_facets, filtered, { useCategoryPayload: features.useCustomCategories() });
+	const _facets = new Map<string, Map<string, number>>([
+		['audience', fromCounts(audience.options as string[])],
+		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[])],
+		['topic', fromCounts(topics.options as string[])],
+		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[])]
+	]);
+	const facets = computeFacetCount(_facets, filtered, {
+		useCategoryPayload: features.useCustomCategories()
+	});
 
 	return {
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facets
 	};
 };
