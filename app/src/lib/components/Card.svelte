@@ -121,19 +121,29 @@
 
 	function computeHref(url: URL) {
 		const hashParams = paramsFromFragment(url);
+
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			return '#';
-		} else if (hashParams.has('indicators')) {
-			return overlayURL(url, 'view', container.guid, [
-				['program', hashParams.get('indicators') as string]
-			]);
-		} else if (hashParams.has('resources')) {
-			return overlayURL(url, 'view', container.guid, [
-				['program', hashParams.get('resources') as string]
-			]);
-		} else {
-			return overlayURL(url, 'view', container.guid);
 		}
+
+		// Check for overlay indicators/resources
+		if (
+			hashParams.has('indicators') ||
+			page.route.id === '/[guid=uuid]/[contentGuid=uuid]/indicators/catalog'
+		) {
+			return overlayURL(url, 'view', container.guid, [
+				['program', hashParams.get('indicators') ?? (page.params.contentGuid as string)]
+			]);
+		} else if (
+			hashParams.has('resources') ||
+			page.route.id === '/[guid=uuid]/[contentGuid=uuid]/resources/catalog'
+		) {
+			return overlayURL(url, 'view', container.guid, [
+				['program', hashParams.get('resources') ?? (page.params.contentGuid as string)]
+			]);
+		}
+
+		return overlayURL(url, 'view', container.guid);
 	}
 
 	let previewLink: HTMLAnchorElement;
