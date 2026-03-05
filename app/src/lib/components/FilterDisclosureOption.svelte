@@ -216,8 +216,8 @@
 	}
 
 	.option-icon {
-		height: 1rem;
-		width: 1rem;
+		height: 1.5rem;
+		width: 1.5rem;
 		object-fit: contain;
 		flex-shrink: 0;
 	}
@@ -229,7 +229,6 @@
 	.suboptions-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
 		padding: 0.25rem 0 0.5rem 1.5rem;
 	}
 </style>
