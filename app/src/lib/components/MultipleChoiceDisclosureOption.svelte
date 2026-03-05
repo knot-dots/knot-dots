@@ -21,7 +21,7 @@
 
 	let { option, optionIndex, value = $bindable([] as string[]), iconURL }: Props = $props();
 
-	const disclosure = createDisclosure({});
+	const disclosure = createDisclosure({ label: $_('filter.show_suboptions') });
 
 	function toggleSelection(entryValue: string, checked: boolean) {
 		const current = Array.isArray(value) ? value : [];
@@ -66,12 +66,10 @@
 	{#if option.subOptions?.length}
 		<button
 			type="button"
-			class="action-button action-button--size-l action-button--padding-tight suboption-button"
-			class:suboption-button--active={$disclosure.expanded}
+			class="action-button action-button--size-s suboption-button"
 			data-option-index={optionIndex}
 			data-role="option-toggle"
 			use:disclosure.button
-			aria-label={$_('filter.show_suboptions')}
 		>
 			<span
 				class="suboption-dot"
@@ -125,7 +123,6 @@
 	}
 
 	.option {
-		align-items: center;
 		display: flex;
 		gap: 0.35rem;
 		justify-content: space-between;

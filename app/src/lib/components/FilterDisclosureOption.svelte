@@ -21,7 +21,7 @@
 
 	let { option, selected = $bindable([] as string[]), apply }: Props = $props();
 
-	const disclosure = createDisclosure({});
+	const disclosure = createDisclosure({ label: $_('filter.show_suboptions') });
 	const selectedSubCount = $derived.by(
 		() => option.subOptions?.filter((sub) => selected.includes(sub.value)).length ?? 0
 	);
@@ -70,10 +70,8 @@
 	{#if option.subOptions?.length}
 		<button
 			type="button"
-			class="action-button action-button--size-l action-button--padding-tight suboption-button"
-			class:suboption-button--active={$disclosure.expanded}
+			class="action-button action-button--size-s suboption-button"
 			use:disclosure.button
-			aria-label={$_('filter.show_suboptions')}
 		>
 			<span
 				class="suboption-dot"
@@ -127,7 +125,6 @@
 	.suboption-button {
 		align-items: center;
 		display: inline-flex;
-		height: 1.5rem;
 		margin-left: auto;
 		position: relative;
 	}
@@ -162,7 +159,6 @@
 	.option {
 		position: relative;
 		display: flex;
-		align-items: center;
 		gap: 0.35rem;
 	}
 
