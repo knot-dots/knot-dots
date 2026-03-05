@@ -5,20 +5,38 @@ import {
 	computeFacetCount,
 	audience,
 	fromCounts,
+	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
 	topics
 } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
+import {
+	buildCategoryFacetsWithCounts,
+	filterCategoryContext,
+	type CategoryContext
+} from '$lib/server/categoryOptions';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 
-export const load: PageServerLoad = async ({ locals }) => {
+type ParentData = {
+	categoryContext: CategoryContext | null;
+};
+
+export const load = (async ({ locals, parent }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
+
+	const { categoryContext: rawCategoryContext } = (await parent()) as ParentData;
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [
+				payloadTypes.enum.measure,
+				payloadTypes.enum.simple_measure
+			])
+		: null;
 
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
@@ -28,18 +46,29 @@ export const load: PageServerLoad = async ({ locals }) => {
 	);
 
 	const features = createFeatureDecisions(locals.features);
-	const _facets = new Map<string, Map<string, number>>([
-		['audience', fromCounts(audience.options as string[])],
-		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[])],
-		['topic', fromCounts(topics.options as string[])],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[])]
-	]);
+
+	const _facets = new Map<string, Map<string, number>>();
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(categoryContext.options);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[]));
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[]));
+		_facets.set('topic', fromCounts(topics.options as string[]));
+		_facets.set('policyFieldBNK', fromCounts(policyFieldBNK.options as string[]));
+	}
+
 	const facets = computeFacetCount(_facets, filtered, {
 		useCategoryPayload: features.useCustomCategories()
 	});
 
 	return {
 		containers: filtered,
-		facets
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
 	};
-};
+}) satisfies PageServerLoad;
