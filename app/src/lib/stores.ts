@@ -633,13 +633,14 @@ if (browser) {
 			}
 		} else if (hashParams.has(overlayKey.enum.resources)) {
 			const programGuid = hashParams.get(overlayKey.enum.resources) as string;
+
+			// Preload for fullscreen and overlay is the same for resources, so we can use the same logic
 			const result = await preloadData(
-				resolve('/[guid=uuid]/resources/catalog', {
-					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid
+				resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: programGuid
 				}) +
-					'?program=' +
-					programGuid +
-					'&' +
+					'?' +
 					hashParams.toString()
 			);
 
@@ -647,12 +648,9 @@ if (browser) {
 				return;
 			}
 
-			const revisions = (await fetchContainerRevisions(programGuid)) as Container[];
-			const container = revisions[revisions.length - 1];
-
 			setOverlayIfLatest({
 				key: overlayKey.enum.resources,
-				container,
+				container: result.data.container,
 				containers: result.data.containers
 			});
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {

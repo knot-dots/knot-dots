@@ -294,11 +294,10 @@
 					goto(overlayURL(url, overlayKey.enum.resources, container.guid));
 				} else {
 					goto(
-						resolve('/[guid=uuid]/resources/catalog', {
-							guid: selectedContext.guid
-						}) +
-							'?program=' +
-							container.guid
+						resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
 					);
 				}
 			} else if (selected[0] == 'measures' && selected[1] == 'status') {
