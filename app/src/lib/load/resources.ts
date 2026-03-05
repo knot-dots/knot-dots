@@ -4,18 +4,100 @@ import {
 	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
+	isResourceDataContainer,
 	payloadTypes,
-	predicates,
 	resourceCategories,
 	resourceUnits,
-	type ResourceDataContainer,
 	type ResourceV2Container
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, type CategoryContext } from '$lib/server/categoryOptions';
 import { getAllContainersRelatedToProgram, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import type { DatabasePool } from 'slonik';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/resources/$types';
+
+/**
+ * Fetches and filters resource containers, optionally by program
+ */
+export async function fetchResources({
+	pool,
+	scope,
+	programGuid,
+	features,
+	customCategories,
+	resourceCategoryFilters,
+	sort,
+	categoryContext
+}: {
+	pool: DatabasePool;
+	scope: string[];
+	programGuid?: string;
+	features: ReturnType<typeof createFeatureDecisions>;
+	customCategories: Record<string, string[]>;
+	resourceCategoryFilters: string[];
+	sort: 'alpha' | 'modified' | 'priority';
+	categoryContext?: CategoryContext;
+}) {
+	// Fetch all resource containers
+	let resourceContainers: ResourceV2Container[];
+	let data: Record<string, Record<string, number>> | undefined;
+
+	if (features.useElasticsearch()) {
+		const esResult = await pool.connect(
+			getManyContainersWithES(
+				scope,
+				{
+					customCategories,
+					resourceCategories: resourceCategoryFilters,
+					type: [payloadTypes.enum.resource_v2]
+				},
+				sort,
+				undefined,
+				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			)
+		);
+		resourceContainers = esResult.containers as ResourceV2Container[];
+		data = esResult.facets;
+	} else {
+		resourceContainers = (await pool.connect(
+			getManyContainers(
+				scope,
+				{
+					customCategories,
+					resourceCategories: resourceCategoryFilters,
+					type: [payloadTypes.enum.resource_v2]
+				},
+				sort
+			)
+		)) as ResourceV2Container[];
+	}
+
+	// Filter by program if specified
+	if (programGuid) {
+		// Get all containers related to the program (goals, measures, etc.)
+		const relatedContainers = await pool.connect(
+			getAllContainersRelatedToProgram(programGuid, {
+				type: [
+					payloadTypes.enum.goal,
+					payloadTypes.enum.measure,
+					payloadTypes.enum.simple_measure,
+					payloadTypes.enum.resource_data
+				]
+			})
+		);
+
+		// Extract unique resource GUIDs from resource_data containers
+		const usedResourceGuids = new Set(
+			relatedContainers.filter(isResourceDataContainer).map((c) => c.payload.resource)
+		);
+
+		// Filter to only resources that are actually used
+		resourceContainers = resourceContainers.filter((r) => usedResourceGuids.has(r.guid));
+	}
+
+	return { resourceContainers, facetData: data };
+}
 
 export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }) => {
@@ -29,87 +111,21 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			: {};
 
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
+		const programGuid = url.searchParams.get('program') ?? undefined;
 
-		let resourceContainers: ResourceV2Container[];
-		let data: Record<string, Record<string, number>> | undefined;
-		if (features.useElasticsearch()) {
-			const esResult = await locals.pool.connect(
-				getManyContainersWithES(
-					scope,
-					{
-						customCategories,
-						resourceCategories: url.searchParams.getAll('resourceCategory'),
-						type: [payloadTypes.enum.resource_v2]
-					},
-					url.searchParams.get('sort') ?? defaultSort,
-					undefined,
-					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-				)
-			);
-			resourceContainers = esResult.containers as ResourceV2Container[];
-			data = esResult.facets;
-		} else {
-			resourceContainers = (await locals.pool.connect(
-				getManyContainers(
-					scope,
-					{
-						customCategories,
-						resourceCategories: url.searchParams.getAll('resourceCategory'),
-						type: [payloadTypes.enum.resource_v2]
-					},
-					url.searchParams.get('sort') ?? defaultSort
-				)
-			)) as ResourceV2Container[];
-		}
-
-		// Filter by program if specified
-		let filteredResourceContainers = resourceContainers;
-
-		if (url.searchParams.has('program')) {
-			const programGuid = url.searchParams.get('program') as string;
-
-			// Get all containers related to the program (goals, measures, etc.)
-			const relatedContainers = await locals.pool.connect(
-				getAllContainersRelatedToProgram(programGuid, {
-					type: [
-						payloadTypes.enum.goal,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.simple_measure
-					]
-				})
-			);
-
-			// Get all resource_data containers linked to those goals/measures
-			const resourceDataContainers = (await locals.pool.connect(
-				getManyContainers(
-					scope,
-					{
-						type: [payloadTypes.enum.resource_data]
-						// Resource data links to goals/measures via their guid
-					},
-					'alpha'
-				)
-			)) as ResourceDataContainer[];
-
-			// Filter resource_data to only those that are part of related containers
-			const relatedGuids = new Set(relatedContainers.map((c) => c.guid));
-			const usedResourceData = resourceDataContainers.filter((rd) =>
-				rd.relation.some(
-					(r) => r.predicate === predicates.enum['is-part-of'] && relatedGuids.has(r.object)
-				)
-			);
-
-			// Extract unique resource GUIDs
-			const usedResourceGuids = new Set(
-				usedResourceData.map((rd) => rd.payload.resource).filter(Boolean)
-			);
-
-			// Filter to only resources that are actually used
-			filteredResourceContainers = resourceContainers.filter((r) => usedResourceGuids.has(r.guid));
-		}
+		const { resourceContainers, facetData } = await fetchResources({
+			pool: locals.pool,
+			scope,
+			programGuid,
+			features,
+			customCategories,
+			resourceCategoryFilters: url.searchParams.getAll('resourceCategory'),
+			sort: (url.searchParams.get('sort') ?? defaultSort) as 'alpha' | 'modified' | 'priority',
+			...(categoryContext && { categoryContext })
+		});
 
 		const containers = filterOrganizationalUnits(
-			filterVisible(filteredResourceContainers, locals.user),
+			filterVisible(resourceContainers, locals.user),
 			url,
 			[],
 			currentOrganizationalUnit ?? undefined
@@ -121,15 +137,15 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			>),
 			[
 				'resourceCategory',
-				fromCounts(resourceCategories.options as string[], data?.resourceCategory)
+				fromCounts(resourceCategories.options as string[], facetData?.resourceCategory)
 			],
-			['resourceUnit', fromCounts(resourceUnits.options as string[], data?.resourceUnit)]
+			['resourceUnit', fromCounts(resourceUnits.options as string[], facetData?.resourceUnit)]
 		]);
 
 		if (features.useCustomCategories() && categoryContext) {
 			const customFacets = buildCategoryFacetsWithCounts(
 				categoryContext.options,
-				data ? Object.fromEntries(Object.entries(data)) : {}
+				facetData ? Object.fromEntries(Object.entries(facetData)) : {}
 			);
 			for (const [key, values] of customFacets.entries()) {
 				_facets.set(key, values);
