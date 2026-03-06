@@ -70,7 +70,7 @@
 	{#if option.subOptions?.length}
 		<button
 			type="button"
-			class="action-button action-button--size-s suboption-button"
+			class="action-button action-button--size-l suboption-button"
 			use:disclosure.button
 		>
 			<span
