@@ -14,7 +14,7 @@ import {
 	sustainableDevelopmentGoals,
 	topics
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
@@ -31,8 +31,15 @@ export default (async function load({ depends, locals, parent, url }) {
 	let containers: Container[];
 	let data: Record<string, Record<string, number>> | undefined;
 	let subordinateOrganizationalUnits: string[] = [];
-	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
+	const {
+		categoryContext: rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit
+	} = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.goal])
+		: null;
 
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
