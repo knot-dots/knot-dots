@@ -21,7 +21,7 @@
 
 	let { option, optionIndex, value = $bindable([] as string[]), iconURL }: Props = $props();
 
-	const disclosure = createDisclosure({});
+	const disclosure = createDisclosure({ label: $_('filter.show_suboptions') });
 
 	function toggleSelection(entryValue: string, checked: boolean) {
 		const current = Array.isArray(value) ? value : [];
@@ -57,7 +57,7 @@
 			{#if iconSrc}
 				<img alt="" class="option-icon" src={iconSrc} />
 			{/if}
-			{option.label}
+			<span class="truncated">{option.label}</span>
 			{#if option.count !== undefined}
 				<span class="option-count">({option.count})</span>
 			{/if}
@@ -66,11 +66,10 @@
 	{#if option.subOptions?.length}
 		<button
 			type="button"
-			class="suboption-button"
+			class="action-button action-button--size-l suboption-button"
 			data-option-index={optionIndex}
 			data-role="option-toggle"
 			use:disclosure.button
-			aria-label={$_('filter.show_suboptions')}
 		>
 			<span
 				class="suboption-dot"
@@ -104,7 +103,7 @@
 					{#if subIcon}
 						<img alt="" class="option-icon" src={subIcon} />
 					{/if}
-					{sub.label}
+					<span class="truncated">{sub.label}</span>
 					{#if sub.count !== undefined}
 						<span class="option-count">({sub.count})</span>
 					{/if}
@@ -118,18 +117,24 @@
 	.option-label {
 		align-items: center;
 		display: inline-flex;
-		gap: 0.35rem;
+		gap: 0.25rem;
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.option {
-		align-items: center;
 		display: flex;
 		gap: 0.35rem;
 		justify-content: space-between;
 	}
 
 	.option > label {
-		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.option-count {
@@ -138,9 +143,9 @@
 	}
 
 	:global(.suboption-indicator) {
-		color: var(--color-gray-700);
-		height: 1rem;
-		width: 1rem;
+		color: var(--color-gray-500);
+		height: 1.25rem;
+		width: 1.25rem;
 	}
 
 	.suboption-dot {
@@ -149,6 +154,11 @@
 		height: 0.5rem;
 		width: 0.5rem;
 		border: 1px solid transparent;
+		position: absolute;
+		left: -6px;
+		top: 50%;
+		transform: translateY(-50%);
+		pointer-events: none;
 	}
 
 	.suboption-dot--active {
@@ -158,18 +168,8 @@
 
 	.suboption-button {
 		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 6px;
-		color: inherit;
-		cursor: pointer;
 		display: inline-flex;
-		padding: 0.25rem;
-	}
-
-	.suboption-button:focus-visible {
-		outline: 2px solid var(--color-primary-500);
-		outline-offset: 2px;
+		position: relative;
 	}
 
 	.suboptions-list {
@@ -186,6 +186,7 @@
 	}
 
 	.option-icon {
+		flex-shrink: 0;
 		height: 1.25rem;
 		width: 1.25rem;
 		object-fit: contain;

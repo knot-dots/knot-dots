@@ -57,6 +57,7 @@
 	"card_style.default": "Default",
 	"card_style.highlight": "Highlight",
 	"category": "Category",
+	"term": "Term",
 	"category.key_label": "Category key",
 	"category.save_as_template": "Save as template for all",
 	"categories.columns.root": "Categories",

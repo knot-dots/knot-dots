@@ -1,27 +1,30 @@
 <script lang="ts">
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
+	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type CategoryContainer } from '$lib/models';
+	import { type AnyContainer, type CategoryContainer, type Container } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import ManagedBy from '$lib/components/ManagedBy.svelte';
 
 	interface Props {
 		container: CategoryContainer;
 		editable?: boolean;
+		relatedContainers: Container[];
+		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), editable = false }: Props = $props();
+	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
 </script>
 
 <PropertyGrid>
-	{#snippet top()}
-		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
-		{/if}
-	{/snippet}
+	{#snippet ownership()}
+		<ManagedBy {container} {relatedContainers} />
 
-	{#snippet general()}
-		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
-		{/if}
+		<EditableOrganization
+			editable={editable && $ability.can('update', container.payload.type, 'organization')}
+			bind:value={container.organization}
+		/>
+
+		<AuthoredBy {container} {revisions} />
 	{/snippet}
 </PropertyGrid>

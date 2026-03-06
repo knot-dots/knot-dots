@@ -37,10 +37,20 @@ export const load = (async ({ locals, url, parent }) => {
 	let data: Record<string, Record<string, number>> | undefined;
 	const { categoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const useCustomCategories = features.useCustomCategories();
 
 	const customCategories = features.useCustomCategories()
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -71,11 +81,8 @@ export const load = (async ({ locals, url, parent }) => {
 				getManyContainersWithES(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
+						...coreCategoryFilters,
 						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [payloadTypes.enum.knowledge]
@@ -92,11 +99,8 @@ export const load = (async ({ locals, url, parent }) => {
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
+						...coreCategoryFilters,
 						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-						topics: url.searchParams.getAll('topic'),
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [payloadTypes.enum.knowledge]
