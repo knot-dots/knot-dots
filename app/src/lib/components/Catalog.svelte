@@ -18,10 +18,10 @@
 		containers: T[];
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
-		editable?: boolean;
+		hideCreateButton?: boolean;
 	}
 
-	let { containers, item, payloadType, editable = true }: Props = $props();
+	let { containers, item, payloadType, hideCreateButton = false }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -41,7 +41,7 @@
 </script>
 
 <div>
-	{#if editable && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
+	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
 		{#if payloadType.length === 1}
 			<p>
 				<button

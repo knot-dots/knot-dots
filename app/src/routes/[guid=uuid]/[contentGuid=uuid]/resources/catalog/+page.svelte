@@ -23,7 +23,7 @@
 		<Catalog
 			containers={data.containers}
 			payloadType={[payloadTypes.enum.resource_v2]}
-			editable={false}
+			hideCreateButton={true}
 		/>
 		<Help slug="resources-catalog" />
 	{/snippet}

@@ -13,6 +13,6 @@
 
 <Header search />
 
-<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} editable={false} />
+<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
 
 <Help slug="resources-catalog" />
