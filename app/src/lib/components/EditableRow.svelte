@@ -292,6 +292,46 @@
 				bind:value={container.organizational_unit}
 			/>
 		</div>
+	{:else if col.startsWith('year:')}
+		{@const year = parseInt(col.split(':')[1], 10)}
+		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+			{#if 'historicalValues' in container.payload}
+				{@const hv = (container.payload as { historicalValues: [number, number][] })
+					.historicalValues}
+				{@const idx = hv.findIndex(([y]) => y === year)}
+				{#if editable && $ability.can('update', container)}
+					<input
+						type="number"
+						step="any"
+						value={idx >= 0 ? hv[idx][1] : ''}
+						onchange={(e) => {
+							const input = e.currentTarget as HTMLInputElement;
+							const val = input.value;
+							const hvRef = (container.payload as { historicalValues: [number, number][] })
+								.historicalValues;
+							const existingIdx = hvRef.findIndex(([y]) => y === year);
+							if (val === '' || val === null) {
+								if (existingIdx >= 0) {
+									hvRef.splice(existingIdx, 1);
+								}
+							} else {
+								const num = parseFloat(val);
+								if (!isNaN(num)) {
+									if (existingIdx >= 0) {
+										hvRef[existingIdx] = [year, num];
+									} else {
+										hvRef.push([year, num]);
+										hvRef.sort((a, b) => a[0] - b[0]);
+									}
+								}
+							}
+						}}
+					/>
+				{:else if idx >= 0}
+					<span>{hv[idx][1]}</span>
+				{/if}
+			{/if}
+		</div>
 	{/if}
 {/each}
 
@@ -429,6 +469,7 @@
 	}
 
 	.cell > :global(input[type='number']) {
+		min-width: 4rem;
 		padding: 0;
 	}
 
