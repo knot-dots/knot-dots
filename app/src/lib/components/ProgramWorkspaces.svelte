@@ -15,6 +15,7 @@
 	import LandingPage from '~icons/knotdots/landing-page';
 	import Level from '~icons/knotdots/level';
 	import Objects from '~icons/knotdots/objects';
+	import Resources from '~icons/knotdots/resources_v2';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -25,6 +26,7 @@
 		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
+	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
 		container: AnyContainer;
@@ -46,12 +48,16 @@
 		measures: {
 			monitoring: '/measures/monitoring',
 			status: '/measures/status'
+		},
+		resources: {
+			catalog: '/resources/catalog'
 		}
 	};
 
 	const workspacesRight: Record<string, Record<string, string>> = {
 		catalog: {
-			indicators: '/indicators/catalog'
+			indicators: '/indicators/catalog',
+			resources: '/resources/catalog'
 		},
 		level: {
 			all: '/all/level'
@@ -82,6 +88,8 @@
 				return ['all', 'table'];
 			} else if (params.has('indicators')) {
 				return ['indicators', 'catalog'];
+			} else if (params.has('resources')) {
+				return ['resources', 'catalog'];
 			} else if (params.has('measures')) {
 				return ['measures', 'status'];
 			} else if (params.has('measure-monitoring')) {
@@ -120,6 +128,16 @@
 			label: $_('workspace.type.measures'),
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
+		...(createFeatureDecisions(page.data.features).useResourcePlanning()
+			? [
+					{
+						exists: true,
+						icon: Resources,
+						label: $_('workspace.type.resources'),
+						value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
+					}
+				]
+			: []),
 		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
 			? [
 					{
@@ -181,6 +199,8 @@
 				return '/all/table';
 			} else if (params.has('indicators')) {
 				return '/indicators/catalog';
+			} else if (params.has('resources')) {
+				return '/resources/catalog';
 			} else if (params.has('measures')) {
 				return '/measures/status';
 			} else if (params.has('measure-monitoring')) {
@@ -264,6 +284,17 @@
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
+			} else if (selected[0] == 'resources' && selected[1] == 'catalog') {
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.resources, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', {
 							guid: selectedContext.guid,
 							contentGuid: container.guid
 						})

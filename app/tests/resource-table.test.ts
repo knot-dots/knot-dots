@@ -3,21 +3,7 @@ import { expect, test } from './fixtures';
 test.describe('Resource V2 Table', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('displays resource table on resource detail view', async ({
-		dotsBoard,
-		isMobile,
-		testResourceV2
-	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
+	test('displays resource table on resource detail view', async ({ dotsBoard, testResourceV2 }) => {
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
@@ -42,23 +28,12 @@ test.describe('Resource V2 Table', () => {
 
 	test('displays pre-existing resource data in correct sections', async ({
 		dotsBoard,
-		isMobile,
 		testResourceV2,
 		testResourceDataBudget, // eslint-disable-line @typescript-eslint/no-unused-vars
 		testResourceDataPlanned, // eslint-disable-line @typescript-eslint/no-unused-vars
 		testResourceDataActual, // eslint-disable-line @typescript-eslint/no-unused-vars
 		testMeasure
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
@@ -120,20 +95,9 @@ test.describe('Resource V2 Table', () => {
 
 	test('add year columns via + buttons in edit mode', async ({
 		dotsBoard,
-		isMobile,
 		testResourceV2,
 		testResourceDataBudget // eslint-disable-line @typescript-eslint/no-unused-vars
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
@@ -163,21 +127,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(rightAddButton).not.toBeVisible();
 	});
 
-	test('edit budget total values with debounced save', async ({
-		dotsBoard,
-		isMobile,
-		testResourceV2
-	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
+	test('edit budget total values with debounced save', async ({ dotsBoard, testResourceV2 }) => {
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
@@ -218,21 +168,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(budgetTotalCellAfterReload).toContainText('5,000');
 	});
 
-	test('edit prognosis values with debounced save', async ({
-		dotsBoard,
-		isMobile,
-		testResourceV2
-	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
+	test('edit prognosis values with debounced save', async ({ dotsBoard, testResourceV2 }) => {
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
@@ -275,21 +211,10 @@ test.describe('Resource V2 Table', () => {
 
 	test('budget/planned/actual rows link to related measure', async ({
 		dotsBoard,
-		isMobile,
 		testResourceV2,
 		testResourceDataBudget, // eslint-disable-line @typescript-eslint/no-unused-vars
 		testMeasure
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
@@ -312,19 +237,8 @@ test.describe('Resource V2 Table', () => {
 
 	test('table inputs are read-only when not in edit mode', async ({
 		dotsBoard,
-		isMobile,
 		testResourceV2
 	}) => {
-		test.skip(isMobile, 'Feature cannot be enabled on mobile');
-
-		// Enable ResourceV2 feature flag
-		await dotsBoard.goto(`/${testResourceV2.organization}`);
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('ResourceV2').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		// Navigate to resources catalog and open the resource
 		await dotsBoard.page.goto(`/${testResourceV2.organization}/resources/catalog`);
 		await dotsBoard.page.getByTitle(testResourceV2.payload.title).click();
