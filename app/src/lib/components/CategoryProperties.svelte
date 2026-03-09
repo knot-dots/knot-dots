@@ -3,11 +3,9 @@
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
-	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
 		categoryObjectTypes,
-		payloadTypes,
 		type AnyContainer,
 		type CategoryContainer,
 		type Container
@@ -36,10 +34,6 @@
 			}))}
 			bind:value={container.payload.objectTypes}
 		/>
-
-		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
-		{/if}
 	{/snippet}
 
 	{#snippet ownership()}
@@ -57,12 +51,11 @@
 		<EditableMultipleChoice
 			{editable}
 			label={$_('payload_type')}
-			options={objectTypeOptions}
+			options={categoryObjectTypes.options.map((value) => ({
+				label: $_(value),
+				value
+			}))}
 			bind:value={container.payload.objectTypes}
 		/>
-
-		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
-		{/if}
 	{/snippet}
 </PropertyGrid>
