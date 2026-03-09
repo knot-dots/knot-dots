@@ -23,13 +23,6 @@
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
-
-	const objectTypeOptions = $derived.by(() =>
-		categoryObjectTypes.options.map((value) => ({
-			label: $_(value),
-			value
-		}))
-	);
 </script>
 
 <PropertyGrid>
@@ -37,7 +30,10 @@
 		<EditableMultipleChoice
 			{editable}
 			label={$_('payload_type')}
-			options={objectTypeOptions}
+			options={categoryObjectTypes.options.map((value) => ({
+				label: $_(value),
+				value
+			}))}
 			bind:value={container.payload.objectTypes}
 		/>
 

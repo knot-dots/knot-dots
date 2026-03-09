@@ -138,10 +138,6 @@ const categoryObjectTypeValues = [
 
 export const categoryObjectTypes = z.enum(categoryObjectTypeValues);
 
-export type CategoryObjectType = z.infer<typeof categoryObjectTypes>;
-
-const defaultCategoryObjectTypes = [...categoryObjectTypes.options] as CategoryObjectType[];
-
 export const chapterTypeOptions = [
 	payloadTypes.enum.goal,
 	payloadTypes.enum.knowledge,
@@ -662,8 +658,8 @@ const basePayload = z.object({
 const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
+	objectTypes: z.array(categoryObjectTypes).default(categoryObjectTypes.options),
 	title: z.string().trim().min(1),
-	objectTypes: z.array(categoryObjectTypes).default(defaultCategoryObjectTypes),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])
 });
