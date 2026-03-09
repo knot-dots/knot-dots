@@ -24,23 +24,9 @@
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
 
-	const objectTypeLabels: Record<string, string> = {
-		[payloadTypes.enum.goal]: 'goal',
-		[payloadTypes.enum.program]: 'program',
-		[payloadTypes.enum.measure]: 'measure',
-		[payloadTypes.enum.simple_measure]: 'simple_measure',
-		[payloadTypes.enum.rule]: 'rule',
-		[payloadTypes.enum.knowledge]: 'knowledge',
-		[payloadTypes.enum.task]: 'task',
-		[payloadTypes.enum.indicator]: 'indicator',
-		[payloadTypes.enum.indicator_template]: 'indicator_template',
-		[payloadTypes.enum.effect]: 'effect',
-		[payloadTypes.enum.objective]: 'objective'
-	};
-
 	const objectTypeOptions = $derived.by(() =>
 		categoryObjectTypes.options.map((value) => ({
-			label: $_(objectTypeLabels[value] ?? value),
+			label: $_(value),
 			value
 		}))
 	);
