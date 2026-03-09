@@ -795,8 +795,7 @@ const goalPayload = basePayload
 		progress: z.number().nonnegative().optional(),
 		type: z.literal(payloadTypes.enum.goal)
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialGoalPayload = goalPayload.partial({
 	goalType: true,
@@ -826,17 +825,15 @@ const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: 
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
-const indicatorPayload = basePayload
-	.extend({
-		externalReference: z.string().url().optional(),
-		historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-		indicatorCategory: z.array(indicatorCategories).default([]),
-		indicatorType: z.array(indicatorTypes).default([]),
-		quantity: z.string(),
-		type: z.literal(payloadTypes.enum.indicator),
-		unit: z.string()
-	})
-	.catchall(z.array(z.string().trim().min(1)));
+const indicatorPayload = basePayload.extend({
+	externalReference: z.string().url().optional(),
+	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	indicatorCategory: z.array(indicatorCategories).default([]),
+	indicatorType: z.array(indicatorTypes).default([]),
+	quantity: z.string(),
+	type: z.literal(payloadTypes.enum.indicator),
+	unit: z.string()
+});
 
 const initialIndicatorPayload = indicatorPayload.partial({
 	quantity: true,
@@ -870,8 +867,7 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 
 export const knowledgePayload = basePayload
 	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
@@ -903,8 +899,7 @@ const measurePayload = basePayload
 		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
@@ -983,8 +978,7 @@ const rulePayload = basePayload
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional()
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialRulePayload = rulePayload.partial({ title: true });
 
@@ -1013,8 +1007,7 @@ const simpleMeasurePayload = basePayload
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
@@ -1043,8 +1036,7 @@ const programPayload = basePayload
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialProgramPayload = programPayload.partial({
 	title: true
@@ -1098,8 +1090,7 @@ const reportPayload = basePayload
 	.extend({
 		type: z.literal(payloadTypes.enum.report)
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialReportPayload = reportPayload.partial({ title: true });
 
@@ -1143,8 +1134,7 @@ const resourceV2Payload = basePayload
 		resourceUnit: resourceUnits.default(resourceUnits.enum['unit.euro']),
 		visibility: visibility.default(visibility.enum['public'])
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
@@ -1332,8 +1322,7 @@ const contentPartnerPayload = basePayload
 		type: z.literal(payloadTypes.enum.content_partner),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
-	.strict()
-	.catchall(z.array(z.string().trim().min(1)));
+	.strict();
 
 const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
 
