@@ -89,6 +89,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useIOOI() {
 			return features.includes('IOOI');
 		},
+		useTendentialObjectivesAndEffects() {
+			return features.includes('IOOI');
+		},
 		usePage() {
 			return features.includes('EditorialPages');
 		},
