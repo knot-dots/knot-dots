@@ -65,7 +65,8 @@ export async function loadCategoryContext(params: {
 
 export function filterCategoryContext(
 	context: CategoryContext,
-	objectTypes: string[]
+	objectTypes: string[],
+	options?: { matchAll?: boolean }
 ): CategoryContext {
 	if (objectTypes.length === 0) return context;
 
@@ -74,6 +75,9 @@ export function filterCategoryContext(
 	const filteredKeys = context.keys.filter((key) => {
 		const configured = context.objectTypesPerKey[key] ?? [];
 		if (configured.length === 0) return true;
+		if (options?.matchAll) {
+			return [...allowedTypes].every((type) => configured.includes(type));
+		}
 		return configured.some((type) => allowedTypes.has(type));
 	});
 
