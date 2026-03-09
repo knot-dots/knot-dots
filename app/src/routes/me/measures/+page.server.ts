@@ -12,25 +12,17 @@ import {
 } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
-import {
-	buildCategoryFacetsWithCounts,
-	filterCategoryContext,
-	type CategoryContext
-} from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-
-type ParentData = {
-	categoryContext: CategoryContext | null;
-};
 
 export const load = (async ({ locals, parent }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	const { categoryContext: rawCategoryContext } = (await parent()) as ParentData;
+	const { categoryContext: rawCategoryContext } = await parent();
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, [
 				payloadTypes.enum.measure,
