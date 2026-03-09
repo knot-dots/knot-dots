@@ -49,6 +49,8 @@
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
 			case overlayKey.enum['indicators']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', routeParams);
+			case overlayKey.enum['resources']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', routeParams);
 			case overlayKey.enum['measure-monitoring']:
 				if (isProgramContainer($overlay.container)) {
 					return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', routeParams);

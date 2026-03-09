@@ -211,6 +211,11 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
+			key: 'resources';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
 			key: 'view';
 			container: AnyContainer;
 			revisions: AnyContainer[];
@@ -617,6 +622,28 @@ if (browser) {
 					containers: relatedContainers
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum.resources)) {
+			const programGuid = hashParams.get(overlayKey.enum.resources) as string;
+
+			// Preload for fullscreen and overlay is the same for resources, so we can use the same logic
+			const result = await preloadData(
+				resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: programGuid
+				}) +
+					'?' +
+					hashParams.toString()
+			);
+
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+
+			setOverlayIfLatest({
+				key: overlayKey.enum.resources,
+				container: result.data.container,
+				containers: result.data.containers
+			});
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
 				sdg: hashParams.getAll('sdg'),

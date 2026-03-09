@@ -18,7 +18,7 @@
 	);
 </script>
 
-{#if 'trendValue' in container.payload}}
+{#if 'trendValue' in container.payload}
 	<p>
 		{#if container.payload.trendValue === 1}
 			<ArrowCircleUpSolid />

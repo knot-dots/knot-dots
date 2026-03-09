@@ -39,6 +39,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 				[predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 				{
 					type: [
+						payloadTypes.enum.effect,
 						payloadTypes.enum.indicator,
 						payloadTypes.enum.objective,
 						payloadTypes.enum.resource_data,

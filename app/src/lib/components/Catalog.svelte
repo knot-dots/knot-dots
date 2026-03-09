@@ -18,9 +18,10 @@
 		containers: T[];
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
+		hideCreateButton?: boolean;
 	}
 
-	let { containers, item, payloadType }: Props = $props();
+	let { containers, item, payloadType, hideCreateButton = false }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -40,7 +41,7 @@
 </script>
 
 <div>
-	{#if payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
+	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
 		{#if payloadType.length === 1}
 			<p>
 				<button

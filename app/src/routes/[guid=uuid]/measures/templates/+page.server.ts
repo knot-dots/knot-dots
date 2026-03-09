@@ -32,10 +32,20 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				payloadTypes.enum.simple_measure
 			])
 		: null;
+	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -53,11 +63,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainersWithES(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
+					...coreCategoryFilters,
 					customCategories,
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
 					template: true,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.measure]
@@ -74,11 +81,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
+					...coreCategoryFilters,
 					customCategories,
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
 					template: true,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.measure]
@@ -101,7 +105,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}

@@ -57,6 +57,7 @@
 	"card_style.default": "Standard",
 	"card_style.highlight": "Hervorheben",
 	"category": "SDG",
+	"term": "Begriff",
 	"category.key_label": "Kategorie-Schlüssel",
 	"category.save_as_template": "Als Vorlage für alle speichern",
 	"categories.columns.root": "Kategorien",

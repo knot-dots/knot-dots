@@ -114,7 +114,7 @@
 					{#if iconSrc}
 						<img alt="" class="selected-icon" src={iconSrc} />
 					{/if}
-					{entry.option.label}
+					<span class="truncated">{entry.option.label}</span>
 				</span>
 			{/each}
 			{#if selectedEntries.length === 0}
@@ -153,12 +153,15 @@
 
 	.selected {
 		display: block;
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.value {
 		align-items: center;
 		display: flex;
 		gap: 0.35rem;
+		min-width: 0;
 		padding: 0;
 		text-align: left;
 	}
@@ -180,6 +183,7 @@
 	}
 
 	.selected-icon {
+		flex-shrink: 0;
 		height: 1.25rem;
 		margin-right: 0.35rem;
 		object-fit: contain;
@@ -189,7 +193,8 @@
 	.dropdown-panel {
 		position: relative;
 		overflow: visible;
-		min-width: 16rem;
+		min-width: 100%;
+		width: 100%;
 	}
 
 	.dropdown-panel-scroll {

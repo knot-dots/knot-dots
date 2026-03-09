@@ -30,10 +30,20 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				payloadTypes.enum.indicator
 			])
 		: null;
+	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	let containers: IndicatorContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
@@ -42,13 +52,10 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainersWithES(
 				[currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
+					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
 				},
 				'',
@@ -63,13 +70,10 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				[currentOrganization.guid],
 				{
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
+					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic'),
 					type: [payloadTypes.enum.indicator]
 				},
 				''
@@ -91,7 +95,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		]
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}

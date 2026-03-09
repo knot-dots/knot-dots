@@ -8,6 +8,7 @@
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
+	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -17,6 +18,7 @@
 	import EffectProperties from '$lib/components/EffectProperties.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type EffectContainer,
@@ -158,7 +160,7 @@
 				/>
 			{/key}
 
-			{#if indicator}
+			{#if indicator && createFeatureDecisions(page.data.features).useTendentialObjectivesAndEffects()}
 				<div class="details-section">
 					<h2 class="details-heading">{$_('effect.tendency')}</h2>
 

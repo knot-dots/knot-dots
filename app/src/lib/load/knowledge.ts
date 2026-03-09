@@ -27,10 +27,20 @@ export default (async function load({ depends, locals, parent, url }) {
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge])
 		: null;
+	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -48,13 +58,10 @@ export default (async function load({ depends, locals, parent, url }) {
 				getManyContainersWithES(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
+						...coreCategoryFilters,
 						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
-						topics: url.searchParams.getAll('topic'),
 						type: [payloadTypes.enum.knowledge]
 					},
 					url.searchParams.get('sort') ?? '',
@@ -69,13 +76,10 @@ export default (async function load({ depends, locals, parent, url }) {
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						audience: url.searchParams.getAll('audience'),
-						sdg: url.searchParams.getAll('sdg'),
+						...coreCategoryFilters,
 						customCategories,
-						policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
-						topics: url.searchParams.getAll('topic'),
 						type: [payloadTypes.enum.knowledge]
 					},
 					url.searchParams.get('sort') ?? ''
@@ -95,7 +99,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -116,7 +120,7 @@ export default (async function load({ depends, locals, parent, url }) {
 	const facets = features.useElasticsearch()
 		? _facets
 		: computeFacetCount(_facets, containers, {
-				useCategoryPayload: features.useCustomCategories()
+				useCategoryPayload: useCustomCategories
 			});
 
 	return {

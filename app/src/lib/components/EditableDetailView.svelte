@@ -69,7 +69,7 @@
 {:else if isGoalContainer(container)}
 	<EditableGoalDetailView bind:container {layout} {revisions} />
 {:else if isCategoryContainer(container)}
-	<EditableCategoryDetailView bind:container {layout} />
+	<EditableCategoryDetailView bind:container {layout} {revisions} />
 {:else if isIndicatorContainer(container)}
 	<EditableIndicatorDetailView bind:container {layout} {revisions} />
 {:else if isIndicatorTemplateContainer(container)}

@@ -697,11 +697,12 @@ button.button-square,
 }
 
 .action-button.action-button--padding-tight {
+	border-radius: 4px;
 	padding: 0.25rem;
 }
 
 .action-button.action-button--size-s {
-	border-radius: 4px;
+	padding: 0.625rem;
 }
 
 .action-button.action-button--size-s.action-button--padding-tight {

@@ -12,6 +12,7 @@
 	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
@@ -99,6 +100,8 @@
 		<NewIndicatorCatalogOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
+	{:else if data.key === overlayKey.enum['resources']}
+		<ResourcesOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
 		<EditableDetailView container={data.container} {layout} revisions={data.revisions} />
 	{/if}
