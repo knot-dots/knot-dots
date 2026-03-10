@@ -4,6 +4,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
+	administrativeTypes,
 	type AnyContainer,
 	audience,
 	type Container,
@@ -472,6 +473,7 @@ async function copyReportContainer(
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
+		administrativeType: z.array(administrativeTypes).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
 		sdg: z.array(sustainableDevelopmentGoals).default([]),
@@ -479,6 +481,8 @@ export const GET = (async ({ locals, url }) => {
 		indicatorType: z.array(indicatorTypes).default([]),
 		isPartOfMeasure: z.array(z.string().uuid()).default([]),
 		isPartOfProgram: z.array(z.string().uuid()).default([]),
+		limit: z.coerce.number().int().positive().optional(),
+		offset: z.coerce.number().int().nonnegative().default(0),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
@@ -542,11 +546,19 @@ export const GET = (async ({ locals, url }) => {
 		}
 	} else if (parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit)) {
 		containers = await locals.pool.connect(
-			getManyOrganizationalUnitContainers(
-				parseResult.data.organization.length > 0
-					? { include: { organization: parseResult.data.organization[0] } }
-					: {}
-			)
+			getManyOrganizationalUnitContainers({
+				include: {
+					...(parseResult.data.organization.length > 0 && {
+						organization: parseResult.data.organization[0]
+					}),
+					...(parseResult.data.administrativeType.length > 0 && {
+						administrativeType: parseResult.data.administrativeType
+					}),
+					...(parseResult.data.terms.length > 0 && { terms: parseResult.data.terms[0] })
+				},
+				...(parseResult.data.limit && { limit: parseResult.data.limit }),
+				...(parseResult.data.offset && { offset: parseResult.data.offset })
+			})
 		);
 	} else {
 		containers = await locals.pool.connect(

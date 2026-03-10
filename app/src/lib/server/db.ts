@@ -801,6 +801,8 @@ export function getManyOrganizationalUnitContainers(filters: {
 	exclude?: {
 		organizationalUnitType?: string[];
 	};
+	limit?: number;
+	offset?: number;
 }) {
 	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
 		const conditions = [
@@ -850,6 +852,9 @@ export function getManyOrganizationalUnitContainers(filters: {
 				SELECT c.*
 				FROM container c
 				WHERE ${sql.join(conditions, sql.fragment` AND `)}
+				ORDER BY c.payload->>'name'
+				${filters.limit ? sql.fragment`LIMIT ${filters.limit}` : sql.fragment``}
+				${filters.offset ? sql.fragment`OFFSET ${filters.offset}` : sql.fragment``}
 			), container_user_result AS (
 				SELECT
 					c.guid,

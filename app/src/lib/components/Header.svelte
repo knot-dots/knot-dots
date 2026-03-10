@@ -7,6 +7,7 @@
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Close from '~icons/knotdots/close';
+	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
 	import { goto, invalidate } from '$app/navigation';
@@ -15,6 +16,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
+	import CompareBar from '$lib/components/CompareBar.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
 	import FilterDropDown from '$lib/components/FilterDropDown.svelte';
@@ -41,12 +43,13 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramContainer,
+		isReportContainer,
 		isSimpleMeasureContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
-	import { ability, user, overlay as overlayStore } from '$lib/stores';
+	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
 
@@ -84,11 +87,20 @@
 
 	let overlay = getContext('overlay');
 
+	let container = $derived(
+		overlay && $overlayStore?.container ? $overlayStore.container : page.data.container
+	);
+
 	let filterBar = $derived.by(() =>
 		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
 	);
 
 	let sortBar = createDisclosure({ label: $_('sort') });
+
+	let compareBar = createDisclosure({
+		label: $_('compare'),
+		expanded: $compareState.selectedMunicipalities.length > 0
+	});
 
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
@@ -195,9 +207,7 @@
 
 	{#if workspaceOptions}
 		<Workspaces options={workspaceOptions} />
-	{:else if (overlay && $overlayStore?.container) || (!overlay && page.data.container)}
-		{@const container =
-			overlay && $overlayStore?.container ? $overlayStore.container : page.data.container}
+	{:else if container}
 		{#if isProgramContainer(container)}
 			<ProgramWorkspaces {container} />
 		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
@@ -244,24 +254,39 @@
 			</button>
 		{/if}
 
-		{#if overlay && $overlayStore?.container && $ability.can('invite-members', $overlayStore.container)}
+		{#if createFeatureDecisions(page.data.features).useCompare() && container && isReportContainer(container)}
+			<button
+				class="dropdown-button dropdown-button--command"
+				type="button"
+				{@attach tooltip($_('compare'))}
+				use:compareBar.button
+				onclick={() => {
+					filterBar.close();
+					sortBar.close();
+				}}
+			>
+				<Compare />
+			</button>
+		{/if}
+
+		{#if overlay && container && $ability.can('invite-members', container)}
 			<div class="divider"></div>
 
 			<a
 				class="action-button action-button--size-l"
-				href={overlayURL(page.url, overlayKey.enum.members, $overlayStore.container.guid)}
+				href={overlayURL(page.url, overlayKey.enum.members, container.guid)}
 				{@attach tooltip($_('members'))}
 			>
 				<Users />
 			</a>
-		{:else if !overlay && !$overlayStore?.key && page.data.container && (isProgramContainer(page.data.container) || isMeasureContainer(page.data.container) || isSimpleMeasureContainer(page.data.container)) && $ability.can('invite-members', page.data.container)}
+		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('invite-members', container)}
 			<div class="divider"></div>
 
 			<a
 				class="action-button action-button--size-l"
 				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
 					guid: selectedContext.guid,
-					contentGuid: page.data.container.guid
+					contentGuid: container.guid
 				})}
 				{@attach tooltip($_('members'))}
 			>
@@ -367,6 +392,8 @@
 				</label>
 			{/each}
 		</fieldset>
+	{:else}
+		<CompareBar disclosure={compareBar} />
 	{/if}
 </form>
 
