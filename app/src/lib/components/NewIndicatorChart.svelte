@@ -70,7 +70,9 @@
 				}))
 				.toSorted((a, b) => a.date.getTime() - b.date.getTime()),
 			municipalityGuid: container.organizational_unit ?? container.organization,
-			color: container.organizational_unit ?? container.organization
+			color:
+				$compareState.colorAssignments[container.organizational_unit ?? container.organization] ||
+				'--color-gray-600'
 		}))
 	);
 
@@ -94,7 +96,7 @@
 				Plot.lineY(actualValues, {
 					x: 'date',
 					y: 'value',
-					// stroke: hasComparison ? 'var(--color-blue-600)' : undefined,
+					stroke: 'var(--indicator-color-own-base)',
 					strokeWidth: 2
 				})
 			);
@@ -106,7 +108,7 @@
 						Plot.lineY(values, {
 							x: 'date',
 							y: 'value',
-							stroke: 'var(--color-red-600)',
+							stroke: `var(${color})`,
 							strokeWidth: 2
 							// strokeDasharray: '4,4'
 						})

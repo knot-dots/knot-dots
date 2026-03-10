@@ -15,19 +15,56 @@
 
 	let dialog: HTMLDialogElement = $state(undefined!);
 
+	const colors = [
+		'--indicator-color-compare-1-base',
+		'--indicator-color-compare-2-base',
+		'--indicator-color-compare-3-base'
+	];
+
 	function openPicker() {
 		dialog?.showModal();
 	}
 
 	function removeMunicipality(guid: string) {
-		compareState.update((state) => ({
-			selectedMunicipalities: state.selectedMunicipalities.filter((m) => m.guid !== guid)
-		}));
+		compareState.update((state) => {
+			const newAssignments = { ...state.colorAssignments };
+			delete newAssignments[guid];
+			return {
+				selectedMunicipalities: state.selectedMunicipalities.filter((m) => m.guid !== guid),
+				colorAssignments: newAssignments
+			};
+		});
 	}
 
 	function clearAll() {
-		compareState.set({ selectedMunicipalities: [] });
+		compareState.set({ selectedMunicipalities: [], colorAssignments: {} });
 	}
+
+	// Assign colors to municipalities that don't have one yet
+	$effect(() => {
+		const currentAssignments = $compareState.colorAssignments;
+		const currentMunicipalities = $compareState.selectedMunicipalities;
+
+		// Find municipalities without color assignments
+		const unassigned = currentMunicipalities.filter((m) => !currentAssignments[m.guid]);
+
+		if (unassigned.length > 0) {
+			// Find which colors are currently in use
+			const usedColors = new Set(Object.values(currentAssignments));
+			const availableColors = colors.filter((c) => !usedColors.has(c));
+
+			// Assign colors to unassigned municipalities
+			const newAssignments = { ...currentAssignments };
+			for (let i = 0; i < unassigned.length && i < availableColors.length; i++) {
+				newAssignments[unassigned[i].guid] = availableColors[i];
+			}
+
+			compareState.update((state) => ({
+				...state,
+				colorAssignments: newAssignments
+			}));
+		}
+	});
 </script>
 
 <MunicipalityPicker bind:dialog bind:selected={$compareState.selectedMunicipalities} />
@@ -53,6 +90,12 @@
 
 		{#each $compareState.selectedMunicipalities as municipality (municipality.guid)}
 			<div class="municipality-chip">
+				<span
+					class="chip-color"
+					style:background-color={$compareState.colorAssignments[municipality.guid]
+						? `var(${$compareState.colorAssignments[municipality.guid]})`
+						: 'transparent'}
+				></span>
 				<span class="chip-name">{municipality.payload.name}</span>
 				<button
 					class="chip-remove"
@@ -135,6 +178,14 @@
 		gap: 0.5rem;
 		padding: 0.25rem 0.5rem 0.25rem 0.75rem;
 		white-space: nowrap;
+	}
+
+	.chip-color {
+		border-radius: 50%;
+		display: block;
+		flex-shrink: 0;
+		height: 10px;
+		width: 10px;
 	}
 
 	.chip-name {

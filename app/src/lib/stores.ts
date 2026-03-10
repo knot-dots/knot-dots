@@ -41,8 +41,10 @@ export const applicationState = writable<ApplicationState>({
 
 export const compareState = writable<{
 	selectedMunicipalities: OrganizationalUnitContainer[];
+	colorAssignments: Record<string, string>;
 }>({
-	selectedMunicipalities: []
+	selectedMunicipalities: [],
+	colorAssignments: {}
 });
 
 export type User = {
