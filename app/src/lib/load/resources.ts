@@ -10,7 +10,11 @@ import {
 	resourceUnits,
 	type ResourceV2Container
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts, type CategoryContext } from '$lib/server/categoryOptions';
+import {
+	buildCategoryFacetsWithCounts,
+	filterCategoryContext,
+	type CategoryContext
+} from '$lib/server/categoryOptions';
 import { getAllContainersRelatedToProgram, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -103,8 +107,15 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 	return (async ({ depends, locals, parent, url }) => {
 		depends('containers');
 
-		const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
+		const {
+			categoryContext: rawCategoryContext,
+			currentOrganization,
+			currentOrganizationalUnit
+		} = await parent();
 		const features = createFeatureDecisions(locals.features);
+		const categoryContext = rawCategoryContext
+			? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.resource_v2])
+			: null;
 
 		const customCategories = features.useCustomCategories()
 			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])

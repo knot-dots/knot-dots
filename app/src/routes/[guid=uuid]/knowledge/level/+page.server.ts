@@ -19,7 +19,7 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
@@ -35,11 +35,14 @@ function isRelatedToSome(containers: Container[]) {
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
 	let data: Record<string, Record<string, number>> | undefined;
-	const { categoryContext, currentOrganization } = await parent();
+	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge])
+		: null;
 	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
 
@@ -138,7 +141,7 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const _facets = new Map<string, Map<string, number>>();
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -161,7 +164,7 @@ export const load = (async ({ locals, url, parent }) => {
 	const facets = features.useElasticsearch()
 		? _facets
 		: computeFacetCount(_facets, [...filtered, ...filteredPrograms], {
-				useCategoryPayload: features.useCustomCategories()
+				useCategoryPayload: useCustomCategories
 			});
 
 	return {

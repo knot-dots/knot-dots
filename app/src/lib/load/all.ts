@@ -21,7 +21,7 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/all/$types';
 
 export default (async function load({ depends, locals, url, parent }) {
@@ -30,11 +30,30 @@ export default (async function load({ depends, locals, url, parent }) {
 	let containers;
 	let data: Record<string, Record<string, number>> | undefined;
 	let subordinateOrganizationalUnits: string[] = [];
-	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
+	const {
+		categoryContext: rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit
+	} = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(
+				rawCategoryContext,
+				[
+					payloadTypes.enum.effect,
+					payloadTypes.enum.goal,
+					payloadTypes.enum.indicator,
+					payloadTypes.enum.measure,
+					payloadTypes.enum.program,
+					payloadTypes.enum.rule,
+					payloadTypes.enum.simple_measure
+				],
+				{ matchAll: true }
+			)
+		: null;
 	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
 
@@ -187,7 +206,7 @@ export default (async function load({ depends, locals, url, parent }) {
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -210,7 +229,7 @@ export default (async function load({ depends, locals, url, parent }) {
 	const facets = features.useElasticsearch()
 		? _facets
 		: computeFacetCount(_facets, containers, {
-				useCategoryPayload: features.useCustomCategories()
+				useCategoryPayload: useCustomCategories
 			});
 
 	return {

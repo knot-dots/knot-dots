@@ -12,7 +12,7 @@ import {
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
@@ -20,11 +20,21 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
 	let subordinateOrganizationalUnits: string[] = [];
-	const { categoryContext, currentOrganization, currentOrganizationalUnit } = await parent();
+	const {
+		categoryContext: rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit
+	} = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [
+				payloadTypes.enum.measure,
+				payloadTypes.enum.simple_measure
+			])
+		: null;
 	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
 
@@ -95,7 +105,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}

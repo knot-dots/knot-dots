@@ -14,18 +14,25 @@ import {
 } from '$lib/models';
 import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	const { categoryContext, currentOrganization } = await parent();
+	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [
+				payloadTypes.enum.objective,
+				payloadTypes.enum.effect,
+				payloadTypes.enum.indicator
+			])
+		: null;
 	const useCustomCategories = features.useCustomCategories();
 
-	const customCategories = features.useCustomCategories()
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
 
@@ -88,7 +95,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		]
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
