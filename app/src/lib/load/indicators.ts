@@ -207,6 +207,11 @@ export default (async function load({ depends, locals, parent, url }) {
 		connect: locals.pool.connect
 	});
 
+	const requestedPayloadTypes = url.searchParams.getAll('payloadType');
+	const filteredCombined = requestedPayloadTypes.length
+		? result.combined.filter((container) => requestedPayloadTypes.includes(container.payload.type))
+		: result.combined;
+
 	const useFacetData = features.useElasticsearch() && !result.useNewIndicators;
 	const data = useFacetData ? result.facetData : undefined;
 
@@ -247,7 +252,7 @@ export default (async function load({ depends, locals, parent, url }) {
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
-		containers: result.combined,
+		containers: filteredCombined,
 		filters,
 		useNewIndicators: result.useNewIndicators,
 		facets,

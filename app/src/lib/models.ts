@@ -28,7 +28,8 @@ export const overlayKey = z.enum([
 	'tasks',
 	'teasers',
 	'view',
-	'view-help'
+	'view-help',
+	'workspace'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
@@ -90,6 +91,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'workspace',
 	'program',
 	'program_collection',
 	'progress',
@@ -611,6 +613,14 @@ export const taskPriority = z.object({
 export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'organization', 'public']);
+
+const workspaceSortValues = ['alpha', 'modified', 'priority'] as const;
+
+export const workspaceSort = z.enum(workspaceSortValues);
+
+const workspaceViewValues = ['catalog', 'table', 'level', 'status'] as const;
+
+export const workspaceView = z.enum(workspaceViewValues);
 
 export const boards = z.enum([
 	'board.indicators',
@@ -1422,6 +1432,52 @@ const organizationalUnitPayload = z.object({
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
 
+const workspaceFilterPayload = z.preprocess(
+	(value) => {
+		if (!value || typeof value !== 'object') return value;
+		const v = value as Record<string, unknown>;
+		if ('category' in v && Array.isArray(v.category)) {
+			const { category, ...rest } = v;
+			return { ...rest, sdg: 'sdg' in v ? v.sdg : category };
+		}
+		return v;
+	},
+	z
+		.object({
+			audience: z.array(audience).default([]),
+			sdg: z.array(sustainableDevelopmentGoals).default([]),
+			category: z.record(z.string(), z.array(z.string())).default({}),
+			indicatorCategory: z.array(indicatorCategories).default([]),
+			indicatorType: z.array(indicatorTypes).default([]),
+			measureType: z.array(measureTypes).default([]),
+			payloadType: z.array(payloadTypes).default([]),
+			policyFieldBNK: z.array(policyFieldBNK).default([]),
+			programType: z.array(programTypes).default([]),
+			taskCategory: z.array(taskCategories).default([]),
+			relationType: z.array(predicates).default([]),
+			relatedTo: z.string().uuid().optional(),
+			sort: workspaceSort.default(workspaceSort.enum.alpha),
+			terms: z.string().default(''),
+			topic: z.array(topics).default([]),
+			view: workspaceView.default(workspaceView.enum.catalog)
+		})
+		.strict()
+);
+
+const workspacePayload = z
+	.object({
+		description: z.string().trim().optional(),
+		favorite: z.boolean().default(false),
+		hideFacets: z.boolean().default(true),
+		filters: workspaceFilterPayload.default(workspaceFilterPayload.parse({})),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.workspace),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialWorkspacePayload = workspacePayload.partial({ title: true });
+
 const textPayload = z
 	.object({
 		audience: z.array(audience).default([audience.enum['audience.citizens']]),
@@ -1471,6 +1527,7 @@ const payload = z.discriminatedUnion('type', [
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
+	workspacePayload,
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
@@ -1831,6 +1888,18 @@ export function isPageContainer(
 	container: AnyContainer | EmptyContainer
 ): container is PageContainer {
 	return container.payload.type === payloadTypes.enum.page;
+}
+
+const workspaceContainer = container.extend({
+	payload: workspacePayload
+});
+
+export type WorkspaceContainer = z.infer<typeof workspaceContainer>;
+
+export function isWorkspaceContainer(
+	container: AnyContainer | EmptyContainer
+): container is WorkspaceContainer {
+	return container.payload.type === payloadTypes.enum.workspace;
 }
 
 const progressContainer = container.extend({
@@ -2422,6 +2491,7 @@ export const emptyContainer = newContainer.extend({
 		initialOrganizationPayload,
 		initialOrganizationalUnitPayload,
 		initialPagePayload,
+		initialWorkspacePayload,
 		initialProgramCollectionPayload,
 		initialProgramPayload,
 		initialProgressPayload,
@@ -2875,6 +2945,9 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 	return url.searchParams.has('related-to')
 		? containers
 		: containers.filter((c) => {
+				if (c.payload.type === payloadTypes.enum.workspace) {
+					return true;
+				}
 				const included = url.searchParams.has('includedChanged')
 					? url.searchParams.getAll('included')
 					: ['subordinate_organizational_units'];
@@ -3102,6 +3175,13 @@ export function computeFacetCount(
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
+			if (key === 'payloadType') {
+				const payloadType = container.payload.type;
+				const normalized = normalizeValue(payloadType);
+				const foci = facets.get(key) as Map<string, number>;
+				foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+				continue;
+			}
 			const categoryPayload = useCategoryPayload
 				? (container.payload as { category?: Record<string, unknown> }).category
 				: undefined;

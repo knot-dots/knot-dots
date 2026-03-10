@@ -27,6 +27,7 @@
 		isTeaserContainer,
 		isKnowledgeContainer,
 		isTaskContainer,
+		isWorkspaceContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
@@ -125,6 +126,10 @@
 
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			return '#';
+		} else if (isWorkspaceContainer(container)) {
+			return overlayContext
+				? overlayURL(url, 'workspace', container.guid)
+				: overlayURL(url, 'workspace', container.guid, [['fullscreen', '1']]);
 		}
 
 		// Check for overlay indicators/resources

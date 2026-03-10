@@ -5,7 +5,12 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { titleForGoalCollection, containersByHierarchyLevel, isGoalContainer } from '$lib/models';
+	import {
+		isGoalContainer,
+		payloadTypes,
+		titleForGoalCollection,
+		containersByHierarchyLevel
+	} from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -24,7 +29,7 @@
 	);
 </script>
 
-<GoalsPage {data}>
+<GoalsPage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.goal]}>
 	<Board>
 		{#each columns as column (column.key)}
 			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>

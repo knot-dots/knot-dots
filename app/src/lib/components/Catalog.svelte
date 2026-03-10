@@ -18,10 +18,11 @@
 		containers: T[];
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
+		createParams?: URLSearchParams;
 		hideCreateButton?: boolean;
 	}
 
-	let { containers, item, payloadType, hideCreateButton = false }: Props = $props();
+	let { containers, item, payloadType, createParams, hideCreateButton = false }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -35,6 +36,26 @@
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
+
+		if (createParams) {
+			const applyFilterDefaults = (key: string) => {
+				const values = createParams.getAll(key).filter(Boolean);
+				if (!values.length) return;
+				const payload = $newContainer?.payload as Record<string, unknown> | undefined;
+				if (!payload || !(key in payload)) return;
+				payload[key] = Array.isArray(payload[key]) ? values : values[0];
+			};
+
+			applyFilterDefaults('audience');
+			applyFilterDefaults('category');
+			applyFilterDefaults('indicatorCategory');
+			applyFilterDefaults('indicatorType');
+			applyFilterDefaults('measureType');
+			applyFilterDefaults('policyFieldBNK');
+			applyFilterDefaults('programType');
+			applyFilterDefaults('taskCategory');
+			applyFilterDefaults('topic');
+		}
 
 		createContainerDialog.getElement().showModal();
 	}

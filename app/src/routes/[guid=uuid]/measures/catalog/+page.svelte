@@ -8,7 +8,12 @@
 	let { data }: PageProps = $props();
 </script>
 
-<MeasuresPage {data} filterBarInitiallyOpen>
+<MeasuresPage
+	{data}
+	filterBarInitiallyOpen
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}
+>
 	<Catalog
 		containers={data.containers}
 		payloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}

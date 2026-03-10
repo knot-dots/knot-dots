@@ -3,12 +3,13 @@
 	import Help from '$lib/components/Help.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { payloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<KnowledgePage {data}>
+<KnowledgePage {data} showSaveWorkspace savePayloadType={[payloadTypes.enum.knowledge]}>
 	<Table
 		columns={[
 			{ heading: $_('title'), key: 'title' },

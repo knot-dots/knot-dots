@@ -396,6 +396,7 @@
 	"owned_by": "Owned by",
 	"page": "Page",
 	"page_title": "knotdots.net",
+	"workspace": "Workspace",
 	"payload_group": {
 		"implementation": "Implementation",
 		"long_term_goals": "Long term goals",
@@ -743,6 +744,7 @@
 	"workspace.programs_by_level": "Programs by level",
 	"workspace.resources": "Resources",
 	"workspace.rules": "Rules",
+	"workspace.save_as_workspace": "Save as workspace",
 	"workspace.tasks": "Tasks status board",
 	"workspace.type.all": "All",
 	"workspace.type.goals": "Goals",

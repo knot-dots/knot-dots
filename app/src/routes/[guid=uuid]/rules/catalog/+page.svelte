@@ -8,7 +8,12 @@
 	let { data }: PageProps = $props();
 </script>
 
-<RulesPage {data} filterBarInitiallyOpen>
+<RulesPage
+	{data}
+	filterBarInitiallyOpen
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.rule]}
+>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.rule]} />
 	<Help slug="rules-catalog" />
 </RulesPage>

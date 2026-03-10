@@ -5,14 +5,18 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import { status } from '$lib/models';
+	import { payloadTypes, status } from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<MeasuresPage {data}>
+<MeasuresPage
+	{data}
+	showSaveWorkspace
+	savePayloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}
+>
 	<Board>
 		{#each status.options as statusOption (statusOption)}
 			<BoardColumn

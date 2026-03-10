@@ -53,6 +53,7 @@ type MyWorkerFixtures = {
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
+	testGoalWithSDG: GoalContainer;
 	testSubordinateGoal: GoalContainer;
 	testIndicator: IndicatorContainer;
 	testObjective: ObjectiveContainer;
@@ -296,6 +297,31 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testGoal);
 
 			await deleteContainer(adminContext, testGoal);
+		},
+		{ scope: 'worker' }
+	],
+	testGoalWithSDG: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newGoal = containerOfType(
+				payloadTypes.enum.goal,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as GoalContainer;
+			const payload = newGoal.payload as GoalContainer['payload'];
+			payload.title = `Test Goal SDG ${workerInfo.workerIndex}`;
+			payload.category = { sdg: ['sdg.01'] };
+			payload.sdg = ['sdg.01'];
+
+			const testGoalWithSDG = await createContainer(adminContext, {
+				...newGoal,
+				payload
+			});
+
+			await use(testGoalWithSDG);
+
+			await deleteContainer(adminContext, testGoalWithSDG);
 		},
 		{ scope: 'worker' }
 	],
