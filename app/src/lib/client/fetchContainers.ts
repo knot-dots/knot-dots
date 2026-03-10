@@ -81,5 +81,5 @@ export default async function fetchContainers(
 		params.append('topic', value);
 	}
 	const response = await withRequestCoalescing(fetch)(`/container?${params}`, init);
-	return z.array(anyContainer).parse(await response.json());
+	return z.array(anyContainer).parse(await response.clone().json());
 }
