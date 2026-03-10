@@ -3,22 +3,53 @@
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import { getCategoryKeys } from '$lib/categoryOptions';
+	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import type { ActualDataContainer, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
+		categoryOptions?: CategoryOptions | null;
 		columns: Array<{ heading: string; key: string }>;
 		rows: Container[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
-	let { columns, rows: originalRows, actualDataContainers = [] }: Props = $props();
+	let {
+		categoryOptions = null,
+		columns,
+		rows: originalRows,
+		actualDataContainers = []
+	}: Props = $props();
+
+	const customCategoryKeys = $derived(categoryOptions ? getCategoryKeys(categoryOptions) : []);
+
+	function initCategoryFields(snapshot: Container[]): Container[] {
+		if (customCategoryKeys.length === 0) return snapshot;
+		for (const row of snapshot) {
+			const payload = row.payload as Record<string, unknown>;
+			if (
+				!payload.category ||
+				typeof payload.category !== 'object' ||
+				Array.isArray(payload.category)
+			) {
+				payload.category = {};
+			}
+			const cat = payload.category as Record<string, string[]>;
+			for (const key of customCategoryKeys) {
+				if (!Array.isArray(cat[key])) {
+					cat[key] = [];
+				}
+			}
+		}
+		return snapshot;
+	}
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let rows = $state([] as Container[]);
 
 	$effect(() => {
-		rows = $state.snapshot(originalRows) as Container[];
+		rows = initCategoryFields($state.snapshot(originalRows) as Container[]);
 	});
 </script>
 
@@ -43,6 +74,7 @@
 					novalidate
 				>
 					<EditableRow
+						{categoryOptions}
 						columns={columns.map(({ key }) => key)}
 						bind:container={rows[i]}
 						editable={$applicationState.containerDetailView.editable}

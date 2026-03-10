@@ -7,6 +7,8 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
+	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
+	import { getCategoryKeys, type CategoryOptions } from '$lib/client/categoryOptions';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
@@ -28,6 +30,7 @@
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
 		type Container,
@@ -49,6 +52,7 @@
 
 	interface Props {
 		actualDataContainers?: ActualDataContainer[];
+		categoryOptions?: CategoryOptions | null;
 		columns: string[];
 		container: Container;
 		dragEnabled?: boolean;
@@ -57,6 +61,7 @@
 
 	let {
 		actualDataContainers = [],
+		categoryOptions = null,
 		columns,
 		container = $bindable(),
 		dragEnabled = false,
@@ -95,6 +100,10 @@
 			}
 		};
 	}
+
+	const customCategoryKeys = $derived(categoryOptions ? getCategoryKeys(categoryOptions) : []);
+
+	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
 </script>
 
 <div class="cell cell--action">
@@ -175,7 +184,7 @@
 				/>
 			{/if}
 		</div>
-	{:else if col === 'sdg'}
+	{:else if col === 'sdg' && !featureDecisions.useCustomCategories()}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'sdg' in container.payload}
 				<CategoryDropdown
@@ -212,7 +221,7 @@
 				/>
 			{/if}
 		</div>
-	{:else if col === 'topic'}
+	{:else if col === 'topic' && !featureDecisions.useCustomCategories()}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'topic' in container.payload}
 				<TopicDropdown
@@ -222,7 +231,7 @@
 				/>
 			{/if}
 		</div>
-	{:else if col === 'policyFieldBNK'}
+	{:else if col === 'policyFieldBNK' && !featureDecisions.useCustomCategories()}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'policyFieldBNK' in container.payload}
 				<PolicyFieldBNKDropdown
@@ -242,7 +251,7 @@
 				/>
 			{/if}
 		</div>
-	{:else if col === 'audience'}
+	{:else if col === 'audience' && !featureDecisions.useCustomCategories()}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'audience' in container.payload}
 				<AudienceDropdown
@@ -353,6 +362,17 @@
 				/>
 			{:else if idx >= 0}
 				<span>{values[idx][1]}</span>
+			{/if}
+		</div>
+	{:else if featureDecisions.useCustomCategories() && customCategoryKeys.includes(col)}
+		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+			{#if 'category' in container.payload}
+				<CustomCategoryDropdown
+					compact
+					editable={editable && $ability.can('update', container)}
+					options={categoryOptions?.[col] ?? []}
+					bind:value={container.payload.category[col]}
+				/>
 			{/if}
 		</div>
 	{/if}

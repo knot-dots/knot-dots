@@ -9,6 +9,7 @@
 
 	interface Props {
 		compact?: boolean;
+		iconOnly?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];
 		options: Array<{
@@ -22,6 +23,7 @@
 
 	let {
 		compact = false,
+		iconOnly = false,
 		labelledBy,
 		offset = [0, 4],
 		options,
@@ -107,14 +109,30 @@
 
 <div class="dropdown" use:popperRef use:autoUpdate>
 	<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
-		<span class="selected" class:truncated={compact}>
+		<span
+			class="selected"
+			class:truncated={compact || iconOnly}
+			class:selected--icon-only={iconOnly}
+		>
 			{#each selectedEntries as entry (entry.option.value)}
 				{@const iconSrc = iconURL(entry.option.icon)}
-				<span class="value" class:value--compact={compact} class:value--child={entry.isChild}>
+				<span
+					class="value"
+					class:value--compact={compact}
+					class:value--icon-only={iconOnly}
+					class:value--child={entry.isChild}
+				>
 					{#if iconSrc}
-						<img alt="" class="selected-icon" src={iconSrc} />
+						<img
+							alt={entry.option.label}
+							class="selected-icon"
+							class:selected-icon--large={iconOnly}
+							src={iconSrc}
+						/>
 					{/if}
-					<span class="truncated">{entry.option.label}</span>
+					{#if !(iconOnly && iconSrc)}
+						<span class="truncated">{entry.option.label}</span>
+					{/if}
 				</span>
 			{/each}
 			{#if selectedEntries.length === 0}
@@ -157,6 +175,10 @@
 		overflow: hidden;
 	}
 
+	.selected.selected--icon-only {
+		align-items: center;
+	}
+
 	.value {
 		align-items: center;
 		display: flex;
@@ -174,12 +196,39 @@
 		display: inline;
 	}
 
-	.value.value--compact:not(:last-child)::after {
+	.value.value--compact:not(:last-child):not(.value--icon-only)::after {
 		content: ', ';
+	}
+
+	.value.value--icon-only {
+		display: inline;
+	}
+
+	.value.value--icon-only:not(:last-child):not(:has(.selected-icon))::after {
+		content: ', ';
+	}
+
+	.value.value--icon-only:has(.selected-icon) {
+		display: inline-flex;
+		flex-shrink: 0;
+		margin-right: 0.25rem;
+		vertical-align: middle;
+	}
+
+	.value.value--icon-only + .value.value--icon-only {
+		margin-top: 0;
+	}
+
+	.value.value--icon-only .selected-icon {
+		margin-right: 0;
 	}
 
 	.value.value--child {
 		padding-left: 1.5rem;
+	}
+
+	.value.value--icon-only.value--child {
+		padding-left: 0;
 	}
 
 	.selected-icon {
@@ -188,6 +237,12 @@
 		margin-right: 0.35rem;
 		object-fit: contain;
 		width: 1.25rem;
+	}
+
+	.selected-icon.selected-icon--large {
+		height: 1.5rem;
+		object-fit: fill;
+		width: 1.5rem;
 	}
 
 	.dropdown-panel {
