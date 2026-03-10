@@ -224,7 +224,9 @@
 	});
 
 	const payloadTypeOptions = $derived.by(() =>
-		Array.from(new Set(containers.map((item) => item.payload.type))).filter(Boolean)
+		Array.from(new Set(containers.map((item) => item.payload.type)))
+			.filter(Boolean)
+			.filter((type) => type !== payloadTypes.enum.workspace)
 	);
 
 	const resolvedPayloadTypes = $derived.by(() => {

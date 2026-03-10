@@ -17,7 +17,8 @@
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import WorkspaceOverlay from '$lib/components/WorkspaceOverlay.svelte';
-	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
+	import { page } from '$app/state';
+	import { isGoalContainer, isMeasureContainer, overlayKey, paramsFromFragment } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
 
@@ -29,7 +30,8 @@
 
 	setContext('overlay', true);
 
-	let fullScreen = $state({ enabled: false });
+	const initialFullScreen = paramsFromFragment(page.url).get('fullscreen') === '1';
+	let fullScreen = $state({ enabled: initialFullScreen });
 
 	setContext('overlayFullScreen', fullScreen);
 

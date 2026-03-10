@@ -385,7 +385,7 @@
 				{/if}
 			{/each}
 
-			{#if showSaveWorkspace && featureDecisions.useCustomWorkspaces() && !$overlayStore?.key}
+			{#if showSaveWorkspace && featureDecisions.useCustomWorkspaces() && (!$overlayStore?.key || $overlayStore?.key === overlayKey.enum.workspace)}
 				<div class="filterbar-actions dropdown" use:workspaceMenuRef>
 					<button
 						class="dropdown-button dropdown-button--command"

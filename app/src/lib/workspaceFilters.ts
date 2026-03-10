@@ -1,4 +1,5 @@
 import {
+	isOverlayKey,
 	predicates,
 	workspaceSort,
 	workspaceView,
@@ -42,7 +43,8 @@ function viewFromUrl(url: URL): WorkspaceFilters['view'] {
 
 export function filtersFromUrl(url: URL, customCategoryKeys: string[] = []): WorkspaceFilters {
 	const params = url.searchParams;
-	const sdg = params.getAll('sdg');
+	const customKeys = new Set(customCategoryKeys);
+	const sdg = customKeys.has('sdg') ? [] : params.getAll('sdg');
 	const legacyCategory = params.getAll('category');
 	const category: Record<string, string[]> = {};
 	for (const key of customCategoryKeys) {
@@ -52,24 +54,77 @@ export function filtersFromUrl(url: URL, customCategoryKeys: string[] = []): Wor
 		}
 	}
 
+	const getAll = (key: string) => (customKeys.has(key) ? [] : params.getAll(key));
+
 	return {
-		audience: params.getAll('audience'),
+		audience: getAll('audience'),
 		sdg: sdg.length ? sdg : legacyCategory,
 		category,
-		indicatorCategory: params.getAll('indicatorCategory'),
-		indicatorType: params.getAll('indicatorType'),
-		measureType: params.getAll('measureType'),
+		indicatorCategory: getAll('indicatorCategory'),
+		indicatorType: getAll('indicatorType'),
+		measureType: getAll('measureType'),
 		payloadType: (params.getAll('payloadType') as PayloadType[]).filter(Boolean),
-		policyFieldBNK: params.getAll('policyFieldBNK'),
-		programType: params.getAll('programType'),
-		taskCategory: params.getAll('taskCategory'),
+		policyFieldBNK: getAll('policyFieldBNK'),
+		programType: getAll('programType'),
+		taskCategory: getAll('taskCategory'),
 		relationType: params.getAll('relationType').filter(isPredicate),
 		relatedTo: params.get('related-to') ?? undefined,
 		sort: (params.get('sort') as WorkspaceFilters['sort']) ?? workspaceSort.enum.alpha,
 		terms: params.get('terms') ?? '',
-		topic: params.getAll('topic'),
+		topic: getAll('topic'),
 		view: (params.get('view') as WorkspaceFilters['view']) ?? viewFromUrl(url)
 	};
+}
+
+export function filtersFromWorkspaceOverlay(
+	savedFilters: Record<string, unknown>,
+	hashParams: URLSearchParams,
+	customCategoryKeys: string[] = []
+): WorkspaceFilters {
+	const merged = new URLSearchParams();
+
+	const overriddenKeys = new Set<string>();
+	for (const key of hashParams.keys()) {
+		if (key.endsWith('Changed')) {
+			overriddenKeys.add(key.slice(0, -'Changed'.length));
+		} else if (!isOverlayKey(key) && key !== 'fullscreen') {
+			overriddenKeys.add(key);
+		}
+	}
+
+	for (const [key, value] of hashParams.entries()) {
+		if (!isOverlayKey(key) && key !== 'fullscreen' && !key.endsWith('Changed')) {
+			merged.append(key, value);
+		}
+	}
+
+	for (const [key, value] of Object.entries(savedFilters)) {
+		const urlKey = key === 'relatedTo' ? 'related-to' : key;
+
+		if (key === 'category' && typeof value === 'object' && !Array.isArray(value) && value) {
+			for (const [catKey, catValues] of Object.entries(value as Record<string, string[]>)) {
+				if (overriddenKeys.has(catKey)) continue;
+				if (Array.isArray(catValues)) {
+					catValues.forEach((v) => merged.append(catKey, String(v)));
+				}
+			}
+			continue;
+		}
+
+		if (overriddenKeys.has(urlKey)) continue;
+
+		if (Array.isArray(value)) {
+			value.forEach((v) => {
+				if (v !== undefined && v !== null && String(v) !== '') {
+					merged.append(urlKey, String(v));
+				}
+			});
+		} else if (typeof value === 'string' && value) {
+			merged.set(urlKey, value);
+		}
+	}
+
+	return filtersFromUrl(new URL(`http://x?${merged.toString()}`), customCategoryKeys);
 }
 
 export function filtersToQuery(filters: WorkspaceFilters): URLSearchParams {

@@ -732,7 +732,11 @@ if (browser) {
 
 			for (const [key, value] of Object.entries(rawFilters)) {
 				if (hashFilterKeys.has(key)) continue;
-				if (Array.isArray(value)) {
+				if (key === 'category' && typeof value === 'object' && !Array.isArray(value) && value) {
+					for (const [catKey, catValues] of Object.entries(value as Record<string, string[]>)) {
+						appendAll(catKey, catValues);
+					}
+				} else if (Array.isArray(value)) {
 					appendAll(key, value);
 				}
 			}

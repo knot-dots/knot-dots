@@ -17,14 +17,19 @@ import {
 	type PayloadType
 } from '$lib/models';
 import { getContainerByGuid, getManyOrganizationContainers } from '$lib/server/db';
+import { loadCategoryContext, type CategoryContext } from '$lib/server/categoryOptions';
 
 type ParentData = {
+	categoryContext: CategoryContext | null;
 	currentOrganization: OrganizationContainer;
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
 	defaultOrganizationGuid: string | null;
 };
 
-async function resolveParentData(locals: App.Locals, url: URL): Promise<ParentData> {
+async function resolveBaseParentData(
+	locals: App.Locals,
+	url: URL
+): Promise<Omit<ParentData, 'categoryContext'>> {
 	const organizationGuid = url.searchParams.get('organizationGuid');
 	const organizationalUnitGuid = url.searchParams.get('organizationalUnitGuid');
 
@@ -63,6 +68,21 @@ async function resolveParentData(locals: App.Locals, url: URL): Promise<ParentDa
 	}
 
 	return { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid };
+}
+
+async function resolveParentDataWithCategories(locals: App.Locals, url: URL): Promise<ParentData> {
+	const base = await resolveBaseParentData(locals, url);
+
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect.bind(locals.pool),
+		scope: [
+			base.currentOrganization.guid,
+			base.defaultOrganizationGuid ?? base.currentOrganization.guid
+		],
+		user: locals.user
+	});
+
+	return { ...base, categoryContext };
 }
 
 function pickLoader(payloadTypeValues: string[]) {
@@ -117,7 +137,7 @@ export const GET: RequestHandler = async ({ locals, url }) => {
 		input: LoaderInput
 	) => Promise<LoaderResult>;
 
-	const parent = async () => resolveParentData(locals, url);
+	const parent = async () => resolveParentDataWithCategories(locals, url);
 	const data = await loader({
 		depends: () => undefined,
 		locals,

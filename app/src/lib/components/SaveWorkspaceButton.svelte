@@ -6,14 +6,15 @@
 	import { env } from '$env/dynamic/public';
 	import {
 		containerOfType,
+		paramsFromFragment,
 		payloadTypes,
 		type NewContainer,
 		type PayloadType,
 		type WorkspaceContainer
 	} from '$lib/models';
-	import { newContainer } from '$lib/stores';
+	import { newContainer, overlay as overlayStore } from '$lib/stores';
 	import type { WorkspaceFilters } from '$lib/workspaceFilters';
-	import { filtersFromUrl } from '$lib/workspaceFilters';
+	import { filtersFromUrl, filtersFromWorkspaceOverlay } from '$lib/workspaceFilters';
 
 	interface Props {
 		defaultPayloadType?: PayloadType[];
@@ -30,6 +31,19 @@
 		getContext<{ getElement: () => HTMLDialogElement }>('createContainerDialog') ?? null;
 
 	function currentFilters(): WorkspaceFilters {
+		if ($overlayStore?.key === 'workspace') {
+			const filters = filtersFromWorkspaceOverlay(
+				$overlayStore.container.payload.filters as Record<string, unknown>,
+				paramsFromFragment(page.url),
+				customCategoryKeys
+			);
+			filters.payloadType = filters.payloadType.filter((pt) => pt !== payloadTypes.enum.workspace);
+			if (filters.payloadType.length === 0 && defaultPayloadType.length > 0) {
+				filters.payloadType = defaultPayloadType.filter((pt) => pt !== payloadTypes.enum.workspace);
+			}
+			return filters;
+		}
+
 		const fromUrl = filtersFromUrl(new URL(page.url), customCategoryKeys);
 		if (fromUrl.payloadType.length === 0 && defaultPayloadType.length > 0) {
 			return { ...fromUrl, payloadType: defaultPayloadType };
