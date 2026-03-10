@@ -749,6 +749,30 @@ export function getManyContainers(
 	};
 }
 
+export function getManyActualData(indicatorGuid: string, organizationalUnitGuids: string[]) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		if (organizationalUnitGuids.length === 0) {
+			return [];
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			WHERE c.valid_currently
+				AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
+				AND c.payload->>'indicator' = ${indicatorGuid}
+				AND (
+					c.organizational_unit IN (${sql.join(organizationalUnitGuids, sql.fragment`, `)})
+					OR c.organization IN (${sql.join(organizationalUnitGuids, sql.fragment`, `)})
+				)
+			ORDER BY COALESCE(c.organizational_unit, c.organization), (c.payload->>'values')::jsonb
+		`);
+
+		return withUserAndRelation<Container>(connection, containerResult);
+	};
+}
+
 export function getManyOrganizationContainers(
 	filters: { default?: boolean; organizationCategories?: string[] },
 	sort: string

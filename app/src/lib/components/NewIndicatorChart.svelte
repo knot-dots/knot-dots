@@ -2,11 +2,15 @@
 	import * as Plot from '@observablehq/plot';
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
+	import { resource } from 'runed';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import {
 		type AnyContainer,
 		type IndicatorTemplateContainer,
-		isActualDataContainer
+		isActualDataContainer,
+		payloadTypes
 	} from '$lib/models';
+	import { compareState } from '$lib/stores';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -17,6 +21,7 @@
 
 	let unit = $derived($_(container.payload.unit));
 
+	// Current organizational unit's actual data
 	let actualDataContainer = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
@@ -31,19 +36,90 @@
 		})) ?? []
 	);
 
+	// Fetch comparison data for selected municipalities
+	let selectedMunicipalityGuids = $derived(
+		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
+	);
+
+	const hasComparison = $derived(selectedMunicipalityGuids.length > 0);
+
+	const comparisonDataResource = resource(
+		() => [selectedMunicipalityGuids, container.guid] as const,
+		async ([guids, indicatorGuid]) => {
+			if (guids.length === 0) return [];
+
+			const params = new SvelteURLSearchParams();
+			params.append('indicator', indicatorGuid);
+			params.append('payloadType', payloadTypes.enum.actual_data);
+			for (const guid of guids) {
+				params.append('organizationalUnit', guid);
+			}
+
+			const response = await fetch(`/container?${params.toString()}`);
+			if (!response.ok) return [];
+			return (await response.json()) as AnyContainer[];
+		}
+	);
+
+	let comparisonValues = $derived(
+		(comparisonDataResource.current ?? []).filter(isActualDataContainer).map((container) => ({
+			values: container.payload.values
+				.map(([key, value]) => ({
+					date: new Date(key, 0),
+					value
+				}))
+				.toSorted((a, b) => a.date.getTime() - b.date.getTime()),
+			municipalityGuid: container.organizational_unit ?? container.organization,
+			color: container.organizational_unit ?? container.organization
+		}))
+	);
+
 	const chart: Attachment = (element) => {
 		element?.firstChild?.remove();
+
+		const marks = [];
+
+		// Area chart for current organization (only when no comparison)
+		if (!hasComparison) {
+			marks.push(
+				Plot.areaY(actualValues, {
+					x: 'date',
+					y: 'value',
+					fill: 'rgb(213, 239, 252)'
+				})
+			);
+		} else {
+			// Line for current organization
+			marks.push(
+				Plot.lineY(actualValues, {
+					x: 'date',
+					y: 'value',
+					// stroke: hasComparison ? 'var(--color-blue-600)' : undefined,
+					strokeWidth: 2
+				})
+			);
+
+			// Lines for comparison municipalities
+			if (hasComparison) {
+				for (const { values, color } of comparisonValues) {
+					marks.push(
+						Plot.lineY(values, {
+							x: 'date',
+							y: 'value',
+							stroke: 'var(--color-red-600)',
+							strokeWidth: 2
+							// strokeDasharray: '4,4'
+						})
+					);
+				}
+			}
+		}
+
 		element?.append(
 			Plot.plot({
-				marks: [
-					Plot.areaY(actualValues, {
-						x: 'date',
-						y: 'value',
-						fill: 'rgb(213, 239, 252)'
-					}),
-					Plot.lineY(actualValues, { x: 'date', y: 'value' })
-				],
-				y: { label: $_(unit), tickFormat: (d) => $number(d) }
+				marks,
+				y: { label: $_(unit), tickFormat: (d) => $number(d) },
+				color: hasComparison ? { legend: true } : undefined
 			})
 		);
 	};

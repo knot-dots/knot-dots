@@ -41,6 +41,7 @@ import {
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
+	getManyActualData,
 	getManyContainers,
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
@@ -477,6 +478,7 @@ export const GET = (async ({ locals, url }) => {
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
 		sdg: z.array(sustainableDevelopmentGoals).default([]),
+		indicator: z.array(z.string().uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		isPartOfMeasure: z.array(z.string().uuid()).default([]),
@@ -510,7 +512,16 @@ export const GET = (async ({ locals, url }) => {
 
 	let containers: AnyContainer[];
 
-	if (parseResult.data.isPartOfProgram.length > 0) {
+	if (
+		parseResult.data.indicator.length > 0 &&
+		parseResult.data.organizationalUnit.length > 0 &&
+		parseResult.data.payloadType.includes(payloadTypes.enum.actual_data)
+	) {
+		// Fetch actual data for specific indicator and organizational units (comparison data)
+		containers = await locals.pool.connect(
+			getManyActualData(parseResult.data.indicator[0], parseResult.data.organizationalUnit)
+		);
+	} else if (parseResult.data.isPartOfProgram.length > 0) {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
 				audience: parseResult.data.audience,
