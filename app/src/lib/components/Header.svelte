@@ -327,7 +327,7 @@
 	{/if}
 </header>
 
-<form class="filter-and-sort" data-sveltekit-keepfocus>
+<div class="filter-and-sort" data-sveltekit-keepfocus>
 	{#if $filterBar.expanded}
 		<fieldset use:filterBar.panel>
 			{#if activeFilters > 0}
@@ -395,7 +395,7 @@
 	{:else}
 		<CompareBar disclosure={compareBar} />
 	{/if}
-</form>
+</div>
 
 <style>
 	header {
