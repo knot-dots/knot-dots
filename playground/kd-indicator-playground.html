@@ -1,0 +1,779 @@
+<!doctype html>
+<notebook>
+  <title>kd-indicator-playground</title>
+
+  <!-- ============================================================ -->
+  <!-- Introduction -->
+  <!-- ============================================================ -->
+  <script id="1" type="text/markdown">
+# kd-indicator Playground
+
+Interactive chart exploration for the indicator chart components (`IndicatorChart.svelte`, `EffectChart.svelte`, `ObjectiveChart.svelte`).
+
+Each cell is **reactive** — change a design token or slider and all dependent charts update automatically.
+
+**Sections:**
+1. Design Tokens (colors, line widths, options)
+2. Sample Data (main indicator, comparison cities, effects)
+3. Helper functions
+4. Charts: C (Comparison), C1 (observable10), C2 (Set1), D (Highlight), E (Card), F (Effect Bar)
+  </script>
+
+  <!-- Theme overrides for VS Code webview -->
+  <script id="theme" type="text/html">
+<style>
+  input[type="number"],
+  input[type="text"] {
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #d1d5db !important;
+  }
+</style>
+  </script>
+
+  <!-- ============================================================ -->
+  <!-- Design Tokens -->
+  <!-- ============================================================ -->
+  <script id="2" type="text/markdown">
+## Design Tokens
+  </script>
+
+  <script id="3" type="application/vnd.observable.javascript">
+COLORS = ({
+  // Status colors (from IndicatorChart.svelte)
+  statusIdea:             '#ca1d61',   // Idea
+  statusInPlanning:       '#f18c5f',   // In Planning
+  statusInImplementation: '#fccd6c',   // In Implementation
+  statusDone:             '#6edaa6',   // Done
+  statusRejected:         '#9ca3af',   // Rejected
+
+  // Trend area (light blue, as in the app)
+  trendArea:              'rgb(213, 239, 252)',
+
+  // Objective line
+  objectiveLine:          '#21a5ed',
+
+  // Main indicator (own Kommune) — from indicator-tokens.css
+  mainLine:               '#0B8A8A',
+
+  // Comparison / reference series — from indicator-tokens.css
+  comparisonColors: [
+    '#C25A0A',   // compare-1 — Vergleichskommune 1 (Orange)
+    '#7233C2',   // compare-2 — Vergleichskommune 2 (Violet)
+    '#B81E5D',   // compare-3 — Vergleichskommune 3 (Rose)
+    '#A08C78',   // ref-state — Landesdurchschnitt  (Warm Taupe)
+    '#2E4560',   // ref-federal — Bundesdurchschnitt (Dark Slate)
+    '#1D7A46',   // ref-benchmark — Benchmark        (Forest Green)
+  ],
+
+  // Grid and axes
+  grid: '#e5e7eb',
+  axis: '#6b7280',
+})
+  </script>
+
+  <script id="52" type="application/vnd.observable.javascript">
+// Full token config per slot (color + stroke weight + dash + linecap)
+// Source: indicator-tokens.css
+INDICATOR_TOKENS = ({
+  own:            { color: '#0B8A8A', width: 2.5, dash: null,        linecap: 'round' },
+  'compare-1':    { color: '#C25A0A', width: 2,   dash: null,        linecap: 'round' },
+  'compare-2':    { color: '#7233C2', width: 2,   dash: null,        linecap: 'round' },
+  'compare-3':    { color: '#B81E5D', width: 2,   dash: null,        linecap: 'round' },
+  'ref-state':    { color: '#A08C78', width: 1.5, dash: '8 4',       linecap: 'butt'  },
+  'ref-federal':  { color: '#2E4560', width: 1.5, dash: '4 4',       linecap: 'butt'  },
+  'ref-benchmark':{ color: '#1D7A46', width: 1.5, dash: '8 3 2 3',  linecap: 'butt'  },
+})
+  </script>
+
+  <script id="4" type="application/vnd.observable.javascript">
+viewof LINE_WIDTH_standard = Inputs.range([0.5, 5], {step: 0.5, value: 2, label: "Line width — single chart"})
+  </script>
+
+  <script id="5" type="application/vnd.observable.javascript">
+viewof LINE_WIDTH_main = Inputs.range([0.5, 6], {step: 0.5, value: 3, label: "Line width — main (comparison)"})
+  </script>
+
+  <script id="6" type="application/vnd.observable.javascript">
+viewof LINE_WIDTH_comparison = Inputs.range([0.5, 3], {step: 0.5, value: 1.5, label: "Line width — comparison lines"})
+  </script>
+
+  <script id="7" type="application/vnd.observable.javascript">
+LINE_WIDTH = ({
+  standard:   LINE_WIDTH_standard,
+  main:       LINE_WIDTH_main,
+  comparison: LINE_WIDTH_comparison,
+  objective:  2,
+})
+  </script>
+
+  <script id="8" type="application/vnd.observable.javascript">
+viewof DOT_RADIUS = Inputs.range([1, 8], {step: 0.5, value: 3, label: "Dot radius"})
+  </script>
+
+  <script id="9" type="application/vnd.observable.javascript">
+viewof SHOW_GRID = Inputs.toggle({label: "Show grid", value: true})
+  </script>
+
+  <script id="10" type="application/vnd.observable.javascript">
+viewof SHOW_DOTS = Inputs.toggle({label: "Show dots", value: true})
+  </script>
+
+  <script id="11" type="application/vnd.observable.javascript">
+viewof SHOW_TOOLTIPS = Inputs.toggle({label: "Show tooltips", value: true})
+  </script>
+
+  <script id="12" type="application/vnd.observable.javascript">
+viewof CHART_WIDTH = Inputs.range([300, 1200], {step: 20, value: 640, label: "Chart width"})
+  </script>
+
+  <script id="13" type="application/vnd.observable.javascript">
+viewof CHART_HEIGHT = Inputs.range([150, 600], {step: 10, value: 400, label: "Chart height"})
+  </script>
+
+  <script id="14" type="application/vnd.observable.javascript">
+CARD_WIDTH = 300
+  </script>
+
+  <script id="15" type="application/vnd.observable.javascript">
+CARD_HEIGHT = 150
+  </script>
+
+  <!-- ============================================================ -->
+  <!-- Sample Data -->
+  <!-- ============================================================ -->
+  <script id="16" type="text/markdown">
+## Sample Data
+  </script>
+
+  <script id="17" type="application/vnd.observable.javascript">
+mainIndicator = ({
+  title: "CO₂ emissions per capita",
+  unit: "tons",
+  historicalValues: [
+    [2017, 9.1],
+    [2018, 8.2],
+    [2019, 7.9],
+    [2020, 7.1],
+    [2021, 7.3],
+    [2022, 6.8],
+    [2023, 6.5],
+    [2024, 6.2],
+  ]
+})
+  </script>
+
+  <script id="18" type="application/vnd.observable.javascript">
+comparisonIndicators = [
+  { title: "City A", unit: "tons", historicalValues: [[2017,10.4],[2018,10.1],[2019,9.7],[2020,8.9],[2021,8.6],[2022,8.1],[2023,7.8],[2024,7.4]] },
+  { title: "City B", unit: "tons", historicalValues: [[2017,7.5],[2018,7.6],[2019,7.4],[2020,7.5],[2021,7.3],[2022,7.4],[2023,7.2],[2024,7.3]] },
+  { title: "City C", unit: "tons", historicalValues: [[2017,6.2],[2018,6.0],[2019,5.8],[2020,5.5],[2021,5.7],[2022,5.4],[2023,5.1],[2024,4.9]] },
+  { title: "City D", unit: "tons", historicalValues: [[2017,11.3],[2018,11.8],[2019,12.2],[2020,11.5],[2021,11.9],[2022,12.4],[2023,12.1],[2024,12.7]] },
+  { title: "City E", unit: "tons", historicalValues: [[2017,8.8],[2018,8.5],[2019,8.6],[2020,8.2],[2021,8.4],[2022,8.1],[2023,8.3],[2024,8.0]] },
+  { title: "City F", unit: "tons", historicalValues: [[2017,5.1],[2018,4.8],[2019,4.5],[2020,4.2],[2021,4.4],[2022,4.0],[2023,3.7],[2024,3.4]] },
+  { title: "City G", unit: "tons", historicalValues: [[2017,13.0],[2018,12.6],[2019,12.3],[2020,11.8],[2021,12.0],[2022,11.5],[2023,11.2],[2024,10.9]] },
+]
+  </script>
+
+  <script id="20" type="application/vnd.observable.javascript">
+effects = [
+  {
+    title: "E-Mobility Subsidy",
+    status: "status.done",
+    plannedValues:  [[2022, 0.2], [2023, 0.3], [2024, 0.4]],
+    achievedValues: [[2022, 0.18], [2023, 0.28], [2024, 0.35]],
+  },
+  {
+    title: "Solar Rooftop Initiative",
+    status: "status.in_implementation",
+    plannedValues:  [[2023, 0.1], [2024, 0.2], [2025, 0.3]],
+    achievedValues: [[2023, 0.08]],
+  },
+  {
+    title: "District Heating Network",
+    status: "status.in_planning",
+    plannedValues:  [[2025, 0.15], [2026, 0.25], [2027, 0.35]],
+    achievedValues: [],
+  },
+]
+  </script>
+
+  <!-- ============================================================ -->
+  <!-- Helpers -->
+  <!-- ============================================================ -->
+  <script id="21" type="text/markdown">
+## Helpers
+  </script>
+
+  <script id="22" type="application/vnd.observable.javascript">
+function toDataPoints(historicalValues) {
+  return historicalValues.map(([year, value]) => ({
+    date: new Date(year, 0, 1),
+    value,
+    year,
+  }))
+}
+  </script>
+
+  <!-- ============================================================ -->
+  <!-- Charts -->
+  <!-- ============================================================ -->
+  <script id="25" type="text/markdown">
+## Charts
+  </script>
+
+  <!-- Variant C -->
+  <script id="36" type="text/markdown">
+### Variant C – Comparison Mode (NEW)
+Main indicator (thick blue) + up to 7 comparison lines with right-edge labels.
+  </script>
+
+  <script id="37" type="application/vnd.observable.javascript">
+{
+  // Map series titles to slots (City G fällt raus — kein 7. Slot)
+  const slotKeys = ['compare-1', 'compare-2', 'compare-3', 'ref-state', 'ref-federal', 'ref-benchmark']
+  const slots = [
+    [mainIndicator.title, 'own'],
+    ...comparisonIndicators.slice(0, 6).map((ind, i) => [ind.title, slotKeys[i]]),
+  ]
+  const slotMap = new Map(slots)
+
+  const allData = [mainIndicator, ...comparisonIndicators.slice(0, 6)].flatMap((ind) =>
+    ind.historicalValues.map(([year, value]) => ({
+      date: new Date(year, 0, 1),
+      value,
+      title: ind.title,
+      slot: slotMap.get(ind.title),
+    }))
+  )
+
+  // One Plot.lineY mark per slot so each gets its own strokeDasharray
+  const lineMarks = slots.flatMap(([title, slot]) => {
+    const tk = INDICATOR_TOKENS[slot]
+    const data = allData.filter((d) => d.title === title)
+    return [
+      Plot.lineY(data, {
+        x: 'date', y: 'value',
+        stroke: tk.color,
+        strokeWidth: tk.width,
+        strokeDasharray: tk.dash,
+        strokeLinecap: tk.linecap,
+      }),
+      ...(SHOW_DOTS ? [Plot.dot(data, {
+        x: 'date', y: 'value',
+        fill: tk.color,
+        r: slot === 'own' ? DOT_RADIUS + 1 : DOT_RADIUS - 0.5,
+      })] : []),
+    ]
+  })
+
+  const labelData = slots
+    .map(([title, slot]) => {
+      const pt = allData.find((d) => d.title === title && d.date.getFullYear() === 2024)
+      return pt ? { ...pt, slot } : null
+    })
+    .filter(Boolean)
+
+  return Plot.plot({
+    title: 'Variant C: Comparison Mode (indicator tokens)',
+    width: CHART_WIDTH,
+    height: CHART_HEIGHT,
+    marginLeft: 60,
+    marginRight: 180,
+    marginTop: 40,
+    marginBottom: 40,
+    grid: SHOW_GRID,
+    marks: [
+      ...lineMarks,
+      Plot.text(labelData, {
+        x: 'date', y: 'value', text: 'title',
+        dx: 8, textAnchor: 'start', fontSize: 12,
+        fill: (d) => INDICATOR_TOKENS[d.slot].color,
+      }),
+      ...(SHOW_TOOLTIPS
+        ? [Plot.tip(allData, Plot.pointerX({
+            x: 'date', y: 'value',
+            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+          }))]
+        : []),
+    ],
+    y: { label: mainIndicator.unit },
+    x: { type: 'time' },
+  })
+}
+  </script>
+
+  <!-- Variant C1 -->
+  <script id="45" type="text/markdown">
+### Variant C1 – Comparison Mode (observable10)
+Gleiche Struktur wie C, aber Vergleichslinien mit dem Observable10-Farbschema.
+  </script>
+
+  <script id="46" type="application/vnd.observable.javascript">
+{
+  const mainData = toDataPoints(mainIndicator.historicalValues).map((d) => ({
+    ...d,
+    title: mainIndicator.title,
+  }))
+
+  const comparisonLines = comparisonIndicators.flatMap((ind) =>
+    ind.historicalValues.map(([year, value]) => ({
+      date: new Date(year, 0, 1),
+      value,
+      title: ind.title,
+    }))
+  )
+
+  return Plot.plot({
+    title: "Variant C1: Comparison Mode (observable10)",
+    width: CHART_WIDTH,
+    height: CHART_HEIGHT,
+    marginLeft: 60,
+    marginRight: 180,
+    marginTop: 40,
+    marginBottom: 40,
+    grid: SHOW_GRID,
+    color: {
+      domain: comparisonIndicators.map((i) => i.title),
+      scheme: "observable10",
+      legend: true,
+    },
+    marks: [
+      Plot.lineY(comparisonLines, {
+        x: "date",
+        y: "value",
+        stroke: "title",
+        strokeWidth: LINE_WIDTH.comparison,
+        strokeOpacity: 0.8,
+      }),
+      ...(SHOW_DOTS
+        ? [Plot.dot(comparisonLines, {
+            x: "date",
+            y: "value",
+            stroke: "title",
+            r: DOT_RADIUS - 1,
+            fillOpacity: 0.7,
+          })]
+        : []),
+      Plot.lineY(mainData, {
+        x: "date",
+        y: "value",
+        stroke: COLORS.mainLine,
+        strokeWidth: LINE_WIDTH.main,
+      }),
+      ...(SHOW_DOTS
+        ? [Plot.dot(mainData, {
+            x: "date",
+            y: "value",
+            fill: COLORS.mainLine,
+            r: DOT_RADIUS + 1,
+          })]
+        : []),
+      Plot.text(
+        [...comparisonLines, ...mainData].filter((d) => d.date.getFullYear() === 2024),
+        {
+          x: "date",
+          y: "value",
+          text: "title",
+          dx: 8,
+          textAnchor: "start",
+          fontSize: 11,
+        }
+      ),
+      ...(SHOW_TOOLTIPS
+        ? [Plot.tip(
+            [...comparisonLines, ...mainData],
+            Plot.pointerX({
+              x: "date",
+              y: "value",
+              title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+            })
+          )]
+        : []),
+    ],
+    y: { label: mainIndicator.unit },
+    x: { type: "time" },
+  })
+}
+  </script>
+
+  <!-- Variant C2 -->
+  <script id="47" type="text/markdown">
+### Variant C2 – Comparison Mode (Set1)
+Gleiche Struktur wie C, aber Vergleichslinien mit dem ColorBrewer-Set1-Farbschema.
+  </script>
+
+  <script id="48" type="application/vnd.observable.javascript">
+{
+  const mainData = toDataPoints(mainIndicator.historicalValues).map((d) => ({
+    ...d,
+    title: mainIndicator.title,
+  }))
+
+  const comparisonLines = comparisonIndicators.flatMap((ind) =>
+    ind.historicalValues.map(([year, value]) => ({
+      date: new Date(year, 0, 1),
+      value,
+      title: ind.title,
+    }))
+  )
+
+  return Plot.plot({
+    title: "Variant C2: Comparison Mode (Set1)",
+    width: CHART_WIDTH,
+    height: CHART_HEIGHT,
+    marginLeft: 60,
+    marginRight: 180,
+    marginTop: 40,
+    marginBottom: 40,
+    grid: SHOW_GRID,
+    color: {
+      domain: comparisonIndicators.map((i) => i.title),
+      scheme: "Set1",
+      legend: true,
+    },
+    marks: [
+      Plot.lineY(comparisonLines, {
+        x: "date",
+        y: "value",
+        stroke: "title",
+        strokeWidth: LINE_WIDTH.comparison,
+        strokeOpacity: 0.8,
+      }),
+      ...(SHOW_DOTS
+        ? [Plot.dot(comparisonLines, {
+            x: "date",
+            y: "value",
+            stroke: "title",
+            r: DOT_RADIUS - 1,
+            fillOpacity: 0.7,
+          })]
+        : []),
+      Plot.lineY(mainData, {
+        x: "date",
+        y: "value",
+        stroke: COLORS.mainLine,
+        strokeWidth: LINE_WIDTH.main,
+      }),
+      ...(SHOW_DOTS
+        ? [Plot.dot(mainData, {
+            x: "date",
+            y: "value",
+            fill: COLORS.mainLine,
+            r: DOT_RADIUS + 1,
+          })]
+        : []),
+      Plot.text(
+        [...comparisonLines, ...mainData].filter((d) => d.date.getFullYear() === 2024),
+        {
+          x: "date",
+          y: "value",
+          text: "title",
+          dx: 8,
+          textAnchor: "start",
+          fontSize: 11,
+        }
+      ),
+      ...(SHOW_TOOLTIPS
+        ? [Plot.tip(
+            [...comparisonLines, ...mainData],
+            Plot.pointerX({
+              x: "date",
+              y: "value",
+              title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+            })
+          )]
+        : []),
+    ],
+    y: { label: mainIndicator.unit },
+    x: { type: "time" },
+  })
+}
+  </script>
+
+  <!-- Variant C – Responsive sizes -->
+  <script id="49" type="text/markdown">
+### Variant C – Responsive Größenvergleich
+Derselbe Chart in drei festen Breiten: 320 px (mobile), 600 px (tablet), 960 px (desktop).
+  </script>
+
+  <script id="50" type="application/vnd.observable.javascript">
+// Helper – gibt einen Comparison-Chart für eine feste Breite zurück (indicator tokens)
+function comparisonChart(width) {
+  const slotKeys = ['compare-1', 'compare-2', 'compare-3', 'ref-state', 'ref-federal', 'ref-benchmark']
+  const slots = [
+    [mainIndicator.title, 'own'],
+    ...comparisonIndicators.slice(0, 6).map((ind, i) => [ind.title, slotKeys[i]]),
+  ]
+  const slotMap = new Map(slots)
+
+  const allData = [mainIndicator, ...comparisonIndicators.slice(0, 6)].flatMap((ind) =>
+    ind.historicalValues.map(([year, value]) => ({
+      date: new Date(year, 0, 1), value,
+      title: ind.title, slot: slotMap.get(ind.title),
+    }))
+  )
+
+  const height = Math.round(width * 0.6)
+  const marginRight = width < 400 ? 80 : 150
+
+  const lineMarks = slots.flatMap(([title, slot]) => {
+    const tk = INDICATOR_TOKENS[slot]
+    const data = allData.filter((d) => d.title === title)
+    return [Plot.lineY(data, {
+      x: 'date', y: 'value',
+      stroke: tk.color, strokeWidth: tk.width,
+      strokeDasharray: tk.dash, strokeLinecap: tk.linecap,
+    })]
+  })
+
+  const labelData = slots
+    .map(([title, slot]) => {
+      const pt = allData.find((d) => d.title === title && d.date.getFullYear() === 2024)
+      return pt ? { ...pt, slot } : null
+    })
+    .filter(Boolean)
+
+  return Plot.plot({
+    width, height,
+    marginLeft: 44, marginRight,
+    marginTop: 32, marginBottom: 32,
+    grid: SHOW_GRID,
+    style: { fontSize: "12px" },
+    marks: [
+      ...lineMarks,
+      Plot.text(labelData, {
+        x: 'date', y: 'value', text: 'title',
+        dx: 6, textAnchor: 'start', fontSize: 12,
+        fill: (d) => INDICATOR_TOKENS[d.slot].color,
+      }),
+      ...(SHOW_TOOLTIPS
+        ? [Plot.tip(allData, Plot.pointerX({
+            x: 'date', y: 'value',
+            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+          }))]
+        : []),
+    ],
+    y: { label: mainIndicator.unit, ticks: 4 },
+    x: { type: 'time' },
+  })
+}
+  </script>
+
+  <script id="51" type="application/vnd.observable.javascript">
+{
+  const sizes = [320, 600, 960]
+  const wrap = document.createElement("div")
+  wrap.style.cssText = "display:flex; flex-direction:column; gap:2rem;"
+  for (const w of sizes) {
+    const label = document.createElement("div")
+    label.textContent = `${w} px`
+    label.style.cssText = "font-size:0.75rem; font-weight:600; color:#6b7280; margin-bottom:0.25rem;"
+    const container = document.createElement("div")
+    container.style.cssText = `width:${w}px; border:1px solid #e5e7eb; border-radius:4px; padding:0.5rem; box-sizing:border-box;`
+    container.append(comparisonChart(w))
+    wrap.append(label, container)
+  }
+  return wrap
+}
+  </script>
+
+  <!-- Variant D -->
+  <script id="38" type="text/markdown">
+### Variant D – Comparison with Highlight
+One line is highlighted, all others are dimmed. Use the slider to select which city to focus on.
+  </script>
+
+  <script id="39" type="application/vnd.observable.javascript">
+viewof highlightIndex = Inputs.range([0, 7], {step: 1, value: 0, label: "Highlight (0 = main, 1–7 = comparison)"})
+  </script>
+
+  <script id="40" type="application/vnd.observable.javascript">
+{
+  const allLines = [mainIndicator, ...comparisonIndicators]
+  const highlightedTitle = allLines[highlightIndex].title
+
+  const allData = allLines.flatMap((ind, idx) =>
+    ind.historicalValues.map(([year, value]) => ({
+      date: new Date(year, 0, 1),
+      value,
+      title: ind.title,
+      color: ind.title === mainIndicator.title
+        ? COLORS.mainLine
+        : COLORS.comparisonColors[idx - 1],
+    }))
+  )
+
+  const highlighted = allData.filter((d) => d.title === highlightedTitle)
+  const dimmed = allData.filter((d) => d.title !== highlightedTitle)
+
+  return Plot.plot({
+    title: `Variant D: Highlight — ${highlightedTitle}`,
+    width: CHART_WIDTH,
+    height: CHART_HEIGHT,
+    marginLeft: 60,
+    marginRight: 180,
+    marginTop: 40,
+    marginBottom: 40,
+    grid: SHOW_GRID,
+    marks: [
+      // Dimmed lines (gray, thin)
+      Plot.lineY(dimmed, {
+        x: "date",
+        y: "value",
+        stroke: "#d1d5db",
+        strokeWidth: 1,
+        z: "title",
+      }),
+      // Highlighted line (colored, thicker)
+      Plot.lineY(highlighted, {
+        x: "date",
+        y: "value",
+        stroke: highlighted[0]?.color,
+        strokeWidth: LINE_WIDTH.main,
+      }),
+      // Dots on highlighted line
+      ...(SHOW_DOTS
+        ? [Plot.dot(highlighted, {
+            x: "date",
+            y: "value",
+            fill: highlighted[0]?.color,
+            r: DOT_RADIUS + 1,
+          })]
+        : []),
+      // Label on highlighted line
+      Plot.text(
+        highlighted.filter((d) => d.date.getFullYear() === 2024),
+        {
+          x: "date",
+          y: "value",
+          text: "title",
+          dx: 8,
+          textAnchor: "start",
+          fontSize: 12,
+          fontWeight: "bold",
+          fill: highlighted[0]?.color,
+        }
+      ),
+      // Tooltips
+      ...(SHOW_TOOLTIPS
+        ? [Plot.tip(highlighted, Plot.pointerX({
+            x: "date",
+            y: "value",
+            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+          }))]
+        : []),
+    ],
+    y: { label: mainIndicator.unit },
+    x: { type: "time" },
+  })
+}
+  </script>
+
+  <!-- Variant E -->
+  <script id="41" type="text/markdown">
+### Variant E – Compact Card View
+Small sparkline for dashboard cards (`Card.svelte`).
+  </script>
+
+  <script id="42" type="application/vnd.observable.javascript">
+{
+  const data = toDataPoints(mainIndicator.historicalValues)
+  const lastValue = data[data.length - 1]?.value
+  const firstValue = data[0]?.value
+  const change = lastValue - firstValue
+  const trendArrow = change < 0 ? "▼" : change > 0 ? "▲" : "→"
+
+  return Plot.plot({
+    title: mainIndicator.title,
+    subtitle: `${lastValue?.toFixed(1)} ${mainIndicator.unit} ${trendArrow}`,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    marginLeft: 36,
+    marginRight: 8,
+    marginTop: 36,
+    marginBottom: 24,
+    marks: [
+      Plot.areaY(data, {
+        x: "date",
+        y: "value",
+        fill: COLORS.trendArea,
+        fillOpacity: 0.6,
+      }),
+      Plot.lineY(data, {
+        x: "date",
+        y: "value",
+        stroke: COLORS.mainLine,
+        strokeWidth: 1.5,
+      }),
+      Plot.dot([data[data.length - 1]], {
+        x: "date",
+        y: "value",
+        fill: COLORS.mainLine,
+        r: 3,
+      }),
+    ],
+    y: {
+      label: mainIndicator.unit,
+      ticks: 3,
+      tickFormat: (d) => d.toFixed(0),
+    },
+    x: {
+      type: "time",
+      ticks: 2,
+      tickFormat: (d) => d.getFullYear().toString(),
+    },
+  })
+}
+  </script>
+
+  <!-- Variant F -->
+  <script id="43" type="text/markdown">
+### Variant F – Effect Bar Chart
+Reproduces `EffectChart.svelte` — planned vs. achieved values per effect.
+  </script>
+
+  <script id="44" type="application/vnd.observable.javascript">
+{
+  const effect = effects[1] // "Solar Rooftop Initiative" as example
+
+  const data = [
+    ...effect.plannedValues.map(([year, value], i) => ({
+      date: new Date(year, 0, 1),
+      value: effect.achievedValues[i]
+        ? value - effect.achievedValues[i][1]
+        : value,
+      status: "Planned (remaining)",
+    })),
+    ...effect.achievedValues.map(([year, value]) => ({
+      date: new Date(year, 0, 1),
+      value,
+      status: "Achieved",
+    })),
+  ]
+
+  return Plot.plot({
+    title: `Effects: ${effect.title}`,
+    color: {
+      domain: ["Planned (remaining)", "Achieved"],
+      range: [COLORS.statusIdea, COLORS.statusDone],
+      legend: true,
+    },
+    marks: [
+      Plot.barY(data, { x: "date", y: "value", fill: "status" }),
+      ...(SHOW_TOOLTIPS
+        ? [Plot.tip(data, Plot.pointer({
+            x: "date",
+            y: "value",
+            title: (d) => `${d.status}\n${d.date.getFullYear()}: ${d.value.toFixed(2)} ${mainIndicator.unit}`,
+          }))]
+        : []),
+    ],
+    x: { type: "band", label: "Year", tickFormat: (d) => d.getFullYear() },
+    y: { label: mainIndicator.unit },
+  })
+}
+  </script>
+
+
+</notebook>

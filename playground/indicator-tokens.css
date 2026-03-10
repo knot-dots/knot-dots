@@ -1,0 +1,171 @@
+/* ============================================================
+   knot-dots — Indicator Tokens
+   CSS Custom Properties (computed from indicator.tokens.json)
+   Generated: 2026-03-10
+   ============================================================ */
+
+:root {
+
+  /* ----------------------------------------------------------
+     COLOR · SERIES · BASE
+     Hauptfarben der 7 Serien
+  ---------------------------------------------------------- */
+
+  --indicator-color-own-base:                #0B8A8A;   /* Teal     — Eigene Kommune       */
+  --indicator-color-compare-1-base:          #C25A0A;   /* Orange   — Vergleichskommune 1  */
+  --indicator-color-compare-2-base:          #7233C2;   /* Violet   — Vergleichskommune 2  */
+  --indicator-color-compare-3-base:          #B81E5D;   /* Rose     — Vergleichskommune 3  */
+  --indicator-color-ref-state-base:          #A08C78;   /* Warm Taupe  — Landesdurchschnitt  L58  */
+  --indicator-color-ref-federal-base:        #2E4560;   /* Dark Slate  — Bundesdurchschnitt  L30  */
+  --indicator-color-ref-benchmark-base:      #1D7A46;   /* Forest Green — Benchmark               */
+
+  /* ----------------------------------------------------------
+     COLOR · SERIES · SUBTLE
+     Hintergrundflächen / Confidence Bands
+  ---------------------------------------------------------- */
+
+  --indicator-color-own-subtle:              #D6F0EF;
+  --indicator-color-compare-1-subtle:        #FAE4D0;
+  --indicator-color-compare-2-subtle:        #EAD9F7;
+  --indicator-color-compare-3-subtle:        #F5D4E5;
+  --indicator-color-ref-state-subtle:        #EDE7DE;
+  --indicator-color-ref-federal-subtle:      #C8D4E2;
+  --indicator-color-ref-benchmark-subtle:    #C4EAD6;
+
+  /* ----------------------------------------------------------
+     COLOR · SERIES · ON-DARK
+     Für Dark Mode / dunkle Diagramm-Hintergründe
+  ---------------------------------------------------------- */
+
+  --indicator-color-own-on-dark:             #2DD4CC;
+  --indicator-color-compare-1-on-dark:       #F59642;
+  --indicator-color-compare-2-on-dark:       #B27FEE;
+  --indicator-color-compare-3-on-dark:       #E86FA6;
+  --indicator-color-ref-state-on-dark:       #C8B8A4;
+  --indicator-color-ref-federal-on-dark:     #7892AE;
+  --indicator-color-ref-benchmark-on-dark:   #3FBF78;
+
+  /* ----------------------------------------------------------
+     STROKE · WEIGHT
+  ---------------------------------------------------------- */
+
+  --indicator-stroke-weight-own:             2.5px;
+  --indicator-stroke-weight-commune:         2px;
+  --indicator-stroke-weight-reference:       1.5px;
+
+  /* ----------------------------------------------------------
+     STROKE · DASH PATTERNS (SVG stroke-dasharray)
+  ---------------------------------------------------------- */
+
+  --indicator-dash-solid:                    none;
+  --indicator-dash-long:                     8 4;       /* Landesdurchschnitt  — — —   */
+  --indicator-dash-short:                    4 4;       /* Bundesdurchschnitt  - - -   */
+  --indicator-dash-dot:                      8 3 2 3;   /* Benchmark           — · —   */
+
+  /* ----------------------------------------------------------
+     STROKE · LINECAP
+  ---------------------------------------------------------- */
+
+  --indicator-linecap-commune:               round;
+  --indicator-linecap-reference:             butt;
+
+  /* ----------------------------------------------------------
+     OPACITY
+  ---------------------------------------------------------- */
+
+  --indicator-opacity-active:                1;
+  --indicator-opacity-hover:                 0.85;
+  --indicator-opacity-inactive:              0.25;     /* Fade bei Focus einer Serie  */
+  --indicator-opacity-subtle-fill:           0.35;     /* Confidence Band / Fläche    */
+
+}
+
+/* ============================================================
+   SLOT SHORTHAND CLASSES
+   Convenience-Klassen für Chart-Implementierung
+   Verwendung: <path class="indicator-series--own" ... />
+   ============================================================ */
+
+.indicator-series--own {
+  stroke:                var(--indicator-color-own-base);
+  stroke-width:          var(--indicator-stroke-weight-own);
+  stroke-dasharray:      var(--indicator-dash-solid);
+  stroke-linecap:        var(--indicator-linecap-commune);
+  fill:                  none;
+}
+
+.indicator-series--compare-1 {
+  stroke:                var(--indicator-color-compare-1-base);
+  stroke-width:          var(--indicator-stroke-weight-commune);
+  stroke-dasharray:      var(--indicator-dash-solid);
+  stroke-linecap:        var(--indicator-linecap-commune);
+  fill:                  none;
+}
+
+.indicator-series--compare-2 {
+  stroke:                var(--indicator-color-compare-2-base);
+  stroke-width:          var(--indicator-stroke-weight-commune);
+  stroke-dasharray:      var(--indicator-dash-solid);
+  stroke-linecap:        var(--indicator-linecap-commune);
+  fill:                  none;
+}
+
+.indicator-series--compare-3 {
+  stroke:                var(--indicator-color-compare-3-base);
+  stroke-width:          var(--indicator-stroke-weight-commune);
+  stroke-dasharray:      var(--indicator-dash-solid);
+  stroke-linecap:        var(--indicator-linecap-commune);
+  fill:                  none;
+}
+
+.indicator-series--reference-state {
+  stroke:                var(--indicator-color-ref-state-base);
+  stroke-width:          var(--indicator-stroke-weight-reference);
+  stroke-dasharray:      var(--indicator-dash-long);
+  stroke-linecap:        var(--indicator-linecap-reference);
+  fill:                  none;
+}
+
+.indicator-series--reference-federal {
+  stroke:                var(--indicator-color-ref-federal-base);
+  stroke-width:          var(--indicator-stroke-weight-reference);
+  stroke-dasharray:      var(--indicator-dash-short);
+  stroke-linecap:        var(--indicator-linecap-reference);
+  fill:                  none;
+}
+
+.indicator-series--reference-benchmark {
+  stroke:                var(--indicator-color-ref-benchmark-base);
+  stroke-width:          var(--indicator-stroke-weight-reference);
+  stroke-dasharray:      var(--indicator-dash-dot);
+  stroke-linecap:        var(--indicator-linecap-reference);
+  fill:                  none;
+}
+
+/* ----------------------------------------------------------
+   INTERACTION STATE MODIFIER
+   Verwendung: <g class="indicator-series--own is-inactive">
+---------------------------------------------------------- */
+
+.is-inactive path,
+.is-inactive line,
+.is-inactive polyline {
+  opacity: var(--indicator-opacity-inactive);
+}
+
+.is-hovered path,
+.is-hovered line,
+.is-hovered polyline {
+  opacity: var(--indicator-opacity-hover);
+}
+
+/* ----------------------------------------------------------
+   CONFIDENCE BAND / AREA FILL MODIFIER
+   Verwendung: <path class="indicator-series--own indicator-fill">
+---------------------------------------------------------- */
+
+.indicator-fill {
+  fill:    currentColor;
+  opacity: var(--indicator-opacity-subtle-fill);
+  stroke:  none;
+}
