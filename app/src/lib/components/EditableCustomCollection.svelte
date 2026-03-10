@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resource } from 'runed';
+	import { IsInViewport, resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
@@ -11,6 +11,7 @@
 	import Filter from '~icons/knotdots/filter';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -21,7 +22,6 @@
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
 		actualDataContainer,
-		anyContainer,
 		type AnyContainer,
 		audience,
 		computeFacetCount,
@@ -97,6 +97,10 @@
 
 	const idForTitle = crypto.randomUUID();
 
+	let header = $state<HTMLElement>();
+
+	const inViewport = new IsInViewport(() => header);
+
 	const savedResource = resource(
 		[
 			() => container.payload.filter.audience,
@@ -109,28 +113,30 @@
 					? container.payload.filter.type
 					: defaultPayloadType,
 			() => container.payload.sort,
-			() => container.payload.terms
+			() => container.payload.terms,
+			() => inViewport.current
 		],
 		async (
 			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
 			_,
 			{ signal }
 		) => {
-			const params = new URLSearchParams([
-				...audience.map((v) => ['audience', v]),
-				...sdg.map((v) => ['sdg', v]),
-				...indicatorCategory.map((v) => ['indicatorCategory', v]),
-				['organization', page.data.currentOrganization.guid],
-				...policyFieldBNK.map((v) => ['policyFieldBNK', v]),
-				['terms', terms],
-				...topic.map((v) => ['topic', v]),
-				...type.map((v) => ['payloadType', v]),
-				['sort', sort]
-			]);
-
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z.array(anyContainer).parse(await response.json());
-		}
+			return fetchContainers(
+				{
+					audience,
+					sdg,
+					indicatorCategory,
+					organization: [page.data.currentOrganization.guid],
+					policyFieldBNK,
+					terms,
+					topic,
+					payloadType: type
+				},
+				sort,
+				{ signal }
+			);
+		},
+		{ lazy: true, once: true }
 	);
 
 	const searchResource = resource(
@@ -142,45 +148,48 @@
 			() => filter.topic,
 			() => (filter.type.length > 0 ? filter.type : defaultPayloadType),
 			() => sort,
-			() => terms
+			() => terms,
+			() => inViewport.current
 		],
 		async (
 			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
 			_,
 			{ signal }
 		) => {
-			const params = new URLSearchParams([
-				...audience.map((v) => ['audience', v]),
-				...sdg.map((v) => ['sdg', v]),
-				...indicatorCategory.map((v) => ['indicatorCategory', v]),
-				['organization', page.data.currentOrganization.guid],
-				...policyFieldBNK.map((v) => ['policyFieldBNK', v]),
-				['terms', terms],
-				...topic.map((v) => ['topic', v]),
-				...type.map((v) => ['payloadType', v]),
-				['sort', sort]
-			]);
-
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z.array(anyContainer).parse(await response.json());
+			return fetchContainers(
+				{
+					audience,
+					sdg,
+					indicatorCategory,
+					organization: [page.data.currentOrganization.guid],
+					policyFieldBNK,
+					terms,
+					topic,
+					payloadType: type
+				},
+				sort,
+				{ signal }
+			);
 		},
 		{
-			debounce: 300
+			debounce: 300,
+			lazy: true
 		}
 	);
 
 	const actualDataResource = resource([], async (_, __, { signal }) => {
-		const params = new URLSearchParams([
-			['organization', page.data.currentOrganization.guid],
-			...(page.data.currentOrganizationalUnit
-				? [['organizationalUnit', page.data.currentOrganizationalUnit.guid]]
-				: []),
-			['payloadType', payloadTypes.enum.actual_data],
-			['sort', 'alpha']
-		]);
-
-		const response = await fetch(`/container?${params.toString()}`, { signal });
-		return z.array(actualDataContainer).parse(await response.json());
+		const response = await fetchContainers(
+			{
+				organization: [page.data.currentOrganization.guid],
+				...(page.data.currentOrganizationalUnit
+					? { organizationalUnit: [page.data.currentOrganizationalUnit.guid] }
+					: undefined),
+				payloadType: [payloadTypes.enum.actual_data]
+			},
+			'alpha',
+			{ signal }
+		);
+		return z.array(actualDataContainer).parse(response);
 	});
 
 	let items = $derived.by(() => {
@@ -231,7 +240,7 @@
 	}
 </script>
 
-<header>
+<header bind:this={header}>
 	<svelte:element this={heading} class="details-heading">
 		{#if editable && $ability.can('update', container)}
 			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>

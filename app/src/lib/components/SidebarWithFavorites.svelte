@@ -184,9 +184,9 @@
 					<li>
 						<a
 							class="sidebar-menu-item sidebar-menu-item--secondary"
-							class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+							class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
 								page.url.toString()}
-							href={landingPageURL(page.data.currentOrganization)}
+							href={landingPageURL(currentOrganizationalUnit)}
 						>
 							<OrganizationalUnit />
 							<span>

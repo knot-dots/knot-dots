@@ -8,14 +8,17 @@
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
+	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableTendency from '$lib/components/EditableTendency.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		isIndicatorContainer,
@@ -133,8 +136,29 @@
 				{revisions}
 			/>
 
-			<div class="details-section">
-				{#if indicator}
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+
+			{#if indicator && createFeatureDecisions(page.data.features).useTendentialObjectivesAndEffects()}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('objective.tendency')}</h2>
+
+					<EditableTendency
+						{container}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
+				</div>
+			{/if}
+
+			{#if indicator}
+				<div class="details-section">
 					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 						{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
 						<div class="disclosure">
@@ -222,17 +246,8 @@
 					{/if}
 
 					<ObjectiveChart {container} {relatedContainers} />
-				{/if}
-			</div>
-
-			{#key container.guid}
-				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					label={$_('description')}
-					bind:value={container.payload.description}
-				/>
-			{/key}
+				</div>
+			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 

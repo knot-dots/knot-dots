@@ -61,7 +61,7 @@ async function* fetchContainers(batchSize = 500) {
           'program',
           'report',
           'resource',
-          'resource_data'
+          'resource_data',
           'resource_v2',
           'rule',
           'simple_measure',

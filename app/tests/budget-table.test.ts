@@ -24,15 +24,14 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		// Verify the budget table is visible
-		const table = dotsBoard.overlay.locator.locator('.resource-table');
+		// Verify the budget table component is visible
+		const table = dotsBoard.overlay.locator.getByRole('table');
 		await expect(table).toBeVisible();
 
-		// Verify table header shows subordinate goals budget title
-		await expect(table.getByText('Subordinate goals budget')).toBeVisible();
-
-		// Verify table header shows resource unit
-		await expect(table.getByText('€')).toBeVisible();
+		// Verify table header shows subordinate goals budget title and unit
+		await expect(
+			dotsBoard.overlay.locator.getByRole('heading', { name: 'Subordinate goals budget €' })
+		).toBeVisible();
 
 		// Verify section headers are present
 		await expect(table.getByText('Current budget')).toBeVisible();
@@ -72,19 +71,20 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.resource-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify year columns are present
 		await expect(table.getByRole('columnheader', { name: '2025' })).toBeVisible();
 		await expect(table.getByRole('columnheader', { name: '2026' })).toBeVisible();
 
 		// Verify current budget row shows correct amounts
-		const currentBudgetInput2025 = table
-			.locator('.resource-table__budget-row')
+		const currentBudgetSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Current budget' })
+		});
+		const currentBudgetInput2025 = currentBudgetSection
 			.locator('input[inputmode="decimal"]')
 			.first();
-		const currentBudgetInput2026 = table
-			.locator('.resource-table__budget-row')
+		const currentBudgetInput2026 = currentBudgetSection
 			.locator('input[inputmode="decimal"]')
 			.last();
 		await expect(currentBudgetInput2025).toHaveValue('50,000');
@@ -99,7 +99,10 @@ test.describe('Budget Table in Goal Detail View', () => {
 		await expect(subordinateGoalRow.locator('td').nth(1)).toContainText('25,000');
 
 		// Verify subordinate measure row shows correct amounts
-		const subordinateMeasureRow = table.locator('.resource-table__measure-row', {
+		const subordinateMeasureSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Subordinate measures', exact: true })
+		});
+		const subordinateMeasureRow = subordinateMeasureSection.locator('tr', {
 			has: dotsBoard.page.getByRole('link', { name: testSubordinateMeasure.payload.title })
 		});
 		await expect(subordinateMeasureRow).toBeVisible();
@@ -128,7 +131,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.resource-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
 		const rightAddButton = table.locator('thead th:last-child button');
@@ -138,17 +141,17 @@ test.describe('Budget Table in Goal Detail View', () => {
 		await expect(table.getByRole('columnheader', { name: String(currentYear + 1) })).toBeVisible();
 
 		// Locate the current budget row input for the new year
-		const currentBudgetInput = table
-			.locator('.resource-table__budget-row')
-			.locator('input[inputmode="decimal"]')
-			.last();
+		const currentBudgetSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Current budget' })
+		});
+		const currentBudgetInput = currentBudgetSection.locator('input[inputmode="decimal"]').last();
 
 		// Type a value and wait for debounced save
 		const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
 		await currentBudgetInput.fill('75000');
 		await invalidateRequest;
 
-		// Reload and verify persistence
+		// Reload and verify persistence (data should be visible even when not in edit mode)
 		await dotsBoard.page.reload();
 
 		// Re-open the goal overlay after reload - the Budget section still exists
@@ -160,13 +163,13 @@ test.describe('Budget Table in Goal Detail View', () => {
 		});
 		await sectionAfterReload.getByTitle(testGoalBudget.payload.title).click();
 
-		const tableAfterReload = dotsBoard.overlay.locator.locator('.resource-table__table');
-		const currentBudgetInputAfterReload = tableAfterReload
-			.locator('.resource-table__budget-row')
-			.locator('input[inputmode="decimal"]')
-			.last();
+		const tableAfterReload = dotsBoard.overlay.locator.getByRole('table');
+		const currentBudgetSectionAfterReload = tableAfterReload.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Current budget' })
+		});
+		const currentBudgetCellAfterReload = currentBudgetSectionAfterReload.locator('td').last();
 
-		await expect(currentBudgetInputAfterReload).toHaveValue('75,000');
+		await expect(currentBudgetCellAfterReload).toContainText('75,000');
 
 		// Clean up - navigate back and delete the section
 		await dotsBoard.overlay.editModeToggle.check();
@@ -191,10 +194,10 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.resource-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are visible in edit mode
-		const leftAddButton = table.locator('.resource-table__head-years button');
+		const leftAddButton = table.locator('.editable-table__head-years button');
 		const rightAddButton = table.locator('thead th:last-child button');
 		await expect(leftAddButton).toBeVisible();
 		await expect(rightAddButton).toBeVisible();
@@ -239,7 +242,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.resource-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify the subordinate goal row has a link
 		const goalLink = table.getByRole('link', { name: testSubordinateGoal.payload.title });
@@ -286,22 +289,20 @@ test.describe('Budget Table in Goal Detail View', () => {
 		// Click the budget card to open the budget resource data detail view
 		await section.getByTitle(testGoalBudget.payload.title).click();
 
-		const table = dotsBoard.overlay.locator.locator('.resource-table__table');
+		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are not visible
-		const leftAddButton = table.locator('.resource-table__head-years button');
+		const leftAddButton = table.locator('.editable-table__head-years button');
 		const rightAddButton = table.locator('thead th:last-child button');
 		await expect(leftAddButton).not.toBeVisible();
 		await expect(rightAddButton).not.toBeVisible();
 
-		// Verify current budget inputs are disabled
-		const budgetInputs = table
-			.locator('.resource-table__budget-row')
-			.locator('input[inputmode="decimal"]');
-		const count = await budgetInputs.count();
-		for (let i = 0; i < count; i++) {
-			await expect(budgetInputs.nth(i)).toBeDisabled();
-		}
+		// Verify current budget inputs are not rendered (read-only mode shows text, not inputs)
+		const currentBudgetSection = table.locator('tbody', {
+			has: dotsBoard.page.getByRole('columnheader', { name: 'Current budget' })
+		});
+		const budgetInputs = currentBudgetSection.locator('input[inputmode="decimal"]');
+		await expect(budgetInputs).not.toBeVisible();
 
 		// Clean up - navigate back and delete the section
 		await dotsBoard.overlay.backButton.click();

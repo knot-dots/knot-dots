@@ -82,6 +82,7 @@
 	.details-header :global(.logo),
 	.details-header :global(.logo-upload) {
 		--logo-height: 2.5rem;
+		flex-shrink: 0;
 	}
 
 	.details-meta {

@@ -43,6 +43,7 @@
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
+		isMeasureContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
@@ -143,7 +144,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
+		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
 			<EditableEffectCollection
 				bind:container
 				bind:parentContainer

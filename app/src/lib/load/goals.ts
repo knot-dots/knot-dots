@@ -3,62 +3,57 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	audience,
 	computeFacetCount,
+	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
+	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics,
-	type Container,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
-import { getFacetAggregationsForGuids, getManyContainersWithES } from '$lib/server/elasticsearch';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
+import type { PageServerLoad } from '../../routes/[guid=uuid]/goals/$types';
 
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-	defaultOrganizationGuid: string;
-};
-
-export default (async function load({ depends, locals, parent, url }: LoadInput) {
+export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
 	let containers: Container[];
+	let data: Record<string, Record<string, number>> | undefined;
 	let subordinateOrganizationalUnits: string[] = [];
-	const { currentOrganization, currentOrganizationalUnit, defaultOrganizationGuid } =
-		(await parent()) as ParentData;
+	const {
+		categoryContext: rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit
+	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-
-	const organizationScope = [currentOrganization.guid, defaultOrganizationGuid];
-
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope,
-				fallbackScope: [],
-				user: locals.user
-			})
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.goal])
 		: null;
-	const customCategories = features.useCustomCategories()
+	const useCustomCategories = features.useCustomCategories();
+
+	const customCategories = useCustomCategories
 		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
 		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = (await locals.pool.connect(
@@ -106,37 +101,39 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 			)
 		);
 	} else {
-		containers = await locals.pool.connect(
-			features.useElasticsearch()
-				? getManyContainersWithES(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							audience: url.searchParams.getAll('audience'),
-							sdg: url.searchParams.getAll('sdg'),
-							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							programTypes: url.searchParams.getAll('programType'),
-							topics: url.searchParams.getAll('topic'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.goal]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
-				: getManyContainers(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							audience: url.searchParams.getAll('audience'),
-							sdg: url.searchParams.getAll('sdg'),
-							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							programTypes: url.searchParams.getAll('programType'),
-							topics: url.searchParams.getAll('topic'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.goal]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
-		);
+		if (features.useElasticsearch()) {
+			const esResult = await locals.pool.connect(
+				getManyContainersWithES(
+					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					{
+						...coreCategoryFilters,
+						customCategories,
+						programTypes: url.searchParams.getAll('programType'),
+						terms: url.searchParams.get('terms') ?? '',
+						type: [payloadTypes.enum.goal]
+					},
+					url.searchParams.get('sort') ?? '',
+					undefined,
+					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				)
+			);
+			containers = esResult.containers;
+			data = esResult.facets;
+		} else {
+			containers = await locals.pool.connect(
+				getManyContainers(
+					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					{
+						...coreCategoryFilters,
+						customCategories,
+						programTypes: url.searchParams.getAll('programType'),
+						terms: url.searchParams.get('terms') ?? '',
+						type: [payloadTypes.enum.goal]
+					},
+					url.searchParams.get('sort') ?? ''
+				)
+			);
+		}
 	}
 
 	const filtered = filterOrganizationalUnits(
@@ -151,13 +148,6 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		subordinateOrganizationalUnits,
 		currentOrganizationalUnit ?? undefined
 	);
-
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(
-				filtered.map((c) => c.guid),
-				categoryContext?.keys ?? []
-			)
-		: undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
 		...((url.searchParams.has('related-to')
@@ -178,7 +168,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (useCustomCategories && categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -201,7 +191,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 	const facets = features.useElasticsearch()
 		? _facets
 		: computeFacetCount(_facets, containers, {
-				useCategoryPayload: features.useCustomCategories()
+				useCategoryPayload: useCustomCategories
 			});
 
 	return {
@@ -210,4 +200,4 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options ?? null
 	};
-});
+} satisfies PageServerLoad);

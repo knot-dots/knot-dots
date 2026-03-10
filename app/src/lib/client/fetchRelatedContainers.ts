@@ -18,7 +18,8 @@ export default async function fetchRelatedContainers(
 		terms?: string;
 		topic?: string[];
 	},
-	sort?: string
+	sort?: string,
+	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
 	for (const value of filters.assignee ?? []) {
@@ -63,7 +64,7 @@ export default async function fetchRelatedContainers(
 	for (const value of filters.topic ?? []) {
 		params.append('topic', value);
 	}
-	const response = await fetch(`/container/${guid}/relation?${params}`);
+	const response = await fetch(`/container/${guid}/relation?${params}`, init);
 	const data = await response.json();
 	return z.array(container).parse(data);
 }

@@ -356,6 +356,8 @@
 				bind:value={container.payload.measureType}
 			/>
 		</div>
+	{:else}
+		<div class="cell"></div>
 	{/if}
 {/if}
 

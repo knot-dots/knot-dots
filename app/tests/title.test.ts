@@ -44,6 +44,11 @@ test.describe('Document titles', () => {
 		await page.getByRole('button', { name: 'Programs', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Measures' }).click();
 		await expect(page).toHaveTitle(/\/\s*Measures$/);
+
+		// Navigate to Resources workspace
+		await page.getByRole('button', { name: 'Measures', exact: true }).click();
+		await page.getByRole('menuitem', { name: 'Resources' }).click();
+		await expect(page).toHaveTitle(/\/\s*Resources$/);
 	});
 
 	test('profile routes use profile workspace title segments', async ({ page }) => {

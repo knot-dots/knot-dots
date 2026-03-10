@@ -11,6 +11,7 @@
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import Tendency from '$lib/components/Tendency.svelte';
 	import {
 		findAncestors,
 		isContainerWithProgress,
@@ -122,17 +123,31 @@
 
 	function computeHref(url: URL) {
 		const hashParams = paramsFromFragment(url);
+
 		if (hashParams.get(overlayKey.enum.view) === container.guid) {
 			return '#';
 		} else if (isWorkspaceContainer(container)) {
 			return overlayURL(url, 'workspace', container.guid);
-		} else if (hashParams.has('indicators')) {
-			return overlayURL(url, 'view', container.guid, [
-				['program', hashParams.get('indicators') as string]
-			]);
-		} else {
-			return overlayURL(url, 'view', container.guid);
 		}
+
+		// Check for overlay indicators/resources
+		if (
+			hashParams.has('indicators') ||
+			page.route.id === '/[guid=uuid]/[contentGuid=uuid]/indicators/catalog'
+		) {
+			return overlayURL(url, 'view', container.guid, [
+				['program', hashParams.get('indicators') ?? (page.params.contentGuid as string)]
+			]);
+		} else if (
+			hashParams.has('resources') ||
+			page.route.id === '/[guid=uuid]/[contentGuid=uuid]/resources/catalog'
+		) {
+			return overlayURL(url, 'view', container.guid, [
+				['program', hashParams.get('resources') ?? (page.params.contentGuid as string)]
+			]);
+		}
+
+		return overlayURL(url, 'view', container.guid);
 	}
 
 	let previewLink: HTMLAnchorElement;
@@ -281,7 +296,11 @@
 		{:else if isEffectContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				<EffectChart {container} {relatedContainers} />
+				{#if container.payload.plannedValues.length > 0}
+					<EffectChart {container} {relatedContainers} />
+				{:else}
+					<Tendency {container} />
+				{/if}
 			{/if}
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
@@ -302,7 +321,11 @@
 		{:else if isObjectiveContainer(container)}
 			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
-				<ObjectiveChart {container} {relatedContainers} />
+				{#if container.payload.wantedValues.length > 0}
+					<ObjectiveChart {container} {relatedContainers} />
+				{:else if 'trendValue' in container.payload}
+					<Tendency {container} />
+				{/if}
 			{/if}
 		{:else if isContentPartnerContainer(container)}
 			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>

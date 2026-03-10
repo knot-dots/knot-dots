@@ -19,9 +19,10 @@
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
 		createParams?: URLSearchParams;
+		hideCreateButton?: boolean;
 	}
 
-	let { containers, item, payloadType, createParams }: Props = $props();
+	let { containers, item, payloadType, createParams, hideCreateButton = false }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -61,7 +62,7 @@
 </script>
 
 <div>
-	{#if payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
+	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
 		{#if payloadType.length === 1}
 			<p>
 				<button

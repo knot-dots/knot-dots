@@ -11,6 +11,7 @@
 		type GoalContainer,
 		isEffectContainer,
 		isPartOf,
+		type MeasureContainer,
 		overlayKey,
 		payloadTypes
 	} from '$lib/models';
@@ -21,7 +22,7 @@
 		container: EffectCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: GoalContainer;
+		parentContainer: GoalContainer | MeasureContainer;
 		relatedContainers: AnyContainer[];
 	}
 

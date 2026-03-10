@@ -18,6 +18,7 @@
 		iooiTypes,
 		isEffectContainer,
 		isGoalContainer,
+		isIndicatorContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
 		isResourceDataCollectionContainer,
@@ -315,13 +316,13 @@
 					onfinalize={handleDndFinalize(iooiType)}
 				>
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
-						<Card container={item} />
+						<Card container={item} relatedContainers={containers.filter(isIndicatorContainer)} />
 					{/each}
 				</div>
 			{:else}
 				<div class="vertical-scroll-wrapper">
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
-						<Card container={item} />
+						<Card container={item} relatedContainers={containers.filter(isIndicatorContainer)} />
 					{/each}
 				</div>
 			{/if}

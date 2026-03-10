@@ -222,6 +222,11 @@ export type OverlayData =
 			categoryOptions?: CategoryOptions | null;
 	  }
 	| {
+			key: 'resources';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
 			key: 'view';
 			container: AnyContainer;
 			revisions: AnyContainer[];
@@ -512,16 +517,12 @@ if (browser) {
 					{
 						organization: [container.organization],
 						payloadType: [
-							payloadTypes.enum.goal,
+							payloadTypes.enum.indicator,
 							payloadTypes.enum.objective,
 							payloadTypes.enum.resource_data,
 							payloadTypes.enum.resource_data_collection
 						],
-						relationType: [
-							predicates.enum['is-part-of'],
-							predicates.enum['is-objective-for'],
-							predicates.enum['is-section-of']
-						],
+						relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'
@@ -542,17 +543,12 @@ if (browser) {
 				{
 					organization: [container.organization],
 					payloadType: [
-						payloadTypes.enum.measure,
-						payloadTypes.enum.simple_measure,
 						payloadTypes.enum.effect,
+						payloadTypes.enum.indicator,
 						payloadTypes.enum.resource_data,
 						payloadTypes.enum.resource_data_collection
 					],
-					relationType: [
-						predicates.enum['is-part-of'],
-						predicates.enum['is-measured-by'],
-						predicates.enum['is-section-of']
-					],
+					relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
@@ -637,6 +633,28 @@ if (browser) {
 					containers: relatedContainers
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum.resources)) {
+			const programGuid = hashParams.get(overlayKey.enum.resources) as string;
+
+			// Preload for fullscreen and overlay is the same for resources, so we can use the same logic
+			const result = await preloadData(
+				resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: programGuid
+				}) +
+					'?' +
+					hashParams.toString()
+			);
+
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+
+			setOverlayIfLatest({
+				key: overlayKey.enum.resources,
+				container: result.data.container,
+				containers: result.data.containers
+			});
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
 				sdg: hashParams.getAll('sdg'),

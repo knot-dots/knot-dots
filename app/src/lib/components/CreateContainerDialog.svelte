@@ -185,7 +185,12 @@
 						revisions={[]}
 					/>
 				{:else if isCategoryContainer($newContainer)}
-					<CategoryProperties bind:container={$newContainer} editable />
+					<CategoryProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isIndicatorContainer($newContainer)}
 					<IndicatorProperties
 						bind:container={$newContainer}

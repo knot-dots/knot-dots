@@ -17,6 +17,7 @@
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import SaveAsIndicatorTemplateButton from '$lib/components/SaveAsIndicatorTemplateButton.svelte';
+	import Sections from '$lib/components/Sections.svelte';
 	import {
 		type AnyContainer,
 		titleForProgramCollection,
@@ -190,6 +191,8 @@
 					bind:value={container.payload.description}
 				/>
 			{/key}
+
+			<Sections bind:container {relatedContainers} />
 		{/snippet}
 	</EditableContainerDetailView>
 

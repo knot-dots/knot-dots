@@ -13,6 +13,7 @@ import {
 	type OrganizationContainer,
 	payloadTypes
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
@@ -64,8 +65,6 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 		}
 	}
 
-	const defaultOrganizationGuid = organizations.find(({ payload }) => payload.default)?.guid;
-
 	// Don't use subdomains in dev mode if the env var is set
 	if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
 		if (currentOrganizationalUnit) {
@@ -102,6 +101,15 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
+	const defaultOrganizationGuid =
+		organizations.find(({ payload }) => payload.default)?.guid ?? currentOrganization.guid;
+
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope: [currentOrganization.guid, defaultOrganizationGuid],
+		user: locals.user
+	});
+
 	if (url.searchParams.has('signup')) {
 		try {
 			const foundUser = await findUserById(url.searchParams.get('signup') as string);
@@ -114,12 +122,13 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 	}
 
 	return {
+		categoryContext,
 		currentOrganization,
 		currentOrganizationalUnit,
+		defaultOrganizationGuid,
 		features: locals.features,
 		organizations,
 		organizationalUnits,
-		defaultOrganizationGuid,
 		session: await locals.auth(),
 		user
 	};

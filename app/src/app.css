@@ -697,11 +697,12 @@ button.button-square,
 }
 
 .action-button.action-button--padding-tight {
+	border-radius: 4px;
 	padding: 0.25rem;
 }
 
 .action-button.action-button--size-s {
-	border-radius: 4px;
+	padding: 0.625rem;
 }
 
 .action-button.action-button--size-s.action-button--padding-tight {
@@ -772,6 +773,74 @@ button.button-square,
 
 .button-group.button-group-nav {
 	--button-border-color: var(--color-gray-900);
+}
+
+/* Segmented button */
+:root {
+	--segmented-button-selected-background-color: var(--color-primary-050);
+	--segmented-button-selected-border-color: var(--color-primary-700);
+	--segmented-button-selected-color: var(--color-primary-700);
+}
+
+.segmented-button {
+	color: var(--color-gray-900);
+	display: flex;
+}
+
+.segmented-button.segmented-button--vertical {
+	flex-direction: column;
+}
+
+.segmented-button > .button {
+	--button-active-background: var(--color-gray-100);
+	--button-background: var(--color-white);
+	--button-hover-background: var(--color-blue-gray-050);
+
+	border: solid 1px var(--color-gray-200);
+	border-radius: 0;
+	padding: 0.5rem 1rem;
+}
+
+.segmented-button > .button:first-child {
+	border-bottom-left-radius: 8px;
+	border-top-left-radius: 8px;
+}
+
+.segmented-button.segmented-button--vertical > .button:first-child {
+	border-bottom-left-radius: 0;
+	border-top-right-radius: 8px;
+}
+
+.segmented-button > .button:last-child {
+	border-bottom-right-radius: 8px;
+	border-top-right-radius: 8px;
+}
+
+.segmented-button.segmented-button--vertical > .button:last-child {
+	border-bottom-left-radius: 8px;
+	border-top-right-radius: 0;
+}
+
+.segmented-button > .button svg {
+	color: var(--color-gray-700);
+	flex-shrink: 0;
+	height: 1.5rem;
+	max-width: revert;
+	width: 1.5rem;
+}
+
+.segmented-button input {
+	appearance: none;
+}
+
+.segmented-button > .button:has(input:checked) {
+	background-color: var(--segmented-button-selected-background-color);
+	border-color: var(--segmented-button-selected-border-color);
+	color: var(--segmented-button-selected-color);
+}
+
+.segmented-button > .button:has(input:checked) svg {
+	color: inherit;
 }
 
 /* Form controls */
@@ -1059,6 +1128,12 @@ label > input[type='checkbox'].toggle {
 	--carousel-margin-right: calc(
 		var(--details-padding-right) * -1 - var(--details-section-padding-x)
 	);
+	--editable-table-margin-left: calc(
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+	);
+	--editable-table-margin-right: calc(
+		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
@@ -1088,12 +1163,25 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-heading {
-	color: var(--color-gray-700);
+	color: var(--color-gray-800);
 	flex-grow: 1;
-	font-size: 1.5rem;
-	font-weight: 600;
 	line-height: 1.25;
 	min-height: 2rem;
+}
+
+h2.details-heading {
+	font-size: 1.875rem;
+	font-weight: 600;
+}
+
+h3.details-heading {
+	font-size: 1.875rem;
+	font-weight: 400;
+}
+
+h4.details-heading {
+	font-size: 1.5rem;
+	font-weight: 600;
 }
 
 .details-section header {
