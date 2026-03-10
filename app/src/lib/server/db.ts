@@ -1118,6 +1118,19 @@ export function getAllContainersRelatedToIndicators(
 				AND NOT c.deleted
 		`);
 
+		const sectionResult = await connection.any(sql.typeAlias('guid')`
+			SELECT c.guid
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject AND cr.object IN (${sql.join(
+				containers.map(({ guid }) => guid),
+				sql.fragment`, `
+			)})
+				AND cr.predicate = ${predicates.enum['is-section-of']}
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE c.valid_currently AND NOT c.deleted
+		`);
+
 		const objectiveAndEffectResult = await connection.any(sql.typeAlias('guid')`
 			SELECT c.guid
 			FROM container c
@@ -1165,7 +1178,7 @@ export function getAllContainersRelatedToIndicators(
 					FROM container c
 					WHERE ${prepareWhereCondition({ ...filters })}
 					  AND c.guid IN (${sql.join(
-							[...isPartOfResult, ...indicatorResult].map(({ guid }) => guid),
+							[...isPartOfResult, ...indicatorResult, ...sectionResult].map(({ guid }) => guid),
 							sql.fragment`, `
 						)})
 				`)

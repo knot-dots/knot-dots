@@ -53,6 +53,35 @@ test('create custom indicator with actual data', async ({ indicatorCatalog, test
 	await expect(table.getByRole('cell', { name: secondValue })).toBeVisible();
 });
 
+test('add section to indicator', async ({ indicatorCatalog, testOrganization }) => {
+	await indicatorCatalog.goto(`/${testOrganization.guid}`);
+	await indicatorCatalog.header.editModeToggle.check();
+
+	// Create a custom indicator
+	const titleOfCustomIndicator = 'My Indicator';
+	await indicatorCatalog.addCustomIndicatorButton.click();
+	await indicatorCatalog.page
+		.getByRole('dialog')
+		.getByRole('textbox', { name: 'Title' })
+		.fill(titleOfCustomIndicator);
+	await indicatorCatalog.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+	await expect(indicatorCatalog.overlay.title).toHaveText(titleOfCustomIndicator);
+
+	// Add a text section
+	const section = await indicatorCatalog.overlay.addSection('Text');
+	const invalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	await section.getByRole('heading').fill('Lorem ipsum');
+	await section
+		.getByRole('textbox')
+		.fill('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+	await invalidateRequest;
+
+	// Verify section is persisted
+	await indicatorCatalog.page.reload();
+	await expect(section.getByRole('heading')).toHaveText('Lorem ipsum');
+	await expect(section).toContainText('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+});
+
 test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTemplate }) => {
 	await indicatorCatalog.goto(`/${testIndicatorTemplate.organization}`);
 	await indicatorCatalog.header.editModeToggle.check();

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
 import { filterVisible } from '$lib/authorization';
 import { isIndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
+import { hasSection } from '$lib/relations';
 import {
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
@@ -40,11 +41,14 @@ export const fetchContainersRelatedToIndicators = query(
 				locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
 			]);
 
-			relatedContainers = containersRelatedToProgram.filter(({ guid }) =>
-				containersRelatedToIndicator.some(
-					({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
-				)
-			);
+			relatedContainers = [
+				...containersRelatedToProgram.filter(({ guid }) =>
+					containersRelatedToIndicator.some(
+						({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
+					)
+				),
+				...hasSection(container, containersRelatedToIndicator)
+			];
 		} else {
 			let subordinateOrganizationalUnits: string[] = [];
 
@@ -87,18 +91,23 @@ export const fetchContainersRelatedToIndicatorTemplates = query(
 	}),
 	async ({ guid, params }) => {
 		const { locals } = getRequestEvent();
-		const relatedContainers = await locals.pool.connect(
-			getManyContainers(
-				[params.organization],
-				{
-					indicator: guid,
-					organizationalUnits: params.organizationalUnit ? [params.organizationalUnit] : [],
-					type: [payloadTypes.enum.actual_data]
-				},
-				'alpha'
+		const [actualDataContainers, sectionContainers] = await Promise.all([
+			locals.pool.connect(
+				getManyContainers(
+					[params.organization],
+					{
+						indicator: guid,
+						organizationalUnits: params.organizationalUnit ? [params.organizationalUnit] : [],
+						type: [payloadTypes.enum.actual_data]
+					},
+					'alpha'
+				)
+			),
+			locals.pool.connect(
+				getAllRelatedContainers([params.organization], guid, ['is-section-of'], {}, 'alpha')
 			)
-		);
-		return filterVisible(relatedContainers, locals.user);
+		]);
+		return filterVisible([...actualDataContainers, ...sectionContainers], locals.user);
 	}
 );
 
