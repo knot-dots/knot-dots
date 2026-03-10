@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { IsInViewport, resource } from 'runed';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -40,18 +41,29 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let guid = $derived(container.guid);
+	let header = $state<HTMLElement>();
 
-	let teaserRequest = $derived.by(() => {
-		if (fetchDisabled) {
-			return Promise.resolve([]);
-		} else {
-			return fetchRelatedContainers(guid, {
-				payloadType: [payloadTypes.enum.teaser],
-				relationType: [predicates.enum['is-part-of']]
-			});
-		}
-	}) as Promise<TeaserContainer[]>;
+	const inViewport = new IsInViewport(() => header);
+
+	let teasers = resource(
+		[() => container.guid, () => inViewport.current],
+		async ([guid], _, { signal }) => {
+			if (fetchDisabled) {
+				return Promise.resolve([]);
+			} else {
+				return (await fetchRelatedContainers(
+					guid,
+					{
+						payloadType: [payloadTypes.enum.teaser],
+						relationType: [predicates.enum['is-part-of']]
+					},
+					'alpha',
+					{ signal }
+				)) as TeaserContainer[];
+			}
+		},
+		{ lazy: true, once: true }
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -87,7 +99,7 @@
 	}
 </script>
 
-<header>
+<header bind:this={header}>
 	{#if editable && $ability.can('update', container)}
 		<svelte:element
 			this={heading}
@@ -129,7 +141,8 @@
 	{/if}
 </header>
 
-{#await teaserRequest then items}
+{#if teasers.current}
+	{@const items = teasers.current}
 	{#if container.payload.listType === 'list'}
 		<List
 			{addItem}
@@ -171,4 +184,4 @@
 			{/snippet}
 		</Carousel>
 	{/if}
-{/await}
+{/if}

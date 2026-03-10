@@ -10,6 +10,7 @@
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
+	import Sections from '$lib/components/Sections.svelte';
 	import { type AnyContainer, type IndicatorTemplateContainer } from '$lib/models';
 	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
@@ -81,6 +82,8 @@
 					/>
 				{/if}
 			</div>
+
+			<Sections bind:container {relatedContainers} />
 		{/snippet}
 	</EditableContainerDetailView>
 
