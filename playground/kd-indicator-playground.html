@@ -48,10 +48,10 @@ COLORS = ({
   statusRejected:         '#9ca3af',   // Rejected
 
   // Trend area (light blue, as in the app)
-  trendArea:              'rgb(213, 239, 252)',
+  trendArea:              '#D6F0EF',
 
   // Objective line
-  objectiveLine:          '#21a5ed',
+  objectiveLine:          '#0B8A8A',
 
   // Main indicator (own Kommune) — from indicator-tokens.css
   mainLine:               '#0B8A8A',
@@ -76,13 +76,13 @@ COLORS = ({
 // Full token config per slot (color + stroke weight + dash + linecap)
 // Source: indicator-tokens.css
 INDICATOR_TOKENS = ({
-  own:            { color: '#0B8A8A', width: 2.5, dash: null,        linecap: 'round' },
+  own:            { color: '#0B8A8A', width: 3, dash: null,        linecap: 'round' },
   'compare-1':    { color: '#C25A0A', width: 2,   dash: null,        linecap: 'round' },
   'compare-2':    { color: '#7233C2', width: 2,   dash: null,        linecap: 'round' },
   'compare-3':    { color: '#B81E5D', width: 2,   dash: null,        linecap: 'round' },
-  'ref-state':    { color: '#A08C78', width: 1.5, dash: '8 4',       linecap: 'butt'  },
-  'ref-federal':  { color: '#2E4560', width: 1.5, dash: '4 4',       linecap: 'butt'  },
-  'ref-benchmark':{ color: '#1D7A46', width: 1.5, dash: '8 3 2 3',  linecap: 'butt'  },
+  'ref-state':    { color: '#A08C78', width: 2, dash: '8 4',       linecap: 'butt'  },
+  'ref-federal':  { color: '#2E4560', width: 2, dash: '4 4',       linecap: 'butt'  },
+  'ref-benchmark':{ color: '#1D7A46', width: 2, dash: '8 3 2 3',  linecap: 'butt'  },
 })
   </script>
 
@@ -215,6 +215,40 @@ function toDataPoints(historicalValues) {
 }
   </script>
 
+  <script id="53" type="application/vnd.observable.javascript">
+// Renders a legend row with SVG line swatches (supports dash patterns)
+function makeLegend(entries) {
+  const wrap = document.createElement('div')
+  wrap.style.cssText = 'display:flex; flex-wrap:wrap; gap:0.5rem 1.5rem; padding:0.75rem 0 0.25rem; border-top:1px solid #e5e7eb; margin-top:0.25rem;'
+  for (const { title, color, width, dash } of entries) {
+    const item = document.createElement('div')
+    item.style.cssText = 'display:flex; align-items:center; gap:0.375rem;'
+    const svgH = Math.max(width * 2, 10)
+    const midY = svgH / 2
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('width', '28')
+    svg.setAttribute('height', String(svgH))
+    svg.style.flexShrink = '0'
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    line.setAttribute('x1', '0')
+    line.setAttribute('y1', String(midY))
+    line.setAttribute('x2', '28')
+    line.setAttribute('y2', String(midY))
+    line.setAttribute('stroke', color)
+    line.setAttribute('stroke-width', String(width))
+    if (dash) line.setAttribute('stroke-dasharray', dash)
+    line.setAttribute('stroke-linecap', dash ? 'butt' : 'round')
+    svg.append(line)
+    const label = document.createElement('span')
+    label.textContent = title
+    label.style.cssText = 'font-size:12px; color:#374151;'
+    item.append(svg, label)
+    wrap.append(item)
+  }
+  return wrap
+}
+  </script>
+
   <!-- ============================================================ -->
   <!-- Charts -->
   <!-- ============================================================ -->
@@ -274,32 +308,37 @@ Main indicator (thick blue) + up to 7 comparison lines with right-edge labels.
     })
     .filter(Boolean)
 
-  return Plot.plot({
-    title: 'Variant C: Comparison Mode (indicator tokens)',
-    width: CHART_WIDTH,
-    height: CHART_HEIGHT,
-    marginLeft: 60,
-    marginRight: 180,
-    marginTop: 40,
-    marginBottom: 40,
-    grid: SHOW_GRID,
-    marks: [
-      ...lineMarks,
-      Plot.text(labelData, {
-        x: 'date', y: 'value', text: 'title',
-        dx: 8, textAnchor: 'start', fontSize: 12,
-        fill: (d) => INDICATOR_TOKENS[d.slot].color,
-      }),
-      ...(SHOW_TOOLTIPS
-        ? [Plot.tip(allData, Plot.pointerX({
-            x: 'date', y: 'value',
-            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
-          }))]
-        : []),
-    ],
-    y: { label: mainIndicator.unit },
-    x: { type: 'time' },
-  })
+  const legendEntries = slots.map(([title, slot]) => ({
+    title, color: INDICATOR_TOKENS[slot].color,
+    width: INDICATOR_TOKENS[slot].width, dash: INDICATOR_TOKENS[slot].dash,
+  }))
+
+  const wrap = document.createElement('div')
+  wrap.append(
+    Plot.plot({
+      title: 'Variant C: Comparison Mode (indicator tokens)',
+      width: CHART_WIDTH,
+      height: CHART_HEIGHT,
+      marginLeft: 60,
+      marginRight: 40,
+      marginTop: 40,
+      marginBottom: 40,
+      grid: SHOW_GRID,
+      marks: [
+        ...lineMarks,
+        ...(SHOW_TOOLTIPS
+          ? [Plot.tip(allData, Plot.pointerX({
+              x: 'date', y: 'value',
+              title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+            }))]
+          : []),
+      ],
+      y: { label: mainIndicator.unit },
+      x: { type: 'time' },
+    }),
+    makeLegend(legendEntries)
+  )
+  return wrap
 }
   </script>
 
@@ -324,76 +363,57 @@ Gleiche Struktur wie C, aber Vergleichslinien mit dem Observable10-Farbschema.
     }))
   )
 
-  return Plot.plot({
-    title: "Variant C1: Comparison Mode (observable10)",
-    width: CHART_WIDTH,
-    height: CHART_HEIGHT,
-    marginLeft: 60,
-    marginRight: 180,
-    marginTop: 40,
-    marginBottom: 40,
-    grid: SHOW_GRID,
-    color: {
-      domain: comparisonIndicators.map((i) => i.title),
-      scheme: "observable10",
-      legend: true,
-    },
-    marks: [
-      Plot.lineY(comparisonLines, {
-        x: "date",
-        y: "value",
-        stroke: "title",
-        strokeWidth: LINE_WIDTH.comparison,
-        strokeOpacity: 0.8,
-      }),
-      ...(SHOW_DOTS
-        ? [Plot.dot(comparisonLines, {
-            x: "date",
-            y: "value",
-            stroke: "title",
-            r: DOT_RADIUS - 1,
-            fillOpacity: 0.7,
-          })]
-        : []),
-      Plot.lineY(mainData, {
-        x: "date",
-        y: "value",
-        stroke: COLORS.mainLine,
-        strokeWidth: LINE_WIDTH.main,
-      }),
-      ...(SHOW_DOTS
-        ? [Plot.dot(mainData, {
-            x: "date",
-            y: "value",
-            fill: COLORS.mainLine,
-            r: DOT_RADIUS + 1,
-          })]
-        : []),
-      Plot.text(
-        [...comparisonLines, ...mainData].filter((d) => d.date.getFullYear() === 2024),
-        {
-          x: "date",
-          y: "value",
-          text: "title",
-          dx: 8,
-          textAnchor: "start",
-          fontSize: 11,
-        }
-      ),
-      ...(SHOW_TOOLTIPS
-        ? [Plot.tip(
-            [...comparisonLines, ...mainData],
-            Plot.pointerX({
-              x: "date",
-              y: "value",
-              title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
-            })
-          )]
-        : []),
-    ],
-    y: { label: mainIndicator.unit },
-    x: { type: "time" },
-  })
+  const schemeColors = d3.schemeObservable10
+  const legendEntries = [
+    { title: mainIndicator.title, color: COLORS.mainLine, width: LINE_WIDTH.main, dash: null },
+    ...comparisonIndicators.map((ind, i) => ({
+      title: ind.title, color: schemeColors[i % schemeColors.length],
+      width: LINE_WIDTH.comparison, dash: null,
+    })),
+  ]
+
+  const wrap = document.createElement('div')
+  wrap.append(
+    Plot.plot({
+      title: "Variant C1: Comparison Mode (observable10)",
+      width: CHART_WIDTH,
+      height: CHART_HEIGHT,
+      marginLeft: 60,
+      marginRight: 40,
+      marginTop: 40,
+      marginBottom: 40,
+      grid: SHOW_GRID,
+      color: { domain: comparisonIndicators.map((i) => i.title), scheme: "observable10" },
+      marks: [
+        Plot.lineY(comparisonLines, {
+          x: "date", y: "value", stroke: "title",
+          strokeWidth: LINE_WIDTH.comparison, strokeOpacity: 0.8,
+        }),
+        ...(SHOW_DOTS ? [Plot.dot(comparisonLines, {
+          x: "date", y: "value", stroke: "title",
+          r: DOT_RADIUS - 1, fillOpacity: 0.7,
+        })] : []),
+        Plot.lineY(mainData, {
+          x: "date", y: "value",
+          stroke: COLORS.mainLine, strokeWidth: LINE_WIDTH.main,
+        }),
+        ...(SHOW_DOTS ? [Plot.dot(mainData, {
+          x: "date", y: "value", fill: COLORS.mainLine, r: DOT_RADIUS + 1,
+        })] : []),
+        ...(SHOW_TOOLTIPS ? [Plot.tip(
+          [...comparisonLines, ...mainData],
+          Plot.pointerX({
+            x: "date", y: "value",
+            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+          })
+        )] : []),
+      ],
+      y: { label: mainIndicator.unit },
+      x: { type: "time" },
+    }),
+    makeLegend(legendEntries)
+  )
+  return wrap
 }
   </script>
 
@@ -418,76 +438,57 @@ Gleiche Struktur wie C, aber Vergleichslinien mit dem ColorBrewer-Set1-Farbschem
     }))
   )
 
-  return Plot.plot({
-    title: "Variant C2: Comparison Mode (Set1)",
-    width: CHART_WIDTH,
-    height: CHART_HEIGHT,
-    marginLeft: 60,
-    marginRight: 180,
-    marginTop: 40,
-    marginBottom: 40,
-    grid: SHOW_GRID,
-    color: {
-      domain: comparisonIndicators.map((i) => i.title),
-      scheme: "Set1",
-      legend: true,
-    },
-    marks: [
-      Plot.lineY(comparisonLines, {
-        x: "date",
-        y: "value",
-        stroke: "title",
-        strokeWidth: LINE_WIDTH.comparison,
-        strokeOpacity: 0.8,
-      }),
-      ...(SHOW_DOTS
-        ? [Plot.dot(comparisonLines, {
-            x: "date",
-            y: "value",
-            stroke: "title",
-            r: DOT_RADIUS - 1,
-            fillOpacity: 0.7,
-          })]
-        : []),
-      Plot.lineY(mainData, {
-        x: "date",
-        y: "value",
-        stroke: COLORS.mainLine,
-        strokeWidth: LINE_WIDTH.main,
-      }),
-      ...(SHOW_DOTS
-        ? [Plot.dot(mainData, {
-            x: "date",
-            y: "value",
-            fill: COLORS.mainLine,
-            r: DOT_RADIUS + 1,
-          })]
-        : []),
-      Plot.text(
-        [...comparisonLines, ...mainData].filter((d) => d.date.getFullYear() === 2024),
-        {
-          x: "date",
-          y: "value",
-          text: "title",
-          dx: 8,
-          textAnchor: "start",
-          fontSize: 11,
-        }
-      ),
-      ...(SHOW_TOOLTIPS
-        ? [Plot.tip(
-            [...comparisonLines, ...mainData],
-            Plot.pointerX({
-              x: "date",
-              y: "value",
-              title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
-            })
-          )]
-        : []),
-    ],
-    y: { label: mainIndicator.unit },
-    x: { type: "time" },
-  })
+  const schemeColors = d3.schemeSet1
+  const legendEntries = [
+    { title: mainIndicator.title, color: COLORS.mainLine, width: LINE_WIDTH.main, dash: null },
+    ...comparisonIndicators.map((ind, i) => ({
+      title: ind.title, color: schemeColors[i % schemeColors.length],
+      width: LINE_WIDTH.comparison, dash: null,
+    })),
+  ]
+
+  const wrap = document.createElement('div')
+  wrap.append(
+    Plot.plot({
+      title: "Variant C2: Comparison Mode (Set1)",
+      width: CHART_WIDTH,
+      height: CHART_HEIGHT,
+      marginLeft: 60,
+      marginRight: 40,
+      marginTop: 40,
+      marginBottom: 40,
+      grid: SHOW_GRID,
+      color: { domain: comparisonIndicators.map((i) => i.title), scheme: "Set1" },
+      marks: [
+        Plot.lineY(comparisonLines, {
+          x: "date", y: "value", stroke: "title",
+          strokeWidth: LINE_WIDTH.comparison, strokeOpacity: 0.8,
+        }),
+        ...(SHOW_DOTS ? [Plot.dot(comparisonLines, {
+          x: "date", y: "value", stroke: "title",
+          r: DOT_RADIUS - 1, fillOpacity: 0.7,
+        })] : []),
+        Plot.lineY(mainData, {
+          x: "date", y: "value",
+          stroke: COLORS.mainLine, strokeWidth: LINE_WIDTH.main,
+        }),
+        ...(SHOW_DOTS ? [Plot.dot(mainData, {
+          x: "date", y: "value", fill: COLORS.mainLine, r: DOT_RADIUS + 1,
+        })] : []),
+        ...(SHOW_TOOLTIPS ? [Plot.tip(
+          [...comparisonLines, ...mainData],
+          Plot.pointerX({
+            x: "date", y: "value",
+            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+          })
+        )] : []),
+      ],
+      y: { label: mainIndicator.unit },
+      x: { type: "time" },
+    }),
+    makeLegend(legendEntries)
+  )
+  return wrap
 }
   </script>
 
@@ -534,29 +535,34 @@ function comparisonChart(width) {
     })
     .filter(Boolean)
 
-  return Plot.plot({
-    width, height,
-    marginLeft: 44, marginRight,
-    marginTop: 32, marginBottom: 32,
-    grid: SHOW_GRID,
-    style: { fontSize: "12px" },
-    marks: [
-      ...lineMarks,
-      Plot.text(labelData, {
-        x: 'date', y: 'value', text: 'title',
-        dx: 6, textAnchor: 'start', fontSize: 12,
-        fill: (d) => INDICATOR_TOKENS[d.slot].color,
-      }),
-      ...(SHOW_TOOLTIPS
-        ? [Plot.tip(allData, Plot.pointerX({
-            x: 'date', y: 'value',
-            title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
-          }))]
-        : []),
-    ],
-    y: { label: mainIndicator.unit, ticks: 4 },
-    x: { type: 'time' },
-  })
+  const legendEntries = slots.map(([title, slot]) => ({
+    title, color: INDICATOR_TOKENS[slot].color,
+    width: INDICATOR_TOKENS[slot].width, dash: INDICATOR_TOKENS[slot].dash,
+  }))
+
+  const wrap = document.createElement('div')
+  wrap.append(
+    Plot.plot({
+      width, height,
+      marginLeft: 44, marginRight,
+      marginTop: 32, marginBottom: 32,
+      grid: SHOW_GRID,
+      style: { fontSize: "12px" },
+      marks: [
+        ...lineMarks,
+        ...(SHOW_TOOLTIPS
+          ? [Plot.tip(allData, Plot.pointerX({
+              x: 'date', y: 'value',
+              title: (d) => `${d.title}\n${d.date.getFullYear()}: ${d.value.toFixed(1)} ${mainIndicator.unit}`,
+            }))]
+          : []),
+      ],
+      y: { label: mainIndicator.unit, ticks: 4 },
+      x: { type: 'time' },
+    }),
+    makeLegend(legendEntries)
+  )
+  return wrap
 }
   </script>
 
