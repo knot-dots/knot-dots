@@ -2,22 +2,21 @@
 	import * as Plot from '@observablehq/plot';
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
-	import { resource } from 'runed';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import {
+		type ActualDataContainer,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
-		isActualDataContainer,
-		payloadTypes
+		isActualDataContainer
 	} from '$lib/models';
 	import { compareState } from '$lib/stores';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
 		relatedContainers?: AnyContainer[];
+		comparisonContainers?: ActualDataContainer[];
 	}
 
-	let { container, relatedContainers = [] }: Props = $props();
+	let { container, relatedContainers = [], comparisonContainers }: Props = $props();
 
 	let unit = $derived($_(container.payload.unit));
 
@@ -36,33 +35,11 @@
 		})) ?? []
 	);
 
-	// Fetch comparison data for selected municipalities
-	let selectedMunicipalityGuids = $derived(
-		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
-	);
+	const hasComparison = $derived(comparisonContainers && comparisonContainers.length > 0);
 
-	const hasComparison = $derived(selectedMunicipalityGuids.length > 0);
-
-	const comparisonDataResource = resource(
-		() => [selectedMunicipalityGuids, container.guid] as const,
-		async ([guids, indicatorGuid]) => {
-			if (guids.length === 0) return [];
-
-			const params = new SvelteURLSearchParams();
-			params.append('indicator', indicatorGuid);
-			params.append('payloadType', payloadTypes.enum.actual_data);
-			for (const guid of guids) {
-				params.append('organizationalUnit', guid);
-			}
-
-			const response = await fetch(`/container?${params.toString()}`);
-			if (!response.ok) return [];
-			return (await response.json()) as AnyContainer[];
-		}
-	);
-
+	// Prepare comparison data with assigned colors
 	let comparisonValues = $derived(
-		(comparisonDataResource.current ?? []).filter(isActualDataContainer).map((container) => ({
+		comparisonContainers?.map((container) => ({
 			values: container.payload.values
 				.map(([key, value]) => ({
 					date: new Date(key, 0),
@@ -102,7 +79,7 @@
 			);
 
 			// Lines for comparison municipalities
-			if (hasComparison) {
+			if (hasComparison && comparisonValues) {
 				for (const { values, color } of comparisonValues) {
 					marks.push(
 						Plot.lineY(values, {

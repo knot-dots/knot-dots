@@ -2,6 +2,7 @@
 	import { IsInViewport, resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 	import { z } from 'zod';
 	import CheckCircle from '~icons/flowbite/check-circle-solid';
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
@@ -18,19 +19,21 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
+		type ActualDataContainer,
 		actualDataContainer,
 		type AnyContainer,
 		audience,
 		computeFacetCount,
 		type CustomCollectionContainer,
 		indicatorCategories,
+		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -199,6 +202,66 @@
 		}
 	});
 
+	// Fetch comparison data for all indicators in batch
+	let selectedMunicipalityGuids = $derived(
+		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
+	);
+
+	let indicatorGuids = $derived(
+		items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
+	);
+
+	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
+	const comparisonDataResource = resource(
+		() => [selectedMunicipalityGuids, indicatorGuids, inViewport.current] as const,
+		async ([municipalityGuids, indicators], _, { signal }) => {
+			if (municipalityGuids.length === 0 || indicators.length === 0) return [];
+
+			// Split indicators into chunks to avoid 431 error (Request URI Too Large)
+			const CHUNK_SIZE = 50; // Conservative limit to keep URL under ~8KB
+			const chunks: string[][] = [];
+			for (let i = 0; i < indicators.length; i += CHUNK_SIZE) {
+				chunks.push(indicators.slice(i, i + CHUNK_SIZE));
+			}
+
+			// Fetch all chunks in parallel
+			const fetchPromises = chunks.map(async (indicatorChunk) => {
+				const params = new SvelteURLSearchParams();
+				for (const guid of indicatorChunk) {
+					params.append('indicator', guid);
+				}
+				for (const guid of municipalityGuids) {
+					params.append('organizationalUnit', guid);
+				}
+				params.append('payloadType', payloadTypes.enum.actual_data);
+
+				const response = await fetch(`/container?${params.toString()}`, { signal });
+				if (!response.ok) return [];
+				return z.array(actualDataContainer).parse(await response.json());
+			});
+
+			// Combine results from all chunks
+			const results = await Promise.all(fetchPromises);
+			return results.flat();
+		},
+		{ lazy: true }
+	);
+
+	// Create a map for efficient lookup of comparison data by indicator GUID
+	let comparisonDataMap = $derived.by(() => {
+		const map = new SvelteMap<string, ActualDataContainer[]>();
+		for (const container of comparisonDataResource.current ?? []) {
+			if (isActualDataContainer(container) && container.payload.indicator) {
+				const indicatorGuid = container.payload.indicator;
+				if (!map.has(indicatorGuid)) {
+					map.set(indicatorGuid, []);
+				}
+				map.get(indicatorGuid)!.push(container);
+			}
+		}
+		return map;
+	});
+
 	function addItems() {
 		dialog?.showModal();
 	}
@@ -280,7 +343,12 @@
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
-					<NewIndicatorCard --height="100%" container={item} {relatedContainers} />
+					<NewIndicatorCard
+						--height="100%"
+						container={item}
+						{relatedContainers}
+						{comparisonDataMap}
+					/>
 				{:else}
 					<Card --height="100%" container={item} />
 				{/if}
