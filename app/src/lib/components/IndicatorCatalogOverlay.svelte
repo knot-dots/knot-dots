@@ -11,8 +11,10 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		audience,
+		type BinaryIndicatorContainer,
 		computeFacetCount,
 		containerOfType,
 		type EmptyIndicatorContainer,
@@ -21,6 +23,7 @@
 		type IndicatorTemplateContainer,
 		indicatorTypes,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -36,7 +39,7 @@
 
 	interface Props {
 		indicatorTemplates: IndicatorTemplateContainer[];
-		indicators: IndicatorContainer[];
+		indicators: Array<BinaryIndicatorContainer | IndicatorContainer>;
 	}
 
 	let { indicatorTemplates, indicators }: Props = $props();
@@ -59,6 +62,23 @@
 		container.payload.quantity = quantities.enum['quantity.custom'];
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
+		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
+
+		$newContainer = container;
+
+		createContainerDialog.getElement().showModal();
+	}
+
+	function createBinaryIndicator() {
+		const container = containerOfType(
+			payloadTypes.enum.binary_indicator,
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as Omit<NewContainer, 'payload'> & Pick<BinaryIndicatorContainer, 'payload'>;
+
+		container.payload.title = '';
 		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
 
 		$newContainer = container;
@@ -89,7 +109,9 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	async function select(container: IndicatorContainer | IndicatorTemplateContainer) {
+	async function select(
+		container: BinaryIndicatorContainer | IndicatorContainer | IndicatorTemplateContainer
+	) {
 		if (isIndicatorContainer(container)) {
 			if ($addEffectState.target) {
 				const effect = await createEffect(
@@ -113,7 +135,7 @@
 				const params = new URLSearchParams([[overlayKey.enum.view, container.guid]]);
 				await goto(`#${params.toString()}`);
 			}
-		} else {
+		} else if (isIndicatorTemplateContainer(container)) {
 			createIndicatorFromTemplate(container);
 		}
 	}
@@ -143,7 +165,9 @@
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))]
 			]),
 			[
-				...indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)),
+				...indicatorTemplates.filter(
+					(c) => !alreadyInUse(c, indicators.filter(isIndicatorContainer))
+				),
 				...(params.has('alreadyInUse') ? indicators : [])
 			]
 		)
@@ -159,6 +183,13 @@
 				<Plus />
 				{$_('indicator_form.create_custom')}
 			</button>
+
+			{#if createFeatureDecisions(page.data.features).useBinaryIndicators()}
+				<button type="button" onclick={createBinaryIndicator}>
+					<Plus />
+					{$_('indicators.create_binary')}
+				</button>
+			{/if}
 		</p>
 
 		<ul class="details-section">
@@ -180,7 +211,7 @@
 					</li>
 				{/each}
 			{/if}
-			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators)) as template (template.guid)}
+			{#each indicatorTemplates.filter((c) => !alreadyInUse(c, indicators.filter(isIndicatorContainer))) as template (template.guid)}
 				<li>
 					<IndicatorTemplateCard --height="100%" container={template}>
 						{#snippet button()}
@@ -203,6 +234,11 @@
 <Help slug="indicator-catalog" />
 
 <style>
+	p {
+		display: flex;
+		gap: 0.5rem;
+	}
+
 	ul {
 		display: flex;
 		flex-direction: row;

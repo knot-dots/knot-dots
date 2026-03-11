@@ -290,6 +290,7 @@
 	"indicator_type.performance": "Performance indicator",
 	"indicators": "Indicators",
 	"indicators.activate_selected": "Activate selected indicators",
+	"indicators.create_binary": "Create a binary indicator",
 	"indicators.create_custom": "Create a custom indicator",
 	"info_box": "Infobox",
 	"invite": {

@@ -93,7 +93,7 @@ export async function getIndicatorsData(params: {
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
 					...(restrictOrgUnits ? { organizationalUnits } : {}),
-					type: [payloadTypes.enum.indicator]
+					type: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator]
 				},
 				'alpha',
 				undefined,
@@ -112,7 +112,7 @@ export async function getIndicatorsData(params: {
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
 					...(restrictOrgUnits ? { organizationalUnits } : {}),
-					type: [payloadTypes.enum.indicator]
+					type: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator]
 				},
 				'alpha'
 			)
@@ -138,7 +138,7 @@ export async function getIndicatorsData(params: {
 						indicatorCategories: filters.indicatorCategories,
 						indicatorTypes: filters.indicatorTypes,
 						sdg: filters.sdg,
-						type: [payloadTypes.enum.indicator_template]
+						type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 					},
 					'alpha'
 				)

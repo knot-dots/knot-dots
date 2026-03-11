@@ -290,6 +290,7 @@
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
 	"indicators.activate_selected": "Indikatoren einbinden",
+	"indicators.create_binary": "Binär-Indikator anlegen",
 	"indicators.create_custom": "Eigenen Indikator anlegen",
 	"info_box": "Infobox",
 	"invite": {

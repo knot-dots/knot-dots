@@ -12,9 +12,11 @@
 	import { page } from '$app/state';
 	import Card from '$lib/components/Card.svelte';
 	import {
+		type BinaryIndicatorContainer,
 		type Container,
 		findConnected,
 		type IndicatorContainer,
+		isBinaryIndicatorContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isIndicatorContainer,
@@ -33,7 +35,7 @@
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
 			return containers
-				.filter(isIndicatorContainer)
+				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 				.find(({ guid }) => guid === page.url.searchParams.get('related-to'));
 		} else {
 			return undefined;
@@ -44,16 +46,16 @@
 		if (selectedContainer) {
 			const connectedContainers = findConnected(
 				selectedContainer,
-				containers.filter(isIndicatorContainer),
+				containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c)),
 				[predicates.enum['is-affected-by']]
 			);
 			return containers
-				.filter(isIndicatorContainer)
+				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 				.filter((c) => connectedContainers.has(c))
 				.map((container) => ({ guid: container.guid, container }));
 		} else {
 			return containers
-				.filter(isIndicatorContainer)
+				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
@@ -61,7 +63,9 @@
 	let shouldIgnoreDndEvents = $state(false);
 
 	function handleDndConsider(
-		event: CustomEvent<DndEvent<{ guid: string; container: IndicatorContainer }>>
+		event: CustomEvent<
+			DndEvent<{ guid: string; container: BinaryIndicatorContainer | IndicatorContainer }>
+		>
 	) {
 		const { trigger, id } = event.detail.info;
 		if (trigger === TRIGGERS.DRAG_STARTED) {
@@ -83,7 +87,9 @@
 	}
 
 	function handleDndFinalize(
-		event: CustomEvent<DndEvent<{ guid: string; container: IndicatorContainer }>>
+		event: CustomEvent<
+			DndEvent<{ guid: string; container: BinaryIndicatorContainer | IndicatorContainer }>
+		>
 	) {
 		if (!shouldIgnoreDndEvents) {
 			items = event.detail.items;
