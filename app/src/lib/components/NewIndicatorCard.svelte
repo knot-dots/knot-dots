@@ -1,21 +1,43 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import type { ActualDataContainer, IndicatorTemplateContainer } from '$lib/models.js';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
+	import Summary from '$lib/components/Summary.svelte';
+	import {
+		type ActualDataContainer,
+		type BinaryIndicatorContainer,
+		type IndicatorTemplateContainer,
+		isActualDataContainer,
+		isBinaryIndicatorContainer
+	} from '$lib/models';
 
 	interface Props {
-		container: IndicatorTemplateContainer;
+		button?: Snippet;
+		container: IndicatorTemplateContainer | BinaryIndicatorContainer;
 		relatedContainers?: ActualDataContainer[];
 		showRelationFilter?: boolean;
 	}
 
-	const { container, relatedContainers = [], showRelationFilter = false }: Props = $props();
+	const { button, container, relatedContainers = [], showRelationFilter = false }: Props = $props();
 </script>
 
-<Card {container} {relatedContainers} {showRelationFilter}>
+<Card {button} {container} {relatedContainers} {showRelationFilter}>
 	{#snippet body()}
-		<NewIndicatorChart {container} {relatedContainers} />
+		{#if isBinaryIndicatorContainer(container)}
+			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
+			<Summary {container} />
+			{#if actualDataContainer}
+				<BooleanValueToggle
+					checked={actualDataContainer.payload.booleanValue}
+					disabled
+					value={actualDataContainer.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{/if}
+		{:else}
+			<NewIndicatorChart {container} {relatedContainers} />
+		{/if}
 	{/snippet}
 
 	{#snippet footer()}

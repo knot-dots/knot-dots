@@ -705,6 +705,7 @@ const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: tr
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
+	booleanValue: z.boolean().default(false),
 	indicator: z.string().uuid(),
 	source: z.string().optional(),
 	title: z.string(),

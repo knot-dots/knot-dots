@@ -40,6 +40,8 @@
 	"benefit.low": "Klein",
 	"benefit.medium": "Mittel",
 	"binary_indicator": "Binär-Indikator",
+	"binary_indicator.actual_data": "Ist-Wert",
+	"binary_indicator.add_actual_data": "Ist-Wert hinzufügen",
 	"board": {
 		"chapters": "Programm-Board",
 		"elements": "dots",
@@ -364,6 +366,7 @@
 	"models": "Visionen",
 	"modified_date": "Geändert am",
 	"n_more": "{count, plural, one {+1} other {+#}}",
+	"no": "Nein",
 	"object": "Objekt",
 	"objective": "Gewünschte Entwicklung",
 	"objective.tendency": "Tendenz",
@@ -763,5 +766,6 @@
 	"workspace.view.status": "Status-Board",
 	"workspace.view.table": "Tabelle",
 	"workspaces": "Arbeitsbereiche",
-	"year": "Jahr"
+	"year": "Jahr",
+	"yes": "Ja"
 }

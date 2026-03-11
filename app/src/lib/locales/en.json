@@ -40,6 +40,8 @@
 	"benefit.low": "Low",
 	"benefit.medium": "Medium",
 	"binary_indicator": "Binary indicator",
+	"binary_indicator.actual_data": "Actual data",
+	"binary_indicator.add_actual_data": "Add actual data",
 	"board": {
 		"chapters": "Chapters",
 		"elements": "Elements",
@@ -364,6 +366,7 @@
 	"models": "Models",
 	"modified_date": "Modified at",
 	"n_more": "{count, plural, one {+1} other {+#}}",
+	"no": "No",
 	"object": "Object",
 	"objective": "Objective",
 	"objective.tendency": "Tendency",
@@ -764,5 +767,6 @@
 	"workspace.view.status": "Status board",
 	"workspace.view.table": "Table",
 	"workspaces": "Workspaces",
-	"year": "Year"
+	"year": "Year",
+	"yes": "Yes"
 }

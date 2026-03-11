@@ -6,6 +6,7 @@
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
@@ -14,6 +15,8 @@
 	import Tendency from '$lib/components/Tendency.svelte';
 	import {
 		findAncestors,
+		isActualDataContainer,
+		isBinaryIndicatorContainer,
 		isContainerWithProgress,
 		isContainerWithEffect,
 		isContainerWithObjective,
@@ -268,6 +271,16 @@
 	<div class="body">
 		{#if body}
 			{@render body()}
+		{:else if isBinaryIndicatorContainer(container)}
+			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
+			<Summary {container} />
+			{#if actualDataContainer}
+				<BooleanValueToggle
+					checked={actualDataContainer.payload.booleanValue}
+					disabled
+					value={actualDataContainer.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{/if}
 		{:else if isIndicatorContainer(container)}
 			<IndicatorChart
 				{container}
