@@ -304,13 +304,17 @@
 				{/each}
 			</p>
 		{:else if isEffectContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
-			{#if indicator}
-				{#if container.payload.plannedValues.length > 0}
-					<EffectChart {container} {relatedContainers} />
-				{:else}
-					<Tendency {container} />
-				{/if}
+			{#if relatedContainers.find(isIndicatorContainer) && container.payload.plannedValues.length > 0}
+				<EffectChart {container} {relatedContainers} />
+			{:else if container.payload.booleanValue !== undefined}
+				<Summary {container} />
+				<BooleanValueToggle
+					checked={container.payload.booleanValue}
+					disabled
+					value={container.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{:else}
+				<Tendency {container} />
 			{/if}
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
@@ -329,13 +333,17 @@
 				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
-			{#if indicator}
-				{#if container.payload.wantedValues.length > 0}
-					<ObjectiveChart {container} {relatedContainers} />
-				{:else if 'trendValue' in container.payload}
-					<Tendency {container} />
-				{/if}
+			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorContainer)}
+				<ObjectiveChart {container} {relatedContainers} />
+			{:else if container.payload.booleanValue !== undefined}
+				<Summary {container} />
+				<BooleanValueToggle
+					checked={container.payload.booleanValue}
+					disabled
+					value={container.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{:else}
+				<Tendency {container} />
 			{/if}
 		{:else if isContentPartnerContainer(container)}
 			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>

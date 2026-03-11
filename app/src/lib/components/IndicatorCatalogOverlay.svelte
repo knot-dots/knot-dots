@@ -22,8 +22,8 @@
 		type IndicatorContainer,
 		type IndicatorTemplateContainer,
 		indicatorTypes,
+		isBinaryIndicatorContainer,
 		isIndicatorContainer,
-		isIndicatorTemplateContainer,
 		type NewContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -95,14 +95,12 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer & EmptyIndicatorContainer;
 
-		const payload = {
+		container.payload = {
 			...template.payload,
 			historicalValues: container.payload.historicalValues,
 			quantity: template.guid,
 			type: container.payload.type
 		} as IndicatorContainer['payload'];
-
-		container.payload = payload;
 
 		$newContainer = container;
 
@@ -112,7 +110,7 @@
 	async function select(
 		container: BinaryIndicatorContainer | IndicatorContainer | IndicatorTemplateContainer
 	) {
-		if (isIndicatorContainer(container)) {
+		if (isIndicatorContainer(container) || isBinaryIndicatorContainer(container)) {
 			if ($addEffectState.target) {
 				const effect = await createEffect(
 					$addEffectState.target,
@@ -135,7 +133,7 @@
 				const params = new URLSearchParams([[overlayKey.enum.view, container.guid]]);
 				await goto(`#${params.toString()}`);
 			}
-		} else if (isIndicatorTemplateContainer(container)) {
+		} else {
 			createIndicatorFromTemplate(container);
 		}
 	}
@@ -181,7 +179,7 @@
 		<p class="details-section">
 			<button class="template-category" type="button" onclick={() => createCustomIndicator()}>
 				<Plus />
-				{$_('indicator_form.create_custom')}
+				{$_('indicators.create_custom')}
 			</button>
 
 			{#if createFeatureDecisions(page.data.features).useBinaryIndicators()}

@@ -17,6 +17,7 @@ import {
 	type Container,
 	containerOfType,
 	filterMembers,
+	type HelpContainer,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	type IooiType,
@@ -24,7 +25,6 @@ import {
 	type MeasureContainer,
 	type NewContainer,
 	overlayKey,
-	type HelpContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
@@ -658,7 +658,7 @@ if (browser) {
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				organization: [values.data.currentOrganization.guid],
-				payloadType: [payloadTypes.enum.indicator],
+				payloadType: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator],
 				topic: hashParams.getAll('topic')
 			})) as Array<BinaryIndicatorContainer | IndicatorContainer>;
 			setOverlayIfLatest({

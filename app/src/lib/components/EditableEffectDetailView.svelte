@@ -10,6 +10,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -22,6 +23,7 @@
 	import {
 		type AnyContainer,
 		type EffectContainer,
+		isBinaryIndicatorContainer,
 		isIndicatorContainer,
 		predicates
 	} from '$lib/models';
@@ -160,47 +162,116 @@
 				/>
 			{/key}
 
-			{#if indicator && createFeatureDecisions(page.data.features).useTendentialObjectivesAndEffects()}
-				<div class="details-section">
-					<h2 class="details-heading">{$_('effect.tendency')}</h2>
-
-					<EditableTendency
-						{container}
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-				</div>
-			{/if}
-
 			{#if indicator}
-				<div class="details-section">
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<div class="disclosure">
-							<button class="disclosure-button" type="button" use:disclosure.button>
-								<span>
-									<small>{$_('indicator.table.edit')}</small>
-									<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
-								</span>
-								{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-							</button>
+				{#if createFeatureDecisions(page.data.features).useBinaryIndicators() && isBinaryIndicatorContainer(indicator)}
+					<div class="details-section">
+						<BooleanValueToggle
+							bind:checked={
+								() => container.payload.booleanValue ?? false,
+								(v) => (container.payload.booleanValue = v)
+							}
+							disabled={!$applicationState.containerDetailView.editable ||
+								!$ability.can('update', container)}
+							value={container.payload.booleanValue ? $_('yes') : $_('no')}
+						/>
+					</div>
+				{:else if !isBinaryIndicatorContainer(indicator)}
+					{#if createFeatureDecisions(page.data.features).useTendentialObjectivesAndEffects()}
+						<div class="details-section">
+							<h2 class="details-heading">{$_('effect.tendency')}</h2>
 
-							{#if $disclosure.expanded}
-								<div transition:slide={{ duration: 125, easing: cubicInOut }} use:disclosure.panel>
-									<table>
-										<thead>
-											<tr>
-												<th>{$_('indicator.table.year')}</th>
-												<th>{$_('indicator.effect.planned_values')}</th>
-												<th>{$_('indicator.effect.achieved_values')}</th>
-												<th></th>
-											</tr>
-										</thead>
-										<tbody>
-											{#if container.payload.plannedValues.length > 0}
+							<EditableTendency
+								{container}
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+							/>
+						</div>
+					{/if}
+
+					<div class="details-section">
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<div class="disclosure">
+								<button class="disclosure-button" type="button" use:disclosure.button>
+									<span>
+										<small>{$_('indicator.table.edit')}</small>
+										<strong>{indicator.payload.title} ({$_(indicator.payload.unit ?? '')})</strong>
+									</span>
+									{#if $disclosure.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+								</button>
+
+								{#if $disclosure.expanded}
+									<div
+										transition:slide={{ duration: 125, easing: cubicInOut }}
+										use:disclosure.panel
+									>
+										<table>
+											<thead>
+												<tr>
+													<th>{$_('indicator.table.year')}</th>
+													<th>{$_('indicator.effect.planned_values')}</th>
+													<th>{$_('indicator.effect.achieved_values')}</th>
+													<th></th>
+												</tr>
+											</thead>
+											<tbody>
+												{#if container.payload.plannedValues.length > 0}
+													<tr>
+														<td colspan="4">
+															<button
+																onclick={prependYear}
+																type="button"
+																{@attach tooltip($_('append_row'))}
+															>
+																<Plus />
+															</button>
+														</td>
+													</tr>
+												{/if}
+
+												{#each container.payload.plannedValues as [key], index (key)}
+													<tr>
+														<td class="year">
+															{container.payload.plannedValues[index][0]}
+														</td>
+														<td class="focus-indicator">
+															{#if $applicationState.containerDetailView.editable}
+																<input
+																	inputmode="decimal"
+																	onchange={updatePlannedValues(index)}
+																	type="text"
+																	value={container.payload.plannedValues[index][1]}
+																	use:init={key === newRowKey}
+																/>
+															{:else}
+																{container.payload.plannedValues[index][1]}
+															{/if}
+														</td>
+														<td class="focus-indicator">
+															<input
+																inputmode="decimal"
+																onchange={updateAchievedValues(index)}
+																type="text"
+																value={container.payload.achievedValues[index][1]}
+															/>
+														</td>
+														<td>
+															{#if index === 0 || index === container.payload.plannedValues.length - 1}
+																<button
+																	onclick={removeYear(index)}
+																	type="button"
+																	{@attach tooltip($_('delete_row'))}
+																>
+																	<Minus />
+																</button>
+															{/if}
+														</td>
+													</tr>
+												{/each}
+
 												<tr>
 													<td colspan="4">
 														<button
-															onclick={prependYear}
+															onclick={appendYear}
 															type="button"
 															{@attach tooltip($_('append_row'))}
 														>
@@ -208,68 +279,16 @@
 														</button>
 													</td>
 												</tr>
-											{/if}
+											</tbody>
+										</table>
+									</div>
+								{/if}
+							</div>
+						{/if}
 
-											{#each container.payload.plannedValues as [key], index (key)}
-												<tr>
-													<td class="year">
-														{container.payload.plannedValues[index][0]}
-													</td>
-													<td class="focus-indicator">
-														{#if $applicationState.containerDetailView.editable}
-															<input
-																inputmode="decimal"
-																onchange={updatePlannedValues(index)}
-																type="text"
-																value={container.payload.plannedValues[index][1]}
-																use:init={key === newRowKey}
-															/>
-														{:else}
-															{container.payload.plannedValues[index][1]}
-														{/if}
-													</td>
-													<td class="focus-indicator">
-														<input
-															inputmode="decimal"
-															onchange={updateAchievedValues(index)}
-															type="text"
-															value={container.payload.achievedValues[index][1]}
-														/>
-													</td>
-													<td>
-														{#if index === 0 || index === container.payload.plannedValues.length - 1}
-															<button
-																onclick={removeYear(index)}
-																type="button"
-																{@attach tooltip($_('delete_row'))}
-															>
-																<Minus />
-															</button>
-														{/if}
-													</td>
-												</tr>
-											{/each}
-
-											<tr>
-												<td colspan="4">
-													<button
-														onclick={appendYear}
-														type="button"
-														{@attach tooltip($_('append_row'))}
-													>
-														<Plus />
-													</button>
-												</td>
-											</tr>
-										</tbody>
-									</table>
-								</div>
-							{/if}
-						</div>
-					{/if}
-
-					<EffectChart {container} {relatedContainers} showLegend />
-				</div>
+						<EffectChart {container} {relatedContainers} showLegend />
+					</div>
+				{/if}
 			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
