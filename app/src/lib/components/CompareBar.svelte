@@ -88,25 +88,27 @@
 			{/if}
 		</div>
 
-		{#each $compareState.selectedMunicipalities as municipality (municipality.guid)}
-			<div class="municipality-chip">
-				<span
-					class="chip-color"
-					style:background-color={$compareState.colorAssignments[municipality.guid]
-						? `var(${$compareState.colorAssignments[municipality.guid]})`
-						: 'transparent'}
-				></span>
-				<span class="chip-name">{municipality.payload.name}</span>
-				<button
-					class="chip-remove"
-					onclick={() => removeMunicipality(municipality.guid)}
-					title={$_('compare_remove')}
-					type="button"
-				>
-					<CloseCircle />
-				</button>
-			</div>
-		{/each}
+		<div class="municipality-list">
+			{#each $compareState.selectedMunicipalities as municipality (municipality.guid)}
+				<div class="municipality-chip">
+					<span
+						class="chip-color"
+						style:background-color={$compareState.colorAssignments[municipality.guid]
+							? `var(${$compareState.colorAssignments[municipality.guid]})`
+							: 'transparent'}
+					></span>
+					<span class="chip-name">{municipality.payload.name}</span>
+					<button
+						class="chip-remove"
+						onclick={() => removeMunicipality(municipality.guid)}
+						title={$_('compare_remove')}
+						type="button"
+					>
+						<CloseCircle />
+					</button>
+				</div>
+			{/each}
+		</div>
 
 		<button
 			class="compare-bar__button"
@@ -124,22 +126,23 @@
 	.compare-bar {
 		background-color: var(--color-primary-050);
 		border: 1px solid var(--color-primary-200);
-		border-radius: 0rem;
+		border-radius: 9999rem;
 		display: flex;
-		justify-content: safe center;
 		align-items: center;
+		align-self: stretch;
 		gap: 0.5rem;
 		height: 3rem;
+		margin: 0 0.5rem;
 		overflow-x: auto;
 		overflow-y: hidden;
-		padding: 0 0.75rem;
+		padding: 0 0.5rem;
 	}
 
 	.compare-bar__label {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding-right: 0.5rem;
+		padding: 0.75rem;
 	}
 
 	.compare-bar__label-text {
@@ -152,12 +155,13 @@
 
 	.compare-bar__clear-button {
 		align-items: center;
-		background: transparent;
 		border: 1px solid var(--color-primary-700);
 		border-radius: 0.5rem;
 		color: var(--color-primary-700);
 		display: flex;
-		padding: 0.25rem;
+		flex-shrink: 0;
+		justify-content: center;
+		padding: 0.5rem 0.75rem;
 	}
 
 	.compare-bar__clear-button :global(svg) {
@@ -169,13 +173,24 @@
 		background: var(--color-primary-200);
 	}
 
+	.municipality-list {
+		display: flex;
+		align-items: center;
+		align-self: stretch;
+		gap: 0.25rem;
+		min-width: 0;
+		overflow-x: auto;
+		padding: 0 0.75rem;
+	}
+
 	.municipality-chip {
 		align-items: center;
-		background-color: var(--color-white);
-		border: 1px solid var(--color-primary-300);
-		border-radius: 16px;
+		background-color: var(--color-primary-025);
+		border: 1px solid var(--color-primary-100);
+		border-radius: 6px;
 		display: flex;
 		gap: 0.5rem;
+		min-width: 8rem;
 		padding: 0.25rem 0.5rem 0.25rem 0.75rem;
 		white-space: nowrap;
 	}
@@ -192,16 +207,20 @@
 		color: var(--color-gray-900);
 		font-size: 0.875rem;
 		font-weight: 500;
+		flex-shrink: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.chip-remove {
-		align-items: center;
 		background: transparent;
 		border: none;
 		border-radius: 50%;
 		color: var(--color-gray-500);
 		cursor: pointer;
-		display: flex;
+		flex-shrink: 0;
 		padding: 0;
 		transition: color 0.15s ease;
 	}
@@ -222,6 +241,7 @@
 		border-radius: 8px;
 		color: var(--color-gray-700);
 		display: flex;
+		flex-shrink: 0;
 		font-size: 0.875rem;
 		font-weight: 500;
 		gap: 0.375rem;
