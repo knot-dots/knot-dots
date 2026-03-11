@@ -1,12 +1,18 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IOOI from '$lib/components/IOOI.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { isGoalContainer, isMeasureContainer } from '$lib/models';
+	import { isGoalContainer, isMeasureContainer, predicates } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [predicates.enum['contributes-to']]
+	});
 </script>
 
 <Layout>

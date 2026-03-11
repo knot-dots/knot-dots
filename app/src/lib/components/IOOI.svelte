@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import type { Writable } from 'svelte/store';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import type { Writable } from 'svelte/store';
+	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
 		type Container,
 		containerOfType,
@@ -27,6 +30,7 @@
 		type NewContainer,
 		type ObjectiveContainer,
 		overlayKey,
+		paramsFromFragment,
 		payloadTypes,
 		predicates,
 		resourceDataTypes
@@ -38,7 +42,6 @@
 		lastCreatedContainer,
 		newContainer
 	} from '$lib/stores';
-	import ResourceDataCard from './ResourceDataCard.svelte';
 
 	interface Props {
 		container: GoalContainer | MeasureContainer;
@@ -308,7 +311,9 @@
 			title={$_(iooiType)}
 			onCreateContainer={addItemForIooiType(iooiType)}
 		>
-			{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', container)}
+			{#if paramsFromFragment(page.url).has('relations')}
+				<MaybeDragZone containers={itemsByIooiType.get(iooiType) ?? []} />
+			{:else if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', container)}
 				<div
 					class="vertical-scroll-wrapper"
 					use:dndzone={{ dropTargetStyle: {}, items: itemsByIooiType.get(iooiType) ?? [] }}
