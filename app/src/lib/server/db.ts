@@ -537,7 +537,7 @@ function prepareWhereCondition(filters: {
 	sdg?: string[];
 	customCategories?: Record<string, string[]>;
 	indicatorCategories?: string[];
-	indicator?: string;
+	indicators?: string[];
 	indicatorTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[];
@@ -579,8 +579,10 @@ function prepareWhereCondition(filters: {
 			)}`
 		);
 	}
-	if (filters.indicator) {
-		conditions.push(sql.fragment`c.payload->>'indicator' = ${filters.indicator}`);
+	if (filters.indicators?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'indicator' IN (${sql.join(filters.indicators, sql.fragment`, `)})`
+		);
 	}
 	if (filters.indicatorTypes?.length) {
 		conditions.push(
@@ -721,7 +723,7 @@ export function getManyContainers(
 		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		indicator?: string;
+		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];
@@ -745,30 +747,6 @@ export function getManyContainers(
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
     `);
-		return withUserAndRelation<Container>(connection, containerResult);
-	};
-}
-
-export function getManyActualData(indicatorGuid: string, organizationalUnitGuids: string[]) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		if (organizationalUnitGuids.length === 0) {
-			return [];
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
-			FROM container c
-			WHERE c.valid_currently
-				AND NOT c.deleted
-				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
-				AND c.payload->>'indicator' = ${indicatorGuid}
-				AND (
-					c.organizational_unit IN (${sql.join(organizationalUnitGuids, sql.fragment`, `)})
-					OR c.organization IN (${sql.join(organizationalUnitGuids, sql.fragment`, `)})
-				)
-			ORDER BY COALESCE(c.organizational_unit, c.organization), (c.payload->>'values')::jsonb
-		`);
-
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
 }
