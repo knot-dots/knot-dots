@@ -321,13 +321,21 @@
 					onfinalize={handleDndFinalize(iooiType)}
 				>
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
-						<Card container={item} relatedContainers={containers.filter(isIndicatorContainer)} />
+						<Card
+							container={item}
+							relatedContainers={containers.filter(isIndicatorContainer)}
+							showRelationFilter
+						/>
 					{/each}
 				</div>
 			{:else}
 				<div class="vertical-scroll-wrapper">
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
-						<Card container={item} relatedContainers={containers.filter(isIndicatorContainer)} />
+						<Card
+							container={item}
+							relatedContainers={containers.filter(isIndicatorContainer)}
+							showRelationFilter
+						/>
 					{/each}
 				</div>
 			{/if}
