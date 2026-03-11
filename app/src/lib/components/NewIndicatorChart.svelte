@@ -9,6 +9,7 @@
 		isActualDataContainer
 	} from '$lib/models';
 	import { compareState } from '$lib/stores';
+	import { page } from '$app/state';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -17,6 +18,8 @@
 	}
 
 	let { container, relatedContainers = [], comparisonContainers }: Props = $props();
+
+	const currentOrgUnitName = page.data.currentOrganizationalUnit?.payload.name;
 
 	let unit = $derived($_(container.payload.unit));
 
@@ -35,8 +38,6 @@
 		})) ?? []
 	);
 
-	const hasComparison = $derived(comparisonContainers && comparisonContainers.length > 0);
-
 	// Prepare comparison data with assigned colors
 	let comparisonValues = $derived(
 		comparisonContainers?.map((container) => ({
@@ -50,57 +51,110 @@
 			color:
 				$compareState.colorAssignments[container.organizational_unit ?? container.organization] ||
 				'--color-gray-600'
-		}))
+		})) ?? []
 	);
 
+	// Combine all data for Plot's color scale
+	let allData = $derived([
+		...actualValues.map((d) => ({ ...d, municipality: 'current' })),
+		...comparisonValues.flatMap(({ values, municipalityGuid }) =>
+			values.map((d) => ({ ...d, municipality: municipalityGuid }))
+		)
+	]);
+
+	// Build color scale domain and range
+	let colorDomain = $derived(['current', ...comparisonValues.map((c) => c.municipalityGuid)]);
+	let colorRange = $derived([
+		'var(--indicator-color-own-base)',
+		...comparisonValues.map((c) => `var(${c.color})`)
+	]);
+
 	const chart: Attachment = (element) => {
-		element?.firstChild?.remove();
+		if (!element) return;
 
-		const marks = [];
+		// Create a reactive state for the container's width
+		let currentWidth = $state(0);
 
-		// Area chart for current organization (only when no comparison)
-		if (!hasComparison) {
-			marks.push(
-				Plot.areaY(actualValues, {
-					x: 'date',
-					y: 'value',
-					fill: 'rgb(213, 239, 252)'
-				})
-			);
-		} else {
-			// Line for current organization
-			marks.push(
-				Plot.lineY(actualValues, {
-					x: 'date',
-					y: 'value',
-					stroke: 'var(--indicator-color-own-base)',
-					strokeWidth: 2
-				})
-			);
+		// Use a ResizeObserver to measure the container and trigger a render
+		const observer = new ResizeObserver((entries) => {
+			for (let entry of entries) {
+				// Get the actual inner width of the container div
+				const { width } = entry.contentRect;
 
-			// Lines for comparison municipalities
-			if (hasComparison && comparisonValues) {
-				for (const { values, color } of comparisonValues) {
-					marks.push(
-						Plot.lineY(values, {
-							x: 'date',
-							y: 'value',
-							stroke: `var(${color})`,
-							strokeWidth: 2
-							// strokeDasharray: '4,4'
-						})
-					);
+				// Only render if we have a valid width
+				if (width > 0) {
+					currentWidth = width;
 				}
 			}
-		}
+		});
 
-		element?.append(
-			Plot.plot({
-				marks,
+		// Start observing the element this action is attached to
+		observer.observe(element);
+
+		// Use $effect to automatically re-run whenever data OR width changes
+		$effect(() => {
+			// Svelte tracks dependencies here. Because we read currentWidth, allData,
+			// colorDomain, etc., any change to them will trigger a re-render.
+			if (currentWidth === 0) return;
+
+			// Use innerHTML = '' instead of firstChild.remove()
+			// because we are going to append TWO elements now (plot + legend).
+			element.innerHTML = '';
+
+			const plot = Plot.plot({
+				marks: [
+					Plot.lineY(allData, {
+						x: 'date',
+						y: 'value',
+						stroke: 'municipality',
+						strokeWidth: (d) => (d.municipality === 'current' ? 3 : 2),
+						strokeLinecap: 'round'
+					}),
+					Plot.dot(allData, {
+						x: 'date',
+						y: 'value',
+						fill: 'municipality',
+						r: (d) => (d.municipality === 'current' ? 4 : 2.5)
+					})
+				],
+				width: currentWidth,
+				height: (currentWidth * 400) / 640, // Maintain the 640:400 aspect ratio
+				grid: true,
 				y: { label: $_(unit), tickFormat: (d) => $number(d) },
-				color: hasComparison ? { legend: true } : undefined
-			})
-		);
+				color: {
+					domain: colorDomain,
+					range: colorRange
+				},
+				style: {
+					// fontFamily: 'inherit',
+					fontSize: '0.75rem'
+				}
+			});
+
+			const legend = Plot.legend({
+				color: {
+					legend: true,
+					domain: colorDomain,
+					range: colorRange,
+					tickFormat: (d) => {
+						if (d === 'current') return currentOrgUnitName;
+						const municipality = $compareState.selectedMunicipalities.find((m) => m.guid === d);
+						return municipality ? municipality.payload.name : d;
+					}
+				},
+				style: {
+					fontSize: '0.75rem'
+				},
+				swatchHeight: 3
+			});
+
+			element?.append(plot, legend);
+		});
+
+		// Return a destroy method for cleanup
+		return () => {
+			observer.disconnect();
+		};
 	};
 </script>
 
