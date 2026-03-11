@@ -14,34 +14,31 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
 	import {
+		type AnyContainer,
+		type Container,
 		findAncestors,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
-		isContainerWithProgress,
 		isContainerWithEffect,
 		isContainerWithObjective,
+		isContainerWithProgress,
+		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
+		isKnowledgeContainer,
 		isObjectiveContainer,
 		isPartOf,
+		isQuoteContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
-		isTeaserContainer,
-		isKnowledgeContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
-		predicates,
-		isQuoteContainer,
-		isContentPartnerContainer,
-		type ProgramType,
-		type RuleStatus,
-		type Status,
-		type TaskStatus
+		predicates
 	} from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
 	import {
 		predicateIcons,
@@ -390,7 +387,7 @@
 			{@const image = Array.isArray(container.payload.image)
 				? container.payload.image[0]
 				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image as string)} />
+			<img alt={$_('cover_image')} src={transformFileURL(image)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
@@ -400,21 +397,21 @@
 		{#if footer}
 			{@render footer()}
 		{:else if 'ruleStatus' in container.payload}
-			{@const ruleStatus = container.payload.ruleStatus as RuleStatus}
+			{@const ruleStatus = container.payload.ruleStatus}
 			{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
 			<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
 				<RuleStatusIcon />
 				{$_(ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
-			{@const status = container.payload.status as Status}
+			{@const status = container.payload.status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
 				{$_(status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
-			{@const taskStatus = container.payload.taskStatus as TaskStatus}
+			{@const taskStatus = container.payload.taskStatus}
 			{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
 			<span class="badge badge--{taskStatusColors.get(taskStatus)}">
 				<TaskStatusIcon />
@@ -423,7 +420,7 @@
 		{:else if isContainerWithProgress(container) && container.payload.progress != null}
 			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
-			{@const programType = container.payload.programType as ProgramType}
+			{@const programType = container.payload.programType}
 			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>
