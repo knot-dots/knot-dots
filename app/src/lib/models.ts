@@ -125,6 +125,7 @@ export function isPayloadType(value: unknown): value is PayloadType {
 const categoryObjectTypeValues = [
 	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.goal,
+	payloadTypes.enum.help,
 	payloadTypes.enum.program,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.simple_measure,

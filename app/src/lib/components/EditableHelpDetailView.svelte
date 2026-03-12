@@ -28,7 +28,7 @@
 			guid,
 			params: {
 				organization: [organization],
-				relationType: [predicates.enum['is-section-of']]
+				relationType: [predicates.enum['is-part-of-category'], predicates.enum['is-section-of']]
 			}
 		})
 	);
@@ -47,7 +47,7 @@
 				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				relatedContainers={[]}
+				{relatedContainers}
 				{revisions}
 			/>
 
