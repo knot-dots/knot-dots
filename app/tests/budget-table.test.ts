@@ -152,6 +152,7 @@ test.describe('Budget Table in Goal Detail View', () => {
 		await invalidateRequest;
 
 		// Reload and verify persistence (data should be visible even when not in edit mode)
+		await dotsBoard.overlay.closeButton.click();
 		await dotsBoard.page.reload();
 
 		// Re-open the goal overlay after reload - the Budget section still exists
