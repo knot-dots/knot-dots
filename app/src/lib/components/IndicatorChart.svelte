@@ -158,73 +158,102 @@
 	);
 
 	const chart: Attachment = (element) => {
-		element?.firstChild?.remove();
-		element?.append(
-			Plot.plot({
-				color: {
-					domain: [
-						status.enum['status.idea'],
-						status.enum['status.in_planning'],
-						status.enum['status.in_implementation'],
-						status.enum['status.done'],
-						'trend'
+		if (!element) return;
+
+		// Create a reactive state for the container's width
+		let currentWidth = $state(0);
+
+		// Use a ResizeObserver to measure the container and trigger a render
+		const observer = new ResizeObserver((entries) => {
+			for (let entry of entries) {
+				// Get the actual inner width of the container div
+				const { width } = entry.contentRect;
+				// Only render if we have a valid width
+				if (width > 0) {
+					currentWidth = width;
+				}
+			}
+		});
+
+		// Start observing the element this action is attached to
+		observer.observe(element);
+
+		$effect(() => {
+			element?.firstChild?.remove();
+			element?.append(
+				Plot.plot({
+					color: {
+						domain: [
+							status.enum['status.idea'],
+							status.enum['status.in_planning'],
+							status.enum['status.in_implementation'],
+							status.enum['status.done'],
+							'trend'
+						],
+						range: ['#ca1d61', '#f18c5f', '#fccd6c', '#6edaa6', 'rgb(213, 239, 252)'],
+						legend: showLegend,
+						tickFormat: (v) => $_(v)
+					},
+					marks: [
+						...(showEffects && effects.length > 0
+							? [
+									Plot.areaY(trendWithEffects, {
+										x: 'date',
+										y: 'value',
+										fill: 'status',
+										interval: 'year',
+										order:
+											effects[0]?.value < 0
+												? [
+														'trend',
+														status.enum['status.idea'],
+														status.enum['status.in_planning'],
+														status.enum['status.in_implementation'],
+														status.enum['status.done']
+													]
+												: [
+														'trend',
+														status.enum['status.done'],
+														status.enum['status.in_implementation'],
+														status.enum['status.in_planning'],
+														status.enum['status.idea']
+													],
+										reduce: 'sum'
+									})
+								]
+							: [
+									Plot.areaY(trendWithEffects, {
+										x: 'date',
+										y: 'value',
+										fill: 'status',
+										interval: 'year'
+									})
+								]),
+						...(showObjectives && objectives.length > 0
+							? [
+									Plot.lineY(objectives, {
+										x: 'date',
+										y: 'value',
+										interval: 'year',
+										sort: 'date',
+										stroke: '#21a5ed'
+									})
+								]
+							: []),
+						Plot.lineY(trend, { x: 'date', y: 'value', interval: 'year' }),
+						Plot.ruleX([new Date()])
 					],
-					range: ['#ca1d61', '#f18c5f', '#fccd6c', '#6edaa6', 'rgb(213, 239, 252)'],
-					legend: showLegend,
-					tickFormat: (v) => $_(v)
-				},
-				marks: [
-					...(showEffects && effects.length > 0
-						? [
-								Plot.areaY(trendWithEffects, {
-									x: 'date',
-									y: 'value',
-									fill: 'status',
-									interval: 'year',
-									order:
-										effects[0]?.value < 0
-											? [
-													'trend',
-													status.enum['status.idea'],
-													status.enum['status.in_planning'],
-													status.enum['status.in_implementation'],
-													status.enum['status.done']
-												]
-											: [
-													'trend',
-													status.enum['status.done'],
-													status.enum['status.in_implementation'],
-													status.enum['status.in_planning'],
-													status.enum['status.idea']
-												],
-									reduce: 'sum'
-								})
-							]
-						: [
-								Plot.areaY(trendWithEffects, {
-									x: 'date',
-									y: 'value',
-									fill: 'status',
-									interval: 'year'
-								})
-							]),
-					...(showObjectives && objectives.length > 0
-						? [
-								Plot.lineY(objectives, {
-									x: 'date',
-									y: 'value',
-									interval: 'year',
-									sort: 'date',
-									stroke: '#21a5ed'
-								})
-							]
-						: []),
-					Plot.lineY(trend, { x: 'date', y: 'value', interval: 'year' }),
-					Plot.ruleX([new Date()])
-				],
-				y: { label: $_(unit), tickFormat: (d) => $number(d) }
-			})
-		);
+					y: { label: $_(unit), tickFormat: (d) => $number(d) },
+					width: currentWidth,
+					height: (currentWidth * 400) / 640 // Maintain the 640:400 aspect ratio
+				})
+			);
+		});
+
+		// Return a destroy method for cleanup
+		return () => {
+			observer.disconnect();
+		};
 	};
 </script>
 

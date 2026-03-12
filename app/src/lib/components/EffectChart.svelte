@@ -17,12 +17,35 @@
 
 	let { container, relatedContainers = [], showLegend = false }: Props = $props();
 
+	const indicator = $derived(
+		relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container))
+	);
+
+	const unit = $derived($_(indicator?.payload.unit ?? ''));
+
 	const chart: Attachment = (element) => {
-		const indicator = relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container));
+		if (!element || !indicator) return;
 
-		if (indicator) {
-			let unit = $_(indicator.payload.unit);
+		// Create a reactive state for the container's width
+		let currentWidth = $state(0);
 
+		// Use a ResizeObserver to measure the container and trigger a render
+		const observer = new ResizeObserver((entries) => {
+			for (let entry of entries) {
+				// Get the actual inner width of the container div
+				const { width } = entry.contentRect;
+
+				// Only render if we have a valid width
+				if (width > 0) {
+					currentWidth = width;
+				}
+			}
+		});
+
+		// Start observing the element this action is attached to
+		observer.observe(element);
+
+		$effect(() => {
 			element?.firstChild?.remove();
 			element?.append(
 				Plot.plot({
@@ -59,10 +82,17 @@
 						)
 					],
 					x: { type: 'band' },
-					y: { label: $_(unit), tickFormat: (d) => $number(d) }
+					y: { label: $_(unit), tickFormat: (d) => $number(d) },
+					width: currentWidth,
+					height: (currentWidth * 400) / 640 // Maintain the 640:400 aspect ratio
 				})
 			);
-		}
+		});
+
+		// Return a destroy method for cleanup
+		return () => {
+			observer.disconnect();
+		};
 	};
 </script>
 
