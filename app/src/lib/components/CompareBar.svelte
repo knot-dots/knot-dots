@@ -124,15 +124,11 @@
 
 <style>
 	.compare-bar {
-		background-color: var(--color-primary-050);
-		border: 1px solid var(--color-primary-200);
-		border-radius: 9999rem;
-		display: flex;
 		align-items: center;
 		align-self: stretch;
+		display: flex;
 		gap: 0.5rem;
-		height: 3rem;
-		margin: 0 0.5rem;
+		height: 100%;
 		overflow-x: auto;
 		overflow-y: hidden;
 		padding: 0 0.5rem;

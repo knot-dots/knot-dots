@@ -52,6 +52,7 @@
 	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 	import tooltip from '$lib/attachments/tooltip';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	type FilterOption = {
 		count: number;
@@ -91,7 +92,7 @@
 		overlay && $overlayStore?.container ? $overlayStore.container : page.data.container
 	);
 
-	let filterBar = $derived.by(() =>
+	let filterBar = $derived(
 		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
 	);
 
@@ -133,14 +134,14 @@
 
 	function applySort() {
 		if (overlay) {
-			const query = new URLSearchParams(page.url.hash.substring(1));
+			const query = new SvelteURLSearchParams(page.url.hash.substring(1));
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new URLSearchParams(page.url.searchParams);
+			const query = new SvelteURLSearchParams(page.url.searchParams);
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
@@ -157,7 +158,7 @@
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new URLSearchParams(page.url.searchParams);
+			const query = new SvelteURLSearchParams(page.url.searchParams);
 			for (const key of facets.keys()) {
 				query.delete(key);
 			}
@@ -194,34 +195,92 @@
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
 <header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
-	{#if overlay}
-		<OverlayCloseButton />
-		<OverlayFullscreenToggle />
-		<OverlayBackButton />
-		<OverlayTitle />
-	{:else}
-		<OrganizationMenu />
-		<DotsBoardButton />
-		<BackToOverlayButton />
-	{/if}
+	<div class="main-row">
+		{#if overlay}
+			<OverlayCloseButton />
+			<OverlayFullscreenToggle />
+			<OverlayBackButton />
+			<OverlayTitle />
+		{:else}
+			<OrganizationMenu />
+			<DotsBoardButton />
+			<BackToOverlayButton />
+		{/if}
 
-	{#if workspaceOptions}
-		<Workspaces options={workspaceOptions} />
-	{:else if container}
-		{#if isProgramContainer(container)}
-			<ProgramWorkspaces {container} />
-		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
-			<MeasureWorkspaces {container} />
-		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
-			<GoalWorkspaces {container} />
-		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+		{#if workspaceOptions}
+			<Workspaces options={workspaceOptions} />
+		{:else if container}
+			{#if isProgramContainer(container)}
+				<ProgramWorkspaces {container} />
+			{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+				<MeasureWorkspaces {container} />
+			{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
+				<GoalWorkspaces {container} />
+			{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+				<WorkspacesMenu />
+			{/if}
+		{:else}
 			<WorkspacesMenu />
 		{/if}
-	{:else}
-		<WorkspacesMenu />
-	{/if}
 
-	<form class="commands" data-sveltekit-keepfocus>
+		<div class="actions">
+			{#if overlay && container && $ability.can('invite-members', container)}
+				<div class="divider"></div>
+
+				<a
+					class="action-button action-button--size-l"
+					href={overlayURL(page.url, overlayKey.enum.members, container.guid)}
+					{@attach tooltip($_('members'))}
+				>
+					<Users />
+				</a>
+			{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('invite-members', container)}
+				<div class="divider"></div>
+
+				<a
+					class="action-button action-button--size-l"
+					href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
+						guid: selectedContext.guid,
+						contentGuid: container.guid
+					})}
+					{@attach tooltip($_('members'))}
+				>
+					<Users />
+				</a>
+			{:else if !overlay && !$overlayStore?.key && $ability.can('invite-members', selectedContext)}
+				<a
+					class="action-button action-button--size-l"
+					href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
+					{@attach tooltip($_('members'))}
+				>
+					<Users />
+				</a>
+			{/if}
+
+			{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
+				<button
+					aria-label={$_('favorite')}
+					class="action-button action-button--size-l action-button--favorite"
+					onclick={toggleFavorite}
+					type="button"
+				>
+					{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
+				</button>
+			{/if}
+
+			{#if (!overlay && !$overlayStore?.key) || overlay}
+				{#if $user.isAuthenticated}
+					<EditModeToggle />
+				{:else}
+					<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
+						{$_('login')}
+					</button>
+				{/if}
+			{/if}
+		</div>
+	</div>
+
+	<div class="commands" data-sveltekit-keepfocus>
 		{#if search}
 			<Search />
 		{/if}
@@ -268,134 +327,82 @@
 				<Compare />
 			</button>
 		{/if}
+	</div>
 
-		{#if overlay && container && $ability.can('invite-members', container)}
-			<div class="divider"></div>
+	{#if $filterBar.expanded || $sortBar.expanded || $compareBar.expanded}
+		<div class="filter-and-sort" data-sveltekit-keepfocus>
+			{#if $filterBar.expanded}
+				<fieldset use:filterBar.panel>
+					{#if activeFilters > 0}
+						<span>{$_('active_filters', { values: { count: activeFilters } })}</span>
 
-			<a
-				class="action-button action-button--size-l"
-				href={overlayURL(page.url, overlayKey.enum.members, container.guid)}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('invite-members', container)}
-			<div class="divider"></div>
+						<button class="button-outline button-xs" onclick={resetFilters} type="button">
+							<Close />
+						</button>
+					{/if}
 
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
-					guid: selectedContext.guid,
-					contentGuid: container.guid
-				})}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{:else if !overlay && !$overlayStore?.key && $ability.can('invite-members', selectedContext)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{/if}
-
-		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
-			<button
-				aria-label={$_('favorite')}
-				class="action-button action-button--size-l action-button--favorite"
-				onclick={toggleFavorite}
-				type="button"
-			>
-				{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
-			</button>
-		{/if}
-	</form>
-
-	{#if (!overlay && !$overlayStore?.key) || overlay}
-		{#if $user.isAuthenticated}
-			<EditModeToggle />
-		{:else}
-			<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
-				{$_('login')}
-			</button>
-		{/if}
+					{#each facets.entries() as [key, foci] (key)}
+						{@const labelOverride = facetLabels.get(key)}
+						{@const categoryOptionList = categoryOptions?.[key]}
+						{@const options = (
+							categoryOptionList
+								? categoryOptionList.map((option) => ({
+										...option,
+										count:
+											foci.get(option.value) ??
+											(option.guid ? foci.get(option.guid) : undefined) ??
+											0,
+										subOptions: option.subOptions?.map((sub) => ({
+											...sub,
+											count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+										}))
+									}))
+								: [...foci.entries()]
+										.map(([k, v]) => ({
+											count: v,
+											label: facetLabels.get(k) ?? $_(k),
+											value: k,
+											subOptions: undefined
+										}))
+										.toSorted((a, b) =>
+											a.label.localeCompare(b.label, undefined, {
+												numeric: true,
+												sensitivity: 'base'
+											})
+										)
+						) as FilterOption[]}
+						{#if key === 'assignee'}
+							<AssigneeFilterDropDown {options} />
+						{:else if key === 'included'}
+							<OrganizationIncludedFilterDropDown />
+						{:else if key === 'relationType'}
+							<RelationTypeFilterDropDown {options} />
+						{:else if key === 'member'}
+							<MemberFilterDropDown {options} />
+						{:else if options.some(({ count, subOptions }: FilterOption) => (count ?? 0) > 0 || subOptions?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
+							<FilterDropDown {key} {options} label={labelOverride} />
+						{/if}
+					{/each}
+				</fieldset>
+			{:else if $sortBar.expanded}
+				<fieldset aria-labelledby="legend" use:sortBar.panel>
+					<legend class="is-visually-hidden">{$_('sort')}</legend>
+					<span aria-hidden="true">{$_('sort')}</span>
+					{#each sortOptions as [label, value] (value)}
+						{@const Icon = sortIcons.get(value)}
+						<label class="sort-option">
+							<input onchange={applySort} type="radio" {value} bind:group={selectedSort} />
+							<Icon />
+							{label}
+						</label>
+					{/each}
+				</fieldset>
+			{:else}
+				<CompareBar disclosure={compareBar} />
+			{/if}
+		</div>
 	{/if}
 </header>
-
-<div class="filter-and-sort" data-sveltekit-keepfocus>
-	{#if $filterBar.expanded}
-		<fieldset use:filterBar.panel>
-			{#if activeFilters > 0}
-				<span>{$_('active_filters', { values: { count: activeFilters } })}</span>
-
-				<button class="button-outline button-xs" onclick={resetFilters} type="button">
-					<Close />
-				</button>
-			{/if}
-
-			{#each facets.entries() as [key, foci] (key)}
-				{@const labelOverride = facetLabels.get(key)}
-				{@const categoryOptionList = categoryOptions?.[key]}
-				{@const options = (
-					categoryOptionList
-						? categoryOptionList.map((option) => ({
-								...option,
-								count:
-									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
-								subOptions: option.subOptions?.map((sub) => ({
-									...sub,
-									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
-								}))
-							}))
-						: [...foci.entries()]
-								.map(([k, v]) => ({
-									count: v,
-									label: facetLabels.get(k) ?? $_(k),
-									value: k,
-									subOptions: undefined
-								}))
-								.toSorted((a, b) =>
-									a.label.localeCompare(b.label, undefined, {
-										numeric: true,
-										sensitivity: 'base'
-									})
-								)
-				) as FilterOption[]}
-				{#if key === 'assignee'}
-					<AssigneeFilterDropDown {options} />
-				{:else if key === 'included'}
-					<OrganizationIncludedFilterDropDown />
-				{:else if key === 'relationType'}
-					<RelationTypeFilterDropDown {options} />
-				{:else if key === 'member'}
-					<MemberFilterDropDown {options} />
-				{:else if options.some(({ count, subOptions }: FilterOption) => (count ?? 0) > 0 || subOptions?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
-					<FilterDropDown {key} {options} label={labelOverride} />
-				{/if}
-			{/each}
-		</fieldset>
-	{:else if $sortBar.expanded}
-		<fieldset aria-labelledby="legend" use:sortBar.panel>
-			<legend class="is-visually-hidden">{$_('sort')}</legend>
-			<span aria-hidden="true">{$_('sort')}</span>
-			{#each sortOptions as [label, value] (value)}
-				{@const Icon = sortIcons.get(value)}
-				<label class="sort-option">
-					<input onchange={applySort} type="radio" {value} bind:group={selectedSort} />
-					<Icon />
-					{label}
-				</label>
-			{/each}
-		</fieldset>
-	{:else}
-		<CompareBar disclosure={compareBar} />
-	{/if}
-</div>
 
 <style>
 	header {
@@ -407,17 +414,15 @@
 		--icon-color: var(--color-gray-500);
 		--indicator-background-color: var(--color-primary-700);
 
-		align-items: center;
 		background: white;
-		border-bottom: 1px solid var(--color-gray-200);
 		color: var(--color-gray-700);
 		container-type: inline-size;
-		display: flex;
+		display: grid;
+		grid-template-rows: auto auto auto;
+		gap: 0.5rem;
+		padding: 0.75rem;
 		flex-shrink: 0;
 		font-size: 0.875rem;
-		gap: 0.5rem;
-		height: var(--header-height);
-		padding: 0.75rem;
 		z-index: 2;
 	}
 
@@ -425,25 +430,29 @@
 		color: var(--icon-color);
 	}
 
+	.main-row {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.actions {
+		align-items: center;
+		display: flex;
+		gap: 0.75rem;
+		margin-left: auto;
+	}
+
 	.commands {
 		align-items: center;
 		display: flex;
-		flex-direction: row;
-		flex-shrink: 0;
+		flex-wrap: wrap;
 		gap: 0.75rem;
-		margin: 0 0.75rem 0 auto;
-	}
-
-	.commands:last-child {
-		margin-right: 0;
+		justify-content: end;
 	}
 
 	.commands > * {
 		width: fit-content;
-	}
-
-	.commands > .divider:first-child {
-		display: none;
 	}
 
 	.action-button--favorite {
@@ -457,26 +466,34 @@
 
 	.dropdown-button.dropdown-button--command {
 		--dropdown-button-default-background: transparent;
-		--dropdown-button-padding: 0 0.5rem 0 0.375rem;
+		--dropdown-button-padding: 0 0.5rem 0 0.5rem;
 
 		height: 2rem;
 		position: relative;
+	}
+
+	.filter-and-sort {
+		background-color: var(--color-primary-050);
+		border: 1px solid var(--color-primary-200);
+		border-radius: 9999rem;
+		height: 3rem;
+		overflow: hidden;
 	}
 
 	.filter-and-sort fieldset {
 		--indicator-background-color: var(--color-primary-700);
 
 		align-items: center;
-		background-color: var(--color-primary-050);
-		border-radius: 0;
+		background-color: transparent;
 		border: none;
 		display: flex;
 		flex-direction: row;
 		font-size: 0.875rem;
 		gap: 0.25rem;
+		height: 100%;
 		justify-content: safe center;
 		overflow: auto;
-		padding: 0.5rem 1rem;
+		padding: 0 0.5rem;
 	}
 
 	.filter-and-sort fieldset > :global(*) {

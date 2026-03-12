@@ -116,7 +116,7 @@
 		overflow-y: auto;
 	}
 
-	main > :global(:is(:not(aside))) {
+	.main-with-header-wrapper > :global(:is(:not(aside))) {
 		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
 	}
 
