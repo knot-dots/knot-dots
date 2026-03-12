@@ -84,7 +84,6 @@
 			try {
 				const response = await saveContainer(container);
 				if (response.ok) {
-					actualDataContainer = await response.json();
 					await relatedContainersQuery.refresh();
 					await invalidate('containers');
 				} else {
@@ -162,7 +161,6 @@
 						disabled={!$applicationState.containerDetailView.editable ||
 							!$ability.can('update', actualDataContainer)}
 						label={$_('binary_indicator.actual_data')}
-						value={actualDataContainer.payload.booleanValue ? $_('yes') : $_('no')}
 					/>
 				{/if}
 			</div>

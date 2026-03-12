@@ -312,7 +312,15 @@
 			onCreateContainer={addItemForIooiType(iooiType)}
 		>
 			{#if paramsFromFragment(page.url).has('relations')}
-				<MaybeDragZone containers={itemsByIooiType.get(iooiType) ?? []} />
+				<MaybeDragZone containers={itemsByIooiType.get(iooiType) ?? []}>
+					{#snippet itemSnippet(container)}
+						<Card
+							{container}
+							relatedContainers={containers.filter(isIndicatorContainer)}
+							showRelationFilter
+						/>
+					{/snippet}
+				</MaybeDragZone>
 			{:else if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', container)}
 				<div
 					class="vertical-scroll-wrapper"

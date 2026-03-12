@@ -68,7 +68,7 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter(isIndicatorContainer)
+			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
@@ -172,7 +172,6 @@
 							}
 							disabled={!$applicationState.containerDetailView.editable ||
 								!$ability.can('update', container)}
-							value={container.payload.booleanValue ? $_('yes') : $_('no')}
 						/>
 					</div>
 				{:else if !isBinaryIndicatorContainer(indicator)}

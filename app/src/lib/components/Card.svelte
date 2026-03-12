@@ -272,11 +272,7 @@
 			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
 			<Summary {container} />
 			{#if actualDataContainer}
-				<BooleanValueToggle
-					checked={actualDataContainer.payload.booleanValue}
-					disabled
-					value={actualDataContainer.payload.booleanValue ? $_('yes') : $_('no')}
-				/>
+				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
 		{:else if isIndicatorContainer(container)}
 			<IndicatorChart
@@ -305,11 +301,7 @@
 				<EffectChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
-				<BooleanValueToggle
-					checked={container.payload.booleanValue}
-					disabled
-					value={container.payload.booleanValue ? $_('yes') : $_('no')}
-				/>
+				<BooleanValueToggle checked={container.payload.booleanValue} disabled />
 			{:else}
 				<Tendency {container} />
 			{/if}
@@ -334,11 +326,7 @@
 				<ObjectiveChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
-				<BooleanValueToggle
-					checked={container.payload.booleanValue}
-					disabled
-					value={container.payload.booleanValue ? $_('yes') : $_('no')}
-				/>
+				<BooleanValueToggle checked={container.payload.booleanValue} disabled />
 			{:else}
 				<Tendency {container} />
 			{/if}
