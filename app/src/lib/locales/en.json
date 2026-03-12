@@ -750,6 +750,7 @@
 	"workspace.tasks": "Tasks status board",
 	"workspace.type.all": "All",
 	"workspace.type.goals": "Goals",
+	"workspace.type.help": "Help",
 	"workspace.type.indicators": "Indicators",
 	"workspace.type.knowledge": "Knowledge",
 	"workspace.type.categories": "Categories",
