@@ -1015,16 +1015,6 @@ const simpleMeasurePayload = basePayload
 		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
-		resource: z
-			.array(
-				z.object({
-					description: z.string(),
-					amount: z.coerce.number(),
-					unit: z.string(),
-					fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
-				})
-			)
-			.default([]),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
