@@ -84,7 +84,6 @@
 			try {
 				const response = await saveContainer(container);
 				if (response.ok) {
-					actualDataContainer = await response.json();
 					await relatedContainersQuery.refresh();
 					await invalidate('containers');
 				} else {
