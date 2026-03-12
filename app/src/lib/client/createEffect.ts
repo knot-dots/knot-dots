@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/public';
 import {
+	type BinaryIndicatorContainer,
 	type Container,
 	containerOfType,
 	type EmptyEffectContainer,
@@ -12,7 +13,7 @@ import saveContainer from '$lib/client/saveContainer';
 
 export default async function createEffect(
 	target: Container,
-	indicator: IndicatorContainer,
+	indicator: IndicatorContainer | BinaryIndicatorContainer,
 	iooiType?: IooiType
 ) {
 	const newEffect = containerOfType(

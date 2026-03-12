@@ -13,9 +13,11 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	type ApplicationState,
+	type BinaryIndicatorContainer,
 	type Container,
 	containerOfType,
 	filterMembers,
+	type HelpContainer,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	type IooiType,
@@ -23,7 +25,6 @@ import {
 	type MeasureContainer,
 	type NewContainer,
 	overlayKey,
-	type HelpContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
@@ -152,7 +153,7 @@ export type OverlayData =
 	| {
 			key: 'indicator-catalog';
 			container: undefined;
-			indicators: IndicatorContainer[];
+			indicators: Array<BinaryIndicatorContainer | IndicatorContainer>;
 			indicatorTemplates: IndicatorTemplateContainer[];
 	  }
 	| {
@@ -657,9 +658,9 @@ if (browser) {
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				organization: [values.data.currentOrganization.guid],
-				payloadType: [payloadTypes.enum.indicator],
+				payloadType: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator],
 				topic: hashParams.getAll('topic')
-			})) as IndicatorContainer[];
+			})) as Array<BinaryIndicatorContainer | IndicatorContainer>;
 			setOverlayIfLatest({
 				key: overlayKey.enum['indicator-catalog'],
 				container: undefined,

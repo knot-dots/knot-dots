@@ -32,13 +32,15 @@
 	"audience.science": "Wissenschaft",
 	"audience.urban_society": "Stadtgesellschaft",
 	"audience.voluntary_work_associations_ngos": "Ehrenamt, Vereine & NGOs",
-	"type": "Art",
 	"back": "Zurück",
 	"back_to_overlay": "Zurück zum Overlay",
 	"benefit": "Nutzen",
 	"benefit.high": "Groß",
 	"benefit.low": "Klein",
 	"benefit.medium": "Mittel",
+	"binary_indicator": "Binär-Indikator",
+	"binary_indicator.actual_data": "Ist-Wert",
+	"binary_indicator.add_actual_data": "Ist-Wert hinzufügen",
 	"board": {
 		"chapters": "Programm-Board",
 		"elements": "dots",
@@ -277,7 +279,6 @@
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",
 	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
-	"indicator_form.create_custom": "Eigenen Indikator anlegen",
 	"indicator_form.with_historical_values": "Mit Ist-Werten und Prognose ohne Intervention",
 	"indicator_picker.title": "Indikatoren einbinden",
 	"indicator_picker.import": "{count, plural, one {Einen Indikator} other {# Indikatoren}} einbinden",
@@ -289,6 +290,7 @@
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
 	"indicators.activate_selected": "Indikatoren einbinden",
+	"indicators.create_binary": "Binär-Indikator anlegen",
 	"indicators.create_custom": "Eigenen Indikator anlegen",
 	"info_box": "Infobox",
 	"invite": {
@@ -362,6 +364,7 @@
 	"models": "Visionen",
 	"modified_date": "Geändert am",
 	"n_more": "{count, plural, one {+1} other {+#}}",
+	"no": "Nein",
 	"object": "Objekt",
 	"objective": "Gewünschte Entwicklung",
 	"objective.tendency": "Tendenz",
@@ -666,6 +669,7 @@
 	"topic.water": "Wasser",
 	"total": "Gesamt",
 	"trend": "Trend",
+	"type": "Art",
 	"unit": "Einheit",
 	"unit.cubic_meter": "m³",
 	"unit.euro": "€",
@@ -761,5 +765,6 @@
 	"workspace.view.status": "Status-Board",
 	"workspace.view.table": "Tabelle",
 	"workspaces": "Arbeitsbereiche",
-	"year": "Jahr"
+	"year": "Jahr",
+	"yes": "Ja"
 }

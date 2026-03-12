@@ -4,8 +4,11 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
+	findConnected,
+	isEffectContainer,
 	isGoalContainer,
 	isMeasureContainer,
+	isObjectiveContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -32,7 +35,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		const containers = await locals.pool.connect(
+		let containers = await locals.pool.connect(
 			getAllRelatedContainers(
 				[container.organization],
 				container.guid,
@@ -49,6 +52,19 @@ export const load = (async ({ depends, locals, params, url }) => {
 				url.searchParams.get('sort') ?? ''
 			)
 		);
+
+		const selectedContainer = containers.find(
+			({ guid }) => guid === url.searchParams.get('related-to')
+		);
+
+		if (
+			selectedContainer &&
+			(isEffectContainer(selectedContainer) || isObjectiveContainer(selectedContainer))
+		) {
+			containers = [
+				...findConnected(selectedContainer, containers, [predicates.enum['contributes-to']])
+			];
+		}
 
 		return {
 			container,

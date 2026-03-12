@@ -14,13 +14,16 @@
 	import { env } from '$env/dynamic/public';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type BinaryIndicatorContainer,
 		type Container,
 		containerOfType,
 		findConnected,
 		indicatorCategories,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
+		isBinaryIndicatorContainer,
 		isIndicatorTemplateContainer,
 		type NewContainer,
 		overlayKey,
@@ -57,22 +60,27 @@
 		if (selectedContainer) {
 			const connectedContainers = findConnected(
 				selectedContainer,
-				containers.filter(isIndicatorTemplateContainer),
+				containers.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c)),
 				[predicates.enum['is-affected-by']]
 			);
 			return containers
-				.filter(isIndicatorTemplateContainer)
+				.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
 				.filter((c) => connectedContainers.has(c))
 				.map((container) => ({ guid: container.guid, container }));
 		} else {
 			return containers
-				.filter(isIndicatorTemplateContainer)
+				.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
 
 	let managedBy = $derived(
 		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
+	);
+
+	let mayCreateBinaryIndicator = $derived(
+		createFeatureDecisions(page.data.features).useBinaryIndicators() &&
+			$mayCreateContainer(payloadTypes.enum.binary_indicator, managedBy)
 	);
 
 	// svelte-ignore non_reactive_update
@@ -89,7 +97,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<IndicatorTemplateContainer, 'payload'>;
+		) as Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
 
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
@@ -100,10 +108,29 @@
 		createContainerDialog.getElement().showModal();
 	}
 
+	function createBinaryIndicator() {
+		const container = containerOfType(
+			payloadTypes.enum.binary_indicator,
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as Omit<NewContainer, 'payload'> & Pick<BinaryIndicatorContainer, 'payload'>;
+
+		container.payload.title = '';
+		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
+
+		$newContainer = container;
+
+		createContainerDialog.getElement().showModal();
+	}
+
 	let shouldIgnoreDndEvents = $state(false);
 
 	function handleDndConsider(
-		event: CustomEvent<DndEvent<{ guid: string; container: IndicatorTemplateContainer }>>
+		event: CustomEvent<
+			DndEvent<{ guid: string; container: IndicatorTemplateContainer | BinaryIndicatorContainer }>
+		>
 	) {
 		const { trigger, id } = event.detail.info;
 		if (trigger === TRIGGERS.DRAG_STARTED) {
@@ -125,7 +152,9 @@
 	}
 
 	function handleDndFinalize(
-		event: CustomEvent<DndEvent<{ guid: string; container: IndicatorTemplateContainer }>>
+		event: CustomEvent<
+			DndEvent<{ guid: string; container: IndicatorTemplateContainer | BinaryIndicatorContainer }>
+		>
 	) {
 		if (!shouldIgnoreDndEvents) {
 			items = event.detail.items;
@@ -137,7 +166,7 @@
 </script>
 
 <div class="indicators">
-	{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy) && $applicationState.containerDetailView.editable}
+	{#if ($mayCreateContainer(payloadTypes.enum.indicator_template, managedBy) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
 		<p>
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
 				<button
@@ -153,6 +182,13 @@
 				<button class="button button-xs" type="button" onclick={createCustomIndicatorTemplate}>
 					<Plus />
 					{$_('indicators.create_custom')}
+				</button>
+			{/if}
+
+			{#if mayCreateBinaryIndicator}
+				<button class="button button-xs" type="button" onclick={createBinaryIndicator}>
+					<Plus />
+					{$_('indicators.create_binary')}
 				</button>
 			{/if}
 		</p>

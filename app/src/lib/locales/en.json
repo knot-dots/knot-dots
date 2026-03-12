@@ -36,9 +36,11 @@
 	"back_to_overlay": "Back to overlay",
 	"benefit": "Benefit",
 	"benefit.high": "High",
-	"type": "Type",
 	"benefit.low": "Low",
 	"benefit.medium": "Medium",
+	"binary_indicator": "Binary indicator",
+	"binary_indicator.actual_data": "Actual data",
+	"binary_indicator.add_actual_data": "Add actual data",
 	"board": {
 		"chapters": "Chapters",
 		"elements": "Elements",
@@ -277,7 +279,6 @@
 	"indicator_category.mpsc": "MPSC",
 	"indicator_category.sdg": "SDG",
 	"indicator_category.wegweiser_kommune": "Wegweiser Kommune",
-	"indicator_form.create_custom": "Create a custom indicator",
 	"indicator_form.with_historical_values": "With historical values",
 	"indicator_picker.title": "Select indicators to activate",
 	"indicator_picker.import": "Activate {count, plural, one {one indicator} other {# indicators}}",
@@ -289,6 +290,7 @@
 	"indicator_type.performance": "Performance indicator",
 	"indicators": "Indicators",
 	"indicators.activate_selected": "Activate selected indicators",
+	"indicators.create_binary": "Create a binary indicator",
 	"indicators.create_custom": "Create a custom indicator",
 	"info_box": "Infobox",
 	"invite": {
@@ -362,6 +364,7 @@
 	"models": "Models",
 	"modified_date": "Modified at",
 	"n_more": "{count, plural, one {+1} other {+#}}",
+	"no": "No",
 	"object": "Object",
 	"objective": "Objective",
 	"objective.tendency": "Tendency",
@@ -667,6 +670,7 @@
 	"topic.water": "Water",
 	"total": "Total",
 	"trend": "Trend",
+	"type": "Type",
 	"unit": "Unit",
 	"unit.cubic_meter": "m³",
 	"unit.euro": "€",
@@ -762,5 +766,6 @@
 	"workspace.view.status": "Status board",
 	"workspace.view.table": "Table",
 	"workspaces": "Workspaces",
-	"year": "Year"
+	"year": "Year",
+	"yes": "Yes"
 }

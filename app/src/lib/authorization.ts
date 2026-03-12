@@ -16,6 +16,7 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const specialTypes: PayloadType[] = [
+	payloadTypes.enum.binary_indicator,
 	payloadTypes.enum.category,
 	payloadTypes.enum.indicator,
 	payloadTypes.enum.indicator_template,
@@ -37,9 +38,10 @@ export default function defineAbilityFor(user: User) {
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
 		can('relate', [
+			payloadTypes.enum.binary_indicator,
+			payloadTypes.enum.category,
 			payloadTypes.enum.indicator,
 			payloadTypes.enum.program,
-			payloadTypes.enum.category,
 			payloadTypes.enum.term,
 			...commonTypes
 		]);
@@ -83,14 +85,22 @@ export default function defineAbilityFor(user: User) {
 		});
 		can(
 			['create', 'update', 'delete'],
-			[payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+			[
+				payloadTypes.enum.binary_indicator,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template
+			],
 			{
 				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 			}
 		);
 		can(
 			['create', 'update', 'delete'],
-			[payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+			[
+				payloadTypes.enum.binary_indicator,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template
+			],
 			{
 				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 			}

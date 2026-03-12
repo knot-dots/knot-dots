@@ -6,6 +6,7 @@
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
@@ -13,32 +14,31 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
 	import {
+		type AnyContainer,
+		type Container,
 		findAncestors,
-		isContainerWithProgress,
+		isActualDataContainer,
+		isBinaryIndicatorContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
+		isContainerWithProgress,
+		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
+		isKnowledgeContainer,
 		isObjectiveContainer,
 		isPartOf,
+		isQuoteContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
-		isTeaserContainer,
-		isKnowledgeContainer,
 		isTaskContainer,
+		isTeaserContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
-		predicates,
-		isQuoteContainer,
-		isContentPartnerContainer,
-		type ProgramType,
-		type RuleStatus,
-		type Status,
-		type TaskStatus
+		predicates
 	} from '$lib/models';
-	import type { AnyContainer, Container } from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
 	import {
 		predicateIcons,
@@ -268,6 +268,16 @@
 	<div class="body">
 		{#if body}
 			{@render body()}
+		{:else if isBinaryIndicatorContainer(container)}
+			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
+			<Summary {container} />
+			{#if actualDataContainer}
+				<BooleanValueToggle
+					checked={actualDataContainer.payload.booleanValue}
+					disabled
+					value={actualDataContainer.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{/if}
 		{:else if isIndicatorContainer(container)}
 			<IndicatorChart
 				{container}
@@ -291,13 +301,17 @@
 				{/each}
 			</p>
 		{:else if isEffectContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
-			{#if indicator}
-				{#if container.payload.plannedValues.length > 0}
-					<EffectChart {container} {relatedContainers} />
-				{:else}
-					<Tendency {container} />
-				{/if}
+			{#if relatedContainers.find(isIndicatorContainer) && container.payload.plannedValues.length > 0}
+				<EffectChart {container} {relatedContainers} />
+			{:else if container.payload.booleanValue !== undefined}
+				<Summary {container} />
+				<BooleanValueToggle
+					checked={container.payload.booleanValue}
+					disabled
+					value={container.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{:else}
+				<Tendency {container} />
 			{/if}
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
@@ -316,13 +330,17 @@
 				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
-			{#if indicator}
-				{#if container.payload.wantedValues.length > 0}
-					<ObjectiveChart {container} {relatedContainers} />
-				{:else if 'trendValue' in container.payload}
-					<Tendency {container} />
-				{/if}
+			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorContainer)}
+				<ObjectiveChart {container} {relatedContainers} />
+			{:else if container.payload.booleanValue !== undefined}
+				<Summary {container} />
+				<BooleanValueToggle
+					checked={container.payload.booleanValue}
+					disabled
+					value={container.payload.booleanValue ? $_('yes') : $_('no')}
+				/>
+			{:else}
+				<Tendency {container} />
 			{/if}
 		{:else if isContentPartnerContainer(container)}
 			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
@@ -369,7 +387,7 @@
 			{@const image = Array.isArray(container.payload.image)
 				? container.payload.image[0]
 				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image as string)} />
+			<img alt={$_('cover_image')} src={transformFileURL(image)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
@@ -379,21 +397,21 @@
 		{#if footer}
 			{@render footer()}
 		{:else if 'ruleStatus' in container.payload}
-			{@const ruleStatus = container.payload.ruleStatus as RuleStatus}
+			{@const ruleStatus = container.payload.ruleStatus}
 			{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
 			<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
 				<RuleStatusIcon />
 				{$_(ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
-			{@const status = container.payload.status as Status}
+			{@const status = container.payload.status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
 				{$_(status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
-			{@const taskStatus = container.payload.taskStatus as TaskStatus}
+			{@const taskStatus = container.payload.taskStatus}
 			{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
 			<span class="badge badge--{taskStatusColors.get(taskStatus)}">
 				<TaskStatusIcon />
@@ -402,7 +420,7 @@
 		{:else if isContainerWithProgress(container) && container.payload.progress != null}
 			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
-			{@const programType = container.payload.programType as ProgramType}
+			{@const programType = container.payload.programType}
 			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>

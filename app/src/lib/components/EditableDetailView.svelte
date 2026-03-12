@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
@@ -45,7 +46,8 @@
 		isTaskContainer,
 		isTeaserContainer,
 		isTextContainer,
-		isResourceDataContainer
+		isResourceDataContainer,
+		isBinaryIndicatorContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -62,7 +64,9 @@
 	});
 </script>
 
-{#if isContentPartnerContainer(container)}
+{#if isBinaryIndicatorContainer(container)}
+	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} />
+{:else if isContentPartnerContainer(container)}
 	<EditableContentPartnerDetailView bind:container {layout} {revisions} />
 {:else if isEffectContainer(container)}
 	<EditableEffectDetailView bind:container {layout} {revisions} />

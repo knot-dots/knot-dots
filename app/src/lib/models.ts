@@ -64,6 +64,7 @@ export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGo
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
+	'binary_indicator',
 	'category',
 	'chapter',
 	'col_content',
@@ -655,6 +656,16 @@ const basePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
+const binaryIndicatorPayload = basePayload
+	.extend({
+		indicatorCategory: z.array(indicatorCategories).default([]),
+		indicatorType: z.array(indicatorTypes).default([]),
+		type: z.literal(payloadTypes.enum.binary_indicator)
+	})
+	.strict();
+
+const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
+
 const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
@@ -694,6 +705,7 @@ const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: tr
 
 const actualDataPayload = z.object({
 	audience: z.array(audience).default([audience.enum['audience.citizens']]),
+	booleanValue: z.boolean().default(false),
 	indicator: z.string().uuid(),
 	source: z.string().optional(),
 	title: z.string(),
@@ -924,6 +936,7 @@ const objectivePayload = basePayload
 			.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
 			.optional(),
 		type: z.literal(payloadTypes.enum.objective),
+		booleanValue: z.boolean().optional(),
 		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
 	})
 	.strict();
@@ -1065,6 +1078,7 @@ const measureMonitoringBasePayload = z.object({
 
 const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
 	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+	booleanValue: z.boolean().optional(),
 	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
@@ -1447,6 +1461,7 @@ const initialUndefinedPayload = undefinedPayload.partial({ title: true });
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
+	binaryIndicatorPayload,
 	chapterPayload,
 	categoryPayload,
 	colContentPayload,
@@ -1581,6 +1596,16 @@ export function isAdministrativeAreaBasicDataContainer(
 	container: AnyContainer | EmptyContainer
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+}
+
+const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
+
+export type BinaryIndicatorContainer = z.infer<typeof binaryIndicatorContainer>;
+
+export function isBinaryIndicatorContainer(
+	container: AnyContainer | EmptyContainer
+): container is BinaryIndicatorContainer {
+	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
 
 const chapterContainer = container.extend({
@@ -2396,6 +2421,7 @@ export const emptyContainer = newContainer.extend({
 	payload: z.discriminatedUnion('type', [
 		initialActualDataPayload,
 		initialAdministrativeAreaBasicDataPayload,
+		initialBinaryIndicatorPayload,
 		initialChapterPayload,
 		initialCategoryPayload,
 		initialColContentPayload,
