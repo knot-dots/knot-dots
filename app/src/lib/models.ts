@@ -644,15 +644,15 @@ export function slugify(source: string) {
 
 const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
-	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
+	audience: z.array(audience).default([audience.enum['audience.citizens']]),
 	sdg: z.array(sustainableDevelopmentGoals).default([]),
 	category: z.record(z.string(), z.array(z.string().trim().min(1))).default({}),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
-	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+	policyFieldBNK: z.array(policyFieldBNK).default([]),
 	summary: z.string().trim().max(200).optional(),
 	title: z.string().trim(),
-	topic: z.array(z.string().trim().min(1)).default([]),
+	topic: z.array(topics).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
