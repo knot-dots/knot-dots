@@ -29,11 +29,7 @@
 			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
 			<Summary {container} />
 			{#if actualDataContainer}
-				<BooleanValueToggle
-					checked={actualDataContainer.payload.booleanValue}
-					disabled
-					value={actualDataContainer.payload.booleanValue ? $_('yes') : $_('no')}
-				/>
+				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
 		{:else}
 			<NewIndicatorChart {container} {relatedContainers} />

@@ -172,7 +172,6 @@
 							}
 							disabled={!$applicationState.containerDetailView.editable ||
 								!$ability.can('update', container)}
-							value={container.payload.booleanValue ? $_('yes') : $_('no')}
 						/>
 					</div>
 				{:else if !isBinaryIndicatorContainer(indicator)}

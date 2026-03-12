@@ -1,21 +1,34 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
+
 	interface Props {
 		checked?: boolean;
 		disabled?: boolean;
 		label?: string;
-		value: string;
 	}
 
-	let { checked = $bindable(), disabled = false, label, value }: Props = $props();
+	let { checked = $bindable(), disabled = false, label }: Props = $props();
 </script>
 
 {#if label}
 	<label>
 		<span class="badge badge--purple">{label}</span>
-		<input bind:checked class="toggle" {disabled} type="checkbox" {value} />
+		<input
+			bind:checked
+			class="toggle"
+			{disabled}
+			type="checkbox"
+			value={checked ? $_('yes') : $_('no')}
+		/>
 	</label>
 {:else}
-	<input bind:checked class="toggle" {disabled} type="checkbox" {value} />
+	<input
+		bind:checked
+		class="toggle"
+		{disabled}
+		type="checkbox"
+		value={checked ? $_('yes') : $_('no')}
+	/>
 {/if}
 
 <style>
