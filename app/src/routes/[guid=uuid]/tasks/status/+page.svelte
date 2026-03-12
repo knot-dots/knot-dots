@@ -18,9 +18,13 @@
 		taskStatus
 	} from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
 	function goalsColumnTitle(containers: GoalContainer[]) {
 		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
@@ -57,7 +61,7 @@
 					title={$_(taskStatusOption)}
 				>
 					<MaybeDragZone
-						containers={data.containers
+						containers={containers
 							.filter(isTaskContainer)
 							.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 					/>
@@ -67,7 +71,7 @@
 					--background={taskStatusBackgrounds.get(taskStatusOption)}
 					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
 					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
-					items={data.containers
+					items={containers
 						.filter(isTaskContainer)
 						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
 					status={taskStatusOption}

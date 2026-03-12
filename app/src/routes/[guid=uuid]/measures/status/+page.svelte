@@ -6,10 +6,14 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
 	import { status } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 </script>
 
 <MeasuresPage {data}>
@@ -22,7 +26,7 @@
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone
-					containers={data.containers.filter(
+					containers={containers.filter(
 						(c) => 'status' in c.payload && c.payload.status === statusOption
 					)}
 				/>

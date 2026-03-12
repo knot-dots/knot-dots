@@ -3,6 +3,8 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import {
 		audience,
 		computeFacetCount,
@@ -16,7 +18,7 @@
 
 	let container = $derived(data.container);
 
-	let containers = $derived(data.containers);
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
 	let facets = $derived(
 		computeFacetCount(

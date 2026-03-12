@@ -14,14 +14,17 @@
 		findAncestors,
 		predicates
 	} from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 	let knowledgeByLevel = $derived.by(() => {
 		let knowledgeByLevel = new Map<number, Container[]>();
 
-		for (const container of data.containers) {
-			const ancestors = findAncestors(container, data.containers, [predicates.enum['is-part-of']]);
+		for (const container of containers) {
+			const ancestors = findAncestors(container, containers, [predicates.enum['is-part-of']]);
 			const level = ancestors.length;
 
 			if (knowledgeByLevel.has(level)) {

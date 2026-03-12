@@ -10,6 +10,8 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { predicates, type Container, type Predicate } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 
 	type PageProps = {
 		data: {
@@ -20,6 +22,8 @@
 	};
 
 	let { data }: PageProps = $props();
+
+	let allContainers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
 	const defaultRelationPredicates: Predicate[] = [
 		predicates.enum['is-equivalent-to'],
@@ -43,7 +47,7 @@
 			: defaultRelationPredicates
 	);
 
-	let combinedContainers = $derived([...data.containers, ...data.terms, ...data.subterms]);
+	let combinedContainers = $derived([...allContainers, ...data.terms, ...data.subterms]);
 
 	let relatedGuids = $derived.by(() => {
 		const target = page.url.searchParams.get('related-to');
@@ -107,7 +111,7 @@
 	});
 
 	let filteredContainers = $derived.by(() =>
-		relatedGuids ? data.containers.filter(({ guid }) => relatedGuids.has(guid)) : data.containers
+		relatedGuids ? allContainers.filter(({ guid }) => relatedGuids.has(guid)) : allContainers
 	);
 
 	let filteredTerms = $derived.by(() =>
