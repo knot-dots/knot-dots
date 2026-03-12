@@ -68,7 +68,7 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter(isIndicatorContainer)
+			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
