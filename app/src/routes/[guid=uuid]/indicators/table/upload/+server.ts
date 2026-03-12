@@ -4,6 +4,7 @@ import stream from 'node:stream';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	containerOfType,
 	editorialState,
@@ -30,6 +31,10 @@ function filterDefined(arr: (string | undefined)[]): string[] {
 }
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
+	if (!createFeatureDecisions(locals.features).useImportFromCsv()) {
+		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	}
+
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}

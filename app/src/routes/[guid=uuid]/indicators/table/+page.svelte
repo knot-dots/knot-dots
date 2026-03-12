@@ -17,6 +17,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
@@ -25,6 +26,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
 	let uploadDialog: HTMLDialogElement = $state()!;
 	let uploadErrors: string[] = $state([]);
@@ -103,6 +105,9 @@
 	}
 
 	onMount(() => {
+		if (!featureDecisions.useImportFromCsv()) {
+			return;
+		}
 		const instance = new Uppy({
 			autoProceed: true,
 			restrictions: {
@@ -170,65 +175,67 @@
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 
-<Dialog bind:dialog={uploadDialog} class="csv-upload-dialog" showCloseButton={false}>
-	<div class="csv-upload">
-		<header class="csv-upload__header">
-			<span class="csv-upload__label">{$_('indicator_csv.upload')}</span>
-			<button
-				class="button-outline csv-upload__cancel"
-				type="button"
-				onclick={() => uploadDialog.close()}
-			>
-				{$_('cancel')}
-			</button>
-		</header>
-		<div class="csv-upload__content">
-			{#if uploadSuccess}
-				<p class="success-message">{$_('indicator_csv.upload_success')}</p>
-			{/if}
-
-			{#if uploadErrors.length > 0}
-				<ul class="error-list">
-					{#each uploadErrors as err (err)}
-						<li>{err}</li>
-					{/each}
-				</ul>
-			{/if}
-
-			<div class="csv-upload__card">
-				{#if uppy}
-					<UppyContextProvider {uppy}>
-						<FileUpload helpKey="upload.csv.help" />
-					</UppyContextProvider>
+{#if featureDecisions.useImportFromCsv()}
+	<Dialog bind:dialog={uploadDialog} class="csv-upload-dialog" showCloseButton={false}>
+		<div class="csv-upload">
+			<header class="csv-upload__header">
+				<span class="csv-upload__label">{$_('indicator_csv.upload')}</span>
+				<button
+					class="button-outline csv-upload__cancel"
+					type="button"
+					onclick={() => uploadDialog.close()}
+				>
+					{$_('cancel')}
+				</button>
+			</header>
+			<div class="csv-upload__content">
+				{#if uploadSuccess}
+					<p class="success-message">{$_('indicator_csv.upload_success')}</p>
 				{/if}
 
-				{#if uploadFiles.length > 0}
-					<ul class="csv-upload__file-list">
-						{#each uploadFiles as file (file.id)}
-							<li class="csv-upload__file">
-								<FileIcon />
-								<div class="csv-upload__file-info">
-									<span class="csv-upload__file-name">{file.name}</span>
-									<span class="csv-upload__file-size">
-										{prettierBytes(file.size || 0)}
-									</span>
-								</div>
-								<button
-									class="button csv-upload__file-remove"
-									type="button"
-									onclick={() => removeUploadFile(file.id)}
-									aria-label={$_('upload.file.remove')}
-								>
-									<Close />
-								</button>
-							</li>
+				{#if uploadErrors.length > 0}
+					<ul class="error-list">
+						{#each uploadErrors as err (err)}
+							<li>{err}</li>
 						{/each}
 					</ul>
 				{/if}
+
+				<div class="csv-upload__card">
+					{#if uppy}
+						<UppyContextProvider {uppy}>
+							<FileUpload helpKey="upload.csv.help" />
+						</UppyContextProvider>
+					{/if}
+
+					{#if uploadFiles.length > 0}
+						<ul class="csv-upload__file-list">
+							{#each uploadFiles as file (file.id)}
+								<li class="csv-upload__file">
+									<FileIcon />
+									<div class="csv-upload__file-info">
+										<span class="csv-upload__file-name">{file.name}</span>
+										<span class="csv-upload__file-size">
+											{prettierBytes(file.size || 0)}
+										</span>
+									</div>
+									<button
+										class="button csv-upload__file-remove"
+										type="button"
+										onclick={() => removeUploadFile(file.id)}
+										aria-label={$_('upload.file.remove')}
+									>
+										<Close />
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+				</div>
 			</div>
 		</div>
-	</div>
-</Dialog>
+	</Dialog>
+{/if}
 
 <style>
 	.csv-action {
