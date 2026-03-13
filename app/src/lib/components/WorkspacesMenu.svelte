@@ -24,11 +24,12 @@
 	import Star from '~icons/knotdots/star';
 	import Tag from '~icons/knotdots/tag';
 	import Resources from '~icons/knotdots/resources_v2';
+	import QuestionCircle from '~icons/flowbite/question-circle-outline';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import { boards, payloadTypes } from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { ability, mayCreateContainer } from '$lib/stores';
 
 	const featureDecisions = createFeatureDecisions(page.data.features);
 
@@ -94,6 +95,13 @@
 						table: '/resources/table'
 					}
 				}
+			: undefined),
+		...(featureDecisions.useHelpWorkspace() && $ability.can('create', payloadTypes.enum.help)
+			? {
+					help: {
+						catalog: '/help/catalog'
+					}
+				}
 			: undefined)
 	};
 
@@ -107,7 +115,12 @@
 			programs: '/programs/catalog',
 			rules: '/rules/catalog',
 			tasks: '/tasks/catalog',
-			...(featureDecisions.useResourceWorkspace() ? { resources: '/resources/catalog' } : undefined)
+			...(featureDecisions.useResourceWorkspace()
+				? { resources: '/resources/catalog' }
+				: undefined),
+			...(featureDecisions.useHelpWorkspace() && $ability.can('create', payloadTypes.enum.help)
+				? { help: '/help/catalog' }
+				: undefined)
 		},
 		level: {
 			all: '/all/level',
@@ -266,6 +279,17 @@
 						recommended: false,
 						value:
 							workspacesLeft['objectives-and-effects'][selectedItem[1]] ?? '/objectives-and-effects'
+					}
+				]
+			: []),
+		...(featureDecisions.useHelpWorkspace() && $ability.can('create', payloadTypes.enum.help)
+			? [
+					{
+						exists: true,
+						icon: QuestionCircle,
+						label: $_('workspace.type.help'),
+						recommended: false,
+						value: workspacesLeft.help[selectedItem[1]] ?? '/help/catalog'
 					}
 				]
 			: [])

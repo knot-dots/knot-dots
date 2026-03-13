@@ -41,6 +41,7 @@ persons.forEach((person) => {
 		await page.getByRole('navigation').getByRole('button', { name: 'Settings' }).click();
 		await page.getByRole('dialog').getByLabel('CustomCategories').check();
 		await page.getByRole('dialog').getByLabel('FullScreenRoutes').check();
+		await page.getByRole('dialog').getByLabel('HelpWorkspace').check();
 		await page.getByRole('dialog').getByLabel('IOOI').check();
 		await page.getByRole('dialog').getByLabel('Report').check();
 		await page.getByRole('dialog').getByLabel('ResourceV2').check();

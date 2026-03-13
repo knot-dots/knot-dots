@@ -749,6 +749,7 @@
 	"workspace.tasks": "Aufgaben Status-Board",
 	"workspace.type.all": "Alle",
 	"workspace.type.goals": "Ziele",
+	"workspace.type.help": "Hilfe",
 	"workspace.type.indicators": "Indikatoren",
 	"workspace.type.knowledge": "Wissen",
 	"workspace.type.categories": "Kategorien",

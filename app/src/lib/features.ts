@@ -9,6 +9,7 @@ export const featureFlags = new Map([
 			'ContentPartner',
 			'ResourceV2',
 			'CustomCategories',
+			'HelpWorkspace',
 			'IOOI',
 			'EditorialPages',
 			'FullScreenRoutes',
@@ -106,6 +107,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useFullScreenRoutes() {
 			return features.includes('FullScreenRoutes');
+		},
+		useHelpWorkspace() {
+			return features.includes('HelpWorkspace');
 		}
 	};
 }

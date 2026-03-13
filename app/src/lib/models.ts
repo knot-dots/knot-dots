@@ -125,6 +125,7 @@ export function isPayloadType(value: unknown): value is PayloadType {
 const categoryObjectTypeValues = [
 	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.goal,
+	payloadTypes.enum.help,
 	payloadTypes.enum.program,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.simple_measure,
@@ -835,8 +836,8 @@ const goalCollectionPayload = z
 	.strict();
 
 const helpPayload = z.object({
-	body: z.string().trim(),
-	slug: z.string(),
+	body: z.string().trim().default(''),
+	slug: z.string().default(''),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.help),
 	visibility: visibility.default(visibility.enum['public'])

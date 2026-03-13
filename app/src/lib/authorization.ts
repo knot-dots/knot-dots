@@ -18,6 +18,7 @@ type Subjects = AnyContainer | EmptyContainer | PayloadType;
 const specialTypes: PayloadType[] = [
 	payloadTypes.enum.binary_indicator,
 	payloadTypes.enum.category,
+	payloadTypes.enum.help,
 	payloadTypes.enum.indicator,
 	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.organization,
