@@ -1,5 +1,5 @@
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
-import type { Container, IndicatorContainer } from '$lib/models';
+import { isActualDataContainer, type Container, type IndicatorContainer } from '$lib/models';
 
 const $_ = unwrapFunctionStore(_);
 
@@ -28,7 +28,8 @@ function translateValues(values: string[]): string {
 export function generateIndicatorCsv(
 	rows: Container[],
 	allYears: number[],
-	organizationalUnits: Map<string, string>
+	organizationalUnits: Map<string, string>,
+	actualDataContainers: Container[]
 ): string {
 	const BOM = '\uFEFF';
 
@@ -55,7 +56,10 @@ export function generateIndicatorCsv(
 	for (const row of rows) {
 		const p = row.payload as IndicatorContainer['payload'];
 
-		const historicalMap = new Map<number, number>(p.historicalValues ?? []);
+		const actualData = actualDataContainers
+			.filter(isActualDataContainer)
+			.find(({ payload }) => payload.indicator === row.guid);
+		const valuesMap = new Map<number, number>(actualData?.payload.values ?? []);
 
 		const fields: string[] = [
 			p.title ?? '',
@@ -73,7 +77,7 @@ export function generateIndicatorCsv(
 		];
 
 		for (const year of allYears) {
-			const val = historicalMap.get(year);
+			const val = valuesMap.get(year);
 			fields.push(val !== undefined ? String(val) : '');
 		}
 

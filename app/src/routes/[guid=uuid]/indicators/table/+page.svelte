@@ -19,9 +19,9 @@
 	import Table from '$lib/components/Table.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		isActualDataContainer,
 		isIndicatorContainer,
-		isIndicatorTemplateContainer,
-		type IndicatorContainer
+		isIndicatorTemplateContainer
 	} from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -40,13 +40,13 @@
 		)
 	);
 
+	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
+
 	let allYears = $derived.by(() => {
 		const yearSet = new Set<number>();
-		for (const c of filteredRows) {
-			if ('historicalValues' in c.payload) {
-				for (const [year] of (c as IndicatorContainer).payload.historicalValues) {
-					yearSet.add(year);
-				}
+		for (const c of actualDataContainers) {
+			for (const [year] of c.payload.values) {
+				yearSet.add(year);
 			}
 		}
 		return [...yearSet].sort((a, b) => a - b);
@@ -78,7 +78,7 @@
 				(ou: { guid: string; payload: { name: string } }) => [ou.guid, ou.payload.name]
 			)
 		);
-		const csv = generateIndicatorCsv(filteredRows, allYears, orgUnits);
+		const csv = generateIndicatorCsv(filteredRows, allYears, orgUnits, actualDataContainers);
 		downloadCsv(csv, 'indicators.csv');
 	}
 
@@ -171,7 +171,7 @@
 			{$_('indicator_csv.download')}
 		</button>
 	{/snippet}
-	<Table {columns} rows={filteredRows} />
+	<Table {columns} rows={filteredRows} {actualDataContainers} />
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 

@@ -6,6 +6,7 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	type ActualDataContainer,
 	containerOfType,
 	editorialState,
 	emptyContainer,
@@ -46,7 +47,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		!defineAbilityFor(locals.user).can(
 			'create',
 			containerOfType(
-				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template,
 				organization.guid,
 				null,
 				organization.guid,
@@ -63,11 +64,18 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		})
 	);
 
-	// Fetch existing indicator titles in this organization
-	const existingIndicators = await locals.pool.connect(
-		getManyContainers([organization.guid], { type: [payloadTypes.enum.indicator] }, 'alpha')
+	// Fetch existing indicator titles (both old and new system)
+	const [existingIndicators, existingTemplates] = await Promise.all([
+		locals.pool.connect(
+			getManyContainers([organization.guid], { type: [payloadTypes.enum.indicator] }, 'alpha')
+		),
+		locals.pool.connect(
+			getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
+		)
+	]);
+	const existingTitles = new Set(
+		[...existingIndicators, ...existingTemplates].map((c) => c.payload.title)
 	);
-	const existingTitles = new Set(existingIndicators.map((c) => c.payload.title));
 
 	// Track titles created during this import to handle duplicates within the same batch
 	const usedTitles = new Set(existingTitles);
@@ -102,7 +110,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		})
 	);
 
-	const containers: NewContainer[] = [];
+	const containers: { indicator: NewContainer; title: string; yearValues: [number, number][] }[] =
+		[];
 	const errors: string[] = [];
 	let lineNumber = 1;
 
@@ -200,8 +209,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				}
 				usedTitles.add(title);
 
-				containers.push(
-					emptyContainer.parse({
+				containers.push({
+					title,
+					indicator: emptyContainer.parse({
 						managed_by: orgUnit?.guid ?? organization.guid,
 						organization: organization.guid,
 						organizational_unit: orgUnit?.guid ?? null,
@@ -217,9 +227,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 							unit,
 							visibility,
 							editorialState: editorialStateValue,
-							historicalValues: yearValues,
-							quantity: 'quantity.custom',
-							type: payloadTypes.enum.indicator
+							type: payloadTypes.enum.indicator_template
 						},
 						realm: env.PUBLIC_KC_REALM,
 						user: [
@@ -228,8 +236,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as NewContainer
-				);
+					}) as NewContainer,
+					yearValues
+				});
 			} catch (e) {
 				errors.push(
 					unwrapFunctionStore(_)('import.error.invalid_record', {
@@ -247,8 +256,34 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.transaction(async (connection) => {
-		for (const container of containers) {
-			await createContainer(container)(connection);
+		for (const { indicator, title, yearValues } of containers) {
+			const created = await createContainer(indicator)(connection);
+
+			if (yearValues.length > 0) {
+				const actualDataContainer = containerOfType(
+					payloadTypes.enum.actual_data,
+					organization.guid,
+					indicator.organizational_unit ?? null,
+					indicator.managed_by,
+					env.PUBLIC_KC_REALM
+				) as NewContainer & { payload: ActualDataContainer['payload'] };
+
+				actualDataContainer.payload = {
+					...actualDataContainer.payload,
+					indicator: created.guid,
+					title,
+					values: yearValues
+				};
+
+				actualDataContainer.user = [
+					{
+						predicate: predicates.enum['is-creator-of'],
+						subject: locals.user.guid
+					}
+				];
+
+				await createContainer(actualDataContainer)(connection);
+			}
 		}
 	});
 
