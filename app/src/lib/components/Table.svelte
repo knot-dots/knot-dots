@@ -27,12 +27,11 @@
 	function initCategoryFields(snapshot: Container[]): Container[] {
 		if (customCategoryKeys.length === 0) return snapshot;
 		for (const row of snapshot) {
-			if (!('category' in row.payload)) {
-				continue;
-			}
-			for (const key of customCategoryKeys) {
-				if (!Array.isArray(row.payload.category[key])) {
-					row.payload.category[key] = [];
+			if ('category' in row.payload) {
+				for (const key of customCategoryKeys) {
+					if (!Array.isArray(row.payload.category[key])) {
+						row.payload.category[key] = [];
+					}
 				}
 			}
 		}
