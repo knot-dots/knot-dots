@@ -385,7 +385,7 @@
 					{/each}
 				</fieldset>
 			{:else if $sortBar.expanded}
-				<fieldset aria-labelledby="legend" use:sortBar.panel>
+				<fieldset use:sortBar.panel>
 					<legend class="is-visually-hidden">{$_('sort')}</legend>
 					<span aria-hidden="true">{$_('sort')}</span>
 					{#each sortOptions as [label, value] (value)}

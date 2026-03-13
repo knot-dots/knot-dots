@@ -82,7 +82,7 @@
 					{@render filterContent()}
 				</fieldset>
 			{:else if $sortBar.expanded}
-				<fieldset aria-labelledby="legend" use:sortBar.panel>
+				<fieldset use:sortBar.panel>
 					{@render sortContent()}
 				</fieldset>
 			{/if}

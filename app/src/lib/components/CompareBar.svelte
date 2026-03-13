@@ -13,7 +13,8 @@
 
 	let { disclosure }: Props = $props();
 
-	let dialog: HTMLDialogElement = $state(undefined!);
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
 
 	const colors = [
 		'--indicator-color-compare-1-base',
@@ -70,7 +71,7 @@
 <MunicipalityPicker bind:dialog bind:selected={$compareState.selectedMunicipalities} />
 
 {#if $disclosure.expanded}
-	<fieldset aria-labelledby="legend" class="compare-bar" use:disclosure.panel>
+	<fieldset class="compare-bar" use:disclosure.panel>
 		<legend class="is-visually-hidden">{$_('compare')}</legend>
 
 		<div class="compare-bar__label">

@@ -41,16 +41,19 @@
 			const params = new SvelteURLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
+
 			for (const type of administrativeTypes.options) {
 				params.append('administrativeType', type);
 			}
+
 			if (terms) {
 				params.append('terms', terms);
-			} else {
-				// Only paginate when not searching
-				params.append('limit', String(PAGE_SIZE));
-				params.append('offset', String(offset));
 			}
+
+			// Append pagination parameters
+			params.append('limit', String(PAGE_SIZE));
+			params.append('offset', String(offset));
+
 			params.append('sort', 'alpha');
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
@@ -81,7 +84,7 @@
 
 			// Check if there might be more results
 			// If we got less than PAGE_SIZE, we're at the end
-			hasMore = !terms && results.length === PAGE_SIZE;
+			hasMore = results.length === PAGE_SIZE;
 			isLoadingMore = false;
 		}
 	});
@@ -238,7 +241,7 @@
 						{/each}
 					</ul>
 
-					{#if hasMore && !terms}
+					{#if hasMore}
 						<div bind:this={loadMoreSentinel} class="load-more-sentinel">
 							{#if isLoadingMore}
 								<span class="loading-indicator">{$_('loading')}</span>
