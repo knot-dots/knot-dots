@@ -51,11 +51,11 @@
 		)
 	);
 
-	const chart: Attachment = (element) => {
-		if (!indicator || !element) return;
+	// Create a reactive state for the container's width
+	let currentWidth = $state(0);
 
-		// Create a reactive state for the container's width
-		let currentWidth = $state(0);
+	const chart: Attachment = (element) => {
+		if (!indicator) return;
 
 		// Use a ResizeObserver to measure the container and trigger a render
 		const observer = new ResizeObserver((entries) => {
@@ -73,27 +73,25 @@
 		// Start observing the element this action is attached to
 		observer.observe(element);
 
-		$effect(() => {
-			element?.firstChild?.remove();
-			element?.append(
-				Plot.plot({
-					color: { scheme: 'Blues' },
-					marks: [
-						Plot.lineY(total, { x: 'date', y: 'value' }),
-						Plot.areaY(subTargets, {
-							x: 'date',
-							y: 'value',
-							fill: 'guid',
-							href: ({ guid }) => overlayURL(page.url, overlayKey.enum.view, guid),
-							title: ({ title }) => title
-						})
-					],
-					y: { label: $_(unit), tickFormat: (d) => $number(d) },
-					width: currentWidth,
-					height: (currentWidth * 400) / 640 // Maintain the 640:400 aspect ratio
-				})
-			);
-		});
+		element.innerHTML = '';
+		element.append(
+			Plot.plot({
+				color: { scheme: 'Blues' },
+				marks: [
+					Plot.lineY(total, { x: 'date', y: 'value' }),
+					Plot.areaY(subTargets, {
+						x: 'date',
+						y: 'value',
+						fill: 'guid',
+						href: ({ guid }) => overlayURL(page.url, overlayKey.enum.view, guid),
+						title: ({ title }) => title
+					})
+				],
+				y: { label: $_(unit), tickFormat: (d) => $number(d) },
+				width: currentWidth,
+				height: (currentWidth * 400) / 640 // Maintain the 640:400 aspect ratio
+			})
+		);
 
 		// Return a destroy method for cleanup
 		return () => {

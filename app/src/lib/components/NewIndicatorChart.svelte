@@ -19,7 +19,7 @@
 
 	let { container, relatedContainers = [], comparisonContainers }: Props = $props();
 
-	const currentOrgUnitName = page.data.currentOrganizationalUnit?.payload.name;
+	const currentOrgUnitName = $derived(page.data.currentOrganizationalUnit?.payload.name);
 
 	let unit = $derived($_(container.payload.unit));
 
@@ -69,12 +69,10 @@
 		...comparisonValues.map((c) => `var(${c.color})`)
 	]);
 
+	// Create a reactive state for the container's width
+	let currentWidth = $state(0);
+
 	const chart: Attachment = (element) => {
-		if (!element) return;
-
-		// Create a reactive state for the container's width
-		let currentWidth = $state(0);
-
 		// Use a ResizeObserver to measure the container and trigger a render
 		const observer = new ResizeObserver((entries) => {
 			for (let entry of entries) {
@@ -91,65 +89,61 @@
 		// Start observing the element this action is attached to
 		observer.observe(element);
 
-		// Use $effect to automatically re-run whenever data OR width changes
-		$effect(() => {
-			// Svelte tracks dependencies here. Because we read currentWidth, allData,
-			// colorDomain, etc., any change to them will trigger a re-render.
-			if (currentWidth === 0) return;
+		// Svelte tracks dependencies here. Because we read currentWidth, allData,
+		// colorDomain, etc., any change to them will trigger a re-render.
+		if (currentWidth === 0) return;
 
-			// Use innerHTML = '' instead of firstChild.remove()
-			// because we are going to append TWO elements now (plot + legend).
-			element.innerHTML = '';
+		// Use innerHTML = '' instead of firstChild.remove()
+		// because we are going to append TWO elements now (plot + legend).
+		element.innerHTML = '';
 
-			const plot = Plot.plot({
-				marks: [
-					Plot.lineY(allData, {
-						x: 'date',
-						y: 'value',
-						stroke: 'municipality',
-						strokeWidth: (d) => (d.municipality === 'current' ? 3 : 2),
-						strokeLinecap: 'round'
-					}),
-					Plot.dot(allData, {
-						x: 'date',
-						y: 'value',
-						fill: 'municipality',
-						r: (d) => (d.municipality === 'current' ? 4 : 2.5)
-					})
-				],
-				width: currentWidth,
-				height: (currentWidth * 400) / 640, // Maintain the 640:400 aspect ratio
-				grid: true,
-				y: { label: $_(unit), tickFormat: (d) => $number(d) },
-				color: {
-					domain: colorDomain,
-					range: colorRange
-				},
-				style: {
-					// fontFamily: 'inherit',
-					fontSize: '0.75rem'
-				}
-			});
-
-			const legend = Plot.legend({
-				color: {
-					legend: true,
-					domain: colorDomain,
-					range: colorRange,
-					tickFormat: (d) => {
-						if (d === 'current') return currentOrgUnitName;
-						const municipality = $compareState.selectedMunicipalities.find((m) => m.guid === d);
-						return municipality ? municipality.payload.name : d;
-					}
-				},
-				style: {
-					fontSize: '0.75rem'
-				},
-				swatchHeight: 3
-			});
-
-			element?.append(plot, legend);
+		const plot = Plot.plot({
+			marks: [
+				Plot.lineY(allData, {
+					x: 'date',
+					y: 'value',
+					stroke: 'municipality',
+					strokeWidth: (d) => (d.municipality === 'current' ? 3 : 2),
+					strokeLinecap: 'round'
+				}),
+				Plot.dot(allData, {
+					x: 'date',
+					y: 'value',
+					fill: 'municipality',
+					r: (d) => (d.municipality === 'current' ? 4 : 2.5)
+				})
+			],
+			width: currentWidth,
+			height: (currentWidth * 400) / 640, // Maintain the 640:400 aspect ratio
+			grid: true,
+			y: { label: $_(unit), tickFormat: (d) => $number(d) },
+			color: {
+				domain: colorDomain,
+				range: colorRange
+			},
+			style: {
+				fontSize: '0.75rem'
+			}
 		});
+
+		const legend = Plot.legend({
+			color: {
+				legend: true,
+				domain: colorDomain,
+				range: colorRange,
+				tickFormat: (d) => {
+					if (d === 'current') return currentOrgUnitName;
+					const municipality = $compareState.selectedMunicipalities.find((m) => m.guid === d);
+					return municipality ? municipality.payload.name : d;
+				}
+			},
+			style: {
+				fontSize: '0.75rem'
+			},
+			swatchHeight: 3
+		});
+
+		element.append(plot, legend);
 
 		// Return a destroy method for cleanup
 		return () => {
