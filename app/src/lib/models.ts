@@ -642,24 +642,30 @@ export function slugify(source: string) {
 		.substring(0, 128);
 }
 
+function deduplicate(v: string[]) {
+	return [...new Set(v)];
+}
+
 const basePayload = z.object({
 	aiSuggestion: z.boolean().default(false),
-	audience: z.array(z.string().trim().min(1)).default([audience.enum['audience.citizens']]),
-	sdg: z.array(sustainableDevelopmentGoals).default([]),
-	category: z.record(z.string(), z.array(z.string().trim().min(1))).default({}),
+	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
+	sdg: z.array(sustainableDevelopmentGoals).transform(deduplicate).default([]),
+	category: z
+		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+		.default({}),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
-	policyFieldBNK: z.array(z.string().trim().min(1)).default([]),
+	policyFieldBNK: z.array(policyFieldBNK).transform(deduplicate).default([]),
 	summary: z.string().trim().max(200).optional(),
 	title: z.string().trim(),
-	topic: z.array(z.string().trim().min(1)).default([]),
+	topic: z.array(topics).transform(deduplicate).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
 const binaryIndicatorPayload = basePayload
 	.extend({
-		indicatorCategory: z.array(indicatorCategories).default([]),
-		indicatorType: z.array(indicatorTypes).default([]),
+		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
+		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
 		type: z.literal(payloadTypes.enum.binary_indicator)
 	})
 	.strict();
@@ -669,7 +675,10 @@ const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: tr
 const unrefinedCategoryPayload = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim().optional(),
-	objectTypes: z.array(categoryObjectTypes).default(categoryObjectTypes.options),
+	objectTypes: z
+		.array(categoryObjectTypes)
+		.transform(deduplicate)
+		.default(categoryObjectTypes.options),
 	title: z.string().trim().min(1),
 	type: z.literal(payloadTypes.enum.category),
 	visibility: visibility.default(visibility.enum['public'])
@@ -704,7 +713,7 @@ const termPayload = unrefinedTermPayload.superRefine((payload) => {
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 const actualDataPayload = z.object({
-	audience: z.array(audience).default([audience.enum['audience.citizens']]),
+	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	booleanValue: z.boolean().default(false),
 	indicator: z.string().uuid(),
 	source: z.string().optional(),
@@ -840,8 +849,8 @@ const initialGoalCollectionPayload = goalCollectionPayload;
 const indicatorPayload = basePayload.extend({
 	externalReference: z.string().url().optional(),
 	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	indicatorCategory: z.array(indicatorCategories).default([]),
-	indicatorType: z.array(indicatorTypes).default([]),
+	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
+	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
 	quantity: z.string(),
 	type: z.literal(payloadTypes.enum.indicator),
 	unit: z.string()
@@ -1006,16 +1015,6 @@ const simpleMeasurePayload = basePayload
 		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
-		resource: z
-			.array(
-				z.object({
-					description: z.string(),
-					amount: z.coerce.number(),
-					unit: z.string(),
-					fulfillmentDate: z.string().refine((v) => z.coerce.date().safeParse(v))
-				})
-			)
-			.default([]),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
@@ -1041,7 +1040,7 @@ const programPayload = basePayload
 		summary: true
 	})
 	.extend({
-		chapterType: z.array(payloadTypes).default(chapterTypeOptions),
+		chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 		image: z.string().url().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
@@ -1069,7 +1068,7 @@ const programCollectionPayload = z
 const initialProgramCollectionPayload = programCollectionPayload;
 
 const measureMonitoringBasePayload = z.object({
-	audience: z.array(audience).default([audience.enum['audience.citizens']]),
+	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	description: z.string().trim().optional(),
 	summary: z.string().trim().max(200).optional(),
 	title: z.string(),
@@ -1197,7 +1196,7 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
-		assignee: z.array(z.string().uuid()).default([]),
+		assignee: z.array(z.string().uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
 		effort: z.string().optional(),
 		fulfillmentDate: z.string().date().optional(),
@@ -1223,7 +1222,10 @@ const initialImagePayload = imagePayload.partial({ body: true, title: true });
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
-		audience: z.array(audience).default([audience.enum['audience.citizens']]),
+		audience: z
+			.array(audience)
+			.transform(deduplicate)
+			.default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
 		bodyRight: z.string().trim().optional(),
 		cardStyle: z.string().optional(),
@@ -1381,7 +1383,7 @@ const taskCollectionPayload = z
 const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
-	boards: z.array(boards).default([]),
+	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	default: z.boolean().default(false),
@@ -1406,7 +1408,7 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 const organizationalUnitPayload = z.object({
 	administrativeType: administrativeTypes.optional(),
-	boards: z.array(boards).default([]),
+	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
@@ -1438,7 +1440,10 @@ const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ nam
 
 const textPayload = z
 	.object({
-		audience: z.array(audience).default([audience.enum['audience.citizens']]),
+		audience: z
+			.array(audience)
+			.transform(deduplicate)
+			.default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
@@ -2521,7 +2526,7 @@ export const user = z.object({
 	guid: z.string().uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
-		features: z.array(z.string()).optional()
+		features: z.array(z.string()).transform(deduplicate).optional()
 	})
 });
 
