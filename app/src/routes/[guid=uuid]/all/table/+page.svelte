@@ -55,7 +55,7 @@
 
 <AllPage {data}>
 	<Table
-		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : null}
+		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
 		rows={data.containers
 			.filter(

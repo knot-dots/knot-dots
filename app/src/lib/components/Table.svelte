@@ -9,18 +9,13 @@
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
-		categoryOptions?: CategoryOptions | null;
+		categoryOptions?: CategoryOptions;
 		columns: Array<{ heading: string; key: string }>;
 		rows: Container[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
-	let {
-		categoryOptions = null,
-		columns,
-		rows: originalRows,
-		actualDataContainers = []
-	}: Props = $props();
+	let { categoryOptions, columns, rows: originalRows, actualDataContainers = [] }: Props = $props();
 
 	const initialCategory = $derived(
 		Object.fromEntries(
