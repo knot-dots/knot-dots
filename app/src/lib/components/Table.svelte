@@ -22,27 +22,35 @@
 		actualDataContainers = []
 	}: Props = $props();
 
-	const customCategoryKeys = $derived(categoryOptions ? getCategoryKeys(categoryOptions) : []);
+	const initialCategory = $derived(
+		Object.fromEntries(
+			(categoryOptions ? getCategoryKeys(categoryOptions) : []).map((key) => [key, []])
+		)
+	);
 
-	function initCategoryFields(snapshot: Container[]): Container[] {
-		if (customCategoryKeys.length === 0) return snapshot;
-		for (const row of snapshot) {
-			if ('category' in row.payload) {
-				for (const key of customCategoryKeys) {
-					if (!Array.isArray(row.payload.category[key])) {
-						row.payload.category[key] = [];
-					}
+	function ensureAllCategoriesArePresent(container: Container): Container {
+		if ('category' in container.payload) {
+			return {
+				...container,
+				payload: {
+					...container.payload,
+					category: { ...initialCategory, ...container.payload.category }
 				}
-			}
+			};
+		} else {
+			return container;
 		}
-		return snapshot;
 	}
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let rows = $state([] as Container[]);
 
 	$effect(() => {
-		rows = initCategoryFields($state.snapshot(originalRows) as Container[]);
+		if (categoryOptions) {
+			rows = $state.snapshot(originalRows.map(ensureAllCategoriesArePresent));
+		} else {
+			rows = $state.snapshot(originalRows);
+		}
 	});
 </script>
 
