@@ -239,15 +239,14 @@
 								/>
 							</li>
 						{/each}
+						{#if hasMore}
+							<div bind:this={loadMoreSentinel} class="load-more-sentinel">
+								{#if isLoadingMore}
+									<span class="loading-indicator">{$_('loading')}</span>
+								{/if}
+							</div>
+						{/if}
 					</ul>
-
-					{#if hasMore}
-						<div bind:this={loadMoreSentinel} class="load-more-sentinel">
-							{#if isLoadingMore}
-								<span class="loading-indicator">{$_('loading')}</span>
-							{/if}
-						</div>
-					{/if}
 				</div>
 
 				<aside class="selection-panel">
