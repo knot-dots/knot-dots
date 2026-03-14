@@ -3,7 +3,6 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import Close from '~icons/knotdots/close';
-	import CloseCircle from '~icons/flowbite/close-circle-solid';
 	import MunicipalityPicker from '$lib/components/MunicipalityPicker.svelte';
 	import { compareState } from '$lib/stores';
 
@@ -72,191 +71,143 @@
 
 {#if $disclosure.expanded}
 	<fieldset class="compare-bar" use:disclosure.panel>
-		<legend class="is-visually-hidden">{$_('compare')}</legend>
+		<span class="aria-hidden">{$_('compare_with')}</span>
 
-		<div class="compare-bar__label">
-			<span class="compare-bar__label-text">{$_('compare_with')}</span>
+		{#if $compareState.selectedMunicipalities.length > 0}
+			<button
+				aria-label={$_('compare_clear_all')}
+				class="button-outline button-xs"
+				onclick={clearAll}
+				type="button"
+			>
+				<Close />
+			</button>
+		{/if}
 
-			{#if $compareState.selectedMunicipalities.length > 0}
+		{#each $compareState.selectedMunicipalities as municipality (municipality.guid)}
+			<div class="badge badge--large badge--municipality">
+				<span
+					class="municipality-color"
+					style:background-color={$compareState.colorAssignments[municipality.guid]
+						? `var(${$compareState.colorAssignments[municipality.guid]})`
+						: 'transparent'}
+				></span>
+				<span class="municipality-name">{municipality.payload.name}</span>
 				<button
-					class="compare-bar__clear-button"
-					onclick={clearAll}
-					title={$_('compare_clear_all')}
+					class="municipality-remove"
+					onclick={() => removeMunicipality(municipality.guid)}
+					title={$_('compare_remove')}
 					type="button"
 				>
 					<Close />
 				</button>
-			{/if}
-		</div>
-
-		<div class="municipality-list">
-			{#each $compareState.selectedMunicipalities as municipality (municipality.guid)}
-				<div class="municipality-chip">
-					<span
-						class="chip-color"
-						style:background-color={$compareState.colorAssignments[municipality.guid]
-							? `var(${$compareState.colorAssignments[municipality.guid]})`
-							: 'transparent'}
-					></span>
-					<span class="chip-name">{municipality.payload.name}</span>
-					<button
-						class="chip-remove"
-						onclick={() => removeMunicipality(municipality.guid)}
-						title={$_('compare_remove')}
-						type="button"
-					>
-						<CloseCircle />
-					</button>
-				</div>
-			{/each}
-		</div>
+			</div>
+		{/each}
 
 		<button
-			class="compare-bar__button"
+			class="municipality-add"
 			disabled={$compareState.selectedMunicipalities.length >= 3}
 			onclick={openPicker}
 			type="button"
 		>
 			<Plus />
-			<span>{$_('compare_add_municipality')}</span>
+			{$_('compare_add_municipality')}
 		</button>
 	</fieldset>
 {/if}
 
 <style>
 	.compare-bar {
-		align-items: center;
-		align-self: stretch;
-		display: flex;
-		gap: 0.5rem;
-		height: 100%;
-		overflow-x: auto;
-		overflow-y: hidden;
-		padding: 0 0.5rem;
-	}
+		--indicator-background-color: var(--color-primary-700);
 
-	.compare-bar__label {
-		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.75rem;
-	}
-
-	.compare-bar__label-text {
-		color: var(--color-primary-700);
+		background-color: var(--color-primary-050);
+		border: 1px solid var(--color-primary-200);
+		border-radius: 9999rem;
+		display: flex;
+		flex-direction: row;
 		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.5;
-		white-space: nowrap;
-	}
-
-	.compare-bar__clear-button {
-		align-items: center;
-		border: 1px solid var(--color-primary-700);
-		border-radius: 0.5rem;
-		color: var(--color-primary-700);
-		display: flex;
-		flex-shrink: 0;
-		justify-content: center;
-		padding: 0.5rem 0.75rem;
-	}
-
-	.compare-bar__clear-button :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.compare-bar__clear-button:hover {
-		background: var(--color-primary-200);
-	}
-
-	.municipality-list {
-		display: flex;
-		align-items: center;
-		align-self: stretch;
 		gap: 0.25rem;
-		min-width: 0;
-		overflow-x: auto;
-		padding: 0 0.75rem;
+		justify-content: safe center;
+		overflow: auto;
+		padding: 0.375rem;
 	}
 
-	.municipality-chip {
-		align-items: center;
-		background-color: var(--color-primary-025);
+	.compare-bar > * {
+		flex-shrink: 0;
+		justify-content: safe center;
+	}
+
+	.compare-bar > span:first-child {
+		color: var(--color-primary-700);
+		padding: 0 0.25rem 0 0.5rem;
+	}
+
+	.compare-bar > button:first-of-type {
+		margin-right: 0.75rem;
+	}
+
+	.badge.badge--municipality {
 		border: 1px solid var(--color-primary-100);
-		border-radius: 6px;
-		display: flex;
-		gap: 0.5rem;
-		min-width: 8rem;
-		padding: 0.25rem 0.5rem 0.25rem 0.75rem;
-		white-space: nowrap;
+		background: var(--cololr-primary-025);
 	}
 
-	.chip-color {
+	.municipality-color {
 		border-radius: 50%;
 		display: block;
+		flex-grow: 0;
 		flex-shrink: 0;
 		height: 10px;
 		width: 10px;
 	}
 
-	.chip-name {
+	.municipality-name {
 		color: var(--color-gray-900);
 		font-size: 0.875rem;
 		font-weight: 500;
 		flex-shrink: 1;
+		max-width: 10rem;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	.chip-remove {
+	.municipality-remove {
 		background: transparent;
 		border: none;
-		border-radius: 50%;
 		color: var(--color-gray-500);
 		cursor: pointer;
 		flex-shrink: 0;
 		padding: 0;
-		transition: color 0.15s ease;
 	}
 
-	.chip-remove :global(svg) {
+	.municipality-remove :global(svg) {
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.chip-remove:hover {
-		color: var(--color-red-600);
-	}
+	.municipality-add {
+		--button-background: transparent;
+		--button-active-background: var(--color-primary-300);
+		--button-disabled-background: transparent;
+		--button-hover-background: var(--color-primary-100);
 
-	.compare-bar__button {
-		align-items: center;
-		background: transparent;
 		border: none;
-		border-radius: 8px;
 		color: var(--color-gray-700);
-		display: flex;
-		flex-shrink: 0;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.375rem;
-		height: 2.25rem;
-		padding: 0 0.625rem;
+		padding: 0.5rem 0.625rem;
 		white-space: nowrap;
 	}
 
-	.compare-bar__button:hover:not(:disabled) {
-		background: var(--color-primary-200);
+	.municipality-add:active {
+		color: var(--color-primary-700);
 	}
 
-	.compare-bar__button:disabled {
-		cursor: not-allowed;
-		opacity: 0.5;
+	.municipality-add:disabled {
+		color: var(--color-gray-400);
 	}
 
-	.compare-bar__button :global(svg) {
+	.municipality-add :global(svg) {
 		height: 0.875rem;
 		width: 0.875rem;
 	}
