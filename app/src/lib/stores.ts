@@ -24,6 +24,7 @@ import {
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
+	type OrganizationalUnitContainer,
 	overlayKey,
 	paramsFromFragment,
 	type PayloadType,
@@ -36,6 +37,14 @@ export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
 		editable: false
 	}
+});
+
+export const compareState = writable<{
+	selectedMunicipalities: OrganizationalUnitContainer[];
+	colorAssignments: Record<string, string>;
+}>({
+	selectedMunicipalities: [],
+	colorAssignments: {}
 });
 
 export type User = {

@@ -175,7 +175,7 @@
 			{@const image = Array.isArray(container.payload.image)
 				? container.payload.image[0]
 				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image as string)} />
+			<img alt={$_('cover_image')} loading="lazy" src={transformFileURL(image as string)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}

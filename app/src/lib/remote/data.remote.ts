@@ -96,7 +96,7 @@ export const fetchContainersRelatedToIndicatorTemplates = query(
 				getManyContainers(
 					[params.organization],
 					{
-						indicator: guid,
+						indicators: [guid],
 						organizationalUnits: params.organizationalUnit ? [params.organizationalUnit] : [],
 						type: [payloadTypes.enum.actual_data]
 					},

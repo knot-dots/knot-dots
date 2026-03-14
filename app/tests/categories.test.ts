@@ -52,7 +52,7 @@ test.describe('Categories', () => {
 		await dotsBoard.overlay.locator.getByRole('checkbox', { name: sharedTermNames[0] }).check();
 		await dotsBoard.overlay.closeButton.click();
 
-		await dotsBoard.header.filterButton.click();
+		await dotsBoard.page.getByRole('button', { name: 'Filter' }).click();
 		await dotsBoard.page.getByRole('button', { name: sharedCategoryTitle }).click();
 		const firstFilterResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] }).check();

@@ -130,7 +130,7 @@ export function getManyContainersWithES(
 		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
-		indicator?: string;
+		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
 		policyFieldsBNK?: string[];

@@ -13,7 +13,8 @@ export const featureFlags = new Map([
 			'IOOI',
 			'EditorialPages',
 			'FullScreenRoutes',
-			'SubMeasures'
+			'SubMeasures',
+			'Compare'
 		] as const
 	],
 	[
@@ -107,6 +108,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useFullScreenRoutes() {
 			return features.includes('FullScreenRoutes');
+		},
+		useCompare() {
+			return features.includes('Compare');
 		},
 		useHelpWorkspace() {
 			return features.includes('HelpWorkspace');

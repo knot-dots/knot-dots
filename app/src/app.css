@@ -225,6 +225,19 @@
 	--indicator-color: white;
 	--indicator-font-size: 0.625rem;
 
+	/* ----------------------------------------------------------
+		COLOR · SERIES · BASE
+		Main colors for lines and points
+	---------------------------------------------------------- */
+
+	--indicator-color-own-base: #0b8a8a; /* Teal                   — Own Municipality           */
+	--indicator-color-compare-1-base: #c25a0a; /* Orange           — Comparison Municipality 1  */
+	--indicator-color-compare-2-base: #7233c2; /* Violet           — Comparison Municipality 2  */
+	--indicator-color-compare-3-base: #b81e5d; /* Rose             — Comparison Municipality 3  */
+	--indicator-color-ref-state-base: #a08c78; /* Warm Taupe       — State Average   L58        */
+	--indicator-color-ref-federal-base: #2e4560; /* Dark Slate     — Federal Average L30        */
+	--indicator-color-ref-benchmark-base: #1d7a46; /* Forest Green — Benchmark                  */
+
 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
 	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);

@@ -133,7 +133,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			const foundActualDataContainers = await getManyContainers(
 				[organizationalUnitContainer.organization],
 				{
-					indicator: currentIndicator,
+					indicators: [currentIndicator],
 					organizationalUnits: [organizationalUnitContainer.guid],
 					type: [payloadTypes.enum.actual_data]
 				},

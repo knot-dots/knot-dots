@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
+	import type { SvelteMap } from 'svelte/reactivity';
 	import Card from '$lib/components/Card.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -18,9 +19,19 @@
 		container: IndicatorTemplateContainer | BinaryIndicatorContainer;
 		relatedContainers?: ActualDataContainer[];
 		showRelationFilter?: boolean;
+		comparisonDataMap?: SvelteMap<string, ActualDataContainer[]>;
 	}
 
-	const { button, container, relatedContainers = [], showRelationFilter = false }: Props = $props();
+	const {
+		button,
+		container,
+		relatedContainers = [],
+		showRelationFilter = false,
+		comparisonDataMap
+	}: Props = $props();
+
+	// Extract comparison containers for this specific indicator
+	let comparisonContainers = $derived(comparisonDataMap?.get(container.guid));
 </script>
 
 <Card {button} {container} {relatedContainers} {showRelationFilter}>
@@ -32,7 +43,7 @@
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
 		{:else}
-			<NewIndicatorChart {container} {relatedContainers} />
+			<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
 		{/if}
 	{/snippet}
 

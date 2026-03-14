@@ -2,13 +2,11 @@
 	import { IsInViewport, resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 	import { z } from 'zod';
-	import Sort from '~icons/flowbite/sort-outline';
 	import CheckCircle from '~icons/flowbite/check-circle-solid';
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
-	import Close from '~icons/knotdots/close';
 	import Collection from '~icons/knotdots/collection';
-	import Filter from '~icons/knotdots/filter';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
@@ -18,22 +16,24 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
-	import SearchInput from '$lib/components/SearchInput.svelte';
+	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
+		type ActualDataContainer,
 		actualDataContainer,
 		type AnyContainer,
 		audience,
 		computeFacetCount,
 		type CustomCollectionContainer,
 		indicatorCategories,
+		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -52,7 +52,7 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let dialog: HTMLDialogElement;
+	let dialog: HTMLDialogElement = $state(undefined!);
 
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 
@@ -202,8 +202,68 @@
 		}
 	});
 
+	// Fetch comparison data for all indicators in batch
+	let selectedMunicipalityGuids = $derived(
+		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
+	);
+
+	let indicatorGuids = $derived(
+		items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
+	);
+
+	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
+	const comparisonDataResource = resource(
+		() => [selectedMunicipalityGuids, indicatorGuids, inViewport.current] as const,
+		async ([municipalityGuids, indicators], _, { signal }) => {
+			if (municipalityGuids.length === 0 || indicators.length === 0) return [];
+
+			// Split indicators into chunks to avoid 431 error (Request URI Too Large)
+			const CHUNK_SIZE = 50; // Conservative limit to keep URL under ~8KB
+			const chunks: string[][] = [];
+			for (let i = 0; i < indicators.length; i += CHUNK_SIZE) {
+				chunks.push(indicators.slice(i, i + CHUNK_SIZE));
+			}
+
+			// Fetch all chunks in parallel
+			const fetchPromises = chunks.map(async (indicatorChunk) => {
+				const params = new SvelteURLSearchParams();
+				for (const guid of indicatorChunk) {
+					params.append('indicator', guid);
+				}
+				for (const guid of municipalityGuids) {
+					params.append('organizationalUnit', guid);
+				}
+				params.append('payloadType', payloadTypes.enum.actual_data);
+
+				const response = await fetch(`/container?${params.toString()}`, { signal });
+				if (!response.ok) return [];
+				return z.array(actualDataContainer).parse(await response.json());
+			});
+
+			// Combine results from all chunks
+			const results = await Promise.all(fetchPromises);
+			return results.flat();
+		},
+		{ lazy: true }
+	);
+
+	// Create a map for efficient lookup of comparison data by indicator GUID
+	let comparisonDataMap = $derived.by(() => {
+		const map = new SvelteMap<string, ActualDataContainer[]>();
+		for (const container of comparisonDataResource.current ?? []) {
+			if (isActualDataContainer(container) && container.payload.indicator) {
+				const indicatorGuid = container.payload.indicator;
+				if (!map.has(indicatorGuid)) {
+					map.set(indicatorGuid, []);
+				}
+				map.get(indicatorGuid)!.push(container);
+			}
+		}
+		return map;
+	});
+
 	function addItems() {
-		dialog.showModal();
+		dialog?.showModal();
 	}
 
 	function resetFilters() {
@@ -283,7 +343,12 @@
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
-					<NewIndicatorCard --height="100%" container={item} {relatedContainers} />
+					<NewIndicatorCard
+						--height="100%"
+						container={item}
+						{relatedContainers}
+						{comparisonDataMap}
+					/>
 				{:else}
 					<Card --height="100%" container={item} />
 				{/if}
@@ -299,89 +364,54 @@
 	</div>
 {/if}
 
-<dialog bind:this={dialog} oninput={(e) => e.stopPropagation()}>
-	<form method="dialog">
-		<div class="commands">
-			<span>{$_('custom_collection.dialog.title')}</span>
-
-			<SearchInput bind:value={terms} />
-
-			<button
-				class="dropdown-button dropdown-button--command"
-				onclick={() => sortBar.close()}
-				type="button"
-				use:filterBar.button
-			>
-				<Filter />
-				<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
-				{#if activeFilters > 0 && !$filterBar.expanded}
-					<span class="indicator">{activeFilters}</span>
-				{/if}
-			</button>
-
-			<button
-				class="dropdown-button dropdown-button--command"
-				onclick={() => filterBar.close()}
-				type="button"
-				use:sortBar.button
-			>
-				<Sort />
-				<span class="is-visually-hidden">{$_('sort')}</span>
-			</button>
-		</div>
-
-		<div class="filter-and-sort">
-			{#if $filterBar.expanded}
-				<fieldset use:filterBar.panel>
-					{#if activeFilters > 0}
-						<span class="active-filters">
-							{$_('active_filters', { values: { count: activeFilters } })}
-						</span>
-
-						<button class="button-outline button-xs" onclick={resetFilters} type="button">
-							<Close />
-						</button>
-					{/if}
-
-					{#each facets.entries() as [key, foci] (key)}
-						{@const options = [...foci.entries()]
-							.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-							.toSorted((a, b) =>
-								a.label.localeCompare(b.label, undefined, {
-									numeric: true,
-									sensitivity: 'base'
-								})
-							)}
-						{#if options.some(({ count }) => count > 0)}
-							<InlineFilterDropDown
-								bind:value={filter[key as keyof typeof filter] as string[]}
-								{key}
-								{mode}
-								{options}
-							/>
-						{/if}
-					{/each}
-				</fieldset>
-			{:else if $sortBar.expanded}
-				{@const sortOptions = [
-					[$_('sort_alphabetically'), 'alpha'],
-					[$_('sort_modified'), 'modified']
-				]}
-				<fieldset aria-labelledby="legend" use:sortBar.panel>
-					<legend class="is-visually-hidden">{$_('sort')}</legend>
-					<span aria-hidden="true">{$_('sort')}</span>
-					{#each sortOptions as [label, value] (value)}
-						{@const Icon = sortIcons.get(value)}
-						<label class="sort-option">
-							<input type="radio" {value} bind:group={sort} />
-							<Icon />
-							{label}
-						</label>
-					{/each}
-				</fieldset>
+<PickerDialog
+	bind:dialog
+	bind:terms
+	{activeFilters}
+	{filterBar}
+	{sortBar}
+	onResetFilters={resetFilters}
+	title={$_('custom_collection.dialog.title')}
+>
+	{#snippet filterContent()}
+		{#each facets.entries() as [key, foci] (key)}
+			{@const options = [...foci.entries()]
+				.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+				.toSorted((a, b) =>
+					a.label.localeCompare(b.label, undefined, {
+						numeric: true,
+						sensitivity: 'base'
+					})
+				)}
+			{#if options.some(({ count }) => count > 0)}
+				<InlineFilterDropDown
+					bind:value={filter[key as keyof typeof filter] as string[]}
+					{key}
+					{mode}
+					{options}
+				/>
 			{/if}
-		</div>
+		{/each}
+	{/snippet}
 
+	{#snippet sortContent()}
+		{@const sortOptions = [
+			[$_('sort_alphabetically'), 'alpha'],
+			[$_('sort_modified'), 'modified']
+		]}
+		<legend class="is-visually-hidden">{$_('sort')}</legend>
+		<span aria-hidden="true">{$_('sort')}</span>
+		{#each sortOptions as [label, value] (value)}
+			{@const Icon = sortIcons.get(value)}
+			<label class="sort-option">
+				<input type="radio" {value} bind:group={sort} />
+				<Icon />
+				{label}
+			</label>
+		{/each}
+	{/snippet}
+
+	{#snippet content()}
 		<div class="result-and-preview">
 			<div class="result">
 				<ul class="inline-actions">
@@ -478,79 +508,10 @@
 				{/if}
 			</div>
 		</div>
-	</form>
-</dialog>
+	{/snippet}
+</PickerDialog>
 
 <style>
-	dialog {
-		--dropdown-button-expanded-background: var(--color-primary-100);
-		--dropdown-button-expanded-color: var(--color-primary-700);
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
-
-		--icon-color: var(--color-gray-500);
-		--indicator-background-color: var(--color-primary-700);
-
-		background-color: var(--color-gray-025);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow: var(--shadow-2xl);
-		color: var(--color-gray-500);
-		container-type: inline-size;
-		height: calc(100vh - 3rem);
-		padding: 1.5rem;
-		width: calc(100vw - 10rem);
-	}
-
-	dialog > form {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
-
-	.commands {
-		align-items: center;
-		display: flex;
-		flex-direction: row;
-		flex-shrink: 0;
-		gap: 0.75rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.commands > span {
-		margin-right: auto;
-	}
-
-	.commands > :global(*) {
-		width: fit-content;
-	}
-
-	.dropdown-button.dropdown-button--command {
-		--dropdown-button-default-background: transparent;
-		--dropdown-button-padding: 0 0.5rem 0 0.375rem;
-
-		height: 2rem;
-		position: relative;
-	}
-
-	.filter-and-sort > fieldset {
-		align-items: center;
-		background-color: var(--color-primary-050);
-		border: solid 1px var(--color-primary-200);
-		border-radius: calc(infinity * 1px);
-		display: flex;
-		flex-direction: row;
-		gap: 0.5rem;
-		height: 3.125rem;
-		margin-left: auto;
-		padding: 0.5rem 1rem;
-		width: fit-content;
-	}
-
-	.active-filters {
-		color: var(--dropdown-button-expanded-color);
-	}
-
 	.result-and-preview {
 		display: flex;
 		flex-direction: row;
@@ -687,13 +648,5 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		padding: 0.375rem;
-	}
-
-	@layer visually-hidden {
-		@container (min-width: 60rem) {
-			.is-visually-hidden.is-visually-hidden--mobile-only {
-				all: revert-layer;
-			}
-		}
 	}
 </style>
