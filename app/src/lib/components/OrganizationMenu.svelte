@@ -206,7 +206,7 @@
 		left: 0;
 		position: absolute;
 		right: 0;
-		top: var(--header-height);
+		top: 3rem;
 	}
 
 	@layer visually-hidden {

@@ -10,8 +10,4 @@ export default class Header {
 	get editModeToggle() {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
-
-	get filterButton() {
-		return this.locator.getByRole('button', { name: 'Filter' });
-	}
 }
