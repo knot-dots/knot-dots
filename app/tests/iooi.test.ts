@@ -36,6 +36,7 @@ test.describe('Goal IOOI Board', () => {
 		// Open goal overlay
 		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testGoal.payload.title);
 
 		// Navigate to IOOI workspace
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
