@@ -16,7 +16,7 @@
 			...page.data.organizations,
 			...page.data.organizationalUnits,
 			...relatedContainers
-		]) as AnyContainer
+		])
 	);
 
 	let managedByGuid = $derived(managedBy?.guid);
@@ -36,11 +36,11 @@
 		&nbsp;
 	{:then members}
 		{@const headsOf = members
-			.filter((m) => isHeadOf(m, managedBy))
+			.filter((m) => managedBy && isHeadOf(m, managedBy))
 			.map((m) => displayName(m))
 			.join(', ')}
 		{@const adminsOf = members
-			.filter((m) => isAdminOf(m, managedBy))
+			.filter((m) => managedBy && isAdminOf(m, managedBy))
 			.map((m) => displayName(m))
 			.join(', ')}
 		{#if headsOf}{headsOf}{:else if adminsOf}{adminsOf}{:else}&nbsp;{/if}
