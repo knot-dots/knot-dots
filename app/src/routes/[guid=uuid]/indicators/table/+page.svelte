@@ -26,7 +26,8 @@
 
 	let { data }: PageProps = $props();
 
-	let uploadDialog: HTMLDialogElement = $state()!;
+	// svelte-ignore non_reactive_update
+	let uploadDialog: HTMLDialogElement;
 	let uploadErrors: string[] = $state([]);
 	let uploadSuccess: boolean = $state(false);
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
