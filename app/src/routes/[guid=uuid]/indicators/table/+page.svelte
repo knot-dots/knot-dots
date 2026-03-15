@@ -12,7 +12,6 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
-	import Dialog from '$lib/components/Dialog.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
@@ -162,11 +161,11 @@
 
 <IndicatorsPage {data}>
 	{#snippet actions()}
-		<button class="button csv-action csv-action--primary" type="button" onclick={openUploadDialog}>
+		<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>
 			<UploadIcon />
 			{$_('indicator_csv.upload')}
 		</button>
-		<button class="button csv-action csv-action--outline" type="button" onclick={handleDownload}>
+		<button class="button-xs" type="button" onclick={handleDownload}>
 			<DownloadIcon />
 			{$_('indicator_csv.download')}
 		</button>
@@ -176,19 +175,16 @@
 </IndicatorsPage>
 
 {#if featureDecisions.useImportFromCsv()}
-	<Dialog bind:dialog={uploadDialog} class="csv-upload-dialog" showCloseButton={false}>
-		<div class="csv-upload">
-			<header class="csv-upload__header">
-				<span class="csv-upload__label">{$_('indicator_csv.upload')}</span>
-				<button
-					class="button-outline csv-upload__cancel"
-					type="button"
-					onclick={() => uploadDialog.close()}
-				>
+	<dialog bind:this={uploadDialog} class="csv-upload">
+		<form method="dialog">
+			<p class="dialog-actions">
+				<span>{$_('indicator_csv.upload')}</span>
+				<button class="button-xs button-alternative" type="submit">
 					{$_('cancel')}
 				</button>
-			</header>
-			<div class="csv-upload__content">
+			</p>
+
+			<div class="details">
 				{#if uploadSuccess}
 					<p class="success-message">{$_('indicator_csv.upload_success')}</p>
 				{/if}
@@ -201,107 +197,53 @@
 					</ul>
 				{/if}
 
-				<div class="csv-upload__card">
-					{#if uppy}
-						<UppyContextProvider {uppy}>
-							<FileUpload helpKey="upload.csv.help" />
-						</UppyContextProvider>
-					{/if}
+				{#if uppy}
+					<UppyContextProvider {uppy}>
+						<FileUpload helpKey="upload.csv.help" />
+					</UppyContextProvider>
+				{/if}
 
-					{#if uploadFiles.length > 0}
-						<ul class="csv-upload__file-list">
-							{#each uploadFiles as file (file.id)}
-								<li class="csv-upload__file">
-									<FileIcon />
-									<div class="csv-upload__file-info">
-										<span class="csv-upload__file-name">{file.name}</span>
-										<span class="csv-upload__file-size">
-											{prettierBytes(file.size || 0)}
-										</span>
-									</div>
-									<button
-										class="button csv-upload__file-remove"
-										type="button"
-										onclick={() => removeUploadFile(file.id)}
-										aria-label={$_('upload.file.remove')}
-									>
-										<Close />
-									</button>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</div>
+				{#if uploadFiles.length > 0}
+					<ul class="file-list">
+						{#each uploadFiles as file (file.id)}
+							<li>
+								<FileIcon />
+								<span>
+									<span class="file-name truncated">{file.name}</span>
+									<span class="file-size">{prettierBytes(file.size)}</span>
+								</span>
+								<button
+									aria-label={$_('upload.file.remove')}
+									class="action-button action-button--size-l"
+									type="button"
+									onclick={() => removeUploadFile(file.id)}
+								>
+									<Close />
+								</button>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</div>
-		</div>
-	</Dialog>
+		</form>
+	</dialog>
 {/if}
 
 <style>
-	.csv-action {
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		align-items: center;
-		border-radius: 8px;
-		box-sizing: border-box;
-		display: inline-flex;
-		gap: 0.5rem;
-		font-size: 0.75rem;
-		font-weight: 500;
-		line-height: 1.5;
-		height: 2.125rem;
-		min-height: 2.125rem;
-		padding: 0 var(--padding-x);
-	}
-
-	.csv-action > :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.csv-action--outline {
-		--button-border-color: var(--color-gray-200);
-		--button-hover-background: var(--color-gray-050);
-		background: var(--color-white, #fff);
-		border: 1px solid var(--color-gray-200);
-		color: var(--color-gray-900);
-	}
-
-	.csv-action--primary {
-		--button-border-color: transparent;
-		--button-hover-background: var(--color-primary-700);
-		background: var(--color-primary-700);
-		border: 1px solid transparent;
-		color: var(--color-white, #fff);
-	}
-
-	.success-message {
-		color: var(--color-green-600, #16a34a);
-		margin-bottom: 1rem;
-	}
-
-	.error-list {
-		color: var(--color-red-600, #dc2626);
-		margin-bottom: 1rem;
-	}
-
-	:global(dialog.csv-upload-dialog) {
-		max-width: 53.5rem;
-		padding: 0;
-	}
-
 	.csv-upload {
-		display: flex;
-		flex-direction: column;
 		max-height: 90vh;
+		width: calc(min(54rem, 100vw));
 	}
 
-	.csv-upload__header {
+	.csv-upload > * {
+		min-width: 30rem;
+	}
+
+	.dialog-actions {
 		align-items: center;
-		background: var(--color-white, #fff);
-		border-bottom: 1px solid var(--color-gray-200);
+		background-color: white;
 		display: flex;
+		gap: 0.5rem;
 		justify-content: space-between;
 		padding: 1.5rem;
 		position: sticky;
@@ -309,41 +251,21 @@
 		z-index: 1;
 	}
 
-	.csv-upload__label {
+	.dialog-actions span {
 		color: var(--color-gray-500);
-		font-size: 1rem;
 	}
 
-	.csv-upload__cancel {
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-		font-size: 0.75rem;
+	.success-message {
+		color: var(--color-green-600);
+		margin-bottom: 1rem;
 	}
 
-	.csv-upload__content {
-		padding: 1.5rem 5rem 5rem;
+	.error-list {
+		color: var(--color-red-600);
+		margin-bottom: 1rem;
 	}
 
-	.csv-upload__card {
-		background: var(--color-white, #fff);
-		border-radius: 24px;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		padding: 1.5rem;
-	}
-
-	.csv-upload__file-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.csv-upload__file {
+	.file-list > li {
 		align-items: center;
 		border-radius: 8px;
 		display: flex;
@@ -351,33 +273,31 @@
 		padding: 0.25rem;
 	}
 
-	.csv-upload__file-info {
+	.file-list > li:nth-child(n + 2) {
+		margin-top: 0.5rem;
+	}
+
+	.file-list > li:hover {
+		background-color: var(--color-gray-100);
+	}
+
+	.file-list > li > span {
+		flex-grow: 1;
 		display: flex;
-		flex: 1;
 		flex-direction: column;
-		gap: 0.125rem;
+		overflow: hidden;
 	}
 
-	.csv-upload__file-name {
+	.file-list > li :global(svg) {
+		flex-shrink: 0;
+		max-width: none;
+	}
+
+	.file-list > li :global(> svg:first-child) {
+		color: var(--color-gray-400);
+	}
+
+	.file-name {
 		color: var(--color-gray-900);
-		font-size: 0.875rem;
-		font-weight: 500;
-	}
-
-	.csv-upload__file-size {
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-	}
-
-	.csv-upload__file-remove {
-		--padding-x: 0.375rem;
-		--padding-y: 0.375rem;
-		border: none;
-		color: var(--color-gray-500);
-	}
-
-	.csv-upload__file-remove > :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
 	}
 </style>

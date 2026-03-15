@@ -6,24 +6,15 @@
 	interface Props {
 		children: Snippet;
 		dialog: HTMLDialogElement;
-		class?: string;
-		showCloseButton?: boolean;
 	}
 
-	let {
-		children,
-		dialog = $bindable(),
-		class: className = '',
-		showCloseButton = true
-	}: Props = $props();
+	let { children, dialog = $bindable() }: Props = $props();
 </script>
 
-<dialog bind:this={dialog} class={className}>
-	{#if showCloseButton}
-		<button tabindex="-1" title={$_('close_modal')} type="button" onclick={() => dialog.close()}>
-			<XMark />
-		</button>
-	{/if}
+<dialog bind:this={dialog}>
+	<button tabindex="-1" title={$_('close_modal')} type="button" onclick={() => dialog.close()}>
+		<XMark />
+	</button>
 
 	{@render children()}
 </dialog>
