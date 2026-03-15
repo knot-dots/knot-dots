@@ -32,9 +32,14 @@
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
 	let uppy: Uppy | undefined = $state();
 
+	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
+
 	let filteredRows = $derived(
 		data.containers.filter((c) =>
-			data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
+			data.useNewIndicators
+				? isIndicatorTemplateContainer(c) &&
+					actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
+				: isIndicatorContainer(c)
 		)
 	);
 

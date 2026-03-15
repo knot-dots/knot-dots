@@ -14,9 +14,9 @@ test('upload CSV creates indicators', async ({ page, testOrganization }) => {
 	// Prepare a minimal CSV file with BOM and semicolon delimiter
 	const BOM = '\uFEFF';
 	const csvContent = [
-		`${BOM}Title;Description;Unit`,
-		'CSV Test Indicator A;First test indicator;',
-		'CSV Test Indicator B;Second test indicator;'
+		`${BOM}Title;Description;Unit;2010;2011`,
+		'CSV Test Indicator A;First test indicator;10;20',
+		'CSV Test Indicator B;Second test indicator;15;25'
 	].join('\n');
 
 	// Upload the CSV file via the dropzone input (auto-upload)
