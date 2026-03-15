@@ -31,7 +31,7 @@
 
 	const workspaceTranslated = $derived.by(() => {
 		const segments = page.url.pathname.split('/');
-		let msgId = '';
+		let msgId;
 
 		// Determine workspace type from URL segments
 		if (segments[1] == 'me') {
