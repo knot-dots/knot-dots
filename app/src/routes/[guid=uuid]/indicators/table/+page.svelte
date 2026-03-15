@@ -43,17 +43,11 @@
 		)
 	);
 
-	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
-
-	let allYears = $derived.by(() => {
-		const yearSet = new Set<number>();
-		for (const c of actualDataContainers) {
-			for (const [year] of c.payload.values) {
-				yearSet.add(year);
-			}
-		}
-		return [...yearSet].sort((a, b) => a - b);
-	});
+	let allYears = $derived(
+		Array.from(
+			new Set(actualDataContainers.flatMap(({ payload }) => payload.values.map(([year]) => year)))
+		).toSorted()
+	);
 
 	let yearColumns = $derived(
 		allYears.map((year) => ({ heading: String(year), key: `year:${year}` }))
