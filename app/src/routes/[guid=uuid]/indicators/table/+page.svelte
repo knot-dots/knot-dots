@@ -25,7 +25,6 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 
 	let uploadDialog: HTMLDialogElement = $state()!;
 	let uploadErrors: string[] = $state([]);
@@ -104,7 +103,7 @@
 	}
 
 	onMount(() => {
-		if (!featureDecisions.useImportFromCsv()) {
+		if (!createFeatureDecisions(page.data.features).useImportFromCsv()) {
 			return;
 		}
 		const instance = new Uppy({
@@ -174,7 +173,7 @@
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 
-{#if featureDecisions.useImportFromCsv()}
+{#if createFeatureDecisions(page.data.features).useImportFromCsv()}
 	<dialog bind:this={uploadDialog} class="csv-upload">
 		<form method="dialog">
 			<p class="dialog-actions">
