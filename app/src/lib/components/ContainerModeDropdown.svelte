@@ -8,10 +8,9 @@
 
 	interface Props {
 		container: AnyContainer;
-		relatedContainers: AnyContainer[];
 	}
 
-	let { container = $bindable(), relatedContainers = $bindable() }: Props = $props();
+	let { container = $bindable() }: Props = $props();
 
 	let popover = createPopover({ label: $_('settings') });
 

@@ -139,6 +139,7 @@ test.describe('Resources fullscreen', () => {
 		// Switch to Resources workspace
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Resources' }).click();
+		await expect(dotsBoard.overlay.title).not.toBeVisible();
 
 		// Click full-screen button
 		await dotsBoard.overlay.fullScreenButton.click();
@@ -170,6 +171,7 @@ test.describe('Resources fullscreen', () => {
 		// Switch to Resources workspace
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Resources' }).click();
+		await expect(dotsBoard.overlay.title).not.toBeVisible();
 
 		// Go to fullscreen
 		await dotsBoard.overlay.fullScreenButton.click();

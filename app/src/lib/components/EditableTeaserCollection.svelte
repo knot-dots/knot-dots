@@ -119,7 +119,7 @@
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>
-				<ContainerModeDropdown bind:container bind:relatedContainers />
+				<ContainerModeDropdown bind:container />
 			</li>
 			{#if $mayCreateContainer(payloadTypes.enum.teaser, container.managed_by)}
 				<li>

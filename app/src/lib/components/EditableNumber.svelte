@@ -1,7 +1,3 @@
-<script module>
-	let counter = 0;
-</script>
-
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
 
@@ -13,7 +9,7 @@
 
 	let { editable = false, label, value = $bindable() }: Props = $props();
 
-	let id = `number-${counter++}`;
+	const id = crypto.randomUUID();
 </script>
 
 {#if editable}

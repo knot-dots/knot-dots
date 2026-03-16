@@ -7,16 +7,16 @@
     "start": "node src/index.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.994.0",
-    "@elastic/elasticsearch": "^9.3.1",
+    "@aws-sdk/client-sqs": "^3.1009.0",
+    "@elastic/elasticsearch": "^9.3.4",
     "roarr": "^7.21.4",
     "serialize-error": "^13.0.1",
-    "slonik": "^48.10.3",
+    "slonik": "^48.13.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
-    "@types/node": "^24.10.13",
+    "@types/node": "^24.12.0",
     "typescript": "^5.9.3"
   }
 }

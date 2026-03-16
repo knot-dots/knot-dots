@@ -81,7 +81,7 @@ export async function getIndicatorsData(params: {
 	const restrictOrgUnits = !filters.included.includes('all_organizational_units');
 
 	// Primary indicator fetch
-	let indicators: IndicatorContainer[] = [];
+	let indicators: IndicatorContainer[];
 	let facetData: Record<string, Record<string, number>> | undefined;
 	if (useElasticsearch) {
 		const esResult = await connect(

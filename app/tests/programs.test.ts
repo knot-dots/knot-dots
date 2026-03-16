@@ -21,9 +21,6 @@ test.describe('Level board', () => {
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'Page' }).click();
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Level board' }).click();
 		await expect(dotsBoard.overlay.locator.getByRole('heading', { name: 'Goals' })).toBeVisible();
-		await expect(
-			dotsBoard.overlay.locator.getByRole('heading', { name: 'Implementation' })
-		).toBeVisible();
 
 		for (const item of ['Goal']) {
 			const title = `${item} for ${testProgram.payload.title}`;

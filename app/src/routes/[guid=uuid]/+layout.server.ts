@@ -3,7 +3,6 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 function pageTitle(url: URL) {
 	const segments = url.pathname.split('/');
-	let title = '';
 
 	const workspaceType = segments[2];
 
@@ -17,12 +16,11 @@ function pageTitle(url: URL) {
 		return '';
 	}
 
-	title =
+	return (
 		unwrapFunctionStore(_)('workspace.type.' + workspaceType) +
 		' / ' +
-		unwrapFunctionStore(_)('workspace.view.' + workspaceView);
-
-	return title;
+		unwrapFunctionStore(_)('workspace.view.' + workspaceView)
+	);
 }
 
 export const load = (async ({ url }) => {
