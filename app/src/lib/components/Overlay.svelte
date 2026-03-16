@@ -4,7 +4,6 @@
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
-	import GoalIOOIOverlay from '$lib/components/GoalIOOIOverlay.svelte';
 	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
@@ -13,11 +12,13 @@
 	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
+	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
-	import { isGoalContainer, overlayKey } from '$lib/models';
+	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
+	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
 
 	interface Props {
 		data: OverlayData;
@@ -77,7 +78,9 @@
 	{:else if data.key === overlayKey.enum['content-partners']}
 		<ContentPartnersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['goal-iooi'] && isGoalContainer(data.container)}
-		<GoalIOOIOverlay container={data.container} containers={data.containers} />
+		<IOOIOverlay container={data.container} containers={data.containers} />
+	{:else if data.key === overlayKey.enum['measure-iooi'] && isMeasureContainer(data.container)}
+		<IOOIOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['teasers']}
 		<TeasersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['relations']}
@@ -97,6 +100,8 @@
 		<NewIndicatorCatalogOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
+	{:else if data.key === overlayKey.enum['resources']}
+		<ResourcesOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
 		<EditableDetailView container={data.container} {layout} revisions={data.revisions} />
 	{/if}

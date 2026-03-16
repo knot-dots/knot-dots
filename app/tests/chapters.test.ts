@@ -11,14 +11,6 @@ test.describe('Chapters', () => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
 
 		await dotsBoard.goto(`/${testReport.organization}`);
-
-		// Ensure feature flag is enabled
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('Report').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		await dotsBoard.card(testReport.payload.title).click();
 		await expect(dotsBoard.overlay.title).toHaveText(testReport.payload.title);
 		await dotsBoard.overlay.editModeToggle.check();

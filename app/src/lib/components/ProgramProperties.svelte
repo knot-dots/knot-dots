@@ -75,7 +75,7 @@
 		{#if featureDecisions.useCustomCategories()}
 			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 		{:else}
-			<EditableCategory {editable} bind:value={container.payload.category} />
+			<EditableCategory {editable} bind:value={container.payload.sdg} />
 			<EditableTopic {editable} bind:value={container.payload.topic} />
 			<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
 			<EditableAudience {editable} bind:value={container.payload.audience} />

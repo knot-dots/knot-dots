@@ -5,6 +5,13 @@
 	import { _ } from 'svelte-i18n';
 	import Upload from '~icons/flowbite/upload-solid';
 
+	interface Props {
+		helpKey?: string;
+		helpText?: string;
+	}
+
+	let { helpKey = 'upload.file.help', helpText }: Props = $props();
+
 	const { getRootProps, getInputProps } = useDropzone({
 		onDragOver: () => (dropZoneIsActive = true),
 		onDragLeave: () => (dropZoneIsActive = false),
@@ -58,7 +65,7 @@
 	</p>
 </div>
 
-<p class="help">{$_('upload.file.help')}</p>
+<p class="help">{helpText ?? $_(helpKey)}</p>
 
 {#if status === 'uploading'}
 	<progress value={progress} max="100"></progress>

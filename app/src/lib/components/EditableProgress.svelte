@@ -1,7 +1,3 @@
-<script module>
-	let counter = 0;
-</script>
-
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 
@@ -12,7 +8,7 @@
 
 	let { editable = false, value = $bindable() }: Props = $props();
 
-	let id = `date-${counter++}`;
+	const id = crypto.randomUUID();
 </script>
 
 <div class="progress">

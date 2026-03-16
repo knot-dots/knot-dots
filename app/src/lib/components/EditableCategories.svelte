@@ -2,7 +2,11 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import { loadCategoryOptions, type CategoryOption } from '$lib/client/categoryOptions';
+	import {
+		categoryMatchesObjectTypes,
+		loadCategoryOptions,
+		type CategoryOption
+	} from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import { isCategoryContainer, payloadTypes } from '$lib/models';
 	import type { AnyContainer, CategoryContainer } from '$lib/models';
@@ -65,23 +69,33 @@
 			'alpha'
 		);
 		const visibleCategories = all.filter(isCategoryContainer);
-		const custom = visibleCategories.filter(({ payload }) => Boolean(payload.key));
 
+		const payloadType = (container.payload as Record<string, unknown>).type;
+		const custom = visibleCategories
+			.filter(({ payload }) => Boolean(payload.key))
+			.filter((category) =>
+				!payloadType ? true : categoryMatchesObjectTypes(category, [String(payloadType)])
+			);
+
+		const payload = container.payload as Record<string, unknown>;
+		if (!payload.category || Array.isArray(payload.category)) {
+			payload.category = {};
+		}
+		const categoryMap = payload.category as Record<string, unknown>;
 		const keys = custom.map(({ payload }) => payload.key).filter(Boolean) as string[];
 		for (const key of keys) {
-			const current = (container.payload as Record<string, unknown>)[key];
+			const current = categoryMap[key];
 			if (!Array.isArray(current)) {
-				(container.payload as Record<string, unknown>)[key] = [];
+				categoryMap[key] = [];
 			}
 		}
-
 		categories = custom;
 		if (keys.length === 0) {
 			optionsByKey = new Map();
 			return;
 		}
 
-		const loaded = await loadCategoryOptions(keys, orgs);
+		const loaded = await loadCategoryOptions(keys, orgs, payloadType ? [String(payloadType)] : []);
 		const next = new Map<string, CategoryOption[]>();
 		for (const key of keys) {
 			next.set(key, loaded[key] ?? []);
@@ -98,7 +112,7 @@
 				{editable}
 				label={category.payload.title ?? category.payload.key}
 				options={optionsByKey.get(key) ?? []}
-				bind:value={(container.payload as Record<string, unknown>)[key] as string[]}
+				bind:value={(container.payload as { category: Record<string, string[]> }).category[key]}
 			/>
 		{/if}
 	{/each}

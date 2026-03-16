@@ -1,12 +1,15 @@
 <script lang="ts">
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type Container, type HelpContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { page } from '$app/state';
 
 	interface Props {
 		container: HelpContainer;
@@ -16,12 +19,20 @@
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
+
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 </script>
 
 <PropertyGrid>
 	{#snippet general()}
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+		{/if}
+	{/snippet}
+
+	{#snippet categories()}
+		{#if featureDecisions.useCustomCategories()}
+			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 		{/if}
 	{/snippet}
 

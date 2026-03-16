@@ -1,9 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
+	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
 	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
 	import EditableIndicatorTemplateDetailView from '$lib/components/EditableIndicatorTemplateDetailView.svelte';
 	import EditableKnowledgeDetailView from '$lib/components/EditableKnowledgeDetailView.svelte';
@@ -29,6 +31,7 @@
 		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
+		isHelpContainer,
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
@@ -45,7 +48,8 @@
 		isTaskContainer,
 		isTeaserContainer,
 		isTextContainer,
-		isResourceDataContainer
+		isResourceDataContainer,
+		isBinaryIndicatorContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -62,14 +66,18 @@
 	});
 </script>
 
-{#if isContentPartnerContainer(container)}
+{#if isBinaryIndicatorContainer(container)}
+	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} />
+{:else if isContentPartnerContainer(container)}
 	<EditableContentPartnerDetailView bind:container {layout} {revisions} />
 {:else if isEffectContainer(container)}
 	<EditableEffectDetailView bind:container {layout} {revisions} />
 {:else if isGoalContainer(container)}
 	<EditableGoalDetailView bind:container {layout} {revisions} />
+{:else if isHelpContainer(container)}
+	<EditableHelpDetailView bind:container {layout} {revisions} />
 {:else if isCategoryContainer(container)}
-	<EditableCategoryDetailView bind:container {layout} />
+	<EditableCategoryDetailView bind:container {layout} {revisions} />
 {:else if isIndicatorContainer(container)}
 	<EditableIndicatorDetailView bind:container {layout} {revisions} />
 {:else if isIndicatorTemplateContainer(container)}

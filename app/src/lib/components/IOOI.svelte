@@ -1,28 +1,143 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
+	import type { Writable } from 'svelte/store';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
 		type Container,
+		containerOfType,
+		type EffectContainer,
+		type GoalContainer,
 		type IooiType,
 		iooiTypes,
+		isEffectContainer,
+		isGoalContainer,
+		isIndicatorContainer,
+		isMeasureContainer,
 		isObjectiveContainer,
+		isResourceDataCollectionContainer,
+		isResourceDataContainer,
+		type MeasureContainer,
+		type NewContainer,
 		type ObjectiveContainer,
-		overlayKey
+		overlayKey,
+		paramsFromFragment,
+		payloadTypes,
+		predicates,
+		resourceDataTypes
 	} from '$lib/models';
-	import { ability, addObjectiveState } from '$lib/stores';
+	import {
+		ability,
+		addEffectState,
+		addObjectiveState,
+		lastCreatedContainer,
+		newContainer
+	} from '$lib/stores';
 
 	interface Props {
-		container: Container;
+		container: GoalContainer | MeasureContainer;
 		containers: Container[];
 	}
 
 	let { container, containers }: Props = $props();
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	// Watch for successfully created resourceData containers and create collection if needed
+	$effect(() => {
+		const created = $lastCreatedContainer;
+
+		if (created && isResourceDataContainer(created) && container) {
+			// Check if this resourceData belongs to our container
+			const belongsToThisContainer = created.relation.some(
+				(r) => r.object === container.guid && r.predicate === predicates.enum['is-part-of']
+			);
+
+			if (belongsToThisContainer) {
+				createResourceDataCollectionIfNeeded(created.payload.resourceDataType);
+			}
+		}
+	});
+
+	// Function to check if collection exists and create it if not
+	async function createResourceDataCollectionIfNeeded(resourceDataType: string) {
+		if (!container) return;
+
+		// Check if a collection with this resourceDataType already exists
+		const collectionExists = containers.some(
+			(c) =>
+				isResourceDataCollectionContainer(c) &&
+				c.payload.resourceDataType === resourceDataType &&
+				c.relation.some(
+					(r) => r.object === container.guid && r.predicate === predicates.enum['is-section-of']
+				)
+		);
+
+		if (!collectionExists) {
+			// Create the collection
+			const collection = containerOfType(
+				payloadTypes.enum.resource_data_collection,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
+
+			// Set the resourceDataType
+			(collection.payload as { resourceDataType?: string }).resourceDataType = resourceDataType;
+
+			// Set relation as a section of the container
+			collection.relation = [
+				{
+					object: container.guid,
+					position: containers.filter((c) =>
+						c.relation.some(
+							(r) => r.object === container.guid && r.predicate === predicates.enum['is-section-of']
+						)
+					).length,
+					predicate: predicates.enum['is-section-of']
+				}
+			];
+
+			// Save the collection
+			const response = await saveContainer(collection);
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('Failed to create resource data collection:', error.message);
+			}
+		}
+	}
+
+	const { itemType, itemFilterFn, addItemState } = $derived.by(() => {
+		if (isGoalContainer(container)) {
+			return {
+				itemType: 'objective' as const,
+				itemFilterFn: isObjectiveContainer,
+				addItemState: addObjectiveState
+			};
+		} else if (isMeasureContainer(container)) {
+			return {
+				itemType: 'effect' as const,
+				itemFilterFn: isEffectContainer,
+				addItemState: addEffectState
+			};
+		}
+	}) as {
+		itemType: 'objective' | 'effect';
+		itemFilterFn: (container: Container) => boolean;
+		addItemState: Writable<{ target?: Container; iooiType?: IooiType }>;
+	};
 
 	const iooiBackgrounds = new Map([
 		[iooiTypes.enum['iooi.input'], 'hsl(200, 70%, 95%)'],
@@ -38,14 +153,50 @@
 		[iooiTypes.enum['iooi.impact'], 'hsl(30, 70%, 50%)']
 	]);
 
-	let objectives = $derived(containers.filter(isObjectiveContainer));
+	// Define create options for resource data based on container type
+	let resourceDataCreateOptions = $derived.by(() => {
+		if (isMeasureContainer(container)) {
+			// Measures can have both planned and actual resource allocation
+			return [
+				{
+					value: resourceDataTypes.enum['resource_data_type.planned_resource_allocation'],
+					label: $_(resourceDataTypes.enum['resource_data_type.planned_resource_allocation'])
+				},
+				{
+					value: resourceDataTypes.enum['resource_data_type.actual_resource_allocation'],
+					label: $_(resourceDataTypes.enum['resource_data_type.actual_resource_allocation'])
+				}
+			];
+		} else {
+			// Goals only have budget
+			return [
+				{
+					value: resourceDataTypes.enum['resource_data_type.budget'],
+					label: $_(resourceDataTypes.enum['resource_data_type.budget'])
+				}
+			];
+		}
+	});
 
-	// Writable derived state for drag-and-drop
-	let objectivesByIooiType = $derived.by(() => {
+	type IooiItem = ObjectiveContainer | EffectContainer;
+
+	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
+	let resourceData = $derived(
+		(containers ?? [])
+			.filter(isResourceDataContainer)
+			.filter((rd) =>
+				rd.relation.some(
+					(r) => r.object === container?.guid && r.predicate === predicates.enum['is-part-of']
+				)
+			)
+	);
+
+	// Items filtered by IOOI type (for output, outcome, impact columns)
+	let itemsByIooiType = $derived.by(() => {
 		return new Map(
 			iooiTypes.options.map((iooiType) => [
 				iooiType,
-				objectives.filter((objective) => objective.payload.iooiType === iooiType)
+				items.filter((item) => item.payload.iooiType === iooiType)
 			])
 		);
 	});
@@ -62,9 +213,9 @@
 				['iooiType', iooiType]
 			]);
 
-			if ('category' in container.payload) {
-				for (const category of container.payload.category) {
-					params.append('category', category);
+			if ('sdg' in container.payload) {
+				for (const sdg of container.payload.sdg) {
+					params.append('sdg', sdg);
 				}
 			}
 
@@ -74,25 +225,61 @@
 				}
 			}
 
-			$addObjectiveState = { target: container, iooiType };
+			addItemState.set({ target: container, iooiType });
 
 			await goto(`#${params.toString()}`);
 		};
 	}
 
+	function addResourceDataItem() {
+		return (selectedType?: string) => {
+			if (!container) {
+				return;
+			}
+
+			// Use selectedType if provided, otherwise determine based on container type
+			const resourceDataType =
+				selectedType ||
+				(isMeasureContainer(container)
+					? resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
+					: resourceDataTypes.enum['resource_data_type.budget']);
+
+			// Create new resource_data container
+			const item = containerOfType(
+				payloadTypes.enum.resource_data,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
+
+			// Set the resourceDataType
+			(item.payload as { resourceDataType?: string }).resourceDataType = resourceDataType;
+
+			// Set relations to the parent container
+			item.relation = [
+				{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+			];
+
+			$newContainer = item;
+
+			createContainerDialog.getElement().showModal();
+		};
+	}
+
 	function handleDndConsider(iooiType: IooiType) {
-		return (e: CustomEvent<DndEvent<ObjectiveContainer>>) => {
-			objectivesByIooiType.set(iooiType, e.detail.items);
-			objectivesByIooiType = new Map(objectivesByIooiType);
+		return (e: CustomEvent<DndEvent<IooiItem>>) => {
+			itemsByIooiType.set(iooiType, e.detail.items);
+			itemsByIooiType = new Map(itemsByIooiType);
 		};
 	}
 
 	function handleDndFinalize(iooiType: IooiType) {
-		return async (e: CustomEvent<DndEvent<ObjectiveContainer>>) => {
+		return async (e: CustomEvent<DndEvent<IooiItem>>) => {
 			const items = e.detail.items;
 
-			objectivesByIooiType.set(iooiType, items);
-			objectivesByIooiType = new Map(objectivesByIooiType);
+			itemsByIooiType.set(iooiType, items);
+			itemsByIooiType = new Map(itemsByIooiType);
 
 			if (e.detail.info.trigger === 'droppedIntoZone') {
 				const droppedItem = items.find(({ guid }) => guid === e.detail.info.id);
@@ -115,32 +302,67 @@
 </script>
 
 <Board>
-	{#each iooiTypes.options as iooiType (iooiType)}
+	<!-- Impact, Outcome, Output Columns: Display Items -->
+	{#each [iooiTypes.enum['iooi.impact'], iooiTypes.enum['iooi.outcome'], iooiTypes.enum['iooi.output']] as iooiType (iooiType)}
 		<BoardColumn
 			--background={iooiBackgrounds.get(iooiType)}
 			--hover-border-color={iooiHoverColors.get(iooiType)}
-			addItemUrl={`#create=objective&iooiType=${iooiType}`}
+			addItemUrl={`#create=${itemType}&iooiType=${iooiType}`}
 			title={$_(iooiType)}
 			onCreateContainer={addItemForIooiType(iooiType)}
 		>
-			{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', container)}
+			{#if paramsFromFragment(page.url).has('relations')}
+				<MaybeDragZone containers={itemsByIooiType.get(iooiType) ?? []}>
+					{#snippet itemSnippet(container)}
+						<Card
+							{container}
+							relatedContainers={containers.filter(isIndicatorContainer)}
+							showRelationFilter
+						/>
+					{/snippet}
+				</MaybeDragZone>
+			{:else if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', container)}
 				<div
 					class="vertical-scroll-wrapper"
-					use:dndzone={{ dropTargetStyle: {}, items: objectivesByIooiType.get(iooiType) ?? [] }}
+					use:dndzone={{ dropTargetStyle: {}, items: itemsByIooiType.get(iooiType) ?? [] }}
 					onconsider={handleDndConsider(iooiType)}
 					onfinalize={handleDndFinalize(iooiType)}
 				>
-					{#each objectivesByIooiType.get(iooiType) ?? [] as objective (objective.guid)}
-						<Card container={objective} />
+					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
+						<Card
+							container={item}
+							relatedContainers={containers.filter(isIndicatorContainer)}
+							showRelationFilter
+						/>
 					{/each}
 				</div>
 			{:else}
 				<div class="vertical-scroll-wrapper">
-					{#each objectivesByIooiType.get(iooiType) ?? [] as objective (objective.guid)}
-						<Card container={objective} />
+					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
+						<Card
+							container={item}
+							relatedContainers={containers.filter(isIndicatorContainer)}
+							showRelationFilter
+						/>
 					{/each}
 				</div>
 			{/if}
 		</BoardColumn>
 	{/each}
+
+	<!-- Input Column: Display Resource Data -->
+	<BoardColumn
+		--background={iooiBackgrounds.get(iooiTypes.enum['iooi.input'])}
+		--hover-border-color={iooiHoverColors.get(iooiTypes.enum['iooi.input'])}
+		addItemUrl="#create=resource_data"
+		createOptions={resourceDataCreateOptions}
+		title={$_(iooiTypes.enum['iooi.input'])}
+		onCreateContainer={addResourceDataItem()}
+	>
+		<div class="vertical-scroll-wrapper">
+			{#each resourceData as rd (rd.guid)}
+				<ResourceDataCard container={rd} />
+			{/each}
+		</div>
+	</BoardColumn>
 </Board>

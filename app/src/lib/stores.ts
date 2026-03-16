@@ -13,17 +13,19 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	type ApplicationState,
+	type BinaryIndicatorContainer,
 	type Container,
 	containerOfType,
 	filterMembers,
+	type HelpContainer,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	type IooiType,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
+	type OrganizationalUnitContainer,
 	overlayKey,
-	type HelpContainer,
 	paramsFromFragment,
 	type PayloadType,
 	payloadTypes,
@@ -35,6 +37,14 @@ export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
 		editable: false
 	}
+});
+
+export const compareState = writable<{
+	selectedMunicipalities: OrganizationalUnitContainer[];
+	colorAssignments: Record<string, string>;
+}>({
+	selectedMunicipalities: [],
+	colorAssignments: {}
 });
 
 export type User = {
@@ -125,6 +135,7 @@ if (browser) {
 type AddEffectState = {
 	target?: Container;
 	effect?: IndicatorContainer;
+	iooiType?: IooiType;
 };
 
 export const addEffectState = writable<AddEffectState>({});
@@ -139,6 +150,9 @@ export const addObjectiveState = writable<AddObjectiveState>({});
 
 export const newContainer = writable<NewContainer | undefined>();
 
+// Store to track last successfully created container
+export const lastCreatedContainer = writable<Container | undefined>(undefined);
+
 export type OverlayData =
 	| {
 			key: 'chapters';
@@ -148,7 +162,7 @@ export type OverlayData =
 	| {
 			key: 'indicator-catalog';
 			container: undefined;
-			indicators: IndicatorContainer[];
+			indicators: Array<BinaryIndicatorContainer | IndicatorContainer>;
 			indicatorTemplates: IndicatorTemplateContainer[];
 	  }
 	| {
@@ -197,7 +211,17 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
+			key: 'measure-iooi';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
 			key: 'teasers';
+			container: AnyContainer;
+			containers: Container[];
+	  }
+	| {
+			key: 'resources';
 			container: AnyContainer;
 			containers: Container[];
 	  }
@@ -374,7 +398,7 @@ if (browser) {
 					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
 						audience: hashParams.getAll('audience'),
-						category: hashParams.getAll('category'),
+						sdg: hashParams.getAll('sdg'),
 						organization: [container.organization],
 						...(hashParams.has('related-to')
 							? { relationType: [predicates.enum['is-part-of']] }
@@ -400,7 +424,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
@@ -421,7 +445,7 @@ if (browser) {
 				hashParams.get(overlayKey.enum['measures']) as string,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
@@ -491,8 +515,13 @@ if (browser) {
 					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
 						organization: [container.organization],
-						payloadType: [payloadTypes.enum.goal, payloadTypes.enum.objective],
-						relationType: [predicates.enum['is-part-of'], predicates.enum['is-objective-for']],
+						payloadType: [
+							payloadTypes.enum.indicator,
+							payloadTypes.enum.objective,
+							payloadTypes.enum.resource_data,
+							payloadTypes.enum.resource_data_collection
+						],
+						relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
 						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'
@@ -503,6 +532,31 @@ if (browser) {
 					containers
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum['measure-iooi'])) {
+			const revisions = await fetchContainerRevisions(
+				hashParams.get(overlayKey.enum['measure-iooi']) as string
+			);
+			const container = revisions[revisions.length - 1];
+			const containers = await fetchRelatedContainers(
+				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
+				{
+					organization: [container.organization],
+					payloadType: [
+						payloadTypes.enum.effect,
+						payloadTypes.enum.indicator,
+						payloadTypes.enum.resource_data,
+						payloadTypes.enum.resource_data_collection
+					],
+					relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']],
+					terms: hashParams.get('terms') ?? ''
+				},
+				hashParams.get('sort') ?? 'alpha'
+			);
+			setOverlayIfLatest({
+				key: overlayKey.enum['measure-iooi'],
+				container,
+				containers
+			});
 		} else if (hashParams.has(overlayKey.enum.tasks)) {
 			if (useFullScreenRoutes) {
 				const result = await preloadData(
@@ -578,22 +632,44 @@ if (browser) {
 					containers: relatedContainers
 				});
 			}
+		} else if (hashParams.has(overlayKey.enum.resources)) {
+			const programGuid = hashParams.get(overlayKey.enum.resources) as string;
+
+			// Preload for fullscreen and overlay is the same for resources, so we can use the same logic
+			const result = await preloadData(
+				resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: programGuid
+				}) +
+					'?' +
+					hashParams.toString()
+			);
+
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+
+			setOverlayIfLatest({
+				key: overlayKey.enum.resources,
+				container: result.data.container,
+				containers: result.data.containers
+			});
 		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
 			const indicatorTemplates = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
 				topic: hashParams.getAll('topic')
 			})) as IndicatorTemplateContainer[];
 			const indicators = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				organization: [values.data.currentOrganization.guid],
-				payloadType: [payloadTypes.enum.indicator],
+				payloadType: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator],
 				topic: hashParams.getAll('topic')
-			})) as IndicatorContainer[];
+			})) as Array<BinaryIndicatorContainer | IndicatorContainer>;
 			setOverlayIfLatest({
 				key: overlayKey.enum['indicator-catalog'],
 				container: undefined,
@@ -602,7 +678,7 @@ if (browser) {
 			});
 		} else if (hashParams.has(overlayKey.enum['new-indicator-catalog'])) {
 			const containers = (await fetchContainers({
-				category: hashParams.getAll('category'),
+				sdg: hashParams.getAll('sdg'),
 				indicatorCategory: hashParams.getAll('indicatorCategory'),
 				indicatorType: hashParams.getAll('indicatorType'),
 				payloadType: [payloadTypes.enum.indicator_template],
@@ -622,7 +698,7 @@ if (browser) {
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
 					audience: hashParams.getAll('audience'),
-					category: hashParams.getAll('category'),
+					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }

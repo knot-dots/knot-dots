@@ -16,7 +16,9 @@ type Actions =
 type Subjects = AnyContainer | EmptyContainer | PayloadType;
 
 const specialTypes: PayloadType[] = [
+	payloadTypes.enum.binary_indicator,
 	payloadTypes.enum.category,
+	payloadTypes.enum.help,
 	payloadTypes.enum.indicator,
 	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.organization,
@@ -36,7 +38,14 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes]);
+		can('relate', [
+			payloadTypes.enum.binary_indicator,
+			payloadTypes.enum.category,
+			payloadTypes.enum.indicator,
+			payloadTypes.enum.program,
+			payloadTypes.enum.term,
+			...commonTypes
+		]);
 		can('delete-recursively', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.program,
@@ -75,6 +84,28 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
+		can(
+			['create', 'update', 'delete'],
+			[
+				payloadTypes.enum.binary_indicator,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template
+			],
+			{
+				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
+		can(
+			['create', 'update', 'delete'],
+			[
+				payloadTypes.enum.binary_indicator,
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template
+			],
+			{
+				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
 		can(
 			'invite-members',
 			[
@@ -133,15 +164,42 @@ export default function defineAbilityFor(user: User) {
 				managed_by: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes], {
-			organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('relate', [payloadTypes.enum.indicator, payloadTypes.enum.program, ...commonTypes], {
-			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
+		can(
+			'relate',
+			[
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.program,
+				payloadTypes.enum.term,
+				...commonTypes
+			],
+			{
+				managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
+		can(
+			'relate',
+			[
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.program,
+				payloadTypes.enum.term,
+				...commonTypes
+			],
+			{
+				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
+		can(
+			'relate',
+			[
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.program,
+				payloadTypes.enum.term,
+				...commonTypes
+			],
+			{
+				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			}
+		);
 		can('prioritize', payloadTypes.enum.task, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});

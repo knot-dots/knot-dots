@@ -6,7 +6,7 @@ export default async function fetchRelatedContainers(
 	filters: {
 		assignee?: string[];
 		audience?: string[];
-		category?: string[];
+		sdg?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
@@ -18,7 +18,8 @@ export default async function fetchRelatedContainers(
 		terms?: string;
 		topic?: string[];
 	},
-	sort?: string
+	sort?: string,
+	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
 	for (const value of filters.assignee ?? []) {
@@ -27,8 +28,8 @@ export default async function fetchRelatedContainers(
 	for (const value of filters.audience ?? []) {
 		params.append('audience', value);
 	}
-	for (const value of filters.category ?? []) {
-		params.append('category', value);
+	for (const value of filters.sdg ?? []) {
+		params.append('sdg', value);
 	}
 	for (const value of filters.organization ?? []) {
 		params.append('organization', value);
@@ -63,7 +64,7 @@ export default async function fetchRelatedContainers(
 	for (const value of filters.topic ?? []) {
 		params.append('topic', value);
 	}
-	const response = await fetch(`/container/${guid}/relation?${params}`);
+	const response = await fetch(`/container/${guid}/relation?${params}`, init);
 	const data = await response.json();
 	return z.array(container).parse(data);
 }

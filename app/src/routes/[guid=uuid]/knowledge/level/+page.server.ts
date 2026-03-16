@@ -17,8 +17,9 @@ import {
 	getAllRelatedContainersByProgramType,
 	getManyContainers
 } from '$lib/server/db';
-import { getManyContainersWithES, getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { createFeatureDecisions } from '$lib/features';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
@@ -33,9 +34,26 @@ function isRelatedToSome(containers: Container[]) {
 
 export const load = (async ({ locals, url, parent }) => {
 	let containers;
-	const customCategories = extractCustomCategoryFilters(url);
-	const { currentOrganization } = await parent();
+	let data: Record<string, Record<string, number>> | undefined;
+	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge])
+		: null;
+	const useCustomCategories = features.useCustomCategories();
+
+	const customCategories = useCustomCategories
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
+
+	const coreCategoryFilters = useCustomCategories
+		? {}
+		: {
+				audience: url.searchParams.getAll('audience'),
+				sdg: url.searchParams.getAll('sdg'),
+				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
+				topics: url.searchParams.getAll('topic')
+			};
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -61,75 +79,99 @@ export const load = (async ({ locals, url, parent }) => {
 			)
 		);
 	} else {
-		containers = await locals.pool.connect(
-			features.useElasticsearch()
-				? getManyContainersWithES(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
-							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							topics: url.searchParams.getAll('topic'),
-							programTypes: url.searchParams.getAll('programType'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.knowledge]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
-				: getManyContainers(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							audience: url.searchParams.getAll('audience'),
-							categories: url.searchParams.getAll('category'),
-							customCategories,
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							topics: url.searchParams.getAll('topic'),
-							programTypes: url.searchParams.getAll('programType'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.knowledge]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
-		);
+		if (features.useElasticsearch()) {
+			const esResult = await locals.pool.connect(
+				getManyContainersWithES(
+					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					{
+						...coreCategoryFilters,
+						customCategories,
+						programTypes: url.searchParams.getAll('programType'),
+						terms: url.searchParams.get('terms') ?? '',
+						type: [payloadTypes.enum.knowledge]
+					},
+					url.searchParams.get('sort') ?? '',
+					undefined,
+					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				)
+			);
+			containers = esResult.containers;
+			data = esResult.facets;
+		} else {
+			containers = await locals.pool.connect(
+				getManyContainers(
+					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					{
+						...coreCategoryFilters,
+						customCategories,
+						programTypes: url.searchParams.getAll('programType'),
+						terms: url.searchParams.get('terms') ?? '',
+						type: [payloadTypes.enum.knowledge]
+					},
+					url.searchParams.get('sort') ?? ''
+				)
+			);
+		}
 	}
 
-	const programs = (await locals.pool.connect(
-		features.useElasticsearch()
-			? getManyContainersWithES(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{ type: [payloadTypes.enum.program] },
-					url.searchParams.get('sort') ?? ''
-				)
-			: getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{ type: [payloadTypes.enum.program] },
-					url.searchParams.get('sort') ?? ''
-				)
-	)) as ProgramContainer[];
+	let programs: ProgramContainer[];
+	if (features.useElasticsearch()) {
+		const esPrograms = await locals.pool.connect(
+			getManyContainersWithES(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				{ type: [payloadTypes.enum.program] },
+				url.searchParams.get('sort') ?? '',
+				undefined,
+				{ includeFacets: false }
+			)
+		);
+		programs = esPrograms.containers as ProgramContainer[];
+	} else {
+		programs = (await locals.pool.connect(
+			getManyContainers(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				{ type: [payloadTypes.enum.program] },
+				url.searchParams.get('sort') ?? ''
+			)
+		)) as ProgramContainer[];
+	}
 
 	const filtered = filterVisible(containers, locals.user);
 	const filteredPrograms = filterVisible(programs.filter(isRelatedToSome(containers)), locals.user);
 
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(filtered.map((c) => c.guid))
-		: undefined;
+	const _facets = new Map<string, Map<string, number>>();
 
-	const _facets = new Map<string, Map<string, number>>([
-		['audience', fromCounts(audience.options as string[], data?.audience)],
-		['category', fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)],
-		['topic', fromCounts(topics.options as string[], data?.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)],
-		['programType', fromCounts(programTypes.options as string[], data?.programType)]
-	]);
+	if (useCustomCategories && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(
+			categoryContext.options,
+			data ? Object.fromEntries(Object.entries(data)) : {}
+		);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	} else {
+		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
+		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
+		_facets.set(
+			'policyFieldBNK',
+			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
+		);
+	}
+
+	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
 	const facets = features.useElasticsearch()
 		? _facets
-		: computeFacetCount(_facets, [...filtered, ...filteredPrograms]);
+		: computeFacetCount(_facets, [...filtered, ...filteredPrograms], {
+				useCategoryPayload: useCustomCategories
+			});
 
 	return {
 		containers: filtered,
 		programs: filteredPrograms,
-		facets
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
 	};
 }) satisfies PageServerLoad;

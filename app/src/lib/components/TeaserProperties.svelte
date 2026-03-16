@@ -4,13 +4,10 @@
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCardStyle from '$lib/components/EditableCardStyle.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type TeaserContainer } from '$lib/models';
@@ -90,9 +87,6 @@
 		{#if featureDecisions.useCustomCategories()}
 			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 		{:else if legacyPayload}
-			<EditableCategory {editable} bind:value={legacyPayload.category} />
-			<EditableTopic {editable} bind:value={legacyPayload.topic} />
-			<EditablePolicyFieldBNK {editable} bind:value={legacyPayload.policyFieldBNK} />
 			<EditableAudience {editable} bind:value={legacyPayload.audience} />
 		{/if}
 

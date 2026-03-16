@@ -8,6 +8,7 @@
 	import {
 		containerOfType,
 		type GoalStatus,
+		isContainerWithHierarchyLevel,
 		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
@@ -29,11 +30,12 @@
 	interface Props {
 		addItemUrl?: string;
 		children: Snippet;
+		createOptions?: Array<{ value: string; label: string }>;
 		title: string;
-		onCreateContainer?: () => void;
+		onCreateContainer?: (selectedType?: string) => void;
 	}
 
-	let { addItemUrl, children, title, onCreateContainer }: Props = $props();
+	let { addItemUrl, children, createOptions, title, onCreateContainer }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -54,6 +56,15 @@
 			) as PayloadType[]
 	);
 
+	// Use explicit createOptions if provided, otherwise derive from URL
+	let effectiveOptions = $derived.by(() => {
+		if (createOptions && createOptions.length > 0) {
+			return createOptions;
+		}
+		// Convert mayCreate PayloadTypes to options format
+		return mayCreate.map((t) => ({ value: t, label: $_(t) }));
+	});
+
 	function defaultCreateContainer(payloadType: PayloadType, params: URLSearchParams) {
 		const container = containerOfType(
 			payloadType,
@@ -73,13 +84,8 @@
 			container.payload.status = params.get('status') as Status;
 		} else if (isTaskContainer(container) && params.has('taskStatus')) {
 			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
-		} else if (isGoalContainer(container)) {
-			if (params.has('hierarchyLevel')) {
-				container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
-			}
-			if (params.has('goalStatus')) {
-				container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
-			}
+		} else if (isGoalContainer(container) && params.has('goalStatus')) {
+			container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
 		} else if (isProgramContainer(container)) {
 			if (params.has('level')) {
 				container.payload.level = params.get('level') as Level;
@@ -87,6 +93,8 @@
 			if (params.has('programStatus')) {
 				container.payload.programStatus = params.get('programStatus') as ProgramStatus;
 			}
+		} else if (isContainerWithHierarchyLevel(container) && params.has('hierarchyLevel')) {
+			container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);
 		}
 
 		container.relation = [
@@ -120,17 +128,17 @@
 
 	function handleCreate() {
 		if (onCreateContainer) {
-			onCreateContainer();
+			onCreateContainer(effectiveOptions[0].value);
 		} else {
 			defaultCreateContainer(mayCreate[0], addItemParams);
 		}
 	}
 
-	function handleCreateWithType(payloadType: PayloadType) {
+	function handleCreateWithType(selectedValue: string) {
 		if (onCreateContainer) {
-			onCreateContainer();
+			onCreateContainer(selectedValue);
 		} else {
-			defaultCreateContainer(payloadType, addItemParams);
+			defaultCreateContainer(selectedValue as PayloadType, addItemParams);
 		}
 	}
 </script>
@@ -140,17 +148,17 @@
 		<h2>
 			{title}
 		</h2>
-		{#if mayCreate.length === 1}
+		{#if effectiveOptions.length === 1}
 			<button class="action-button action-button--size-l" onclick={handleCreate} type="button">
 				<Plus />
 				<span class="is-visually-hidden">{$_('add_item')}</span>
 			</button>
-		{:else if mayCreate.length > 1}
+		{:else if effectiveOptions.length > 1}
 			<DropDownMenu
 				handleChange={(e) =>
 					e instanceof CustomEvent && e.detail.selected && handleCreateWithType(e.detail.selected)}
 				label={$_('add_item')}
-				options={mayCreate.map((t) => ({ label: $_(t), value: t }))}
+				options={effectiveOptions}
 			>
 				{#snippet icon()}
 					<Plus />
@@ -161,20 +169,20 @@
 
 	{@render children()}
 
-	{#if mayCreate.length > 0}
+	{#if effectiveOptions.length > 0}
 		<footer>
-			{#if addItemParams.getAll('create').length === 1}
+			{#if effectiveOptions.length === 1}
 				<button onclick={handleCreate} type="button">
 					<Plus />{$_('add_item')}
 				</button>
-			{:else if mayCreate.length > 1}
+			{:else if effectiveOptions.length > 1}
 				<DropDownMenu
 					handleChange={(e) =>
 						e instanceof CustomEvent &&
 						e.detail.selected &&
 						handleCreateWithType(e.detail.selected)}
 					label={$_('add_item')}
-					options={mayCreate.map((t) => ({ label: $_(t), value: t }))}
+					options={effectiveOptions}
 				>
 					{#snippet icon()}
 						<Plus />

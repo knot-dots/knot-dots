@@ -2,10 +2,10 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IOOI from '$lib/components/IOOI.svelte';
-	import { type Container, type GoalContainer } from '$lib/models';
+	import { type Container, type GoalContainer, type MeasureContainer } from '$lib/models';
 
 	interface Props {
-		container: GoalContainer;
+		container: MeasureContainer | GoalContainer;
 		containers: Container[];
 	}
 
@@ -16,4 +16,4 @@
 
 <IOOI {container} {containers}></IOOI>
 
-<Help slug="goals-iooi" />
+<Help slug="iooi" />

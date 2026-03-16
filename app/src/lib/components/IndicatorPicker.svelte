@@ -1,0 +1,286 @@
+<script lang="ts">
+	import { resource } from 'runed';
+	import { createDisclosure } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
+	import { z } from 'zod';
+	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import PickerDialog from '$lib/components/PickerDialog.svelte';
+	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import {
+		computeFacetCount,
+		indicatorCategories,
+		indicatorTemplateContainer,
+		indicatorTypes,
+		payloadTypes,
+		sustainableDevelopmentGoals
+	} from '$lib/models';
+	import { sortIcons } from '$lib/theme/models';
+	import { page } from '$app/state';
+	import { invalidate } from '$app/navigation';
+
+	interface Props {
+		dialog: HTMLDialogElement;
+	}
+
+	let { dialog = $bindable() }: Props = $props();
+
+	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
+
+	let sortBar = createDisclosure({ label: $_('sort') });
+
+	let filter = $state({
+		sdg: [],
+		indicatorCategory: [],
+		indicatorType: []
+	});
+
+	let sort = $state('alpha');
+
+	let terms = $state('');
+
+	let selected = $state([]) as string[];
+
+	let activeFilters = $derived(
+		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
+	);
+
+	const mode = 'select';
+
+	const searchResource = resource(
+		[
+			() => filter.sdg,
+			() => filter.indicatorCategory,
+			() => filter.indicatorType,
+			() => sort,
+			() => terms
+		],
+		async ([sdg, indicatorCategory, indicatorType, sort, terms], _, { signal }) => {
+			const params = new URLSearchParams([
+				...sdg.map((v) => ['sdg', v]),
+				...indicatorCategory.map((v) => ['indicatorCategory', v]),
+				...indicatorType.map((v) => ['indicatorType', v]),
+				['payloadType', payloadTypes.enum.indicator_template],
+				['sort', sort],
+				['terms', terms]
+			]);
+
+			const response = await fetch(`/container?${params.toString()}`, { signal });
+			return z.array(indicatorTemplateContainer).parse(await response.json());
+		},
+		{
+			debounce: 300
+		}
+	);
+
+	let facets = $derived.by(() => {
+		const facets = new Map([
+			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
+			['indicatorTypes', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
+		]);
+
+		return computeFacetCount(facets, searchResource.current ?? []);
+	});
+
+	function resetFilters() {
+		filter = {
+			sdg: [],
+			indicatorCategory: [],
+			indicatorType: []
+		};
+	}
+
+	function selectAll() {
+		selected = (searchResource.current ?? []).map(({ guid }) => guid);
+	}
+
+	function unselectAll() {
+		selected = [];
+	}
+
+	async function performImport() {
+		const response = await fetch(
+			`/${(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid}/import-actual-data`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: new URLSearchParams(selected.map((guid) => ['indicator', guid]))
+			}
+		);
+		if (response.ok) {
+			await invalidate('containers');
+			dialog.close();
+		} else {
+			alert($_('indicator_picker.import_failed'));
+			console.log(await response.json());
+		}
+	}
+</script>
+
+<PickerDialog
+	bind:dialog
+	bind:terms
+	{activeFilters}
+	{filterBar}
+	{sortBar}
+	onResetFilters={resetFilters}
+	title={$_('indicator_picker.title')}
+>
+	{#snippet filterContent()}
+		{#each facets.entries() as [key, foci] (key)}
+			{@const options = [...foci.entries()]
+				.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+				.toSorted((a, b) =>
+					a.label.localeCompare(b.label, undefined, {
+						numeric: true,
+						sensitivity: 'base'
+					})
+				)}
+			{#if options.some(({ count }) => count > 0)}
+				<InlineFilterDropDown
+					bind:value={filter[key as keyof typeof filter] as string[]}
+					{key}
+					{mode}
+					{options}
+				/>
+			{/if}
+		{/each}
+	{/snippet}
+
+	{#snippet sortContent()}
+		{@const sortOptions = [
+			[$_('sort_alphabetically'), 'alpha'],
+			[$_('sort_modified'), 'modified']
+		]}
+		<legend class="is-visually-hidden">{$_('sort')}</legend>
+		<span aria-hidden="true">{$_('sort')}</span>
+		{#each sortOptions as [label, value] (value)}
+			{@const Icon = sortIcons.get(value)}
+			<label class="sort-option">
+				<input type="radio" {value} bind:group={sort} />
+				<Icon />
+				{label}
+			</label>
+		{/each}
+	{/snippet}
+
+	{#snippet content()}
+		<div class="result">
+			<ul class="inline-actions">
+				<li>
+					<label>
+						<input
+							onclick={(e) => (e.currentTarget.checked ? selectAll() : unselectAll())}
+							type="checkbox"
+						/>
+						{$_('select_all')}
+					</label>
+				</li>
+				<li>
+					<button
+						class="button-primary"
+						disabled={selected.length === 0}
+						onclick={performImport}
+						type="button"
+					>
+						{$_('indicator_picker.import', { values: { count: selected.length } })}
+					</button>
+				</li>
+				<li>
+					<!-- svelte-ignore a11y_autofocus -->
+					<button class="button-red" autofocus>
+						{$_('custom_collection.dialog.cancel')}
+					</button>
+				</li>
+			</ul>
+
+			{#if searchResource.current}
+				<ul class="catalog">
+					{#each searchResource.current as item (item.guid)}
+						<li>
+							<SelectableCard
+								--height="100%"
+								bind:value={selected}
+								container={item}
+								selectable={mode === 'select'}
+							/>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
+	{/snippet}
+</PickerDialog>
+
+<style>
+	.result {
+		display: flex;
+		flex-direction: column;
+		min-height: 1px;
+	}
+
+	.result :global(.inline-actions) {
+		align-items: center;
+		margin-left: 0;
+		margin-top: 1rem;
+	}
+
+	.result :global(.inline-actions label) {
+		padding: 0.625rem 1.25rem;
+	}
+
+	.result :global(.inline-actions > li:last-child) {
+		margin-left: auto;
+	}
+
+	.button-red {
+		--button-background: transparent;
+
+		border: solid 1px var(--color-red-700);
+		color: var(--color-red-700);
+	}
+
+	.button-red:active,
+	.button-red:hover {
+		color: var(--color-white);
+	}
+
+	.catalog {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+		margin-top: 1rem;
+		overflow: auto;
+	}
+
+	.sort-option {
+		border-radius: 8px;
+		gap: 0;
+		padding: 0.5rem 0.625rem;
+	}
+
+	.sort-option > input {
+		appearance: none;
+	}
+
+	.sort-option > :global(svg) {
+		height: 1rem;
+		margin-right: 0.375rem;
+		width: 1rem;
+	}
+
+	.sort-option:focus-within,
+	.sort-option:hover {
+		background-color: var(--color-primary-100);
+	}
+
+	.sort-option:has(> input:active) {
+		background-color: var(--color-primary-300);
+		color: var(--color-primary-700);
+	}
+
+	.sort-option:has(> input:checked) {
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
+	}
+</style>

@@ -3,15 +3,16 @@
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import type { Container } from '$lib/models';
+	import type { ActualDataContainer, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		columns: Array<{ heading: string; key: string }>;
 		rows: Container[];
+		actualDataContainers?: ActualDataContainer[];
 	}
 
-	let { columns, rows: originalRows }: Props = $props();
+	let { columns, rows: originalRows, actualDataContainers = [] }: Props = $props();
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let rows = $state([] as Container[]);
@@ -45,6 +46,7 @@
 						columns={columns.map(({ key }) => key)}
 						bind:container={rows[i]}
 						editable={$applicationState.containerDetailView.editable}
+						{actualDataContainers}
 					/>
 				</form>
 			{/each}

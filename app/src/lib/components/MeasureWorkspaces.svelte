@@ -14,6 +14,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 
 	interface Props {
@@ -28,6 +29,9 @@
 		all: {
 			monitoring: '/all/monitoring',
 			page: '/'
+		},
+		iooi: {
+			board: '/iooi/board'
 		},
 		tasks: {
 			status: '/tasks/status'
@@ -52,7 +56,9 @@
 		if (overlay) {
 			const params = paramsFromFragment(page.url);
 
-			if (params.has('measure-monitoring')) {
+			if (params.has('measure-iooi')) {
+				return ['iooi', 'board'];
+			} else if (params.has('measure-monitoring')) {
 				return ['all', 'monitoring'];
 			} else if (params.has('tasks')) {
 				return ['tasks', 'status'];
@@ -84,6 +90,16 @@
 			label: $_('workspace.type.all'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/monitoring'
 		},
+		...(createFeatureDecisions(page.data.features).useIOOI()
+			? [
+					{
+						exists: true,
+						icon: ColumnSolid,
+						label: $_('workspace.iooi'),
+						value: workspacesLeft.iooi[selectedItem[1]] ?? '/iooi/board'
+					}
+				]
+			: []),
 		{
 			exists: true,
 			icon: ClipboardCheck,
@@ -119,7 +135,9 @@
 		if (overlay) {
 			const params = paramsFromFragment(url);
 
-			if (params.has('measure-monitoring')) {
+			if (params.has('measure-iooi')) {
+				return '/iooi/board';
+			} else if (params.has('measure-monitoring')) {
 				return '/all/monitoring';
 			} else if (params.has('tasks')) {
 				return '/tasks/status';
@@ -154,7 +172,18 @@
 				return;
 			}
 
-			if (selected[0] == 'all' && selected[1] == 'monitoring') {
+			if (selected[0] == 'iooi' && selected[1] == 'board') {
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum['measure-iooi'], container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
+			} else if (selected[0] == 'all' && selected[1] == 'monitoring') {
 				if (overlay) {
 					goto(overlayURL(url, overlayKey.enum['measure-monitoring'], container.guid));
 				} else {

@@ -7,7 +7,7 @@ export default class Header {
 		this.locator = page.getByRole('banner');
 	}
 
-	async enableEditMode() {
-		await this.locator.getByRole('checkbox', { name: 'Edit mode' }).check();
+	get editModeToggle() {
+		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 }

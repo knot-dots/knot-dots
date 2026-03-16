@@ -225,6 +225,19 @@
 	--indicator-color: white;
 	--indicator-font-size: 0.625rem;
 
+	/* ----------------------------------------------------------
+		COLOR · SERIES · BASE
+		Main colors for lines and points
+	---------------------------------------------------------- */
+
+	--indicator-color-own-base: #0b8a8a; /* Teal                   — Own Municipality           */
+	--indicator-color-compare-1-base: #c25a0a; /* Orange           — Comparison Municipality 1  */
+	--indicator-color-compare-2-base: #7233c2; /* Violet           — Comparison Municipality 2  */
+	--indicator-color-compare-3-base: #b81e5d; /* Rose             — Comparison Municipality 3  */
+	--indicator-color-ref-state-base: #a08c78; /* Warm Taupe       — State Average   L58        */
+	--indicator-color-ref-federal-base: #2e4560; /* Dark Slate     — Federal Average L30        */
+	--indicator-color-ref-benchmark-base: #1d7a46; /* Forest Green — Benchmark                  */
+
 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
 	--shadow-lg: 0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px rgba(0, 0, 0, 0.05);
@@ -301,6 +314,7 @@ body {
 	font-weight: 400;
 	line-height: 1.5;
 	min-height: 100vh;
+	overflow-x: hidden;
 	text-rendering: optimizeSpeed;
 }
 
@@ -696,11 +710,12 @@ button.button-square,
 }
 
 .action-button.action-button--padding-tight {
+	border-radius: 4px;
 	padding: 0.25rem;
 }
 
 .action-button.action-button--size-s {
-	border-radius: 4px;
+	padding: 0.625rem;
 }
 
 .action-button.action-button--size-s.action-button--padding-tight {
@@ -771,6 +786,74 @@ button.button-square,
 
 .button-group.button-group-nav {
 	--button-border-color: var(--color-gray-900);
+}
+
+/* Segmented button */
+:root {
+	--segmented-button-selected-background-color: var(--color-primary-050);
+	--segmented-button-selected-border-color: var(--color-primary-700);
+	--segmented-button-selected-color: var(--color-primary-700);
+}
+
+.segmented-button {
+	color: var(--color-gray-900);
+	display: flex;
+}
+
+.segmented-button.segmented-button--vertical {
+	flex-direction: column;
+}
+
+.segmented-button > .button {
+	--button-active-background: var(--color-gray-100);
+	--button-background: var(--color-white);
+	--button-hover-background: var(--color-blue-gray-050);
+
+	border: solid 1px var(--color-gray-200);
+	border-radius: 0;
+	padding: 0.5rem 1rem;
+}
+
+.segmented-button > .button:first-child {
+	border-bottom-left-radius: 8px;
+	border-top-left-radius: 8px;
+}
+
+.segmented-button.segmented-button--vertical > .button:first-child {
+	border-bottom-left-radius: 0;
+	border-top-right-radius: 8px;
+}
+
+.segmented-button > .button:last-child {
+	border-bottom-right-radius: 8px;
+	border-top-right-radius: 8px;
+}
+
+.segmented-button.segmented-button--vertical > .button:last-child {
+	border-bottom-left-radius: 8px;
+	border-top-right-radius: 0;
+}
+
+.segmented-button > .button svg {
+	color: var(--color-gray-700);
+	flex-shrink: 0;
+	height: 1.5rem;
+	max-width: revert;
+	width: 1.5rem;
+}
+
+.segmented-button input {
+	appearance: none;
+}
+
+.segmented-button > .button:has(input:checked) {
+	background-color: var(--segmented-button-selected-background-color);
+	border-color: var(--segmented-button-selected-border-color);
+	color: var(--segmented-button-selected-color);
+}
+
+.segmented-button > .button:has(input:checked) svg {
+	color: inherit;
 }
 
 /* Form controls */
@@ -1058,6 +1141,12 @@ label > input[type='checkbox'].toggle {
 	--carousel-margin-right: calc(
 		var(--details-padding-right) * -1 - var(--details-section-padding-x)
 	);
+	--editable-table-margin-left: calc(
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+	);
+	--editable-table-margin-right: calc(
+		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
@@ -1087,12 +1176,29 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-heading {
-	color: var(--color-gray-700);
+	color: var(--color-gray-800);
 	flex-grow: 1;
-	font-size: 1.5rem;
-	font-weight: 600;
 	line-height: 1.25;
 	min-height: 2rem;
+}
+
+h2.details-heading {
+	font-size: 1.875rem;
+	font-weight: 600;
+}
+
+h3.details-heading {
+	font-size: 1.875rem;
+	font-weight: 400;
+}
+
+h4.details-heading {
+	font-size: 1.5rem;
+	font-weight: 600;
+}
+
+.details-section header {
+	margin-bottom: 0.5rem;
 }
 
 #dnd-action-dragged-el .details-section {
@@ -1188,7 +1294,7 @@ label > input[type='checkbox'].toggle {
 	padding-inline-start: 1.5rem;
 }
 
-.markdown-body p,
+.markdown-body > p,
 .milkdown .editor > p,
 .milkdown .editor > ul,
 .milkdown .editor > ol {
@@ -1197,7 +1303,7 @@ label > input[type='checkbox'].toggle {
 
 .markdown-body > *:first-child,
 .milkdown .editor > *:first-child {
-	margin-top: 0;
+	margin-top: 0.5rem;
 }
 
 .markdown-body > *:last-child,

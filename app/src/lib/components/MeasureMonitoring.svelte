@@ -4,8 +4,8 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		computeColumnTitleForGoals,
-		goalsByHierarchyLevel,
+		titleForGoalCollection,
+		containersByHierarchyLevel,
 		type IndicatorContainer,
 		isEffectContainer,
 		isGoalContainer,
@@ -30,7 +30,7 @@
 	let { measure, measures, containers, indicators, showMeasures = false }: Props = $props();
 
 	let goals = $derived(
-		goalsByHierarchyLevel(
+		containersByHierarchyLevel(
 			containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>
@@ -54,7 +54,7 @@
 					: undefined,
 				containers: containers,
 				key: `goals-${hierarchyLevel}`,
-				title: computeColumnTitleForGoals(containers)
+				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
 			})),
 		{
 			addItemUrl: measure

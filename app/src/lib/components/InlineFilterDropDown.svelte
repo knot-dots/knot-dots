@@ -27,11 +27,12 @@
 		['indicatorCategory', 'indicator_category'],
 		['federalState', 'administrative_area.basic_data.federal_state'],
 		['member', 'member_filter.label'],
-		['type', 'payload_type'],
 		['policyFieldBNK', 'policy_field_bnk'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
-		['taskCategory', 'task_category.label']
+		['sdg', 'category'],
+		['taskCategory', 'task_category.label'],
+		['type', 'payload_type']
 	]);
 
 	const popover = createPopover({ label });

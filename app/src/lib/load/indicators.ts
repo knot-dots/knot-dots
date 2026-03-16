@@ -3,17 +3,16 @@ import { filterVisible } from '$lib/authorization';
 import {
 	audience,
 	computeFacetCount,
+	type Container,
 	fromCounts,
 	indicatorCategories,
+	type IndicatorContainer,
 	indicatorTypes,
+	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics,
-	type Container,
-	type IndicatorContainer,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	topics
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
@@ -22,36 +21,26 @@ import {
 } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, loadCategoryContext } from '$lib/server/categoryOptions';
-import { getFacetAggregationsForGuids } from '$lib/server/elasticsearch';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
+import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
-import type { ServerLoad } from '@sveltejs/kit';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';
 
 export interface IndicatorFilters {
 	customCategories: Record<string, string[]>;
 	indicatorCategories: string[];
 	indicatorTypes: string[];
 	included: string[];
+	sdg: string[];
 }
 
 export interface IndicatorLoadResult {
 	containers: IndicatorContainer[];
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
+	facetData?: Record<string, Record<string, number>>;
 	useNewIndicators: boolean;
 }
-
-type LoadInput = {
-	depends: (deps: string) => void;
-	locals: App.Locals;
-	parent: () => Promise<unknown>;
-	url: URL;
-};
-
-type ParentData = {
-	currentOrganization: OrganizationContainer;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
-};
 
 /**
  * Fetch indicators for an organization/org unit with fallback to templates + actual data when none exist.
@@ -63,9 +52,19 @@ export async function getIndicatorsData(params: {
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
 	filters: IndicatorFilters;
 	user: User;
+	useElasticsearch?: boolean;
+	customCategoryKeys?: string[];
 	connect: <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 }): Promise<IndicatorLoadResult> {
-	const { organizationGuid, currentOrganizationalUnit, filters, user, connect } = params;
+	const {
+		organizationGuid,
+		currentOrganizationalUnit,
+		filters,
+		user,
+		useElasticsearch,
+		customCategoryKeys,
+		connect
+	} = params;
 
 	// Build organizational unit scope
 	let organizationalUnits: string[] = [];
@@ -82,19 +81,43 @@ export async function getIndicatorsData(params: {
 	const restrictOrgUnits = !filters.included.includes('all_organizational_units');
 
 	// Primary indicator fetch
-	let indicators = (await connect(
-		getManyContainers(
-			[organizationGuid],
-			{
-				customCategories: filters.customCategories,
-				indicatorCategories: filters.indicatorCategories,
-				indicatorTypes: filters.indicatorTypes,
-				...(restrictOrgUnits ? { organizationalUnits } : {}),
-				type: [payloadTypes.enum.indicator]
-			},
-			'alpha'
-		)
-	)) as IndicatorContainer[];
+	let indicators: IndicatorContainer[];
+	let facetData: Record<string, Record<string, number>> | undefined;
+	if (useElasticsearch) {
+		const esResult = await connect(
+			getManyContainersWithES(
+				[organizationGuid],
+				{
+					customCategories: filters.customCategories,
+					indicatorCategories: filters.indicatorCategories,
+					indicatorTypes: filters.indicatorTypes,
+					sdg: filters.sdg,
+					...(restrictOrgUnits ? { organizationalUnits } : {}),
+					type: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator]
+				},
+				'alpha',
+				undefined,
+				{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
+			)
+		);
+		indicators = esResult.containers as IndicatorContainer[];
+		facetData = esResult.facets;
+	} else {
+		indicators = (await connect(
+			getManyContainers(
+				[organizationGuid],
+				{
+					customCategories: filters.customCategories,
+					indicatorCategories: filters.indicatorCategories,
+					indicatorTypes: filters.indicatorTypes,
+					sdg: filters.sdg,
+					...(restrictOrgUnits ? { organizationalUnits } : {}),
+					type: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator]
+				},
+				'alpha'
+			)
+		)) as IndicatorContainer[];
+	}
 
 	// Related containers (objectives/effects/indicators linked)
 	let related = await connect(
@@ -105,15 +128,17 @@ export async function getIndicatorsData(params: {
 
 	if (indicators.length === 0) {
 		useNewIndicators = true;
+		facetData = undefined;
 		const [templates, actualData] = await Promise.all([
 			connect(
 				getManyContainers(
-					[organizationGuid],
+					[],
 					{
 						customCategories: filters.customCategories,
 						indicatorCategories: filters.indicatorCategories,
 						indicatorTypes: filters.indicatorTypes,
-						type: [payloadTypes.enum.indicator_template]
+						sdg: filters.sdg,
+						type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 					},
 					'alpha'
 				)
@@ -139,31 +164,37 @@ export async function getIndicatorsData(params: {
 		containers: indicators,
 		related,
 		combined: combinedVisible,
+		facetData,
 		useNewIndicators
 	};
 }
 
-export default (async function load({ depends, locals, parent, url }: LoadInput) {
+export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
-	const { currentOrganization, currentOrganizationalUnit } = (await parent()) as ParentData;
-	const customCategories = extractCustomCategoryFilters(url);
+	const {
+		categoryContext: rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit
+	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-
-	const categoryContext = features.useCustomCategories()
-		? await loadCategoryContext({
-				connect: locals.pool.connect,
-				organizationScope: [currentOrganization.guid],
-				fallbackScope: [],
-				user: locals.user
-			})
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [
+				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template
+			])
 		: null;
+
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	const filters = {
 		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
-		included: url.searchParams.getAll('included')
+		included: url.searchParams.getAll('included'),
+		sdg: url.searchParams.getAll('sdg')
 	} as const;
 
 	const result = await getIndicatorsData({
@@ -171,15 +202,13 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		currentOrganizationalUnit: currentOrganizationalUnit ?? null,
 		filters,
 		user: locals.user,
+		useElasticsearch: features.useElasticsearch(),
+		customCategoryKeys: categoryContext?.keys ?? [],
 		connect: locals.pool.connect
 	});
 
-	const data = features.useElasticsearch()
-		? await getFacetAggregationsForGuids(
-				result.combined.map((c) => c.guid),
-				categoryContext?.keys ?? []
-			)
-		: undefined;
+	const useFacetData = features.useElasticsearch() && !result.useNewIndicators;
+	const data = useFacetData ? result.facetData : undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
@@ -197,10 +226,7 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		}
 	} else {
 		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set(
-			'category',
-			fromCounts(sustainableDevelopmentGoals.options as string[], data?.category)
-		);
+		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
 		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
 		_facets.set(
 			'policyFieldBNK',
@@ -213,10 +239,11 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		'indicatorCategory',
 		fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
 	);
-
-	const facets = features.useElasticsearch()
+	const facets = useFacetData
 		? _facets
-		: computeFacetCount(_facets, result.combined);
+		: computeFacetCount(_facets, result.combined, {
+				useCategoryPayload: features.useCustomCategories()
+			});
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
@@ -227,4 +254,4 @@ export default (async function load({ depends, locals, parent, url }: LoadInput)
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options ?? null
 	};
-} satisfies ServerLoad);
+} satisfies PageServerLoad);

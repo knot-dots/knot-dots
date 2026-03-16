@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import AllPage from '$lib/components/AllPage.svelte';
@@ -9,13 +8,16 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		computeColumnTitleForGoals,
-		goalsByHierarchyLevel,
+		titleForGoalCollection,
+		containersByHierarchyLevel,
 		isGoalContainer,
+		isMeasureContainer,
 		isProgramContainer,
 		isReportContainer,
-		payloadTypes,
+		isRuleContainer,
+		isSimpleMeasureContainer,
 		predicates,
+		titleForMeasureCollection,
 		titleForProgramCollection
 	} from '$lib/models';
 	import type { PageProps } from './$types';
@@ -23,12 +25,20 @@
 	let { data }: PageProps = $props();
 
 	let goals = $derived(
-		goalsByHierarchyLevel(
+		containersByHierarchyLevel(
 			data.containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>
 					relation.every(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
 				)
+		)
+	);
+
+	let measuresAndRules = $derived(
+		containersByHierarchyLevel(
+			data.containers.filter(
+				(c) => isMeasureContainer(c) || isSimpleMeasureContainer(c) || isRuleContainer(c)
+			)
 		)
 	);
 
@@ -49,23 +59,30 @@
 				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
 				containers: containers.slice(0, browser ? undefined : 10),
 				key: `goals-${hierarchyLevel}`,
-				title: computeColumnTitleForGoals(containers)
+				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
 			})),
-		{
-			addItemUrl: '#create=measure&create=rule&create=simple_measure',
-			containers: data.containers
-				.filter(
-					(c) =>
-						[
-							payloadTypes.enum.measure,
-							payloadTypes.enum.rule,
-							payloadTypes.enum.simple_measure
-						].findIndex((payloadType) => payloadType === c.payload.type) > -1
-				)
-				.slice(0, browser ? undefined : 10),
-			key: 'implementation',
-			title: $_('payload_group.implementation')
-		}
+		...Array.from(measuresAndRules.entries())
+			.toSorted()
+			.map(([hierarchyLevel, containers]) => {
+				if (hierarchyLevel === 1) {
+					return {
+						addItemUrl: `#create=measure&hierarchyLevel=${hierarchyLevel}&create=simple_measure&create=rule`,
+						containers: containers.slice(0, browser ? undefined : 10),
+						key: `implementation-${hierarchyLevel}`,
+						title: titleForMeasureCollection(
+							containers.filter(isMeasureContainer),
+							[...measuresAndRules.keys()].length > 1 ? hierarchyLevel : 0
+						)
+					};
+				} else {
+					return {
+						addItemUrl: `#create=measure&hierarchyLevel=${hierarchyLevel}`,
+						containers: containers.slice(0, browser ? undefined : 10),
+						key: `implementation-${hierarchyLevel}`,
+						title: titleForMeasureCollection(containers.filter(isMeasureContainer), hierarchyLevel)
+					};
+				}
+			})
 	]);
 </script>
 

@@ -2,12 +2,13 @@
 	import { onMount } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
+	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
-	import { page } from '$app/state';
 
 	let { children, data }: LayoutProps = $props();
 
@@ -22,9 +23,15 @@
 		}
 	});
 
+	let lastOverlay = $state({
+		url: undefined
+	});
+
+	setLastOverlayContext(lastOverlay);
+
 	const workspaceTranslated = $derived.by(() => {
 		const segments = page.url.pathname.split('/');
-		let msgId = '';
+		let msgId;
 
 		// Determine workspace type from URL segments
 		if (segments[1] == 'me') {

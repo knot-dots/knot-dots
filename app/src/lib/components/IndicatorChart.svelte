@@ -157,9 +157,27 @@
 			: [...effects, ...trend.map((t) => ({ ...t, status: 'trend' }))]
 	);
 
+	// Create a reactive state for the container's width
+	let currentWidth = $state(0);
+
 	const chart: Attachment = (element) => {
-		element?.firstChild?.remove();
-		element?.append(
+		// Use a ResizeObserver to measure the container and trigger a render
+		const observer = new ResizeObserver((entries) => {
+			for (let entry of entries) {
+				// Get the actual inner width of the container div
+				const { width } = entry.contentRect;
+				// Only render if we have a valid width
+				if (width > 0) {
+					currentWidth = width;
+				}
+			}
+		});
+
+		// Start observing the element this action is attached to
+		observer.observe(element);
+
+		element.innerHTML = '';
+		element.append(
 			Plot.plot({
 				color: {
 					domain: [
@@ -222,9 +240,16 @@
 					Plot.lineY(trend, { x: 'date', y: 'value', interval: 'year' }),
 					Plot.ruleX([new Date()])
 				],
-				y: { label: $_(unit), tickFormat: (d) => $number(d) }
+				y: { label: $_(unit), tickFormat: (d) => $number(d) },
+				width: currentWidth,
+				height: (currentWidth * 400) / 640 // Maintain the 640:400 aspect ratio
 			})
 		);
+
+		// Return a destroy method for cleanup
+		return () => {
+			observer.disconnect();
+		};
 	};
 </script>
 

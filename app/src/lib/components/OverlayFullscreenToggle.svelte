@@ -6,6 +6,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
+	import { getLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isMeasureContainer,
@@ -17,6 +18,8 @@
 	import { overlay } from '$lib/stores';
 
 	let fullScreen = getContext<{ enabled: boolean }>('overlayFullScreen');
+
+	let lastOverlay = getLastOverlayContext();
 
 	let href = $derived.by(() => {
 		if (!$overlay?.container) {
@@ -42,8 +45,12 @@
 				);
 			case overlayKey.enum['goal-iooi']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
+			case overlayKey.enum['measure-iooi']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
 			case overlayKey.enum['indicators']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/indicators/catalog', routeParams);
+			case overlayKey.enum['resources']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/resources/catalog', routeParams);
 			case overlayKey.enum['measure-monitoring']:
 				if (isProgramContainer($overlay.container)) {
 					return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', routeParams);
@@ -68,7 +75,12 @@
 </script>
 
 {#if href}
-	<a {@attach tooltip($_('full_screen'))} class="action-button" {href}>
+	<a
+		{@attach tooltip($_('full_screen'))}
+		class="action-button"
+		{href}
+		onclick={() => (lastOverlay.url = page.url)}
+	>
 		<Maximize />
 	</a>
 {:else}

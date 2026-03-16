@@ -1,21 +1,12 @@
 import { z } from 'zod';
-import { type AnyContainer, anyContainer } from '$lib/models';
-import type { PayloadType } from '$lib/models';
-
-// In-flight request deduplication to avoid firing identical concurrent network requests.
-// Cache entry retains the promise while in-flight and the resolved result until TTL expires.
-interface CacheEntry {
-	promise: Promise<AnyContainer[]>;
-	inserted: number; // ms timestamp when the request was initiated
-	result?: AnyContainer[]; // populated once promise resolves
-}
-const inflight = new Map<string, CacheEntry>();
+import withRequestCoalescing from '$lib/client/withRequestCoalescing';
+import { anyContainer, type PayloadType } from '$lib/models';
 
 export default async function fetchContainers(
 	filters: {
 		assignee?: string[];
 		audience?: string[];
-		category?: string[];
+		sdg?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		isPartOfMeasure?: string[];
@@ -31,7 +22,8 @@ export default async function fetchContainers(
 		terms?: string;
 		topic?: string[];
 	},
-	sort?: string
+	sort?: string,
+	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
 	for (const value of filters.assignee ?? []) {
@@ -40,8 +32,8 @@ export default async function fetchContainers(
 	for (const value of filters.audience ?? []) {
 		params.append('audience', value);
 	}
-	for (const value of filters.category ?? []) {
-		params.append('category', value);
+	for (const value of filters.sdg ?? []) {
+		params.append('sdg', value);
 	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
@@ -88,41 +80,6 @@ export default async function fetchContainers(
 	for (const value of filters.topic ?? []) {
 		params.append('topic', value);
 	}
-	const url = `/container?${params}`;
-	const now = Date.now();
-
-	const existing = inflight.get(url);
-	if (existing) {
-		// If we have a resolved result and it's still within TTL (2s), serve from cache.
-		if (existing.result && now - existing.inserted < 2000) {
-			return existing.result;
-		}
-		// If still in-flight (no result yet), just return that promise.
-		if (!existing.result) {
-			return existing.promise;
-		}
-		// Expired entry with a result: drop it and proceed to refetch.
-		inflight.delete(url);
-	}
-
-	// Create new entry
-	// Declare then assign to allow closure to mutate entry.result post resolution
-	const entry: CacheEntry = {
-		inserted: now,
-		promise: Promise.resolve([] as AnyContainer[]) // placeholder, replaced immediately
-	};
-	entry.promise = (async () => {
-		const response = await fetch(url, {
-			cache: 'default',
-			credentials: 'same-origin'
-		});
-		const data = await response.json();
-		const parsed = z.array(anyContainer).parse(data);
-		entry.result = parsed; // store resolved data for TTL reuse
-		return parsed;
-	})();
-	inflight.set(url, entry);
-
-	// Return the promise (callers can await). Subsequent identical calls within 2s will reuse result.
-	return entry.promise;
+	const response = await withRequestCoalescing(fetch)(`/container?${params}`, init);
+	return z.array(anyContainer).parse(await response.clone().json());
 }

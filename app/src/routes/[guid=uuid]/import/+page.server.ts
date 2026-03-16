@@ -6,7 +6,6 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import de from '$lib/locales/de.json';
 import {
 	containerOfType,
 	editorialState,
@@ -15,6 +14,7 @@ import {
 	payloadTypes,
 	predicates
 } from '$lib/models';
+import { reverseTranslationMap } from '$lib/server/csv';
 import {
 	createContainer,
 	getAllRelatedUsers,
@@ -23,12 +23,6 @@ import {
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
-
-const reverseTranslationMap = new Map<string, string>(
-	Object.entries(de)
-		.filter((e): e is [string, string] => typeof e[1] === 'string')
-		.map(([k, v]) => [v, k])
-);
 
 export const actions = {
 	default: async ({ locals, url, request }) => {
@@ -111,7 +105,7 @@ export const actions = {
 											.map((t: string) => reverseTranslationMap.get(t))
 									}
 								: {}),
-							category: record.category?.toLowerCase().split(', ') ?? [],
+							sdg: record.sdg?.toLowerCase().split(', ') ?? [],
 							description: record.description,
 							...(record.endDate ? { endDate: record.endDate } : {}),
 							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),

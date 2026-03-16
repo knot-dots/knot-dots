@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
-	import DragHandle from '~icons/knotdots/draghandle';
+	import { SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import { invalidate } from '$app/navigation';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
@@ -26,6 +25,7 @@
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
 	import EditableTeaserSection from '$lib/components/EditableTeaserSection.svelte';
+	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
 	import {
 		type AnyContainer,
 		isAdministrativeAreaBasicDataContainer,
@@ -43,6 +43,7 @@
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
+		isMeasureContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
@@ -110,14 +111,13 @@
 
 <section class="details-section">
 	{#if $applicationState.containerDetailView.editable}
-		<div class="actions is-visible-on-hover">
-			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
-			{/if}
-			<span class="drag-handle" use:dragHandle>
-				<DragHandle />
-			</span>
-		</div>
+		<DraggableActionBar>
+			{#snippet actions()}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
+				{/if}
+			{/snippet}
+		</DraggableActionBar>
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
@@ -144,7 +144,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isEffectCollectionContainer(container) && isGoalContainer(parentContainer)}
+		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
 			<EditableEffectCollection
 				bind:container
 				bind:parentContainer
@@ -303,33 +303,6 @@
 <style>
 	.details-section {
 		position: relative;
-	}
-
-	.actions {
-		--dropdown-button-icon-default-color: var(--color-gray-700);
-		--dropdown-button-icon-size: 1rem;
-
-		align-items: center;
-		background-color: white;
-		border-radius: 12px;
-		box-shadow: var(--shadow-sm);
-		display: flex;
-		gap: 0.25rem;
-		left: -3.25rem;
-		padding: 0.25rem;
-		position: absolute;
-		top: 1.25rem;
-		z-index: 1;
-	}
-
-	.drag-handle {
-		padding: 0.25rem;
-	}
-
-	.drag-handle :global(svg) {
-		color: var(--dropdown-button-icon-default-color);
-		height: 1rem;
-		width: 1rem;
 	}
 
 	@media (hover: hover) {

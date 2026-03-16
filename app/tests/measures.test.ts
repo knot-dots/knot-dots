@@ -47,19 +47,11 @@ test.describe('Measure monitoring', () => {
 	});
 });
 
-test.describe('Sub-measure creation', () => {
+test.describe('Measures section', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
 	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
 		await dotsBoard.goto(`/${testMeasure.organization}`);
-
-		// Ensure feature flag is enabled
-		await dotsBoard.sidebar.openProfileSettings();
-		await dotsBoard.page.getByLabel('SubMeasures').check();
-		const response = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
-		await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
-		await response;
-
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
@@ -84,5 +76,19 @@ test.describe('Sub-measure creation', () => {
 		await dotsBoard.page.reload();
 		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
 		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
+	});
+
+	test('measures can be displayed in section on organization page', async ({
+		landingPage,
+		testMeasure
+	}) => {
+		await landingPage.goto(`/${testMeasure.organization}`);
+		await landingPage.header.editModeToggle.check();
+		await landingPage.addSection('Measures');
+		await expect(
+			landingPage.sections
+				.filter({ has: landingPage.page.getByRole('heading', { level: 2, name: 'Measures' }) })
+				.getByRole('heading', { name: testMeasure.payload.title })
+		).toBeVisible();
 	});
 });

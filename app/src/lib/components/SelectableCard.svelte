@@ -9,11 +9,12 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import {
 		isContainerWithEffect,
-		isContainerWithProgress,
 		isContainerWithObjective,
+		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isPartOf,
 		isResourceContainer,
@@ -53,8 +54,13 @@
 	// svelte-ignore non_reactive_update
 	let checkbox: HTMLInputElement;
 
+	const id = crypto.randomUUID();
+
 	function handleClick(event: MouseEvent) {
-		if (checkbox == event.target) {
+		if (
+			checkbox == event.target ||
+			checkbox.labels?.values().some((label) => label == event.target)
+		) {
 			return;
 		}
 		const isTextSelected = window.getSelection()?.toString();
@@ -82,13 +88,13 @@
 							(value = v ? [...value, container.guid] : value.filter((id) => id !== container.guid))
 					}
 					bind:this={checkbox}
-					id={crypto.randomUUID()}
+					{id}
 					name="item"
 					type="checkbox"
 					value={container.guid}
 				/>
 			{/if}
-			<label for={checkbox?.id}>
+			<label for={id}>
 				{#if 'title' in container.payload}
 					{container.payload.title}
 				{:else if 'name' in container.payload}
@@ -117,6 +123,13 @@
 					<span class="badge">{$_(indicatorType)}</span>
 				{/each}
 
+				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
+					<span class="badge">{$_(indicatorCategory)}</span>
+				{/each}
+			</p>
+		{:else if isIndicatorTemplateContainer(container)}
+			<Summary {container} />
+			<p class="badges">
 				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
 					<span class="badge">{$_(indicatorCategory)}</span>
 				{/each}
@@ -162,7 +175,7 @@
 			{@const image = Array.isArray(container.payload.image)
 				? container.payload.image[0]
 				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image as string)} />
+			<img alt={$_('cover_image')} loading="lazy" src={transformFileURL(image as string)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}

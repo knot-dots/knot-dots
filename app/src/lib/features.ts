@@ -9,10 +9,12 @@ export const featureFlags = new Map([
 			'ContentPartner',
 			'ResourceV2',
 			'CustomCategories',
+			'HelpWorkspace',
 			'IOOI',
 			'EditorialPages',
 			'FullScreenRoutes',
-			'SubMeasures'
+			'SubMeasures',
+			'Compare'
 		] as const
 	],
 	[
@@ -89,6 +91,12 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useIOOI() {
 			return features.includes('IOOI');
 		},
+		useBinaryIndicators() {
+			return features.includes('IOOI');
+		},
+		useTendentialObjectivesAndEffects() {
+			return features.includes('IOOI');
+		},
 		usePage() {
 			return features.includes('EditorialPages');
 		},
@@ -100,6 +108,12 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useFullScreenRoutes() {
 			return features.includes('FullScreenRoutes');
+		},
+		useCompare() {
+			return features.includes('Compare');
+		},
+		useHelpWorkspace() {
+			return features.includes('HelpWorkspace');
 		}
 	};
 }

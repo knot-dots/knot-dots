@@ -1,0 +1,107 @@
+import { expect, test } from './fixtures';
+
+test.use({ storageState: 'tests/.auth/admin.json' });
+
+test('create custom indicator with actual data', async ({ indicatorCatalog, testOrganization }) => {
+	await indicatorCatalog.goto(`/${testOrganization.guid}`);
+	await indicatorCatalog.header.editModeToggle.check();
+
+	// Create a custom indicator
+	const titleOfCustomIndicator = 'My Indicator';
+	await indicatorCatalog.addCustomIndicatorButton.click();
+	await indicatorCatalog.page
+		.getByRole('dialog')
+		.getByRole('textbox', { name: 'Title' })
+		.fill(titleOfCustomIndicator);
+	await indicatorCatalog.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+	await expect(indicatorCatalog.overlay.title).toHaveText(titleOfCustomIndicator);
+
+	// Enable entering actual data
+	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	const table = indicatorCatalog.overlay.locator.getByRole('table');
+	await table.getByRole('button', { name: 'Add custom actual data' }).click();
+	await expect(table.getByRole('row', { name: 'Custom actual data' })).toBeVisible();
+
+	// Add a column and fill actual data
+	await table.getByRole('button', { name: 'Add column' }).click();
+	await expect(table.getByRole('columnheader', { name: /\d+/ })).toBeVisible();
+	const firstValue = '101.5';
+	const firstInvalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	await table
+		.getByRole('row', { name: 'Custom actual data' })
+		.getByRole('cell', { name: '0', exact: true })
+		.getByRole('textbox')
+		.fill(firstValue);
+	await firstInvalidateRequest;
+
+	// Add another column and fill actual data
+	await table.getByRole('button', { name: 'Add column' }).last().click();
+	await expect(table.getByRole('columnheader', { name: /\d+/ })).toHaveCount(2);
+	const secondValue = '246.7';
+	const secondInvalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	await table
+		.getByRole('row', { name: 'Custom actual data' })
+		.getByRole('cell', { name: '0', exact: true })
+		.getByRole('textbox')
+		.fill(secondValue);
+	await secondInvalidateRequest;
+
+	// Verify actual data is persisted
+	await indicatorCatalog.page.reload();
+	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await expect(table.getByRole('cell', { name: firstValue })).toBeVisible();
+	await expect(table.getByRole('cell', { name: secondValue })).toBeVisible();
+});
+
+test('add section to indicator', async ({ indicatorCatalog, testOrganization }) => {
+	await indicatorCatalog.goto(`/${testOrganization.guid}`);
+	await indicatorCatalog.header.editModeToggle.check();
+
+	// Create a custom indicator
+	const titleOfCustomIndicator = 'My Indicator';
+	await indicatorCatalog.addCustomIndicatorButton.click();
+	await indicatorCatalog.page
+		.getByRole('dialog')
+		.getByRole('textbox', { name: 'Title' })
+		.fill(titleOfCustomIndicator);
+	await indicatorCatalog.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+	await expect(indicatorCatalog.overlay.title).toHaveText(titleOfCustomIndicator);
+
+	// Add a text section
+	const section = await indicatorCatalog.overlay.addSection('Text');
+	const invalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	await section.getByRole('heading').fill('Lorem ipsum');
+	await section
+		.getByRole('textbox')
+		.fill('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+	await invalidateRequest;
+
+	// Verify section is persisted
+	await indicatorCatalog.page.reload();
+	await expect(section.getByRole('heading')).toHaveText('Lorem ipsum');
+	await expect(section).toContainText('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
+});
+
+test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTemplate }) => {
+	await indicatorCatalog.goto(`/${testIndicatorTemplate.organization}`);
+	await indicatorCatalog.header.editModeToggle.check();
+
+	// Open the indicator catalog and select the indicator template
+	await indicatorCatalog.activateSelectedIndicatorsButton.click();
+	await expect(indicatorCatalog.page.getByRole('dialog')).toContainText(
+		'Select indicators to activate'
+	);
+	await indicatorCatalog.page
+		.getByRole('dialog')
+		.getByRole('checkbox', { name: testIndicatorTemplate.payload.title })
+		.check();
+	await indicatorCatalog.page.getByRole('dialog').getByRole('button', { name: 'Activate' }).click();
+
+	// Verify the indicator is activated and has custom actual data
+	await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();
+	await expect(indicatorCatalog.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
+	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await expect(
+		indicatorCatalog.overlay.locator.getByRole('row', { name: 'Custom actual data' })
+	).toBeVisible();
+});
