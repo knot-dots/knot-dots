@@ -559,8 +559,7 @@ button.button-red,
 }
 
 button.button-ai {
-	--button-active-background:
-		linear-gradient(
+	--button-active-background: linear-gradient(
 			62deg,
 			rgba(240, 82, 82, 0.4) 17.85%,
 			rgba(154, 122, 225, 0.4) 46.05%,
@@ -569,8 +568,7 @@ button.button-ai {
 		white;
 	--button-background: transparent;
 	--button-border-color: var(--color-gray-200);
-	--button-hover-background:
-		linear-gradient(
+	--button-hover-background: linear-gradient(
 			62deg,
 			rgba(240, 82, 82, 0.2) 17.85%,
 			rgba(154, 122, 225, 0.2) 46.05%,
@@ -589,12 +587,20 @@ button.button-ai > svg {
 }
 
 button.button-copycat {
-	--button-active-background:
-		linear-gradient(85deg, rgba(252, 221, 9, 0.4) 3.48%, rgba(22, 189, 202, 0.4) 96.01%), white;
+	--button-active-background: linear-gradient(
+			85deg,
+			rgba(252, 221, 9, 0.4) 3.48%,
+			rgba(22, 189, 202, 0.4) 96.01%
+		),
+		white;
 	--button-background: transparent;
 	--button-border-color: var(--color-gray-200);
-	--button-hover-background:
-		linear-gradient(85deg, rgba(252, 221, 9, 0.2) 3.48%, rgba(22, 189, 202, 0.2) 96.01%), white;
+	--button-hover-background: linear-gradient(
+			85deg,
+			rgba(252, 221, 9, 0.2) 3.48%,
+			rgba(22, 189, 202, 0.2) 96.01%
+		),
+		white;
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-gray-900);
@@ -608,12 +614,20 @@ button.button-copycat > svg {
 
 button.button-relation,
 .button.button-relation {
-	--button-active-background:
-		linear-gradient(62deg, rgba(28, 100, 242, 0.4) 17.85%, rgba(22, 189, 202, 0.4) 74.26%), white;
+	--button-active-background: linear-gradient(
+			62deg,
+			rgba(28, 100, 242, 0.4) 17.85%,
+			rgba(22, 189, 202, 0.4) 74.26%
+		),
+		white;
 	--button-background: transparent;
 	--button-border-color: var(--color-primary-700);
-	--button-hover-background:
-		linear-gradient(62deg, rgba(28, 100, 242, 0.2) 17.85%, rgba(22, 189, 202, 0.2) 74.26%), white;
+	--button-hover-background: linear-gradient(
+			62deg,
+			rgba(28, 100, 242, 0.2) 17.85%,
+			rgba(22, 189, 202, 0.2) 74.26%
+		),
+		white;
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-primary-700);
@@ -1322,6 +1336,114 @@ h4.details-heading {
 
 .milkdown [data-show='false'] {
 	display: none;
+}
+
+/* Table block component (inline table editing) */
+
+milkdown-table-block {
+	display: block;
+	position: relative;
+	margin: 1rem 0;
+}
+
+milkdown-table-block.readonly .handle {
+	display: none !important;
+}
+
+milkdown-table-block .table-wrapper {
+	position: relative;
+	overflow-x: auto;
+}
+
+milkdown-table-block th,
+milkdown-table-block td {
+	border: solid 1px var(--color-gray-200);
+	min-width: 4rem;
+}
+
+milkdown-table-block .handle.cell-handle {
+	--button-background: var(--color-gray-100);
+	--button-hover-background: var(--color-gray-200);
+	--button-border-color: var(--color-gray-200);
+	--padding-x: 0;
+	--padding-y: 0;
+
+	position: absolute;
+	cursor: grab;
+	color: var(--color-gray-400);
+	font-size: 0.75rem;
+	width: 1.25rem;
+	height: 1.25rem;
+	justify-content: center;
+	z-index: 2;
+}
+
+milkdown-table-block .handle.cell-handle:hover {
+	color: var(--color-gray-600);
+}
+
+milkdown-table-block .button-group {
+	position: absolute;
+	background: white;
+	border: solid 1px var(--color-gray-200);
+	border-radius: 8px;
+	box-shadow: var(--shadow-md);
+	gap: 0.125rem;
+	padding: 0.25rem;
+	z-index: 10;
+}
+
+milkdown-table-block .button-group button {
+	--button-background: transparent;
+	--button-border-color: transparent;
+	--button-hover-background: var(--color-gray-100);
+	--padding-x: 0.25rem;
+	--padding-y: 0.125rem;
+
+	border-radius: 4px;
+	color: var(--color-gray-500);
+	font-size: 0.75rem;
+	line-height: 1;
+}
+
+milkdown-table-block .button-group button:hover {
+	color: var(--color-gray-700);
+}
+
+milkdown-table-block .handle.line-handle {
+	position: absolute;
+	z-index: 2;
+}
+
+milkdown-table-block .add-button {
+	--button-background: var(--color-primary-050);
+	--button-border-color: var(--color-primary-200);
+	--button-hover-background: var(--color-primary-100);
+
+	border-radius: 50%;
+	color: var(--color-primary-600);
+	font-size: 0.875rem;
+	width: 1.25rem;
+	height: 1.25rem;
+	justify-content: center;
+	padding: 0;
+	line-height: 1;
+}
+
+milkdown-table-block .add-button:hover {
+	--button-hover-border-color: var(--color-primary-400);
+}
+
+milkdown-table-block .drag-preview {
+	position: absolute;
+	opacity: 0.6;
+	pointer-events: none;
+	z-index: 20;
+}
+
+milkdown-table-block th.selectedCell,
+milkdown-table-block td.selectedCell {
+	background-color: var(--color-primary-050);
 }
 
 .milkdown .placeholder::before {

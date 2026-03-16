@@ -7,8 +7,10 @@
 		wrapInBlockquoteCommand,
 		wrapInBulletListCommand
 	} from '@milkdown/preset-commonmark';
+	import { insertTableCommand } from '@milkdown/preset-gfm';
 	import { _ } from 'svelte-i18n';
 	import ListBullet from '~icons/heroicons/list-bullet-20-solid';
+	import TableCells from '~icons/heroicons/table-cells-20-solid';
 	import tooltip from '$lib/attachments/tooltip';
 	import Quote from '~icons/flowbite/quote-solid';
 
@@ -59,6 +61,14 @@
 			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(wrapInBlockquoteCommand.key))}
 		>
 			<Quote />
+		</button>
+	</li>
+	<li>
+		<button
+			type="button"
+			onmousedown={onClick((ctx) => ctx.get(commandsCtx).call(insertTableCommand.key))}
+		>
+			<TableCells />
 		</button>
 	</li>
 </ul>

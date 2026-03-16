@@ -10,6 +10,7 @@
 	import { upload, uploadConfig } from '@milkdown/plugin-upload';
 	import { commonmark } from '@milkdown/preset-commonmark';
 	import { gfm } from '@milkdown/preset-gfm';
+	import { tableBlock, tableBlockConfig } from '@milkdown/components/table-block';
 	import { _ } from 'svelte-i18n';
 	import { placeholderConfig, placeholderPlugin } from '$lib/milkdown/placeholder';
 	import { toolbar, toolbarPluginView } from '$lib/milkdown/toolbar';
@@ -68,8 +69,35 @@
 					view: toolbarPluginView(ctx)
 				});
 			})
+			.config((ctx) => {
+				ctx.update(tableBlockConfig.key, (prev) => ({
+					...prev,
+					renderButton: (renderType: string) => {
+						switch (renderType) {
+							case 'add_row':
+							case 'add_col':
+								return '+';
+							case 'delete_row':
+							case 'delete_col':
+								return '×';
+							case 'align_col_left':
+								return '⫷';
+							case 'align_col_center':
+								return '⫶';
+							case 'align_col_right':
+								return '⫸';
+							case 'col_drag_handle':
+							case 'row_drag_handle':
+								return '⠿';
+							default:
+								return '';
+						}
+					}
+				}));
+			})
 			.use(commonmark)
 			.use(gfm)
+			.use(tableBlock)
 			.use(clipboard)
 			.use(history)
 			.use(listener)
