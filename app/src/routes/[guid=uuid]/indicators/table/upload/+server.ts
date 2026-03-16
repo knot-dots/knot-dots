@@ -1,4 +1,4 @@
-import { error, json, type RequestHandler } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import { parse } from 'csv-parse';
 import stream from 'node:stream';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
@@ -26,6 +26,7 @@ import {
 	getManyContainers,
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
+import type { RequestHandler } from './$types';
 
 function filterDefined(arr: (string | undefined)[]): string[] {
 	return arr.filter((x): x is string => x !== undefined);
