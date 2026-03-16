@@ -28,6 +28,7 @@
 	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import {
+		type ActualDataContainer,
 		type Container,
 		type GoalStatus,
 		type ProgramStatus,
@@ -37,6 +38,7 @@
 		type Status,
 		type TaskCategory,
 		type TaskStatus,
+		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
 		isContainerWithEditorialState,
@@ -52,13 +54,20 @@
 	import { ability } from '$lib/stores';
 
 	interface Props {
+		actualDataContainers?: ActualDataContainer[];
 		columns: string[];
 		container: Container;
 		dragEnabled?: boolean;
 		editable?: boolean;
 	}
 
-	let { columns, container = $bindable(), dragEnabled = false, editable = false }: Props = $props();
+	let {
+		actualDataContainers = [],
+		columns,
+		container = $bindable(),
+		dragEnabled = false,
+		editable = false
+	}: Props = $props();
 </script>
 
 <div class="cell cell--action">
@@ -292,6 +301,51 @@
 				bind:value={container.organizational_unit}
 			/>
 		</div>
+	{:else if col.startsWith('year:')}
+		{@const year = parseInt(col.split(':')[1], 10)}
+		{@const actualData = actualDataContainers.find(
+			(c) => isActualDataContainer(c) && c.payload.indicator === container.guid
+		)}
+		{@const values = actualData ? actualData.payload.values : []}
+		{@const idx = values.findIndex(([y]: [number, number]) => y === year)}
+		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+			{#if editable && $ability.can('update', container)}
+				<input
+					type="number"
+					step="any"
+					value={idx >= 0 ? values[idx][1] : ''}
+					onchange={async (e) => {
+						const input = e.currentTarget as HTMLInputElement;
+						const val = input.value;
+						if (!actualData) return;
+						const existingIdx = actualData.payload.values.findIndex(
+							([y]: [number, number]) => y === year
+						);
+						if (val === '' || val === null) {
+							if (existingIdx >= 0) {
+								actualData.payload.values.splice(existingIdx, 1);
+							}
+						} else {
+							const num = parseFloat(val);
+							if (!isNaN(num)) {
+								if (existingIdx >= 0) {
+									actualData.payload.values[existingIdx] = [year, num];
+								} else {
+									actualData.payload.values.push([year, num]);
+									actualData.payload.values.sort(
+										(a: [number, number], b: [number, number]) => a[0] - b[0]
+									);
+								}
+							}
+						}
+						const { default: saveContainer } = await import('$lib/client/saveContainer');
+						await saveContainer(actualData);
+					}}
+				/>
+			{:else if idx >= 0}
+				<span>{values[idx][1]}</span>
+			{/if}
+		</div>
 	{/if}
 {/each}
 
@@ -429,6 +483,7 @@
 	}
 
 	.cell > :global(input[type='number']) {
+		min-width: 4rem;
 		padding: 0;
 	}
 
