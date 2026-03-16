@@ -10,6 +10,8 @@ import {
 	containerOfType,
 	editorialState,
 	emptyContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	type NewContainer,
 	payloadTypes,
 	predicates
@@ -41,17 +43,37 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	const guid = params.guid!;
-	const organization = await locals.pool.connect(getContainerByGuid(guid));
+	let currentOrganizationGuid: string;
+	let currentOrganizationalUnitGuid: string | undefined;
+
+	try {
+		const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
+		if (
+			isOrganizationalUnitContainer(containerFromParams) &&
+			defineAbilityFor(locals.user).can('read', containerFromParams)
+		) {
+			currentOrganizationalUnitGuid = containerFromParams.guid;
+			currentOrganizationGuid = containerFromParams.organization;
+		} else if (
+			isOrganizationContainer(containerFromParams) &&
+			defineAbilityFor(locals.user).can('read', containerFromParams)
+		) {
+			currentOrganizationGuid = containerFromParams.guid;
+		} else {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		}
+	} catch {
+		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	}
 
 	if (
 		!defineAbilityFor(locals.user).can(
 			'create',
 			containerOfType(
 				payloadTypes.enum.indicator_template,
-				organization.guid,
-				null,
-				organization.guid,
+				currentOrganizationGuid,
+				currentOrganizationalUnitGuid ?? null,
+				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 				env.PUBLIC_KC_REALM
 			)
 		)
@@ -61,14 +83,14 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	const organizationalUnits = await locals.pool.connect(
 		getManyOrganizationalUnitContainers({
-			include: { organization: organization.guid }
+			include: { organization: currentOrganizationGuid }
 		})
 	);
 
 	// Fetch existing indicator titles (both old and new system)
 	const [existingIndicators, existingTemplates] = await Promise.all([
 		locals.pool.connect(
-			getManyContainers([organization.guid], { type: [payloadTypes.enum.indicator] }, 'alpha')
+			getManyContainers([currentOrganizationGuid], { type: [payloadTypes.enum.indicator] }, 'alpha')
 		),
 		locals.pool.connect(
 			getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
@@ -155,7 +177,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				// Resolve organizational unit by name
 				const orgUnit = fields.organizationalUnit
 					? organizationalUnits.find(({ payload }) => payload.name === fields.organizationalUnit)
-					: undefined;
+					: organizationalUnits.find(({ guid }) => guid === currentOrganizationalUnitGuid);
 
 				// Build payload fields, translating labels back to enum keys
 				const indicatorCategory = fields.indicatorCategory
@@ -213,8 +235,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				containers.push({
 					title,
 					indicator: emptyContainer.parse({
-						managed_by: orgUnit?.guid ?? organization.guid,
-						organization: organization.guid,
+						managed_by: orgUnit?.guid ?? currentOrganizationGuid,
+						organization: currentOrganizationGuid,
 						organizational_unit: orgUnit?.guid ?? null,
 						payload: {
 							title,
@@ -263,8 +285,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			if (yearValues.length > 0) {
 				const actualDataContainer = containerOfType(
 					payloadTypes.enum.actual_data,
-					organization.guid,
-					indicator.organizational_unit ?? null,
+					indicator.organization,
+					indicator.organizational_unit,
 					indicator.managed_by,
 					env.PUBLIC_KC_REALM
 				) as NewContainer & { payload: ActualDataContainer['payload'] };
