@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'measures' });
+
 test.describe('Measure monitoring', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

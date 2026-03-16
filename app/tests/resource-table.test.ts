@@ -1,5 +1,7 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'resource-table' });
+
 test.describe('Resource V2 Table', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

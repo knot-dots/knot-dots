@@ -23,7 +23,7 @@ const config: PlaywrightTestConfig = {
 			dependencies: ['authenticate users']
 		}
 	],
-	reporter: process.env.CI ? 'blob' : 'list',
+	reporter: process.env.CI ? [['blob'], ['github'], ['list']] : [['list']],
 	retries: process.env.CI ? 1 : 0,
 	testDir: 'tests',
 	use: {

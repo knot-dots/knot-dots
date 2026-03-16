@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'overlay' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test('objects can be edited sequentially', async ({ dotsBoard, testOrganization }) => {

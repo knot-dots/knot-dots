@@ -1,6 +1,8 @@
 import { expect, test } from './fixtures';
 import { Catalog } from './catalogs';
 
+test.use({ suiteId: 'help-workspace' });
+
 test.describe('Admin users', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 

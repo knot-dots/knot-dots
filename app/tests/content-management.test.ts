@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { expect, test } from './fixtures';
 
+test.use({ suiteId: 'content-management' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test('stage', async ({ page, testOrganization }) => {

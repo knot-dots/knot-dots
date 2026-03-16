@@ -47,6 +47,7 @@ type MyFixtures = {
 };
 
 type MyWorkerFixtures = {
+	suiteId: string;
 	adminContext: BrowserContext;
 	defaultOrganization: OrganizationContainer;
 	testOrganization: OrganizationContainer;
@@ -87,7 +88,8 @@ async function deleteContainer(context: BrowserContext, container: AnyContainer)
 	const response = await context.request.get(`/container/${container.guid}`);
 
 	if (!response.ok()) {
-		console.log(`Failed to fetch container for deletion: ${response.status()}`);
+		console.log(`Failed to fetch container ${container.guid} for deletion: ${response.status()}`);
+		return;
 	}
 
 	const currentVersion = await response.json();
@@ -115,8 +117,10 @@ async function inviteUser(
 }
 
 export const test = base.extend<MyFixtures, MyWorkerFixtures>({
+	suiteId: ['not-specified', { scope: 'worker', option: true }],
 	adminContext: [
-		async ({ browser }, use, workerInfo) => {
+		async ({ browser, suiteId }, use, workerInfo) => {
+			void suiteId; // declares dependency to force a new worker per test file
 			const adminContext = await browser.newContext({
 				baseURL: workerInfo.project.use.baseURL,
 				storageState: 'tests/.auth/admin.json'
