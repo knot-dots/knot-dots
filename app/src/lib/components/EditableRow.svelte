@@ -371,6 +371,7 @@
 					compact
 					editable={editable && $ability.can('update', container)}
 					options={categoryOptions?.[col] ?? []}
+					showSelectedIcons={false}
 					bind:value={container.payload.category[col]}
 				/>
 			{/if}

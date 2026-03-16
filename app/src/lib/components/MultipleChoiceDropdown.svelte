@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
@@ -10,6 +11,7 @@
 	interface Props {
 		compact?: boolean;
 		iconOnly?: boolean;
+		showSelectedIcons?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];
 		options: Array<{
@@ -24,6 +26,7 @@
 	let {
 		compact = false,
 		iconOnly = false,
+		showSelectedIcons = true,
 		labelledBy,
 		offset = [0, 4],
 		options,
@@ -74,7 +77,7 @@
 			option: Option | SubOption;
 			isChild: boolean;
 		}> = [];
-		const groupedSubValues = new Set<string>();
+		const groupedSubValues = new SvelteSet<string>();
 
 		for (const option of options) {
 			if (!value.includes(option.value)) continue;
@@ -112,25 +115,25 @@
 		<span
 			class="selected"
 			class:truncated={compact || iconOnly}
-			class:selected--icon-only={iconOnly}
+			class:selected--icon-only={iconOnly && showSelectedIcons}
 		>
 			{#each selectedEntries as entry (entry.option.value)}
 				{@const iconSrc = iconURL(entry.option.icon)}
 				<span
 					class="value"
 					class:value--compact={compact}
-					class:value--icon-only={iconOnly}
+					class:value--icon-only={iconOnly && showSelectedIcons}
 					class:value--child={entry.isChild}
 				>
-					{#if iconSrc}
+					{#if showSelectedIcons && iconSrc}
 						<img
 							alt={entry.option.label}
 							class="selected-icon"
-							class:selected-icon--large={iconOnly}
+							class:selected-icon--large={iconOnly && showSelectedIcons}
 							src={iconSrc}
 						/>
 					{/if}
-					{#if !(iconOnly && iconSrc)}
+					{#if !(iconOnly && showSelectedIcons && iconSrc)}
 						<span class="truncated">{entry.option.label}</span>
 					{/if}
 				</span>
