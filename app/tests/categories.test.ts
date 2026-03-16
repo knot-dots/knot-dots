@@ -71,7 +71,5 @@ test.describe('Categories', () => {
 		await categoriesBoard.page.waitForTimeout(100);
 		await categoriesBoard.column('Categories').card(sharedCategoryTitle).click();
 		await expect(categoriesBoard.overlay.title).toHaveText(sharedCategoryTitle);
-		await categoriesBoard.overlay.editModeToggle.check();
-		await categoriesBoard.overlay.delete();
 	});
 });

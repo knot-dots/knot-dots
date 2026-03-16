@@ -88,7 +88,8 @@ async function deleteContainer(context: BrowserContext, container: AnyContainer)
 	const response = await context.request.get(`/container/${container.guid}`);
 
 	if (!response.ok()) {
-		console.log(`Failed to fetch container for deletion: ${response.status()}`);
+		console.log(`Failed to fetch container ${container.guid} for deletion: ${response.status()}`);
+		return;
 	}
 
 	const currentVersion = await response.json();
