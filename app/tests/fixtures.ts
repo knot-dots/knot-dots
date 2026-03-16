@@ -32,7 +32,6 @@ import { IndicatorCatalog, ResourceCatalog } from './catalogs';
 import { LandingPage } from './pages';
 
 type MyFixtures = {
-	suiteId: string;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
@@ -48,6 +47,7 @@ type MyFixtures = {
 };
 
 type MyWorkerFixtures = {
+	suiteId: string;
 	adminContext: BrowserContext;
 	defaultOrganization: OrganizationContainer;
 	testOrganization: OrganizationContainer;
@@ -117,9 +117,10 @@ async function inviteUser(
 }
 
 export const test = base.extend<MyFixtures, MyWorkerFixtures>({
-	suiteId: ['not-specified', { option: true }],
+	suiteId: ['not-specified', { scope: 'worker', option: true }],
 	adminContext: [
-		async ({ browser }, use, workerInfo) => {
+		async ({ browser, suiteId }, use, workerInfo) => {
+			void suiteId; // declares dependency to force a new worker per test file
 			const adminContext = await browser.newContext({
 				baseURL: workerInfo.project.use.baseURL,
 				storageState: 'tests/.auth/admin.json'
