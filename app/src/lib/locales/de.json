@@ -216,6 +216,7 @@
 	"home": "Startseite",
 	"homepage": "Homepage",
 	"image": "Bild",
+	"inline_help": "Inline-Hilfe",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",
 	"import.error.missing": "Die CSV-Datei fehlt",

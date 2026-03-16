@@ -59,7 +59,8 @@
 		isTaskContainer,
 		payloadTypes,
 		predicates,
-		resourceDataTypes
+		resourceDataTypes,
+		textVariants
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
@@ -242,6 +243,12 @@
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
+			{
+				icon: Text,
+				label: $_('inline_help'),
+				textVariant: textVariants.enum.inline_help,
+				value: payloadTypes.enum.text
+			},
 			...(mayAddSummary
 				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
 				: []),
@@ -447,12 +454,16 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textVariant ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
 							<button
 								use:menu.item={{
-									value: { type: option.value, resourceDataType: option.resourceDataType }
+									value: {
+										type: option.value,
+										resourceDataType: option.resourceDataType,
+										textVariant: option.textVariant
+									}
 								}}
 								type="button"
 							>

@@ -216,6 +216,7 @@
 	"home": "Home screen",
 	"homepage": "Homepage",
 	"image": "Image",
+	"inline_help": "Inline help",
 	"import.csv_file": "CSV file",
 	"import.error.invalid_record": "Error in line {line}: {errors}",
 	"import.error.missing": "CSV file is required",

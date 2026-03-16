@@ -1382,6 +1382,11 @@ h4.details-heading {
 	--badge-color: var(--color-yellow-700);
 }
 
+.badge.badge--inline-help {
+	--badge-background-color: #fdf6b2;
+	--badge-color: #723b13;
+}
+
 .badge.badge--amber {
 	--badge-background-color: var(--color-amber-100);
 	--badge-color: var(--color-amber-700);

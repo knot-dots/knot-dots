@@ -12,6 +12,7 @@
 		isChapterContainer,
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
+		isTextContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates
@@ -86,6 +87,10 @@
 				(newContainer.payload as { resourceDataType?: string }).resourceDataType = (
 					event as CustomEvent
 				).detail.selected.resourceDataType;
+			}
+
+			if (isTextContainer(newContainer) && (event as CustomEvent).detail.selected.textVariant) {
+				newContainer.payload.variant = (event as CustomEvent).detail.selected.textVariant;
 			}
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
