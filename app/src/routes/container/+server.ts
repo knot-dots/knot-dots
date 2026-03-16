@@ -3,6 +3,7 @@ import type { CommonQueryMethods, DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	audience,
@@ -30,6 +31,7 @@ import {
 	programTypes,
 	type Relation,
 	type ReportContainer,
+	textVariants,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -589,6 +591,15 @@ export const POST = (async ({ locals, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		const featureDecisions = createFeatureDecisions(locals.features ?? []);
+		if (
+			parseResult.data.payload.type === payloadTypes.enum.text &&
+			parseResult.data.payload.variant === textVariants.enum.inline_help &&
+			!featureDecisions.useInlineHelp()
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.unauthorized') });
+		}
+
 		const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
 			connection.transaction(async (txConnection) => {
 				const createdContainer = await createContainer({

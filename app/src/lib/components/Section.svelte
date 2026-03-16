@@ -81,8 +81,10 @@
 
 	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 	let isInlineHelpSection = $derived(isInlineHelpTextContainer(container));
+	let useInlineHelp = $derived(createFeatureDecisions(page.data.features).useInlineHelp());
 	let showSection = $derived(
-		!isInlineHelpSection || $applicationState.containerDetailView.editable
+		(!isInlineHelpSection || $applicationState.containerDetailView.editable) &&
+			(!isInlineHelpSection || useInlineHelp)
 	);
 
 	const handleSubmit = autoSave(2000);

@@ -2,7 +2,8 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { etag, modifiedContainer, predicates } from '$lib/models';
+import { createFeatureDecisions } from '$lib/features';
+import { etag, modifiedContainer, payloadTypes, predicates, textVariants } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getContainerByGuid,
@@ -56,6 +57,15 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		const featureDecisions = createFeatureDecisions(locals.features ?? []);
+		if (
+			parseResult.data.payload.type === payloadTypes.enum.text &&
+			parseResult.data.payload.variant === textVariants.enum.inline_help &&
+			!featureDecisions.useInlineHelp()
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.unauthorized') });
+		}
+
 		// Auto-transfer managed_by when organizational_unit changes.
 		// Rules:
 		// 1. If organizational_unit changed from previous value to a new non-null value

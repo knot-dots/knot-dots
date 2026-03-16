@@ -235,6 +235,8 @@
 
 	let mayAddImage = $derived(createFeatureDecisions(page.data.features).useImage());
 
+	let mayAddInlineHelp = $derived(createFeatureDecisions(page.data.features).useInlineHelp());
+
 	let mayAddSummary = $derived(
 		isContainerWithSummary(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
@@ -243,12 +245,16 @@
 	let options = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
-			{
-				icon: Text,
-				label: $_('inline_help'),
-				textVariant: textVariants.enum.inline_help,
-				value: payloadTypes.enum.text
-			},
+			...(mayAddInlineHelp
+				? [
+						{
+							icon: Text,
+							label: $_('inline_help'),
+							textVariant: textVariants.enum.inline_help,
+							value: payloadTypes.enum.text
+						}
+					]
+				: []),
 			...(mayAddSummary
 				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
 				: []),

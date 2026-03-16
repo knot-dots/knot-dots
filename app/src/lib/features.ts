@@ -10,6 +10,7 @@ export const featureFlags = new Map([
 			'ResourceV2',
 			'CustomCategories',
 			'HelpWorkspace',
+			'InlineHelp',
 			'IOOI',
 			'EditorialPages',
 			'FullScreenRoutes',
@@ -110,6 +111,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useHelpWorkspace() {
 			return features.includes('HelpWorkspace');
+		},
+		useInlineHelp() {
+			return features.includes('InlineHelp');
 		}
 	};
 }
