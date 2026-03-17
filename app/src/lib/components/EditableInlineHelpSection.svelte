@@ -47,15 +47,6 @@
 		margin-bottom: 0.5rem;
 	}
 
-	.inline-help-content :global(.markdown-body),
-	.inline-help-content :global(.markdown-body p),
-	.inline-help-content :global(.markdown-body li) {
-		color: var(--color-gray-600);
-		font-size: 1rem;
-		font-weight: 500;
-		line-height: 1.5;
-	}
-
 	.inline-help-content :global(.markdown-body ul) {
 		margin: 0;
 		padding-left: 1.5rem;
