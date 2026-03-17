@@ -312,7 +312,7 @@
 		</button>
 	{/if}
 
-	{#if createFeatureDecisions(page.data.features).useCompare() && container && isReportContainer(container)}
+	{#if container && isReportContainer(container)}
 		<button
 			class="dropdown-button dropdown-button--command"
 			type="button"

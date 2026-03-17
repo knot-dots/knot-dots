@@ -9,12 +9,10 @@ export const featureFlags = new Map([
 			'ContentPartner',
 			'ResourceV2',
 			'CustomCategories',
-			'HelpWorkspace',
 			'IOOI',
 			'EditorialPages',
 			'FullScreenRoutes',
-			'SubMeasures',
-			'Compare'
+			'SubMeasures'
 		] as const
 	],
 	[
@@ -108,12 +106,6 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useFullScreenRoutes() {
 			return features.includes('FullScreenRoutes');
-		},
-		useCompare() {
-			return features.includes('Compare');
-		},
-		useHelpWorkspace() {
-			return features.includes('HelpWorkspace');
 		}
 	};
 }
