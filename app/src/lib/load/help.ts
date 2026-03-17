@@ -1,3 +1,5 @@
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { payloadTypes } from '$lib/models';
 import { getManyContainers } from '$lib/server/db';
@@ -7,6 +9,10 @@ export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
 	const { currentOrganization } = await parent();
+
+	if (!currentOrganization.payload.default) {
+		error(404, unwrapFunctionStore(_)('error.not_found'));
+	}
 
 	const containers = await locals.pool.connect(
 		getManyContainers(

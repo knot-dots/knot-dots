@@ -6,11 +6,11 @@ test.use({ suiteId: 'help-workspace' });
 test.describe('Admin users', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('create, edit and delete help object', async ({ page, testOrganization }) => {
+	test('create, edit and delete help object', async ({ page, defaultOrganization }) => {
 		const catalog = new Catalog(page);
 
 		// Navigate to the help catalog
-		await page.goto(`/${testOrganization.guid}/help/catalog`);
+		await page.goto(`/${defaultOrganization.guid}/help/catalog`);
 		await catalog.header.editModeToggle.check();
 
 		// Create a help object
@@ -46,12 +46,9 @@ test.describe('Admin users', () => {
 test.describe('Regular users', () => {
 	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('cannot see Help workspace even when feature flag is enabled', async ({
-		page,
-		testOrganization
-	}) => {
+	test('cannot see help workspace', async ({ page, defaultOrganization }) => {
 		// Navigate to the organization's main page
-		await page.goto(`/${testOrganization.guid}/all/catalog`);
+		await page.goto(`/${defaultOrganization.guid}/all/catalog`);
 
 		// Open the workspace menu by clicking the dropdown button
 		await page.getByRole('button', { name: 'All', exact: true }).click();
@@ -64,7 +61,7 @@ test.describe('Regular users', () => {
 
 		// Also verify that directly navigating to the help catalog page
 		// doesn't show the create button since Bob lacks the permission
-		await page.goto(`/${testOrganization.guid}/help/catalog`);
+		await page.goto(`/${defaultOrganization.guid}/help/catalog`);
 
 		// Bob should not see the "Help" creation button
 		await expect(

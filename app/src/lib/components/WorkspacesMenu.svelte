@@ -96,7 +96,8 @@
 					}
 				}
 			: undefined),
-		...($ability.can('create', payloadTypes.enum.help)
+		...($ability.can('create', payloadTypes.enum.help) &&
+		page.data.currentOrganization.payload.default
 			? {
 					help: {
 						catalog: '/help/catalog'
@@ -118,7 +119,10 @@
 			...(featureDecisions.useResourceWorkspace()
 				? { resources: '/resources/catalog' }
 				: undefined),
-			...($ability.can('create', payloadTypes.enum.help) ? { help: '/help/catalog' } : undefined)
+			...($ability.can('create', payloadTypes.enum.help) &&
+			page.data.currentOrganization.payload.default
+				? { help: '/help/catalog' }
+				: undefined)
 		},
 		level: {
 			all: '/all/level',
@@ -280,7 +284,8 @@
 					}
 				]
 			: []),
-		...($ability.can('create', payloadTypes.enum.help)
+		...($ability.can('create', payloadTypes.enum.help) &&
+		page.data.currentOrganization.payload.default
 			? [
 					{
 						exists: true,
