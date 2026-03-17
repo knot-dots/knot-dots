@@ -64,5 +64,7 @@
 	.badge.badge--inline-help {
 		--badge-background-color: var(--color-yellow-100);
 		--badge-color: var(--color-yellow-800);
+
+		margin: 0.375rem 0 1rem 0;
 	}
 </style>
