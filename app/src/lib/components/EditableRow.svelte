@@ -311,8 +311,8 @@
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if editable && $ability.can('update', container)}
 				<input
-					type="number"
-					step="any"
+					type="text"
+					inputmode="numeric"
 					value={idx >= 0 ? values[idx][1] : ''}
 					onchange={async (e) => {
 						const input = e.currentTarget as HTMLInputElement;
@@ -482,9 +482,10 @@
 		background-color: var(--color-gray-100);
 	}
 
-	.cell > :global(input[type='number']) {
-		min-width: 4rem;
+	.cell > :global(input[type='text'][inputmode='numeric']) {
+		field-sizing: content;
 		padding: 0;
+		text-align: right;
 	}
 
 	.cell > :global(span),
