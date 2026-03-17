@@ -60,4 +60,9 @@
 		margin: 0;
 		padding-left: 1.5rem;
 	}
+
+	.badge.badge--inline-help {
+		--badge-background-color: var(--color-yellow-100);
+		--badge-color: var(--color-yellow-800);
+	}
 </style>
