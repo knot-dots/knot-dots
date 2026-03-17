@@ -20,11 +20,40 @@
 	import {
 		isActualDataContainer,
 		isIndicatorContainer,
-		isIndicatorTemplateContainer
+		isIndicatorTemplateContainer,
+		containerOfType,
+		payloadTypes
 	} from '$lib/models';
+	import { ability } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let canUploadCsv = $derived(
+		$ability.can(
+			'create',
+			containerOfType(
+				payloadTypes.enum.indicator_template,
+				data.container.organization,
+				data.container.organizational_unit,
+				data.container.managed_by,
+				''
+			)
+		)
+	);
+
+	let canDownloadCsv = $derived(
+		$ability.can(
+			'download-csv',
+			containerOfType(
+				payloadTypes.enum.indicator_template,
+				data.container.organization,
+				data.container.organizational_unit,
+				data.container.managed_by,
+				''
+			)
+		)
+	);
 
 	// svelte-ignore non_reactive_update
 	let uploadDialog: HTMLDialogElement;
@@ -160,14 +189,18 @@
 
 <IndicatorsPage {data}>
 	{#snippet actions()}
-		<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>
-			<UploadIcon />
-			{$_('indicator_csv.upload')}
-		</button>
-		<button class="button-xs" type="button" onclick={handleDownload}>
-			<DownloadIcon />
-			{$_('indicator_csv.download')}
-		</button>
+		{#if canUploadCsv}
+			<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>
+				<UploadIcon />
+				{$_('indicator_csv.upload')}
+			</button>
+		{/if}
+		{#if canDownloadCsv}
+			<button class="button-xs" type="button" onclick={handleDownload}>
+				<DownloadIcon />
+				{$_('indicator_csv.download')}
+			</button>
+		{/if}
 	{/snippet}
 	<Table {columns} rows={filteredRows} {actualDataContainers} />
 	<Help slug="indicators-table" />
