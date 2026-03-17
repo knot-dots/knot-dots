@@ -82,10 +82,6 @@
 	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 	let isInlineHelpSection = $derived(isInlineHelpTextContainer(container));
 	let useInlineHelp = $derived(createFeatureDecisions(page.data.features).useInlineHelp());
-	let showSection = $derived(
-		(!isInlineHelpSection || $applicationState.containerDetailView.editable) &&
-			(!isInlineHelpSection || useInlineHelp)
-	);
 
 	const handleSubmit = autoSave(2000);
 
@@ -117,210 +113,208 @@
 	}
 </script>
 
-{#if showSection}
-	<section class="details-section" class:details-section--inline-help={isInlineHelpSection}>
-		{#if $applicationState.containerDetailView.editable}
-			<DraggableActionBar>
-				{#snippet actions()}
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<AddSectionMenu
-							bind:relatedContainers
-							bind:parentContainer
-							compact
-							{handleAddSection}
-						/>
-					{/if}
-				{/snippet}
-			</DraggableActionBar>
-		{/if}
+<section
+	class="details-section"
+	class:details-section--inline-help={isInlineHelpSection &&
+		useInlineHelp &&
+		$applicationState.containerDetailView.editable}
+>
+	{#if $applicationState.containerDetailView.editable}
+		<DraggableActionBar>
+			{#snippet actions()}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
+				{/if}
+			{/snippet}
+		</DraggableActionBar>
+	{/if}
 
-		<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
-			{#if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
-				<ReadonlyAdministrativeAreaBasicDataSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isChapterContainer(container)}
-				<EditableChapterSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-				/>
-			{:else if isCustomCollectionContainer(container)}
-				<EditableCustomCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
-				<EditableEffectCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isFileCollectionContainer(container)}
-				<EditableFileCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isGoalCollectionContainer(container)}
-				<EditableGoalCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isContentPartnerCollectionContainer(container)}
-				<EditableContentPartnerCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isContentPartnerContainer(container)}
-				<EditableContentPartnerSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isIndicatorCollectionContainer(container)}
-				<EditableIndicatorCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isMapContainer(container) && isOrganizationalUnitContainer(parentContainer)}
-				<EditableMapSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isMeasureCollectionContainer(container)}
-				<EditableMeasureCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
-				<EditableObjectiveCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isProgramCollectionContainer(container)}
-				<EditableProgramCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
-				<EditableProgressSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
-				<EditableResourceDataCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isResourceCollectionContainer(container)}
-				<EditableResourceCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
-				<EditableSummarySection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-				/>
-			{:else if isTaskCollectionContainer(container)}
-				<EditableTaskCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isInlineHelpSection}
-				<EditableInlineHelpSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable && !isShadowItem}
-				/>
-			{:else if isTextContainer(container)}
-				<EditableTextSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable && !isShadowItem}
-					{heading}
-				/>
-			{:else if isTeaserLikeContainer(container)}
-				<EditableTeaserSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isImageContainer(container)}
-				<EditableImageSection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					{heading}
-				/>
-			{:else if isTeaserCollectionContainer(container)}
-				<EditableTeaserCollection
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					editable={$applicationState.containerDetailView.editable}
-					fetchDisabled={isShadowItem}
-					{heading}
-				/>
-			{/if}
-		</form>
-	</section>
-{/if}
+	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
+		{#if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+			<ReadonlyAdministrativeAreaBasicDataSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isChapterContainer(container)}
+			<EditableChapterSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isCustomCollectionContainer(container)}
+			<EditableCustomCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
+			<EditableEffectCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isFileCollectionContainer(container)}
+			<EditableFileCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isGoalCollectionContainer(container)}
+			<EditableGoalCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isContentPartnerCollectionContainer(container)}
+			<EditableContentPartnerCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isContentPartnerContainer(container)}
+			<EditableContentPartnerSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isIndicatorCollectionContainer(container)}
+			<EditableIndicatorCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isMapContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+			<EditableMapSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isMeasureCollectionContainer(container)}
+			<EditableMeasureCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
+			<EditableObjectiveCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isProgramCollectionContainer(container)}
+			<EditableProgramCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
+			<EditableProgressSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
+			<EditableResourceDataCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isResourceCollectionContainer(container)}
+			<EditableResourceCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
+			<EditableSummarySection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+			/>
+		{:else if isTaskCollectionContainer(container)}
+			<EditableTaskCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isInlineHelpTextContainer(container) && useInlineHelp && $applicationState.containerDetailView.editable}
+			<EditableInlineHelpSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={!isShadowItem}
+			/>
+		{:else if isTextContainer(container) && !isInlineHelpSection}
+			<EditableTextSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable && !isShadowItem}
+				{heading}
+			/>
+		{:else if isTeaserLikeContainer(container)}
+			<EditableTeaserSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isImageContainer(container)}
+			<EditableImageSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isTeaserCollectionContainer(container)}
+			<EditableTeaserCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				fetchDisabled={isShadowItem}
+				{heading}
+			/>
+		{/if}
+	</form>
+</section>
 
 <style>
 	.details-section {

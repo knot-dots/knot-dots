@@ -3,11 +3,11 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { type AnyContainer, isTextContainer } from '$lib/models';
+	import type { AnyContainer, TextContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: TextContainer;
 		editable?: boolean;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
@@ -21,26 +21,24 @@
 	}: Props = $props();
 </script>
 
-{#if isTextContainer(container)}
-	<header>
-		<span class="badge badge--inline-help">{$_('inline_help')}</span>
-		{#if editable}
-			<ul class="inline-actions is-visible-on-hover">
-				<li>
-					<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
-				</li>
-			</ul>
-		{/if}
-	</header>
+<header>
+	<span class="badge badge--inline-help">{$_('inline_help')}</span>
+	{#if editable}
+		<ul class="inline-actions is-visible-on-hover">
+			<li>
+				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+			</li>
+		</ul>
+	{/if}
+</header>
 
-	<div class="inline-help-content">
-		{#if editable && $ability.can('update', container)}
-			<Editor bind:value={container.payload.body} />
-		{:else}
-			<Viewer value={container.payload.body} />
-		{/if}
-	</div>
-{/if}
+<div class="inline-help-content">
+	{#if editable && $ability.can('update', container)}
+		<Editor bind:value={container.payload.body} />
+	{:else}
+		<Viewer value={container.payload.body} />
+	{/if}
+</div>
 
 <style>
 	header {
