@@ -165,6 +165,7 @@
 				uploadSuccess = true;
 				uploadErrors = [];
 				void invalidateAll();
+				setTimeout(() => uploadDialog.close(), 1500);
 			} else if (body?.errors) {
 				uploadErrors = body.errors;
 			}

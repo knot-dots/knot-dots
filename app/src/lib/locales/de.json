@@ -287,7 +287,7 @@
 	"indicator_csv.error.upload_failed": "Der Upload ist fehlgeschlagen. Bitte versuchen Sie es erneut.",
 	"indicator_csv.upload": "CSV-Upload",
 	"indicator_csv.upload_description": "Laden Sie eine CSV-Datei mit Indikatordaten hoch. Das Format muss dem der heruntergeladenen CSV-Datei entsprechen.",
-	"indicator_csv.upload_success": "Die Indikatoren wurden erfolgreich importiert.",
+	"indicator_csv.upload_success": "Die Indikatoren wurden erfolgreich importiert. Vorhandene Indikatoren wurden aktualisiert.",
 	"indicator_category": "Indikatoren-Set",
 	"indicator_category.custom": "Eigene",
 	"indicator_category.fgk": "FGK-Kernindikatoren",

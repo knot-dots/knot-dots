@@ -287,7 +287,7 @@
 	"indicator_csv.error.upload_failed": "Upload failed. Please try again.",
 	"indicator_csv.upload": "CSV Upload",
 	"indicator_csv.upload_description": "Upload a CSV file with indicator data. The format must match the downloaded CSV file.",
-	"indicator_csv.upload_success": "Indicators were imported successfully.",
+	"indicator_csv.upload_success": "Indicators were imported successfully. Existing indicators were updated.",
 	"indicator_category": "Category",
 	"indicator_category.custom": "Custom",
 	"indicator_category.fgk": "FGK core indicators",
