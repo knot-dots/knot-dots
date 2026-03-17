@@ -1,26 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { applicationState } from '$lib/stores';
-
-	async function handleChange(event: Event) {
-		const checked = (event.currentTarget as HTMLInputElement).checked;
-
-		applicationState.set({
-			...$applicationState,
-			containerDetailView: {
-				...$applicationState.containerDetailView,
-				editable: checked
-			}
-		});
-	}
 </script>
 
 <label>
 	<input
 		class="toggle"
 		type="checkbox"
-		checked={$applicationState.containerDetailView.editable}
-		onchange={handleChange}
+		bind:checked={$applicationState.containerDetailView.editable}
 		value={$applicationState.containerDetailView.editable ? $_('on') : $_('off')}
 	/>
 	<span class="is-visually-hidden">{$_('edit_mode')}</span>
