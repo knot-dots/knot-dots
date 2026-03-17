@@ -29,7 +29,7 @@
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import { boards, payloadTypes } from '$lib/models';
-	import { ability, mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 
 	const featureDecisions = createFeatureDecisions(page.data.features);
 
@@ -96,7 +96,7 @@
 					}
 				}
 			: undefined),
-		...($ability.can('create', payloadTypes.enum.help) &&
+		...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization.guid) &&
 		page.data.currentOrganization.payload.default
 			? {
 					help: {
@@ -119,7 +119,7 @@
 			...(featureDecisions.useResourceWorkspace()
 				? { resources: '/resources/catalog' }
 				: undefined),
-			...($ability.can('create', payloadTypes.enum.help) &&
+			...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization.guid) &&
 			page.data.currentOrganization.payload.default
 				? { help: '/help/catalog' }
 				: undefined)
@@ -284,7 +284,7 @@
 					}
 				]
 			: []),
-		...($ability.can('create', payloadTypes.enum.help) &&
+		...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization.guid) &&
 		page.data.currentOrganization.payload.default
 			? [
 					{

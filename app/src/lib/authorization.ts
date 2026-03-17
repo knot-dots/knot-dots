@@ -69,6 +69,9 @@ export default function defineAbilityFor(user: User) {
 		);
 		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
+		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
+			organization: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can('update', payloadTypes.enum.organization, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
