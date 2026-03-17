@@ -60,7 +60,7 @@
 		payloadTypes,
 		predicates,
 		resourceDataTypes,
-		textVariants
+		textType
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
@@ -250,7 +250,7 @@
 						{
 							icon: Text,
 							label: $_('inline_help'),
-							textVariant: textVariants.enum.inline_help,
+							textType: textType.enum.inline_help,
 							value: payloadTypes.enum.text
 						}
 					]
@@ -460,7 +460,7 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textVariant ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
 							<button
@@ -468,7 +468,7 @@
 									value: {
 										type: option.value,
 										resourceDataType: option.resourceDataType,
-										textVariant: option.textVariant
+										textType: option.textType
 									}
 								}}
 								type="button"

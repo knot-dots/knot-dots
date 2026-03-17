@@ -31,7 +31,7 @@ import {
 	programTypes,
 	type Relation,
 	type ReportContainer,
-	textVariants,
+	textType,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
@@ -594,7 +594,7 @@ export const POST = (async ({ locals, request }) => {
 		const featureDecisions = createFeatureDecisions(locals.features ?? []);
 		if (
 			parseResult.data.payload.type === payloadTypes.enum.text &&
-			parseResult.data.payload.variant === textVariants.enum.inline_help &&
+			parseResult.data.payload.textType === textType.enum.inline_help &&
 			!featureDecisions.useInlineHelp()
 		) {
 			error(403, { message: unwrapFunctionStore(_)('error.unauthorized') });

@@ -3,7 +3,7 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
-import { etag, modifiedContainer, payloadTypes, predicates, textVariants } from '$lib/models';
+import { etag, modifiedContainer, payloadTypes, predicates, textType } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getContainerByGuid,
@@ -60,7 +60,7 @@ export const POST = (async ({ locals, params, request }) => {
 		const featureDecisions = createFeatureDecisions(locals.features ?? []);
 		if (
 			parseResult.data.payload.type === payloadTypes.enum.text &&
-			parseResult.data.payload.variant === textVariants.enum.inline_help &&
+			parseResult.data.payload.textType === textType.enum.inline_help &&
 			!featureDecisions.useInlineHelp()
 		) {
 			error(403, { message: unwrapFunctionStore(_)('error.unauthorized') });

@@ -89,8 +89,8 @@
 				).detail.selected.resourceDataType;
 			}
 
-			if (isTextContainer(newContainer) && (event as CustomEvent).detail.selected.textVariant) {
-				newContainer.payload.variant = (event as CustomEvent).detail.selected.textVariant;
+			if (isTextContainer(newContainer) && (event as CustomEvent).detail.selected.textType) {
+				newContainer.payload.textType = (event as CustomEvent).detail.selected.textType;
 			}
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
