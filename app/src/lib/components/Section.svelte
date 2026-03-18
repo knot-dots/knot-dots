@@ -81,7 +81,6 @@
 
 	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 	let isInlineHelpSection = $derived(isInlineHelpTextContainer(container));
-	let useInlineHelp = $derived(createFeatureDecisions(page.data.features).useInlineHelp());
 
 	const handleSubmit = autoSave(2000);
 
@@ -116,7 +115,6 @@
 <section
 	class="details-section"
 	class:details-section--inline-help={isInlineHelpSection &&
-		useInlineHelp &&
 		$applicationState.containerDetailView.editable}
 >
 	{#if $applicationState.containerDetailView.editable}
@@ -272,7 +270,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isInlineHelpTextContainer(container) && useInlineHelp && $applicationState.containerDetailView.editable}
+		{:else if isInlineHelpTextContainer(container) && $applicationState.containerDetailView.editable}
 			<EditableInlineHelpSection
 				bind:container
 				bind:parentContainer
