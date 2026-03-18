@@ -339,14 +339,6 @@
 		min-height: 0;
 	}
 
-	.catalog {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-		min-height: 0;
-		overflow: auto;
-	}
-
 	.catalog li.disabled {
 		opacity: 0.5;
 		pointer-events: none;

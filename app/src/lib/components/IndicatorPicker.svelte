@@ -246,11 +246,7 @@
 	}
 
 	.catalog {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 		margin-top: 1rem;
-		overflow: auto;
 	}
 
 	.sort-option {

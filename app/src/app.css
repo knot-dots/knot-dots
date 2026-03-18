@@ -385,6 +385,14 @@ progress::-moz-progress-bar {
 	background-color: var(--color, var(--color-primary-600));
 }
 
+/* Catalogs */
+.catalog {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+	overflow: auto;
+}
+
 /* Tables */
 table,
 .table {
