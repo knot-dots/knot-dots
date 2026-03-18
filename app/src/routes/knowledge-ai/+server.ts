@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	audience,
 	editorialState,
 	emptyContainer,
 	isProgramContainer,
@@ -95,12 +96,16 @@ export const POST = (async ({ locals, request }) => {
 								organizational_unit: container.organizational_unit,
 								payload: {
 									aiSuggestion: true,
-									sdg: object.category.map((c) => c.substring(0, 6)),
+									category: {
+										sdg: object.sdg,
+										policyFieldBNK: object.policyFieldBNK,
+										topic: object.topic,
+										audience: [audience.enum['audience.citizens']]
+									},
 									description: object.description,
 									editorialState: editorialState.enum['editorial_state.draft'],
 									summary: object.summary,
 									title: object.title,
-									topic: object.topic,
 									type: payloadTypes.enum.knowledge
 								},
 								realm: env.PUBLIC_KC_REALM,
@@ -121,6 +126,9 @@ export const POST = (async ({ locals, request }) => {
 							await locals.pool.connect(createContainer(newContainer));
 						} catch (error) {
 							log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+							log.error(
+								`failed to create container for object ${JSON.stringify(object)} of job ${job}`
+							);
 						}
 					}
 
