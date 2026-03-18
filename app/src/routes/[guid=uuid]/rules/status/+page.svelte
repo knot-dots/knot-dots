@@ -6,10 +6,14 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
 	import { ruleStatus } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import { ruleStatusBackgrounds, ruleStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 </script>
 
 <RulesPage {data}>
@@ -22,7 +26,7 @@
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone
-					containers={data.containers.filter(
+					containers={containers.filter(
 						(c) => 'ruleStatus' in c.payload && c.payload.ruleStatus === statusOption
 					)}
 				/>

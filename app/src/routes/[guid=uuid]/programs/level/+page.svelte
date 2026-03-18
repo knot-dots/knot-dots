@@ -8,6 +8,8 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { levels, predicates } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -22,6 +24,8 @@
 	});
 
 	let facets = $derived(data.facets);
+
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 </script>
 
 <Layout>
@@ -39,7 +43,7 @@
 			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption (levelOption)}
 				<BoardColumn addItemUrl={`#create=program&level=${levelOption}`} title={$_(levelOption)}>
 					<MaybeDragZone
-						containers={data.containers.filter(
+						containers={containers.filter(
 							(c) => 'level' in c.payload && c.payload.level === levelOption
 						)}
 					/>

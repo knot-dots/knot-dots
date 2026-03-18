@@ -14,10 +14,12 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Measures from '$lib/components/Measures.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(data.containers);
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
 	let memberFacet = $derived(
 		containers

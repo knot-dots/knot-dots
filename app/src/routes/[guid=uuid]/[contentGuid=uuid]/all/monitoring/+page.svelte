@@ -3,6 +3,8 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 	import {
 		audience,
@@ -20,7 +22,7 @@
 
 	let container = $derived(data.container);
 
-	let containers = $derived(data.containers);
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
 	let measures = $derived(
 		isMeasureContainer(container) || isSimpleMeasureContainer(container)

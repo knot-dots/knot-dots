@@ -23,9 +23,14 @@
 		isRelatedTo,
 		predicates
 	} from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let allContainers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-concrete-target-of'], predicates.enum['is-sub-target-of']]
@@ -35,18 +40,18 @@
 		let containers = new Set<Container>();
 
 		if (page.url.searchParams.has('related-to')) {
-			const selectedContainer = data.containers.find(
+			const selectedContainer = allContainers.find(
 				({ guid }) => guid === page.url.searchParams.get('related-to')
 			);
 
 			if (selectedContainer) {
 				if (isIndicatorContainer(selectedContainer)) {
-					containers = findConnected(selectedContainer, data.containers, [
+					containers = findConnected(selectedContainer, allContainers, [
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for']
 					]);
 				} else if (isObjectiveContainer(selectedContainer)) {
-					const indicator = data.containers
+					const indicator = allContainers
 						.filter(isIndicatorContainer)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
@@ -54,22 +59,22 @@
 						...(indicator ? [indicator] : []),
 						...findLeafObjectives([
 							selectedContainer,
-							...findDescendants(selectedContainer, data.containers.filter(isObjectiveContainer), [
+							...findDescendants(selectedContainer, allContainers.filter(isObjectiveContainer), [
 								predicates.enum['is-sub-target-of']
 							])
-						]).flatMap((c) => data.containers.filter(isEffectContainer).filter(isRelatedTo(c))),
-						...findAncestors(selectedContainer, data.containers, [
+						]).flatMap((c) => allContainers.filter(isEffectContainer).filter(isRelatedTo(c))),
+						...findAncestors(selectedContainer, allContainers, [
 							predicates.enum['is-sub-target-of']
 						]),
-						...findDescendants(selectedContainer, data.containers, [
+						...findDescendants(selectedContainer, allContainers, [
 							predicates.enum['is-sub-target-of']
 						])
 					]);
 				} else if (isEffectContainer(selectedContainer)) {
-					const objective = data.containers
+					const objective = allContainers
 						.filter(isObjectiveContainer)
 						.find(isRelatedTo(selectedContainer));
-					const indicator = data.containers
+					const indicator = allContainers
 						.filter(isIndicatorContainer)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
@@ -78,16 +83,14 @@
 						...(objective
 							? [
 									objective,
-									...findAncestors(objective, data.containers, [
-										predicates.enum['is-sub-target-of']
-									])
+									...findAncestors(objective, allContainers, [predicates.enum['is-sub-target-of']])
 								]
 							: [])
 					]);
 				}
 			}
 		} else {
-			containers = new Set(data.containers);
+			containers = new Set(allContainers);
 		}
 
 		return containers;
@@ -96,8 +99,8 @@
 	let objectivesByLevel = $derived.by(() => {
 		let objectivesByLevel = new SvelteMap<number, Container[]>();
 
-		for (const container of data.containers.filter(isObjectiveContainer)) {
-			const ancestors = findAncestors(container, data.containers.filter(isObjectiveContainer), [
+		for (const container of allContainers.filter(isObjectiveContainer)) {
+			const ancestors = findAncestors(container, allContainers.filter(isObjectiveContainer), [
 				predicates.enum['is-sub-target-of']
 			]);
 			const level = ancestors.length;
@@ -130,10 +133,10 @@
 			<Board>
 				<BoardColumn title={$_('indicators')}>
 					<div class="vertical-scroll-wrapper">
-						{#each data.containers
+						{#each allContainers
 							.filter(isIndicatorContainer)
 							.filter((c) => containers.has(c)) as container (container.guid)}
-							<Card {container} relatedContainers={data.containers} showRelationFilter />
+							<Card {container} relatedContainers={allContainers} showRelationFilter />
 						{/each}
 					</div>
 				</BoardColumn>
@@ -143,7 +146,7 @@
 							{#snippet itemSnippet(container)}
 								<Card
 									{container}
-									relatedContainers={data.containers}
+									relatedContainers={allContainers}
 									showRelationFilter
 									titleOverride
 								/>
@@ -153,14 +156,14 @@
 				{/each}
 				<BoardColumn title={$_('effects')}>
 					<MaybeDragZone
-						containers={data.containers.filter(isEffectContainer).filter((c) => containers.has(c))}
+						containers={allContainers.filter(isEffectContainer).filter((c) => containers.has(c))}
 					>
 						{#snippet itemSnippet(container)}
 							<Card
 								{container}
 								relatedContainers={[
-									...data.containers.filter(isRelatedTo(container)),
-									...data.containers.filter(isContainerWithEffect)
+									...allContainers.filter(isRelatedTo(container)),
+									...allContainers.filter(isContainerWithEffect)
 								]}
 								showRelationFilter
 								titleOverride

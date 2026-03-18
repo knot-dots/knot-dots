@@ -6,11 +6,14 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { titleForGoalCollection, containersByHierarchyLevel, isGoalContainer } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let goals = $derived(containersByHierarchyLevel(data.containers.filter(isGoalContainer)));
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let goals = $derived(containersByHierarchyLevel(containers.filter(isGoalContainer)));
 
 	let columns = $derived(
 		Array.from(goals.entries())

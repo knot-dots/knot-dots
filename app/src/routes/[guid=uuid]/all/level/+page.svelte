@@ -20,13 +20,17 @@
 		titleForMeasureCollection,
 		titleForProgramCollection
 	} from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+
 	let goals = $derived(
 		containersByHierarchyLevel(
-			data.containers
+			containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>
 					relation.every(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
@@ -36,7 +40,7 @@
 
 	let measuresAndRules = $derived(
 		containersByHierarchyLevel(
-			data.containers.filter(
+			containers.filter(
 				(c) => isMeasureContainer(c) || isSimpleMeasureContainer(c) || isRuleContainer(c)
 			)
 		)
@@ -47,11 +51,11 @@
 	let columns = $derived([
 		{
 			addItemUrl: `#create=program${useReport ? '&create=report' : ''}`,
-			containers: data.containers
+			containers: containers
 				.filter((c) => isProgramContainer(c) || isReportContainer(c))
 				.slice(0, browser ? undefined : 10),
 			key: 'programs',
-			title: titleForProgramCollection(data.containers.filter(isProgramContainer))
+			title: titleForProgramCollection(containers.filter(isProgramContainer))
 		},
 		...Array.from(goals.entries())
 			.toSorted()
