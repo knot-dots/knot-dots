@@ -162,7 +162,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	);
 
 	const containers: {
-		indicator: NewContainer;
+		indicator: Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
 		title: string;
 		yearValues: [number, number][];
 	}[] = [];
@@ -255,7 +255,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as NewContainer,
+					}) as Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>,
 					yearValues
 				});
 			} catch (e) {
