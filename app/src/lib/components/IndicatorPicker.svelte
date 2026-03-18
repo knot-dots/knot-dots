@@ -115,6 +115,12 @@
 			console.log(await response.json());
 		}
 	}
+
+	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
+		selected = event.currentTarget.checked
+			? [...selected, event.currentTarget.value]
+			: selected.filter((guid) => guid !== event.currentTarget.value);
+	}
 </script>
 
 <PickerDialog
@@ -200,9 +206,9 @@
 						<li>
 							<SelectableCard
 								--height="100%"
-								bind:value={selected}
+								checked={selected.includes(item.guid)}
 								container={item}
-								selectable={mode === 'select'}
+								{onchange}
 							/>
 						</li>
 					{/each}
