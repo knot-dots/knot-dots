@@ -163,7 +163,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	const containers: {
 		indicator: Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
-		title: string;
 		yearValues: [number, number][];
 	}[] = [];
 	const errors: string[] = [];
@@ -229,7 +228,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				yearValues.sort((a, b) => a[0] - b[0]);
 
 				containers.push({
-					title: fields.title,
 					indicator: emptyContainer.parse({
 						managed_by: orgUnit?.guid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
@@ -275,10 +273,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.transaction(async (connection) => {
-		for (const { indicator, title, yearValues } of containers) {
+		for (const { indicator, yearValues } of containers) {
 			let indicatorGuid: string;
 
-			const existingContainer = existingByTitle.get(title);
+			const existingContainer = existingByTitle.get(indicator.payload.title);
 
 			if (existingContainer) {
 				// Overwriting unchanged values is fine and keeps the upsert logic simple.
@@ -319,7 +317,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					actualDataContainer.payload = {
 						...actualDataContainer.payload,
 						indicator: indicatorGuid,
-						title,
+						title: indicator.payload.title,
 						values: yearValues
 					};
 
