@@ -22,8 +22,10 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
+		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		type ObjectiveContainer,
 		predicates
 	} from '$lib/models';
@@ -68,7 +70,12 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+			.filter(
+				(c) =>
+					isIndicatorContainer(c) ||
+					isIndicatorTemplateContainer(c) ||
+					isBinaryIndicatorContainer(c)
+			)
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
@@ -77,6 +84,8 @@
 					) > -1
 			)
 	);
+
+	let actualDataContainer = $derived(relatedContainers.find(isActualDataContainer));
 
 	let newRowKey = $state(0);
 
@@ -174,7 +183,11 @@
 
 					<div class="details-section">
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							{@const historicalValuesByYear = new Map(indicator.payload.historicalValues)}
+							{@const historicalValuesByYear = new Map(
+								isIndicatorContainer(indicator)
+									? indicator.payload.historicalValues
+									: (actualDataContainer?.payload.values ?? [])
+							)}
 							<div class="disclosure">
 								<button class="disclosure-button" type="button" use:disclosure.button>
 									<span>

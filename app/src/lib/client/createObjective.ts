@@ -7,6 +7,7 @@ import {
 	containerOfType,
 	type EmptyObjectiveContainer,
 	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	type IooiType,
 	type NewContainer,
 	type ObjectiveContainer,
@@ -16,7 +17,7 @@ import {
 
 export default async function createObjective(
 	target: Container,
-	indicator: IndicatorContainer | BinaryIndicatorContainer,
+	indicator: IndicatorContainer | IndicatorTemplateContainer | BinaryIndicatorContainer,
 	iooiType?: IooiType
 ) {
 	const isOverallObjective = target.guid == indicator.guid;
