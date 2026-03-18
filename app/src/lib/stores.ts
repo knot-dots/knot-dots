@@ -134,7 +134,6 @@ if (browser) {
 
 type AddEffectState = {
 	target?: Container;
-	effect?: IndicatorContainer;
 	iooiType?: IooiType;
 };
 
@@ -142,7 +141,6 @@ export const addEffectState = writable<AddEffectState>({});
 
 type AddObjectiveState = {
 	target?: Container;
-	indicator?: IndicatorContainer;
 	iooiType?: IooiType;
 };
 
