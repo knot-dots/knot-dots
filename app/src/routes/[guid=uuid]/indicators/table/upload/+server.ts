@@ -281,17 +281,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			let indicatorGuid: string;
 
 			if (existingContainer) {
-				// Update existing indicator if payload has changed
-				const payloadChanged =
-					JSON.stringify(existingContainer.payload) !==
-					JSON.stringify({ ...existingContainer.payload, ...indicator.payload });
-
-				if (payloadChanged) {
-					await updateContainer({
-						...existingContainer,
-						payload: { ...existingContainer.payload, ...indicator.payload }
-					})(connection);
-				}
+				// Overwriting unchanged values is fine and keeps the upsert logic simple.
+				await updateContainer({
+					...existingContainer,
+					payload: { ...existingContainer.payload, ...indicator.payload }
+				})(connection);
 
 				indicatorGuid = existingContainer.guid;
 			} else {
