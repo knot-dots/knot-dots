@@ -10,6 +10,8 @@ import {
 	containerOfType,
 	editorialState,
 	emptyContainer,
+	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	isActualDataContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
@@ -96,7 +98,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	// Fetch existing custom indicators for upsert matching.
 	// Only match against indicators in the "Eigene" (custom) category to avoid
 	// accidentally overwriting indicators from other sets (e.g. Wegweiser Kommune).
-	const existingIndicators = await locals.pool.connect(
+	const existingIndicators = (await locals.pool.connect(
 		getManyContainers(
 			[currentOrganizationGuid],
 			{
@@ -105,7 +107,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			},
 			'alpha'
 		)
-	);
+	)) as Array<IndicatorContainer | IndicatorTemplateContainer>;
 
 	const existingByTitle = new Map(existingIndicators.map((c) => [c.payload.title, c]));
 
@@ -161,7 +163,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	const containers: {
 		indicator: NewContainer;
-		existingContainer?: (typeof existingIndicators)[number];
+		existingContainer?: IndicatorContainer | IndicatorTemplateContainer;
 		title: string;
 		yearValues: [number, number][];
 	}[] = [];
@@ -314,7 +316,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 						indicator.organizational_unit,
 						indicator.managed_by,
 						env.PUBLIC_KC_REALM
-					) as NewContainer & { payload: ActualDataContainer['payload'] };
+					) as Omit<NewContainer, 'payload'> & { payload: ActualDataContainer['payload'] };
 
 					actualDataContainer.payload = {
 						...actualDataContainer.payload,
