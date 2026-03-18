@@ -21,6 +21,7 @@
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableResourceDataCollection from '$lib/components/EditableResourceDataCollection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
+	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
@@ -40,6 +41,7 @@
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isImageContainer,
+		isInlineHelpTextContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -78,6 +80,7 @@
 	}: Props = $props();
 
 	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
+	let isInlineHelpSection = $derived(isInlineHelpTextContainer(container));
 
 	const handleSubmit = autoSave(2000);
 
@@ -109,7 +112,11 @@
 	}
 </script>
 
-<section class="details-section">
+<section
+	class="details-section"
+	class:details-section--inline-help={isInlineHelpSection &&
+		$applicationState.containerDetailView.editable}
+>
 	{#if $applicationState.containerDetailView.editable}
 		<DraggableActionBar>
 			{#snippet actions()}
@@ -263,7 +270,14 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isTextContainer(container)}
+		{:else if isInlineHelpTextContainer(container) && $applicationState.containerDetailView.editable}
+			<EditableInlineHelpSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={!isShadowItem}
+			/>
+		{:else if isTextContainer(container) && !isInlineHelpSection}
 			<EditableTextSection
 				bind:container
 				bind:parentContainer
@@ -303,6 +317,11 @@
 <style>
 	.details-section {
 		position: relative;
+	}
+
+	.details-section--inline-help {
+		background: var(--color-yellow-025);
+		border: 1px solid var(--color-yellow-200);
 	}
 
 	@media (hover: hover) {

@@ -72,3 +72,15 @@ test('adding and removing a progress section updates the card', async ({ dotsBoa
 	await dotsBoard.overlay.closeButton.click();
 	await expect(dotsBoard.card(testGoal.payload.title).getByRole('progressbar')).not.toBeVisible();
 });
+
+test('inline help is edit-only', async ({ dotsBoard, testReport }) => {
+	await dotsBoard.goto(`/${testReport.organization}`);
+	await dotsBoard.card(testReport.payload.title).click();
+	await dotsBoard.overlay.editModeToggle.check();
+
+	const inlineHelp = await dotsBoard.overlay.addSection('Inline help');
+	await expect(inlineHelp.getByText('Inline help')).toBeVisible();
+
+	await dotsBoard.overlay.editModeToggle.uncheck();
+	await expect(dotsBoard.overlay.locator.getByText('Inline help')).toHaveCount(0);
+});

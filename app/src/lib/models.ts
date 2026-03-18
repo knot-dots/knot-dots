@@ -200,6 +200,12 @@ const cardStyleValues = ['default', 'highlight'] as const;
 
 export const cardStyles = z.enum(cardStyleValues);
 
+const textTypeValues = ['default', 'inline_help'] as const;
+
+export const textType = z.enum(textTypeValues);
+
+export type TextType = z.infer<typeof textType>;
+
 const predicateValues = [
 	'contributes-to',
 	'is-admin-of',
@@ -1448,6 +1454,7 @@ const textPayload = z
 		body: z.string().trim().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
+		textType: textType.default(textType.enum.default),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
@@ -2064,6 +2071,12 @@ export function isTextContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TextContainer {
 	return container.payload.type === payloadTypes.enum.text;
+}
+
+export function isInlineHelpTextContainer(
+	container: AnyContainer | EmptyContainer
+): container is TextContainer {
+	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
 }
 
 const taskContainer = container.extend({
