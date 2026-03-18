@@ -20,11 +20,7 @@
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
-		predicates,
-		type ProgramType,
-		type RuleStatus,
-		type Status,
-		type TaskStatus
+		predicates
 	} from '$lib/models';
 	import type { AnyContainer } from '$lib/models';
 	import {
@@ -172,10 +168,7 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			{@const image = Array.isArray(container.payload.image)
-				? container.payload.image[0]
-				: container.payload.image}
-			<img alt={$_('cover_image')} loading="lazy" src={transformFileURL(image as string)} />
+			<img alt={$_('cover_image')} loading="lazy" src={transformFileURL(container.payload.image)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
@@ -183,21 +176,21 @@
 
 	<footer>
 		{#if 'ruleStatus' in container.payload}
-			{@const ruleStatus = container.payload.ruleStatus as RuleStatus}
+			{@const ruleStatus = container.payload.ruleStatus}
 			{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
 			<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
 				<RuleStatusIcon />
 				{$_(ruleStatus)}
 			</span>
 		{:else if 'status' in container.payload}
-			{@const status = container.payload.status as Status}
+			{@const status = container.payload.status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
 				{$_(status)}
 			</span>
 		{:else if 'taskStatus' in container.payload}
-			{@const taskStatus = container.payload.taskStatus as TaskStatus}
+			{@const taskStatus = container.payload.taskStatus}
 			{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
 			<span class="badge badge--{taskStatusColors.get(taskStatus)}">
 				<TaskStatusIcon />
@@ -206,7 +199,7 @@
 		{:else if isContainerWithProgress(container)}
 			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}
-			{@const programType = container.payload.programType as ProgramType}
+			{@const programType = container.payload.programType}
 			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>
