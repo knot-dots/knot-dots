@@ -118,8 +118,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					getManyContainers(
 						[currentOrganizationGuid],
 						{
-							type: [payloadTypes.enum.actual_data],
-							indicators: existingIndicatorGuids
+							indicators: existingIndicatorGuids,
+							...(currentOrganizationalUnitGuid
+								? { organizationalUnits: [currentOrganizationalUnitGuid] }
+								: undefined),
+							type: [payloadTypes.enum.actual_data]
 						},
 						'alpha'
 					)
