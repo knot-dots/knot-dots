@@ -463,6 +463,7 @@ const indicatorCategoryValues = [
 	'indicator_category.kpi',
 	'indicator_category.mpsc',
 	'indicator_category.sdg',
+	'indicator_category.urban_development',
 	'indicator_category.wegweiser_kommune',
 	'indicator_category.custom'
 ] as const;
