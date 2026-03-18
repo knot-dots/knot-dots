@@ -320,8 +320,8 @@
 	}
 
 	.details-section--inline-help {
-		background: #fefef6;
-		border: 1px solid #fce96a;
+		background: var(--color-yellow-025);
+		border: 1px solid var(--color-yellow-200);
 	}
 
 	@media (hover: hover) {
