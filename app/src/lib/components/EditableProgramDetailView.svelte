@@ -51,6 +51,8 @@
 
 	let guid = $derived(container.guid);
 
+	let isGuide = $derived(container.payload.programType === programTypes.enum['program_type.guide']);
+
 	let relatedContainersQuery = $derived(
 		fetchContainersRelatedToProgram({
 			guid,
@@ -194,6 +196,7 @@
 					'action',
 					'title',
 					'type',
+					...(isGuide ? ['aiSuggestionPageReference'] : []),
 					'description',
 					'visibility',
 					'status',
@@ -272,6 +275,9 @@
 						<div class="cell cell--action"></div>
 						<div class="cell">{$_('title')}</div>
 						<div class="cell">{$_('object')}</div>
+						{#if isGuide}
+							<div class="cell">{$_('page')}</div>
+						{/if}
 						<div class="cell">{$_('description')}</div>
 						<div class="cell">{$_('visibility.label')}</div>
 						<div class="cell">{$_('status')}</div>

@@ -46,6 +46,7 @@
 		isGoalContainer,
 		isIndicatorContainer,
 		isIndicatorTemplateContainer,
+		isKnowledgeContainer,
 		isMeasureContainer,
 		isProgramContainer,
 		overlayKey,
@@ -300,6 +301,14 @@
 				organization={container.organization}
 				bind:value={container.organizational_unit}
 			/>
+		</div>
+	{:else if col === 'aiSuggestionPageReference'}
+		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+			{#if isKnowledgeContainer(container) && container.payload.aiSuggestionPageReference}
+				<span>
+					{container.payload.aiSuggestionPageReference}
+				</span>
+			{/if}
 		</div>
 	{:else if col.startsWith('year:')}
 		{@const year = parseInt(col.split(':')[1], 10)}

@@ -14,6 +14,7 @@
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import { _ } from 'svelte-i18n';
 	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type Container, type KnowledgeContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -37,6 +38,11 @@
 				editable={editable && $ability.can('update', container, 'payload.editorialState')}
 				bind:value={container.payload.editorialState}
 			/>
+		{/if}
+
+		{#if container.payload.aiSuggestionPageReference}
+			<div class="label">{$_('ai_suggestion_page_reference')}</div>
+			<div class="value value--read-only">{container.payload.aiSuggestionPageReference}</div>
 		{/if}
 
 		<EditableProgram {editable} bind:container />

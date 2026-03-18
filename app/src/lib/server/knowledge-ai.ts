@@ -19,7 +19,8 @@ const jobStatusResponseSchema = z.object({
 					policyFieldBNK: z.array(z.string()),
 					summary: z.string(),
 					title: z.string(),
-					topic: z.array(z.string())
+					topic: z.array(z.string()),
+					source_pages: z.array(z.number().int())
 				})
 			)
 		})

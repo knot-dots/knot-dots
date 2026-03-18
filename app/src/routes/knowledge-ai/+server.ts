@@ -104,6 +104,9 @@ export const POST = (async ({ locals, request }) => {
 									},
 									description: object.description,
 									editorialState: editorialState.enum['editorial_state.draft'],
+									...(object.source_pages?.length > 0 && {
+										aiSuggestionPageReference: object.source_pages.toSorted()[0]
+									}),
 									summary: object.summary,
 									title: object.title,
 									type: payloadTypes.enum.knowledge
