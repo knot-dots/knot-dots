@@ -68,6 +68,36 @@
 		dragEnabled = false,
 		editable = false
 	}: Props = $props();
+
+	function saveActualData(actualData: ActualDataContainer | undefined, year: number) {
+		return async (event: Event) => {
+			const input = event.currentTarget as HTMLInputElement;
+			const val = input.value;
+			if (!actualData) return;
+			const existingIdx = actualData.payload.values.findIndex(
+				([y]: [number, number]) => y === year
+			);
+			if (val === '' || val === null) {
+				if (existingIdx >= 0) {
+					actualData.payload.values.splice(existingIdx, 1);
+				}
+			} else {
+				const num = parseFloat(val);
+				if (!isNaN(num)) {
+					if (existingIdx >= 0) {
+						actualData.payload.values[existingIdx] = [year, num];
+					} else {
+						actualData.payload.values.push([year, num]);
+						actualData.payload.values.sort(
+							(a: [number, number], b: [number, number]) => a[0] - b[0]
+						);
+					}
+				}
+			}
+			const { default: saveContainer } = await import('$lib/client/saveContainer');
+			await saveContainer(actualData);
+		};
+	}
 </script>
 
 <div class="cell cell--action">
@@ -314,33 +344,7 @@
 					type="text"
 					inputmode="numeric"
 					value={idx >= 0 ? values[idx][1] : ''}
-					onchange={async (e) => {
-						const input = e.currentTarget as HTMLInputElement;
-						const val = input.value;
-						if (!actualData) return;
-						const existingIdx = actualData.payload.values.findIndex(
-							([y]: [number, number]) => y === year
-						);
-						if (val === '' || val === null) {
-							if (existingIdx >= 0) {
-								actualData.payload.values.splice(existingIdx, 1);
-							}
-						} else {
-							const num = parseFloat(val);
-							if (!isNaN(num)) {
-								if (existingIdx >= 0) {
-									actualData.payload.values[existingIdx] = [year, num];
-								} else {
-									actualData.payload.values.push([year, num]);
-									actualData.payload.values.sort(
-										(a: [number, number], b: [number, number]) => a[0] - b[0]
-									);
-								}
-							}
-						}
-						const { default: saveContainer } = await import('$lib/client/saveContainer');
-						await saveContainer(actualData);
-					}}
+					onchange={saveActualData(actualData, year)}
 				/>
 			{:else if idx >= 0}
 				<span>{values[idx][1]}</span>
