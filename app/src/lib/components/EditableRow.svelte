@@ -4,6 +4,7 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
+	import saveContainer from '$lib/client/saveContainer';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
@@ -91,7 +92,6 @@
 					}
 				}
 			}
-			const { default: saveContainer } = await import('$lib/client/saveContainer');
 			await saveContainer(actualData);
 		};
 	}
