@@ -92,7 +92,14 @@
 					}
 				}
 			}
-			await saveContainer(actualData);
+			const response = await saveContainer(actualData);
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				actualData.revision = updatedContainer.revision;
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
 		};
 	}
 </script>
