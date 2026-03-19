@@ -447,6 +447,15 @@
 		width: fit-content;
 	}
 
+	input[type='text'] {
+		border: none;
+		field-sizing: content;
+		line-height: 1.5;
+		min-width: 2rem;
+		padding: 0;
+		text-align: right;
+	}
+
 	.cell {
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-default-color: var(--color-gray-700);
@@ -488,12 +497,6 @@
 
 	:global(.row:hover .cell:hover input) {
 		background-color: var(--color-gray-100);
-	}
-
-	.cell > :global(input[type='text'][inputmode='numeric']) {
-		field-sizing: content;
-		padding: 0;
-		text-align: right;
 	}
 
 	.cell > :global(span),
