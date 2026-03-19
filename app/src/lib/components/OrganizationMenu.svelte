@@ -8,6 +8,7 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
+	import { z } from 'zod';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Organization from '~icons/knotdots/organization';
 	import { page } from '$app/state';
@@ -92,12 +93,7 @@
 	let pathnameWithoutContextSegment = $derived.by(() => {
 		const pathnameSegments = page.url.pathname.split('/');
 
-		if (
-			pathnameSegments.length > 1 &&
-			[...page.data.organizations, ...page.data.organizationalUnits].some(
-				({ guid }) => guid === pathnameSegments[1]
-			)
-		) {
+		if (pathnameSegments.length > 1 && z.uuid().parse(pathnameSegments[1])) {
 			return [pathnameSegments.slice(0, 1), ...pathnameSegments.slice(2)].join('/');
 		} else {
 			return page.url.pathname;
