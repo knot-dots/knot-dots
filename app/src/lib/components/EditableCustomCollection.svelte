@@ -36,6 +36,7 @@
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import {
 		type ActualDataContainer,
 		actualDataContainer,
@@ -56,6 +57,11 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	const MAX_ITEMS_PER_PAGE = 50;
+
+	const sortOptions = [
+		{ value: 'modified', label: $_('sort_modified') },
+		{ value: 'alpha', label: $_('sort_alphabetically') }
+	];
 
 	interface Props {
 		container: CustomCollectionContainer;
@@ -257,6 +263,27 @@
 		return '';
 	}
 
+	function bySortOption(value: 'alpha' | 'modified') {
+		switch (value) {
+			case 'modified':
+				return (a: AnyContainer, b: AnyContainer) => {
+					if (a.valid_from && b.valid_from) {
+						return new Date(b.valid_from).getTime() - new Date(a.valid_from).getTime();
+					}
+					if (a.valid_from) {
+						return -1;
+					}
+					if (b.valid_from) {
+						return 1;
+					}
+					return 0;
+				};
+			case 'alpha':
+				return (a: AnyContainer, b: AnyContainer) =>
+					containerLabel(a).localeCompare(containerLabel(b));
+		}
+	}
+
 	let filteredItems = $derived.by(() => {
 		const normalizedTerms = allowSearch ? localTerms.trim().toLocaleLowerCase() : '';
 		const result = items.filter((item) =>
@@ -264,17 +291,7 @@
 		);
 
 		if (allowSort) {
-			return [...result].toSorted((a, b) => {
-				if (localSort === 'modified') {
-					const modifiedB = b.valid_from ? new Date(b.valid_from).getTime() : 0;
-					const modifiedA = a.valid_from ? new Date(a.valid_from).getTime() : 0;
-					return modifiedB - modifiedA;
-				}
-				return containerLabel(a).localeCompare(containerLabel(b), undefined, {
-					numeric: true,
-					sensitivity: 'base'
-				});
-			});
+			return [...result].toSorted(bySortOption(localSort === 'modified' ? 'modified' : 'alpha'));
 		}
 
 		return result;
@@ -296,7 +313,6 @@
 		if (allowSearch) {
 			interactions.push($_('search'));
 		}
-		interactions.push($_('filter'));
 		if (allowSort) {
 			interactions.push($_('sort'));
 		}
@@ -482,15 +498,6 @@
 		settingsSubview = 'main';
 	}
 
-	function toggleInlineSort() {
-		if (!allowSort) {
-			return;
-		}
-
-		localSort = localSort === 'alpha' ? 'modified' : 'alpha';
-		visibleCount = MAX_ITEMS_PER_PAGE;
-	}
-
 	async function handleDelete() {
 		const response = await deleteContainer(container);
 
@@ -598,21 +605,6 @@
 						}}
 					/>
 				</label>
-			</li>
-		{/if}
-
-		{#if editable && allowSort && hasConfiguredContent}
-			<li>
-				<button
-					class="action-button action-button--size-l"
-					class:is-active={localSort === 'modified'}
-					onclick={toggleInlineSort}
-					title={$_('sort')}
-					type="button"
-				>
-					<Sort />
-					<span class="is-visually-hidden">{$_('sort')}</span>
-				</button>
 			</li>
 		{/if}
 
@@ -784,6 +776,14 @@
 		{/if}
 	</ul>
 </header>
+
+{#if hasConfiguredContent}
+	<div class="carousel-toolbar">
+		{#if allowSort}
+			<SortDropdown options={sortOptions} bind:value={localSort} />
+		{/if}
+	</div>
+{/if}
 
 {#if hasConfiguredContent}
 	{#if listType === 'carousel'}
@@ -1183,13 +1183,6 @@
 		padding: 0 0.5rem;
 		padding-left: 2rem;
 		width: 100%;
-	}
-
-	.action-button.is-active {
-		--button-background: var(--color-primary-100);
-		--button-hover-background: var(--color-primary-100);
-		--button-active-background: var(--color-primary-300);
-		color: var(--color-primary-700);
 	}
 
 	.custom-settings {
