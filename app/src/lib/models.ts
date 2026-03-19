@@ -780,6 +780,9 @@ const customCollectionPayload = z
 				type: []
 			}),
 		item: z.array(z.uuid()).default([]),
+		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
+		allowSearch: z.boolean().default(false),
+		allowSort: z.boolean().default(false),
 		sort: z.enum(['alpha', 'modified']).default('alpha'),
 		terms: z.string().default(''),
 		title: z.string(),
