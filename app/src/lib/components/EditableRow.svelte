@@ -70,13 +70,11 @@
 	}: Props = $props();
 
 	function saveActualData(actualData: ActualDataContainer | undefined, year: number) {
-		return async (event: Event) => {
-			const input = event.currentTarget as HTMLInputElement;
+		return async (event: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+			const input = event.currentTarget;
 			const val = input.value;
 			if (!actualData) return;
-			const existingIdx = actualData.payload.values.findIndex(
-				([y]: [number, number]) => y === year
-			);
+			const existingIdx = actualData.payload.values.findIndex(([y]) => y === year);
 			if (val === '' || val === null) {
 				if (existingIdx >= 0) {
 					actualData.payload.values.splice(existingIdx, 1);
@@ -337,7 +335,7 @@
 			(c) => isActualDataContainer(c) && c.payload.indicator === container.guid
 		)}
 		{@const values = actualData ? actualData.payload.values : []}
-		{@const idx = values.findIndex(([y]: [number, number]) => y === year)}
+		{@const idx = values.findIndex(([y]) => y === year)}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if editable && $ability.can('update', container)}
 				<input
