@@ -586,20 +586,18 @@
 
 		{#if allowSearch && hasConfiguredContent}
 			<li class="inline-search-item">
-				{#if allowSearch}
-					<label class="search search-inline search-slot">
-						<Search />
-						<span class="is-visually-hidden">{$_('search')}</span>
-						<input
-							type="search"
-							placeholder={$_('search')}
-							bind:value={localTerms}
-							oninput={() => {
-								visibleCount = MAX_ITEMS_PER_PAGE;
-							}}
-						/>
-					</label>
-				{/if}
+				<label class="search-inline search-slot">
+					<Search />
+					<span class="is-visually-hidden">{$_('search')}</span>
+					<input
+						type="search"
+						placeholder={$_('search')}
+						bind:value={localTerms}
+						oninput={() => {
+							visibleCount = MAX_ITEMS_PER_PAGE;
+						}}
+					/>
+				</label>
 			</li>
 		{/if}
 
@@ -1119,11 +1117,6 @@
 		font-weight: 400;
 	}
 
-	.search {
-		display: grid;
-		gap: 0.25rem;
-	}
-
 	.search-inline {
 		display: flex;
 		align-items: center;
@@ -1177,21 +1170,17 @@
 		width: 1rem;
 	}
 
-	.search input {
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		height: 2rem;
-		min-width: 12rem;
-		padding: 0 0.5rem;
-	}
-
 	.search-inline input {
 		margin: 0;
 		min-width: 10rem;
 	}
 
 	.search-slot input {
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
 		height: 2.125rem;
+		min-width: 12rem;
+		padding: 0 0.5rem;
 		padding-left: 2rem;
 		width: 100%;
 	}
