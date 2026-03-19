@@ -116,7 +116,7 @@ async function createResourceV2(
 	) as ResourceV2Container;
 	return createContainer(context, {
 		...template,
-		payload: { ...template.payload, title, ...payload } as ResourceV2Container['payload']
+		payload: { ...template.payload, title, ...payload }
 	});
 }
 
@@ -136,7 +136,7 @@ async function createResourceData(
 	) as ResourceDataContainer;
 	return createContainer(context, {
 		...template,
-		payload: { ...template.payload, title, ...payload } as ResourceDataContainer['payload'],
+		payload: { ...template.payload, title, ...payload },
 		relation: [{ position: 0, predicate: predicates.enum['is-part-of'], object: partOf }]
 	});
 }
@@ -218,7 +218,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		) as NewContainer;
 		(newCategory.payload as CategoryContainer['payload']).title = categoryTitle;
 
-		const category = (await createContainer(adminContext, newCategory)) as CategoryContainer;
+		const category = await createContainer(adminContext, newCategory);
 
 		const terms: TermContainer[] = [];
 		for (const [index, termName] of termNames.entries()) {
@@ -240,7 +240,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				}
 			];
 
-			const term = (await createContainer(adminContext, newTerm)) as TermContainer;
+			const term = await createContainer(adminContext, newTerm);
 			terms.push(term);
 		}
 
@@ -310,7 +310,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newProgram.payload,
 					title: `Test Program ${workerInfo.workerIndex}`
-				} as ProgramContainer['payload']
+				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
 				predicates.enum['is-head-of'],
@@ -335,9 +335,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			const testGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {
-					...(newGoal.payload as GoalContainer['payload']),
+					...newGoal.payload,
 					title: `Test Goal ${workerInfo.workerIndex}`
-				} as GoalContainer['payload']
+				}
 			});
 
 			await use(testGoal);
@@ -358,9 +358,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			const testSubordinateGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {
-					...(newGoal.payload as GoalContainer['payload']),
+					...newGoal.payload,
 					title: `Subordinate Goal ${workerInfo.workerIndex}`
-				} as GoalContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -393,7 +393,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					indicatorCategory: ['indicator_category.custom'],
 					unit: 'unit.percent',
 					quantity: quantities.enum['quantity.custom']
-				} as IndicatorContainer['payload']
+				}
 			});
 
 			await use(testIndicator);
@@ -417,7 +417,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				title: `Test Indicator Template ${workerInfo.workerIndex}`,
 				indicatorCategory: ['indicator_category.wegweiser_kommune'],
 				unit: 'unit.km'
-			} as IndicatorContainer['payload']
+			}
 		});
 
 		await use(testIndicatorTemplate);
@@ -439,7 +439,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					...newObjective.payload,
 					title: `Test Objective ${workerInfo.workerIndex}`,
 					iooiType: 'iooi.output'
-				} as ObjectiveContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -474,7 +474,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newMeasure.payload,
 					title: `Test Measure ${workerInfo.workerIndex}`
-				} as MeasureContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -508,7 +508,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newMeasure.payload,
 					title: `Subordinate Measure ${workerInfo.workerIndex}`
-				} as MeasureContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -544,7 +544,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					...newEffect.payload,
 					title: `Test Effect ${workerInfo.workerIndex}`,
 					iooiType: 'iooi.output'
-				} as EffectContainer['payload'],
+				},
 				relation: [
 					{
 						position: 0,
@@ -835,7 +835,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newReport.payload,
 					title: `Test Report ${workerInfo.workerIndex}`
-				} as ReportContainer['payload']
+				}
 			});
 
 			await use(testReport);
