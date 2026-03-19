@@ -14,12 +14,13 @@ const jobStatusResponseSchema = z.object({
 			knowledge_objects: z.array(
 				z.object({
 					audience: z.array(audience),
-					category: z.array(z.string()),
+					sdg: z.array(z.string()),
 					description: z.string(),
 					policyFieldBNK: z.array(z.string()),
 					summary: z.string(),
 					title: z.string(),
-					topic: z.array(z.string())
+					topic: z.array(z.string()),
+					source_pages: z.array(z.number().int())
 				})
 			)
 		})

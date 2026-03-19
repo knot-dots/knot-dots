@@ -895,7 +895,10 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 });
 
 export const knowledgePayload = basePayload
-	.extend({ type: z.literal(payloadTypes.enum.knowledge) })
+	.extend({
+		type: z.literal(payloadTypes.enum.knowledge),
+		aiSuggestionPageReference: z.number().int().positive().optional()
+	})
 	.strict();
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
