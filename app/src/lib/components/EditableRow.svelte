@@ -71,8 +71,7 @@
 
 	function saveActualData(actualData: ActualDataContainer | undefined, year: number) {
 		return async (event: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
-			const input = event.currentTarget;
-			const val = input.value;
+			const val = event.currentTarget.value;
 			if (!actualData) return;
 			const existingIdx = actualData.payload.values.findIndex(([y]) => y === year);
 			if (val === '' || val === null) {
