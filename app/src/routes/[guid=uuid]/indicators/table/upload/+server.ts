@@ -10,6 +10,9 @@ import {
 	containerOfType,
 	editorialState,
 	emptyContainer,
+	type IndicatorContainer,
+	type IndicatorTemplateContainer,
+	isActualDataContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
@@ -26,12 +29,17 @@ import {
 	createContainer,
 	getContainerByGuid,
 	getManyContainers,
-	getManyOrganizationalUnitContainers
+	getManyOrganizationalUnitContainers,
+	updateContainer
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-function filterDefined(arr: (string | undefined)[]): string[] {
-	return arr.filter((x): x is string => x !== undefined);
+function reverseTranslateList(value: string | undefined): string[] {
+	if (!value) return [];
+	return value
+		.split(', ')
+		.map((t) => reverseTranslationMap.get(t))
+		.filter((x): x is string => x !== undefined);
 }
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
@@ -87,21 +95,44 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		})
 	);
 
-	// Fetch existing indicator titles (both old and new system)
-	const [existingIndicators, existingTemplates] = await Promise.all([
-		locals.pool.connect(
-			getManyContainers([currentOrganizationGuid], { type: [payloadTypes.enum.indicator] }, 'alpha')
-		),
-		locals.pool.connect(
-			getManyContainers([], { type: [payloadTypes.enum.indicator_template] }, 'alpha')
+	// Fetch existing custom indicators for upsert matching.
+	// Only match against indicators in the "Eigene" (custom) category to avoid
+	// accidentally overwriting indicators from other sets (e.g. Wegweiser Kommune).
+	const existingIndicators = (await locals.pool.connect(
+		getManyContainers(
+			[currentOrganizationGuid],
+			{
+				type: [payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+				indicatorCategories: ['indicator_category.custom']
+			},
+			'alpha'
 		)
-	]);
-	const existingTitles = new Set(
-		[...existingIndicators, ...existingTemplates].map((c) => c.payload.title)
-	);
+	)) as Array<IndicatorContainer | IndicatorTemplateContainer>;
 
-	// Track titles created during this import to handle duplicates within the same batch
-	const usedTitles = new Set(existingTitles);
+	const existingByTitle = new Map(existingIndicators.map((c) => [c.payload.title, c]));
+
+	const existingIndicatorGuids = existingIndicators.map((c) => c.guid);
+	const existingActualData =
+		existingIndicatorGuids.length > 0
+			? await locals.pool.connect(
+					getManyContainers(
+						[currentOrganizationGuid],
+						{
+							indicators: existingIndicatorGuids,
+							...(currentOrganizationalUnitGuid
+								? { organizationalUnits: [currentOrganizationalUnitGuid] }
+								: undefined),
+							type: [payloadTypes.enum.actual_data]
+						},
+						'alpha'
+					)
+				)
+			: [];
+
+	// Build a map from indicator GUID to its actual_data container
+	const actualDataByIndicator = new Map(
+		existingActualData.filter(isActualDataContainer).map((c) => [c.payload.indicator, c])
+	);
 
 	const data = await request.formData();
 	const csv = data.get('csv');
@@ -133,8 +164,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		})
 	);
 
-	const containers: { indicator: NewContainer; title: string; yearValues: [number, number][] }[] =
-		[];
+	const containers: {
+		indicator: Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
+		yearValues: [number, number][];
+	}[] = [];
 	const errors: string[] = [];
 	let lineNumber = 1;
 
@@ -179,36 +212,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					? organizationalUnits.find(({ payload }) => payload.name === fields.organizationalUnit)
 					: organizationalUnits.find(({ guid }) => guid === currentOrganizationalUnitGuid);
 
-				// Build payload fields, translating labels back to enum keys
-				const indicatorCategory = fields.indicatorCategory
-					? filterDefined(
-							fields.indicatorCategory.split(', ').map((t: string) => reverseTranslationMap.get(t))
-						)
-					: [];
-
-				const indicatorType = fields.indicatorType
-					? filterDefined(
-							fields.indicatorType.split(', ').map((t: string) => reverseTranslationMap.get(t))
-						)
-					: [];
-
-				const topic = fields.topic
-					? filterDefined(fields.topic.split(', ').map((t: string) => reverseTranslationMap.get(t)))
-					: [];
-
-				const sdg = fields.sdg ? parseSdgValues(fields.sdg) : [];
-
-				const policyFieldBNK = fields.policyFieldBNK
-					? filterDefined(
-							fields.policyFieldBNK.split(', ').map((t: string) => reverseTranslationMap.get(t))
-						)
-					: [];
-
-				const audience = fields.audience
-					? filterDefined(
-							fields.audience.split(', ').map((t: string) => reverseTranslationMap.get(t))
-						)
-					: [];
+				// Always include indicator_category.custom so CSV-uploaded indicators
+				// can be identified and matched for future upserts.
+				const parsedCategories = reverseTranslateList(fields.indicatorCategory);
+				const indicatorCategory = parsedCategories.includes('indicator_category.custom')
+					? parsedCategories
+					: [...parsedCategories, 'indicator_category.custom'];
 
 				const unit = fields.unit ? (reverseTranslationMap.get(fields.unit) ?? '') : '';
 				const visibility = fields.visibility
@@ -221,32 +230,20 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 				yearValues.sort((a, b) => a[0] - b[0]);
 
-				// Deduplicate title
-				let title = fields.title;
-				if (usedTitles.has(title)) {
-					let suffix = 1;
-					while (usedTitles.has(`${fields.title} (${suffix})`)) {
-						suffix++;
-					}
-					title = `${fields.title} (${suffix})`;
-				}
-				usedTitles.add(title);
-
 				containers.push({
-					title,
 					indicator: emptyContainer.parse({
 						managed_by: orgUnit?.guid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
 						organizational_unit: orgUnit?.guid ?? null,
 						payload: {
-							title,
+							title: fields.title,
 							...(fields.description ? { description: fields.description } : {}),
 							indicatorCategory,
-							indicatorType,
-							topic,
-							sdg,
-							policyFieldBNK,
-							audience,
+							indicatorType: reverseTranslateList(fields.indicatorType),
+							topic: reverseTranslateList(fields.topic),
+							sdg: fields.sdg ? parseSdgValues(fields.sdg) : [],
+							policyFieldBNK: reverseTranslateList(fields.policyFieldBNK),
+							audience: reverseTranslateList(fields.audience),
 							unit,
 							visibility,
 							editorialState: editorialStateValue,
@@ -259,7 +256,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as NewContainer,
+					}) as Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>,
 					yearValues
 				});
 			} catch (e) {
@@ -279,33 +276,63 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.transaction(async (connection) => {
-		for (const { indicator, title, yearValues } of containers) {
-			const created = await createContainer(indicator)(connection);
+		for (const { indicator, yearValues } of containers) {
+			let indicatorGuid: string;
+
+			const existingContainer = existingByTitle.get(indicator.payload.title);
+
+			if (existingContainer) {
+				// Overwriting unchanged values is fine and keeps the upsert logic simple.
+				await updateContainer({
+					...existingContainer,
+					payload: { ...existingContainer.payload, ...indicator.payload }
+				})(connection);
+
+				indicatorGuid = existingContainer.guid;
+			} else {
+				// Create new indicator
+				const created = await createContainer(indicator)(connection);
+				indicatorGuid = created.guid;
+			}
 
 			if (yearValues.length > 0) {
-				const actualDataContainer = containerOfType(
-					payloadTypes.enum.actual_data,
-					indicator.organization,
-					indicator.organizational_unit,
-					indicator.managed_by,
-					env.PUBLIC_KC_REALM
-				) as NewContainer & { payload: ActualDataContainer['payload'] };
+				const existingActualDataContainer = actualDataByIndicator.get(indicatorGuid);
 
-				actualDataContainer.payload = {
-					...actualDataContainer.payload,
-					indicator: created.guid,
-					title,
-					values: yearValues
-				};
+				if (existingActualDataContainer) {
+					// Overwrite existing actual data values
+					await updateContainer({
+						...existingActualDataContainer,
+						payload: {
+							...existingActualDataContainer.payload,
+							values: yearValues
+						}
+					})(connection);
+				} else {
+					// Create new actual_data container
+					const actualDataContainer = containerOfType(
+						payloadTypes.enum.actual_data,
+						indicator.organization,
+						indicator.organizational_unit,
+						indicator.managed_by,
+						env.PUBLIC_KC_REALM
+					) as Omit<NewContainer, 'payload'> & { payload: ActualDataContainer['payload'] };
 
-				actualDataContainer.user = [
-					{
-						predicate: predicates.enum['is-creator-of'],
-						subject: locals.user.guid
-					}
-				];
+					actualDataContainer.payload = {
+						...actualDataContainer.payload,
+						indicator: indicatorGuid,
+						title: indicator.payload.title,
+						values: yearValues
+					};
 
-				await createContainer(actualDataContainer)(connection);
+					actualDataContainer.user = [
+						{
+							predicate: predicates.enum['is-creator-of'],
+							subject: locals.user.guid
+						}
+					];
+
+					await createContainer(actualDataContainer)(connection);
+				}
 			}
 		}
 	});

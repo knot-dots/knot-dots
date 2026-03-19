@@ -4,6 +4,7 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
+	import saveContainer from '$lib/client/saveContainer';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
@@ -30,14 +31,6 @@
 	import {
 		type ActualDataContainer,
 		type Container,
-		type GoalStatus,
-		type ProgramStatus,
-		type ResourceCategory,
-		type ResourceUnit,
-		type RuleStatus,
-		type Status,
-		type TaskCategory,
-		type TaskStatus,
 		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
@@ -68,6 +61,39 @@
 		dragEnabled = false,
 		editable = false
 	}: Props = $props();
+
+	function saveActualData(actualData: ActualDataContainer | undefined, year: number) {
+		return async (event: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
+			const val = event.currentTarget.value;
+			if (!actualData) return;
+			const existingIdx = actualData.payload.values.findIndex(([y]) => y === year);
+			if (val === '' || val === null) {
+				if (existingIdx >= 0) {
+					actualData.payload.values.splice(existingIdx, 1);
+				}
+			} else {
+				const num = parseFloat(val);
+				if (!isNaN(num)) {
+					if (existingIdx >= 0) {
+						actualData.payload.values[existingIdx] = [year, num];
+					} else {
+						actualData.payload.values.push([year, num]);
+						actualData.payload.values.sort(
+							(a: [number, number], b: [number, number]) => a[0] - b[0]
+						);
+					}
+				}
+			}
+			const response = await saveContainer(actualData);
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				actualData.revision = updatedContainer.revision;
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		};
+	}
 </script>
 
 <div class="cell cell--action">
@@ -93,7 +119,7 @@
 {#each columns as col (col)}
 	{#if col === 'type'}
 		<div class="cell" class:cell--locked={editable}>
-			<span>{$_(container.payload.type) as string}</span>
+			<span>{$_(container.payload.type)}</span>
 		</div>
 	{:else if col === 'description'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
@@ -120,31 +146,31 @@
 				<StatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.status as Status}
+					bind:value={container.payload.status}
 				/>
 			{:else if 'taskStatus' in container.payload}
 				<TaskStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.taskStatus as TaskStatus}
+					bind:value={container.payload.taskStatus}
 				/>
 			{:else if 'ruleStatus' in container.payload}
 				<RuleStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.ruleStatus as RuleStatus}
+					bind:value={container.payload.ruleStatus}
 				/>
 			{:else if 'goalStatus' in container.payload}
 				<GoalStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.goalStatus as GoalStatus}
+					bind:value={container.payload.goalStatus}
 				/>
 			{:else if 'programStatus' in container.payload}
 				<ProgramStatusDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[-41, -41]}
-					bind:value={container.payload.programStatus as ProgramStatus}
+					bind:value={container.payload.programStatus}
 				/>
 			{/if}
 		</div>
@@ -211,7 +237,7 @@
 				<TaskCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
-					bind:value={container.payload.taskCategory as TaskCategory}
+					bind:value={container.payload.taskCategory}
 				/>
 			{/if}
 		</div>
@@ -307,40 +333,14 @@
 			(c) => isActualDataContainer(c) && c.payload.indicator === container.guid
 		)}
 		{@const values = actualData ? actualData.payload.values : []}
-		{@const idx = values.findIndex(([y]: [number, number]) => y === year)}
+		{@const idx = values.findIndex(([y]) => y === year)}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if editable && $ability.can('update', container)}
 				<input
-					type="number"
-					step="any"
+					type="text"
+					inputmode="numeric"
 					value={idx >= 0 ? values[idx][1] : ''}
-					onchange={async (e) => {
-						const input = e.currentTarget as HTMLInputElement;
-						const val = input.value;
-						if (!actualData) return;
-						const existingIdx = actualData.payload.values.findIndex(
-							([y]: [number, number]) => y === year
-						);
-						if (val === '' || val === null) {
-							if (existingIdx >= 0) {
-								actualData.payload.values.splice(existingIdx, 1);
-							}
-						} else {
-							const num = parseFloat(val);
-							if (!isNaN(num)) {
-								if (existingIdx >= 0) {
-									actualData.payload.values[existingIdx] = [year, num];
-								} else {
-									actualData.payload.values.push([year, num]);
-									actualData.payload.values.sort(
-										(a: [number, number], b: [number, number]) => a[0] - b[0]
-									);
-								}
-							}
-						}
-						const { default: saveContainer } = await import('$lib/client/saveContainer');
-						await saveContainer(actualData);
-					}}
+					onchange={saveActualData(actualData, year)}
 				/>
 			{:else if idx >= 0}
 				<span>{values[idx][1]}</span>
@@ -352,7 +352,7 @@
 {#if columns.includes('resourceCategory')}
 	<div class="cell cell--locked">
 		{#if 'resourceCategory' in container.payload}
-			<span>{$_(container.payload.resourceCategory as ResourceCategory) as string}</span>
+			<span>{$_(container.payload.resourceCategory)}</span>
 		{/if}
 	</div>
 {/if}
@@ -360,7 +360,7 @@
 {#if columns.includes('resourceUnit')}
 	<div class="cell cell--locked">
 		{#if 'resourceUnit' in container.payload}
-			<span>{$_(container.payload.resourceUnit as ResourceUnit) as string}</span>
+			<span>{$_(container.payload.resourceUnit)}</span>
 		{/if}
 	</div>
 {/if}
@@ -439,6 +439,15 @@
 		width: fit-content;
 	}
 
+	input[type='text'] {
+		border: none;
+		field-sizing: content;
+		line-height: 1.5;
+		min-width: 2rem;
+		padding: 0;
+		text-align: right;
+	}
+
 	.cell {
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-default-color: var(--color-gray-700);
@@ -480,11 +489,6 @@
 
 	:global(.row:hover .cell:hover input) {
 		background-color: var(--color-gray-100);
-	}
-
-	.cell > :global(input[type='number']) {
-		min-width: 4rem;
-		padding: 0;
 	}
 
 	.cell > :global(span),
