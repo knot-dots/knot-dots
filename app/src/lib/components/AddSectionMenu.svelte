@@ -246,7 +246,7 @@
 				? [
 						{
 							icon: Grid,
-							label: $_('custom_collection'),
+							label: $_('custom_collection.settings.embed_objects'),
 							value: payloadTypes.enum.custom_collection
 						}
 					]
