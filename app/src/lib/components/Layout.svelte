@@ -8,8 +8,6 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import Toast from '$lib/components/Toast.svelte';
-	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
 	import { overlay } from '$lib/stores';
 
@@ -32,18 +30,6 @@
 	let dialog: HTMLDialogElement;
 
 	setContext('createContainerDialog', { getElement: () => dialog });
-
-	let toasts = $state([] as ToastProps[]);
-
-	function addToast(toast: ToastProps) {
-		toasts = [...toasts, toast];
-	}
-
-	function removeToast(index: number) {
-		toasts = toasts.filter((_, i) => i !== index);
-	}
-
-	setToastContext(addToast);
 </script>
 
 <div class="app-wrapper">
@@ -58,12 +44,6 @@
 	</nav>
 
 	<div class="main-with-header-wrapper">
-		<div class="toasts">
-			{#each toasts as toast, index (index)}
-				<Toast {...toast} onclose={() => removeToast(index)} />
-			{/each}
-		</div>
-
 		{#if header}
 			{@render header()}
 		{:else}
@@ -118,16 +98,5 @@
 
 	main > :global(:is(:not(aside))) {
 		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
-	}
-
-	.toasts {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		position: fixed;
-		right: 3rem;
-		top: 6rem;
-		width: min(20rem, 80%);
-		z-index: 1000;
 	}
 </style>

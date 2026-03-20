@@ -11,6 +11,7 @@
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -28,6 +29,8 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let toast = getToastContext();
 
 	let canUploadCsv = $derived(
 		$ability.can(
@@ -58,7 +61,6 @@
 	// svelte-ignore non_reactive_update
 	let uploadDialog: HTMLDialogElement;
 	let uploadErrors: string[] = $state([]);
-	let uploadSuccess: boolean = $state(false);
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
 	let uppy: Uppy | undefined = $state();
 
@@ -111,7 +113,6 @@
 
 	function openUploadDialog() {
 		uploadErrors = [];
-		uploadSuccess = false;
 		uploadFiles = [];
 		uppy?.cancelAll();
 		uploadDialog.showModal();
@@ -151,7 +152,6 @@
 
 		instance.on('file-added', () => {
 			uploadErrors = [];
-			uploadSuccess = false;
 			syncUploadFiles();
 		});
 
@@ -162,10 +162,14 @@
 		instance.on('upload-success', (file, response) => {
 			const body = response?.body as { success?: boolean; errors?: string[] } | undefined;
 			if (body?.success) {
-				uploadSuccess = true;
 				uploadErrors = [];
+				uploadDialog.close();
+				toast({
+					status: 'success',
+					heading: $_('indicator_csv.upload'),
+					message: $_('indicator_csv.upload_success')
+				});
 				void invalidateAll();
-				setTimeout(() => uploadDialog.close(), 1500);
 			} else if (body?.errors) {
 				uploadErrors = body.errors;
 			}
@@ -218,10 +222,6 @@
 			</p>
 
 			<div class="details">
-				{#if uploadSuccess}
-					<p class="success-message">{$_('indicator_csv.upload_success')}</p>
-				{/if}
-
 				{#if uploadErrors.length > 0}
 					<ul class="error-list">
 						{#each uploadErrors as err (err)}
@@ -286,11 +286,6 @@
 
 	.dialog-actions span {
 		color: var(--color-gray-500);
-	}
-
-	.success-message {
-		color: var(--color-green-600);
-		margin-bottom: 1rem;
 	}
 
 	.error-list {

@@ -5,8 +5,10 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
 
@@ -28,6 +30,18 @@
 	});
 
 	setLastOverlayContext(lastOverlay);
+
+	let toasts = $state([] as ToastProps[]);
+
+	function addToast(toast: ToastProps) {
+		toasts = [...toasts, toast];
+	}
+
+	function removeToast(index: number) {
+		toasts = toasts.filter((_, i) => i !== index);
+	}
+
+	setToastContext(addToast);
 
 	const workspaceTranslated = $derived.by(() => {
 		const segments = page.url.pathname.split('/');
@@ -88,5 +102,24 @@
 
 {@render children()}
 
+<div class="toasts">
+	{#each toasts as toast, index (index)}
+		<Toast {...toast} onclose={() => removeToast(index)} />
+	{/each}
+</div>
+
 <SignupDialog bind:dialog />
 <UppyDashboardService />
+
+<style>
+	.toasts {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		position: fixed;
+		right: 3rem;
+		top: 6rem;
+		width: min(20rem, 80%);
+		z-index: 1000;
+	}
+</style>

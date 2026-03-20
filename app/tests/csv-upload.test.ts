@@ -31,11 +31,11 @@ test('upload CSV creates indicators', async ({ page, testOrganization }) => {
 	// Wait for the API response
 	await page.waitForResponse((r) => r.url().includes('/upload') && r.ok());
 
-	// Verify success message
-	await expect(dialog.getByText('Indicators were imported successfully.')).toBeVisible();
+	// Verify dialog closes and success toast appears
+	await expect(dialog).not.toBeVisible();
+	await expect(page.getByText('Indicators were imported successfully.')).toBeVisible();
 
-	// Close the dialog and verify the indicators appear in the table
-	await page.keyboard.press('Escape');
+	// Verify the indicators appear in the table
 	await expect(page.getByText('CSV Test Indicator A')).toBeVisible();
 	await expect(page.getByText('CSV Test Indicator B')).toBeVisible();
 });
