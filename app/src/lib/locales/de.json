@@ -311,6 +311,10 @@
 	"indicators.activate_selected": "Indikatoren einbinden",
 	"indicators.create_binary": "Binär-Indikator anlegen",
 	"indicators.create_custom": "Eigenen Indikator anlegen",
+	"individual_profile.create": "Individualprofil anlegen",
+	"individual_profile.link_to_individual": "Zum Individualprofil",
+	"individual_profile.link_to_standard": "Zum Standardprofil",
+	"individual_profile.title": "Individualprofil",
 	"info_box": "Infobox",
 	"invite": {
 		"email": "E-Mail-Adresse",
@@ -622,6 +626,7 @@
 	"status.in_implementation": "In Umsetzung",
 	"status.in_operation": "In Betrieb",
 	"status.in_planning": "In Planung",
+	"standard_profile.title": "Standardprofil",
 	"status.rejected": "Verworfen",
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",

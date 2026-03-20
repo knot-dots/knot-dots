@@ -16,6 +16,7 @@
 	import { onMount, onDestroy } from 'svelte';
 
 	interface Props {
+		actions?: Snippet;
 		children: Snippet;
 		container: OrganizationContainer | OrganizationalUnitContainer | PageContainer;
 		relatedContainers: AnyContainer[];
@@ -23,7 +24,14 @@
 		title: string;
 	}
 
-	let { children, container, relatedContainers, dialog = $bindable(), title }: Props = $props();
+	let {
+		actions,
+		children,
+		container,
+		relatedContainers,
+		dialog = $bindable(),
+		title
+	}: Props = $props();
 
 	let confirmDelete = $state(false);
 
@@ -109,7 +117,7 @@
 			<div class="details">
 				{@render children()}
 
-				<footer>
+				<footer class="dialog-footer-actions">
 					<button
 						class="button button-xs button-red"
 						onclick={(e) => {
@@ -126,6 +134,8 @@
 							}
 						})}
 					</button>
+
+					{@render actions?.()}
 				</footer>
 			</div>
 		{/if}
@@ -161,6 +171,14 @@
 
 	footer {
 		padding: 1.5rem;
+	}
+
+	.dialog-footer-actions {
+		align-items: center;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		justify-content: flex-start;
 	}
 
 	form {

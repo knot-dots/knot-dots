@@ -17,12 +17,14 @@ import {
 	isGoalContainer,
 	isIndicatorContainer,
 	isMeasureContainer,
+	isOrganizationalUnitContainer,
 	isProgramContainer,
 	isReportContainer,
 	isTaskContainer,
 	type MeasureContainer,
 	type NewContainer,
 	newContainer,
+	type OrganizationalUnitContainer,
 	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
@@ -445,6 +447,32 @@ async function copyProgram(
 	await createManyContainerRelations(relations)(txConnection);
 }
 
+async function copyOrganizationalUnitSections(
+	createdContainer: OrganizationalUnitContainer,
+	isIndividualProfileOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllRelatedContainers(
+			[],
+			isIndividualProfileOfRelation.object as string,
+			['is-section-of'],
+			{},
+			''
+		)(txConnection),
+		user
+	);
+
+	await copySectionsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		[createdContainer],
+		user.guid,
+		txConnection
+	);
+}
+
 async function copyReportContainer(
 	createdContainer: ReportContainer,
 	isCopyOfRelation: PartialRelation,
@@ -626,6 +654,20 @@ export const POST = (async ({ locals, request }) => {
 					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
 					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
+				}
+
+				const isIndividualProfileOfRelation = parseResult.data.relation.find(
+					({ object, predicate }) =>
+						predicate === predicates.enum['is-individual-profile-of'] && object !== undefined
+				);
+
+				if (isIndividualProfileOfRelation && isOrganizationalUnitContainer(createdContainer)) {
+					await copyOrganizationalUnitSections(
+						createdContainer,
+						isIndividualProfileOfRelation,
+						locals.user,
+						txConnection
+					);
 				}
 
 				return createdContainer;

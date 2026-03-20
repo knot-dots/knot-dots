@@ -220,6 +220,7 @@ const predicateValues = [
 	'implies',
 	'is-head-of',
 	'is-inconsistent-with',
+	'is-individual-profile-of',
 	'is-measured-by',
 	'is-member-of',
 	'is-objective-for',
@@ -378,7 +379,10 @@ export const goalType = z.enum(goalTypeValues);
 
 export type GoalType = z.infer<typeof goalType>;
 
-const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
+const organizationalUnitTypeValues = [
+	'organizational_unit_type.administrative_area',
+	'organizational_unit_type.individual_profile'
+] as const;
 
 export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
 
