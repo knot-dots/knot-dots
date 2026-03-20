@@ -59,7 +59,9 @@ test.describe('Budget Table in Goal Detail View', () => {
 		testSubordinateGoal,
 		testSubordinateGoalBudget, // eslint-disable-line @typescript-eslint/no-unused-vars
 		testSubordinateMeasure,
-		testSubordinateMeasureResourceData // eslint-disable-line @typescript-eslint/no-unused-vars
+		testSubordinateMeasureResourceData, // eslint-disable-line @typescript-eslint/no-unused-vars
+		testSubordinateGoalBudgetOtherResource, // eslint-disable-line @typescript-eslint/no-unused-vars
+		testSubordinateMeasureResourceDataOtherResource // eslint-disable-line @typescript-eslint/no-unused-vars
 	}) => {
 		await dotsBoard.goto(`/${testGoal.organization}`);
 
@@ -110,6 +112,9 @@ test.describe('Budget Table in Goal Detail View', () => {
 		await expect(subordinateMeasureRow).toBeVisible();
 		await expect(subordinateMeasureRow.locator('td').nth(0)).toContainText('5,000');
 		await expect(subordinateMeasureRow.locator('td').nth(1)).toContainText('7,000');
+
+		// Verify resource data from a different ResourceV2 does not appear in this table
+		await expect(table.getByText('99,000')).not.toBeVisible();
 
 		// Clean up - navigate back and delete the section
 		await dotsBoard.overlay.backButton.click();

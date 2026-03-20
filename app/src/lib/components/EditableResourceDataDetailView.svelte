@@ -127,6 +127,9 @@
 		);
 	});
 
+	// Fetch all ResourceData containers in the organization to find those related
+	// to subordinate goals and measures if the current container is a budget container.
+	// Only fetch ResourceData containers which have the same resource as the current container.
 	let allResourceDataContainers = $state<ResourceDataContainer[]>([]);
 
 	$effect(() => {
@@ -142,7 +145,9 @@
 			},
 			'alpha'
 		).then((containers) => {
-			allResourceDataContainers = containers.filter(isResourceDataContainer);
+			allResourceDataContainers = containers
+				.filter(isResourceDataContainer)
+				.filter((c) => c.payload.resource === container.payload.resource);
 		});
 	});
 
