@@ -13,6 +13,7 @@ import {
 	type NewContainer,
 	type ObjectiveContainer,
 	type OrganizationalUnitContainer,
+	organizationalUnitType,
 	type OrganizationContainer,
 	payloadTypes,
 	type Predicate,
@@ -52,6 +53,7 @@ type MyWorkerFixtures = {
 	defaultOrganization: OrganizationContainer;
 	testOrganization: OrganizationContainer;
 	testOrganizationalUnit: OrganizationalUnitContainer;
+	testIndividualProfile: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
 	testSubordinateGoal: GoalContainer;
@@ -77,7 +79,7 @@ type MyWorkerFixtures = {
 
 locale.set('en');
 
-async function createContainer(context: BrowserContext, newContainer: NewContainer) {
+export async function createContainer(context: BrowserContext, newContainer: NewContainer) {
 	const response = await context.request.post('/container', { data: newContainer });
 
 	if (!response.ok()) {
@@ -87,7 +89,7 @@ async function createContainer(context: BrowserContext, newContainer: NewContain
 	return response.json();
 }
 
-async function deleteContainer(context: BrowserContext, container: AnyContainer) {
+export async function deleteContainer(context: BrowserContext, container: AnyContainer) {
 	const response = await context.request.get(`/container/${container.guid}`);
 
 	if (!response.ok()) {
@@ -293,6 +295,39 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testOrganizationalUnit);
 
 			await deleteContainer(adminContext, testOrganizationalUnit);
+		},
+		{ scope: 'worker' }
+	],
+	testIndividualProfile: [
+		async ({ adminContext, testOrganization, testOrganizationalUnit }, use, workerInfo) => {
+			const newIndividualProfile = containerOfType(
+				payloadTypes.enum.organizational_unit,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as OrganizationalUnitContainer;
+
+			const testIndividualProfile = await createContainer(adminContext, {
+				...newIndividualProfile,
+				payload: {
+					...newIndividualProfile.payload,
+					name: `${testOrganizationalUnit.payload.name} - Individual ${workerInfo.workerIndex}`,
+					organizationalUnitType:
+						organizationalUnitType.enum['organizational_unit_type.individual_profile']
+				},
+				relation: [
+					{
+						object: testOrganizationalUnit.guid,
+						position: 0,
+						predicate: predicates.enum['is-individual-profile-of']
+					}
+				]
+			});
+
+			await use(testIndividualProfile);
+
+			await deleteContainer(adminContext, testIndividualProfile);
 		},
 		{ scope: 'worker' }
 	],
