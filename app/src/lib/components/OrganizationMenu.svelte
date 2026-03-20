@@ -90,10 +90,14 @@
 		return organizationalUnitsByLevel;
 	});
 
+	// To preserve the context when switching the organization or organizational
+	// unit, the first URL segment is checked for a UUID. If present, it
+	// represents the GUID of the entity and is ignored to extract the remaining
+	// path (workspace).
 	let pathnameWithoutContextSegment = $derived.by(() => {
 		const pathnameSegments = page.url.pathname.split('/');
 
-		if (pathnameSegments.length > 1 && z.uuid().parse(pathnameSegments[1])) {
+		if (pathnameSegments.length > 1 && z.uuid().safeParse(pathnameSegments[1]).success) {
 			return [pathnameSegments.slice(0, 1), ...pathnameSegments.slice(2)].join('/');
 		} else {
 			return page.url.pathname;
