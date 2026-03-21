@@ -35,10 +35,9 @@
 <div class="dropdown">
 	<div class="combobox-input">
 		<input
-			use:combobox.input
 			aria-labelledby={labelledBy}
+			use:combobox.input
 			{onchange}
-			oninput={(e) => e.stopPropagation()}
 			value={$combobox.selected?.nameOSM ?? ''}
 		/>
 		<ChevronSort />

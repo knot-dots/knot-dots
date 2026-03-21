@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { flip } from 'svelte/animate';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import type { ActualDataContainer, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -36,14 +35,13 @@
 		}
 	}
 
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let rows = $state([] as Container[]);
-
-	$effect(() => {
+	let rows = $derived.by(() => {
 		if (categoryOptions) {
-			rows = $state.snapshot(originalRows.map(ensureAllCategoriesArePresent));
+			return originalRows
+				.map(ensureAllCategoriesArePresent)
+				.map((c) => autoSaveContainer(c, 2000, ''));
 		} else {
-			rows = $state.snapshot(originalRows);
+			return originalRows.map((c) => autoSaveContainer(c, 2000, ''));
 		}
 	});
 </script>
@@ -61,13 +59,7 @@
 
 		<div class="table-body">
 			{#each rows as row, i (row.guid)}
-				<form
-					animate:flip={{ duration: 100 }}
-					class="row"
-					oninput={requestSubmit}
-					onsubmit={autoSave(row, 2000)}
-					novalidate
-				>
+				<div animate:flip={{ duration: 100 }} class="row">
 					<EditableRow
 						{categoryOptions}
 						columns={columns.map(({ key }) => key)}
@@ -75,7 +67,7 @@
 						editable={$applicationState.containerDetailView.editable}
 						{actualDataContainers}
 					/>
-				</form>
+				</div>
 			{/each}
 		</div>
 	</div>

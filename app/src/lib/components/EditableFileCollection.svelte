@@ -9,9 +9,6 @@
 	import FileDoc from '~icons/flowbite/file-doc-solid';
 	import FilePDF from '~icons/flowbite/file-pdf-solid';
 	import Close from '~icons/knotdots/close';
-	import { invalidateAll } from '$app/navigation';
-	import requestSubmit from '$lib/client/requestSubmit';
-	import saveContainer from '$lib/client/saveContainer';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import type { AnyContainer, FileCollectionContainer } from '$lib/models';
@@ -65,25 +62,12 @@
 		}
 	});
 
-	uppy.on('complete', async () => {
-		const res = await saveContainer(container);
-		if (res.ok) {
-			const updatedContainer = await res.json();
-			container.revision = updatedContainer.revision;
-			await invalidateAll();
-		} else {
-			const error = await res.json();
-			alert(error.message);
-		}
-	});
-
 	function remove(index: number) {
-		return (event: Event) => {
+		return () => {
 			container.payload.file = [
 				...container.payload.file.slice(0, index),
 				...container.payload.file.slice(index + 1)
 			];
-			requestSubmit(event);
 		};
 	}
 </script>

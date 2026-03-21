@@ -9,10 +9,10 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
+	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';

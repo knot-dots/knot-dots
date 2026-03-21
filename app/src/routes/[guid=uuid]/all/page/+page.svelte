@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
 	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
 	import Layout from '$lib/components/Layout.svelte';
@@ -8,10 +9,7 @@
 
 	let { data }: PageProps = $props();
 
-	let container = $derived.by(() => {
-		let _ = $state(data.container);
-		return _;
-	});
+	let container = $derived(autoSaveContainer(data.container, 2000, data.container.payload.type));
 
 	let relatedContainers = $derived(data.relatedContainers);
 

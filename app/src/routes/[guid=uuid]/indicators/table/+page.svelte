@@ -12,6 +12,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { getCategoryKeys } from '$lib/categoryOptions';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import { getToastContext } from '$lib/contexts/toast';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import FileUpload from '$lib/components/FileUpload.svelte';
@@ -64,7 +65,9 @@
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
 	let uppy: Uppy | undefined = $state();
 
-	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
+	let actualDataContainers = $derived(
+		data.containers.filter(isActualDataContainer).map((c) => autoSaveContainer(c, 2000, ''))
+	);
 
 	let filteredRows = $derived(
 		data.containers.filter(

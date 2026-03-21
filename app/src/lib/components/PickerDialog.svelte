@@ -35,7 +35,7 @@
 	}: Props = $props();
 </script>
 
-<dialog bind:this={dialog} oninput={(e) => e.stopPropagation()}>
+<dialog bind:this={dialog}>
 	<form method="dialog">
 		<div class="commands">
 			<span>{title}</span>

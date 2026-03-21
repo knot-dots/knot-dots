@@ -9,7 +9,6 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -33,17 +32,11 @@
 
 	interface Props {
 		container: EffectContainer;
-		disableRefreshOnSave?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		disableRefreshOnSave = false,
-		layout,
-		revisions
-	}: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -105,7 +98,7 @@
 	}
 
 	function removeYear(index: number) {
-		return (event: Event) => {
+		return () => {
 			container.payload.plannedValues = [
 				...container.payload.plannedValues.slice(0, index),
 				...container.payload.plannedValues.slice(index + 1)
@@ -114,7 +107,6 @@
 				...container.payload.achievedValues.slice(0, index),
 				...container.payload.achievedValues.slice(index + 1)
 			];
-			requestSubmit(event);
 		};
 	}
 
@@ -123,7 +115,6 @@
 			container.payload.achievedValues[index][1] = parseFloat(
 				(event.currentTarget as HTMLInputElement).value
 			);
-			requestSubmit(event);
 		};
 	}
 
@@ -132,7 +123,6 @@
 			container.payload.plannedValues[index][1] = parseFloat(
 				(event.currentTarget as HTMLInputElement).value
 			);
-			requestSubmit(event);
 		};
 	}
 
@@ -149,10 +139,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView
-		bind:container
-		invalidateResource={disableRefreshOnSave ? '' : undefined}
-	>
+	<EditableContainerDetailView bind:container>
 		{#snippet data()}
 			<EffectProperties
 				bind:container

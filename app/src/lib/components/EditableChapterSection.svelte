@@ -27,11 +27,9 @@
 	function handleInputNumber(event: Event) {
 		const input = event.currentTarget as HTMLInputElement;
 
-		if (!input.validity.valid) {
-			event.stopPropagation();
+		if (input.validity.valid) {
+			container.payload.number = input.value;
 		}
-
-		container.payload.number = input.value;
 	}
 </script>
 

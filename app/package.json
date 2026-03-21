@@ -63,6 +63,7 @@
 		"globals": "^17.4.0",
 		"leaflet": "^1.9.4",
 		"nodemailer": "^7.0.13",
+		"p-debounce": "^5.1.0",
 		"postcss": "^8.5.9",
 		"prettier": "^3.8.2",
 		"prettier-plugin-svelte": "^3.5.1",

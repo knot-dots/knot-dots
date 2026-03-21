@@ -5,7 +5,6 @@
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
 	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
-	import saveContainer from '$lib/client/saveContainer';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
@@ -88,14 +87,6 @@
 						);
 					}
 				}
-			}
-			const response = await saveContainer(actualData);
-			if (response.ok) {
-				const updatedContainer = await response.json();
-				actualData.revision = updatedContainer.revision;
-			} else {
-				const error = await response.json();
-				alert(error.message);
 			}
 		};
 	}

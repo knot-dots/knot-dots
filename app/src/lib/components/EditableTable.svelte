@@ -232,9 +232,6 @@
 			return;
 		}
 
-		// Stop propagation so parent forms or auto-save handlers do not double-save
-		event.stopPropagation();
-
 		// Callers own the container-specific mutation logic so the same table component can
 		// edit resource entries, indicator values, and future yearly datasets
 		setEntry(row.container, year, input.value === '' ? null : parsed);

@@ -6,6 +6,7 @@
 	import ChevronDoubleRight from '~icons/flowbite/chevron-double-right-outline';
 	import { invalidateAll, pushState } from '$app/navigation';
 	import { page } from '$app/state';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
@@ -57,6 +58,12 @@
 	}
 
 	let newObjectiveOrEffect = $state<EffectContainer | ObjectiveContainer>();
+
+	let autoSaveObjectiveOrEffect = $derived.by(() => {
+		if (newObjectiveOrEffect) {
+			return autoSaveContainer(newObjectiveOrEffect, 2000, '');
+		}
+	});
 
 	async function handleConfirm() {
 		if (selected) {
@@ -131,7 +138,7 @@
 				<IndicatorTemplatePicker onSelect={handleSelect} {target} value={selected} />
 			{:else if page.state.createObjectiveOrEffect.step === 2 && selected}
 				<IndicatorTemplatePreview container={selected} />
-			{:else if page.state.createObjectiveOrEffect.step === 3 && newObjectiveOrEffect}
+			{:else if page.state.createObjectiveOrEffect.step === 3 && autoSaveObjectiveOrEffect}
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
 						<div class="step-3-layout-left">
@@ -143,22 +150,20 @@
 					{/if}
 
 					<div class="step-3-layout-right">
-						{#if isEffectContainer(newObjectiveOrEffect)}
+						{#if isEffectContainer(autoSaveObjectiveOrEffect)}
 							<EditableEffectDetailView
-								bind:container={newObjectiveOrEffect}
-								disableRefreshOnSave
-								revisions={[newObjectiveOrEffect]}
+								bind:container={autoSaveObjectiveOrEffect}
+								revisions={[autoSaveObjectiveOrEffect]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 								{#snippet layout(header: Snippet, main: Snippet)}
 									{@render main()}
 								{/snippet}
 							</EditableEffectDetailView>
-						{:else if isObjectiveContainer(newObjectiveOrEffect)}
+						{:else if isObjectiveContainer(autoSaveObjectiveOrEffect)}
 							<EditableObjectiveDetailView
-								bind:container={newObjectiveOrEffect}
-								disableRefreshOnSave
-								revisions={[newObjectiveOrEffect]}
+								bind:container={autoSaveObjectiveOrEffect}
+								revisions={[autoSaveObjectiveOrEffect]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 								{#snippet layout(header: Snippet, main: Snippet)}

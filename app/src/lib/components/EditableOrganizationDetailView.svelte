@@ -2,8 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import EditableCover from '$lib/components/EditableCover.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -14,8 +12,8 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import { type Container, type OrganizationContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		container: OrganizationContainer;
@@ -35,8 +33,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	const handleSubmit = $derived(autoSave(container, 2000, container.payload.type));
 </script>
 
 {#snippet header()}
@@ -55,67 +51,65 @@
 				? backgroundColors.get(container.payload.color)
 				: 'white'}"
 		>
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<div class="stage--buttons details-section">
-					<EditableCover
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						label={$_('add_cover')}
-						bind:value={container.payload.cover}
-					/>
-					<ColorDropdown
-						buttonStyle="button"
-						bind:value={container.payload.color}
-						label={$_('highlight')}
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-				</div>
-				<header class="details-section">
-					<EditableLogo
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.image}
-					/>
+			<div class="stage--buttons details-section">
+				<EditableCover
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('add_cover')}
+					bind:value={container.payload.cover}
+				/>
+				<ColorDropdown
+					buttonStyle="button"
+					bind:value={container.payload.color}
+					label={$_('highlight')}
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
+			</div>
+			<header class="details-section">
+				<EditableLogo
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					bind:value={container.payload.image}
+				/>
 
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<h1
-							class="details-title"
-							contenteditable="plaintext-only"
-							bind:textContent={container.payload.name}
-							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-						></h1>
-					{:else}
-						<h1 class="details-title" contenteditable="false">
-							{container.payload.name}
-						</h1>
-					{/if}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<h1
+						class="details-title"
+						contenteditable="plaintext-only"
+						bind:textContent={container.payload.name}
+						onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+					></h1>
+				{:else}
+					<h1 class="details-title" contenteditable="false">
+						{container.payload.name}
+					</h1>
+				{/if}
 
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<button class="action-button" onclick={() => dialog.showModal()} type="button">
-							<Ellipsis />
-							<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-						</button>
-					{/if}
-				</header>
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<button class="action-button" onclick={() => dialog.showModal()} type="button">
+						<Ellipsis />
+						<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+					</button>
+				{/if}
+			</header>
 
-				<PropertiesDialog
-					bind:dialog
-					{container}
-					{relatedContainers}
-					title={$_('organization.properties.title')}
-				>
-					<OrganizationProperties bind:container editable={$ability.can('update', container)} />
-				</PropertiesDialog>
+			<PropertiesDialog
+				bind:dialog
+				{container}
+				{relatedContainers}
+				title={$_('organization.properties.title')}
+			>
+				<OrganizationProperties bind:container editable={$ability.can('update', container)} />
+			</PropertiesDialog>
 
-				{#key container.guid}
-					<EditableFormattedText
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.description}
-					/>
-				{/key}
-			</form>
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					bind:value={container.payload.description}
+				/>
+			{/key}
 		</div>
 
 		<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>

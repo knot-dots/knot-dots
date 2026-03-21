@@ -3,7 +3,6 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import tooltip from '$lib/attachments/tooltip';
 	import UppyImageUploader from '$lib/components/UppyImageUploader.svelte';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import transformFileURL from '$lib/transformFileURL.js';
 
 	interface Props {
@@ -26,9 +25,8 @@
 		};
 	}
 
-	function remove(event: Event) {
+	function remove() {
 		value = undefined;
-		requestSubmit(event);
 	}
 </script>
 

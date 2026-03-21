@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import saveContainer from '$lib/client/saveContainer';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
 		type Container,
@@ -67,6 +69,18 @@
 				: []),
 			...container.relation.slice(isPartOfMeasureIndex + 1)
 		];
+
+		if ('guid' in container) {
+			const response = await saveContainer(container);
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.revision = updatedContainer.revision;
+				await invalidate('containers');
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		}
 	}
 </script>
 
