@@ -47,7 +47,6 @@
 	class:drop-zone--is-uploading={status === 'uploading'}
 	class:drop-zone--has-error={errorMessage}
 	{...getRootProps()}
-	oninput={(e) => e.stopPropagation()}
 >
 	<input {...getInputProps()} class="is-visually-hidden" />
 	<Upload />

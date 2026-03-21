@@ -4,7 +4,6 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
-	import saveContainer from '$lib/client/saveContainer';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
@@ -80,14 +79,6 @@
 						);
 					}
 				}
-			}
-			const response = await saveContainer(actualData);
-			if (response.ok) {
-				const updatedContainer = await response.json();
-				actualData.revision = updatedContainer.revision;
-			} else {
-				const error = await response.json();
-				alert(error.message);
 			}
 		};
 	}

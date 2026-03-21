@@ -2,6 +2,7 @@
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
@@ -69,10 +70,7 @@
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
 			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
-			.map((c) => {
-				let _ = $state(c);
-				return _;
-			})
+			.map((c) => autoSaveContainer(c, 2000))
 	);
 
 	let customActualDataContainer = $derived(
@@ -463,7 +461,9 @@
 
 		try {
 			const response = await saveContainer(newActualDataContainer);
-			if (!response.ok) {
+			if (response.ok) {
+				relatedContainers = [...relatedContainers, await response.json()];
+			} else {
 				const error = await response.json();
 				alert(error.message);
 				return;

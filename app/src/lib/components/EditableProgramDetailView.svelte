@@ -6,9 +6,8 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
@@ -122,7 +121,7 @@
 				}
 			}
 
-			parts = filtered;
+			parts = filtered.map((c) => autoSaveContainer(c, 2000));
 		}
 	});
 
@@ -187,24 +186,11 @@
 
 		createContainerDialog.getElement().showModal();
 	}
-
-	function stopPropagation(fn: (event: Event) => void) {
-		return function (this: Event, event: Event) {
-			event.stopPropagation();
-			fn.call(this, event);
-		};
-	}
 </script>
 
 {#snippet row(parts: Container[], dragEnabled: boolean)}
 	{#each parts as part, i (part.guid)}
-		<form
-			class="row"
-			animate:flip={{ duration: 100 }}
-			oninput={requestSubmit}
-			onsubmit={autoSave(part, 2000)}
-			novalidate
-		>
+		<div class="row" animate:flip={{ duration: 100 }}>
 			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 			<!-- svelte-ignore binding_property_non_reactive -->
 			<EditableRow
@@ -228,7 +214,7 @@
 				{dragEnabled}
 				editable={$applicationState.containerDetailView.editable}
 			/>
-		</form>
+		</div>
 	{/each}
 {/snippet}
 
@@ -250,12 +236,7 @@
 
 				<div class="chapters">
 					{#each filteredParts as part, i (part.guid)}
-						<form
-							class="details-section"
-							oninput={stopPropagation(requestSubmit)}
-							onsubmit={autoSave(part, 2000)}
-							novalidate
-						>
+						<div class="details-section">
 							<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 							<!-- svelte-ignore binding_property_non_reactive -->
 							<EditableChapter
@@ -265,7 +246,7 @@
 								isPartOf={container}
 								{relatedContainers}
 							/>
-						</form>
+						</div>
 					{:else}
 						{#if $ability.can('create', containerOfType(payloadTypes.enum.undefined, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM))}
 							<DropDownMenu

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
@@ -24,11 +22,10 @@
 
 	let w = $state(0);
 
-	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
 </script>
 
-<form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+<div class="content-details">
 	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
 		<header class="details-section">
 			<div class="details-header">
@@ -76,7 +73,7 @@
 
 		{@render data?.()}
 	</article>
-</form>
+</div>
 
 {#if detailViewHelpSlug}
 	<Help slug={detailViewHelpSlug} />

@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { invalidate } from '$app/navigation';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
@@ -56,10 +57,7 @@
 			})
 			.filter((entry): entry is { position: number; term: TermContainer } => entry !== null)
 			.toSorted((a, b) => a.position - b.position)
-			.map(({ term }) => {
-				let _ = $state(term);
-				return _;
-			})
+			.map(({ term }) => autoSaveContainer(term, 2000))
 	);
 
 	let termItems: TermDragItem[] = $derived.by(() => {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
@@ -58,10 +59,7 @@
 
 	let { container: originalContainer, layout, revisions = [] }: Props = $props();
 
-	let container = $derived.by(() => {
-		let _ = $state(originalContainer);
-		return _;
-	});
+	let container = $derived(autoSaveContainer(originalContainer, 2000));
 </script>
 
 {#if isBinaryIndicatorContainer(container)}

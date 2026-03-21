@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { invalidate } from '$app/navigation';
-	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -24,36 +22,8 @@
 
 	const id = crypto.randomUUID();
 
-	let timer: ReturnType<typeof setTimeout>;
-
-	async function handleInput(event: Event) {
-		event.stopPropagation();
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			const response = await saveContainer(parentContainer);
-			if (response.ok) {
-				const updatedContainer = await response.json();
-				parentContainer.revision = updatedContainer.revision;
-				await invalidate('containers');
-			} else {
-				const error = await response.json();
-				alert(error.message);
-			}
-		}, 2000);
-	}
-
 	async function handleDelete() {
 		parentContainer.payload.summary = undefined;
-
-		const response = await saveContainer(parentContainer);
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
 	}
 </script>
 
@@ -85,7 +55,6 @@
 		{id}
 		maxlength={200}
 		name="summary"
-		oninput={handleInput}
 		placeholder={$_('empty')}
 		rows={1}
 	/>

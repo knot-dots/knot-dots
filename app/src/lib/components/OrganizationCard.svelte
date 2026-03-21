@@ -26,9 +26,7 @@
 	let relatedTo = $derived(page.url.searchParams.get('related-to'));
 
 	function toggleRelatedTo(params: URLSearchParams) {
-		return async (event: Event) => {
-			event.stopPropagation();
-
+		return async () => {
 			const query = new URLSearchParams(params);
 			if (relatedTo === container.guid) {
 				query.delete('related-to');

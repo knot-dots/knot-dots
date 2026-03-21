@@ -2,9 +2,8 @@
 	import type { Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { page } from '$app/state';
-	import autoSave from '$lib/client/autoSave';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import { filterCategoryContext } from '$lib/categoryOptions';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import type { ActualDataContainer, AnyContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
@@ -38,10 +37,7 @@
 	}
 
 	let rows = $derived(
-		originalRows.map((row) => {
-			let _ = $state(ensureAllCategoriesArePresent(row));
-			return _;
-		})
+		originalRows.map((row) => autoSaveContainer(ensureAllCategoriesArePresent(row), 2000))
 	);
 </script>
 
@@ -58,20 +54,14 @@
 
 		<div class="table-body">
 			{#each rows as row, i (row.guid)}
-				<form
-					animate:flip={{ duration: 100 }}
-					class="row"
-					oninput={requestSubmit}
-					onsubmit={autoSave(row, 2000)}
-					novalidate
-				>
+				<div animate:flip={{ duration: 100 }} class="row">
 					<EditableRow
 						columns={columns.map(({ key }) => key)}
 						bind:container={rows[i]}
 						editable={$applicationState.containerDetailView.editable}
 						{actualDataContainers}
 					/>
-				</form>
+				</div>
 			{/each}
 		</div>
 	</div>

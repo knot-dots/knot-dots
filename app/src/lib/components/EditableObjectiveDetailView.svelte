@@ -9,7 +9,6 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -100,12 +99,11 @@
 	}
 
 	function remove(index: number) {
-		return (event: Event) => {
+		return () => {
 			container.payload.wantedValues = [
 				...container.payload.wantedValues.slice(0, index),
 				...container.payload.wantedValues.slice(index + 1)
 			];
-			requestSubmit(event);
 		};
 	}
 
@@ -114,7 +112,6 @@
 			container.payload.wantedValues[index][1] = parseFloat(
 				(event.currentTarget as HTMLInputElement).value
 			);
-			requestSubmit(event);
 		};
 	}
 

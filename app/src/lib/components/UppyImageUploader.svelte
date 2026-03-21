@@ -8,8 +8,6 @@
 	import UploadIcon from '~icons/flowbite/upload-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
-	import requestSubmit from '$lib/client/requestSubmit';
-	import requestSubmitElement from '$lib/client/requestSubmitElement';
 	import { openDashboard, closeDashboard } from '$lib/uppyStore';
 
 	interface Props {
@@ -104,9 +102,6 @@
 		if (response.body && response.body.url) {
 			const url = response.body.url;
 			value = url;
-			const input = document.getElementById(id);
-			if (input) requestSubmitElement(input);
-
 			if (onSuccess) onSuccess(url);
 		}
 		uploadInProgress = false;
@@ -137,10 +132,9 @@
 		input?.click();
 	}
 
-	function removeImage(event: Event) {
+	function removeImage() {
 		value = undefined;
 		uppy.clear();
-		requestSubmit(event);
 	}
 
 	onDestroy(() => {

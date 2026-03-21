@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { invalidate } from '$app/navigation';
-	import saveContainer from '$lib/client/saveContainer';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
 		type AnyContainer,
@@ -28,30 +26,8 @@
 
 	const id = crypto.randomUUID();
 
-	async function handleChange() {
-		const response = await saveContainer(parentContainer);
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
-	}
-
 	async function handleDelete() {
 		parentContainer.payload.progress = undefined;
-
-		const response = await saveContainer(parentContainer);
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
 	}
 </script>
 
@@ -82,8 +58,6 @@
 			list="steps"
 			max="1"
 			min="0"
-			onchange={handleChange}
-			oninput={(e) => e.stopPropagation()}
 			step="0.1"
 			type="range"
 		/>

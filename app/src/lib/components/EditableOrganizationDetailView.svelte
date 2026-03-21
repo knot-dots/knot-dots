@@ -2,8 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
@@ -37,8 +35,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	const handleSubmit = $derived(autoSave(container, 2000));
 </script>
 
 {#snippet header()}
@@ -56,72 +52,70 @@
 				? backgroundColors.get(container.payload.color)
 				: 'white'}"
 		>
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<div class="stage--buttons details-section">
-					<CoverUpload
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						label={$_('add_cover')}
-						bind:value={container.payload.cover}
-					/>
-					<ColorDropdown
-						buttonStyle="button"
-						bind:value={container.payload.color}
-						label={$_('highlight')}
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
+			<div class="stage--buttons details-section">
+				<CoverUpload
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('add_cover')}
+					bind:value={container.payload.cover}
+				/>
+				<ColorDropdown
+					buttonStyle="button"
+					bind:value={container.payload.color}
+					label={$_('highlight')}
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+				{/if}
+			</div>
+			<header class="details-section">
+				<EditableLogo
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					bind:value={container.payload.image}
+				/>
+
+				{#if !container.payload.imageReplacesName}
 					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+						<h1
+							class="details-title"
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.name}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+					{:else}
+						<h1 class="details-title" contenteditable="false">
+							{container.payload.name}
+						</h1>
 					{/if}
-				</div>
-				<header class="details-section">
-					<EditableLogo
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.image}
-					/>
+				{/if}
 
-					{#if !container.payload.imageReplacesName}
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class="details-title"
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.name}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-						{:else}
-							<h1 class="details-title" contenteditable="false">
-								{container.payload.name}
-							</h1>
-						{/if}
-					{/if}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					<button class="action-button" onclick={() => dialog.showModal()} type="button">
+						<Ellipsis />
+						<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+					</button>
+				{/if}
+			</header>
 
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<button class="action-button" onclick={() => dialog.showModal()} type="button">
-							<Ellipsis />
-							<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-						</button>
-					{/if}
-				</header>
+			<PropertiesDialog
+				bind:dialog
+				{container}
+				{relatedContainers}
+				title={$_('organization.properties.title')}
+			>
+				<OrganizationProperties bind:container editable={$ability.can('update', container)} />
+			</PropertiesDialog>
 
-				<PropertiesDialog
-					bind:dialog
-					{container}
-					{relatedContainers}
-					title={$_('organization.properties.title')}
-				>
-					<OrganizationProperties bind:container editable={$ability.can('update', container)} />
-				</PropertiesDialog>
-
-				{#key container.guid}
-					<EditableFormattedText
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.description}
-					/>
-				{/key}
-			</form>
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					bind:value={container.payload.description}
+				/>
+			{/key}
 		</div>
 
 		<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
