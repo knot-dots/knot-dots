@@ -35,11 +35,17 @@
 
 	interface Props {
 		container: ObjectiveContainer;
+		disableRefreshOnSave?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, revisions }: Props = $props();
+	let {
+		container = $bindable(),
+		disableRefreshOnSave = false,
+		layout,
+		revisions
+	}: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -137,7 +143,10 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container>
+	<EditableContainerDetailView
+		bind:container
+		invalidateResource={disableRefreshOnSave ? '' : undefined}
+	>
 		{#snippet data()}
 			<ObjectiveProperties
 				bind:container
