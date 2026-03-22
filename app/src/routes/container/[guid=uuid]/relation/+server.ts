@@ -7,16 +7,16 @@ import {
 	audience,
 	isContainerWithEffect,
 	isIndicatorContainer,
+	isIndicatorTemplateContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	relation,
 	programTypes,
+	relation,
 	sustainableDevelopmentGoals,
 	taskCategories,
-	topics,
-	isIndicatorTemplateContainer
+	topics
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
@@ -25,6 +25,7 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
+	getManyContainers,
 	updateManyContainerRelations
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -98,6 +99,30 @@ export const GET = (async ({ locals, params, url }) => {
 					})
 				);
 			}
+		} else if (isIndicatorTemplateContainer(container)) {
+			const [actualDataContainers, sectionContainers] = await Promise.all([
+				locals.pool.connect(
+					getManyContainers(
+						parseResult.data.organization,
+						{
+							indicators: [container.guid],
+							organizationalUnits: parseResult.data.organizationalUnit,
+							type: [payloadTypes.enum.actual_data]
+						},
+						'alpha'
+					)
+				),
+				locals.pool.connect(
+					getAllRelatedContainers(
+						parseResult.data.organization,
+						container.guid,
+						['is-section-of'],
+						{},
+						'alpha'
+					)
+				)
+			]);
+			containers = [...actualDataContainers, ...sectionContainers];
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(
