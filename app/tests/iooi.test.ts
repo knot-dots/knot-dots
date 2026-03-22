@@ -54,7 +54,7 @@ test.describe('Goal IOOI Board', () => {
 			dotsBoard,
 			isMobile,
 			testGoal,
-			testIndicator
+			testIndicatorTemplate
 		}) => {
 			test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
@@ -66,27 +66,45 @@ test.describe('Goal IOOI Board', () => {
 			// Navigate to IOOI workspace
 			await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
 			await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+			await expect(dotsBoard.overlay.locator.getByText('Output')).toBeVisible();
+			await dotsBoard.overlay.fullScreenButton.click();
 
-			// Create new objective in Output column
-			const column = dotsBoard.overlay.locator.locator('section', { hasText: iooiType });
-			await column.getByRole('button', { name: 'Add item' }).first().click();
+			// Create a new objective in Output column
+			const column = dotsBoard.column(iooiType);
+			await column.addItemButton.click();
 
-			// Select indicator from catalog
-			await dotsBoard.overlay.locator
-				.getByRole('article', { name: testIndicator.payload.title })
-				.getByRole('button', { name: 'Select this template' })
+			// Verify the dialog for creating objectives and effects opens
+			await expect(dotsBoard.page.getByRole('dialog').getByRole('navigation')).toContainText(
+				'Select indicator'
+			);
+
+			// Select an indicator template from the dialog
+			await dotsBoard.page
+				.getByRole('dialog')
+				.getByText(testIndicatorTemplate.payload.title)
 				.click();
 
-			// Verify the objective was created and overlay is showing it
-			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
+			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
 
-			// Go back to IOOI board and verify objective is in Output column
-			await dotsBoard.page.goto(`/${testGoal.organization}#goal-iooi=${testGoal.guid}`);
-			await expect(column.getByTitle(testIndicator.payload.title)).toBeVisible();
+			// Verify the objective can be edited
+			await expect(
+				dotsBoard.page
+					.getByRole('article')
+					.getByRole('heading', { level: 1, name: testIndicatorTemplate.payload.title })
+			).toBeVisible();
+			await expect(dotsBoard.page.getByRole('article')).toContainText('Objective');
+			await expect(
+				dotsBoard.page.getByRole('article').getByRole('textbox', { name: 'Description' })
+			).toBeEditable();
+
+			// Close dialog and verify objective is in Output column
+			await dotsBoard.page.getByRole('button', { name: 'Confirm' }).click();
+			await expect(dotsBoard.page.getByRole('dialog')).not.toBeVisible();
+			await expect(column.card(testIndicatorTemplate.payload.title)).toBeVisible();
 
 			// Delete the created objective
-			await column.getByTitle(testIndicator.payload.title).click();
-			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
+			await column.card(testIndicatorTemplate.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});
@@ -287,7 +305,7 @@ test.describe('Measure IOOI Board', () => {
 			dotsBoard,
 			isMobile,
 			testMeasure,
-			testIndicator
+			testIndicatorTemplate
 		}) => {
 			test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
@@ -299,27 +317,45 @@ test.describe('Measure IOOI Board', () => {
 			// Navigate to IOOI workspace
 			await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
 			await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'IOOI', exact: true }).click();
+			await expect(dotsBoard.overlay.locator.getByText('Output')).toBeVisible();
+			await dotsBoard.overlay.fullScreenButton.click();
 
-			// Create new effect in column
-			const column = dotsBoard.overlay.locator.locator('section', { hasText: iooiType });
-			await column.getByRole('button', { name: 'Add item' }).first().click();
+			// Create a new objective in Output column
+			const column = dotsBoard.column(iooiType);
+			await column.addItemButton.click();
 
-			// Select indicator from catalog
-			await dotsBoard.overlay.locator
-				.getByRole('article', { name: testIndicator.payload.title })
-				.getByRole('button', { name: 'Select this template' })
+			// Verify the dialog for creating objectives and effects opens
+			await expect(dotsBoard.page.getByRole('dialog').getByRole('navigation')).toContainText(
+				'Select indicator'
+			);
+
+			// Select an indicator template from the dialog
+			await dotsBoard.page
+				.getByRole('dialog')
+				.getByText(testIndicatorTemplate.payload.title)
 				.click();
 
-			// Verify the effect was created and overlay is showing it
-			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
+			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
 
-			// Go back to IOOI board and verify effect is in column
-			await dotsBoard.page.goto(`/${testMeasure.organization}#measure-iooi=${testMeasure.guid}`);
-			await expect(column.getByTitle(testIndicator.payload.title)).toBeVisible();
+			// Verify the effect can be edited
+			await expect(
+				dotsBoard.page
+					.getByRole('article')
+					.getByRole('heading', { level: 1, name: testIndicatorTemplate.payload.title })
+			).toBeVisible();
+			await expect(dotsBoard.page.getByRole('article')).toContainText('Effect');
+			await expect(
+				dotsBoard.page.getByRole('article').getByRole('textbox', { name: 'Description' })
+			).toBeEditable();
+
+			// Close dialog and verify effect is in Output column
+			await dotsBoard.page.getByRole('button', { name: 'Confirm' }).click();
+			await expect(dotsBoard.page.getByRole('dialog')).not.toBeVisible();
+			await expect(column.card(testIndicatorTemplate.payload.title)).toBeVisible();
 
 			// Delete the created effect
-			await column.getByTitle(testIndicator.payload.title).click();
-			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
+			await column.card(testIndicatorTemplate.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});
