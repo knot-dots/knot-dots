@@ -15,7 +15,8 @@ import {
 	programTypes,
 	sustainableDevelopmentGoals,
 	taskCategories,
-	topics
+	topics,
+	isIndicatorTemplateContainer
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,

@@ -1027,7 +1027,7 @@ export function getAllRelatedContainers(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator);
+			filters.type.includes(payloadTypes.enum.indicator || payloadTypes.enum.indicator_template);
 
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
@@ -1044,7 +1044,26 @@ export function getAllRelatedContainers(
 			`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+		const actualDataResult =
+			indicatorResult.length > 0
+				? await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE payload->>'type' = ${payloadTypes.enum.actual_data}
+			  AND payload->>'indicator' IN (${sql.join(
+					indicatorResult.map(({ guid }) => guid),
+					sql.fragment`, `
+				)})
+			  AND valid_currently
+				AND NOT deleted
+		`)
+				: [];
+
+		return withUserAndRelation<Container>(connection, [
+			...containerResult,
+			...indicatorResult,
+			...actualDataResult
+		]);
 	};
 }
 
