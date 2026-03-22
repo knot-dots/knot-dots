@@ -25,6 +25,9 @@ declare global {
 			session: Session | null;
 			user?: KeycloakUser;
 		}
+		interface PageState {
+			createObjectiveOrEffect?: { step: 1 | 2 | 3 };
+		}
 		// interface Platform {}
 	}
 }
