@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { createScrollAnchor } from '$lib/attachments/scrollAnchor.svelte';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
@@ -19,11 +20,46 @@
 	let w = $state(0);
 
 	const handleSubmit = $derived(autoSave(container, 2000));
+
+	const {
+		attachment: scrollAnchorAttachment,
+		captureForEnter,
+		captureForLeave,
+		onEditableChange
+	} = createScrollAnchor();
+
+	let previousEditable: boolean | undefined = $applicationState.containerDetailView.editable;
+
+	// Capture scroll position BEFORE DOM update when entering edit mode.
+	$effect.pre(() => {
+		const current = $applicationState.containerDetailView.editable;
+		if (current === true && previousEditable !== true) {
+			captureForEnter();
+		} else if (current === false && previousEditable === true) {
+			captureForLeave();
+		}
+	});
+
+	// Notify after DOM update so scroll can be corrected.
+	$effect(() => {
+		const current = $applicationState.containerDetailView.editable;
+		if (current !== previousEditable) {
+			const prev = previousEditable;
+			previousEditable = current;
+			onEditableChange(prev, current);
+		}
+	});
 </script>
 
-<form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+<form
+	class="content-details"
+	{@attach scrollAnchorAttachment}
+	oninput={requestSubmit}
+	onsubmit={handleSubmit}
+	novalidate
+>
 	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
-		<header class="details-section">
+		<header class="details-section" data-guid={container.guid}>
 			<div class="details-header">
 				{#if container.payload.type === payloadTypes.enum.term}
 					{#if $applicationState.containerDetailView.editable || container.payload.icon}
