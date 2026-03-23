@@ -2,7 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
-	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
@@ -12,7 +11,6 @@
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type PageContainer, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
@@ -57,8 +55,6 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	let mayEditStage = $derived(createFeatureDecisions(page.data.features).useStage());
-
 	const handleSubmit = autoSave(container, 2000);
 </script>
 
@@ -81,21 +77,19 @@
 			>
 				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 					<div class="stage--buttons details-section">
-						{#if mayEditStage}
-							<EditableCover
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								label={$_('add_cover')}
-								bind:value={container.payload.cover}
-							/>
-							<ColorDropdown
-								buttonStyle="button"
-								bind:value={container.payload.color}
-								label={$_('highlight')}
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-							/>
-						{/if}
+						<EditableCover
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							label={$_('add_cover')}
+							bind:value={container.payload.cover}
+						/>
+						<ColorDropdown
+							buttonStyle="button"
+							bind:value={container.payload.color}
+							label={$_('highlight')}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
 					</div>
 					<header class="details-section">
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}

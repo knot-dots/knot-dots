@@ -16,8 +16,6 @@
 	import { ability, applicationState } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
-	import { createFeatureDecisions } from '$lib/features';
-	import { page } from '$app/state';
 
 	interface Props {
 		container: OrganizationContainer;
@@ -37,8 +35,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	let mayEditStage = $derived(createFeatureDecisions(page.data.features).useStage());
 
 	const handleSubmit = $derived(autoSave(container, 2000, container.payload.type));
 </script>
@@ -61,21 +57,19 @@
 		>
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 				<div class="stage--buttons details-section">
-					{#if mayEditStage}
-						<EditableCover
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							label={$_('add_cover')}
-							bind:value={container.payload.cover}
-						/>
-						<ColorDropdown
-							buttonStyle="button"
-							bind:value={container.payload.color}
-							label={$_('highlight')}
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-					{/if}
+					<EditableCover
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						label={$_('add_cover')}
+						bind:value={container.payload.cover}
+					/>
+					<ColorDropdown
+						buttonStyle="button"
+						bind:value={container.payload.color}
+						label={$_('highlight')}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
 				</div>
 				<header class="details-section">
 					<EditableLogo
