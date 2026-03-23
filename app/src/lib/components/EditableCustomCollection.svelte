@@ -21,7 +21,6 @@
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import Grid from '~icons/knotdots/grid';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
-	import Plus from '~icons/knotdots/plus';
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -609,12 +608,6 @@
 		{/if}
 
 		{#if editable}
-			<li>
-				<button class="action-button action-button--size-l" onclick={addItems} type="button">
-					<Plus />
-					<span class="is-visually-hidden">{$_('custom_collection.add_items')}</span>
-				</button>
-			</li>
 			<li>
 				<div class="dropdown custom-settings" use:settingsPopperRef>
 					<button class="dropdown-button" type="button" use:settingsPopover.button>
@@ -1208,7 +1201,7 @@
 		align-items: center;
 		display: flex;
 		justify-content: space-between;
-		padding: 0.25rem 0.5rem 0.5rem;
+		padding: 0.25rem 0 0.5rem 0.5rem;
 	}
 
 	.custom-settings-header p {
