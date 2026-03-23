@@ -26,7 +26,7 @@ function delay(milliseconds: number) {
 }
 
 export const POST = (async ({ locals, request }) => {
-	if (!createFeatureDecisions(locals.features).useAI()) {
+	if (!createFeatureDecisions(locals.features).useMistral()) {
 		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 

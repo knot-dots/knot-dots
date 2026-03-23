@@ -3,7 +3,8 @@ export const featureFlags = new Map([
 		'alpha',
 		[
 			'ImportFromCsv',
-			'AI',
+			'OpenAI',
+			'Mistral',
 			'Elasticsearch',
 			'TeaserCollection',
 			'ContentPartner',
@@ -35,8 +36,11 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useImportFromCsv() {
 			return features.includes('ImportFromCsv');
 		},
-		useAI() {
-			return features.includes('AI');
+		useOpenAI() {
+			return features.includes('OpenAI');
+		},
+		useMistral() {
+			return features.includes('Mistral');
 		},
 		useElasticsearch() {
 			return features.includes('Elasticsearch');
