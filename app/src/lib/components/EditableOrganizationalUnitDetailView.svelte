@@ -15,6 +15,7 @@
 		type AnyContainer,
 		type Container,
 		containerOfType,
+		createCopyOf,
 		getOrganizationURL,
 		type NewContainer,
 		newContainer,
@@ -96,29 +97,35 @@
 		creatingProfile = true;
 
 		try {
-			const profile: NewContainer = newContainer.parse({
-				managed_by: container.organization,
-				organization: container.organization,
-				organizational_unit: null,
-				payload: {
-					...container.payload,
-					organizationalUnitType:
-						organizationalUnitType.enum['organizational_unit_type.individual_profile']
-				},
-				realm: container.realm,
-				relation: [
-					{
-						object: container.guid,
-						position: 0,
-						predicate: predicates.enum['is-individual-profile-of']
-					}
-				]
-			});
+			const copy = createCopyOf(container, container.organization, null);
+
+			copy.payload = {
+				administrativeType: container.payload.administrativeType,
+				federalState: container.payload.federalState,
+				geometry: container.payload.geometry,
+				name: container.payload.name,
+				nameBBSR: container.payload.nameBBSR,
+				nameOSM: container.payload.nameOSM,
+				officialMunicipalityKey: container.payload.officialMunicipalityKey,
+				officialRegionalCode: container.payload.officialRegionalCode,
+				organizationalUnitType:
+					organizationalUnitType.enum['organizational_unit_type.individual_profile'],
+				type: container.payload.type
+			} as typeof copy.payload;
+
+			copy.relation = copy.relation.map((r) =>
+				r.predicate === predicates.enum['is-copy-of']
+					? { ...r, predicate: predicates.enum['is-individual-profile-of'] }
+					: r
+			);
+
+			const profile: NewContainer = newContainer.parse(copy);
 
 			const response = await saveContainer(profile);
 
 			if (response.ok) {
 				const created = await response.json();
+				dialog.close();
 				goto(getOrganizationURL(created, '/all/page', env).toString());
 			} else {
 				const err = await response.json();
