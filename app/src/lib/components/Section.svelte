@@ -116,6 +116,8 @@
 	class="details-section"
 	class:details-section--inline-help={isInlineHelpSection &&
 		$applicationState.containerDetailView.editable}
+	data-guid={container.guid}
+	data-inline-help={isInlineHelpSection ? '' : undefined}
 >
 	{#if $applicationState.containerDetailView.editable}
 		<DraggableActionBar>
