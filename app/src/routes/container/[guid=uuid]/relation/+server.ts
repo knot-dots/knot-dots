@@ -20,12 +20,12 @@ import {
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
+	getAllContainersRelatedToIndicatorTemplates,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
-	getManyContainers,
 	updateManyContainerRelations
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -100,29 +100,45 @@ export const GET = (async ({ locals, params, url }) => {
 				);
 			}
 		} else if (isIndicatorTemplateContainer(container)) {
-			const [actualDataContainers, sectionContainers] = await Promise.all([
-				locals.pool.connect(
-					getManyContainers(
-						parseResult.data.organization,
-						{
-							indicators: [container.guid],
-							organizationalUnits: parseResult.data.organizationalUnit,
-							type: [payloadTypes.enum.actual_data]
-						},
-						'alpha'
+			if (parseResult.data.program.length > 0) {
+				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
+					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
+					locals.pool.connect(
+						getAllContainersRelatedToIndicatorTemplates([container], {
+							organizations: parseResult.data.organization,
+							organizationalUnits: parseResult.data.organizationalUnit
+						})
 					)
-				),
-				locals.pool.connect(
-					getAllRelatedContainers(
-						parseResult.data.organization,
-						container.guid,
-						['is-section-of'],
-						{},
-						'alpha'
+				]);
+
+				containers = containersRelatedToProgram.filter(({ guid }) =>
+					containersRelatedToIndicator.some(
+						({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
 					)
-				)
-			]);
-			containers = [...actualDataContainers, ...sectionContainers];
+				);
+			} else {
+				let subordinateOrganizationalUnits: string[] = [];
+
+				if (parseResult.data.organizationalUnit.length > 0) {
+					const [currentOrganizationalUnit, relatedOrganizationalUnits] = (await Promise.all([
+						locals.pool.connect(getContainerByGuid(parseResult.data.organizationalUnit[0])),
+						locals.pool.connect(
+							getAllRelatedOrganizationalUnitContainers(parseResult.data.organizationalUnit[0])
+						)
+					])) as [OrganizationalUnitContainer, OrganizationalUnitContainer[]];
+					subordinateOrganizationalUnits = relatedOrganizationalUnits
+						.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
+						.map(({ guid }) => guid)
+						.concat(currentOrganizationalUnit.guid);
+				}
+
+				containers = await locals.pool.connect(
+					getAllContainersRelatedToIndicatorTemplates([container], {
+						organizations: parseResult.data.organization,
+						organizationalUnits: subordinateOrganizationalUnits
+					})
+				);
+			}
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(

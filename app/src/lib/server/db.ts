@@ -16,6 +16,7 @@ import {
 	container,
 	findDescendants,
 	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	type ModifiedContainer,
 	type NewContainer,
 	type OrganizationalUnitContainer,
@@ -1209,6 +1210,91 @@ export function getAllContainersRelatedToIndicators(
 						)})
 				`)
 				: [];
+
+		return withUserAndRelation<Container>(connection, containerResult);
+	};
+}
+
+export function getAllContainersRelatedToIndicatorTemplates(
+	containers: IndicatorTemplateContainer[],
+	filters: { organizations?: string[]; organizationalUnits?: string[] }
+) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		if (containers.length == 0) {
+			return [];
+		}
+
+		const sectionResult = await connection.any(sql.typeAlias('guid')`
+			SELECT c.guid
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject AND cr.object = ANY (${sql.array(
+				containers.map(({ guid }) => guid),
+				'uuid'
+			)})
+				AND cr.predicate = ${predicates.enum['is-section-of']}
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE c.valid_currently AND NOT c.deleted
+		`);
+
+		const actualDataResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			WHERE ${prepareWhereCondition(filters)}
+				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
+				AND c.payload->>'indicator' = ANY (${sql.array(
+					containers.map(({ guid }) => guid),
+					'text'
+				)})
+		`);
+
+		const objectiveAndEffectResult = await connection.any(sql.typeAlias('guid')`
+			SELECT c.guid
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject
+				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE ${prepareWhereCondition(filters)}
+				AND cr.object = ANY (${sql.array(
+					containers.map(({ guid }) => guid),
+					'uuid'
+				)})
+		`);
+
+		const isPartOfResult =
+			objectiveAndEffectResult.length > 0
+				? await connection.any(sql.typeAlias('guid')`
+					WITH RECURSIVE is_part_of_relation(path, is_cycle) AS (
+						--Top level items (roots)
+						SELECT array[c.guid] AS path, false, c.guid AS subject
+						FROM unnest(${sql.array(
+							objectiveAndEffectResult.map(({ guid }) => guid),
+							'uuid'
+						)}) AS c(guid)
+						UNION ALL
+						SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.object
+							AND cr.predicate IN (${sql.join([predicates.enum['is-part-of'], predicates.enum['is-part-of-measure'], predicates.enum['is-part-of-program']], sql.fragment`, `)})
+							AND cr.valid_currently
+							AND NOT cr.deleted
+						JOIN is_part_of_relation r ON cr.subject = r.subject AND NOT r.is_cycle
+						WHERE c.valid_currently
+							AND NOT c.deleted
+					)
+					SELECT DISTINCT unnest(path) AS guid FROM is_part_of_relation
+				`)
+				: [];
+
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			WHERE c.guid = ANY (${sql.array(
+				[...sectionResult, ...actualDataResult, ...isPartOfResult].map(({ guid }) => guid),
+				'uuid'
+			)})
+		`);
 
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
