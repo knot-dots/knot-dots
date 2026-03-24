@@ -84,3 +84,46 @@ test('inline help is edit-only', async ({ dotsBoard, testReport }) => {
 	await dotsBoard.overlay.editModeToggle.uncheck();
 	await expect(dotsBoard.overlay.locator.getByText('Inline help')).toHaveCount(0);
 });
+
+test('custom collection interactions only show configured options', async ({
+	landingPage,
+	testOrganization
+}) => {
+	await landingPage.goto(`/${testOrganization.guid}`);
+	await landingPage.header.editModeToggle.check();
+
+	const numberOfSections = await landingPage.sections.count();
+	await landingPage.page.getByRole('button', { name: 'Add section' }).click();
+	await landingPage.page.getByRole('menuitem', { name: 'embed objects' }).click();
+
+	const section = landingPage.sections.nth(numberOfSections);
+	await expect(section).toBeVisible();
+
+	const hasCustomSettings =
+		(await section.locator('.custom-settings .dropdown-button').count()) > 0;
+	test.skip(
+		!hasCustomSettings,
+		'Custom collection section is not available in this test configuration.'
+	);
+
+	await section.hover();
+	await section.locator('.custom-settings .dropdown-button').click();
+
+	const settingsPanel = section.locator('.custom-settings-panel');
+	const interactionsItem = settingsPanel.getByRole('button', { name: 'interactions' });
+	const initialSummary = (await interactionsItem.innerText()).toLowerCase();
+
+	expect(initialSummary).not.toContain('filter');
+
+	await interactionsItem.click();
+
+	await expect(settingsPanel.getByRole('button', { name: 'search' })).toBeVisible();
+	await expect(settingsPanel.getByRole('button', { name: 'sort' })).toBeVisible();
+	await expect(settingsPanel.getByRole('button', { name: 'filter' })).toHaveCount(0);
+
+	await settingsPanel.getByRole('button', { name: 'sort' }).click();
+	await settingsPanel.getByRole('button', { name: 'back' }).click();
+
+	await expect(interactionsItem).toContainText(/sort/i);
+	await expect(interactionsItem).not.toContainText(/filter/i);
+});

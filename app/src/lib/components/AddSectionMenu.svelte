@@ -87,9 +87,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = {
+	let extraOpts = $derived({
 		modifiers: [{ name: 'offset', options: { offset: compact ? [-4, 8] : [0, 4] } }]
-	};
+	});
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
@@ -218,7 +218,9 @@
 	);
 
 	let mayAddCustomCollection = $derived(
-		createFeatureDecisions(page.data.features).useCustomCollection() &&
+		isOrganizationContainer(parentContainer) ||
+			isOrganizationalUnitContainer(parentContainer) ||
+			isPageContainer(parentContainer) ||
 			isReportContainer(parentContainer)
 	);
 
@@ -243,7 +245,7 @@
 				? [
 						{
 							icon: Grid,
-							label: $_('custom_collection'),
+							label: $_('custom_collection.settings.embed_objects'),
 							value: payloadTypes.enum.custom_collection
 						}
 					]

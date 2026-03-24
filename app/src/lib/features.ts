@@ -44,9 +44,6 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useReport() {
 			return features.includes('Report');
 		},
-		useCustomCollection() {
-			return features.includes('Report');
-		},
 		useContentPartner() {
 			return features.includes('ContentPartner');
 		},
