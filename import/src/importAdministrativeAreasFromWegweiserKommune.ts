@@ -36,7 +36,7 @@ const regionType = z.enum([
 ]);
 
 const administrativeTypeFromRegionType = new Map([
-	['BUND', 'administrative_type.state'],
+	['BUND', 'administrative_type.country'],
 	['BUNDESLAND', 'administrative_type.federal_state'],
 	['LANDKREIS', 'administrative_type.rural_district'],
 	['KREISFREIE_STADT', 'administrative_type.urban_district'],

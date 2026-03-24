@@ -72,7 +72,7 @@
 
 	const stateTypes = new Set<string>([
 		administrativeTypes.enum['administrative_type.federal_state'],
-		administrativeTypes.enum['administrative_type.state']
+		administrativeTypes.enum['administrative_type.country']
 	]);
 
 	let stateMunicipalityGuids = $derived(

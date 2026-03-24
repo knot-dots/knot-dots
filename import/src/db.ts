@@ -172,7 +172,7 @@ export const organizationalUnitPayload = z.object({
 	administrativeType: z
 		.array(
 			z.enum([
-				'administrative_type.state',
+				'administrative_type.country',
 				'administrative_type.federal_state',
 				'administrative_type.municipality',
 				'administrative_type.rural_district',

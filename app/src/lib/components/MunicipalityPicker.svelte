@@ -48,7 +48,7 @@
 		administrativeTypes.enum['administrative_type.municipality'],
 		administrativeTypes.enum['administrative_type.rural_district'],
 		administrativeTypes.enum['administrative_type.federal_state'],
-		administrativeTypes.enum['administrative_type.state']
+		administrativeTypes.enum['administrative_type.country']
 	] as const;
 
 	const PAGE_SIZE = 50;
