@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
-	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
 	import { untrack } from 'svelte';
 
@@ -21,13 +22,43 @@
 
 	let terms = $state('');
 	let localSelected: string[] = $state([]);
+	let filterAdministrativeTypes: string[] = $state([]);
+	let filterFederalStates: string[] = $state([]);
+
+	const federalStates = [
+		'Baden-Württemberg',
+		'Bayern',
+		'Berlin',
+		'Brandenburg',
+		'Bremen',
+		'Hamburg',
+		'Hessen',
+		'Mecklenburg-Vorpommern',
+		'Niedersachsen',
+		'Nordrhein-Westfalen',
+		'Rheinland-Pfalz',
+		'Saarland',
+		'Sachsen',
+		'Sachsen-Anhalt',
+		'Schleswig-Holstein',
+		'Thüringen'
+	];
+
+	const sidebarAdministrativeTypes = [
+		administrativeTypes.enum['administrative_type.municipality'],
+		administrativeTypes.enum['administrative_type.rural_district'],
+		administrativeTypes.enum['administrative_type.federal_state'],
+		administrativeTypes.enum['administrative_type.state']
+	] as const;
 
 	const PAGE_SIZE = 50;
+	const MAX_SELECTION = 5;
+
 	let offset = $state(0);
 	let allMunicipalities: OrganizationalUnitContainer[] = $state([]);
 	let hasMore = $state(true);
 	let isLoadingMore = $state(false);
-	let previousResults: OrganizationalUnitContainer[] | undefined = $state(undefined);
+	let previousResults: OrganizationalUnitContainer[] | undefined;
 	let loadMoreSentinel: HTMLElement | undefined = $state(undefined);
 
 	// Maintain a map of all encountered municipalities to preserve selections
@@ -36,18 +67,22 @@
 
 	// Fetch municipalities based on search terms
 	const municipalitiesResource = resource(
-		() => [terms, offset] as const,
-		async ([terms, offset], _, { signal }) => {
-			const params = new SvelteURLSearchParams();
+		() => [terms, offset, filterAdministrativeTypes, filterFederalStates] as const,
+		async ([terms, offset, adminTypes, federalStateFilters], _, { signal }) => {
+			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
 
-			for (const type of administrativeTypes.options) {
+			for (const type of adminTypes) {
 				params.append('administrativeType', type);
 			}
 
 			if (terms) {
 				params.append('terms', terms);
+			}
+
+			for (const state of federalStateFilters) {
+				params.append('federalState', state);
 			}
 
 			// Append pagination parameters
@@ -74,7 +109,7 @@
 				allMunicipalities = results;
 			} else {
 				// Loading more - append results
-				allMunicipalities = [...allMunicipalities, ...results];
+				allMunicipalities = [...untrack(() => allMunicipalities), ...results];
 			}
 
 			// Add to known municipalities
@@ -89,14 +124,17 @@
 		}
 	});
 
-	// Reset pagination when search terms change
-	let previousTerms = $state('');
+	// Reset pagination when search terms or filters change
+	const filterKey = $derived(
+		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}`
+	);
+	let previousFilterKey = '';
 	$effect.pre(() => {
-		if (terms !== previousTerms) {
+		if (filterKey !== previousFilterKey) {
+			previousFilterKey = filterKey;
 			offset = 0;
 			hasMore = true;
 			isLoadingMore = false;
-			previousTerms = terms;
 			previousResults = undefined;
 			allMunicipalities = [];
 		}
@@ -108,10 +146,56 @@
 		offset += PAGE_SIZE;
 	}
 
-	let activeFilters = $derived(0);
+	let activeFilters = $derived(filterAdministrativeTypes.length + filterFederalStates.length);
+
+	type FederalLevelKey = 'all' | (typeof sidebarAdministrativeTypes)[number];
+
+	let federalLevelItems = $derived.by(() => {
+		const countsByType = new Map<string, number>();
+
+		for (const municipality of allMunicipalities) {
+			const type = municipality.payload.administrativeType;
+			if (!type) continue;
+
+			if (Array.isArray(type)) {
+				for (const singleType of type) {
+					countsByType.set(singleType, (countsByType.get(singleType) ?? 0) + 1);
+				}
+			} else {
+				countsByType.set(type, (countsByType.get(type) ?? 0) + 1);
+			}
+		}
+
+		return [
+			{ key: 'all', label: $_('all'), count: allMunicipalities.length },
+			...sidebarAdministrativeTypes.map((type) => ({
+				key: type,
+				label: $_(type),
+				count: countsByType.get(type) ?? 0
+			}))
+		] as Array<{ key: FederalLevelKey; label: string; count: number }>;
+	});
+
+	let activeFederalLevel = $derived.by(() => {
+		if (filterAdministrativeTypes.length === 0) return 'all';
+		if (filterAdministrativeTypes.length === 1) {
+			return filterAdministrativeTypes[0] as FederalLevelKey;
+		}
+		return null;
+	});
 
 	function resetFilters() {
-		// No filters for now, could add administrative type filters later
+		filterAdministrativeTypes = [];
+		filterFederalStates = [];
+	}
+
+	function selectFederalLevel(level: FederalLevelKey) {
+		if (level === 'all') {
+			filterAdministrativeTypes = [];
+			return;
+		}
+
+		filterAdministrativeTypes = [level];
 	}
 
 	function clearSelection() {
@@ -151,7 +235,6 @@
 					entries[0].isIntersecting &&
 					hasMore &&
 					!isLoadingMore &&
-					!terms &&
 					allMunicipalities.length > 0
 				) {
 					loadMore();
@@ -187,7 +270,18 @@
 	title={$_('compare_search_municipality')}
 >
 	{#snippet filterContent()}
-		<!-- No filters for now -->
+		<InlineFilterDropDown
+			key="administrativeType"
+			mode="select"
+			options={administrativeTypes.options.map((t) => ({ label: $_(t), value: t }))}
+			bind:value={filterAdministrativeTypes}
+		/>
+		<InlineFilterDropDown
+			key="federalState"
+			mode="select"
+			options={federalStates.map((s) => ({ label: s, value: s }))}
+			bind:value={filterFederalStates}
+		/>
 	{/snippet}
 
 	{#snippet sortContent()}
@@ -208,7 +302,7 @@
 
 				<span class="selection-count">
 					{$_('compare_municipalities_selected', { values: { count: localSelected.length } })}
-					{#if localSelected.length >= 3}
+					{#if localSelected.length >= MAX_SELECTION}
 						<span class="max-indicator">({$_('compare_max_reached')})</span>
 					{/if}
 				</span>
@@ -231,11 +325,30 @@
 			</div>
 
 			<div class="picker-layout">
+				<aside class="federal-levels-panel">
+					<span class="federal-levels-title">{$_('compare_federal_levels')}</span>
+					<ul class="federal-levels-list">
+						{#each federalLevelItems as item (item.key)}
+							<li>
+								<button
+									class="federal-level-item"
+									class:is-active={activeFederalLevel === item.key}
+									onclick={() => selectFederalLevel(item.key)}
+									type="button"
+								>
+									<span aria-hidden="true" class="federal-level-bullet"></span>
+									<span class="federal-level-label">{item.label}</span>
+								</button>
+							</li>
+						{/each}
+					</ul>
+				</aside>
+
 				<div class="catalog-area">
 					<ul class="catalog">
 						{#each allMunicipalities as municipality (municipality.guid)}
 							{@const isDisabled =
-								!localSelected.includes(municipality.guid) && localSelected.length >= 3}
+								!localSelected.includes(municipality.guid) && localSelected.length >= MAX_SELECTION}
 							<li class:disabled={isDisabled}>
 								<SelectableCard
 									--height="100%"
@@ -246,11 +359,11 @@
 							</li>
 						{/each}
 						{#if hasMore}
-							<div bind:this={loadMoreSentinel} class="load-more-sentinel">
+							<li bind:this={loadMoreSentinel} class="load-more-sentinel">
 								{#if isLoadingMore}
 									<span class="loading-indicator">{$_('loading')}</span>
 								{/if}
-							</div>
+							</li>
 						{/if}
 					</ul>
 				</div>
@@ -335,8 +448,74 @@
 	.picker-layout {
 		display: grid;
 		gap: 1.5rem;
-		grid-template-columns: minmax(0, 1fr) 16.5rem;
+		grid-template-columns: 13rem minmax(0, 1fr) 16.5rem;
 		min-height: 0;
+	}
+
+	.federal-levels-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		min-height: 0;
+	}
+
+	.federal-levels-title {
+		color: var(--color-gray-800);
+		font-size: 0.875rem;
+		font-weight: 600;
+	}
+
+	.federal-levels-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		list-style: none;
+		margin: 0;
+		overflow: auto;
+		padding: 0;
+	}
+
+	.federal-level-item {
+		align-items: center;
+		background: var(--color-gray-050);
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
+		color: var(--color-gray-700);
+		display: flex;
+		font-size: 0.875rem;
+		gap: 0.375rem;
+		padding: 0.625rem 0.75rem;
+		text-align: left;
+		width: 100%;
+	}
+
+	.federal-level-item:hover {
+		background: var(--color-gray-100);
+	}
+
+	.federal-level-item.is-active {
+		background: var(--color-gray-100);
+		border-color: var(--color-gray-300);
+		color: var(--color-gray-900);
+		font-weight: 600;
+	}
+
+	.federal-level-bullet {
+		background: var(--color-gray-300);
+		border-radius: 3px;
+		display: block;
+		height: 0.75rem;
+		width: 0.75rem;
+	}
+
+	.federal-level-item.is-active .federal-level-bullet {
+		background: var(--color-primary-700);
+	}
+
+	.federal-level-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.catalog-area {
@@ -425,5 +604,30 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	@media (width <= 1200px) {
+		.picker-layout {
+			grid-template-columns: 13rem minmax(0, 1fr);
+		}
+
+		.selection-panel {
+			grid-column: 1 / -1;
+		}
+	}
+
+	@media (width <= 900px) {
+		.picker-layout {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.federal-levels-list {
+			flex-direction: row;
+			overflow: auto;
+		}
+
+		.federal-levels-list > li {
+			flex-shrink: 0;
+		}
 	}
 </style>

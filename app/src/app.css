@@ -230,8 +230,8 @@
 	--indicator-color-compare-1-base: #c25a0a; /* Orange           — Comparison Municipality 1  */
 	--indicator-color-compare-2-base: #7233c2; /* Violet           — Comparison Municipality 2  */
 	--indicator-color-compare-3-base: #b81e5d; /* Rose             — Comparison Municipality 3  */
-	--indicator-color-ref-state-base: #a08c78; /* Warm Taupe       — State Average   L58        */
-	--indicator-color-ref-federal-base: #2e4560; /* Dark Slate     — Federal Average L30        */
+	--indicator-color-compare-4-base: #a08c78; /* Warm Taupe       — Comparison Municipality 4  */
+	--indicator-color-compare-5-base: #2e4560; /* Dark Slate       — Comparison Municipality 5  */
 	--indicator-color-ref-benchmark-base: #1d7a46; /* Forest Green — Benchmark                  */
 	--indicator-color-idea: #e74694;
 	--indicator-color-in-planning: #ff8a4c;
