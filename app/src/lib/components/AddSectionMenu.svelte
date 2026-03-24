@@ -218,11 +218,10 @@
 	);
 
 	let mayAddCustomCollection = $derived(
-		createFeatureDecisions(page.data.features).useCustomCollection() &&
-			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer) ||
-				isPageContainer(parentContainer) ||
-				isReportContainer(parentContainer))
+		isOrganizationContainer(parentContainer) ||
+			isOrganizationalUnitContainer(parentContainer) ||
+			isPageContainer(parentContainer) ||
+			isReportContainer(parentContainer)
 	);
 
 	let mayAddSummary = $derived(
