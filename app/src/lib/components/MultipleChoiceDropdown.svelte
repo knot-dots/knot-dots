@@ -252,7 +252,6 @@
 		position: relative;
 		overflow: visible;
 		min-width: 100%;
-		width: 100%;
 	}
 
 	.dropdown-panel-scroll {
