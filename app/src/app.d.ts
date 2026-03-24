@@ -15,7 +15,7 @@ declare global {
 			user: User;
 		}
 		interface PageData {
-			categoryContext: CategoryContext | null;
+			categoryContext?: CategoryContext;
 			currentOrganization: OrganizationContainer;
 			currentOrganizationalUnit?: OrganizationalUnitContainer;
 			defaultOrganizationGuid: string;

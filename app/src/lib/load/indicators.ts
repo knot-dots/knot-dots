@@ -252,6 +252,6 @@ export default (async function load({ depends, locals, parent, url }) {
 		useNewIndicators: result.useNewIndicators,
 		facets,
 		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		categoryOptions: categoryContext?.options
 	};
 } satisfies PageServerLoad);

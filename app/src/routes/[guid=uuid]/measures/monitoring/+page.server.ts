@@ -69,6 +69,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		),
 		facets: new Map(),
 		facetLabels: undefined,
-		categoryOptions: null
+		categoryOptions: undefined
 	};
 }) satisfies PageServerLoad;

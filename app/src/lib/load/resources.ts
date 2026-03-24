@@ -173,7 +173,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			containers,
 			facets,
 			facetLabels: categoryContext?.labels,
-			categoryOptions: categoryContext?.options ?? null
+			categoryOptions: categoryContext?.options
 		};
 	}) satisfies PageServerLoad;
 }
