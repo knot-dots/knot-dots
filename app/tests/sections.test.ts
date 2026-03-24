@@ -94,11 +94,7 @@ test('custom collection interactions only show configured options', async ({
 
 	const numberOfSections = await landingPage.sections.count();
 	await landingPage.page.getByRole('button', { name: 'Add section' }).click();
-	await landingPage.page
-		.getByRole('menuitem', {
-			name: /objekte einbinden|embed objects|tiles|custom collection|kacheln/i
-		})
-		.click();
+	await landingPage.page.getByRole('menuitem', { name: 'embed objects' }).click();
 
 	const section = landingPage.sections.nth(numberOfSections);
 	await expect(section).toBeVisible();
@@ -114,22 +110,20 @@ test('custom collection interactions only show configured options', async ({
 	await section.locator('.custom-settings .dropdown-button').click();
 
 	const settingsPanel = section.locator('.custom-settings-panel');
-	const interactionsItem = settingsPanel.getByRole('button', {
-		name: /interactions|interaktionen/i
-	});
+	const interactionsItem = settingsPanel.getByRole('button', { name: 'interactions' });
 	const initialSummary = (await interactionsItem.innerText()).toLowerCase();
 
 	expect(initialSummary).not.toContain('filter');
 
 	await interactionsItem.click();
 
-	await expect(settingsPanel.getByRole('button', { name: /search|suche/i })).toBeVisible();
-	await expect(settingsPanel.getByRole('button', { name: /sort|sortieren/i })).toBeVisible();
-	await expect(settingsPanel.getByRole('button', { name: /filter|filtern/i })).toHaveCount(0);
+	await expect(settingsPanel.getByRole('button', { name: 'search' })).toBeVisible();
+	await expect(settingsPanel.getByRole('button', { name: 'sort' })).toBeVisible();
+	await expect(settingsPanel.getByRole('button', { name: 'filter' })).toHaveCount(0);
 
-	await settingsPanel.getByRole('button', { name: /sort|sortieren/i }).click();
-	await settingsPanel.getByRole('button', { name: /back|zurück/i }).click();
+	await settingsPanel.getByRole('button', { name: 'sort' }).click();
+	await settingsPanel.getByRole('button', { name: 'back' }).click();
 
-	await expect(interactionsItem).toContainText(/sort|sortieren/i);
-	await expect(interactionsItem).not.toContainText(/filter|filtern/i);
+	await expect(interactionsItem).toContainText(/sort/i);
+	await expect(interactionsItem).not.toContainText(/filter/i);
 });
