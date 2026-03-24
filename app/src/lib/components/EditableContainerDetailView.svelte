@@ -12,13 +12,14 @@
 	interface Props {
 		container: Container;
 		data?: Snippet;
+		invalidateResource?: string;
 	}
 
-	let { container = $bindable(), data }: Props = $props();
+	let { container = $bindable(), data, invalidateResource = 'containers' }: Props = $props();
 
 	let w = $state(0);
 
-	const handleSubmit = $derived(autoSave(container, 2000));
+	const handleSubmit = $derived(autoSave(container, 2000, invalidateResource));
 </script>
 
 <form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>

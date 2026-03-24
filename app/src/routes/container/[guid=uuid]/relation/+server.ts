@@ -7,18 +7,20 @@ import {
 	audience,
 	isContainerWithEffect,
 	isIndicatorContainer,
+	isIndicatorTemplateContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	relation,
 	programTypes,
+	relation,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
+	getAllContainersRelatedToIndicatorTemplates,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
@@ -93,6 +95,46 @@ export const GET = (async ({ locals, params, url }) => {
 
 				containers = await locals.pool.connect(
 					getAllContainersRelatedToIndicators([container], {
+						organizationalUnits: subordinateOrganizationalUnits
+					})
+				);
+			}
+		} else if (isIndicatorTemplateContainer(container)) {
+			if (parseResult.data.program.length > 0) {
+				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
+					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
+					locals.pool.connect(
+						getAllContainersRelatedToIndicatorTemplates([container], {
+							organizations: parseResult.data.organization,
+							organizationalUnits: parseResult.data.organizationalUnit
+						})
+					)
+				]);
+
+				containers = containersRelatedToProgram.filter(({ guid }) =>
+					containersRelatedToIndicator.some(
+						({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
+					)
+				);
+			} else {
+				let subordinateOrganizationalUnits: string[] = [];
+
+				if (parseResult.data.organizationalUnit.length > 0) {
+					const [currentOrganizationalUnit, relatedOrganizationalUnits] = (await Promise.all([
+						locals.pool.connect(getContainerByGuid(parseResult.data.organizationalUnit[0])),
+						locals.pool.connect(
+							getAllRelatedOrganizationalUnitContainers(parseResult.data.organizationalUnit[0])
+						)
+					])) as [OrganizationalUnitContainer, OrganizationalUnitContainer[]];
+					subordinateOrganizationalUnits = relatedOrganizationalUnits
+						.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
+						.map(({ guid }) => guid)
+						.concat(currentOrganizationalUnit.guid);
+				}
+
+				containers = await locals.pool.connect(
+					getAllContainersRelatedToIndicatorTemplates([container], {
+						organizations: parseResult.data.organization,
 						organizationalUnits: subordinateOrganizationalUnits
 					})
 				);

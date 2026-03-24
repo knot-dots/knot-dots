@@ -3203,3 +3203,73 @@ export function getOrganizationURL(
 
 	return url;
 }
+
+function computeRelevanceScore(
+	indicator: IndicatorTemplateContainer,
+	containersRelatedToIndicator: Container[],
+	container: MeasureContainer | GoalContainer
+): number {
+	const containerHasParentUsingIndicator = containersRelatedToIndicator.some(({ relation }) =>
+		relation.find(
+			({ predicate, subject }) =>
+				predicate == predicates.enum['is-part-of'] && subject == container.guid
+		)
+	);
+
+	const containerIsPartOfProgramUsingIndicator = containersRelatedToIndicator.some(({ relation }) =>
+		relation.find(
+			({ predicate, subject }) =>
+				predicate == predicates.enum['is-part-of-program'] && subject == container.guid
+		)
+	);
+
+	const containerIsInOrganizationUsingIndicator = containersRelatedToIndicator
+		.filter(({ guid }) => guid != indicator.guid)
+		.some(({ organization }) => container.organization == organization);
+
+	let score = 0;
+
+	if (containerHasParentUsingIndicator) {
+		score += 2;
+	} else if (containerIsPartOfProgramUsingIndicator) {
+		score += 0.5;
+	} else if (containerIsInOrganizationUsingIndicator) {
+		score += 0.25;
+	}
+
+	const indicatorCategory = new Set(Object.values(indicator.payload.category).flatMap((v) => v));
+	const containerCategory = new Set(Object.values(container.payload.category).flatMap((v) => v));
+
+	if (indicatorCategory.union(containerCategory).size > 0) {
+		const jaccardSimilarity =
+			indicatorCategory.intersection(containerCategory).size /
+			indicatorCategory.union(containerCategory).size;
+		score += jaccardSimilarity;
+	}
+
+	return score;
+}
+
+export function sortIndicatorsByRelevanceForGoalOrMeasure(
+	indicators: IndicatorTemplateContainer[],
+	containersRelatedToIndicators: Container[],
+	container: GoalContainer | MeasureContainer
+): IndicatorTemplateContainer[] {
+	return indicators
+		.map((i) => ({
+			indicator: i,
+			score: computeRelevanceScore(
+				i,
+				[
+					...findConnected(i, containersRelatedToIndicators, [
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-program']
+					])
+				],
+				container
+			)
+		}))
+		.toSorted((a, b) => b.score - a.score)
+		.map(({ indicator }) => indicator);
+}

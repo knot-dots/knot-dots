@@ -4,6 +4,7 @@
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
+	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
@@ -30,6 +31,9 @@
 	let dialog: HTMLDialogElement;
 
 	setContext('createContainerDialog', { getElement: () => dialog });
+
+	// svelte-ignore non_reactive_update
+	let createEffectDialog: HTMLDialogElement;
 </script>
 
 <div class="app-wrapper">
@@ -61,6 +65,8 @@
 </div>
 
 <CreateContainerDialog bind:dialog />
+
+<CreateObjectiveOrEffectDialog bind:dialog={createEffectDialog} />
 
 <style>
 	.app-wrapper {

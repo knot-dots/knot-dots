@@ -298,6 +298,12 @@
 			alert(error.message);
 		}
 	}
+
+	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
+		selected = event.currentTarget.checked
+			? [...selected, event.currentTarget.value]
+			: selected.filter((guid) => guid !== event.currentTarget.value);
+	}
 </script>
 
 <header bind:this={header}>
@@ -441,12 +447,17 @@
 					<ul class="catalog">
 						{#each searchResource.current as item (item.guid)}
 							<li>
-								<SelectableCard
-									--height="100%"
-									bind:value={selected}
-									container={item}
-									selectable={mode === 'select'}
-								/>
+								{#if mode === 'select'}
+									<SelectableCard
+										--height="100%"
+										checked={selected.includes(item.guid)}
+										container={item}
+										inputType="checkbox"
+										{onchange}
+									/>
+								{:else}
+									<Card --height="100%" container={item} />
+								{/if}
 							</li>
 						{/each}
 					</ul>
@@ -607,11 +618,7 @@
 	}
 
 	.catalog {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 		margin-top: 1rem;
-		overflow: auto;
 	}
 
 	.preview {

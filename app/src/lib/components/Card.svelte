@@ -372,10 +372,7 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			{@const image = Array.isArray(container.payload.image)
-				? container.payload.image[0]
-				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image)} />
+			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}

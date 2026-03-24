@@ -17,6 +17,7 @@ import {
 	type Container,
 	containerOfType,
 	filterMembers,
+	type GoalContainer,
 	type HelpContainer,
 	type IndicatorContainer,
 	type IndicatorTemplateContainer,
@@ -133,16 +134,14 @@ if (browser) {
 }
 
 type AddEffectState = {
-	target?: Container;
-	effect?: IndicatorContainer;
+	target?: GoalContainer | MeasureContainer;
 	iooiType?: IooiType;
 };
 
 export const addEffectState = writable<AddEffectState>({});
 
 type AddObjectiveState = {
-	target?: Container;
-	indicator?: IndicatorContainer;
+	target?: GoalContainer;
 	iooiType?: IooiType;
 };
 

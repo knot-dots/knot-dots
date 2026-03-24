@@ -7,6 +7,7 @@ import {
 	fromCounts,
 	indicatorCategories,
 	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	indicatorTypes,
 	type OrganizationalUnitContainer,
 	payloadTypes,
@@ -16,6 +17,7 @@ import {
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicators,
+	getAllContainersRelatedToIndicatorTemplates,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
@@ -35,7 +37,7 @@ export interface IndicatorFilters {
 }
 
 export interface IndicatorLoadResult {
-	containers: IndicatorContainer[];
+	containers: IndicatorContainer[] | IndicatorTemplateContainer[];
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
@@ -81,7 +83,7 @@ export async function getIndicatorsData(params: {
 	const restrictOrgUnits = !filters.included.includes('all_organizational_units');
 
 	// Primary indicator fetch
-	let indicators: IndicatorContainer[];
+	let indicators: IndicatorContainer[] | IndicatorTemplateContainer[];
 	let facetData: Record<string, Record<string, number>> | undefined;
 	if (useElasticsearch) {
 		const esResult = await connect(
@@ -93,7 +95,7 @@ export async function getIndicatorsData(params: {
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
 					...(restrictOrgUnits ? { organizationalUnits } : {}),
-					type: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator]
+					type: [payloadTypes.enum.indicator]
 				},
 				'alpha',
 				undefined,
@@ -112,7 +114,7 @@ export async function getIndicatorsData(params: {
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
 					...(restrictOrgUnits ? { organizationalUnits } : {}),
-					type: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator]
+					type: [payloadTypes.enum.indicator]
 				},
 				'alpha'
 			)
@@ -129,33 +131,25 @@ export async function getIndicatorsData(params: {
 	if (indicators.length === 0) {
 		useNewIndicators = true;
 		facetData = undefined;
-		const [templates, actualData] = await Promise.all([
-			connect(
-				getManyContainers(
-					[],
-					{
-						customCategories: filters.customCategories,
-						indicatorCategories: filters.indicatorCategories,
-						indicatorTypes: filters.indicatorTypes,
-						sdg: filters.sdg,
-						type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
-					},
-					'alpha'
-				)
-			),
-			connect(
-				getManyContainers(
-					[organizationGuid],
-					{
-						organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : [],
-						type: [payloadTypes.enum.actual_data]
-					},
-					'alpha'
-				)
+		indicators = (await connect(
+			getManyContainers(
+				[],
+				{
+					customCategories: filters.customCategories,
+					indicatorCategories: filters.indicatorCategories,
+					indicatorTypes: filters.indicatorTypes,
+					sdg: filters.sdg,
+					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
+				},
+				'alpha'
 			)
-		]);
-		indicators = templates as IndicatorContainer[];
-		related = actualData;
+		)) as IndicatorTemplateContainer[];
+		related = await connect(
+			getAllContainersRelatedToIndicatorTemplates(indicators, {
+				organizations: [organizationGuid],
+				organizationalUnits: restrictOrgUnits ? organizationalUnits : []
+			})
+		);
 	}
 
 	const combinedVisible = filterVisible([...indicators, ...related], user);

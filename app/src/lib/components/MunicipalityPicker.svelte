@@ -169,6 +169,12 @@
 			observer.disconnect();
 		};
 	});
+
+	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
+		localSelected = event.currentTarget.checked
+			? [...localSelected, event.currentTarget.value]
+			: localSelected.filter((guid) => guid !== event.currentTarget.value);
+	}
 </script>
 
 <PickerDialog
@@ -233,9 +239,9 @@
 							<li class:disabled={isDisabled}>
 								<SelectableCard
 									--height="100%"
-									bind:value={localSelected}
+									checked={localSelected.includes(municipality.guid)}
 									container={municipality}
-									selectable={true}
+									{onchange}
 								/>
 							</li>
 						{/each}
@@ -337,14 +343,6 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
-	}
-
-	.catalog {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-		min-height: 0;
-		overflow: auto;
 	}
 
 	.catalog li.disabled {

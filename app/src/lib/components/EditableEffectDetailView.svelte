@@ -25,6 +25,7 @@
 		type EffectContainer,
 		isBinaryIndicatorContainer,
 		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		predicates
 	} from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
@@ -33,11 +34,17 @@
 
 	interface Props {
 		container: EffectContainer;
+		disableRefreshOnSave?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), layout, revisions }: Props = $props();
+	let {
+		container = $bindable(),
+		disableRefreshOnSave = false,
+		layout,
+		revisions
+	}: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -68,7 +75,12 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+			.filter(
+				(c) =>
+					isIndicatorContainer(c) ||
+					isIndicatorTemplateContainer(c) ||
+					isBinaryIndicatorContainer(c)
+			)
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
@@ -143,7 +155,10 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container>
+	<EditableContainerDetailView
+		bind:container
+		invalidateResource={disableRefreshOnSave ? '' : undefined}
+	>
 		{#snippet data()}
 			<EffectProperties
 				bind:container
