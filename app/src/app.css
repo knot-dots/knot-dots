@@ -1934,3 +1934,71 @@ img.cover {
 	pointer-events: none;
 	cursor: none;
 }
+
+@media print {
+	nav,
+	header[role='banner'],
+	.commands,
+	.bottom-actions-bar,
+	.is-visible-on-hover,
+	.print-button,
+	aside:has(> button),
+	.details-section:has(#properties-label),
+	.details-section--inline-help {
+		display: none !important;
+	}
+
+	.app-wrapper {
+		height: auto;
+		overflow: visible;
+	}
+
+	.main-with-header-wrapper {
+		overflow: visible;
+	}
+
+	main {
+		overflow: visible !important;
+	}
+
+	.content-details {
+		overflow: visible;
+		height: auto;
+	}
+
+	[contenteditable] {
+		outline: none !important;
+		border: none !important;
+	}
+
+	.details {
+		--details-padding-left: 0;
+		--details-padding-right: 0;
+
+		min-width: 100%;
+		padding: 1rem 0;
+	}
+
+	.splitpanes.splitpanes--vertical {
+		flex-direction: column;
+	}
+
+	.splitpanes .splitpanes__pane {
+		width: 100% !important;
+		height: auto !important;
+	}
+
+	.badge {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.splitpanes__splitter {
+		display: none !important;
+	}
+
+	.splitpanes__pane--wrap img,
+	img.cover {
+		max-width: 50% !important;
+	}
+}
