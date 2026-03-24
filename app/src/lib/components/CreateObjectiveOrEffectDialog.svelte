@@ -29,6 +29,8 @@
 
 	let { dialog = $bindable() }: Props = $props();
 
+	let target = $derived($addEffectState.target ?? $addObjectiveState.target);
+
 	let selected = $state<IndicatorTemplateContainer>();
 
 	const actualDataResource = resource([() => selected?.guid], async ([guid], _, { signal }) => {
@@ -125,8 +127,8 @@
 				{/if}
 			</nav>
 
-			{#if page.state.createObjectiveOrEffect.step === 1}
-				<IndicatorTemplatePicker onSelect={handleSelect} value={selected} />
+			{#if page.state.createObjectiveOrEffect.step === 1 && target}
+				<IndicatorTemplatePicker onSelect={handleSelect} {target} value={selected} />
 			{:else if page.state.createObjectiveOrEffect.step === 2 && selected}
 				<IndicatorTemplatePreview container={selected} />
 			{:else if page.state.createObjectiveOrEffect.step === 3 && newObjectiveOrEffect}

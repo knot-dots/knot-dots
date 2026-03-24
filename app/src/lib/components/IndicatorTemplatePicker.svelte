@@ -3,57 +3,52 @@
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import InfoCircle from '~icons/flowbite/info-circle-solid';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
 		computeFacetCount,
+		type GoalContainer,
 		indicatorCategories,
 		type IndicatorTemplateContainer,
 		indicatorTemplateContainer,
 		indicatorTypes,
-		payloadTypes,
+		isEffectContainer,
+		type MeasureContainer,
 		sustainableDevelopmentGoals
 	} from '$lib/models';
+	import { page } from '$app/state';
 
 	interface Props {
 		onSelect: (container: IndicatorTemplateContainer) => void;
+		target: GoalContainer | MeasureContainer;
 		value?: IndicatorTemplateContainer;
 	}
 
-	let { onSelect, value }: Props = $props();
+	let { onSelect, target, value }: Props = $props();
 
 	let filter = $state({
 		sdg: [],
 		indicatorCategory: [],
 		indicatorType: []
-	}) as Record<string, string[]>;
-
-	let sort = $state('alpha');
+	});
 
 	let terms = $state('');
 
 	const searchResource = resource(
-		[
-			() => filter.sdg,
-			() => filter.indicatorCategory,
-			() => filter.indicatorType,
-			() => sort,
-			() => terms
-		],
-		async ([sdg, indicatorCategory, indicatorType, sort, terms], _, { signal }) => {
-			const response = await fetchContainers(
-				{
-					sdg,
-					indicatorCategory,
-					indicatorType,
-					payloadType: [payloadTypes.enum.indicator_template],
-					terms
-				},
-				sort,
-				{ signal }
-			);
-			return z.array(indicatorTemplateContainer).parse(response);
+		[() => $state.snapshot(filter), () => terms],
+		async ([filter, terms], _, { signal }) => {
+			if (target) {
+				return z
+					.array(indicatorTemplateContainer)
+					.parse(
+						await fetchSuggestedContainers(
+							target.guid,
+							{ ...filter, organization: [page.data.currentOrganization.guid], terms },
+							{ signal }
+						)
+					);
+			}
 		},
 		{
 			debounce: 300
@@ -71,18 +66,16 @@
 	});
 </script>
 
-<SearchToolbar
-	bind:filter
-	bind:sort
-	bind:terms
-	{facets}
-	sortOptions={[
-		[$_('sort_alphabetically'), 'alpha'],
-		[$_('sort_modified'), 'modified']
-	]}
->
+<SearchToolbar bind:filter bind:terms {facets}>
 	{#snippet extraPrimaryContent()}
-		<span class="prompt"><InfoCircle /> {$_('create_effect_dialog.prompt')}</span>
+		<span class="prompt">
+			<InfoCircle />
+			{#if isEffectContainer(target)}
+				{$_('create_effect_dialog.prompt_effect')}
+			{:else}
+				{$_('create_effect_dialog.prompt_objective')}
+			{/if}
+		</span>
 	{/snippet}
 </SearchToolbar>
 

@@ -13,8 +13,8 @@
 		extraPrimaryContent?: Snippet;
 		facets: Map<string, Map<string, number>>;
 		filter: Record<string, string[]>;
-		sort: string;
-		sortOptions: [string, string][];
+		sort?: string;
+		sortOptions?: [string, string][];
 		terms: string;
 	}
 
@@ -23,7 +23,7 @@
 		facets,
 		filter = $bindable(),
 		sort = $bindable(),
-		sortOptions,
+		sortOptions = [],
 		terms = $bindable()
 	}: Props = $props();
 
@@ -60,15 +60,17 @@
 		{/if}
 	</button>
 
-	<button
-		class="dropdown-button"
-		onclick={() => filterBar.close()}
-		type="button"
-		use:sortBar.button
-	>
-		<Sort />
-		<span class="is-visually-hidden">{$_('sort')}</span>
-	</button>
+	{#if sortOptions.length > 0}
+		<button
+			class="dropdown-button"
+			onclick={() => filterBar.close()}
+			type="button"
+			use:sortBar.button
+		>
+			<Sort />
+			<span class="is-visually-hidden">{$_('sort')}</span>
+		</button>
+	{/if}
 </div>
 
 <div class="search-toolbar-secondary">
