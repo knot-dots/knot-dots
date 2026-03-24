@@ -1422,7 +1422,7 @@ const organizationPayload = z.object({
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 const organizationalUnitPayload = z.object({
-	administrativeType: administrativeTypes.optional(),
+	administrativeType: z.array(administrativeTypes).default([]),
 	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
