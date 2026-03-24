@@ -630,6 +630,8 @@ export const boards = z.enum([
 ]);
 
 export const administrativeTypes = z.enum([
+	'administrative_type.state',
+	'administrative_type.federal_state',
 	'administrative_type.municipality',
 	'administrative_type.rural_district',
 	'administrative_type.urban_district'

@@ -124,7 +124,7 @@ function isSame<T>(a: T, b: T) {
 					)
 			),
 			tap((indicators) =>
-				console.log(`fetched ${indicators.length} indicators from Wegweiser Kommune`)
+				console.log(`Fetched ${indicators.length} indicators from Wegweiser Kommune`)
 			)
 		)
 		.subscribe({
@@ -169,7 +169,7 @@ function isSame<T>(a: T, b: T) {
 									)
 								) {
 									console.log(
-										`ignored indicator "${indicator.name}" (${foundIndicatorTemplateContainer.guid})`
+										`Ignored indicator "${indicator.name}" (${foundIndicatorTemplateContainer.guid})`
 									);
 								} else {
 									const updatedIndicatorTemplateContainer = await updateContainer({
@@ -178,7 +178,7 @@ function isSame<T>(a: T, b: T) {
 									})(tx);
 
 									console.log(
-										`updated indicator template "${indicator.name}" (${updatedIndicatorTemplateContainer.guid})`
+										`Updated indicator template "${indicator.name}" (${updatedIndicatorTemplateContainer.guid})`
 									);
 								}
 							} else {
@@ -187,12 +187,12 @@ function isSame<T>(a: T, b: T) {
 								)(tx);
 
 								console.log(
-									`created indicator template "${indicator.name}" (${savedIndicatorTemplateContainer.guid})`
+									`Created indicator template "${indicator.name}" (${savedIndicatorTemplateContainer.guid})`
 								);
 							}
 						});
 					} catch (error) {
-						console.error(`failed to save "${indicator.name}"`, JSON.stringify(error));
+						console.error(`Failed to save "${indicator.name}"`, JSON.stringify(error));
 					}
 				}
 			},

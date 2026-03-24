@@ -5,7 +5,9 @@ import {
 	createRelation,
 	getAdministrativeAreaBBSR,
 	getAdministrativeAreaOpenStreetMap,
+	getAdministrativeAreaOpenStreetMapByRelationId,
 	getAdministrativeAreaWikidata,
+	getAdministrativeAreaWikidataByRegionalCode,
 	getContainer,
 	getPool,
 	insertIntoAdministrativeAreaWegweiserKommune,
@@ -21,6 +23,7 @@ import { DatabaseTransactionConnection } from 'slonik';
 import * as z from 'zod';
 
 const regionType = z.enum([
+	'BUND',
 	'BUNDESLAND',
 	'REGIERUNGSBEZIRK',
 	'LANDKREIS',
@@ -33,10 +36,29 @@ const regionType = z.enum([
 ]);
 
 const administrativeTypeFromRegionType = new Map([
+	['BUND', 'administrative_type.state'],
+	['BUNDESLAND', 'administrative_type.federal_state'],
 	['LANDKREIS', 'administrative_type.rural_district'],
 	['KREISFREIE_STADT', 'administrative_type.urban_district'],
 	['GEMEINDE', 'administrative_type.municipality']
 ]);
+
+// Hamburg (02), Bremen (04), Berlin (11) are city-states: simultaneously
+// a federal state and an urban district. However Bremen has also a federal state entry in Wegweiser,
+// so only Berlin and Hamburg are stored as KREISFREIE_STADT in Wegweiser. For these two, we want to assign both.
+const cityStatePrefixes = new Set(['02', '11']);
+
+function getAdministrativeTypes(regionType: string, officialMunicipalityKey: string): string[] {
+	const primary = administrativeTypeFromRegionType.get(regionType);
+	if (!primary) return [];
+	if (
+		regionType === 'KREISFREIE_STADT' &&
+		cityStatePrefixes.has(officialMunicipalityKey.substring(0, 2))
+	) {
+		return [primary, 'administrative_type.federal_state'];
+	}
+	return [primary];
+}
 
 const stateFromAGS = new Map([
 	['01', 'Schleswig-Holstein'],
@@ -84,7 +106,7 @@ const envSchema = z
 		IMPORT_ORGANIZATIONAL_UNIT_LEVEL: z.coerce.number().int().positive().default(1),
 		IMPORT_TYPES: z
 			.string()
-			.default('KREISFREIE_STADT,LANDKREIS,GEMEINDE')
+			.default('BUND,BUNDESLAND,KREISFREIE_STADT,LANDKREIS,GEMEINDE')
 			.transform((value) => value.split(','))
 			.pipe(regionType.array()),
 		IMPORT_USER: z.string().uuid(),
@@ -148,7 +170,7 @@ function isSame<T>(a: T, b: T) {
 					})
 				)
 			),
-			tap((regions) => console.log(`fetched ${regions.length} regions from Wegweiser Kommune`))
+			tap((regions) => console.log(`Fetched ${regions.length} regions from Wegweiser Kommune`))
 		)
 		.subscribe({
 			next: async (regions) => {
@@ -158,7 +180,7 @@ function isSame<T>(a: T, b: T) {
 
 				for (const region of regions) {
 					try {
-						const osm = await pool.maybeOne(
+						let osm = await pool.maybeOne(
 							getAdministrativeAreaOpenStreetMap(region.official_regional_code)
 						);
 
@@ -166,16 +188,36 @@ function isSame<T>(a: T, b: T) {
 							getAdministrativeAreaBBSR(region.official_regional_code)
 						);
 
+						// For BUND, look up Germany directly by its stable Wikidata ID (Q183).
+						// For other types without an OSM entry (e.g. BUNDESLAND whose OSM
+						// relations carry no de:regionalschluessel tag), fall back to a
+						// regional-code lookup in the Wikidata table.
 						const wikidata = osm?.wikidata_id
 							? await pool.maybeOne(getAdministrativeAreaWikidata(osm.wikidata_id))
-							: undefined;
+							: region.type === 'BUND'
+								? await pool.maybeOne(getAdministrativeAreaWikidata('Q183'))
+								: await pool.maybeOne(
+										getAdministrativeAreaWikidataByRegionalCode(region.official_regional_code)
+									);
+
+						// When OSM wasn't found by regional code (e.g. Germany and federal
+						// states don't carry de:regionalschluessel), derive it from the
+						// OSM relation ID stored in the Wikidata entry.
+						if (!osm && wikidata?.open_street_map_relation_id) {
+							osm = await pool.maybeOne(
+								getAdministrativeAreaOpenStreetMapByRelationId(wikidata.open_street_map_relation_id)
+							);
+						}
 
 						const newOrganizationalUnitContainer = organizationalUnitContainer.parse({
 							managed_by: organization,
 							organization: organization,
 							organizational_unit: null,
 							payload: {
-								administrativeType: administrativeTypeFromRegionType.get(region.type),
+								administrativeType: getAdministrativeTypes(
+									region.type,
+									region.official_municipality_key
+								),
 								...(bbsr
 									? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
 									: undefined),
@@ -215,11 +257,11 @@ function isSame<T>(a: T, b: T) {
 									})(tx);
 
 									console.log(
-										`updated ${region.title} (${updatedOrganizationalUnitContainer.guid})`
+										`Updated ${region.title} (${updatedOrganizationalUnitContainer.guid})`
 									);
 								}
 
-								console.log(`ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
+								console.log(`Ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
 
 								return;
 							}
@@ -280,10 +322,10 @@ function isSame<T>(a: T, b: T) {
 
 							await createRelation(relations)(tx);
 
-							console.log(`created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
+							console.log(`Created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
 						});
 					} catch (error) {
-						console.error(`failed to save ${region.title}`, error);
+						console.error(`Failed to save ${region.title}`, error);
 					}
 				}
 			},
