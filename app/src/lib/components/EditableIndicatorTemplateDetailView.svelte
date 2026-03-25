@@ -5,11 +5,14 @@
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { z } from 'zod';
 	import { page } from '$app/state';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ImpactMonitoringChart from '$lib/components/ImpactMonitoringChart.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
@@ -18,9 +21,15 @@
 		actualDataContainer,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
-		payloadTypes
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isEffectContainer,
+		isObjectiveContainer,
+		isProgramContainer,
+		isRelatedTo,
+		payloadTypes,
+		titleForProgramCollection
 	} from '$lib/models';
-	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
@@ -33,17 +42,19 @@
 
 	let guid = $derived(container.guid);
 
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToIndicatorTemplates({
-			guid,
-			params: {
-				organization: page.data.currentOrganization.guid,
-				...(page.data.currentOrganizationalUnit
-					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
-					: undefined)
-			}
-		})
-	);
+	let relatedContainersQuery = resource([() => guid], async (_, __, { signal }) => {
+		return fetchRelatedContainers(
+			container.guid,
+			{
+				organization: [page.data.currentOrganization.guid],
+				organizationalUnit: page.data.currentOrganizationalUnit
+					? [page.data.currentOrganizationalUnit.guid]
+					: []
+			},
+			'alpha',
+			{ signal }
+		);
+	});
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
@@ -106,7 +117,11 @@
 				</select>
 
 				{#if viewMode === 'chart'}
-					<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))}
+						<ImpactMonitoringChart {container} {relatedContainers} showLegend />
+					{:else}
+						<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+					{/if}
 				{:else}
 					<NewIndicatorTable
 						{container}
@@ -117,6 +132,52 @@
 			</div>
 
 			<Sections bind:container {relatedContainers} />
+
+			{#if relatedContainers.filter(isContainerWithEffect).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('measures')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isContainerWithEffect) as measure (measure.guid)}
+							<li>
+								<Card container={measure} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if relatedContainers.filter(isObjectiveContainer).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('goals')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
+							{@const goal = relatedContainers
+								.filter(isContainerWithObjective)
+								.find(isRelatedTo(objective))}
+							{#if goal}
+								<li>
+									<Card container={goal} />
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if relatedContainers.filter(isProgramContainer).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">
+						{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
+					</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
+							<li>
+								<Card container={program} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 
