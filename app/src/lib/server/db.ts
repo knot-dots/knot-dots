@@ -44,7 +44,6 @@ const INDEXABLE_TYPES = new Set<string>([
 	'effect',
 	'goal',
 	'help',
-	'indicator',
 	'indicator_template',
 	'knowledge',
 	'measure',
