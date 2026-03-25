@@ -1,6 +1,6 @@
 import osmtogeojson from 'osmtogeojson';
 import { DefaultOverpassApi, type OverpassJsonOutput } from 'overpass-ql-ts';
-import { concat, from, of, timer, withLatestFrom } from 'rxjs';
+import { concat, from, of, timer, withLatestFrom, EMPTY } from 'rxjs';
 import { concatMap, delay, map, retry, tap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
@@ -59,7 +59,11 @@ const envSchema = z
 			.transform((value) => value.split(','))
 			.pipe(z.string().array()),
 		OVERPASS_API_URL: z.url().default(DEFAULT_OVERPASS_API_URL),
-		MAX_RETRIES: z.coerce.number().int().min(0).default(DEFAULT_MAX_RETRIES)
+		MAX_RETRIES: z.coerce.number().int().min(0).default(DEFAULT_MAX_RETRIES),
+		ONLY_GERMANY: z
+			.string()
+			.optional()
+			.transform((v) => v === 'true' || v === '1')
 	})
 	.transform((value) => ({
 		timeoutSeconds: value.TIMEOUT_SECONDS,
@@ -67,7 +71,8 @@ const envSchema = z
 		levelsPerState: value.LEVELS_PER_STATE,
 		includedStates: value.INCLUDED_STATES,
 		overpassApiUrl: value.OVERPASS_API_URL,
-		maxRetries: value.MAX_RETRIES
+		maxRetries: value.MAX_RETRIES,
+		onlyGermany: value.ONLY_GERMANY
 	}));
 
 type FetchOptions = z.infer<typeof envSchema>;
@@ -153,8 +158,15 @@ function retryOnError<T>(delayMs: number, maxRetries: number) {
 }
 
 export function extractAdministrativeAreas(opts: FetchOptions) {
-	const { timeoutSeconds, throttleMs, levelsPerState, includedStates, overpassApiUrl, maxRetries } =
-		opts;
+	const {
+		timeoutSeconds,
+		throttleMs,
+		levelsPerState,
+		includedStates,
+		overpassApiUrl,
+		maxRetries,
+		onlyGermany
+	} = opts;
 
 	const germany$ = from(fetchGermany(timeoutSeconds, overpassApiUrl)).pipe(
 		retryOnError(throttleMs, maxRetries),
@@ -162,30 +174,34 @@ export function extractAdministrativeAreas(opts: FetchOptions) {
 		delay(throttleMs)
 	);
 
-	const statesAndLevels$ = from(fetchStates(timeoutSeconds, overpassApiUrl)).pipe(
-		retryOnError(throttleMs, maxRetries),
-		tap(() => console.log('Fetched federal states')),
-		delay(throttleMs),
-		concatMap((result) => {
-			const states = extractStateRouting(result as OverpassJsonOutput, includedStates);
-			return concat(
-				of(result),
-				from(states).pipe(
-					concatMap((state) =>
-						from(levelsPerState).pipe(
-							concatMap((level) =>
-								from(fetchLevelForState(state, level, timeoutSeconds, overpassApiUrl)).pipe(
-									retryOnError(throttleMs, maxRetries),
-									tap(() => console.log(`Fetched administrative level ${level} of ${state.name}`)),
-									delay(throttleMs)
+	const statesAndLevels$ = onlyGermany
+		? EMPTY
+		: from(fetchStates(timeoutSeconds, overpassApiUrl)).pipe(
+				retryOnError(throttleMs, maxRetries),
+				tap(() => console.log('Fetched federal states')),
+				delay(throttleMs),
+				concatMap((result) => {
+					const states = extractStateRouting(result as OverpassJsonOutput, includedStates);
+					return concat(
+						of(result),
+						from(states).pipe(
+							concatMap((state) =>
+								from(levelsPerState).pipe(
+									concatMap((level) =>
+										from(fetchLevelForState(state, level, timeoutSeconds, overpassApiUrl)).pipe(
+											retryOnError(throttleMs, maxRetries),
+											tap(() =>
+												console.log(`Fetched administrative level ${level} of ${state.name}`)
+											),
+											delay(throttleMs)
+										)
+									)
 								)
 							)
 						)
-					)
-				)
+					);
+				})
 			);
-		})
-	);
 
 	return concat(germany$, statesAndLevels$);
 }
