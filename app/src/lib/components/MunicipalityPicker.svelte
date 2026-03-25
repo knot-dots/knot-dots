@@ -326,19 +326,23 @@
 
 			<div class="picker-layout">
 				<aside class="federal-levels-panel">
-					<span class="federal-levels-title">{$_('compare_federal_levels')}</span>
-					<ul class="federal-levels-list">
+					<span class="federal-levels-title" id="federal-levels-title"
+						>{$_('compare_federal_levels')}</span
+					>
+					<ul aria-labelledby="federal-levels-title" class="federal-levels-list" role="radiogroup">
 						{#each federalLevelItems as item (item.key)}
 							<li>
-								<button
-									class="federal-level-item"
-									class:is-active={activeFederalLevel === item.key}
-									onclick={() => selectFederalLevel(item.key)}
-									type="button"
-								>
-									<span aria-hidden="true" class="federal-level-bullet"></span>
+								<label class="federal-level-item">
+									<input
+										class="is-visually-hidden"
+										type="radio"
+										name="federal-level"
+										value={item.key}
+										checked={activeFederalLevel === item.key}
+										onchange={() => selectFederalLevel(item.key)}
+									/>
 									<span class="federal-level-label">{item.label}</span>
-								</button>
+								</label>
 							</li>
 						{/each}
 					</ul>
@@ -457,6 +461,7 @@
 		flex-direction: column;
 		gap: 0.75rem;
 		min-height: 0;
+		overflow: auto;
 	}
 
 	.federal-levels-title {
@@ -468,7 +473,7 @@
 	.federal-levels-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		list-style: none;
 		margin: 0;
 		overflow: auto;
@@ -476,40 +481,27 @@
 	}
 
 	.federal-level-item {
-		align-items: center;
+		align-items: flex-start;
+		align-self: stretch;
 		background: var(--color-gray-050);
 		border: 1px solid var(--color-gray-200);
 		border-radius: 8px;
-		color: var(--color-gray-700);
+		color: var(--color-gray-600);
 		display: flex;
-		font-size: 0.875rem;
-		gap: 0.375rem;
-		padding: 0.625rem 0.75rem;
-		text-align: left;
-		width: 100%;
+		gap: 6px;
+		height: 72px;
+		padding: 12px;
 	}
 
 	.federal-level-item:hover {
-		background: var(--color-gray-100);
+		background-color: var(--color-gray-100);
 	}
 
-	.federal-level-item.is-active {
-		background: var(--color-gray-100);
-		border-color: var(--color-gray-300);
-		color: var(--color-gray-900);
+	.federal-level-item:has(> input:checked) {
+		background-color: var(--color-gray-200);
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-800);
 		font-weight: 600;
-	}
-
-	.federal-level-bullet {
-		background: var(--color-gray-300);
-		border-radius: 3px;
-		display: block;
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.federal-level-item.is-active .federal-level-bullet {
-		background: var(--color-primary-700);
 	}
 
 	.federal-level-label {
@@ -623,7 +615,6 @@
 
 		.federal-levels-list {
 			flex-direction: row;
-			overflow: auto;
 		}
 
 		.federal-levels-list > li {
