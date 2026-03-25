@@ -32,7 +32,6 @@
 		isContainerWithName,
 		isContainerWithTitle,
 		isGoalContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
@@ -50,7 +49,8 @@
 		isTextContainer,
 		type NewContainer,
 		overlayKey,
-		overlayURL
+		overlayURL,
+		isIndicatorContainer
 	} from '$lib/models';
 	import { addEffectState, lastCreatedContainer, newContainer } from '$lib/stores';
 
