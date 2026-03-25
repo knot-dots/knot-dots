@@ -11,11 +11,9 @@ import {
 	createCopyOf,
 	type GoalContainer,
 	indicatorCategories,
-	type IndicatorContainer,
 	indicatorTypes,
 	isEffectContainer,
 	isGoalContainer,
-	isIndicatorContainer,
 	isMeasureContainer,
 	isProgramContainer,
 	isReportContainer,
@@ -49,7 +47,7 @@ import type { RequestHandler } from './$types';
 
 function findCopiedTargetGuid<T extends AnyContainer>(
 	originalTargetGuid: string,
-	copied: Array<GoalContainer | IndicatorContainer | T>
+	copied: Array<GoalContainer | T>
 ): string {
 	return copied.find(({ relation }) =>
 		relation.some(
@@ -208,59 +206,10 @@ async function copyTasksFromOriginal(
 	}
 }
 
-async function copyIndicatorsFromOriginal(
-	createdMeasure: MeasureContainer,
-	originals: Container[],
-	userGuid: string,
-	txConnection: CommonQueryMethods
-) {
-	const measuredByObjects: IndicatorContainer[] = [];
-
-	const organizationIndicators = (await getManyContainers(
-		[createdMeasure.organization],
-		{ type: [payloadTypes.enum.indicator] },
-		''
-	)(txConnection)) as IndicatorContainer[];
-
-	for (const copyFrom of originals.filter(isIndicatorContainer)) {
-		const match = organizationIndicators.find(
-			({ payload }) => payload.quantity === copyFrom.payload.quantity
-		);
-		if (match) {
-			measuredByObjects.push({
-				...match,
-				relation: [
-					...match.relation,
-					{
-						object: copyFrom.guid,
-						position: 0,
-						predicate: predicates.enum['is-copy-of'],
-						subject: match.guid
-					}
-				]
-			});
-		} else {
-			const copy = createCopyOf(copyFrom, createdMeasure.organization, null);
-
-			copy.user.push({
-				predicate: predicates.enum['is-creator-of'],
-				subject: userGuid
-			});
-
-			measuredByObjects.push(
-				(await createContainer(copy as NewContainer)(txConnection)) as IndicatorContainer
-			);
-		}
-	}
-
-	return measuredByObjects;
-}
-
 async function copyEffectsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
-	indicators: IndicatorContainer[],
 	userGuid: string,
 	txConnection: CommonQueryMethods
 ) {
@@ -281,7 +230,7 @@ async function copyEffectsFromOriginal(
 		copy.relation.push(
 			...mapRelationsByPredicate(copyFrom, {
 				predicate: predicates.enum['is-measured-by'],
-				resolveObject: (origIndicatorGuid) => findCopiedTargetGuid(origIndicatorGuid, indicators)
+				resolveObject: (origIndicatorGuid) => origIndicatorGuid
 			})
 		);
 
@@ -361,18 +310,10 @@ async function copyMeasure(
 		txConnection
 	);
 
-	const indicators = await copyIndicatorsFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal,
-		user.guid,
-		txConnection
-	);
-
 	await copyEffectsFromOriginal(
 		createdContainer,
 		containersRelatedToOriginal,
 		isPartOfObjects,
-		indicators,
 		user.guid,
 		txConnection
 	);
