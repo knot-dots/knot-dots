@@ -130,20 +130,40 @@ export async function getIndicatorsData(params: {
 
 	if (indicators.length === 0) {
 		useNewIndicators = true;
-		facetData = undefined;
-		indicators = (await connect(
-			getManyContainers(
-				[],
-				{
-					customCategories: filters.customCategories,
-					indicatorCategories: filters.indicatorCategories,
-					indicatorTypes: filters.indicatorTypes,
-					sdg: filters.sdg,
-					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
-				},
-				'alpha'
-			)
-		)) as IndicatorTemplateContainer[];
+		if (useElasticsearch) {
+			const esResult = await connect(
+				getManyContainersWithES(
+					[],
+					{
+						customCategories: filters.customCategories,
+						indicatorCategories: filters.indicatorCategories,
+						indicatorTypes: filters.indicatorTypes,
+						sdg: filters.sdg,
+						type: [payloadTypes.enum.indicator_template]
+					},
+					'alpha',
+					undefined,
+					{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
+				)
+			);
+			indicators = esResult.containers as IndicatorTemplateContainer[];
+			facetData = esResult.facets;
+		} else {
+			indicators = (await connect(
+				getManyContainers(
+					[],
+					{
+						customCategories: filters.customCategories,
+						indicatorCategories: filters.indicatorCategories,
+						indicatorTypes: filters.indicatorTypes,
+						sdg: filters.sdg,
+						type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
+					},
+					'alpha'
+				)
+			)) as IndicatorTemplateContainer[];
+			facetData = undefined;
+		}
 		related = await connect(
 			getAllContainersRelatedToIndicatorTemplates(indicators, {
 				organizations: [organizationGuid],
