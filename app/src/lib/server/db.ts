@@ -1187,14 +1187,13 @@ export function getAllContainersRelatedToIndicatorTemplates(
 				: [];
 
 		const containerResult = await connection.any(sql.typeAlias('container')`
-			SELECT c.*
+			SELECT DISTINCT(c.*)
 			FROM container c
-			WHERE c.guid = ANY (${sql.array(
-				[...sectionResult, ...actualDataResult, ...isPartOfResult].map(({ guid }) => guid),
-				'uuid'
-			)})
-				AND c.valid_currently
-				AND NOT c.deleted
+			WHERE ${prepareWhereCondition({})}
+				AND c.guid = ANY (${sql.array(
+					[...sectionResult, ...actualDataResult, ...isPartOfResult].map(({ guid }) => guid),
+					'uuid'
+				)})
 		`);
 
 		return withUserAndRelation<Container>(connection, containerResult);
