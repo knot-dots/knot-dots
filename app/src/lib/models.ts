@@ -14,8 +14,6 @@ export const overlayKey = z.enum([
 	'content-partners',
 	'create',
 	'goal-iooi',
-	'indicator-catalog',
-	'new-indicator-catalog',
 	'indicators',
 	'measure-iooi',
 	'measure-monitoring',

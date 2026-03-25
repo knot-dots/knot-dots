@@ -3,7 +3,6 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import createEffect from '$lib/client/createEffect';
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -52,7 +51,7 @@
 		overlayURL,
 		isIndicatorContainer
 	} from '$lib/models';
-	import { addEffectState, lastCreatedContainer, newContainer } from '$lib/stores';
+	import { lastCreatedContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -68,11 +67,7 @@
 			// Signal that a container was successfully created
 			$lastCreatedContainer = savedContainer;
 
-			if (isIndicatorContainer(savedContainer) && $addEffectState.target) {
-				const effect = await createEffect($addEffectState.target, savedContainer);
-				$addEffectState = {};
-				await goto(`#view=${effect.guid}`);
-			} else if (isOrganizationalUnitContainer(savedContainer)) {
+			if (isOrganizationalUnitContainer(savedContainer)) {
 				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));

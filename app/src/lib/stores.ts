@@ -13,14 +13,11 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	type ApplicationState,
-	type BinaryIndicatorContainer,
 	type Container,
 	containerOfType,
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
-	type IndicatorContainer,
-	type IndicatorTemplateContainer,
 	type IooiType,
 	mayDelete,
 	type MeasureContainer,
@@ -157,17 +154,6 @@ export type OverlayData =
 			key: 'chapters';
 			container: AnyContainer;
 			containers: Container[];
-	  }
-	| {
-			key: 'indicator-catalog';
-			container: undefined;
-			indicators: Array<BinaryIndicatorContainer | IndicatorContainer>;
-			indicatorTemplates: IndicatorTemplateContainer[];
-	  }
-	| {
-			key: 'new-indicator-catalog';
-			container: undefined;
-			containers: IndicatorTemplateContainer[];
 	  }
 	| {
 			key: 'indicators';
@@ -652,41 +638,6 @@ if (browser) {
 				key: overlayKey.enum.resources,
 				container: result.data.container,
 				containers: result.data.containers
-			});
-		} else if (hashParams.has(overlayKey.enum['indicator-catalog'])) {
-			const indicatorTemplates = (await fetchContainers({
-				sdg: hashParams.getAll('sdg'),
-				indicatorCategory: hashParams.getAll('indicatorCategory'),
-				indicatorType: hashParams.getAll('indicatorType'),
-				payloadType: [payloadTypes.enum.indicator_template],
-				topic: hashParams.getAll('topic')
-			})) as IndicatorTemplateContainer[];
-			const indicators = (await fetchContainers({
-				sdg: hashParams.getAll('sdg'),
-				indicatorCategory: hashParams.getAll('indicatorCategory'),
-				indicatorType: hashParams.getAll('indicatorType'),
-				organization: [values.data.currentOrganization.guid],
-				payloadType: [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator],
-				topic: hashParams.getAll('topic')
-			})) as Array<BinaryIndicatorContainer | IndicatorContainer>;
-			setOverlayIfLatest({
-				key: overlayKey.enum['indicator-catalog'],
-				container: undefined,
-				indicators,
-				indicatorTemplates
-			});
-		} else if (hashParams.has(overlayKey.enum['new-indicator-catalog'])) {
-			const containers = (await fetchContainers({
-				sdg: hashParams.getAll('sdg'),
-				indicatorCategory: hashParams.getAll('indicatorCategory'),
-				indicatorType: hashParams.getAll('indicatorType'),
-				payloadType: [payloadTypes.enum.indicator_template],
-				topic: hashParams.getAll('topic')
-			})) as IndicatorTemplateContainer[];
-			setOverlayIfLatest({
-				key: overlayKey.enum['new-indicator-catalog'],
-				container: undefined,
-				containers
 			});
 		} else if (hashParams.has(overlayKey.enum.teasers)) {
 			const revisions = await fetchContainerRevisions(
