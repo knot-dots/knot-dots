@@ -8,6 +8,7 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -19,7 +20,13 @@
 		actualDataContainer,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
-		payloadTypes
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isObjectiveContainer,
+		isProgramContainer,
+		isRelatedTo,
+		payloadTypes,
+		titleForProgramCollection
 	} from '$lib/models';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
@@ -119,6 +126,52 @@
 			</div>
 
 			<Sections bind:container {relatedContainers} />
+
+			{#if relatedContainers.filter(isContainerWithEffect).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('measures')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isContainerWithEffect) as measure (measure.guid)}
+							<li>
+								<Card container={measure} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if relatedContainers.filter(isObjectiveContainer).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('goals')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
+							{@const goal = relatedContainers
+								.filter(isContainerWithObjective)
+								.find(isRelatedTo(objective))}
+							{#if goal}
+								<li>
+									<Card container={goal} />
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if relatedContainers.filter(isProgramContainer).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">
+						{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
+					</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
+							<li>
+								<Card container={program} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 
