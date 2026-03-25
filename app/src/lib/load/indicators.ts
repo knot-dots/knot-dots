@@ -31,6 +31,7 @@ export interface IndicatorFilters {
 	indicatorCategories: string[];
 	indicatorTypes: string[];
 	included: string[];
+	terms: string;
 	sdg: string[];
 }
 
@@ -89,6 +90,7 @@ export async function getIndicatorsData(params: {
 					indicatorCategories: filters.indicatorCategories,
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
+					terms: filters.terms,
 					type: [payloadTypes.enum.indicator_template]
 				},
 				'alpha',
@@ -107,6 +109,7 @@ export async function getIndicatorsData(params: {
 					indicatorCategories: filters.indicatorCategories,
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
+					terms: filters.terms,
 					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
@@ -163,6 +166,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
 		included: url.searchParams.getAll('included'),
+		terms: url.searchParams.get('terms') ?? '',
 		sdg: url.searchParams.getAll('sdg')
 	} as const;
 
