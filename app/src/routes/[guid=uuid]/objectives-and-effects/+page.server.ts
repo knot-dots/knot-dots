@@ -21,7 +21,11 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
+	const {
+		categoryContext: rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit
+	} = await parent();
 	const features = createFeatureDecisions(locals.features);
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, [
@@ -82,9 +86,14 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	}
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicatorTemplates(containers, {
-			organizations: [currentOrganization.guid]
-		})
+		getAllContainersRelatedToIndicatorTemplates(
+			containers,
+			{ organizations: [currentOrganization.guid] },
+			{
+				organizations: [currentOrganization.guid],
+				organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null
+			}
+		)
 	);
 
 	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);

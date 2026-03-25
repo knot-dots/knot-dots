@@ -116,12 +116,19 @@ export async function getIndicatorsData(params: {
 	}
 
 	const related = await connect(
-		getAllContainersRelatedToIndicatorTemplates(indicators, {
-			organizations: [organizationGuid],
-			organizationalUnits: !filters.included.includes('all_organizational_units')
-				? organizationalUnits
-				: []
-		})
+		getAllContainersRelatedToIndicatorTemplates(
+			indicators,
+			{
+				organizations: [organizationGuid],
+				organizationalUnits: !filters.included.includes('all_organizational_units')
+					? organizationalUnits
+					: []
+			},
+			{
+				organizations: [organizationGuid],
+				organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null
+			}
+		)
 	);
 
 	const combinedVisible = filterVisible([...indicators, ...related], user);

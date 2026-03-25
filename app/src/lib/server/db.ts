@@ -539,7 +539,7 @@ function prepareWhereCondition(filters: {
 	indicators?: string[];
 	indicatorTypes?: string[];
 	organizations?: string[];
-	organizationalUnits?: string[];
+	organizationalUnits?: string[] | null;
 	policyFieldsBNK?: string[];
 	programTypes?: string[];
 	resource?: string[];
@@ -593,7 +593,9 @@ function prepareWhereCondition(filters: {
 			sql.fragment`c.organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
 		);
 	}
-	if (filters.organizationalUnits?.length) {
+	if (filters.organizationalUnits === null) {
+		conditions.push(sql.fragment`c.organizational_unit IS NULL`);
+	} else if (filters.organizationalUnits?.length) {
 		conditions.push(
 			sql.fragment`c.organizational_unit IN (${sql.join(
 				filters.organizationalUnits,
@@ -724,7 +726,7 @@ export function getManyContainers(
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
-		organizationalUnits?: string[];
+		organizationalUnits?: string[] | null;
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		resource?: string[];
@@ -1113,7 +1115,8 @@ export function getAllRelatedContainersByProgramType(
 
 export function getAllContainersRelatedToIndicatorTemplates(
 	containers: IndicatorTemplateContainer[],
-	filters: { organizations?: string[]; organizationalUnits?: string[] }
+	filters: { organizations?: string[]; organizationalUnits?: string[] },
+	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		if (containers.length == 0) {
@@ -1136,7 +1139,7 @@ export function getAllContainersRelatedToIndicatorTemplates(
 		const actualDataResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c
-			WHERE ${prepareWhereCondition(filters)}
+			WHERE ${prepareWhereCondition(actualDataFilters)}
 				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
 				AND c.payload->>'indicator' = ANY (${sql.array(
 					containers.map(({ guid }) => guid),

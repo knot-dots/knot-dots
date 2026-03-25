@@ -52,7 +52,7 @@ export const load = (async ({ locals, parent }) => {
 			getManyContainers(
 				[container.organization],
 				{
-					organizationalUnits,
+					organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null,
 					type: [payloadTypes.enum.actual_data]
 				},
 				'alpha'

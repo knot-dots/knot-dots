@@ -68,10 +68,20 @@ export const GET = (async ({ locals, params, url }) => {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
 					locals.pool.connect(
-						getAllContainersRelatedToIndicatorTemplates([container], {
-							organizations: parseResult.data.organization,
-							organizationalUnits: parseResult.data.organizationalUnit
-						})
+						getAllContainersRelatedToIndicatorTemplates(
+							[container],
+							{
+								organizations: parseResult.data.organization,
+								organizationalUnits: parseResult.data.organizationalUnit
+							},
+							{
+								organizations: parseResult.data.organization,
+								organizationalUnits:
+									parseResult.data.organizationalUnit.length > 0
+										? parseResult.data?.organizationalUnit
+										: null
+							}
+						)
 					)
 				]);
 
@@ -83,7 +93,7 @@ export const GET = (async ({ locals, params, url }) => {
 			} else {
 				let subordinateOrganizationalUnits: string[] = [];
 
-				if (parseResult.data.organizationalUnit.length > 0) {
+				if (parseResult.data.organizationalUnit.length == 1) {
 					const [currentOrganizationalUnit, relatedOrganizationalUnits] = (await Promise.all([
 						locals.pool.connect(getContainerByGuid(parseResult.data.organizationalUnit[0])),
 						locals.pool.connect(
@@ -97,10 +107,20 @@ export const GET = (async ({ locals, params, url }) => {
 				}
 
 				containers = await locals.pool.connect(
-					getAllContainersRelatedToIndicatorTemplates([container], {
-						organizations: parseResult.data.organization,
-						organizationalUnits: subordinateOrganizationalUnits
-					})
+					getAllContainersRelatedToIndicatorTemplates(
+						[container],
+						{
+							organizations: parseResult.data.organization,
+							organizationalUnits: subordinateOrganizationalUnits
+						},
+						{
+							organizations: parseResult.data.organization,
+							organizationalUnits:
+								parseResult.data.organizationalUnit.length > 0
+									? parseResult.data.organizationalUnit
+									: null
+						}
+					)
 				);
 			}
 		} else if (isContainerWithEffect(container)) {
