@@ -48,8 +48,7 @@
 		isTextContainer,
 		type NewContainer,
 		overlayKey,
-		overlayURL,
-		isIndicatorContainer
+		overlayURL
 	} from '$lib/models';
 	import { lastCreatedContainer, newContainer } from '$lib/stores';
 
@@ -172,13 +171,6 @@
 					/>
 				{:else if isCategoryContainer($newContainer)}
 					<CategoryProperties
-						bind:container={$newContainer}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isIndicatorContainer($newContainer)}
-					<IndicatorProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

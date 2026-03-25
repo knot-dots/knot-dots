@@ -2720,17 +2720,6 @@ export function mayDelete(container: AnyContainer | EmptyContainer, ability: Mon
 	);
 }
 
-export function newIndicatorTemplateFromIndicator(container: IndicatorContainer) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { historicalValues, quantity, ...copiedPayload } = container.payload;
-	return newContainer.parse({
-		payload: { ...copiedPayload, type: payloadTypes.enum.indicator_template },
-		organization: container.organization,
-		organizational_unit: container.organization,
-		realm: container.realm
-	});
-}
-
 export function newCategoryTemplateFromCategory(
 	category: CategoryContainer,
 	organization: OrganizationContainer
@@ -2894,7 +2883,10 @@ export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveC
 	);
 }
 
-export function findOverallObjective(container: IndicatorContainer, containers: Container[]) {
+export function findOverallObjective(
+	container: IndicatorTemplateContainer,
+	containers: Container[]
+) {
 	return containers
 		.filter(isObjectiveContainer)
 		.find(
@@ -2986,10 +2978,6 @@ export function getCreator(revision: AnyContainer) {
 
 export function getManagedBy(container: AnyContainer, candidates: AnyContainer[]) {
 	return candidates.find(({ guid }) => guid === container.managed_by);
-}
-
-export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicatorContainer) {
-	return container.payload.historicalValues.length > 0;
 }
 
 export function createCopyOf(
