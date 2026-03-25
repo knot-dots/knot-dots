@@ -21,7 +21,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isActualDataContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		containerOfType,
 		payloadTypes
@@ -68,11 +67,10 @@
 	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
 
 	let filteredRows = $derived(
-		data.containers.filter((c) =>
-			data.useNewIndicators
-				? isIndicatorTemplateContainer(c) &&
-					actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
-				: isIndicatorContainer(c)
+		data.containers.filter(
+			(c) =>
+				isIndicatorTemplateContainer(c) &&
+				actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
 		)
 	);
 
@@ -226,9 +224,7 @@
 	<Table
 		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
-		rows={data.containers.filter((c) =>
-			data.useNewIndicators ? isIndicatorTemplateContainer(c) : isIndicatorContainer(c)
-		)}
+		rows={data.containers.filter((c) => isIndicatorTemplateContainer(c))}
 	/>
 	<Help slug="indicators-table" />
 </IndicatorsPage>
