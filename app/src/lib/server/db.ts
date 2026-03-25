@@ -1294,6 +1294,8 @@ export function getAllContainersRelatedToIndicatorTemplates(
 				[...sectionResult, ...actualDataResult, ...isPartOfResult].map(({ guid }) => guid),
 				'uuid'
 			)})
+				AND c.valid_currently
+				AND NOT c.deleted
 		`);
 
 		return withUserAndRelation<Container>(connection, containerResult);
