@@ -40,7 +40,6 @@
 		isContainerWithEditorialState,
 		isContainerWithFulfillmentDate,
 		isGoalContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
@@ -205,7 +204,7 @@
 		</div>
 	{:else if col === 'unit'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if isIndicatorContainer(container) || isIndicatorTemplateContainer(container)}
+			{#if isIndicatorTemplateContainer(container)}
 				<IndicatorUnitDropdown
 					editable={editable && $ability.can('update', container)}
 					bind:value={container.payload.unit}

@@ -2,7 +2,6 @@ import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
 	audience,
-	type IndicatorContainer,
 	payloadTypes,
 	computeFacetCount,
 	fromCounts,
@@ -10,9 +9,10 @@ import {
 	indicatorTypes,
 	policyFieldBNK,
 	sustainableDevelopmentGoals,
-	topics
+	topics,
+	type IndicatorTemplateContainer
 } from '$lib/models';
-import { getAllContainersRelatedToIndicators, getManyContainers } from '$lib/server/db';
+import { getAllContainersRelatedToIndicatorTemplates, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -27,7 +27,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		? filterCategoryContext(rawCategoryContext, [
 				payloadTypes.enum.objective,
 				payloadTypes.enum.effect,
-				payloadTypes.enum.indicator
+				payloadTypes.enum.indicator_template
 			])
 		: null;
 	const useCustomCategories = features.useCustomCategories();
@@ -45,44 +45,46 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				topics: url.searchParams.getAll('topic')
 			};
 
-	let containers: IndicatorContainer[];
+	let containers: IndicatorTemplateContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
 	if (features.useElasticsearch()) {
 		const esResult = await locals.pool.connect(
 			getManyContainersWithES(
-				[currentOrganization.guid],
+				[],
 				{
 					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					type: [payloadTypes.enum.indicator]
+					type: [payloadTypes.enum.indicator_template]
 				},
 				'',
 				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			)
 		);
-		containers = esResult.containers as IndicatorContainer[];
+		containers = esResult.containers as IndicatorTemplateContainer[];
 		data = esResult.facets;
 	} else {
 		containers = (await locals.pool.connect(
 			getManyContainers(
-				[currentOrganization.guid],
+				[],
 				{
 					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					type: [payloadTypes.enum.indicator]
+					type: [payloadTypes.enum.indicator_template]
 				},
 				''
 			)
-		)) as IndicatorContainer[];
+		)) as IndicatorTemplateContainer[];
 	}
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicators(containers, {})
+		getAllContainersRelatedToIndicatorTemplates(containers, {
+			organizations: [currentOrganization.guid]
+		})
 	);
 
 	const filtered = filterVisible([...containers, ...relatedContainers], locals.user);

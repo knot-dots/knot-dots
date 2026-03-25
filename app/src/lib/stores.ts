@@ -459,7 +459,7 @@ if (browser) {
 					terms: hashParams.get('terms') ?? '',
 					payloadType: [
 						payloadTypes.enum.effect,
-						payloadTypes.enum.indicator,
+						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.goal,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.simple_measure,
@@ -501,7 +501,7 @@ if (browser) {
 					{
 						organization: [container.organization],
 						payloadType: [
-							payloadTypes.enum.indicator,
+							payloadTypes.enum.indicator_template,
 							payloadTypes.enum.objective,
 							payloadTypes.enum.resource_data,
 							payloadTypes.enum.resource_data_collection
@@ -528,7 +528,7 @@ if (browser) {
 					organization: [container.organization],
 					payloadType: [
 						payloadTypes.enum.effect,
-						payloadTypes.enum.indicator,
+						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.resource_data,
 						payloadTypes.enum.resource_data_collection
 					],

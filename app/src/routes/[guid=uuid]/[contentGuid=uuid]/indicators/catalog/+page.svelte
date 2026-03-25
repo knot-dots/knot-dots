@@ -7,7 +7,7 @@
 		computeFacetCount,
 		indicatorCategories,
 		indicatorTypes,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
@@ -26,7 +26,7 @@
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 			]),
-			data.containers.filter(isIndicatorContainer)
+			data.containers.filter(isIndicatorTemplateContainer)
 		)
 	);
 </script>

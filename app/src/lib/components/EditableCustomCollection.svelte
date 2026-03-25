@@ -249,10 +249,7 @@
 		}
 
 		for (const value of container.payload.filter.type) {
-			params.append(
-				'payloadType',
-				value === payloadTypes.enum.indicator_template ? payloadTypes.enum.indicator : value
-			);
+			params.append('payloadType', value);
 		}
 
 		const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';

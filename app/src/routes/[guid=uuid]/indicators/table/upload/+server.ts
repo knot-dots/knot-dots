@@ -10,7 +10,6 @@ import {
 	containerOfType,
 	editorialState,
 	emptyContainer,
-	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	isActualDataContainer,
 	isOrganizationalUnitContainer,
@@ -102,12 +101,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		getManyContainers(
 			[currentOrganizationGuid],
 			{
-				type: [payloadTypes.enum.indicator, payloadTypes.enum.indicator_template],
+				type: [payloadTypes.enum.indicator_template],
 				indicatorCategories: ['indicator_category.custom']
 			},
 			'alpha'
 		)
-	)) as Array<IndicatorContainer | IndicatorTemplateContainer>;
+	)) as Array<IndicatorTemplateContainer>;
 
 	const existingByTitle = new Map(existingIndicators.map((c) => [c.payload.title, c]));
 

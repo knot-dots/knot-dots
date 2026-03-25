@@ -3004,11 +3004,6 @@ export function createCopyOf(
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
 		} as typeof copy.payload;
-	} else if (isIndicatorContainer(container)) {
-		copy.payload = {
-			...(container.payload as unknown as typeof copy.payload),
-			historicalValues: []
-		} as unknown as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
 			...(container.payload as typeof copy.payload),
