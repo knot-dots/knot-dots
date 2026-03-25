@@ -5,6 +5,7 @@
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { z } from 'zod';
 	import { page } from '$app/state';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -20,7 +21,6 @@
 		type IndicatorTemplateContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
@@ -33,17 +33,19 @@
 
 	let guid = $derived(container.guid);
 
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToIndicatorTemplates({
-			guid,
-			params: {
-				organization: page.data.currentOrganization.guid,
-				...(page.data.currentOrganizationalUnit
-					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
-					: undefined)
-			}
-		})
-	);
+	let relatedContainersQuery = resource([() => guid], async (_, __, { signal }) => {
+		return fetchRelatedContainers(
+			container.guid,
+			{
+				organization: [page.data.currentOrganization.guid],
+				organizationalUnit: page.data.currentOrganizationalUnit
+					? [page.data.currentOrganizationalUnit.guid]
+					: []
+			},
+			'alpha',
+			{ signal }
+		);
+	});
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
