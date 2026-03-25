@@ -12,6 +12,7 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ImpactMonitoringChart from '$lib/components/ImpactMonitoringChart.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
@@ -22,6 +23,7 @@
 		type IndicatorTemplateContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
+		isEffectContainer,
 		isObjectiveContainer,
 		isProgramContainer,
 		isRelatedTo,
@@ -115,7 +117,11 @@
 				</select>
 
 				{#if viewMode === 'chart'}
-					<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))}
+						<ImpactMonitoringChart {container} {relatedContainers} showLegend />
+					{:else}
+						<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+					{/if}
 				{:else}
 					<NewIndicatorTable
 						{container}
