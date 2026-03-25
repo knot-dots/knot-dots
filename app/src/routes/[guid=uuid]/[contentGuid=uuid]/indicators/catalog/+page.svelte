@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Indicators from '$lib/components/Indicators.svelte';
+	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { PageProps } from './$types';
 	import {
@@ -37,6 +37,6 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Indicators containers={data.containers} />
+		<NewIndicators containers={data.containers} />
 	{/snippet}
 </Layout>
