@@ -29,7 +29,7 @@ export const load = (async ({ locals, parent }) => {
 			.concat(container.guid);
 	}
 
-	const [containers, sections] = await Promise.all([
+	const [containers, actualData, sections] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
@@ -38,12 +38,22 @@ export const load = (async ({ locals, parent }) => {
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator,
+						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.objective,
 						payloadTypes.enum.program,
 						payloadTypes.enum.simple_measure
 					]
+				},
+				'alpha'
+			)
+		),
+		locals.pool.connect(
+			getManyContainers(
+				[container.organization],
+				{
+					organizationalUnits,
+					type: [payloadTypes.enum.actual_data]
 				},
 				'alpha'
 			)
@@ -83,7 +93,7 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		container,
-		relatedContainers: filterVisible([...containers, ...sections], locals.user),
+		relatedContainers: filterVisible([...containers, ...actualData, ...sections], locals.user),
 		spatialFeatures
 	};
 }) satisfies PageServerLoad;
