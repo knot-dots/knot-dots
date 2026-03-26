@@ -231,49 +231,65 @@
 					</button>
 				{/if}
 			{:else if settingsSubview === 'view'}
-				<button
+				<label
 					class="custom-settings-choice"
 					class:is-selected={container.payload.listType === 'wall'}
-					onclick={() => updateSettings({ listType: 'wall' })}
-					type="button"
 				>
+					<input
+						type="radio"
+						name="listType"
+						value="wall"
+						checked={container.payload.listType === 'wall'}
+						onchange={() => updateSettings({ listType: 'wall' })}
+					/>
 					<Grid />
 					<span>{$_('list_type.wall')}</span>
-				</button>
-				<button
+				</label>
+				<label
 					class="custom-settings-choice"
 					class:is-selected={container.payload.listType === 'carousel'}
-					onclick={() => updateSettings({ listType: 'carousel' })}
-					type="button"
 				>
-					<CarouselIcon />
+					<input
+						type="radio"
+						name="listType"
+						value="carousel"
+						checked={container.payload.listType === 'carousel'}
+						onchange={() => updateSettings({ listType: 'carousel' })}
+					/>
+					<Grid />
 					<span>{$_('list_type.carousel')}</span>
-				</button>
+				</label>
 			{:else if settingsSubview === 'visibility'}
 				{#each visibility.options as option (option)}
-					<button
+					<label
 						class="custom-settings-visibility"
 						class:is-selected={container.payload.visibility === option}
-						onclick={() => setVisibilityOption(option)}
-						type="button"
 					>
-						<span class="custom-settings-radio" aria-hidden="true"></span>
+						<input
+							type="radio"
+							name="visibility"
+							value={option}
+							checked={container.payload.visibility === option}
+							onchange={() => setVisibilityOption(option)}
+						/>
 						<span class="custom-settings-badge">{$_(`visibility.${option}`)}</span>
-					</button>
+					</label>
 				{/each}
 			{:else}
-				<button class="custom-settings-toggle" onclick={toggleAllowSearch} type="button">
-					<span class="custom-settings-check" class:is-selected={container.payload.allowSearch}
-					></span>
+				<label class="custom-settings-toggle">
+					<input
+						type="checkbox"
+						checked={container.payload.allowSearch}
+						onchange={toggleAllowSearch}
+					/>
 					<Search />
 					<span>{$_('search')}</span>
-				</button>
-				<button class="custom-settings-toggle" onclick={toggleAllowSort} type="button">
-					<span class="custom-settings-check" class:is-selected={container.payload.allowSort}
-					></span>
+				</label>
+				<label class="custom-settings-toggle">
+					<input type="checkbox" checked={container.payload.allowSort} onchange={toggleAllowSort} />
 					<Sort />
 					<span>{$_('sort')}</span>
-				</button>
+				</label>
 			{/if}
 		</fieldset>
 	{/if}
@@ -328,6 +344,7 @@
 		--padding-y: 0.25rem;
 
 		border: none;
+		margin-left: -0.3rem;
 	}
 
 	.custom-settings-header .action-button > :global(svg) {
@@ -420,20 +437,6 @@
 		background-color: var(--color-gray-100);
 	}
 
-	.custom-settings-radio {
-		border: 1px solid var(--color-gray-300);
-		border-radius: 999px;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.custom-settings-visibility.is-selected .custom-settings-radio {
-		border-color: var(--color-primary-700);
-		box-shadow:
-			inset 0 0 0 3px var(--color-white),
-			inset 0 0 0 7px var(--color-primary-700);
-	}
-
 	.custom-settings-badge {
 		background-color: var(--color-primary-100);
 		border-radius: 999px;
@@ -441,18 +444,6 @@
 		font-size: 0.75rem;
 		font-weight: 500;
 		padding: 0.125rem 0.5rem;
-	}
-
-	.custom-settings-check {
-		border: 1px solid var(--color-gray-300);
-		border-radius: 0.25rem;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.custom-settings-check.is-selected {
-		background-color: var(--color-primary-700);
-		border-color: var(--color-primary-700);
 	}
 
 	.custom-settings-divider {
