@@ -202,6 +202,10 @@
 
 	let items = $derived.by(() => {
 		if (container.payload.item.length > 0) {
+			if (container.payload.allowSort) {
+				const selectedSet = new Set(container.payload.item);
+				return (savedResource.current ?? []).filter(({ guid }) => selectedSet.has(guid));
+			}
 			return container.payload.item
 				.map((item) => savedResource.current?.find(({ guid }) => guid === item))
 				.filter((item): item is AnyContainer => item !== undefined);
@@ -210,47 +214,9 @@
 		}
 	});
 
-	function containerLabel(item: AnyContainer) {
-		if ('name' in item.payload) {
-			return item.payload.name;
-		}
-		if ('title' in item.payload) {
-			return item.payload.title;
-		}
-		return '';
-	}
+	let visibleItems = $derived(items.slice(0, visibleCount));
 
-	function bySortOption(value: 'alpha' | 'modified') {
-		switch (value) {
-			case 'modified':
-				return (a: AnyContainer, b: AnyContainer) => {
-					if (a.valid_from && b.valid_from) {
-						return new Date(b.valid_from).getTime() - new Date(a.valid_from).getTime();
-					}
-					if (a.valid_from) {
-						return -1;
-					}
-					if (b.valid_from) {
-						return 1;
-					}
-					return 0;
-				};
-			case 'alpha':
-				return (a: AnyContainer, b: AnyContainer) =>
-					containerLabel(a).localeCompare(containerLabel(b));
-		}
-	}
-
-	let filteredItems = $derived.by(() => {
-		if (container.payload.item.length > 0 && container.payload.allowSort) {
-			return [...items].toSorted(bySortOption(localSort === 'modified' ? 'modified' : 'alpha'));
-		}
-		return items;
-	});
-
-	let visibleItems = $derived(filteredItems.slice(0, visibleCount));
-
-	let hasMoreItems = $derived(filteredItems.length > visibleCount);
+	let hasMoreItems = $derived(items.length > visibleCount);
 
 	let hasConfiguredContent = $derived(
 		container.payload.item.length > 0 ||
@@ -439,7 +405,7 @@
 			{container.payload.title}
 		{/if}
 		{#if hasConfiguredContent}
-			<span class="details-count">({filteredItems.length})</span>
+			<span class="details-count">({items.length})</span>
 		{/if}
 	</svelte:element>
 
