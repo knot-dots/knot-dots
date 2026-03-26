@@ -850,6 +850,9 @@ const goalCollectionPayload = z
 
 const helpPayload = z.object({
 	body: z.string().trim().default(''),
+	category: z
+		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+		.default({}),
 	slug: z.string().default(''),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.help),
