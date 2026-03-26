@@ -14,7 +14,6 @@
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import saveContainer from '$lib/client/saveContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import { type AnyContainer, type CustomCollectionContainer, visibility } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -58,38 +57,6 @@
 		}
 		return interactions.length > 0 ? interactions.join(', ') : $_('empty');
 	});
-
-	async function updateSettings(payloadPatch: Partial<CustomCollectionContainer['payload']>) {
-		const response = await saveContainer({
-			...container,
-			payload: {
-				...container.payload,
-				...payloadPatch
-			}
-		});
-
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			container.payload = updatedContainer.payload;
-			container.revision = updatedContainer.revision;
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
-	}
-
-	async function setVisibilityOption(value: (typeof visibility.options)[number]) {
-		if (container.payload.visibility === value) return;
-		await updateSettings({ visibility: value });
-	}
-
-	async function toggleAllowSearch() {
-		await updateSettings({ allowSearch: !container.payload.allowSearch });
-	}
-
-	async function toggleAllowSort() {
-		await updateSettings({ allowSort: !container.payload.allowSort });
-	}
 
 	function openSubview(view: SettingsSubview) {
 		settingsSubview = view;
@@ -135,7 +102,6 @@
 			class="dropdown-panel custom-settings-panel"
 			use:popperContent={popperOpts}
 			use:popover.panel
-			oninput={(e) => e.stopPropagation()}
 		>
 			<div class="custom-settings-header">
 				{#if settingsSubview !== 'main'}
@@ -245,7 +211,7 @@
 						name="listType"
 						value="wall"
 						checked={container.payload.listType === 'wall'}
-						onchange={() => updateSettings({ listType: 'wall' })}
+						onchange={() => (container.payload.listType = 'wall')}
 					/>
 					<Grid />
 					<span>{$_('list_type.wall')}</span>
@@ -259,7 +225,7 @@
 						name="listType"
 						value="carousel"
 						checked={container.payload.listType === 'carousel'}
-						onchange={() => updateSettings({ listType: 'carousel' })}
+						onchange={() => (container.payload.listType = 'carousel')}
 					/>
 					<CarouselIcon />
 					<span>{$_('list_type.carousel')}</span>
@@ -285,7 +251,7 @@
 					<input
 						type="checkbox"
 						checked={container.payload.allowSearch}
-						onchange={toggleAllowSearch}
+						onchange={() => (container.payload.allowSearch = !container.payload.allowSearch)}
 					/>
 					<Search />
 					<span>{$_('search')}</span>
