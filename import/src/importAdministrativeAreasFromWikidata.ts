@@ -62,12 +62,18 @@ function fetchWdqs$(query: string): Observable<WdqsResponse> {
 function buildQuery() {
 	return `
 SELECT
-  ?entity ?entityLabel ?country ?officialRegionalCode ?officialMunicipalityKey ?area ?population ?coatOfArms ?openStreetMapRelationId (STR(?entity) AS ?wikidata)
+  ?entity ?entityLabel ?country ?officialRegionalCode ?officialMunicipalityKey ?coatOfArms ?openStreetMapRelationId (STR(?entity) AS ?wikidata)
 WHERE {
   VALUES ?country { "de" }
 
-  ?entity wdt:P17           wd:Q183.
-  ?entity wdt:P31/wdt:P279* wd:Q387917.
+  {
+    ?entity wdt:P17           wd:Q183.
+    ?entity wdt:P31/wdt:P279* wd:Q387917.
+  } UNION {
+    ?entity wdt:P31/wdt:P279* wd:Q1221156.
+  } UNION {
+    VALUES ?entity { wd:Q183 }
+  }
 
   OPTIONAL { ?entity wdt:P439  ?officialMunicipalityKey. }
   OPTIONAL { ?entity wdt:P402  ?openStreetMapRelationId. }
@@ -136,14 +142,19 @@ function mapBindingToAdministrativeArea(binding: WdqsBinding): AdministrativeAre
 fetchWdqs$(buildQuery())
 	.pipe(
 		tap((value) =>
-			console.log(`fetched ${value.results.bindings.length} administrative areas from Wikidata`)
+			console.log(`Fetched ${value.results.bindings.length} administrative areas from Wikidata`)
 		),
-		map((value) => value.results.bindings.map(mapBindingToAdministrativeArea))
+		map((value) => value.results.bindings.map(mapBindingToAdministrativeArea)),
+		tap((data) => {
+			console.log(`Parsed ${data.length} areas`);
+		})
 	)
 	.subscribe({
 		next: async (data) => {
 			const pool = await getPool();
+			console.log(`Inserting ${data.length} areas into database...`);
 			await pool.query(insertIntoAdministrativeAreaWikidata(data));
+			console.log(`Committed ${data.length} areas to database`);
 		},
 		error: (err) => console.error(err)
 	});

@@ -630,6 +630,8 @@ export const boards = z.enum([
 ]);
 
 export const administrativeTypes = z.enum([
+	'administrative_type.country',
+	'administrative_type.federal_state',
 	'administrative_type.municipality',
 	'administrative_type.rural_district',
 	'administrative_type.urban_district'
@@ -1422,7 +1424,7 @@ const organizationPayload = z.object({
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 const organizationalUnitPayload = z.object({
-	administrativeType: administrativeTypes.optional(),
+	administrativeType: z.array(administrativeTypes).default([]),
 	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),

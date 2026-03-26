@@ -107,8 +107,8 @@ export const administrativeAreaWegweiserKommune = z.object({
 	friendly_url: z.string(),
 	id: z.number().int(),
 	name: z.string(),
-	official_municipality_key: z.string(),
-	official_regional_code: z.string(),
+	official_municipality_key: z.string().transform((v) => v.padEnd(8, '0')),
+	official_regional_code: z.string().transform((v) => v.padEnd(12, '0')),
 	parent: z.string().nullable(),
 	small_region_replacement: z.boolean().optional().nullable(),
 	title: z.string(),
@@ -156,7 +156,7 @@ export const spatialFeature = z.object({
 });
 
 export const mapPayload = z.object({
-	geometry: z.string().uuid(),
+	geometry: z.uuid().optional(),
 	title: z.string().default('Gebietsgrenze'),
 	type: z.literal('map').default('map'),
 	visibility: z.literal('organization').default('organization')
@@ -170,12 +170,16 @@ export const administrativeAreaBasicDataPayload = z.object({
 
 export const organizationalUnitPayload = z.object({
 	administrativeType: z
-		.enum([
-			'administrative_type.municipality',
-			'administrative_type.rural_district',
-			'administrative_type.urban_district'
-		])
-		.optional(),
+		.array(
+			z.enum([
+				'administrative_type.country',
+				'administrative_type.federal_state',
+				'administrative_type.municipality',
+				'administrative_type.rural_district',
+				'administrative_type.urban_district'
+			])
+		)
+		.default([]),
 	boards: z.array(z.string()).default(['board.indicators']),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
@@ -314,6 +318,15 @@ export function getAdministrativeAreaOpenStreetMap(officialRegionalCode: string)
 	`;
 }
 
+export function getAdministrativeAreaOpenStreetMapByRelationId(relationId: number) {
+	return sql.type(administrativeAreaOpenStreetMap)`
+		SELECT *
+		FROM administrative_area_open_street_map WHERE relation_id = ${relationId}
+		ORDER BY valid_from DESC
+		LIMIT 1
+	`;
+}
+
 export function insertIntoAdministrativeAreaWikidata(data: Json) {
 	return sql.type(administrativeAreaWikidata)`
 		INSERT INTO administrative_area_wikidata (area, coat_of_arms, country, id, name, official_municipality_key, official_regional_code, open_street_map_relation_id, population)
@@ -326,6 +339,14 @@ export function insertIntoAdministrativeAreaWikidata(data: Json) {
 export function getAdministrativeAreaWikidata(id: string) {
 	return sql.type(administrativeAreaWikidata)`
 		SELECT * FROM administrative_area_wikidata WHERE id = ${id}
+		ORDER BY valid_from DESC
+		LIMIT 1
+	`;
+}
+
+export function getAdministrativeAreaWikidataByRegionalCode(officialRegionalCode: string) {
+	return sql.type(administrativeAreaWikidata)`
+		SELECT * FROM administrative_area_wikidata WHERE official_regional_code = ${officialRegionalCode}
 		ORDER BY valid_from DESC
 		LIMIT 1
 	`;
@@ -348,7 +369,11 @@ export function insertIntoIndicatorWegweiserKommune(data: IndicatorWegweiserKomm
 }
 
 export function getAllIndicatorWegweiserKommune() {
-	return sql.type(indicatorWegweiserKommune)`SELECT * FROM indicator_wegweiser_kommune`;
+	return sql.type(indicatorWegweiserKommune)`
+		SELECT DISTINCT ON (id) *
+		FROM indicator_wegweiser_kommune
+		ORDER BY id, valid_from DESC
+	`;
 }
 
 export function insertIntoIndicatorDataWegweiserKommune(data: IndicatorDataWegweiserKommune[]) {

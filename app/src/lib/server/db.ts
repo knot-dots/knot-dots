@@ -815,7 +815,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		];
 		if (filters.include?.administrativeType?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.include.administrativeType, 'text')})`
+				sql.fragment`c.payload->'administrativeType' ?| ${sql.array(filters.include.administrativeType, 'text')}`
 			);
 		}
 		if (filters.include?.cityAndMunicipalityTypeBBSR?.length) {

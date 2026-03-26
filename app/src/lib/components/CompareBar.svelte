@@ -18,7 +18,9 @@
 	const colors = [
 		'--indicator-color-compare-1-base',
 		'--indicator-color-compare-2-base',
-		'--indicator-color-compare-3-base'
+		'--indicator-color-compare-3-base',
+		'--indicator-color-compare-4-base',
+		'--indicator-color-compare-5-base'
 	];
 
 	function openPicker() {
@@ -106,7 +108,7 @@
 
 		<button
 			class="municipality-add"
-			disabled={$compareState.selectedMunicipalities.length >= 3}
+			disabled={$compareState.selectedMunicipalities.length >= 5}
 			onclick={openPicker}
 			type="button"
 		>

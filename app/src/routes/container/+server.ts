@@ -474,6 +474,7 @@ async function copyReportContainer(
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		administrativeType: z.array(administrativeTypes).default([]),
+		federalState: z.array(z.string()).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
 		sdg: z.array(sustainableDevelopmentGoals).default([]),
@@ -554,6 +555,9 @@ export const GET = (async ({ locals, url }) => {
 					}),
 					...(parseResult.data.administrativeType.length > 0 && {
 						administrativeType: parseResult.data.administrativeType
+					}),
+					...(parseResult.data.federalState.length > 0 && {
+						federalState: parseResult.data.federalState
 					}),
 					...(parseResult.data.terms.length > 0 && { terms: parseResult.data.terms[0] })
 				},
