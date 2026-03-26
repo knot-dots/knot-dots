@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { parse } from 'csv-parse';
 import stream from 'node:stream';
+import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
@@ -69,8 +70,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		} else {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
-	} catch {
-		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	} catch (e: unknown) {
+		if (e instanceof NotFoundError) {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		} else {
+			throw e;
+		}
 	}
 
 	if (

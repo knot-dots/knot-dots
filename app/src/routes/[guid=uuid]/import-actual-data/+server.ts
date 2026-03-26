@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import assert from 'node:assert';
-import { type CommonQueryMethods } from 'slonik';
+import { type CommonQueryMethods, NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
@@ -57,8 +57,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		} else {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
-	} catch {
-		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	} catch (e: unknown) {
+		if (e instanceof NotFoundError) {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		} else {
+			throw e;
+		}
 	}
 
 	if (!request.headers.get('Content-Type')?.startsWith('application/x-www-form-urlencoded')) {
