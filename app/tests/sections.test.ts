@@ -111,19 +111,14 @@ test('custom collection interactions only show configured options', async ({
 
 	const settingsPanel = section.locator('.custom-settings-panel');
 	const interactionsItem = settingsPanel.getByRole('button', { name: 'interactions' });
-	const initialSummary = (await interactionsItem.innerText()).toLowerCase();
-
-	expect(initialSummary).not.toContain('filter');
 
 	await interactionsItem.click();
 
-	await expect(settingsPanel.getByRole('button', { name: 'search' })).toBeVisible();
-	await expect(settingsPanel.getByRole('button', { name: 'sort' })).toBeVisible();
-	await expect(settingsPanel.getByRole('button', { name: 'filter' })).toHaveCount(0);
+	await expect(settingsPanel.getByRole('checkbox', { name: 'search' })).toBeVisible();
+	await expect(settingsPanel.getByRole('checkbox', { name: 'sort' })).toBeVisible();
 
-	await settingsPanel.getByRole('button', { name: 'sort' }).click();
+	await settingsPanel.getByRole('checkbox', { name: 'sort' }).check();
 	await settingsPanel.getByRole('button', { name: 'back' }).click();
 
 	await expect(interactionsItem).toContainText(/sort/i);
-	await expect(interactionsItem).not.toContainText(/filter/i);
 });

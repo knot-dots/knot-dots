@@ -53,31 +53,7 @@ export const load = (async ({ locals, parent }) => {
 				[container.organization],
 				container.guid,
 				[predicates.enum['is-section-of']],
-				{
-					type: [
-						payloadTypes.enum.chapter,
-						payloadTypes.enum.col_content,
-						payloadTypes.enum.content_partner,
-						payloadTypes.enum.content_partner_collection,
-						payloadTypes.enum.custom_collection,
-						payloadTypes.enum.knowledge,
-						payloadTypes.enum.file_collection,
-						payloadTypes.enum.indicator_collection,
-						payloadTypes.enum.info_box,
-						payloadTypes.enum.image,
-						payloadTypes.enum.map,
-						payloadTypes.enum.measure_collection,
-						payloadTypes.enum.administrative_area_basic_data,
-						payloadTypes.enum.program_collection,
-						payloadTypes.enum.report,
-						payloadTypes.enum.quote,
-						payloadTypes.enum.task_collection,
-						payloadTypes.enum.teaser,
-						payloadTypes.enum.teaser_collection,
-						payloadTypes.enum.teaser_highlight,
-						payloadTypes.enum.text
-					]
-				},
+				{},
 				''
 			)
 		)
