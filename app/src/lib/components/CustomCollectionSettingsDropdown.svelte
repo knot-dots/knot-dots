@@ -91,7 +91,7 @@
 	});
 </script>
 
-<div class="dropdown custom-settings" use:popperRef>
+<div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<Ellipsis />
 		<span class="is-visually-hidden">{$_('custom_collection.settings.title')}</span>
@@ -99,11 +99,11 @@
 
 	{#if $popover.expanded}
 		<fieldset
-			class="dropdown-panel custom-settings-panel"
+			class="dropdown-panel settings-panel"
 			use:popperContent={popperOpts}
 			use:popover.panel
 		>
-			<div class="custom-settings-header">
+			<div class="settings-header">
 				{#if settingsSubview !== 'main'}
 					<button class="action-button" onclick={backToMain} type="button">
 						<ChevronLeft />
@@ -128,7 +128,7 @@
 			</div>
 
 			{#if settingsSubview === 'main'}
-				<button class="custom-settings-item" onclick={() => openSubview('view')} type="button">
+				<button class="settings-item" onclick={() => openSubview('view')} type="button">
 					{#if container.payload.listType === 'carousel'}
 						<CarouselIcon />
 					{:else}
@@ -142,11 +142,7 @@
 				</button>
 
 				{#if $ability.can('update', container, 'visibility')}
-					<button
-						class="custom-settings-item"
-						onclick={() => openSubview('visibility')}
-						type="button"
-					>
+					<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
 						<Eye />
 						<span>
 							<strong>{$_('container_settings_dropdown.visibility.title')}</strong>
@@ -156,11 +152,7 @@
 					</button>
 				{/if}
 
-				<button
-					class="custom-settings-item"
-					onclick={() => openSubview('interactions')}
-					type="button"
-				>
+				<button class="settings-item" onclick={() => openSubview('interactions')} type="button">
 					<ArrowRightBox />
 					<span>
 						<strong>{$_('custom_collection.settings.interactions')}</strong>
@@ -169,12 +161,12 @@
 					<ChevronRight />
 				</button>
 
-				<div class="custom-settings-divider" role="presentation"></div>
-				<div class="custom-settings-section-title">
+				<div class="settings-divider" role="presentation"></div>
+				<p class="dropdown-panel-group-title">
 					{$_('custom_collection.settings.objects_title')}
-				</div>
+				</p>
 				<button
-					class="custom-settings-embed"
+					class="settings-embed"
 					onclick={() => {
 						closePopover();
 						onAddItems();
@@ -184,11 +176,11 @@
 					{$_('custom_collection.settings.embed_objects')}
 				</button>
 
-				<div class="custom-settings-divider" role="presentation"></div>
+				<div class="settings-divider" role="presentation"></div>
 
 				{#if $ability.can('delete', container)}
 					<button
-						class="custom-settings-item custom-settings-item--danger"
+						class="settings-item settings-item--danger"
 						onclick={() => {
 							closePopover();
 							confirmDeleteDialog.showModal();
@@ -202,10 +194,7 @@
 					</button>
 				{/if}
 			{:else if settingsSubview === 'view'}
-				<label
-					class="custom-settings-choice"
-					class:is-selected={container.payload.listType === 'wall'}
-				>
+				<label class="settings-choice" class:is-selected={container.payload.listType === 'wall'}>
 					<input
 						type="radio"
 						name="listType"
@@ -217,7 +206,7 @@
 					<span>{$_('list_type.wall')}</span>
 				</label>
 				<label
-					class="custom-settings-choice"
+					class="settings-choice"
 					class:is-selected={container.payload.listType === 'carousel'}
 				>
 					<input
@@ -233,7 +222,7 @@
 			{:else if settingsSubview === 'visibility'}
 				{#each visibility.options as option (option)}
 					<label
-						class="custom-settings-visibility"
+						class="settings-visibility"
 						class:is-selected={container.payload.visibility === option}
 					>
 						<input
@@ -241,13 +230,13 @@
 							name="visibility"
 							value={option}
 							checked={container.payload.visibility === option}
-							onchange={() => setVisibilityOption(option)}
+							onchange={() => (container.payload.visibility = option)}
 						/>
-						<span class="custom-settings-badge">{$_(`visibility.${option}`)}</span>
+						<span class="settings-badge">{$_(`visibility.${option}`)}</span>
 					</label>
 				{/each}
 			{:else}
-				<label class="custom-settings-toggle">
+				<label class="settings-toggle">
 					<input
 						type="checkbox"
 						checked={container.payload.allowSearch}
@@ -256,8 +245,12 @@
 					<Search />
 					<span>{$_('search')}</span>
 				</label>
-				<label class="custom-settings-toggle">
-					<input type="checkbox" checked={container.payload.allowSort} onchange={toggleAllowSort} />
+				<label class="settings-toggle">
+					<input
+						type="checkbox"
+						checked={container.payload.allowSort}
+						onchange={() => (container.payload.allowSort = !container.payload.allowSort)}
+					/>
 					<Sort />
 					<span>{$_('sort')}</span>
 				</label>
@@ -274,17 +267,18 @@
 />
 
 <style>
-	.custom-settings {
+	.dropdown {
 		--dropdown-button-default-background: transparent;
-		--dropdown-button-expanded-background: var(--color-primary-100);
+		--dropdown-button-expanded-background: var(--color-gray-100);
 		--dropdown-button-padding: 0.375rem;
 		--dropdown-button-border-radius: 8px;
 		--dropdown-button-icon-default-color: var(--color-gray-500);
-		--dropdown-button-icon-expanded-color: var(--color-primary-700);
+		--dropdown-button-icon-expanded-color: var(--color-gray-700);
 		--dropdown-button-chevron-display: none;
+		--dropdown-panel-max-height: 30rem;
 	}
 
-	.custom-settings-panel {
+	.settings-panel {
 		background-color: var(--color-gray-050);
 		border: 1px solid var(--color-gray-200);
 		border-radius: 1rem;
@@ -293,21 +287,21 @@
 		padding: 0.5rem;
 	}
 
-	.custom-settings-header {
+	.settings-header {
 		align-items: center;
 		display: flex;
 		justify-content: space-between;
 		padding: 0.25rem 0 0.5rem 0.5rem;
 	}
 
-	.custom-settings-header p {
+	.settings-header p {
 		color: var(--color-gray-700);
 		font-size: 0.75rem;
 		font-weight: 600;
 		margin: 0;
 	}
 
-	.custom-settings-header .action-button {
+	.settings-header .action-button {
 		--button-active-background: transparent;
 		--button-background: transparent;
 		--button-hover-background: transparent;
@@ -318,12 +312,12 @@
 		margin-left: -0.3rem;
 	}
 
-	.custom-settings-header .action-button > :global(svg) {
+	.settings-header .action-button > :global(svg) {
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.custom-settings-item {
+	.settings-item {
 		align-items: center;
 		background: transparent;
 		border: none;
@@ -336,18 +330,18 @@
 		width: 100%;
 	}
 
-	.custom-settings-item:hover {
+	.settings-item:hover {
 		background-color: var(--color-gray-100);
 	}
 
-	.custom-settings-item > :global(svg:first-child) {
-		color: var(--color-primary-700);
+	.settings-item > :global(svg:first-child) {
+		color: var(--color-gray-700);
 		height: 1rem;
 		max-width: none;
 		width: 1rem;
 	}
 
-	.custom-settings-item > span {
+	.settings-item > span {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
@@ -355,28 +349,28 @@
 		min-width: 0;
 	}
 
-	.custom-settings-item strong {
+	.settings-item strong {
 		font-size: 0.875rem;
 		font-weight: 500;
 		line-height: 1;
 	}
 
-	.custom-settings-item small {
+	.settings-item small {
 		color: var(--color-gray-500);
 		font-size: 0.75rem;
 		line-height: 1.5;
 	}
 
-	.custom-settings-item > :global(svg:last-child) {
+	.settings-item > :global(svg:last-child) {
 		color: var(--color-gray-400);
 		height: 0.75rem;
 		margin-left: auto;
 		width: 0.75rem;
 	}
 
-	.custom-settings-choice,
-	.custom-settings-visibility,
-	.custom-settings-toggle {
+	.settings-choice,
+	.settings-visibility,
+	.settings-toggle {
 		align-items: center;
 		background: transparent;
 		border: none;
@@ -390,46 +384,59 @@
 		width: 100%;
 	}
 
-	.custom-settings-choice:hover,
-	.custom-settings-visibility:hover,
-	.custom-settings-toggle:hover {
+	.settings-visibility:hover,
+	.settings-toggle:hover {
 		background-color: var(--color-gray-100);
 	}
 
-	.custom-settings-choice > :global(svg),
-	.custom-settings-toggle > :global(svg) {
-		color: var(--color-primary-700);
+	.settings-choice:hover,
+	.settings-choice.is-selected {
+		background-color: var(--color-primary-100);
+	}
+
+	.settings-choice > :global(svg),
+	.settings-toggle > :global(svg) {
+		color: var(--color-gray-700);
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.custom-settings-choice.is-selected,
-	.custom-settings-visibility.is-selected {
+	.settings-choice:hover > :global(svg),
+	.settings-choice.is-selected > :global(svg) {
+		color: var(--color-primary-700);
+	}
+
+	.settings-choice:hover > span,
+	.settings-choice.is-selected > span {
+		color: var(--color-primary-700);
+	}
+
+	.settings-visibility.is-selected {
 		background-color: var(--color-gray-100);
 	}
 
-	.custom-settings-badge {
-		background-color: var(--color-primary-100);
+	.settings-badge {
+		background-color: var(--color-gray-100);
 		border-radius: 999px;
-		color: var(--color-primary-700);
+		color: var(--color-gray-900);
 		font-size: 0.75rem;
 		font-weight: 500;
 		padding: 0.125rem 0.5rem;
 	}
 
-	.custom-settings-divider {
+	.settings-divider {
 		border-top: solid 1px var(--color-gray-200);
 		margin: 0.375rem 0;
 	}
 
-	.custom-settings-section-title {
-		color: var(--color-gray-500);
+	.dropdown-panel-group-title {
+		color: var(--color-gray-400);
 		font-size: 0.75rem;
 		font-weight: 500;
-		padding: 0.125rem 0.5rem 0.375rem;
+		padding: 0.5rem;
 	}
 
-	.custom-settings-embed {
+	.settings-embed {
 		--button-background: var(--color-white);
 		--button-hover-background: var(--color-gray-100);
 		--button-active-background: var(--color-gray-200);
@@ -443,8 +450,8 @@
 		width: 100%;
 	}
 
-	.custom-settings-item--danger > :global(svg:first-child),
-	.custom-settings-item--danger strong {
+	.settings-item--danger > :global(svg:first-child),
+	.settings-item--danger strong {
 		color: var(--color-gray-700);
 	}
 </style>
