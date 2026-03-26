@@ -60,10 +60,7 @@ const envSchema = z
 			.pipe(z.string().array()),
 		OVERPASS_API_URL: z.url().default(DEFAULT_OVERPASS_API_URL),
 		MAX_RETRIES: z.coerce.number().int().min(0).default(DEFAULT_MAX_RETRIES),
-		ONLY_GERMANY: z
-			.string()
-			.optional()
-			.transform((v) => v === 'true' || v === '1')
+		ONLY_GERMANY: z.stringbool().optional()
 	})
 	.transform((value) => ({
 		timeoutSeconds: value.TIMEOUT_SECONDS,
