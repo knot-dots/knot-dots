@@ -135,6 +135,7 @@
 			class="dropdown-panel custom-settings-panel"
 			use:popperContent={popperOpts}
 			use:popover.panel
+			oninput={(e) => e.stopPropagation()}
 		>
 			<div class="custom-settings-header">
 				{#if settingsSubview !== 'main'}

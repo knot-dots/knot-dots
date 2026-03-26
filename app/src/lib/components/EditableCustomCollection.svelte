@@ -466,7 +466,8 @@
 						type="search"
 						placeholder={$_('search')}
 						bind:value={localTerms}
-						oninput={() => {
+						oninput={(e) => {
+							e.stopPropagation();
 							visibleCount = MAX_ITEMS_PER_PAGE;
 						}}
 					/>
