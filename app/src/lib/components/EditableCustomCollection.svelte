@@ -119,40 +119,32 @@
 
 	const savedResource = resource(
 		[
-			() => container.payload.filter.audience,
-			() => container.payload.filter.sdg,
-			() => container.payload.filter.indicatorCategory,
-			() => container.payload.filter.policyFieldBNK,
-			() => container.payload.filter.topic,
-			() =>
-				container.payload.filter.type.length > 0
-					? container.payload.filter.type
-					: defaultPayloadType,
-			() => container.payload.sort,
+			() => $state.snapshot(container.payload.filter),
 			() => container.payload.terms,
+			() => (container.payload.allowSearch ? localTerms.trim() : ''),
+			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewport.current
 		],
-		async (
-			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
-			_,
-			{ signal }
-		) => {
+		async ([filter, terms, searchTerms, sort], _, { signal }) => {
+			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
+			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
+
 			return fetchContainers(
 				{
-					audience,
-					sdg,
-					indicatorCategory,
+					audience: filter.audience,
+					sdg: filter.sdg,
+					indicatorCategory: filter.indicatorCategory,
 					organization: [page.data.currentOrganization.guid],
-					policyFieldBNK,
-					terms,
-					topic,
+					policyFieldBNK: filter.policyFieldBNK,
+					terms: combinedTerms,
+					topic: filter.topic,
 					payloadType: type
 				},
 				sort,
 				{ signal }
 			);
 		},
-		{ lazy: true }
+		{ lazy: true, debounce: 300 }
 	);
 
 	const searchResource = resource(
@@ -250,18 +242,10 @@
 	}
 
 	let filteredItems = $derived.by(() => {
-		const normalizedTerms = container.payload.allowSearch
-			? localTerms.trim().toLocaleLowerCase()
-			: '';
-		const result = items.filter((item) =>
-			normalizedTerms ? containerLabel(item).toLocaleLowerCase().includes(normalizedTerms) : true
-		);
-
-		if (container.payload.allowSort) {
-			return [...result].toSorted(bySortOption(localSort === 'modified' ? 'modified' : 'alpha'));
+		if (container.payload.item.length > 0 && container.payload.allowSort) {
+			return [...items].toSorted(bySortOption(localSort === 'modified' ? 'modified' : 'alpha'));
 		}
-
-		return result;
+		return items;
 	});
 
 	let visibleItems = $derived(filteredItems.slice(0, visibleCount));
