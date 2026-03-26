@@ -163,7 +163,11 @@
 
 			{#if settingsSubview === 'main'}
 				<button class="custom-settings-item" onclick={() => openSubview('view')} type="button">
-					<CarouselIcon />
+					{#if container.payload.listType === 'carousel'}
+						<CarouselIcon />
+					{:else}
+						<Grid />
+					{/if}
 					<span>
 						<strong>{$_('custom_collection.settings.view')}</strong>
 						<small>{$_(`list_type.${container.payload.listType}`)}</small>
@@ -257,7 +261,7 @@
 						checked={container.payload.listType === 'carousel'}
 						onchange={() => updateSettings({ listType: 'carousel' })}
 					/>
-					<Grid />
+					<CarouselIcon />
 					<span>{$_('list_type.carousel')}</span>
 				</label>
 			{:else if settingsSubview === 'visibility'}
