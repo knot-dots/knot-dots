@@ -1739,6 +1739,10 @@ img.cover {
 }
 
 /* Menu */
+.dropdown-panel:has(.menu) {
+	background-color: var(--color-gray-025);
+}
+
 .menu-item > button {
 	--button-active-background: transparent;
 	--button-hover-background: var(--color-gray-100);

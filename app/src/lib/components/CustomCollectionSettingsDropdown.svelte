@@ -279,7 +279,7 @@
 	}
 
 	.settings-panel {
-		background-color: var(--color-gray-050);
+		background-color: var(--color-gray-025);
 		border: 1px solid var(--color-gray-200);
 		border-radius: 1rem;
 		gap: 0;
