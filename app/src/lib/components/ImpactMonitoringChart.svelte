@@ -230,14 +230,6 @@
 					sort: 'date',
 					stroke: 'var(--indicator-color-objective)',
 					strokeDasharray: '8 4'
-				}),
-				Plot.lineY(actualValues, {
-					x: 'date',
-					y: 'value',
-					stroke: 'municipality',
-					strokeWidth: 3,
-					strokeLinecap: 'round',
-					interval: 'year'
 				})
 			],
 			width: currentWidth,
