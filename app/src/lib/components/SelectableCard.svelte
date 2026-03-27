@@ -3,17 +3,13 @@
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import Cog from '~icons/knotdots/cog';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
-		isContainerWithEffect,
-		isContainerWithObjective,
 		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isPartOf,
@@ -99,29 +95,7 @@
 	</header>
 
 	<div class="body">
-		{#if isIndicatorContainer(container)}
-			<IndicatorChart
-				{container}
-				relatedContainers={[
-					...relatedContainers.filter(({ relation }) =>
-						relation.some(({ object }) => object === container.guid)
-					),
-					...relatedContainers.filter(isContainerWithEffect),
-					...relatedContainers.filter(isContainerWithObjective)
-				]}
-				showEffects
-				showObjectives
-			/>
-			<p class="badges">
-				{#each container.payload.indicatorType as indicatorType (indicatorType)}
-					<span class="badge">{$_(indicatorType)}</span>
-				{/each}
-
-				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
-					<span class="badge">{$_(indicatorCategory)}</span>
-				{/each}
-			</p>
-		{:else if isIndicatorTemplateContainer(container)}
+		{#if isIndicatorTemplateContainer(container)}
 			<Summary {container} />
 			<p class="badges">
 				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
@@ -129,14 +103,14 @@
 				{/each}
 			</p>
 		{:else if isEffectContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+			{@const indicator = relatedContainers.find(isIndicatorTemplateContainer)}
 			{#if indicator}
 				<EffectChart {container} {relatedContainers} />
 			{/if}
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
 			{@const indicator = relatedContainers
-				.filter(isIndicatorContainer)
+				.filter(isIndicatorTemplateContainer)
 				.find(
 					({ guid }) =>
 						(effect?.relation.findIndex(
@@ -150,7 +124,7 @@
 				<Summary {container} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorContainer)}
+			{@const indicator = relatedContainers.find(isIndicatorTemplateContainer)}
 			{#if indicator}
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}

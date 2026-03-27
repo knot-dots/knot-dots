@@ -6,7 +6,6 @@ import {
 	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	indicatorTypes,
 	type OrganizationalUnitContainer,
@@ -16,7 +15,6 @@ import {
 	topics
 } from '$lib/models';
 import {
-	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToIndicatorTemplates,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
@@ -33,15 +31,15 @@ export interface IndicatorFilters {
 	indicatorCategories: string[];
 	indicatorTypes: string[];
 	included: string[];
+	terms: string;
 	sdg: string[];
 }
 
 export interface IndicatorLoadResult {
-	containers: IndicatorContainer[] | IndicatorTemplateContainer[];
+	containers: IndicatorTemplateContainer[];
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
-	useNewIndicators: boolean;
 }
 
 /**
@@ -80,57 +78,29 @@ export async function getIndicatorsData(params: {
 			.concat(currentOrganizationalUnit.guid);
 	}
 
-	const restrictOrgUnits = !filters.included.includes('all_organizational_units');
-
-	// Primary indicator fetch
-	let indicators: IndicatorContainer[] | IndicatorTemplateContainer[];
+	let indicators: IndicatorTemplateContainer[];
 	let facetData: Record<string, Record<string, number>> | undefined;
+
 	if (useElasticsearch) {
 		const esResult = await connect(
 			getManyContainersWithES(
-				[organizationGuid],
+				[],
 				{
 					customCategories: filters.customCategories,
 					indicatorCategories: filters.indicatorCategories,
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
-					...(restrictOrgUnits ? { organizationalUnits } : {}),
-					type: [payloadTypes.enum.indicator]
+					terms: filters.terms,
+					type: [payloadTypes.enum.indicator_template]
 				},
 				'alpha',
 				undefined,
 				{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
 			)
 		);
-		indicators = esResult.containers as IndicatorContainer[];
+		indicators = esResult.containers as IndicatorTemplateContainer[];
 		facetData = esResult.facets;
 	} else {
-		indicators = (await connect(
-			getManyContainers(
-				[organizationGuid],
-				{
-					customCategories: filters.customCategories,
-					indicatorCategories: filters.indicatorCategories,
-					indicatorTypes: filters.indicatorTypes,
-					sdg: filters.sdg,
-					...(restrictOrgUnits ? { organizationalUnits } : {}),
-					type: [payloadTypes.enum.indicator]
-				},
-				'alpha'
-			)
-		)) as IndicatorContainer[];
-	}
-
-	// Related containers (objectives/effects/indicators linked)
-	let related = await connect(
-		getAllContainersRelatedToIndicators(indicators, restrictOrgUnits ? { organizationalUnits } : {})
-	);
-
-	let useNewIndicators = false;
-
-	if (indicators.length === 0) {
-		useNewIndicators = true;
-		facetData = undefined;
 		indicators = (await connect(
 			getManyContainers(
 				[],
@@ -139,18 +109,30 @@ export async function getIndicatorsData(params: {
 					indicatorCategories: filters.indicatorCategories,
 					indicatorTypes: filters.indicatorTypes,
 					sdg: filters.sdg,
+					terms: filters.terms,
 					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
 			)
 		)) as IndicatorTemplateContainer[];
-		related = await connect(
-			getAllContainersRelatedToIndicatorTemplates(indicators, {
-				organizations: [organizationGuid],
-				organizationalUnits: restrictOrgUnits ? organizationalUnits : []
-			})
-		);
+		facetData = undefined;
 	}
+
+	const related = await connect(
+		getAllContainersRelatedToIndicatorTemplates(
+			indicators,
+			{
+				organizations: [organizationGuid],
+				organizationalUnits: !filters.included.includes('all_organizational_units')
+					? organizationalUnits
+					: []
+			},
+			{
+				organizations: [organizationGuid],
+				organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null
+			}
+		)
+	);
 
 	const combinedVisible = filterVisible([...indicators, ...related], user);
 
@@ -158,8 +140,7 @@ export async function getIndicatorsData(params: {
 		containers: indicators,
 		related,
 		combined: combinedVisible,
-		facetData,
-		useNewIndicators
+		facetData
 	};
 }
 
@@ -173,10 +154,7 @@ export default (async function load({ depends, locals, parent, url }) {
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
 	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.indicator_template
-			])
+		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.indicator_template])
 		: null;
 
 	const customCategories = features.useCustomCategories()
@@ -188,6 +166,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
 		included: url.searchParams.getAll('included'),
+		terms: url.searchParams.get('terms') ?? '',
 		sdg: url.searchParams.getAll('sdg')
 	} as const;
 
@@ -201,7 +180,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		connect: locals.pool.connect
 	});
 
-	const useFacetData = features.useElasticsearch() && !result.useNewIndicators;
+	const useFacetData = features.useElasticsearch();
 	const data = useFacetData ? result.facetData : undefined;
 
 	const _facets = new Map<string, Map<string, number>>([
@@ -235,7 +214,7 @@ export default (async function load({ depends, locals, parent, url }) {
 	);
 	const facets = useFacetData
 		? _facets
-		: computeFacetCount(_facets, result.combined, {
+		: computeFacetCount(_facets, result.containers, {
 				useCategoryPayload: features.useCustomCategories()
 			});
 
@@ -243,7 +222,6 @@ export default (async function load({ depends, locals, parent, url }) {
 		container: currentOrganizationalUnit ?? currentOrganization,
 		containers: result.combined,
 		filters,
-		useNewIndicators: result.useNewIndicators,
 		facets,
 		facetLabels: categoryContext?.labels,
 		categoryOptions: categoryContext?.options

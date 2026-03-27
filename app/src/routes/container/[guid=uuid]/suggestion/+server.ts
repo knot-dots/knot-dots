@@ -64,6 +64,13 @@ export const GET = (async ({ locals, params, url }) => {
 			{
 				organizations: parseResult.data.organization,
 				organizationalUnits: parseResult.data.organizationalUnit
+			},
+			{
+				organizations: parseResult.data.organization,
+				organizationalUnits:
+					parseResult.data.organizationalUnit.length > 0
+						? parseResult.data.organizationalUnit
+						: null
 			}
 		)(connection);
 

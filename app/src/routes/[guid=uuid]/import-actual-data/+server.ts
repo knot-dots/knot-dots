@@ -9,8 +9,9 @@ import {
 	type ActualDataContainer,
 	containerOfType,
 	isIndicatorTemplateContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	type NewContainer,
-	type OrganizationalUnitContainer,
 	payloadTypes
 } from '$lib/models';
 import {
@@ -36,12 +37,26 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	let organizationalUnitContainer: OrganizationalUnitContainer;
+	let currentOrganizationGuid: string;
+	let currentOrganizationalUnitGuid: string | undefined;
+	let containerFromParams;
 
 	try {
-		organizationalUnitContainer = (await locals.pool.connect(
-			getContainerByGuid(params.guid)
-		)) as OrganizationalUnitContainer;
+		containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
+		if (
+			isOrganizationalUnitContainer(containerFromParams) &&
+			defineAbilityFor(locals.user).can('read', containerFromParams)
+		) {
+			currentOrganizationalUnitGuid = containerFromParams.guid;
+			currentOrganizationGuid = containerFromParams.organization;
+		} else if (
+			isOrganizationContainer(containerFromParams) &&
+			defineAbilityFor(locals.user).can('read', containerFromParams)
+		) {
+			currentOrganizationGuid = containerFromParams.guid;
+		} else {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		}
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
@@ -63,9 +78,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 	const container = containerOfType(
 		payloadTypes.enum.actual_data,
-		organizationalUnitContainer.organization,
-		organizationalUnitContainer.guid,
-		organizationalUnitContainer.guid,
+		currentOrganizationGuid,
+		currentOrganizationalUnitGuid ?? null,
+		currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 		env.PUBLIC_KC_REALM
 	);
 
@@ -74,9 +89,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.transaction(async (tx: CommonQueryMethods) => {
-		const statistics = organizationalUnitContainer.payload.geometry
-			? await getManyIndicatorDataWegweiserKommune(organizationalUnitContainer.payload.geometry)(tx)
-			: [];
+		const statistics =
+			'geometry' in containerFromParams.payload && containerFromParams.payload.geometry
+				? await getManyIndicatorDataWegweiserKommune(containerFromParams.payload.geometry)(tx)
+				: [];
 
 		const statisticsByIndicator = new Map(statistics.map((s) => [s.indicator_guid, s]));
 
@@ -85,9 +101,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 			const newActualDataContainer = containerOfType(
 				payloadTypes.enum.actual_data,
-				organizationalUnitContainer.organization,
-				organizationalUnitContainer.guid,
-				organizationalUnitContainer.guid,
+				currentOrganizationGuid,
+				currentOrganizationalUnitGuid ?? null,
+				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 				env.PUBLIC_KC_REALM
 			) as NewContainer & { payload: ActualDataContainer['payload'] };
 
@@ -131,10 +147,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			];
 
 			const foundActualDataContainers = await getManyContainers(
-				[organizationalUnitContainer.organization],
+				[currentOrganizationGuid],
 				{
 					indicators: [currentIndicator],
-					organizationalUnits: [organizationalUnitContainer.guid],
+					organizationalUnits: currentOrganizationalUnitGuid
+						? [currentOrganizationalUnitGuid]
+						: null,
 					type: [payloadTypes.enum.actual_data]
 				},
 				''

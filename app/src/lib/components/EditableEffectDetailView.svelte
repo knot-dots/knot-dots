@@ -24,7 +24,6 @@
 		type AnyContainer,
 		type EffectContainer,
 		isBinaryIndicatorContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		predicates
 	} from '$lib/models';
@@ -75,12 +74,7 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter(
-				(c) =>
-					isIndicatorContainer(c) ||
-					isIndicatorTemplateContainer(c) ||
-					isBinaryIndicatorContainer(c)
-			)
+			.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
