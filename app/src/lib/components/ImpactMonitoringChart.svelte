@@ -48,7 +48,8 @@
 		status.enum['status.in_planning'],
 		status.enum['status.in_implementation'],
 		status.enum['status.done'],
-		'trend'
+		'trend',
+		'objective'
 	];
 
 	const colorRange = [
@@ -57,7 +58,8 @@
 		'var(--indicator-color-in-implementation)',
 		'var(--indicator-color-done)',
 		'var(--indicator-color-trend-area)',
-		'var(--indicator-color-trend-line)'
+		'var(--indicator-color-trend-line)',
+		'var(--indicator-color-objective)'
 	];
 
 	let objectives = $derived.by(() => {
