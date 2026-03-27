@@ -300,7 +300,12 @@
 				{:else}
 					<div
 						class="table-body"
-						use:dragHandleZone={{ items: filteredParts, flipDurationMs: 100 }}
+						use:dragHandleZone={{
+							dropTargetStyle: {},
+							items: filteredParts,
+							flipDurationMs: 100,
+							useCursorForDetection: true
+						}}
 						onconsider={handleDndConsider}
 						onfinalize={handleDndFinalize}
 					>

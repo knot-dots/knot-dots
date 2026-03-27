@@ -524,14 +524,4 @@
 	.cell > fieldset {
 		white-space: nowrap;
 	}
-
-	.drag-handle {
-		display: none !important;
-	}
-
-	@container (min-inline-size: 90rem) {
-		.drag-handle {
-			display: inline-block !important;
-		}
-	}
 </style>
