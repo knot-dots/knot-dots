@@ -2,7 +2,7 @@
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronLeft from '~icons/flowbite/chevron-left-outline';
+	import ArrowLeft from '~icons/flowbite/arrow-left-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import Sort from '~icons/flowbite/sort-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
@@ -106,7 +106,7 @@
 			<div class="settings-header">
 				{#if settingsSubview !== 'main'}
 					<button class="action-button" onclick={backToMain} type="button">
-						<ChevronLeft />
+						<ArrowLeft />
 						<span class="is-visually-hidden">{$_('back')}</span>
 					</button>
 				{/if}
