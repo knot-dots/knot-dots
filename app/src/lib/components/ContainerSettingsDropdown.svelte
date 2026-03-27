@@ -107,6 +107,7 @@
 
 <style>
 	.dropdown-panel {
+		background-color: var(--color-gray-025);
 		border-radius: 16px;
 	}
 

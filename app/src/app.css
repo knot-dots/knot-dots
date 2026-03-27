@@ -1742,6 +1742,10 @@ img.cover {
 }
 
 /* Menu */
+.dropdown-panel:has(.menu) {
+	background-color: var(--color-gray-025);
+}
+
 .menu-item > button {
 	--button-active-background: transparent;
 	--button-hover-background: var(--color-gray-100);
@@ -1815,6 +1819,10 @@ img.cover {
 	.is-visible-on-hover {
 		transition: var(--is-visible-on-hover-transition, visibility 0s 0.5s linear);
 		visibility: var(--is-visible-on-hover-visibility, hidden);
+	}
+
+	.is-visible-on-hover:has([aria-haspopup='true'][aria-expanded='true']) {
+		visibility: visible;
 	}
 }
 
