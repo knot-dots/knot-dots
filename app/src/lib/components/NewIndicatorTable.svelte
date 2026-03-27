@@ -248,8 +248,12 @@
 	}
 
 	div {
-		overflow-x: scroll;
-		padding: 0 0 1px;
+		margin-left: var(--editable-table-margin-left, 0);
+		margin-right: var(--editable-table-margin-right, 0);
+		margin-top: 1.25rem;
+		overflow: auto;
+		padding-left: calc(var(--editable-table-margin-left) * -1);
+		padding-right: 1rem;
 	}
 
 	table {
@@ -257,25 +261,19 @@
 		width: fit-content;
 	}
 
-	thead {
-		background-color: var(--color-gray-100);
-	}
-
 	td,
 	th {
 		border: solid 1px var(--color-gray-200);
-		padding: 0.75rem 0.5rem;
-	}
-
-	th {
+		font-size: 0.875rem;
+		line-height: 1.5;
 		white-space: nowrap;
 	}
 
 	thead th {
-		border-top: none;
-		color: var(--color-gray-700);
+		background-color: var(--color-teal-100);
+		border-color: var(--color-teal-200);
+		color: var(--color-teal-900);
 		font-weight: 400;
-		padding: 0.5rem;
 	}
 
 	tbody th[scope='col'] {
@@ -285,13 +283,9 @@
 	}
 
 	tbody th[scope='row'] {
-		background-color: var(--color-white);
 		color: var(--color-gray-800);
 		font-weight: 500;
-	}
-
-	tbody td {
-		background: var(--color-white);
+		max-width: 18.75rem;
 	}
 
 	td:has(input) {
