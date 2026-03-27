@@ -232,7 +232,7 @@
 							checked={container.payload.visibility === option}
 							onchange={() => (container.payload.visibility = option)}
 						/>
-						<span class="settings-badge">{$_(`visibility.${option}`)}</span>
+						<span class="badge badge--gray">{$_(`visibility.${option}`)}</span>
 					</label>
 				{/each}
 			{:else}
@@ -413,15 +413,6 @@
 
 	.settings-visibility.is-selected {
 		background-color: var(--color-gray-100);
-	}
-
-	.settings-badge {
-		background-color: var(--color-gray-100);
-		border-radius: 999px;
-		color: var(--color-gray-900);
-		font-size: 0.75rem;
-		font-weight: 500;
-		padding: 0.125rem 0.5rem;
 	}
 
 	.settings-divider {
