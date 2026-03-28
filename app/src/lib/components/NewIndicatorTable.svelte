@@ -11,11 +11,24 @@
 		type ActualDataContainer,
 		type Container,
 		containerOfType,
+		findAncestors,
+		findLeafObjectives,
+		findOverallObjective,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isEffectContainer,
+		isObjectiveContainer,
+		isPartOf,
 		type NewContainer,
-		payloadTypes
+		overlayKey,
+		overlayURL,
+		payloadTypes,
+		predicates,
+		status
 	} from '$lib/models';
+	import { statusColors } from '$lib/theme/models';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
@@ -46,8 +59,137 @@
 		actualDataContainer.map(({ payload }) => new Map(payload.values ?? []))
 	);
 
+	let overallObjectiveByYear = $derived.by(() => {
+		const overallObjective =
+			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
+				([year, value]) => [year, (actualValuesByYear[0]?.get(year) ?? 0) + value]
+			) ?? [];
+		return new Map(overallObjective as Array<[number, number]>);
+	});
+
+	let objectivesByYear = $derived.by(() => {
+		const objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
+			.flatMap(({ payload }) => payload.wantedValues)
+			.map(([year, value]) => ({ year, value }))
+			.reduce(
+				(accumulator, currentValue) => {
+					const groupIndex = accumulator.findIndex(({ year }) => currentValue.year == year);
+					return groupIndex > -1
+						? [
+								...accumulator.slice(0, groupIndex),
+								{
+									year: currentValue.year,
+									value: currentValue.value + accumulator[groupIndex].value
+								},
+								...accumulator.slice(groupIndex + 1)
+							]
+						: [
+								...accumulator,
+								{
+									year: currentValue.year,
+									value: currentValue.value
+								}
+							];
+				},
+				[] as Array<{ year: number; value: number }>
+			)
+			.map(({ year, value }) => [year, (actualValuesByYear[0]?.get(year) ?? 0) + value]);
+
+		return new Map(objectives as Array<[number, number]>);
+	});
+
+	let effectContainers = $derived(relatedContainers.filter(isEffectContainer));
+
+	let measureContainers = $derived(relatedContainers.filter(isContainerWithEffect));
+
+	let effects = $derived.by(() => {
+		return effectContainers
+			.map((c) => {
+				const measure = findAncestors(c, relatedContainers, [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-measure']
+				]).find(isContainerWithEffect);
+
+				if (!measure) {
+					return {
+						values: []
+					};
+				}
+
+				switch (measure.payload.status) {
+					case status.enum['status.done']:
+						return {
+							values: c.payload.achievedValues.map(([year, value]) => ({
+								year,
+								value,
+								status: measure.payload.status
+							}))
+						};
+					case status.enum['status.in_implementation']:
+						return {
+							values: c.payload.plannedValues.map(([year, value], index) => ({
+								year,
+								value: c.payload.achievedValues[index]
+									? value - c.payload.achievedValues[index][1]
+									: value,
+								status: measure.payload.status
+							}))
+						};
+					case status.enum['status.rejected']:
+						return {
+							values: c.payload.plannedValues.map(([year]) => ({
+								year,
+								value: 0,
+								status: measure.payload.status
+							}))
+						};
+					default:
+						return {
+							values: c.payload.plannedValues.map(([year, value]) => ({
+								year: year,
+								value: value,
+								status: measure.payload.status
+							}))
+						};
+				}
+			})
+			.flatMap(({ values }) => values)
+			.reduce(
+				(accumulator, currentValue) => {
+					const groupIndex = accumulator.findIndex(
+						({ status, year }) => currentValue.status == status && currentValue.year == year
+					);
+					return groupIndex > -1
+						? [
+								...accumulator.slice(0, groupIndex),
+								{
+									status: currentValue.status,
+									year: currentValue.year,
+									value: currentValue.value + accumulator[groupIndex].value
+								},
+								...accumulator.slice(groupIndex + 1)
+							]
+						: [
+								...accumulator,
+								{
+									status: currentValue.status,
+									year: currentValue.year,
+									value: currentValue.value
+								}
+							];
+				},
+				[] as Array<{ year: number; value: number; status: string }>
+			);
+	});
+
 	let years = $derived(
-		Array.from(new Set(actualValuesByYear.flatMap((m) => [...m.keys()]))).toSorted()
+		Array.from(
+			new Set([
+				...actualValuesByYear.flatMap((m) => [...m.keys()]),
+				...objectivesByYear.keys(),
+				...effects.map(({ year }) => year)
+			])
+		).toSorted()
 	);
 
 	let addingCustomActualData = $state(false);
@@ -136,6 +278,28 @@
 	}
 </script>
 
+{#snippet cells(header: { href?: string; text: string }, valuesByYear: Map<number, number>)}
+	<th class="truncated" scope="row">
+		{#if header.href}
+			<a href={header.href}>{header.text}</a>
+		{:else}
+			{header.text}
+		{/if}
+	</th>
+
+	{#if editable && customActualDataContainer}
+		<td class="control control--prepend"></td>
+	{/if}
+
+	{#each years as year (year)}
+		<td class="data">{valuesByYear.get(year) ?? ''}</td>
+	{/each}
+
+	{#if editable && customActualDataContainer && years.length > 0}
+		<td></td>
+	{/if}
+{/snippet}
+
 <div bind:this={tableContainer}>
 	<table>
 		<thead>
@@ -155,7 +319,7 @@
 				{/if}
 
 				{#each years as year (year)}
-					<th class="data">{year}</th>
+					<th scope="col" class="data">{year}</th>
 				{/each}
 
 				{#if editable && customActualDataContainer && years.length > 0}
@@ -186,8 +350,12 @@
 			</tr>
 
 			{#each actualValuesByYear as valuesByYear, i (i)}
-				<tr>
-					<th scope="row">
+				<tr
+					style:--indicator-color={actualDataContainer[i].payload.source
+						? 'var(--color-teal-600)'
+						: 'var(--color-gray-200)'}
+				>
+					<th class="truncated" scope="row">
 						{#if actualDataContainer[i].payload.source}
 							{actualDataContainer[i].payload.source}
 						{:else}
@@ -239,6 +407,144 @@
 				</tr>
 			{/if}
 		</tbody>
+
+		<tbody>
+			<tr>
+				<th
+					colspan={editable
+						? years.length + 1 + (customActualDataContainer ? Math.max(years.length + 1, 2) : 0)
+						: years.length + 1}
+					scope="col">{$_('goals')}</th
+				>
+			</tr>
+
+			<tr class="overall-objective">
+				{@render cells({ text: $_('indicator.table.overall_objective') }, overallObjectiveByYear)}
+			</tr>
+
+			<tr class="objective-total" style:--indicator-color="var(--color-indigo-500)">
+				{@render cells({ text: $_('indicator.table.objectives') }, objectivesByYear)}
+			</tr>
+
+			{#each relatedContainers.filter(isContainerWithObjective) as containerWithObjective (containerWithObjective.guid)}
+				{@const valuesByYear = new Map(
+					findLeafObjectives(
+						relatedContainers.filter(isObjectiveContainer).filter(isPartOf(containerWithObjective))
+					).flatMap(({ payload }) => payload.wantedValues)
+				)}
+				<tr class="objective" style:--indicator-color="var(--color-indigo-200)">
+					{@render cells(
+						{
+							href: overlayURL(page.url, overlayKey.enum.view, containerWithObjective.guid),
+							text: containerWithObjective.payload.title
+						},
+						valuesByYear
+					)}
+				</tr>
+			{/each}
+		</tbody>
+
+		<tbody>
+			<tr>
+				<th
+					colspan={editable
+						? years.length + 1 + (customActualDataContainer ? Math.max(years.length + 1, 2) : 0)
+						: years.length + 1}
+					scope="col">{$_('measures')}</th
+				>
+			</tr>
+
+			{#each [status.enum['status.done'], status.enum['status.in_implementation'], status.enum['status.in_planning'], status.enum['status.idea']] as currentStatus (currentStatus)}
+				{@const totalValuesByYear = new Map(
+					effects.filter((e) => e.status === currentStatus).map(({ year, value }) => [year, value])
+				)}
+
+				{@const indicatorColor = statusColors.get(currentStatus) ?? 'gray'}
+
+				<tr class="effect-total" style="--indicator-color: var(--color-{indicatorColor}-500)">
+					{@render cells({ text: $_(`indicator.table.${currentStatus}`) }, totalValuesByYear)}
+				</tr>
+
+				{#each measureContainers.filter(({ payload }) => payload.status === currentStatus) as measure (measure.guid)}
+					{@const valuesByYear = new Map(
+						effectContainers
+							.filter((c) =>
+								findAncestors(c, relatedContainers, [
+									predicates.enum['is-part-of'],
+									predicates.enum['is-part-of-measure']
+								]).some(({ guid }) => guid === measure.guid)
+							)
+							.map(({ payload }) => {
+								switch (measure.payload.status) {
+									case status.enum['status.done']:
+										return {
+											values: payload.achievedValues.map(([year, value]) => ({
+												year: year,
+												value: value
+											}))
+										};
+									case status.enum['status.in_implementation']:
+										return {
+											values: payload.plannedValues.map(([year, value], index) => ({
+												year: year,
+												value: payload.achievedValues[index]
+													? value - payload.achievedValues[index][1]
+													: value
+											}))
+										};
+									case status.enum['status.rejected']:
+										return {
+											values: payload.plannedValues.map(([year]) => ({
+												year,
+												value: 0
+											}))
+										};
+									default:
+										return {
+											values: payload.plannedValues.map(([year, value]) => ({
+												year: year,
+												value: value
+											}))
+										};
+								}
+							})
+							.flatMap(({ values }) => values)
+							.reduce(
+								(accumulator, currentValue) => {
+									const groupIndex = accumulator.findIndex(({ year }) => currentValue.year == year);
+									return groupIndex > -1
+										? [
+												...accumulator.slice(0, groupIndex),
+												{
+													year: currentValue.year,
+													value: currentValue.value + accumulator[groupIndex].value
+												},
+												...accumulator.slice(groupIndex + 1)
+											]
+										: [
+												...accumulator,
+												{
+													year: currentValue.year,
+													value: currentValue.value
+												}
+											];
+								},
+								[] as Array<{ year: number; value: number }>
+							)
+							.map(({ year, value }) => [year, value])
+					)}
+					<tr class="effect" style="--indicator-color: var(--color-{indicatorColor}-200)">
+						{@render cells(
+							{
+								href: overlayURL(page.url, overlayKey.enum.view, measure.guid),
+								text: measure.payload.title
+							},
+							valuesByYear
+						)}
+					</tr>
+				{/each}
+			{/each}
+		</tbody>
 	</table>
 </div>
 
@@ -288,6 +594,20 @@
 		max-width: 18.75rem;
 	}
 
+	tbody th[scope='row']::before {
+		--diameter: 0.75rem;
+
+		background-color: var(--indicator-color);
+		border-radius: 50%;
+		content: '';
+		display: inline-block;
+		height: var(--diameter);
+		margin-left: 0.5rem;
+		margin-right: 0.375rem;
+		vertical-align: -1px;
+		width: var(--diameter);
+	}
+
 	td:has(input) {
 		padding: 0;
 	}
@@ -318,5 +638,22 @@
 
 	.data {
 		text-align: right;
+	}
+
+	.effect th,
+	.objective th {
+		padding-left: 1rem;
+	}
+
+	.objective {
+		--indicator-color: var(--color-indigo-200);
+	}
+
+	.objective-total {
+		--indicator-color: var(--color-indigo-500);
+	}
+
+	.overall-objective {
+		--indicator-color: var(--color-gray-900);
 	}
 </style>
