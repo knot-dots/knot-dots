@@ -173,25 +173,21 @@
 				</div>
 
 				{#if linkedProfile}
-					<div class="details-section profile-switch-wrapper">
-						{#if linkedProfileURL}
-							<div class="profile-switch" role="group" aria-label={$_('landing_page')}>
-								{#if isIndividualProfile}
-									<a class="profile-switch-item" href={linkedProfileURL}
-										>{$_('standard_profile.title')}</a
-									>
-									<span aria-current="page" class="profile-switch-item profile-switch-item--active"
-										>{$_('individual_profile.title')}</span
-									>
-								{:else}
-									<span aria-current="page" class="profile-switch-item profile-switch-item--active"
-										>{$_('standard_profile.title')}</span
-									>
-									<a class="profile-switch-item" href={linkedProfileURL}
-										>{$_('individual_profile.title')}</a
-									>
-								{/if}
-							</div>
+					<div class="details-section profile-switch">
+						{#if isIndividualProfile}
+							<a class="profile-switch-item" href={linkedProfileURL}
+								>{$_('standard_profile.title')}</a
+							>
+							<span aria-current="page" class="profile-switch-item profile-switch-item--active"
+								>{$_('individual_profile.title')}</span
+							>
+						{:else}
+							<span aria-current="page" class="profile-switch-item profile-switch-item--active"
+								>{$_('standard_profile.title')}</span
+							>
+							<a class="profile-switch-item" href={linkedProfileURL}
+								>{$_('individual_profile.title')}</a
+							>
 						{/if}
 					</div>
 				{/if}
@@ -292,14 +288,9 @@
 		min-height: 3rem;
 	}
 
-	.profile-switch-wrapper {
-		display: flex;
-		gap: 0.75rem;
-		justify-content: flex-end;
-	}
-
 	.profile-switch {
 		align-items: center;
+		align-self: flex-end;
 		background: white;
 		border: 1px solid var(--color-gray-200);
 		border-radius: 9999px;
