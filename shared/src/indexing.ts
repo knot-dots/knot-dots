@@ -134,6 +134,15 @@ export function createIndexWithMappings(client: Client, index: string) {
 				task_category_labels: { type: 'text' },
 				resource_category_labels: { type: 'text' },
 				resource_unit_labels: { type: 'text' },
+				relations: {
+					type: 'nested',
+					properties: {
+						object: { type: 'keyword' },
+						predicate: { type: 'keyword' },
+						position: { type: 'integer' },
+						subject: { type: 'keyword' }
+					}
+				},
 				payload: {
 					properties: {
 						audience: { type: 'keyword' },
@@ -218,6 +227,13 @@ export function normalizePayload(payload: any) {
 	return normalized;
 }
 
+export interface IndexedRelation {
+	object: string;
+	predicate: string;
+	position: number;
+	subject: string;
+}
+
 export function toDoc(row: {
 	guid: string;
 	revision: number;
@@ -228,6 +244,7 @@ export function toDoc(row: {
 	payload: any;
 	valid_from?: string | Date | null;
 	priority?: number | null;
+	relations?: IndexedRelation[];
 }) {
 	const normalized = normalizePayload(row.payload || {});
 	const type: string | undefined = normalized?.type;
@@ -257,6 +274,13 @@ export function toDoc(row: {
 		(normalized.category as Record<string, string[]>) ?? {}
 	).flat();
 
+	const relations = (row.relations ?? []).map((r) => ({
+		object: r.object,
+		predicate: r.predicate,
+		position: r.position,
+		subject: r.subject
+	}));
+
 	return {
 		guid: row.guid,
 		revision: row.revision,
@@ -269,6 +293,7 @@ export function toDoc(row: {
 		visibility,
 		validFrom,
 		priority,
+		relations,
 		payload: normalized,
 		sdg_labels: sdgLabels,
 		topic_labels: topicLabels,
