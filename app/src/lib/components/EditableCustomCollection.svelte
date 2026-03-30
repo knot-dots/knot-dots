@@ -12,6 +12,7 @@
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
@@ -68,12 +69,16 @@
 
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 	let sortBar = createDisclosure({ label: $_('sort') });
-	const defaultPayloadType = [
+	const defaultPayloadType = $derived([
 		payloadTypes.enum.indicator_template,
 		payloadTypes.enum.program,
 		payloadTypes.enum.goal,
-		payloadTypes.enum.measure
-	];
+		payloadTypes.enum.knowledge,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.organizational_unit,
+		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.task
+	]);
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
