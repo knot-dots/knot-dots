@@ -95,7 +95,8 @@ let pool: DatabasePool;
 export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
-			interceptors: [createResultParserInterceptor()]
+			interceptors: [createResultParserInterceptor()],
+			maximumPoolSize: 50
 		});
 	}
 	return pool;
