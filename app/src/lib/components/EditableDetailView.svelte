@@ -6,7 +6,6 @@
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
-	import EditableIndicatorDetailView from '$lib/components/EditableIndicatorDetailView.svelte';
 	import EditableIndicatorTemplateDetailView from '$lib/components/EditableIndicatorTemplateDetailView.svelte';
 	import EditableKnowledgeDetailView from '$lib/components/EditableKnowledgeDetailView.svelte';
 	import EditableMeasureDetailView from '$lib/components/EditableMeasureDetailView.svelte';
@@ -32,7 +31,6 @@
 		isEffectContainer,
 		isGoalContainer,
 		isHelpContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isObjectiveContainer,
@@ -78,8 +76,6 @@
 	<EditableHelpDetailView bind:container {layout} {revisions} />
 {:else if isCategoryContainer(container)}
 	<EditableCategoryDetailView bind:container {layout} {revisions} />
-{:else if isIndicatorContainer(container)}
-	<EditableIndicatorDetailView bind:container {layout} {revisions} />
 {:else if isIndicatorTemplateContainer(container)}
 	<EditableIndicatorTemplateDetailView bind:container {layout} {revisions} />
 {:else if isKnowledgeContainer(container)}

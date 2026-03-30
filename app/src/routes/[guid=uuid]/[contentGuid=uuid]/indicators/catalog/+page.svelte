@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Indicators from '$lib/components/Indicators.svelte';
+	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { PageProps } from './$types';
 	import {
@@ -7,7 +7,7 @@
 		computeFacetCount,
 		indicatorCategories,
 		indicatorTypes,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
 		topics
@@ -26,7 +26,7 @@
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 			]),
-			data.containers.filter(isIndicatorContainer)
+			data.containers.filter(isIndicatorTemplateContainer)
 		)
 	);
 </script>
@@ -37,6 +37,6 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Indicators containers={data.containers} />
+		<NewIndicators containers={data.containers} />
 	{/snippet}
 </Layout>

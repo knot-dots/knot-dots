@@ -6,7 +6,6 @@
 	import {
 		titleForGoalCollection,
 		containersByHierarchyLevel,
-		type IndicatorContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isPartOf,
@@ -16,14 +15,15 @@
 		overlayKey,
 		payloadTypes,
 		predicates,
-		type SimpleMeasureContainer
+		type SimpleMeasureContainer,
+		type IndicatorTemplateContainer
 	} from '$lib/models';
 
 	interface Props {
 		measure?: MeasureContainer | SimpleMeasureContainer;
 		measures: Array<MeasureContainer | SimpleMeasureContainer>;
 		containers: MeasureMonitoringContainer[];
-		indicators: IndicatorContainer[];
+		indicators: IndicatorTemplateContainer[];
 		showMeasures?: boolean;
 	}
 

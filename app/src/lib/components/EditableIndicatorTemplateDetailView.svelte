@@ -2,8 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { resource } from 'runed';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
-	import { z } from 'zod';
 	import { page } from '$app/state';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
@@ -18,16 +16,15 @@
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import {
-		actualDataContainer,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
+		isActualDataContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
 		isObjectiveContainer,
 		isProgramContainer,
 		isRelatedTo,
-		payloadTypes,
 		titleForProgramCollection
 	} from '$lib/models';
 	import { ability, applicationState, compareState } from '$lib/stores';
@@ -42,46 +39,43 @@
 
 	let guid = $derived(container.guid);
 
-	let relatedContainersQuery = resource([() => guid], async (_, __, { signal }) => {
-		return fetchRelatedContainers(
-			container.guid,
-			{
-				organization: [page.data.currentOrganization.guid],
-				organizationalUnit: page.data.currentOrganizationalUnit
-					? [page.data.currentOrganizationalUnit.guid]
-					: []
-			},
-			'alpha',
-			{ signal }
-		);
-	});
-
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
-
 	// Fetch comparison data for selected municipalities
 	let selectedMunicipalityGuids = $derived(
 		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
 	);
 
-	const comparisonDataResource = resource(
-		() => [selectedMunicipalityGuids, guid] as const,
-		async ([municipalityGuids, indicatorGuid], _, { signal }) => {
-			if (municipalityGuids.length === 0) return [];
-
-			const params = new SvelteURLSearchParams();
-			params.append('indicator', indicatorGuid);
-			for (const guid of municipalityGuids) {
-				params.append('organizationalUnit', guid);
-			}
-			params.append('payloadType', payloadTypes.enum.actual_data);
-
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			if (!response.ok) return [];
-			return z.array(actualDataContainer).parse(await response.json());
+	let relatedContainersQuery = resource(
+		[() => guid, () => selectedMunicipalityGuids],
+		async ([guid, selectedMunicipalityGuids], __, { signal }) => {
+			return fetchRelatedContainers(
+				guid,
+				{
+					organization: [page.data.currentOrganization.guid],
+					organizationalUnit: page.data.currentOrganizationalUnit
+						? [page.data.currentOrganizationalUnit.guid, ...selectedMunicipalityGuids]
+						: []
+				},
+				'alpha',
+				{ signal }
+			);
 		}
 	);
 
-	let comparisonContainers = $derived(comparisonDataResource.current ?? []);
+	let relatedContainers = $derived(
+		relatedContainersQuery.current?.filter(
+			({ organizational_unit }) =>
+				!organizational_unit || !selectedMunicipalityGuids.includes(organizational_unit)
+		) ?? []
+	);
+
+	let comparisonContainers = $derived(
+		relatedContainersQuery.current
+			?.filter(isActualDataContainer)
+			.filter(
+				({ organizational_unit }) =>
+					organizational_unit && selectedMunicipalityGuids.includes(organizational_unit)
+			)
+	);
 
 	let viewMode = $state('chart');
 </script>

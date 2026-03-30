@@ -24,7 +24,6 @@
 		type AnyContainer,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		type ObjectiveContainer,
 		predicates
@@ -76,12 +75,7 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter(
-				(c) =>
-					isIndicatorContainer(c) ||
-					isIndicatorTemplateContainer(c) ||
-					isBinaryIndicatorContainer(c)
-			)
+			.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
@@ -192,11 +186,7 @@
 
 					<div class="details-section">
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							{@const historicalValuesByYear = new Map(
-								isIndicatorContainer(indicator)
-									? indicator.payload.historicalValues
-									: (actualDataContainer?.payload.values ?? [])
-							)}
+							{@const historicalValuesByYear = new Map(actualDataContainer?.payload.values ?? [])}
 							<div class="disclosure">
 								<button class="disclosure-button" type="button" use:disclosure.button>
 									<span>

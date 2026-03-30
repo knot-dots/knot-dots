@@ -2,7 +2,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer
 	} from '$lib/models';
@@ -21,7 +21,7 @@
 	<MeasureMonitoring
 		{measures}
 		containers={containers.filter(isMeasureMonitoringContainer)}
-		indicators={containers.filter(isIndicatorContainer)}
+		indicators={containers.filter(isIndicatorTemplateContainer)}
 		showMeasures
 	/>
 	<Help slug="measures-monitoring" />

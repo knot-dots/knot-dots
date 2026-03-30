@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import Board from '$lib/components/Board.svelte';
@@ -9,16 +10,18 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import {
 		type Container,
 		findAncestors,
 		findConnected,
 		findDescendants,
 		findLeafObjectives,
+		isActualDataContainer,
 		isContainerWithEffect,
+		isContainerWithObjective,
 		isEffectContainer,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isRelatedTo,
 		predicates
@@ -45,14 +48,14 @@
 			);
 
 			if (selectedContainer) {
-				if (isIndicatorContainer(selectedContainer)) {
+				if (isIndicatorTemplateContainer(selectedContainer)) {
 					containers = findConnected(selectedContainer, allContainers, [
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for']
 					]);
 				} else if (isObjectiveContainer(selectedContainer)) {
 					const indicator = allContainers
-						.filter(isIndicatorContainer)
+						.filter(isIndicatorTemplateContainer)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
 						selectedContainer,
@@ -75,7 +78,7 @@
 						.filter(isObjectiveContainer)
 						.find(isRelatedTo(selectedContainer));
 					const indicator = allContainers
-						.filter(isIndicatorContainer)
+						.filter(isIndicatorTemplateContainer)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
 						selectedContainer,
@@ -134,9 +137,31 @@
 				<BoardColumn title={$_('indicators')}>
 					<div class="vertical-scroll-wrapper">
 						{#each allContainers
-							.filter(isIndicatorContainer)
+							.filter(isIndicatorTemplateContainer)
 							.filter((c) => containers.has(c)) as container (container.guid)}
-							<Card {container} relatedContainers={allContainers} showRelationFilter />
+							{@const dataContainers = [
+								...allContainers
+									.filter(isActualDataContainer)
+									.filter(({ payload }) => payload.indicator === container.guid),
+								...allContainers
+									.filter(({ relation }) =>
+										relation.some(
+											({ object, predicate }) =>
+												object === container.guid &&
+												(predicate === predicates.enum['is-measured-by'] ||
+													predicate === predicates.enum['is-objective-for'])
+										)
+									)
+									.filter((c) => c.guid !== container.guid)
+							]}
+							{@const relatedContainers = [
+								...dataContainers,
+								...allContainers.filter(isContainerWithEffect),
+								...allContainers.filter(isContainerWithObjective)
+							]}
+							{#if dataContainers.length > 0}
+								<NewIndicatorCard {container} {relatedContainers} showRelationFilter />
+							{/if}
 						{/each}
 					</div>
 				</BoardColumn>

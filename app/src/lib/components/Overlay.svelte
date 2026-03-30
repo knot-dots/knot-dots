@@ -4,12 +4,10 @@
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
-	import IndicatorCatalogOverlay from '$lib/components/IndicatorCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
-	import NewIndicatorCatalogOverlay from '$lib/components/NewIndicatorCatalogOverlay.svelte';
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
@@ -91,13 +89,6 @@
 		<MeasureMonitoringOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['tasks']}
 		<TasksOverlay container={data.container} containers={data.containers} />
-	{:else if data.key === overlayKey.enum['indicator-catalog']}
-		<IndicatorCatalogOverlay
-			indicatorTemplates={data.indicatorTemplates}
-			indicators={data.indicators}
-		/>
-	{:else if data.key === overlayKey.enum['new-indicator-catalog']}
-		<NewIndicatorCatalogOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['indicators']}
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['resources']}

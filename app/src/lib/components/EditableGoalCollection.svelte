@@ -109,7 +109,7 @@
 			container={item}
 			relatedContainers={relatedContainers.filter(
 				({ payload, relation }) =>
-					payload.type === payloadTypes.enum.indicator ||
+					payload.type === payloadTypes.enum.indicator_template ||
 					relation.some(({ object, subject }) => [object, subject].includes(item.guid))
 			)}
 		/>

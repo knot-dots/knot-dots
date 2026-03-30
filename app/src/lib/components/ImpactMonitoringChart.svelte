@@ -226,8 +226,8 @@
 					y: 'value',
 					interval: 'year',
 					sort: 'date',
-					stroke: '#21a5ed',
-					strokeDasharray: '4 8'
+					stroke: 'var(--indicator-color-objective)',
+					strokeDasharray: '8 4'
 				}),
 				Plot.lineY(actualValues, {
 					x: 'date',

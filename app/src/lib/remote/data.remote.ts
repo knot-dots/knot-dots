@@ -1,85 +1,13 @@
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
 import { filterVisible } from '$lib/authorization';
-import { isIndicatorContainer, isOrganizationalUnitContainer, payloadTypes } from '$lib/models';
-import { hasSection } from '$lib/relations';
+import { payloadTypes } from '$lib/models';
 import {
-	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
-	getContainerByGuid,
 	getManyContainers
 } from '$lib/server/db';
-
-export const fetchContainersRelatedToIndicators = query(
-	z.object({
-		guid: z.string().uuid(),
-		params: z.object({
-			organization: z.array(z.string().uuid()),
-			organizationalUnit: z.string().uuid().optional(),
-			program: z.string().uuid().optional()
-		})
-	}),
-	async ({ guid, params }) => {
-		const { locals } = getRequestEvent();
-
-		let relatedContainers;
-
-		const container = await locals.pool.connect(getContainerByGuid(guid));
-
-		if (!isIndicatorContainer(container)) {
-			error(404, unwrapFunctionStore(_)('error.not_found'));
-		}
-
-		if (params.program) {
-			const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
-				locals.pool.connect(getAllContainersRelatedToProgram(params.program, {})),
-				locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
-			]);
-
-			relatedContainers = [
-				...containersRelatedToProgram.filter(({ guid }) =>
-					containersRelatedToIndicator.some(
-						({ guid: relatedContainerGuid }) => relatedContainerGuid === guid
-					)
-				),
-				...hasSection(container, containersRelatedToIndicator)
-			];
-		} else {
-			let subordinateOrganizationalUnits: string[] = [];
-
-			if (params.organizationalUnit) {
-				const currentOrganizationalUnit = await locals.pool.connect(
-					getContainerByGuid(params.organizationalUnit)
-				);
-
-				if (!isOrganizationalUnitContainer(currentOrganizationalUnit)) {
-					error(404, unwrapFunctionStore(_)('error.not_found'));
-				}
-
-				const relatedOrganizationalUnits = await locals.pool.connect(
-					getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-				);
-				subordinateOrganizationalUnits = relatedOrganizationalUnits
-					.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-					.map(({ guid }) => guid)
-					.concat(currentOrganizationalUnit.guid);
-			}
-
-			relatedContainers = await locals.pool.connect(
-				getAllContainersRelatedToIndicators([container], {
-					organizationalUnits: subordinateOrganizationalUnits
-				})
-			);
-		}
-
-		return filterVisible(relatedContainers, locals.user);
-	}
-);
 
 export const fetchContainersRelatedToIndicatorTemplates = query(
 	z.object({

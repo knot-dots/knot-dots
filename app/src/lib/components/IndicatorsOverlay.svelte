@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import Indicators from '$lib/components/Indicators.svelte';
+	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import {
 		audience,
 		computeFacetCount,
@@ -36,6 +36,6 @@
 
 <Header {facets} search />
 
-<Indicators {containers} />
+<NewIndicators {containers} />
 
 <Help slug="indicators" />
