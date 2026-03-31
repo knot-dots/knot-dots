@@ -14,8 +14,6 @@ export const overlayKey = z.enum([
 	'content-partners',
 	'create',
 	'goal-iooi',
-	'indicator-catalog',
-	'new-indicator-catalog',
 	'indicators',
 	'measure-iooi',
 	'measure-monitoring',
@@ -78,7 +76,6 @@ const payloadTypeValues = [
 	'goal_collection',
 	'help',
 	'image',
-	'indicator',
 	'indicator_collection',
 	'indicator_template',
 	'info_box',
@@ -132,7 +129,6 @@ const categoryObjectTypeValues = [
 	payloadTypes.enum.rule,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.task,
-	payloadTypes.enum.indicator,
 	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.effect,
 	payloadTypes.enum.objective
@@ -464,6 +460,7 @@ const indicatorCategoryValues = [
 	'indicator_category.kpi',
 	'indicator_category.mpsc',
 	'indicator_category.sdg',
+	'indicator_category.sump_mobility',
 	'indicator_category.urban_development',
 	'indicator_category.wegweiser_kommune',
 	'indicator_category.custom'
@@ -630,6 +627,8 @@ export const boards = z.enum([
 ]);
 
 export const administrativeTypes = z.enum([
+	'administrative_type.country',
+	'administrative_type.federal_state',
 	'administrative_type.municipality',
 	'administrative_type.rural_district',
 	'administrative_type.urban_district'
@@ -780,6 +779,9 @@ const customCollectionPayload = z
 				type: []
 			}),
 		item: z.array(z.uuid()).default([]),
+		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
+		allowSearch: z.boolean().default(false),
+		allowSort: z.boolean().default(false),
 		sort: z.enum(['alpha', 'modified']).default('alpha'),
 		terms: z.string().default(''),
 		title: z.string(),
@@ -845,6 +847,9 @@ const goalCollectionPayload = z
 
 const helpPayload = z.object({
 	body: z.string().trim().default(''),
+	category: z
+		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+		.default({}),
 	slug: z.string().default(''),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.help),
@@ -854,22 +859,6 @@ const helpPayload = z.object({
 const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: true });
 
 const initialGoalCollectionPayload = goalCollectionPayload;
-
-const indicatorPayload = basePayload.extend({
-	externalReference: z.string().url().optional(),
-	historicalValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
-	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
-	quantity: z.string(),
-	type: z.literal(payloadTypes.enum.indicator),
-	unit: z.string()
-});
-
-const initialIndicatorPayload = indicatorPayload.partial({
-	quantity: true,
-	title: true,
-	unit: true
-});
 
 const indicatorCollectionPayload = z
 	.object({
@@ -884,11 +873,15 @@ const indicatorCollectionPayload = z
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
-const indicatorTemplatePayload = indicatorPayload
+const indicatorTemplatePayload = basePayload
 	.extend({
-		type: z.literal(payloadTypes.enum.indicator_template)
+		externalReference: z.string().url().optional(),
+		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
+		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
+		type: z.literal(payloadTypes.enum.indicator_template),
+		unit: z.string()
 	})
-	.omit({ historicalValues: true, quantity: true });
+	.strict();
 
 const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	title: true,
@@ -1419,7 +1412,7 @@ const organizationPayload = z.object({
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 const organizationalUnitPayload = z.object({
-	administrativeType: administrativeTypes.optional(),
+	administrativeType: z.array(administrativeTypes).default([]),
 	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
@@ -1494,7 +1487,6 @@ const payload = z.discriminatedUnion('type', [
 	helpPayload,
 	imagePayload,
 	indicatorCollectionPayload,
-	indicatorPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
 	knowledgePayload,
@@ -1732,18 +1724,6 @@ export function isHelpContainer(
 	container: AnyContainer | EmptyContainer
 ): container is HelpContainer {
 	return container.payload.type === payloadTypes.enum.help;
-}
-
-const indicatorContainer = container.extend({
-	payload: indicatorPayload
-});
-
-export type IndicatorContainer = z.infer<typeof indicatorContainer>;
-
-export function isIndicatorContainer(
-	container: AnyContainer | EmptyContainer
-): container is IndicatorContainer {
-	return container.payload.type === payloadTypes.enum.indicator;
 }
 
 const indicatorCollectionContainer = container.extend({
@@ -2460,7 +2440,6 @@ export const emptyContainer = newContainer.extend({
 		initialHelpPayload,
 		initialImagePayload,
 		initialIndicatorCollectionPayload,
-		initialIndicatorPayload,
 		initialIndicatorTemplatePayload,
 		initialInfoBoxPayload,
 		initialKnowledgePayload,
@@ -2503,12 +2482,6 @@ const emptyEffectContainer = emptyContainer.extend({
 });
 
 export type EmptyEffectContainer = z.infer<typeof emptyEffectContainer>;
-
-const emptyIndicatorContainer = emptyContainer.extend({
-	payload: initialIndicatorPayload
-});
-
-export type EmptyIndicatorContainer = z.infer<typeof emptyIndicatorContainer>;
 
 const emptyObjectiveContainer = emptyContainer.extend({
 	payload: initialObjectivePayload
@@ -2714,17 +2687,6 @@ export function mayDelete(container: AnyContainer | EmptyContainer, ability: Mon
 	);
 }
 
-export function newIndicatorTemplateFromIndicator(container: IndicatorContainer) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { historicalValues, quantity, ...copiedPayload } = container.payload;
-	return newContainer.parse({
-		payload: { ...copiedPayload, type: payloadTypes.enum.indicator_template },
-		organization: container.organization,
-		organizational_unit: container.organization,
-		realm: container.realm
-	});
-}
-
 export function newCategoryTemplateFromCategory(
 	category: CategoryContainer,
 	organization: OrganizationContainer
@@ -2888,7 +2850,10 @@ export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveC
 	);
 }
 
-export function findOverallObjective(container: IndicatorContainer, containers: Container[]) {
+export function findOverallObjective(
+	container: IndicatorTemplateContainer,
+	containers: Container[]
+) {
 	return containers
 		.filter(isObjectiveContainer)
 		.find(
@@ -2982,10 +2947,6 @@ export function getManagedBy(container: AnyContainer, candidates: AnyContainer[]
 	return candidates.find(({ guid }) => guid === container.managed_by);
 }
 
-export function hasHistoricalValues(container: IndicatorContainer | EmptyIndicatorContainer) {
-	return container.payload.historicalValues.length > 0;
-}
-
 export function createCopyOf(
 	container: AnyContainer,
 	organization: string,
@@ -3010,11 +2971,6 @@ export function createCopyOf(
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
 		} as typeof copy.payload;
-	} else if (isIndicatorContainer(container)) {
-		copy.payload = {
-			...(container.payload as unknown as typeof copy.payload),
-			historicalValues: []
-		} as unknown as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
 			...(container.payload as typeof copy.payload),
@@ -3202,4 +3158,74 @@ export function getOrganizationURL(
 		.replace(/\/me$/, '/all/page');
 
 	return url;
+}
+
+function computeRelevanceScore(
+	indicator: IndicatorTemplateContainer,
+	containersRelatedToIndicator: Container[],
+	container: MeasureContainer | GoalContainer
+): number {
+	const containerHasParentUsingIndicator = containersRelatedToIndicator.some(({ relation }) =>
+		relation.find(
+			({ predicate, subject }) =>
+				predicate == predicates.enum['is-part-of'] && subject == container.guid
+		)
+	);
+
+	const containerIsPartOfProgramUsingIndicator = containersRelatedToIndicator.some(({ relation }) =>
+		relation.find(
+			({ predicate, subject }) =>
+				predicate == predicates.enum['is-part-of-program'] && subject == container.guid
+		)
+	);
+
+	const containerIsInOrganizationUsingIndicator = containersRelatedToIndicator
+		.filter(({ guid }) => guid != indicator.guid)
+		.some(({ organization }) => container.organization == organization);
+
+	let score = 0;
+
+	if (containerHasParentUsingIndicator) {
+		score += 2;
+	} else if (containerIsPartOfProgramUsingIndicator) {
+		score += 0.5;
+	} else if (containerIsInOrganizationUsingIndicator) {
+		score += 0.25;
+	}
+
+	const indicatorCategory = new Set(Object.values(indicator.payload.category).flatMap((v) => v));
+	const containerCategory = new Set(Object.values(container.payload.category).flatMap((v) => v));
+
+	if (indicatorCategory.union(containerCategory).size > 0) {
+		const jaccardSimilarity =
+			indicatorCategory.intersection(containerCategory).size /
+			indicatorCategory.union(containerCategory).size;
+		score += jaccardSimilarity;
+	}
+
+	return score;
+}
+
+export function sortIndicatorsByRelevanceForGoalOrMeasure(
+	indicators: IndicatorTemplateContainer[],
+	containersRelatedToIndicators: Container[],
+	container: GoalContainer | MeasureContainer
+): IndicatorTemplateContainer[] {
+	return indicators
+		.map((i) => ({
+			indicator: i,
+			score: computeRelevanceScore(
+				i,
+				[
+					...findConnected(i, containersRelatedToIndicators, [
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-program']
+					])
+				],
+				container
+			)
+		}))
+		.toSorted((a, b) => b.score - a.score)
+		.map(({ indicator }) => indicator);
 }

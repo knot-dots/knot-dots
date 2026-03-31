@@ -4,6 +4,7 @@
 	import { _, number } from 'svelte-i18n';
 	import {
 		type ActualDataContainer,
+		administrativeTypes,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
 		isActualDataContainer
@@ -69,6 +70,19 @@
 		...comparisonValues.map((c) => `var(${c.color})`)
 	]);
 
+	const stateTypes = new Set<string>([
+		administrativeTypes.enum['administrative_type.federal_state'],
+		administrativeTypes.enum['administrative_type.country']
+	]);
+
+	let stateMunicipalityGuids = $derived(
+		new Set(
+			$compareState.selectedMunicipalities
+				.filter((m) => m.payload.administrativeType?.some((t) => stateTypes.has(t)))
+				.map((m) => m.guid)
+		)
+	);
+
 	// Create a reactive state for the container's width
 	let currentWidth = $state(0);
 
@@ -99,13 +113,41 @@
 
 		const plot = Plot.plot({
 			marks: [
-				Plot.lineY(allData, {
-					x: 'date',
-					y: 'value',
-					stroke: 'municipality',
-					strokeWidth: (d) => (d.municipality === 'current' ? 3 : 2),
-					strokeLinecap: 'round'
-				}),
+				Plot.lineY(
+					allData.filter(
+						(d) => d.municipality !== 'current' && stateMunicipalityGuids.has(d.municipality)
+					),
+					{
+						x: 'date',
+						y: 'value',
+						stroke: 'municipality',
+						strokeWidth: 2,
+						strokeLinecap: 'round',
+						strokeDasharray: '4'
+					}
+				),
+				Plot.lineY(
+					allData.filter(
+						(d) => d.municipality !== 'current' && !stateMunicipalityGuids.has(d.municipality)
+					),
+					{
+						x: 'date',
+						y: 'value',
+						stroke: 'municipality',
+						strokeWidth: 2,
+						strokeLinecap: 'round'
+					}
+				),
+				Plot.lineY(
+					allData.filter((d) => d.municipality === 'current'),
+					{
+						x: 'date',
+						y: 'value',
+						stroke: 'municipality',
+						strokeWidth: 3,
+						strokeLinecap: 'round'
+					}
+				),
 				Plot.dot(allData, {
 					x: 'date',
 					y: 'value',
@@ -126,24 +168,7 @@
 			}
 		});
 
-		const legend = Plot.legend({
-			color: {
-				legend: true,
-				domain: colorDomain,
-				range: colorRange,
-				tickFormat: (d) => {
-					if (d === 'current') return currentOrgUnitName;
-					const municipality = $compareState.selectedMunicipalities.find((m) => m.guid === d);
-					return municipality ? municipality.payload.name : d;
-				}
-			},
-			style: {
-				fontSize: '0.75rem'
-			},
-			swatchHeight: 3
-		});
-
-		element.append(plot, legend);
+		element.append(plot);
 
 		// Return a destroy method for cleanup
 		return () => {
@@ -155,9 +180,52 @@
 {#if actualDataContainer[0]}
 	<figure>
 		<div role="img" {@attach chart}></div>
+		<ul class="chart-legend">
+			{#each colorDomain as guid (guid)}
+				{@const i = colorDomain.indexOf(guid)}
+				{@const isState = guid !== 'current' && stateMunicipalityGuids.has(guid)}
+				{@const label =
+					guid === 'current'
+						? currentOrgUnitName
+						: ($compareState.selectedMunicipalities.find((m) => m.guid === guid)?.payload.name ??
+							guid)}
+				<li>
+					<svg width="24" height="10" aria-hidden="true">
+						<line
+							x1="2"
+							y1="5"
+							x2="22"
+							y2="5"
+							style="stroke: {colorRange[i]}; stroke-width: 3; stroke-linecap: round;{isState
+								? ' stroke-dasharray: 4;'
+								: ''}"
+						/>
+					</svg>
+					<span>{label}</span>
+				</li>
+			{/each}
+		</ul>
 
 		{#if actualDataContainer[0].payload.source}
 			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
 		{/if}
 	</figure>
 {/if}
+
+<style>
+	.chart-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 0.75rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-size: 0.75rem;
+	}
+
+	.chart-legend li {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+</style>

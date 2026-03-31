@@ -57,3 +57,16 @@ export function isPartOf<T extends AnyContainer>(
 ): T | undefined {
 	return relatedObjectNodesByPredicate(container, predicates.enum['is-part-of'], containers)[0];
 }
+
+export function addRelation(subject: Node, predicate: Predicate, object: Node) {
+	const position =
+		(subject.relation.findLast((r) => r.predicate === predicate)?.position ?? -1) + 1;
+	subject.relation = [
+		...subject.relation,
+		{ subject: subject.guid, predicate, object: object.guid, position }
+	];
+	object.relation = [
+		...object.relation,
+		{ subject: subject.guid, predicate, object: object.guid, position }
+	];
+}

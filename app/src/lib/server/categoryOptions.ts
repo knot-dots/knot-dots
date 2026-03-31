@@ -26,7 +26,7 @@ export async function loadCategoryContext(params: {
 	connect: Connect;
 	scope: Scope;
 	user: User;
-}): Promise<CategoryContext | null> {
+}): Promise<CategoryContext | undefined> {
 	const containers = await params.connect(
 		getManyContainers(
 			params.scope,
@@ -59,8 +59,6 @@ export async function loadCategoryContext(params: {
 			objectTypesPerKey
 		};
 	}
-
-	return null;
 }
 
 export function filterCategoryContext(

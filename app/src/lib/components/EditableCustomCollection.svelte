@@ -6,18 +6,23 @@
 	import { z } from 'zod';
 	import CheckCircle from '~icons/flowbite/check-circle-solid';
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
+	import ArrowRight from '~icons/knotdots/arrow-right';
 	import Collection from '~icons/knotdots/collection';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
+	import Search from '~icons/knotdots/search';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import Carousel from '$lib/components/Carousel.svelte';
+	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import {
 		type ActualDataContainer,
 		actualDataContainer,
@@ -35,6 +40,13 @@
 	} from '$lib/models';
 	import { ability, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
+
+	const MAX_ITEMS_PER_PAGE = 50;
+
+	const sortOptions = [
+		{ value: 'modified', label: $_('sort_modified') },
+		{ value: 'alpha', label: $_('sort_alphabetically') }
+	];
 
 	interface Props {
 		container: CustomCollectionContainer;
@@ -55,10 +67,8 @@
 	let dialog: HTMLDialogElement = $state(undefined!);
 
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
-
 	let sortBar = createDisclosure({ label: $_('sort') });
-
-	let defaultPayloadType = [
+	const defaultPayloadType = [
 		payloadTypes.enum.indicator_template,
 		payloadTypes.enum.program,
 		payloadTypes.enum.goal,
@@ -84,6 +94,12 @@
 
 	let terms = $state(container.payload.terms);
 
+	let localTerms = $state('');
+
+	let localSort = $state(container.payload.sort);
+
+	let visibleCount = $state(MAX_ITEMS_PER_PAGE);
+
 	let selected = $state(container.payload.item);
 
 	let activeFilters = $derived(
@@ -103,40 +119,32 @@
 
 	const savedResource = resource(
 		[
-			() => container.payload.filter.audience,
-			() => container.payload.filter.sdg,
-			() => container.payload.filter.indicatorCategory,
-			() => container.payload.filter.policyFieldBNK,
-			() => container.payload.filter.topic,
-			() =>
-				container.payload.filter.type.length > 0
-					? container.payload.filter.type
-					: defaultPayloadType,
-			() => container.payload.sort,
+			() => $state.snapshot(container.payload.filter),
 			() => container.payload.terms,
+			() => (container.payload.allowSearch ? localTerms.trim() : ''),
+			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewport.current
 		],
-		async (
-			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
-			_,
-			{ signal }
-		) => {
+		async ([filter, terms, searchTerms, sort], _, { signal }) => {
+			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
+			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
+
 			return fetchContainers(
 				{
-					audience,
-					sdg,
-					indicatorCategory,
+					audience: filter.audience,
+					sdg: filter.sdg,
+					indicatorCategory: filter.indicatorCategory,
 					organization: [page.data.currentOrganization.guid],
-					policyFieldBNK,
-					terms,
-					topic,
+					policyFieldBNK: filter.policyFieldBNK,
+					terms: combinedTerms,
+					topic: filter.topic,
 					payloadType: type
 				},
 				sort,
 				{ signal }
 			);
 		},
-		{ lazy: true, once: true }
+		{ lazy: true, debounce: 300 }
 	);
 
 	const searchResource = resource(
@@ -194,6 +202,10 @@
 
 	let items = $derived.by(() => {
 		if (container.payload.item.length > 0) {
+			if (container.payload.allowSort) {
+				const selectedSet = new Set(container.payload.item);
+				return (savedResource.current ?? []).filter(({ guid }) => selectedSet.has(guid));
+			}
 			return container.payload.item
 				.map((item) => savedResource.current?.find(({ guid }) => guid === item))
 				.filter((item): item is AnyContainer => item !== undefined);
@@ -202,13 +214,64 @@
 		}
 	});
 
+	let visibleItems = $derived(items.slice(0, visibleCount));
+
+	let hasMoreItems = $derived(items.length > visibleCount);
+
+	let hasConfiguredContent = $derived(
+		container.payload.item.length > 0 ||
+			Object.values(container.payload.filter).some((v) => v.length > 0)
+	);
+
+	let isRuleBasedCollection = $derived(container.payload.item.length === 0);
+
+	let allCatalogHref = $derived.by(() => {
+		const params = new SvelteURLSearchParams();
+
+		for (const value of container.payload.item) {
+			params.append('item', value);
+		}
+
+		for (const value of container.payload.filter.audience) {
+			params.append('audience', value);
+		}
+		for (const value of container.payload.filter.sdg) {
+			params.append('sdg', value);
+		}
+		for (const value of container.payload.filter.policyFieldBNK) {
+			params.append('policyFieldBNK', value);
+		}
+		for (const value of container.payload.filter.topic) {
+			params.append('topic', value);
+		}
+		for (const value of container.payload.filter.indicatorCategory) {
+			params.append('indicatorCategory', value);
+		}
+
+		for (const value of container.payload.filter.type) {
+			params.append('payloadType', value);
+		}
+
+		const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';
+		const termsForCatalog = searchTerms || container.payload.terms.trim();
+		if (termsForCatalog) {
+			params.append('terms', termsForCatalog);
+		}
+
+		const queryString = params.toString();
+		const path = resolve('/[guid=uuid]/all/catalog', {
+			guid: page.params.guid ?? page.data.currentOrganization.guid
+		});
+		return `${path}${queryString ? `?${queryString}` : ''}`;
+	});
+
 	// Fetch comparison data for all indicators in batch
 	let selectedMunicipalityGuids = $derived(
 		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
 	);
 
 	let indicatorGuids = $derived(
-		items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
+		visibleItems.filter(isIndicatorTemplateContainer).map((item) => item.guid)
 	);
 
 	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
@@ -284,19 +347,39 @@
 		}
 	}
 
+	$effect(() => {
+		if (!container.payload.allowSearch) {
+			localTerms = '';
+		}
+	});
+
 	async function confirm() {
 		const response = await saveContainer({
 			...container,
-			payload: { ...container.payload, filter, item: mode == 'select' ? selected : [], sort, terms }
+			payload: {
+				...container.payload,
+				filter,
+				item: mode == 'select' ? selected : [],
+				sort,
+				terms
+			}
 		});
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			container.payload = updatedContainer.payload;
 			container.revision = updatedContainer.revision;
+			localSort = updatedContainer.payload.sort;
+			visibleCount = MAX_ITEMS_PER_PAGE;
 		} else {
 			const error = await response.json();
 			alert(error.message);
 		}
+	}
+
+	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
+		selected = event.currentTarget.checked
+			? [...selected, event.currentTarget.value]
+			: selected.filter((guid) => guid !== event.currentTarget.value);
 	}
 </script>
 
@@ -318,27 +401,72 @@
 		{:else}
 			{container.payload.title}
 		{/if}
+		{#if hasConfiguredContent}
+			<span class="details-count">({items.length})</span>
+		{/if}
 	</svelte:element>
 
-	{#if editable}
-		<ul class="inline-actions is-visible-on-hover">
+	<ul class="inline-actions" class:is-visible-on-hover={editable}>
+		{#if hasConfiguredContent && isRuleBasedCollection}
 			<li>
-				<button class="action-button action-button--size-l" onclick={addItems} type="button">
-					<Collection />
-					<span class="is-visually-hidden">{$_('custom_collection.add_items')}</span>
+				<button
+					class="show-all-button"
+					onclick={() => (window.location.href = allCatalogHref)}
+					type="button"
+				>
+					<ArrowRight />
+					{$_('custom_collection.show_all')}
 				</button>
 			</li>
-			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+		{/if}
+
+		{#if container.payload.allowSearch && hasConfiguredContent}
+			<li class="inline-search-item">
+				<label class="search-inline search-slot">
+					<Search />
+					<span class="is-visually-hidden">{$_('search')}</span>
+					<input
+						type="search"
+						placeholder={$_('search')}
+						bind:value={localTerms}
+						oninput={(e) => {
+							e.stopPropagation();
+							visibleCount = MAX_ITEMS_PER_PAGE;
+						}}
+					/>
+				</label>
 			</li>
-		</ul>
-	{/if}
+		{/if}
+
+		{#if editable}
+			<li>
+				<CustomCollectionSettingsDropdown
+					bind:container
+					onAddItems={addItems}
+					bind:parentContainer
+					bind:relatedContainers
+				/>
+			</li>
+		{/if}
+	</ul>
 </header>
 
-{#if container.payload.item.length > 0 || Object.values(container.payload.filter).some((v) => v.length > 0)}
-	<ul class="catalog">
-		{#each items as item (item.guid)}
-			<li>
+{#if hasConfiguredContent}
+	<div class="carousel-toolbar">
+		{#if container.payload.allowSort}
+			<SortDropdown options={sortOptions} bind:value={localSort} />
+		{/if}
+	</div>
+{/if}
+
+{#if hasConfiguredContent}
+	{#if container.payload.listType === 'carousel'}
+		<Carousel
+			addItem={addItems}
+			items={visibleItems}
+			mayAddItem={editable && $ability.can('update', container)}
+		>
+			{#snippet itemSnippet(item)}
 				{#if isIndicatorTemplateContainer(item)}
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
@@ -352,9 +480,38 @@
 				{:else}
 					<Card --height="100%" container={item} />
 				{/if}
-			</li>
-		{/each}
-	</ul>
+			{/snippet}
+		</Carousel>
+	{:else}
+		<ul class="catalog">
+			{#each visibleItems as item (item.guid)}
+				<li>
+					{#if isIndicatorTemplateContainer(item)}
+						{@const relatedContainers =
+							actualDataResource.current?.filter(
+								({ payload }) => payload.indicator === item.guid
+							) ?? []}
+						<NewIndicatorCard
+							--height="100%"
+							container={item}
+							{relatedContainers}
+							{comparisonDataMap}
+						/>
+					{:else}
+						<Card --height="100%" container={item} />
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
+	{#if hasMoreItems}
+		<p class="load-more">
+			<button class="button" onclick={() => (visibleCount += MAX_ITEMS_PER_PAGE)} type="button">
+				{$_('load_more')}
+			</button>
+		</p>
+	{/if}
 {:else if editable}
 	<div class="catalog">
 		<button onclick={addItems} type="button">
@@ -441,12 +598,17 @@
 					<ul class="catalog">
 						{#each searchResource.current as item (item.guid)}
 							<li>
-								<SelectableCard
-									--height="100%"
-									bind:value={selected}
-									container={item}
-									selectable={mode === 'select'}
-								/>
+								{#if mode === 'select'}
+									<SelectableCard
+										--height="100%"
+										checked={selected.includes(item.guid)}
+										container={item}
+										inputType="checkbox"
+										{onchange}
+									/>
+								{:else}
+									<Card --height="100%" container={item} />
+								{/if}
 							</li>
 						{/each}
 					</ul>
@@ -607,11 +769,93 @@
 	}
 
 	.catalog {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 		margin-top: 1rem;
-		overflow: auto;
+	}
+
+	.details-heading {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+	}
+
+	.details-count {
+		color: var(--color-gray-400);
+		font-size: inherit;
+		font-weight: 400;
+	}
+
+	.search-inline {
+		display: flex;
+		align-items: center;
+		gap: 0;
+	}
+
+	.show-all-button {
+		--button-active-background: transparent;
+		--button-background: var(--color-white);
+		--button-hover-background: var(--color-gray-050);
+		--padding-x: 0.75rem;
+		--padding-y: 0.5rem;
+
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
+		color: var(--color-gray-900);
+		display: inline-flex;
+		height: 2.125rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		gap: 0.5rem;
+		line-height: 1.5;
+	}
+
+	.show-all-button > :global(svg) {
+		height: 0.75rem;
+		max-width: none;
+		width: 0.75rem;
+	}
+
+	.inline-search-item {
+		display: flex;
+		min-width: 10rem;
+	}
+
+	.search-slot {
+		margin-top: 0;
+		max-width: 12rem;
+		position: relative;
+		width: 100%;
+	}
+
+	.search-slot > :global(svg) {
+		color: var(--color-gray-500);
+		height: 1rem;
+		left: 0.625rem;
+		max-width: none;
+		pointer-events: none;
+		position: absolute;
+		top: 0.5rem;
+		width: 1rem;
+	}
+
+	.search-inline input {
+		margin: 0;
+		min-width: 10rem;
+	}
+
+	.search-slot input {
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
+		height: 2.125rem;
+		min-width: 12rem;
+		padding: 0 0.5rem;
+		padding-left: 2rem;
+		width: 100%;
+	}
+
+	.load-more {
+		display: flex;
+		justify-content: center;
+		margin-top: 1rem;
 	}
 
 	.preview {

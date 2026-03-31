@@ -3,22 +3,49 @@
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import { getCategoryKeys } from '$lib/categoryOptions';
+	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import type { ActualDataContainer, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
+		categoryOptions?: CategoryOptions;
 		columns: Array<{ heading: string; key: string }>;
 		rows: Container[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
-	let { columns, rows: originalRows, actualDataContainers = [] }: Props = $props();
+	let { categoryOptions, columns, rows: originalRows, actualDataContainers = [] }: Props = $props();
+
+	const initialCategory = $derived(
+		Object.fromEntries(
+			(categoryOptions ? getCategoryKeys(categoryOptions) : []).map((key) => [key, []])
+		)
+	);
+
+	function ensureAllCategoriesArePresent(container: Container): Container {
+		if ('category' in container.payload) {
+			return {
+				...container,
+				payload: {
+					...container.payload,
+					category: { ...initialCategory, ...container.payload.category }
+				}
+			};
+		} else {
+			return container;
+		}
+	}
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let rows = $state([] as Container[]);
 
 	$effect(() => {
-		rows = $state.snapshot(originalRows) as Container[];
+		if (categoryOptions) {
+			rows = $state.snapshot(originalRows.map(ensureAllCategoriesArePresent));
+		} else {
+			rows = $state.snapshot(originalRows);
+		}
 	});
 </script>
 
@@ -43,6 +70,7 @@
 					novalidate
 				>
 					<EditableRow
+						{categoryOptions}
 						columns={columns.map(({ key }) => key)}
 						bind:container={rows[i]}
 						editable={$applicationState.containerDetailView.editable}

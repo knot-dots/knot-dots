@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Help from '$lib/components/Help.svelte';
-	import Indicators from '$lib/components/Indicators.svelte';
 	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import type { PageProps } from './$types';
@@ -9,10 +8,6 @@
 </script>
 
 <IndicatorsPage {data} filterBarInitiallyOpen>
-	{#if data.useNewIndicators}
-		<NewIndicators containers={data.containers} />
-	{:else}
-		<Indicators containers={data.containers} />
-	{/if}
+	<NewIndicators containers={data.containers} />
 	<Help slug="indicators" />
 </IndicatorsPage>

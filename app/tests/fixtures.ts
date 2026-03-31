@@ -7,7 +7,6 @@ import {
 	type EffectContainer,
 	etag,
 	type GoalContainer,
-	type IndicatorContainer,
 	type IndicatorTemplateContainer,
 	type MeasureContainer,
 	type NewContainer,
@@ -18,7 +17,6 @@ import {
 	type Predicate,
 	predicates,
 	type ProgramContainer,
-	quantities,
 	type ReportContainer,
 	type ResourceDataContainer,
 	resourceDataTypes,
@@ -38,7 +36,6 @@ type MyFixtures = {
 	landingPage: LandingPage;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
-	testIndicatorTemplate: IndicatorTemplateContainer;
 	testCategoryWithTerms: {
 		category: CategoryContainer;
 		terms: TermContainer[];
@@ -50,13 +47,13 @@ type MyWorkerFixtures = {
 	suiteId: string;
 	adminContext: BrowserContext;
 	defaultOrganization: OrganizationContainer;
+	testIndicatorTemplate: IndicatorTemplateContainer;
 	testOrganization: OrganizationContainer;
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testIndividualProfile: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
 	testSubordinateGoal: GoalContainer;
-	testIndicator: IndicatorContainer;
 	testObjective: ObjectiveContainer;
 	testMeasure: MeasureContainer;
 	testSubordinateMeasure: MeasureContainer;
@@ -408,56 +405,37 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
-	testIndicator: [
+	testIndicatorTemplate: [
 		async ({ adminContext, testOrganization }, use, workerInfo) => {
-			const newIndicator = containerOfType(
-				payloadTypes.enum.indicator,
+			const newIndicatorTemplate = containerOfType(
+				payloadTypes.enum.indicator_template,
 				testOrganization.guid,
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as IndicatorContainer;
-			const testIndicator = await createContainer(adminContext, {
-				...newIndicator,
+			) as IndicatorTemplateContainer;
+			const testIndicatorTemplate = await createContainer(adminContext, {
+				...newIndicatorTemplate,
 				payload: {
-					...newIndicator.payload,
-					title: `Test Indicator ${workerInfo.workerIndex}`,
-					indicatorCategory: ['indicator_category.custom'],
-					unit: 'unit.percent',
-					quantity: quantities.enum['quantity.custom']
+					...newIndicatorTemplate.payload,
+					title: `Test Indicator Template ${workerInfo.workerIndex}`,
+					indicatorCategory: ['indicator_category.wegweiser_kommune'],
+					unit: 'unit.km'
 				}
 			});
 
-			await use(testIndicator);
+			await use(testIndicatorTemplate);
 
-			await deleteContainer(adminContext, testIndicator);
+			await deleteContainer(adminContext, testIndicatorTemplate);
 		},
 		{ scope: 'worker' }
 	],
-	testIndicatorTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
-		const newIndicatorTemplate = containerOfType(
-			payloadTypes.enum.indicator_template,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
-		) as IndicatorContainer;
-		const testIndicatorTemplate = await createContainer(adminContext, {
-			...newIndicatorTemplate,
-			payload: {
-				...newIndicatorTemplate.payload,
-				title: `Test Indicator Template ${workerInfo.workerIndex}`,
-				indicatorCategory: ['indicator_category.wegweiser_kommune'],
-				unit: 'unit.km'
-			}
-		});
-
-		await use(testIndicatorTemplate);
-
-		await deleteContainer(adminContext, testIndicatorTemplate);
-	},
 	testObjective: [
-		async ({ adminContext, testOrganization, testGoal, testIndicator }, use, workerInfo) => {
+		async (
+			{ adminContext, testOrganization, testGoal, testIndicatorTemplate },
+			use,
+			workerInfo
+		) => {
 			const newObjective = containerOfType(
 				payloadTypes.enum.objective,
 				testOrganization.guid,
@@ -481,7 +459,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					{
 						position: 1,
 						predicate: predicates.enum['is-objective-for'],
-						object: testIndicator.guid
+						object: testIndicatorTemplate.guid
 					}
 				]
 			});
@@ -562,7 +540,11 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		{ scope: 'worker' }
 	],
 	testEffect: [
-		async ({ adminContext, testOrganization, testMeasure, testIndicator }, use, workerInfo) => {
+		async (
+			{ adminContext, testOrganization, testMeasure, testIndicatorTemplate },
+			use,
+			workerInfo
+		) => {
 			const newEffect = containerOfType(
 				payloadTypes.enum.effect,
 				testOrganization.guid,
@@ -586,7 +568,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					{
 						position: 1,
 						predicate: predicates.enum['is-measured-by'],
-						object: testIndicator.guid
+						object: testIndicatorTemplate.guid
 					}
 				]
 			});

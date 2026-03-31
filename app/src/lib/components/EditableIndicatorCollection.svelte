@@ -2,21 +2,25 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
-	import Card from '$lib/components/Card.svelte';
+	import tooltip from '$lib/attachments/tooltip';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import {
 		type AnyContainer,
 		containerOfType,
 		type IndicatorCollectionContainer,
-		isContainerWithEffect,
-		isContainerWithObjective,
-		isIndicatorContainer,
+		isActualDataContainer,
+		isEffectContainer,
+		isGoalContainer,
+		isIndicatorTemplateContainer,
+		isMeasureContainer,
+		isObjectiveContainer,
 		type NewContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: IndicatorCollectionContainer;
@@ -34,7 +38,33 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let items = $derived(relatedContainers.filter(isIndicatorContainer));
+	let actualDataContainers = $derived(relatedContainers.filter(isActualDataContainer));
+
+	let effectContainers = $derived(relatedContainers.filter(isEffectContainer));
+
+	let objectiveContainers = $derived(relatedContainers.filter(isObjectiveContainer));
+
+	let items = $derived(
+		relatedContainers
+			.filter(isIndicatorTemplateContainer)
+			.filter((item) =>
+				[
+					actualDataContainers.some(({ payload }) => payload.indicator === item.guid),
+					effectContainers.some(({ relation }) =>
+						relation.some(
+							({ object, predicate }) =>
+								object === item.guid && predicate === predicates.enum['is-measured-by']
+						)
+					),
+					objectiveContainers.some(({ relation }) =>
+						relation.some(
+							({ object, predicate }) =>
+								object === item.guid && predicate === predicates.enum['is-objective-for']
+						)
+					)
+				].some(Boolean)
+			)
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -42,7 +72,7 @@
 
 	function addItem() {
 		$newContainer = containerOfType(
-			payloadTypes.enum.indicator,
+			payloadTypes.enum.indicator_template,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
@@ -81,17 +111,28 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator, container.managed_by) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator_template, container.managed_by) &&
+		editable}
 >
 	{#snippet itemSnippet(item)}
-		<Card
+		<NewIndicatorCard
 			container={item}
 			relatedContainers={[
-				...relatedContainers.filter(({ relation }) =>
-					relation.some(({ object }) => object === item.guid)
+				...actualDataContainers.filter(({ payload }) => payload.indicator === item.guid),
+				...effectContainers.filter(({ relation }) =>
+					relation.some(
+						({ object, predicate }) =>
+							object === item.guid && predicate === predicates.enum['is-measured-by']
+					)
 				),
-				...relatedContainers.filter(isContainerWithEffect),
-				...relatedContainers.filter(isContainerWithObjective)
+				...objectiveContainers.filter(({ relation }) =>
+					relation.some(
+						({ object, predicate }) =>
+							object === item.guid && predicate === predicates.enum['is-objective-for']
+					)
+				),
+				...relatedContainers.filter(isGoalContainer),
+				...relatedContainers.filter(isMeasureContainer)
 			]}
 		/>
 	{/snippet}

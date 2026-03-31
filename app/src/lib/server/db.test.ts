@@ -255,7 +255,7 @@ test.for([
 			type: [
 				payloadTypes.enum.effect,
 				payloadTypes.enum.goal,
-				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template,
 				payloadTypes.enum.measure,
 				payloadTypes.enum.program,
 				payloadTypes.enum.rule,
@@ -271,7 +271,7 @@ test.for([
 			type: [
 				payloadTypes.enum.effect,
 				payloadTypes.enum.goal,
-				payloadTypes.enum.indicator,
+				payloadTypes.enum.indicator_template,
 				payloadTypes.enum.measure,
 				payloadTypes.enum.program,
 				payloadTypes.enum.rule,
@@ -297,12 +297,12 @@ test.for([
 	},
 	{
 		name: 'indicator',
-		filters: { type: [payloadTypes.enum.indicator] },
+		filters: { type: [payloadTypes.enum.indicator_template] },
 		sort: 'modified'
 	},
 	{
 		name: 'indicator with topics',
-		filters: { type: [payloadTypes.enum.indicator], topics: ['topic.health'] as string[] },
+		filters: { type: [payloadTypes.enum.indicator_template], topics: ['topic.health'] as string[] },
 		sort: 'alpha'
 	},
 	{

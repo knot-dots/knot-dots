@@ -2,30 +2,24 @@ export const featureFlags = new Map([
 	[
 		'alpha',
 		[
-			'ImportFromCsv',
-			'AI',
+			'OpenAI',
 			'Elasticsearch',
-			'TeaserCollection',
 			'ContentPartner',
 			'ResourceV2',
 			'CustomCategories',
 			'IOOI',
-			'EditorialPages',
-			'FullScreenRoutes',
 			'SubMeasures'
 		] as const
 	],
 	[
 		'beta',
 		[
-			'AdministrativeArea',
-			'Image',
-			'InfoBox',
-			'Quote',
+			'EditorialPages',
+			'FullScreenRoutes',
+			'ImportFromCsv',
+			'Mistral',
 			'Report',
-			'Stage',
-			'Teaser',
-			'TwoColumn'
+			'TeaserCollection'
 		] as const
 	]
 ]);
@@ -35,14 +29,14 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useImportFromCsv() {
 			return features.includes('ImportFromCsv');
 		},
-		useAI() {
-			return features.includes('AI');
+		useOpenAI() {
+			return features.includes('OpenAI');
+		},
+		useMistral() {
+			return features.includes('Mistral');
 		},
 		useElasticsearch() {
 			return features.includes('Elasticsearch');
-		},
-		useAdministrativeArea() {
-			return features.includes('AdministrativeArea');
 		},
 		useChapter() {
 			return features.includes('Report');
@@ -50,32 +44,8 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useReport() {
 			return features.includes('Report');
 		},
-		useCustomCollection() {
-			return features.includes('Report');
-		},
-		useTeaser() {
-			return features.includes('Teaser');
-		},
-		useTeaserCollection() {
-			return features.includes('TeaserCollection');
-		},
-		useInfoBox() {
-			return features.includes('InfoBox');
-		},
-		useQuote() {
-			return features.includes('Quote');
-		},
-		useTwoColumn() {
-			return features.includes('TwoColumn');
-		},
-		useImage() {
-			return features.includes('Image');
-		},
 		useContentPartner() {
 			return features.includes('ContentPartner');
-		},
-		useStage() {
-			return features.includes('Stage');
 		},
 		useResourceWorkspace() {
 			return features.includes('ResourceV2');

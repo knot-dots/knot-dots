@@ -32,7 +32,12 @@
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset
+			class="dropdown-panel"
+			use:popperContent={extraOpts}
+			use:popover.panel
+			oninput={(e) => e.stopPropagation()}
+		>
 			{#each options as option (option.value)}
 				<label>
 					<input type="radio" value={option.value} bind:group={value} />

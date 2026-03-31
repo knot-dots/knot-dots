@@ -47,10 +47,10 @@
 			</div>
 		{/if}
 
-		{#if parentContainer.payload.administrativeType}
+		{#if parentContainer.payload.administrativeType?.length}
 			<div>
 				<dt>{$_('administrative_area.basic_data.administrative_type')}</dt>
-				<dd>{$_(parentContainer.payload.administrativeType)}</dd>
+				<dd>{parentContainer.payload.administrativeType.map((t) => $_(t)).join(', ')}</dd>
 			</div>
 		{/if}
 

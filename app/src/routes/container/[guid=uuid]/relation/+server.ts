@@ -6,19 +6,19 @@ import { filterVisible } from '$lib/authorization';
 import {
 	audience,
 	isContainerWithEffect,
-	isIndicatorContainer,
+	isIndicatorTemplateContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	relation,
 	programTypes,
+	relation,
 	sustainableDevelopmentGoals,
 	taskCategories,
 	topics
 } from '$lib/models';
 import {
-	getAllContainersRelatedToIndicators,
+	getAllContainersRelatedToIndicatorTemplates,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
@@ -63,11 +63,26 @@ export const GET = (async ({ locals, params, url }) => {
 
 		let containers;
 
-		if (isIndicatorContainer(container)) {
+		if (isIndicatorTemplateContainer(container)) {
 			if (parseResult.data.program.length > 0) {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
-					locals.pool.connect(getAllContainersRelatedToIndicators([container], {}))
+					locals.pool.connect(
+						getAllContainersRelatedToIndicatorTemplates(
+							[container],
+							{
+								organizations: parseResult.data.organization,
+								organizationalUnits: parseResult.data.organizationalUnit
+							},
+							{
+								organizations: parseResult.data.organization,
+								organizationalUnits:
+									parseResult.data.organizationalUnit.length > 0
+										? parseResult.data?.organizationalUnit
+										: null
+							}
+						)
+					)
 				]);
 
 				containers = containersRelatedToProgram.filter(({ guid }) =>
@@ -78,7 +93,7 @@ export const GET = (async ({ locals, params, url }) => {
 			} else {
 				let subordinateOrganizationalUnits: string[] = [];
 
-				if (parseResult.data.organizationalUnit.length > 0) {
+				if (parseResult.data.organizationalUnit.length == 1) {
 					const [currentOrganizationalUnit, relatedOrganizationalUnits] = (await Promise.all([
 						locals.pool.connect(getContainerByGuid(parseResult.data.organizationalUnit[0])),
 						locals.pool.connect(
@@ -92,9 +107,20 @@ export const GET = (async ({ locals, params, url }) => {
 				}
 
 				containers = await locals.pool.connect(
-					getAllContainersRelatedToIndicators([container], {
-						organizationalUnits: subordinateOrganizationalUnits
-					})
+					getAllContainersRelatedToIndicatorTemplates(
+						[container],
+						{
+							organizations: parseResult.data.organization,
+							organizationalUnits: subordinateOrganizationalUnits
+						},
+						{
+							organizations: parseResult.data.organization,
+							organizationalUnits:
+								parseResult.data.organizationalUnit.length > 0
+									? parseResult.data.organizationalUnit
+									: null
+						}
+					)
 				);
 			}
 		} else if (isContainerWithEffect(container)) {

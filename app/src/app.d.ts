@@ -15,7 +15,7 @@ declare global {
 			user: User;
 		}
 		interface PageData {
-			categoryContext: CategoryContext | null;
+			categoryContext?: CategoryContext;
 			currentOrganization: OrganizationContainer;
 			currentOrganizationalUnit?: OrganizationalUnitContainer;
 			defaultOrganizationGuid: string;
@@ -24,6 +24,9 @@ declare global {
 			organizationalUnits: OrganizationalUnitContainer[];
 			session: Session | null;
 			user?: KeycloakUser;
+		}
+		interface PageState {
+			createObjectiveOrEffect?: { step: 1 | 2 | 3 };
 		}
 		// interface Platform {}
 	}

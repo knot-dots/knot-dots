@@ -30,7 +30,7 @@ export const load = (async ({ locals, parent }) => {
 			.concat(container.guid);
 	}
 
-	const [containers, sections, linkedProfiles] = await Promise.all([
+	const [containers, actualData, sections, linkedProfiles] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
@@ -39,7 +39,7 @@ export const load = (async ({ locals, parent }) => {
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator,
+						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.objective,
 						payloadTypes.enum.program,
@@ -50,34 +50,21 @@ export const load = (async ({ locals, parent }) => {
 			)
 		),
 		locals.pool.connect(
+			getManyContainers(
+				[container.organization],
+				{
+					organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null,
+					type: [payloadTypes.enum.actual_data]
+				},
+				'alpha'
+			)
+		),
+		locals.pool.connect(
 			getAllRelatedContainers(
 				[container.organization],
 				container.guid,
 				[predicates.enum['is-section-of']],
-				{
-					type: [
-						payloadTypes.enum.chapter,
-						payloadTypes.enum.col_content,
-						payloadTypes.enum.content_partner,
-						payloadTypes.enum.content_partner_collection,
-						payloadTypes.enum.knowledge,
-						payloadTypes.enum.file_collection,
-						payloadTypes.enum.indicator_collection,
-						payloadTypes.enum.info_box,
-						payloadTypes.enum.image,
-						payloadTypes.enum.map,
-						payloadTypes.enum.measure_collection,
-						payloadTypes.enum.administrative_area_basic_data,
-						payloadTypes.enum.program_collection,
-						payloadTypes.enum.report,
-						payloadTypes.enum.quote,
-						payloadTypes.enum.task_collection,
-						payloadTypes.enum.teaser,
-						payloadTypes.enum.teaser_collection,
-						payloadTypes.enum.teaser_highlight,
-						payloadTypes.enum.text
-					]
-				},
+				{},
 				''
 			)
 		),
@@ -115,7 +102,7 @@ export const load = (async ({ locals, parent }) => {
 	return {
 		container,
 		linkedProfiles: filterVisible(linkedProfiles, locals.user),
-		relatedContainers: filterVisible([...containers, ...sections], locals.user),
+		relatedContainers: filterVisible([...containers, ...actualData, ...sections], locals.user),
 		spatialFeatures
 	};
 }) satisfies PageServerLoad;

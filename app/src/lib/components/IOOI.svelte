@@ -4,7 +4,7 @@
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import { goto } from '$app/navigation';
+	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Board from '$lib/components/Board.svelte';
@@ -21,7 +21,7 @@
 		iooiTypes,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
 		isResourceDataCollectionContainer,
@@ -29,7 +29,6 @@
 		type MeasureContainer,
 		type NewContainer,
 		type ObjectiveContainer,
-		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
@@ -207,27 +206,9 @@
 				return;
 			}
 
-			const params = new URLSearchParams([
-				[overlayKey.enum['indicator-catalog'], ''],
-				['alreadyInUse', ''],
-				['iooiType', iooiType]
-			]);
-
-			if ('sdg' in container.payload) {
-				for (const sdg of container.payload.sdg) {
-					params.append('sdg', sdg);
-				}
-			}
-
-			if ('topic' in container.payload) {
-				for (const topic of container.payload.topic) {
-					params.append('topic', topic);
-				}
-			}
-
 			addItemState.set({ target: container, iooiType });
 
-			await goto(`#${params.toString()}`);
+			pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
 		};
 	}
 
@@ -316,7 +297,7 @@
 					{#snippet itemSnippet(container)}
 						<Card
 							{container}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={containers.filter(isIndicatorTemplateContainer)}
 							showRelationFilter
 						/>
 					{/snippet}
@@ -331,7 +312,7 @@
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
 						<Card
 							container={item}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={containers.filter(isIndicatorTemplateContainer)}
 							showRelationFilter
 						/>
 					{/each}
@@ -341,7 +322,7 @@
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
 						<Card
 							container={item}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={containers.filter(isIndicatorTemplateContainer)}
 							showRelationFilter
 						/>
 					{/each}

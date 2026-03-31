@@ -6,20 +6,20 @@
 	import {
 		type Container,
 		findOverallObjective,
-		type IndicatorContainer,
+		type IndicatorTemplateContainer,
 		payloadTypes
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: IndicatorContainer;
+		container: IndicatorTemplateContainer;
 		relatedContainers: Container[];
 	}
 
 	let { container, relatedContainers }: Props = $props();
 
-	function createOverallObjective(c: IndicatorContainer) {
+	function createOverallObjective(c: IndicatorTemplateContainer) {
 		return async () => {
 			const objective = await createObjective(c, c);
 			await goto(`#view=${objective.guid}`, { invalidateAll: true });

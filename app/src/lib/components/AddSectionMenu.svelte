@@ -87,9 +87,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = {
+	let extraOpts = $derived({
 		modifiers: [{ name: 'offset', options: { offset: compact ? [-4, 8] : [0, 4] } }]
-	};
+	});
 
 	let mayAddTaskCollection = $derived(
 		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
@@ -150,24 +150,21 @@
 	);
 
 	let mayAddAdministrativeAreaBasicData = $derived(
-		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
-			isOrganizationalUnitContainer(parentContainer) &&
+		isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.officialRegionalCode &&
 			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
 	);
 
 	let mayAddMap = $derived(
-		createFeatureDecisions(page.data.features).useAdministrativeArea() &&
-			isOrganizationalUnitContainer(parentContainer) &&
+		isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.geometry &&
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
 	let mayAddTeaserCollection = $derived(
-		createFeatureDecisions(page.data.features).useTeaserCollection() &&
-			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer) ||
-				isPageContainer(parentContainer))
+		isOrganizationContainer(parentContainer) ||
+			isOrganizationalUnitContainer(parentContainer) ||
+			isPageContainer(parentContainer)
 	);
 
 	let mayAddContentPartnerCollection = $derived(
@@ -210,14 +207,6 @@
 			)
 	);
 
-	let mayAddTeaserSection = $derived(createFeatureDecisions(page.data.features).useTeaser());
-
-	let mayAddInfoBox = $derived(createFeatureDecisions(page.data.features).useInfoBox());
-
-	let mayAddQuote = $derived(createFeatureDecisions(page.data.features).useQuote());
-
-	let mayAddTwoColumnSection = $derived(createFeatureDecisions(page.data.features).useTwoColumn());
-
 	let mayAddProgress = $derived(
 		isContainerWithProgress(parentContainer) &&
 			!isSimpleMeasureContainer(parentContainer) &&
@@ -229,11 +218,11 @@
 	);
 
 	let mayAddCustomCollection = $derived(
-		createFeatureDecisions(page.data.features).useCustomCollection() &&
+		isOrganizationContainer(parentContainer) ||
+			isOrganizationalUnitContainer(parentContainer) ||
+			isPageContainer(parentContainer) ||
 			isReportContainer(parentContainer)
 	);
-
-	let mayAddImage = $derived(createFeatureDecisions(page.data.features).useImage());
 
 	let mayAddSummary = $derived(
 		isContainerWithSummary(parentContainer) &&
@@ -256,7 +245,7 @@
 				? [
 						{
 							icon: Grid,
-							label: $_('custom_collection'),
+							label: $_('custom_collection.settings.embed_objects'),
 							value: payloadTypes.enum.custom_collection
 						}
 					]
@@ -402,7 +391,7 @@
 			...(mayAddMap
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
-			...(mayAddImage ? [{ icon: Image, label: $_('image'), value: payloadTypes.enum.image }] : []),
+			{ icon: Image, label: $_('image'), value: payloadTypes.enum.image },
 			...(mayAddTeaserCollection
 				? [
 						{
@@ -412,19 +401,11 @@
 						}
 					]
 				: []),
-			...(mayAddTwoColumnSection
-				? [{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content }]
-				: []),
-			...(mayAddTeaserSection
-				? [{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser }]
-				: []),
-			...(mayAddTeaserSection
-				? [{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight }]
-				: []),
-			...(mayAddInfoBox
-				? [{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box }]
-				: []),
-			...(mayAddQuote ? [{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }] : []),
+			{ icon: TwoCol, label: $_('col_content'), value: payloadTypes.enum.col_content },
+			{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser },
+			{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight },
+			{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box },
+			{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote },
 			...(mayAddContentPartnerCollection
 				? [
 						{

@@ -2,25 +2,31 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { resource } from 'runed';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
-	import { z } from 'zod';
 	import { page } from '$app/state';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import Card from '$lib/components/Card.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ImpactMonitoringChart from '$lib/components/ImpactMonitoringChart.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import {
-		actualDataContainer,
 		type AnyContainer,
 		type IndicatorTemplateContainer,
-		payloadTypes
+		isActualDataContainer,
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isEffectContainer,
+		isObjectiveContainer,
+		isProgramContainer,
+		isRelatedTo,
+		titleForProgramCollection
 	} from '$lib/models';
-	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
@@ -33,44 +39,43 @@
 
 	let guid = $derived(container.guid);
 
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToIndicatorTemplates({
-			guid,
-			params: {
-				organization: page.data.currentOrganization.guid,
-				...(page.data.currentOrganizationalUnit
-					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
-					: undefined)
-			}
-		})
-	);
-
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
-
 	// Fetch comparison data for selected municipalities
 	let selectedMunicipalityGuids = $derived(
 		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
 	);
 
-	const comparisonDataResource = resource(
-		() => [selectedMunicipalityGuids, guid] as const,
-		async ([municipalityGuids, indicatorGuid], _, { signal }) => {
-			if (municipalityGuids.length === 0) return [];
-
-			const params = new SvelteURLSearchParams();
-			params.append('indicator', indicatorGuid);
-			for (const guid of municipalityGuids) {
-				params.append('organizationalUnit', guid);
-			}
-			params.append('payloadType', payloadTypes.enum.actual_data);
-
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			if (!response.ok) return [];
-			return z.array(actualDataContainer).parse(await response.json());
+	let relatedContainersQuery = resource(
+		[() => guid, () => selectedMunicipalityGuids],
+		async ([guid, selectedMunicipalityGuids], __, { signal }) => {
+			return fetchRelatedContainers(
+				guid,
+				{
+					organization: [page.data.currentOrganization.guid],
+					organizationalUnit: page.data.currentOrganizationalUnit
+						? [page.data.currentOrganizationalUnit.guid, ...selectedMunicipalityGuids]
+						: []
+				},
+				'alpha',
+				{ signal }
+			);
 		}
 	);
 
-	let comparisonContainers = $derived(comparisonDataResource.current ?? []);
+	let relatedContainers = $derived(
+		relatedContainersQuery.current?.filter(
+			({ organizational_unit }) =>
+				!organizational_unit || !selectedMunicipalityGuids.includes(organizational_unit)
+		) ?? []
+	);
+
+	let comparisonContainers = $derived(
+		relatedContainersQuery.current
+			?.filter(isActualDataContainer)
+			.filter(
+				({ organizational_unit }) =>
+					organizational_unit && selectedMunicipalityGuids.includes(organizational_unit)
+			)
+	);
 
 	let viewMode = $state('chart');
 </script>
@@ -90,15 +95,6 @@
 				{revisions}
 			/>
 
-			{#key container.guid}
-				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					label={$_('description')}
-					bind:value={container.payload.description}
-				/>
-			{/key}
-
 			<div class="details-section">
 				<select class="view-mode" oninput={(e) => e.stopPropagation()} bind:value={viewMode}>
 					<option value="chart">{$_('indicator.view_mode.chart')}</option>
@@ -106,7 +102,11 @@
 				</select>
 
 				{#if viewMode === 'chart'}
-					<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))}
+						<ImpactMonitoringChart {container} {relatedContainers} showLegend />
+					{:else}
+						<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
+					{/if}
 				{:else}
 					<NewIndicatorTable
 						{container}
@@ -116,7 +116,62 @@
 				{/if}
 			</div>
 
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
+
 			<Sections bind:container {relatedContainers} />
+
+			{#if relatedContainers.filter(isContainerWithEffect).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('measures')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isContainerWithEffect) as measure (measure.guid)}
+							<li>
+								<Card container={measure} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if relatedContainers.filter(isObjectiveContainer).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">{$_('goals')}</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isObjectiveContainer) as objective (objective.guid)}
+							{@const goal = relatedContainers
+								.filter(isContainerWithObjective)
+								.find(isRelatedTo(objective))}
+							{#if goal}
+								<li>
+									<Card container={goal} />
+								</li>
+							{/if}
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if relatedContainers.filter(isProgramContainer).length > 0}
+				<div class="details-section">
+					<h2 class="details-heading">
+						{titleForProgramCollection(relatedContainers.filter(isProgramContainer))}
+					</h2>
+					<ul class="carousel">
+						{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
+							<li>
+								<Card container={program} />
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 

@@ -9,7 +9,7 @@
 	import {
 		audience,
 		computeFacetCount,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
 		isSimpleMeasureContainer,
@@ -55,7 +55,7 @@
 				: undefined}
 			{measures}
 			containers={containers.filter(isMeasureMonitoringContainer)}
-			indicators={containers.filter(isIndicatorContainer)}
+			indicators={containers.filter(isIndicatorTemplateContainer)}
 			showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 		/>
 

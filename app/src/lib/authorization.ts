@@ -20,7 +20,6 @@ const specialTypes: PayloadType[] = [
 	payloadTypes.enum.binary_indicator,
 	payloadTypes.enum.category,
 	payloadTypes.enum.help,
-	payloadTypes.enum.indicator,
 	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
@@ -39,15 +38,10 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('download-csv', [
-			payloadTypes.enum.binary_indicator,
-			payloadTypes.enum.indicator,
-			payloadTypes.enum.indicator_template
-		]);
+		can('download-csv', [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template]);
 		can('relate', [
 			payloadTypes.enum.binary_indicator,
 			payloadTypes.enum.category,
-			payloadTypes.enum.indicator,
 			payloadTypes.enum.program,
 			payloadTypes.enum.term,
 			...commonTypes
@@ -95,44 +89,28 @@ export default function defineAbilityFor(user: User) {
 		});
 		can(
 			['create', 'update', 'delete'],
-			[
-				payloadTypes.enum.binary_indicator,
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.indicator_template
-			],
+			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
 			{
 				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 			}
 		);
 		can(
 			['create', 'update', 'delete'],
-			[
-				payloadTypes.enum.binary_indicator,
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.indicator_template
-			],
+			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
 			{
 				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 			}
 		);
 		can(
 			'download-csv',
-			[
-				payloadTypes.enum.binary_indicator,
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.indicator_template
-			],
+			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
 			{
 				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 			}
 		);
 		can(
 			'download-csv',
-			[
-				payloadTypes.enum.binary_indicator,
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.indicator_template
-			],
+			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
 			{
 				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 			}
@@ -195,42 +173,15 @@ export default function defineAbilityFor(user: User) {
 				managed_by: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can(
-			'relate',
-			[
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.program,
-				payloadTypes.enum.term,
-				...commonTypes
-			],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
-		can(
-			'relate',
-			[
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.program,
-				payloadTypes.enum.term,
-				...commonTypes
-			],
-			{
-				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
-		can(
-			'relate',
-			[
-				payloadTypes.enum.indicator,
-				payloadTypes.enum.program,
-				payloadTypes.enum.term,
-				...commonTypes
-			],
-			{
-				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
+		can('relate', [payloadTypes.enum.program, payloadTypes.enum.term, ...commonTypes], {
+			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		});
+		can('relate', [payloadTypes.enum.program, payloadTypes.enum.term, ...commonTypes], {
+			organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		});
+		can('relate', [payloadTypes.enum.program, payloadTypes.enum.term, ...commonTypes], {
+			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		});
 		can('prioritize', payloadTypes.enum.task, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
@@ -282,7 +233,7 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.members,
 			managed_by: { $in: user.memberOf }
 		});
-		cannot('update', payloadTypes.enum.indicator, ['indicatorCategory']);
+		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }

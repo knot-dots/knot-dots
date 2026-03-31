@@ -8,7 +8,6 @@
 	import { page } from '$app/state';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
-	import IndicatorChart from '$lib/components/IndicatorChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
@@ -25,7 +24,7 @@
 		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isObjectiveContainer,
 		isPartOf,
@@ -274,30 +273,8 @@
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
-		{:else if isIndicatorContainer(container)}
-			<IndicatorChart
-				{container}
-				relatedContainers={[
-					...relatedContainers.filter(({ relation }) =>
-						relation.some(({ object }) => object === container.guid)
-					),
-					...relatedContainers.filter(isContainerWithEffect),
-					...relatedContainers.filter(isContainerWithObjective)
-				]}
-				showEffects
-				showObjectives
-			/>
-			<p class="badges">
-				{#each container.payload.indicatorType as indicatorType (indicatorType)}
-					<span class="badge">{$_(indicatorType)}</span>
-				{/each}
-
-				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
-					<span class="badge">{$_(indicatorCategory)}</span>
-				{/each}
-			</p>
 		{:else if isEffectContainer(container)}
-			{#if relatedContainers.find(isIndicatorContainer) && container.payload.plannedValues.length > 0}
+			{#if relatedContainers.find(isIndicatorTemplateContainer) && container.payload.plannedValues.length > 0}
 				<EffectChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
@@ -308,7 +285,7 @@
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
 			{@const indicator = relatedContainers
-				.filter(isIndicatorContainer)
+				.filter(isIndicatorTemplateContainer)
 				.find(
 					({ guid }) =>
 						(effect?.relation.findIndex(
@@ -322,7 +299,7 @@
 				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
-			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorContainer)}
+			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorTemplateContainer)}
 				<ObjectiveChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
@@ -372,10 +349,7 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			{@const image = Array.isArray(container.payload.image)
-				? container.payload.image[0]
-				: container.payload.image}
-			<img alt={$_('cover_image')} src={transformFileURL(image)} />
+			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}

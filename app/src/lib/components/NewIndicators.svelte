@@ -24,6 +24,8 @@
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
+		isContainerWithEffect,
+		isContainerWithObjective,
 		isIndicatorTemplateContainer,
 		type NewContainer,
 		overlayKey,
@@ -201,10 +203,27 @@
 			onfinalize={handleDndFinalize}
 		>
 			{#each items as { guid, container } (guid)}
-				{@const relatedContainers = containers
-					.filter(isActualDataContainer)
-					.filter(({ payload }) => payload.indicator === container.guid)}
-				{#if relatedContainers.length > 0}
+				{@const dataContainers = [
+					...containers
+						.filter(isActualDataContainer)
+						.filter(({ payload }) => payload.indicator === guid),
+					...containers
+						.filter(({ relation }) =>
+							relation.some(
+								({ object, predicate }) =>
+									object === guid &&
+									(predicate === predicates.enum['is-measured-by'] ||
+										predicate === predicates.enum['is-objective-for'])
+							)
+						)
+						.filter((c) => c.guid !== guid)
+				]}
+				{@const relatedContainers = [
+					...dataContainers,
+					...containers.filter(isContainerWithEffect),
+					...containers.filter(isContainerWithObjective)
+				]}
+				{#if dataContainers.length > 0}
 					<li>
 						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
 					</li>
@@ -214,10 +233,27 @@
 	{:else}
 		<ul>
 			{#each items as { guid, container } (guid)}
-				{@const relatedContainers = containers
-					.filter(isActualDataContainer)
-					.filter(({ payload }) => payload.indicator === container.guid)}
-				{#if relatedContainers.length > 0}
+				{@const dataContainers = [
+					...containers
+						.filter(isActualDataContainer)
+						.filter(({ payload }) => payload.indicator === guid),
+					...containers
+						.filter(({ relation }) =>
+							relation.some(
+								({ object, predicate }) =>
+									object === guid &&
+									(predicate === predicates.enum['is-measured-by'] ||
+										predicate === predicates.enum['is-objective-for'])
+							)
+						)
+						.filter((c) => c.guid !== guid)
+				]}
+				{@const relatedContainers = [
+					...dataContainers,
+					...containers.filter(isContainerWithEffect),
+					...containers.filter(isContainerWithObjective)
+				]}
+				{#if dataContainers.length > 0}
 					<li>
 						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
 					</li>

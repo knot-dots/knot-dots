@@ -33,7 +33,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator,
+						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.task
 					]
@@ -50,7 +50,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator,
+						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.task
 					]
@@ -69,6 +69,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		),
 		facets: new Map(),
 		facetLabels: undefined,
-		categoryOptions: null
+		categoryOptions: undefined
 	};
 }) satisfies PageServerLoad;

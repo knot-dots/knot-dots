@@ -9,7 +9,7 @@ import {
 	updateContainer
 } from './db.ts';
 import assert from 'node:assert';
-import { from } from 'rxjs';
+import { EMPTY, from } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { concatMap, delay, map, retry, switchMap, tap } from 'rxjs/operators';
 import { DatabasePool } from 'slonik';
@@ -17,8 +17,8 @@ import { z } from 'zod';
 
 const envSchema = z
 	.object({
-		IMPORT_ORGANIZATION: z.string().uuid(),
-		IMPORT_USER: z.string().uuid(),
+		IMPORT_ORGANIZATION: z.uuid(),
+		IMPORT_USER: z.uuid(),
 		PUBLIC_KC_REALM: z.string().default('knot-dots')
 	})
 	.transform((value) => ({
@@ -76,27 +76,32 @@ const unitMap = new Map([
 function fetchIndicatorData$(pool: DatabasePool) {
 	return from(pool.any(getAllIndicatorWegweiserKommune())).pipe(
 		concatMap((all) => from(all)),
-		concatMap((each) => {
-			const { friendly_url, years } = each;
-			return from(
-				[...Array(16).keys()].map((i) => [friendly_url, String(i + 1).padStart(2, '0'), years])
-			);
+		concatMap(({ friendly_url, years }) => {
+			const segments = [
+				// All municipalities, grouped by the 16 federal state AGS prefixes
+				...[...Array(16).keys()].map((i) => `kommunen-mit-ags-${String(i + 1).padStart(2, '0')}*`),
+				// All federal states in one request
+				'bundeslaender',
+				// Germany as a whole
+				'deutschland'
+			];
+			return from(segments.map((segment) => ({ friendlyUrl: friendly_url, segment, years })));
 		}),
-		concatMap(([friendlyUrl, officialMunicipalityKeyPrefix, years]) => {
+		concatMap(({ friendlyUrl, segment, years }) => {
 			const base = 'https://www.wegweiser-kommune.de/data-api/rest/statistics/data/';
-			const from = years[0];
-			const to = years[years.length - 1];
-			const url = new URL(
-				`${friendlyUrl}+kommunen-mit-ags-${officialMunicipalityKeyPrefix}*+${from}-${to}`,
-				base
-			);
+			const yearFrom = years[0];
+			const yearTo = years[years.length - 1];
+			const url = new URL(`${friendlyUrl}+${segment}+${yearFrom}-${yearTo}`, base);
 			return fromFetch(url.toString()).pipe(
 				switchMap((response) => {
 					if (response.ok) {
 						return response.json();
+					} else if (response.status === 404) {
+						// Not all indicators have data at every administrative level
+						return EMPTY;
 					} else {
 						throw new Error(
-							`failed to fetch statistics from ${response.url}: status ${response.status}`
+							`Failed to fetch statistics from ${response.url}: status ${response.status}`
 						);
 					}
 				}),
@@ -125,18 +130,16 @@ function isSame<T>(a: T, b: T) {
 			map((data) => statisticsData.parse(data)),
 			tap((statistics) =>
 				console.log(
-					`fetched statistics for "${statistics.indicatorsAndTopics[0].name}" in ${statistics.data.regions.length} administrative areas from ${statistics.years[0]} to ${statistics.years[statistics.years.length - 1]}`
+					`Fetched statistics for "${statistics.indicatorsAndTopics[0].name}" in ${statistics.data.regions.length} administrative areas from ${statistics.years[0]} to ${statistics.years[statistics.years.length - 1]}`
 				)
-			)
-		)
-		.subscribe({
-			next: async (statistics) => {
+			),
+			concatMap(async (statistics) => {
 				await pool.query(
 					insertIntoIndicatorDataWegweiserKommune(
 						statistics.data.regions.map((region, regionIndex) =>
 							indicatorDataWegweiserKommune.parse({
 								indicator_id: statistics.indicatorsAndTopics[0].id,
-								official_regional_code: region.ars,
+								official_regional_code: region.ars.padEnd(12, '0'),
 								actual_values: statistics.years.map((year, yearIndex) => [
 									year,
 									statistics.data.indicators[0].regionYearValues[regionIndex][yearIndex]
@@ -155,12 +158,11 @@ function isSame<T>(a: T, b: T) {
 								organization,
 								organizationalUnit: null,
 								payload: {
-									officialRegionalCode: region.ars,
+									officialRegionalCode: region.ars.padEnd(12, '0'),
 									organizationalUnitType: 'organizational_unit_type.administrative_area',
 									type: 'organizational_unit'
 								}
 							})(tx);
-
 							const indicatorTemplate = await getContainer({
 								organization,
 								organizationalUnit: null,
@@ -199,7 +201,7 @@ function isSame<T>(a: T, b: T) {
 							if (foundActualDataContainer) {
 								if (isSame(foundActualDataContainer.payload, newActualDataContainer.payload)) {
 									console.log(
-										`ignored indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${foundActualDataContainer.guid})`
+										`Ignored indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${foundActualDataContainer.guid})`
 									);
 								} else {
 									const updatedActualDataContainer = await updateContainer({
@@ -208,28 +210,25 @@ function isSame<T>(a: T, b: T) {
 									})(tx);
 
 									console.log(
-										`updated indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${updatedActualDataContainer.guid})`
+										`Updated indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${updatedActualDataContainer.guid})`
 									);
 								}
 							} else {
 								const savedActualDataContainer = await createContainer(newActualDataContainer)(tx);
 
 								console.log(
-									`created indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${savedActualDataContainer.guid})`
+									`Created indicator "${statistics.indicatorsAndTopics[0].name}" for ${region.title} (${savedActualDataContainer.guid})`
 								);
 							}
 						});
 					} catch (error) {
 						console.error(
-							`failed to save statistics for "${statistics.indicatorsAndTopics[0].name}" in administrative area ${region.ars}`,
+							`Failed to save statistics for "${statistics.indicatorsAndTopics[0].name}" in administrative area ${region.ars}`,
 							JSON.stringify(error)
 						);
 					}
 				}
-			},
-			complete: () => {
-				console.log('done');
-			},
-			error: console.error
-		});
+			})
+		)
+		.subscribe({});
 })();

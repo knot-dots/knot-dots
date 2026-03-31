@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
+	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -28,10 +30,6 @@
 	import EditableCover from '$lib/components/EditableCover.svelte';
 	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
-	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
-	import { createFeatureDecisions } from '$lib/features';
-	import Header from '$lib/components/Header.svelte';
-	import type { Snippet } from 'svelte';
 	import { env } from '$env/dynamic/public';
 
 	interface Props {
@@ -54,8 +52,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	let mayEditStage = $derived(createFeatureDecisions(page.data.features).useStage());
 
 	const handleSubmit = $derived(autoSave(container, 2000, container.payload.type));
 
@@ -145,21 +141,19 @@
 		>
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 				<div class="stage--buttons details-section">
-					{#if mayEditStage}
-						<EditableCover
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							label={$_('add_cover')}
-							bind:value={container.payload.cover}
-						/>
-						<ColorDropdown
-							buttonStyle="button"
-							bind:value={container.payload.color}
-							label={$_('highlight')}
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-					{/if}
+					<EditableCover
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						label={$_('add_cover')}
+						bind:value={container.payload.cover}
+					/>
+					<ColorDropdown
+						buttonStyle="button"
+						bind:value={container.payload.color}
+						label={$_('highlight')}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
 				</div>
 
 				{#if linkedProfile}

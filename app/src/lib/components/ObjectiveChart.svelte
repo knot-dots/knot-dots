@@ -7,7 +7,7 @@
 		type AnyContainer,
 		findDescendants,
 		findLeafObjectives,
-		isIndicatorContainer,
+		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isRelatedTo,
 		type ObjectiveContainer,
@@ -24,7 +24,7 @@
 	let { container, relatedContainers = [] }: Props = $props();
 
 	const indicator = $derived(
-		relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container))
+		relatedContainers.filter(isIndicatorTemplateContainer).find(isRelatedTo(container))
 	);
 
 	const unit = $derived($_(indicator?.payload.unit ?? ''));

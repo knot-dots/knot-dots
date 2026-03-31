@@ -11,6 +11,7 @@
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { getCategoryKeys } from '$lib/categoryOptions';
 	import { getToastContext } from '$lib/contexts/toast';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import FileUpload from '$lib/components/FileUpload.svelte';
@@ -20,7 +21,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isActualDataContainer,
-		isIndicatorContainer,
 		isIndicatorTemplateContainer,
 		containerOfType,
 		payloadTypes
@@ -67,11 +67,10 @@
 	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
 
 	let filteredRows = $derived(
-		data.containers.filter((c) =>
-			data.useNewIndicators
-				? isIndicatorTemplateContainer(c) &&
-					actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
-				: isIndicatorContainer(c)
+		data.containers.filter(
+			(c) =>
+				isIndicatorTemplateContainer(c) &&
+				actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
 		)
 	);
 
@@ -85,16 +84,31 @@
 		allYears.map((year) => ({ heading: String(year), key: `year:${year}` }))
 	);
 
-	let columns = $derived([
+	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
+
+	const legacyCategoryColumns = [
+		{ heading: $_('topic'), key: 'topic' },
+		{ heading: $_('category'), key: 'sdg' },
+		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
+		{ heading: $_('audience'), key: 'audience' }
+	];
+
+	const customCategoryColumns = $derived(
+		featureDecisions.useCustomCategories() && data.categoryOptions
+			? getCategoryKeys(data.categoryOptions).map((key) => ({
+					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
+					key
+				}))
+			: null
+	);
+
+	const columns = $derived([
 		{ heading: $_('title'), key: 'title' },
 		{ heading: $_('description'), key: 'description' },
 		{ heading: $_('visibility.label'), key: 'visibility' },
 		{ heading: $_('indicator_category'), key: 'indicatorCategory' },
 		{ heading: $_('indicator_type'), key: 'indicatorType' },
-		{ heading: $_('topic'), key: 'topic' },
-		{ heading: $_('category'), key: 'sdg' },
-		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
-		{ heading: $_('audience'), key: 'audience' },
+		...(customCategoryColumns ?? legacyCategoryColumns),
 		{ heading: $_('editorial_state'), key: 'editorialState' },
 		{ heading: $_('organizational_unit'), key: 'organizationalUnit' },
 		{ heading: $_('label.unit'), key: 'unit' },
@@ -207,7 +221,11 @@
 			</button>
 		{/if}
 	{/snippet}
-	<Table {columns} rows={filteredRows} {actualDataContainers} />
+	<Table
+		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
+		{columns}
+		rows={data.containers.filter((c) => isIndicatorTemplateContainer(c))}
+	/>
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 

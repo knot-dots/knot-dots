@@ -225,18 +225,21 @@
 	--indicator-color: white;
 	--indicator-font-size: 0.625rem;
 
-	/* ----------------------------------------------------------
-		COLOR · SERIES · BASE
-		Main colors for lines and points
-	---------------------------------------------------------- */
-
+	/* Indicator colors */
 	--indicator-color-own-base: #0b8a8a; /* Teal                   — Own Municipality           */
 	--indicator-color-compare-1-base: #c25a0a; /* Orange           — Comparison Municipality 1  */
 	--indicator-color-compare-2-base: #7233c2; /* Violet           — Comparison Municipality 2  */
 	--indicator-color-compare-3-base: #b81e5d; /* Rose             — Comparison Municipality 3  */
-	--indicator-color-ref-state-base: #a08c78; /* Warm Taupe       — State Average   L58        */
-	--indicator-color-ref-federal-base: #2e4560; /* Dark Slate     — Federal Average L30        */
+	--indicator-color-compare-4-base: #a08c78; /* Warm Taupe       — Comparison Municipality 4  */
+	--indicator-color-compare-5-base: #2e4560; /* Dark Slate       — Comparison Municipality 5  */
 	--indicator-color-ref-benchmark-base: #1d7a46; /* Forest Green — Benchmark                  */
+	--indicator-color-idea: #e74694;
+	--indicator-color-in-planning: #ff8a4c;
+	--indicator-color-in-implementation: #faca15;
+	--indicator-color-done: #31c48d;
+	--indicator-color-trend-line: #0b808e;
+	--indicator-color-trend-area: #d5f5f6;
+	--indicator-color-objective: #3980ac;
 
 	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
@@ -385,6 +388,14 @@ progress::-moz-progress-bar {
 	background-color: var(--color, var(--color-primary-600));
 }
 
+/* Catalogs */
+.catalog {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+	overflow: auto;
+}
+
 /* Tables */
 table,
 .table {
@@ -420,6 +431,7 @@ tr:hover,
 }
 
 td,
+th,
 .cell {
 	border-bottom: solid 1px var(--color-gray-200);
 	display: table-cell;
@@ -432,9 +444,9 @@ td:hover,
 	background-color: var(--color-gray-100);
 }
 
-th,
+thead th,
 .table-head .cell {
-	background-color: var(--color-gray-050);
+	background-color: var(--color-white);
 	padding: 0.5rem;
 }
 
@@ -1129,12 +1141,20 @@ label > input[type='checkbox'].toggle {
 	border-radius: 0.5rem;
 }
 
-.details {
+:root {
 	--details-max-width: 51.5rem;
-	--details-padding-left: 5rem;
-	--details-padding-right: max(5rem, calc(var(--content-width, 100%) - var(--details-max-width)));
+	--details-padding-y: 5rem;
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
+}
+
+.details {
+	--details-padding-left: var(--details-padding-x, 5rem);
+	--details-padding-right: var(
+		--details-padding-x,
+		max(var(--details-padding-left), calc(var(--content-width, 100%) - var(--details-max-width)))
+	);
+
 	--carousel-margin-left: calc(
 		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
 	);
@@ -1152,7 +1172,8 @@ label > input[type='checkbox'].toggle {
 	container-type: inline-size;
 	font-size: 0.875rem;
 	min-width: min(var(--details-max-width), calc(100% - 8rem));
-	padding: 5rem var(--details-padding-right) 5rem var(--details-padding-left);
+	padding: var(--details-padding-y) var(--details-padding-right) var(--details-padding-y)
+		var(--details-padding-left);
 	position: relative;
 }
 
@@ -1722,6 +1743,10 @@ img.cover {
 }
 
 /* Menu */
+.dropdown-panel:has(.menu) {
+	background-color: var(--color-gray-025);
+}
+
 .menu-item > button {
 	--button-active-background: transparent;
 	--button-hover-background: var(--color-gray-100);
@@ -1795,6 +1820,10 @@ img.cover {
 	.is-visible-on-hover {
 		transition: var(--is-visible-on-hover-transition, visibility 0s 0.5s linear);
 		visibility: var(--is-visible-on-hover-visibility, hidden);
+	}
+
+	.is-visible-on-hover:has([aria-haspopup='true'][aria-expanded='true']) {
+		visibility: visible;
 	}
 }
 

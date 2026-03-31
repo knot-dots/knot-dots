@@ -300,7 +300,12 @@
 				{:else}
 					<div
 						class="table-body"
-						use:dragHandleZone={{ items: filteredParts, flipDurationMs: 100 }}
+						use:dragHandleZone={{
+							dropTargetStyle: {},
+							items: filteredParts,
+							flipDurationMs: 100,
+							useCursorForDetection: true
+						}}
 						onconsider={handleDndConsider}
 						onfinalize={handleDndFinalize}
 					>
@@ -316,12 +321,10 @@
 			<RelationButton {container} />
 			<CreateAnotherButton {container} {relatedContainers} />
 			<CreateCopyButton {container} />
-			{#if createFeatureDecisions(page.data.features).useAI()}
-				{#if container.payload.programType === programTypes.enum['program_type.guide']}
-					<KnowledgeAIButton {container} />
-				{:else}
-					<AskAIButton {container} />
-				{/if}
+			{#if container.payload.programType === programTypes.enum['program_type.guide'] && createFeatureDecisions(page.data.features).useMistral()}
+				<KnowledgeAIButton {container} />
+			{:else if createFeatureDecisions(page.data.features).useOpenAI()}
+				<AskAIButton {container} />
 			{/if}
 			<DeleteButton {container} {relatedContainers} />
 		</div>

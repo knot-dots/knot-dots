@@ -15,7 +15,7 @@ import {
 	type Container,
 	container,
 	findDescendants,
-	type IndicatorContainer,
+	type IndicatorTemplateContainer,
 	type ModifiedContainer,
 	type NewContainer,
 	type OrganizationalUnitContainer,
@@ -44,7 +44,6 @@ const INDEXABLE_TYPES = new Set<string>([
 	'effect',
 	'goal',
 	'help',
-	'indicator',
 	'indicator_template',
 	'knowledge',
 	'measure',
@@ -96,7 +95,8 @@ let pool: DatabasePool;
 export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
-			interceptors: [createResultParserInterceptor()]
+			interceptors: [createResultParserInterceptor()],
+			maximumPoolSize: 50
 		});
 	}
 	return pool;
@@ -540,7 +540,7 @@ function prepareWhereCondition(filters: {
 	indicators?: string[];
 	indicatorTypes?: string[];
 	organizations?: string[];
-	organizationalUnits?: string[];
+	organizationalUnits?: string[] | null;
 	policyFieldsBNK?: string[];
 	programTypes?: string[];
 	resource?: string[];
@@ -594,7 +594,9 @@ function prepareWhereCondition(filters: {
 			sql.fragment`c.organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
 		);
 	}
-	if (filters.organizationalUnits?.length) {
+	if (filters.organizationalUnits === null) {
+		conditions.push(sql.fragment`c.organizational_unit IS NULL`);
+	} else if (filters.organizationalUnits?.length) {
 		conditions.push(
 			sql.fragment`c.organizational_unit IN (${sql.join(
 				filters.organizationalUnits,
@@ -725,7 +727,7 @@ export function getManyContainers(
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
-		organizationalUnits?: string[];
+		organizationalUnits?: string[] | null;
 		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		resource?: string[];
@@ -815,7 +817,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		];
 		if (filters.include?.administrativeType?.length) {
 			conditions.push(
-				sql.fragment`c.payload->>'administrativeType' = ANY (${sql.array(filters.include.administrativeType, 'text')})`
+				sql.fragment`c.payload->'administrativeType' ?| ${sql.array(filters.include.administrativeType, 'text')}`
 			);
 		}
 		if (filters.include?.cityAndMunicipalityTypeBBSR?.length) {
@@ -1068,7 +1070,7 @@ export function getAllRelatedContainers(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator);
+			filters.type.includes(payloadTypes.enum.indicator_template);
 
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
@@ -1085,7 +1087,26 @@ export function getAllRelatedContainers(
 			`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+		const actualDataResult =
+			indicatorResult.length > 0
+				? await connection.any(sql.typeAlias('container')`
+			SELECT *
+			FROM container
+			WHERE payload->>'type' = ${payloadTypes.enum.actual_data}
+			  AND payload->>'indicator' IN (${sql.join(
+					indicatorResult.map(({ guid }) => guid),
+					sql.fragment`, `
+				)})
+			  AND valid_currently
+				AND NOT deleted
+		`)
+				: [];
+
+		return withUserAndRelation<Container>(connection, [
+			...containerResult,
+			...indicatorResult,
+			...actualDataResult
+		]);
 	};
 }
 
@@ -1134,49 +1155,38 @@ export function getAllRelatedContainersByProgramType(
 	};
 }
 
-export function getAllContainersRelatedToIndicators(
-	containers: IndicatorContainer[],
-	filters: { organizationalUnits?: string[] }
+export function getAllContainersRelatedToIndicatorTemplates(
+	containers: IndicatorTemplateContainer[],
+	filters: { organizations?: string[]; organizationalUnits?: string[] },
+	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		if (containers.length == 0) {
 			return [];
 		}
 
-		const indicatorResult = await connection.any(sql.typeAlias('guid')`
-			SELECT c.guid
-			FROM container c
-			JOIN container_relation cr ON (c.guid = cr.subject OR c.guid = cr.object)
-				AND cr.predicate = ${predicates.enum['is-affected-by']}
-				AND cr.valid_currently
-				AND NOT cr.deleted
-			WHERE (cr.object IN (${sql.join(
-				containers.map(({ guid }) => guid),
-				sql.fragment`, `
-			)}) OR cr.subject IN (${sql.join(
-				containers.map(({ guid }) => guid),
-				sql.fragment`, `
-			)}))
-			  AND guid NOT IN (${sql.join(
-					containers.map(({ guid }) => guid),
-					sql.fragment`, `
-				)})
-			  AND c.payload->>'type' = ${payloadTypes.enum.indicator}
-        AND c.valid_currently
-				AND NOT c.deleted
-		`);
-
 		const sectionResult = await connection.any(sql.typeAlias('guid')`
 			SELECT c.guid
 			FROM container c
-			JOIN container_relation cr ON c.guid = cr.subject AND cr.object IN (${sql.join(
+			JOIN container_relation cr ON c.guid = cr.subject AND cr.object = ANY (${sql.array(
 				containers.map(({ guid }) => guid),
-				sql.fragment`, `
+				'uuid'
 			)})
 				AND cr.predicate = ${predicates.enum['is-section-of']}
 				AND cr.valid_currently
 				AND NOT cr.deleted
 			WHERE c.valid_currently AND NOT c.deleted
+		`);
+
+		const actualDataResult = await connection.any(sql.typeAlias('container')`
+			SELECT c.*
+			FROM container c
+			WHERE ${prepareWhereCondition(actualDataFilters)}
+				AND c.payload->>'type' = ${payloadTypes.enum.actual_data}
+				AND c.payload->>'indicator' = ANY (${sql.array(
+					containers.map(({ guid }) => guid),
+					'text'
+				)})
 		`);
 
 		const objectiveAndEffectResult = await connection.any(sql.typeAlias('guid')`
@@ -1186,12 +1196,11 @@ export function getAllContainersRelatedToIndicators(
 				AND cr.predicate IN (${predicates.enum['is-measured-by']}, ${predicates.enum['is-objective-for']})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			WHERE cr.object IN (${sql.join(
-				containers.map(({ guid }) => guid),
-				sql.fragment`, `
-			)})
-        AND c.valid_currently
-				AND NOT c.deleted
+			WHERE ${prepareWhereCondition(filters)}
+				AND cr.object = ANY (${sql.array(
+					containers.map(({ guid }) => guid),
+					'uuid'
+				)})
 		`);
 
 		const isPartOfResult =
@@ -1208,7 +1217,7 @@ export function getAllContainersRelatedToIndicators(
 						SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
 						FROM container c
 						JOIN container_relation cr ON c.guid = cr.object
-							AND cr.predicate IN ('is-part-of', 'is-part-of-measure', 'is-part-of-program')
+							AND cr.predicate IN (${sql.join([predicates.enum['is-part-of'], predicates.enum['is-part-of-measure'], predicates.enum['is-part-of-program']], sql.fragment`, `)})
 							AND cr.valid_currently
 							AND NOT cr.deleted
 						JOIN is_part_of_relation r ON cr.subject = r.subject AND NOT r.is_cycle
@@ -1219,18 +1228,15 @@ export function getAllContainersRelatedToIndicators(
 				`)
 				: [];
 
-		const containerResult =
-			isPartOfResult.length > 0
-				? await connection.any(sql.typeAlias('container')`
-					SELECT c.*
-					FROM container c
-					WHERE ${prepareWhereCondition({ ...filters })}
-					  AND c.guid IN (${sql.join(
-							[...isPartOfResult, ...indicatorResult, ...sectionResult].map(({ guid }) => guid),
-							sql.fragment`, `
-						)})
-				`)
-				: [];
+		const containerResult = await connection.any(sql.typeAlias('container')`
+			SELECT DISTINCT(c.*)
+			FROM container c
+			WHERE ${prepareWhereCondition({})}
+				AND c.guid = ANY (${sql.array(
+					[...sectionResult, ...actualDataResult, ...isPartOfResult].map(({ guid }) => guid),
+					'uuid'
+				)})
+		`);
 
 		return withUserAndRelation<Container>(connection, containerResult);
 	};
@@ -1300,7 +1306,7 @@ export function getAllContainersRelatedToProgram(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator);
+			filters.type.includes(payloadTypes.enum.indicator_template);
 
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
@@ -1412,7 +1418,7 @@ export function getAllContainersRelatedToMeasure(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator);
+			filters.type.includes(payloadTypes.enum.indicator_template);
 
 		const indicatorResult =
 			effects.length > 0 && includeIndicators
