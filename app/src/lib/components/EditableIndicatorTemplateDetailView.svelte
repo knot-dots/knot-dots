@@ -95,15 +95,6 @@
 				{revisions}
 			/>
 
-			{#key container.guid}
-				<EditableFormattedText
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					label={$_('description')}
-					bind:value={container.payload.description}
-				/>
-			{/key}
-
 			<div class="details-section">
 				<select class="view-mode" oninput={(e) => e.stopPropagation()} bind:value={viewMode}>
 					<option value="chart">{$_('indicator.view_mode.chart')}</option>
@@ -124,6 +115,15 @@
 					/>
 				{/if}
 			</div>
+
+			{#key container.guid}
+				<EditableFormattedText
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					label={$_('description')}
+					bind:value={container.payload.description}
+				/>
+			{/key}
 
 			<Sections bind:container {relatedContainers} />
 

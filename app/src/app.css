@@ -431,6 +431,7 @@ tr:hover,
 }
 
 td,
+th,
 .cell {
 	border-bottom: solid 1px var(--color-gray-200);
 	display: table-cell;
@@ -443,9 +444,9 @@ td:hover,
 	background-color: var(--color-gray-100);
 }
 
-th,
+thead th,
 .table-head .cell {
-	background-color: var(--color-gray-050);
+	background-color: var(--color-white);
 	padding: 0.5rem;
 }
 
