@@ -21,7 +21,6 @@
 		newContainer,
 		type OrganizationalUnitContainer,
 		isOrganizationalUnitContainer,
-		organizationalUnitType,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -61,8 +60,10 @@
 	const handleSubmit = $derived(autoSave(container, 2000, container.payload.type));
 
 	let isIndividualProfile = $derived(
-		container.payload.organizationalUnitType ===
-			organizationalUnitType.enum['organizational_unit_type.individual_profile']
+		container.relation.some(
+			({ predicate, subject }) =>
+				predicate === predicates.enum['is-individual-profile-of'] && subject === container.guid
+		)
 	);
 
 	let linkedProfile = $derived(
@@ -99,25 +100,14 @@
 		try {
 			const copy = createCopyOf(container, container.organization, null);
 
-			copy.payload = {
-				administrativeType: container.payload.administrativeType,
-				federalState: container.payload.federalState,
-				geometry: container.payload.geometry,
-				name: container.payload.name,
-				nameBBSR: container.payload.nameBBSR,
-				nameOSM: container.payload.nameOSM,
-				officialMunicipalityKey: container.payload.officialMunicipalityKey,
-				officialRegionalCode: container.payload.officialRegionalCode,
-				organizationalUnitType:
-					organizationalUnitType.enum['organizational_unit_type.individual_profile'],
-				type: container.payload.type
-			} as typeof copy.payload;
-
-			copy.relation = copy.relation.map((r) =>
-				r.predicate === predicates.enum['is-copy-of']
-					? { ...r, predicate: predicates.enum['is-individual-profile-of'] }
-					: r
-			);
+			copy.relation = [
+				...copy.relation,
+				{
+					object: container.guid,
+					position: 0,
+					predicate: predicates.enum['is-individual-profile-of']
+				}
+			];
 
 			const profile: NewContainer = newContainer.parse(copy);
 
@@ -245,7 +235,7 @@
 					/>
 				</PropertiesDialog>
 
-				{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+				{#if container.payload.organizationalUnitType !== 'organizational_unit_type.administrative_area'}
 					{#key container.guid}
 						<EditableFormattedText
 							editable={$applicationState.containerDetailView.editable &&

@@ -802,6 +802,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 	};
 	exclude?: {
 		organizationalUnitType?: string[];
+		relationPredicate?: string[];
 	};
 	limit?: number;
 	offset?: number;
@@ -846,6 +847,12 @@ export function getManyOrganizationalUnitContainers(filters: {
 		if (filters.exclude?.organizationalUnitType?.length) {
 			conditions.push(
 				sql.fragment`NOT (payload ? 'organizationalUnitType' AND payload->>'organizationalUnitType' = ANY (${sql.array(filters.exclude.organizationalUnitType, 'text')}))`
+			);
+		}
+
+		if (filters.exclude?.relationPredicate?.length) {
+			conditions.push(
+				sql.fragment`NOT EXISTS (SELECT 1 FROM container_relation cr WHERE cr.subject = c.guid AND cr.predicate = ANY (${sql.array(filters.exclude.relationPredicate, 'text')}) AND cr.valid_currently AND NOT cr.deleted)`
 			);
 		}
 

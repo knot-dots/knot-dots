@@ -379,10 +379,7 @@ export const goalType = z.enum(goalTypeValues);
 
 export type GoalType = z.infer<typeof goalType>;
 
-const organizationalUnitTypeValues = [
-	'organizational_unit_type.administrative_area',
-	'organizational_unit_type.individual_profile'
-] as const;
+const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
 
 export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
 

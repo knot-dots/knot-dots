@@ -447,16 +447,16 @@ async function copyProgram(
 	await createManyContainerRelations(relations)(txConnection);
 }
 
-async function copyOrganizationalUnitSections(
+async function copyOrganizationalUnitContainer(
 	createdContainer: OrganizationalUnitContainer,
-	isIndividualProfileOfRelation: PartialRelation,
+	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: CommonQueryMethods
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllRelatedContainers(
 			[],
-			isIndividualProfileOfRelation.object as string,
+			isCopyOfRelation.object as string,
 			['is-section-of'],
 			{},
 			''
@@ -654,17 +654,10 @@ export const POST = (async ({ locals, request }) => {
 					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
 					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
-				}
-
-				const isIndividualProfileOfRelation = parseResult.data.relation.find(
-					({ object, predicate }) =>
-						predicate === predicates.enum['is-individual-profile-of'] && object !== undefined
-				);
-
-				if (isIndividualProfileOfRelation && isOrganizationalUnitContainer(createdContainer)) {
-					await copyOrganizationalUnitSections(
+				} else if (isCopyOfRelation && isOrganizationalUnitContainer(createdContainer)) {
+					await copyOrganizationalUnitContainer(
 						createdContainer,
-						isIndividualProfileOfRelation,
+						isCopyOfRelation,
 						locals.user,
 						txConnection
 					);

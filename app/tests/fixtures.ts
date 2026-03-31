@@ -13,7 +13,6 @@ import {
 	type NewContainer,
 	type ObjectiveContainer,
 	type OrganizationalUnitContainer,
-	organizationalUnitType,
 	type OrganizationContainer,
 	payloadTypes,
 	type Predicate,
@@ -312,9 +311,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				...newIndividualProfile,
 				payload: {
 					...newIndividualProfile.payload,
-					name: `${testOrganizationalUnit.payload.name} - Individual ${workerInfo.workerIndex}`,
-					organizationalUnitType:
-						organizationalUnitType.enum['organizational_unit_type.individual_profile']
+					name: `${testOrganizationalUnit.payload.name} - Individual ${workerInfo.workerIndex}`
 				},
 				relation: [
 					{

@@ -41,9 +41,9 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 				getManyOrganizationalUnitContainers({
 					exclude: {
 						organizationalUnitType: [
-							organizationalUnitType.enum['organizational_unit_type.administrative_area'],
-							organizationalUnitType.enum['organizational_unit_type.individual_profile']
-						]
+							organizationalUnitType.enum['organizational_unit_type.administrative_area']
+						],
+						relationPredicate: ['is-individual-profile-of']
 					}
 				})
 			)
