@@ -23,6 +23,7 @@
 		newContainer,
 		type OrganizationalUnitContainer,
 		isOrganizationalUnitContainer,
+		organizationalUnitType,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -229,7 +230,7 @@
 					/>
 				</PropertiesDialog>
 
-				{#if container.payload.organizationalUnitType !== 'organizational_unit_type.administrative_area'}
+				{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
 					{#key container.guid}
 						<EditableFormattedText
 							editable={$applicationState.containerDetailView.editable &&
