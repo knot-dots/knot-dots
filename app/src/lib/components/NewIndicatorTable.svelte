@@ -52,7 +52,7 @@
 
 	let addingCustomActualData = $state(false);
 
-	let actualDataContainer = $derived(
+	let actualDataContainers = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
@@ -64,11 +64,11 @@
 	);
 
 	let customActualDataContainer = $derived(
-		actualDataContainer.find(({ payload }) => !payload.source)
+		actualDataContainers.find(({ payload }) => !payload.source)
 	);
 
 	let actualValuesByYear = $derived(
-		actualDataContainer.map(({ payload }) => new Map(payload.values ?? []))
+		actualDataContainers.map(({ payload }) => new Map(payload.values ?? []))
 	);
 
 	let overallObjectiveByYear = $derived.by(() => {
@@ -271,7 +271,7 @@
 	}
 
 	let sections = $derived.by((): EditableTableSection[] => {
-		const actualDataRows: EditableTableSection['rows'] = actualDataContainer.map((actualData) => ({
+		const actualDataRows: EditableTableSection['rows'] = actualDataContainers.map((actualData) => ({
 			id: actualData.guid,
 			container: actualData,
 			label: actualData.payload.source
@@ -428,7 +428,7 @@
 			}
 
 			let reactiveActualDataContainer = $state(await response.json());
-			actualDataContainer = [...actualDataContainer, reactiveActualDataContainer];
+			actualDataContainers = [...actualDataContainers, reactiveActualDataContainer];
 			await invalidate('containers');
 		} catch (error: unknown) {
 			console.error(error);
