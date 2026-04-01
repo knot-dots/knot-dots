@@ -261,6 +261,11 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
+		padding-right: 15rem;
+	}
+
+	form {
+		position: relative;
 	}
 
 	header button {
@@ -275,21 +280,26 @@
 
 	.profile-switch {
 		align-items: center;
-		align-self: flex-end;
-		background: white;
-		border: 1px solid var(--color-gray-200);
+		background: transparent;
+		border: 0;
 		border-radius: 9999px;
 		display: inline-flex;
-		gap: 0.125rem;
-		padding: 0.125rem;
+		gap: 0;
+		padding: 0;
+		position: absolute;
+		right: var(--details-section-padding-x, 1.5rem);
+		top: calc(var(--details-section-padding-y, 1rem));
 	}
 
 	.profile-switch-item {
-		background: white;
+		align-items: center;
+		background: transparent;
 		border-radius: 9999px;
-		color: var(--color-gray-700);
-		font-size: 0.875rem;
+		color: var(--color-indigo-800);
+		display: inline-flex;
+		font-size: 0.75rem;
 		font-weight: 500;
+		justify-content: center;
 		line-height: 1.5;
 		padding: 0.5rem 1rem;
 		text-decoration: none;
@@ -299,12 +309,17 @@
 	}
 
 	a.profile-switch-item:hover {
-		background: white;
-		color: var(--color-primary-700);
+		background: var(--color-indigo-050);
+		color: var(--color-indigo-800);
+	}
+
+	a.profile-switch-item:focus-visible {
+		outline: 2px solid var(--focus-color);
+		outline-offset: 1px;
 	}
 
 	.profile-switch-item--active {
-		background: var(--color-primary-700);
+		background: var(--color-indigo-800);
 		color: white;
 	}
 </style>

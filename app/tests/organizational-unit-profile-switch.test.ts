@@ -17,7 +17,6 @@ test('allows switching between standard and individual profile from the profile 
 	const switchRoot = page.locator('.profile-switch');
 	await expect.poll(async () => await switchRoot.count()).toBeGreaterThan(0);
 	await expect(switchRoot).toBeVisible();
-	await expect(switchRoot).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 
 	const standardActive = switchRoot.locator('.profile-switch-item--active', {
 		hasText: 'Standard profile'
@@ -26,7 +25,6 @@ test('allows switching between standard and individual profile from the profile 
 
 	await expect(standardActive).toBeVisible();
 	await expect(individualLink).toBeVisible();
-	await expect(individualLink).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 
 	await Promise.all([
 		page.waitForURL(new RegExp(`/${testIndividualProfile.guid}/all/page$`)),
