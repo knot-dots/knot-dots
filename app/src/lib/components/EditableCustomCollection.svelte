@@ -194,9 +194,9 @@
 		const response = await fetchContainers(
 			{
 				organization: [page.data.currentOrganization.guid],
-				...(page.data.currentOrganizationalUnit
-					? { organizationalUnit: [page.data.currentOrganizationalUnit.guid] }
-					: undefined),
+				organizationalUnit: page.data.currentOrganizationalUnit
+					? [page.data.currentOrganizationalUnit.guid]
+					: [''],
 				payloadType: [payloadTypes.enum.actual_data]
 			},
 			'alpha',
