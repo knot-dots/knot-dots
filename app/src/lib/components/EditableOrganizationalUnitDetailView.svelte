@@ -261,7 +261,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding-right: 15rem;
 	}
 
 	form {
@@ -280,8 +279,6 @@
 
 	.profile-switch {
 		align-items: center;
-		background: transparent;
-		border: 0;
 		border-radius: 9999px;
 		display: inline-flex;
 		gap: 0;
@@ -292,17 +289,11 @@
 	}
 
 	.profile-switch-item {
-		align-items: center;
-		background: transparent;
 		border-radius: 9999px;
 		color: var(--color-indigo-800);
-		display: inline-flex;
 		font-size: 0.75rem;
 		font-weight: 500;
-		justify-content: center;
-		line-height: 1.5;
 		padding: 0.5rem 1rem;
-		text-decoration: none;
 		transition:
 			background-color 160ms ease,
 			color 160ms ease;
@@ -311,11 +302,6 @@
 	a.profile-switch-item:hover {
 		background: var(--color-indigo-050);
 		color: var(--color-indigo-800);
-	}
-
-	a.profile-switch-item:focus-visible {
-		outline: 2px solid var(--focus-color);
-		outline-offset: 1px;
 	}
 
 	.profile-switch-item--active {
