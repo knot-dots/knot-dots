@@ -15,12 +15,14 @@ import {
 	isEffectContainer,
 	isGoalContainer,
 	isMeasureContainer,
+	isOrganizationalUnitContainer,
 	isProgramContainer,
 	isReportContainer,
 	isTaskContainer,
 	type MeasureContainer,
 	type NewContainer,
 	newContainer,
+	type OrganizationalUnitContainer,
 	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
@@ -386,6 +388,32 @@ async function copyProgram(
 	await createManyContainerRelations(relations)(txConnection);
 }
 
+async function copyOrganizationalUnitContainer(
+	createdContainer: OrganizationalUnitContainer,
+	isCopyOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllRelatedContainers(
+			[],
+			isCopyOfRelation.object as string,
+			['is-section-of'],
+			{},
+			''
+		)(txConnection),
+		user
+	);
+
+	await copySectionsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		[createdContainer],
+		user.guid,
+		txConnection
+	);
+}
+
 async function copyReportContainer(
 	createdContainer: ReportContainer,
 	isCopyOfRelation: PartialRelation,
@@ -582,6 +610,13 @@ export const POST = (async ({ locals, request }) => {
 					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
 					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
+				} else if (isCopyOfRelation && isOrganizationalUnitContainer(createdContainer)) {
+					await copyOrganizationalUnitContainer(
+						createdContainer,
+						isCopyOfRelation,
+						locals.user,
+						txConnection
+					);
 				}
 
 				return createdContainer;

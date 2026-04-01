@@ -216,6 +216,7 @@ const predicateValues = [
 	'implies',
 	'is-head-of',
 	'is-inconsistent-with',
+	'is-individual-profile-of',
 	'is-measured-by',
 	'is-member-of',
 	'is-objective-for',

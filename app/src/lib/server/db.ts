@@ -804,6 +804,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 	};
 	exclude?: {
 		organizationalUnitType?: string[];
+		relationPredicate?: string[];
 	};
 	limit?: number;
 	offset?: number;
@@ -848,6 +849,12 @@ export function getManyOrganizationalUnitContainers(filters: {
 		if (filters.exclude?.organizationalUnitType?.length) {
 			conditions.push(
 				sql.fragment`NOT (payload ? 'organizationalUnitType' AND payload->>'organizationalUnitType' = ANY (${sql.array(filters.exclude.organizationalUnitType, 'text')}))`
+			);
+		}
+
+		if (filters.exclude?.relationPredicate?.length) {
+			conditions.push(
+				sql.fragment`NOT EXISTS (SELECT 1 FROM container_relation cr WHERE cr.subject = c.guid AND cr.predicate = ANY (${sql.array(filters.exclude.relationPredicate, 'text')}) AND cr.valid_currently AND NOT cr.deleted)`
 			);
 		}
 
@@ -936,6 +943,40 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as OrganizationalUnitContainer[];
+	};
+}
+
+export function getRelatedOrganizationalUnitContainersByPredicates(
+	guid: string,
+	relationTypes: Predicate[]
+) {
+	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		if (relationTypes.length === 0) {
+			return [];
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			WITH related_container AS (
+				SELECT
+					CASE
+						WHEN cr.subject = ${guid} THEN cr.object
+						ELSE cr.subject
+					END AS guid
+				FROM container_relation cr
+				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+					AND cr.predicate IN (${sql.join(relationTypes, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+			)
+			SELECT DISTINCT c.*
+			FROM container c
+			JOIN related_container rc ON rc.guid = c.guid
+			WHERE c.valid_currently
+				AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+		`);
+
+		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
 	};
 }
 
