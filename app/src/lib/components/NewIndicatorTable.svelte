@@ -31,7 +31,7 @@
 		predicates,
 		status
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { compareState, mayCreateContainer } from '$lib/stores';
 	import { statusColors } from '$lib/theme/models';
 	import { _ } from 'svelte-i18n';
 
@@ -39,9 +39,19 @@
 		container: IndicatorTemplateContainer;
 		editable?: boolean;
 		relatedContainers?: Container[];
+		comparisonContainers?: ActualDataContainer[];
 	}
 
-	let { container, editable = false, relatedContainers = [] }: Props = $props();
+	let {
+		container,
+		editable = false,
+		relatedContainers = [],
+		comparisonContainers = []
+	}: Props = $props();
+
+	const currentOrgUnitName = $derived(page.data.currentOrganizationalUnit?.payload.name);
+
+	const hasComparisonData = $derived(comparisonContainers.length > 0);
 
 	const measureStatuses = [
 		status.enum['status.done'],
@@ -275,9 +285,12 @@
 			id: actualData.guid,
 			container: actualData,
 			label: actualData.payload.source
-				? actualData.payload.title
+				? hasComparisonData
+					? (currentOrgUnitName ?? actualData.payload.title)
+					: actualData.payload.source
 				: $_('indicator.table.custom_actual_data'),
-			subtitle: actualData.payload.source,
+
+			subtitle: hasComparisonData ? actualData.payload.source : undefined,
 			dotColor: actualData.payload.source ? 'var(--color-teal-600)' : 'var(--color-gray-200)',
 			editable: editable && !actualData.payload.source
 		}));
@@ -296,6 +309,24 @@
 				loading: addingCustomActualData
 			});
 		}
+
+		const comparisonRows: EditableTableSection['rows'] = comparisonContainers.map(
+			(comparisonContainer) => ({
+				id: comparisonContainer.guid,
+				container: comparisonContainer,
+				label:
+					$compareState.selectedMunicipalities.find(
+						(m) => m.guid === comparisonContainer.organizational_unit
+					)?.payload.name ?? comparisonContainer.payload.title,
+				subtitle: comparisonContainer.payload.source,
+				dotColor: `var(${
+					$compareState.colorAssignments[
+						comparisonContainer.organizational_unit ?? comparisonContainer.organization
+					] ?? 'gray-200'
+				})`,
+				editable: false
+			})
+		);
 
 		const goalRows: EditableTableDataRow[] = [
 			{
@@ -364,14 +395,23 @@
 				heading: $_('indicator.table.actual_data'),
 				rows: actualDataRows
 			},
-			{
-				heading: $_('goals'),
-				rows: goalRows
-			},
-			{
-				heading: $_('measures'),
-				rows: measureRows
-			}
+			...(hasComparisonData
+				? [
+						{
+							heading: $_('indicator.table.comparison_data'),
+							rows: comparisonRows
+						}
+					]
+				: [
+						{
+							heading: $_('goals'),
+							rows: goalRows
+						},
+						{
+							heading: $_('measures'),
+							rows: measureRows
+						}
+					])
 		];
 	});
 

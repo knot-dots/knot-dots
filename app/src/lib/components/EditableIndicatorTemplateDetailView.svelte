@@ -112,6 +112,7 @@
 						{container}
 						editable={$applicationState.containerDetailView.editable}
 						{relatedContainers}
+						{comparisonContainers}
 					/>
 				{/if}
 			</div>
