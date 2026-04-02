@@ -5,6 +5,7 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 import { getPool } from './db.ts';
 import { createIndexWithMappings, toDoc } from '@knot-dots/shared/src/indexing.ts';
+import type { Relation } from '@knot-dots/app/src/lib/models.ts';
 
 interface Row {
 	guid: string;
@@ -80,14 +81,7 @@ async function* fetchContainers(batchSize = 500) {
 	}
 }
 
-interface RelationRow {
-	object: string;
-	predicate: string;
-	position: number;
-	subject: string;
-}
-
-async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, RelationRow[]>> {
+async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, Relation[]>> {
 	if (guids.length === 0) return new Map();
 	const pool = await getPool();
 	const rows = (await pool.any(sql.unsafe`
@@ -96,9 +90,10 @@ async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, Rela
 		WHERE (subject = ANY(${sql.array(guids, 'uuid')}) OR object = ANY(${sql.array(guids, 'uuid')}))
 			AND valid_currently
 			AND NOT deleted
-	`)) as unknown as RelationRow[];
+		ORDER BY position
+	`)) as Relation[];
 
-	const map = new Map<string, RelationRow[]>();
+	const map = new Map<string, Relation[]>();
 	for (const guid of guids) {
 		map.set(guid, []);
 	}
@@ -152,7 +147,7 @@ async function run() {
 		if (batchRows.length >= 500) {
 			const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
 			for (const r of batchRows) {
-				const doc = toDoc({ ...r, relations: relationsMap.get(r.guid) ?? [] });
+				const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [] });
 				ops.push({ index: { _index: newIndexName, _id: r.guid } });
 				ops.push(doc);
 			}
@@ -188,7 +183,7 @@ async function run() {
 	if (batchRows.length > 0) {
 		const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
 		for (const r of batchRows) {
-			const doc = toDoc({ ...r, relations: relationsMap.get(r.guid) ?? [] });
+			const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [] });
 			ops.push({ index: { _index: newIndexName, _id: r.guid } });
 			ops.push(doc);
 		}

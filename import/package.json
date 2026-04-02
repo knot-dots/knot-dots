@@ -13,6 +13,7 @@
     "index-containers-to-elasticsearch": "tsx src/indexContainersToElasticsearch.ts"
   },
   "dependencies": {
+    "@knot-dots/app": "*",
     "@elastic/elasticsearch": "^9.3.4",
     "csv-parse": "^6.1.0",
     "osmtogeojson": "^3.0.0-beta.5",
