@@ -141,7 +141,11 @@ test.describe('Budget Table in Goal Detail View', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
-		const rightAddButton = table.locator('thead th:last-child button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await rightAddButton.click();
 
 		const currentYear = new Date().getFullYear();
@@ -204,8 +208,16 @@ test.describe('Budget Table in Goal Detail View', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are visible in edit mode
-		const leftAddButton = table.locator('.editable-table__head-years button');
-		const rightAddButton = table.locator('thead th:last-child button');
+		const leftAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.first()
+			.getByRole('button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await expect(leftAddButton).toBeVisible();
 		await expect(rightAddButton).toBeVisible();
 
@@ -299,8 +311,16 @@ test.describe('Budget Table in Goal Detail View', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are not visible
-		const leftAddButton = table.locator('.editable-table__head-years button');
-		const rightAddButton = table.locator('thead th:last-child button');
+		const leftAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.first()
+			.getByRole('button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await expect(leftAddButton).not.toBeVisible();
 		await expect(rightAddButton).not.toBeVisible();
 

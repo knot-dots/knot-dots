@@ -268,18 +268,17 @@
 		<small>{titleUnit}</small>
 	</h2>
 
-	<div class="editable-table__wrapper" bind:this={tableContainer}>
-		<table class="editable-table__table">
-			<thead class="editable-table__head">
+	<div class="scroll" bind:this={tableContainer}>
+		<table>
+			<thead>
 				<tr>
-					<th class="editable-table__head-label">
-						<div class="editable-table__head-content">
+					<th class="head-label">
+						<div class="head-content">
 							<span>{columnLabel}</span>
-							<span class="editable-table__head-years">
+							<span class="head-years">
 								<span>{yearLabel}</span>
 								{#if isEditMode}
 									<button
-										class="editable-table__head-action"
 										type="button"
 										aria-label={$_('table.add_column_left')}
 										onclick={addEntryLeft}
@@ -291,23 +290,13 @@
 						</div>
 					</th>
 					{#each years as year (year)}
-						<th
-							class="editable-table__head-year"
-							class:editable-table__head-year--current={year === new Date().getFullYear()}
-						>
+						<th class="year" class:current={year === new Date().getFullYear()}>
 							{year}
 						</th>
 					{/each}
 					{#if isEditMode}
-						<th class="editable-table__head-year">
-							<button
-								class="editable-table__head-action"
-								type="button"
-								aria-label={addYearLabel}
-								onclick={addEntryRight}
-							>
-								+
-							</button>
+						<th>
+							<button type="button" aria-label={addYearLabel} onclick={addEntryRight}> + </button>
 						</th>
 					{/if}
 				</tr>
@@ -318,33 +307,24 @@
 				<tbody>
 					{#if section.heading}
 						<tr>
-							<th class="editable-table__section-header" colspan={columnCount}>
-								{section.heading}
-							</th>
+							<th class="section-heading" colspan={columnCount}>{section.heading}</th>
 						</tr>
 					{/if}
 
 					{#if section.rows.length === 0 && section.emptyMessage}
 						<tr>
-							<td colspan={columnCount} class="editable-table__empty">
-								{section.emptyMessage}
-							</td>
+							<td colspan={columnCount} class="empty">{section.emptyMessage}</td>
 						</tr>
 					{:else}
 						{#each section.rows as row (row.id)}
 							{#if isActionRow(row)}
-								<tr class="editable-table__action-row">
-									<td colspan={columnCount} class="editable-table__action-cell">
-										<button
-											class="editable-table__inline-action"
-											type="button"
-											disabled={row.disabled}
-											onclick={row.onAction}
-										>
+								<tr class="action">
+									<td colspan={columnCount}>
+										<button type="button" disabled={row.disabled} onclick={row.onAction}>
 											{#if row.loading}
 												<span class="loader"></span>
 											{:else}
-												<span class="editable-table__inline-action-plus">+</span>
+												<span class="plus">+</span>
 												{row.label}
 											{/if}
 										</button>
@@ -356,39 +336,33 @@
 								{@const timerKey = row.id}
 								<tr>
 									<th
+										class="row-label truncated"
 										scope="row"
-										class="editable-table__row-label"
-										class:editable-table__row-label--editable={canEdit}
+										class:editable={canEdit}
+										class:indented={row.indented}
 									>
-										<div
-											class="editable-table__row-label-content"
-											class:editable-table__row-label-content--indented={row.indented}
-										>
-											{#if row.dotColor}
-												<span class="editable-table__row-dot" style:background-color={row.dotColor}
-												></span>
-											{/if}
-											{#if row.href}
-												<a href={row.href} class="editable-table__row-link">{row.label}</a>
-											{:else}
-												<span class="editable-table__row-text">{row.label}</span>
-											{/if}
-											{#if row.subtitle}
-												<span class="editable-table__row-subtitle">({row.subtitle})</span>
-											{/if}
-										</div>
+										{#if row.dotColor}
+											<span class="dot" style:background-color={row.dotColor}></span>
+										{/if}
+										{#if row.href}
+											<a href={row.href}>{row.label}</a>
+										{:else}
+											<span>{row.label}</span>
+										{/if}
+										{#if row.subtitle}
+											<span class="subtitle">({row.subtitle})</span>
+										{/if}
 									</th>
 									{#each years as year (year)}
 										{@const value = valuesByYear.get(year)}
 										<td
-											class="editable-table__cell focus-indicator"
-											class:editable-table__cell--empty={!hasValue(value)}
-											class:editable-table__cell--locked={isEditMode && !canEdit}
-											class:editable-table__cell--bold={canEdit}
+											class="value focus-indicator"
+											class:missing={!hasValue(value)}
+											class:locked={isEditMode && !canEdit}
+											class:editable={canEdit}
 										>
 											{#if canEdit}
 												<input
-													class="editable-table__input"
 													type="text"
 													inputmode="decimal"
 													data-year={year}
@@ -402,10 +376,7 @@
 										</td>
 									{/each}
 									{#if isEditMode}
-										<td
-											class="editable-table__cell"
-											class:editable-table__cell--locked={isEditMode && !canEdit}
-										></td>
+										<td class:locked={isEditMode && !canEdit}></td>
 									{/if}
 								</tr>
 							{/if}
@@ -413,18 +384,17 @@
 
 						{#if section.showSum}
 							{@const sumByYearMap = sumByYear(section.rows.filter(isDataRow))}
-							<tr class="editable-table__sum-row">
-								<th scope="row" class="editable-table__row-label">{$_('table.sum')}</th>
+							<tr class="sum">
+								<th class="row-label" scope="row">{$_('table.sum')}</th>
 								{#each years as year (year)}
-									<td class="editable-table__cell" class:editable-table__cell--locked={isEditMode}>
+									<td class="value" class:locked={isEditMode}>
 										{hasValue(sumByYearMap.get(year))
 											? formatNumber(sumByYearMap.get(year) as number)
 											: ''}
 									</td>
 								{/each}
 								{#if isEditMode}
-									<td class="editable-table__cell" class:editable-table__cell--locked={isEditMode}>
-									</td>
+									<td class:locked={isEditMode}></td>
 								{/if}
 							</tr>
 						{/if}
@@ -437,19 +407,21 @@
 
 <style>
 	.editable-table {
-		--editable-table-head-background: var(--color-yellow-100);
-		--editable-table-head-border: var(--color-yellow-200);
-		--editable-table-head-text: var(--color-yellow-900);
-		--editable-table-head-current-background: var(--color-yellow-200);
-		--editable-table-head-action-hover: var(--color-yellow-200);
+		--head-background: var(--color-yellow-100);
+		--head-border: var(--color-yellow-200);
+		--head-text: var(--color-yellow-900);
+		--head-current-background: var(--color-yellow-200);
+		--head-action-hover: var(--color-yellow-200);
+		--label-width: 18.75rem;
+		--value-column-width: 3.5rem;
 	}
 
 	.editable-table[data-variant='teal'] {
-		--editable-table-head-background: var(--color-teal-100);
-		--editable-table-head-border: var(--color-teal-200);
-		--editable-table-head-text: var(--color-teal-900);
-		--editable-table-head-current-background: #b9eef0;
-		--editable-table-head-action-hover: #c3f0f2;
+		--head-background: var(--color-teal-100);
+		--head-border: var(--color-teal-200);
+		--head-text: var(--color-teal-900);
+		--head-current-background: #b9eef0;
+		--head-action-hover: #c3f0f2;
 	}
 
 	.details-heading > small {
@@ -459,7 +431,7 @@
 		line-height: 1.25;
 	}
 
-	.editable-table__wrapper {
+	.scroll {
 		margin-left: var(--editable-table-margin-left, 0);
 		margin-right: var(--editable-table-margin-right, 0);
 		margin-top: 1.25rem;
@@ -468,7 +440,7 @@
 		padding-right: 4rem;
 	}
 
-	.editable-table__table {
+	table {
 		width: fit-content;
 		border-collapse: separate;
 		border-spacing: 0;
@@ -476,185 +448,172 @@
 		overflow: hidden;
 	}
 
-	.editable-table__table th,
-	.editable-table__table td {
-		border: 0.0625rem solid var(--color-gray-200);
+	th,
+	td {
+		border-bottom: 0.0625rem solid var(--color-gray-200);
+		border-right: 0.0625rem solid var(--color-gray-200);
 		font-size: 0.875rem;
 		line-height: 1.5;
 		padding: 0.75rem 0.5rem;
 		white-space: nowrap;
 	}
 
-	.editable-table__head th {
-		background: var(--editable-table-head-background);
-		border-color: var(--editable-table-head-border);
-		color: var(--editable-table-head-text);
+	tr > :first-child {
+		border-left: 0.0625rem solid var(--color-gray-200);
+	}
+
+	thead th {
+		background: var(--head-background);
+		border-color: var(--head-border);
+		border-top: 0.0625rem solid var(--head-border);
+		color: var(--head-text);
 		font-weight: 400;
 	}
 
-	.editable-table__head th:first-child {
+	.head-label {
+		min-width: var(--label-width);
+		text-align: left;
 		border-radius: 1rem 0 0 0;
 		overflow: hidden;
 	}
 
-	.editable-table__head th:last-child {
+	thead tr > :last-child {
 		border-radius: 0 1rem 0 0;
 		overflow: hidden;
 	}
 
-	.editable-table__table tbody:last-of-type tr:last-child th:first-child,
-	.editable-table__table tbody:last-of-type tr:last-child td:last-child {
-		overflow: hidden;
-	}
-
-	.editable-table__table tbody:last-of-type tr:last-child th:first-child {
-		border-radius: 0 0 0 1rem;
-	}
-
-	.editable-table__table tbody:last-of-type tr:last-child td:last-child {
-		border-radius: 0 0 1rem 0;
-	}
-
-	.editable-table__head-label {
-		min-width: 18.75rem;
-		text-align: left;
-	}
-
-	.editable-table__head-content {
+	.head-content {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		gap: 1rem;
 	}
 
-	.editable-table__head-years {
+	.head-years {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
 	}
 
-	.editable-table__head-action {
+	.year {
+		color: var(--color-gray-600);
+		text-align: right;
+		width: var(--value-column-width);
+		min-width: var(--value-column-width);
+	}
+
+	.year.current {
+		background: var(--head-current-background);
 		font-weight: 600;
-		font-size: large;
+	}
+
+	thead button {
+		align-items: center;
 		background: transparent;
 		border: 0.0625rem solid transparent;
 		border-radius: 0.5rem;
 		cursor: pointer;
 		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		height: 1.75rem;
-		width: 1.75rem;
-		padding: 0;
-	}
-
-	.editable-table__head-action:hover {
-		background: var(--editable-table-head-action-hover);
-	}
-
-	.editable-table__head-year {
-		background: var(--color-gray-050);
-		color: var(--color-gray-600);
-		text-align: right;
-		width: 3.5rem;
-		min-width: 3.5rem;
-	}
-
-	.editable-table__head-year.editable-table__head-year--current {
-		background: var(--editable-table-head-current-background);
+		font-size: large;
 		font-weight: 600;
+		height: 1.75rem;
+		justify-content: center;
+		padding: 0;
+		width: 1.75rem;
 	}
 
-	.editable-table__row-label {
-		color: var(--color-gray-800);
-		background-color: white;
-		font-weight: 500;
-		text-align: left;
-		max-width: 18.75rem;
+	thead button:hover {
+		background: var(--head-action-hover);
+	}
+
+	tbody:last-of-type tr:last-child > :first-child,
+	tbody:last-of-type tr:last-child > :last-child {
 		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
-	tr:hover .editable-table__row-label {
+	tbody:last-of-type tr:last-child > :first-child {
+		border-radius: 0 0 0 1rem;
+	}
+
+	tbody:last-of-type tr:last-child > :last-child {
+		border-radius: 0 0 1rem 0;
+	}
+
+	.section-heading {
+		background: var(--color-gray-025);
+		color: var(--color-gray-600);
+		font-weight: 500;
+	}
+
+	.row-label {
+		background: white;
+		color: var(--color-gray-800);
+		font-weight: 500;
+		max-width: var(--label-width);
+		padding: 0.75rem 0.5rem 0.75rem 1rem;
+		text-align: left;
+	}
+
+	tr:hover > .row-label {
 		background-color: var(--color-gray-050);
 	}
 
-	.editable-table__row-label a:hover {
+	.row-label a:hover {
 		text-decoration: underline;
 	}
 
-	.editable-table__row-label--editable {
+	.row-label.indented {
+		padding-left: 1.5rem;
+	}
+
+	.row-label > :not(.dot) {
+		min-width: 0;
+	}
+
+	.row-label > :not(.dot):not(.subtitle) {
+		color: var(--color-gray-800);
+		font-weight: 500;
+	}
+
+	tbody th.editable,
+	tbody td.editable {
 		font-weight: 600;
 	}
 
-	.editable-table__row-label-content {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.375rem;
-		max-width: 100%;
-		overflow: hidden;
-		padding-right: 0.5rem;
+	.subtitle {
+		color: var(--color-gray-500);
 	}
 
-	.editable-table__row-label-content--indented {
-		padding-left: 0.5rem;
-	}
-
-	.editable-table__row-dot {
+	.dot {
 		border-radius: 50%;
 		display: inline-block;
 		flex: 0 0 auto;
+		margin-right: 0.25rem;
 		height: 0.75rem;
 		width: 0.75rem;
+		vertical-align: -1px;
 	}
 
-	.editable-table__row-link,
-	.editable-table__row-text {
-		color: var(--color-gray-800);
-		font-weight: 500;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.editable-table__row-subtitle {
-		color: var(--color-gray-500);
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.editable-table__section-header {
-		background: var(--color-gray-025);
-		color: var(--color-gray-600);
-		font-weight: 500;
-	}
-
-	.editable-table__sum-row th,
-	.editable-table__sum-row td {
-		font-weight: 600;
-	}
-
-	.editable-table__cell {
+	.value {
 		text-align: right;
-		width: 3.5rem;
-		min-width: 3.5rem;
+		width: var(--value-column-width);
+		min-width: var(--value-column-width);
 	}
 
-	.editable-table__cell--empty {
+	tbody td.missing {
 		color: var(--color-gray-400);
 	}
 
-	.editable-table__cell--locked {
+	tbody td.locked {
 		background: var(--color-gray-025);
 	}
 
-	.editable-table__cell--bold {
+	tr.sum th,
+	tr.sum td {
 		font-weight: 600;
 	}
 
-	.editable-table__input {
+	.value input {
 		background: transparent;
 		border: none;
 		color: inherit;
@@ -665,16 +624,16 @@
 		width: 100%;
 	}
 
-	.editable-table__input:focus {
+	.value input:focus {
 		outline: none;
 	}
 
-	.editable-table__action-cell {
+	tr.action td {
 		background: white;
 		text-align: left;
 	}
 
-	.editable-table__inline-action {
+	tr.action button {
 		align-items: center;
 		background: white;
 		border: 0.0625rem solid var(--color-gray-200);
@@ -688,17 +647,17 @@
 		padding: 0.5rem 0.75rem;
 	}
 
-	.editable-table__inline-action-plus {
+	tr.action button:disabled {
+		opacity: 0.6;
+	}
+
+	.plus {
 		color: var(--color-gray-500);
 		font-size: 1rem;
 		line-height: 1;
 	}
 
-	.editable-table__inline-action:disabled {
-		opacity: 0.6;
-	}
-
-	.editable-table__empty {
+	td.empty {
 		color: var(--color-gray-500);
 		text-align: left;
 	}
