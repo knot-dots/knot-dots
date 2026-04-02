@@ -145,7 +145,6 @@ Organizations and organizational units can enable specific "boards" (feature mod
 - **Batch database operations:** Always use transactions for related write operations
 - **Memoize with `$derived`:** Use for expensive computations, not simple property access
 - **Reactive collections:** Native Map and Set do not trigger deep reactivity. Use import { SvelteMap, SvelteSet } from 'svelte/reactivity' for efficient, reactive lookups.
-- **Avoid state in derived:** Never create `$state()` inside `$derived()` - leads to memory leaks
 
 ## 💡 Workflow Tips for AI Agents
 
