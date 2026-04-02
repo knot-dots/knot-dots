@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import { createCombobox } from 'svelte-headlessui';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Map from '$lib/components/Map.svelte';
 	import { fetchAdministrativeAreas } from '$lib/remote/administrativeArea.remote';
 
 	interface Props {
+		labelledBy?: string;
 		onchange: (e: Event) => void;
 		value?: {
 			nameOSM: string;
@@ -13,12 +13,9 @@
 		};
 	}
 
-	let { onchange, value }: Props = $props();
+	let { labelledBy, onchange, value }: Props = $props();
 
-	const combobox = createCombobox({
-		label: $_('administrative_area'),
-		selected: value
-	});
+	const combobox = createCombobox({ selected: value });
 
 	let filterCache =
 		$combobox.filter.replace(/^(\s*Landkreis|Kreis)\s+/, '').substring(0, 2) ||
@@ -39,6 +36,7 @@
 	<div class="combobox-input">
 		<input
 			use:combobox.input
+			aria-labelledby={labelledBy}
 			{onchange}
 			oninput={(e) => e.stopPropagation()}
 			value={$combobox.selected?.nameOSM ?? ''}

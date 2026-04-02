@@ -184,9 +184,11 @@ export const organizationalUnitPayload = z.object({
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	federalState: z.string().optional(),
+	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
 	level: z.coerce.number().int().positive().default(1),
 	name: z.string().trim(),
+	nameOSM: z.string().optional(),
 	officialMunicipalityKey: z.string().optional(),
 	officialRegionalCode: z.string().optional(),
 	organizationalUnitType: z
