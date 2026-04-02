@@ -30,6 +30,7 @@
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
+	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
@@ -276,6 +277,10 @@
 				</button>
 			{/if}
 		{/if}
+
+		{#if overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+			<OverlaySettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
+		{/if}
 	</div>
 </header>
 
@@ -447,11 +452,13 @@
 		gap: 0.75rem;
 		justify-content: end;
 		padding: 0 0.75rem 0.5rem;
-		z-index: 2;
+		z-index: 1;
+		pointer-events: none;
 	}
 
 	.commands > * {
 		width: fit-content;
+		pointer-events: all;
 	}
 
 	.action-button--favorite {
