@@ -120,6 +120,7 @@
 					{
 						x: 'date',
 						y: 'value',
+						z: 'municipality',
 						stroke: 'municipality',
 						strokeWidth: 2,
 						strokeLinecap: 'round',
@@ -133,6 +134,7 @@
 					{
 						x: 'date',
 						y: 'value',
+						z: 'municipality',
 						stroke: 'municipality',
 						strokeWidth: 2,
 						strokeLinecap: 'round'
@@ -143,6 +145,7 @@
 					{
 						x: 'date',
 						y: 'value',
+						z: 'municipality',
 						stroke: 'municipality',
 						strokeWidth: 3,
 						strokeLinecap: 'round'
