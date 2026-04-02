@@ -20,6 +20,7 @@
 	let { container = $bindable(), editable = false }: Props = $props();
 
 	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
+	const administrativeAreaLabelId = crypto.randomUUID();
 
 	const stateFromOfficialRegionalCode = new Map([
 		['01', 'Schleswig-Holstein'],
@@ -77,8 +78,9 @@
 <div class="details-section">
 	<div class="data-grid">
 		{#if editable}
-			<label class="label" for="administrativeArea">{$_('administrative_area')}</label>
+			<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
 			<AdministrativeAreaCombobox
+				labelledBy={administrativeAreaLabelId}
 				{onchange}
 				value={container.payload.nameOSM && container.payload.officialRegionalCode
 					? {
