@@ -304,7 +304,9 @@
 				<span class="selection-count">
 					{$_('compare_municipalities_selected', { values: { count: localSelected.length } })}
 					{#if localSelected.length >= MAX_SELECTION}
-						<span class="max-indicator">({$_('compare_max_reached')})</span>
+						<span class="max-indicator"
+							>({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})</span
+						>
 					{/if}
 				</span>
 

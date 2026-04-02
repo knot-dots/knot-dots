@@ -102,7 +102,7 @@
 	"compare": "Compare",
 	"compare_add_municipality": "Add municipality",
 	"compare_clear_all": "Clear all",
-	"compare_max_reached": "Maximum 3 municipalities",
+	"compare_max_reached": "Maximum {max} municipalities",
 	"compare_municipalities_selected": "{count, plural, one {# municipality selected} other {# municipalities selected}}",
 	"compare_federal_levels": "Federal levels",
 	"compare_remove": "Remove",
