@@ -7,6 +7,7 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
 	import { untrack } from 'svelte';
 
@@ -333,6 +334,7 @@
 						{#each federalLevelItems as item (item.key)}
 							<li>
 								<label class="federal-level-item">
+									<ClipboardIcon />
 									<input
 										class="is-visually-hidden"
 										type="radio"
@@ -491,6 +493,10 @@
 		gap: 6px;
 		height: 72px;
 		padding: 12px;
+	}
+
+	.federal-level-item :global(svg) {
+		color: var(--color-gray-400);
 	}
 
 	.federal-level-item:hover {
