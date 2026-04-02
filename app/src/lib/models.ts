@@ -1414,6 +1414,9 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 const organizationalUnitPayload = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
 	boards: z.array(boards).transform(deduplicate).default([]),
+	category: z
+		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+		.default({}),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
