@@ -493,7 +493,7 @@
 </script>
 
 <EditableTable
-	title={$_('table.time_series')}
+	title={container.payload.title}
 	titleUnit={$_(container.payload.unit)}
 	columnLabel={$_('table.data_object')}
 	yearLabel={$_('table.in_years')}
