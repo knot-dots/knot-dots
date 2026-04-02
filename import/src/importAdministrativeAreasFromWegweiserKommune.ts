@@ -222,6 +222,7 @@ function isSame<T>(a: T, b: T) {
 									? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
 									: undefined),
 								federalState: stateFromAGS.get(region.official_municipality_key.substring(0, 2)),
+								...(osm ? { geometry: osm.boundary, nameOSM: osm?.name } : undefined),
 								...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
 								level: organizationalUnitLevel,
 								name: region.title,
@@ -259,9 +260,9 @@ function isSame<T>(a: T, b: T) {
 									console.log(
 										`Updated ${region.title} (${updatedOrganizationalUnitContainer.guid})`
 									);
+								} else {
+									console.log(`Ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
 								}
-
-								console.log(`Ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
 
 								return;
 							}
@@ -284,7 +285,6 @@ function isSame<T>(a: T, b: T) {
 								managed_by: savedOrganizationalUnitContainer.guid,
 								organization: organization,
 								organizational_unit: savedOrganizationalUnitContainer.guid,
-								payload: { geometry: osm?.boundary },
 								realm,
 								user: [{ predicate: 'is-creator-of', subject: user }]
 							});
