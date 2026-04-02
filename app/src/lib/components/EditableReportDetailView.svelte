@@ -72,15 +72,16 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
+
+			<button class="print-button" onclick={() => window.print()} type="button">
+				<PrinterIcon />
+				<span>{$_('print')}</span>
+			</button>
 		{/snippet}
 	</EditableContainerDetailView>
 
 	<footer class="content-footer bottom-actions-bar">
 		<div class="content-actions">
-			<button class="print-button action-button" onclick={() => window.print()} type="button">
-				<PrinterIcon />
-				<span>{$_('print')}</span>
-			</button>
 			<CreateCopyButton {container} />
 			<DeleteButton {container} {relatedContainers} />
 		</div>
@@ -91,6 +92,10 @@
 
 <style>
 	.print-button {
-		margin-right: auto;
+		align-items: center;
+		display: inline-flex;
+		gap: 0.5rem;
+		margin-left: var(--details-section-padding-x, 1.5rem);
+		margin-top: 2rem;
 	}
 </style>
