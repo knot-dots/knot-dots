@@ -384,7 +384,7 @@
 			{/key}
 
 			<EditableTable
-				title={$_('resource_table.resource_demand')}
+				title={$_('resource_table.resource_requirements')}
 				titleUnit={$_(container.payload.resourceUnit)}
 				columnLabel={$_('table.data_object')}
 				{sections}

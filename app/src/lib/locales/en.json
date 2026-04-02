@@ -569,7 +569,7 @@
 	"resource_data_type.budget": "Budget",
 	"resource_table.budgets": "Budgets",
 	"resource_table.past_years": "Past years",
-	"resource_table.resource_demand": "Resource demand",
+	"resource_table.resource_requirements": "Resource requirements",
 	"resource_table.total_budget": "Total budget",
 	"resource_table.total_budget_forecast": "Total budget forecast",
 	"resource_table.subordinate_goals_budget": "Subordinate goals budget",
