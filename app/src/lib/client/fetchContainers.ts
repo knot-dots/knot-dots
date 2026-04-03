@@ -12,8 +12,6 @@ export default async function fetchContainers(
 		guid?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
-		isPartOfMeasure?: string[];
-		isPartOfProgram?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: PayloadType[];
@@ -61,12 +59,6 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.indicatorType ?? []) {
 		params.append('indicatorType', value);
-	}
-	for (const value of filters.isPartOfMeasure ?? []) {
-		params.append('isPartOfMeasure', String(value));
-	}
-	for (const value of filters.isPartOfProgram ?? []) {
-		params.append('isPartOfProgram', String(value));
 	}
 	for (const value of filters.organization ?? []) {
 		params.append('organization', value);

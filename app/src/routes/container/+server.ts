@@ -453,8 +453,6 @@ export const GET = (async ({ locals, url }) => {
 		indicator: z.array(z.string().uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
-		isPartOfMeasure: z.array(z.string().uuid()).default([]),
-		isPartOfProgram: z.array(z.string().uuid()).default([]),
 		limit: z.coerce.number().int().positive().optional(),
 		offset: z.coerce.number().int().nonnegative().default(0),
 		organization: z.array(z.string().uuid()).default([]),
@@ -506,68 +504,27 @@ export const GET = (async ({ locals, url }) => {
 
 	let containers: AnyContainer[];
 
-	if (parseResult.data.isPartOfProgram.length > 0) {
-		containers = await locals.pool.connect(
-			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
+	containers = await locals.pool.connect(
+		getManyContainers(
+			parseResult.data.organization,
+			{
 				audience: parseResult.data.audience,
 				customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
-				sdg: parseResult.data.sdg,
+				guid: parseResult.data.guid,
+				indicators: parseResult.data.indicator,
+				indicatorCategories: parseResult.data.indicatorCategory,
+				indicatorTypes: parseResult.data.indicatorType,
+				organizationalUnits: parseResult.data.organizationalUnit,
 				policyFieldsBNK: parseResult.data.policyFieldBNK,
+				programTypes: parseResult.data.programType,
+				sdg: parseResult.data.sdg,
 				terms: parseResult.data.terms[0],
 				topics: parseResult.data.topic,
 				type: parseResult.data.payloadType
-			})
-		);
-	} else if (parseResult.data.isPartOfMeasure.length > 0) {
-		if (parseResult.data.relatedTo.length > 0) {
-			containers = await locals.pool.connect(
-				getAllRelatedContainers(
-					parseResult.data.organization,
-					parseResult.data.relatedTo[0],
-					parseResult.data.relationType,
-					{
-						customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
-						type: parseResult.data.payloadType
-					},
-					parseResult.data.sort[0]
-				)
-			);
-		} else {
-			containers = await locals.pool.connect(
-				getAllContainersRelatedToMeasure(
-					parseResult.data.isPartOfMeasure[0],
-					{
-						customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
-						terms: parseResult.data.terms[0],
-						type: parseResult.data.payloadType
-					},
-					parseResult.data.sort[0]
-				)
-			);
-		}
-	} else {
-		containers = await locals.pool.connect(
-			getManyContainers(
-				parseResult.data.organization,
-				{
-					audience: parseResult.data.audience,
-					customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
-					guid: parseResult.data.guid,
-					indicators: parseResult.data.indicator,
-					indicatorCategories: parseResult.data.indicatorCategory,
-					indicatorTypes: parseResult.data.indicatorType,
-					organizationalUnits: parseResult.data.organizationalUnit,
-					policyFieldsBNK: parseResult.data.policyFieldBNK,
-					programTypes: parseResult.data.programType,
-					sdg: parseResult.data.sdg,
-					terms: parseResult.data.terms[0],
-					topics: parseResult.data.topic,
-					type: parseResult.data.payloadType
-				},
-				parseResult.data.sort[0]
-			)
-		);
-	}
+			},
+			parseResult.data.sort[0]
+		)
+	);
 
 	if (
 		parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit) ||
