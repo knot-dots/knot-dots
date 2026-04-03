@@ -5,7 +5,6 @@ import { resolve } from '$app/paths';
 import { page } from '$app/stores';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
-import fetchContainers from '$lib/client/fetchContainers';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchMembers from '$lib/client/fetchMembers';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -631,9 +630,7 @@ if (browser) {
 					hashParams.get(overlayKey.enum.indicators) as string
 				)) as Container[];
 				const container = revisions[revisions.length - 1];
-				const relatedContainers = (await fetchContainers({
-					isPartOfProgram: [container.guid]
-				})) as Container[];
+				const relatedContainers = (await fetchRelatedContainers(container.guid, {})) as Container[];
 				setOverlayIfLatest({
 					key: overlayKey.enum.indicators,
 					container,
