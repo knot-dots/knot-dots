@@ -152,6 +152,7 @@
 		>
 			<VisibilityDropdown
 				editable={editable && $ability.can('update', container, 'payload.visibility')}
+				offset={[-41, -39]}
 				bind:value={container.payload.visibility}
 			/>
 		</div>
@@ -204,6 +205,7 @@
 			{#if 'indicatorType' in container.payload}
 				<IndicatorTypeDropdown
 					editable={editable && $ability.can('update', container)}
+					offset={[0, -39]}
 					bind:value={container.payload.indicatorType}
 				/>
 			{/if}
@@ -213,6 +215,7 @@
 			{#if isIndicatorTemplateContainer(container)}
 				<IndicatorUnitDropdown
 					editable={editable && $ability.can('update', container)}
+					offset={[0, -39]}
 					bind:value={container.payload.unit}
 				/>
 			{/if}
@@ -222,6 +225,7 @@
 			{#if 'indicatorCategory' in container.payload}
 				<IndicatorCategoryDropdown
 					editable={editable && $ability.can('update', container)}
+					offset={[0, -39]}
 					bind:value={container.payload.indicatorCategory}
 				/>
 			{/if}
@@ -250,8 +254,8 @@
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'taskCategory' in container.payload}
 				<TaskCategoryDropdown
-					compact
 					editable={editable && $ability.can('update', container)}
+					offset={[-41, -39]}
 					bind:value={container.payload.taskCategory}
 				/>
 			{/if}
@@ -262,6 +266,7 @@
 				<AudienceDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
+					offset={[-41, -39]}
 					bind:value={container.payload.audience}
 				/>
 			{/if}
@@ -327,6 +332,7 @@
 				<EditorialStateDropdown
 					aiSuggestion={'aiSuggestion' in container.payload && container.payload.aiSuggestion}
 					editable={editable && $ability.can('update', container, 'payload.editorialState')}
+					offset={[-41, -39]}
 					bind:value={container.payload.editorialState}
 				/>
 			{/if}
@@ -338,6 +344,7 @@
 		>
 			<OrganizationalUnitDropdown
 				editable={editable && $ability.can('update', container, 'organizational_unit')}
+				offset={[-41, -39]}
 				organization={container.organization}
 				bind:value={container.organizational_unit}
 			/>
@@ -422,6 +429,7 @@
 		>
 			<GoalTypeDropdown
 				editable={editable && $ability.can('update', container, 'payload.goalType')}
+				offset={[0, -39]}
 				bind:value={container.payload.goalType}
 			/>
 		</div>
@@ -432,6 +440,7 @@
 		>
 			<ProgramTypeDropdown
 				editable={editable && $ability.can('update', container, 'payload.programType')}
+				offset={[0, -39]}
 				bind:value={container.payload.programType}
 			/>
 		</div>
@@ -442,6 +451,7 @@
 		>
 			<MeasureTypeDropdown
 				editable={editable && $ability.can('update', container, 'payload.measureType')}
+				offset={[0, -39]}
 				bind:value={container.payload.measureType}
 			/>
 		</div>

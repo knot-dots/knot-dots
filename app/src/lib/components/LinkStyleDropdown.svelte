@@ -6,16 +6,17 @@
 	interface Props {
 		editable: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		value?: string;
 	}
 
-	let { editable = false, labelledBy, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, offset, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
 	<SingleChoiceDropdown
 		{labelledBy}
-		offset={[-41, -39]}
+		{offset}
 		options={linkStyles.options.map((o) => ({ value: o, label: $_(`link_style.${o}`) }))}
 		bind:value
 	/>

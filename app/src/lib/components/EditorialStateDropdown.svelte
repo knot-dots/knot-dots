@@ -7,16 +7,23 @@
 		aiSuggestion?: boolean;
 		editable?: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		value: string | undefined;
 	}
 
-	let { aiSuggestion = false, labelledBy, editable = false, value = $bindable() }: Props = $props();
+	let {
+		aiSuggestion = false,
+		editable = false,
+		labelledBy,
+		offset,
+		value = $bindable()
+	}: Props = $props();
 </script>
 
 {#if editable}
 	<SingleChoiceDropdown
 		{labelledBy}
-		offset={[-41, -39]}
+		{offset}
 		options={[
 			{ label: $_('empty'), value: undefined },
 			...editorialState.options.map((o) => ({

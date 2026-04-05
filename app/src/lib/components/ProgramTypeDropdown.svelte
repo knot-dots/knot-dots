@@ -6,16 +6,17 @@
 	interface Props {
 		editable?: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		value: ProgramType;
 	}
 
-	let { editable = false, labelledBy, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, offset, value = $bindable() }: Props = $props();
 
 	const options = $derived(programTypes.options.map((o) => ({ label: $_(o), value: o })));
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown {labelledBy} offset={[0, -39]} {options} bind:value />
+	<SingleChoiceDropdown {labelledBy} {offset} {options} bind:value />
 {:else}
 	<span class="value">{$_(value)}</span>
 {/if}
