@@ -29,7 +29,7 @@
 
 	const popover = createPopover({});
 
-	const [popperRef, popperContent, getPopperInstance] = createPopperActions({
+	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
 		strategy: 'absolute'
 	});
@@ -37,30 +37,6 @@
 	const extraOpts = $derived.by(() => ({
 		modifiers: [{ name: 'offset', options: { offset } }]
 	}));
-
-	function autoUpdate(node: HTMLElement) {
-		const update = () => getPopperInstance()?.update();
-		const observer = new ResizeObserver(update);
-		observer.observe(node);
-		if (node.parentElement) observer.observe(node.parentElement);
-		window.addEventListener('resize', update);
-		window.addEventListener('scroll', update, true);
-
-		return {
-			destroy() {
-				observer.disconnect();
-				window.removeEventListener('resize', update);
-				window.removeEventListener('scroll', update, true);
-			}
-		};
-	}
-
-	$effect(() => {
-		if (!$popover.expanded) return;
-		queueMicrotask(() => getPopperInstance()?.update());
-	});
-
-	let panelEl = $state<HTMLElement | null>(null);
 
 	type Option = (typeof options)[number];
 	type SubOption = NonNullable<Option['subOptions']>[number];
@@ -105,7 +81,7 @@
 </script>
 
 {#if editable || (value.length > 1 && compact)}
-	<div class="dropdown" use:popperRef use:autoUpdate>
+	<div class="dropdown" use:popperRef>
 		<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
 			<span class="value" class:value--compact={compact}>
 				{#each selectedEntries.slice(0, value.length > 1 && compact ? 1 : value.length) as entry (entry.option.value)}
@@ -134,7 +110,6 @@
 					class="dropdown-panel"
 					use:popperContent={extraOpts}
 					use:popover.panel
-					bind:this={panelEl}
 				>
 					{#each options as option (option.value)}
 						<MultipleChoiceDisclosureOption {option} bind:value {iconURL} />
@@ -145,7 +120,7 @@
 					<ul>
 						{#each selectedEntries as entry (entry.option.value)}
 							<li>
-								<span class="badge badge--gray">{$_(entry.option.label)}</span>
+								<span class="badge badge--gray">{entry.option.label}</span>
 							</li>
 						{/each}
 					</ul>
