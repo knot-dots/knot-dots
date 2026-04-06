@@ -9,7 +9,7 @@
 	import type { AnyContainer, CategoryContainer } from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: AnyContainer & { payload: { category: Record<string, string[]> } };
 		editable?: boolean;
 		organizationGuid?: string;
 		includeDefaultOrganization?: boolean;
@@ -108,7 +108,7 @@
 			{@const id = crypto.randomUUID()}
 			<div class="label" {id}>{category.payload.title ?? category.payload.key}</div>
 			<CustomCategoryDropdown
-				bind:value={(container.payload as { category: Record<string, string[]> }).category[key]}
+				bind:value={container.payload.category[key]}
 				{editable}
 				labelledBy={id}
 				options={optionsByKey.get(key) ?? []}
