@@ -1,6 +1,7 @@
 <script lang="ts">
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
+	import EditableHelpSlug from '$lib/components/EditableHelpSlug.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -27,6 +28,10 @@
 	{#snippet general()}
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+		{/if}
+
+		{#if $ability.can('update', container, 'slug')}
+			<EditableHelpSlug {editable} bind:value={container.payload.slug} />
 		{/if}
 	{/snippet}
 
