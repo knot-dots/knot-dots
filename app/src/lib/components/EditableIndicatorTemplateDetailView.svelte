@@ -215,7 +215,6 @@
 
 	.segmented-button .button {
 		border-color: var(--color-blue-gray-200);
-		padding: 0.5rem 0.75rem;
 	}
 
 	.segmented-button * {
