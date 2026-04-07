@@ -2001,4 +2001,8 @@ img.cover {
 	img.cover {
 		max-width: 50% !important;
 	}
+
+	.card {
+		break-inside: avoid-page;
+	}
 }
