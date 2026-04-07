@@ -950,7 +950,10 @@ const helpPayload = z.object({
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	slug: z.array(helpSlug).transform(deduplicate).default([]),
+	slug: z
+		.preprocess((v) => (Array.isArray(v) ? v.filter(isHelpSlug) : []), z.array(helpSlug))
+		.transform(deduplicate)
+		.default([]),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.help),
 	visibility: visibility.default(visibility.enum['public'])
