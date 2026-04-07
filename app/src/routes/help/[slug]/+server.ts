@@ -4,7 +4,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { helpSlug, newContainer, payloadTypes, predicates } from '$lib/models';
-import { createContainer, getContainerBySlug, getManyOrganizationContainers } from '$lib/server/db';
+import { createContainer, getManyContainers, getManyOrganizationContainers } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -14,8 +14,10 @@ export const GET = (async ({ locals, params }) => {
 	}
 
 	try {
-		const container = await locals.pool.connect(getContainerBySlug(parsedSlug.data));
-		return json(container);
+		const containers = await locals.pool.connect(
+			getManyContainers([], { helpSlugs: [parsedSlug.data] }, 'alpha')
+		);
+		return json(containers);
 	} catch (e) {
 		if (
 			e instanceof NotFoundError &&
@@ -41,7 +43,7 @@ export const GET = (async ({ locals, params }) => {
 					})
 				)
 			);
-			return json(container);
+			return json([container]);
 		} else {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}

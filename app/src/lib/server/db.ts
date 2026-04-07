@@ -540,6 +540,7 @@ function prepareWhereCondition(filters: {
 	audience?: string[];
 	customCategories?: Record<string, string[]>;
 	guid?: string[];
+	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
@@ -575,6 +576,10 @@ function prepareWhereCondition(filters: {
 			if (!values?.length) continue;
 			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
 		}
+	}
+	if (filters.helpSlugs?.length) {
+		conditions.push(sql.fragment`c.payload->>'type' = 'help'`);
+		conditions.push(sql.fragment`c.payload->'slug' ?| ${sql.array(filters.helpSlugs, 'text')}`);
 	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
@@ -732,6 +737,7 @@ export function getManyContainers(
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		guid?: string[];
+		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
