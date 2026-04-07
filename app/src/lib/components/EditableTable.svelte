@@ -472,12 +472,10 @@
 		min-width: var(--label-width);
 		text-align: left;
 		border-radius: 4px 0 0 0;
-		overflow: hidden;
 	}
 
 	thead tr > :last-child {
 		border-radius: 0 4px 0 0;
-		overflow: hidden;
 	}
 
 	.head-content {
@@ -522,11 +520,6 @@
 
 	thead button:hover {
 		background: var(--head-action-hover);
-	}
-
-	tbody:last-of-type tr:last-child > :first-child,
-	tbody:last-of-type tr:last-child > :last-child {
-		overflow: hidden;
 	}
 
 	tbody:last-of-type tr:last-child > :first-child {
