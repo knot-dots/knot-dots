@@ -7,6 +7,7 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
 	import { untrack } from 'svelte';
 
@@ -303,7 +304,9 @@
 				<span class="selection-count">
 					{$_('compare_municipalities_selected', { values: { count: localSelected.length } })}
 					{#if localSelected.length >= MAX_SELECTION}
-						<span class="max-indicator">({$_('compare_max_reached')})</span>
+						<span class="max-indicator"
+							>({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})</span
+						>
 					{/if}
 				</span>
 
@@ -333,6 +336,7 @@
 						{#each federalLevelItems as item (item.key)}
 							<li>
 								<label class="federal-level-item">
+									<ClipboardIcon />
 									<input
 										class="is-visually-hidden"
 										type="radio"
@@ -491,6 +495,10 @@
 		gap: 6px;
 		height: 72px;
 		padding: 12px;
+	}
+
+	.federal-level-item :global(svg) {
+		color: var(--color-gray-400);
 	}
 
 	.federal-level-item:hover {
