@@ -219,10 +219,10 @@
 
 	.segmented-button * {
 		color: var(--color-blue-gray-800);
-		font-size: 14px;
+		font-size: 0.875rem;
 		font-style: normal;
 		font-weight: 500;
-		line-height: 125%; /* 17.5px */
+		line-height: 125%;
 	}
 
 	.segmented-button > .button:has(input:checked) {
