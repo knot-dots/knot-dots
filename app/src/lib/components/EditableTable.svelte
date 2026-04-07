@@ -590,7 +590,7 @@
 	}
 
 	tbody td.locked {
-		background: var(--color-gray-025);
+		background: repeating-linear-gradient(45deg, #fff5f5, #fff5f5 2px, #ffebeb 2px 4px);
 	}
 
 	tr.sum th,
