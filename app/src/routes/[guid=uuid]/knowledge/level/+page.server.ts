@@ -80,20 +80,18 @@ export const load = (async ({ locals, url, parent }) => {
 		);
 	} else {
 		if (features.useElasticsearch()) {
-			const esResult = await locals.pool.connect(
-				getManyContainersWithES(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						...coreCategoryFilters,
-						customCategories,
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.knowledge]
-					},
-					url.searchParams.get('sort') ?? '',
-					undefined,
-					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-				)
+			const esResult = await getManyContainersWithES(
+				currentOrganization.payload.default ? [] : [currentOrganization.guid],
+				{
+					...coreCategoryFilters,
+					customCategories,
+					programTypes: url.searchParams.getAll('programType'),
+					terms: url.searchParams.get('terms') ?? '',
+					type: [payloadTypes.enum.knowledge]
+				},
+				url.searchParams.get('sort') ?? '',
+				undefined,
+				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = esResult.containers;
 			data = esResult.facets;
@@ -116,14 +114,12 @@ export const load = (async ({ locals, url, parent }) => {
 
 	let programs: ProgramContainer[];
 	if (features.useElasticsearch()) {
-		const esPrograms = await locals.pool.connect(
-			getManyContainersWithES(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{ type: [payloadTypes.enum.program] },
-				url.searchParams.get('sort') ?? '',
-				undefined,
-				{ includeFacets: false }
-			)
+		const esPrograms = await getManyContainersWithES(
+			currentOrganization.payload.default ? [] : [currentOrganization.guid],
+			{ type: [payloadTypes.enum.program] },
+			url.searchParams.get('sort') ?? '',
+			undefined,
+			{ includeFacets: false }
 		);
 		programs = esPrograms.containers as ProgramContainer[];
 	} else {

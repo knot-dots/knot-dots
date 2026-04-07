@@ -105,12 +105,12 @@ export function createIndexWithMappings(client: Client, index: string) {
 			properties: {
 				guid: { type: 'keyword' },
 				revision: { type: 'integer' },
-				validFrom: { type: 'date' },
+				valid_from: { type: 'date' },
 				priority: { type: 'integer' },
 				realm: { type: 'keyword' },
 				organization: { type: 'keyword' },
-				organizationalUnit: { type: 'keyword' },
-				managedBy: { type: 'keyword' },
+				organizational_unit: { type: 'keyword' },
+				managed_by: { type: 'keyword' },
 				type: { type: 'keyword' },
 				title: {
 					type: 'text',
@@ -177,19 +177,7 @@ function resolveLabel(code: string): string | undefined {
 	return typeof cur === 'string' ? cur : undefined;
 }
 
-function sanitizeDates(obj: any) {
-	if (obj && typeof obj === 'object') {
-		for (const k of Object.keys(obj)) {
-			const v = obj[k];
-			if (/Date$/.test(k)) {
-				delete obj[k];
-				continue;
-			}
-			if (Array.isArray(v)) v.forEach((item) => sanitizeDates(item));
-			else if (v && typeof v === 'object') sanitizeDates(v);
-		}
-	}
-}
+
 
 export function normalizePayload(payload: any) {
 	const normalized = { ...payload };
@@ -206,7 +194,7 @@ export function normalizePayload(payload: any) {
 		'resourceUnit'
 	]) {
 		const value = normalized[key];
-		if (value === undefined || value === null) normalized[key] = [];
+		if (value === undefined || value === null) continue;
 		else if (Array.isArray(value)) normalized[key] = value;
 		else normalized[key] = [value];
 	}
@@ -224,7 +212,6 @@ export function normalizePayload(payload: any) {
 		}
 		normalized.category = normalizedCategory;
 	}
-	sanitizeDates(normalized);
 	return normalized;
 }
 
@@ -241,6 +228,7 @@ export function toDoc(row: {
 	relation?: Relation[];
 }) {
 	const normalized = normalizePayload(row.payload || {});
+	const originalPayload = { ...(row.payload || {}) };
 	const type: string | undefined = normalized?.type;
 	const title: string | undefined = normalized?.title ?? normalized?.name;
 	const description: string | undefined = normalized?.description;
@@ -280,15 +268,15 @@ export function toDoc(row: {
 		revision: row.revision,
 		realm: row.realm,
 		organization: row.organization,
-		organizationalUnit: row.organizational_unit ?? undefined,
-		managedBy: row.managed_by,
+		organizational_unit: row.organizational_unit ?? undefined,
+		managed_by: row.managed_by,
 		type,
 		title,
 		visibility,
-		validFrom,
+		valid_from: validFrom,
 		priority,
 		relation,
-		payload: normalized,
+		payload: originalPayload,
 		sdg_labels: sdgLabels,
 		topic_labels: topicLabels,
 		audience_labels: audienceLabels,

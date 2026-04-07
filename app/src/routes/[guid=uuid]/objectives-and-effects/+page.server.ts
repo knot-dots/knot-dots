@@ -52,20 +52,18 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	let containers: IndicatorTemplateContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
 	if (features.useElasticsearch()) {
-		const esResult = await locals.pool.connect(
-			getManyContainersWithES(
-				[],
-				{
-					...coreCategoryFilters,
-					customCategories,
-					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
-					indicatorTypes: url.searchParams.getAll('indicatorType'),
-					type: [payloadTypes.enum.indicator_template]
-				},
-				'',
-				undefined,
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-			)
+		const esResult = await getManyContainersWithES(
+			[],
+			{
+				...coreCategoryFilters,
+				customCategories,
+				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
+				indicatorTypes: url.searchParams.getAll('indicatorType'),
+				type: [payloadTypes.enum.indicator_template]
+			},
+			'',
+			undefined,
+			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 		);
 		containers = esResult.containers as IndicatorTemplateContainer[];
 		data = esResult.facets;
