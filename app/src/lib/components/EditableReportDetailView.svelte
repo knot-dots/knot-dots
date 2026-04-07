@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import PrinterIcon from '~icons/heroicons/printer-20-solid';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -71,6 +72,11 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
+
+			<button class="print-button" onclick={() => window.print()} type="button">
+				<PrinterIcon />
+				<span>{$_('print')}</span>
+			</button>
 		{/snippet}
 	</EditableContainerDetailView>
 
@@ -83,3 +89,13 @@
 {/snippet}
 
 {@render layout(header, main)}
+
+<style>
+	.print-button {
+		align-items: center;
+		display: inline-flex;
+		gap: 0.5rem;
+		margin-left: var(--details-section-padding-x, 1.5rem);
+		margin-top: 2rem;
+	}
+</style>
