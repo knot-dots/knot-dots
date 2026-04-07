@@ -414,6 +414,8 @@
 		--head-text: var(--color-yellow-900);
 		--head-current-background: var(--color-yellow-200);
 		--head-action-hover: var(--color-yellow-200);
+		--header-row-height: 2.5rem;
+		--body-row-height: 3rem;
 		--label-width: 18.75rem;
 		--value-column-width: 3.5rem;
 
@@ -465,6 +467,12 @@
 		border-top: 1px solid var(--head-border);
 		color: var(--head-text);
 		font-weight: 400;
+		height: var(--header-row-height);
+	}
+
+	tbody th,
+	tbody td {
+		height: var(--body-row-height);
 	}
 
 	.head-label {
@@ -509,12 +517,13 @@
 		border-radius: 8px;
 		cursor: pointer;
 		display: inline-flex;
-		font-size: large;
+		font-size: 1.125rem;
 		font-weight: 600;
-		height: 1.75rem;
+		height: 1.25rem;
 		justify-content: center;
+		line-height: 1;
 		padding: 0;
-		width: 1.75rem;
+		width: 1.25rem;
 	}
 
 	thead button:hover {
