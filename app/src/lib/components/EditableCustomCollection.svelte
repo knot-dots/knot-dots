@@ -76,6 +76,14 @@
 
 	const inViewport = new IsInViewport(() => header);
 
+	let inViewportOnce = $state(false);
+
+	$effect(() => {
+		if (inViewport.current) {
+			inViewportOnce = true;
+		}
+	});
+
 	const savedResource = resource(
 		[
 			() => container.payload.item,
@@ -83,30 +91,37 @@
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
-			() => inViewport.current
+			() => inViewportOnce
 		],
 		async ([item, filter, terms, searchTerms, sort], _, { signal }) => {
 			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
 			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 
-			return fetchContainers(
-				{
-					...(item.length > 0
-						? { guid: item, terms: combinedTerms }
-						: {
-								audience: filter.audience,
-								sdg: filter.sdg,
-								indicatorCategory: filter.indicatorCategory,
-								organization: [page.data.currentOrganization.guid],
-								policyFieldBNK: filter.policyFieldBNK,
-								terms: combinedTerms,
-								topic: filter.topic,
-								payloadType: type
-							})
-				},
-				sort,
-				{ signal }
+			const activeFilters = Object.values(filter).reduce(
+				(acc, v) => acc + (v.length > 0 ? 1 : 0),
+				0
 			);
+
+			return item.length > 0 || activeFilters > 0
+				? fetchContainers(
+						{
+							...(item.length > 0
+								? { guid: item, terms: combinedTerms }
+								: {
+										audience: filter.audience,
+										sdg: filter.sdg,
+										indicatorCategory: filter.indicatorCategory,
+										organization: [page.data.currentOrganization.guid],
+										policyFieldBNK: filter.policyFieldBNK,
+										terms: combinedTerms,
+										topic: filter.topic,
+										payloadType: type
+									})
+						},
+						sort,
+						{ signal }
+					)
+				: [];
 		},
 		{ lazy: true, debounce: 300 }
 	);

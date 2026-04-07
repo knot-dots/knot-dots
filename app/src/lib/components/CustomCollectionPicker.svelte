@@ -92,24 +92,26 @@
 			() => inViewport.current
 		],
 		async (
-			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
+			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms, inViewport],
 			_,
 			{ signal }
 		) => {
-			return fetchContainers(
-				{
-					audience,
-					sdg,
-					indicatorCategory,
-					organization: [page.data.currentOrganization.guid],
-					policyFieldBNK,
-					terms,
-					topic,
-					payloadType: type
-				},
-				sort,
-				{ signal }
-			);
+			return inViewport
+				? fetchContainers(
+						{
+							audience,
+							sdg,
+							indicatorCategory,
+							organization: [page.data.currentOrganization.guid],
+							policyFieldBNK,
+							terms,
+							topic,
+							payloadType: type
+						},
+						sort,
+						{ signal }
+					)
+				: [];
 		},
 		{
 			debounce: 300,
