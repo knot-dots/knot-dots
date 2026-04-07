@@ -444,8 +444,6 @@
 		width: fit-content;
 		border-collapse: separate;
 		border-spacing: 0;
-		border-radius: 1rem;
-		overflow: hidden;
 	}
 
 	th,
@@ -473,12 +471,12 @@
 	.head-label {
 		min-width: var(--label-width);
 		text-align: left;
-		border-radius: 1rem 0 0 0;
+		border-radius: 4px 0 0 0;
 		overflow: hidden;
 	}
 
 	thead tr > :last-child {
-		border-radius: 0 1rem 0 0;
+		border-radius: 0 4px 0 0;
 		overflow: hidden;
 	}
 
@@ -532,11 +530,11 @@
 	}
 
 	tbody:last-of-type tr:last-child > :first-child {
-		border-radius: 0 0 0 1rem;
+		border-radius: 0 0 0 4px;
 	}
 
 	tbody:last-of-type tr:last-child > :last-child {
-		border-radius: 0 0 1rem 0;
+		border-radius: 0 0 4px 0;
 	}
 
 	.section-heading {
