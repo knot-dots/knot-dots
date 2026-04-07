@@ -1,6 +1,6 @@
-import { helpContainer } from '$lib/models';
+import { type HelpSlug, helpContainer } from '$lib/models';
 
-export default async function fetchHelpBySlug(slug: string) {
+export default async function fetchHelpBySlug(slug: HelpSlug) {
 	const response = await fetch(`/help/${slug}`);
 	const data = await response.json();
 	return helpContainer.parse(data);

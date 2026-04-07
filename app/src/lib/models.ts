@@ -119,6 +119,106 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+const helpSlugValues = [
+	'all-catalog',
+	'all-level',
+	'all-table',
+	'binary-indicator-view',
+	'categories',
+	'category-view',
+	'content-partner-view',
+	'effect-view',
+	'goal-view',
+	'goals-catalog',
+	'goals-level',
+	'goals-status',
+	'goals-table',
+	'help-catalog',
+	'help-view',
+	'import',
+	'indicator-catalog',
+	'indicator-template-view',
+	'indicators',
+	'indicators-table',
+	'iooi',
+	'knowledge-catalog',
+	'knowledge-level',
+	'knowledge-table',
+	'knowledge-view',
+	'measure-view',
+	'measures-catalog',
+	'measures-monitoring',
+	'measures-status',
+	'measures-table',
+	'measures-templates',
+	'members',
+	'objective-view',
+	'objectives-and-effects',
+	'profile',
+	'program-view',
+	'programs-catalog',
+	'programs-level',
+	'programs-status',
+	'programs-table',
+	'relations',
+	'report-view',
+	'resource-data-view',
+	'resource-v2-view',
+	'resource-view',
+	'resources-catalog',
+	'resources-table',
+	'rule-view',
+	'rules-catalog',
+	'rules-status',
+	'rules-table',
+	'simple-measure-view',
+	'task-view',
+	'tasks-catalog',
+	'tasks-status',
+	'tasks-table',
+	'teaser-view',
+	'term-view',
+	'text-view'
+] as const;
+
+export const helpSlug = z.enum(helpSlugValues);
+
+export type HelpSlug = z.infer<typeof helpSlug>;
+
+export function isHelpSlug(value: unknown): value is HelpSlug {
+	return helpSlug.safeParse(value).success;
+}
+
+const detailViewHelpSlugByPayloadType = {
+	[payloadTypes.enum.binary_indicator]: helpSlug.enum['binary-indicator-view'],
+	[payloadTypes.enum.category]: helpSlug.enum['category-view'],
+	[payloadTypes.enum.content_partner]: helpSlug.enum['content-partner-view'],
+	[payloadTypes.enum.effect]: helpSlug.enum['effect-view'],
+	[payloadTypes.enum.goal]: helpSlug.enum['goal-view'],
+	[payloadTypes.enum.help]: helpSlug.enum['help-view'],
+	[payloadTypes.enum.indicator_template]: helpSlug.enum['indicator-template-view'],
+	[payloadTypes.enum.knowledge]: helpSlug.enum['knowledge-view'],
+	[payloadTypes.enum.measure]: helpSlug.enum['measure-view'],
+	[payloadTypes.enum.objective]: helpSlug.enum['objective-view'],
+	[payloadTypes.enum.program]: helpSlug.enum['program-view'],
+	[payloadTypes.enum.report]: helpSlug.enum['report-view'],
+	[payloadTypes.enum.resource]: helpSlug.enum['resource-view'],
+	[payloadTypes.enum.resource_data]: helpSlug.enum['resource-data-view'],
+	[payloadTypes.enum.resource_v2]: helpSlug.enum['resource-v2-view'],
+	[payloadTypes.enum.rule]: helpSlug.enum['rule-view'],
+	[payloadTypes.enum.simple_measure]: helpSlug.enum['simple-measure-view'],
+	[payloadTypes.enum.task]: helpSlug.enum['task-view'],
+	[payloadTypes.enum.teaser]: helpSlug.enum['teaser-view'],
+	[payloadTypes.enum.term]: helpSlug.enum['term-view'],
+	[payloadTypes.enum.text]: helpSlug.enum['text-view']
+} as const satisfies Partial<Record<PayloadType, HelpSlug>>;
+
+export function helpSlugForDetailView(payloadType: PayloadType): HelpSlug | undefined {
+	return detailViewHelpSlugByPayloadType[
+		payloadType as keyof typeof detailViewHelpSlugByPayloadType
+	];
+}
+
 const categoryObjectTypeValues = [
 	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.goal,
@@ -850,7 +950,7 @@ const helpPayload = z.object({
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	slug: z.string().default(''),
+	slug: z.array(helpSlug).transform(deduplicate).default([]),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.help),
 	visibility: visibility.default(visibility.enum['public'])

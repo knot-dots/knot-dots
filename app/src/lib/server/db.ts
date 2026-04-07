@@ -15,6 +15,7 @@ import {
 	type Container,
 	container,
 	findDescendants,
+	type HelpSlug,
 	type IndicatorTemplateContainer,
 	type ModifiedContainer,
 	type NewContainer,
@@ -460,12 +461,15 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
-export function getContainerBySlug(slug: string) {
+export function getContainerBySlug(slug: HelpSlug) {
 	return async (connection: DatabaseConnection): Promise<Container> => {
 		const containerResult = await connection.one(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE payload->>'slug' = ${slug} AND valid_currently AND NOT deleted
+			WHERE payload->>'type' = 'help'
+				AND payload->'slug' @> ${sql.jsonb(<SerializableValue>[slug])}
+				AND valid_currently
+				AND NOT deleted
 		`);
 
 		const userResult = await connection.any(sql.typeAlias('userRelationWithObject')`

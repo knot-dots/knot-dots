@@ -3,12 +3,12 @@
 	import QuestionCircle from '~icons/flowbite/question-circle-outline';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { overlayKey, paramsFromFragment } from '$lib/models';
+	import { type HelpSlug, overlayKey, paramsFromFragment } from '$lib/models';
 	import { overlayHistory } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		slug: string;
+		slug: HelpSlug;
 	}
 
 	let { slug }: Props = $props();
