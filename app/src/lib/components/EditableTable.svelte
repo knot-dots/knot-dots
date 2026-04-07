@@ -448,8 +448,8 @@
 
 	th,
 	td {
-		border-bottom: 0.0625rem solid var(--color-gray-200);
-		border-right: 0.0625rem solid var(--color-gray-200);
+		border-bottom: 1px solid var(--color-gray-200);
+		border-right: 1px solid var(--color-gray-200);
 		font-size: 0.875rem;
 		line-height: 1.5;
 		padding: 0.75rem 0.5rem;
@@ -457,13 +457,13 @@
 	}
 
 	tr > :first-child {
-		border-left: 0.0625rem solid var(--color-gray-200);
+		border-left: 1px solid var(--color-gray-200);
 	}
 
 	thead th {
 		background: var(--head-background);
 		border-color: var(--head-border);
-		border-top: 0.0625rem solid var(--head-border);
+		border-top: 1px solid var(--head-border);
 		color: var(--head-text);
 		font-weight: 400;
 	}
@@ -507,7 +507,7 @@
 		align-items: center;
 		background: transparent;
 		border: 0.0625rem solid transparent;
-		border-radius: 0.5rem;
+		border-radius: 8px;
 		cursor: pointer;
 		display: inline-flex;
 		font-size: large;
@@ -627,8 +627,8 @@
 	tr.action button {
 		align-items: center;
 		background: white;
-		border: 0.0625rem solid var(--color-gray-200);
-		border-radius: 0.5rem;
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
 		color: var(--color-gray-900);
 		display: inline-flex;
 		gap: 0.5rem;
