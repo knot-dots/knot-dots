@@ -210,7 +210,7 @@
 
 <style>
 	.segmented-button {
-		padding: 0 1.5rem;
+		margin-bottom: 1rem;
 	}
 
 	.segmented-button .button {

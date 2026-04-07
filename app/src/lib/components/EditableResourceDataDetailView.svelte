@@ -346,19 +346,21 @@
 				/>
 			{/key}
 
-			<EditableTable
-				title={isBudgetContainer
-					? $_('resource_table.subordinate_goals_budget')
-					: $_(container.payload.resourceDataType)}
-				titleUnit={$_(resourceUnit)}
-				columnLabel={isBudgetContainer ? $_('goal') : ''}
-				{sections}
-				fillYearGaps={isBudgetContainer}
-				getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
-				setEntry={(containerToUpdate, year, value) =>
-					setEntry(containerToUpdate as ResourceDataContainer, year, value)}
-				onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
-			/>
+			<div class="details-section">
+				<EditableTable
+					title={isBudgetContainer
+						? $_('resource_table.subordinate_goals_budget')
+						: $_(container.payload.resourceDataType)}
+					titleUnit={$_(resourceUnit)}
+					columnLabel={isBudgetContainer ? $_('goal') : ''}
+					{sections}
+					fillYearGaps={isBudgetContainer}
+					getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
+					setEntry={(containerToUpdate, year, value) =>
+						setEntry(containerToUpdate as ResourceDataContainer, year, value)}
+					onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
+				/>
+			</div>
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}

@@ -383,16 +383,18 @@
 				/>
 			{/key}
 
-			<EditableTable
-				title={$_('resource_table.resource_requirements')}
-				titleUnit={$_(container.payload.resourceUnit)}
-				columnLabel={$_('table.data_object')}
-				{sections}
-				getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
-				setEntry={(containerToUpdate, year, value) =>
-					setEntry(containerToUpdate as ResourceDataContainer, year, value)}
-				onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
-			/>
+			<div class="details-section">
+				<EditableTable
+					title={$_('resource_table.resource_requirements')}
+					titleUnit={$_(container.payload.resourceUnit)}
+					columnLabel={$_('table.data_object')}
+					{sections}
+					getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
+					setEntry={(containerToUpdate, year, value) =>
+						setEntry(containerToUpdate as ResourceDataContainer, year, value)}
+					onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
+				/>
+			</div>
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}

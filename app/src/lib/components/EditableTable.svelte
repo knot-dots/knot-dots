@@ -262,150 +262,152 @@
 	}
 </script>
 
-<div class="details-section editable-table" data-variant={variant}>
-	<h2 class="details-heading">
-		{title}
-		<small>{titleUnit}</small>
-	</h2>
+<h2 class="details-heading">
+	{title}
+	<small>{titleUnit}</small>
+</h2>
 
-	<div class="scroll" bind:this={tableContainer}>
-		<table>
-			<thead>
-				<tr>
-					<th class="head-label">
-						<div class="head-content">
-							<span>{columnLabel}</span>
-							<span class="head-years">
-								<span>{yearLabel}</span>
-								{#if isEditMode}
-									<button
-										type="button"
-										aria-label={$_('table.add_column_left')}
-										onclick={addEntryLeft}
-									>
-										+
-									</button>
-								{/if}
-							</span>
-						</div>
-					</th>
-					{#each years as year (year)}
-						<th class="year" class:current={year === new Date().getFullYear()}>
-							{year}
-						</th>
-					{/each}
-					{#if isEditMode}
-						<th>
-							<button type="button" aria-label={addYearLabel} onclick={addEntryRight}> + </button>
-						</th>
-					{/if}
-				</tr>
-			</thead>
-
-			<!-- Dynamic sections -->
-			{#each sections as section (section.heading)}
-				<tbody>
-					{#if section.heading}
-						<tr>
-							<th class="section-heading" colspan={columnCount}>{section.heading}</th>
-						</tr>
-					{/if}
-
-					{#if section.rows.length === 0 && section.emptyMessage}
-						<tr>
-							<td colspan={columnCount} class="empty">{section.emptyMessage}</td>
-						</tr>
-					{:else}
-						{#each section.rows as row (row.id)}
-							{#if isActionRow(row)}
-								<tr class="action">
-									<td colspan={columnCount}>
-										<button type="button" disabled={row.disabled} onclick={row.onAction}>
-											{#if row.loading}
-												<span class="loader"></span>
-											{:else}
-												<span class="plus">+</span>
-												{row.label}
-											{/if}
-										</button>
-									</td>
-								</tr>
-							{:else}
-								{@const valuesByYear = getValueByYear(row)}
-								{@const canEdit = rowCanEdit(row)}
-								{@const timerKey = row.id}
-								<tr>
-									<th
-										class="row-label truncated"
-										scope="row"
-										class:editable={canEdit}
-										class:indented={row.indented}
-									>
-										{#if row.dotColor}
-											<span class="dot" style:background-color={row.dotColor}></span>
-										{/if}
-										{#if row.href}
-											<a href={row.href}>{row.label}</a>
-										{:else}
-											<span>{row.label}</span>
-										{/if}
-										{#if row.subtitle}
-											<span class="subtitle">({row.subtitle})</span>
-										{/if}
-									</th>
-									{#each years as year (year)}
-										{@const value = valuesByYear.get(year)}
-										<td
-											class="value focus-indicator"
-											class:missing={!hasValue(value)}
-											class:locked={isEditMode && !canEdit}
-											class:editable={canEdit}
-										>
-											{#if canEdit}
-												<input
-													type="text"
-													inputmode="decimal"
-													data-year={year}
-													value={hasValue(value) ? formatNumber(value) : ''}
-													placeholder="0"
-													oninput={(inputEvent) => handleInput(year, inputEvent, row, timerKey)}
-												/>
-											{:else}
-												{hasValue(value) ? formatNumber(value) : ''}
-											{/if}
-										</td>
-									{/each}
-									{#if isEditMode}
-										<td class:locked={isEditMode && !canEdit}></td>
-									{/if}
-								</tr>
+<div bind:this={tableContainer} class="editable-table" data-variant={variant}>
+	<table>
+		<thead>
+			<tr>
+				<th class="head-label">
+					<div class="head-content">
+						<span>{columnLabel}</span>
+						<span class="head-years">
+							<span>{yearLabel}</span>
+							{#if isEditMode}
+								<button
+									type="button"
+									aria-label={$_('table.add_column_left')}
+									onclick={addEntryLeft}
+								>
+									+
+								</button>
 							{/if}
-						{/each}
+						</span>
+					</div>
+				</th>
+				{#each years as year (year)}
+					<th class="year" class:current={year === new Date().getFullYear()}>
+						{year}
+					</th>
+				{/each}
+				{#if isEditMode}
+					<th>
+						<button type="button" aria-label={addYearLabel} onclick={addEntryRight}> + </button>
+					</th>
+				{/if}
+			</tr>
+		</thead>
 
-						{#if section.showSum}
-							{@const sumByYearMap = sumByYear(section.rows.filter(isDataRow))}
-							<tr class="sum">
-								<th class="row-label" scope="row">{$_('table.sum')}</th>
+		<!-- Dynamic sections -->
+		{#each sections as section (section.heading)}
+			<tbody>
+				{#if section.heading}
+					<tr>
+						<th class="section-heading" colspan={columnCount}>{section.heading}</th>
+					</tr>
+				{/if}
+
+				{#if section.rows.length === 0 && section.emptyMessage}
+					<tr>
+						<td colspan={columnCount} class="empty">{section.emptyMessage}</td>
+					</tr>
+				{:else}
+					{#each section.rows as row (row.id)}
+						{#if isActionRow(row)}
+							<tr class="action">
+								<td colspan={columnCount}>
+									<button type="button" disabled={row.disabled} onclick={row.onAction}>
+										{#if row.loading}
+											<span class="loader"></span>
+										{:else}
+											<span class="plus">+</span>
+											{row.label}
+										{/if}
+									</button>
+								</td>
+							</tr>
+						{:else}
+							{@const valuesByYear = getValueByYear(row)}
+							{@const canEdit = rowCanEdit(row)}
+							{@const timerKey = row.id}
+							<tr>
+								<th
+									class="row-label truncated"
+									scope="row"
+									class:editable={canEdit}
+									class:indented={row.indented}
+								>
+									{#if row.dotColor}
+										<span class="dot" style:background-color={row.dotColor}></span>
+									{/if}
+									{#if row.href}
+										<a href={row.href}>{row.label}</a>
+									{:else}
+										<span>{row.label}</span>
+									{/if}
+									{#if row.subtitle}
+										<span class="subtitle">({row.subtitle})</span>
+									{/if}
+								</th>
 								{#each years as year (year)}
-									<td class="value" class:locked={isEditMode}>
-										{hasValue(sumByYearMap.get(year))
-											? formatNumber(sumByYearMap.get(year) as number)
-											: ''}
+									{@const value = valuesByYear.get(year)}
+									<td
+										class="value focus-indicator"
+										class:missing={!hasValue(value)}
+										class:locked={isEditMode && !canEdit}
+										class:editable={canEdit}
+									>
+										{#if canEdit}
+											<input
+												type="text"
+												inputmode="decimal"
+												data-year={year}
+												value={hasValue(value) ? formatNumber(value) : ''}
+												placeholder="0"
+												oninput={(inputEvent) => handleInput(year, inputEvent, row, timerKey)}
+											/>
+										{:else}
+											{hasValue(value) ? formatNumber(value) : ''}
+										{/if}
 									</td>
 								{/each}
 								{#if isEditMode}
-									<td class:locked={isEditMode}></td>
+									<td class:locked={isEditMode && !canEdit}></td>
 								{/if}
 							</tr>
 						{/if}
+					{/each}
+
+					{#if section.showSum}
+						{@const sumByYearMap = sumByYear(section.rows.filter(isDataRow))}
+						<tr class="sum">
+							<th class="row-label" scope="row">{$_('table.sum')}</th>
+							{#each years as year (year)}
+								<td class="value" class:locked={isEditMode}>
+									{hasValue(sumByYearMap.get(year))
+										? formatNumber(sumByYearMap.get(year) as number)
+										: ''}
+								</td>
+							{/each}
+							{#if isEditMode}
+								<td class:locked={isEditMode}></td>
+							{/if}
+						</tr>
 					{/if}
-				</tbody>
-			{/each}
-		</table>
-	</div>
+				{/if}
+			</tbody>
+		{/each}
+	</table>
 </div>
 
 <style>
+	.details-heading {
+		margin-top: 1.5rem;
+	}
+
 	.editable-table {
 		--head-background: var(--color-yellow-100);
 		--head-border: var(--color-yellow-200);
@@ -414,6 +416,13 @@
 		--head-action-hover: var(--color-yellow-200);
 		--label-width: 18.75rem;
 		--value-column-width: 3.5rem;
+
+		margin-left: var(--editable-table-margin-left, 0);
+		margin-right: var(--editable-table-margin-right, 0);
+		margin-top: 1rem;
+		overflow: auto;
+		padding-left: calc(var(--carousel-margin-left) * -1);
+		padding-right: 4rem;
 	}
 
 	.editable-table[data-variant='teal'] {
@@ -429,15 +438,6 @@
 		font-size: 1.25rem;
 		font-weight: 400;
 		line-height: 1.25;
-	}
-
-	.scroll {
-		margin-left: var(--editable-table-margin-left, 0);
-		margin-right: var(--editable-table-margin-right, 0);
-		margin-top: 1.25rem;
-		overflow: auto;
-		padding-left: calc(var(--carousel-margin-left) * -1);
-		padding-right: 4rem;
 	}
 
 	table {
