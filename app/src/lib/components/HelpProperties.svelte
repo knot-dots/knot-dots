@@ -25,13 +25,19 @@
 </script>
 
 <PropertyGrid>
-	{#snippet general()}
-		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
-		{/if}
-
+	{#snippet top()}
 		{#if $ability.can('update', container, 'slug')}
 			<EditableHelpSlug {editable} bind:value={container.payload.slug} />
+		{/if}
+	{/snippet}
+
+	{#snippet general()}
+		{#if $ability.can('update', container, 'slug')}
+			<EditableHelpSlug {editable} bind:value={container.payload.slug} />
+		{/if}
+
+		{#if $ability.can('update', container, 'visibility')}
+			<EditableVisibility {editable} bind:value={container.payload.visibility} />
 		{/if}
 	{/snippet}
 
