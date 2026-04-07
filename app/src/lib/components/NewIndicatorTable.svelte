@@ -40,13 +40,15 @@
 		editable?: boolean;
 		relatedContainers?: Container[];
 		comparisonContainers?: ActualDataContainer[];
+		onDataChanged?: () => void;
 	}
 
 	let {
 		container,
 		editable = false,
 		relatedContainers = [],
-		comparisonContainers = []
+		comparisonContainers = [],
+		onDataChanged
 	}: Props = $props();
 
 	const currentOrgUnitName = $derived(page.data.currentOrganizationalUnit?.payload.name);
@@ -467,9 +469,7 @@
 				return;
 			}
 
-			let reactiveActualDataContainer = $state(await response.json());
-			actualDataContainers = [...actualDataContainers, reactiveActualDataContainer];
-			await invalidate('containers');
+			onDataChanged?.();
 		} catch (error: unknown) {
 			console.error(error);
 		} finally {
