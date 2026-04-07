@@ -443,10 +443,10 @@ async function copyReportContainer(
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		administrativeType: z.array(administrativeTypes).default([]),
-		federalState: z.array(z.string()).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
-		sdg: z.array(sustainableDevelopmentGoals).default([]),
+		federalState: z.array(z.string()).default([]),
+		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
@@ -469,6 +469,7 @@ export const GET = (async ({ locals, url }) => {
 		programType: z.array(programTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
+		sdg: z.array(sustainableDevelopmentGoals).default([]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
@@ -529,13 +530,14 @@ export const GET = (async ({ locals, url }) => {
 				parseResult.data.organization,
 				{
 					audience: parseResult.data.audience,
-					sdg: parseResult.data.sdg,
+					guid: parseResult.data.guid,
 					indicators: parseResult.data.indicator,
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
 					organizationalUnits: parseResult.data.organizationalUnit,
 					policyFieldsBNK: parseResult.data.policyFieldBNK,
 					programTypes: parseResult.data.programType,
+					sdg: parseResult.data.sdg,
 					terms: parseResult.data.terms[0],
 					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
@@ -545,7 +547,10 @@ export const GET = (async ({ locals, url }) => {
 		);
 	}
 
-	if (parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit)) {
+	if (
+		parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit) ||
+		parseResult.data.guid.length > 0
+	) {
 		const orgs = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
 				include: {
@@ -558,6 +563,7 @@ export const GET = (async ({ locals, url }) => {
 					...(parseResult.data.federalState.length > 0 && {
 						federalState: parseResult.data.federalState
 					}),
+					...(parseResult.data.guid.length > 0 && { guid: parseResult.data.guid }),
 					...(parseResult.data.terms.length > 0 && { terms: parseResult.data.terms[0] })
 				},
 				...(parseResult.data.limit && { limit: parseResult.data.limit }),

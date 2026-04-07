@@ -124,26 +124,31 @@
 
 	const savedResource = resource(
 		[
+			() => container.payload.item,
 			() => $state.snapshot(container.payload.filter),
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewport.current
 		],
-		async ([filter, terms, searchTerms, sort], _, { signal }) => {
+		async ([item, filter, terms, searchTerms, sort], _, { signal }) => {
 			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
 			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 
 			return fetchContainers(
 				{
-					audience: filter.audience,
-					sdg: filter.sdg,
-					indicatorCategory: filter.indicatorCategory,
-					organization: [page.data.currentOrganization.guid],
-					policyFieldBNK: filter.policyFieldBNK,
-					terms: combinedTerms,
-					topic: filter.topic,
-					payloadType: type
+					...(item.length > 0
+						? { guid: item, terms: combinedTerms }
+						: {
+								audience: filter.audience,
+								sdg: filter.sdg,
+								indicatorCategory: filter.indicatorCategory,
+								organization: [page.data.currentOrganization.guid],
+								policyFieldBNK: filter.policyFieldBNK,
+								terms: combinedTerms,
+								topic: filter.topic,
+								payloadType: type
+							})
 				},
 				sort,
 				{ signal }
