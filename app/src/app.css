@@ -823,7 +823,7 @@ button.button-square,
 
 	border: solid 1px var(--color-gray-200);
 	border-radius: 0;
-	padding: 0.5rem 1rem;
+	padding: 0.5rem 0.75rem;
 }
 
 .segmented-button > .button:first-child {

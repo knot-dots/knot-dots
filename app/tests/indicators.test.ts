@@ -18,7 +18,7 @@ test('create custom indicator with actual data', async ({ indicatorCatalog, test
 	await expect(indicatorCatalog.overlay.title).toHaveText(titleOfCustomIndicator);
 
 	// Enable entering actual data
-	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	const table = indicatorCatalog.overlay.locator.getByRole('table');
 	await table.getByRole('button', { name: 'Add custom actual data' }).click();
 	await expect(table.getByRole('row', { name: 'Custom actual data' })).toBeVisible();
@@ -46,7 +46,7 @@ test('create custom indicator with actual data', async ({ indicatorCatalog, test
 
 	// Verify actual data is persisted
 	await indicatorCatalog.page.reload();
-	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	await expect(table.getByRole('cell', { name: firstValue })).toBeVisible();
 	await expect(table.getByRole('cell', { name: secondValue })).toBeVisible();
 });
@@ -98,7 +98,7 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTem
 	// Verify the indicator is activated and has custom actual data
 	await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();
 	await expect(indicatorCatalog.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
-	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	await expect(
 		indicatorCatalog.overlay.locator.getByRole('row', { name: 'Custom actual data' })
 	).toBeVisible();

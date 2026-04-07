@@ -58,7 +58,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(budgetRow.locator('td').nth(1)).toContainText('15,000');
 
 		// Verify Budget sum row
-		const budgetSumRow = table.locator('.editable-table__sum-row').first();
+		const budgetSumRow = table.locator('tr.sum').first();
 		await expect(budgetSumRow.locator('td').nth(0)).toContainText('10,000');
 		await expect(budgetSumRow.locator('td').nth(1)).toContainText('15,000');
 
@@ -74,7 +74,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(plannedRow.locator('td').nth(1)).toContainText('12,000');
 
 		// Verify Planned sum row
-		const plannedSumRow = table.locator('.editable-table__sum-row').nth(1);
+		const plannedSumRow = table.locator('tr.sum').nth(1);
 		await expect(plannedSumRow.locator('td').nth(0)).toContainText('8,000');
 		await expect(plannedSumRow.locator('td').nth(1)).toContainText('12,000');
 
@@ -90,7 +90,7 @@ test.describe('Resource V2 Table', () => {
 		await expect(actualRow.locator('td').nth(1)).toContainText('11,000');
 
 		// Verify Actual sum row
-		const actualSumRow = table.locator('.editable-table__sum-row').nth(2);
+		const actualSumRow = table.locator('tr.sum').nth(2);
 		await expect(actualSumRow.locator('td').nth(0)).toContainText('7,500');
 		await expect(actualSumRow.locator('td').nth(1)).toContainText('11,000');
 	});
@@ -110,8 +110,16 @@ test.describe('Resource V2 Table', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are visible in edit mode
-		const leftAddButton = table.locator('.editable-table__head-years button');
-		const rightAddButton = table.locator('thead th:last-child button');
+		const leftAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.first()
+			.getByRole('button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await expect(leftAddButton).toBeVisible();
 		await expect(rightAddButton).toBeVisible();
 
@@ -140,7 +148,11 @@ test.describe('Resource V2 Table', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
-		const rightAddButton = table.locator('thead th:last-child button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await rightAddButton.click();
 
 		// The first year added will be the current year
@@ -181,7 +193,11 @@ test.describe('Resource V2 Table', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Add a year column using the right button
-		const rightAddButton = table.locator('thead th:last-child button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await rightAddButton.click();
 
 		// The first year added will be the current year
@@ -251,8 +267,16 @@ test.describe('Resource V2 Table', () => {
 		const table = dotsBoard.overlay.locator.getByRole('table');
 
 		// Verify + buttons are not visible
-		const leftAddButton = table.locator('.editable-table__head-years button');
-		const rightAddButton = table.locator('thead th:last-child button');
+		const leftAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.first()
+			.getByRole('button');
+		const rightAddButton = table
+			.locator('thead')
+			.getByRole('columnheader')
+			.last()
+			.getByRole('button');
 		await expect(leftAddButton).not.toBeVisible();
 		await expect(rightAddButton).not.toBeVisible();
 

@@ -4,6 +4,8 @@
 	import { resource } from 'runed';
 	import { page } from '$app/state';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import ChartLineIcon from '~icons/flowbite/chart-outline';
+	import TableIcon from '~icons/flowbite/table-row-outline';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -96,10 +98,30 @@
 			/>
 
 			<div class="details-section">
-				<select class="view-mode" oninput={(e) => e.stopPropagation()} bind:value={viewMode}>
-					<option value="chart">{$_('indicator.view_mode.chart')}</option>
-					<option value="table">{$_('indicator.view_mode.table')}</option>
-				</select>
+				<div class="segmented-button">
+					<label class="button">
+						<ChartLineIcon />
+						{$_('indicator.view_mode.chart')}
+						<input
+							name="mode"
+							type="radio"
+							value="chart"
+							bind:group={viewMode}
+							class="is-visually-hidden"
+						/>
+					</label>
+					<label class="button">
+						<TableIcon />
+						{$_('indicator.view_mode.table')}
+						<input
+							name="mode"
+							type="radio"
+							value="table"
+							bind:group={viewMode}
+							class="is-visually-hidden"
+						/>
+					</label>
+				</div>
 
 				{#if viewMode === 'chart'}
 					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))}
@@ -112,6 +134,7 @@
 						{container}
 						editable={$applicationState.containerDetailView.editable}
 						{relatedContainers}
+						{comparisonContainers}
 					/>
 				{/if}
 			</div>
@@ -186,10 +209,25 @@
 {@render layout(header, main)}
 
 <style>
-	.view-mode {
-		border: none;
-		box-shadow: var(--shadow-sm);
-		margin: 0 0 1rem;
-		width: fit-content;
+	.segmented-button {
+		margin-bottom: 1rem;
+	}
+
+	.segmented-button .button {
+		border-color: var(--color-blue-gray-200);
+	}
+
+	.segmented-button * {
+		color: var(--color-blue-gray-800);
+		font-size: 0.875rem;
+		font-style: normal;
+		font-weight: 500;
+		line-height: 125%;
+	}
+
+	.segmented-button > .button:has(input:checked) {
+		background-color: var(--color-blue-gray-800);
+		border-color: var(--color-blue-gray-800);
+		color: var(--color-white);
 	}
 </style>

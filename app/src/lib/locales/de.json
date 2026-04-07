@@ -281,6 +281,7 @@
 	"indicator.tab.objectives": "Gewünschte Entwicklung",
 	"indicator.table.actual_data": "Ist-Werte",
 	"indicator.table.add_custom_actual_data": "Eigene Ist-Werte hinzufügen",
+	"indicator.table.comparison_data": "Ist-Werte (Vergleichskommunen)",
 	"indicator.table.custom_actual_data": "Eigene Ist-Werte",
 	"indicator.table.edit": "Daten bearbeiten",
 	"indicator.table.historical_values": "Ist und Planung ohne Intervention",

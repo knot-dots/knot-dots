@@ -31,7 +31,7 @@
 		predicates,
 		status
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { compareState, mayCreateContainer } from '$lib/stores';
 	import { statusColors } from '$lib/theme/models';
 	import { _ } from 'svelte-i18n';
 
@@ -39,9 +39,19 @@
 		container: IndicatorTemplateContainer;
 		editable?: boolean;
 		relatedContainers?: Container[];
+		comparisonContainers?: ActualDataContainer[];
 	}
 
-	let { container, editable = false, relatedContainers = [] }: Props = $props();
+	let {
+		container,
+		editable = false,
+		relatedContainers = [],
+		comparisonContainers = []
+	}: Props = $props();
+
+	const currentOrgUnitName = $derived(page.data.currentOrganizationalUnit?.payload.name);
+
+	const hasComparisonData = $derived(comparisonContainers.length > 0);
 
 	const measureStatuses = [
 		status.enum['status.done'],
@@ -52,7 +62,7 @@
 
 	let addingCustomActualData = $state(false);
 
-	let actualDataContainer = $derived(
+	let actualDataContainers = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
@@ -64,11 +74,11 @@
 	);
 
 	let customActualDataContainer = $derived(
-		actualDataContainer.find(({ payload }) => !payload.source)
+		actualDataContainers.find(({ payload }) => !payload.source)
 	);
 
 	let actualValuesByYear = $derived(
-		actualDataContainer.map(({ payload }) => new Map(payload.values ?? []))
+		actualDataContainers.map(({ payload }) => new Map(payload.values ?? []))
 	);
 
 	let overallObjectiveByYear = $derived.by(() => {
@@ -271,13 +281,16 @@
 	}
 
 	let sections = $derived.by((): EditableTableSection[] => {
-		const actualDataRows: EditableTableSection['rows'] = actualDataContainer.map((actualData) => ({
+		const actualDataRows: EditableTableSection['rows'] = actualDataContainers.map((actualData) => ({
 			id: actualData.guid,
 			container: actualData,
 			label: actualData.payload.source
-				? actualData.payload.title
+				? hasComparisonData
+					? (currentOrgUnitName ?? actualData.payload.title)
+					: actualData.payload.source
 				: $_('indicator.table.custom_actual_data'),
-			subtitle: actualData.payload.source,
+
+			subtitle: hasComparisonData ? actualData.payload.source : undefined,
 			dotColor: actualData.payload.source ? 'var(--color-teal-600)' : 'var(--color-gray-200)',
 			editable: editable && !actualData.payload.source
 		}));
@@ -296,6 +309,24 @@
 				loading: addingCustomActualData
 			});
 		}
+
+		const comparisonRows: EditableTableSection['rows'] = comparisonContainers.map(
+			(comparisonContainer) => ({
+				id: comparisonContainer.guid,
+				container: comparisonContainer,
+				label:
+					$compareState.selectedMunicipalities.find(
+						(m) => m.guid === comparisonContainer.organizational_unit
+					)?.payload.name ?? comparisonContainer.payload.title,
+				subtitle: comparisonContainer.payload.source,
+				dotColor: `var(${
+					$compareState.colorAssignments[
+						comparisonContainer.organizational_unit ?? comparisonContainer.organization
+					] ?? 'gray-200'
+				})`,
+				editable: false
+			})
+		);
 
 		const goalRows: EditableTableDataRow[] = [
 			{
@@ -364,14 +395,23 @@
 				heading: $_('indicator.table.actual_data'),
 				rows: actualDataRows
 			},
-			{
-				heading: $_('goals'),
-				rows: goalRows
-			},
-			{
-				heading: $_('measures'),
-				rows: measureRows
-			}
+			...(hasComparisonData
+				? [
+						{
+							heading: $_('indicator.table.comparison_data'),
+							rows: comparisonRows
+						}
+					]
+				: [
+						{
+							heading: $_('goals'),
+							rows: goalRows
+						},
+						{
+							heading: $_('measures'),
+							rows: measureRows
+						}
+					])
 		];
 	});
 
@@ -428,7 +468,7 @@
 			}
 
 			let reactiveActualDataContainer = $state(await response.json());
-			actualDataContainer = [...actualDataContainer, reactiveActualDataContainer];
+			actualDataContainers = [...actualDataContainers, reactiveActualDataContainer];
 			await invalidate('containers');
 		} catch (error: unknown) {
 			console.error(error);
@@ -453,7 +493,7 @@
 </script>
 
 <EditableTable
-	title={$_('table.time_series')}
+	title={container.payload.title}
 	titleUnit={$_(container.payload.unit)}
 	columnLabel={$_('table.data_object')}
 	yearLabel={$_('table.in_years')}

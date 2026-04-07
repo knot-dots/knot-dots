@@ -281,6 +281,7 @@
 	"indicator.tab.objectives": "Objectives",
 	"indicator.table.actual_data": "Actual values",
 	"indicator.table.add_custom_actual_data": "Add custom actual data",
+	"indicator.table.comparison_data": "Actual values (peer municipalities)",
 	"indicator.table.custom_actual_data": "Custom actual data",
 	"indicator.table.edit": "Edit data",
 	"indicator.table.historical_values": "Historical and extrapolated values",
