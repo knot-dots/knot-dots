@@ -452,7 +452,6 @@
 		border-right: 1px solid var(--color-gray-200);
 		font-size: 0.875rem;
 		line-height: 1.5;
-		padding: 0.75rem 0.5rem;
 		white-space: nowrap;
 	}
 
@@ -537,16 +536,11 @@
 	}
 
 	.row-label {
-		background: white;
 		color: var(--color-gray-800);
 		font-weight: 500;
 		max-width: var(--label-width);
 		padding: 0.75rem 0.5rem 0.75rem 1rem;
 		text-align: left;
-	}
-
-	tr:hover > .row-label {
-		background-color: var(--color-gray-050);
 	}
 
 	.row-label a:hover {
