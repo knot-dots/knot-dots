@@ -143,18 +143,17 @@
 		--button-active-background: transparent;
 		--button-background: transparent;
 		--button-hover-background: transparent;
-		--padding-x: 0.25rem;
-		--padding-y: 0.25rem;
+		--padding-x: 0.5rem;
+		--padding-y: 0.5rem;
 
 		align-items: center;
 		border: none;
 		border-radius: 0.375rem;
 		cursor: pointer;
 		display: inline-flex;
-		height: 1.75rem;
+		height: 2rem;
 		justify-content: center;
-		margin-left: -0.3rem;
-		width: 1.75rem;
+		width: 2rem;
 	}
 
 	.settings-header .action-button:hover {

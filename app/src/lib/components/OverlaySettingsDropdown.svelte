@@ -211,7 +211,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		padding: 0 0.5rem 0.5rem;
 	}
 
 	.embed-description {
@@ -219,6 +218,7 @@
 		font-size: 0.75rem;
 		line-height: 1.5;
 		margin: 0;
+		padding: 0 0.5rem;
 	}
 
 	.copy-button {
@@ -234,7 +234,7 @@
 	.code-box {
 		background: var(--color-gray-050);
 		border: 1px solid var(--color-gray-200);
-		border-radius: 0.5rem;
+		border-radius: 0.25rem;
 		overflow: hidden;
 	}
 
