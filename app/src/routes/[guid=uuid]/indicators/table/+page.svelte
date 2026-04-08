@@ -153,7 +153,7 @@
 		const instance = new Uppy({
 			autoProceed: true,
 			restrictions: {
-				allowedFileTypes: ['text/csv'],
+				allowedFileTypes: ['text/csv', '.csv'],
 				maxNumberOfFiles: 1,
 				maxTotalFileSize: 100 * 1024 * 1024
 			}

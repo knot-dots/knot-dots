@@ -56,7 +56,7 @@ export const actions = {
 			return fail(400, { errors: [unwrapFunctionStore(_)('import.error.missing')] });
 		}
 
-		if (!(csv instanceof File) || csv.type != 'text/csv') {
+		if (!(csv instanceof File) || (!csv.name.endsWith('.csv') && csv.type !== 'text/csv')) {
 			return fail(400, { errors: [unwrapFunctionStore(_)('import.error.unsupported_media_type')] });
 		}
 

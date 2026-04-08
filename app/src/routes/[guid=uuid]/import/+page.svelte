@@ -22,7 +22,7 @@
 			<form class="details" method="POST" enctype="multipart/form-data">
 				<label>
 					{$_('import.csv_file')}
-					<input accept="text/csv" name="csv" type="file" required />
+					<input accept="text/csv,.csv" name="csv" type="file" required />
 				</label>
 				{#await data.users then users}
 					{#if users.length > 0}
