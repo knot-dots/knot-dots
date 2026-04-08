@@ -88,9 +88,7 @@
 
 	let overlay = getContext('overlay');
 
-	let container = $derived(
-		overlay && $overlayStore?.container ? $overlayStore.container : page.data.container
-	);
+	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
 
 	let filterBar = $derived(
 		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })

@@ -243,6 +243,7 @@
 	"goals_and_measure_results_and_milestones": "Goals, results milestones",
 	"goals_by_hierarchy_level": "Goals {level}",
 	"help": "Help",
+	"help_catalog.empty": "No help is available for this view yet.",
 	"help_slug.label": "Shown in",
 	"help_slug.option.all-catalog": "Catalog: All objects",
 	"help_slug.option.all-level": "Levels: All objects",

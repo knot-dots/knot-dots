@@ -243,6 +243,7 @@
 	"goals_and_measure_results_and_milestones": "Ziele, Maßnahmenergebnisse, Meilensteine",
 	"goals_by_hierarchy_level": "Zielebene {level}",
 	"help": "Hilfe",
+	"help_catalog.empty": "Für diese Ansicht ist noch keine Hilfe verfügbar.",
 	"help_slug.label": "Angezeigt in",
 	"help_slug.option.all-catalog": "Katalog: Alle Objekte",
 	"help_slug.option.all-level": "Ebenen: Alle Objekte",
