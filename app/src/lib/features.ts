@@ -4,6 +4,7 @@ export const featureFlags = new Map([
 		[
 			'OpenAI',
 			'Elasticsearch',
+			'EmbedObjects',
 			'ContentPartner',
 			'ResourceV2',
 			'CustomCategories',
@@ -70,6 +71,9 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		},
 		useFavoriteList() {
 			return features.includes('EditorialPages');
+		},
+		useEmbedObjects() {
+			return features.includes('EmbedObjects');
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');

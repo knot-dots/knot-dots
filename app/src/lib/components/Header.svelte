@@ -278,7 +278,7 @@
 			{/if}
 		{/if}
 
-		{#if overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+		{#if createFeatureDecisions(page.data.features).useEmbedObjects() && overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
 			<OverlaySettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
 		{/if}
 	</div>
