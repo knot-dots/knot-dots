@@ -10,6 +10,7 @@
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import TemplateToggle from '$lib/components/TemplateToggle.svelte';
 	import { type AnyContainer, type ContainerWithEffect, isMeasureContainer } from '$lib/models';
 	import { fetchContainersRelatedToMeasure } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
@@ -60,15 +61,7 @@
 	<footer class="content-footer bottom-actions-bar">
 		<div class="content-actions">
 			{#if $applicationState.containerDetailView.editable && isMeasureContainer(container) && $ability.can('update', container)}
-				<label>
-					<input
-						class="toggle"
-						name="template"
-						type="checkbox"
-						bind:checked={container.payload.template}
-					/>
-					{$_('template')}
-				</label>
+				<TemplateToggle bind:value={container.payload.template} />
 			{/if}
 			<RelationButton {container} />
 			<CreateAnotherButton {container} {relatedContainers} />
@@ -79,10 +72,3 @@
 {/snippet}
 
 {@render layout(header, main)}
-
-<style>
-	.toggle {
-		--height: 1rem;
-		--width: 2.25rem;
-	}
-</style>
