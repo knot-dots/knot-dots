@@ -135,6 +135,7 @@
 						editable={$applicationState.containerDetailView.editable}
 						{relatedContainers}
 						{comparisonContainers}
+						onDataChanged={relatedContainersQuery.refetch}
 					/>
 				{/if}
 			</div>
