@@ -18,6 +18,7 @@ import {
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
+	isHelpSlug,
 	type IooiType,
 	mayDelete,
 	type MeasureContainer,
@@ -263,7 +264,12 @@ if (browser) {
 		const useFullScreenRoutes = createFeatureDecisions(values.data.features).useFullScreenRoutes();
 
 		if (hashParams.has(overlayKey.enum['view-help'])) {
-			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
+			const helpSlug = hashParams.get(overlayKey.enum['view-help']);
+			if (!isHelpSlug(helpSlug)) {
+				setOverlayIfLatest(undefined);
+				return;
+			}
+			const help = await fetchHelpBySlug(helpSlug);
 			setOverlayIfLatest({
 				key: overlayKey.enum['view-help'],
 				container: help

@@ -15,6 +15,7 @@ import {
 	type Container,
 	container,
 	findDescendants,
+	type HelpSlug,
 	type IndicatorTemplateContainer,
 	type ModifiedContainer,
 	type NewContainer,
@@ -460,12 +461,15 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
-export function getContainerBySlug(slug: string) {
+export function getContainerBySlug(slug: HelpSlug) {
 	return async (connection: DatabaseConnection): Promise<Container> => {
 		const containerResult = await connection.one(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE payload->>'slug' = ${slug} AND valid_currently AND NOT deleted
+			WHERE payload->>'type' = 'help'
+				AND payload->'slug' @> ${sql.jsonb(<SerializableValue>[slug])}
+				AND valid_currently
+				AND NOT deleted
 		`);
 
 		const userResult = await connection.any(sql.typeAlias('userRelationWithObject')`
@@ -536,6 +540,7 @@ function prepareWhereCondition(filters: {
 	audience?: string[];
 	customCategories?: Record<string, string[]>;
 	guid?: string[];
+	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
@@ -571,6 +576,10 @@ function prepareWhereCondition(filters: {
 			if (!values?.length) continue;
 			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
 		}
+	}
+	if (filters.helpSlugs?.length) {
+		conditions.push(sql.fragment`c.payload->>'type' = 'help'`);
+		conditions.push(sql.fragment`c.payload->'slug' ?| ${sql.array(filters.helpSlugs, 'text')}`);
 	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
@@ -728,6 +737,7 @@ export function getManyContainers(
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		guid?: string[];
+		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];

@@ -3,14 +3,21 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
-import { newContainer, payloadTypes, predicates } from '$lib/models';
-import { createContainer, getContainerBySlug, getManyOrganizationContainers } from '$lib/server/db';
+import { helpSlug, newContainer, payloadTypes, predicates } from '$lib/models';
+import { createContainer, getManyContainers, getManyOrganizationContainers } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
+	const parsedSlug = helpSlug.safeParse(params.slug);
+	if (!parsedSlug.success) {
+		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	}
+
 	try {
-		const container = await locals.pool.connect(getContainerBySlug(params.slug));
-		return json(container);
+		const containers = await locals.pool.connect(
+			getManyContainers([], { helpSlugs: [parsedSlug.data] }, 'alpha')
+		);
+		return json(containers);
 	} catch (e) {
 		if (
 			e instanceof NotFoundError &&
@@ -22,7 +29,12 @@ export const GET = (async ({ locals, params }) => {
 			const container = await locals.pool.connect(
 				createContainer(
 					newContainer.parse({
-						payload: { body: '', slug: params.slug, title: '', type: payloadTypes.enum.help },
+						payload: {
+							body: '',
+							slug: [parsedSlug.data],
+							title: '',
+							type: payloadTypes.enum.help
+						},
 						managed_by: organizations[0].guid,
 						organization: organizations[0].guid,
 						organizational_unit: null,
@@ -31,7 +43,7 @@ export const GET = (async ({ locals, params }) => {
 					})
 				)
 			);
-			return json(container);
+			return json([container]);
 		} else {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}

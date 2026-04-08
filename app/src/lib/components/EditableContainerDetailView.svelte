@@ -6,7 +6,12 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import { payloadTypes, type Container, isSimpleMeasureContainer } from '$lib/models';
+	import {
+		helpSlugForDetailView,
+		payloadTypes,
+		type Container,
+		isSimpleMeasureContainer
+	} from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
@@ -20,6 +25,7 @@
 	let w = $state(0);
 
 	const handleSubmit = $derived(autoSave(container, 2000, invalidateResource));
+	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
 </script>
 
 <form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -71,7 +77,9 @@
 	</article>
 </form>
 
-<Help slug={`${container.payload.type.replace('_', '-')}-view`} />
+{#if detailViewHelpSlug}
+	<Help slug={detailViewHelpSlug} />
+{/if}
 
 <style>
 	.details-header {
