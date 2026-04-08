@@ -18,6 +18,7 @@ import {
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
+	type HelpSlug,
 	isHelpSlug,
 	type IooiType,
 	mayDelete,
@@ -218,7 +219,9 @@ export type OverlayData =
 	  }
 	| {
 			key: 'view-help';
-			container: HelpContainer;
+			container?: undefined;
+			containers: HelpContainer[];
+			slug: HelpSlug;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -269,10 +272,12 @@ if (browser) {
 				setOverlayIfLatest(undefined);
 				return;
 			}
-			const help = await fetchHelpBySlug(helpSlug);
+			const containers = await fetchHelpBySlug(helpSlug);
 			setOverlayIfLatest({
 				key: overlayKey.enum['view-help'],
-				container: help
+				container: undefined,
+				containers,
+				slug: helpSlug
 			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
 			if (useFullScreenRoutes) {
