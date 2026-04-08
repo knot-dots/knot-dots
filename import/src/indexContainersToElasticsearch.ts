@@ -106,6 +106,25 @@ async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, Rela
 	return map;
 }
 
+async function fetchUsersForRevisions(revisions: number[]): Promise<Map<number, { predicate: string; subject: string }[]>> {
+	if (revisions.length === 0) return new Map();
+	const pool = await getPool();
+	const rows = (await pool.any(sql.unsafe`
+		SELECT object, predicate, subject
+		FROM container_user
+		WHERE object IN (${sql.join(revisions, sql.fragment`, `)})
+	`)) as { object: number; predicate: string; subject: string }[];
+
+	const map = new Map<number, { predicate: string; subject: string }[]>();
+	for (const rev of revisions) {
+		map.set(rev, []);
+	}
+	for (const r of rows) {
+		map.get(r.object)?.push({ predicate: r.predicate, subject: r.subject });
+	}
+	return map;
+}
+
 async function run() {
 	const { aliasName, node, username, password } = env;
 	const clientConfig: any = { node };
@@ -146,8 +165,9 @@ async function run() {
 
 		if (batchRows.length >= 500) {
 			const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
+			const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
 			for (const r of batchRows) {
-				const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [] });
+				const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [], user: usersMap.get(r.revision) ?? [] });
 				ops.push({ index: { _index: newIndexName, _id: r.guid } });
 				ops.push(doc);
 			}
@@ -182,8 +202,9 @@ async function run() {
 	// Flush remaining rows that didn't fill a full batch
 	if (batchRows.length > 0) {
 		const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
+		const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
 		for (const r of batchRows) {
-			const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [] });
+			const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [], user: usersMap.get(r.revision) ?? [] });
 			ops.push({ index: { _index: newIndexName, _id: r.guid } });
 			ops.push(doc);
 		}

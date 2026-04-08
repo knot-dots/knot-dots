@@ -244,6 +244,7 @@ export async function getManyContainersWithES(
 		managed_by: string;
 		valid_from?: string;
 		relation?: { object: string; predicate: string; position: number; subject: string }[];
+		user?: { predicate: string; subject: string }[];
 		payload: Record<string, unknown>;
 	};
 
@@ -257,7 +258,8 @@ export async function getManyContainersWithES(
 				...doc,
 				organizational_unit: doc.organizational_unit ?? null,
 				valid_currently: true,
-				relation: doc.relation ?? []
+				relation: doc.relation ?? [],
+				user: doc.user ?? []
 			})
 		];
 	});

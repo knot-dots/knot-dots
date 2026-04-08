@@ -90,6 +90,16 @@ async function fetchContainerRelations(guid: string) {
   return rows as Relation[];
 }
 
+async function fetchContainerUsers(revision: number) {
+  const pool = await getPool();
+  const rows = await pool.any<any>(sql.unsafe`
+    SELECT predicate, subject
+    FROM container_user
+    WHERE object = ${revision}
+  `);
+  return rows as { predicate: string; subject: string }[];
+}
+
 async function processBatch(events: IndexingEvent[], client: ESClient) {
   if (!events.length) return;
   log.info({ eventCount: events.length }, '[indexing-consumer] Processing batch of events');
@@ -106,6 +116,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         continue;
       }
       const relation = await fetchContainerRelations(evt.guid);
+      const user = await fetchContainerUsers(row.revision);
       const doc = toDoc({
         guid: row.guid,
         revision: row.revision,
@@ -116,7 +127,8 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         organizational_unit: row.organizational_unit ?? null,
         managed_by: String(row.managed_by),
         payload: (row as any).payload || {},
-        relation
+        relation,
+        user
       });
       operations.push({ index: { _index: esIndex, _id: evt.guid } });
       operations.push(doc);
