@@ -407,5 +407,6 @@ test.for([
 
 		expect(esResults.containers.length).toBe(sqlResults.length);
 		expect(esResults.containers.map((c) => c.guid)).toEqual(sqlResults.map((c) => c.guid));
+		expect(esResults.containers.map((c) => c.relation)).toEqual(sqlResults.map((c) => c.relation));
 	}
 );

@@ -84,13 +84,17 @@ async function* fetchContainers(batchSize = 500) {
 async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, Relation[]>> {
 	if (guids.length === 0) return new Map();
 	const pool = await getPool();
+	const guidList = sql.join(
+		guids.map((g) => sql.fragment`${g}::uuid`),
+		sql.fragment`, `
+	);
 	const rows = (await pool.any(sql.unsafe`
 		SELECT object, predicate, position, subject
 		FROM container_relation
-		WHERE (subject = ANY(${sql.array(guids, 'uuid')}) OR object = ANY(${sql.array(guids, 'uuid')}))
+		WHERE (subject IN (${guidList}) OR object IN (${guidList}))
 			AND valid_currently
 			AND NOT deleted
-		ORDER BY position
+		ORDER BY predicate, position, subject, object
 	`)) as Relation[];
 
 	const map = new Map<string, Relation[]>();
