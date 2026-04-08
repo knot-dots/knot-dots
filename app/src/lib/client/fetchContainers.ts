@@ -6,7 +6,7 @@ export default async function fetchContainers(
 	filters: {
 		assignee?: string[];
 		audience?: string[];
-		sdg?: string[];
+		guid?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		isPartOfMeasure?: string[];
@@ -18,6 +18,7 @@ export default async function fetchContainers(
 		programType?: string[];
 		relatedTo?: string[];
 		relationType?: string[];
+		sdg?: string[];
 		taskCategory?: string[];
 		terms?: string;
 		topic?: string[];
@@ -32,8 +33,8 @@ export default async function fetchContainers(
 	for (const value of filters.audience ?? []) {
 		params.append('audience', value);
 	}
-	for (const value of filters.sdg ?? []) {
-		params.append('sdg', value);
+	for (const value of filters.guid ?? []) {
+		params.append('guid', value);
 	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
@@ -64,6 +65,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);
+	}
+	for (const value of filters.sdg ?? []) {
+		params.append('sdg', value);
 	}
 	if (sort) {
 		params.append('sort', sort);

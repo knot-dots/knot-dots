@@ -1,46 +1,32 @@
 <script lang="ts">
 	import { IsInViewport, resource } from 'runed';
-	import { createDisclosure } from 'svelte-headlessui';
-	import { _ } from 'svelte-i18n';
 	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
+	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
-	import CheckCircle from '~icons/flowbite/check-circle-solid';
-	import CloseCircle from '~icons/flowbite/close-circle-solid';
 	import ArrowRight from '~icons/knotdots/arrow-right';
 	import Collection from '~icons/knotdots/collection';
-	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { createFeatureDecisions } from '$lib/features';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import saveContainer from '$lib/client/saveContainer';
+	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
-	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
-	import PickerDialog from '$lib/components/PickerDialog.svelte';
-	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
 		actualDataContainer,
 		type AnyContainer,
-		audience,
-		computeFacetCount,
 		type CustomCollectionContainer,
-		indicatorCategories,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
-		payloadTypes,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
+		payloadTypes
 	} from '$lib/models';
 	import { ability, compareState } from '$lib/stores';
-	import { sortIcons } from '$lib/theme/models';
 
 	const MAX_ITEMS_PER_PAGE = 50;
 
@@ -67,8 +53,6 @@
 
 	let dialog: HTMLDialogElement = $state(undefined!);
 
-	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
-	let sortBar = createDisclosure({ label: $_('sort') });
 	const defaultPayloadType = $derived([
 		payloadTypes.enum.indicator_template,
 		payloadTypes.enum.program,
@@ -80,41 +64,11 @@
 		payloadTypes.enum.task
 	]);
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, searchResource.current ?? []);
-	});
-
-	let filter = $state({ ...container.payload.filter });
-
-	let sort = $state(container.payload.sort);
-
-	let terms = $state(container.payload.terms);
-
 	let localTerms = $state('');
 
-	let localSort = $state(container.payload.sort);
+	let localSort = $derived(container.payload.sort);
 
 	let visibleCount = $state(MAX_ITEMS_PER_PAGE);
-
-	let selected = $state(container.payload.item);
-
-	let activeFilters = $derived(
-		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
-	);
-
-	// svelte-ignore state_referenced_locally
-	let mode: 'select' | 'apply_rule' = $state(
-		selected.length > 0 || activeFilters == 0 ? 'select' : 'apply_rule'
-	);
 
 	const idForTitle = crypto.randomUUID();
 
@@ -122,72 +76,54 @@
 
 	const inViewport = new IsInViewport(() => header);
 
+	let inViewportOnce = $state(false);
+
+	$effect(() => {
+		if (inViewport.current) {
+			inViewportOnce = true;
+		}
+	});
+
 	const savedResource = resource(
 		[
+			() => container.payload.item,
 			() => $state.snapshot(container.payload.filter),
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
-			() => inViewport.current
+			() => inViewportOnce
 		],
-		async ([filter, terms, searchTerms, sort], _, { signal }) => {
+		async ([item, filter, terms, searchTerms, sort], _, { signal }) => {
 			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
 			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 
-			return fetchContainers(
-				{
-					audience: filter.audience,
-					sdg: filter.sdg,
-					indicatorCategory: filter.indicatorCategory,
-					organization: [page.data.currentOrganization.guid],
-					policyFieldBNK: filter.policyFieldBNK,
-					terms: combinedTerms,
-					topic: filter.topic,
-					payloadType: type
-				},
-				sort,
-				{ signal }
+			const activeFilters = Object.values(filter).reduce(
+				(acc, v) => acc + (v.length > 0 ? 1 : 0),
+				0
 			);
+
+			return item.length > 0 || activeFilters > 0
+				? fetchContainers(
+						{
+							...(item.length > 0
+								? { guid: item, terms: combinedTerms }
+								: {
+										audience: filter.audience,
+										sdg: filter.sdg,
+										indicatorCategory: filter.indicatorCategory,
+										organization: [page.data.currentOrganization.guid],
+										policyFieldBNK: filter.policyFieldBNK,
+										terms: combinedTerms,
+										topic: filter.topic,
+										payloadType: type
+									})
+						},
+						sort,
+						{ signal }
+					)
+				: [];
 		},
 		{ lazy: true, debounce: 300 }
-	);
-
-	const searchResource = resource(
-		[
-			() => filter.audience,
-			() => filter.sdg,
-			() => filter.indicatorCategory,
-			() => filter.policyFieldBNK,
-			() => filter.topic,
-			() => (filter.type.length > 0 ? filter.type : defaultPayloadType),
-			() => sort,
-			() => terms,
-			() => inViewport.current
-		],
-		async (
-			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms],
-			_,
-			{ signal }
-		) => {
-			return fetchContainers(
-				{
-					audience,
-					sdg,
-					indicatorCategory,
-					organization: [page.data.currentOrganization.guid],
-					policyFieldBNK,
-					terms,
-					topic,
-					payloadType: type
-				},
-				sort,
-				{ signal }
-			);
-		},
-		{
-			debounce: 300,
-			lazy: true
-		}
 	);
 
 	const actualDataResource = resource([], async (_, __, { signal }) => {
@@ -334,58 +270,11 @@
 		dialog?.showModal();
 	}
 
-	function resetFilters() {
-		filter = {
-			audience: [],
-			category: [],
-			sdg: [],
-			indicatorCategory: [],
-			type: [],
-			policyFieldBNK: [],
-			topic: []
-		};
-	}
-
-	function handleRemoveFilterValue(key: string, value: string) {
-		if (key in filter) {
-			filter = { ...filter, [key]: filter[key as keyof typeof filter].filter((v) => v !== value) };
-		}
-	}
-
 	$effect(() => {
 		if (!container.payload.allowSearch) {
 			localTerms = '';
 		}
 	});
-
-	async function confirm() {
-		const response = await saveContainer({
-			...container,
-			payload: {
-				...container.payload,
-				filter,
-				item: mode == 'select' ? selected : [],
-				sort,
-				terms
-			}
-		});
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			container.payload = updatedContainer.payload;
-			container.revision = updatedContainer.revision;
-			localSort = updatedContainer.payload.sort;
-			visibleCount = MAX_ITEMS_PER_PAGE;
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
-	}
-
-	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
-		selected = event.currentTarget.checked
-			? [...selected, event.currentTarget.value]
-			: selected.filter((guid) => guid !== event.currentTarget.value);
-	}
 </script>
 
 <header bind:this={header}>
@@ -526,257 +415,9 @@
 	</div>
 {/if}
 
-<PickerDialog
-	bind:dialog
-	bind:terms
-	{activeFilters}
-	{filterBar}
-	{sortBar}
-	onResetFilters={resetFilters}
-	title={$_('custom_collection.dialog.title')}
->
-	{#snippet filterContent()}
-		{#each facets.entries() as [key, foci] (key)}
-			{@const options = [...foci.entries()]
-				.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-				.toSorted((a, b) =>
-					a.label.localeCompare(b.label, undefined, {
-						numeric: true,
-						sensitivity: 'base'
-					})
-				)}
-			{#if options.some(({ count }) => count > 0)}
-				<InlineFilterDropDown
-					bind:value={filter[key as keyof typeof filter] as string[]}
-					{key}
-					{mode}
-					{options}
-				/>
-			{/if}
-		{/each}
-	{/snippet}
-
-	{#snippet sortContent()}
-		{@const sortOptions = [
-			[$_('sort_alphabetically'), 'alpha'],
-			[$_('sort_modified'), 'modified']
-		]}
-		<legend class="is-visually-hidden">{$_('sort')}</legend>
-		<span aria-hidden="true">{$_('sort')}</span>
-		{#each sortOptions as [label, value] (value)}
-			{@const Icon = sortIcons.get(value)}
-			<label class="sort-option">
-				<input type="radio" {value} bind:group={sort} />
-				<Icon />
-				{label}
-			</label>
-		{/each}
-	{/snippet}
-
-	{#snippet content()}
-		<div class="result-and-preview">
-			<div class="result">
-				<ul class="inline-actions">
-					<li>
-						<div class="segmented-button">
-							<label class="button">
-								<CheckCircle />
-								{$_('custom_collection.dialog.select')}
-								<input name="mode" type="radio" value="select" bind:group={mode} />
-							</label>
-							<label class="button">
-								<LightningBolt />
-								{$_('custom_collection.dialog.apply_rule')}
-								<input name="mode" type="radio" value="apply_rule" bind:group={mode} />
-							</label>
-						</div>
-					</li>
-					<li>
-						<!-- svelte-ignore a11y_autofocus -->
-						<button class="button-red" autofocus>
-							{$_('custom_collection.dialog.cancel')}
-						</button>
-					</li>
-				</ul>
-
-				{#if searchResource.current}
-					<ul class="catalog">
-						{#each searchResource.current as item (item.guid)}
-							<li>
-								{#if mode === 'select'}
-									<SelectableCard
-										--height="100%"
-										checked={selected.includes(item.guid)}
-										container={item}
-										inputType="checkbox"
-										{onchange}
-									/>
-								{:else}
-									<Card --height="100%" container={item} />
-								{/if}
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
-
-			<div class="preview">
-				<button
-					class="button-primary"
-					disabled={mode === 'select' && selected.length === 0}
-					onclick={confirm}
-				>
-					{#if mode === 'select'}
-						{$_('custom_collection.dialog.accept_selection', {
-							values: { count: selected.length }
-						})}
-					{:else}
-						{$_('custom_collection.dialog.apply_rule')}
-					{/if}
-				</button>
-				{#if mode === 'select' && selected.length > 0}
-					<ul>
-						{#each selected as guid (guid)}
-							{@const item = searchResource.current?.find((item) => item.guid === guid)}
-							{#if item}
-								<li class="preview-item">
-									<input bind:group={selected} name="selected" type="checkbox" value={guid} />
-
-									{#if 'name' in item.payload}
-										{item.payload.name}
-									{:else if 'title' in item.payload}
-										{item.payload.title}
-									{/if}
-								</li>
-							{/if}
-						{/each}
-					</ul>
-				{:else if mode === 'apply_rule' && searchResource.current}
-					<ul>
-						{#each Object.entries(filter) as [key, valueList] (key)}
-							{#if valueList.length > 0}
-								{#each valueList as value (value)}
-									<li class="preview-item">
-										<LightningBolt />
-										{$_(value)}
-										<button
-											class="button button-remove"
-											type="button"
-											onclick={() => handleRemoveFilterValue(key, value)}
-										>
-											<CloseCircle />
-											<span class="is-visually-hidden">{$_('remove')}</span>
-										</button>
-									</li>
-								{/each}
-							{/if}
-						{/each}
-					</ul>
-				{/if}
-			</div>
-		</div>
-	{/snippet}
-</PickerDialog>
+<CustomCollectionPicker bind:container bind:dialog />
 
 <style>
-	.result-and-preview {
-		display: flex;
-		flex-direction: row;
-		flex-grow: 1;
-		gap: 1.5rem;
-		margin-top: 1rem;
-		min-height: 1px;
-	}
-
-	.result {
-		display: flex;
-		flex-direction: column;
-		min-height: 1px;
-	}
-
-	.result .inline-actions {
-		margin-left: 0;
-		margin-top: 1rem;
-	}
-
-	.result .inline-actions > li:last-child {
-		margin-left: auto;
-	}
-
-	.segmented-button {
-		--button-border-color: var(--color-blue-gray-200);
-
-		border: solid var(--button-border-color);
-		border-radius: 8px;
-		border-width: 1px 0 0 1px;
-		color: var(--color-blue-gray-800);
-		display: flex;
-	}
-
-	.segmented-button > .button {
-		--button-active-background: var(--color-blue-gray-300);
-		--button-background: var(--color-white);
-		--button-hover-background: var(--color-blue-gray-200);
-
-		border-width: 0 1px 1px 0;
-	}
-
-	.segmented-button > .button:active {
-		border-color: var(--color-blue-gray-300);
-	}
-
-	.segmented-button > .button:first-child {
-		border-bottom-right-radius: 0;
-		border-top-right-radius: 0;
-	}
-
-	.segmented-button > .button:last-child {
-		border-bottom-left-radius: 0;
-		border-top-left-radius: 0;
-	}
-
-	.segmented-button input {
-		appearance: none;
-	}
-
-	.segmented-button .button:has(input:checked) {
-		background-color: var(--color-blue-gray-800);
-		border-color: var(--color-blue-gray-800);
-		color: var(--color-white);
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
-	}
-
-	.button-remove {
-		--button-active-background: transparent;
-		--button-hover-background: transparent;
-		--padding-x: 0;
-		--padding-y: 0.375rem;
-
-		border: none;
-		flex-shrink: 0;
-		margin-left: auto;
-	}
-
-	.button-remove > :global(svg) {
-		color: var(--color-gray-500);
-		max-width: none;
-	}
-
-	.catalog {
-		margin-top: 1rem;
-	}
-
 	.details-heading {
 		display: flex;
 		align-items: baseline;
@@ -861,41 +502,5 @@
 		display: flex;
 		justify-content: center;
 		margin-top: 1rem;
-	}
-
-	.preview {
-		background-color: var(--color-white);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 24px;
-		display: flex;
-		flex-direction: column;
-		flex-basis: 20rem;
-		flex-shrink: 0;
-		height: 100%;
-		padding: 1rem;
-	}
-
-	.preview > button {
-		justify-content: center;
-		width: 100%;
-	}
-
-	.preview > ul {
-		overflow: auto;
-	}
-
-	.preview-item {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 8px;
-		color: var(--color-gray-700);
-		display: flex;
-		font-weight: 500;
-		gap: 0.5rem;
-		margin-top: 1rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		padding: 0.375rem;
 	}
 </style>

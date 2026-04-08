@@ -534,8 +534,8 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
-	sdg?: string[];
 	customCategories?: Record<string, string[]>;
+	guid?: string[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
@@ -545,6 +545,7 @@ function prepareWhereCondition(filters: {
 	programTypes?: string[];
 	resource?: string[];
 	resourceCategories?: string[];
+	sdg?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
@@ -562,8 +563,8 @@ function prepareWhereCondition(filters: {
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
-	if (filters.sdg?.length) {
-		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
+	if (filters.guid?.length) {
+		conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.guid, 'uuid')})`);
 	}
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {
@@ -626,6 +627,9 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
+	}
+	if (filters.sdg?.length) {
+		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.taskCategories?.length) {
 		conditions.push(
@@ -722,8 +726,8 @@ export function getManyContainers(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		sdg?: string[];
 		customCategories?: Record<string, string[]>;
+		guid?: string[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
@@ -732,6 +736,7 @@ export function getManyContainers(
 		programTypes?: string[];
 		resource?: string[];
 		resourceCategories?: string[];
+		sdg?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
@@ -798,6 +803,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		administrativeType?: string[];
 		cityAndMunicipalityTypeBBSR?: string[];
 		federalState?: string[];
+		guid?: string[];
 		level?: number;
 		organization?: string;
 		terms?: string;
@@ -829,6 +835,9 @@ export function getManyOrganizationalUnitContainers(filters: {
 			conditions.push(
 				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.include.federalState, 'text')})`
 			);
+		}
+		if (filters.include?.guid?.length) {
+			conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.include.guid, 'uuid')})`);
 		}
 		if (filters.include?.level) {
 			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.include.level}`);
