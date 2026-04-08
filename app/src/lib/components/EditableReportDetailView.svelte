@@ -9,6 +9,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import TemplateToggle from '$lib/components/TemplateToggle.svelte';
 	import { type AnyContainer, predicates, type ReportContainer } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
@@ -82,6 +83,9 @@
 
 	<footer class="content-footer bottom-actions-bar">
 		<div class="content-actions">
+			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+				<TemplateToggle bind:value={container.payload.template} />
+			{/if}
 			<CreateCopyButton {container} />
 			<DeleteButton {container} {relatedContainers} />
 		</div>
