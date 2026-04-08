@@ -775,6 +775,7 @@ const basePayload = z.object({
 	editorialState: editorialState.optional(),
 	policyFieldBNK: z.array(policyFieldBNK).transform(deduplicate).default([]),
 	summary: z.string().trim().max(200).optional(),
+	template: z.boolean().default(false),
 	title: z.string().trim(),
 	topic: z.array(topics).transform(deduplicate).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -1034,7 +1035,6 @@ const measurePayload = basePayload
 		result: z.string().trim().optional(),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
-		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
 	.strict();
