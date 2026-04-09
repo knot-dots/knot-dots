@@ -273,6 +273,18 @@ if (browser) {
 				return;
 			}
 			const containers = await fetchHelpBySlug(helpSlug);
+
+			// If there's only one help container for the slug, we can directly open the view
+			// overlay for that container instead of showing the list of help containers
+			if (containers.length === 1) {
+				setOverlayIfLatest({
+					key: overlayKey.enum.view,
+					container: containers[0],
+					revisions: [containers[0]]
+				});
+				return;
+			}
+
 			setOverlayIfLatest({
 				key: overlayKey.enum['view-help'],
 				container: undefined,
