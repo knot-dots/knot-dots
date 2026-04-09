@@ -37,9 +37,9 @@
 			'create',
 			containerOfType(
 				payloadTypes.enum.indicator_template,
-				data.container.organization,
-				data.container.organizational_unit,
-				data.container.managed_by,
+				page.data.currentOrganization.guid,
+				page.data.currentOrganizationalUnit?.guid ?? null,
+				page.data.currentOrganization.guid,
 				''
 			)
 		)
@@ -50,9 +50,9 @@
 			'download-csv',
 			containerOfType(
 				payloadTypes.enum.indicator_template,
-				data.container.organization,
-				data.container.organizational_unit,
-				data.container.managed_by,
+				page.data.currentOrganization.guid,
+				page.data.currentOrganizationalUnit?.guid ?? null,
+				page.data.currentOrganization.guid,
 				''
 			)
 		)
