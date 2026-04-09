@@ -53,7 +53,38 @@ export const load = (async ({ locals, parent, url }) => {
 
 	const features = createFeatureDecisions(locals.features);
 	const _facets = new Map<string, Map<string, number>>([
-		['administrativeType', fromCounts(administrativeTypes.options as string[])]
+		['administrativeType', fromCounts(administrativeTypes.options as string[])],
+		[
+			'cityAndMunicipalityTypeBBSR',
+			fromCounts([
+				'Großstadt',
+				'Mittelstadt',
+				'Größere Kleinstadt',
+				'Kleine Kleinstadt',
+				'Landgemeinde'
+			])
+		],
+		[
+			'federalState',
+			fromCounts([
+				'Baden-Württemberg',
+				'Bayern',
+				'Berlin',
+				'Brandenburg',
+				'Bremen',
+				'Hamburg',
+				'Hessen',
+				'Mecklenburg-Vorpommern',
+				'Niedersachsen',
+				'Nordrhein-Westfalen',
+				'Rheinland-Pfalz',
+				'Saarland',
+				'Sachsen',
+				'Sachsen-Anhalt',
+				'Schleswig-Holstein',
+				'Thüringen'
+			])
+		]
 	]);
 	const facets = computeFacetCount(_facets, filtered, {
 		useCategoryPayload: features.useCustomCategories()
