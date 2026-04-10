@@ -99,7 +99,7 @@ export function getCategoryKeys(options: CategoryOptions): string[] {
 	return Object.keys(options).filter((key) => key !== LABELS_KEY);
 }
 
-export function buildCategoryFacets(
+export function buildCategoryFacetsWithCounts(
 	options: CategoryOptions,
 	counts: Record<string, Record<string, number>> = {}
 ): Map<string, Map<string, number>> {
@@ -132,13 +132,6 @@ export function buildCategoryFacets(
 	}
 
 	return result;
-}
-
-export function buildCategoryFacetsWithCounts(
-	options: CategoryOptions,
-	counts: Record<string, Record<string, number>> = {}
-) {
-	return buildCategoryFacets(options, counts);
 }
 
 export function buildCategoryLabels(options: CategoryOptions) {
