@@ -270,7 +270,7 @@ export const containerRelation = z.array(
 	z.object({
 		object: z.string().uuid(),
 		position: z.number().int().nonnegative().default(0),
-		predicate: z.enum(['is-part-of', 'is-section-of']),
+		predicate: z.enum(['is-part-of', 'is-part-of-category', 'is-section-of']),
 		subject: z.string().uuid()
 	})
 );
