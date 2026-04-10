@@ -15,6 +15,7 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
+	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -24,6 +25,7 @@
 		type CustomCollectionContainer,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
+		isOrganizationalUnitContainer,
 		payloadTypes
 	} from '$lib/models';
 	import { ability, compareState } from '$lib/stores';
@@ -371,6 +373,8 @@
 						{relatedContainers}
 						{comparisonDataMap}
 					/>
+				{:else if isOrganizationalUnitContainer(item)}
+					<OrganizationCard --height="100%" container={item} />
 				{:else}
 					<Card --height="100%" container={item} />
 				{/if}
@@ -391,6 +395,8 @@
 							{relatedContainers}
 							{comparisonDataMap}
 						/>
+					{:else if isOrganizationalUnitContainer(item)}
+						<OrganizationCard --height="100%" container={item} />
 					{:else}
 						<Card --height="100%" container={item} />
 					{/if}
