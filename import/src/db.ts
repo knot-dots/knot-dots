@@ -155,17 +155,19 @@ export const spatialFeature = z.object({
 	guid: z.string().uuid()
 });
 
+const visibility = z.enum(['creator', 'members', 'organization', 'public']);
+
 export const mapPayload = z.object({
 	geometry: z.uuid().optional(),
 	title: z.string().default('Gebietsgrenze'),
 	type: z.literal('map').default('map'),
-	visibility: z.literal('organization').default('organization')
+	visibility: visibility.default('organization')
 });
 
 export const administrativeAreaBasicDataPayload = z.object({
 	title: z.string().readonly().default('Basisinformationen'),
 	type: z.literal('administrative_area_basic_data').default('administrative_area_basic_data'),
-	visibility: z.literal('organization').default('organization')
+	visibility: visibility.default('organization')
 });
 
 export const organizationalUnitPayload = z.object({
@@ -195,7 +197,7 @@ export const organizationalUnitPayload = z.object({
 		.literal('organizational_unit_type.administrative_area')
 		.default('organizational_unit_type.administrative_area'),
 	type: z.literal('organizational_unit').default('organizational_unit'),
-	visibility: z.literal('organization').default('organization')
+	visibility: visibility.default('organization')
 });
 
 export const indicatorTemplatePayload = z.object({
@@ -212,7 +214,7 @@ export const indicatorTemplatePayload = z.object({
 	topic: z.array(z.string()).default([]),
 	type: z.literal('indicator_template').default('indicator_template'),
 	unit: z.string(),
-	visibility: z.literal('public').default('public')
+	visibility: visibility.default('public')
 });
 
 export const actualDataPayload = z.object({
@@ -222,7 +224,7 @@ export const actualDataPayload = z.object({
 	title: z.string(),
 	type: z.literal('actual_data').default('actual_data'),
 	values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	visibility: z.literal('organization').default('organization')
+	visibility: visibility.default('organization')
 });
 
 const anyPayload = z.discriminatedUnion('type', [
