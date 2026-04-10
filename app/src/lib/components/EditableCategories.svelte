@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
+	import type { CategoryOption } from '$lib/categoryOptions';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import {
-		categoryMatchesObjectTypes,
-		loadCategoryOptions,
-		type CategoryOption
-	} from '$lib/client/categoryOptions';
+	import { categoryMatchesObjectTypes, loadCategoryOptions } from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import { isCategoryContainer, payloadTypes } from '$lib/models';
 	import type { AnyContainer, CategoryContainer } from '$lib/models';

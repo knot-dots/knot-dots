@@ -1,4 +1,6 @@
 import { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	type Container,
 	filterOrganizationalUnits,
@@ -18,8 +20,6 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { createFeatureDecisions } from '$lib/features';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 

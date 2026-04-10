@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import type { CategoryOption } from '$lib/categoryOptions';
 	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
-	import type { CategoryOption } from '$lib/client/categoryOptions';
 
 	interface Props {
 		compact?: boolean;

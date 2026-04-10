@@ -1,6 +1,11 @@
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	buildCategoryFacetsWithCounts,
+	type CategoryContext,
+	filterCategoryContext
+} from '$lib/categoryOptions';
+import {
 	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
@@ -10,11 +15,6 @@ import {
 	resourceUnits,
 	type ResourceV2Container
 } from '$lib/models';
-import {
-	buildCategoryFacetsWithCounts,
-	filterCategoryContext,
-	type CategoryContext
-} from '$lib/server/categoryOptions';
 import { getAllContainersRelatedToProgram, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';

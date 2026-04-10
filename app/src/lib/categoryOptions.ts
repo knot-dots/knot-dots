@@ -1,4 +1,4 @@
-import { predicates, type CategoryContainer, type TermContainer } from '$lib/models';
+import { type CategoryContainer, predicates, type TermContainer } from '$lib/models';
 
 export type CategoryOption = {
 	label: string;
@@ -10,6 +10,13 @@ export type CategoryOption = {
 
 export type CategoryOptions = Record<string, CategoryOption[]> & {
 	__categoryLabels__?: Record<string, string>;
+};
+
+export type CategoryContext = {
+	options: CategoryOptions;
+	labels: Map<string, string>;
+	keys: string[];
+	objectTypesPerKey: Record<string, string[]>;
 };
 
 const LABELS_KEY = '__categoryLabels__';
@@ -92,7 +99,7 @@ export function getCategoryKeys(options: CategoryOptions): string[] {
 	return Object.keys(options).filter((key) => key !== LABELS_KEY);
 }
 
-export function buildCategoryFacets(
+export function buildCategoryFacetsWithCounts(
 	options: CategoryOptions,
 	counts: Record<string, Record<string, number>> = {}
 ): Map<string, Map<string, number>> {
@@ -148,4 +155,40 @@ export function buildCategoryLabels(options: CategoryOptions) {
 	}
 
 	return labels;
+}
+
+export function filterCategoryContext(
+	context: CategoryContext,
+	objectTypes: string[],
+	options?: { matchAll?: boolean }
+): CategoryContext {
+	if (objectTypes.length === 0) return context;
+
+	const allowedTypes = new Set(objectTypes);
+
+	const filteredKeys = context.keys.filter((key) => {
+		const configured = context.objectTypesPerKey[key] ?? [];
+		if (configured.length === 0) return true;
+		if (options?.matchAll) {
+			return [...allowedTypes].every((type) => configured.includes(type));
+		}
+		return configured.some((type) => allowedTypes.has(type));
+	});
+
+	const filteredOptions: CategoryOptions = {};
+	for (const key of filteredKeys) {
+		if (context.options[key]) {
+			filteredOptions[key] = context.options[key];
+		}
+	}
+	if (context.options.__categoryLabels__) {
+		filteredOptions.__categoryLabels__ = context.options.__categoryLabels__;
+	}
+
+	return {
+		options: filteredOptions,
+		labels: buildCategoryLabels(filteredOptions),
+		keys: filteredKeys,
+		objectTypesPerKey: context.objectTypesPerKey
+	};
 }
