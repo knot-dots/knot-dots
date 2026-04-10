@@ -42,8 +42,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 					exclude: {
 						organizationalUnitType: [
 							organizationalUnitType.enum['organizational_unit_type.administrative_area']
-						],
-						relationPredicate: ['is-individual-profile-of']
+						]
 					}
 				})
 			)
