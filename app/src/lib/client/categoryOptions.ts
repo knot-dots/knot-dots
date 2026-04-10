@@ -1,10 +1,7 @@
 import fetchContainers from '$lib/client/fetchContainers';
 import {
-	buildCategoryFacets,
-	buildCategoryLabels,
 	buildCategoryOptionsFromContainers,
 	getCategoryKeys,
-	type CategoryOption,
 	type CategoryOptions
 } from '$lib/categoryOptions';
 import {
@@ -13,9 +10,6 @@ import {
 	payloadTypes,
 	type CategoryContainer
 } from '$lib/models';
-
-export { buildCategoryFacets, buildCategoryLabels, getCategoryKeys };
-export type { CategoryOption, CategoryOptions };
 
 function normalize(values: unknown): string[] {
 	if (Array.isArray(values)) {
