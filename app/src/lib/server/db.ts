@@ -1274,6 +1274,7 @@ export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		audience?: string[];
+		customCategories?: Record<string, string[]>;
 		sdg?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1359,6 +1360,7 @@ export function getAllContainersRelatedToMeasure(
 	guid: string,
 	filters: {
 		assignees?: string[];
+		customCategories?: Record<string, string[]>;
 		sdg?: string[];
 		policyFieldsBNK?: string[];
 		taskCategories?: string[];
