@@ -1,10 +1,8 @@
 import { filterVisible } from '$lib/authorization';
 import {
-	buildCategoryFacets,
 	buildCategoryLabels,
 	buildCategoryOptionsFromContainers,
 	type CategoryContext,
-	type CategoryOptions,
 	getCategoryKeys
 } from '$lib/categoryOptions';
 import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models';
@@ -53,47 +51,4 @@ export async function loadCategoryContext(params: {
 			objectTypesPerKey
 		};
 	}
-}
-
-export function filterCategoryContext(
-	context: CategoryContext,
-	objectTypes: string[],
-	options?: { matchAll?: boolean }
-): CategoryContext {
-	if (objectTypes.length === 0) return context;
-
-	const allowedTypes = new Set(objectTypes);
-
-	const filteredKeys = context.keys.filter((key) => {
-		const configured = context.objectTypesPerKey[key] ?? [];
-		if (configured.length === 0) return true;
-		if (options?.matchAll) {
-			return [...allowedTypes].every((type) => configured.includes(type));
-		}
-		return configured.some((type) => allowedTypes.has(type));
-	});
-
-	const filteredOptions: CategoryOptions = {};
-	for (const key of filteredKeys) {
-		if (context.options[key]) {
-			filteredOptions[key] = context.options[key];
-		}
-	}
-	if (context.options.__categoryLabels__) {
-		filteredOptions.__categoryLabels__ = context.options.__categoryLabels__;
-	}
-
-	return {
-		options: filteredOptions,
-		labels: buildCategoryLabels(filteredOptions),
-		keys: filteredKeys,
-		objectTypesPerKey: context.objectTypesPerKey
-	};
-}
-
-export function buildCategoryFacetsWithCounts(
-	options: CategoryOptions,
-	counts: Record<string, Record<string, number>> = {}
-) {
-	return buildCategoryFacets(options, counts);
 }

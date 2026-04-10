@@ -14,7 +14,7 @@ import {
 	sustainableDevelopmentGoals,
 	topics
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,

@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
@@ -11,7 +12,6 @@ import {
 	resourceCategories,
 	resourceUnits
 } from '$lib/models';
-import { buildCategoryFacetsWithCounts } from '$lib/server/categoryOptions';
 import { getAllContainerRevisionsByGuid } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import { fetchResources } from '$lib/load/resources';

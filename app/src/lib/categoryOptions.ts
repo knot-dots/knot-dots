@@ -134,6 +134,13 @@ export function buildCategoryFacets(
 	return result;
 }
 
+export function buildCategoryFacetsWithCounts(
+	options: CategoryOptions,
+	counts: Record<string, Record<string, number>> = {}
+) {
+	return buildCategoryFacets(options, counts);
+}
+
 export function buildCategoryLabels(options: CategoryOptions) {
 	const labels = new Map<string, string>();
 
@@ -155,4 +162,40 @@ export function buildCategoryLabels(options: CategoryOptions) {
 	}
 
 	return labels;
+}
+
+export function filterCategoryContext(
+	context: CategoryContext,
+	objectTypes: string[],
+	options?: { matchAll?: boolean }
+): CategoryContext {
+	if (objectTypes.length === 0) return context;
+
+	const allowedTypes = new Set(objectTypes);
+
+	const filteredKeys = context.keys.filter((key) => {
+		const configured = context.objectTypesPerKey[key] ?? [];
+		if (configured.length === 0) return true;
+		if (options?.matchAll) {
+			return [...allowedTypes].every((type) => configured.includes(type));
+		}
+		return configured.some((type) => allowedTypes.has(type));
+	});
+
+	const filteredOptions: CategoryOptions = {};
+	for (const key of filteredKeys) {
+		if (context.options[key]) {
+			filteredOptions[key] = context.options[key];
+		}
+	}
+	if (context.options.__categoryLabels__) {
+		filteredOptions.__categoryLabels__ = context.options.__categoryLabels__;
+	}
+
+	return {
+		options: filteredOptions,
+		labels: buildCategoryLabels(filteredOptions),
+		keys: filteredKeys,
+		objectTypesPerKey: context.objectTypesPerKey
+	};
 }
