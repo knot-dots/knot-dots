@@ -227,12 +227,33 @@ export const actualDataPayload = z.object({
 	visibility: visibility.default('organization')
 });
 
+const categoryPayload = z.object({
+	description: z.string().trim().optional(),
+	key: z.string().trim(),
+	objectTypes: z.array(z.string()).default([]),
+	title: z.string().trim().min(1),
+	type: z.literal('category').default('category'),
+	visibility: visibility.default('public')
+});
+
+const termPayload = z.object({
+	description: z.string().trim().optional(),
+	filterLabel: z.string().trim().max(256).optional(),
+	icon: z.string().trim().optional(),
+	title: z.string().trim().min(1),
+	type: z.literal('term').default('term'),
+	value: z.string().trim(),
+	visibility: visibility.default('public')
+});
+
 const anyPayload = z.discriminatedUnion('type', [
 	mapPayload,
 	administrativeAreaBasicDataPayload,
 	organizationalUnitPayload,
 	actualDataPayload,
-	indicatorTemplatePayload
+	indicatorTemplatePayload,
+	categoryPayload,
+	termPayload
 ]);
 
 export type Payload = z.infer<typeof anyPayload>;
@@ -283,6 +304,10 @@ export const organizationalUnitContainer = createContainerSchema(organizationalU
 export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
 
 export const actualDataContainer = createContainerSchema(actualDataPayload);
+
+export const categoryContainer = createContainerSchema(categoryPayload);
+
+export const termContainer = createContainerSchema(termPayload);
 
 const persistedContainer = createContainerSchema(anyPayload).extend({
 	guid: z.string().uuid(),
