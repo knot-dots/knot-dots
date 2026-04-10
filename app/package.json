@@ -85,7 +85,7 @@
 		"svelte-splitpanes": "^8.0.12",
 		"sveltekit-sse": "^0.14.3",
 		"tslib": "^2.8.1",
-		"typescript": "^5.9.3",
+		"typescript": "^6.0.2",
 		"typescript-eslint": "^8.58.1",
 		"unified": "^11.0.5",
 		"unplugin-icons": "^23.0.1",
