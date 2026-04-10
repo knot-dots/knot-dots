@@ -3,6 +3,7 @@ import {
 	buildCategoryFacets,
 	buildCategoryLabels,
 	buildCategoryOptionsFromContainers,
+	type CategoryContext,
 	type CategoryOptions,
 	getCategoryKeys
 } from '$lib/categoryOptions';
@@ -10,13 +11,6 @@ import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models'
 import type { User } from '$lib/stores';
 import { getManyContainers } from '$lib/server/db';
 import type { DatabaseConnection } from 'slonik';
-
-export type CategoryContext = {
-	options: CategoryOptions;
-	labels: Map<string, string>;
-	keys: string[];
-	objectTypesPerKey: Record<string, string[]>;
-};
 
 type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 

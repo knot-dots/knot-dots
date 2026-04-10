@@ -1,4 +1,4 @@
-import { predicates, type CategoryContainer, type TermContainer } from '$lib/models';
+import { type CategoryContainer, predicates, type TermContainer } from '$lib/models';
 
 export type CategoryOption = {
 	label: string;
@@ -10,6 +10,13 @@ export type CategoryOption = {
 
 export type CategoryOptions = Record<string, CategoryOption[]> & {
 	__categoryLabels__?: Record<string, string>;
+};
+
+export type CategoryContext = {
+	options: CategoryOptions;
+	labels: Map<string, string>;
+	keys: string[];
+	objectTypesPerKey: Record<string, string[]>;
 };
 
 const LABELS_KEY = '__categoryLabels__';
