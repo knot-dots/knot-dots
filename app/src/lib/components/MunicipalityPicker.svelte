@@ -26,12 +26,15 @@
 	let localSelected: string[] = $state([]);
 	let filterAdministrativeTypes: string[] = $state([]);
 	let filterFederalStates: string[] = $state([]);
-	let filterCustomCategories = new SvelteMap<string, string[]>();
 
 	const categoryContext = $derived(
 		page.data.categoryContext
 			? filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.organizational_unit])
 			: undefined
+	);
+
+	let filterCustomCategories = $state(
+		categoryContext ? Object.fromEntries(categoryContext.keys.map((key) => [key, []])) : {}
 	);
 
 	const federalStates = [
@@ -74,24 +77,16 @@
 	// even if they are no longer in the current visible list (e.g. after search)
 	let knownMunicipalities = new SvelteMap<string, OrganizationalUnitContainer>();
 
-	const customCategoryEntries = $derived(JSON.stringify([...filterCustomCategories]));
-
 	// Fetch municipalities based on search terms
 	const municipalitiesResource = resource(
-		() =>
-			[
-				terms,
-				offset,
-				filterAdministrativeTypes,
-				filterFederalStates,
-				customCategoryEntries
-			] as const,
-		async (
-			[terms, offset, adminTypes, federalStateFilters, customCategoriesJson],
-			_,
-			{ signal }
-		) => {
-			const customCategories: Map<string, string[]> = new Map(JSON.parse(customCategoriesJson));
+		[
+			() => terms,
+			() => offset,
+			() => filterAdministrativeTypes,
+			() => filterFederalStates,
+			() => $state.snapshot(filterCustomCategories)
+		],
+		async ([terms, offset, adminTypes, federalStateFilters, customCategories], _, { signal }) => {
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
@@ -108,11 +103,10 @@
 				params.append('federalState', state);
 			}
 
-			const activeCustomCategories = Object.fromEntries(
-				[...customCategories.entries()].filter(([, v]) => v.length > 0)
-			);
-			if (Object.keys(activeCustomCategories).length > 0) {
-				params.append('customCategories', JSON.stringify(activeCustomCategories));
+			for (const key in customCategories) {
+				for (const value of customCategories[key]) {
+					params.append(key, value);
+				}
 			}
 
 			// Append pagination parameters
@@ -156,7 +150,7 @@
 
 	// Reset pagination when search terms or filters change
 	const filterKey = $derived(
-		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}|${customCategoryEntries}`
+		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}|${Object.values(filterCustomCategories).join(',')}`
 	);
 	let previousFilterKey = '';
 	$effect.pre(() => {
@@ -179,7 +173,7 @@
 	let activeFilters = $derived(
 		filterAdministrativeTypes.length +
 			filterFederalStates.length +
-			[...filterCustomCategories.values()].filter((v) => v.length > 0).length
+			Object.values(filterCustomCategories).filter((v) => v.length > 0).length
 	);
 
 	type FederalLevelKey = 'all' | (typeof sidebarAdministrativeTypes)[number];
@@ -221,7 +215,9 @@
 	function resetFilters() {
 		filterAdministrativeTypes = [];
 		filterFederalStates = [];
-		filterCustomCategories.clear();
+		for (const key in filterCustomCategories) {
+			filterCustomCategories[key] = [];
+		}
 	}
 
 	function selectFederalLevel(level: FederalLevelKey) {
@@ -319,7 +315,7 @@
 		/>
 		{#if categoryContext}
 			{#each categoryContext.keys as key (key)}
-				{@const values = filterCustomCategories.get(key) ?? []}
+				{@const values = filterCustomCategories[key] ?? []}
 				<InlineFilterDropDown
 					{key}
 					label={categoryContext.options.__categoryLabels__?.[key]}
@@ -328,7 +324,7 @@
 						label: o.label,
 						value: o.value
 					}))}
-					bind:value={() => values, (v) => filterCustomCategories.set(key, v)}
+					bind:value={() => values, (v) => (filterCustomCategories[key] = v)}
 				/>
 			{/each}
 		{/if}
@@ -353,9 +349,9 @@
 				<span class="selection-count">
 					{$_('compare_municipalities_selected', { values: { count: localSelected.length } })}
 					{#if localSelected.length >= MAX_SELECTION}
-						<span class="max-indicator"
-							>({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})</span
-						>
+						<span class="max-indicator">
+							({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})
+						</span>
 					{/if}
 				</span>
 
@@ -378,9 +374,9 @@
 
 			<div class="picker-layout">
 				<aside class="federal-levels-panel">
-					<span class="federal-levels-title" id="federal-levels-title"
-						>{$_('compare_federal_levels')}</span
-					>
+					<span class="federal-levels-title" id="federal-levels-title">
+						{$_('compare_federal_levels')}
+					</span>
 					<ul aria-labelledby="federal-levels-title" class="federal-levels-list" role="radiogroup">
 						{#each federalLevelItems as item (item.key)}
 							<li>
