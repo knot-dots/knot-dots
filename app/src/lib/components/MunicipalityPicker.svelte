@@ -24,8 +24,6 @@
 
 	let terms = $state('');
 	let localSelected: string[] = $state([]);
-	let filterAdministrativeTypes: string[] = $state([]);
-	let filterFederalStates: string[] = $state([]);
 
 	const categoryContext = $derived(
 		page.data.categoryContext
@@ -33,9 +31,12 @@
 			: undefined
 	);
 
-	let filterCustomCategories = $state(
-		categoryContext ? Object.fromEntries(categoryContext.keys.map((key) => [key, []])) : {}
-	);
+	// svelte-ignore state_referenced_locally
+	let filter = $state<Record<string, string[]>>({
+		administrativeType: [],
+		federalState: [],
+		...(categoryContext ? Object.fromEntries(categoryContext.keys.map((key) => [key, []])) : {})
+	});
 
 	const federalStates = [
 		'Baden-Württemberg',
@@ -79,34 +80,20 @@
 
 	// Fetch municipalities based on search terms
 	const municipalitiesResource = resource(
-		[
-			() => terms,
-			() => offset,
-			() => filterAdministrativeTypes,
-			() => filterFederalStates,
-			() => $state.snapshot(filterCustomCategories)
-		],
-		async ([terms, offset, adminTypes, federalStateFilters, customCategories], _, { signal }) => {
+		[() => $state.snapshot(filter), () => terms, () => offset],
+		async ([filter, terms, offset], _, { signal }) => {
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
 
-			for (const type of adminTypes) {
-				params.append('administrativeType', type);
+			for (const key in filter) {
+				for (const value of filter[key]) {
+					params.append(key, value);
+				}
 			}
 
 			if (terms) {
 				params.append('terms', terms);
-			}
-
-			for (const state of federalStateFilters) {
-				params.append('federalState', state);
-			}
-
-			for (const key in customCategories) {
-				for (const value of customCategories[key]) {
-					params.append(key, value);
-				}
 			}
 
 			// Append pagination parameters
@@ -149,9 +136,7 @@
 	});
 
 	// Reset pagination when search terms or filters change
-	const filterKey = $derived(
-		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}|${Object.values(filterCustomCategories).join(',')}`
-	);
+	const filterKey = $derived(`${Object.values(filter).join(',')}|${terms}`);
 	let previousFilterKey = '';
 	$effect.pre(() => {
 		if (filterKey !== previousFilterKey) {
@@ -171,9 +156,7 @@
 	}
 
 	let activeFilters = $derived(
-		filterAdministrativeTypes.length +
-			filterFederalStates.length +
-			Object.values(filterCustomCategories).filter((v) => v.length > 0).length
+		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
 	);
 
 	type FederalLevelKey = 'all' | (typeof sidebarAdministrativeTypes)[number];
@@ -205,28 +188,26 @@
 	});
 
 	let activeFederalLevel = $derived.by(() => {
-		if (filterAdministrativeTypes.length === 0) return 'all';
-		if (filterAdministrativeTypes.length === 1) {
-			return filterAdministrativeTypes[0] as FederalLevelKey;
+		if (filter.administrativeType.length === 0) return 'all';
+		if (filter.administrativeType.length === 1) {
+			return filter.administrativeType[0] as FederalLevelKey;
 		}
 		return null;
 	});
 
 	function resetFilters() {
-		filterAdministrativeTypes = [];
-		filterFederalStates = [];
-		for (const key in filterCustomCategories) {
-			filterCustomCategories[key] = [];
+		for (const key in filter) {
+			filter[key] = [];
 		}
 	}
 
 	function selectFederalLevel(level: FederalLevelKey) {
 		if (level === 'all') {
-			filterAdministrativeTypes = [];
+			filter.administrativeType = [];
 			return;
 		}
 
-		filterAdministrativeTypes = [level];
+		filter.administrativeType = [level];
 	}
 
 	function clearSelection() {
@@ -305,26 +286,22 @@
 			key="administrativeType"
 			mode="select"
 			options={administrativeTypes.options.map((t) => ({ label: $_(t), value: t }))}
-			bind:value={filterAdministrativeTypes}
+			bind:value={filter.administrativeType}
 		/>
 		<InlineFilterDropDown
 			key="federalState"
 			mode="select"
 			options={federalStates.map((s) => ({ label: s, value: s }))}
-			bind:value={filterFederalStates}
+			bind:value={filter.federalState}
 		/>
 		{#if categoryContext}
 			{#each categoryContext.keys as key (key)}
-				{@const values = filterCustomCategories[key] ?? []}
 				<InlineFilterDropDown
 					{key}
-					label={categoryContext.options.__categoryLabels__?.[key]}
+					label={categoryContext.labels.get(key)}
 					mode="select"
-					options={(categoryContext.options[key] ?? []).map((o) => ({
-						label: o.label,
-						value: o.value
-					}))}
-					bind:value={() => values, (v) => (filterCustomCategories[key] = v)}
+					options={categoryContext.options[key]}
+					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 				/>
 			{/each}
 		{/if}
