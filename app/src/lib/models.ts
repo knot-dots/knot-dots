@@ -3198,24 +3198,13 @@ export function computeFacetCount(
 	options?: { useCategoryPayload?: boolean }
 ) {
 	const useCategoryPayload = options?.useCategoryPayload ?? false;
-	const normalizeValue = (value: unknown): string => {
-		if (value === null || value === undefined) return '';
-		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-			return String(value);
-		}
-		if (typeof value === 'object') {
-			const v = value as { guid?: unknown; value?: unknown };
-			if (v.guid !== undefined) return String(v.guid);
-			if (v.value !== undefined) return String(v.value);
-		}
-		return String(value);
-	};
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
-			const categoryPayload = useCategoryPayload
-				? (container.payload as { category?: Record<string, unknown> }).category
-				: undefined;
+			const categoryPayload =
+				useCategoryPayload && 'category' in container.payload
+					? container.payload.category
+					: undefined;
 			const hasCategoryValue = categoryPayload && key in categoryPayload;
 			const hasPayloadValue = key in container.payload;
 			const valueSource = hasCategoryValue
@@ -3227,12 +3216,10 @@ export function computeFacetCount(
 				const foci = facets.get(key) as Map<string, number>;
 				if (Array.isArray(valueSource)) {
 					for (const value of valueSource) {
-						const normalized = normalizeValue(value);
-						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+						foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
 					}
 				} else {
-					const normalized = normalizeValue(valueSource);
-					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+					foci.set(valueSource, ((foci.get(valueSource) as number) ?? 0) + 1);
 				}
 			}
 		}
