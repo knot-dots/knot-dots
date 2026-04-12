@@ -445,6 +445,14 @@ export const GET = (async ({ locals, url }) => {
 		administrativeType: z.array(administrativeTypes).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
+		customCategories: z
+			.array(z.string())
+			.default([])
+			.transform((arr) => {
+				if (arr.length === 0) return {};
+				const parsed = z.record(z.string(), z.array(z.string())).safeParse(JSON.parse(arr[0]));
+				return parsed.success ? parsed.data : {};
+			}),
 		federalState: z.array(z.string()).default([]),
 		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
@@ -494,6 +502,7 @@ export const GET = (async ({ locals, url }) => {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
 				audience: parseResult.data.audience,
+				customCategories: parseResult.data.customCategories,
 				sdg: parseResult.data.sdg,
 				policyFieldsBNK: parseResult.data.policyFieldBNK,
 				terms: parseResult.data.terms[0],
@@ -508,7 +517,10 @@ export const GET = (async ({ locals, url }) => {
 					parseResult.data.organization,
 					parseResult.data.relatedTo[0],
 					parseResult.data.relationType,
-					{ type: parseResult.data.payloadType },
+					{
+						customCategories: parseResult.data.customCategories,
+						type: parseResult.data.payloadType
+					},
 					parseResult.data.sort[0]
 				)
 			);
@@ -517,6 +529,7 @@ export const GET = (async ({ locals, url }) => {
 				getAllContainersRelatedToMeasure(
 					parseResult.data.isPartOfMeasure[0],
 					{
+						customCategories: parseResult.data.customCategories,
 						terms: parseResult.data.terms[0],
 						type: parseResult.data.payloadType
 					},
@@ -530,6 +543,7 @@ export const GET = (async ({ locals, url }) => {
 				parseResult.data.organization,
 				{
 					audience: parseResult.data.audience,
+					customCategories: parseResult.data.customCategories,
 					guid: parseResult.data.guid,
 					indicators: parseResult.data.indicator,
 					indicatorCategories: parseResult.data.indicatorCategory,
@@ -559,6 +573,9 @@ export const GET = (async ({ locals, url }) => {
 					}),
 					...(parseResult.data.administrativeType.length > 0 && {
 						administrativeType: parseResult.data.administrativeType
+					}),
+					...(Object.keys(parseResult.data.customCategories).length > 0 && {
+						customCategories: parseResult.data.customCategories
 					}),
 					...(parseResult.data.federalState.length > 0 && {
 						federalState: parseResult.data.federalState

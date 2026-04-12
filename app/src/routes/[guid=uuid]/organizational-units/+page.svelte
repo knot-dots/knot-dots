@@ -11,7 +11,14 @@
 
 <Layout>
 	{#snippet header()}
-		<Header workspaceOptions={[]} facets={data.facets} filterBarInitiallyOpen search />
+		<Header
+			workspaceOptions={[]}
+			facets={data.facets}
+			facetLabels={data.facetLabels}
+			categoryOptions={data.categoryOptions}
+			filterBarInitiallyOpen
+			search
+		/>
 	{/snippet}
 
 	{#snippet main()}

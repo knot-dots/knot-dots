@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { resource } from 'runed';
+	import { untrack } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import { filterCategoryContext } from '$lib/categoryOptions';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
-	import { untrack } from 'svelte';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -25,6 +26,13 @@
 	let localSelected: string[] = $state([]);
 	let filterAdministrativeTypes: string[] = $state([]);
 	let filterFederalStates: string[] = $state([]);
+	let filterCustomCategories = new SvelteMap<string, string[]>();
+
+	const categoryContext = $derived(
+		page.data.categoryContext
+			? filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.organizational_unit])
+			: undefined
+	);
 
 	const federalStates = [
 		'Baden-Württemberg',
@@ -66,10 +74,32 @@
 	// even if they are no longer in the current visible list (e.g. after search)
 	let knownMunicipalities = new SvelteMap<string, OrganizationalUnitContainer>();
 
+	const customCategoryEntries = $derived(JSON.stringify([...filterCustomCategories]));
+
 	// Fetch municipalities based on search terms
 	const municipalitiesResource = resource(
-		() => [terms, offset, filterAdministrativeTypes, filterFederalStates] as const,
-		async ([terms, offset, adminTypes, federalStateFilters], _, { signal }) => {
+		() =>
+			[
+				terms,
+				offset,
+				filterAdministrativeTypes,
+				filterFederalStates,
+				customCategoryEntries
+			] as const,
+		async (
+			[terms, offset, adminTypes, federalStateFilters, customCategoriesJson],
+			_,
+			{ signal }
+		) => {
+			const customCategories: Map<string, string[]> = new Map(JSON.parse(customCategoriesJson));
+			console.log('Fetching municipalities with', {
+				terms,
+				offset,
+				adminTypes,
+				federalStateFilters,
+				customCategories: Object.fromEntries(customCategories.entries())
+			});
+
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
@@ -84,6 +114,13 @@
 
 			for (const state of federalStateFilters) {
 				params.append('federalState', state);
+			}
+
+			const activeCustomCategories = Object.fromEntries(
+				[...customCategories.entries()].filter(([, v]) => v.length > 0)
+			);
+			if (Object.keys(activeCustomCategories).length > 0) {
+				params.append('customCategories', JSON.stringify(activeCustomCategories));
 			}
 
 			// Append pagination parameters
@@ -127,7 +164,7 @@
 
 	// Reset pagination when search terms or filters change
 	const filterKey = $derived(
-		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}`
+		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}|${customCategoryEntries}`
 	);
 	let previousFilterKey = '';
 	$effect.pre(() => {
@@ -147,7 +184,11 @@
 		offset += PAGE_SIZE;
 	}
 
-	let activeFilters = $derived(filterAdministrativeTypes.length + filterFederalStates.length);
+	let activeFilters = $derived(
+		filterAdministrativeTypes.length +
+			filterFederalStates.length +
+			[...filterCustomCategories.values()].filter((v) => v.length > 0).length
+	);
 
 	type FederalLevelKey = 'all' | (typeof sidebarAdministrativeTypes)[number];
 
@@ -188,6 +229,7 @@
 	function resetFilters() {
 		filterAdministrativeTypes = [];
 		filterFederalStates = [];
+		filterCustomCategories.clear();
 	}
 
 	function selectFederalLevel(level: FederalLevelKey) {
@@ -283,6 +325,21 @@
 			options={federalStates.map((s) => ({ label: s, value: s }))}
 			bind:value={filterFederalStates}
 		/>
+		{#if categoryContext}
+			{#each categoryContext.keys as key (key)}
+				{@const values = filterCustomCategories.get(key) ?? []}
+				<InlineFilterDropDown
+					{key}
+					label={categoryContext.options.__categoryLabels__?.[key]}
+					mode="select"
+					options={(categoryContext.options[key] ?? []).map((o) => ({
+						label: o.label,
+						value: o.value
+					}))}
+					bind:value={() => values, (v) => filterCustomCategories.set(key, v)}
+				/>
+			{/each}
+		{/if}
 	{/snippet}
 
 	{#snippet sortContent()}

@@ -812,6 +812,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 	include?: {
 		administrativeType?: string[];
 		cityAndMunicipalityTypeBBSR?: string[];
+		customCategories?: Record<string, string[]>;
 		federalState?: string[];
 		guid?: string[];
 		level?: number;
@@ -840,6 +841,14 @@ export function getManyOrganizationalUnitContainers(filters: {
 			conditions.push(
 				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.include.cityAndMunicipalityTypeBBSR, 'text')})`
 			);
+		}
+		if (filters.include?.customCategories) {
+			for (const [key, values] of Object.entries(filters.include.customCategories)) {
+				if (!values?.length) continue;
+				conditions.push(
+					sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`
+				);
+			}
 		}
 		if (filters.include?.federalState?.length) {
 			conditions.push(
@@ -1265,6 +1274,7 @@ export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		audience?: string[];
+		customCategories?: Record<string, string[]>;
 		sdg?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1350,6 +1360,7 @@ export function getAllContainersRelatedToMeasure(
 	guid: string,
 	filters: {
 		assignees?: string[];
+		customCategories?: Record<string, string[]>;
 		sdg?: string[];
 		policyFieldsBNK?: string[];
 		taskCategories?: string[];
