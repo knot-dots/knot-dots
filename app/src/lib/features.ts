@@ -24,7 +24,7 @@ export const featureFlags = new Map([
 	]
 ]);
 
-export function createFeatureDecisions(features: string[]): Record<string, () => boolean> {
+export function createFeatureDecisions(features: string[]) {
 	return {
 		useImportFromCsv() {
 			return features.includes('ImportFromCsv');
@@ -77,5 +77,5 @@ export function createFeatureDecisions(features: string[]): Record<string, () =>
 		useFullScreenRoutes() {
 			return features.includes('FullScreenRoutes');
 		}
-	};
+	} satisfies Record<string, () => boolean>;
 }
