@@ -152,14 +152,16 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0.5rem;
-		height: 3.125rem;
+		overflow: auto;
 		margin-left: auto;
+		max-width: 100%;
 		padding: 0.5rem 1rem;
 		width: fit-content;
 	}
 
 	.active-filters {
 		color: var(--dropdown-button-expanded-color);
+		white-space: nowrap;
 	}
 
 	.indicator {
