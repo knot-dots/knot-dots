@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { resource } from 'runed';
+	import { untrack } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import { filterCategoryContext } from '$lib/categoryOptions';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
-	import type { CategoryContext } from '$lib/categoryOptions';
-	import { untrack } from 'svelte';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -28,17 +28,11 @@
 	let filterFederalStates: string[] = $state([]);
 	let filterCustomCategories = new SvelteMap<string, string[]>();
 
-	const categoryContext = $derived.by(() => {
-		const ctx = page.data.categoryContext as CategoryContext | undefined;
-		if (!ctx) return null;
-		const keys = ctx.keys.filter(
-			(key) =>
-				ctx.objectTypesPerKey[key]?.includes('organizational_unit') ??
-				ctx.objectTypesPerKey[key]?.length === 0
-		);
-		if (keys.length === 0) return null;
-		return { ...ctx, keys };
-	});
+	const categoryContext = $derived(
+		page.data.categoryContext
+			? filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.organizational_unit])
+			: undefined
+	);
 
 	const federalStates = [
 		'Baden-Württemberg',
