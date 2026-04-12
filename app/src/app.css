@@ -511,6 +511,11 @@ button,
 	padding: var(--padding-y) var(--padding-x);
 }
 
+button > svg,
+.button > svg {
+	max-width: none;
+}
+
 button.quiet,
 .button.quiet {
 	--button-background: transparent;
