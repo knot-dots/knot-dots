@@ -92,14 +92,6 @@
 			{ signal }
 		) => {
 			const customCategories: Map<string, string[]> = new Map(JSON.parse(customCategoriesJson));
-			console.log('Fetching municipalities with', {
-				terms,
-				offset,
-				adminTypes,
-				federalStateFilters,
-				customCategories: Object.fromEntries(customCategories.entries())
-			});
-
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
