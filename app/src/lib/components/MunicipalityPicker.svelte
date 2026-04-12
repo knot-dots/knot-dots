@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { untrack } from 'svelte';
-	import { createDisclosure } from 'svelte-headlessui';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { z } from 'zod';
+	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
+	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
-	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
-	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
-	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
+	import {
+		administrativeTypes,
+		payloadTypes,
+		type OrganizationalUnitContainer,
+		organizationalUnitContainer
+	} from '$lib/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -103,9 +109,7 @@
 			params.append('sort', 'alpha');
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
-			if (!response.ok) throw new Error(response.statusText);
-			const result = await response.json();
-			return result as OrganizationalUnitContainer[];
+			return z.array(organizationalUnitContainer).parse(await response.json());
 		},
 		{ debounce: 300 }
 	);
