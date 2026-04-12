@@ -862,16 +862,15 @@ const customCollectionPayload = z
 		filter: z
 			.object({
 				audience: z.array(audience).default([]),
-				category: z.array(sustainableDevelopmentGoals).default([]),
 				sdg: z.array(sustainableDevelopmentGoals).default([]),
 				indicatorCategory: z.array(indicatorCategories).default([]),
 				type: z.array(payloadTypes).default([]),
 				policyFieldBNK: z.array(policyFieldBNK).default([]),
 				topic: z.array(topics).default([])
 			})
+			.catchall(z.array(z.string()))
 			.default({
 				audience: [],
-				category: [],
 				sdg: [],
 				indicatorCategory: [],
 				policyFieldBNK: [],
