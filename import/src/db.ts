@@ -575,27 +575,6 @@ export function createRelation(relation: ContainerRelation) {
 	};
 }
 
-const containerRelationRow = z.object({
-	object: z.string().uuid(),
-	position: z.number().int().nonnegative(),
-	predicate: z.enum(['is-part-of', 'is-part-of-category', 'is-section-of']),
-	subject: z.string().uuid()
-});
-
-export function getSectionRelations(objectGuid: string) {
-	return async (tx: DatabaseTransactionConnection) => {
-		return tx.any(sql.type(containerRelationRow)`
-			SELECT object, position, predicate, subject
-			FROM container_relation
-			WHERE object = ${objectGuid}
-			  AND predicate = 'is-section-of'
-			  AND valid_currently
-			  AND NOT deleted
-			ORDER BY position
-		`);
-	};
-}
-
 export async function getCategoryContainer(
 	tx: DatabaseTransactionConnection,
 	organizationGuid: string,
