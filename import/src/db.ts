@@ -170,6 +170,14 @@ export const administrativeAreaBasicDataPayload = z.object({
 	visibility: visibility.default('organization')
 });
 
+const demographicDataPayload = z.object({
+	area: z.number().nonnegative().optional(),
+	population: z.number().int().nonnegative().optional(),
+	title: z.string().readonly().default('Demografische Daten'),
+	type: z.literal('demographic_data').default('demographic_data'),
+	visibility: visibility.default('organization')
+});
+
 export const organizationalUnitPayload = z.object({
 	administrativeType: z
 		.array(
@@ -231,6 +239,8 @@ export const actualDataPayload = z.object({
 	visibility: visibility.default('organization')
 });
 
+export type ActualDataPayload = z.infer<typeof actualDataPayload>;
+
 const categoryPayload = z.object({
 	description: z.string().trim().optional(),
 	key: z.string().trim(),
@@ -257,6 +267,7 @@ export type TermPayload = z.infer<typeof termPayload>;
 const anyPayload = z.discriminatedUnion('type', [
 	mapPayload,
 	administrativeAreaBasicDataPayload,
+	demographicDataPayload,
 	organizationalUnitPayload,
 	actualDataPayload,
 	indicatorTemplatePayload,
@@ -306,6 +317,8 @@ export const mapContainer = createContainerSchema(mapPayload);
 export const administrativeAreaBasicDataContainer = createContainerSchema(
 	administrativeAreaBasicDataPayload
 );
+
+export const demographicDataContainer = createContainerSchema(demographicDataPayload);
 
 export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
 
@@ -558,6 +571,27 @@ export function createRelation(relation: ContainerRelation) {
 			SELECT *
 			FROM jsonb_to_recordset(${sql.jsonb(relation)}) AS t(object uuid, position int, predicate text, subject uuid)
 			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO UPDATE SET position = EXCLUDED.position
+		`);
+	};
+}
+
+const containerRelationRow = z.object({
+	object: z.string().uuid(),
+	position: z.number().int().nonnegative(),
+	predicate: z.enum(['is-part-of', 'is-part-of-category', 'is-section-of']),
+	subject: z.string().uuid()
+});
+
+export function getSectionRelations(objectGuid: string) {
+	return async (tx: DatabaseTransactionConnection) => {
+		return tx.any(sql.type(containerRelationRow)`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE object = ${objectGuid}
+			  AND predicate = 'is-section-of'
+			  AND valid_currently
+			  AND NOT deleted
+			ORDER BY position
 		`);
 	};
 }

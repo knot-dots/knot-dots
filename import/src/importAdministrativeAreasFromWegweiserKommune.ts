@@ -4,6 +4,7 @@ import {
 	Container,
 	createContainer,
 	createRelation,
+	demographicDataContainer,
 	getAdministrativeAreaBBSR,
 	getAdministrativeAreaOpenStreetMap,
 	getAdministrativeAreaOpenStreetMapByRelationId,
@@ -11,6 +12,7 @@ import {
 	getAdministrativeAreaWikidataByRegionalCode,
 	getContainer,
 	getPool,
+	getSectionRelations,
 	insertIntoAdministrativeAreaWegweiserKommune,
 	Json,
 	mapContainer,
@@ -323,7 +325,67 @@ function isSame<T>(a: T, b: T) {
 									})
 								)(tx));
 
+							const newDemographicDataContainer = demographicDataContainer.parse({
+								managed_by: ouContainer.guid,
+								organization,
+								organizational_unit: ouContainer.guid,
+								payload: {
+									type: 'demographic_data',
+									area: bbsr?.area ?? undefined,
+									population: bbsr?.population ?? undefined
+								},
+								realm,
+								user: [{ predicate: 'is-creator-of', subject: user }]
+							});
+
+							const foundDemographicData = await getContainer({
+								organization,
+								organizationalUnit: ouContainer.guid,
+								payload: { type: 'demographic_data' }
+							})(tx);
+
+							let demographicDataContainerResult;
+
+							if (foundDemographicData) {
+								if (!isSame(foundDemographicData.payload, newDemographicDataContainer.payload)) {
+									demographicDataContainerResult = await updateContainer({
+										...foundDemographicData,
+										payload: {
+											...newDemographicDataContainer.payload
+										}
+									})(tx);
+									console.log(
+										`Updated demographic data for ${region.title} (${demographicDataContainerResult.guid})`
+									);
+								} else {
+									demographicDataContainerResult = foundDemographicData;
+									console.log(
+										`Ignored demographic data for ${region.title} (${demographicDataContainerResult.guid})`
+									);
+								}
+							} else {
+								demographicDataContainerResult = await createContainer(newDemographicDataContainer)(
+									tx
+								);
+							}
+
 							// Build and upsert the full relations array.
+							// Managed sections are assigned fixed positions 0–2.
+							// Any pre-existing section relations not managed by this
+							// script are re-numbered to positions 3+ so they never
+							// conflict with the managed ones.
+							const managedSubjectGuids = new Set([
+								basicDataContainer.guid,
+								mapContainerResult.guid,
+								demographicDataContainerResult.guid
+							]);
+
+							const existingSectionRelations = await getSectionRelations(ouContainer.guid)(tx);
+
+							const unmanagedRelations = existingSectionRelations
+								.filter((r) => !managedSubjectGuids.has(r.subject))
+								.map((r, i) => ({ ...r, position: 3 + i }));
+
 							const relations = [
 								{
 									object: ouContainer.guid,
@@ -337,6 +399,13 @@ function isSame<T>(a: T, b: T) {
 									predicate: 'is-section-of' as const,
 									subject: mapContainerResult.guid
 								},
+								{
+									object: ouContainer.guid,
+									position: 2,
+									predicate: 'is-section-of' as const,
+									subject: demographicDataContainerResult.guid
+								},
+								...unmanagedRelations,
 								...(organizationalUnit
 									? [
 											{
