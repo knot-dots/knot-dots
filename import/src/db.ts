@@ -264,6 +264,19 @@ const termPayload = z.object({
 
 export type TermPayload = z.infer<typeof termPayload>;
 
+const customCollectionPayload = z.object({
+	allowSearch: z.boolean().default(false),
+	allowSort: z.boolean().default(false),
+	filter: z.record(z.string(), z.array(z.string())).default({}),
+	item: z.array(z.uuid()).default([]),
+	listType: z.enum(['carousel', 'wall']).default('carousel'),
+	sort: z.enum(['alpha', 'modified']).default('alpha'),
+	terms: z.string().default(''),
+	title: z.string(),
+	type: z.literal('custom_collection').default('custom_collection'),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
 const anyPayload = z.discriminatedUnion('type', [
 	mapPayload,
 	administrativeAreaBasicDataPayload,
@@ -272,7 +285,8 @@ const anyPayload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	indicatorTemplatePayload,
 	categoryPayload,
-	termPayload
+	termPayload,
+	customCollectionPayload
 ]);
 
 export type Payload = z.infer<typeof anyPayload>;
@@ -329,6 +343,8 @@ export const actualDataContainer = createContainerSchema(actualDataPayload);
 export const categoryContainer = createContainerSchema(categoryPayload);
 
 export const termContainer = createContainerSchema(termPayload);
+
+export const customCollectionContainer = createContainerSchema(customCollectionPayload);
 
 const persistedContainer = createContainerSchema(anyPayload).extend({
 	guid: z.string().uuid(),
@@ -513,6 +529,7 @@ export function getContainer(criteria: {
 		indicator?: string;
 		officialRegionalCode?: string;
 		organizationalUnitType?: string;
+		title?: string;
 		type?: string;
 	};
 }) {
@@ -549,6 +566,10 @@ export function getContainer(criteria: {
 			conditions.push(
 				sql.fragment`payload->>'organizationalUnitType' = ${criteria.payload.organizationalUnitType}`
 			);
+		}
+
+		if (criteria.payload.title) {
+			conditions.push(sql.fragment`payload->>'title' = ${criteria.payload.title}`);
 		}
 
 		if (criteria.payload.type) {

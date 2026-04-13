@@ -4,6 +4,7 @@ import {
 	Container,
 	createContainer,
 	createRelation,
+	customCollectionContainer,
 	demographicDataContainer,
 	getAdministrativeAreaBBSR,
 	getAdministrativeAreaOpenStreetMap,
@@ -109,10 +110,15 @@ const envSchema = z
 		IMPORT_ORGANIZATION: z.string().uuid(),
 		IMPORT_ORGANIZATIONAL_UNIT: z.string().uuid().nullable().default(null),
 		IMPORT_ORGANIZATIONAL_UNIT_LEVEL: z.coerce.number().int().positive().default(1),
+		IMPORT_REPORTS: z
+			.string()
+			.default('')
+			.transform((value) => value.split(',').filter(Boolean))
+			.pipe(z.array(z.uuid())),
 		IMPORT_TYPES: z
 			.string()
 			.default('BUND,BUNDESLAND,KREISFREIE_STADT,LANDKREIS,GEMEINDE')
-			.transform((value) => value.split(','))
+			.transform((value) => value.split(',').filter(Boolean))
 			.pipe(regionType.array()),
 		IMPORT_USER: z.string().uuid(),
 		PUBLIC_KC_REALM: z.string().default('knot-dots')
@@ -124,6 +130,7 @@ const envSchema = z
 		organizationalUnit: value.IMPORT_ORGANIZATIONAL_UNIT,
 		organizationalUnitLevel: value.IMPORT_ORGANIZATIONAL_UNIT_LEVEL,
 		realm: value.PUBLIC_KC_REALM,
+		reports: value.IMPORT_REPORTS,
 		types: value.IMPORT_TYPES,
 		user: value.IMPORT_USER
 	}));
@@ -161,6 +168,7 @@ function isSame<T>(a: T, b: T) {
 		organizationalUnit,
 		organizationalUnitLevel,
 		realm,
+		reports,
 		types,
 		user
 	} = envSchema.parse(process.env);
@@ -368,6 +376,57 @@ function isSame<T>(a: T, b: T) {
 								);
 							}
 
+							const reportCollectionTitle = 'Nachhaltigkeitsberichte';
+
+							const newReportCollectionContainer = customCollectionContainer.parse({
+								managed_by: ouContainer.guid,
+								organization,
+								organizational_unit: ouContainer.guid,
+								payload: {
+									item: reports,
+									title: reportCollectionTitle
+								},
+								realm,
+								user: [{ predicate: 'is-creator-of', subject: user }]
+							});
+
+							const foundReportCollectionContainer = await getContainer({
+								organization,
+								organizationalUnit: ouContainer.guid,
+								payload: { title: reportCollectionTitle, type: 'custom_collection' }
+							})(tx);
+
+							let reportCollectionContainerResult;
+
+							if (foundReportCollectionContainer) {
+								if (
+									!isSame(
+										foundReportCollectionContainer.payload,
+										newReportCollectionContainer.payload
+									)
+								) {
+									reportCollectionContainerResult = await updateContainer({
+										...foundReportCollectionContainer,
+										payload: {
+											...newReportCollectionContainer.payload
+										}
+									})(tx);
+									console.log(
+										`Updated report collection for ${region.title} (${reportCollectionContainerResult.guid})`
+									);
+								} else {
+									reportCollectionContainerResult = foundReportCollectionContainer;
+									console.log(
+										`Ignored report collection for ${region.title} (${reportCollectionContainerResult.guid})`
+									);
+								}
+							} else {
+								reportCollectionContainerResult = await createContainer(
+									newReportCollectionContainer
+								)(tx);
+							}
+
+							// Build and upsert the full relations array.
 							const relations = [
 								{
 									object: ouContainer.guid,
@@ -386,6 +445,12 @@ function isSame<T>(a: T, b: T) {
 									position: 2,
 									predicate: 'is-section-of' as const,
 									subject: demographicDataContainerResult.guid
+								},
+								{
+									object: ouContainer.guid,
+									position: 3,
+									predicate: 'is-section-of' as const,
+									subject: reportCollectionContainerResult.guid
 								},
 								...(organizationalUnit
 									? [
