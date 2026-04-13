@@ -557,7 +557,7 @@ export function createRelation(relation: ContainerRelation) {
 			INSERT INTO container_relation (object, position, predicate, subject)
 			SELECT *
 			FROM jsonb_to_recordset(${sql.jsonb(relation)}) AS t(object uuid, position int, predicate text, subject uuid)
-			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
+			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO UPDATE SET position = EXCLUDED.position
 		`);
 	};
 }
