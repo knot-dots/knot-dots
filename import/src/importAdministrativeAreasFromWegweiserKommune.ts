@@ -1,6 +1,7 @@
 import {
 	administrativeAreaBasicDataContainer,
 	administrativeAreaWegweiserKommune,
+	Container,
 	createContainer,
 	createRelation,
 	getAdministrativeAreaBBSR,
@@ -14,6 +15,8 @@ import {
 	Json,
 	mapContainer,
 	organizationalUnitContainer,
+	OrganizationalUnitPayload,
+	PersistedContainer,
 	updateContainer
 } from './db.ts';
 import assert from 'node:assert';
@@ -100,6 +103,7 @@ type Region = z.infer<typeof region>;
 
 const envSchema = z
 	.object({
+		IMPORT_CUSTOM_CATEGORY: z.preprocess((data: string) => JSON.parse(data), z.json()).optional(),
 		IMPORT_MAX: z.coerce.number().int().positive().default(10000),
 		IMPORT_ORGANIZATION: z.string().uuid(),
 		IMPORT_ORGANIZATIONAL_UNIT: z.string().uuid().nullable().default(null),
@@ -113,6 +117,7 @@ const envSchema = z
 		PUBLIC_KC_REALM: z.string().default('knot-dots')
 	})
 	.transform((value) => ({
+		category: value.IMPORT_CUSTOM_CATEGORY,
 		max: value.IMPORT_MAX,
 		organization: value.IMPORT_ORGANIZATION,
 		organizationalUnit: value.IMPORT_ORGANIZATIONAL_UNIT,
@@ -148,8 +153,16 @@ function isSame<T>(a: T, b: T) {
 }
 
 (function main() {
-	const { max, organization, organizationalUnit, organizationalUnitLevel, realm, types, user } =
-		envSchema.parse(process.env);
+	const {
+		category,
+		max,
+		organization,
+		organizationalUnit,
+		organizationalUnitLevel,
+		realm,
+		types,
+		user
+	} = envSchema.parse(process.env);
 
 	fetchRegion$({ max, types })
 		.pipe(
@@ -218,6 +231,7 @@ function isSame<T>(a: T, b: T) {
 									region.type,
 									region.official_municipality_key
 								),
+								...(category ? { category } : undefined),
 								...(bbsr
 									? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type }
 									: undefined),
@@ -235,7 +249,7 @@ function isSame<T>(a: T, b: T) {
 
 						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
 							// Find or create the org unit container.
-							const foundOrganizationalUnitContainer = await getContainer({
+							const foundOrganizationalUnitContainer = (await getContainer({
 								organization,
 								organizationalUnit: null,
 								payload: {
@@ -244,7 +258,7 @@ function isSame<T>(a: T, b: T) {
 									organizationalUnitType: 'organizational_unit_type.administrative_area',
 									type: 'organizational_unit'
 								}
-							})(tx);
+							})(tx)) as PersistedContainer & Container<OrganizationalUnitPayload>;
 
 							let ouContainer;
 
@@ -259,7 +273,10 @@ function isSame<T>(a: T, b: T) {
 							) {
 								ouContainer = await updateContainer({
 									...foundOrganizationalUnitContainer,
-									payload: newOrganizationalUnitContainer.payload
+									payload: {
+										...foundOrganizationalUnitContainer.payload,
+										...newOrganizationalUnitContainer.payload
+									}
 								})(tx);
 								console.log(`Updated ${region.title} (${ouContainer.guid})`);
 							} else {
