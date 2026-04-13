@@ -13,9 +13,10 @@
 		items: Item[];
 		itemSnippet: Snippet<[Item]>;
 		mayAddItem?: boolean;
+		onLoadMore?: () => void;
 	}
 
-	let { addItem, items, itemSnippet, mayAddItem = false }: Props = $props();
+	let { addItem, items, itemSnippet, mayAddItem = false, onLoadMore }: Props = $props();
 </script>
 
 {#if items.length > 0 || mayAddItem}
@@ -25,6 +26,14 @@
 				{@render itemSnippet(item)}
 			</li>
 		{/each}
+
+		{#if onLoadMore}
+			<li>
+				<button class="card" onclick={onLoadMore} type="button">
+					{$_('load_more')}
+				</button>
+			</li>
+		{/if}
 
 		{#if mayAddItem}
 			<li>
@@ -45,7 +54,7 @@
 		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		display: grid;
-		grid-row: 1 / 4;
+		height: 100%;
 		min-height: 6rem;
 		justify-content: center;
 	}

@@ -1541,7 +1541,7 @@ img.cover {
 
 .carousel {
 	display: grid;
-	gap: 1rem;
+	gap: 0.5rem 1rem;
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
