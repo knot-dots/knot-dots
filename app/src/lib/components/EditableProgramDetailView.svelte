@@ -6,6 +6,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import { buildCategoryFacetsWithCounts, getCategoryKeys } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
@@ -40,6 +41,7 @@
 	} from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability, applicationState, newContainer } from '$lib/stores';
+	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
 		container: ProgramContainer;
@@ -53,15 +55,28 @@
 
 	let isGuide = $derived(container.payload.programType === programTypes.enum['program_type.guide']);
 
+	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
+	let categoryContext = $derived(page.data.categoryContext);
+	let useCustomCategories = $derived(featureDecisions.useCustomCategories());
+
 	let relatedContainersQuery = $derived(
 		fetchContainersRelatedToProgram({
 			guid,
 			params: {
-				audience: paramsFromFragment(page.url).getAll('audience'),
-				sdg: paramsFromFragment(page.url).getAll('sdg'),
-				policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
-				terms: paramsFromFragment(page.url).get('terms') ?? '',
-				topic: paramsFromFragment(page.url).getAll('topic')
+				...(useCustomCategories
+					? {
+							customCategories: extractCustomCategoryFiltersFromParams(
+								paramsFromFragment(page.url),
+								categoryContext?.keys ?? []
+							)
+						}
+					: {
+							audience: paramsFromFragment(page.url).getAll('audience'),
+							sdg: paramsFromFragment(page.url).getAll('sdg'),
+							policyFieldsBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
+							topics: paramsFromFragment(page.url).getAll('topic')
+						}),
+				terms: paramsFromFragment(page.url).get('terms') ?? ''
 			}
 		})
 	);
@@ -74,22 +89,43 @@
 		parts.filter(({ payload }) => byPayloadType(payload.type, page.url))
 	);
 
+	let relatedParts = $derived(
+		relatedContainersQuery.current?.filter(({ guid, relation }) =>
+			relation.some(
+				({ predicate }) =>
+					predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
+			)
+		) ?? []
+	);
+
 	let facets = $derived(
-		computeFacetCount(
-			new Map([
-				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
-			relatedContainersQuery.current?.filter(({ guid, relation }) =>
-				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
+		useCustomCategories && categoryContext
+			? computeFacetCount(
+					new Map([
+						...buildCategoryFacetsWithCounts(categoryContext.options),
+						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
+					]),
+					relatedParts,
+					{ useCategoryPayload: true }
 				)
-			) ?? []
-		)
+			: computeFacetCount(
+					new Map([
+						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
+						['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+						['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+						['topic', new Map(topics.options.map((v) => [v as string, 0]))],
+						['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
+					]),
+					relatedParts
+				)
+	);
+
+	let usedCategoryKeys = $derived(
+		useCustomCategories && categoryContext
+			? getCategoryKeys(categoryContext.options).filter((key) =>
+					parts.some((part) => 'category' in part.payload && part.payload.category[key]?.length > 0)
+				)
+			: []
 	);
 
 	let viewMode = $derived(
@@ -101,12 +137,26 @@
 	$effect(() => {
 		if (relatedContainersQuery.current) {
 			relatedContainers = relatedContainersQuery.current;
-			parts = relatedContainers.filter(({ guid, relation }) =>
+			const filtered = relatedContainers.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
 						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
 				)
 			);
+
+			if (useCustomCategories) {
+				for (const part of filtered) {
+					if ('category' in part.payload) {
+						for (const key of categoryContext!.keys) {
+							if (!part.payload.category[key]) {
+								part.payload.category[key] = [];
+							}
+						}
+					}
+				}
+			}
+
+			parts = filtered;
 		}
 	});
 
@@ -200,10 +250,9 @@
 					'description',
 					'visibility',
 					'status',
-					'sdg',
-					'topic',
-					'policyFieldBNK',
-					'audience',
+					...(useCustomCategories
+						? usedCategoryKeys
+						: ['sdg', 'topic', 'policyFieldBNK', 'audience']),
 					'fulfillmentDate',
 					'duration',
 					'editorialState',
@@ -212,6 +261,7 @@
 					'objectType'
 				]}
 				bind:container={parts[i]}
+				categoryOptions={useCustomCategories ? categoryContext?.options : null}
 				{dragEnabled}
 				editable={$applicationState.containerDetailView.editable}
 			/>
@@ -220,7 +270,12 @@
 {/snippet}
 
 {#snippet header()}
-	<Header {facets} search />
+	<Header
+		{facets}
+		facetLabels={useCustomCategories ? categoryContext?.labels : undefined}
+		categoryOptions={useCustomCategories ? categoryContext?.options : null}
+		search
+	/>
 {/snippet}
 
 {#snippet main()}
@@ -281,10 +336,16 @@
 						<div class="cell">{$_('description')}</div>
 						<div class="cell">{$_('visibility.label')}</div>
 						<div class="cell">{$_('status')}</div>
-						<div class="cell">{$_('category')}</div>
-						<div class="cell">{$_('topic')}</div>
-						<div class="cell">{$_('policy_field_bnk')}</div>
-						<div class="cell">{$_('audience')}</div>
+						{#if useCustomCategories}
+							{#each usedCategoryKeys as key (key)}
+								<div class="cell">{categoryContext?.labels.get(key) ?? key}</div>
+							{/each}
+						{:else}
+							<div class="cell">{$_('category')}</div>
+							<div class="cell">{$_('topic')}</div>
+							<div class="cell">{$_('policy_field_bnk')}</div>
+							<div class="cell">{$_('audience')}</div>
+						{/if}
 						<div class="cell">{$_('fulfillment_date')}</div>
 						<div class="cell">{$_('planned_duration')}</div>
 						<div class="cell">{$_('editorial_state')}</div>
