@@ -234,6 +234,7 @@ function isSame<T>(a: T, b: T) {
 						});
 
 						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
+							// Find or create the org unit container.
 							const foundOrganizationalUnitContainer = await getContainer({
 								organization,
 								organizationalUnit: null,
@@ -245,84 +246,93 @@ function isSame<T>(a: T, b: T) {
 								}
 							})(tx);
 
-							if (foundOrganizationalUnitContainer) {
-								if (
-									!isSame(
-										foundOrganizationalUnitContainer.payload,
-										newOrganizationalUnitContainer.payload
-									)
-								) {
-									const updatedOrganizationalUnitContainer = await updateContainer({
-										...foundOrganizationalUnitContainer,
-										payload: newOrganizationalUnitContainer.payload
-									})(tx);
+							let ouContainer;
 
-									console.log(
-										`Updated ${region.title} (${updatedOrganizationalUnitContainer.guid})`
-									);
-								} else {
-									console.log(`Ignored ${region.title} (${foundOrganizationalUnitContainer.guid})`);
-								}
-
-								return;
+							if (!foundOrganizationalUnitContainer) {
+								ouContainer = await createContainer(newOrganizationalUnitContainer)(tx);
+								console.log(`Created ${region.title} (${ouContainer.guid})`);
+							} else if (
+								!isSame(
+									foundOrganizationalUnitContainer.payload,
+									newOrganizationalUnitContainer.payload
+								)
+							) {
+								ouContainer = await updateContainer({
+									...foundOrganizationalUnitContainer,
+									payload: newOrganizationalUnitContainer.payload
+								})(tx);
+								console.log(`Updated ${region.title} (${ouContainer.guid})`);
+							} else {
+								ouContainer = foundOrganizationalUnitContainer;
+								console.log(`Ignored ${region.title} (${ouContainer.guid})`);
 							}
 
-							const savedOrganizationalUnitContainer = await createContainer(
-								newOrganizationalUnitContainer
-							)(tx);
+							// Find or create sub-containers.
+							const existingBasicData = await getContainer({
+								organization,
+								organizationalUnit: ouContainer.guid,
+								payload: { type: 'administrative_area_basic_data' }
+							})(tx);
 
-							const newAdministrativeAreaBasicDataContainer =
-								administrativeAreaBasicDataContainer.parse({
-									managed_by: savedOrganizationalUnitContainer.guid,
-									organization: organization,
-									organizational_unit: savedOrganizationalUnitContainer.guid,
-									payload: {},
-									realm,
-									user: [{ predicate: 'is-creator-of', subject: user }]
-								});
+							const basicDataContainer =
+								existingBasicData ??
+								(await createContainer(
+									administrativeAreaBasicDataContainer.parse({
+										managed_by: ouContainer.guid,
+										organization,
+										organizational_unit: ouContainer.guid,
+										payload: {},
+										realm,
+										user: [{ predicate: 'is-creator-of', subject: user }]
+									})
+								)(tx));
 
-							const newMapContainer = mapContainer.parse({
-								managed_by: savedOrganizationalUnitContainer.guid,
-								organization: organization,
-								organizational_unit: savedOrganizationalUnitContainer.guid,
-								realm,
-								user: [{ predicate: 'is-creator-of', subject: user }]
-							});
+							const existingMap = await getContainer({
+								organization,
+								organizationalUnit: ouContainer.guid,
+								payload: { type: 'map' }
+							})(tx);
 
-							const savedAdministrativeAreaBasicDataContainer = await createContainer(
-								newAdministrativeAreaBasicDataContainer
-							)(tx);
+							const mapContainerResult =
+								existingMap ??
+								(await createContainer(
+									mapContainer.parse({
+										managed_by: ouContainer.guid,
+										organization,
+										organizational_unit: ouContainer.guid,
+										payload: {},
+										realm,
+										user: [{ predicate: 'is-creator-of', subject: user }]
+									})
+								)(tx));
 
-							const savedMapContainer = await createContainer(newMapContainer)(tx);
-
+							// Build and upsert the full relations array.
 							const relations = [
 								{
-									object: savedOrganizationalUnitContainer.guid,
+									object: ouContainer.guid,
 									position: 0,
-									predicate: 'is-section-of' as 'is-section-of',
-									subject: savedAdministrativeAreaBasicDataContainer.guid
+									predicate: 'is-section-of' as const,
+									subject: basicDataContainer.guid
 								},
 								{
-									object: savedOrganizationalUnitContainer.guid,
+									object: ouContainer.guid,
 									position: 1,
-									predicate: 'is-section-of' as 'is-section-of',
-									subject: savedMapContainer.guid
+									predicate: 'is-section-of' as const,
+									subject: mapContainerResult.guid
 								},
 								...(organizationalUnit
 									? [
 											{
 												object: organizationalUnit,
 												position: 0,
-												predicate: 'is-part-of' as 'is-part-of',
-												subject: savedOrganizationalUnitContainer.guid
+												predicate: 'is-part-of' as const,
+												subject: ouContainer.guid
 											}
 										]
 									: [])
 							];
 
 							await createRelation(relations)(tx);
-
-							console.log(`Created ${region.title} (${savedOrganizationalUnitContainer.guid})`);
 						});
 					} catch (error) {
 						console.error(`Failed to save ${region.title}`, error);
