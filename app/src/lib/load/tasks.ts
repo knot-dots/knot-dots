@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
@@ -21,6 +22,7 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
 
 function filterRelated(
@@ -38,8 +40,14 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		let otherContainers: GoalContainer[];
 		let subordinateOrganizationalUnits: string[] = [];
 
-		const { currentOrganization, currentOrganizationalUnit } = await parent();
+		const { currentOrganization, currentOrganizationalUnit, categoryContext } = await parent();
 		const features = createFeatureDecisions(locals.features);
+		const useCustomCategories = features.useCustomCategories();
+
+		let customCategoryFilters: Record<string, string[]> = {};
+		if (useCustomCategories && categoryContext) {
+			customCategoryFilters = extractCustomCategoryFilters(url, categoryContext.keys);
+		}
 
 		if (currentOrganization.payload.default) {
 			error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -75,7 +83,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							currentOrganization.payload.default ? [] : [currentOrganization.guid],
 							{
 								assignees: url.searchParams.getAll('assignee'),
-								taskCategories: url.searchParams.getAll('taskCategory'),
+								...(useCustomCategories
+									? { customCategories: customCategoryFilters }
+									: { taskCategories: url.searchParams.getAll('taskCategory') }),
 								terms: url.searchParams.get('terms') ?? '',
 								type: [payloadTypes.enum.task]
 							},
@@ -104,7 +114,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							currentOrganization.payload.default ? [] : [currentOrganization.guid],
 							{
 								assignees: url.searchParams.getAll('assignee'),
-								taskCategories: url.searchParams.getAll('taskCategory'),
+								...(useCustomCategories
+									? { customCategories: customCategoryFilters }
+									: { taskCategories: url.searchParams.getAll('taskCategory') }),
 								terms: url.searchParams.get('terms') ?? '',
 								type: [payloadTypes.enum.task]
 							},
@@ -154,12 +166,25 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 				[string, Map<string, number>]
 			>),
-			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
+			...(useCustomCategories
+				? []
+				: [
+						[
+							'taskCategory',
+							fromCounts(taskCategories.options as string[], data?.taskCategory)
+						] as [string, Map<string, number>]
+					]),
 			['assignee', new Map()]
 		]);
 
+		if (useCustomCategories && categoryContext) {
+			for (const [key, facetMap] of buildCategoryFacetsWithCounts(categoryContext.options)) {
+				_facets.set(key, facetMap);
+			}
+		}
+
 		const computedFacets = computeFacetCount(_facets, taskContainers, {
-			useCategoryPayload: features.useCustomCategories()
+			useCategoryPayload: useCustomCategories
 		});
 		const facets = features.useElasticsearch() && data ? _facets : computedFacets;
 
