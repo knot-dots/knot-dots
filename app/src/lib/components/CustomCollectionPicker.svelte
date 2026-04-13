@@ -6,6 +6,7 @@
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
+	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
@@ -18,6 +19,7 @@
 		computeFacetCount,
 		type CustomCollectionContainer,
 		indicatorCategories,
+		type PayloadType,
 		payloadTypes,
 		policyFieldBNK,
 		sustainableDevelopmentGoals,
@@ -53,19 +55,40 @@
 		payloadTypes.enum.organizational_unit,
 		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
 		payloadTypes.enum.task
-	]);
+	] satisfies PayloadType[]);
+
+	const categoryContext = $derived(
+		page.data.categoryContext
+			? filterCategoryContext(
+					page.data.categoryContext,
+					filter.type.length > 0 ? filter.type : defaultPayloadType,
+					{
+						matchAll: true
+					}
+				)
+			: undefined
+	);
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-			['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-			['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-			['audience', new Map(audience.options.map((v) => [v as string, 0]))]
-		]);
+			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
+			...(createFeatureDecisions(page.data.features).useCustomCategories()
+				? (categoryContext?.keys.map((k) => [
+						k,
+						new Map(categoryContext.options[k].map((v) => [v.value, 0]))
+					]) ?? [])
+				: [
+						['audience', new Map(audience.options.map((v) => [v as string, 0]))],
+						['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+						['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
+						['topic', new Map(topics.options.map((v) => [v as string, 0]))]
+					])
+		] as [string, Map<string, number>][]);
 
-		return computeFacetCount(facets, searchResource.current ?? []);
+		return computeFacetCount(facets, searchResource.current ?? [], {
+			useCategoryPayload: createFeatureDecisions(page.data.features).useCustomCategories()
+		});
 	});
 
 	let activeFilters = $derived(
@@ -80,33 +103,25 @@
 	const inViewport = new IsInViewport(() => dialog);
 
 	const searchResource = resource(
-		[
-			() => filter.audience,
-			() => filter.sdg,
-			() => filter.indicatorCategory,
-			() => filter.policyFieldBNK,
-			() => filter.topic,
-			() => (filter.type.length > 0 ? filter.type : defaultPayloadType),
-			() => sort,
-			() => terms,
-			() => inViewport.current
-		],
-		async (
-			[audience, sdg, indicatorCategory, policyFieldBNK, topic, type, sort, terms, inViewport],
-			_,
-			{ signal }
-		) => {
+		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current],
+		async ([filter, sort, terms, inViewport], _, { signal }) => {
 			return inViewport
 				? fetchContainers(
 						{
-							audience,
-							sdg,
-							indicatorCategory,
+							indicatorCategory: filter.indicatorCategory,
 							organization: [page.data.currentOrganization.guid],
-							policyFieldBNK,
-							terms,
-							topic,
-							payloadType: type
+							payloadType: filter.type.length > 0 ? filter.type : defaultPayloadType,
+							...(createFeatureDecisions(page.data.features).useCustomCategories()
+								? Object.fromEntries(
+										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
+									)
+								: {
+										audience: filter.audience,
+										policyFieldBNK: filter.policyFieldBNK,
+										topic: filter.topic,
+										sdg: filter.sdg
+									}),
+							terms
 						},
 						sort,
 						{ signal }
@@ -120,15 +135,9 @@
 	);
 
 	function resetFilters() {
-		filter = {
-			audience: [],
-			category: [],
-			sdg: [],
-			indicatorCategory: [],
-			type: [],
-			policyFieldBNK: [],
-			topic: []
-		};
+		for (const key in filter) {
+			filter[key] = [];
+		}
 	}
 
 	function handleRemoveFilterValue(key: string, value: string) {
@@ -176,18 +185,33 @@
 >
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
-			{@const options = [...foci.entries()]
-				.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-				.toSorted((a, b) =>
-					a.label.localeCompare(b.label, undefined, {
-						numeric: true,
-						sensitivity: 'base'
-					})
-				)}
+			{@const options =
+				categoryContext?.options[key]?.map((option) => ({
+					...option,
+					count: foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+					subOptions: option.subOptions?.map((sub) => ({
+						...sub,
+						count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+					}))
+				})) ??
+				[...foci.entries()]
+					.map(([k, v]) => ({
+						count: v,
+						label: $_(k),
+						value: k,
+						subOptions: undefined
+					}))
+					.toSorted((a, b) =>
+						a.label.localeCompare(b.label, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						})
+					)}
 			{#if options.some(({ count }) => count > 0)}
 				<InlineFilterDropDown
-					bind:value={filter[key as keyof typeof filter] as string[]}
+					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
+					label={categoryContext?.labels.get(key)}
 					{mode}
 					{options}
 				/>
