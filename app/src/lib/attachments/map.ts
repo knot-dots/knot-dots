@@ -7,7 +7,7 @@ export function createMapWithGeoJsonObject(geometry: GeoJsonObject): Attachment<
 		let map: Map;
 
 		import('leaflet').then((leaflet) => {
-			map = leaflet.map(element);
+			map = leaflet.map(element, { scrollWheelZoom: false });
 
 			leaflet
 				.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
