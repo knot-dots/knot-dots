@@ -110,11 +110,8 @@
 							...(item.length > 0
 								? { guid: item, terms: combinedTerms }
 								: {
-										audience: filter.audience,
-										sdg: filter.sdg,
-										indicatorCategory: filter.indicatorCategory,
+										...filter,
 										organization: [page.data.currentOrganization.guid],
-										policyFieldBNK: filter.policyFieldBNK,
 										terms: combinedTerms,
 										topic: filter.topic,
 										payloadType: type
