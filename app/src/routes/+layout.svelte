@@ -49,6 +49,11 @@
 		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? []
 	});
 
+	$effect(() => {
+		favoriteList.organization = page.data.currentOrganization.payload.favorite;
+		favoriteList.organizationalUnit = page.data.currentOrganizationalUnit?.payload.favorite ?? [];
+	});
+
 	setFavoriteListContext(favoriteList);
 
 	const workspaceTranslated = $derived.by(() => {
