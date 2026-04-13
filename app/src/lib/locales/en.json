@@ -152,6 +152,13 @@
 	"delete.name": "Delete {name}",
 	"description": "Description",
 	"download": "Download",
+	"embed.copied": "Embed code copied",
+	"embed.copy_code": "Copy embed code",
+	"embed.delete_report": "Delete report",
+	"embed.menu_item_subtitle": "Embed object in website",
+	"embed.menu_item_title": "Embed code",
+	"embed.open": "Open embed",
+	"embed.show_code": "Show code",
 	"edit_mode": "Edit mode",
 	"editor": {
 		"emphasis": "I",

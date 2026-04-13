@@ -152,6 +152,13 @@
 	"delete.name": "{name} löschen",
 	"description": "Beschreibung",
 	"download": "Herunterladen",
+	"embed.copied": "Embed-Code kopiert",
+	"embed.copy_code": "Embed-Code kopieren",
+	"embed.delete_report": "Bericht löschen",
+	"embed.menu_item_subtitle": "Objekt in Website einbetten",
+	"embed.menu_item_title": "Embed Code",
+	"embed.open": "Einbettung öffnen",
+	"embed.show_code": "Code anzeigen",
 	"edit_mode": "Bearbeitenmodus",
 	"editor": {
 		"emphasis": "K",
