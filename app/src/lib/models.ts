@@ -69,6 +69,7 @@ const payloadTypeValues = [
 	'content_partner',
 	'content_partner_collection',
 	'custom_collection',
+	'demographic_data',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -891,6 +892,23 @@ const customCollectionPayload = z
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
+const demographicDataPayload = z
+	.object({
+		area: z.number().nonnegative().optional(),
+		population: z.number().int().nonnegative().optional(),
+		title: z
+			.string()
+			.trim()
+			.default(() => unwrapFunctionStore(_)('demographic_data')),
+		type: z.literal(payloadTypes.enum.demographic_data),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialDemographicDataPayload = demographicDataPayload.partial({
+	title: true
+});
+
 const fileCollectionPayload = z
 	.object({
 		file: z
@@ -1584,6 +1602,7 @@ const payload = z.discriminatedUnion('type', [
 	contentPartnerCollectionPayload,
 	contentPartnerPayload,
 	customCollectionPayload,
+	demographicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1757,6 +1776,18 @@ export function isCustomCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CustomCollectionContainer {
 	return container.payload.type === payloadTypes.enum.custom_collection;
+}
+
+const demographicDataContainer = container.extend({
+	payload: demographicDataPayload
+});
+
+export type DemographicDataContainer = z.infer<typeof demographicDataContainer>;
+
+export function isDemographicDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is DemographicDataContainer {
+	return container.payload.type === payloadTypes.enum.demographic_data;
 }
 
 const effectContainer = container.extend({
@@ -2539,6 +2570,7 @@ export const emptyContainer = newContainer.extend({
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialDemographicDataPayload,
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,

@@ -4,6 +4,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
+	import DemographicDataSection from '$lib/components/DemographicDataSection.svelte';
 	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
 	import EditableCustomCollection from '$lib/components/EditableCustomCollection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
@@ -36,6 +37,7 @@
 		isContentPartnerCollectionContainer,
 		isContentPartnerContainer,
 		isCustomCollectionContainer,
+		isDemographicDataContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -150,6 +152,13 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
+			/>
+		{:else if isDemographicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+			<DemographicDataSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
 			<EditableEffectCollection
