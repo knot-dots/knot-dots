@@ -1187,6 +1187,11 @@ label > input[type='checkbox'].toggle {
 	padding: var(--details-section-padding-y, 1rem) var(--details-section-padding-x, 1.5rem);
 }
 
+header.details-section + div.details-section,
+header.details-section + dialog + div.details-section {
+	padding-top: 0;
+}
+
 .details-section header {
 	align-items: start;
 	display: flex;
