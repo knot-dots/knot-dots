@@ -13,6 +13,7 @@ import {
 	type OrganizationContainer,
 	payloadTypes
 } from '$lib/models';
+import { createFeatureDecisions } from '$lib/features';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getContainerByGuid,
@@ -104,11 +105,13 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 	const defaultOrganizationGuid =
 		organizations.find(({ payload }) => payload.default)?.guid ?? currentOrganization.guid;
 
-	const categoryContext = await loadCategoryContext({
-		connect: locals.pool.connect,
-		scope: [currentOrganization.guid, defaultOrganizationGuid],
-		user: locals.user
-	});
+	const categoryContext = createFeatureDecisions(locals.features).useCustomCategories()
+		? await loadCategoryContext({
+				connect: locals.pool.connect,
+				scope: [currentOrganization.guid, defaultOrganizationGuid],
+				user: locals.user
+			})
+		: null;
 
 	if (url.searchParams.has('signup')) {
 		try {
