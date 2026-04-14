@@ -579,6 +579,8 @@
 	"program_type.set_of_rules.plural": "Sets of rules",
 	"program_type.smart_city": "Smart city strategy",
 	"program_type.smart_city.plural": "Smart city strategies",
+	"program_type.strategy": "Strategy",
+	"program_type.strategy.plural": "Strategies",
 	"program_type.sustainability": "Sustainability strategy",
 	"program_type.sustainability.plural": "Sustainability strategies",
 	"programs": "Programs",

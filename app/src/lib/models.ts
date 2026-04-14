@@ -411,6 +411,7 @@ export type TaskStatus = z.infer<typeof taskStatus>;
 
 const programTypeValues = [
 	'program_type.misc',
+	'program_type.strategy',
 	'program_type.mobility',
 	'program_type.sustainability',
 	'program_type.smart_city',
