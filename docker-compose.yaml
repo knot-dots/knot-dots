@@ -56,6 +56,7 @@ services:
       - import
     volumes:
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
+      - ./app/src/lib/models.ts:/srv/knot-dots/app/src/lib/models.ts:ro
       - ./import/src:/srv/knot-dots/import/src
       - ./shared/src:/srv/knot-dots/shared/src
 
