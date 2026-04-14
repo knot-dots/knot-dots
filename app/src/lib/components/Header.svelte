@@ -451,13 +451,11 @@
 		gap: 0.75rem;
 		justify-content: end;
 		padding: 0 0.75rem 0.5rem;
-		z-index: 1;
-		pointer-events: none;
+		z-index: 2;
 	}
 
 	.commands > * {
 		width: fit-content;
-		pointer-events: all;
 	}
 
 	.action-button--favorite {
