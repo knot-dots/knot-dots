@@ -50,7 +50,7 @@
 			})}
 		</p>
 
-		<button class="button-primary button-xs" type="submit" aria-label={buttonLabel}>
+		<button class="button-primary button-xs" type="submit">
 			{buttonLabel}
 		</button>
 	</form>
