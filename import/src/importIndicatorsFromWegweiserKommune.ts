@@ -139,6 +139,7 @@ function isSame<T>(a: T, b: T) {
 							organization: organization,
 							organizational_unit: null,
 							payload: {
+								type: 'indicator_template',
 								description: indicator.explanation,
 								externalReference,
 								indicatorCategory: [

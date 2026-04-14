@@ -3,17 +3,18 @@ import XLSX from 'xlsx';
 import * as z from 'zod';
 import {
 	categoryContainer,
+	CategoryContainer,
 	CategoryPayload,
-	Container,
 	createContainer,
 	createRelation,
 	getCategoryContainer,
 	getOrganizationalUnitContainers,
 	getTermContainersForCategory,
 	getPool,
+	OrganizationalUnitContainer,
 	OrganizationalUnitPayload,
-	PersistedContainer,
 	termContainer,
+	TermContainer,
 	TermPayload,
 	updateContainer
 } from './db.ts';
@@ -122,10 +123,8 @@ function addAssignment(assignments: Map<string, Assignment>, row: ParsedRow) {
 	existing.rows.push(row);
 }
 
-function buildOrganizationalUnitMap(
-	containers: Readonly<Array<PersistedContainer & Container<OrganizationalUnitPayload>>>
-) {
-	const byKey = new Map<string, Array<PersistedContainer & Container<OrganizationalUnitPayload>>>();
+function buildOrganizationalUnitMap(containers: Readonly<Array<OrganizationalUnitContainer>>) {
+	const byKey = new Map<string, Array<OrganizationalUnitContainer>>();
 
 	for (const container of containers) {
 		const key = String(container.payload.officialMunicipalityKey ?? '').trim();
@@ -141,8 +140,8 @@ function buildOrganizationalUnitMap(
 	return byKey;
 }
 
-function buildTermMap(terms: Readonly<Array<PersistedContainer & Container<TermPayload>>>) {
-	const byCode = new Map<string, PersistedContainer & Container<TermPayload>>();
+function buildTermMap(terms: Readonly<Array<TermContainer>>) {
+	const byCode = new Map<string, TermContainer>();
 
 	for (const term of terms) {
 		const code = String(term.payload.value ?? '').trim();
@@ -164,7 +163,7 @@ async function ensureCategory(
 	tx: DatabaseTransactionConnection,
 	organization: string,
 	stats: { categoryCreated: boolean; categoryUpdated: boolean }
-): Promise<PersistedContainer & Container<CategoryPayload>> {
+): Promise<CategoryContainer> {
 	const existing = await getCategoryContainer(tx, organization, categoryKey);
 
 	if (!existing) {
@@ -174,11 +173,16 @@ async function ensureCategory(
 				managed_by: organization,
 				organization: organization,
 				organizational_unit: null,
-				payload: { key: categoryKey, objectTypes: ['organizational_unit'], title: categoryTitle },
+				payload: {
+					type: 'category',
+					key: categoryKey,
+					objectTypes: ['organizational_unit'],
+					title: categoryTitle
+				},
 				realm: env.PUBLIC_KC_REALM,
 				user: [{ predicate: creatorPredicate, subject: env.IMPORT_USER }]
 			})
-		)(tx)) as PersistedContainer & Container<CategoryPayload>;
+		)(tx)) as CategoryContainer;
 	}
 
 	const needsUpdate =
@@ -201,15 +205,15 @@ async function ensureCategory(
 			objectTypes: ['organizational_unit'],
 			title: categoryTitle
 		}
-	})(tx)) as PersistedContainer & Container<CategoryPayload>;
+	})(tx)) as CategoryContainer;
 }
 
 async function ensureTerm(
 	tx: DatabaseTransactionConnection,
-	category: PersistedContainer & Container<CategoryPayload>,
+	category: CategoryContainer,
 	code: string,
 	position: number,
-	termsByCode: Map<string, PersistedContainer & Container<TermPayload>>,
+	termsByCode: Map<string, TermContainer>,
 	stats: { termsCreated: number; termsUpdated: number }
 ) {
 	const existing = termsByCode.get(code);
@@ -220,11 +224,11 @@ async function ensureTerm(
 				managed_by: category.managed_by,
 				organization: category.organization,
 				organizational_unit: category.organizational_unit,
-				payload: { title: code, value: code },
+				payload: { type: 'term', title: code, value: code },
 				realm: env.PUBLIC_KC_REALM,
 				user: [{ predicate: creatorPredicate, subject: env.IMPORT_USER }]
 			})
-		)(tx)) as PersistedContainer & Container<TermPayload>;
+		)(tx)) as TermContainer;
 
 		await createRelation([
 			{
@@ -251,7 +255,7 @@ async function ensureTerm(
 	const updated = (await updateContainer({
 		...existing,
 		payload: { ...existing.payload, title: code, value: code }
-	})(tx)) as PersistedContainer & Container<TermPayload>;
+	})(tx)) as TermContainer;
 	termsByCode.set(code, updated);
 	stats.termsUpdated++;
 	return updated;
@@ -355,7 +359,7 @@ function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[
 
 				const updated = (await updateContainer({ ...organizationalUnit, payload: nextPayload })(
 					tx
-				)) as PersistedContainer & Container<OrganizationalUnitPayload>;
+				)) as OrganizationalUnitContainer;
 				organizationalUnitsByKey.set(assignment.official_municipality_key, [updated]);
 				stats.assignmentsUpdated++;
 			}

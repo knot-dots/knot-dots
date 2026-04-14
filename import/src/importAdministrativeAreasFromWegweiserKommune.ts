@@ -1,7 +1,6 @@
 import {
 	administrativeAreaBasicDataContainer,
 	administrativeAreaWegweiserKommune,
-	Container,
 	createContainer,
 	createRelation,
 	customCollectionContainer,
@@ -20,7 +19,7 @@ import {
 	organizationalUnitContainer,
 	organizationalUnitPayload,
 	OrganizationalUnitPayload,
-	PersistedContainer,
+	OrganizationalUnitContainer,
 	updateContainer
 } from './db.ts';
 import assert from 'node:assert';
@@ -252,7 +251,8 @@ function isSame<T>(a: T, b: T) {
 								level: organizationalUnitLevel,
 								name: region.title,
 								officialMunicipalityKey: region.official_municipality_key,
-								officialRegionalCode: region.official_regional_code
+								officialRegionalCode: region.official_regional_code,
+								type: 'organizational_unit'
 							},
 							realm,
 							user: [{ predicate: 'is-creator-of', subject: user }]
@@ -269,7 +269,7 @@ function isSame<T>(a: T, b: T) {
 									organizationalUnitType: 'organizational_unit_type.administrative_area',
 									type: 'organizational_unit'
 								}
-							})(tx)) as PersistedContainer & Container<OrganizationalUnitPayload>;
+							})(tx)) as OrganizationalUnitContainer;
 
 							let ouContainer;
 
@@ -312,7 +312,10 @@ function isSame<T>(a: T, b: T) {
 										managed_by: ouContainer.guid,
 										organization,
 										organizational_unit: ouContainer.guid,
-										payload: {},
+										payload: {
+											type: 'administrative_area_basic_data',
+											title: 'Basisinformationen'
+										},
 										realm,
 										user: [{ predicate: 'is-creator-of', subject: user }]
 									})
@@ -331,7 +334,7 @@ function isSame<T>(a: T, b: T) {
 										managed_by: ouContainer.guid,
 										organization,
 										organizational_unit: ouContainer.guid,
-										payload: {},
+										payload: { type: 'map', title: 'Gebietsgrenze' },
 										realm,
 										user: [{ predicate: 'is-creator-of', subject: user }]
 									})
@@ -343,6 +346,7 @@ function isSame<T>(a: T, b: T) {
 								organizational_unit: ouContainer.guid,
 								payload: {
 									type: 'demographic_data',
+									title: 'Demografische Daten',
 									area: bbsr?.area,
 									population: bbsr?.population
 								},
@@ -388,6 +392,7 @@ function isSame<T>(a: T, b: T) {
 								organization,
 								organizational_unit: ouContainer.guid,
 								payload: {
+									type: 'custom_collection',
 									item: reports,
 									title: reportCollectionTitle
 								},
