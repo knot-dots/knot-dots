@@ -1,5 +1,5 @@
 import { type DatabaseTransactionConnection } from 'slonik';
-import XLSX from 'xlsx';
+import xlsx from 'node-xlsx';
 import * as z from 'zod';
 import {
 	categoryContainer,
@@ -54,6 +54,8 @@ type Assignment = {
 	rows: ParsedRow[];
 };
 
+type ParsedWorkbook = ReturnType<typeof xlsx.parse>;
+
 function getValue(record: Record<string, unknown>, header: string | readonly string[]) {
 	const headers = Array.isArray(header) ? header : [header];
 
@@ -65,24 +67,27 @@ function getValue(record: Record<string, unknown>, header: string | readonly str
 	}
 }
 
-function readSheet(workbook: XLSX.WorkBook, sheetName: string) {
-	const worksheet = workbook.Sheets[sheetName];
+function readSheet(workbook: ParsedWorkbook, sheetName: string) {
+	const worksheet = workbook.find((sheet) => sheet.name === sheetName);
 
 	if (!worksheet) {
 		throw new Error(
-			`Sheet "${sheetName}" was not found. Available sheets: ${workbook.SheetNames.join(', ')}`
+			`Sheet "${sheetName}" was not found. Available sheets: ${workbook.map(({ name }) => name).join(', ')}`
 		);
 	}
 
-	return XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
-		blankrows: false,
-		defval: '',
-		raw: false
-	});
+	const [headerRow = [], ...rows] = worksheet.data as unknown[][];
+	const headers = headerRow.map((value) => String(value ?? '').trim());
+
+	return rows
+		.filter((row) => row.some((value) => String(value ?? '').trim() !== ''))
+		.map((row) =>
+			Object.fromEntries(headers.map((header, index) => [header, row[index] ?? '']))
+		) as Record<string, unknown>[];
 }
 
 function parseSheet(
-	workbook: XLSX.WorkBook,
+	workbook: ParsedWorkbook,
 	sheetName: 'Kreistypen 2021' | 'Gemeindetypen 2022',
 	headers: { code: string; name: string; key: string }
 ) {
@@ -276,7 +281,7 @@ function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[
 }
 
 (async function main() {
-	const workbook = XLSX.readFile(env.DIFU_FILE);
+	const workbook = xlsx.parse(env.DIFU_FILE, { raw: false, blankrows: false });
 	const rows = [
 		...parseSheet(workbook, 'Kreistypen 2021', {
 			code: 'Kreistyp',
