@@ -12,9 +12,9 @@
 
 	let { dialog = $bindable(), handleSubmit, container, relatedContainers }: Props = $props();
 
-	// derive the title once and reuse below
-	const title: string =
-		'title' in container.payload ? container.payload.title : container.payload.name;
+	const title = $derived(
+		'title' in container.payload ? container.payload.title : container.payload.name
+	);
 </script>
 
 <dialog bind:this={dialog}>
