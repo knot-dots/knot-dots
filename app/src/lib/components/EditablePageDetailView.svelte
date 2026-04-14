@@ -154,10 +154,11 @@
 	}
 
 	.stage--buttons {
-		min-height: 4rem;
+		min-height: 3.125rem;
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
+		padding-bottom: 0;
 	}
 
 	header button {
@@ -168,5 +169,17 @@
 		flex-grow: 1;
 		margin: 0;
 		min-height: 3rem;
+	}
+
+	.stage {
+		padding-bottom: 0;
+	}
+
+	.stage:not(.stage--white) {
+		padding-bottom: 2rem;
+	}
+
+	.stage + .details {
+		padding-top: 4rem;
 	}
 </style>
