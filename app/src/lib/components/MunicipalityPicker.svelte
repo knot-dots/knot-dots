@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { untrack } from 'svelte';
-	import { createDisclosure } from 'svelte-headlessui';
 	import { SvelteMap } from 'svelte/reactivity';
+	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import { z } from 'zod';
+	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
+	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
-	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
-	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
-	import { administrativeTypes, payloadTypes, type OrganizationalUnitContainer } from '$lib/models';
+	import {
+		administrativeTypes,
+		payloadTypes,
+		type OrganizationalUnitContainer,
+		organizationalUnitContainer
+	} from '$lib/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -24,15 +30,19 @@
 
 	let terms = $state('');
 	let localSelected: string[] = $state([]);
-	let filterAdministrativeTypes: string[] = $state([]);
-	let filterFederalStates: string[] = $state([]);
-	let filterCustomCategories = new SvelteMap<string, string[]>();
 
 	const categoryContext = $derived(
 		page.data.categoryContext
 			? filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.organizational_unit])
 			: undefined
 	);
+
+	// svelte-ignore state_referenced_locally
+	let filter = $state<Record<string, string[]>>({
+		administrativeType: [],
+		federalState: [],
+		...(categoryContext ? Object.fromEntries(categoryContext.keys.map((key) => [key, []])) : {})
+	});
 
 	const federalStates = [
 		'Baden-Württemberg',
@@ -74,53 +84,22 @@
 	// even if they are no longer in the current visible list (e.g. after search)
 	let knownMunicipalities = new SvelteMap<string, OrganizationalUnitContainer>();
 
-	const customCategoryEntries = $derived(JSON.stringify([...filterCustomCategories]));
-
 	// Fetch municipalities based on search terms
 	const municipalitiesResource = resource(
-		() =>
-			[
-				terms,
-				offset,
-				filterAdministrativeTypes,
-				filterFederalStates,
-				customCategoryEntries
-			] as const,
-		async (
-			[terms, offset, adminTypes, federalStateFilters, customCategoriesJson],
-			_,
-			{ signal }
-		) => {
-			const customCategories: Map<string, string[]> = new Map(JSON.parse(customCategoriesJson));
-			console.log('Fetching municipalities with', {
-				terms,
-				offset,
-				adminTypes,
-				federalStateFilters,
-				customCategories: Object.fromEntries(customCategories.entries())
-			});
-
+		[() => $state.snapshot(filter), () => terms, () => offset],
+		async ([filter, terms, offset], _, { signal }) => {
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
 
-			for (const type of adminTypes) {
-				params.append('administrativeType', type);
+			for (const key in filter) {
+				for (const value of filter[key]) {
+					params.append(key, value);
+				}
 			}
 
 			if (terms) {
 				params.append('terms', terms);
-			}
-
-			for (const state of federalStateFilters) {
-				params.append('federalState', state);
-			}
-
-			const activeCustomCategories = Object.fromEntries(
-				[...customCategories.entries()].filter(([, v]) => v.length > 0)
-			);
-			if (Object.keys(activeCustomCategories).length > 0) {
-				params.append('customCategories', JSON.stringify(activeCustomCategories));
 			}
 
 			// Append pagination parameters
@@ -130,9 +109,7 @@
 			params.append('sort', 'alpha');
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
-			if (!response.ok) throw new Error(response.statusText);
-			const result = await response.json();
-			return result as OrganizationalUnitContainer[];
+			return z.array(organizationalUnitContainer).parse(await response.json());
 		},
 		{ debounce: 300 }
 	);
@@ -163,9 +140,7 @@
 	});
 
 	// Reset pagination when search terms or filters change
-	const filterKey = $derived(
-		`${terms}|${filterAdministrativeTypes.join(',')}|${filterFederalStates.join(',')}|${customCategoryEntries}`
-	);
+	const filterKey = $derived(`${Object.values(filter).join(',')}|${terms}`);
 	let previousFilterKey = '';
 	$effect.pre(() => {
 		if (filterKey !== previousFilterKey) {
@@ -185,9 +160,7 @@
 	}
 
 	let activeFilters = $derived(
-		filterAdministrativeTypes.length +
-			filterFederalStates.length +
-			[...filterCustomCategories.values()].filter((v) => v.length > 0).length
+		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
 	);
 
 	type FederalLevelKey = 'all' | (typeof sidebarAdministrativeTypes)[number];
@@ -219,26 +192,26 @@
 	});
 
 	let activeFederalLevel = $derived.by(() => {
-		if (filterAdministrativeTypes.length === 0) return 'all';
-		if (filterAdministrativeTypes.length === 1) {
-			return filterAdministrativeTypes[0] as FederalLevelKey;
+		if (filter.administrativeType.length === 0) return 'all';
+		if (filter.administrativeType.length === 1) {
+			return filter.administrativeType[0] as FederalLevelKey;
 		}
 		return null;
 	});
 
 	function resetFilters() {
-		filterAdministrativeTypes = [];
-		filterFederalStates = [];
-		filterCustomCategories.clear();
+		for (const key in filter) {
+			filter[key] = [];
+		}
 	}
 
 	function selectFederalLevel(level: FederalLevelKey) {
 		if (level === 'all') {
-			filterAdministrativeTypes = [];
+			filter.administrativeType = [];
 			return;
 		}
 
-		filterAdministrativeTypes = [level];
+		filter.administrativeType = [level];
 	}
 
 	function clearSelection() {
@@ -317,26 +290,22 @@
 			key="administrativeType"
 			mode="select"
 			options={administrativeTypes.options.map((t) => ({ label: $_(t), value: t }))}
-			bind:value={filterAdministrativeTypes}
+			bind:value={filter.administrativeType}
 		/>
 		<InlineFilterDropDown
 			key="federalState"
 			mode="select"
 			options={federalStates.map((s) => ({ label: s, value: s }))}
-			bind:value={filterFederalStates}
+			bind:value={filter.federalState}
 		/>
 		{#if categoryContext}
 			{#each categoryContext.keys as key (key)}
-				{@const values = filterCustomCategories.get(key) ?? []}
 				<InlineFilterDropDown
 					{key}
-					label={categoryContext.options.__categoryLabels__?.[key]}
+					label={categoryContext.labels.get(key)}
 					mode="select"
-					options={(categoryContext.options[key] ?? []).map((o) => ({
-						label: o.label,
-						value: o.value
-					}))}
-					bind:value={() => values, (v) => filterCustomCategories.set(key, v)}
+					options={categoryContext.options[key]}
+					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 				/>
 			{/each}
 		{/if}
@@ -361,9 +330,9 @@
 				<span class="selection-count">
 					{$_('compare_municipalities_selected', { values: { count: localSelected.length } })}
 					{#if localSelected.length >= MAX_SELECTION}
-						<span class="max-indicator"
-							>({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})</span
-						>
+						<span class="max-indicator">
+							({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})
+						</span>
 					{/if}
 				</span>
 
@@ -386,9 +355,9 @@
 
 			<div class="picker-layout">
 				<aside class="federal-levels-panel">
-					<span class="federal-levels-title" id="federal-levels-title"
-						>{$_('compare_federal_levels')}</span
-					>
+					<span class="federal-levels-title" id="federal-levels-title">
+						{$_('compare_federal_levels')}
+					</span>
 					<ul aria-labelledby="federal-levels-title" class="federal-levels-list" role="radiogroup">
 						{#each federalLevelItems as item (item.key)}
 							<li>

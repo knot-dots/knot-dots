@@ -844,10 +844,11 @@ export function getManyOrganizationalUnitContainers(filters: {
 		}
 		if (filters.include?.customCategories) {
 			for (const [key, values] of Object.entries(filters.include.customCategories)) {
-				if (!values?.length) continue;
-				conditions.push(
-					sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`
-				);
+				if (values.length > 0) {
+					conditions.push(
+						sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`
+					);
+				}
 			}
 		}
 		if (filters.include?.federalState?.length) {

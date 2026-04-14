@@ -58,7 +58,7 @@
 			<LightningBolt />
 		{/if}
 		<span>
-			{$_(labelForKey.get(key) ?? key)}
+			{label ?? $_(labelForKey.get(key) ?? key)}
 		</span>
 		{#if value.length > 0}
 			<span class="indicator">{value.length}</span>

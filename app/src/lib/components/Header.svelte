@@ -11,7 +11,7 @@
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -33,11 +33,13 @@
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
+	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
+	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -120,6 +122,8 @@
 		return count;
 	});
 
+	let favoritesList = getFavoriteListContext();
+
 	let href = $derived(
 		page.url.searchParams.size
 			? `${page.url.pathname}?${page.url.searchParams.toString()}`
@@ -127,7 +131,9 @@
 	);
 
 	let isFavorite = $derived(
-		selectedContext.payload.favorite.findIndex((f) => f.href === href) > -1
+		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
+			(f) => f.href === href
+		) > -1
 	);
 
 	function applySort() {
@@ -165,25 +171,21 @@
 	}
 
 	async function toggleFavorite() {
-		let index = selectedContext.payload.favorite.findIndex((f) => f.href === href);
+		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
+		const index = favoritesList[key].findIndex((f) => f.href === href);
+
+		favoritesList[key] =
+			index > -1
+				? favoritesList[key].filter((_, i) => i !== index)
+				: [...favoritesList[key], { href, title: page.data.title ?? $_('new_favorite') }];
 
 		const response = await saveContainer({
 			...selectedContext,
-			payload: {
-				...selectedContext.payload,
-				favorite:
-					index > -1
-						? selectedContext.payload.favorite.filter((_, i) => i !== index)
-						: [
-								...selectedContext.payload.favorite,
-								{ href, title: page.data.title ?? $_('new_favorite') }
-							]
-			}
+			payload: { ...selectedContext.payload, favorite: favoritesList[key] }
 		});
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			selectedContext.revision = updatedContainer.revision;
-			await invalidate(selectedContext.payload.type);
 		} else {
 			const error = await response.json();
 			alert(error.message);
@@ -273,6 +275,10 @@
 					{$_('login')}
 				</button>
 			{/if}
+		{/if}
+
+		{#if createFeatureDecisions(page.data.features).useEmbedObjects() && overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+			<OverlaySettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
 		{/if}
 	</div>
 </header>

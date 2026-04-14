@@ -110,11 +110,8 @@
 							...(item.length > 0
 								? { guid: item, terms: combinedTerms }
 								: {
-										audience: filter.audience,
-										sdg: filter.sdg,
-										indicatorCategory: filter.indicatorCategory,
+										...filter,
 										organization: [page.data.currentOrganization.guid],
-										policyFieldBNK: filter.policyFieldBNK,
 										terms: combinedTerms,
 										topic: filter.topic,
 										payloadType: type
@@ -347,11 +344,9 @@
 	</ul>
 </header>
 
-{#if hasConfiguredContent}
+{#if hasConfiguredContent && container.payload.allowSort}
 	<div class="carousel-toolbar">
-		{#if container.payload.allowSort}
-			<SortDropdown options={sortOptions} bind:value={localSort} />
-		{/if}
+		<SortDropdown options={sortOptions} bind:value={localSort} />
 	</div>
 {/if}
 
@@ -361,6 +356,7 @@
 			addItem={addItems}
 			items={visibleItems}
 			mayAddItem={editable && $ability.can('update', container)}
+			onLoadMore={hasMoreItems ? () => (visibleCount += MAX_ITEMS_PER_PAGE) : undefined}
 		>
 			{#snippet itemSnippet(item)}
 				{#if isIndicatorTemplateContainer(item)}
@@ -405,7 +401,7 @@
 		</ul>
 	{/if}
 
-	{#if hasMoreItems}
+	{#if hasMoreItems && container.payload.listType !== 'carousel'}
 		<p class="load-more">
 			<button class="button" onclick={() => (visibleCount += MAX_ITEMS_PER_PAGE)} type="button">
 				{$_('load_more')}

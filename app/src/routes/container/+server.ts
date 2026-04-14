@@ -35,6 +35,7 @@ import {
 	taskCategories,
 	topics
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	createContainer,
 	createManyContainerRelations,
@@ -42,9 +43,11 @@ import {
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getManyContainers,
-	getManyOrganizationalUnitContainers
+	getManyOrganizationalUnitContainers,
+	getManyOrganizationContainers
 } from '$lib/server/db';
 import type { User } from '$lib/stores';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
 
 function findCopiedTargetGuid<T extends AnyContainer>(
@@ -445,14 +448,6 @@ export const GET = (async ({ locals, url }) => {
 		administrativeType: z.array(administrativeTypes).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
-		customCategories: z
-			.array(z.string())
-			.default([])
-			.transform((arr) => {
-				if (arr.length === 0) return {};
-				const parsed = z.record(z.string(), z.array(z.string())).safeParse(JSON.parse(arr[0]));
-				return parsed.success ? parsed.data : {};
-			}),
 		federalState: z.array(z.string()).default([]),
 		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
@@ -496,13 +491,26 @@ export const GET = (async ({ locals, url }) => {
 		error(400, { message: parseResult.error.message });
 	}
 
+	const organizations = await locals.pool.connect(
+		getManyOrganizationContainers({ default: true }, '')
+	);
+
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope:
+			organizations.length > 0
+				? [organizations[0].guid, ...parseResult.data.organization]
+				: parseResult.data.organization,
+		user: locals.user
+	});
+
 	let containers: AnyContainer[];
 
 	if (parseResult.data.isPartOfProgram.length > 0) {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
 				audience: parseResult.data.audience,
-				customCategories: parseResult.data.customCategories,
+				customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
 				sdg: parseResult.data.sdg,
 				policyFieldsBNK: parseResult.data.policyFieldBNK,
 				terms: parseResult.data.terms[0],
@@ -518,7 +526,7 @@ export const GET = (async ({ locals, url }) => {
 					parseResult.data.relatedTo[0],
 					parseResult.data.relationType,
 					{
-						customCategories: parseResult.data.customCategories,
+						customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
 						type: parseResult.data.payloadType
 					},
 					parseResult.data.sort[0]
@@ -529,7 +537,7 @@ export const GET = (async ({ locals, url }) => {
 				getAllContainersRelatedToMeasure(
 					parseResult.data.isPartOfMeasure[0],
 					{
-						customCategories: parseResult.data.customCategories,
+						customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
 						terms: parseResult.data.terms[0],
 						type: parseResult.data.payloadType
 					},
@@ -543,7 +551,7 @@ export const GET = (async ({ locals, url }) => {
 				parseResult.data.organization,
 				{
 					audience: parseResult.data.audience,
-					customCategories: parseResult.data.customCategories,
+					customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
 					guid: parseResult.data.guid,
 					indicators: parseResult.data.indicator,
 					indicatorCategories: parseResult.data.indicatorCategory,
@@ -568,20 +576,12 @@ export const GET = (async ({ locals, url }) => {
 		const orgs = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
 				include: {
-					...(parseResult.data.organization.length > 0 && {
-						organization: parseResult.data.organization[0]
-					}),
-					...(parseResult.data.administrativeType.length > 0 && {
-						administrativeType: parseResult.data.administrativeType
-					}),
-					...(Object.keys(parseResult.data.customCategories).length > 0 && {
-						customCategories: parseResult.data.customCategories
-					}),
-					...(parseResult.data.federalState.length > 0 && {
-						federalState: parseResult.data.federalState
-					}),
-					...(parseResult.data.guid.length > 0 && { guid: parseResult.data.guid }),
-					...(parseResult.data.terms.length > 0 && { terms: parseResult.data.terms[0] })
+					organization: parseResult.data.organization[0],
+					administrativeType: parseResult.data.administrativeType,
+					customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
+					federalState: parseResult.data.federalState,
+					guid: parseResult.data.guid,
+					terms: parseResult.data.terms[0]
 				},
 				...(parseResult.data.limit && { limit: parseResult.data.limit }),
 				...(parseResult.data.offset && { offset: parseResult.data.offset })

@@ -71,6 +71,7 @@ type MyWorkerFixtures = {
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: ReportContainer;
+	testPublicReport: ReportContainer;
 };
 
 locale.set('en');
@@ -855,6 +856,30 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testReport);
 
 			await deleteContainer(adminContext, testReport);
+		},
+		{ scope: 'worker' }
+	],
+	testPublicReport: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newReport = containerOfType(
+				payloadTypes.enum.report,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ReportContainer;
+			const testPublicReport = await createContainer(adminContext, {
+				...newReport,
+				payload: {
+					...newReport.payload,
+					title: `Test Public Report ${workerInfo.workerIndex}`,
+					visibility: 'public'
+				}
+			});
+
+			await use(testPublicReport);
+
+			await deleteContainer(adminContext, testPublicReport);
 		},
 		{ scope: 'worker' }
 	]

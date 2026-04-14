@@ -5,7 +5,9 @@
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
 	import { cubicInOut } from 'svelte/easing';
+	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
+	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import ArrowRightToBracket from '~icons/flowbite/arrow-right-to-bracket-outline';
@@ -18,14 +20,17 @@
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Cog from '~icons/knotdots/cog';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import DragHandle from '~icons/knotdots/draghandle';
 	import Favicon from '~icons/knotdots/favicon';
 	import OrganizationalUnit from '~icons/knotdots/organizational-unit';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import tooltip from '$lib/attachments/tooltip';
+	import saveContainer from '$lib/client/saveContainer';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
+	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
@@ -33,16 +38,9 @@
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
+	import { ability, applicationState } from '$lib/stores';
 
-	let currentOrganization = $derived.by(() => {
-		let _ = $state(page.data.currentOrganization);
-		return _;
-	});
-
-	let currentOrganizationalUnit = $derived.by(() => {
-		let _ = $state(page.data.currentOrganizationalUnit);
-		return _;
-	});
+	let favoriteList = getFavoriteListContext();
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
 
@@ -68,6 +66,80 @@
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
+	}
+
+	function updateFavorite(
+		container: OrganizationContainer | OrganizationalUnitContainer,
+		favorite: Favorite[]
+	) {
+		return async () => {
+			const response = await saveContainer({
+				...container,
+				payload: {
+					...container.payload,
+					favorite
+				}
+			});
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.revision = updatedContainer.revision;
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		};
+	}
+
+	let favoriteItemsOrganization = $derived(
+		favoriteList.organization.map((favorite) => ({
+			...favorite,
+			guid: favorite.href
+		}))
+	);
+
+	let favoriteItemsOrganizationalUnit = $derived(
+		favoriteList.organizationalUnit.map((favorite) => ({
+			...favorite,
+			guid: favorite.href
+		}))
+	);
+
+	function handleDndConsiderOrganization(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganization = event.detail.items;
+	}
+
+	function handleDndFinalizeOrganization(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganization = event.detail.items;
+		favoriteList.organization = favoriteItemsOrganization.map(({ href, icon, title }) => ({
+			href,
+			icon,
+			title
+		}));
+		updateFavorite(page.data.currentOrganization, favoriteList.organization)();
+	}
+
+	function handleDndConsiderOrganizationalUnit(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganizationalUnit = event.detail.items;
+	}
+
+	function handleDndFinalizeOrganizationalUnit(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganizationalUnit = event.detail.items;
+		favoriteList.organizationalUnit = favoriteItemsOrganizationalUnit.map(
+			({ href, icon, title }) => ({
+				href,
+				icon,
+				title
+			})
+		);
+		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
 	}
 </script>
 
@@ -125,27 +197,55 @@
 					</a>
 				</li>
 
-				{#each currentOrganization.payload.favorite as favorite, index (favorite.href)}
-					{@const href = page.url.searchParams.size
-						? `${page.url.pathname}?${page.url.searchParams.toString()}`
-						: page.url.pathname}
-					<li>
-						<a
-							class="sidebar-menu-item sidebar-menu-item--secondary"
-							class:sidebar-menu-item--active={favorite.href === href}
-							href={favorite.href}
-						>
-							{#if favorite.icon}
-								<img alt="" class="favorite-icon" src={transformFileURL(favorite.icon)} />
-							{:else}
-								<StarSolid />
-							{/if}
+				<li>
+					<ul
+						class="sidebar-menu drag-zone"
+						onconsider={handleDndConsiderOrganization}
+						onfinalize={handleDndFinalizeOrganization}
+						use:dragHandleZone={{
+							dropTargetStyle: {},
+							flipDurationMs: 100,
+							items: favoriteItemsOrganization,
+							type: 'organization'
+						}}
+					>
+						{#each favoriteItemsOrganization as item, index (item.guid)}
+							{@const href = page.url.searchParams.size
+								? `${page.url.pathname}?${page.url.searchParams.toString()}`
+								: page.url.pathname}
+							<li animate:flip={{ duration: 100 }}>
+								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
+									<span
+										class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+										use:dragHandle
+									>
+										<DragHandle />
+									</span>
+								{/if}
+								<a
+									class="sidebar-menu-item sidebar-menu-item--secondary"
+									class:sidebar-menu-item--active={item.href === href}
+									href={item.href}
+								>
+									{#if item.icon}
+										<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+									{:else}
+										<StarSolid />
+									{/if}
 
-							<span>{favorite.title}</span>
-						</a>
-						<EditableFavorite bind:container={currentOrganization} {index} />
-					</li>
-				{/each}
+									<span>{item.title}</span>
+								</a>
+								<EditableFavorite
+									bind:favorite={favoriteList.organization[index]}
+									onchange={updateFavorite(
+										page.data.currentOrganization,
+										favoriteList.organization
+									)}
+								/>
+							</li>
+						{/each}
+					</ul>
+				</li>
 			</ul>
 		</li>
 	{/if}
@@ -154,15 +254,16 @@
 		<a
 			{@attach tooltip($_('landing_page'))}
 			class="sidebar-menu-item sidebar-menu-item--collapsed"
-			class:sidebar-menu-item--active={landingPageURL(currentOrganization) === page.url.toString()}
-			href={landingPageURL(currentOrganization)}
+			class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+				page.url.toString()}
+			href={landingPageURL(page.data.currentOrganization)}
 		>
 			<Home />
 		</a>
 	</li>
 </ul>
 
-{#if currentOrganizationalUnit}
+{#if page.data.currentOrganizationalUnit}
 	<ul
 		class="sidebar-menu"
 		class:collapsed={sidebarExpanded === false}
@@ -173,7 +274,7 @@
 			<button class="sidebar-menu-item sidebar-menu-item--toggle" use:organizationalUnitMenu.button>
 				{#if $organizationalUnitMenu.expanded}<ChevronDown />{:else}<ChevronRight />{/if}
 				<span>
-					{currentOrganizationalUnit.payload.name}
+					{page.data.currentOrganizationalUnit.payload.name}
 				</span>
 			</button>
 		</li>
@@ -184,9 +285,10 @@
 					<li>
 						<a
 							class="sidebar-menu-item sidebar-menu-item--secondary"
-							class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
-								page.url.toString()}
-							href={landingPageURL(currentOrganizationalUnit)}
+							class:sidebar-menu-item--active={landingPageURL(
+								page.data.currentOrganizationalUnit
+							) === page.url.toString()}
+							href={landingPageURL(page.data.currentOrganizationalUnit)}
 						>
 							<OrganizationalUnit />
 							<span>
@@ -195,27 +297,55 @@
 						</a>
 					</li>
 
-					{#each currentOrganizationalUnit.payload.favorite as favorite, index (favorite.href)}
-						{@const href = page.url.searchParams.size
-							? `${page.url.pathname}?${page.url.searchParams.toString()}`
-							: page.url.pathname}
-						<li>
-							<a
-								class="sidebar-menu-item sidebar-menu-item--secondary"
-								class:sidebar-menu-item--active={favorite.href === href}
-								href={favorite.href}
-							>
-								{#if favorite.icon}
-									<img alt="" class="favorite-icon" src={transformFileURL(favorite.icon)} />
-								{:else}
-									<StarSolid />
-								{/if}
+					<li>
+						<ul
+							class="sidebar-menu"
+							onconsider={handleDndConsiderOrganizationalUnit}
+							onfinalize={handleDndFinalizeOrganizationalUnit}
+							use:dragHandleZone={{
+								dropTargetStyle: {},
+								flipDurationMs: 100,
+								items: favoriteItemsOrganizationalUnit,
+								type: 'organizationalUnit'
+							}}
+						>
+							{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
+								{@const href = page.url.searchParams.size
+									? `${page.url.pathname}?${page.url.searchParams.toString()}`
+									: page.url.pathname}
+								<li>
+									{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
+										<span
+											class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+											use:dragHandle
+										>
+											<DragHandle />
+										</span>
+									{/if}
+									<a
+										class="sidebar-menu-item sidebar-menu-item--secondary"
+										class:sidebar-menu-item--active={item.href === href}
+										href={item.href}
+									>
+										{#if item.icon}
+											<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+										{:else}
+											<StarSolid />
+										{/if}
 
-								<span>{favorite.title}</span>
-							</a>
-							<EditableFavorite bind:container={currentOrganizationalUnit} {index} />
-						</li>
-					{/each}
+										<span>{item.title}</span>
+									</a>
+									<EditableFavorite
+										bind:favorite={favoriteList.organizationalUnit[index]}
+										onchange={updateFavorite(
+											page.data.currentOrganizationalUnit,
+											favoriteList.organizationalUnit
+										)}
+									/>
+								</li>
+							{/each}
+						</ul>
+					</li>
 				</ul>
 			</li>
 		{/if}
@@ -224,9 +354,9 @@
 			<a
 				{@attach tooltip($_('overview'))}
 				class="sidebar-menu-item sidebar-menu-item--collapsed"
-				class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
+				class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganizationalUnit) ===
 					page.url.toString()}
-				href={landingPageURL(currentOrganizationalUnit)}
+				href={landingPageURL(page.data.currentOrganizationalUnit)}
 			>
 				<OrganizationalUnit />
 			</a>
@@ -452,6 +582,15 @@
 	.favorite-icon {
 		height: 1rem;
 		width: 1rem;
+	}
+
+	.drag-handle {
+		align-self: center;
+		flex-shrink: 0;
+	}
+
+	.is-visible-on-hover {
+		display: none;
 	}
 
 	.sidebar-menu {

@@ -69,6 +69,7 @@ const payloadTypeValues = [
 	'content_partner',
 	'content_partner_collection',
 	'custom_collection',
+	'demographic_data',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -410,6 +411,7 @@ export type TaskStatus = z.infer<typeof taskStatus>;
 
 const programTypeValues = [
 	'program_type.misc',
+	'program_type.strategy',
 	'program_type.mobility',
 	'program_type.sustainability',
 	'program_type.smart_city',
@@ -862,16 +864,15 @@ const customCollectionPayload = z
 		filter: z
 			.object({
 				audience: z.array(audience).default([]),
-				category: z.array(sustainableDevelopmentGoals).default([]),
 				sdg: z.array(sustainableDevelopmentGoals).default([]),
 				indicatorCategory: z.array(indicatorCategories).default([]),
 				type: z.array(payloadTypes).default([]),
 				policyFieldBNK: z.array(policyFieldBNK).default([]),
 				topic: z.array(topics).default([])
 			})
+			.catchall(z.array(z.string()))
 			.default({
 				audience: [],
-				category: [],
 				sdg: [],
 				indicatorCategory: [],
 				policyFieldBNK: [],
@@ -891,6 +892,23 @@ const customCollectionPayload = z
 	.strict();
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
+
+const demographicDataPayload = z
+	.object({
+		area: z.number().nonnegative().optional(),
+		population: z.number().int().nonnegative().optional(),
+		title: z
+			.string()
+			.trim()
+			.default(() => unwrapFunctionStore(_)('demographic_data')),
+		type: z.literal(payloadTypes.enum.demographic_data),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialDemographicDataPayload = demographicDataPayload.partial({
+	title: true
+});
 
 const fileCollectionPayload = z
 	.object({
@@ -1588,6 +1606,7 @@ const payload = z.discriminatedUnion('type', [
 	contentPartnerCollectionPayload,
 	contentPartnerPayload,
 	customCollectionPayload,
+	demographicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1761,6 +1780,18 @@ export function isCustomCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CustomCollectionContainer {
 	return container.payload.type === payloadTypes.enum.custom_collection;
+}
+
+const demographicDataContainer = container.extend({
+	payload: demographicDataPayload
+});
+
+export type DemographicDataContainer = z.infer<typeof demographicDataContainer>;
+
+export function isDemographicDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is DemographicDataContainer {
+	return container.payload.type === payloadTypes.enum.demographic_data;
 }
 
 const effectContainer = container.extend({
@@ -2543,6 +2574,7 @@ export const emptyContainer = newContainer.extend({
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialDemographicDataPayload,
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
@@ -3202,24 +3234,13 @@ export function computeFacetCount(
 	options?: { useCategoryPayload?: boolean }
 ) {
 	const useCategoryPayload = options?.useCategoryPayload ?? false;
-	const normalizeValue = (value: unknown): string => {
-		if (value === null || value === undefined) return '';
-		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-			return String(value);
-		}
-		if (typeof value === 'object') {
-			const v = value as { guid?: unknown; value?: unknown };
-			if (v.guid !== undefined) return String(v.guid);
-			if (v.value !== undefined) return String(v.value);
-		}
-		return String(value);
-	};
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
-			const categoryPayload = useCategoryPayload
-				? (container.payload as { category?: Record<string, unknown> }).category
-				: undefined;
+			const categoryPayload =
+				useCategoryPayload && 'category' in container.payload
+					? container.payload.category
+					: undefined;
 			const hasCategoryValue = categoryPayload && key in categoryPayload;
 			const hasPayloadValue = key in container.payload;
 			const valueSource = hasCategoryValue
@@ -3231,12 +3252,10 @@ export function computeFacetCount(
 				const foci = facets.get(key) as Map<string, number>;
 				if (Array.isArray(valueSource)) {
 					for (const value of valueSource) {
-						const normalized = normalizeValue(value);
-						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+						foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
 					}
 				} else {
-					const normalized = normalizeValue(valueSource);
-					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+					foci.set(valueSource, ((foci.get(valueSource) as number) ?? 0) + 1);
 				}
 			}
 		}
