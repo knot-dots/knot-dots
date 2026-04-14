@@ -61,10 +61,7 @@
 		page.data.categoryContext
 			? filterCategoryContext(
 					page.data.categoryContext,
-					filter.type.length > 0 ? filter.type : defaultPayloadType,
-					{
-						matchAll: true
-					}
+					filter.type.length > 0 ? filter.type : defaultPayloadType
 				)
 			: undefined
 	);
@@ -112,9 +109,7 @@
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type.length > 0 ? filter.type : defaultPayloadType,
 							...(createFeatureDecisions(page.data.features).useCustomCategories()
-								? Object.fromEntries(
-										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
-									)
+								? Object.fromEntries(categoryContext?.keys.map((k) => [k, filter[k] ?? []]) ?? [])
 								: {
 										audience: filter.audience,
 										policyFieldBNK: filter.policyFieldBNK,
@@ -185,8 +180,11 @@
 >
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
+			{@const categoryOptions = createFeatureDecisions(page.data.features).useCustomCategories()
+				? categoryContext?.options[key]
+				: undefined}
 			{@const options =
-				categoryContext?.options[key]?.map((option) => ({
+				categoryOptions?.map((option) => ({
 					...option,
 					count: foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
 					subOptions: option.subOptions?.map((sub) => ({
@@ -211,7 +209,7 @@
 				<InlineFilterDropDown
 					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
-					label={categoryContext?.labels.get(key)}
+					label={categoryOptions ? categoryContext?.labels.get(key) : undefined}
 					{mode}
 					{options}
 				/>
