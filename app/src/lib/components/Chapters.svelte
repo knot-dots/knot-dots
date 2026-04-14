@@ -43,21 +43,23 @@
 	);
 
 	let columns = $derived([
-		...Array.from(goals.entries()).map(([hierarchyLevel, containers]) => ({
-			addItemUrl: addItemUrl([
-				[overlayKey.enum.create, payloadTypes.enum.goal],
-				['hierarchyLevel', String(hierarchyLevel)],
-				...(program
-					? [
-							[predicates.enum['is-part-of-program'], program.guid],
-							['managedBy', program.managed_by]
-						]
-					: [])
-			]),
-			containers,
-			key: `goals-${hierarchyLevel}`,
-			title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
-		})),
+		...Array.from(goals.entries())
+			.toSorted()
+			.map(([hierarchyLevel, containers]) => ({
+				addItemUrl: addItemUrl([
+					[overlayKey.enum.create, payloadTypes.enum.goal],
+					['hierarchyLevel', String(hierarchyLevel)],
+					...(program
+						? [
+								[predicates.enum['is-part-of-program'], program.guid],
+								['managedBy', program.managed_by]
+							]
+						: [])
+				]),
+				containers,
+				key: `goals-${hierarchyLevel}`,
+				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
+			})),
 		...Array.from(measuresAndRules.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => {
