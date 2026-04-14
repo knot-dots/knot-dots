@@ -652,3 +652,29 @@ export async function getOrganizationalUnitContainers(
 		ORDER BY payload->>'officialMunicipalityKey', guid
 	`);
 }
+
+const isObject = (item: unknown): item is Record<string, unknown> => {
+	return item !== null && typeof item === 'object' && !Array.isArray(item);
+};
+
+export const mergeDeep = (
+	target: Record<string, unknown>,
+	...sources: Record<string, unknown>[]
+): Record<string, unknown> => {
+	if (!sources.length) return { ...target };
+	const [source, ...rest] = sources;
+
+	if (isObject(target) && isObject(source)) {
+		const result: Record<string, unknown> = { ...target };
+		for (const key in source) {
+			if (isObject(source[key])) {
+				result[key] = mergeDeep(isObject(target[key]) ? target[key] : {}, source[key]);
+			} else {
+				result[key] = source[key];
+			}
+		}
+		return mergeDeep(result, ...rest);
+	}
+
+	return mergeDeep({ ...target }, ...rest);
+};

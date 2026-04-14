@@ -16,7 +16,9 @@ import {
 	insertIntoAdministrativeAreaWegweiserKommune,
 	Json,
 	mapContainer,
+	mergeDeep,
 	organizationalUnitContainer,
+	organizationalUnitPayload,
 	OrganizationalUnitPayload,
 	PersistedContainer,
 	updateContainer
@@ -280,12 +282,15 @@ function isSame<T>(a: T, b: T) {
 									newOrganizationalUnitContainer.payload
 								)
 							) {
+								const mergedPayload = organizationalUnitPayload.parse(
+									mergeDeep(
+										foundOrganizationalUnitContainer.payload,
+										newOrganizationalUnitContainer.payload
+									)
+								);
 								ouContainer = await updateContainer({
 									...foundOrganizationalUnitContainer,
-									payload: {
-										...foundOrganizationalUnitContainer.payload,
-										...newOrganizationalUnitContainer.payload
-									}
+									payload: mergedPayload
 								})(tx);
 								console.log(`Updated ${region.title} (${ouContainer.guid})`);
 							} else {
