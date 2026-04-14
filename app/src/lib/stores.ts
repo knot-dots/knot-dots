@@ -486,6 +486,7 @@ if (browser) {
 					audience: hashParams.getAll('audience'),
 					sdg: hashParams.getAll('sdg'),
 					organization: [container.organization],
+					payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
 					terms: hashParams.get('terms') ?? '',
