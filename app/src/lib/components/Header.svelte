@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { getContext } from 'svelte';
+	import { getContext, untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -43,6 +43,7 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
+		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -98,10 +99,14 @@
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
-	let compareBar = createDisclosure({
-		label: $_('compare'),
-		expanded: $compareState.selectedMunicipalities.length > 0
-	});
+	let compareBar = $derived(
+		createDisclosure({
+			label: $_('compare'),
+			expanded:
+				untrack(() => $compareState.selectedMunicipalities.length > 0) &&
+				(isReportContainer(container) || isIndicatorTemplateContainer(container))
+		})
+	);
 
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
