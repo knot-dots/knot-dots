@@ -1,45 +1,93 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _, number } from 'svelte-i18n';
-	import { type ResourceDataContainer } from '$lib/models';
+	import type { AnyContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
-	export interface ResourceTableRow {
-		container: ResourceDataContainer; // has payload.entries
-		label: string; // display text
-		href?: string; // optional overlay link URL
-		subtitle?: string; // optional muted parenthetical text
-		editable?: boolean; // whether cells are <input> elements
-		dotColor?: string; // CSS color, e.g. 'var(--color-primary-300)'
+	export interface EditableTableValue {
+		year: number;
+		value: number;
 	}
 
-	export interface ResourceTableSection {
-		heading?: string; // already-translated section heading
-		rows: ResourceTableRow[]; // data rows
-		showSum?: boolean; // auto-compute & render a sum row
-		emptyMessage?: string; // shown when rows is empty
+	export interface EditableTableDataRow {
+		type?: 'data';
+		id: string;
+		container: AnyContainer;
+		label: string;
+		href?: string;
+		subtitle?: string;
+		editable?: boolean;
+		dotColor?: string;
+		values?: EditableTableValue[];
+		indented?: boolean;
+	}
+
+	export interface EditableTableActionRow {
+		type: 'action';
+		id: string;
+		label: string;
+		onAction: () => void | Promise<void>;
+		disabled?: boolean;
+		loading?: boolean;
+	}
+
+	export type EditableTableRow = EditableTableDataRow | EditableTableActionRow;
+
+	export interface EditableTableSection {
+		heading?: string;
+		rows: EditableTableRow[];
+		showSum?: boolean;
+		emptyMessage?: string;
 	}
 
 	interface Props {
-		title: string; // card title (translated)
-		titleUnit: string; // unit label (translated)
-		columnLabel: string; // first column header (translated), e.g. "Data object" or "Goal"
-		sections: ResourceTableSection[];
-		fillYearGaps?: boolean; // fill gaps between min/max year (default: false)
-		onSave: (container: ResourceDataContainer) => Promise<{ guid: string; revision: number }>;
+		title: string;
+		titleUnit: string;
+		columnLabel: string;
+		yearLabel?: string;
+		addYearLabel?: string;
+		sections: EditableTableSection[];
+		fillYearGaps?: boolean;
+		variant?: 'yellow' | 'teal';
+		getEntries: (container: AnyContainer) => EditableTableValue[];
+		setEntry: (container: AnyContainer, year: number, value: number | null) => void;
+		onSave: (container: AnyContainer) => Promise<{ guid: string; revision: number }>;
 	}
 
-	let { title, titleUnit, columnLabel, sections, fillYearGaps = false, onSave }: Props = $props();
+	let {
+		title,
+		titleUnit,
+		columnLabel,
+		yearLabel = $_('table.in_years'),
+		addYearLabel = $_('table.add_column_right'),
+		sections,
+		fillYearGaps = false,
+		variant = 'yellow',
+		getEntries,
+		setEntry,
+		onSave
+	}: Props = $props();
 
-	// Derived list of all years present in the data, used for rendering columns
+	function isDataRow(row: EditableTableRow): row is EditableTableDataRow {
+		return row.type !== 'action';
+	}
+
+	function isActionRow(row: EditableTableRow): row is EditableTableActionRow {
+		return row.type === 'action';
+	}
+
+	// Read all persisted years from the caller-provided row data so the table can build
+	// one shared set of columns regardless of the underlying container shape
 	const dataYears = $derived(
-		sections.flatMap((s) => s.rows.flatMap((r) => r.container.payload.entries.map((e) => e.year)))
+		sections.flatMap((section) =>
+			section.rows.filter(isDataRow).flatMap((row) => getRowValues(row).map((entry) => entry.year))
+		)
 	);
 
-	// Holds years that have been added by the user in the UI or "locked in" from data
 	let additionalYears: number[] = $state([]);
 
-	// Lock in any years that appear in data so they stay visible even if data is deleted
+	// Keep user-added year columns visible even if the current edit temporarily clears
+	// all values for that year before the save completes
 	$effect(() => {
 		for (const year of dataYears) {
 			if (!additionalYears.includes(year)) {
@@ -52,12 +100,12 @@
 	let years = $derived.by(() => {
 		const allYears = Array.from(new Set([...dataYears, ...additionalYears])).sort((a, b) => a - b);
 
-		// If no years at all, show current year as placeholder
+		// If no years are persisted yet, show the current year as a placeholder column
 		if (allYears.length === 0) {
 			return [new Date().getFullYear()];
 		}
 
-		// Fill year gaps if requested (for budget mode)
+		// Fill year gaps for budget-like tables that need continuous ranges
 		if (fillYearGaps && allYears.length > 0) {
 			const minYear = allYears[0];
 			const maxYear = allYears[allYears.length - 1];
@@ -71,16 +119,19 @@
 		return allYears;
 	});
 
-	function getAmountByYear(container: ResourceDataContainer): Map<number, number> {
-		return new Map(container.payload.entries.map((e) => [e.year, e.amount]));
+	function getRowValues(row: EditableTableDataRow): EditableTableValue[] {
+		return row.values ?? getEntries(row.container);
 	}
 
-	function sumByYear(containers: ResourceDataContainer[]): Map<number, number> {
+	function getValueByYear(row: EditableTableDataRow): Map<number, number> {
+		return new Map(getRowValues(row).map((entry) => [entry.year, entry.value]));
+	}
+
+	function sumByYear(rows: EditableTableDataRow[]): Map<number, number> {
 		const sumMap = new Map<number, number>();
-		for (const container of containers) {
-			const amounts = getAmountByYear(container);
-			for (const [year, amount] of amounts) {
-				sumMap.set(year, (sumMap.get(year) ?? 0) + amount);
+		for (const row of rows) {
+			for (const [year, value] of getValueByYear(row)) {
+				sumMap.set(year, (sumMap.get(year) ?? 0) + value);
 			}
 		}
 		return sumMap;
@@ -88,16 +139,15 @@
 
 	const isEditMode = $derived($applicationState.containerDetailView.editable);
 
-	// Column count for table - depends on number of years and whether we're in edit mode (which shows the add year buttons)
+	// Column count depends on whether edit mode adds the trailing control column
 	const columnCount = $derived(isEditMode ? years.length + 2 : years.length + 1);
 
-	// Debounce timers
+	// Save timers debounce per-row persistence to avoid issuing a request on every keystroke
 	let saveTimers: Record<string, ReturnType<typeof setTimeout> | undefined> = {};
-
 	let tableContainer = $state<HTMLDivElement | null>(null);
 
 	async function addEntryLeft() {
-		// If we're showing only the placeholder year, commit it to additionalYears first
+		// If we're showing only the placeholder year, commit it before extending the range
 		if (additionalYears.length === 0 && dataYears.length === 0) {
 			additionalYears.push(new Date().getFullYear());
 		}
@@ -107,7 +157,7 @@
 
 		await tick();
 
-		// Focus the new input
+		// Focus the first input in the newly added year column
 		const firstInput = tableContainer?.querySelector(
 			`input[data-year="${newYear}"]`
 		) as HTMLInputElement;
@@ -115,7 +165,7 @@
 	}
 
 	async function addEntryRight() {
-		// If we're showing only the placeholder year, commit it to additionalYears first
+		// If we're showing only the placeholder year, commit it before extending the range
 		if (additionalYears.length === 0 && dataYears.length === 0) {
 			additionalYears.push(new Date().getFullYear());
 		}
@@ -125,10 +175,10 @@
 
 		await tick();
 
-		// Scroll to the rightmost edge to show the newly added year input
+		// Scroll the wrapper so the newly created rightmost column becomes visible
 		tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
 
-		// Focus the new input
+		// Focus the first input in the newly added year column
 		const firstInput = tableContainer?.querySelector(
 			`input[data-year="${newYear}"]`
 		) as HTMLInputElement;
@@ -138,21 +188,26 @@
 	function formatNumber(value: number): string {
 		return $number(value, {
 			minimumFractionDigits: 0,
-			maximumFractionDigits: 10
+			maximumFractionDigits: 10,
+			useGrouping: true
 		});
 	}
 
-	// Generic input handler for editable cells
+	function rowCanEdit(row: EditableTableDataRow): boolean {
+		if (!row.editable || !isEditMode) return false;
+		return $ability.can('update', row.container);
+	}
+
 	function handleInput(
 		year: number,
 		event: Event,
-		container: ResourceDataContainer,
+		row: EditableTableDataRow,
 		timerKey: string,
 		locale: string = navigator.language
 	) {
 		const input = event.currentTarget as HTMLInputElement;
 
-		// Locale-aware number parsing and validation
+		// Parse user input with the active locale's decimal and thousands separators
 		const parts = new Intl.NumberFormat(locale).formatToParts(1000.1);
 		const decimalSeparator = parts.find((part) => part.type === 'decimal')?.value ?? '.';
 		const thousandSeparator = parts.find((part) => part.type === 'group')?.value ?? ',';
@@ -171,42 +226,29 @@
 		} else {
 			input.setCustomValidity('');
 		}
+
 		if (!input.validity.valid) {
 			event.stopPropagation();
 			return;
 		}
 
-		// Stop propagation to prevent parent form's autoSave from double-saving
+		// Stop propagation so parent forms or auto-save handlers do not double-save
 		event.stopPropagation();
 
-		// Handle empty input (delete entry)
-		if (input.value === '') {
-			container.payload.entries = container.payload.entries.filter((e) => e.year !== year);
-			debouncedSave(container, timerKey);
-			return;
-		}
-
-		if (Number.isNaN(parsed)) return;
-
-		// Update or add entry
-		const entryIndex = container.payload.entries.findIndex((e) => e.year === year);
-		if (entryIndex >= 0) {
-			container.payload.entries[entryIndex].amount = parsed;
-		} else {
-			container.payload.entries = [...container.payload.entries, { year, amount: parsed }].sort(
-				(a, b) => a.year - b.year
-			);
-		}
-
-		debouncedSave(container, timerKey);
+		// Callers own the container-specific mutation logic so the same table component can
+		// edit resource entries, indicator values, and future yearly datasets
+		setEntry(row.container, year, input.value === '' ? null : parsed);
+		if (input.value !== '' && Number.isNaN(parsed)) return;
+		debouncedSave(row.container, timerKey);
 	}
 
-	function debouncedSave(containerToSave: ResourceDataContainer, timerKey: string) {
+	function debouncedSave(containerToSave: AnyContainer, timerKey: string) {
 		clearTimeout(saveTimers[timerKey]);
 		saveTimers[timerKey] = setTimeout(async () => {
 			try {
 				const result = await onSave(containerToSave);
-				// Update the local container with server-assigned guid and revision
+
+				// Update the local container with the server-assigned guid and revision
 				containerToSave.guid = result.guid;
 				containerToSave.revision = result.revision;
 			} catch (error) {
@@ -220,112 +262,112 @@
 	}
 </script>
 
-<div class="details-section">
-	<h2 class="details-heading">
-		{title}
-		<small>{titleUnit}</small>
-	</h2>
+<h2 class="details-heading">
+	{title}
+	<small>{titleUnit}</small>
+</h2>
 
-	<div class="editable-table__wrapper" bind:this={tableContainer}>
-		<table class="editable-table__table">
-			<thead class="editable-table__head">
-				<tr>
-					<th class="editable-table__head-label">
-						<div class="editable-table__head-content">
-							<span>{columnLabel}</span>
-							<span class="editable-table__head-years">
-								<span>{$_('resource_table.in_years')}</span>
-								{#if isEditMode}
-									<button
-										class="editable-table__head-action"
-										type="button"
-										aria-label={$_('resource_table.add_year')}
-										onclick={addEntryLeft}
-									>
-										+
-									</button>
-								{/if}
-							</span>
-						</div>
-					</th>
-					{#each years as year (year)}
-						<th
-							class="editable-table__head-year"
-							class:editable-table__head-year--current={year === new Date().getFullYear()}
-						>
-							{year}
-						</th>
-					{/each}
-					{#if isEditMode}
-						<th class="editable-table__head-year">
-							<button
-								class="editable-table__head-action"
-								type="button"
-								aria-label={$_('resource_table.add_year')}
-								onclick={addEntryRight}
-							>
-								+
-							</button>
-						</th>
-					{/if}
-				</tr>
-			</thead>
-
-			<!-- Dynamic sections -->
-			{#each sections as section, sectionIndex (section.heading)}
-				<tbody>
-					{#if section.heading}
-						<tr>
-							<th class="editable-table__section-header" colspan={columnCount}>
-								{section.heading}
-							</th>
-						</tr>
-					{/if}
-
-					{#if section.rows.length === 0 && section.emptyMessage}
-						<tr>
-							<td colspan={columnCount} class="editable-table__empty">
-								{section.emptyMessage}
-							</td>
-						</tr>
-					{:else}
-						{#each section.rows as row, rowIndex (row.container.guid)}
-							{@const valuesByYear = getAmountByYear(row.container)}
-							{@const timerKey = `${sectionIndex}-${rowIndex}`}
-							<tr class:editable-table__dot-row={row.dotColor} style:--dot-color={row.dotColor}>
-								<th
-									scope="row"
-									class="editable-table__row-label"
-									class:editable-table__row-label--editable={row.editable}
+<div bind:this={tableContainer} class="editable-table" data-variant={variant}>
+	<table>
+		<thead>
+			<tr>
+				<th class="head-label">
+					<div class="head-content">
+						<span>{columnLabel}</span>
+						<span class="head-years">
+							<span>{yearLabel}</span>
+							{#if isEditMode}
+								<button
+									type="button"
+									aria-label={$_('table.add_column_left')}
+									onclick={addEntryLeft}
 								>
+									+
+								</button>
+							{/if}
+						</span>
+					</div>
+				</th>
+				{#each years as year (year)}
+					<th class="year" class:current={year === new Date().getFullYear()}>
+						{year}
+					</th>
+				{/each}
+				{#if isEditMode}
+					<th>
+						<button type="button" aria-label={addYearLabel} onclick={addEntryRight}> + </button>
+					</th>
+				{/if}
+			</tr>
+		</thead>
+
+		<!-- Dynamic sections -->
+		{#each sections as section (section.heading)}
+			<tbody>
+				{#if section.heading}
+					<tr>
+						<th class="section-heading" colspan={columnCount}>{section.heading}</th>
+					</tr>
+				{/if}
+
+				{#if section.rows.length === 0 && section.emptyMessage}
+					<tr>
+						<td colspan={columnCount} class="empty">{section.emptyMessage}</td>
+					</tr>
+				{:else}
+					{#each section.rows as row (row.id)}
+						{#if isActionRow(row)}
+							<tr class="action">
+								<td colspan={columnCount}>
+									<button type="button" disabled={row.disabled} onclick={row.onAction}>
+										{#if row.loading}
+											<span class="loader"></span>
+										{:else}
+											<span class="plus">+</span>
+											{row.label}
+										{/if}
+									</button>
+								</td>
+							</tr>
+						{:else}
+							{@const valuesByYear = getValueByYear(row)}
+							{@const canEdit = rowCanEdit(row)}
+							{@const timerKey = row.id}
+							<tr>
+								<th
+									class="row-label truncated"
+									scope="row"
+									class:editable={canEdit}
+									class:indented={row.indented}
+								>
+									{#if row.dotColor}
+										<span class="dot" style:background-color={row.dotColor}></span>
+									{/if}
 									{#if row.href}
 										<a href={row.href}>{row.label}</a>
 									{:else}
-										{row.label}
+										<span>{row.label}</span>
 									{/if}
 									{#if row.subtitle}
-										<span class="editable-table__row-subtitle">({row.subtitle})</span>
+										<span class="subtitle">({row.subtitle})</span>
 									{/if}
 								</th>
 								{#each years as year (year)}
 									{@const value = valuesByYear.get(year)}
-									{@const canEdit =
-										row.editable && isEditMode && $ability.can('update', row.container)}
 									<td
-										class="editable-table__cell focus-indicator"
-										class:editable-table__cell--empty={!hasValue(value)}
-										class:editable-table__cell--locked={isEditMode && !row.editable}
-										class:editable-table__cell--bold={row.editable}
+										class="value focus-indicator"
+										class:missing={!hasValue(value)}
+										class:locked={isEditMode && !canEdit}
+										class:editable={canEdit}
 									>
 										{#if canEdit}
 											<input
-												class="editable-table__input"
 												type="text"
 												inputmode="decimal"
 												data-year={year}
 												value={hasValue(value) ? formatNumber(value) : ''}
 												placeholder="0"
-												oninput={(e) => handleInput(year, e, row.container, timerKey)}
+												oninput={(inputEvent) => handleInput(year, inputEvent, row, timerKey)}
 											/>
 										{:else}
 											{hasValue(value) ? formatNumber(value) : ''}
@@ -333,40 +375,66 @@
 									</td>
 								{/each}
 								{#if isEditMode}
-									<td
-										class="editable-table__cell"
-										class:editable-table__cell--locked={isEditMode && !row.editable}
-									>
-									</td>
-								{/if}
-							</tr>
-						{/each}
-
-						{#if section.showSum}
-							{@const sumByYearMap = sumByYear(section.rows.map((r) => r.container))}
-							<tr class="editable-table__sum-row">
-								<th scope="row" class="editable-table__row-label">{$_('resource_table.sum')}</th>
-								{#each years as year (year)}
-									<td class="editable-table__cell" class:editable-table__cell--locked={isEditMode}>
-										{hasValue(sumByYearMap.get(year))
-											? formatNumber(sumByYearMap.get(year) as number)
-											: ''}
-									</td>
-								{/each}
-								{#if isEditMode}
-									<td class="editable-table__cell" class:editable-table__cell--locked={isEditMode}>
-									</td>
+									<td class:locked={isEditMode && !canEdit}></td>
 								{/if}
 							</tr>
 						{/if}
+					{/each}
+
+					{#if section.showSum}
+						{@const sumByYearMap = sumByYear(section.rows.filter(isDataRow))}
+						<tr class="sum">
+							<th class="row-label" scope="row">{$_('table.sum')}</th>
+							{#each years as year (year)}
+								<td class="value" class:locked={isEditMode}>
+									{hasValue(sumByYearMap.get(year))
+										? formatNumber(sumByYearMap.get(year) as number)
+										: ''}
+								</td>
+							{/each}
+							{#if isEditMode}
+								<td class:locked={isEditMode}></td>
+							{/if}
+						</tr>
 					{/if}
-				</tbody>
-			{/each}
-		</table>
-	</div>
+				{/if}
+			</tbody>
+		{/each}
+	</table>
 </div>
 
 <style>
+	.details-heading {
+		margin-top: 1.5rem;
+	}
+
+	.editable-table {
+		--head-background: var(--color-yellow-100);
+		--head-border: var(--color-yellow-200);
+		--head-text: var(--color-yellow-900);
+		--head-current-background: var(--color-yellow-200);
+		--head-action-hover: var(--color-yellow-200);
+		--header-row-height: 2.5rem;
+		--body-row-height: 3rem;
+		--label-width: 18.75rem;
+		--value-column-width: 3.5rem;
+
+		margin-left: var(--editable-table-margin-left, 0);
+		margin-right: var(--editable-table-margin-right, 0);
+		margin-top: 1rem;
+		overflow: auto;
+		padding-left: calc(var(--carousel-margin-left) * -1);
+		padding-right: 4rem;
+	}
+
+	.editable-table[data-variant='teal'] {
+		--head-background: var(--color-teal-100);
+		--head-border: var(--color-teal-200);
+		--head-text: var(--color-teal-900);
+		--head-current-background: #b9eef0;
+		--head-action-hover: #c3f0f2;
+	}
+
 	.details-heading > small {
 		color: var(--color-gray-500);
 		font-size: 1.25rem;
@@ -374,210 +442,217 @@
 		line-height: 1.25;
 	}
 
-	/* Table */
-	.editable-table__wrapper {
-		margin-left: var(--editable-table-margin-left, 0);
-		margin-right: var(--editable-table-margin-right, 0);
-		margin-top: 1.25rem;
-		overflow: auto;
-		padding-left: calc(var(--carousel-margin-left) * -1);
-		padding-right: 4rem;
-	}
-
-	.editable-table__table {
+	table {
 		width: fit-content;
 		border-collapse: separate;
 		border-spacing: 0;
-		border-radius: 1rem;
-		overflow: hidden;
 	}
 
-	.editable-table__table th,
-	.editable-table__table td {
-		border: 0.0625rem solid var(--color-gray-200);
+	th,
+	td {
+		border-bottom: 1px solid var(--color-gray-200);
+		border-right: 1px solid var(--color-gray-200);
 		font-size: 0.875rem;
 		line-height: 1.5;
-		padding: 0.75rem 0.5rem;
 		white-space: nowrap;
 	}
 
-	.editable-table__head th {
-		background: var(--color-yellow-100);
-		border-color: var(--color-yellow-200);
-		color: var(--color-yellow-900);
+	tr > :first-child {
+		border-left: 1px solid var(--color-gray-200);
+	}
+
+	thead th {
+		background: var(--head-background);
+		border-color: var(--head-border);
+		border-top: 1px solid var(--head-border);
+		color: var(--head-text);
 		font-weight: 400;
+		height: var(--header-row-height);
 	}
 
-	.editable-table__head th:first-child {
-		border-radius: 1rem 0 0 0;
-		overflow: hidden;
-	}
-	.editable-table__head th:last-child {
-		border-radius: 0 1rem 0 0;
-		overflow: hidden;
-	}
-	.editable-table__table tbody:last-of-type tr:last-child th:first-child {
-		border-radius: 0 0 0 1rem;
-		overflow: hidden;
-	}
-	.editable-table__table tbody:last-of-type tr:last-child td:last-child {
-		border-radius: 0 0 1rem 0;
-		overflow: hidden;
+	tbody th,
+	tbody td {
+		height: var(--body-row-height);
 	}
 
-	.editable-table__head-label {
-		min-width: 18.75rem;
+	.head-label {
+		min-width: var(--label-width);
 		text-align: left;
+		border-radius: 4px 0 0 0;
 	}
 
-	.editable-table__head-content {
+	thead tr > :last-child {
+		border-radius: 0 4px 0 0;
+	}
+
+	.head-content {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: 1rem;
 	}
 
-	.editable-table__head-years {
+	.head-years {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
 	}
 
-	.editable-table__head-action {
-		font-weight: 600;
-		font-size: large;
-		background: transparent;
-		border: 0.0625rem solid transparent;
-		border-radius: 0.5rem;
-		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		height: 1.75rem;
-		width: 1.75rem;
-		padding: 0;
-	}
-
-	.editable-table__head-action:hover {
-		background: var(--color-yellow-200);
-	}
-
-	.editable-table__head-year {
-		background: var(--color-gray-050);
+	.year {
 		color: var(--color-gray-600);
 		text-align: right;
-		width: 7.5rem;
+		width: var(--value-column-width);
+		min-width: var(--value-column-width);
 	}
 
-	.editable-table__head-year.editable-table__head-year--current {
-		background: var(--color-yellow-200);
+	.year.current {
+		background: var(--head-current-background);
 		font-weight: 600;
 	}
 
-	/* Rows */
-	.editable-table__row-label {
-		color: var(--color-gray-800);
-		background-color: white;
-		font-weight: 500;
-		text-align: left;
-		max-width: 18.75rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	tr:hover .editable-table__row-label {
-		background-color: var(--color-gray-050);
-	}
-
-	.editable-table__row-label a:hover {
-		text-decoration: underline;
-	}
-
-	.editable-table__row-label--editable {
+	thead button {
+		align-items: center;
+		background: transparent;
+		border: 0.0625rem solid transparent;
+		border-radius: 8px;
+		cursor: pointer;
+		display: inline-flex;
+		font-size: 1.125rem;
 		font-weight: 600;
+		height: 1.25rem;
+		justify-content: center;
+		line-height: 1;
+		padding: 0;
+		width: 1.25rem;
 	}
 
-	.editable-table__section-header {
+	thead button:hover {
+		background: var(--head-action-hover);
+	}
+
+	tbody:last-of-type tr:last-child > :first-child {
+		border-radius: 0 0 0 4px;
+	}
+
+	tbody:last-of-type tr:last-child > :last-child {
+		border-radius: 0 0 4px 0;
+	}
+
+	.section-heading {
 		background: var(--color-gray-025);
 		color: var(--color-gray-600);
 		font-weight: 500;
 	}
 
-	.editable-table__sum-row th,
-	.editable-table__sum-row td {
+	.row-label {
+		color: var(--color-gray-800);
+		font-weight: 500;
+		max-width: var(--label-width);
+		padding: 0.75rem 0.5rem 0.75rem 1rem;
+		text-align: left;
+	}
+
+	.row-label a:hover {
+		text-decoration: underline;
+	}
+
+	.row-label.indented {
+		padding-left: 1.5rem;
+	}
+
+	.row-label > :not(.dot) {
+		min-width: 0;
+	}
+
+	.row-label > :not(.dot):not(.subtitle) {
+		color: var(--color-gray-800);
+		font-weight: 500;
+	}
+
+	tbody th.editable,
+	tbody td.editable {
 		font-weight: 600;
 	}
 
-	/* Cells */
-	.editable-table__cell {
-		text-align: right;
+	.subtitle {
+		color: var(--color-gray-500);
 	}
 
-	.editable-table__cell--empty {
+	.dot {
+		border-radius: 50%;
+		display: inline-block;
+		flex: 0 0 auto;
+		margin-right: 0.25rem;
+		height: 0.75rem;
+		width: 0.75rem;
+		vertical-align: -1px;
+	}
+
+	.value {
+		text-align: right;
+		width: var(--value-column-width);
+		min-width: var(--value-column-width);
+	}
+
+	tbody td.missing {
 		color: var(--color-gray-400);
 	}
 
-	.editable-table__cell--locked {
+	tbody td.locked {
 		background: repeating-linear-gradient(45deg, #fff5f5, #fff5f5 2px, #ffebeb 2px 4px);
 	}
 
-	.editable-table__cell--bold {
+	tr.sum th,
+	tr.sum td {
 		font-weight: 600;
 	}
 
-	/* Input */
-	.editable-table__input {
-		font-weight: 600;
+	.value input {
 		background: transparent;
 		border: none;
-		box-sizing: border-box;
 		color: inherit;
-		field-sizing: content;
-		min-width: 0;
-		padding: 0;
+		font: inherit;
+		margin: -0.25rem -0.125rem;
+		padding: 0.25rem 0.125rem;
 		text-align: right;
 		width: 100%;
 	}
 
-	.editable-table__input:focus-visible {
+	.value input:focus {
 		outline: none;
 	}
 
-	/* Empty state */
-	.editable-table__empty {
+	tr.action td {
+		background: white;
+		text-align: left;
+	}
+
+	tr.action button {
+		align-items: center;
+		background: white;
+		border: 1px solid var(--color-gray-200);
+		border-radius: 8px;
+		color: var(--color-gray-900);
+		display: inline-flex;
+		gap: 0.5rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+		line-height: 1.5;
+		padding: 0.5rem 0.75rem;
+	}
+
+	tr.action button:disabled {
+		opacity: 0.6;
+	}
+
+	.plus {
 		color: var(--color-gray-500);
-		font-style: italic;
-		padding: 1.5rem;
-		text-align: center;
+		font-size: 1rem;
+		line-height: 1;
 	}
 
-	/* Row subtitle */
-	.editable-table__row-subtitle {
-		color: var(--color-gray-600);
-		font-weight: 400;
-		font-size: 0.8125rem;
-		margin-left: 0.375rem;
-	}
-
-	/* Generic dot indicator via CSS custom property */
-	.editable-table__dot-row .editable-table__row-label::before {
-		content: '';
-		display: inline-block;
-		width: 0.625rem;
-		height: 0.625rem;
-		border-radius: 50%;
-		margin-right: 0.5rem;
-		vertical-align: middle;
-		background: var(--dot-color);
-	}
-
-	@media (max-width: 56.25rem) {
-		.editable-table__head-label {
-			min-width: 13.75rem;
-		}
-
-		.editable-table__row-label {
-			max-width: 13.75rem;
-		}
+	td.empty {
+		color: var(--color-gray-500);
+		text-align: left;
 	}
 </style>

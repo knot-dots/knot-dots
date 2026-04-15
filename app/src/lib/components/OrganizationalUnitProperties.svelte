@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -15,6 +18,9 @@
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();
+
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
+	const administrativeAreaLabelId = crypto.randomUUID();
 
 	const stateFromOfficialRegionalCode = new Map([
 		['01', 'Schleswig-Holstein'],
@@ -72,8 +78,9 @@
 <div class="details-section">
 	<div class="data-grid">
 		{#if editable}
-			<label class="label" for="administrativeArea">{$_('administrative_area')}</label>
+			<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
 			<AdministrativeAreaCombobox
+				labelledBy={administrativeAreaLabelId}
 				{onchange}
 				value={container.payload.nameOSM && container.payload.officialRegionalCode
 					? {
@@ -107,6 +114,11 @@
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+		{/if}
+
+		{#if featureDecisions.useCustomCategories()}
+			<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
+			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 		{/if}
 	</div>
 </div>

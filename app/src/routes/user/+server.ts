@@ -41,13 +41,16 @@ export const POST = (async ({ locals, request }) => {
 	try {
 		const { firstName, id, lastName } = await findUserByEmail(parseResult.data.email);
 		user = await locals.pool.connect(
-			createOrUpdateUser({
-				family_name: lastName?.trim() ?? '',
-				given_name: firstName?.trim() ?? '',
-				guid: id,
-				realm: env.PUBLIC_KC_REALM ?? '',
-				settings: {}
-			})
+			createOrUpdateUser(
+				{
+					family_name: lastName?.trim() ?? '',
+					given_name: firstName?.trim() ?? '',
+					guid: id,
+					realm: env.PUBLIC_KC_REALM ?? '',
+					settings: {}
+				},
+				true
+			)
 		);
 	} catch {
 		const subject = await createKeycloakUser(parseResult.data.email);

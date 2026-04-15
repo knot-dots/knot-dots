@@ -15,6 +15,7 @@ import {
 	type Container,
 	container,
 	findDescendants,
+	type HelpSlug,
 	type IndicatorTemplateContainer,
 	type ModifiedContainer,
 	type NewContainer,
@@ -95,7 +96,8 @@ let pool: DatabasePool;
 export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
-			interceptors: [createResultParserInterceptor()]
+			interceptors: [createResultParserInterceptor()],
+			maximumPoolSize: 50
 		});
 	}
 	return pool;
@@ -459,12 +461,15 @@ export function getContainerByGuid(guid: string) {
 	};
 }
 
-export function getContainerBySlug(slug: string) {
+export function getContainerBySlug(slug: HelpSlug) {
 	return async (connection: DatabaseConnection): Promise<Container> => {
 		const containerResult = await connection.one(sql.typeAlias('container')`
 			SELECT *
 			FROM container
-			WHERE payload->>'slug' = ${slug} AND valid_currently AND NOT deleted
+			WHERE payload->>'type' = 'help'
+				AND payload->'slug' @> ${sql.jsonb(<SerializableValue>[slug])}
+				AND valid_currently
+				AND NOT deleted
 		`);
 
 		const userResult = await connection.any(sql.typeAlias('userRelationWithObject')`
@@ -533,8 +538,9 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
-	sdg?: string[];
 	customCategories?: Record<string, string[]>;
+	guid?: string[];
+	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
@@ -544,6 +550,7 @@ function prepareWhereCondition(filters: {
 	programTypes?: string[];
 	resource?: string[];
 	resourceCategories?: string[];
+	sdg?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
@@ -561,14 +568,18 @@ function prepareWhereCondition(filters: {
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
-	if (filters.sdg?.length) {
-		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
+	if (filters.guid?.length) {
+		conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.guid, 'uuid')})`);
 	}
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {
 			if (!values?.length) continue;
 			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
 		}
+	}
+	if (filters.helpSlugs?.length) {
+		conditions.push(sql.fragment`c.payload->>'type' = 'help'`);
+		conditions.push(sql.fragment`c.payload->'slug' ?| ${sql.array(filters.helpSlugs, 'text')}`);
 	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
@@ -625,6 +636,9 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
+	}
+	if (filters.sdg?.length) {
+		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.taskCategories?.length) {
 		conditions.push(
@@ -721,8 +735,9 @@ export function getManyContainers(
 	filters: {
 		assignees?: string[];
 		audience?: string[];
-		sdg?: string[];
 		customCategories?: Record<string, string[]>;
+		guid?: string[];
+		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
@@ -731,6 +746,7 @@ export function getManyContainers(
 		programTypes?: string[];
 		resource?: string[];
 		resourceCategories?: string[];
+		sdg?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
@@ -796,13 +812,16 @@ export function getManyOrganizationalUnitContainers(filters: {
 	include?: {
 		administrativeType?: string[];
 		cityAndMunicipalityTypeBBSR?: string[];
+		customCategories?: Record<string, string[]>;
 		federalState?: string[];
+		guid?: string[];
 		level?: number;
 		organization?: string;
 		terms?: string;
 	};
 	exclude?: {
 		organizationalUnitType?: string[];
+		relationPredicate?: string[];
 	};
 	limit?: number;
 	offset?: number;
@@ -823,10 +842,22 @@ export function getManyOrganizationalUnitContainers(filters: {
 				sql.fragment`c.payload->>'cityAndMunicipalityTypeBBSR' = ANY (${sql.array(filters.include.cityAndMunicipalityTypeBBSR, 'text')})`
 			);
 		}
+		if (filters.include?.customCategories) {
+			for (const [key, values] of Object.entries(filters.include.customCategories)) {
+				if (values.length > 0) {
+					conditions.push(
+						sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`
+					);
+				}
+			}
+		}
 		if (filters.include?.federalState?.length) {
 			conditions.push(
 				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.include.federalState, 'text')})`
 			);
+		}
+		if (filters.include?.guid?.length) {
+			conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.include.guid, 'uuid')})`);
 		}
 		if (filters.include?.level) {
 			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.include.level}`);
@@ -847,6 +878,12 @@ export function getManyOrganizationalUnitContainers(filters: {
 		if (filters.exclude?.organizationalUnitType?.length) {
 			conditions.push(
 				sql.fragment`NOT (payload ? 'organizationalUnitType' AND payload->>'organizationalUnitType' = ANY (${sql.array(filters.exclude.organizationalUnitType, 'text')}))`
+			);
+		}
+
+		if (filters.exclude?.relationPredicate?.length) {
+			conditions.push(
+				sql.fragment`NOT EXISTS (SELECT 1 FROM container_relation cr WHERE cr.subject = c.guid AND cr.predicate = ANY (${sql.array(filters.exclude.relationPredicate, 'text')}) AND cr.valid_currently AND NOT cr.deleted)`
 			);
 		}
 
@@ -935,6 +972,40 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as OrganizationalUnitContainer[];
+	};
+}
+
+export function getRelatedOrganizationalUnitContainersByPredicates(
+	guid: string,
+	relationTypes: Predicate[]
+) {
+	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+		if (relationTypes.length === 0) {
+			return [];
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
+			WITH related_container AS (
+				SELECT
+					CASE
+						WHEN cr.subject = ${guid} THEN cr.object
+						ELSE cr.subject
+					END AS guid
+				FROM container_relation cr
+				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+					AND cr.predicate IN (${sql.join(relationTypes, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+			)
+			SELECT DISTINCT c.*
+			FROM container c
+			JOIN related_container rc ON rc.guid = c.guid
+			WHERE c.valid_currently
+				AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+		`);
+
+		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
 	};
 }
 
@@ -1204,6 +1275,7 @@ export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		audience?: string[];
+		customCategories?: Record<string, string[]>;
 		sdg?: string[];
 		policyFieldsBNK?: string[];
 		terms?: string;
@@ -1289,6 +1361,7 @@ export function getAllContainersRelatedToMeasure(
 	guid: string,
 	filters: {
 		assignees?: string[];
+		customCategories?: Record<string, string[]>;
 		sdg?: string[];
 		policyFieldsBNK?: string[];
 		taskCategories?: string[];

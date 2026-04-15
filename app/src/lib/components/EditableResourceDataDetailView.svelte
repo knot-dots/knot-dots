@@ -5,8 +5,9 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
-		ResourceTableRow,
-		ResourceTableSection
+		EditableTableDataRow,
+		EditableTableSection,
+		EditableTableValue
 	} from '$lib/components/EditableTable.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import saveContainer from '$lib/client/saveContainer';
@@ -180,7 +181,7 @@
 
 	// --- Sections for EditableTable ---
 
-	const sections = $derived.by((): ResourceTableSection[] => {
+	const sections = $derived.by((): EditableTableSection[] => {
 		if (!isBudgetContainer) {
 			// Simple data table: single section, single editable row
 			return [
@@ -188,6 +189,7 @@
 					heading: '',
 					rows: [
 						{
+							id: container.guid,
 							container,
 							label: '',
 							editable: true
@@ -198,7 +200,7 @@
 		}
 
 		// Budget table: multiple sections
-		const result: ResourceTableSection[] = [];
+		const result: EditableTableSection[] = [];
 
 		// Section 1: Current Budget
 		if (parentGoal) {
@@ -206,6 +208,7 @@
 				heading: $_('resource_table.current_budget'),
 				rows: [
 					{
+						id: container.guid,
 						container,
 						label: parentGoal.payload.title,
 						href: overlayURL(page.url, overlayKey.enum.view, parentGoal.guid),
@@ -222,11 +225,12 @@
 		}
 
 		// Section 2: Subordinate Goals
-		const subordinateGoalRows: ResourceTableRow[] = [];
+		const subordinateGoalRows: EditableTableDataRow[] = [];
 		for (const goal of subordinateGoals) {
 			const budgets = getBudgetsForGoal(goal);
 			for (const budget of budgets) {
 				subordinateGoalRows.push({
+					id: budget.guid,
 					container: budget,
 					label: goal.payload.title,
 					href: overlayURL(page.url, overlayKey.enum.view, goal.guid),
@@ -246,11 +250,12 @@
 		});
 
 		// Section 3: Subordinate Measures
-		const subordinateMeasureRows: ResourceTableRow[] = [];
+		const subordinateMeasureRows: EditableTableDataRow[] = [];
 		for (const measure of subordinateMeasures) {
 			const resourceDataContainers = getResourceDataForMeasure(measure);
 			for (const resourceData of resourceDataContainers) {
 				subordinateMeasureRows.push({
+					id: resourceData.guid,
 					container: resourceData,
 					label: measure.payload.title,
 					href: overlayURL(page.url, overlayKey.enum.view, measure.guid),
@@ -288,6 +293,33 @@
 		await invalidate('containers');
 		return { guid: updated.guid, revision: updated.revision };
 	}
+
+	function getEntries(containerToRead: ResourceDataContainer): EditableTableValue[] {
+		return containerToRead.payload.entries.map((entry) => ({
+			year: entry.year,
+			value: entry.amount
+		}));
+	}
+
+	function setEntry(containerToUpdate: ResourceDataContainer, year: number, value: number | null) {
+		if (value === null) {
+			containerToUpdate.payload.entries = containerToUpdate.payload.entries.filter(
+				(entry) => entry.year !== year
+			);
+			return;
+		}
+
+		const entryIndex = containerToUpdate.payload.entries.findIndex((entry) => entry.year === year);
+		if (entryIndex >= 0) {
+			containerToUpdate.payload.entries[entryIndex].amount = value;
+			return;
+		}
+
+		containerToUpdate.payload.entries = [
+			...containerToUpdate.payload.entries,
+			{ year, amount: value }
+		].sort((a, b) => a.year - b.year);
+	}
 </script>
 
 {#snippet header()}
@@ -314,16 +346,21 @@
 				/>
 			{/key}
 
-			<EditableTable
-				title={isBudgetContainer
-					? $_('resource_table.subordinate_goals_budget')
-					: $_(container.payload.resourceDataType)}
-				titleUnit={$_(resourceUnit)}
-				columnLabel={isBudgetContainer ? $_('goal') : ''}
-				{sections}
-				fillYearGaps={isBudgetContainer}
-				onSave={handleSave}
-			/>
+			<div class="details-section">
+				<EditableTable
+					title={isBudgetContainer
+						? $_('resource_table.subordinate_goals_budget')
+						: $_(container.payload.resourceDataType)}
+					titleUnit={$_(resourceUnit)}
+					columnLabel={isBudgetContainer ? $_('goal') : ''}
+					{sections}
+					fillYearGaps={isBudgetContainer}
+					getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
+					setEntry={(containerToUpdate, year, value) =>
+						setEntry(containerToUpdate as ResourceDataContainer, year, value)}
+					onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
+				/>
+			</div>
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}

@@ -21,8 +21,8 @@ import {
 	topics
 } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/measures/$types';
 
 export default (async function load({ depends, locals, parent, url }) {

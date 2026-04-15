@@ -10,8 +10,9 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
-		ResourceTableRow,
-		ResourceTableSection
+		EditableTableDataRow,
+		EditableTableSection,
+		EditableTableValue
 	} from '$lib/components/EditableTable.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
@@ -204,19 +205,21 @@
 	}
 
 	// Build sections for EditableTable
-	const sections = $derived.by((): ResourceTableSection[] => {
-		const result: ResourceTableSection[] = [];
+	const sections = $derived.by((): EditableTableSection[] => {
+		const result: EditableTableSection[] = [];
 
 		// Section 1: Total Budget
 		result.push({
 			heading: $_('resource_table.total_budget'),
 			rows: [
 				{
+					id: budgetTotalState.guid,
 					container: budgetTotalState,
 					label: $_('resource_table.past_years'),
 					editable: true
 				},
 				{
+					id: prognosisState.guid,
 					container: prognosisState,
 					label: $_('resource_table.total_budget_forecast'),
 					editable: true
@@ -225,9 +228,10 @@
 		});
 
 		// Section 2: Budgets
-		const budgetRows: ResourceTableRow[] = budgetContainers.map((budgetContainer) => {
+		const budgetRows: EditableTableDataRow[] = budgetContainers.map((budgetContainer) => {
 			const relatedContainer = getRelatedMeasureOrGoal(budgetContainer);
 			return {
+				id: budgetContainer.guid,
 				container: budgetContainer,
 				label: relatedContainer?.payload.title ?? budgetContainer.payload.title,
 				href: relatedContainer
@@ -244,9 +248,10 @@
 		});
 
 		// Section 3: Planned Resource Allocation
-		const plannedRows: ResourceTableRow[] = plannedContainers.map((plannedContainer) => {
+		const plannedRows: EditableTableDataRow[] = plannedContainers.map((plannedContainer) => {
 			const relatedContainer = getRelatedMeasureOrGoal(plannedContainer);
 			return {
+				id: plannedContainer.guid,
 				container: plannedContainer,
 				label: relatedContainer?.payload.title ?? plannedContainer.payload.title,
 				href: relatedContainer
@@ -263,9 +268,10 @@
 		});
 
 		// Section 4: Actual Resource Allocation
-		const actualRows: ResourceTableRow[] = actualContainers.map((actualContainer) => {
+		const actualRows: EditableTableDataRow[] = actualContainers.map((actualContainer) => {
 			const relatedContainer = getRelatedMeasureOrGoal(actualContainer);
 			return {
+				id: actualContainer.guid,
 				container: actualContainer,
 				label: relatedContainer?.payload.title ?? actualContainer.payload.title,
 				href: relatedContainer
@@ -324,6 +330,33 @@
 		await invalidate('containers');
 		return { guid: updated.guid, revision: updated.revision };
 	}
+
+	function getEntries(containerToRead: ResourceDataContainer): EditableTableValue[] {
+		return containerToRead.payload.entries.map((entry) => ({
+			year: entry.year,
+			value: entry.amount
+		}));
+	}
+
+	function setEntry(containerToUpdate: ResourceDataContainer, year: number, value: number | null) {
+		if (value === null) {
+			containerToUpdate.payload.entries = containerToUpdate.payload.entries.filter(
+				(entry) => entry.year !== year
+			);
+			return;
+		}
+
+		const entryIndex = containerToUpdate.payload.entries.findIndex((entry) => entry.year === year);
+		if (entryIndex >= 0) {
+			containerToUpdate.payload.entries[entryIndex].amount = value;
+			return;
+		}
+
+		containerToUpdate.payload.entries = [
+			...containerToUpdate.payload.entries,
+			{ year, amount: value }
+		].sort((a, b) => a.year - b.year);
+	}
 </script>
 
 {#snippet header()}
@@ -350,13 +383,18 @@
 				/>
 			{/key}
 
-			<EditableTable
-				title="Ressourcenbedarf"
-				titleUnit={$_(container.payload.resourceUnit)}
-				columnLabel={$_('resource_table.data_object')}
-				{sections}
-				onSave={handleSave}
-			/>
+			<div class="details-section">
+				<EditableTable
+					title={$_('resource_table.resource_requirements')}
+					titleUnit={$_(container.payload.resourceUnit)}
+					columnLabel={$_('table.data_object')}
+					{sections}
+					getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
+					setEntry={(containerToUpdate, year, value) =>
+						setEntry(containerToUpdate as ResourceDataContainer, year, value)}
+					onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
+				/>
+			</div>
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}

@@ -4,6 +4,7 @@
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
+	import HelpCatalogOverlay from '$lib/components/HelpCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
@@ -13,7 +14,6 @@
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
-	import ViewHelpOverlay from '$lib/components/ViewHelpOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
@@ -68,7 +68,7 @@
 	<!--svelte-ignore a11y_no_static_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand}></div>
 	{#if data.key === overlayKey.enum['view-help']}
-		<ViewHelpOverlay container={data.container} />
+		<HelpCatalogOverlay containers={data.containers} slug={data.slug} />
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}

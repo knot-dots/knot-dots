@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
-	import {
-		categoryMatchesObjectTypes,
-		loadCategoryOptions,
-		type CategoryOption
-	} from '$lib/client/categoryOptions';
+	import type { CategoryOption } from '$lib/categoryOptions';
+	import { categoryMatchesObjectTypes, loadCategoryOptions } from '$lib/client/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
 	import { isCategoryContainer, payloadTypes } from '$lib/models';
 	import type { AnyContainer, CategoryContainer } from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: AnyContainer & { payload: { category: Record<string, string[]> } };
 		editable?: boolean;
 		organizationGuid?: string;
 		includeDefaultOrganization?: boolean;
@@ -108,11 +105,13 @@
 	{#each categories as category (category.guid)}
 		{@const key = safeKey(category.payload.key)}
 		{#if key}
-			<EditableMultipleChoice
+			{@const id = crypto.randomUUID()}
+			<div class="label" {id}>{category.payload.title ?? category.payload.key}</div>
+			<CustomCategoryDropdown
+				bind:value={container.payload.category[key]}
 				{editable}
-				label={category.payload.title ?? category.payload.key}
+				labelledBy={id}
 				options={optionsByKey.get(key) ?? []}
-				bind:value={(container.payload as { category: Record<string, string[]> }).category[key]}
 			/>
 		{/if}
 	{/each}

@@ -48,7 +48,8 @@
 		status.enum['status.in_planning'],
 		status.enum['status.in_implementation'],
 		status.enum['status.done'],
-		'trend'
+		'trend',
+		'objective'
 	];
 
 	const colorRange = [
@@ -57,7 +58,8 @@
 		'var(--indicator-color-in-implementation)',
 		'var(--indicator-color-done)',
 		'var(--indicator-color-trend-area)',
-		'var(--indicator-color-trend-line)'
+		'var(--indicator-color-trend-line)',
+		'var(--indicator-color-objective)'
 	];
 
 	let objectives = $derived.by(() => {
@@ -102,38 +104,43 @@
 				predicates.enum['is-part-of'],
 				predicates.enum['is-part-of-measure']
 			]).find(isContainerWithEffect);
-			if (measure?.payload.status == status.enum['status.done']) {
+
+			if (!measure) {
+				return [];
+			}
+
+			if (measure.payload.status == status.enum['status.done']) {
 				return c.payload.achievedValues.map(([year, value]) => ({
 					date: new Date(year, 0),
 					value: value,
-					status: status.enum['status.done'] as string,
+					status: status.enum['status.done'],
 					title: c.payload.title,
 					guid: c.guid
 				}));
-			} else if (measure?.payload.status == status.enum['status.in_implementation']) {
+			} else if (measure.payload.status == status.enum['status.in_implementation']) {
 				return [
 					...c.payload.plannedValues.map(([year, value], index) => ({
 						date: new Date(year, 0),
 						value: c.payload.achievedValues[index]
 							? value - c.payload.achievedValues[index][1]
 							: value,
-						status: measure?.payload.status as string,
+						status: measure.payload.status,
 						title: c.payload.title,
 						guid: c.guid
 					})),
 					...c.payload.achievedValues.map(([year, value]) => ({
 						date: new Date(year, 0),
 						value: value,
-						status: status.enum['status.done'] as string,
+						status: status.enum['status.done'],
 						title: c.payload.title,
 						guid: c.guid
 					}))
 				];
-			} else if (measure?.payload.status == status.enum['status.rejected']) {
+			} else if (measure.payload.status == status.enum['status.rejected']) {
 				return c.payload.plannedValues.map(([year]) => ({
 					date: new Date(year, 0),
 					value: 0,
-					status: measure?.payload.status as string,
+					status: measure.payload.status,
 					title: c.payload.title,
 					guid: c.guid
 				}));
@@ -141,7 +148,7 @@
 				return c.payload.plannedValues.map(([year, value]) => ({
 					date: new Date(year, 0),
 					value: value,
-					status: measure?.payload.status as string,
+					status: measure.payload.status,
 					title: c.payload.title,
 					guid: c.guid
 				}));
@@ -228,14 +235,6 @@
 					sort: 'date',
 					stroke: 'var(--indicator-color-objective)',
 					strokeDasharray: '8 4'
-				}),
-				Plot.lineY(actualValues, {
-					x: 'date',
-					y: 'value',
-					stroke: 'municipality',
-					strokeWidth: 3,
-					strokeLinecap: 'round',
-					interval: 'year'
 				})
 			],
 			width: currentWidth,

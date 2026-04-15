@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { getContext } from 'svelte';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
@@ -10,9 +11,11 @@
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
 	import Users from '~icons/knotdots/users';
-	import { goto, invalidate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
+	import type { CategoryOptions } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
@@ -30,12 +33,13 @@
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
+	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
-	import type { CategoryOptions } from '$lib/client/categoryOptions';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
+	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -51,8 +55,6 @@
 	} from '$lib/models';
 	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
-	import tooltip from '$lib/attachments/tooltip';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	type FilterOption = {
 		count: number;
@@ -88,9 +90,7 @@
 
 	let overlay = getContext('overlay');
 
-	let container = $derived(
-		overlay && $overlayStore?.container ? $overlayStore.container : page.data.container
-	);
+	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
 
 	let filterBar = $derived(
 		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
@@ -122,6 +122,8 @@
 		return count;
 	});
 
+	let favoritesList = getFavoriteListContext();
+
 	let href = $derived(
 		page.url.searchParams.size
 			? `${page.url.pathname}?${page.url.searchParams.toString()}`
@@ -129,7 +131,9 @@
 	);
 
 	let isFavorite = $derived(
-		selectedContext.payload.favorite.findIndex((f) => f.href === href) > -1
+		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
+			(f) => f.href === href
+		) > -1
 	);
 
 	function applySort() {
@@ -167,25 +171,21 @@
 	}
 
 	async function toggleFavorite() {
-		let index = selectedContext.payload.favorite.findIndex((f) => f.href === href);
+		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
+		const index = favoritesList[key].findIndex((f) => f.href === href);
+
+		favoritesList[key] =
+			index > -1
+				? favoritesList[key].filter((_, i) => i !== index)
+				: [...favoritesList[key], { href, title: page.data.title ?? $_('new_favorite') }];
 
 		const response = await saveContainer({
 			...selectedContext,
-			payload: {
-				...selectedContext.payload,
-				favorite:
-					index > -1
-						? selectedContext.payload.favorite.filter((_, i) => i !== index)
-						: [
-								...selectedContext.payload.favorite,
-								{ href, title: page.data.title ?? $_('new_favorite') }
-							]
-			}
+			payload: { ...selectedContext.payload, favorite: favoritesList[key] }
 		});
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			selectedContext.revision = updatedContainer.revision;
-			await invalidate(selectedContext.payload.type);
 		} else {
 			const error = await response.json();
 			alert(error.message);
@@ -275,6 +275,10 @@
 					{$_('login')}
 				</button>
 			{/if}
+		{/if}
+
+		{#if createFeatureDecisions(page.data.features).useEmbedObjects() && overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+			<OverlaySettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
 		{/if}
 	</div>
 </header>

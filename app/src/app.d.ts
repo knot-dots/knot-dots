@@ -1,7 +1,7 @@
 import { type DefaultSession } from '@auth/sveltekit';
 import type { DatabasePool } from 'slonik';
+import type { CategoryContext } from '$lib/categoryOptions';
 import type { KeycloakUser, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
-import type { CategoryContext } from '$lib/server/categoryOptions';
 import type { User } from '$lib/stores';
 
 // See https://kit.svelte.dev/docs/types#app

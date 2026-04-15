@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableAssignee from '$lib/components/EditableAssignee.svelte';
+	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableBenefit from '$lib/components/EditableBenefit.svelte';
 	import EditableDate from '$lib/components/EditableDate.svelte';
 	import EditableMeasure from '$lib/components/EditableMeasure.svelte';
@@ -15,6 +17,7 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type Container, type TaskContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -30,6 +33,8 @@
 	let managedBy = $derived(container.managed_by);
 
 	let assigneeCandidatesPromise = $derived(fetchMembers(managedBy));
+
+	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 </script>
 
 <PropertyGrid>
@@ -82,6 +87,12 @@
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+		{/if}
+	{/snippet}
+
+	{#snippet categories()}
+		{#if featureDecisions.useCustomCategories()}
+			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 		{/if}
 	{/snippet}
 

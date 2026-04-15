@@ -18,6 +18,8 @@ import {
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
+	type HelpSlug,
+	isHelpSlug,
 	type IooiType,
 	mayDelete,
 	type MeasureContainer,
@@ -220,7 +222,9 @@ export type OverlayData =
 	  }
 	| {
 			key: 'view-help';
-			container: HelpContainer;
+			container?: undefined;
+			containers: HelpContainer[];
+			slug: HelpSlug;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -266,10 +270,29 @@ if (browser) {
 		const useFullScreenRoutes = createFeatureDecisions(values.data.features).useFullScreenRoutes();
 
 		if (hashParams.has(overlayKey.enum['view-help'])) {
-			const help = await fetchHelpBySlug(hashParams.get(overlayKey.enum['view-help']) as string);
+			const helpSlug = hashParams.get(overlayKey.enum['view-help']);
+			if (!isHelpSlug(helpSlug)) {
+				setOverlayIfLatest(undefined);
+				return;
+			}
+			const containers = await fetchHelpBySlug(helpSlug);
+
+			// If there's only one help container for the slug, we can directly open the view
+			// overlay for that container instead of showing the list of help containers
+			if (containers.length === 1) {
+				setOverlayIfLatest({
+					key: overlayKey.enum.view,
+					container: containers[0],
+					revisions: [containers[0]]
+				});
+				return;
+			}
+
 			setOverlayIfLatest({
 				key: overlayKey.enum['view-help'],
-				container: help
+				container: undefined,
+				containers,
+				slug: helpSlug
 			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
 			if (useFullScreenRoutes) {

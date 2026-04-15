@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { flip } from 'svelte/animate';
-	import EditableRow from '$lib/components/EditableRow.svelte';
+	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import type { CategoryOptions } from '$lib/client/categoryOptions';
+	import EditableRow from '$lib/components/EditableRow.svelte';
 	import type { ActualDataContainer, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 

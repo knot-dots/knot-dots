@@ -19,9 +19,9 @@ import {
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers
 } from '$lib/server/db';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/indicators/$types';

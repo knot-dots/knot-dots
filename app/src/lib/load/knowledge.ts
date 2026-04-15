@@ -1,6 +1,6 @@
 import { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import {
 	audience,
 	computeFacetCount,
@@ -14,7 +14,7 @@ import {
 } from '$lib/models';
 import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
 export default (async function load({ depends, locals, parent, url }) {

@@ -50,6 +50,7 @@ type MyWorkerFixtures = {
 	testIndicatorTemplate: IndicatorTemplateContainer;
 	testOrganization: OrganizationContainer;
 	testOrganizationalUnit: OrganizationalUnitContainer;
+	testIndividualProfile: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
 	testGoal: GoalContainer;
 	testSubordinateGoal: GoalContainer;
@@ -70,11 +71,12 @@ type MyWorkerFixtures = {
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: ReportContainer;
+	testPublicReport: ReportContainer;
 };
 
 locale.set('en');
 
-async function createContainer(context: BrowserContext, newContainer: NewContainer) {
+export async function createContainer(context: BrowserContext, newContainer: NewContainer) {
 	const response = await context.request.post('/container', { data: newContainer });
 
 	if (!response.ok()) {
@@ -84,7 +86,7 @@ async function createContainer(context: BrowserContext, newContainer: NewContain
 	return response.json();
 }
 
-async function deleteContainer(context: BrowserContext, container: AnyContainer) {
+export async function deleteContainer(context: BrowserContext, container: AnyContainer) {
 	const response = await context.request.get(`/container/${container.guid}`);
 
 	if (!response.ok()) {
@@ -290,6 +292,37 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testOrganizationalUnit);
 
 			await deleteContainer(adminContext, testOrganizationalUnit);
+		},
+		{ scope: 'worker' }
+	],
+	testIndividualProfile: [
+		async ({ adminContext, testOrganization, testOrganizationalUnit }, use, workerInfo) => {
+			const newIndividualProfile = containerOfType(
+				payloadTypes.enum.organizational_unit,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as OrganizationalUnitContainer;
+
+			const testIndividualProfile = await createContainer(adminContext, {
+				...newIndividualProfile,
+				payload: {
+					...newIndividualProfile.payload,
+					name: `${testOrganizationalUnit.payload.name} - Individual ${workerInfo.workerIndex}`
+				},
+				relation: [
+					{
+						object: testOrganizationalUnit.guid,
+						position: 0,
+						predicate: predicates.enum['is-individual-profile-of']
+					}
+				]
+			});
+
+			await use(testIndividualProfile);
+
+			await deleteContainer(adminContext, testIndividualProfile);
 		},
 		{ scope: 'worker' }
 	],
@@ -823,6 +856,30 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testReport);
 
 			await deleteContainer(adminContext, testReport);
+		},
+		{ scope: 'worker' }
+	],
+	testPublicReport: [
+		async ({ adminContext, testOrganization }, use, workerInfo) => {
+			const newReport = containerOfType(
+				payloadTypes.enum.report,
+				testOrganization.guid,
+				null,
+				testOrganization.guid,
+				'knot-dots'
+			) as ReportContainer;
+			const testPublicReport = await createContainer(adminContext, {
+				...newReport,
+				payload: {
+					...newReport.payload,
+					title: `Test Public Report ${workerInfo.workerIndex}`,
+					visibility: 'public'
+				}
+			});
+
+			await use(testPublicReport);
+
+			await deleteContainer(adminContext, testPublicReport);
 		},
 		{ scope: 'worker' }
 	]

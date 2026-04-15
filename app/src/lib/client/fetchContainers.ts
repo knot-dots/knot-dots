@@ -1,12 +1,15 @@
 import { z } from 'zod';
+import { page } from '$app/state';
 import withRequestCoalescing from '$lib/client/withRequestCoalescing';
+import { createFeatureDecisions } from '$lib/features';
 import { anyContainer, type PayloadType } from '$lib/models';
 
 export default async function fetchContainers(
 	filters: {
+		[key: string]: string | string[] | undefined;
 		assignee?: string[];
 		audience?: string[];
-		sdg?: string[];
+		guid?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		isPartOfMeasure?: string[];
@@ -18,6 +21,7 @@ export default async function fetchContainers(
 		programType?: string[];
 		relatedTo?: string[];
 		relationType?: string[];
+		sdg?: string[];
 		taskCategory?: string[];
 		terms?: string;
 		topic?: string[];
@@ -26,14 +30,31 @@ export default async function fetchContainers(
 	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
+	if (createFeatureDecisions(page.data.features).useCustomCategories()) {
+		page.data.categoryContext?.keys.forEach((key) => {
+			for (const value of (filters[key] as string[]) ?? []) {
+				params.append(key, value);
+			}
+		});
+	} else {
+		for (const value of filters.audience ?? []) {
+			params.append('audience', value);
+		}
+		for (const value of filters.policyFieldBNK ?? []) {
+			params.append('policyFieldBNK', value);
+		}
+		for (const value of filters.sdg ?? []) {
+			params.append('sdg', value);
+		}
+		for (const value of filters.topic ?? []) {
+			params.append('topic', value);
+		}
+	}
 	for (const value of filters.assignee ?? []) {
 		params.append('assignee', value);
 	}
-	for (const value of filters.audience ?? []) {
-		params.append('audience', value);
-	}
-	for (const value of filters.sdg ?? []) {
-		params.append('sdg', value);
+	for (const value of filters.guid ?? []) {
+		params.append('guid', value);
 	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
@@ -56,9 +77,6 @@ export default async function fetchContainers(
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
 	}
-	for (const value of filters.policyFieldBNK ?? []) {
-		params.append('policyFieldBNK', value);
-	}
 	for (const value of filters.relatedTo ?? []) {
 		params.append('relatedTo', value);
 	}
@@ -76,9 +94,6 @@ export default async function fetchContainers(
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);
-	}
-	for (const value of filters.topic ?? []) {
-		params.append('topic', value);
 	}
 	const response = await withRequestCoalescing(fetch)(`/container?${params}`, init);
 	return z.array(anyContainer).parse(await response.clone().json());

@@ -10,6 +10,7 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
+	getRelatedOrganizationalUnitContainersByPredicates,
 	getManySpatialFeatures
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
@@ -29,7 +30,7 @@ export const load = (async ({ locals, parent }) => {
 			.concat(container.guid);
 	}
 
-	const [containers, actualData, sections] = await Promise.all([
+	const [containers, actualData, sections, linkedProfiles] = await Promise.all([
 		locals.pool.connect(
 			getManyContainers(
 				[container.organization],
@@ -66,7 +67,14 @@ export const load = (async ({ locals, parent }) => {
 				{},
 				''
 			)
-		)
+		),
+		isOrganizationalUnitContainer(container)
+			? locals.pool.connect(
+					getRelatedOrganizationalUnitContainersByPredicates(container.guid, [
+						predicates.enum['is-individual-profile-of']
+					])
+				)
+			: Promise.resolve([])
 	]);
 
 	let spatialFeatures: Array<GeoJsonObject & { id: string }> = [];
@@ -93,6 +101,7 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		container,
+		linkedProfiles: filterVisible(linkedProfiles, locals.user),
 		relatedContainers: filterVisible([...containers, ...actualData, ...sections], locals.user),
 		spatialFeatures
 	};

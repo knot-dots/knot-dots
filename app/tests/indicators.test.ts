@@ -18,38 +18,35 @@ test('create custom indicator with actual data', async ({ indicatorCatalog, test
 	await expect(indicatorCatalog.overlay.title).toHaveText(titleOfCustomIndicator);
 
 	// Enable entering actual data
-	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	const table = indicatorCatalog.overlay.locator.getByRole('table');
 	await table.getByRole('button', { name: 'Add custom actual data' }).click();
 	await expect(table.getByRole('row', { name: 'Custom actual data' })).toBeVisible();
 
 	// Add a column and fill actual data
-	await table.getByRole('button', { name: 'Add column' }).click();
-	await expect(table.getByRole('columnheader', { name: /\d+/ })).toBeVisible();
+	await table.getByRole('button', { name: 'Add column left' }).click();
+	await expect(table.getByRole('columnheader', { name: /\d+/ })).toHaveCount(2);
+	const customActualDataInputs = table
+		.getByRole('row', { name: 'Custom actual data' })
+		.locator('input[data-year]');
 	const firstValue = '101.5';
 	const firstInvalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
-	await table
-		.getByRole('row', { name: 'Custom actual data' })
-		.getByRole('cell', { name: '0', exact: true })
-		.getByRole('textbox')
-		.fill(firstValue);
+	await expect(customActualDataInputs).toHaveCount(2);
+	await customActualDataInputs.first().fill(firstValue);
 	await firstInvalidateRequest;
 
 	// Add another column and fill actual data
-	await table.getByRole('button', { name: 'Add column' }).last().click();
-	await expect(table.getByRole('columnheader', { name: /\d+/ })).toHaveCount(2);
+	await table.getByRole('button', { name: 'Add column right' }).click();
+	await expect(table.getByRole('columnheader', { name: /\d+/ })).toHaveCount(3);
 	const secondValue = '246.7';
 	const secondInvalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
-	await table
-		.getByRole('row', { name: 'Custom actual data' })
-		.getByRole('cell', { name: '0', exact: true })
-		.getByRole('textbox')
-		.fill(secondValue);
+	await expect(customActualDataInputs).toHaveCount(3);
+	await customActualDataInputs.last().fill(secondValue);
 	await secondInvalidateRequest;
 
 	// Verify actual data is persisted
 	await indicatorCatalog.page.reload();
-	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	await expect(table.getByRole('cell', { name: firstValue })).toBeVisible();
 	await expect(table.getByRole('cell', { name: secondValue })).toBeVisible();
 });
@@ -101,7 +98,7 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTem
 	// Verify the indicator is activated and has custom actual data
 	await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();
 	await expect(indicatorCatalog.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
-	await indicatorCatalog.overlay.locator.getByRole('combobox').selectOption('Table');
+	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	await expect(
 		indicatorCatalog.overlay.locator.getByRole('row', { name: 'Custom actual data' })
 	).toBeVisible();

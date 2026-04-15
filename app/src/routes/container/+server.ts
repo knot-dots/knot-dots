@@ -15,12 +15,14 @@ import {
 	isEffectContainer,
 	isGoalContainer,
 	isMeasureContainer,
+	isOrganizationalUnitContainer,
 	isProgramContainer,
 	isReportContainer,
 	isTaskContainer,
 	type MeasureContainer,
 	type NewContainer,
 	newContainer,
+	type OrganizationalUnitContainer,
 	type PartialRelation,
 	payloadTypes,
 	policyFieldBNK,
@@ -33,6 +35,7 @@ import {
 	taskCategories,
 	topics
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	createContainer,
 	createManyContainerRelations,
@@ -40,9 +43,11 @@ import {
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getManyContainers,
-	getManyOrganizationalUnitContainers
+	getManyOrganizationalUnitContainers,
+	getManyOrganizationContainers
 } from '$lib/server/db';
 import type { User } from '$lib/stores';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
 
 function findCopiedTargetGuid<T extends AnyContainer>(
@@ -386,6 +391,32 @@ async function copyProgram(
 	await createManyContainerRelations(relations)(txConnection);
 }
 
+async function copyOrganizationalUnitContainer(
+	createdContainer: OrganizationalUnitContainer,
+	isCopyOfRelation: PartialRelation,
+	user: User,
+	txConnection: CommonQueryMethods
+) {
+	const containersRelatedToOriginal = filterVisible(
+		await getAllRelatedContainers(
+			[],
+			isCopyOfRelation.object as string,
+			['is-section-of'],
+			{},
+			''
+		)(txConnection),
+		user
+	);
+
+	await copySectionsFromOriginal(
+		createdContainer,
+		containersRelatedToOriginal,
+		[createdContainer],
+		user.guid,
+		txConnection
+	);
+}
+
 async function copyReportContainer(
 	createdContainer: ReportContainer,
 	isCopyOfRelation: PartialRelation,
@@ -415,10 +446,10 @@ async function copyReportContainer(
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		administrativeType: z.array(administrativeTypes).default([]),
-		federalState: z.array(z.string()).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
 		audience: z.array(audience).default([]),
-		sdg: z.array(sustainableDevelopmentGoals).default([]),
+		federalState: z.array(z.string()).default([]),
+		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
@@ -427,12 +458,21 @@ export const GET = (async ({ locals, url }) => {
 		limit: z.coerce.number().int().positive().optional(),
 		offset: z.coerce.number().int().nonnegative().default(0),
 		organization: z.array(z.string().uuid()).default([]),
-		organizationalUnit: z.array(z.string().uuid()).default([]),
+		organizationalUnit: z
+			.array(z.string().uuid())
+			.or(
+				z
+					.array(z.literal(''))
+					.length(1)
+					.transform(() => null)
+			)
+			.default([]),
 		payloadType: z.array(payloadTypes).default([]),
 		policyFieldBNK: z.array(policyFieldBNK).default([]),
 		programType: z.array(programTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
+		sdg: z.array(sustainableDevelopmentGoals).default([]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
@@ -451,12 +491,26 @@ export const GET = (async ({ locals, url }) => {
 		error(400, { message: parseResult.error.message });
 	}
 
+	const organizations = await locals.pool.connect(
+		getManyOrganizationContainers({ default: true }, '')
+	);
+
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope:
+			organizations.length > 0
+				? [organizations[0].guid, ...parseResult.data.organization]
+				: parseResult.data.organization,
+		user: locals.user
+	});
+
 	let containers: AnyContainer[];
 
 	if (parseResult.data.isPartOfProgram.length > 0) {
 		containers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(parseResult.data.isPartOfProgram[0], {
 				audience: parseResult.data.audience,
+				customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
 				sdg: parseResult.data.sdg,
 				policyFieldsBNK: parseResult.data.policyFieldBNK,
 				terms: parseResult.data.terms[0],
@@ -471,7 +525,10 @@ export const GET = (async ({ locals, url }) => {
 					parseResult.data.organization,
 					parseResult.data.relatedTo[0],
 					parseResult.data.relationType,
-					{ type: parseResult.data.payloadType },
+					{
+						customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
+						type: parseResult.data.payloadType
+					},
 					parseResult.data.sort[0]
 				)
 			);
@@ -480,6 +537,7 @@ export const GET = (async ({ locals, url }) => {
 				getAllContainersRelatedToMeasure(
 					parseResult.data.isPartOfMeasure[0],
 					{
+						customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
 						terms: parseResult.data.terms[0],
 						type: parseResult.data.payloadType
 					},
@@ -487,38 +545,21 @@ export const GET = (async ({ locals, url }) => {
 				)
 			);
 		}
-	} else if (parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit)) {
-		containers = await locals.pool.connect(
-			getManyOrganizationalUnitContainers({
-				include: {
-					...(parseResult.data.organization.length > 0 && {
-						organization: parseResult.data.organization[0]
-					}),
-					...(parseResult.data.administrativeType.length > 0 && {
-						administrativeType: parseResult.data.administrativeType
-					}),
-					...(parseResult.data.federalState.length > 0 && {
-						federalState: parseResult.data.federalState
-					}),
-					...(parseResult.data.terms.length > 0 && { terms: parseResult.data.terms[0] })
-				},
-				...(parseResult.data.limit && { limit: parseResult.data.limit }),
-				...(parseResult.data.offset && { offset: parseResult.data.offset })
-			})
-		);
 	} else {
 		containers = await locals.pool.connect(
 			getManyContainers(
 				parseResult.data.organization,
 				{
 					audience: parseResult.data.audience,
-					sdg: parseResult.data.sdg,
+					customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
+					guid: parseResult.data.guid,
 					indicators: parseResult.data.indicator,
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
 					organizationalUnits: parseResult.data.organizationalUnit,
 					policyFieldsBNK: parseResult.data.policyFieldBNK,
 					programTypes: parseResult.data.programType,
+					sdg: parseResult.data.sdg,
 					terms: parseResult.data.terms[0],
 					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
@@ -526,6 +567,27 @@ export const GET = (async ({ locals, url }) => {
 				parseResult.data.sort[0]
 			)
 		);
+	}
+
+	if (
+		parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit) ||
+		parseResult.data.guid.length > 0
+	) {
+		const orgs = await locals.pool.connect(
+			getManyOrganizationalUnitContainers({
+				include: {
+					organization: parseResult.data.organization[0],
+					administrativeType: parseResult.data.administrativeType,
+					customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
+					federalState: parseResult.data.federalState,
+					guid: parseResult.data.guid,
+					terms: parseResult.data.terms[0]
+				},
+				...(parseResult.data.limit && { limit: parseResult.data.limit }),
+				...(parseResult.data.offset && { offset: parseResult.data.offset })
+			})
+		);
+		containers = [...containers, ...orgs];
 	}
 
 	return json(filterVisible(containers, locals.user));
@@ -571,6 +633,13 @@ export const POST = (async ({ locals, request }) => {
 					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
 				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
 					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
+				} else if (isCopyOfRelation && isOrganizationalUnitContainer(createdContainer)) {
+					await copyOrganizationalUnitContainer(
+						createdContainer,
+						isCopyOfRelation,
+						locals.user,
+						txConnection
+					);
 				}
 
 				return createdContainer;

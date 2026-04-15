@@ -6,17 +6,15 @@
 	import Close from '~icons/knotdots/close';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { uploadAsFormData } from '$lib/client/upload';
-	import saveContainer from '$lib/client/saveContainer';
-	import { ability, applicationState } from '$lib/stores';
+	import { applicationState } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
-	import type { OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
 
 	interface Props {
-		container: OrganizationContainer | OrganizationalUnitContainer;
-		index: number;
+		favorite: { title: string; icon?: string };
+		onchange: () => void;
 	}
 
-	let { container = $bindable(), index }: Props = $props();
+	let { favorite = $bindable(), onchange }: Props = $props();
 
 	const popover = createPopover({ label: $_('favorite.edit') });
 
@@ -35,16 +33,8 @@
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
 				uploadInProgress = true;
-				container.payload.favorite[index].icon = await uploadAsFormData(input.files[0]);
-
-				const response = await saveContainer(container);
-				if (response.ok) {
-					const updatedContainer = await response.json();
-					container.revision = updatedContainer.revision;
-				} else {
-					const error = await response.json();
-					alert(error.message);
-				}
+				favorite.icon = await uploadAsFormData(input.files[0]);
+				onchange();
 			} catch (e) {
 				console.log(e);
 			} finally {
@@ -53,30 +43,10 @@
 		}
 	}
 
-	function getFavoriteTitle() {
-		return container.payload.favorite[index].title;
-	}
-
 	let timer: ReturnType<typeof setTimeout>;
-
-	async function setFavoriteTitle(value: string) {
-		container.payload.favorite[index].title = value;
-
-		clearTimeout(timer);
-		timer = setTimeout(async () => {
-			const response = await saveContainer(container);
-			if (response.ok) {
-				const updatedContainer = await response.json();
-				container.revision = updatedContainer.revision;
-			} else {
-				const error = await response.json();
-				alert(error.message);
-			}
-		}, 2000);
-	}
 </script>
 
-{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+{#if $applicationState.containerDetailView.editable}
 	<div class="dropdown is-visible-on-hover" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<Ellipsis />
@@ -93,18 +63,24 @@
 
 					<label class="title">
 						<span>{$_('favorite.rename')}</span>
-						<input bind:value={getFavoriteTitle, setFavoriteTitle} name="title" type="text" />
+						<input
+							bind:value={favorite.title}
+							name="title"
+							oninput={() => {
+								clearTimeout(timer);
+								timer = setTimeout(async () => {
+									onchange();
+								}, 2000);
+							}}
+							type="text"
+						/>
 					</label>
 
 					<label class="icon" for={id}>
 						{#if uploadInProgress}
 							<span class="loader" role="status"></span>
-						{:else if container.payload.favorite[index].icon}
-							<img
-								alt=""
-								class="logo"
-								src={transformFileURL(container.payload.favorite[index].icon)}
-							/>
+						{:else if favorite.icon}
+							<img alt="" class="logo" src={transformFileURL(favorite.icon)} />
 						{:else}
 							<StarSolid />
 						{/if}

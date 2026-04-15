@@ -1,4 +1,6 @@
 import { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	isContainerWithEffect,
 	isMemberOf,
@@ -11,8 +13,6 @@ import {
 	topics
 } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
-import { createFeatureDecisions } from '$lib/features';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';

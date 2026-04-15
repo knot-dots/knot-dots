@@ -69,6 +69,7 @@ const payloadTypeValues = [
 	'content_partner',
 	'content_partner_collection',
 	'custom_collection',
+	'demographic_data',
 	'effect',
 	'effect_collection',
 	'file_collection',
@@ -117,6 +118,112 @@ export type PayloadType = z.infer<typeof payloadTypes>;
 
 export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
+}
+
+const helpSlugValues = [
+	'all-catalog',
+	'all-level',
+	'all-table',
+	'binary-indicator-view',
+	'categories',
+	'category-view',
+	'content-partner-view',
+	'effect-view',
+	'goal-view',
+	'goals-catalog',
+	'goals-level',
+	'goals-status',
+	'goals-table',
+	'help-catalog',
+	'help-view',
+	'import',
+	'indicator-catalog',
+	'indicator-template-view',
+	'indicators',
+	'indicators-table',
+	'iooi',
+	'knowledge-catalog',
+	'knowledge-level',
+	'knowledge-table',
+	'knowledge-view',
+	'measure-view',
+	'measures-catalog',
+	'measures-monitoring',
+	'measures-status',
+	'measures-table',
+	'measures-templates',
+	'members',
+	'objective-view',
+	'objectives-and-effects',
+	'organization-view',
+	'organizational-unit-view',
+	'page-view',
+	'profile',
+	'program-view',
+	'programs-catalog',
+	'programs-level',
+	'programs-status',
+	'programs-table',
+	'relations',
+	'report-view',
+	'resource-data-view',
+	'resource-v2-view',
+	'resource-view',
+	'resources-catalog',
+	'resources-table',
+	'rule-view',
+	'rules-catalog',
+	'rules-status',
+	'rules-table',
+	'simple-measure-view',
+	'task-view',
+	'tasks-catalog',
+	'tasks-status',
+	'tasks-table',
+	'teaser-view',
+	'term-view',
+	'text-view'
+] as const;
+
+export const helpSlug = z.enum(helpSlugValues);
+
+export type HelpSlug = z.infer<typeof helpSlug>;
+
+export function isHelpSlug(value: unknown): value is HelpSlug {
+	return helpSlug.safeParse(value).success;
+}
+
+const detailViewHelpSlugByPayloadType = {
+	[payloadTypes.enum.binary_indicator]: helpSlug.enum['binary-indicator-view'],
+	[payloadTypes.enum.category]: helpSlug.enum['category-view'],
+	[payloadTypes.enum.content_partner]: helpSlug.enum['content-partner-view'],
+	[payloadTypes.enum.effect]: helpSlug.enum['effect-view'],
+	[payloadTypes.enum.goal]: helpSlug.enum['goal-view'],
+	[payloadTypes.enum.help]: helpSlug.enum['help-view'],
+	[payloadTypes.enum.indicator_template]: helpSlug.enum['indicator-template-view'],
+	[payloadTypes.enum.knowledge]: helpSlug.enum['knowledge-view'],
+	[payloadTypes.enum.measure]: helpSlug.enum['measure-view'],
+	[payloadTypes.enum.objective]: helpSlug.enum['objective-view'],
+	[payloadTypes.enum.organization]: helpSlug.enum['organization-view'],
+	[payloadTypes.enum.organizational_unit]: helpSlug.enum['organizational-unit-view'],
+	[payloadTypes.enum.page]: helpSlug.enum['page-view'],
+	[payloadTypes.enum.program]: helpSlug.enum['program-view'],
+	[payloadTypes.enum.report]: helpSlug.enum['report-view'],
+	[payloadTypes.enum.resource]: helpSlug.enum['resource-view'],
+	[payloadTypes.enum.resource_data]: helpSlug.enum['resource-data-view'],
+	[payloadTypes.enum.resource_v2]: helpSlug.enum['resource-v2-view'],
+	[payloadTypes.enum.rule]: helpSlug.enum['rule-view'],
+	[payloadTypes.enum.simple_measure]: helpSlug.enum['simple-measure-view'],
+	[payloadTypes.enum.task]: helpSlug.enum['task-view'],
+	[payloadTypes.enum.teaser]: helpSlug.enum['teaser-view'],
+	[payloadTypes.enum.term]: helpSlug.enum['term-view'],
+	[payloadTypes.enum.text]: helpSlug.enum['text-view']
+} as const satisfies Partial<Record<PayloadType, HelpSlug>>;
+
+export function helpSlugForDetailView(payloadType: PayloadType): HelpSlug | undefined {
+	return detailViewHelpSlugByPayloadType[
+		payloadType as keyof typeof detailViewHelpSlugByPayloadType
+	];
 }
 
 const categoryObjectTypeValues = [
@@ -216,6 +323,7 @@ const predicateValues = [
 	'implies',
 	'is-head-of',
 	'is-inconsistent-with',
+	'is-individual-profile-of',
 	'is-measured-by',
 	'is-member-of',
 	'is-objective-for',
@@ -309,6 +417,7 @@ export type TaskStatus = z.infer<typeof taskStatus>;
 
 const programTypeValues = [
 	'program_type.misc',
+	'program_type.strategy',
 	'program_type.mobility',
 	'program_type.sustainability',
 	'program_type.smart_city',
@@ -761,16 +870,15 @@ const customCollectionPayload = z
 		filter: z
 			.object({
 				audience: z.array(audience).default([]),
-				category: z.array(sustainableDevelopmentGoals).default([]),
 				sdg: z.array(sustainableDevelopmentGoals).default([]),
 				indicatorCategory: z.array(indicatorCategories).default([]),
 				type: z.array(payloadTypes).default([]),
 				policyFieldBNK: z.array(policyFieldBNK).default([]),
 				topic: z.array(topics).default([])
 			})
+			.catchall(z.array(z.string()))
 			.default({
 				audience: [],
-				category: [],
 				sdg: [],
 				indicatorCategory: [],
 				policyFieldBNK: [],
@@ -790,6 +898,23 @@ const customCollectionPayload = z
 	.strict();
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
+
+const demographicDataPayload = z
+	.object({
+		area: z.number().nonnegative().optional(),
+		population: z.number().int().nonnegative().optional(),
+		title: z
+			.string()
+			.trim()
+			.default(() => unwrapFunctionStore(_)('demographic_data')),
+		type: z.literal(payloadTypes.enum.demographic_data),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialDemographicDataPayload = demographicDataPayload.partial({
+	title: true
+});
 
 const fileCollectionPayload = z
 	.object({
@@ -849,7 +974,10 @@ const helpPayload = z.object({
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	slug: z.string().default(''),
+	slug: z
+		.preprocess((v) => (Array.isArray(v) ? v.filter(isHelpSlug) : []), z.array(helpSlug))
+		.transform(deduplicate)
+		.default([]),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.help),
 	visibility: visibility.default(visibility.enum['public'])
@@ -1202,6 +1330,9 @@ const taskPayload = measureMonitoringBasePayload
 	.extend({
 		assignee: z.array(z.string().uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
+		category: z
+			.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+			.default({}),
 		effort: z.string().optional(),
 		fulfillmentDate: z.string().date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
@@ -1413,6 +1544,9 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 const organizationalUnitPayload = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
 	boards: z.array(boards).transform(deduplicate).default([]),
+	category: z
+		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+		.default({}),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
@@ -1478,6 +1612,7 @@ const payload = z.discriminatedUnion('type', [
 	contentPartnerCollectionPayload,
 	contentPartnerPayload,
 	customCollectionPayload,
+	demographicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
 	fileCollectionPayload,
@@ -1651,6 +1786,18 @@ export function isCustomCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is CustomCollectionContainer {
 	return container.payload.type === payloadTypes.enum.custom_collection;
+}
+
+const demographicDataContainer = container.extend({
+	payload: demographicDataPayload
+});
+
+export type DemographicDataContainer = z.infer<typeof demographicDataContainer>;
+
+export function isDemographicDataContainer(
+	container: AnyContainer | EmptyContainer
+): container is DemographicDataContainer {
+	return container.payload.type === payloadTypes.enum.demographic_data;
 }
 
 const effectContainer = container.extend({
@@ -2433,6 +2580,7 @@ export const emptyContainer = newContainer.extend({
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,
+		initialDemographicDataPayload,
 		initialFileCollectionPayload,
 		initialGoalCollectionPayload,
 		initialGoalPayload,
@@ -3092,24 +3240,13 @@ export function computeFacetCount(
 	options?: { useCategoryPayload?: boolean }
 ) {
 	const useCategoryPayload = options?.useCategoryPayload ?? false;
-	const normalizeValue = (value: unknown): string => {
-		if (value === null || value === undefined) return '';
-		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-			return String(value);
-		}
-		if (typeof value === 'object') {
-			const v = value as { guid?: unknown; value?: unknown };
-			if (v.guid !== undefined) return String(v.guid);
-			if (v.value !== undefined) return String(v.value);
-		}
-		return String(value);
-	};
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {
-			const categoryPayload = useCategoryPayload
-				? (container.payload as { category?: Record<string, unknown> }).category
-				: undefined;
+			const categoryPayload =
+				useCategoryPayload && 'category' in container.payload
+					? container.payload.category
+					: undefined;
 			const hasCategoryValue = categoryPayload && key in categoryPayload;
 			const hasPayloadValue = key in container.payload;
 			const valueSource = hasCategoryValue
@@ -3121,12 +3258,10 @@ export function computeFacetCount(
 				const foci = facets.get(key) as Map<string, number>;
 				if (Array.isArray(valueSource)) {
 					for (const value of valueSource) {
-						const normalized = normalizeValue(value);
-						foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+						foci.set(value, ((foci.get(value) as number) ?? 0) + 1);
 					}
 				} else {
-					const normalized = normalizeValue(valueSource);
-					foci.set(normalized, ((foci.get(normalized) as number) ?? 0) + 1);
+					foci.set(valueSource, ((foci.get(valueSource) as number) ?? 0) + 1);
 				}
 			}
 		}

@@ -4,11 +4,11 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
+	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
 	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
 	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
-	import { getCategoryKeys, type CategoryOptions } from '$lib/client/categoryOptions';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
@@ -369,8 +369,8 @@
 				<CustomCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
+					offset={[editable ? -41 : -21, -41]}
 					options={categoryOptions?.[col] ?? []}
-					showSelectedIcons={false}
 					bind:value={container.payload.category[col]}
 				/>
 			{/if}
@@ -523,15 +523,5 @@
 	.cell > :global(span),
 	.cell > fieldset {
 		white-space: nowrap;
-	}
-
-	.drag-handle {
-		display: none !important;
-	}
-
-	@container (min-inline-size: 90rem) {
-		.drag-handle {
-			display: inline-block !important;
-		}
 	}
 </style>

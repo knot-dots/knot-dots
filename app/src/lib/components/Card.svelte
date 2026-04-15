@@ -25,7 +25,6 @@
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorTemplateContainer,
-		isKnowledgeContainer,
 		isObjectiveContainer,
 		isPartOf,
 		isQuoteContainer,
@@ -219,7 +218,7 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container) && !isKnowledgeContainer(container)}
+	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container)}
 		<header>
 			<h3>
 				<a

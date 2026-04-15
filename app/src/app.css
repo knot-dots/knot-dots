@@ -431,6 +431,7 @@ tr:hover,
 }
 
 td,
+th,
 .cell {
 	border-bottom: solid 1px var(--color-gray-200);
 	display: table-cell;
@@ -443,9 +444,9 @@ td:hover,
 	background-color: var(--color-gray-100);
 }
 
-th,
+thead th,
 .table-head .cell {
-	background-color: var(--color-gray-050);
+	background-color: var(--color-white);
 	padding: 0.5rem;
 }
 
@@ -508,6 +509,11 @@ button,
 	gap: 0.5rem;
 	margin: 0;
 	padding: var(--padding-y) var(--padding-x);
+}
+
+button > svg,
+.button > svg {
+	max-width: none;
 }
 
 button.quiet,
@@ -822,7 +828,7 @@ button.button-square,
 
 	border: solid 1px var(--color-gray-200);
 	border-radius: 0;
-	padding: 0.5rem 1rem;
+	padding: 0.5rem 0.75rem;
 }
 
 .segmented-button > .button:first-child {
@@ -1181,6 +1187,11 @@ label > input[type='checkbox'].toggle {
 	padding: var(--details-section-padding-y, 1rem) var(--details-section-padding-x, 1.5rem);
 }
 
+header.details-section + div.details-section,
+header.details-section + dialog + div.details-section {
+	padding-top: 0;
+}
+
 .details-section header {
 	align-items: start;
 	display: flex;
@@ -1530,7 +1541,7 @@ img.cover {
 
 .carousel {
 	display: grid;
-	gap: 1rem;
+	gap: 0.5rem 1rem;
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
@@ -1932,4 +1943,76 @@ img.cover {
 	height: 0.125rem;
 	pointer-events: none;
 	cursor: none;
+}
+
+@media print {
+	nav,
+	header[role='banner'],
+	.commands,
+	.bottom-actions-bar,
+	.is-visible-on-hover,
+	.print-button,
+	aside:has(> button),
+	.details-section:has(#properties-label),
+	.details-section--inline-help {
+		display: none !important;
+	}
+
+	.app-wrapper {
+		height: auto;
+		overflow: visible;
+	}
+
+	.main-with-header-wrapper {
+		overflow: visible;
+	}
+
+	main {
+		overflow: visible !important;
+	}
+
+	.content-details {
+		overflow: visible;
+		height: auto;
+	}
+
+	[contenteditable] {
+		outline: none !important;
+		border: none !important;
+	}
+
+	.details {
+		--details-padding-left: 0;
+		--details-padding-right: 0;
+
+		min-width: 100%;
+		padding: 1rem 0;
+	}
+
+	.splitpanes.splitpanes--vertical {
+		flex-direction: column;
+	}
+
+	.splitpanes .splitpanes__pane {
+		width: 100% !important;
+		height: auto !important;
+	}
+
+	.badge {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.splitpanes__splitter {
+		display: none !important;
+	}
+
+	.splitpanes__pane--wrap img,
+	img.cover {
+		max-width: 50% !important;
+	}
+
+	.card {
+		break-inside: avoid-page;
+	}
 }

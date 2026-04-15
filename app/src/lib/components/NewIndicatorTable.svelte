@@ -1,33 +1,70 @@
 <script lang="ts">
-	import { tick } from 'svelte';
-	import { _, number } from 'svelte-i18n';
-	import Plus from '~icons/knotdots/plus';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
+	import EditableTable from '$lib/components/EditableTable.svelte';
+	import type {
+		EditableTableDataRow,
+		EditableTableSection,
+		EditableTableValue
+	} from '$lib/components/EditableTable.svelte';
 	import {
 		type ActualDataContainer,
 		type Container,
+		type ContainerWithEffect,
 		containerOfType,
+		findAncestors,
+		findLeafObjectives,
+		findOverallObjective,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
+		isContainerWithEffect,
+		isContainerWithObjective,
+		isEffectContainer,
+		isObjectiveContainer,
+		isPartOf,
 		type NewContainer,
-		payloadTypes
+		overlayKey,
+		overlayURL,
+		payloadTypes,
+		predicates,
+		status
 	} from '$lib/models';
+	import { compareState, mayCreateContainer } from '$lib/stores';
+	import { statusColors } from '$lib/theme/models';
+	import { _ } from 'svelte-i18n';
 
 	interface Props {
 		container: IndicatorTemplateContainer;
 		editable?: boolean;
 		relatedContainers?: Container[];
+		comparisonContainers?: ActualDataContainer[];
+		onDataChanged?: () => void;
 	}
 
-	let { container, editable = false, relatedContainers = [] }: Props = $props();
+	let {
+		container,
+		editable = false,
+		relatedContainers = [],
+		comparisonContainers = [],
+		onDataChanged
+	}: Props = $props();
 
-	let tableContainer: HTMLDivElement;
+	const currentOrgUnitName = $derived(page.data.currentOrganizationalUnit?.payload.name);
 
-	let actualDataContainer = $derived(
+	const hasComparisonData = $derived(comparisonContainers.length > 0);
+
+	const measureStatuses = [
+		status.enum['status.done'],
+		status.enum['status.in_implementation'],
+		status.enum['status.in_planning'],
+		status.enum['status.idea']
+	];
+
+	let addingCustomActualData = $state(false);
+
+	let actualDataContainers = $derived(
 		relatedContainers
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
@@ -39,18 +76,372 @@
 	);
 
 	let customActualDataContainer = $derived(
-		actualDataContainer.find(({ payload }) => !payload.source)
+		actualDataContainers.find(({ payload }) => !payload.source)
 	);
 
 	let actualValuesByYear = $derived(
-		actualDataContainer.map(({ payload }) => new Map(payload.values ?? []))
+		actualDataContainers.map(({ payload }) => new Map(payload.values ?? []))
 	);
 
-	let years = $derived(
-		Array.from(new Set(actualValuesByYear.flatMap((m) => [...m.keys()]))).toSorted()
-	);
+	let overallObjectiveByYear = $derived.by(() => {
+		const overallObjective =
+			findOverallObjective(container, relatedContainers)?.payload.wantedValues.map(
+				([year, value]) => [year, (actualValuesByYear[0]?.get(year) ?? 0) + value]
+			) ?? [];
+		return new Map(overallObjective as Array<[number, number]>);
+	});
 
-	let addingCustomActualData = $state(false);
+	let objectivesByYear = $derived.by(() => {
+		const objectives = findLeafObjectives(relatedContainers.filter(isObjectiveContainer))
+			.flatMap(({ payload }) => payload.wantedValues)
+			.map(([year, value]) => ({ year, value }))
+			.reduce(
+				(accumulator, currentValue) => {
+					const groupIndex = accumulator.findIndex(({ year }) => currentValue.year == year);
+					return groupIndex > -1
+						? [
+								...accumulator.slice(0, groupIndex),
+								{
+									year: currentValue.year,
+									value: currentValue.value + accumulator[groupIndex].value
+								},
+								...accumulator.slice(groupIndex + 1)
+							]
+						: [
+								...accumulator,
+								{
+									year: currentValue.year,
+									value: currentValue.value
+								}
+							];
+				},
+				[] as Array<{ year: number; value: number }>
+			)
+			.map(({ year, value }) => [year, (actualValuesByYear[0]?.get(year) ?? 0) + value]);
+
+		return new Map(objectives as Array<[number, number]>);
+	});
+
+	let effectContainers = $derived(relatedContainers.filter(isEffectContainer));
+
+	let measureContainers = $derived(relatedContainers.filter(isContainerWithEffect));
+
+	let effects = $derived.by(() => {
+		return effectContainers
+			.map((c) => {
+				const measure = findAncestors(c, relatedContainers, [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-measure']
+				]).find(isContainerWithEffect);
+
+				if (!measure) {
+					return {
+						values: []
+					};
+				}
+
+				switch (measure.payload.status) {
+					case status.enum['status.done']:
+						return {
+							values: c.payload.achievedValues.map(([year, value]) => ({
+								year,
+								value,
+								status: measure.payload.status
+							}))
+						};
+					case status.enum['status.in_implementation']:
+						return {
+							values: c.payload.plannedValues.map(([year, value], index) => ({
+								year,
+								value: c.payload.achievedValues[index]
+									? value - c.payload.achievedValues[index][1]
+									: value,
+								status: measure.payload.status
+							}))
+						};
+					case status.enum['status.rejected']:
+						return {
+							values: c.payload.plannedValues.map(([year]) => ({
+								year,
+								value: 0,
+								status: measure.payload.status
+							}))
+						};
+					default:
+						return {
+							values: c.payload.plannedValues.map(([year, value]) => ({
+								year: year,
+								value: value,
+								status: measure.payload.status
+							}))
+						};
+				}
+			})
+			.flatMap(({ values }) => values)
+			.reduce(
+				(accumulator, currentValue) => {
+					const groupIndex = accumulator.findIndex(
+						({ status, year }) => currentValue.status == status && currentValue.year == year
+					);
+					return groupIndex > -1
+						? [
+								...accumulator.slice(0, groupIndex),
+								{
+									status: currentValue.status,
+									year: currentValue.year,
+									value: currentValue.value + accumulator[groupIndex].value
+								},
+								...accumulator.slice(groupIndex + 1)
+							]
+						: [
+								...accumulator,
+								{
+									status: currentValue.status,
+									year: currentValue.year,
+									value: currentValue.value
+								}
+							];
+				},
+				[] as Array<{ year: number; value: number; status: string }>
+			);
+	});
+
+	function valuesFromMap(valuesByYear: Map<number, number>): EditableTableValue[] {
+		return [...valuesByYear.entries()].map(([year, value]) => ({ year, value }));
+	}
+
+	function getMeasureValuesByYear(measure: ContainerWithEffect): EditableTableValue[] {
+		const valuesByYear = new Map(
+			effectContainers
+				.filter((c) =>
+					findAncestors(c, relatedContainers, [
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-measure']
+					]).some(({ guid }) => guid === measure.guid)
+				)
+				.map(({ payload }) => {
+					switch (measure.payload.status) {
+						case status.enum['status.done']:
+							return {
+								values: payload.achievedValues.map(([year, value]) => ({
+									year: year,
+									value: value
+								}))
+							};
+						case status.enum['status.in_implementation']:
+							return {
+								values: payload.plannedValues.map(([year, value], index) => ({
+									year: year,
+									value: payload.achievedValues[index]
+										? value - payload.achievedValues[index][1]
+										: value
+								}))
+							};
+						case status.enum['status.rejected']:
+							return {
+								values: payload.plannedValues.map(([year]) => ({
+									year,
+									value: 0
+								}))
+							};
+						default:
+							return {
+								values: payload.plannedValues.map(([year, value]) => ({
+									year: year,
+									value: value
+								}))
+							};
+					}
+				})
+				.flatMap(({ values }) => values)
+				.reduce(
+					(accumulator, currentValue) => {
+						const groupIndex = accumulator.findIndex(({ year }) => currentValue.year == year);
+						return groupIndex > -1
+							? [
+									...accumulator.slice(0, groupIndex),
+									{
+										year: currentValue.year,
+										value: currentValue.value + accumulator[groupIndex].value
+									},
+									...accumulator.slice(groupIndex + 1)
+								]
+							: [
+									...accumulator,
+									{
+										year: currentValue.year,
+										value: currentValue.value
+									}
+								];
+					},
+					[] as Array<{ year: number; value: number }>
+				)
+				.map(({ year, value }) => [year, value] as [number, number])
+		);
+
+		return valuesFromMap(valuesByYear);
+	}
+
+	let sections = $derived.by((): EditableTableSection[] => {
+		const actualDataRows: EditableTableSection['rows'] = actualDataContainers.map((actualData) => ({
+			id: actualData.guid,
+			container: actualData,
+			label: actualData.payload.source
+				? hasComparisonData
+					? (currentOrgUnitName ?? actualData.payload.title)
+					: actualData.payload.source
+				: $_('indicator.table.custom_actual_data'),
+
+			subtitle: hasComparisonData ? actualData.payload.source : undefined,
+			dotColor: actualData.payload.source ? 'var(--color-teal-600)' : 'var(--color-gray-200)',
+			editable: editable && !actualData.payload.source
+		}));
+
+		if (
+			editable &&
+			!customActualDataContainer &&
+			$mayCreateContainer(payloadTypes.enum.actual_data, container.managed_by)
+		) {
+			actualDataRows.push({
+				type: 'action',
+				id: 'add-custom-actual-data',
+				label: $_('indicator.table.add_custom_actual_data'),
+				onAction: addCustomActualData,
+				disabled: addingCustomActualData,
+				loading: addingCustomActualData
+			});
+		}
+
+		const comparisonRows: EditableTableSection['rows'] = comparisonContainers.map(
+			(comparisonContainer) => ({
+				id: comparisonContainer.guid,
+				container: comparisonContainer,
+				label:
+					$compareState.selectedMunicipalities.find(
+						(m) => m.guid === comparisonContainer.organizational_unit
+					)?.payload.name ?? comparisonContainer.payload.title,
+				subtitle: comparisonContainer.payload.source,
+				dotColor: `var(${
+					$compareState.colorAssignments[
+						comparisonContainer.organizational_unit ?? comparisonContainer.organization
+					] ?? 'gray-200'
+				})`,
+				editable: false
+			})
+		);
+
+		const goalRows: EditableTableDataRow[] = [
+			{
+				id: 'overall-objective',
+				container,
+				label: $_('indicator.table.overall_objective'),
+				dotColor: 'var(--color-gray-900)',
+				values: valuesFromMap(overallObjectiveByYear)
+			},
+			{
+				id: 'objective-total',
+				container,
+				label: $_('indicator.table.objectives'),
+				dotColor: 'var(--color-indigo-500)',
+				values: valuesFromMap(objectivesByYear)
+			},
+			...relatedContainers.filter(isContainerWithObjective).map((objectiveContainer) => ({
+				id: objectiveContainer.guid,
+				container: objectiveContainer,
+				label: objectiveContainer.payload.title,
+				href: overlayURL(page.url, overlayKey.enum.view, objectiveContainer.guid),
+				dotColor: 'var(--color-indigo-200)',
+				values: valuesFromMap(
+					new Map(
+						findLeafObjectives(
+							relatedContainers.filter(isObjectiveContainer).filter(isPartOf(objectiveContainer))
+						).flatMap(({ payload }) => payload.wantedValues)
+					)
+				),
+				indented: true
+			}))
+		];
+
+		const measureRows: EditableTableDataRow[] = measureStatuses.flatMap((currentStatus) => {
+			const colorName = statusColors.get(currentStatus) ?? 'gray';
+			const totalValuesByYear = new Map(
+				effects
+					.filter((effect) => effect.status === currentStatus)
+					.map(({ year, value }) => [year, value] as [number, number])
+			);
+
+			return [
+				{
+					id: `status-total-${currentStatus}`,
+					container,
+					label: $_(`indicator.table.${currentStatus}`),
+					dotColor: `var(--color-${colorName}-500)`,
+					values: valuesFromMap(totalValuesByYear)
+				},
+				...measureContainers
+					.filter(({ payload }) => payload.status === currentStatus)
+					.map((measure) => ({
+						id: measure.guid,
+						container: measure,
+						label: measure.payload.title,
+						href: overlayURL(page.url, overlayKey.enum.view, measure.guid),
+						dotColor: `var(--color-${colorName}-200)`,
+						values: getMeasureValuesByYear(measure),
+						indented: true
+					}))
+			];
+		});
+
+		return [
+			{
+				heading: $_('indicator.table.actual_data'),
+				rows: actualDataRows
+			},
+			...(hasComparisonData
+				? [
+						{
+							heading: $_('indicator.table.comparison_data'),
+							rows: comparisonRows
+						}
+					]
+				: [
+						{
+							heading: $_('goals'),
+							rows: goalRows
+						},
+						{
+							heading: $_('measures'),
+							rows: measureRows
+						}
+					])
+		];
+	});
+
+	function getEntries(containerToRead: ActualDataContainer): EditableTableValue[] {
+		return containerToRead.payload.values.map(([year, value]) => ({ year, value }));
+	}
+
+	function setEntry(containerToUpdate: ActualDataContainer, year: number, value: number | null) {
+		if (value === null) {
+			containerToUpdate.payload.values = containerToUpdate.payload.values.filter(
+				([entryYear]) => entryYear !== year
+			);
+			return;
+		}
+
+		const entryIndex = containerToUpdate.payload.values.findIndex(
+			([entryYear]) => entryYear === year
+		);
+		if (entryIndex > -1) {
+			containerToUpdate.payload.values[entryIndex] = [year, value];
+			return;
+		}
+
+		containerToUpdate.payload.values = [
+			...containerToUpdate.payload.values,
+			[year, value] as [number, number]
+		].toSorted((a, b) => a[0] - b[0]);
+	}
 
 	async function addCustomActualData() {
 		addingCustomActualData = true;
@@ -72,13 +463,13 @@
 
 		try {
 			const response = await saveContainer(newActualDataContainer);
-			if (response.ok) {
-				let _ = $state(await response.json());
-				actualDataContainer = [...actualDataContainer, _];
-			} else {
+			if (!response.ok) {
 				const error = await response.json();
 				alert(error.message);
+				return;
 			}
+
+			onDataChanged?.();
 		} catch (error: unknown) {
 			console.error(error);
 		} finally {
@@ -86,243 +477,31 @@
 		}
 	}
 
-	function updateCustomActualData(container: ActualDataContainer, year: number) {
-		let timer: ReturnType<typeof setTimeout>;
+	async function handleSave(
+		containerToSave: ActualDataContainer
+	): Promise<{ guid: string; revision: number }> {
+		const response = await saveContainer(containerToSave);
+		if (!response.ok) {
+			const error = await response.json();
+			throw new Error(error.message);
+		}
 
-		return async (event: Event) => {
-			event.stopPropagation();
-
-			const value = (event.currentTarget as HTMLInputElement).value.replace(',', '.');
-
-			clearTimeout(timer);
-
-			timer = setTimeout(async () => {
-				const index = container.payload.values.findIndex(([y]) => y == year);
-				if (index > -1) {
-					container.payload.values[index] = [year, parseFloat(value)];
-				} else {
-					container.payload.values.push([year, parseFloat(value)]);
-					container.payload.values = container.payload.values.toSorted((a, b) => a[0] - b[0]);
-				}
-
-				const response = await saveContainer(container);
-				if (response.ok) {
-					const updatedContainer = await response.json();
-					container.revision = updatedContainer.revision;
-					await invalidate('containers');
-				} else {
-					const error = await response.json();
-					alert(error.message);
-				}
-			}, 2000);
-		};
-	}
-
-	function append(container: ActualDataContainer) {
-		return async () => {
-			container.payload.values = [...container.payload.values, [Math.max(...years) + 1, 0]];
-			await tick();
-			tableContainer?.scrollTo({ left: tableContainer.scrollWidth, behavior: 'instant' });
-		};
-	}
-
-	function prepend(container: ActualDataContainer) {
-		return () => {
-			container.payload.values = [
-				[years.length ? Math.min(...years) - 1 : new Date().getFullYear(), 0],
-				...container.payload.values
-			];
-		};
+		const updatedContainer = await response.json();
+		await invalidate('containers');
+		return { guid: updatedContainer.guid, revision: updatedContainer.revision };
 	}
 </script>
 
-<div bind:this={tableContainer}>
-	<table>
-		<thead>
-			<tr>
-				<th>&nbsp;</th>
-				{#if editable && customActualDataContainer}
-					<th class="control control--prepend">
-						<button
-							{@attach tooltip($_('indicator.table.add_column'))}
-							class="action-button action-button--size-s action-button--padding-tight"
-							onclick={prepend(customActualDataContainer)}
-							type="button"
-						>
-							<Plus />
-						</button>
-					</th>
-				{/if}
-
-				{#each years as year (year)}
-					<th class="data">{year}</th>
-				{/each}
-
-				{#if editable && customActualDataContainer && years.length > 0}
-					<th class="control">
-						<button
-							{@attach tooltip($_('indicator.table.add_column'))}
-							class="action-button action-button--size-s action-button--padding-tight"
-							onclick={append(customActualDataContainer)}
-							type="button"
-						>
-							<Plus />
-						</button>
-					</th>
-				{/if}
-			</tr>
-		</thead>
-
-		<tbody>
-			<tr>
-				<th
-					colspan={editable
-						? years.length + 1 + (customActualDataContainer ? Math.max(years.length + 1, 2) : 0)
-						: years.length + 1}
-					scope="col"
-				>
-					{$_('indicator.table.actual_data')}
-				</th>
-			</tr>
-
-			{#each actualValuesByYear as valuesByYear, i (i)}
-				<tr>
-					<th scope="row">
-						{#if actualDataContainer[i].payload.source}
-							{actualDataContainer[i].payload.source}
-						{:else}
-							{$_('indicator.table.custom_actual_data')}
-						{/if}
-					</th>
-
-					{#if editable && customActualDataContainer}
-						<td class="control control--prepend"></td>
-					{/if}
-
-					{#each years as year (year)}
-						<td class="data">
-							{#if editable && !actualDataContainer[i].payload.source}
-								<input
-									inputmode="decimal"
-									oninput={updateCustomActualData(actualDataContainer[i], year)}
-									type="text"
-									value={valuesByYear.has(year)
-										? $number(valuesByYear.get(year)!, { style: 'decimal', useGrouping: false })
-										: ''}
-								/>
-							{:else}
-								{valuesByYear.has(year)
-									? $number(valuesByYear.get(year)!, { style: 'decimal', useGrouping: false })
-									: ''}
-							{/if}
-						</td>
-					{/each}
-
-					{#if editable && customActualDataContainer && years.length > 0}
-						<td></td>
-					{/if}
-				</tr>
-			{/each}
-
-			{#if editable && !customActualDataContainer}
-				<tr>
-					<td colspan={years.length + 1}>
-						<button disabled={addingCustomActualData} onclick={addCustomActualData} type="button">
-							{#if addingCustomActualData}
-								<span class="loader"></span>
-							{:else}
-								<Plus />
-								{$_('indicator.table.add_custom_actual_data')}
-							{/if}
-						</button>
-					</td>
-				</tr>
-			{/if}
-		</tbody>
-	</table>
-</div>
-
-<style>
-	button {
-		white-space: nowrap;
-	}
-
-	div {
-		overflow-x: scroll;
-		padding: 0 0 1px;
-	}
-
-	table {
-		border: solid 1px var(--color-gray-200);
-		width: fit-content;
-	}
-
-	thead {
-		background-color: var(--color-gray-100);
-	}
-
-	td,
-	th {
-		border: solid 1px var(--color-gray-200);
-		padding: 0.75rem 0.5rem;
-	}
-
-	th {
-		white-space: nowrap;
-	}
-
-	thead th {
-		border-top: none;
-		color: var(--color-gray-700);
-		font-weight: 400;
-		padding: 0.5rem;
-	}
-
-	tbody th[scope='col'] {
-		background-color: var(--color-gray-025);
-		color: var(--color-gray-600);
-		font-weight: 500;
-	}
-
-	tbody th[scope='row'] {
-		background-color: var(--color-white);
-		color: var(--color-gray-800);
-		font-weight: 500;
-	}
-
-	tbody td {
-		background: var(--color-white);
-	}
-
-	td:has(input) {
-		padding: 0;
-	}
-
-	input {
-		background-color: transparent;
-		border: none;
-		border-radius: 0;
-		display: block;
-		field-sizing: content;
-		line-height: 1.5;
-		padding: 0.75rem 0.5rem;
-		text-align: right;
-	}
-
-	.control {
-		min-width: 2.5rem;
-		width: 2.5rem;
-	}
-
-	.control--prepend {
-		border-left: none;
-	}
-
-	th:has(+ .control--prepend) {
-		border-right: none;
-	}
-
-	.data {
-		text-align: right;
-	}
-</style>
+<EditableTable
+	title={container.payload.title}
+	titleUnit={$_(container.payload.unit)}
+	columnLabel={$_('table.data_object')}
+	yearLabel={$_('table.in_years')}
+	addYearLabel={$_('table.add_column_right')}
+	variant="teal"
+	{sections}
+	getEntries={(containerToRead) => getEntries(containerToRead as ActualDataContainer)}
+	setEntry={(containerToUpdate, year, value) =>
+		setEntry(containerToUpdate as ActualDataContainer, year, value)}
+	onSave={(containerToSave) => handleSave(containerToSave as ActualDataContainer)}
+/>

@@ -1,5 +1,6 @@
 import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
 	audience,
 	computeFacetCount,
@@ -20,7 +21,6 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/server/categoryOptions';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/programs/$types';
 
 export default (async function load({ depends, locals, parent, url }) {

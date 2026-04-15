@@ -145,7 +145,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		return json({ errors: [unwrapFunctionStore(_)('import.error.missing')] }, { status: 400 });
 	}
 
-	if (!(csv instanceof File) || csv.type !== 'text/csv') {
+	if (!(csv instanceof File) || (!csv.name.endsWith('.csv') && csv.type !== 'text/csv')) {
 		return json(
 			{ errors: [unwrapFunctionStore(_)('import.error.unsupported_media_type')] },
 			{ status: 400 }

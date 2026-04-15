@@ -4,15 +4,32 @@ import {
 	type OrganizationalUnitContainer,
 	computeFacetCount,
 	administrativeTypes,
-	fromCounts
+	fromCounts,
+	payloadTypes
 } from '$lib/models';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
 import { createFeatureDecisions } from '$lib/features';
+import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent, url }) => {
 	let containers: OrganizationalUnitContainer[];
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const {
+		currentOrganization,
+		currentOrganizationalUnit,
+		categoryContext: rawCategoryContext
+	} = await parent();
+
+	const features = createFeatureDecisions(locals.features);
+
+	const categoryContext = rawCategoryContext
+		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.organizational_unit])
+		: null;
+
+	const customCategories = features.useCustomCategories()
+		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+		: {};
 
 	if (currentOrganization.payload.default) {
 		error(404, 'No organizational units found');
@@ -24,6 +41,7 @@ export const load = (async ({ locals, parent, url }) => {
 				include: {
 					administrativeType: url.searchParams.getAll('administrativeType'),
 					cityAndMunicipalityTypeBBSR: url.searchParams.getAll('cityAndMunicipalityTypeBBSR'),
+					customCategories,
 					federalState: url.searchParams.getAll('federalState'),
 					level: currentOrganizationalUnit.payload.level + 1,
 					organization: currentOrganization.guid,
@@ -40,6 +58,7 @@ export const load = (async ({ locals, parent, url }) => {
 				include: {
 					administrativeType: url.searchParams.getAll('administrativeType'),
 					cityAndMunicipalityTypeBBSR: url.searchParams.getAll('cityAndMunicipalityTypeBBSR'),
+					customCategories,
 					federalState: url.searchParams.getAll('federalState'),
 					level: 1,
 					organization: currentOrganization.guid,
@@ -50,14 +69,56 @@ export const load = (async ({ locals, parent, url }) => {
 	}
 
 	const filtered = filterVisible(containers, locals.user);
-
-	const features = createFeatureDecisions(locals.features);
 	const _facets = new Map<string, Map<string, number>>([
-		['administrativeType', fromCounts(administrativeTypes.options as string[])]
+		['administrativeType', fromCounts(administrativeTypes.options as string[])],
+		[
+			'cityAndMunicipalityTypeBBSR',
+			fromCounts([
+				'Großstadt',
+				'Mittelstadt',
+				'Größere Kleinstadt',
+				'Kleine Kleinstadt',
+				'Landgemeinde'
+			])
+		],
+		[
+			'federalState',
+			fromCounts([
+				'Baden-Württemberg',
+				'Bayern',
+				'Berlin',
+				'Brandenburg',
+				'Bremen',
+				'Hamburg',
+				'Hessen',
+				'Mecklenburg-Vorpommern',
+				'Niedersachsen',
+				'Nordrhein-Westfalen',
+				'Rheinland-Pfalz',
+				'Saarland',
+				'Sachsen',
+				'Sachsen-Anhalt',
+				'Schleswig-Holstein',
+				'Thüringen'
+			])
+		]
 	]);
+
+	if (features.useCustomCategories() && categoryContext) {
+		const customFacets = buildCategoryFacetsWithCounts(categoryContext.options);
+		for (const [key, values] of customFacets.entries()) {
+			_facets.set(key, values);
+		}
+	}
+
 	const facets = computeFacetCount(_facets, filtered, {
 		useCategoryPayload: features.useCustomCategories()
 	});
 
-	return { containers: filtered, facets };
+	return {
+		containers: filtered,
+		facets,
+		facetLabels: categoryContext?.labels,
+		categoryOptions: categoryContext?.options ?? null
+	};
 }) satisfies PageServerLoad;

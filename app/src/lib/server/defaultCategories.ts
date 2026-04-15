@@ -1,6 +1,6 @@
 import { Roarr as log } from 'roarr';
 import type { DatabasePool } from 'slonik';
-import de from '$lib/locales/de.json' assert { type: 'json' };
+import de from '$lib/locales/de.json' with { type: 'json' };
 import {
 	audience,
 	containerOfType,
