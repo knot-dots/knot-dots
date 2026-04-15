@@ -178,9 +178,11 @@ import {
 export {
 	mapPayload,
 	administrativeAreaBasicDataPayload,
+	categoryPayload,
 	organizationalUnitPayload,
 	indicatorTemplatePayload,
-	actualDataPayload
+	actualDataPayload,
+	termPayload
 };
 
 export type {

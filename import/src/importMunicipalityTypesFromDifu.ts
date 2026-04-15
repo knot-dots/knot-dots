@@ -3,8 +3,8 @@ import xlsx from 'node-xlsx';
 import * as z from 'zod';
 import {
 	categoryContainer,
+	categoryPayload,
 	CategoryContainer,
-	CategoryPayload,
 	createContainer,
 	createRelation,
 	getCategoryContainer,
@@ -14,10 +14,11 @@ import {
 	OrganizationalUnitContainer,
 	OrganizationalUnitPayload,
 	termContainer,
+	termPayload,
 	TermContainer,
-	TermPayload,
 	updateContainer
 } from './db.ts';
+import assert from 'node:assert';
 
 const categoryKey = 'kommunaltyp';
 const categoryTitle = 'Kommunaltyp';
@@ -204,12 +205,12 @@ async function ensureCategory(
 	stats.categoryUpdated = true;
 	return (await updateContainer({
 		...existing,
-		payload: {
+		payload: categoryPayload.parse({
 			...existing.payload,
 			key: categoryKey,
 			objectTypes: ['organizational_unit'],
 			title: categoryTitle
-		}
+		})
 	})(tx)) as CategoryContainer;
 }
 
@@ -259,7 +260,7 @@ async function ensureTerm(
 
 	const updated = (await updateContainer({
 		...existing,
-		payload: { ...existing.payload, title: code, value: code }
+		payload: termPayload.parse({ ...existing.payload, title: code, value: code })
 	})(tx)) as TermContainer;
 	termsByCode.set(code, updated);
 	stats.termsUpdated++;
@@ -278,6 +279,15 @@ function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[
 			)
 		}
 	};
+}
+
+function isSame<T>(a: T, b: T) {
+	try {
+		assert.deepEqual(a, b);
+		return true;
+	} catch (_) {
+		return false;
+	}
 }
 
 (async function main() {
@@ -357,7 +367,7 @@ function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[
 
 				stats.assignmentsMatched++;
 
-				if (!nextPayload) {
+				if (isSame(organizationalUnit.payload, nextPayload)) {
 					stats.assignmentsUnchanged++;
 					continue;
 				}
