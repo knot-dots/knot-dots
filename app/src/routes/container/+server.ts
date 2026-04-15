@@ -43,7 +43,6 @@ import {
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getManyContainers,
-	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
 import type { User } from '$lib/stores';
@@ -502,9 +501,7 @@ export const GET = (async ({ locals, url }) => {
 		user: locals.user
 	});
 
-	let containers: AnyContainer[];
-
-	containers = await locals.pool.connect(
+	const containers = await locals.pool.connect(
 		getManyContainers(
 			parseResult.data.organization,
 			{
@@ -522,30 +519,11 @@ export const GET = (async ({ locals, url }) => {
 				topics: parseResult.data.topic,
 				type: parseResult.data.payloadType
 			},
-			parseResult.data.sort[0]
+			parseResult.data.sort[0],
+			parseResult.data.limit,
+			parseResult.data.offset
 		)
 	);
-
-	if (
-		parseResult.data.payloadType.includes(payloadTypes.enum.organizational_unit) ||
-		parseResult.data.guid.length > 0
-	) {
-		const orgs = await locals.pool.connect(
-			getManyOrganizationalUnitContainers({
-				include: {
-					organization: parseResult.data.organization[0],
-					administrativeType: parseResult.data.administrativeType,
-					customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
-					federalState: parseResult.data.federalState,
-					guid: parseResult.data.guid,
-					terms: parseResult.data.terms[0]
-				},
-				...(parseResult.data.limit && { limit: parseResult.data.limit }),
-				...(parseResult.data.offset && { offset: parseResult.data.offset })
-			})
-		);
-		containers = [...containers, ...orgs];
-	}
 
 	return json(filterVisible(containers, locals.user));
 }) satisfies RequestHandler;
