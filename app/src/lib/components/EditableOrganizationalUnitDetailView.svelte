@@ -3,12 +3,15 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
+	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
+	import EditableCover from '$lib/components/EditableCover.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
@@ -19,19 +22,18 @@
 		containerOfType,
 		createCopyOf,
 		getOrganizationURL,
+		helpSlug,
+		isOrganizationalUnitContainer,
 		type NewContainer,
 		newContainer,
 		type OrganizationalUnitContainer,
-		isOrganizationalUnitContainer,
 		organizationalUnitType,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import EditableCover from '$lib/components/EditableCover.svelte';
-	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
-	import { env } from '$env/dynamic/public';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		container: OrganizationalUnitContainer;
@@ -245,6 +247,8 @@
 			<Sections bind:container {relatedContainers} />
 		</div>
 	</article>
+
+	<Help slug={helpSlug.enum['organizational-unit-view']} />
 {/snippet}
 
 {@render layout(header, main)}
