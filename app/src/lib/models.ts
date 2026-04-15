@@ -1324,6 +1324,9 @@ const taskPayload = measureMonitoringBasePayload
 	.extend({
 		assignee: z.array(z.string().uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
+		category: z
+			.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+			.default({}),
 		effort: z.string().optional(),
 		fulfillmentDate: z.string().date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),

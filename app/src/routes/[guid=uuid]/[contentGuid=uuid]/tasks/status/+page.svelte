@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import {
 		computeFacetCount,
 		isGoalContainer,
@@ -12,6 +14,7 @@
 	import Tasks from '$lib/components/Tasks.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import { createFeatureDecisions } from '$lib/features';
 	import { lastCreatedContainer } from '$lib/stores';
 
 	let { data }: PageProps = $props();
@@ -20,20 +23,39 @@
 
 	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
+	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
+	let categoryContext = $derived(page.data.categoryContext);
+	let useCustomCategories = $derived(featureDecisions.useCustomCategories());
+
 	let facets = $derived(
-		computeFacetCount(
-			new Map([
-				['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-				['assignee', new Map()]
-			]),
-			containers
-		)
+		useCustomCategories && categoryContext
+			? computeFacetCount(
+					new Map([
+						...buildCategoryFacetsWithCounts(categoryContext.options),
+						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+						['assignee', new Map()]
+					]),
+					containers,
+					{ useCategoryPayload: true }
+				)
+			: computeFacetCount(
+					new Map([
+						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+						['assignee', new Map()]
+					]),
+					containers
+				)
 	);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header
+			{facets}
+			facetLabels={useCustomCategories ? categoryContext?.labels : undefined}
+			categoryOptions={useCustomCategories ? categoryContext?.options : null}
+			search
+		/>
 	{/snippet}
 
 	{#snippet main()}
