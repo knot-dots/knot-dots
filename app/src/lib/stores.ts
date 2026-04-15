@@ -100,7 +100,7 @@ export const user = derived(
 
 export const ability = derived(user, defineAbilityFor);
 
-export const dragged = writable<Container | undefined>();
+export const dragged = writable<AnyContainer | undefined>();
 
 export const mayCreateContainer = derived([page, ability], (values) => {
 	return (payloadType: PayloadType, managedBy: string): boolean => {

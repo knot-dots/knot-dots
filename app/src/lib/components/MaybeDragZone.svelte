@@ -1,16 +1,20 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { dndzone, SHADOW_ITEM_MARKER_PROPERTY_NAME, TRIGGERS } from 'svelte-dnd-action';
-	import type { DndEvent, Item } from 'svelte-dnd-action';
+	import {
+		type DndEvent,
+		dndzone,
+		type Item,
+		SHADOW_ITEM_MARKER_PROPERTY_NAME,
+		TRIGGERS
+	} from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
-	import { overlayKey } from '$lib/models';
-	import type { Container } from '$lib/models';
 	import Card from '$lib/components/Card.svelte';
+	import { type AnyContainer, overlayKey } from '$lib/models';
 	import { ability, dragged, overlay } from '$lib/stores';
 
 	interface Props {
-		containers: Container[];
-		itemSnippet?: Snippet<[Container]>;
+		containers: AnyContainer[];
+		itemSnippet?: Snippet<[AnyContainer]>;
 	}
 
 	let { containers, itemSnippet }: Props = $props();
@@ -19,7 +23,9 @@
 
 	let shouldIgnoreDndEvents = false;
 
-	function handleDndConsider(event: CustomEvent<DndEvent<{ guid: string; container: Container }>>) {
+	function handleDndConsider(
+		event: CustomEvent<DndEvent<{ guid: string; container: AnyContainer }>>
+	) {
 		const { trigger, id } = event.detail.info;
 		if (trigger === TRIGGERS.DRAG_STARTED) {
 			const idx = items.findIndex((item) => item.guid === id);
@@ -39,7 +45,9 @@
 		}
 	}
 
-	function handleDndFinalize(event: CustomEvent<DndEvent<{ guid: string; container: Container }>>) {
+	function handleDndFinalize(
+		event: CustomEvent<DndEvent<{ guid: string; container: AnyContainer }>>
+	) {
 		if (!shouldIgnoreDndEvents) {
 			items = event.detail.items;
 		} else {

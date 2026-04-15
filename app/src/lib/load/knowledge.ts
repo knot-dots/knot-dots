@@ -2,6 +2,7 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	type AnyContainer,
 	audience,
 	computeFacetCount,
 	fromCounts,
@@ -9,8 +10,7 @@ import {
 	policyFieldBNK,
 	predicates,
 	sustainableDevelopmentGoals,
-	topics,
-	type Container
+	topics
 } from '$lib/models';
 import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
@@ -20,7 +20,7 @@ import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
-	let containers: Container[];
+	let containers: AnyContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
 	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);

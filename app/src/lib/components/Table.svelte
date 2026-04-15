@@ -4,13 +4,13 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableRow from '$lib/components/EditableRow.svelte';
-	import type { ActualDataContainer, Container } from '$lib/models';
+	import type { ActualDataContainer, AnyContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		categoryOptions?: CategoryOptions;
 		columns: Array<{ heading: string; key: string }>;
-		rows: Container[];
+		rows: AnyContainer[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
@@ -22,7 +22,7 @@
 		)
 	);
 
-	function ensureAllCategoriesArePresent(container: Container): Container {
+	function ensureAllCategoriesArePresent(container: AnyContainer): AnyContainer {
 		if ('category' in container.payload) {
 			return {
 				...container,
@@ -36,8 +36,7 @@
 		}
 	}
 
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let rows = $state([] as Container[]);
+	let rows = $state([] as AnyContainer[]);
 
 	$effect(() => {
 		if (categoryOptions) {

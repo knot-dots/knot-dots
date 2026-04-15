@@ -5,7 +5,6 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		type AnyContainer,
-		type Container,
 		containerOfType,
 		isProgramContainer,
 		isTaskContainer,
@@ -17,7 +16,7 @@
 
 	interface Props {
 		container: AnyContainer;
-		relatedContainers: Container[];
+		relatedContainers: AnyContainer[];
 	}
 
 	let { container, relatedContainers }: Props = $props();

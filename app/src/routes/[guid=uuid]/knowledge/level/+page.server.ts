@@ -12,7 +12,8 @@ import {
 	policyFieldBNK,
 	programTypes,
 	sustainableDevelopmentGoals,
-	topics
+	topics,
+	type AnyContainer
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -23,7 +24,7 @@ import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
-function isRelatedToSome(containers: Container[]) {
+function isRelatedToSome(containers: AnyContainer[]) {
 	return ({ relation }: Container) =>
 		relation.some(
 			({ predicate, subject }) =>

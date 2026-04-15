@@ -4,13 +4,13 @@
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import type { AnyContainer, Container } from '$lib/models';
+	import type { AnyContainer } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: AnyContainer;
-		relatedContainers: Container[];
+		relatedContainers: AnyContainer[];
 	}
 
 	let { container, relatedContainers }: Props = $props();

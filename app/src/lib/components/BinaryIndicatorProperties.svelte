@@ -15,13 +15,13 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { type AnyContainer, type BinaryIndicatorContainer, type Container } from '$lib/models';
+	import { type AnyContainer, type BinaryIndicatorContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: BinaryIndicatorContainer;
 		editable?: boolean;
-		relatedContainers: Container[];
+		relatedContainers: AnyContainer[];
 		revisions: AnyContainer[];
 	}
 
