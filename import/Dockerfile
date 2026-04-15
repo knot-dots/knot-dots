@@ -4,7 +4,7 @@ COPY package*.json ./
 COPY app/package.json ./app/
 COPY import/package.json ./import/
 COPY shared/package.json ./shared/
-RUN npm clean-install --silent --workspace import --workspace shared
+RUN npm clean-install --silent --workspace app --workspace import --workspace shared
 COPY app/src/lib/models.ts ./app/src/lib/models.ts
 COPY import/src ./import/src
 COPY shared/src ./shared/src
