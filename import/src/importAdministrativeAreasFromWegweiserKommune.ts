@@ -18,8 +18,6 @@ import {
 	mergeDeep,
 	organizationalUnitContainer,
 	organizationalUnitPayload,
-	OrganizationalUnitPayload,
-	OrganizationalUnitContainer,
 	updateContainer
 } from './db.ts';
 import assert from 'node:assert';
@@ -252,6 +250,7 @@ function isSame<T>(a: T, b: T) {
 								name: region.title,
 								officialMunicipalityKey: region.official_municipality_key,
 								officialRegionalCode: region.official_regional_code,
+								organizationalUnitType: 'organizational_unit_type.administrative_area',
 								type: 'organizational_unit'
 							},
 							realm,
@@ -260,7 +259,7 @@ function isSame<T>(a: T, b: T) {
 
 						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
 							// Find or create the org unit container.
-							const foundOrganizationalUnitContainer = (await getContainer({
+							const foundOrganizationalUnitContainer = await getContainer({
 								organization,
 								organizationalUnit: null,
 								payload: {
@@ -269,33 +268,33 @@ function isSame<T>(a: T, b: T) {
 									organizationalUnitType: 'organizational_unit_type.administrative_area',
 									type: 'organizational_unit'
 								}
-							})(tx)) as OrganizationalUnitContainer;
+							})(tx);
 
 							let ouContainer;
 
 							if (!foundOrganizationalUnitContainer) {
+								// Create new container if not found
 								ouContainer = await createContainer(newOrganizationalUnitContainer)(tx);
 								console.log(`Created ${region.title} (${ouContainer.guid})`);
-							} else if (
-								!isSame(
-									foundOrganizationalUnitContainer.payload,
-									newOrganizationalUnitContainer.payload
-								)
-							) {
+							} else {
+								// Otherwise, merge and update if there are changes
 								const mergedPayload = organizationalUnitPayload.parse(
 									mergeDeep(
 										foundOrganizationalUnitContainer.payload,
 										newOrganizationalUnitContainer.payload
 									)
 								);
-								ouContainer = await updateContainer({
-									...foundOrganizationalUnitContainer,
-									payload: mergedPayload
-								})(tx);
-								console.log(`Updated ${region.title} (${ouContainer.guid})`);
-							} else {
-								ouContainer = foundOrganizationalUnitContainer;
-								console.log(`Ignored ${region.title} (${ouContainer.guid})`);
+
+								if (!isSame(foundOrganizationalUnitContainer.payload, mergedPayload)) {
+									ouContainer = await updateContainer({
+										...foundOrganizationalUnitContainer,
+										payload: mergedPayload
+									})(tx);
+									console.log(`Updated ${region.title} (${ouContainer.guid})`);
+								} else {
+									ouContainer = foundOrganizationalUnitContainer;
+									console.log(`Ignored ${region.title} (${ouContainer.guid})`);
+								}
 							}
 
 							// Find or create sub-containers.

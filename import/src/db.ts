@@ -562,7 +562,9 @@ export const mergeDeep = (
 	if (isObject(target) && isObject(source)) {
 		const result: Record<string, unknown> = { ...target };
 		for (const key in source) {
-			if (isObject(source[key])) {
+			if (Array.isArray(source[key]) && Array.isArray(target[key])) {
+				result[key] = [...new Set([...(target[key] as unknown[]), ...(source[key] as unknown[])])];
+			} else if (isObject(source[key])) {
 				result[key] = mergeDeep(isObject(target[key]) ? target[key] : {}, source[key]);
 			} else {
 				result[key] = source[key];
