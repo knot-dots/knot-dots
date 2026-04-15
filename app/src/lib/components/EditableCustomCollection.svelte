@@ -302,14 +302,10 @@
 	<ul class="inline-actions" class:is-visible-on-hover={editable}>
 		{#if hasConfiguredContent && isRuleBasedCollection}
 			<li>
-				<button
-					class="button button-xs"
-					onclick={() => (window.location.href = allCatalogHref)}
-					type="button"
-				>
+				<a class="button button-xs" href={allCatalogHref}>
 					<ArrowRight />
 					{$_('custom_collection.show_all')}
-				</button>
+				</a>
 			</li>
 		{/if}
 
