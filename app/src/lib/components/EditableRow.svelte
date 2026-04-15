@@ -369,8 +369,8 @@
 				<CustomCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
+					offset={[editable ? -41 : -21, -41]}
 					options={categoryOptions?.[col] ?? []}
-					showSelectedIcons={false}
 					bind:value={container.payload.category[col]}
 				/>
 			{/if}

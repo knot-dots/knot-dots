@@ -14,12 +14,11 @@
 
 	interface Props {
 		option: Option;
-		optionIndex: number;
 		value: string[];
 		iconURL: (origin?: string) => string | undefined;
 	}
 
-	let { option, optionIndex, value = $bindable([] as string[]), iconURL }: Props = $props();
+	let { option, value = $bindable([] as string[]), iconURL }: Props = $props();
 
 	const disclosure = createDisclosure({ label: $_('filter.show_suboptions') });
 
@@ -42,22 +41,19 @@
 <div class="option" role="presentation">
 	<label>
 		<input
-			data-option-index={optionIndex}
-			data-role="option-checkbox"
 			aria-label={hasSelectedSubOptions
 				? `${option.label}, ${selectedSubCount} Unterziele ausgewählt`
 				: option.label}
 			type="checkbox"
 			value={option.value}
 			checked={value.includes(option.value)}
-			onchange={(event) =>
-				toggleSelection(option.value, (event.currentTarget as HTMLInputElement).checked)}
+			onchange={(event) => toggleSelection(option.value, event.currentTarget.checked)}
 		/>
 		<span class="option-label">
 			{#if iconSrc}
 				<img alt="" class="option-icon" src={iconSrc} />
 			{/if}
-			<span class="truncated">{option.label}</span>
+			<span class="badge badge--gray truncated">{option.label}</span>
 			{#if option.count !== undefined}
 				<span class="option-count">({option.count})</span>
 			{/if}
@@ -67,8 +63,6 @@
 		<button
 			type="button"
 			class="action-button action-button--size-l suboption-button"
-			data-option-index={optionIndex}
-			data-role="option-toggle"
 			use:disclosure.button
 		>
 			<span
@@ -86,24 +80,20 @@
 </div>
 {#if option.subOptions?.length && $disclosure.expanded}
 	<div class="suboptions-list" role="presentation" use:disclosure.panel>
-		{#each option.subOptions as sub, subIndex (sub.value)}
+		{#each option.subOptions as sub (sub.value)}
 			{@const subIcon = iconURL(sub.icon)}
 			<label class="option option--suboption">
 				<input
-					data-option-index={optionIndex}
-					data-sub-index={subIndex}
-					data-role="suboption-checkbox"
 					type="checkbox"
 					value={sub.value}
 					checked={value.includes(sub.value)}
-					onchange={(event) =>
-						toggleSelection(sub.value, (event.currentTarget as HTMLInputElement).checked)}
+					onchange={(event) => toggleSelection(sub.value, event.currentTarget.checked)}
 				/>
 				<span class="option-label">
 					{#if subIcon}
 						<img alt="" class="option-icon" src={subIcon} />
 					{/if}
-					<span class="truncated">{sub.label}</span>
+					<span class="badge badge--gray truncated">{sub.label}</span>
 					{#if sub.count !== undefined}
 						<span class="option-count">({sub.count})</span>
 					{/if}
