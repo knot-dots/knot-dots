@@ -21,10 +21,7 @@ test.describe('Optimistic frontend updates with Elasticsearch', () => {
 		await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 	});
 
-	test('created goal appears immediately on the board', async ({
-		dotsBoard,
-		testOrganization
-	}) => {
+	test('created goal appears immediately on the board', async ({ dotsBoard, testOrganization }) => {
 		await dotsBoard.goto(`/${testOrganization.guid}`);
 		await dotsBoard.header.editModeToggle.check();
 
@@ -43,7 +40,6 @@ test.describe('Optimistic frontend updates with Elasticsearch', () => {
 		// The goal card should be visible immediately (optimistic update),
 		// even before Elasticsearch has indexed it.
 		await expect(dotsBoard.card(goalTitle)).toBeVisible();
-
 	});
 
 	test('updated title is reflected immediately on the board', async ({
@@ -65,7 +61,5 @@ test.describe('Optimistic frontend updates with Elasticsearch', () => {
 		// Close the overlay and verify the updated title on the board
 		await dotsBoard.overlay.closeButton.click();
 		await expect(dotsBoard.card(updatedTitle)).toBeVisible();
-
 	});
-
 });
