@@ -37,7 +37,7 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	const handleSubmit = $derived(autoSave(container, 2000, container.payload.type));
+	const handleSubmit = $derived(autoSave(container, 2000));
 </script>
 
 {#snippet header()}
