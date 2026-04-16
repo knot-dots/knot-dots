@@ -359,16 +359,11 @@
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
-					<NewIndicatorCard
-						--height="100%"
-						container={item}
-						{relatedContainers}
-						{comparisonDataMap}
-					/>
+					<NewIndicatorCard container={item} {relatedContainers} {comparisonDataMap} />
 				{:else if isOrganizationalUnitContainer(item)}
-					<OrganizationCard --height="100%" container={item} />
+					<OrganizationCard container={item} />
 				{:else}
-					<Card --height="100%" container={item} />
+					<Card container={item} />
 				{/if}
 			{/snippet}
 		</Carousel>

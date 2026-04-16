@@ -54,7 +54,7 @@
 		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		display: grid;
-		height: 100%;
+		grid-row: 1 / 4;
 		min-height: 6rem;
 		justify-content: center;
 	}
