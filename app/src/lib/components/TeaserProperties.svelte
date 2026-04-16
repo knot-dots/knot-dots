@@ -1,25 +1,15 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableCardStyle from '$lib/components/EditableCardStyle.svelte';
-	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
+	import EditableLinkStyle from './EditableLinkStyle.svelte';
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type TeaserContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import EditableLinkStyle from './EditableLinkStyle.svelte';
-
-	type LegacyPayload = {
-		category: string[];
-		topic: string[];
-		policyFieldBNK: string[];
-		audience: string[];
-	};
+	import EditableAudience from '$lib/components/EditableAudience.svelte';
 
 	interface Props {
 		container: TeaserContainer;
@@ -28,24 +18,6 @@
 	}
 
 	let { container = $bindable(), editable = false, revisions }: Props = $props();
-	let legacyPayload = $state<LegacyPayload | null>(null);
-
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
-
-	$effect(() => {
-		if (featureDecisions.useCustomCategories()) {
-			legacyPayload = null;
-			return;
-		}
-
-		const payload = container.payload as Partial<LegacyPayload>;
-		legacyPayload = {
-			category: payload.category ?? [],
-			topic: payload.topic ?? [],
-			policyFieldBNK: payload.policyFieldBNK ?? [],
-			audience: payload.audience ?? []
-		};
-	});
 </script>
 
 <PropertyGrid>
@@ -84,11 +56,7 @@
 			bind:value={container.payload.linkCaption}
 		/>
 
-		{#if featureDecisions.useCustomCategories()}
-			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{:else if legacyPayload}
-			<EditableAudience {editable} bind:value={legacyPayload.audience} />
-		{/if}
+		<EditableAudience {editable} bind:value={container.payload.audience} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />

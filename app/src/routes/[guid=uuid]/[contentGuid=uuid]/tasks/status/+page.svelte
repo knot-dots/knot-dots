@@ -25,13 +25,14 @@
 
 	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 	let categoryContext = $derived(page.data.categoryContext);
-	let useCustomCategories = $derived(featureDecisions.useCustomCategories() && !!categoryContext);
+	let useCustomCategories = $derived(featureDecisions.useCustomCategories());
 
 	let facets = $derived(
-		useCustomCategories
+		useCustomCategories && categoryContext
 			? computeFacetCount(
 					new Map([
-						...buildCategoryFacetsWithCounts(categoryContext!.options),
+						...buildCategoryFacetsWithCounts(categoryContext.options),
+						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
 						['assignee', new Map()]
 					]),
 					containers,
@@ -51,8 +52,8 @@
 	{#snippet header()}
 		<Header
 			{facets}
-			facetLabels={useCustomCategories ? categoryContext!.labels : undefined}
-			categoryOptions={useCustomCategories ? categoryContext!.options : null}
+		facetLabels={useCustomCategories ? categoryContext?.labels : undefined}
+		categoryOptions={useCustomCategories ? categoryContext?.options : null}
 			search
 		/>
 	{/snippet}

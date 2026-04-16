@@ -35,7 +35,7 @@
 	let embedCode = $derived.by(() => {
 		const url = typeof window === 'undefined' ? embedPath : `${window.location.origin}${embedPath}`;
 		const escapedTitle = containerTitle.replaceAll('"', '&quot;');
-		return `<!-- knot-dots Embed -->\n<iframe\n  src="${url}"\n  width="100%"\n  min-height="1200"\n  frameborder="0"\n  title="${escapedTitle}"\n  loading="lazy">\n</iframe>`;
+		return `<!-- knot-dots Embed -->\n<iframe\n  src="${url}"\n  style="width: 100%; height: 100%; min-height: 300px; border: 0;"\n  title="${escapedTitle}"\n  loading="lazy">\n</iframe>`;
 	});
 
 	function openSubview(view: SettingsSubview) {

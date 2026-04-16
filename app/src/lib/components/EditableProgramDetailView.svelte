@@ -57,27 +57,26 @@
 
 	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 	let categoryContext = $derived(page.data.categoryContext);
-	let useCustomCategories = $derived(featureDecisions.useCustomCategories() && !!categoryContext);
+	let useCustomCategories = $derived(featureDecisions.useCustomCategories());
 
 	let relatedContainersQuery = $derived(
 		fetchContainersRelatedToProgram({
 			guid,
 			params: {
-				audience: useCustomCategories ? [] : paramsFromFragment(page.url).getAll('audience'),
-				sdg: useCustomCategories ? [] : paramsFromFragment(page.url).getAll('sdg'),
-				policyFieldBNK: useCustomCategories
-					? []
-					: paramsFromFragment(page.url).getAll('policyFieldBNK'),
-				terms: paramsFromFragment(page.url).get('terms') ?? '',
-				topic: useCustomCategories ? [] : paramsFromFragment(page.url).getAll('topic'),
 				...(useCustomCategories
 					? {
 							customCategories: extractCustomCategoryFiltersFromParams(
 								paramsFromFragment(page.url),
-								categoryContext!.keys
+								categoryContext?.keys ?? []
 							)
 						}
-					: {})
+					: {
+							audience: paramsFromFragment(page.url).getAll('audience'),
+							sdg: paramsFromFragment(page.url).getAll('sdg'),
+							policyFieldsBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
+							topics: paramsFromFragment(page.url).getAll('topic')
+						}),
+				terms: paramsFromFragment(page.url).get('terms') ?? ''
 			}
 		})
 	);
@@ -100,12 +99,15 @@
 	);
 
 	let facets = $derived(
-		useCustomCategories
-			? (() => {
-					const f = buildCategoryFacetsWithCounts(categoryContext!.options);
-					f.set('type', new Map(container.payload.chapterType.map((v) => [v as string, 0])));
-					return computeFacetCount(f, relatedParts, { useCategoryPayload: true });
-				})()
+		useCustomCategories && categoryContext
+			? computeFacetCount(
+					new Map([
+						...buildCategoryFacetsWithCounts(categoryContext.options),
+						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
+					]),
+					relatedParts,
+					{ useCategoryPayload: true }
+				)
 			: computeFacetCount(
 					new Map([
 						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
@@ -121,12 +123,7 @@
 	let usedCategoryKeys = $derived(
 		useCustomCategories && categoryContext
 			? getCategoryKeys(categoryContext.options).filter((key) =>
-					parts.some(
-						(part) =>
-							'category' in part.payload &&
-							Array.isArray(part.payload.category[key]) &&
-							part.payload.category[key].length > 0
-					)
+				parts.some((part) => 'category' in part.payload && part.payload.category[key]?.length > 0)
 				)
 			: []
 	);
@@ -264,7 +261,7 @@
 					'objectType'
 				]}
 				bind:container={parts[i]}
-				categoryOptions={useCustomCategories ? categoryContext!.options : null}
+				categoryOptions={useCustomCategories ? categoryContext?.options : null}
 				{dragEnabled}
 				editable={$applicationState.containerDetailView.editable}
 			/>
@@ -275,8 +272,8 @@
 {#snippet header()}
 	<Header
 		{facets}
-		facetLabels={useCustomCategories ? categoryContext!.labels : undefined}
-		categoryOptions={useCustomCategories ? categoryContext!.options : null}
+		facetLabels={useCustomCategories ? categoryContext?.labels : undefined}
+		categoryOptions={useCustomCategories ? categoryContext?.options : null}
 		search
 	/>
 {/snippet}
@@ -341,7 +338,7 @@
 						<div class="cell">{$_('status')}</div>
 						{#if useCustomCategories}
 							{#each usedCategoryKeys as key (key)}
-								<div class="cell">{categoryContext!.options.__categoryLabels__?.[key] ?? key}</div>
+							<div class="cell">{categoryContext?.labels.get(key) ?? key}</div>
 							{/each}
 						{:else}
 							<div class="cell">{$_('category')}</div>

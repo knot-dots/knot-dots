@@ -9,10 +9,11 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type Container, type OrganizationContainer } from '$lib/models';
+	import { type Container, helpSlug, type OrganizationContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
@@ -122,6 +123,8 @@
 			<Sections bind:container {relatedContainers} />
 		</div>
 	</article>
+
+	<Help slug={helpSlug.enum['organization-view']} />
 {/snippet}
 
 {@render layout(header, main)}
@@ -134,10 +137,11 @@
 	}
 
 	.stage--buttons {
-		min-height: 4rem;
+		min-height: 3.125rem;
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
+		padding-bottom: 0;
 	}
 
 	header button {
@@ -148,5 +152,17 @@
 		flex-grow: 1;
 		margin: 0;
 		min-height: 3rem;
+	}
+
+	.stage {
+		padding-bottom: 0;
+	}
+
+	.stage:not(.stage--white) {
+		padding-bottom: 2rem;
+	}
+
+	.stage + .details {
+		padding-top: 4rem;
 	}
 </style>

@@ -44,10 +44,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		const features = createFeatureDecisions(locals.features);
 		const useCustomCategories = features.useCustomCategories();
 
-		let customCategoryFilters: Record<string, string[]> = {};
-		if (useCustomCategories && categoryContext) {
-			customCategoryFilters = extractCustomCategoryFilters(url, categoryContext.keys);
-		}
+		const customCategories = useCustomCategories
+			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
+			: {};
 
 		if (currentOrganization.payload.default) {
 			error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -83,9 +82,8 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							currentOrganization.payload.default ? [] : [currentOrganization.guid],
 							{
 								assignees: url.searchParams.getAll('assignee'),
-								...(useCustomCategories
-									? { customCategories: customCategoryFilters }
-									: { taskCategories: url.searchParams.getAll('taskCategory') }),
+							customCategories,
+							taskCategories: url.searchParams.getAll('taskCategory'),
 								terms: url.searchParams.get('terms') ?? '',
 								type: [payloadTypes.enum.task]
 							},
@@ -114,9 +112,8 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							currentOrganization.payload.default ? [] : [currentOrganization.guid],
 							{
 								assignees: url.searchParams.getAll('assignee'),
-								...(useCustomCategories
-									? { customCategories: customCategoryFilters }
-									: { taskCategories: url.searchParams.getAll('taskCategory') }),
+								customCategories,
+								taskCategories: url.searchParams.getAll('taskCategory'),
 								terms: url.searchParams.get('terms') ?? '',
 								type: [payloadTypes.enum.task]
 							},

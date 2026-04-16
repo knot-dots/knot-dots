@@ -8,10 +8,11 @@
 	import EditableCover from '$lib/components/EditableCover.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type AnyContainer, type PageContainer, predicates } from '$lib/models';
+	import { type AnyContainer, helpSlug, type PageContainer, predicates } from '$lib/models';
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
@@ -142,6 +143,8 @@
 			</div>
 		</article>
 	</div>
+
+	<Help slug={helpSlug.enum['page-view']} />
 {/snippet}
 
 {@render layout(header, main)}
@@ -154,10 +157,11 @@
 	}
 
 	.stage--buttons {
-		min-height: 4rem;
+		min-height: 3.125rem;
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
+		padding-bottom: 0;
 	}
 
 	header button {
@@ -168,5 +172,17 @@
 		flex-grow: 1;
 		margin: 0;
 		min-height: 3rem;
+	}
+
+	.stage {
+		padding-bottom: 0;
+	}
+
+	.stage:not(.stage--white) {
+		padding-bottom: 2rem;
+	}
+
+	.stage + .details {
+		padding-top: 4rem;
 	}
 </style>

@@ -30,6 +30,8 @@
 			? computeFacetCount(
 					new Map([
 						...buildCategoryFacetsWithCounts(categoryContext.options),
+					...buildCategoryFacetsWithCounts(categoryContext.options),
+					['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
 						['assignee', new Map()]
 					]),
 					containers,
