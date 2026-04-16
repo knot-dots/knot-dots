@@ -36,6 +36,7 @@ export default (async function load({ depends, locals, url, parent }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const typeFilterFromURL = url.searchParams.getAll('type');
 	const typeFilter = [
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
@@ -48,7 +49,7 @@ export default (async function load({ depends, locals, url, parent }) {
 		payloadTypes.enum.rule,
 		payloadTypes.enum.simple_measure,
 		payloadTypes.enum.task
-	];
+	].filter((type) => typeFilterFromURL.length == 0 || typeFilterFromURL.includes(type));
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, typeFilter, { matchAll: true })
 		: null;
@@ -193,6 +194,7 @@ export default (async function load({ depends, locals, url, parent }) {
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
+	_facets.set('type', fromCounts(typeFilter, data?.type));
 
 	const facets = features.useElasticsearch()
 		? _facets
