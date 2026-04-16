@@ -477,13 +477,6 @@
 		font-weight: 400;
 	}
 
-	.badges {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
 	footer {
 		align-items: flex-end;
 		display: flex;
