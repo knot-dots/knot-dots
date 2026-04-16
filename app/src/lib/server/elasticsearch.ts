@@ -1,7 +1,7 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import type { DatabaseConnection } from 'slonik';
 import { env as privateEnv } from '$env/dynamic/private';
-import { type Container, type PayloadType } from '$lib/models';
+import { type AnyContainer, type Container, type PayloadType } from '$lib/models';
 import { sql, withUserAndRelation } from './db';
 
 const es = new Client({
@@ -148,7 +148,7 @@ export function getManyContainersWithES(
 ) {
 	return async (
 		connection: DatabaseConnection
-	): Promise<{ containers: Container[]; facets: FacetCounts }> => {
+	): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> => {
 		const must: estypes.QueryDslQueryContainer[] = [];
 		const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
 		const facetFilters: FacetFilterMap = {};

@@ -12,7 +12,8 @@ import {
 	emptyContainer,
 	type NewContainer,
 	payloadTypes,
-	predicates
+	predicates,
+	type ProgramContainer
 } from '$lib/models';
 import { reverseTranslationMap } from '$lib/server/csv';
 import {
@@ -44,9 +45,9 @@ export const actions = {
 				}
 			})
 		);
-		const programs = await locals.pool.connect(
+		const programs = (await locals.pool.connect(
 			getManyContainers([organization.guid], { type: [payloadTypes.enum.program] }, '')
-		);
+		)) as ProgramContainer[];
 
 		const data = await request.formData();
 		const csv = data.get('csv');

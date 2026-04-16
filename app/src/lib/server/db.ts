@@ -557,11 +557,13 @@ function prepareWhereCondition(filters: {
 	topics?: string[];
 	type?: PayloadType[];
 }) {
-	const conditions = [
-		sql.fragment`c.valid_currently`,
-		sql.fragment`NOT c.deleted`,
-		sql.fragment`c.payload->>'type' NOT IN ('organization', 'organizational_unit')`
-	];
+	const conditions = [sql.fragment`c.valid_currently`, sql.fragment`NOT c.deleted`];
+	if (!filters.type?.includes(payloadTypes.enum.organization)) {
+		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organization}`);
+	}
+	if (!filters.type?.includes(payloadTypes.enum.organizational_unit)) {
+		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organizational_unit}`);
+	}
 	if (filters.assignees?.length) {
 		conditions.push(sql.fragment`c.payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
 	}
@@ -674,7 +676,7 @@ function prepareWhereCondition(filters: {
 }
 
 function prepareOrderByExpression(sort: string) {
-	let order_by = sql.fragment`(c.payload->>'title')COLLATE human_sort, c.guid`;
+	let order_by = sql.fragment`(c.payload->>'title') COLLATE human_sort, (c.payload->>'name') COLLATE human_sort, c.guid`;
 	if (sort == 'modified') {
 		order_by = sql.fragment`c.valid_from DESC, c.guid`;
 	} else if (sort == 'priority') {
@@ -754,17 +756,19 @@ export function getManyContainers(
 		type?: PayloadType[];
 	},
 	sort: string,
-	limit?: number
+	limit?: number,
+	offset?: number
 ) {
-	return async (connection: DatabaseConnection): Promise<Container[]> => {
-		const containerResult = await connection.any(sql.typeAlias('container')`
+	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
-			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``};
+			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
+			${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``};
     `);
-		return withUserAndRelation<Container>(connection, containerResult);
+		return withUserAndRelation<AnyContainer>(connection, containerResult);
 	};
 }
 

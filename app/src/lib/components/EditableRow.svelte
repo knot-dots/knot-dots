@@ -33,7 +33,7 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
-		type Container,
+		type AnyContainer,
 		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
@@ -53,7 +53,7 @@
 		actualDataContainers?: ActualDataContainer[];
 		categoryOptions?: CategoryOptions | null;
 		columns: string[];
-		container: Container;
+		container: AnyContainer;
 		dragEnabled?: boolean;
 		editable?: boolean;
 	}
@@ -120,7 +120,13 @@
 	<div class="cell">
 		<TitleDropdown
 			editable={editable && $ability.can('update', container)}
-			bind:value={container.payload.title}
+			bind:value={
+				() => ('title' in container.payload ? container.payload.title : container.payload.name),
+				(v) =>
+					'title' in container.payload
+						? (container.payload.title = v)
+						: (container.payload.name = v)
+			}
 		/>
 	</div>
 {/if}
