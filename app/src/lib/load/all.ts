@@ -37,10 +37,7 @@ export default (async function load({ depends, locals, url, parent }) {
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
 	const typeFilter = [
-		payloadTypes.enum.effect,
 		payloadTypes.enum.goal,
-		payloadTypes.enum.image,
-		payloadTypes.enum.indicator_template,
 		payloadTypes.enum.measure,
 		...(features.usePage() ? [payloadTypes.enum.page] : []),
 		payloadTypes.enum.program,
