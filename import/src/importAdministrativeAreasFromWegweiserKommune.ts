@@ -1,7 +1,6 @@
 import {
 	administrativeAreaBasicDataContainer,
 	administrativeAreaWegweiserKommune,
-	Container,
 	createContainer,
 	createRelation,
 	customCollectionContainer,
@@ -16,9 +15,9 @@ import {
 	insertIntoAdministrativeAreaWegweiserKommune,
 	Json,
 	mapContainer,
+	mergeDeep,
 	organizationalUnitContainer,
-	OrganizationalUnitPayload,
-	PersistedContainer,
+	organizationalUnitPayload,
 	updateContainer
 } from './db.ts';
 import assert from 'node:assert';
@@ -250,7 +249,9 @@ function isSame<T>(a: T, b: T) {
 								level: organizationalUnitLevel,
 								name: region.title,
 								officialMunicipalityKey: region.official_municipality_key,
-								officialRegionalCode: region.official_regional_code
+								officialRegionalCode: region.official_regional_code,
+								organizationalUnitType: 'organizational_unit_type.administrative_area',
+								type: 'organizational_unit'
 							},
 							realm,
 							user: [{ predicate: 'is-creator-of', subject: user }]
@@ -258,7 +259,7 @@ function isSame<T>(a: T, b: T) {
 
 						await pool.transaction(async (tx: DatabaseTransactionConnection) => {
 							// Find or create the org unit container.
-							const foundOrganizationalUnitContainer = (await getContainer({
+							const foundOrganizationalUnitContainer = await getContainer({
 								organization,
 								organizationalUnit: null,
 								payload: {
@@ -267,30 +268,33 @@ function isSame<T>(a: T, b: T) {
 									organizationalUnitType: 'organizational_unit_type.administrative_area',
 									type: 'organizational_unit'
 								}
-							})(tx)) as PersistedContainer & Container<OrganizationalUnitPayload>;
+							})(tx);
 
 							let ouContainer;
 
 							if (!foundOrganizationalUnitContainer) {
+								// Create new container if not found
 								ouContainer = await createContainer(newOrganizationalUnitContainer)(tx);
 								console.log(`Created ${region.title} (${ouContainer.guid})`);
-							} else if (
-								!isSame(
-									foundOrganizationalUnitContainer.payload,
-									newOrganizationalUnitContainer.payload
-								)
-							) {
-								ouContainer = await updateContainer({
-									...foundOrganizationalUnitContainer,
-									payload: {
-										...foundOrganizationalUnitContainer.payload,
-										...newOrganizationalUnitContainer.payload
-									}
-								})(tx);
-								console.log(`Updated ${region.title} (${ouContainer.guid})`);
 							} else {
-								ouContainer = foundOrganizationalUnitContainer;
-								console.log(`Ignored ${region.title} (${ouContainer.guid})`);
+								// Otherwise, merge and update if there are changes
+								const mergedPayload = organizationalUnitPayload.parse(
+									mergeDeep(
+										foundOrganizationalUnitContainer.payload,
+										newOrganizationalUnitContainer.payload
+									)
+								);
+
+								if (!isSame(foundOrganizationalUnitContainer.payload, mergedPayload)) {
+									ouContainer = await updateContainer({
+										...foundOrganizationalUnitContainer,
+										payload: mergedPayload
+									})(tx);
+									console.log(`Updated ${region.title} (${ouContainer.guid})`);
+								} else {
+									ouContainer = foundOrganizationalUnitContainer;
+									console.log(`Ignored ${region.title} (${ouContainer.guid})`);
+								}
 							}
 
 							// Find or create sub-containers.
@@ -307,7 +311,10 @@ function isSame<T>(a: T, b: T) {
 										managed_by: ouContainer.guid,
 										organization,
 										organizational_unit: ouContainer.guid,
-										payload: {},
+										payload: {
+											type: 'administrative_area_basic_data',
+											title: 'Basisinformationen'
+										},
 										realm,
 										user: [{ predicate: 'is-creator-of', subject: user }]
 									})
@@ -326,7 +333,7 @@ function isSame<T>(a: T, b: T) {
 										managed_by: ouContainer.guid,
 										organization,
 										organizational_unit: ouContainer.guid,
-										payload: {},
+										payload: { type: 'map', title: 'Gebietsgrenze' },
 										realm,
 										user: [{ predicate: 'is-creator-of', subject: user }]
 									})
@@ -338,6 +345,7 @@ function isSame<T>(a: T, b: T) {
 								organizational_unit: ouContainer.guid,
 								payload: {
 									type: 'demographic_data',
+									title: 'Demografische Daten',
 									area: bbsr?.area,
 									population: bbsr?.population
 								},
@@ -383,6 +391,7 @@ function isSame<T>(a: T, b: T) {
 								organization,
 								organizational_unit: ouContainer.guid,
 								payload: {
+									type: 'custom_collection',
 									item: reports,
 									title: reportCollectionTitle
 								},
