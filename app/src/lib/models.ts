@@ -233,6 +233,7 @@ const categoryObjectTypeValues = [
 	payloadTypes.enum.program,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.report,
 	payloadTypes.enum.rule,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.task,
