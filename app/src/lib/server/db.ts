@@ -676,7 +676,7 @@ function prepareWhereCondition(filters: {
 }
 
 function prepareOrderByExpression(sort: string) {
-	let order_by = sql.fragment`(c.payload->>'title')COLLATE human_sort, c.guid`;
+	let order_by = sql.fragment`(c.payload->>'title') COLLATE human_sort, (c.payload->>'name') COLLATE human_sort, c.guid`;
 	if (sort == 'modified') {
 		order_by = sql.fragment`c.valid_from DESC, c.guid`;
 	} else if (sort == 'priority') {
