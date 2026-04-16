@@ -41,7 +41,7 @@ export default (async function load({ depends, locals, url, parent }) {
 		payloadTypes.enum.measure,
 		...(features.usePage() ? [payloadTypes.enum.page] : []),
 		payloadTypes.enum.program,
-		payloadTypes.enum.report,
+		...(features.useReport() ? [payloadTypes.enum.report] : []),
 		payloadTypes.enum.rule,
 		payloadTypes.enum.simple_measure
 	];
