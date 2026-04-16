@@ -414,6 +414,7 @@
 		gap: 1rem;
 		height: var(--height, auto);
 		hyphens: auto;
+		justify-content: flex-end;
 		padding: 1rem;
 		width: 100%;
 		word-break: break-word;
@@ -470,6 +471,8 @@
 
 	.body {
 		color: var(--color-gray-500);
+		display: flex;
+		flex-grow: 1;
 		font-size: 0.875rem;
 		font-weight: 400;
 	}
@@ -485,9 +488,9 @@
 		align-items: flex-end;
 		display: flex;
 		flex-direction: row;
+		flex-shrink: 1;
 		gap: 12px;
 		justify-content: space-between;
-		margin-top: auto;
 	}
 
 	footer :global(.progress) {
@@ -504,6 +507,7 @@
 			display: grid;
 			grid-row: inherit;
 			grid-template-rows: inherit;
+			justify-content: initial;
 		}
 
 		header {

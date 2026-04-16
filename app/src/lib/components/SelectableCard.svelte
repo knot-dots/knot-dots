@@ -12,6 +12,7 @@
 		isGoalContainer,
 		isIndicatorTemplateContainer,
 		isObjectiveContainer,
+		isOrganizationalUnitContainer,
 		isPartOf,
 		isResourceContainer,
 		isSimpleMeasureContainer,
@@ -140,7 +141,12 @@
 					: ''}
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
-			<img alt={$_('cover_image')} loading="lazy" src={transformFileURL(container.payload.image)} />
+			<img
+				alt={$_('cover_image')}
+				class={{ ['coat-of-arms']: isOrganizationalUnitContainer(container) }}
+				loading="lazy"
+				src={transformFileURL(container.payload.image)}
+			/>
 		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
@@ -190,6 +196,7 @@
 		gap: 1rem;
 		height: var(--height, auto);
 		hyphens: auto;
+		justify-content: flex-end;
 		padding: 1rem;
 		width: 100%;
 		word-break: break-word;
@@ -234,8 +241,20 @@
 
 	.body {
 		color: var(--color-gray-500);
+		display: flex;
 		font-size: 0.875rem;
 		font-weight: 400;
+		flex-grow: 1;
+	}
+
+	img {
+		object-fit: contain;
+	}
+
+	.coat-of-arms {
+		align-self: flex-end;
+		margin: 0 auto;
+		height: 7rem;
 	}
 
 	.badges {
@@ -249,6 +268,7 @@
 		align-items: flex-end;
 		display: flex;
 		flex-direction: row;
+		flex-shrink: 1;
 		gap: 12px;
 		justify-content: space-between;
 		margin-top: auto;
