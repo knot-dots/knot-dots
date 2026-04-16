@@ -561,19 +561,15 @@ export const mergeDeep = (
 	if (!sources.length) return { ...target };
 	const [source, ...rest] = sources;
 
-	if (isObject(target) && isObject(source)) {
-		const result: Record<string, unknown> = { ...target };
-		for (const key in source) {
-			if (Array.isArray(source[key]) && Array.isArray(target[key])) {
-				result[key] = [...new Set([...(target[key] as unknown[]), ...(source[key] as unknown[])])];
-			} else if (isObject(source[key])) {
-				result[key] = mergeDeep(isObject(target[key]) ? target[key] : {}, source[key]);
-			} else {
-				result[key] = source[key];
-			}
+	const result: Record<string, unknown> = { ...target };
+	for (const key in source) {
+		if (Array.isArray(source[key]) && Array.isArray(target[key])) {
+			result[key] = [...new Set([...target[key], ...source[key]])];
+		} else if (isObject(source[key])) {
+			result[key] = mergeDeep(isObject(target[key]) ? target[key] : {}, source[key]);
+		} else {
+			result[key] = source[key];
 		}
-		return mergeDeep(result, ...rest);
 	}
-
-	return mergeDeep({ ...target }, ...rest);
+	return mergeDeep(result, ...rest);
 };
