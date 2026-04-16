@@ -24,10 +24,12 @@ test.describe('Admin users', () => {
 
 		// Add a text section
 		const section = await catalog.overlay.addSection('Text');
-		const invalidateRequest = page.waitForRequest(/x-sveltekit-invalidated/);
+		const saveResponse = page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
 		await section.getByRole('heading').fill('Test Section');
 		await section.getByRole('textbox').fill('This is a test section for the help object.');
-		await invalidateRequest;
+		await saveResponse;
 
 		// Verify section persists after reload
 		await page.reload();
