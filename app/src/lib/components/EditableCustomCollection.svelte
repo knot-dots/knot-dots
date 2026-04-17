@@ -98,7 +98,7 @@
 			() => inViewportOnce
 		],
 		async ([item, filter, terms, searchTerms, sort], _, { signal }) => {
-			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
+			const type = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
 			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 
 			const activeFilters = Object.values(filter).reduce(
@@ -177,14 +177,6 @@
 			for (const value of container.payload.filter[key]) {
 				params.append(key, value);
 			}
-		}
-
-		for (const value of container.payload.filter.indicatorCategory) {
-			params.append('indicatorCategory', value);
-		}
-
-		for (const value of container.payload.filter.type) {
-			params.append('type', value);
 		}
 
 		const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';

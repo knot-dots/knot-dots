@@ -65,7 +65,7 @@
 		page.data.categoryContext
 			? filterCategoryContext(
 					page.data.categoryContext,
-					filter.type.length > 0 ? filter.type : defaultPayloadType,
+					filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 					{
 						matchAll: true
 					}
@@ -114,7 +114,7 @@
 						{
 							indicatorCategory: filter.indicatorCategory,
 							organization: [page.data.currentOrganization.guid],
-							payloadType: filter.type.length > 0 ? filter.type : defaultPayloadType,
+							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 							...(createFeatureDecisions(page.data.features).useCustomCategories()
 								? Object.fromEntries(
 										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
@@ -146,7 +146,7 @@
 
 	function handleRemoveFilterValue(key: string, value: string) {
 		if (key in filter) {
-			filter = { ...filter, [key]: filter[key as keyof typeof filter].filter((v) => v !== value) };
+			filter = { ...filter, [key]: filter[key].filter((v) => v !== value) };
 		}
 	}
 
