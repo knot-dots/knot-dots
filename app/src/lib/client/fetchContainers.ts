@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { page } from '$app/state';
 import withRequestCoalescing from '$lib/client/withRequestCoalescing';
 import { createFeatureDecisions } from '$lib/features';
-import { anyContainer, type PayloadType } from '$lib/models';
+import { anyContainer } from '$lib/models';
 
 export default async function fetchContainers(
 	filters: {
@@ -14,7 +14,7 @@ export default async function fetchContainers(
 		indicatorType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
-		payloadType?: PayloadType[];
+		payloadType?: string[];
 		policyFieldBNK?: string[];
 		programType?: string[];
 		relatedTo?: string[];

@@ -112,9 +112,8 @@
 								: {
 										...filter,
 										organization: [page.data.currentOrganization.guid],
-										terms: combinedTerms,
-										topic: filter.topic,
-										payloadType: type
+										payloadType: type,
+										terms: combinedTerms
 									})
 						},
 						sort,
@@ -166,24 +165,18 @@
 	let isRuleBasedCollection = $derived(container.payload.item.length === 0);
 
 	let allCatalogHref = $derived.by(() => {
-		const params = new SvelteURLSearchParams();
+		const params = new URLSearchParams();
 
 		for (const value of container.payload.item) {
-			params.append('item', value);
+			params.append('guid', value);
 		}
 
-		for (const value of container.payload.filter.audience) {
-			params.append('audience', value);
+		for (const key in container.payload.filter) {
+			for (const value of container.payload.filter[key]) {
+				params.append(key, value);
+			}
 		}
-		for (const value of container.payload.filter.sdg) {
-			params.append('sdg', value);
-		}
-		for (const value of container.payload.filter.policyFieldBNK) {
-			params.append('policyFieldBNK', value);
-		}
-		for (const value of container.payload.filter.topic) {
-			params.append('topic', value);
-		}
+
 		for (const value of container.payload.filter.indicatorCategory) {
 			params.append('indicatorCategory', value);
 		}

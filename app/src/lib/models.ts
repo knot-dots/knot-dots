@@ -869,23 +869,8 @@ const initialChapterPayload = chapterPayload.partial({ number: true, title: true
 export const customCollectionPayload = z
 	.object({
 		filter: z
-			.object({
-				audience: z.array(audience).default([]),
-				sdg: z.array(sustainableDevelopmentGoals).default([]),
-				indicatorCategory: z.array(indicatorCategories).default([]),
-				type: z.array(payloadTypes).default([]),
-				policyFieldBNK: z.array(policyFieldBNK).default([]),
-				topic: z.array(topics).default([])
-			})
-			.catchall(z.array(z.string()))
-			.default({
-				audience: [],
-				sdg: [],
-				indicatorCategory: [],
-				policyFieldBNK: [],
-				topic: [],
-				type: []
-			}),
+			.record(z.string(), z.array(z.string()).transform(deduplicate))
+			.default({ indicatorCategory: [], type: [] }),
 		item: z.array(z.uuid()).default([]),
 		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
 		allowSearch: z.boolean().default(false),
