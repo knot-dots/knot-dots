@@ -80,6 +80,37 @@ async function* fetchContainers(batchSize = 500) {
 	}
 }
 
+interface RelationRow {
+	object: string;
+	predicate: string;
+	position: number;
+	subject: string;
+}
+
+async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, RelationRow[]>> {
+	if (guids.length === 0) return new Map();
+	const pool = await getPool();
+	const rows = (await pool.any(sql.unsafe`
+		SELECT object, predicate, position, subject
+		FROM container_relation
+		WHERE (subject = ANY(${sql.array(guids, 'uuid')}) OR object = ANY(${sql.array(guids, 'uuid')}))
+			AND valid_currently
+			AND NOT deleted
+	`)) as unknown as RelationRow[];
+
+	const map = new Map<string, RelationRow[]>();
+	for (const guid of guids) {
+		map.set(guid, []);
+	}
+	for (const r of rows) {
+		map.get(r.subject)?.push(r);
+		if (r.object !== r.subject) {
+			map.get(r.object)?.push(r);
+		}
+	}
+	return map;
+}
+
 async function run() {
 	const { aliasName, node, username, password } = env;
 	const clientConfig: any = { node };
@@ -113,11 +144,20 @@ async function run() {
 
 	let indexed = 0;
 	let ops: any[] = [];
+	let batchRows: Row[] = [];
 
 	for await (const row of fetchContainers()) {
-		const doc = toDoc(row);
-		ops.push({ index: { _index: newIndexName, _id: row.guid } });
-		ops.push(doc);
+		batchRows.push(row);
+
+		if (batchRows.length >= 500) {
+			const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
+			for (const r of batchRows) {
+				const doc = toDoc({ ...r, relations: relationsMap.get(r.guid) ?? [] });
+				ops.push({ index: { _index: newIndexName, _id: r.guid } });
+				ops.push(doc);
+			}
+			batchRows = [];
+		}
 
 		if (ops.length >= 1000) {
 			const res = await client.bulk({ refresh: false, operations: ops });
@@ -142,6 +182,17 @@ async function run() {
 			ops = [];
 			log.info({ indexed }, '[indexer] Indexed documents');
 		}
+	}
+
+	// Flush remaining rows that didn't fill a full batch
+	if (batchRows.length > 0) {
+		const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
+		for (const r of batchRows) {
+			const doc = toDoc({ ...r, relations: relationsMap.get(r.guid) ?? [] });
+			ops.push({ index: { _index: newIndexName, _id: r.guid } });
+			ops.push(doc);
+		}
+		batchRows = [];
 	}
 
 	if (ops.length > 0) {

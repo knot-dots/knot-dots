@@ -1500,13 +1500,31 @@ export function getAllContainersRelatedToUser(guid: string) {
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
 	return async (connection: DatabaseConnection) => {
 		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
-		return await connection.any(sql.typeAlias('relation')`
+		const result = await connection.any(sql.typeAlias('relation')`
 			INSERT INTO container_relation (object, position, predicate, subject)
 			SELECT *
 			FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
 			RETURNING *
 		`);
+
+		if (createFeatureDecisions(getFeatures()).useElasticsearch() && result.length > 0) {
+			const affectedGuids = new Set<string>();
+			for (const r of result) {
+				affectedGuids.add(r.object);
+				affectedGuids.add(r.subject);
+			}
+
+			for (const guid of affectedGuids) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+		}
+
+		return result;
 	};
 }
 
@@ -1543,6 +1561,21 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 				SELECT *, true
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			`);
+
+			if (createFeatureDecisions(getFeatures()).useElasticsearch() && relations.length > 0) {
+				const affectedGuids = new Set<string>();
+				for (const r of relations) {
+					affectedGuids.add(r.object);
+					affectedGuids.add(r.subject);
+				}
+				for (const guid of affectedGuids) {
+					await enqueueIndexingEvent({
+						action: 'upsert',
+						guid,
+						timestamp: new Date().toISOString()
+					});
+				}
+			}
 		});
 	};
 }

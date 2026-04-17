@@ -76,6 +76,18 @@ async function fetchContainerRow(guid: string) {
   return row as any;
 }
 
+async function fetchContainerRelations(guid: string) {
+  const pool = await getPool();
+  const rows = await pool.any<any>(sql.unsafe`
+    SELECT object, predicate, position, subject
+    FROM container_relation
+    WHERE (subject = ${guid} OR object = ${guid})
+      AND valid_currently
+      AND NOT deleted
+  `);
+  return rows as { object: string; predicate: string; position: number; subject: string }[];
+}
+
 async function processBatch(events: IndexingEvent[], client: ESClient) {
   if (!events.length) return;
   log.info({ eventCount: events.length }, '[indexing-consumer] Processing batch of events');
@@ -91,6 +103,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         log.warn({ guid: evt.guid }, '[indexing-consumer] Upsert skipped; container missing');
         continue;
       }
+      const relations = await fetchContainerRelations(evt.guid);
       const doc = toDoc({
         guid: row.guid,
         revision: row.revision,
@@ -100,7 +113,8 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         organization: String(row.organization),
         organizational_unit: row.organizational_unit ?? null,
         managed_by: String(row.managed_by),
-        payload: (row as any).payload || {}
+        payload: (row as any).payload || {},
+        relations
       });
       operations.push({ index: { _index: esIndex, _id: evt.guid } });
       operations.push(doc);
