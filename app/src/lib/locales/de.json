@@ -103,9 +103,9 @@
 		"yellow": "Gelb"
 	},
 	"comment": "Kommentar",
-	"compare": "Vergleichen",
 	"compare_add_municipality": "Kommune hinzufügen",
 	"compare_clear_all": "Alle entfernen",
+	"compare_data": "Daten vergleichen",
 	"compare_max_reached": "Maximal {max} Kommunen",
 	"compare_municipalities_selected": "{count, plural, one {# Kommune ausgewählt} other {# Kommunen ausgewählt}}",
 	"compare_federal_levels": "Föderale Ebenen",

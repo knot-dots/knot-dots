@@ -101,7 +101,7 @@
 
 	let compareBar = $derived(
 		createDisclosure({
-			label: $_('compare'),
+			label: $_('compare_data'),
 			expanded:
 				untrack(() => $compareState.selectedMunicipalities.length > 0) &&
 				(isReportContainer(container) || isIndicatorTemplateContainer(container))
@@ -333,7 +333,7 @@
 			}}
 		>
 			<Compare />
-			<span>{$_('compare')}</span>
+			<span>{$_('compare_data')}</span>
 		</button>
 	{/if}
 </div>
