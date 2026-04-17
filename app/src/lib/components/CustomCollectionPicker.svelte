@@ -327,7 +327,7 @@
 								{#each valueList as value (value)}
 									<li class="preview-item">
 										<LightningBolt />
-										{$_(value)}
+										{page.data.categoryContext?.labels.get(value) ?? $_(value)}
 										<button
 											class="button button-remove"
 											type="button"
