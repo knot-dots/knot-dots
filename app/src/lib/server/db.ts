@@ -451,7 +451,7 @@ export function getContainerByGuid(guid: string) {
 			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 		return {
 			...containerResult,
@@ -483,7 +483,7 @@ export function getContainerBySlug(slug: HelpSlug) {
 			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 		return {
 			...containerResult,
@@ -520,7 +520,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			WHERE (cr.subject IN (${guid}) OR cr.object IN (${guid}))
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 
 		return containerResult.map((c) => ({
@@ -716,7 +716,7 @@ export async function withUserAndRelation<T extends AnyContainer>(
 				WHERE (cr.object IN (${guids}) OR cr.subject IN (${guids}))
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				ORDER BY cr.position
+				ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 			`)
 			: [];
 
@@ -909,7 +909,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			), container_relation_result AS (
 				SELECT
 					c.guid,
-					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
@@ -965,7 +965,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
 			), container_relation_result AS (
-				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
@@ -1326,7 +1326,7 @@ export function getAllContainersRelatedToProgram(
 						sql.fragment`, `
 					)})
 						AND ${prepareWhereCondition(filters)}
-					ORDER BY cr.position;
+					ORDER BY cr.predicate, cr.position, cr.subject, cr.object;
 				`)
 				: [];
 

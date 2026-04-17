@@ -85,7 +85,7 @@ async function fetchContainerRelations(guid: string) {
     WHERE (subject = ${guid} OR object = ${guid})
       AND valid_currently
       AND NOT deleted
-    ORDER BY position
+    ORDER BY predicate, position, subject, object
   `);
   return rows as Relation[];
 }
