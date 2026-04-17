@@ -451,8 +451,10 @@
 		--indicator-background-color: var(--color-primary-700);
 
 		align-items: center;
+		container-type: inline-size;
 		display: flex;
 		flex-wrap: wrap;
+		font-size: 0.875rem;
 		gap: 0.75rem;
 		justify-content: end;
 		padding: 0 0.75rem 0.5rem;
