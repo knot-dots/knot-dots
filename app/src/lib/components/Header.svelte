@@ -302,7 +302,7 @@
 			use:filterBar.button
 		>
 			<Filter />
-			<span class="is-visually-hidden--mobile-only">{$_('filter')}</span>
+			<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
 			{#if activeFilters > 0 && !$filterBar.expanded}
 				<span class="indicator">{activeFilters}</span>
 			{/if}
@@ -318,7 +318,6 @@
 			use:sortBar.button
 		>
 			<Sort />
-			<span class="is-visually-hidden--mobile-only">{$_('sort')}</span>
 		</button>
 	{/if}
 
@@ -334,7 +333,6 @@
 			}}
 		>
 			<Compare />
-			<span class="is-visually-hidden--mobile-only">{$_('compare')}</span>
 		</button>
 	{/if}
 </div>
@@ -566,7 +564,7 @@
 
 	@layer visually-hidden {
 		@container (min-width: 60rem) {
-			.is-visually-hidden--mobile-only {
+			.is-visually-hidden.is-visually-hidden--mobile-only {
 				all: revert-layer;
 			}
 		}
