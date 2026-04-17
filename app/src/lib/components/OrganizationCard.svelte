@@ -83,7 +83,9 @@
 
 <style>
 	img {
-		max-height: 7rem;
+		align-self: flex-end;
+		margin: 0 auto;
+		height: 7rem;
 		object-fit: contain;
 	}
 </style>

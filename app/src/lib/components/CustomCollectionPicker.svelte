@@ -11,6 +11,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -19,6 +20,7 @@
 		computeFacetCount,
 		type CustomCollectionContainer,
 		indicatorCategories,
+		isOrganizationalUnitContainer,
 		type PayloadType,
 		payloadTypes,
 		policyFieldBNK,
@@ -276,6 +278,8 @@
 										inputType="checkbox"
 										{onchange}
 									/>
+								{:else if isOrganizationalUnitContainer(item)}
+									<OrganizationCard --height="100%" container={item} />
 								{:else}
 									<Card --height="100%" container={item} />
 								{/if}

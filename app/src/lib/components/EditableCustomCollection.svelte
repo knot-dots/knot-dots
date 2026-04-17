@@ -302,20 +302,16 @@
 	<ul class="inline-actions" class:is-visible-on-hover={editable}>
 		{#if hasConfiguredContent && isRuleBasedCollection}
 			<li>
-				<button
-					class="show-all-button"
-					onclick={() => (window.location.href = allCatalogHref)}
-					type="button"
-				>
+				<a class="button button-xs" href={allCatalogHref}>
 					<ArrowRight />
 					{$_('custom_collection.show_all')}
-				</button>
+				</a>
 			</li>
 		{/if}
 
 		{#if container.payload.allowSearch && hasConfiguredContent}
-			<li class="inline-search-item">
-				<label class="search-inline search-slot">
+			<li class="inline-actions-search">
+				<label class="focus-indicator">
 					<Search />
 					<span class="is-visually-hidden">{$_('search')}</span>
 					<input
@@ -363,16 +359,11 @@
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
-					<NewIndicatorCard
-						--height="100%"
-						container={item}
-						{relatedContainers}
-						{comparisonDataMap}
-					/>
+					<NewIndicatorCard container={item} {relatedContainers} {comparisonDataMap} />
 				{:else if isOrganizationalUnitContainer(item)}
-					<OrganizationCard --height="100%" container={item} />
+					<OrganizationCard container={item} />
 				{:else}
-					<Card --height="100%" container={item} />
+					<Card container={item} />
 				{/if}
 			{/snippet}
 		</Carousel>
@@ -432,72 +423,34 @@
 		font-weight: 400;
 	}
 
-	.search-inline {
+	.inline-actions-search {
 		display: flex;
+		min-width: 10rem;
+	}
+
+	.inline-actions-search label {
 		align-items: center;
-		gap: 0;
-	}
-
-	.show-all-button {
-		--button-active-background: transparent;
-		--button-background: var(--color-white);
-		--button-hover-background: var(--color-gray-050);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		color: var(--color-gray-900);
-		display: inline-flex;
-		height: 2.125rem;
-		font-size: 0.75rem;
-		font-weight: 500;
-		gap: 0.5rem;
-		line-height: 1.5;
-	}
-
-	.show-all-button > :global(svg) {
-		height: 0.75rem;
-		max-width: none;
-		width: 0.75rem;
-	}
-
-	.inline-search-item {
+		background-color: var(--color-gray-050);
+		border-radius: 6px;
 		display: flex;
-		min-width: 10rem;
+		padding-left: 0.5rem;
 	}
 
-	.search-slot {
-		margin-top: 0;
-		max-width: 12rem;
-		position: relative;
-		width: 100%;
+	.inline-actions-search label:hover {
+		background-color: var(--color-gray-100);
 	}
 
-	.search-slot > :global(svg) {
-		color: var(--color-gray-500);
-		height: 1rem;
-		left: 0.625rem;
-		max-width: none;
-		pointer-events: none;
-		position: absolute;
-		top: 0.5rem;
-		width: 1rem;
-	}
-
-	.search-inline input {
-		margin: 0;
-		min-width: 10rem;
-	}
-
-	.search-slot input {
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		height: 2.125rem;
-		min-width: 12rem;
+	.inline-actions-search input {
+		background-color: transparent;
+		border: none;
+		display: inline-block;
+		flex-grow: 0;
+		height: 2rem;
 		padding: 0 0.5rem;
-		padding-left: 2rem;
-		width: 100%;
+	}
+
+	.inline-actions-search input:focus {
+		outline: none;
 	}
 
 	.load-more {
