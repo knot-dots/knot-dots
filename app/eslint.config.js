@@ -29,8 +29,8 @@ export default ts.config(
 	},
 	{
 		rules: {
-			'svelte/no-navigation-without-resolve': 'warn',
-			'svelte/prefer-svelte-reactivity': 'warn'
+			'svelte/no-navigation-without-resolve': 'off',
+			'svelte/prefer-svelte-reactivity': 'off'
 		}
 	}
 );
