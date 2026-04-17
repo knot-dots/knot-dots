@@ -318,6 +318,7 @@
 			use:sortBar.button
 		>
 			<Sort />
+			<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('sort')}</span>
 		</button>
 	{/if}
 
@@ -325,7 +326,6 @@
 		<button
 			class="dropdown-button dropdown-button--command"
 			type="button"
-			{@attach tooltip($_('compare'))}
 			use:compareBar.button
 			onclick={() => {
 				filterBar.close();
@@ -333,6 +333,7 @@
 			}}
 		>
 			<Compare />
+			<span>{$_('compare')}</span>
 		</button>
 	{/if}
 </div>
