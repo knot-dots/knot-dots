@@ -481,4 +481,9 @@
 		text-overflow: ellipsis;
 		padding: 0.375rem;
 	}
+
+	.preview-item > :global(svg) {
+		flex-shrink: 0;
+		max-width: none;
+	}
 </style>
