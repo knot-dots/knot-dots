@@ -189,7 +189,7 @@
 		}
 
 		for (const value of container.payload.filter.type) {
-			params.append('payloadType', value);
+			params.append('type', value);
 		}
 
 		const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';

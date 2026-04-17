@@ -8,14 +8,6 @@
 	import Table from '$lib/components/Table.svelte';
 	import { getCategoryKeys } from '$lib/categoryOptions';
 	import { createFeatureDecisions } from '$lib/features';
-	import {
-		isGoalContainer,
-		isMeasureContainer,
-		isProgramContainer,
-		isReportContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer
-	} from '$lib/models';
 
 	let { data }: PageProps = $props();
 
@@ -57,17 +49,7 @@
 	<Table
 		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
-		rows={data.containers
-			.filter(
-				(c) =>
-					isGoalContainer(c) ||
-					isMeasureContainer(c) ||
-					isReportContainer(c) ||
-					isRuleContainer(c) ||
-					isSimpleMeasureContainer(c) ||
-					isProgramContainer(c)
-			)
-			.slice(0, browser ? undefined : 20)}
+		rows={data.containers.slice(0, browser ? undefined : 20)}
 	/>
 	<Help slug="all-table" />
 </AllPage>

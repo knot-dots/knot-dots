@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { getContext } from 'svelte';
+	import { getContext, untrack } from 'svelte';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -43,6 +43,7 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
+		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -98,10 +99,14 @@
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
-	let compareBar = createDisclosure({
-		label: $_('compare'),
-		expanded: $compareState.selectedMunicipalities.length > 0
-	});
+	let compareBar = $derived(
+		createDisclosure({
+			label: $_('compare'),
+			expanded:
+				untrack(() => $compareState.selectedMunicipalities.length > 0) &&
+				(isReportContainer(container) || isIndicatorTemplateContainer(container))
+		})
+	);
 
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
@@ -313,6 +318,7 @@
 			use:sortBar.button
 		>
 			<Sort />
+			<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('sort')}</span>
 		</button>
 	{/if}
 
@@ -320,7 +326,6 @@
 		<button
 			class="dropdown-button dropdown-button--command"
 			type="button"
-			{@attach tooltip($_('compare'))}
 			use:compareBar.button
 			onclick={() => {
 				filterBar.close();
@@ -328,6 +333,7 @@
 			}}
 		>
 			<Compare />
+			<span>{$_('compare')}</span>
 		</button>
 	{/if}
 </div>
@@ -446,8 +452,10 @@
 		--indicator-background-color: var(--color-primary-700);
 
 		align-items: center;
+		container-type: inline-size;
 		display: flex;
 		flex-wrap: wrap;
+		font-size: 0.875rem;
 		gap: 0.75rem;
 		justify-content: end;
 		padding: 0 0.75rem 0.5rem;

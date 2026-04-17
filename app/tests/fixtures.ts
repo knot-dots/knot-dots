@@ -202,24 +202,23 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(new TaskStatusBoard(page));
 	},
 	testCategoryWithTerms: async ({ adminContext, testGoal }, use, workerInfo) => {
-		const categoryTitle = `E2E Category ${workerInfo.project.name}`;
-		const termNames = [
-			`E2E Term A ${workerInfo.project.name}`,
-			`E2E Term B ${workerInfo.project.name}`
-		];
-
 		const newCategory = containerOfType(
 			payloadTypes.enum.category,
 			testGoal.organization,
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as NewContainer;
-		(newCategory.payload as CategoryContainer['payload']).title = categoryTitle;
-
-		const category = await createContainer(adminContext, newCategory);
+		) as CategoryContainer;
+		const category = await createContainer(adminContext, {
+			...newCategory,
+			payload: { ...newCategory.payload, title: `E2E Category ${workerInfo.project.name}` }
+		});
 
 		const terms: TermContainer[] = [];
+		const termNames = [
+			`E2E Term A ${workerInfo.project.name}`,
+			`E2E Term B ${workerInfo.project.name}`
+		];
 		for (const [index, termName] of termNames.entries()) {
 			const newTerm = containerOfType(
 				payloadTypes.enum.term,
@@ -227,19 +226,22 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as NewContainer;
-			const termPayload = newTerm.payload as TermContainer['payload'];
-			termPayload.title = termName;
-			termPayload.value = termName.toLowerCase().replace(/\s+/g, '-');
-			newTerm.relation = [
-				{
-					object: category.guid,
-					position: index,
-					predicate: predicates.enum['is-part-of-category']
-				}
-			];
-
-			const term = await createContainer(adminContext, newTerm);
+			) as TermContainer;
+			const term = await createContainer(adminContext, {
+				...newTerm,
+				payload: {
+					...newTerm.payload,
+					title: termName,
+					value: termName.toLowerCase().replace(/\s+/g, '-')
+				},
+				relation: [
+					{
+						object: category.guid,
+						position: index,
+						predicate: predicates.enum['is-part-of-category']
+					}
+				]
+			});
 			terms.push(term);
 		}
 

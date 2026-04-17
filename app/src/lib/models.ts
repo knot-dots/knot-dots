@@ -233,6 +233,7 @@ const categoryObjectTypeValues = [
 	payloadTypes.enum.program,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.report,
 	payloadTypes.enum.rule,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.task,
@@ -800,7 +801,7 @@ const unrefinedCategoryPayload = z.object({
 	visibility: visibility.default(visibility.enum['public'])
 });
 
-const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
+export const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
 	if (payload.title && !payload.key) {
 		payload.key = slugify(payload.title);
 	}
@@ -820,7 +821,7 @@ const unrefinedTermPayload = z
 	})
 	.strict();
 
-const termPayload = unrefinedTermPayload.superRefine((payload) => {
+export const termPayload = unrefinedTermPayload.superRefine((payload) => {
 	if (payload.title && !payload.value) {
 		payload.value = slugify(payload.title);
 	}
@@ -828,7 +829,7 @@ const termPayload = unrefinedTermPayload.superRefine((payload) => {
 
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
-const actualDataPayload = z.object({
+export const actualDataPayload = z.object({
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	booleanValue: z.boolean().default(false),
 	indicator: z.string().uuid(),
@@ -841,7 +842,7 @@ const actualDataPayload = z.object({
 
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
 
-const administrativeAreaBasicDataPayload = z.object({
+export const administrativeAreaBasicDataPayload = z.object({
 	title: z
 		.string()
 		.readonly()
@@ -865,7 +866,7 @@ const chapterPayload = basePayload
 
 const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
 
-const customCollectionPayload = z
+export const customCollectionPayload = z
 	.object({
 		filter: z
 			.object({
@@ -899,7 +900,7 @@ const customCollectionPayload = z
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
-const demographicDataPayload = z
+export const demographicDataPayload = z
 	.object({
 		area: z.number().nonnegative().optional(),
 		population: z.number().int().nonnegative().optional(),
@@ -1000,7 +1001,7 @@ const indicatorCollectionPayload = z
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
-const indicatorTemplatePayload = basePayload
+export const indicatorTemplatePayload = basePayload
 	.extend({
 		externalReference: z.string().url().optional(),
 		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
@@ -1024,7 +1025,7 @@ export const knowledgePayload = basePayload
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
-const mapPayload = z
+export const mapPayload = z
 	.object({
 		geometry: z.string().uuid().optional(),
 		title: z
@@ -1541,7 +1542,7 @@ const organizationPayload = z.object({
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
-const organizationalUnitPayload = z.object({
+export const organizationalUnitPayload = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
 	boards: z.array(boards).transform(deduplicate).default([]),
 	category: z
@@ -1728,7 +1729,7 @@ export function isActualDataContainer(
 }
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-const administrativeAreaBasicDataContainer = container.extend({
+export const administrativeAreaBasicDataContainer = container.extend({
 	payload: administrativeAreaBasicDataPayload
 });
 
@@ -1764,7 +1765,7 @@ export function isChapterContainer(
 	return container.payload.type === payloadTypes.enum.chapter;
 }
 
-const categoryContainer = container.extend({
+export const categoryContainer = container.extend({
 	payload: categoryPayload
 });
 
@@ -1776,7 +1777,7 @@ export function isCategoryContainer(
 	return container.payload.type === payloadTypes.enum.category;
 }
 
-const customCollectionContainer = container.extend({
+export const customCollectionContainer = container.extend({
 	payload: customCollectionPayload
 });
 
@@ -1788,7 +1789,7 @@ export function isCustomCollectionContainer(
 	return container.payload.type === payloadTypes.enum.custom_collection;
 }
 
-const demographicDataContainer = container.extend({
+export const demographicDataContainer = container.extend({
 	payload: demographicDataPayload
 });
 
@@ -1908,7 +1909,7 @@ export function isKnowledgeContainer(
 	return container.payload.type === payloadTypes.enum.knowledge;
 }
 
-const mapContainer = container.extend({
+export const mapContainer = container.extend({
 	payload: mapPayload
 });
 
@@ -2222,7 +2223,7 @@ export function isTaskContainer(
 	return container.payload.type === payloadTypes.enum.task;
 }
 
-const termContainer = container.extend({
+export const termContainer = container.extend({
 	payload: termPayload
 });
 

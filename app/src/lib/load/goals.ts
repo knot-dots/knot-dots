@@ -1,9 +1,9 @@
 import { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	type AnyContainer,
 	audience,
 	computeFacetCount,
-	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
 	type OrganizationalUnitContainer,
@@ -28,7 +28,7 @@ import type { PageServerLoad } from '../../routes/[guid=uuid]/goals/$types';
 export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
-	let containers: Container[];
+	let containers: AnyContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
 	let subordinateOrganizationalUnits: string[] = [];
 	const {
@@ -137,7 +137,7 @@ export default (async function load({ depends, locals, parent, url }) {
 	const filtered = filterOrganizationalUnits(
 		filterVisible(
 			containers.filter(
-				(container: Container) =>
+				(container: AnyContainer) =>
 					!container.relation.some((rel) => rel.predicate === predicates.enum['is-part-of-measure'])
 			),
 			locals.user

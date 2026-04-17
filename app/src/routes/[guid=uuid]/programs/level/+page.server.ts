@@ -2,14 +2,14 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
-	type Container,
-	filterOrganizationalUnits,
-	payloadTypes,
-	predicates,
-	computeFacetCount,
+	type AnyContainer,
 	audience,
+	computeFacetCount,
+	filterOrganizationalUnits,
 	fromCounts,
+	payloadTypes,
 	policyFieldBNK,
+	predicates,
 	programTypes,
 	sustainableDevelopmentGoals,
 	topics
@@ -24,7 +24,7 @@ import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, url, parent }) => {
-	let containers: Container[];
+	let containers: AnyContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
 	const {
 		categoryContext: rawCategoryContext,
@@ -50,7 +50,9 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 				topics: url.searchParams.getAll('topic')
 			};
 
-	async function filterOrganizationalUnitsAsync<T extends Container>(promise: Promise<Array<T>>) {
+	async function filterOrganizationalUnitsAsync<T extends AnyContainer>(
+		promise: Promise<Array<T>>
+	) {
 		let subordinateOrganizationalUnits: string[] = [];
 
 		const nextContainers = await promise;

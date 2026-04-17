@@ -17,6 +17,7 @@
 		"@knot-dots/app": "*",
 		"@elastic/elasticsearch": "^9.3.4",
 		"csv-parse": "^6.2.1",
+		"node-xlsx": "^0.24.0",
 		"osmtogeojson": "^3.0.0-beta.5",
 		"overpass-ql-ts": "^1.11.0",
 		"roarr": "^7.21.4",
@@ -24,13 +25,12 @@
 		"serialize-error": "^13.0.1",
 		"slonik": "^48.14.0",
 		"uuid": "^13.0.0",
-		"xlsx": "^0.18.5",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
 		"@tsconfig/node24": "^24.0.4",
 		"@types/node": "^24.12.2",
-		"prettier": "^3.8.2",
+		"prettier": "^3.8.3",
 		"tsx": "^4.21.0"
 	}
 }

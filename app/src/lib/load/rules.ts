@@ -6,9 +6,9 @@ import {
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import {
+	type AnyContainer,
 	audience,
 	computeFacetCount,
-	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
 	payloadTypes,
@@ -27,7 +27,7 @@ import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 export default (async function load({ depends, locals, parent, url }) {
 	depends('containers');
 
-	let containers: Container[];
+	let containers: AnyContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
 	let subordinateOrganizationalUnits: string[] = [];
 	const {

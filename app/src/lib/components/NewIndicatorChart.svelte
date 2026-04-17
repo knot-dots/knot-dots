@@ -63,6 +63,8 @@
 		)
 	]);
 
+	let allYears = $derived([...new Set(allData.map((d) => d.date.getFullYear()))].toSorted());
+
 	// Build color scale domain and range
 	let colorDomain = $derived(['current', ...comparisonValues.map((c) => c.municipalityGuid)]);
 	let colorRange = $derived([
@@ -161,6 +163,7 @@
 			width: currentWidth,
 			height: (currentWidth * 400) / 640, // Maintain the 640:400 aspect ratio
 			grid: true,
+			x: allYears.length === 1 ? { tickFormat: (d: Date) => String(d.getFullYear()) } : undefined,
 			y: { label: $_(unit), tickFormat: (d) => $number(d) },
 			color: {
 				domain: colorDomain,

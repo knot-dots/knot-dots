@@ -155,141 +155,47 @@ export const spatialFeature = z.object({
 	guid: z.string().uuid()
 });
 
-const visibility = z.enum(['creator', 'members', 'organization', 'public']);
-
-export const mapPayload = z.object({
-	geometry: z.uuid().optional(),
-	title: z.string().default('Gebietsgrenze'),
-	type: z.literal('map').default('map'),
-	visibility: visibility.default('organization')
-});
-
-export const administrativeAreaBasicDataPayload = z.object({
-	title: z.string().readonly().default('Basisinformationen'),
-	type: z.literal('administrative_area_basic_data').default('administrative_area_basic_data'),
-	visibility: visibility.default('organization')
-});
-
-const demographicDataPayload = z.object({
-	area: z.number().nonnegative().optional(),
-	population: z.number().int().nonnegative().optional(),
-	title: z.string().readonly().default('Demografische Daten'),
-	type: z.literal('demographic_data').default('demographic_data'),
-	visibility: visibility.default('organization')
-});
-
-export const organizationalUnitPayload = z.object({
-	administrativeType: z
-		.array(
-			z.enum([
-				'administrative_type.country',
-				'administrative_type.federal_state',
-				'administrative_type.municipality',
-				'administrative_type.rural_district',
-				'administrative_type.urban_district'
-			])
-		)
-		.default([]),
-	boards: z.array(z.string()).default(['board.indicators']),
-	category: z.record(z.string(), z.array(z.string())).default({}),
-	cityAndMunicipalityTypeBBSR: z.string().optional(),
-	description: z.string().trim().optional(),
-	federalState: z.string().optional(),
-	geometry: z.string().uuid().optional(),
-	image: z.string().url().optional(),
-	level: z.coerce.number().int().positive().default(1),
-	name: z.string().trim(),
-	nameBBSR: z.string().optional(),
-	nameOSM: z.string().optional(),
-	officialMunicipalityKey: z.string().optional(),
-	officialRegionalCode: z.string().optional(),
-	organizationalUnitType: z
-		.literal('organizational_unit_type.administrative_area')
-		.default('organizational_unit_type.administrative_area'),
-	type: z.literal('organizational_unit').default('organizational_unit'),
-	visibility: visibility.default('organization')
-});
-
-export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
-
-export const indicatorTemplatePayload = z.object({
-	aiSuggestion: z.boolean().default(false),
-	audience: z.array(z.string()).default(['audience.citizens']),
-	sdg: z.array(z.string()).default([]),
-	description: z.string().trim().optional(),
-	editorialState: z.string().optional(),
-	externalReference: z.string().url().optional(),
-	indicatorCategory: z.array(z.string()).default([]),
-	indicatorType: z.array(z.string()).default([]),
-	policyFieldBNK: z.array(z.string()).default([]),
-	title: z.string(),
-	topic: z.array(z.string()).default([]),
-	type: z.literal('indicator_template').default('indicator_template'),
-	unit: z.string(),
-	visibility: visibility.default('public')
-});
-
-export const actualDataPayload = z.object({
-	audience: z.array(z.string()).default(['audience.citizens']),
-	indicator: z.string().uuid(),
-	source: z.string().optional(),
-	title: z.string(),
-	type: z.literal('actual_data').default('actual_data'),
-	values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	visibility: visibility.default('organization')
-});
-
-export type ActualDataPayload = z.infer<typeof actualDataPayload>;
-
-const categoryPayload = z.object({
-	description: z.string().trim().optional(),
-	key: z.string().trim(),
-	objectTypes: z.array(z.string()).default([]),
-	title: z.string().trim().min(1),
-	type: z.literal('category').default('category'),
-	visibility: visibility.default('public')
-});
-
-export type CategoryPayload = z.infer<typeof categoryPayload>;
-
-const termPayload = z.object({
-	description: z.string().trim().optional(),
-	filterLabel: z.string().trim().max(256).optional(),
-	icon: z.string().trim().optional(),
-	title: z.string().trim().min(1),
-	type: z.literal('term').default('term'),
-	value: z.string().trim(),
-	visibility: visibility.default('public')
-});
-
-export type TermPayload = z.infer<typeof termPayload>;
-
-const customCollectionPayload = z.object({
-	allowSearch: z.boolean().default(false),
-	allowSort: z.boolean().default(false),
-	filter: z.record(z.string(), z.array(z.string())).default({}),
-	item: z.array(z.uuid()).default([]),
-	listType: z.enum(['carousel', 'wall']).default('carousel'),
-	sort: z.enum(['alpha', 'modified']).default('alpha'),
-	terms: z.string().default(''),
-	title: z.string(),
-	type: z.literal('custom_collection').default('custom_collection'),
-	visibility: visibility.default(visibility.enum['organization'])
-});
-
-const anyPayload = z.discriminatedUnion('type', [
+import {
 	mapPayload,
 	administrativeAreaBasicDataPayload,
 	demographicDataPayload,
 	organizationalUnitPayload,
-	actualDataPayload,
 	indicatorTemplatePayload,
+	actualDataPayload,
 	categoryPayload,
 	termPayload,
-	customCollectionPayload
-]);
+	customCollectionPayload,
+	anyContainer,
+	AnyContainer,
+	organizationalUnitContainer as persistedOrganizationalUnitContainer,
+	OrganizationalUnitContainer,
+	categoryContainer as persistedCategoryContainer,
+	CategoryContainer,
+	termContainer as persistedTermContainer,
+	TermContainer
+} from '../../app/src/lib/models.ts';
 
-export type Payload = z.infer<typeof anyPayload>;
+export {
+	mapPayload,
+	administrativeAreaBasicDataPayload,
+	categoryPayload,
+	organizationalUnitPayload,
+	indicatorTemplatePayload,
+	actualDataPayload,
+	termPayload
+};
+
+export type {
+	AnyContainer as PersistedContainer,
+	OrganizationalUnitContainer,
+	CategoryContainer,
+	TermContainer
+};
+
+export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
+export type ActualDataPayload = z.infer<typeof actualDataPayload>;
+export type CategoryPayload = z.infer<typeof categoryPayload>;
+export type TermPayload = z.infer<typeof termPayload>;
 
 export const containerUser = z.array(
 	z.object({
@@ -322,9 +228,7 @@ function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	});
 }
 
-export type Container<P extends Payload = Payload> = z.infer<
-	ReturnType<typeof createContainerSchema<z.ZodType<P>>>
->;
+type NewContainerInput = z.infer<ReturnType<typeof createContainerSchema<z.ZodTypeAny>>>;
 
 export const mapContainer = createContainerSchema(mapPayload);
 
@@ -345,13 +249,6 @@ export const categoryContainer = createContainerSchema(categoryPayload);
 export const termContainer = createContainerSchema(termPayload);
 
 export const customCollectionContainer = createContainerSchema(customCollectionPayload);
-
-const persistedContainer = createContainerSchema(anyPayload).extend({
-	guid: z.string().uuid(),
-	revision: z.number().int().positive()
-});
-
-export type PersistedContainer = z.infer<typeof persistedContainer>;
 
 export function insertIntoAdministrativeAreaBBSR(data: Json) {
 	return sql.type(administrativeAreaOpenStreetMap)`
@@ -462,9 +359,9 @@ export function insertIntoSpatialFeature(data: Json) {
 	`;
 }
 
-export function createContainer(container: Container) {
+export function createContainer(container: NewContainerInput) {
 	return async (tx: DatabaseTransactionConnection) => {
-		const result = await tx.one(sql.type(persistedContainer)`
+		const result = await tx.one(sql.type(anyContainer)`
 			INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
 			VALUES (
 				${container.managed_by},
@@ -488,15 +385,15 @@ export function createContainer(container: Container) {
 	};
 }
 
-export function updateContainer(container: PersistedContainer) {
+export function updateContainer(container: AnyContainer) {
 	return async (tx: DatabaseTransactionConnection) => {
-		await tx.query(sql.type(persistedContainer)`
+		await tx.query(sql.type(anyContainer)`
 			UPDATE container
 			SET valid_currently = false
 			WHERE guid = ${container.guid}
 		`);
 
-		const result = await tx.one(sql.type(persistedContainer)`
+		const result = await tx.one(sql.type(anyContainer)`
 			INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
 			VALUES (
 				${container.guid},
@@ -576,7 +473,7 @@ export function getContainer(criteria: {
 			conditions.push(sql.fragment`payload->>'type' = ${criteria.payload.type}`);
 		}
 
-		return await tx.maybeOne(sql.type(persistedContainer)`
+		return await tx.maybeOne(sql.type(anyContainer)`
 			SELECT *
 			FROM container
 			WHERE ${sql.join(conditions, sql.fragment` AND `)}
@@ -600,8 +497,8 @@ export async function getCategoryContainer(
 	tx: DatabaseTransactionConnection,
 	organizationGuid: string,
 	key: string
-): Promise<(PersistedContainer & Container<CategoryPayload>) | null> {
-	return tx.maybeOne(sql.type(persistedContainer.and(categoryContainer))`
+): Promise<CategoryContainer | null> {
+	return tx.maybeOne(sql.type(persistedCategoryContainer)`
 		SELECT *
 		FROM container
 		WHERE organization = ${organizationGuid}
@@ -618,8 +515,8 @@ export async function getTermContainersForCategory(
 	organizationGuid: string,
 	categoryGuid: string,
 	predicate = 'is-part-of-category'
-): Promise<Readonly<Array<PersistedContainer & Container<TermPayload>>>> {
-	return await tx.any(sql.type(persistedContainer.and(termContainer))`
+): Promise<Readonly<Array<TermContainer>>> {
+	return await tx.any(sql.type(persistedTermContainer)`
 		SELECT c.*
 		FROM container c
 		JOIN container_relation cr
@@ -639,8 +536,8 @@ export async function getTermContainersForCategory(
 export async function getOrganizationalUnitContainers(
 	tx: DatabaseTransactionConnection,
 	organizationGuid: string
-): Promise<Readonly<Array<PersistedContainer & Container<OrganizationalUnitPayload>>>> {
-	return tx.any(sql.type(persistedContainer.and(organizationalUnitContainer))`
+): Promise<Readonly<Array<OrganizationalUnitContainer>>> {
+	return tx.any(sql.type(persistedOrganizationalUnitContainer)`
 		SELECT *
 		FROM container
 		WHERE organization = ${organizationGuid}
@@ -652,3 +549,27 @@ export async function getOrganizationalUnitContainers(
 		ORDER BY payload->>'officialMunicipalityKey', guid
 	`);
 }
+
+const isObject = (item: unknown): item is Record<string, unknown> => {
+	return item !== null && typeof item === 'object' && !Array.isArray(item);
+};
+
+export const mergeDeep = (
+	target: Record<string, unknown>,
+	...sources: Record<string, unknown>[]
+): Record<string, unknown> => {
+	if (!sources.length) return { ...target };
+	const [source, ...rest] = sources;
+
+	const result: Record<string, unknown> = { ...target };
+	for (const key in source) {
+		if (Array.isArray(source[key]) && Array.isArray(target[key])) {
+			result[key] = [...new Set([...target[key], ...source[key]])];
+		} else if (isObject(source[key])) {
+			result[key] = mergeDeep(isObject(target[key]) ? target[key] : {}, source[key]);
+		} else {
+			result[key] = source[key];
+		}
+	}
+	return mergeDeep(result, ...rest);
+};

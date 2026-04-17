@@ -178,6 +178,7 @@ function isSame<T>(a: T, b: T) {
 								organization,
 								organizational_unit: organizationalUnit.guid,
 								payload: {
+									type: 'actual_data',
 									indicator: indicatorTemplate.guid,
 									source: statistics.indicatorsAndTopics[0].source,
 									title: statistics.indicatorsAndTopics[0].title,

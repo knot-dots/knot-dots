@@ -7,6 +7,7 @@ import {
 	audience,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
+	isProgramContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
@@ -123,6 +124,17 @@ export const GET = (async ({ locals, params, url }) => {
 					)
 				);
 			}
+		} else if (isProgramContainer(container)) {
+			containers = await locals.pool.connect(
+				getAllContainersRelatedToProgram(container.guid, {
+					audience: parseResult.data.audience,
+					sdg: parseResult.data.sdg,
+					policyFieldsBNK: parseResult.data.policyFieldBNK,
+					terms: parseResult.data.terms[0],
+					topics: parseResult.data.topic,
+					type: parseResult.data.payloadType
+				})
+			);
 		} else if (isContainerWithEffect(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToMeasure(

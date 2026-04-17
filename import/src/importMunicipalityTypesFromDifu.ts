@@ -1,22 +1,24 @@
 import { type DatabaseTransactionConnection } from 'slonik';
-import XLSX from 'xlsx';
+import xlsx from 'node-xlsx';
 import * as z from 'zod';
 import {
 	categoryContainer,
-	CategoryPayload,
-	Container,
+	categoryPayload,
+	CategoryContainer,
 	createContainer,
 	createRelation,
 	getCategoryContainer,
 	getOrganizationalUnitContainers,
 	getTermContainersForCategory,
 	getPool,
+	OrganizationalUnitContainer,
 	OrganizationalUnitPayload,
-	PersistedContainer,
 	termContainer,
-	TermPayload,
+	termPayload,
+	TermContainer,
 	updateContainer
 } from './db.ts';
+import assert from 'node:assert';
 
 const categoryKey = 'kommunaltyp';
 const categoryTitle = 'Kommunaltyp';
@@ -53,6 +55,8 @@ type Assignment = {
 	rows: ParsedRow[];
 };
 
+type ParsedWorkbook = ReturnType<typeof xlsx.parse>;
+
 function getValue(record: Record<string, unknown>, header: string | readonly string[]) {
 	const headers = Array.isArray(header) ? header : [header];
 
@@ -64,24 +68,27 @@ function getValue(record: Record<string, unknown>, header: string | readonly str
 	}
 }
 
-function readSheet(workbook: XLSX.WorkBook, sheetName: string) {
-	const worksheet = workbook.Sheets[sheetName];
+function readSheet(workbook: ParsedWorkbook, sheetName: string) {
+	const worksheet = workbook.find((sheet) => sheet.name === sheetName);
 
 	if (!worksheet) {
 		throw new Error(
-			`Sheet "${sheetName}" was not found. Available sheets: ${workbook.SheetNames.join(', ')}`
+			`Sheet "${sheetName}" was not found. Available sheets: ${workbook.map(({ name }) => name).join(', ')}`
 		);
 	}
 
-	return XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
-		blankrows: false,
-		defval: '',
-		raw: false
-	});
+	const [headerRow = [], ...rows] = worksheet.data as unknown[][];
+	const headers = headerRow.map((value) => String(value ?? '').trim());
+
+	return rows
+		.filter((row) => row.some((value) => String(value ?? '').trim() !== ''))
+		.map((row) =>
+			Object.fromEntries(headers.map((header, index) => [header, row[index] ?? '']))
+		) as Record<string, unknown>[];
 }
 
 function parseSheet(
-	workbook: XLSX.WorkBook,
+	workbook: ParsedWorkbook,
 	sheetName: 'Kreistypen 2021' | 'Gemeindetypen 2022',
 	headers: { code: string; name: string; key: string }
 ) {
@@ -122,10 +129,8 @@ function addAssignment(assignments: Map<string, Assignment>, row: ParsedRow) {
 	existing.rows.push(row);
 }
 
-function buildOrganizationalUnitMap(
-	containers: Readonly<Array<PersistedContainer & Container<OrganizationalUnitPayload>>>
-) {
-	const byKey = new Map<string, Array<PersistedContainer & Container<OrganizationalUnitPayload>>>();
+function buildOrganizationalUnitMap(containers: Readonly<Array<OrganizationalUnitContainer>>) {
+	const byKey = new Map<string, Array<OrganizationalUnitContainer>>();
 
 	for (const container of containers) {
 		const key = String(container.payload.officialMunicipalityKey ?? '').trim();
@@ -141,8 +146,8 @@ function buildOrganizationalUnitMap(
 	return byKey;
 }
 
-function buildTermMap(terms: Readonly<Array<PersistedContainer & Container<TermPayload>>>) {
-	const byCode = new Map<string, PersistedContainer & Container<TermPayload>>();
+function buildTermMap(terms: Readonly<Array<TermContainer>>) {
+	const byCode = new Map<string, TermContainer>();
 
 	for (const term of terms) {
 		const code = String(term.payload.value ?? '').trim();
@@ -164,7 +169,7 @@ async function ensureCategory(
 	tx: DatabaseTransactionConnection,
 	organization: string,
 	stats: { categoryCreated: boolean; categoryUpdated: boolean }
-): Promise<PersistedContainer & Container<CategoryPayload>> {
+): Promise<CategoryContainer> {
 	const existing = await getCategoryContainer(tx, organization, categoryKey);
 
 	if (!existing) {
@@ -174,11 +179,16 @@ async function ensureCategory(
 				managed_by: organization,
 				organization: organization,
 				organizational_unit: null,
-				payload: { key: categoryKey, objectTypes: ['organizational_unit'], title: categoryTitle },
+				payload: {
+					type: 'category',
+					key: categoryKey,
+					objectTypes: ['organizational_unit'],
+					title: categoryTitle
+				},
 				realm: env.PUBLIC_KC_REALM,
 				user: [{ predicate: creatorPredicate, subject: env.IMPORT_USER }]
 			})
-		)(tx)) as PersistedContainer & Container<CategoryPayload>;
+		)(tx)) as CategoryContainer;
 	}
 
 	const needsUpdate =
@@ -195,21 +205,21 @@ async function ensureCategory(
 	stats.categoryUpdated = true;
 	return (await updateContainer({
 		...existing,
-		payload: {
+		payload: categoryPayload.parse({
 			...existing.payload,
 			key: categoryKey,
 			objectTypes: ['organizational_unit'],
 			title: categoryTitle
-		}
-	})(tx)) as PersistedContainer & Container<CategoryPayload>;
+		})
+	})(tx)) as CategoryContainer;
 }
 
 async function ensureTerm(
 	tx: DatabaseTransactionConnection,
-	category: PersistedContainer & Container<CategoryPayload>,
+	category: CategoryContainer,
 	code: string,
 	position: number,
-	termsByCode: Map<string, PersistedContainer & Container<TermPayload>>,
+	termsByCode: Map<string, TermContainer>,
 	stats: { termsCreated: number; termsUpdated: number }
 ) {
 	const existing = termsByCode.get(code);
@@ -220,11 +230,11 @@ async function ensureTerm(
 				managed_by: category.managed_by,
 				organization: category.organization,
 				organizational_unit: category.organizational_unit,
-				payload: { title: code, value: code },
+				payload: { type: 'term', title: code, value: code },
 				realm: env.PUBLIC_KC_REALM,
 				user: [{ predicate: creatorPredicate, subject: env.IMPORT_USER }]
 			})
-		)(tx)) as PersistedContainer & Container<TermPayload>;
+		)(tx)) as TermContainer;
 
 		await createRelation([
 			{
@@ -250,8 +260,8 @@ async function ensureTerm(
 
 	const updated = (await updateContainer({
 		...existing,
-		payload: { ...existing.payload, title: code, value: code }
-	})(tx)) as PersistedContainer & Container<TermPayload>;
+		payload: termPayload.parse({ ...existing.payload, title: code, value: code })
+	})(tx)) as TermContainer;
 	termsByCode.set(code, updated);
 	stats.termsUpdated++;
 	return updated;
@@ -271,8 +281,17 @@ function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[
 	};
 }
 
+function isSame<T>(a: T, b: T) {
+	try {
+		assert.deepEqual(a, b);
+		return true;
+	} catch (_) {
+		return false;
+	}
+}
+
 (async function main() {
-	const workbook = XLSX.readFile(env.DIFU_FILE);
+	const workbook = xlsx.parse(env.DIFU_FILE, { raw: false, blankrows: false });
 	const rows = [
 		...parseSheet(workbook, 'Kreistypen 2021', {
 			code: 'Kreistyp',
@@ -348,14 +367,14 @@ function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[
 
 				stats.assignmentsMatched++;
 
-				if (!nextPayload) {
+				if (isSame(organizationalUnit.payload, nextPayload)) {
 					stats.assignmentsUnchanged++;
 					continue;
 				}
 
 				const updated = (await updateContainer({ ...organizationalUnit, payload: nextPayload })(
 					tx
-				)) as PersistedContainer & Container<OrganizationalUnitPayload>;
+				)) as OrganizationalUnitContainer;
 				organizationalUnitsByKey.set(assignment.official_municipality_key, [updated]);
 				stats.assignmentsUpdated++;
 			}

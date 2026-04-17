@@ -36,20 +36,22 @@ export default (async function load({ depends, locals, url, parent }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
+	const typeFilterFromURL = url.searchParams.getAll('type');
+	const typeFilter = [
+		payloadTypes.enum.goal,
+		payloadTypes.enum.help,
+		payloadTypes.enum.knowledge,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.organizational_unit,
+		...(features.usePage() ? [payloadTypes.enum.page] : []),
+		payloadTypes.enum.program,
+		...(features.useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure,
+		payloadTypes.enum.task
+	].filter((type) => typeFilterFromURL.length == 0 || typeFilterFromURL.includes(type));
 	const categoryContext = rawCategoryContext
-		? filterCategoryContext(
-				rawCategoryContext,
-				[
-					payloadTypes.enum.effect,
-					payloadTypes.enum.goal,
-					payloadTypes.enum.indicator_template,
-					payloadTypes.enum.measure,
-					payloadTypes.enum.program,
-					payloadTypes.enum.rule,
-					payloadTypes.enum.simple_measure
-				],
-				{ matchAll: true }
-			)
+		? filterCategoryContext(rawCategoryContext, typeFilter, { matchAll: true })
 		: null;
 	const useCustomCategories = features.useCustomCategories();
 
@@ -91,17 +93,7 @@ export default (async function load({ depends, locals, url, parent }) {
 					: url.searchParams.getAll('relationType'),
 				{
 					customCategories,
-					type: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.goal,
-						payloadTypes.enum.image,
-						payloadTypes.enum.indicator_template,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.program,
-						payloadTypes.enum.report,
-						payloadTypes.enum.rule,
-						payloadTypes.enum.simple_measure
-					]
+					type: typeFilter
 				},
 				url.searchParams.get('sort') ?? ''
 			)
@@ -115,35 +107,12 @@ export default (async function load({ depends, locals, url, parent }) {
 					...coreCategoryFilters,
 					customCategories,
 					terms: url.searchParams.get('terms') ?? '',
-					type: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.goal,
-						payloadTypes.enum.image,
-						payloadTypes.enum.indicator_template,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.program,
-						payloadTypes.enum.report,
-						payloadTypes.enum.rule,
-						payloadTypes.enum.simple_measure
-					]
+					type: typeFilter
 				},
 				url.searchParams.get('sort') ?? ''
 			)
 		);
 	} else {
-		const typeFilters = [
-			payloadTypes.enum.effect,
-			payloadTypes.enum.goal,
-			payloadTypes.enum.image,
-			payloadTypes.enum.indicator_template,
-			payloadTypes.enum.measure,
-			payloadTypes.enum.program,
-			payloadTypes.enum.report,
-			payloadTypes.enum.rule,
-			payloadTypes.enum.simple_measure,
-			...(features.usePage() ? [payloadTypes.enum.page] : [])
-		];
-
 		if (features.useElasticsearch()) {
 			const esResult = await getManyContainersWithES(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
@@ -152,7 +121,7 @@ export default (async function load({ depends, locals, url, parent }) {
 					customCategories,
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
-					type: typeFilters
+					type: typeFilter
 				},
 				url.searchParams.get('sort') ?? '',
 				undefined,
@@ -169,7 +138,7 @@ export default (async function load({ depends, locals, url, parent }) {
 						customCategories,
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
-						type: typeFilters
+						type: typeFilter
 					},
 					url.searchParams.get('sort') ?? ''
 				)
@@ -223,6 +192,7 @@ export default (async function load({ depends, locals, url, parent }) {
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
+	_facets.set('type', fromCounts(typeFilter, data?.type));
 
 	const facets = features.useElasticsearch()
 		? _facets

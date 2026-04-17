@@ -36,7 +36,7 @@
 </script>
 
 <dialog bind:this={dialog} oninput={(e) => e.stopPropagation()}>
-	<form method="dialog">
+	<div>
 		<div class="commands">
 			<span>{title}</span>
 
@@ -89,7 +89,7 @@
 		</div>
 
 		{@render content()}
-	</form>
+	</div>
 </dialog>
 
 <style>
@@ -113,7 +113,7 @@
 		width: calc(100vw - 10rem);
 	}
 
-	dialog > form {
+	dialog > div {
 		display: flex;
 		flex-direction: column;
 		height: 100%;

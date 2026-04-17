@@ -9,13 +9,19 @@
 	import Card from '$lib/components/Card.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import { type Container, type Predicate, predicates, type Relation } from '$lib/models';
+	import {
+		type AnyContainer,
+		type Container,
+		type Predicate,
+		predicates,
+		type Relation
+	} from '$lib/models';
 	import { dragged } from '$lib/stores';
 	import { predicateIcons } from '$lib/theme/models';
 
 	interface Props {
 		object: Container;
-		relatedContainers: Container[];
+		relatedContainers: AnyContainer[];
 	}
 
 	let { object, relatedContainers }: Props = $props();
@@ -27,12 +33,16 @@
 	type DropZone = {
 		active: boolean;
 		help: string;
-		items: { guid: string; container: Container }[];
+		items: { guid: string; container: AnyContainer }[];
 		predicate: Predicate;
-		createRelation: (selected: Container, dragged: Container) => Relation;
+		createRelation: (selected: AnyContainer, dragged: AnyContainer) => Relation;
 	};
 
-	function createRelation(subject: Container, predicate: Predicate, object: Container): Relation {
+	function createRelation(
+		subject: AnyContainer,
+		predicate: Predicate,
+		object: AnyContainer
+	): Relation {
 		return {
 			object: object.guid,
 			position: 0,
@@ -42,7 +52,7 @@
 	}
 
 	function hasRelation(
-		candidate: Container,
+		candidate: AnyContainer,
 		predicate: Predicate,
 		matcher: (relation: Relation) => boolean
 	) {
@@ -77,7 +87,7 @@
 					.map((container) => ({ guid: container.guid, container })),
 				help: $_('relation_overlay.is_consistent_with'),
 				predicate: predicates.enum['is-consistent-with'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -96,7 +106,7 @@
 					.map((container) => ({ guid: container.guid, container })),
 				help: $_('relation_overlay.is_inconsistent_with'),
 				predicate: predicates.enum['is-inconsistent-with'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -115,7 +125,7 @@
 					.map((container) => ({ guid: container.guid, container })),
 				help: $_('relation_overlay.is_equivalent_to'),
 				predicate: predicates.enum['is-equivalent-to'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -136,7 +146,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['implies'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -157,7 +167,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['implies'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -177,7 +187,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-superordinate-of'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -197,7 +207,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-superordinate-of'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -217,7 +227,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-prerequisite-for'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -237,7 +247,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-prerequisite-for'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -256,7 +266,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['contributes-to'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -275,7 +285,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['contributes-to'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -295,7 +305,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-sub-target-of'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -314,7 +324,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-sub-target-of'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -335,7 +345,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-concrete-target-of'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -355,7 +365,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-concrete-target-of'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			},
@@ -374,7 +384,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-affected-by'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(selected, this.predicate, dragged);
 				}
 			},
@@ -393,7 +403,7 @@
 					values: { selected: object.payload.title }
 				}),
 				predicate: predicates.enum['is-affected-by'],
-				createRelation: function (selected: Container, dragged: Container) {
+				createRelation: function (selected: AnyContainer, dragged: AnyContainer) {
 					return createRelation(dragged, this.predicate, selected);
 				}
 			}
@@ -404,7 +414,7 @@
 
 	function handleDndConsider(
 		index: number,
-		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
+		event: CustomEvent<DndEvent<{ guid: string; container: AnyContainer }>>
 	) {
 		if (event.detail.info.trigger === TRIGGERS.DRAGGED_ENTERED) {
 			activeDropZoneIndex = index;
@@ -416,7 +426,7 @@
 
 	async function handleDndFinalize(
 		index: number,
-		event: CustomEvent<DndEvent<{ guid: string; container: Container }>>
+		event: CustomEvent<DndEvent<{ guid: string; container: AnyContainer }>>
 	) {
 		if (event.detail.info.trigger === TRIGGERS.DROPPED_INTO_ZONE && $dragged) {
 			$dragged.relation.push(dropZones[index].createRelation(object, $dragged));
@@ -433,7 +443,7 @@
 		}
 	}
 
-	function removeRelation(subject: Container, predicate: Predicate, object: Container) {
+	function removeRelation(subject: AnyContainer, predicate: Predicate, object: AnyContainer) {
 		return async (event: Event) => {
 			event.stopPropagation();
 

@@ -5,6 +5,7 @@
 	import Close from '~icons/knotdots/close';
 	import MunicipalityPicker from '$lib/components/MunicipalityPicker.svelte';
 	import { compareState } from '$lib/stores';
+	import { untrack } from 'svelte';
 
 	interface Props {
 		disclosure: ReturnType<typeof createDisclosure>;
@@ -41,6 +42,13 @@
 	function clearAll() {
 		compareState.set({ selectedMunicipalities: [], colorAssignments: {} });
 	}
+
+	// Open the picker dialog when the compare bar is expanded but no municipalities are selected
+	$effect(() => {
+		if ($disclosure.expanded && untrack(() => $compareState.selectedMunicipalities.length === 0)) {
+			openPicker();
+		}
+	});
 
 	// Assign colors to municipalities that don't have one yet
 	$effect(() => {

@@ -18,7 +18,6 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import {
 		type AnyContainer,
-		type Container,
 		containerOfType,
 		createCopyOf,
 		getOrganizationURL,
@@ -39,7 +38,7 @@
 		container: OrganizationalUnitContainer;
 		layout: Snippet<[Snippet, Snippet]>;
 		linkedProfiles?: AnyContainer[];
-		relatedContainers?: Container[];
+		relatedContainers?: AnyContainer[];
 	}
 
 	let {
