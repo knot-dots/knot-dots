@@ -4,7 +4,9 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { predicates } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { computeFacetCount, predicates } from '$lib/models';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -18,7 +20,16 @@
 		]
 	});
 
-	let facets = $derived(data.facets);
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
+
+	let facets = $derived(
+		computeFacetCount(data.facets, containers, {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
+	);
 </script>
 
 <Layout>
@@ -34,7 +45,7 @@
 	{#snippet main()}
 		<div>
 			<ul>
-				{#each data.containers as container (container.guid)}
+				{#each containers as container (container.guid)}
 					<li>
 						<Card --height="100%" {container} />
 					</li>

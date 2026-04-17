@@ -92,7 +92,7 @@
 	]);
 </script>
 
-<AllPage {data}>
+<AllPage {data} {containers}>
 	<Board>
 		{#each columns as column (column.key)}
 			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>

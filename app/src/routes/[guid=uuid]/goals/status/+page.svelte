@@ -18,7 +18,7 @@
 	);
 </script>
 
-<GoalsPage {data}>
+<GoalsPage {data} {containers}>
 	<Board>
 		{#each goalStatus.options as statusOption (statusOption)}
 			<BoardColumn

@@ -2,17 +2,29 @@
 	import { type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import { computeFacetCount, type AnyContainer } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/knowledge/catalog/$types';
 
 	interface Props {
 		children: Snippet;
+		containers?: AnyContainer[];
 		data: PageData;
 		filterBarInitiallyOpen?: boolean;
 	}
-	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
+	let {
+		children,
+		data,
+		containers = data.containers,
+		filterBarInitiallyOpen = false
+	}: Props = $props();
 
-	let facets = $derived(data.facets);
+	let facets = $derived(
+		computeFacetCount(data.facets, containers, {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
+	);
 </script>
 
 <Layout>

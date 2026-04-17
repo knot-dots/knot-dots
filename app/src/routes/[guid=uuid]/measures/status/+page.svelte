@@ -18,7 +18,7 @@
 	);
 </script>
 
-<MeasuresPage {data}>
+<MeasuresPage {data} {containers}>
 	<Board>
 		{#each status.options as statusOption (statusOption)}
 			<BoardColumn

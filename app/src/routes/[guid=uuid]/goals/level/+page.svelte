@@ -29,7 +29,7 @@
 	);
 </script>
 
-<GoalsPage {data}>
+<GoalsPage {data} {containers}>
 	<Board>
 		{#each columns as column (column.key)}
 			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>

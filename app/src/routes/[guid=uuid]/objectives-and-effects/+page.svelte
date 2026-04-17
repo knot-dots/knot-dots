@@ -12,6 +12,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import {
+		computeFacetCount,
 		type Container,
 		findAncestors,
 		findConnected,
@@ -120,7 +121,12 @@
 		return objectivesByLevel;
 	});
 
-	let facets = $derived(data.facets);
+	let facets = $derived(
+		computeFacetCount(data.facets, [...containers], {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
+	);
 </script>
 
 <Layout>

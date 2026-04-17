@@ -7,7 +7,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { levels, predicates } from '$lib/models';
+	import { computeFacetCount, levels, predicates } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -23,10 +23,15 @@
 		]
 	});
 
-	let facets = $derived(data.facets);
-
 	let containers = $derived(
 		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
+
+	let facets = $derived(
+		computeFacetCount(data.facets, containers, {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
 	);
 </script>
 

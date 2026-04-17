@@ -2,17 +2,23 @@
 	import { setContext, type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { predicates } from '$lib/models';
+	import { computeFacetCount, type AnyContainer, predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/all/catalog/$types';
 
 	interface Props {
 		children: Snippet;
+		containers?: AnyContainer[];
 		data: PageData;
 		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
+	let {
+		children,
+		data,
+		containers = data.containers,
+		filterBarInitiallyOpen = false
+	}: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -23,7 +29,12 @@
 			predicates.enum['contributes-to']
 		]
 	});
-	let facets = $derived(data.facets);
+	let facets = $derived(
+		computeFacetCount(data.facets, containers, {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
+	);
 </script>
 
 <Layout>
