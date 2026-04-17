@@ -348,6 +348,37 @@
 </PickerDialog>
 
 <style>
+	.sort-option {
+		border-radius: 8px;
+		gap: 0;
+		padding: 0.5rem 0.625rem;
+	}
+
+	.sort-option > input {
+		appearance: none;
+	}
+
+	.sort-option > :global(svg) {
+		height: 1rem;
+		margin-right: 0.375rem;
+		width: 1rem;
+	}
+
+	.sort-option:focus-within,
+	.sort-option:hover {
+		background-color: var(--color-primary-100);
+	}
+
+	.sort-option:has(> input:active) {
+		background-color: var(--color-primary-300);
+		color: var(--color-primary-700);
+	}
+
+	.sort-option:has(> input:checked) {
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
+	}
+
 	.result-and-preview {
 		display: flex;
 		flex-direction: row;
