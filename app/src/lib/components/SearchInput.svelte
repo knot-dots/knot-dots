@@ -21,10 +21,16 @@
 
 <style>
 	label {
+		background-color: var(--color-gray-050);
 		align-items: center;
 		border-radius: 6px;
 		display: flex;
 		padding-left: 0.5rem;
+	}
+
+	label:hover,
+	label:focus-within {
+		background-color: var(--color-gray-100);
 	}
 
 	input {

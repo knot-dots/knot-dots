@@ -436,7 +436,8 @@
 		padding-left: 0.5rem;
 	}
 
-	.inline-actions-search label:hover {
+	.inline-actions-search label:hover,
+	.inline-actions-search label:focus-within {
 		background-color: var(--color-gray-100);
 	}
 
