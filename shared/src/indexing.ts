@@ -144,6 +144,13 @@ export function createIndexWithMappings(client: Client, index: string) {
 						subject: { type: 'keyword' }
 					}
 				},
+				user: {
+					type: 'nested',
+					properties: {
+						predicate: { type: 'keyword' },
+						subject: { type: 'keyword' }
+					}
+				},
 				payload: {
 					properties: {
 						audience: { type: 'keyword' },
@@ -226,6 +233,7 @@ export function toDoc(row: {
 	valid_from?: string | Date | null;
 	priority?: number | null;
 	relation?: Relation[];
+	user?: { predicate: string; subject: string }[];
 }) {
 	const normalized = normalizePayload(row.payload || {});
 	const originalPayload = { ...(row.payload || {}) };
@@ -263,6 +271,11 @@ export function toDoc(row: {
 		subject: r.subject
 	}));
 
+	const user = (row.user ?? []).map((u) => ({
+		predicate: u.predicate,
+		subject: u.subject
+	}));
+
 	return {
 		guid: row.guid,
 		revision: row.revision,
@@ -276,6 +289,7 @@ export function toDoc(row: {
 		valid_from: validFrom,
 		priority,
 		relation,
+		user,
 		payload: originalPayload,
 		sdg_labels: sdgLabels,
 		topic_labels: topicLabels,
