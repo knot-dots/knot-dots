@@ -82,21 +82,19 @@ export async function getIndicatorsData(params: {
 	let facetData: Record<string, Record<string, number>> | undefined;
 
 	if (useElasticsearch) {
-		const esResult = await connect(
-			getManyContainersWithES(
-				[],
-				{
-					customCategories: filters.customCategories,
-					indicatorCategories: filters.indicatorCategories,
-					indicatorTypes: filters.indicatorTypes,
-					sdg: filters.sdg,
-					terms: filters.terms,
-					type: [payloadTypes.enum.indicator_template]
-				},
-				'alpha',
-				undefined,
-				{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
-			)
+		const esResult = await getManyContainersWithES(
+			[],
+			{
+				customCategories: filters.customCategories,
+				indicatorCategories: filters.indicatorCategories,
+				indicatorTypes: filters.indicatorTypes,
+				sdg: filters.sdg,
+				terms: filters.terms,
+				type: [payloadTypes.enum.indicator_template]
+			},
+			'alpha',
+			undefined,
+			{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
 		);
 		indicators = esResult.containers as IndicatorTemplateContainer[];
 		facetData = esResult.facets;

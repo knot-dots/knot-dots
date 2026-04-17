@@ -403,7 +403,7 @@ test.for([
 	`);
 
 		const sqlResults = await getManyContainers([org.guid], filters, sort, 1000)(connection);
-		const esResults = await getManyContainersWithES([org.guid], filters, sort, 1000)(connection);
+		const esResults = await getManyContainersWithES([org.guid], filters, sort, 1000);
 
 		expect(esResults.containers.length).toBe(sqlResults.length);
 		expect(esResults.containers.map((c) => c.guid)).toEqual(sqlResults.map((c) => c.guid));

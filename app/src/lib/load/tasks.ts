@@ -77,29 +77,25 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		} else {
 			if (features.useElasticsearch()) {
 				const [taskResult, otherResult] = await Promise.all([
-					locals.pool.connect(
-						getManyContainersWithES(
-							currentOrganization.payload.default ? [] : [currentOrganization.guid],
-							{
-								assignees: url.searchParams.getAll('assignee'),
-								customCategories,
-								taskCategories: url.searchParams.getAll('taskCategory'),
-								terms: url.searchParams.get('terms') ?? '',
-								type: [payloadTypes.enum.task]
-							},
-							url.searchParams.get('sort') ?? defaultSort
-						)
+					getManyContainersWithES(
+						currentOrganization.payload.default ? [] : [currentOrganization.guid],
+						{
+							assignees: url.searchParams.getAll('assignee'),
+							customCategories,
+							taskCategories: url.searchParams.getAll('taskCategory'),
+							terms: url.searchParams.get('terms') ?? '',
+							type: [payloadTypes.enum.task]
+						},
+						url.searchParams.get('sort') ?? defaultSort
 					),
-					locals.pool.connect(
-						getManyContainersWithES(
-							currentOrganization.payload.default ? [] : [currentOrganization.guid],
-							{
-								type: [payloadTypes.enum.goal]
-							},
-							'alpha',
-							undefined,
-							{ includeFacets: false }
-						)
+					getManyContainersWithES(
+						currentOrganization.payload.default ? [] : [currentOrganization.guid],
+						{
+							type: [payloadTypes.enum.goal]
+						},
+						'alpha',
+						undefined,
+						{ includeFacets: false }
 					)
 				]);
 				taskContainers = taskResult.containers as TaskContainer[];
