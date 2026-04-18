@@ -169,6 +169,7 @@
 			const error = await response.json();
 			alert(error.message);
 		}
+		dialog.close();
 	}
 
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
@@ -260,7 +261,7 @@
 					</li>
 					<li>
 						<!-- svelte-ignore a11y_autofocus -->
-						<button class="button-red" autofocus>
+						<button autofocus class="button-red" onclick={() => dialog.close()} type="button">
 							{$_('custom_collection.dialog.cancel')}
 						</button>
 					</li>
@@ -294,6 +295,7 @@
 					class="button-primary"
 					disabled={mode === 'select' && selected.length === 0}
 					onclick={confirm}
+					type="button"
 				>
 					{#if mode === 'select'}
 						{$_('custom_collection.dialog.accept_selection', {
