@@ -123,7 +123,7 @@
 	ul {
 		display: grid;
 		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(19.5rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(19.5rem, 1fr));
 	}
 
 	ul:nth-child(2) {
