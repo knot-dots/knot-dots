@@ -72,7 +72,6 @@
 </script>
 
 <MultilevelSettingsDropdown
-	dropdownClass="custom-collection-settings"
 	isRoot={settingsSubview === 'main'}
 	label={$_('custom_collection.settings.title')}
 	handleBack={backToMain}
