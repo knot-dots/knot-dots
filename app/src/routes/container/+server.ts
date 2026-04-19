@@ -473,6 +473,7 @@ export const GET = (async ({ locals, url }) => {
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 		taskCategory: z.array(taskCategories).default([]),
+		template: z.array(z.stringbool()).default([]),
 		terms: z.array(z.string()).default([]),
 		topic: z.array(topics).catch([]).default([])
 	});
@@ -521,6 +522,7 @@ export const GET = (async ({ locals, url }) => {
 				policyFieldsBNK: customCategories['policyFieldBNK'] ? [] : parseResult.data.policyFieldBNK,
 				programTypes: parseResult.data.programType,
 				sdg: customCategories['sdg'] ? [] : parseResult.data.sdg,
+				template: parseResult.data.template[0],
 				terms: parseResult.data.terms[0],
 				topics: customCategories['topic'] ? [] : parseResult.data.topic,
 				type: parseResult.data.payloadType

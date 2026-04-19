@@ -8,7 +8,7 @@
 	import SearchInput from '$lib/components/SearchInput.svelte';
 
 	interface Props {
-		dialog: HTMLDialogElement;
+		dialog?: HTMLDialogElement;
 		title: string;
 		filterBar: ReturnType<typeof createDisclosure>;
 		sortBar: ReturnType<typeof createDisclosure>;

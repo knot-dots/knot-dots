@@ -9,14 +9,15 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
-	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
+	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
+	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
@@ -53,7 +54,9 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let dialog: HTMLDialogElement = $state(undefined!);
+	let dialog = $state<HTMLDialogElement>();
+
+	let templatePickerDialog = $state<HTMLDialogElement>();
 
 	const defaultPayloadType = $derived([
 		payloadTypes.enum.goal,
@@ -257,6 +260,10 @@
 		dialog?.showModal();
 	}
 
+	function addTemplates() {
+		templatePickerDialog?.showModal();
+	}
+
 	$effect(() => {
 		if (!container.payload.allowSearch) {
 			localTerms = '';
@@ -320,6 +327,7 @@
 				<CustomCollectionSettingsDropdown
 					bind:container
 					onAddItems={addItems}
+					onAddTemplates={addTemplates}
 					bind:parentContainer
 					bind:relatedContainers
 				/>
@@ -397,6 +405,8 @@
 {/if}
 
 <CustomCollectionPicker bind:container bind:dialog />
+
+<TemplatePicker bind:container bind:dialog={templatePickerDialog} />
 
 <style>
 	.details-heading {

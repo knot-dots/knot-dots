@@ -873,6 +873,7 @@ export const customCollectionPayload = z
 		filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
 		item: z.array(z.uuid()).default([]),
 		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
+		newItemTemplate: z.array(z.uuid()).default([]),
 		allowSearch: z.boolean().default(false),
 		allowSort: z.boolean().default(false),
 		sort: z.enum(['alpha', 'modified']).default('alpha'),
