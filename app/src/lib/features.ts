@@ -69,9 +69,6 @@ export function createFeatureDecisions(features: string[]) {
 		usePage() {
 			return features.includes('EditorialPages');
 		},
-		useFavoriteList() {
-			return features.includes('EditorialPages');
-		},
 		useEmbedObjects() {
 			return features.includes('EmbedObjects');
 		},
