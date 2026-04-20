@@ -6,7 +6,7 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { overlay } from '$lib/stores';
 
@@ -53,7 +53,7 @@
 		{#if sidebar}
 			{@render sidebar()}
 		{:else}
-			<SidebarWithFavorites />
+			<Sidebar />
 		{/if}
 	</nav>
 
