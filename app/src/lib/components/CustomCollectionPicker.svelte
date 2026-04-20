@@ -76,8 +76,10 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
+			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.indicator_template)
+				? [['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]]
+				: []),
 			...(createFeatureDecisions(page.data.features).useCustomCategories()
 				? (categoryContext?.keys.map((k) => [
 						k,
