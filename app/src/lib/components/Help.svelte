@@ -29,7 +29,20 @@
 		await goto(`#${newParams.toString()}`);
 	}
 
-	async function toggleKnowledge(url: URL) {}
+	async function toggleKnowledge(url: URL) {
+		let newParams = paramsFromFragment(url);
+		if (newParams.has(overlayKey.enum['view-knowledge'])) {
+			if ($overlayHistory.length > 1) {
+				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+				newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+			} else {
+				newParams = new URLSearchParams();
+			}
+		} else {
+			newParams.set(overlayKey.enum['view-knowledge'], '');
+		}
+		await goto(`#${newParams.toString()}`);
+	}
 </script>
 
 <aside>
