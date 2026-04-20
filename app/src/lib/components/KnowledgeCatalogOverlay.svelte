@@ -103,6 +103,28 @@
 		}
 	});
 
+	function countMatchingTerms(
+		container: KnowledgeContainer,
+		cats: Record<string, string[]>
+	): number {
+		const containerCats = container.payload.category;
+		return Object.entries(cats).reduce((sum, [key, values]) => {
+			const containerValues = containerCats[key] ?? [];
+			return sum + values.filter((v) => containerValues.includes(v)).length;
+		}, 0);
+	}
+
+	const totalFilterTerms = $derived(Object.values(activeCategories).flat().length);
+
+	const sortedContainers = $derived(
+		totalFilterTerms === 0
+			? allContainers
+			: allContainers
+					.map((c) => ({ container: c, score: countMatchingTerms(c, activeCategories) }))
+					.sort((a, b) => b.score - a.score)
+					.map(({ container }) => container)
+	);
+
 	function loadMore() {
 		// Guard against the sentinel firing before the first page has loaded
 		if (isLoadingMore || !hasMore || allContainers.length === 0) return;
@@ -133,7 +155,7 @@
 
 {#if allContainers.length > 0 || containersResource.loading}
 	<Catalog
-		containers={allContainers}
+		containers={sortedContainers}
 		payloadType={[payloadTypes.enum.knowledge]}
 		hideCreateButton={true}
 	>
