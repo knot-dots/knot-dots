@@ -19,9 +19,10 @@
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
 		hideCreateButton?: boolean;
+		footer?: Snippet;
 	}
 
-	let { containers, item, payloadType, hideCreateButton = false }: Props = $props();
+	let { containers, item, payloadType, hideCreateButton = false, footer }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -86,6 +87,9 @@
 			</li>
 		{/each}
 	</ul>
+	{#if footer}
+		{@render footer()}
+	{/if}
 </div>
 
 <style>
