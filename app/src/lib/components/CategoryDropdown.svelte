@@ -10,10 +10,11 @@
 	interface Props {
 		compact?: boolean;
 		editable?: boolean;
+		offset?: [number, number];
 		value: string[];
 	}
 
-	let { compact = false, editable = false, value = $bindable() }: Props = $props();
+	let { compact = false, editable = false, offset, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({ label: $_('category') });
 
@@ -26,7 +27,7 @@
 		modifiers: [
 			{
 				name: 'offset',
-				options: { offset: [compact ? (editable ? -45 : -13) : 0, compact ? -43 : 4] }
+				options: { offset: offset ?? [compact ? (editable ? -45 : -13) : 0, compact ? -43 : 4] }
 			}
 		]
 	});

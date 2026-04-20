@@ -10,10 +10,17 @@
 		compact?: boolean;
 		editable?: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		value: string[];
 	}
 
-	let { compact = false, editable = false, labelledBy, value = $bindable() }: Props = $props();
+	let {
+		compact = false,
+		editable = false,
+		labelledBy,
+		offset,
+		value = $bindable()
+	}: Props = $props();
 
 	const popover = createPopover({ label: $_('topic') });
 
@@ -26,7 +33,7 @@
 		modifiers: [
 			{
 				name: 'offset',
-				options: { offset: [compact ? (editable ? -41 : -21) : 0, compact ? -41 : 4] }
+				options: { offset: offset ?? [compact ? (editable ? -41 : -21) : 0, compact ? -41 : 4] }
 			}
 		]
 	});
