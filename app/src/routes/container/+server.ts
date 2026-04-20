@@ -501,22 +501,26 @@ export const GET = (async ({ locals, url }) => {
 		user: locals.user
 	});
 
+	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+
 	const containers = await locals.pool.connect(
 		getManyContainers(
 			parseResult.data.organization,
 			{
-				audience: parseResult.data.audience,
-				customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
+				// Skip legacy filters for any key that is handled as a custom category,
+				// to avoid conflicting AND conditions against different JSON paths.
+				audience: customCategories['audience'] ? [] : parseResult.data.audience,
+				customCategories,
 				guid: parseResult.data.guid,
 				indicators: parseResult.data.indicator,
 				indicatorCategories: parseResult.data.indicatorCategory,
 				indicatorTypes: parseResult.data.indicatorType,
 				organizationalUnits: parseResult.data.organizationalUnit,
-				policyFieldsBNK: parseResult.data.policyFieldBNK,
+				policyFieldsBNK: customCategories['policyFieldBNK'] ? [] : parseResult.data.policyFieldBNK,
 				programTypes: parseResult.data.programType,
-				sdg: parseResult.data.sdg,
+				sdg: customCategories['sdg'] ? [] : parseResult.data.sdg,
 				terms: parseResult.data.terms[0],
-				topics: parseResult.data.topic,
+				topics: customCategories['topic'] ? [] : parseResult.data.topic,
 				type: parseResult.data.payloadType
 			},
 			parseResult.data.sort[0],
