@@ -16,10 +16,10 @@
 	interface Props {
 		option: OptionWithSub;
 		selected: string[];
-		apply: () => void;
+		apply?: () => void;
 	}
 
-	let { option, selected = $bindable([] as string[]), apply }: Props = $props();
+	let { option, selected = $bindable([] as string[]), apply = () => {} }: Props = $props();
 
 	const disclosure = createDisclosure({ label: $_('filter.show_suboptions') });
 	const selectedSubCount = $derived.by(

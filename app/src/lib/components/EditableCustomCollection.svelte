@@ -56,12 +56,14 @@
 	let dialog: HTMLDialogElement = $state(undefined!);
 
 	const defaultPayloadType = $derived([
-		payloadTypes.enum.indicator_template,
-		payloadTypes.enum.program,
 		payloadTypes.enum.goal,
+		payloadTypes.enum.help,
+		payloadTypes.enum.indicator_template,
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
+		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.program,
 		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
 		payloadTypes.enum.task
 	]);
@@ -96,7 +98,7 @@
 			() => inViewportOnce
 		],
 		async ([item, filter, terms, searchTerms, sort], _, { signal }) => {
-			const type = filter.type.length > 0 ? filter.type : defaultPayloadType;
+			const type = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
 			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 
 			const activeFilters = Object.values(filter).reduce(
@@ -112,9 +114,8 @@
 								: {
 										...filter,
 										organization: [page.data.currentOrganization.guid],
-										terms: combinedTerms,
-										topic: filter.topic,
-										payloadType: type
+										payloadType: type,
+										terms: combinedTerms
 									})
 						},
 						sort,
@@ -166,30 +167,16 @@
 	let isRuleBasedCollection = $derived(container.payload.item.length === 0);
 
 	let allCatalogHref = $derived.by(() => {
-		const params = new SvelteURLSearchParams();
+		const params = new URLSearchParams();
 
 		for (const value of container.payload.item) {
-			params.append('item', value);
+			params.append('guid', value);
 		}
 
-		for (const value of container.payload.filter.audience) {
-			params.append('audience', value);
-		}
-		for (const value of container.payload.filter.sdg) {
-			params.append('sdg', value);
-		}
-		for (const value of container.payload.filter.policyFieldBNK) {
-			params.append('policyFieldBNK', value);
-		}
-		for (const value of container.payload.filter.topic) {
-			params.append('topic', value);
-		}
-		for (const value of container.payload.filter.indicatorCategory) {
-			params.append('indicatorCategory', value);
-		}
-
-		for (const value of container.payload.filter.type) {
-			params.append('type', value);
+		for (const key in container.payload.filter) {
+			for (const value of container.payload.filter[key]) {
+				params.append(key, value);
+			}
 		}
 
 		const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';
@@ -436,7 +423,8 @@
 		padding-left: 0.5rem;
 	}
 
-	.inline-actions-search label:hover {
+	.inline-actions-search label:hover,
+	.inline-actions-search label:focus-within {
 		background-color: var(--color-gray-100);
 	}
 

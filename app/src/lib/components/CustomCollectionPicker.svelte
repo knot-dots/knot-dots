@@ -65,7 +65,7 @@
 		page.data.categoryContext
 			? filterCategoryContext(
 					page.data.categoryContext,
-					filter.type.length > 0 ? filter.type : defaultPayloadType,
+					filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 					{
 						matchAll: true
 					}
@@ -114,7 +114,7 @@
 						{
 							indicatorCategory: filter.indicatorCategory,
 							organization: [page.data.currentOrganization.guid],
-							payloadType: filter.type.length > 0 ? filter.type : defaultPayloadType,
+							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 							...(createFeatureDecisions(page.data.features).useCustomCategories()
 								? Object.fromEntries(
 										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
@@ -146,7 +146,7 @@
 
 	function handleRemoveFilterValue(key: string, value: string) {
 		if (key in filter) {
-			filter = { ...filter, [key]: filter[key as keyof typeof filter].filter((v) => v !== value) };
+			filter = { ...filter, [key]: filter[key].filter((v) => v !== value) };
 		}
 	}
 
@@ -169,6 +169,7 @@
 			const error = await response.json();
 			alert(error.message);
 		}
+		dialog.close();
 	}
 
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
@@ -260,7 +261,7 @@
 					</li>
 					<li>
 						<!-- svelte-ignore a11y_autofocus -->
-						<button class="button-red" autofocus>
+						<button autofocus class="button-red" onclick={() => dialog.close()} type="button">
 							{$_('custom_collection.dialog.cancel')}
 						</button>
 					</li>
@@ -294,6 +295,7 @@
 					class="button-primary"
 					disabled={mode === 'select' && selected.length === 0}
 					onclick={confirm}
+					type="button"
 				>
 					{#if mode === 'select'}
 						{$_('custom_collection.dialog.accept_selection', {
@@ -327,7 +329,7 @@
 								{#each valueList as value (value)}
 									<li class="preview-item">
 										<LightningBolt />
-										{$_(value)}
+										{page.data.categoryContext?.labels.get(value) ?? $_(value)}
 										<button
 											class="button button-remove"
 											type="button"
@@ -348,6 +350,37 @@
 </PickerDialog>
 
 <style>
+	.sort-option {
+		border-radius: 8px;
+		gap: 0;
+		padding: 0.5rem 0.625rem;
+	}
+
+	.sort-option > input {
+		appearance: none;
+	}
+
+	.sort-option > :global(svg) {
+		height: 1rem;
+		margin-right: 0.375rem;
+		width: 1rem;
+	}
+
+	.sort-option:focus-within,
+	.sort-option:hover {
+		background-color: var(--color-primary-100);
+	}
+
+	.sort-option:has(> input:active) {
+		background-color: var(--color-primary-300);
+		color: var(--color-primary-700);
+	}
+
+	.sort-option:has(> input:checked) {
+		background-color: var(--color-primary-100);
+		color: var(--color-primary-700);
+	}
+
 	.result-and-preview {
 		display: flex;
 		flex-direction: row;
@@ -360,6 +393,7 @@
 	.result {
 		display: flex;
 		flex-direction: column;
+		flex-grow: 1;
 		min-height: 1px;
 	}
 
@@ -480,5 +514,10 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		padding: 0.375rem;
+	}
+
+	.preview-item > :global(svg) {
+		flex-shrink: 0;
+		max-width: none;
 	}
 </style>

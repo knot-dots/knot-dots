@@ -446,7 +446,7 @@ export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		administrativeType: z.array(administrativeTypes).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
-		audience: z.array(audience).default([]),
+		audience: z.array(audience).catch([]).default([]),
 		federalState: z.array(z.string()).default([]),
 		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
@@ -465,15 +465,15 @@ export const GET = (async ({ locals, url }) => {
 			)
 			.default([]),
 		payloadType: z.array(payloadTypes).default([]),
-		policyFieldBNK: z.array(policyFieldBNK).default([]),
+		policyFieldBNK: z.array(policyFieldBNK).catch([]).default([]),
 		programType: z.array(programTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
-		sdg: z.array(sustainableDevelopmentGoals).default([]),
+		sdg: z.array(sustainableDevelopmentGoals).catch([]).default([]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
-		topic: z.array(topics).default([])
+		topic: z.array(topics).catch([]).default([])
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
