@@ -477,6 +477,10 @@
 		font-weight: 400;
 	}
 
+	img {
+		object-fit: contain;
+	}
+
 	footer {
 		align-items: flex-end;
 		display: flex;

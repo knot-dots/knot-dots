@@ -65,6 +65,7 @@
 		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
 		payloadTypes.enum.program,
 		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.rule,
 		payloadTypes.enum.task
 	]);
 
