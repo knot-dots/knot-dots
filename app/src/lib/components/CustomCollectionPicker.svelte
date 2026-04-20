@@ -58,6 +58,7 @@
 		...(createFeatureDecisions(page.data.features).usePage() ? [payloadTypes.enum.page] : []),
 		payloadTypes.enum.program,
 		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.rule,
 		payloadTypes.enum.task
 	] satisfies PayloadType[]);
 
