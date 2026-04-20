@@ -3095,8 +3095,7 @@ export function createCopyOf(
 
 	if (isMeasureContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
-			template: false
+			...(container.payload as typeof copy.payload)
 		} as typeof copy.payload;
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
@@ -3117,7 +3116,8 @@ export function createCopyOf(
 
 	copy.payload = {
 		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
+		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
+		...('template' in container.payload ? { template: false } : undefined)
 	} as typeof copy.payload;
 
 	copy.relation.push({

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { IsInViewport, resource } from 'runed';
+	import { getContext } from 'svelte';
 	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
@@ -9,6 +10,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import AddItemMenu from '$lib/components/AddItemMenu.svelte';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -23,13 +25,21 @@
 		type ActualDataContainer,
 		actualDataContainer,
 		type AnyContainer,
+		createCopyOf,
 		type CustomCollectionContainer,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
+		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
-	import { ability, compareState } from '$lib/stores';
+	import {
+		ability,
+		addItemState,
+		compareState,
+		mayCreateContainer,
+		newContainer
+	} from '$lib/stores';
 
 	const MAX_ITEMS_PER_PAGE = 50;
 
@@ -57,6 +67,10 @@
 	let dialog = $state<HTMLDialogElement>();
 
 	let templatePickerDialog = $state<HTMLDialogElement>();
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
 
 	const defaultPayloadType = $derived([
 		payloadTypes.enum.goal,
@@ -127,8 +141,27 @@
 					)
 				: [];
 		},
-		{ lazy: true, debounce: 300 }
+		{ lazy: true }
 	);
+
+	const templateResource = resource(
+		[() => container.payload.newItemTemplate, () => inViewportOnce],
+		async ([newItemTemplate], _, { signal }) => {
+			return newItemTemplate.length > 0
+				? fetchContainers({ guid: newItemTemplate, template: 'true' }, 'alpha', { signal })
+				: [];
+		},
+		{ lazy: true }
+	);
+
+	const mayAddItem = $derived.by(() => {
+		return (
+			editable &&
+			templateResource.current?.some(({ payload }) =>
+				$mayCreateContainer(payload.type, container.managed_by)
+			)
+		);
+	});
 
 	const actualDataResource = resource([], async (_, __, { signal }) => {
 		const response = await fetchContainers(
@@ -163,12 +196,15 @@
 
 	let hasMoreItems = $derived(items.length > visibleCount);
 
-	let hasConfiguredContent = $derived(
-		container.payload.item.length > 0 ||
-			Object.values(container.payload.filter).some((v) => v.length > 0)
+	let isRuleBasedCollection = $derived(
+		Object.values(container.payload.filter).some((v) => v.length > 0)
 	);
 
-	let isRuleBasedCollection = $derived(container.payload.item.length === 0);
+	let hasConfiguredContent = $derived(
+		container.payload.item.length > 0 ||
+			container.payload.newItemTemplate.length > 0 ||
+			isRuleBasedCollection
+	);
 
 	let allCatalogHref = $derived.by(() => {
 		const params = new URLSearchParams();
@@ -264,6 +300,23 @@
 		templatePickerDialog?.showModal();
 	}
 
+	function handleAddItem(event: Event) {
+		const template = templateResource.current?.find(
+			({ guid }) => guid === (event as CustomEvent).detail.selected
+		);
+
+		if (template) {
+			$newContainer = createCopyOf(
+				template,
+				container.organization,
+				container.organizational_unit ?? null
+			) as NewContainer;
+
+			$addItemState = { target: container };
+			createContainerDialog.getElement().showModal();
+		}
+	}
+
 	$effect(() => {
 		if (!container.payload.allowSearch) {
 			localTerms = '';
@@ -347,7 +400,7 @@
 		<Carousel
 			addItem={addItems}
 			items={visibleItems}
-			mayAddItem={editable && $ability.can('update', container)}
+			{mayAddItem}
 			onLoadMore={hasMoreItems ? () => (visibleCount += MAX_ITEMS_PER_PAGE) : undefined}
 		>
 			{#snippet itemSnippet(item)}
@@ -360,6 +413,21 @@
 					<OrganizationCard container={item} />
 				{:else}
 					<Card container={item} />
+				{/if}
+			{/snippet}
+			{#snippet addItemSnippet()}
+				{#if mayAddItem}
+					<li>
+						<AddItemMenu
+							managedBy={container.managed_by}
+							onchange={handleAddItem}
+							options={templateResource.current?.map(({ guid, payload }) => ({
+								label: 'title' in payload ? payload.title : payload.name,
+								type: payload.type,
+								value: guid
+							})) ?? []}
+						/>
+					</li>
 				{/if}
 			{/snippet}
 		</Carousel>
@@ -385,6 +453,20 @@
 					{/if}
 				</li>
 			{/each}
+			{#if mayAddItem}
+				<li>
+					<AddItemMenu
+						--height="100%"
+						managedBy={container.managed_by}
+						onchange={handleAddItem}
+						options={templateResource.current?.map(({ guid, payload }) => ({
+							label: 'title' in payload ? payload.title : payload.name,
+							type: payload.type,
+							value: guid
+						})) ?? []}
+					/>
+				</li>
+			{/if}
 		</ul>
 	{/if}
 

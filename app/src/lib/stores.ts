@@ -14,12 +14,13 @@ import {
 	type ApplicationState,
 	type Container,
 	containerOfType,
+	type CustomCollectionContainer,
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
 	type HelpSlug,
-	isHelpSlug,
 	type IooiType,
+	isHelpSlug,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
@@ -145,6 +146,12 @@ type AddObjectiveState = {
 };
 
 export const addObjectiveState = writable<AddObjectiveState>({});
+
+type AddItemState = {
+	target?: CustomCollectionContainer;
+};
+
+export const addItemState = writable<AddItemState>({});
 
 export const newContainer = writable<NewContainer | undefined>();
 

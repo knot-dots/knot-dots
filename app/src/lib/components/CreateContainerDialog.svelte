@@ -50,7 +50,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { lastCreatedContainer, newContainer } from '$lib/stores';
+	import { addItemState, lastCreatedContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -71,6 +71,17 @@
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 			}
+
+			if ($addItemState.target) {
+				await saveContainer({
+					...$addItemState.target,
+					payload: {
+						...$addItemState.target.payload,
+						item: [...$addItemState.target.payload.item, savedContainer.guid]
+					}
+				});
+			}
+
 			await invalidateAll();
 		} else {
 			const error = await response.json();
