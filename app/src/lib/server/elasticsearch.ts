@@ -235,20 +235,7 @@ export async function getManyContainersWithES(
 		aggs
 	};
 
-	type ESDoc = {
-		guid: string;
-		revision: number;
-		realm: string;
-		organization: string;
-		organizational_unit?: string | null;
-		managed_by: string;
-		valid_from?: string;
-		relation?: { object: string; predicate: string; position: number; subject: string }[];
-		user?: { predicate: string; subject: string }[];
-		payload: Record<string, unknown>;
-	};
-
-	const { hits, aggregations } = await es.search<ESDoc>(searchParams);
+	const { hits, aggregations } = await es.search(searchParams);
 
 	const containers: AnyContainer[] = hits.hits.flatMap((h) => {
 		const doc = h._source;
@@ -256,10 +243,10 @@ export async function getManyContainersWithES(
 		return [
 			anyContainer.parse({
 				...doc,
-				organizational_unit: doc.organizational_unit ?? null,
+				organizational_unit: (doc as Record<string, unknown>).organizational_unit ?? null,
 				valid_currently: true,
-				relation: doc.relation ?? [],
-				user: doc.user ?? []
+				relation: (doc as Record<string, unknown>).relation ?? [],
+				user: (doc as Record<string, unknown>).user ?? []
 			})
 		];
 	});
