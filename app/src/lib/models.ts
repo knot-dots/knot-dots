@@ -1881,7 +1881,7 @@ export function isIndicatorTemplateContainer(
 	return container.payload.type === payloadTypes.enum.indicator_template;
 }
 
-const knowledgeContainer = container.extend({
+export const knowledgeContainer = container.extend({
 	payload: knowledgePayload
 });
 

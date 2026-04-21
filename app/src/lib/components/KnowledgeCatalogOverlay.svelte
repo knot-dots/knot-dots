@@ -6,12 +6,7 @@
 	import { page } from '$app/state';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import {
-		anyContainer,
-		isKnowledgeContainer,
-		payloadTypes,
-		type KnowledgeContainer
-	} from '$lib/models';
+	import { knowledgeContainer, payloadTypes, type KnowledgeContainer } from '$lib/models';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	const PAGE_SIZE = 20;
@@ -62,10 +57,7 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch knowledge containers: ${response.status}`);
 			}
-			return z
-				.array(anyContainer)
-				.parse(await response.json())
-				.filter(isKnowledgeContainer);
+			return z.array(knowledgeContainer).parse(await response.json());
 		},
 		{ debounce: 300 }
 	);
