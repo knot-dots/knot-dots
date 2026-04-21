@@ -44,6 +44,7 @@
 			const params = new URLSearchParams();
 			params.append('payloadType', payloadTypes.enum.knowledge);
 			params.append('sort', 'alpha');
+			params.append('categoryMatch', 'any');
 			params.append('limit', String(PAGE_SIZE));
 			params.append('offset', String(off));
 

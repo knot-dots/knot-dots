@@ -471,6 +471,7 @@ export const GET = (async ({ locals, url }) => {
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sdg: z.array(sustainableDevelopmentGoals).catch([]).default([]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
+		categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
 		topic: z.array(topics).catch([]).default([])
@@ -511,6 +512,7 @@ export const GET = (async ({ locals, url }) => {
 				// to avoid conflicting AND conditions against different JSON paths.
 				audience: customCategories['audience'] ? [] : parseResult.data.audience,
 				customCategories,
+				customCategoryMatch: parseResult.data.categoryMatch[0],
 				guid: parseResult.data.guid,
 				indicators: parseResult.data.indicator,
 				indicatorCategories: parseResult.data.indicatorCategory,
