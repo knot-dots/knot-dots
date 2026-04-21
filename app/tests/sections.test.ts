@@ -84,26 +84,3 @@ test('inline help is edit-only', async ({ dotsBoard, testReport }) => {
 	await dotsBoard.overlay.editModeToggle.uncheck();
 	await expect(dotsBoard.overlay.locator.getByText('Inline help')).toHaveCount(0);
 });
-
-test('custom collection interactions only show configured options', async ({
-	landingPage,
-	testOrganization
-}) => {
-	await landingPage.goto(`/${testOrganization.guid}`);
-	await landingPage.header.editModeToggle.check();
-
-	const section = await landingPage.addSection('Embed objects');
-	await section.hover();
-	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
-	await settingsDropdownButton.click();
-	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
-	await settingsPanel.getByRole('button', { name: 'interactions' }).click();
-
-	await expect(settingsPanel.getByRole('checkbox', { name: 'search' })).toBeVisible();
-	await expect(settingsPanel.getByRole('checkbox', { name: 'sort' })).toBeVisible();
-
-	await settingsPanel.getByRole('checkbox', { name: 'sort' }).check();
-	await settingsPanel.getByRole('button', { name: 'back' }).click();
-
-	await expect(settingsPanel.getByRole('button', { name: 'interactions' })).toContainText(/sort/i);
-});

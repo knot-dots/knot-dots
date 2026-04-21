@@ -144,6 +144,7 @@
 				<header class="details-section">
 					{#if isContainerWithName($newContainer)}
 						<textarea
+							aria-label={$_('title')}
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
@@ -154,6 +155,7 @@
 						></textarea>
 					{:else if isContainerWithTitle($newContainer)}
 						<textarea
+							aria-label={$_('title')}
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
