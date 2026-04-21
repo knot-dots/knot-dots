@@ -27,6 +27,7 @@
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import SidebarContextSelect from '$lib/components/SidebarContextSelect.svelte';
+	import SidebarOrgUnitSelect from '$lib/components/SidebarOrgUnitSelect.svelte';
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		getOrganizationURL,
@@ -40,10 +41,6 @@
 	let favoriteList = getFavoriteListContext();
 
 	const userMenu = createDisclosure({ label: $_('user_menu') });
-
-	let activePanel: 'organization' | 'organizationalUnit' = $state(
-		page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization'
-	);
 
 	let orgMainPagesExpanded = $state(true);
 	let orgUnitMainPagesExpanded = $state(true);
@@ -81,14 +78,6 @@
 				c.organization === page.data.currentOrganization.organization
 		)
 	);
-
-	function activateOrganization() {
-		activePanel = 'organization';
-	}
-
-	function activateOrganizationalUnit() {
-		activePanel = 'organizationalUnit';
-	}
 
 	function updateFavorite(
 		container: OrganizationContainer | OrganizationalUnitContainer,
@@ -194,13 +183,12 @@
 	data-sveltekit-preload-data="hover"
 >
 	<!-- Organization (Mandant) Panel -->
-	<div class="panel-section" class:panel-section--active={activePanel === 'organization'}>
+	<div class="panel-section panel-section--active">
 		<div class="panel-header">
 			<SidebarContextSelect
 				{defaultOrganization}
 				options={organizations}
 				title={$_('organizations')}
-				onselect={activateOrganization}
 			>
 				<img
 					alt=""
@@ -215,106 +203,102 @@
 			</SidebarContextSelect>
 		</div>
 
-		{#if activePanel === 'organization'}
-			<!-- Hauptseiten toggle + favorites -->
-			<div class="panel-links">
-				<button
-					class="toggle-label"
-					onclick={() => (orgMainPagesExpanded = !orgMainPagesExpanded)}
-					type="button"
-				>
-					{#if orgMainPagesExpanded}<ChevronDown />{:else}<ChevronRight />{/if}
-					<span>{$_('main_pages')}</span>
-				</button>
+		<!-- Hauptseiten toggle + favorites -->
+		<div class="panel-links">
+			<button
+				class="toggle-label"
+				onclick={() => (orgMainPagesExpanded = !orgMainPagesExpanded)}
+				type="button"
+			>
+				{#if orgMainPagesExpanded}<ChevronDown />{:else}<ChevronRight />{/if}
+				<span>{$_('main_pages')}</span>
+			</button>
 
-				{#if orgMainPagesExpanded}
-					<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
-						<li>
-							<a
-								class="sidebar-menu-item"
-								class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
-									page.url.toString()}
-								href={landingPageURL(page.data.currentOrganization)}
-							>
-								<OrganizationalUnitIcon />
-								<span>{$_('landing_page')}</span>
-							</a>
-						</li>
+			{#if orgMainPagesExpanded}
+				<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+					<li>
+						<a
+							class="sidebar-menu-item"
+							class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+								page.url.toString()}
+							href={landingPageURL(page.data.currentOrganization)}
+						>
+							<OrganizationalUnitIcon />
+							<span>{$_('landing_page')}</span>
+						</a>
+					</li>
 
-						<li>
-							<ul
-								class="sidebar-menu drag-zone"
-								onconsider={handleDndConsiderOrganization}
-								onfinalize={handleDndFinalizeOrganization}
-								use:dragHandleZone={{
-									dropTargetStyle: {},
-									flipDurationMs: 100,
-									items: favoriteItemsOrganization,
-									type: 'organization'
-								}}
-							>
-								{#each favoriteItemsOrganization as item, index (item.guid)}
-									{@const href = page.url.searchParams.size
-										? `${page.url.pathname}?${page.url.searchParams.toString()}`
-										: page.url.pathname}
-									<li animate:flip={{ duration: 100 }}>
-										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
-											<span
-												class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
-												use:dragHandle
-											>
-												<DragHandle />
-											</span>
-										{/if}
-										<a
-											class="sidebar-menu-item"
-											class:sidebar-menu-item--active={item.href === href}
-											href={item.href}
+					<li>
+						<ul
+							class="sidebar-menu drag-zone"
+							onconsider={handleDndConsiderOrganization}
+							onfinalize={handleDndFinalizeOrganization}
+							use:dragHandleZone={{
+								dropTargetStyle: {},
+								flipDurationMs: 100,
+								items: favoriteItemsOrganization,
+								type: 'organization'
+							}}
+						>
+							{#each favoriteItemsOrganization as item, index (item.guid)}
+								{@const href = page.url.searchParams.size
+									? `${page.url.pathname}?${page.url.searchParams.toString()}`
+									: page.url.pathname}
+								<li animate:flip={{ duration: 100 }}>
+									{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
+										<span
+											class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+											use:dragHandle
 										>
-											{#if item.icon}
-												<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
-											{:else}
-												<StarSolid />
-											{/if}
-											<span>{item.title}</span>
-										</a>
-										<EditableFavorite
-											bind:favorite={favoriteList.organization[index]}
-											onchange={updateFavorite(
-												page.data.currentOrganization,
-												favoriteList.organization
-											)}
-										/>
-									</li>
-								{/each}
-							</ul>
-						</li>
-					</ul>
-				{/if}
-			</div>
-		{/if}
+											<DragHandle />
+										</span>
+									{/if}
+									<a
+										class="sidebar-menu-item"
+										class:sidebar-menu-item--active={item.href === href}
+										href={item.href}
+									>
+										{#if item.icon}
+											<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+										{:else}
+											<StarSolid />
+										{/if}
+										<span>{item.title}</span>
+									</a>
+									<EditableFavorite
+										bind:favorite={favoriteList.organization[index]}
+										onchange={updateFavorite(
+											page.data.currentOrganization,
+											favoriteList.organization
+										)}
+									/>
+								</li>
+							{/each}
+						</ul>
+					</li>
+				</ul>
+			{/if}
+		</div>
 	</div>
 
 	<!-- Organizational Unit Panel -->
-	{#if page.data.currentOrganizationalUnit}
-		<div class="panel-section" class:panel-section--active={activePanel === 'organizationalUnit'}>
+	{#if organizationalUnits.length > 0}
+		<div class="panel-section panel-section--active">
 			<div class="panel-header">
-				<SidebarContextSelect
+				<SidebarOrgUnitSelect
 					{defaultOrganization}
-					options={organizationalUnits.filter(
-						(c) => c.guid !== page.data.currentOrganizationalUnit?.guid
-					)}
+					{organizationalUnits}
+					currentOrganizationalUnit={page.data.currentOrganizationalUnit}
 					title={$_('organizational_units')}
-					onselect={activateOrganizationalUnit}
 				>
 					<OrganizationalUnitIcon />
 					<span class="panel-select-label truncated">
-						{page.data.currentOrganizationalUnit.payload.name}
+						{page.data.currentOrganizationalUnit?.payload.name ?? $_('organizational_units')}
 					</span>
-				</SidebarContextSelect>
+				</SidebarOrgUnitSelect>
 			</div>
 
-			{#if activePanel === 'organizationalUnit'}
+			{#if page.data.currentOrganizationalUnit}
 				<!-- Hauptseiten toggle + favorites -->
 				<div class="panel-links">
 					<button
