@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { resource } from 'runed';
 	import { z } from 'zod';
@@ -31,22 +30,16 @@
 			)
 	);
 
-	let offset = $state(0);
-	let allContainers: KnowledgeContainer[] = $state([]);
-	let hasMore = $state(true);
-	let isLoadingMore = $state(false);
-	let previousResults: KnowledgeContainer[] | undefined;
-	let loadMoreSentinel: HTMLElement | undefined = $state(undefined);
+	let visibleCount = $state(PAGE_SIZE);
+	let showMoreSentinel: HTMLElement | undefined = $state(undefined);
 
 	const containersResource = resource(
-		[() => $state.snapshot(activeCategories), () => offset],
-		async ([cats, off], _, { signal }) => {
+		() => $state.snapshot(activeCategories),
+		async (cats, _, { signal }) => {
 			const params = new URLSearchParams();
 			params.append('payloadType', payloadTypes.enum.knowledge);
 			params.append('sort', 'alpha');
 			params.append('categoryMatch', 'any');
-			params.append('limit', String(PAGE_SIZE));
-			params.append('offset', String(off));
 
 			for (const [key, values] of Object.entries(cats)) {
 				for (const value of values) {
@@ -63,37 +56,11 @@
 		{ debounce: 300 }
 	);
 
-	$effect(() => {
-		const results = containersResource.current;
-		if (results && results !== previousResults) {
-			previousResults = results;
-			if (untrack(() => offset === 0)) {
-				allContainers = results;
-			} else {
-				allContainers = [...untrack(() => allContainers), ...results];
-			}
-			hasMore = results.length === PAGE_SIZE;
-			isLoadingMore = false;
-		}
-	});
-
-	// When categories change, atomically reset offset to 0 in the same assignment
-	const categoriesKey = $derived(
-		Object.entries(activeCategories)
-			.sort(([a], [b]) => a.localeCompare(b))
-			.map(([k, vs]) => `${k}:${vs.join(',')}`)
-			.join('|')
-	);
-	let previousCategoriesKey = '';
+	// Reset visible count when categories (and thus the result set) change
 	$effect.pre(() => {
-		if (categoriesKey !== previousCategoriesKey) {
-			previousCategoriesKey = categoriesKey;
-			offset = 0;
-			hasMore = true;
-			isLoadingMore = false;
-			previousResults = undefined;
-			allContainers = [];
-		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		containersResource.current;
+		visibleCount = PAGE_SIZE;
 	});
 
 	function countMatchingTerms(
@@ -108,6 +75,7 @@
 	}
 
 	const totalFilterTerms = $derived(Object.values(activeCategories).flat().length);
+	const allContainers = $derived(containersResource.current ?? []);
 
 	const sortedContainers = $derived(
 		totalFilterTerms === 0
@@ -118,25 +86,26 @@
 					.map(({ container }) => container)
 	);
 
-	function loadMore() {
-		// Guard against the sentinel firing before the first page has loaded
-		if (isLoadingMore || !hasMore || allContainers.length === 0) return;
-		isLoadingMore = true;
-		offset += PAGE_SIZE;
+	const visibleContainers = $derived(sortedContainers.slice(0, visibleCount));
+	const hasMore = $derived(visibleCount < sortedContainers.length);
+
+	function showMore() {
+		if (!hasMore) return;
+		visibleCount += PAGE_SIZE;
 	}
 
-	// Infinite scroll: observe sentinel element to load more data
+	// Infinite scroll: observe sentinel element to reveal more items
 	$effect(() => {
-		if (!loadMoreSentinel) return;
+		if (!showMoreSentinel) return;
 
 		const observer = new IntersectionObserver(
 			() => {
-				loadMore();
+				showMore();
 			},
 			{ threshold: 0, rootMargin: '200px' }
 		);
 
-		observer.observe(loadMoreSentinel);
+		observer.observe(showMoreSentinel);
 
 		return () => {
 			observer.disconnect();
@@ -148,17 +117,13 @@
 
 {#if allContainers.length > 0 || containersResource.loading}
 	<Catalog
-		containers={sortedContainers}
+		containers={visibleContainers}
 		payloadType={[payloadTypes.enum.knowledge]}
 		hideCreateButton={true}
 	>
 		{#snippet footer()}
 			{#if hasMore}
-				<div bind:this={loadMoreSentinel} class="load-more-sentinel">
-					{#if isLoadingMore}
-						<span>{$_('loading')}</span>
-					{/if}
-				</div>
+				<div bind:this={showMoreSentinel} class="load-more-sentinel"></div>
 			{/if}
 		{/snippet}
 	</Catalog>
