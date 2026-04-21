@@ -92,27 +92,12 @@ test('custom collection interactions only show configured options', async ({
 	await landingPage.goto(`/${testOrganization.guid}`);
 	await landingPage.header.editModeToggle.check();
 
-	const numberOfSections = await landingPage.sections.count();
-	await landingPage.page.getByRole('button', { name: 'Add section' }).click();
-	await landingPage.page.getByRole('menuitem', { name: 'embed objects' }).click();
-
-	const section = landingPage.sections.nth(numberOfSections);
-	await expect(section).toBeVisible();
-
-	const hasCustomSettings =
-		(await section.locator('.custom-settings .dropdown-button').count()) > 0;
-	test.skip(
-		!hasCustomSettings,
-		'Custom collection section is not available in this test configuration.'
-	);
-
+	const section = await landingPage.addSection('Embed objects');
 	await section.hover();
-	await section.locator('.custom-settings .dropdown-button').click();
-
-	const settingsPanel = section.locator('.custom-settings-panel');
-	const interactionsItem = settingsPanel.getByRole('button', { name: 'interactions' });
-
-	await interactionsItem.click();
+	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
+	await settingsDropdownButton.click();
+	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
+	await settingsPanel.getByRole('button', { name: 'interactions' }).click();
 
 	await expect(settingsPanel.getByRole('checkbox', { name: 'search' })).toBeVisible();
 	await expect(settingsPanel.getByRole('checkbox', { name: 'sort' })).toBeVisible();
@@ -120,5 +105,5 @@ test('custom collection interactions only show configured options', async ({
 	await settingsPanel.getByRole('checkbox', { name: 'sort' }).check();
 	await settingsPanel.getByRole('button', { name: 'back' }).click();
 
-	await expect(interactionsItem).toContainText(/sort/i);
+	await expect(settingsPanel.getByRole('button', { name: 'interactions' })).toContainText(/sort/i);
 });
