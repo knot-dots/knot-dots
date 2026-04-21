@@ -1,6 +1,6 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
-import { container as containerSchema, type Container, type PayloadType } from '$lib/models';
+import { anyContainer, type AnyContainer, type PayloadType } from '$lib/models';
 
 const es = new Client({
 	auth:
@@ -143,7 +143,7 @@ export async function getManyContainersWithES(
 	sort: string,
 	limit?: number,
 	options?: GetManyContainersWithESOptions
-): Promise<{ containers: Container[]; facets: FacetCounts }> {
+): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> {
 	const must: estypes.QueryDslQueryContainer[] = [];
 	const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
 	const facetFilters: FacetFilterMap = {};
@@ -250,11 +250,11 @@ export async function getManyContainersWithES(
 
 	const { hits, aggregations } = await es.search<ESDoc>(searchParams);
 
-	const containers: Container[] = hits.hits.flatMap((h) => {
+	const containers: AnyContainer[] = hits.hits.flatMap((h) => {
 		const doc = h._source;
 		if (!doc) return [];
 		return [
-			containerSchema.parse({
+			anyContainer.parse({
 				...doc,
 				organizational_unit: doc.organizational_unit ?? null,
 				valid_currently: true,
