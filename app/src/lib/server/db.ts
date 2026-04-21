@@ -35,8 +35,6 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
-import { createFeatureDecisions } from '$lib/features';
-import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -205,10 +203,7 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(containerResult.payload.type)
-			) {
+			if (shouldIndexType(containerResult.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -281,10 +276,7 @@ export function updateContainer(container: ModifiedContainer) {
 				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 			}
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(containerResult.payload.type)
-			) {
+			if (shouldIndexType(containerResult.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -341,10 +333,7 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(container.payload.type)
-			) {
+			if (shouldIndexType(container.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'delete',
 					guid: container.guid,
@@ -1508,7 +1497,7 @@ export function createManyContainerRelations(relations: ReadonlyArray<Relation>)
 			RETURNING *
 		`);
 
-		if (createFeatureDecisions(getFeatures()).useElasticsearch() && result.length > 0) {
+		if (result.length > 0) {
 			const affectedGuids = new Set<string>();
 			for (const r of result) {
 				affectedGuids.add(r.object);
@@ -1562,7 +1551,7 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			`);
 
-			if (createFeatureDecisions(getFeatures()).useElasticsearch() && relations.length > 0) {
+			if (relations.length > 0) {
 				const affectedGuids = new Set<string>();
 				for (const r of relations) {
 					affectedGuids.add(r.object);
@@ -1783,10 +1772,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		if (
-			createFeatureDecisions(getFeatures()).useElasticsearch() &&
-			shouldIndexType(payloadTypes.enum.task)
-		) {
+		if (shouldIndexType(payloadTypes.enum.task)) {
 			for (const taskGuid of new Set(tasks)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
