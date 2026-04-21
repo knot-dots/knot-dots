@@ -26,7 +26,8 @@ export const overlayKey = z.enum([
 	'tasks',
 	'teasers',
 	'view',
-	'view-help'
+	'view-help',
+	'view-knowledge'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
@@ -1880,7 +1881,7 @@ export function isIndicatorTemplateContainer(
 	return container.payload.type === payloadTypes.enum.indicator_template;
 }
 
-const knowledgeContainer = container.extend({
+export const knowledgeContainer = container.extend({
 	payload: knowledgePayload
 });
 

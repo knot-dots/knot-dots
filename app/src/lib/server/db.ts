@@ -539,6 +539,7 @@ function prepareWhereCondition(filters: {
 	assignees?: string[];
 	audience?: string[];
 	customCategories?: Record<string, string[]>;
+	customCategoryMatch?: 'any' | 'all';
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
@@ -574,9 +575,20 @@ function prepareWhereCondition(filters: {
 		conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.guid, 'uuid')})`);
 	}
 	if (filters.customCategories) {
-		for (const [key, values] of Object.entries(filters.customCategories)) {
-			if (!values?.length) continue;
-			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
+		const categoryFragments = Object.entries(filters.customCategories)
+			.filter(([, values]) => values?.length)
+			.map(
+				([key, values]) =>
+					sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`
+			);
+		if (categoryFragments.length > 0) {
+			if (filters.customCategoryMatch === 'any') {
+				conditions.push(sql.fragment`(${sql.join(categoryFragments, sql.fragment` OR `)})`);
+			} else {
+				for (const fragment of categoryFragments) {
+					conditions.push(fragment);
+				}
+			}
 		}
 	}
 	if (filters.helpSlugs?.length) {
@@ -738,6 +750,7 @@ export function getManyContainers(
 		assignees?: string[];
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
+		customCategoryMatch?: 'any' | 'all';
 		guid?: string[];
 		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];

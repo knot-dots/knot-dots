@@ -471,6 +471,7 @@ export const GET = (async ({ locals, url }) => {
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sdg: z.array(sustainableDevelopmentGoals).catch([]).default([]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
+		categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 		taskCategory: z.array(taskCategories).default([]),
 		terms: z.array(z.string()).default([]),
 		topic: z.array(topics).catch([]).default([])
@@ -501,22 +502,27 @@ export const GET = (async ({ locals, url }) => {
 		user: locals.user
 	});
 
+	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+
 	const containers = await locals.pool.connect(
 		getManyContainers(
 			parseResult.data.organization,
 			{
-				audience: parseResult.data.audience,
-				customCategories: extractCustomCategoryFilters(url, categoryContext?.keys ?? []),
+				// Skip legacy filters for any key that is handled as a custom category,
+				// to avoid conflicting AND conditions against different JSON paths.
+				audience: customCategories['audience'] ? [] : parseResult.data.audience,
+				customCategories,
+				customCategoryMatch: parseResult.data.categoryMatch[0],
 				guid: parseResult.data.guid,
 				indicators: parseResult.data.indicator,
 				indicatorCategories: parseResult.data.indicatorCategory,
 				indicatorTypes: parseResult.data.indicatorType,
 				organizationalUnits: parseResult.data.organizationalUnit,
-				policyFieldsBNK: parseResult.data.policyFieldBNK,
+				policyFieldsBNK: customCategories['policyFieldBNK'] ? [] : parseResult.data.policyFieldBNK,
 				programTypes: parseResult.data.programType,
-				sdg: parseResult.data.sdg,
+				sdg: customCategories['sdg'] ? [] : parseResult.data.sdg,
 				terms: parseResult.data.terms[0],
-				topics: parseResult.data.topic,
+				topics: customCategories['topic'] ? [] : parseResult.data.topic,
 				type: parseResult.data.payloadType
 			},
 			parseResult.data.sort[0],

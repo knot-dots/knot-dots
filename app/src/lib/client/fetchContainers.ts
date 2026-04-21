@@ -88,5 +88,10 @@ export default async function fetchContainers(
 		params.append('terms', filters.terms);
 	}
 	const response = await withRequestCoalescing(fetch)(`/container?${params}`, init);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch containers: ${response.status} ${await response.clone().text()}`
+		);
+	}
 	return z.array(anyContainer).parse(await response.clone().json());
 }

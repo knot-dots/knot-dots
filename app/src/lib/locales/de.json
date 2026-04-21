@@ -255,6 +255,7 @@
 	"goals_by_hierarchy_level": "Zielebene {level}",
 	"help": "Hilfe",
 	"help_catalog.empty": "Für diese Ansicht ist noch keine Hilfe verfügbar.",
+	"knowledge_catalog.empty": "Keine Wissensobjekte verfügbar.",
 	"help_slug.label": "Angezeigt in",
 	"help_slug.option.all-catalog": "Katalog: Alle Objekte",
 	"help_slug.option.all-level": "Ebenen: Alle Objekte",
