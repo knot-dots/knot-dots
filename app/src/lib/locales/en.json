@@ -430,6 +430,8 @@
 		"unit": "Unit"
 	},
 	"landing_page": "Landing page",
+	"favorites": "Favorites",
+	"main_pages": "Main pages",
 	"level": {
 		"global": "Global",
 		"label": "Level",

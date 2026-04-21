@@ -430,6 +430,8 @@
 		"unit": "Einheit"
 	},
 	"landing_page": "Startseite",
+	"favorites": "Favoriten",
+	"main_pages": "Hauptseiten",
 	"level": {
 		"global": "Global",
 		"label": "Räumliche Ebene",

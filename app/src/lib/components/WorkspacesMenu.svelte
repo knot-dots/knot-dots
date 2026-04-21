@@ -96,8 +96,8 @@
 					}
 				}
 			: undefined),
-		...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization.guid) &&
-		page.data.currentOrganization.payload.default
+		...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization?.guid) &&
+		page.data.currentOrganization?.payload.default
 			? {
 					help: {
 						catalog: '/help/catalog'
@@ -119,8 +119,8 @@
 			...(featureDecisions.useResourceWorkspace()
 				? { resources: '/resources/catalog' }
 				: undefined),
-			...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization.guid) &&
-			page.data.currentOrganization.payload.default
+			...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization?.guid) &&
+			page.data.currentOrganization?.payload.default
 				? { help: '/help/catalog' }
 				: undefined)
 		},
@@ -284,15 +284,15 @@
 					}
 				]
 			: []),
-		...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization.guid) &&
-		page.data.currentOrganization.payload.default
+		...($mayCreateContainer(payloadTypes.enum.help, page.data.currentOrganization?.guid) &&
+		page.data.currentOrganization?.payload.default
 			? [
 					{
 						exists: true,
 						icon: QuestionCircle,
 						label: $_('workspace.type.help'),
 						recommended: false,
-						value: workspacesLeft.help[selectedItem[1]] ?? '/help/catalog'
+						value: workspacesLeft.help?.[selectedItem[1]] ?? '/help/catalog'
 					}
 				]
 			: [])
