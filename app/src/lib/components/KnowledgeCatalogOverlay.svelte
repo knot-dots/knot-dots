@@ -33,15 +33,25 @@
 	let visibleCount = $state(PAGE_SIZE);
 	let showMoreSentinel: HTMLElement | undefined = $state(undefined);
 
+	// Stable string key — avoids re-fetching when only the URL hash changes
+	// (which would produce a new object reference from activeCategories but the
+	// same logical category selection).
+	const categoriesKey = $derived(
+		Object.entries(activeCategories)
+			.sort(([a], [b]) => a.localeCompare(b))
+			.map(([k, vs]) => `${k}:${[...vs].sort().join(',')}`)
+			.join('|')
+	);
+
 	const containersResource = resource(
-		() => $state.snapshot(activeCategories),
-		async (cats, _, { signal }) => {
+		() => categoriesKey,
+		async (_, __, { signal }) => {
 			const params = new URLSearchParams();
 			params.append('payloadType', payloadTypes.enum.knowledge);
 			params.append('sort', 'alpha');
 			params.append('categoryMatch', 'any');
 
-			for (const [key, values] of Object.entries(cats)) {
+			for (const [key, values] of Object.entries(activeCategories)) {
 				for (const value of values) {
 					params.append(key, value);
 				}
