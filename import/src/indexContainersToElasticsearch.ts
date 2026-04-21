@@ -5,6 +5,7 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 import { getPool } from './db.ts';
 import { createIndexWithMappings, toDoc } from '@knot-dots/shared/src/indexing.ts';
+import type { Relation } from '@knot-dots/app/src/lib/models.ts';
 
 interface Row {
 	guid: string;
@@ -80,6 +81,54 @@ async function* fetchContainers(batchSize = 500) {
 	}
 }
 
+async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, Relation[]>> {
+	if (guids.length === 0) return new Map();
+	const pool = await getPool();
+	const guidList = sql.join(
+		guids.map((g) => sql.fragment`${g}::uuid`),
+		sql.fragment`, `
+	);
+	const rows = (await pool.any(sql.unsafe`
+		SELECT object, predicate, position, subject
+		FROM container_relation
+		WHERE (subject IN (${guidList}) OR object IN (${guidList}))
+			AND valid_currently
+			AND NOT deleted
+		ORDER BY predicate, position, subject, object
+	`)) as Relation[];
+
+	const map = new Map<string, Relation[]>();
+	for (const guid of guids) {
+		map.set(guid, []);
+	}
+	for (const r of rows) {
+		map.get(r.subject)?.push(r);
+		if (r.object !== r.subject) {
+			map.get(r.object)?.push(r);
+		}
+	}
+	return map;
+}
+
+async function fetchUsersForRevisions(revisions: number[]): Promise<Map<number, { predicate: string; subject: string }[]>> {
+	if (revisions.length === 0) return new Map();
+	const pool = await getPool();
+	const rows = (await pool.any(sql.unsafe`
+		SELECT object, predicate, subject
+		FROM container_user
+		WHERE object IN (${sql.join(revisions, sql.fragment`, `)})
+	`)) as { object: number; predicate: string; subject: string }[];
+
+	const map = new Map<number, { predicate: string; subject: string }[]>();
+	for (const rev of revisions) {
+		map.set(rev, []);
+	}
+	for (const r of rows) {
+		map.get(r.object)?.push({ predicate: r.predicate, subject: r.subject });
+	}
+	return map;
+}
+
 async function run() {
 	const { aliasName, node, username, password } = env;
 	const clientConfig: any = { node };
@@ -113,11 +162,21 @@ async function run() {
 
 	let indexed = 0;
 	let ops: any[] = [];
+	let batchRows: Row[] = [];
 
 	for await (const row of fetchContainers()) {
-		const doc = toDoc(row);
-		ops.push({ index: { _index: newIndexName, _id: row.guid } });
-		ops.push(doc);
+		batchRows.push(row);
+
+		if (batchRows.length >= 500) {
+			const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
+			const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
+			for (const r of batchRows) {
+				const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [], user: usersMap.get(r.revision) ?? [] });
+				ops.push({ index: { _index: newIndexName, _id: r.guid } });
+				ops.push(doc);
+			}
+			batchRows = [];
+		}
 
 		if (ops.length >= 1000) {
 			const res = await client.bulk({ refresh: false, operations: ops });
@@ -142,6 +201,18 @@ async function run() {
 			ops = [];
 			log.info({ indexed }, '[indexer] Indexed documents');
 		}
+	}
+
+	// Flush remaining rows that didn't fill a full batch
+	if (batchRows.length > 0) {
+		const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
+		const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
+		for (const r of batchRows) {
+			const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [], user: usersMap.get(r.revision) ?? [] });
+			ops.push({ index: { _index: newIndexName, _id: r.guid } });
+			ops.push(doc);
+		}
+		batchRows = [];
 	}
 
 	if (ops.length > 0) {

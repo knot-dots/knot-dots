@@ -35,8 +35,6 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
-import { createFeatureDecisions } from '$lib/features';
-import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -205,10 +203,7 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(containerResult.payload.type)
-			) {
+			if (shouldIndexType(containerResult.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -281,10 +276,7 @@ export function updateContainer(container: ModifiedContainer) {
 				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 			}
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(containerResult.payload.type)
-			) {
+			if (shouldIndexType(containerResult.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -341,10 +333,7 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(container.payload.type)
-			) {
+			if (shouldIndexType(container.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'delete',
 					guid: container.guid,
@@ -451,7 +440,7 @@ export function getContainerByGuid(guid: string) {
 			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 		return {
 			...containerResult,
@@ -483,7 +472,7 @@ export function getContainerBySlug(slug: HelpSlug) {
 			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 		return {
 			...containerResult,
@@ -520,7 +509,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			WHERE (cr.subject IN (${guid}) OR cr.object IN (${guid}))
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 
 		return containerResult.map((c) => ({
@@ -728,7 +717,7 @@ export async function withUserAndRelation<T extends AnyContainer>(
 				WHERE (cr.object IN (${guids}) OR cr.subject IN (${guids}))
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				ORDER BY cr.position
+				ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 			`)
 			: [];
 
@@ -922,7 +911,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			), container_relation_result AS (
 				SELECT
 					c.guid,
-					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
@@ -978,7 +967,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
 			), container_relation_result AS (
-				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
@@ -1339,7 +1328,7 @@ export function getAllContainersRelatedToProgram(
 						sql.fragment`, `
 					)})
 						AND ${prepareWhereCondition(filters)}
-					ORDER BY cr.position;
+					ORDER BY cr.predicate, cr.position, cr.subject, cr.object;
 				`)
 				: [];
 
@@ -1513,13 +1502,31 @@ export function getAllContainersRelatedToUser(guid: string) {
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
 	return async (connection: DatabaseConnection) => {
 		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
-		return await connection.any(sql.typeAlias('relation')`
+		const result = await connection.any(sql.typeAlias('relation')`
 			INSERT INTO container_relation (object, position, predicate, subject)
 			SELECT *
 			FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
 			RETURNING *
 		`);
+
+		if (result.length > 0) {
+			const affectedGuids = new Set<string>();
+			for (const r of result) {
+				affectedGuids.add(r.object);
+				affectedGuids.add(r.subject);
+			}
+
+			for (const guid of affectedGuids) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+		}
+
+		return result;
 	};
 }
 
@@ -1556,6 +1563,21 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 				SELECT *, true
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			`);
+
+			if (relations.length > 0) {
+				const affectedGuids = new Set<string>();
+				for (const r of relations) {
+					affectedGuids.add(r.object);
+					affectedGuids.add(r.subject);
+				}
+				for (const guid of affectedGuids) {
+					await enqueueIndexingEvent({
+						action: 'upsert',
+						guid,
+						timestamp: new Date().toISOString()
+					});
+				}
+			}
 		});
 	};
 }
@@ -1763,10 +1785,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		if (
-			createFeatureDecisions(getFeatures()).useElasticsearch() &&
-			shouldIndexType(payloadTypes.enum.task)
-		) {
+		if (shouldIndexType(payloadTypes.enum.task)) {
 			for (const taskGuid of new Set(tasks)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',

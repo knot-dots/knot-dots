@@ -3,6 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
+import type { Relation } from '@knot-dots/app/src/lib/models.ts';
 
 const envSchema = z.object({
 	DE_LABELS_PATH: z.string().default('/opt/labels/de.json')
@@ -104,12 +105,12 @@ export function createIndexWithMappings(client: Client, index: string) {
 			properties: {
 				guid: { type: 'keyword' },
 				revision: { type: 'integer' },
-				validFrom: { type: 'date' },
+				valid_from: { type: 'date' },
 				priority: { type: 'integer' },
 				realm: { type: 'keyword' },
 				organization: { type: 'keyword' },
-				organizationalUnit: { type: 'keyword' },
-				managedBy: { type: 'keyword' },
+				organizational_unit: { type: 'keyword' },
+				managed_by: { type: 'keyword' },
 				type: { type: 'keyword' },
 				title: {
 					type: 'text',
@@ -134,6 +135,22 @@ export function createIndexWithMappings(client: Client, index: string) {
 				task_category_labels: { type: 'text' },
 				resource_category_labels: { type: 'text' },
 				resource_unit_labels: { type: 'text' },
+				relation: {
+					type: 'nested',
+					properties: {
+						object: { type: 'keyword' },
+						predicate: { type: 'keyword' },
+						position: { type: 'integer' },
+						subject: { type: 'keyword' }
+					}
+				},
+				user: {
+					type: 'nested',
+					properties: {
+						predicate: { type: 'keyword' },
+						subject: { type: 'keyword' }
+					}
+				},
 				payload: {
 					properties: {
 						audience: { type: 'keyword' },
@@ -167,19 +184,7 @@ function resolveLabel(code: string): string | undefined {
 	return typeof cur === 'string' ? cur : undefined;
 }
 
-function sanitizeDates(obj: any) {
-	if (obj && typeof obj === 'object') {
-		for (const k of Object.keys(obj)) {
-			const v = obj[k];
-			if (/Date$/.test(k)) {
-				delete obj[k];
-				continue;
-			}
-			if (Array.isArray(v)) v.forEach((item) => sanitizeDates(item));
-			else if (v && typeof v === 'object') sanitizeDates(v);
-		}
-	}
-}
+
 
 export function normalizePayload(payload: any) {
 	const normalized = { ...payload };
@@ -196,7 +201,7 @@ export function normalizePayload(payload: any) {
 		'resourceUnit'
 	]) {
 		const value = normalized[key];
-		if (value === undefined || value === null) normalized[key] = [];
+		if (value === undefined || value === null) continue;
 		else if (Array.isArray(value)) normalized[key] = value;
 		else normalized[key] = [value];
 	}
@@ -214,7 +219,6 @@ export function normalizePayload(payload: any) {
 		}
 		normalized.category = normalizedCategory;
 	}
-	sanitizeDates(normalized);
 	return normalized;
 }
 
@@ -228,8 +232,11 @@ export function toDoc(row: {
 	payload: any;
 	valid_from?: string | Date | null;
 	priority?: number | null;
+	relation?: Relation[];
+	user?: { predicate: string; subject: string }[];
 }) {
 	const normalized = normalizePayload(row.payload || {});
+	const originalPayload = { ...(row.payload || {}) };
 	const type: string | undefined = normalized?.type;
 	const title: string | undefined = normalized?.title ?? normalized?.name;
 	const description: string | undefined = normalized?.description;
@@ -257,19 +264,33 @@ export function toDoc(row: {
 		(normalized.category as Record<string, string[]>) ?? {}
 	).flat();
 
+	const relation = (row.relation ?? []).map((r) => ({
+		object: r.object,
+		predicate: r.predicate,
+		position: r.position,
+		subject: r.subject
+	}));
+
+	const user = (row.user ?? []).map((u) => ({
+		predicate: u.predicate,
+		subject: u.subject
+	}));
+
 	return {
 		guid: row.guid,
 		revision: row.revision,
 		realm: row.realm,
 		organization: row.organization,
-		organizationalUnit: row.organizational_unit ?? undefined,
-		managedBy: row.managed_by,
+		organizational_unit: row.organizational_unit ?? undefined,
+		managed_by: row.managed_by,
 		type,
 		title,
 		visibility,
-		validFrom,
+		valid_from: validFrom,
 		priority,
-		payload: normalized,
+		relation,
+		user,
+		payload: originalPayload,
 		sdg_labels: sdgLabels,
 		topic_labels: topicLabels,
 		audience_labels: audienceLabels,

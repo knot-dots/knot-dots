@@ -1,8 +1,6 @@
 import { Client, estypes } from '@elastic/elasticsearch';
-import type { DatabaseConnection } from 'slonik';
 import { env as privateEnv } from '$env/dynamic/private';
-import { type AnyContainer, type Container, type PayloadType } from '$lib/models';
-import { sql, withUserAndRelation } from './db';
+import { anyContainer, type AnyContainer, type PayloadType } from '$lib/models';
 
 const es = new Client({
 	auth:
@@ -109,7 +107,7 @@ function buildFacetAggregations(params: {
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'modified') {
 		return [
-			{ validFrom: { order: 'desc', missing: '_first', unmapped_type: 'date' } },
+			{ valid_from: { order: 'desc', missing: '_first', unmapped_type: 'date' } },
 			{ guid: { order: 'asc' } }
 		];
 	}
@@ -122,7 +120,7 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	return [{ 'title.keyword': { order: 'asc', missing: '_last' } }, { guid: { order: 'asc' } }];
 }
 
-export function getManyContainersWithES(
+export async function getManyContainersWithES(
 	organizations: string[],
 	filters: {
 		assignees?: string[];
@@ -145,142 +143,133 @@ export function getManyContainersWithES(
 	sort: string,
 	limit?: number,
 	options?: GetManyContainersWithESOptions
-) {
-	return async (
-		connection: DatabaseConnection
-	): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> => {
-		const must: estypes.QueryDslQueryContainer[] = [];
-		const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
-		const facetFilters: FacetFilterMap = {};
+): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> {
+	const must: estypes.QueryDslQueryContainer[] = [];
+	const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
+	const facetFilters: FacetFilterMap = {};
 
-		if (filters.terms) {
-			must.push({
-				multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
-			});
+	if (filters.terms) {
+		must.push({
+			multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
+		});
+	}
+	if (filters.type?.length) nonFacetFilters.push({ terms: { type: filters.type } });
+	if (filters.sdg?.length)
+		addFacetFilter(facetFilters, 'sdg', { terms: { 'payload.sdg': filters.sdg } });
+	if (filters.topics?.length)
+		addFacetFilter(facetFilters, 'topic', { terms: { 'payload.topic': filters.topics } });
+	if (filters.audience?.length)
+		addFacetFilter(facetFilters, 'audience', { terms: { 'payload.audience': filters.audience } });
+	if (filters.policyFieldsBNK?.length)
+		addFacetFilter(facetFilters, 'policyFieldBNK', {
+			terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK }
+		});
+	if (filters.programTypes?.length)
+		addFacetFilter(facetFilters, 'programType', {
+			terms: { 'payload.programType': filters.programTypes }
+		});
+	if (filters.indicatorCategories?.length)
+		addFacetFilter(facetFilters, 'indicatorCategory', {
+			terms: { 'payload.indicatorCategory': filters.indicatorCategories }
+		});
+	if (filters.indicatorTypes?.length)
+		addFacetFilter(facetFilters, 'indicatorType', {
+			terms: { 'payload.indicatorType': filters.indicatorTypes }
+		});
+	if (filters.taskCategories?.length)
+		addFacetFilter(facetFilters, 'taskCategory', {
+			terms: { 'payload.taskCategory': filters.taskCategories }
+		});
+	if (filters.resourceCategories?.length)
+		addFacetFilter(facetFilters, 'resourceCategory', {
+			terms: { 'payload.resourceCategory': filters.resourceCategories }
+		});
+	if (filters.customCategories) {
+		for (const [key, values] of Object.entries(filters.customCategories)) {
+			if (!values?.length) continue;
+			addFacetFilter(facetFilters, key, { terms: { [`payload.category.${key}`]: values } });
 		}
-		if (filters.type?.length) nonFacetFilters.push({ terms: { type: filters.type } });
-		if (filters.sdg?.length)
-			addFacetFilter(facetFilters, 'sdg', { terms: { 'payload.sdg': filters.sdg } });
-		if (filters.topics?.length)
-			addFacetFilter(facetFilters, 'topic', { terms: { 'payload.topic': filters.topics } });
-		if (filters.audience?.length)
-			addFacetFilter(facetFilters, 'audience', { terms: { 'payload.audience': filters.audience } });
-		if (filters.policyFieldsBNK?.length)
-			addFacetFilter(facetFilters, 'policyFieldBNK', {
-				terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK }
-			});
-		if (filters.programTypes?.length)
-			addFacetFilter(facetFilters, 'programType', {
-				terms: { 'payload.programType': filters.programTypes }
-			});
-		if (filters.indicatorCategories?.length)
-			addFacetFilter(facetFilters, 'indicatorCategory', {
-				terms: { 'payload.indicatorCategory': filters.indicatorCategories }
-			});
-		if (filters.indicatorTypes?.length)
-			addFacetFilter(facetFilters, 'indicatorType', {
-				terms: { 'payload.indicatorType': filters.indicatorTypes }
-			});
-		if (filters.taskCategories?.length)
-			addFacetFilter(facetFilters, 'taskCategory', {
-				terms: { 'payload.taskCategory': filters.taskCategories }
-			});
-		if (filters.resourceCategories?.length)
-			addFacetFilter(facetFilters, 'resourceCategory', {
-				terms: { 'payload.resourceCategory': filters.resourceCategories }
-			});
-		if (filters.customCategories) {
-			for (const [key, values] of Object.entries(filters.customCategories)) {
-				if (!values?.length) continue;
-				addFacetFilter(facetFilters, key, { terms: { [`payload.category.${key}`]: values } });
+	}
+	if (filters.assignees?.length)
+		nonFacetFilters.push({ terms: { 'payload.assignee': filters.assignees } });
+	if (filters.organizationalUnits?.length)
+		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
+	if (organizations.length) nonFacetFilters.push({ terms: { organization: organizations } });
+	if (filters.template !== undefined) {
+		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
+	} else {
+		// Match SQL behavior: when template filter is not specified, exclude templates by default
+		// SQL: (c.payload @> '{"template": false}' OR NOT payload ? 'template')
+		nonFacetFilters.push({
+			bool: {
+				should: [
+					{ term: { 'payload.template': false } },
+					{ bool: { must_not: { exists: { field: 'payload.template' } } } }
+				],
+				minimum_should_match: 1
 			}
-		}
-		if (filters.assignees?.length)
-			nonFacetFilters.push({ terms: { 'payload.assignee': filters.assignees } });
-		if (filters.organizationalUnits?.length)
-			nonFacetFilters.push({ terms: { organizationalUnit: filters.organizationalUnits } });
-		if (organizations.length) nonFacetFilters.push({ terms: { organization: organizations } });
-		if (filters.template !== undefined) {
-			nonFacetFilters.push({ term: { 'payload.template': filters.template } });
-		} else {
-			// Match SQL behavior: when template filter is not specified, exclude templates by default
-			// SQL: (c.payload @> '{"template": false}' OR NOT payload ? 'template')
-			nonFacetFilters.push({
-				bool: {
-					should: [
-						{ term: { 'payload.template': false } },
-						{ bool: { must_not: { exists: { field: 'payload.template' } } } }
-					],
-					minimum_should_match: 1
-				}
-			});
-		}
+		});
+	}
 
-		const allFacetFilters = Object.values(facetFilters).flat();
-		const query: estypes.QueryDslQueryContainer = {
-			bool: { must, filter: [...nonFacetFilters] }
-		};
-		const postFilter: estypes.QueryDslQueryContainer | undefined =
-			allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
-		const esSortClauses = buildElasticsearchSortClause(sort);
-		const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
-		const aggs = options?.includeFacets
-			? buildFacetAggregations({
-					facetFilters,
-					customCategoryKeys: options?.customCategoryKeys ?? []
-				})
-			: undefined;
-
-		const searchParams: estypes.SearchRequest = {
-			index: privateEnv.ELASTICSEARCH_INDEX_ALIAS ?? 'containers',
-			query,
-			post_filter: postFilter,
-			sort: esSortClauses,
-			size: sizeParam,
-			_source: ['guid'],
-			aggs
-		};
-
-		const { hits, aggregations } = await es.search<{ guid: string }>(searchParams);
-
-		const guids = hits.hits.flatMap((h) => (h._source?.guid ? [h._source.guid] : []));
-
-		if (guids.length === 0) return { containers: [], facets: {} };
-
-		const containerResult = await connection.any(sql.typeAlias('container')`
-				SELECT c.*
-				FROM container c
-				WHERE c.guid IN (${sql.join(
-					guids.map((g) => sql.fragment`${g}`),
-					sql.fragment`, `
-				)})
-				AND deleted = false
-				AND valid_currently
-				ORDER BY array_position(${sql.array(guids, 'uuid')}, c.guid)
-			`);
-
-		const containers = await withUserAndRelation<Container>(connection, containerResult);
-		const facets: FacetCounts = {};
-		if (options?.includeFacets !== false && aggregations) {
-			type TermsBucket = { key: string | number; key_as_string?: string; doc_count?: number };
-			const toCounts = (agg?: estypes.AggregationsAggregate): Record<string, number> => {
-				if (!agg || !('buckets' in agg)) return {};
-				const buckets = (agg as estypes.AggregationsTermsAggregateBase<TermsBucket>).buckets;
-				if (!Array.isArray(buckets)) return {};
-				return Object.fromEntries(
-					buckets.map((b) => [String(b.key_as_string ?? b.key), b.doc_count ?? 0])
-				);
-			};
-
-			for (const [key, agg] of Object.entries(aggregations)) {
-				const filterAgg = agg as estypes.AggregationsFilterAggregate & {
-					values?: estypes.AggregationsAggregate;
-				};
-				const valuesAgg = filterAgg.values;
-				facets[key] = toCounts(valuesAgg);
-			}
-		}
-
-		return { containers, facets };
+	const allFacetFilters = Object.values(facetFilters).flat();
+	const query: estypes.QueryDslQueryContainer = {
+		bool: { must, filter: [...nonFacetFilters] }
 	};
+	const postFilter: estypes.QueryDslQueryContainer | undefined =
+		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
+	const esSortClauses = buildElasticsearchSortClause(sort);
+	const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
+	const aggs = options?.includeFacets
+		? buildFacetAggregations({
+				facetFilters,
+				customCategoryKeys: options?.customCategoryKeys ?? []
+			})
+		: undefined;
+
+	const searchParams: estypes.SearchRequest = {
+		index: privateEnv.ELASTICSEARCH_INDEX_ALIAS ?? 'containers',
+		query,
+		post_filter: postFilter,
+		sort: esSortClauses,
+		size: sizeParam,
+		aggs
+	};
+
+	const { hits, aggregations } = await es.search(searchParams);
+
+	const containers: AnyContainer[] = hits.hits.flatMap((h) => {
+		const doc = h._source;
+		if (!doc) return [];
+		return [
+			anyContainer.parse({
+				...doc,
+				organizational_unit: (doc as Record<string, unknown>).organizational_unit ?? null,
+				valid_currently: true,
+				relation: (doc as Record<string, unknown>).relation ?? [],
+				user: (doc as Record<string, unknown>).user ?? []
+			})
+		];
+	});
+	const facets: FacetCounts = {};
+	if (options?.includeFacets !== false && aggregations) {
+		type TermsBucket = { key: string | number; key_as_string?: string; doc_count?: number };
+		const toCounts = (agg?: estypes.AggregationsAggregate): Record<string, number> => {
+			if (!agg || !('buckets' in agg)) return {};
+			const buckets = (agg as estypes.AggregationsTermsAggregateBase<TermsBucket>).buckets;
+			if (!Array.isArray(buckets)) return {};
+			return Object.fromEntries(
+				buckets.map((b) => [String(b.key_as_string ?? b.key), b.doc_count ?? 0])
+			);
+		};
+
+		for (const [key, agg] of Object.entries(aggregations)) {
+			const filterAgg = agg as estypes.AggregationsFilterAggregate & {
+				values?: estypes.AggregationsAggregate;
+			};
+			const valuesAgg = filterAgg.values;
+			facets[key] = toCounts(valuesAgg);
+		}
+	}
+
+	return { containers, facets };
 }
