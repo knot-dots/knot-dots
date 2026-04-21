@@ -502,6 +502,7 @@
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-default-color: var(--color-gray-700);
 		--dropdown-button-active-background: var(--dropdown-button-default-background);
+		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdown-button-hover-background: var(--dropdown-button-default-background);
 		--dropdown-button-border-width: 0;
 		--dropdown-button-padding: 0;
@@ -531,6 +532,11 @@
 		background: repeating-linear-gradient(45deg, #fff5f5, #fff5f5 2px, #ffebeb 2px, #ffebeb 4px);
 		color: #666;
 		cursor: not-allowed;
+	}
+
+	.cell:has(input:focus-within),
+	.cell:has(:global([aria-expanded='true'])) {
+		background-color: var(--color-primary-100);
 	}
 
 	:global(.row:hover input) {
