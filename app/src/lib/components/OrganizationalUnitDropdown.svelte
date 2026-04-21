@@ -6,11 +6,12 @@
 	interface Props {
 		editable?: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		organization: string;
 		value: string | null;
 	}
 
-	let { editable = false, labelledBy, organization, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, offset, organization, value = $bindable() }: Props = $props();
 
 	let options = $derived([
 		{ label: $_('empty'), value: null },
@@ -24,7 +25,7 @@
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown {labelledBy} offset={[0, -39]} {options} bind:value />
+	<SingleChoiceDropdown {labelledBy} {offset} {options} bind:value />
 {:else}
 	<span class="value">
 		{page.data.organizationalUnits.find(({ guid }) => guid === value)?.payload.name ?? $_('empty')}

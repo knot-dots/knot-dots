@@ -6,21 +6,22 @@
 	interface Props {
 		editable: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		value: string;
 	}
 
-	let { editable = false, labelledBy, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, offset, value = $bindable() }: Props = $props();
 </script>
 
 {#if editable}
 	<SingleChoiceDropdown
 		{labelledBy}
-		offset={[-41, -39]}
+		{offset}
 		options={visibility.options.map((o) => ({ value: o, label: $_(`visibility.${o}`) }))}
 		bind:value
 	/>
 {:else}
-	<span>{$_(`visibility.${value}`)}</span>
+	<span class="value">{$_(`visibility.${value}`)}</span>
 {/if}
 
 <style>

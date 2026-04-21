@@ -5,16 +5,17 @@
 
 	interface Props {
 		editable?: boolean;
+		offset?: [number, number];
 		value?: MeasureType;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, offset, value = $bindable() }: Props = $props();
 
 	const options = $derived(measureTypes.options.map((o) => ({ label: $_(o), value: o })));
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown {options} offset={[0, -39]} bind:value />
+	<SingleChoiceDropdown {options} {offset} bind:value />
 {:else}
 	<span class="value">{value ? $_(value) : $_('empty')}</span>
 {/if}
