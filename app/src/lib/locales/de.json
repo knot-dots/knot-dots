@@ -507,6 +507,7 @@
 		"political": "Politisch"
 	},
 	"organizational_unit": "Organisations-Ebene",
+	"organizational_unit.create": "Organisations-Ebene hinzufügen",
 	"organizational_unit.level": "Ebene",
 	"organizational_unit.properties.title": "Einstellungen",
 	"organizational_unit_level": "Ebene {level, number}",
