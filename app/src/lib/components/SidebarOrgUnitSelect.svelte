@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, type Snippet } from 'svelte';
+	import { getContext, tick, type Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -13,6 +13,7 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Plus from '~icons/knotdots/plus';
+	import Search from '~icons/knotdots/search';
 	import Relation from '~icons/knotdots/relation';
 	import {
 		containerOfType,
@@ -90,6 +91,8 @@
 
 	let buttonEl: HTMLButtonElement | undefined = $state();
 	let panelEl: HTMLDivElement | undefined = $state();
+	let searchQuery = $state('');
+	let searchInputEl: HTMLInputElement | undefined = $state();
 	let popoverPosition = $state({ top: 0, left: 0, minWidth: 0 });
 
 	function updatePosition() {
@@ -105,7 +108,9 @@
 
 	$effect(() => {
 		if ($popover.expanded) {
+			searchQuery = '';
 			updatePosition();
+			tick().then(() => searchInputEl?.focus());
 
 			const onScroll = (e: Event) => {
 				if (panelEl && e.target instanceof Node && panelEl.contains(e.target)) return;
@@ -172,7 +177,29 @@
 		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)
 	);
 
-	const treeItems = $derived(buildTree(organizationalUnits));
+	function filterTree(items: OrgUnitTreeItem[], query: string): OrgUnitTreeItem[] {
+		const lowerQuery = query.toLowerCase();
+		return items.reduce<OrgUnitTreeItem[]>((acc, item) => {
+			const filteredChildren = item.children ? filterTree(item.children, query) : undefined;
+			if (
+				item.name.toLowerCase().includes(lowerQuery) ||
+				(filteredChildren && filteredChildren.length > 0)
+			) {
+				acc.push({
+					...item,
+					children:
+						filteredChildren && filteredChildren.length > 0 ? filteredChildren : item.children
+				});
+			}
+			return acc;
+		}, []);
+	}
+
+	const treeItems = $derived(
+		searchQuery
+			? filterTree(buildTree(organizationalUnits), searchQuery)
+			: buildTree(organizationalUnits)
+	);
 
 	const tree = new Tree<OrgUnitTreeItem>({
 		items: () => treeItems,
@@ -273,6 +300,15 @@
 					<span class="is-visually-hidden">{$_('close')}</span>
 				</button>
 			</div>
+			<div class="context-select-search">
+				<Search />
+				<input
+					bind:this={searchInputEl}
+					bind:value={searchQuery}
+					placeholder={$_('search')}
+					type="search"
+				/>
+			</div>
 			<div class="tree-container">
 				<ul class="tree-root" {...tree.root}>
 					{@render renderChildren(tree.children, 0)}
@@ -331,7 +367,6 @@
 			0 10px 15px -3px rgba(0, 0, 0, 0.06);
 		display: flex;
 		flex-direction: column;
-		max-height: 20rem;
 		overflow: hidden;
 		position: fixed;
 		z-index: 10;
@@ -339,7 +374,6 @@
 
 	.context-select-header {
 		align-items: center;
-		border-bottom: 1px solid var(--color-gray-100);
 		display: flex;
 		justify-content: space-between;
 		padding: 0.375rem 0.5rem;
@@ -373,7 +407,40 @@
 		width: 1rem;
 	}
 
+	.context-select-search {
+		align-items: center;
+		background-color: var(--color-gray-050);
+		border-radius: 6px;
+		color: var(--color-gray-400);
+		display: flex;
+		gap: 0.375rem;
+		margin: 0.25rem;
+		padding: 0.25rem 0.5rem;
+	}
+
+	.context-select-search :global(svg) {
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.context-select-search input {
+		background: transparent;
+		border: none;
+		color: var(--color-gray-700);
+		font-size: 0.875rem;
+		height: 1.5rem;
+		outline: none;
+		padding: 0;
+		width: 100%;
+	}
+
+	.context-select-search input::placeholder {
+		color: var(--color-gray-400);
+	}
+
 	.tree-container {
+		max-height: calc(4 * 2.125rem + 0.5rem);
 		overflow-y: auto;
 		padding: 0.25rem;
 	}
