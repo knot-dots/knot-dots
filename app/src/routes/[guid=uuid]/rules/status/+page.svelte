@@ -7,13 +7,15 @@
 	import RulesPage from '$lib/components/RulesPage.svelte';
 	import { ruleStatus } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import { ruleStatusBackgrounds, ruleStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 </script>
 
 <RulesPage {data}>

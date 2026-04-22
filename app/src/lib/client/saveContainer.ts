@@ -2,10 +2,12 @@ import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import { etag, modifiedContainer, type NewContainer, newContainer } from '$lib/models';
 import type { AnyContainer } from '$lib/models';
+import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
 export default async function saveContainer(container: AnyContainer | NewContainer) {
 	let url = '/container';
-	if ('guid' in container) {
+	const isUpdate = 'guid' in container;
+	if (isUpdate) {
 		url = `/container/${container.guid}/revision`;
 	}
 
@@ -17,7 +19,7 @@ export default async function saveContainer(container: AnyContainer | NewContain
 		)
 	});
 
-	return await fetch(url, {
+	const response = await fetch(url, {
 		method: 'POST',
 		body: JSON.stringify(data),
 		credentials: 'include',
@@ -26,4 +28,19 @@ export default async function saveContainer(container: AnyContainer | NewContain
 			...('revision' in container ? { 'If-Match': etag(container) } : undefined)
 		}
 	});
+
+	if (response.ok) {
+		const cloned = response.clone();
+		cloned.json().then((savedContainer) => {
+			if (isUpdate) {
+				lastUpdatedContainers.update(
+					(map) => new Map([...map, [savedContainer.guid, savedContainer]])
+				);
+			} else {
+				lastCreatedContainer.set(savedContainer);
+			}
+		});
+	}
+
+	return response;
 }
