@@ -93,17 +93,24 @@
 	let panelEl: HTMLDivElement | undefined = $state();
 	let searchQuery = $state('');
 	let searchInputEl: HTMLInputElement | undefined = $state();
-	let popoverPosition = $state({ top: 0, left: 0, minWidth: 0 });
+	let openAbove = $state(false);
+	let popoverPosition = $state({ top: 0, bottom: 0, left: 0, minWidth: 0 });
 
 	function updatePosition() {
-		if (buttonEl) {
-			const rect = buttonEl.getBoundingClientRect();
-			popoverPosition = {
-				top: rect.bottom + 4,
-				left: rect.left,
-				minWidth: rect.width
-			};
-		}
+		if (!buttonEl) return;
+		const rect = buttonEl.getBoundingClientRect();
+		const estimatedPanelHeight = 300;
+		const spaceBelow = window.innerHeight - rect.bottom - 4;
+		const spaceAbove = rect.top - 4;
+
+		openAbove = spaceBelow < estimatedPanelHeight && spaceAbove > spaceBelow;
+
+		popoverPosition = {
+			top: rect.bottom + 4,
+			bottom: window.innerHeight - rect.top + 4,
+			left: rect.left,
+			minWidth: rect.width
+		};
 	}
 
 	$effect(() => {
@@ -289,7 +296,9 @@
 		<div
 			bind:this={panelEl}
 			class="context-select-popover"
-			style="top: {popoverPosition.top}px; left: {popoverPosition.left}px; min-width: {popoverPosition.minWidth}px;"
+			style="{openAbove ? 'bottom' : 'top'}: {openAbove
+				? popoverPosition.bottom
+				: popoverPosition.top}px; left: {popoverPosition.left}px; min-width: {popoverPosition.minWidth}px;"
 			transition:slide={{ duration: 125, easing: cubicInOut }}
 			use:popover.panel
 		>
