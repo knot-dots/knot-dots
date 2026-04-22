@@ -37,6 +37,10 @@ test('Selected objects can be displayed in a section', async ({
 	}
 
 	// Select individual objects by clicking on their checkboxes
+	await dialog.getByRole('button', { name: 'Type of element' }).click();
+	await dialog.getByRole('checkbox', { name: 'Goal (1)', exact: true }).check();
+	await dialog.getByRole('checkbox', { name: 'Measure (1)', exact: true }).check();
+	await expect(dialog.getByRole('article')).toHaveCount(2);
 	await dialog.getByRole('checkbox', { name: testGoal.payload.title }).check();
 	await dialog.getByRole('checkbox', { name: testMeasure.payload.title }).check();
 
@@ -58,6 +62,10 @@ test('Selected objects can be displayed in a section', async ({
 	await expect(section.getByRole('link', { name: testGoal.payload.title })).toBeVisible();
 	await expect(section.getByRole('link', { name: testMeasure.payload.title })).toBeVisible();
 	await expect(section.getByRole('button', { name: 'Add item' })).not.toBeVisible();
+
+	// Assert show-all link is not displayed
+	await section.hover();
+	await expect(section.getByRole('link', { name: 'Show all' })).not.toBeVisible();
 });
 
 test('Rule-based collections can be displayed in a section', async ({
@@ -74,7 +82,7 @@ test('Rule-based collections can be displayed in a section', async ({
 
 	// Add "Embed objects" section
 	const section = await landingPage.addSection('Embed objects');
-	await section.getByPlaceholder('Enter title').fill('My selection');
+	await section.getByPlaceholder('Enter title').fill('My rule-based collection');
 	await section.hover();
 
 	// Open dialog to select objects
@@ -112,6 +120,10 @@ test('Rule-based collections can be displayed in a section', async ({
 	await expect(section.getByRole('link', { name: testProgram.payload.title })).toBeVisible();
 	await expect(section.getByRole('link', { name: testReport.payload.title })).toBeVisible();
 	await expect(section.getByRole('button', { name: 'Add item' })).not.toBeVisible();
+
+	// Assert show-all link is displayed
+	await section.hover();
+	await expect(section.getByRole('link', { name: 'Show all' })).toBeVisible();
 });
 
 test('New item can be added to custom collection', async ({
