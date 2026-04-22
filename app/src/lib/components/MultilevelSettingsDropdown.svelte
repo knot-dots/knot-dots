@@ -8,7 +8,6 @@
 
 	interface Props {
 		children: Snippet<[() => void]>;
-		dropdownClass?: string;
 		handleBack?: () => void;
 		handleClose?: () => void;
 		handleOpen?: () => void;
@@ -21,7 +20,6 @@
 
 	let {
 		children,
-		dropdownClass,
 		handleBack,
 		handleClose,
 		handleOpen,
@@ -63,7 +61,7 @@
 	}
 </script>
 
-<div class="dropdown {dropdownClass ?? ''}" use:popperRef>
+<div class="dropdown" use:popperRef>
 	<button class="dropdown-button" onclick={handleTriggerOpen} type="button" use:popover.button>
 		<Ellipsis />
 		<span class="is-visually-hidden">{label}</span>

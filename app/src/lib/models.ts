@@ -775,6 +775,7 @@ const basePayload = z.object({
 	editorialState: editorialState.optional(),
 	policyFieldBNK: z.array(policyFieldBNK).transform(deduplicate).default([]),
 	summary: z.string().trim().max(200).optional(),
+	template: z.boolean().default(false),
 	title: z.string().trim(),
 	topic: z.array(topics).transform(deduplicate).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -872,6 +873,7 @@ export const customCollectionPayload = z
 		filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
 		item: z.array(z.uuid()).default([]),
 		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
+		newItemTemplate: z.array(z.uuid()).default([]),
 		allowSearch: z.boolean().default(false),
 		allowSort: z.boolean().default(false),
 		sort: z.enum(['alpha', 'modified']).default('alpha'),
@@ -1034,7 +1036,6 @@ const measurePayload = basePayload
 		result: z.string().trim().optional(),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
-		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
 	.strict();
@@ -3094,8 +3095,7 @@ export function createCopyOf(
 
 	if (isMeasureContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
-			template: false
+			...(container.payload as typeof copy.payload)
 		} as typeof copy.payload;
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
@@ -3116,7 +3116,8 @@ export function createCopyOf(
 
 	copy.payload = {
 		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
+		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
+		...('template' in container.payload ? { template: false } : undefined)
 	} as typeof copy.payload;
 
 	copy.relation.push({

@@ -18,6 +18,7 @@
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
+	import TemplateToggle from '$lib/components/TemplateToggle.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -85,6 +86,10 @@
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+		{/if}
+
+		{#if isMeasureContainer(container) && $ability.can('update', container)}
+			<TemplateToggle bind:value={container.payload.template} {editable} />
 		{/if}
 	{/snippet}
 

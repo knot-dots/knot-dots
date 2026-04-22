@@ -19,6 +19,7 @@
 	interface Props {
 		container: CustomCollectionContainer;
 		onAddItems: () => void;
+		onAddTemplates: () => void;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -26,6 +27,7 @@
 	let {
 		container = $bindable(),
 		onAddItems,
+		onAddTemplates,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -72,7 +74,6 @@
 </script>
 
 <MultilevelSettingsDropdown
-	dropdownClass="custom-collection-settings"
 	isRoot={settingsSubview === 'main'}
 	label={$_('custom_collection.settings.title')}
 	handleBack={backToMain}
@@ -126,7 +127,7 @@
 				{$_('custom_collection.settings.objects_title')}
 			</p>
 			<button
-				class="settings-embed"
+				class="settings-button"
 				onclick={() => {
 					closeDropdown();
 					onAddItems();
@@ -134,6 +135,23 @@
 				type="button"
 			>
 				{$_('custom_collection.settings.embed_objects')}
+			</button>
+
+			<div class="settings-divider" role="presentation"></div>
+
+			<p class="dropdown-panel-group-title">
+				{$_('custom_collection.settings.create_objects_title')}
+			</p>
+
+			<button
+				class="settings-button"
+				onclick={() => {
+					closeDropdown();
+					onAddTemplates();
+				}}
+				type="button"
+			>
+				{$_('template_picker_title')}
 			</button>
 
 			<div class="settings-divider" role="presentation"></div>
@@ -333,7 +351,7 @@
 		padding: 0.5rem;
 	}
 
-	.settings-embed {
+	.settings-button {
 		--button-background: var(--color-white);
 		--button-hover-background: var(--color-gray-100);
 		--button-active-background: var(--color-gray-200);
