@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { tick } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
@@ -8,14 +8,19 @@
 	import Close from '~icons/flowbite/close-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import Plus from '~icons/knotdots/plus';
 	import Search from '~icons/knotdots/search';
 	import Relation from '~icons/knotdots/relation';
 	import { page } from '$app/state';
 	import {
+		containerOfType,
 		getOrganizationURL,
+		type NewContainer,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer
+		type OrganizationContainer,
+		payloadTypes
 	} from '$lib/models';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import { env } from '$env/dynamic/public';
 
 	interface Props {
@@ -29,6 +34,27 @@
 	let { defaultOrganization, options, title, onselect, children }: Props = $props();
 
 	const popover = createPopover({});
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	let canCreateOrganization = $derived(
+		$mayCreateContainer(payloadTypes.enum.organization, page.data.currentOrganization.guid)
+	);
+
+	function handleCreateOrganization() {
+		const container = containerOfType(
+			payloadTypes.enum.organization,
+			page.data.currentOrganization.guid,
+			null,
+			page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer;
+
+		$newContainer = container;
+		createContainerDialog.getElement().showModal();
+	}
 
 	$effect(() => {
 		popover.set({ label: title });
@@ -121,10 +147,22 @@
 		>
 			<div class="context-select-header">
 				<span class="context-select-title">{title}</span>
-				<button class="context-select-close" onclick={() => popover.close()} type="button">
-					<Close />
-					<span class="is-visually-hidden">{$_('close')}</span>
-				</button>
+				<div class="context-select-header-actions">
+					{#if canCreateOrganization}
+						<button
+							class="context-select-add"
+							onclick={handleCreateOrganization}
+							title={$_('organization.create')}
+							type="button"
+						>
+							<Plus />
+						</button>
+					{/if}
+					<button class="context-select-close" onclick={() => popover.close()} type="button">
+						<Close />
+						<span class="is-visually-hidden">{$_('close')}</span>
+					</button>
+				</div>
 			</div>
 			<div class="context-select-search">
 				<Search />
@@ -208,6 +246,34 @@
 		display: flex;
 		justify-content: space-between;
 		padding: 0.375rem 0.5rem;
+	}
+
+	.context-select-header-actions {
+		align-items: center;
+		display: flex;
+		gap: 0.125rem;
+	}
+
+	.context-select-add {
+		align-items: center;
+		background: none;
+		border: none;
+		border-radius: 4px;
+		color: var(--color-gray-400);
+		cursor: pointer;
+		display: flex;
+		justify-content: center;
+		padding: 0.25rem;
+	}
+
+	.context-select-add:hover {
+		background-color: var(--color-gray-050);
+		color: var(--color-gray-600);
+	}
+
+	.context-select-add :global(svg) {
+		height: 0.75rem;
+		width: 0.75rem;
 	}
 
 	.context-select-title {
