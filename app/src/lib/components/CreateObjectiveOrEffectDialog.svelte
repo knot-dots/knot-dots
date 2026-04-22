@@ -146,7 +146,6 @@
 						{#if isEffectContainer(newObjectiveOrEffect)}
 							<EditableEffectDetailView
 								bind:container={newObjectiveOrEffect}
-								disableRefreshOnSave
 								revisions={[newObjectiveOrEffect]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
@@ -157,7 +156,6 @@
 						{:else if isObjectiveContainer(newObjectiveOrEffect)}
 							<EditableObjectiveDetailView
 								bind:container={newObjectiveOrEffect}
-								disableRefreshOnSave
 								revisions={[newObjectiveOrEffect]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->

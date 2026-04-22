@@ -1,12 +1,7 @@
-import { invalidate } from '$app/navigation';
 import saveContainer from '$lib/client/saveContainer';
 import type { AnyContainer } from '$lib/models';
 
-export default function autoSave(
-	container: AnyContainer,
-	delay: number,
-	invalidateResource: string = 'containers'
-) {
+export default function autoSave(container: AnyContainer, delay: number) {
 	let timer: ReturnType<typeof setTimeout>;
 	let inFlight = false;
 	let pendingSave = false;
@@ -19,7 +14,6 @@ export default function autoSave(
 			if (response.ok) {
 				const updatedContainer = await response.json();
 				container.revision = updatedContainer.revision;
-				await invalidate(invalidateResource);
 			} else {
 				const error = await response.json();
 				alert(error.message);

@@ -33,17 +33,11 @@
 
 	interface Props {
 		container: EffectContainer;
-		disableRefreshOnSave?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		disableRefreshOnSave = false,
-		layout,
-		revisions
-	}: Props = $props();
+	let { container = $bindable(), layout, revisions }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -149,10 +143,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView
-		bind:container
-		invalidateResource={disableRefreshOnSave ? '' : undefined}
-	>
+	<EditableContainerDetailView bind:container>
 		{#snippet data()}
 			<EffectProperties
 				bind:container
