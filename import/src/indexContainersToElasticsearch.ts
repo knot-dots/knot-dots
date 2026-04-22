@@ -70,7 +70,7 @@ async function* fetchContainers(batchSize = 500) {
         AND (${lastGuid ? sql.fragment`c.guid > ${lastGuid}::uuid` : sql.fragment`true`})
       ORDER BY c.guid
       LIMIT ${batchSize}
-    `)) as unknown as Row[];
+    `)) as Row[];
 
 		if (rows.length === 0) return;
 
