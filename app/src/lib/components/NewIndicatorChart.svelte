@@ -20,7 +20,9 @@
 
 	let { container, relatedContainers = [], comparisonContainers }: Props = $props();
 
-	const currentOrgUnitName = $derived(page.data.currentOrganizationalUnit?.payload.name);
+	const currentOrgUnitName = $derived(
+		page.data.currentOrganizationalUnit?.payload.name ?? page.data.currentOrganization?.payload.name
+	);
 
 	let unit = $derived($_(container.payload.unit));
 
@@ -219,6 +221,10 @@
 {/if}
 
 <style>
+	figure {
+		flex-grow: 1;
+	}
+
 	.chart-legend {
 		display: flex;
 		flex-wrap: wrap;
