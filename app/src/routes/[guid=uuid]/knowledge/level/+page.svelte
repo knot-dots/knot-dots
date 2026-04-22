@@ -10,9 +10,10 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
 		type AnyContainer,
+		computeFacetCount,
+		titleForProgramCollection,
 		findAncestors,
-		predicates,
-		titleForProgramCollection
+		predicates
 	} from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
@@ -42,7 +43,12 @@
 		return knowledgeByLevel;
 	});
 
-	let facets = $derived(data.facets);
+	let facets = $derived(
+		computeFacetCount(data.facets, containers, {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
+	);
 </script>
 
 <Layout>

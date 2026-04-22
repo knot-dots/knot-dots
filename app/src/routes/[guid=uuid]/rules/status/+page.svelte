@@ -18,7 +18,7 @@
 	);
 </script>
 
-<RulesPage {data}>
+<RulesPage {data} {containers}>
 	<Board>
 		{#each ruleStatus.options as statusOption (statusOption)}
 			<BoardColumn

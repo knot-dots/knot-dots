@@ -39,7 +39,7 @@
 	}
 </script>
 
-<TasksPage {data} sortOptions={[]}>
+<TasksPage {data} {containers} sortOptions={[]}>
 	<Board>
 		{#if data.relatedContainers.length > 0}
 			<BoardColumn

@@ -18,7 +18,7 @@
 	);
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage {data} {containers}>
 	<Board>
 		{#each programStatus.options as statusOption (statusOption)}
 			<BoardColumn

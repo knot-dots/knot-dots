@@ -4,6 +4,9 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { computeFacetCount } from '$lib/models';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -13,7 +16,16 @@
 		{ label: $_('workspace.profile.measures'), value: '/me/measures' }
 	];
 
-	let facets = $derived(data.facets);
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
+
+	let facets = $derived(
+		computeFacetCount(data.facets, containers, {
+			useCategoryPayload: !!data.categoryOptions,
+			reset: true
+		})
+	);
 </script>
 
 <Layout>
@@ -28,7 +40,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Measures containers={data.containers} />
+		<Measures {containers} />
 		<Help slug="measures-status" />
 	{/snippet}
 </Layout>
