@@ -548,10 +548,10 @@ function prepareWhereCondition(filters: {
 	type?: PayloadType[];
 }) {
 	const conditions = [sql.fragment`c.valid_currently`, sql.fragment`NOT c.deleted`];
-	if (!filters.type?.includes(payloadTypes.enum.organization)) {
+	if (!filters.type?.includes(payloadTypes.enum.organization) && !filters.guid?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organization}`);
 	}
-	if (!filters.type?.includes(payloadTypes.enum.organizational_unit)) {
+	if (!filters.type?.includes(payloadTypes.enum.organizational_unit) && !filters.guid?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organizational_unit}`);
 	}
 	if (filters.assignees?.length) {
