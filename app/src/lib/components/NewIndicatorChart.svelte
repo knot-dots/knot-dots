@@ -219,6 +219,10 @@
 {/if}
 
 <style>
+	figure {
+		flex-grow: 1;
+	}
+
 	.chart-legend {
 		display: flex;
 		flex-wrap: wrap;
