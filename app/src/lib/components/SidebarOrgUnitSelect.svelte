@@ -244,7 +244,7 @@
 				{:else}
 					<span class="tree-expand-spacer"></span>
 				{/if}
-				<a class="tree-item-link" href={child.item.url}>
+				<a class="tree-item-link" href={child.item.url} title={child.item.name}>
 					{child.item.name}
 				</a>
 				{#if canCreateOrgUnit && depth < 3}
@@ -369,6 +369,7 @@
 		flex-direction: column;
 		overflow: hidden;
 		position: fixed;
+		width: 260px;
 		z-index: 10;
 	}
 
@@ -531,16 +532,17 @@
 		border-radius: 4px;
 		color: var(--color-gray-400);
 		cursor: pointer;
-		display: none;
+		display: flex;
 		flex-shrink: 0;
 		height: 1.25rem;
 		justify-content: center;
+		opacity: 0;
 		padding: 0;
 		width: 1.25rem;
 	}
 
 	.tree-item-content:hover .tree-item-add {
-		display: flex;
+		opacity: 1;
 	}
 
 	.tree-item-add:hover {
