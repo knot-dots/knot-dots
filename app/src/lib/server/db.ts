@@ -525,10 +525,12 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 }
 
 function prepareWhereCondition(filters: {
+	administrativeTypes?: string[];
 	assignees?: string[];
 	audience?: string[];
 	customCategories?: Record<string, string[]>;
 	customCategoryMatch?: 'any' | 'all';
+	federalStates?: string[];
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
@@ -554,14 +556,16 @@ function prepareWhereCondition(filters: {
 	if (!filters.type?.includes(payloadTypes.enum.organizational_unit) && !filters.guid?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organizational_unit}`);
 	}
+	if (filters.administrativeTypes?.length) {
+		conditions.push(
+			sql.fragment`c.payload->'administrativeType' ?| ${sql.array(filters.administrativeTypes, 'text')}`
+		);
+	}
 	if (filters.assignees?.length) {
 		conditions.push(sql.fragment`c.payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
 	}
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
-	}
-	if (filters.guid?.length) {
-		conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.guid, 'uuid')})`);
 	}
 	if (filters.customCategories) {
 		const categoryFragments = Object.entries(filters.customCategories)
@@ -579,6 +583,14 @@ function prepareWhereCondition(filters: {
 				}
 			}
 		}
+	}
+	if (filters.federalStates?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.federalStates, 'text')})`
+		);
+	}
+	if (filters.guid?.length) {
+		conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.guid, 'uuid')})`);
 	}
 	if (filters.helpSlugs?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' = 'help'`);
@@ -736,10 +748,12 @@ export async function withUserAndRelation<T extends AnyContainer>(
 export function getManyContainers(
 	organizations: string[],
 	filters: {
+		administrativeTypes?: string[];
 		assignees?: string[];
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		customCategoryMatch?: 'any' | 'all';
+		federalStates?: string[];
 		guid?: string[];
 		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];

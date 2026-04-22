@@ -509,12 +509,14 @@ export const GET = (async ({ locals, url }) => {
 		getManyContainers(
 			parseResult.data.organization,
 			{
+				administrativeTypes: parseResult.data.administrativeType,
 				// Skip legacy filters for any key that is handled as a custom category,
 				// to avoid conflicting AND conditions against different JSON paths.
 				audience: customCategories['audience'] ? [] : parseResult.data.audience,
 				customCategories,
 				customCategoryMatch: parseResult.data.categoryMatch[0],
 				guid: parseResult.data.guid,
+				federalStates: parseResult.data?.federalState,
 				indicators: parseResult.data.indicator,
 				indicatorCategories: parseResult.data.indicatorCategory,
 				indicatorTypes: parseResult.data.indicatorType,
