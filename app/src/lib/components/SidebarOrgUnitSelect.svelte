@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -12,13 +12,19 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
 	import {
+		containerOfType,
 		getOrganizationURL,
+		type NewContainer,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer
+		type OrganizationContainer,
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { hasPart, isPartOf } from '$lib/relations';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface OrgUnitTreeItem extends TreeItem {
 		name: string;
@@ -43,6 +49,34 @@
 	}: Props = $props();
 
 	const popover = createPopover({});
+
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
+	);
+
+	function handleCreateOrgUnit(parentGuid?: string) {
+		const container = containerOfType(
+			payloadTypes.enum.organizational_unit,
+			page.data.currentOrganization.guid,
+			null,
+			page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer;
+
+		if (parentGuid) {
+			container.relation = [
+				...container.relation,
+				{
+					object: parentGuid,
+					position: 0,
+					predicate: predicates.enum['is-part-of']
+				}
+			];
+		}
+
+		$newContainer = container;
+		createContainerDialog.getElement().showModal();
+	}
 
 	$effect(() => {
 		popover.set({ label: title });
@@ -134,6 +168,10 @@
 		return ids;
 	}
 
+	let canCreateOrgUnit = $derived(
+		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)
+	);
+
 	const treeItems = $derived(buildTree(organizationalUnits));
 
 	const tree = new Tree<OrgUnitTreeItem>({
@@ -182,6 +220,20 @@
 				<a class="tree-item-link" href={child.item.url}>
 					{child.item.name}
 				</a>
+				{#if canCreateOrgUnit && depth < 3}
+					<button
+						class="tree-item-add"
+						onclick={(e) => {
+							e.stopPropagation();
+							handleCreateOrgUnit(child.id);
+						}}
+						tabindex={-1}
+						title={$_('organizational_unit.create')}
+						type="button"
+					>
+						<Plus />
+					</button>
+				{/if}
 			</div>
 			{#if child.canExpand && child.expanded && child.children}
 				<ul {...tree.group}>
@@ -403,6 +455,35 @@
 	.tree-item--selected > .tree-item-content .tree-item-link {
 		color: var(--color-primary-700, var(--color-gray-800));
 		font-weight: 600;
+	}
+
+	.tree-item-add {
+		align-items: center;
+		background: none;
+		border: none;
+		border-radius: 4px;
+		color: var(--color-gray-400);
+		cursor: pointer;
+		display: none;
+		flex-shrink: 0;
+		height: 1.25rem;
+		justify-content: center;
+		padding: 0;
+		width: 1.25rem;
+	}
+
+	.tree-item-content:hover .tree-item-add {
+		display: flex;
+	}
+
+	.tree-item-add:hover {
+		background-color: var(--color-gray-100);
+		color: var(--color-gray-600);
+	}
+
+	.tree-item-add :global(svg) {
+		height: 0.625rem;
+		width: 0.625rem;
 	}
 
 	.context-select-footer {
