@@ -4,23 +4,6 @@ test.use({ suiteId: 'elasticsearch' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test.describe('Optimistic frontend updates with Elasticsearch', () => {
-	test.beforeEach(async ({ page }) => {
-		await page.goto('/');
-		await page.getByRole('navigation').getByRole('button', { name: 'User menu' }).click();
-		await page.getByRole('navigation').getByRole('button', { name: 'Settings' }).click();
-		await page.getByRole('dialog').getByLabel('Elasticsearch').check();
-		await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-		await expect(page.getByRole('dialog')).not.toBeVisible();
-	});
-
-	test.afterEach(async ({ page }) => {
-		await page.goto('/');
-		await page.getByRole('navigation').getByRole('button', { name: 'User menu' }).click();
-		await page.getByRole('navigation').getByRole('button', { name: 'Settings' }).click();
-		await page.getByRole('dialog').getByLabel('Elasticsearch').uncheck();
-		await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-	});
-
 	test('created goal appears immediately on the board', async ({ dotsBoard, testOrganization }) => {
 		await dotsBoard.goto(`/${testOrganization.guid}`);
 		await dotsBoard.header.editModeToggle.check();
