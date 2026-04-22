@@ -138,7 +138,7 @@
 			<ul class="context-select-list">
 				{#each filteredOptions as option (option.guid)}
 					<li>
-						<a class="context-select-option" href={optionURL(option)}>
+						<a class="context-select-option" href={optionURL(option)} title={option.payload.name}>
 							{option.payload.name}
 						</a>
 					</li>
@@ -199,6 +199,7 @@
 		flex-direction: column;
 		overflow: hidden;
 		position: fixed;
+		width: 260px;
 		z-index: 10;
 	}
 
