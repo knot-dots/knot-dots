@@ -512,6 +512,7 @@
 	"organizational_unit.properties.title": "Einstellungen",
 	"organizational_unit_level": "Ebene {level, number}",
 	"organizational_units": "Organisations-Ebenen",
+	"organization.create": "Organisation hinzufügen",
 	"organizations": "Organisationen",
 	"organizations_and_organizational_units": "Organisationen und Organisationsebenen",
 	"other_organizations": "Andere Organisationen",
