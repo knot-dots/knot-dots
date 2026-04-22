@@ -3246,7 +3246,7 @@ export function computeFacetCount(
 					? container.payload.category
 					: undefined;
 			const hasCategoryValue = categoryPayload && key in categoryPayload;
-			const hasPayloadValue = !categoryPayload && key in container.payload;
+			const hasPayloadValue = key in container.payload;
 			const valueSource = hasCategoryValue
 				? categoryPayload?.[key]
 				: hasPayloadValue
