@@ -220,7 +220,7 @@
 							sensitivity: 'base'
 						})
 					)}
-			{#if options.some(({ count }) => count > 0)}
+			{#if options.some(({ count, subOptions }) => count > 0 || subOptions?.some(({ count }) => count > 0))}
 				<InlineFilterDropDown
 					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
