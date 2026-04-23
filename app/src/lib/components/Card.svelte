@@ -472,6 +472,7 @@
 	.body {
 		color: var(--color-gray-500);
 		display: flex;
+		flex-direction: column;
 		flex-grow: 1;
 		font-size: 0.875rem;
 		font-weight: 400;
