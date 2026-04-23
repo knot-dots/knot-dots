@@ -83,8 +83,8 @@
 
 <style>
 	img {
-		align-self: flex-end;
-		margin: 0 auto;
+		align-self: center;
+		margin-top: auto;
 		height: 7rem;
 		object-fit: contain;
 	}
