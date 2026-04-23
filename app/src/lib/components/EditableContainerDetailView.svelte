@@ -56,21 +56,19 @@
 				{/if}
 			</div>
 
-			<div class="details-meta">
-				<Badges
-					bind:container
+			<Badges
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+			/>
+
+			{#if isSimpleMeasureContainer(container)}
+				<EditableProgress
 					editable={$applicationState.containerDetailView.editable &&
 						$ability.can('update', container)}
+					bind:value={container.payload.progress}
 				/>
-
-				{#if isSimpleMeasureContainer(container)}
-					<EditableProgress
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.progress}
-					/>
-				{/if}
-			</div>
+			{/if}
 		</header>
 
 		{@render data?.()}
@@ -86,19 +84,13 @@
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
+		margin-bottom: 0.375rem;
 	}
 
 	.details-header :global(.logo),
 	.details-header :global(.logo-upload) {
 		--logo-height: 2.5rem;
 		flex-shrink: 0;
-	}
-
-	.details-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		margin-top: 0.5rem;
 	}
 
 	.details-title {
