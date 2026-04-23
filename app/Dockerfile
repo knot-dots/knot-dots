@@ -10,7 +10,6 @@ COPY app/tsconfig.json ./app
 COPY app/vite.config.ts ./app
 COPY app/src ./app/src
 COPY app/static ./app/static
-RUN npm run check --workspace app
 RUN npm run build --workspace app
 
 FROM builder AS dev

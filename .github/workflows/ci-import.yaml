@@ -5,16 +5,16 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-import.yaml'
-      - 'import/**'
-      - 'shared/**'
+      - ".github/workflows/ci-import.yaml"
+      - "import/**"
+      - "shared/**"
   pull_request:
     branches:
       - main
     paths:
-      - '.github/workflows/ci-import.yaml'
-      - 'import/**'
-      - 'shared/**'
+      - ".github/workflows/ci-import.yaml"
+      - "import/**"
+      - "shared/**"
 
 env:
   REGISTRY: rg.fr-par.scw.cloud/knot-dots
@@ -30,10 +30,12 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: nologin
           password: ${{ secrets.SCW_SECRET_KEY }}
+      - uses: docker/setup-buildx-action@v4
       - uses: docker/build-push-action@v7
         with:
           context: .
           file: ./import/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.REGISTRY }}/import:${{ github.sha }}
