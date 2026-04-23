@@ -197,7 +197,8 @@
 	let hasMoreItems = $derived(items.length > visibleCount);
 
 	let isRuleBasedCollection = $derived(
-		Object.values(container.payload.filter).some((v) => v.length > 0)
+		container.payload.item.length == 0 &&
+			Object.values(container.payload.filter).some((v) => v.length > 0)
 	);
 
 	let hasConfiguredContent = $derived(

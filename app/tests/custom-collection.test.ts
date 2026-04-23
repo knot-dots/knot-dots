@@ -9,6 +9,7 @@ test('Selected objects can be displayed in a section', async ({
 	testIndicatorTemplate,
 	testMeasure,
 	testOrganization,
+	testOrganizationalUnit,
 	testProgram,
 	testReport
 }) => {
@@ -25,23 +26,38 @@ test('Selected objects can be displayed in a section', async ({
 
 	// Assert catalog of available objects is displayed
 	const dialog = landingPage.page.getByRole('dialog');
-	const expectedObjects = [testGoal, testIndicatorTemplate, testMeasure, testProgram, testReport];
+	const expectedObjects = [
+		testGoal,
+		testIndicatorTemplate,
+		testMeasure,
+		testOrganizationalUnit,
+		testProgram,
+		testReport
+	];
 	await expect(dialog.getByText('Choose objects')).toBeVisible();
 	await expect(dialog.getByText('Select', { exact: true })).toBeChecked();
 	for (const object of expectedObjects) {
 		await expect(
-			dialog
-				.getByRole('article')
-				.filter({ has: landingPage.page.getByRole('heading', { name: object.payload.title }) })
+			dialog.getByRole('article').filter({
+				has: landingPage.page.getByRole('heading', {
+					name: 'title' in object.payload ? object.payload.title : object.payload.name
+				})
+			})
 		).toBeVisible();
 	}
 
 	// Select individual objects by clicking on their checkboxes
+	await dialog.getByRole('button', { name: 'Type of element' }).click();
+	await dialog.getByRole('checkbox', { name: 'Goal (1)', exact: true }).check();
+	await dialog.getByRole('checkbox', { name: 'Measure (1)', exact: true }).check();
+	await dialog.getByRole('checkbox', { name: 'Organizational unit (1)', exact: true }).check();
+	await expect(dialog.getByRole('article')).toHaveCount(3);
 	await dialog.getByRole('checkbox', { name: testGoal.payload.title }).check();
 	await dialog.getByRole('checkbox', { name: testMeasure.payload.title }).check();
+	await dialog.getByRole('checkbox', { name: testOrganizationalUnit.payload.name }).check();
 
 	// Assert selected objects are displayed in the preview
-	const confirmButton = dialog.getByRole('button', { name: 'Accept selection (2)' });
+	const confirmButton = dialog.getByRole('button', { name: 'Accept selection (3)' });
 	const preview = confirmButton.locator('//following-sibling::ul');
 
 	await expect(confirmButton).toBeVisible();
@@ -57,7 +73,14 @@ test('Selected objects can be displayed in a section', async ({
 	await expect(dialog).not.toBeVisible();
 	await expect(section.getByRole('link', { name: testGoal.payload.title })).toBeVisible();
 	await expect(section.getByRole('link', { name: testMeasure.payload.title })).toBeVisible();
+	await expect(
+		section.getByRole('link', { name: testOrganizationalUnit.payload.name })
+	).toBeVisible();
 	await expect(section.getByRole('button', { name: 'Add item' })).not.toBeVisible();
+
+	// Assert show-all link is not displayed
+	await section.hover();
+	await expect(section.getByRole('link', { name: 'Show all' })).not.toBeVisible();
 });
 
 test('Rule-based collections can be displayed in a section', async ({
@@ -74,7 +97,7 @@ test('Rule-based collections can be displayed in a section', async ({
 
 	// Add "Embed objects" section
 	const section = await landingPage.addSection('Embed objects');
-	await section.getByPlaceholder('Enter title').fill('My selection');
+	await section.getByPlaceholder('Enter title').fill('My rule-based collection');
 	await section.hover();
 
 	// Open dialog to select objects
@@ -112,6 +135,10 @@ test('Rule-based collections can be displayed in a section', async ({
 	await expect(section.getByRole('link', { name: testProgram.payload.title })).toBeVisible();
 	await expect(section.getByRole('link', { name: testReport.payload.title })).toBeVisible();
 	await expect(section.getByRole('button', { name: 'Add item' })).not.toBeVisible();
+
+	// Assert show-all link is displayed
+	await section.hover();
+	await expect(section.getByRole('link', { name: 'Show all' })).toBeVisible();
 });
 
 test('New item can be added to custom collection', async ({
