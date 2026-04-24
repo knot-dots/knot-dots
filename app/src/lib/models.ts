@@ -622,7 +622,9 @@ export function isQuantity(value: unknown): value is Quantity {
 export function fromCounts(options: string[], counts: Record<string, number> = {}) {
 	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
 	for (const [key, count] of Object.entries(counts)) {
-		m.set(key, count);
+		if (m.has(key)) {
+			m.set(key, count);
+		}
 	}
 	return m;
 }
@@ -3223,21 +3225,9 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
 	containers: AnyContainer[],
-	options?: { useCategoryPayload?: boolean; reset?: boolean }
+	options?: { useCategoryPayload?: boolean }
 ) {
 	const useCategoryPayload = options?.useCategoryPayload ?? false;
-
-	if (options?.reset) {
-		const template = new Map<string, Map<string, number>>();
-		for (const [key, values] of facets) {
-			const zeroed = new Map<string, number>();
-			for (const [value] of values) {
-				zeroed.set(value, 0);
-			}
-			template.set(key, zeroed);
-		}
-		return computeFacetCount(template, containers, { useCategoryPayload });
-	}
 
 	for (const container of containers) {
 		for (const key of facets.keys()) {

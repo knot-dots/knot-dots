@@ -2,7 +2,6 @@
 	import { type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/knowledge/catalog/$types';
 
@@ -13,12 +12,7 @@
 	}
 	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
 
-	let facets = $derived(
-		computeFacetCount(data.facets, data.containers, {
-			useCategoryPayload: !!data.categoryOptions,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

@@ -10,7 +10,6 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
 		type AnyContainer,
-		computeFacetCount,
 		titleForProgramCollection,
 		findAncestors,
 		predicates
@@ -43,12 +42,7 @@
 		return knowledgeByLevel;
 	});
 
-	let facets = $derived(
-		computeFacetCount(data.facets, containers, {
-			useCategoryPayload: !!data.categoryOptions,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

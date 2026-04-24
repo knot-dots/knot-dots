@@ -4,7 +4,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { computeFacetCount, predicates } from '$lib/models';
+	import { predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
 
@@ -26,12 +26,7 @@
 	let categoryContext = $derived(page.data.categoryContext);
 	let useCustomCategories = $derived(featureDecisions.useCustomCategories() && !!categoryContext);
 
-	let facets = $derived(
-		computeFacetCount(data.facets, data.containers, {
-			useCategoryPayload: useCustomCategories,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

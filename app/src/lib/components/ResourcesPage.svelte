@@ -3,7 +3,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { PageData } from '../../routes/[guid=uuid]/resources/catalog/$types';
-	import { computeFacetCount, predicates } from '$lib/models';
+	import { predicates } from '$lib/models';
 
 	interface Props {
 		children: Snippet;
@@ -19,12 +19,7 @@
 		predicates: [predicates.enum['is-prerequisite-for']]
 	});
 
-	let facets = $derived(
-		computeFacetCount(data.facets, data.containers, {
-			useCategoryPayload: !!data.categoryOptions,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

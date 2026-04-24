@@ -5,7 +5,6 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { computeFacetCount } from '$lib/models';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -20,12 +19,7 @@
 		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
 	);
 
-	let facets = $derived(
-		computeFacetCount(data.facets, containers, {
-			useCategoryPayload: !!data.categoryOptions,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

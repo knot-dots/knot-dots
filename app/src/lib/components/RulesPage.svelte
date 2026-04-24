@@ -2,7 +2,7 @@
 	import { setContext, type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount, predicates } from '$lib/models';
+	import { predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/rules/catalog/$types';
 
@@ -19,7 +19,7 @@
 		predicates: [predicates.enum['is-inconsistent-with']]
 	});
 
-	let facets = $derived(computeFacetCount(data.facets, data.containers, { reset: true }));
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

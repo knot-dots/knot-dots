@@ -2,7 +2,7 @@
 	import { setContext, type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { computeFacetCount, predicates } from '$lib/models';
+	import { predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/goals/catalog/$types';
 
@@ -23,12 +23,7 @@
 		]
 	});
 
-	let facets = $derived(
-		computeFacetCount(data.facets, data.containers, {
-			useCategoryPayload: !!data.categoryOptions,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 </script>
 
 <Layout>

@@ -3,7 +3,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { computeFacetCount } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
@@ -16,12 +15,7 @@
 
 	let { actions, children, data, filterBarInitiallyOpen = false }: Props = $props();
 
-	let facets = $derived(
-		computeFacetCount(data.facets, data.containers, {
-			useCategoryPayload: !!data.categoryOptions,
-			reset: true
-		})
-	);
+	let facets = $derived(data.facets);
 	const featureDecisions = createFeatureDecisions(data.features ?? []);
 </script>
 
