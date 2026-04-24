@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@knot-dots/app": "*",
     "@elastic/elasticsearch": "^9.3.4",
     "roarr": "^7.21.4",
     "serialize-error": "^13.0.1",
