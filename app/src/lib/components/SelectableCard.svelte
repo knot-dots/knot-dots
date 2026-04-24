@@ -244,6 +244,7 @@
 		display: flex;
 		font-size: 0.875rem;
 		font-weight: 400;
+		flex-direction: column;
 		flex-grow: 1;
 	}
 
