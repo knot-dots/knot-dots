@@ -19,7 +19,7 @@
 	let measures = $derived(containers.filter(isMeasureContainer));
 </script>
 
-<MeasuresPage {data} {containers}>
+<MeasuresPage data={{ ...data, containers }}>
 	<MeasureMonitoring
 		{measures}
 		containers={containers.filter(isMeasureMonitoringContainer)}

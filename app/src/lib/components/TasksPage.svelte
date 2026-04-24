@@ -4,25 +4,18 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { computeFacetCount, type AnyContainer, predicates } from '$lib/models';
+	import { computeFacetCount, predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
 
 	interface Props {
 		children: Snippet;
-		containers?: AnyContainer[];
 		data: PageData;
 		sortOptions?: [string, string][];
 		filterBarInitiallyOpen?: boolean;
 	}
 
-	let {
-		children,
-		data,
-		containers = data.containers,
-		filterBarInitiallyOpen = false,
-		sortOptions
-	}: Props = $props();
+	let { children, data, filterBarInitiallyOpen = false, sortOptions }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -34,7 +27,7 @@
 	let useCustomCategories = $derived(featureDecisions.useCustomCategories() && !!categoryContext);
 
 	let facets = $derived(
-		computeFacetCount(data.facets, containers, {
+		computeFacetCount(data.facets, data.containers, {
 			useCategoryPayload: useCustomCategories,
 			reset: true
 		})

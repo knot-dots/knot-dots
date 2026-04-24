@@ -3,23 +3,16 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import type { PageData } from '../../routes/[guid=uuid]/resources/catalog/$types';
-	import { computeFacetCount, type AnyContainer, predicates } from '$lib/models';
+	import { computeFacetCount, predicates } from '$lib/models';
 
 	interface Props {
 		children: Snippet;
-		containers?: AnyContainer[];
 		data: PageData;
 		sortOptions?: [string, string][];
 		filterBarInitiallyOpen?: boolean;
 	}
 
-	let {
-		children,
-		data,
-		containers = data.containers,
-		sortOptions,
-		filterBarInitiallyOpen = false
-	}: Props = $props();
+	let { children, data, sortOptions, filterBarInitiallyOpen = false }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -27,7 +20,7 @@
 	});
 
 	let facets = $derived(
-		computeFacetCount(data.facets, containers, {
+		computeFacetCount(data.facets, data.containers, {
 			useCategoryPayload: !!data.categoryOptions,
 			reset: true
 		})

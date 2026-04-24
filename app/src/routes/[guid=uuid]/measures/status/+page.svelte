@@ -18,7 +18,7 @@
 	);
 </script>
 
-<MeasuresPage {data} {containers}>
+<MeasuresPage data={{ ...data, containers }}>
 	<Board>
 		{#each status.options as statusOption (statusOption)}
 			<BoardColumn
