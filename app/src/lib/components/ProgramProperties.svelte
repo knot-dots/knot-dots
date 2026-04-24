@@ -68,7 +68,7 @@
 			/>
 		{/if}
 
-		<EditableVisibility {editable} bind:value={container.payload.visibility} />
+		<EditableVisibility {editable} bind:container {relatedContainers} />
 	{/snippet}
 
 	{#snippet categories()}
