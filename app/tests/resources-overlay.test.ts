@@ -211,7 +211,7 @@ test.describe('Resources fullscreen', () => {
 		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
 
 		// Navigate away from the program context
-		await dotsBoard.page.getByRole('link', { name: 'My workspace' }).click();
+		await dotsBoard.page.goto(`/${testProgram.organization}`);
 		await expect(dotsBoard.page.getByRole('link', { name: 'Back to overlay' })).not.toBeVisible();
 	});
 
