@@ -177,9 +177,9 @@ test.describe('Permissions', () => {
 			await expect(
 				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })
 			).toBeVisible();
-			await expect(dotsBoard.page.getByRole('button', { name: 'Organizational unit' })).toHaveText(
-				testOrganizationalUnit.payload.name
-			);
+			await expect(
+				dotsBoard.page.getByRole('button', { name: 'Organizational unit', exact: true })
+			).toHaveText(testOrganizationalUnit.payload.name);
 
 			// Assert program is not affected by changing the organizational unit of its descendant measure
 			await dotsBoard.overlay.closeButton.click();

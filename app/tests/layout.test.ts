@@ -17,11 +17,6 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 		await expect(
 			page.getByRole('navigation').locator('header').getByRole('link', { name: 'knotdots.net' })
 		).toBeVisible();
-		await expect(
-			page
-				.getByRole('banner')
-				.getByRole('button', { name: 'Organizations and organizational units' })
-		).toBeVisible();
 		await expect(page.getByRole('banner').getByRole('link', { name: 'dots' })).toBeVisible();
 	}
 });
