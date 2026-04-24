@@ -429,6 +429,7 @@ const programTypeValues = [
 	'program_type.package_of_measures',
 	'program_type.funding_program',
 	'program_type.guide',
+	'program_type.publication',
 	'program_type.agenda'
 ] as const;
 

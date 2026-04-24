@@ -578,6 +578,8 @@
 	"program_type.mobility.plural": "Mobility strategies",
 	"program_type.package_of_measures": "Package of measures",
 	"program_type.package_of_measures.plural": "Packages of measures",
+	"program_type.publication": "Publication",
+	"program_type.publication.plural": "Publications",
 	"program_type.report": "Report",
 	"program_type.report.plural": "Reports",
 	"program_type.set_of_rules": "Set of rules",

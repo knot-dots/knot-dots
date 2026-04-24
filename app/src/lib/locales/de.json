@@ -578,6 +578,8 @@
 	"program_type.mobility.plural": "Mobilitätsstrategien",
 	"program_type.package_of_measures": "Maßnahmenpaket",
 	"program_type.package_of_measures.plural": "Maßnahmenpakete",
+	"program_type.publication": "Publikation",
+	"program_type.publication.plural": "Publikationen",
 	"program_type.report": "Bericht",
 	"program_type.report.plural": "Berichte",
 	"program_type.set_of_rules": "Regelwerk",
