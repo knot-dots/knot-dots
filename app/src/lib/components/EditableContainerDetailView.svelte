@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
@@ -51,7 +52,10 @@
 					></h1>
 				{:else}
 					<h1 class="details-title" contenteditable="false">
-						{container.payload.title}
+						{container.payload.title.replace(
+							/@current_organizational_unit_name/g,
+							page.data.currentOrganizationalUnit?.payload.name ?? ''
+						)}
 					</h1>
 				{/if}
 			</div>
