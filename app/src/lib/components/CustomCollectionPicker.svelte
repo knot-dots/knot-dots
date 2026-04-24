@@ -24,6 +24,7 @@
 		type PayloadType,
 		payloadTypes,
 		policyFieldBNK,
+		programTypes,
 		sustainableDevelopmentGoals,
 		topics
 	} from '$lib/models';
@@ -77,6 +78,9 @@
 	let facets = $derived.by(() => {
 		const facets = new Map([
 			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
+			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.program)
+				? [['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]]
+				: []),
 			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.indicator_template)
 				? [['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]]
 				: []),
@@ -118,6 +122,7 @@
 							indicatorCategory: filter.indicatorCategory,
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
+							programType: filter.programType,
 							...(createFeatureDecisions(page.data.features).useCustomCategories()
 								? Object.fromEntries(
 										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
@@ -196,10 +201,10 @@
 			{@const options =
 				categoryContext?.options[key]?.map((option) => ({
 					...option,
-					count: foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+					count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
 					subOptions: option.subOptions?.map((sub) => ({
 						...sub,
-						count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+						count: foci.get(sub.value) ?? foci.get(sub.guid) ?? 0
 					}))
 				})) ??
 				[...foci.entries()]
@@ -215,7 +220,7 @@
 							sensitivity: 'base'
 						})
 					)}
-			{#if options.some(({ count }) => count > 0)}
+			{#if options.some(({ count, subOptions }) => count > 0 || subOptions?.some(({ count }) => count > 0))}
 				<InlineFilterDropDown
 					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
