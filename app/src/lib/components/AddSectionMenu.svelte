@@ -36,6 +36,7 @@
 		isContainerWithProgress,
 		isContainerWithSummary,
 		isContentPartnerCollectionContainer,
+		isDemographicDataContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
@@ -153,6 +154,12 @@
 		isOrganizationalUnitContainer(parentContainer) &&
 			parentContainer.payload.officialRegionalCode &&
 			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
+	);
+
+	let mayAddDemographicData = $derived(
+		isOrganizationalUnitContainer(parentContainer) &&
+			parentContainer.payload.geometry &&
+			!hasSection(parentContainer, relatedContainers).some(isDemographicDataContainer)
 	);
 
 	let mayAddMap = $derived(
@@ -385,6 +392,15 @@
 							icon: BasicData,
 							label: $_('administrative_area.basic_data'),
 							value: payloadTypes.enum.administrative_area_basic_data
+						}
+					]
+				: []),
+			...(mayAddDemographicData
+				? [
+						{
+							icon: BasicData,
+							label: $_('demographic_data'),
+							value: payloadTypes.enum.demographic_data
 						}
 					]
 				: []),
