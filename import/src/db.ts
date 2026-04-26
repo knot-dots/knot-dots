@@ -533,23 +533,6 @@ export async function getTermContainersForCategory(
 	`);
 }
 
-export async function getOrganizationalUnitContainers(
-	tx: DatabaseTransactionConnection,
-	organizationGuid: string
-): Promise<Readonly<Array<OrganizationalUnitContainer>>> {
-	return tx.any(sql.type(persistedOrganizationalUnitContainer)`
-		SELECT *
-		FROM container
-		WHERE organization = ${organizationGuid}
-			AND valid_currently
-			AND NOT deleted
-			AND payload->>'type' = 'organizational_unit'
-			AND payload->>'officialMunicipalityKey' IS NOT NULL
-			AND payload->>'officialMunicipalityKey' <> ''
-		ORDER BY payload->>'officialMunicipalityKey', guid
-	`);
-}
-
 const isObject = (item: unknown): item is Record<string, unknown> => {
 	return item !== null && typeof item === 'object' && !Array.isArray(item);
 };

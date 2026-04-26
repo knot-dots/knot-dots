@@ -7,73 +7,72 @@ import {
 	createContainer,
 	createRelation,
 	getCategoryContainer,
-	getOrganizationalUnitContainers,
 	getTermContainersForCategory,
 	getPool,
-	OrganizationalUnitContainer,
-	OrganizationalUnitPayload,
 	termContainer,
 	termPayload,
 	TermContainer,
 	updateContainer
 } from './db.ts';
-import { type AdministrativeAreaDifu, getAdministrativeAreasDifu } from './difu.ts';
-import assert from 'node:assert';
+import { getAdministrativeAreasDifu } from './difu.ts';
 
 const categoryKey = 'kommunaltyp';
 const categoryTitle = 'Kommunaltyp';
 const categoryRelationPredicate = 'is-part-of-category';
 const creatorPredicate = 'is-creator-of';
+const envSchema = z.object({
+	DIFU_FILE: z.string().min(1),
+	IMPORT_ORGANIZATION: z.uuid(),
+	IMPORT_USER: z.uuid(),
+	PUBLIC_KC_REALM: z.string().default('knot-dots')
+});
 
-const env = z
-	.object({
-		DIFU_FILE: z.string().min(1),
-		IMPORT_ORGANIZATION: z.uuid(),
-		IMPORT_USER: z.uuid(),
-		PUBLIC_KC_REALM: z.string().default('knot-dots')
-	})
-	.parse(process.env);
+(async function main() {
+	const env = envSchema.parse(process.env);
 
-type Assignment = {
-	codes: string[];
-	official_municipality_key: string;
-	rows: AdministrativeAreaDifu[];
-};
+	const difu = getAdministrativeAreasDifu(env.DIFU_FILE);
 
-function addAssignment(assignments: Map<string, Assignment>, row: AdministrativeAreaDifu) {
-	const existing = assignments.get(row.official_municipality_key);
+	const termsSorted = [...new Set(difu.values().map(({ code }) => code))].toSorted();
 
-	if (!existing) {
-		assignments.set(row.official_municipality_key, {
-			codes: [row.code],
-			official_municipality_key: row.official_municipality_key,
-			rows: [row]
-		});
-		return;
-	}
+	const stats = {
+		categoryCreated: false,
+		categoryUpdated: false,
+		termsCreated: 0,
+		termsUpdated: 0
+	};
 
-	if (!existing.codes.includes(row.code)) {
-		existing.codes.push(row.code);
-	}
-	existing.rows.push(row);
-}
+	const pool = await getPool();
 
-function buildOrganizationalUnitMap(containers: Readonly<Array<OrganizationalUnitContainer>>) {
-	const byKey = new Map<string, Array<OrganizationalUnitContainer>>();
+	await pool.transaction(async (tx) => {
+		const category = await ensureCategory(tx, env.IMPORT_ORGANIZATION, env, stats);
+		const termsByCode = buildTermMap(
+			await getTermContainersForCategory(
+				tx,
+				env.IMPORT_ORGANIZATION,
+				category.guid,
+				categoryRelationPredicate
+			)
+		);
 
-	for (const container of containers) {
-		const key = String(container.payload.officialMunicipalityKey ?? '').trim();
-		if (!key) {
-			continue;
+		for (const code of difu.values().map(({ code }) => code)) {
+			const position = termsSorted.findIndex((term) => term === code);
+			await ensureTerm(tx, category, code, position, termsByCode, env, stats);
 		}
+	});
 
-		const existing = byKey.get(key) ?? [];
-		existing.push(container);
-		byKey.set(key, existing);
-	}
-
-	return byKey;
-}
+	console.log(`Parsed ${difu.size} DIFU rows from ${env.DIFU_FILE}`);
+	console.log(
+		[
+			`Category created: ${stats.categoryCreated}`,
+			`Category updated: ${stats.categoryUpdated}`,
+			`Terms created: ${stats.termsCreated}`,
+			`Terms updated: ${stats.termsUpdated}`
+		].join('\n')
+	);
+})().catch((error) => {
+	console.error(error);
+	process.exitCode = 1;
+});
 
 function buildTermMap(terms: Readonly<Array<TermContainer>>) {
 	const byCode = new Map<string, TermContainer>();
@@ -97,7 +96,11 @@ function buildTermMap(terms: Readonly<Array<TermContainer>>) {
 async function ensureCategory(
 	tx: DatabaseTransactionConnection,
 	organization: string,
-	stats: { categoryCreated: boolean; categoryUpdated: boolean }
+	env: z.infer<typeof envSchema>,
+	stats: {
+		categoryCreated: boolean;
+		categoryUpdated: boolean;
+	}
 ): Promise<CategoryContainer> {
 	const existing = await getCategoryContainer(tx, organization, categoryKey);
 
@@ -149,6 +152,7 @@ async function ensureTerm(
 	code: string,
 	position: number,
 	termsByCode: Map<string, TermContainer>,
+	env: z.infer<typeof envSchema>,
 	stats: { termsCreated: number; termsUpdated: number }
 ) {
 	const existing = termsByCode.get(code);
@@ -195,139 +199,3 @@ async function ensureTerm(
 	stats.termsUpdated++;
 	return updated;
 }
-
-function withAssignedCategory(payload: OrganizationalUnitPayload, codes: string[]) {
-	return {
-		...payload,
-		category: {
-			...payload.category,
-			[categoryKey]: Array.from(
-				new Set(
-					categoryKey in payload.category ? [...payload.category[categoryKey], ...codes] : codes
-				)
-			)
-		}
-	};
-}
-
-function isSame<T>(a: T, b: T) {
-	try {
-		assert.deepEqual(a, b);
-		return true;
-	} catch (_) {
-		return false;
-	}
-}
-
-(async function main() {
-	const rows = getAdministrativeAreasDifu(env.DIFU_FILE);
-	const assignments = new Map<string, Assignment>();
-
-	for (const row of rows.values()) {
-		addAssignment(assignments, row);
-	}
-
-	const termPositions = new Map(
-		[...new Set(rows.values().map(({ code }) => code))].sort().map((code, index) => [code, index])
-	);
-	const stats = {
-		categoryCreated: false,
-		categoryUpdated: false,
-		assignmentsMatched: 0,
-		assignmentsUnchanged: 0,
-		assignmentsUpdated: 0,
-		duplicateKeys: 0,
-		termsCreated: 0,
-		termsUpdated: 0,
-		unmatchedRows: [] as AdministrativeAreaDifu[]
-	};
-
-	const pool = await getPool();
-
-	await pool.transaction(async (tx) => {
-		const category = await ensureCategory(tx, env.IMPORT_ORGANIZATION, stats);
-		const termsByCode = buildTermMap(
-			await getTermContainersForCategory(
-				tx,
-				env.IMPORT_ORGANIZATION,
-				category.guid,
-				categoryRelationPredicate
-			)
-		);
-		const organizationalUnitsByKey = buildOrganizationalUnitMap(
-			await getOrganizationalUnitContainers(tx, env.IMPORT_ORGANIZATION)
-		);
-
-		for (const assignment of assignments.values()) {
-			const matches = organizationalUnitsByKey.get(assignment.official_municipality_key) ?? [];
-
-			if (matches.length === 0) {
-				stats.unmatchedRows.push(...assignment.rows);
-				continue;
-			}
-
-			if (matches.length > 1) {
-				stats.duplicateKeys++;
-			}
-
-			for (const code of assignment.codes) {
-				const position = termPositions.get(code);
-				if (position === undefined) {
-					throw new Error(`Missing term position for code ${code}`);
-				}
-
-				await ensureTerm(tx, category, code, position, termsByCode, stats);
-			}
-
-			for (const organizationalUnit of matches) {
-				const nextPayload = withAssignedCategory(organizationalUnit.payload, assignment.codes);
-
-				stats.assignmentsMatched++;
-
-				if (isSame(organizationalUnit.payload, nextPayload)) {
-					stats.assignmentsUnchanged++;
-					continue;
-				}
-
-				const updated = (await updateContainer({ ...organizationalUnit, payload: nextPayload })(
-					tx
-				)) as OrganizationalUnitContainer;
-				organizationalUnitsByKey.set(assignment.official_municipality_key, [updated]);
-				stats.assignmentsUpdated++;
-			}
-		}
-	});
-
-	console.log(`Parsed ${rows.size} DIFU rows from ${env.DIFU_FILE}`);
-	console.log(
-		[
-			`Category created: ${stats.categoryCreated}`,
-			`Category updated: ${stats.categoryUpdated}`,
-			`Terms created: ${stats.termsCreated}`,
-			`Terms updated: ${stats.termsUpdated}`,
-			`Assignments matched: ${stats.assignmentsMatched}`,
-			`Assignments updated: ${stats.assignmentsUpdated}`,
-			`Assignments unchanged: ${stats.assignmentsUnchanged}`,
-			`Duplicate municipality keys (assigned to all matches): ${stats.duplicateKeys}`,
-			`Unmatched rows: ${stats.unmatchedRows.length}`
-		].join('\n')
-	);
-
-	if (stats.unmatchedRows.length > 0) {
-		console.log('Unmatched DIFU rows:');
-		for (const row of stats.unmatchedRows) {
-			console.log(
-				JSON.stringify({
-					code: row.code,
-					name: row.name,
-					official_municipality_key: row.official_municipality_key,
-					row_number: row.row_number,
-					source_sheet: row.source_sheet
-				})
-			);
-		}
-	}
-})().catch((error) => {
-	console.error(error);
-	process.exitCode = 1;
-});

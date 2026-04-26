@@ -6,9 +6,7 @@ type ParsedWorkbook = ReturnType<typeof xlsx.parse>;
 const administrativeAreaDifu = z.object({
 	code: z.string(),
 	name: z.string().nonempty(),
-	official_municipality_key: z.stringFormat('AGS', /\d+/).transform((v) => v.padStart(8, '0')),
-	row_number: z.number().int().positive(),
-	source_sheet: z.enum(['Kreistypen 2021', 'Gemeindetypen 2022'])
+	official_municipality_key: z.stringFormat('AGS', /\d+/).transform((v) => v.padStart(8, '0'))
 });
 
 export type AdministrativeAreaDifu = z.infer<typeof administrativeAreaDifu>;
