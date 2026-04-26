@@ -888,8 +888,6 @@ const initialCustomCollectionPayload = customCollectionPayload.partial({ title: 
 
 export const demographicDataPayload = z
 	.object({
-		area: z.number().nonnegative().optional(),
-		population: z.number().int().nonnegative().optional(),
 		title: z
 			.string()
 			.trim()

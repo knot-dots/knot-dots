@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
+	import { env } from '$env/dynamic/public';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-	import { type AnyContainer, type DemographicDataContainer } from '$lib/models';
+	import {
+		type ActualDataContainer,
+		type AnyContainer,
+		type DemographicDataContainer,
+		payloadTypes
+	} from '$lib/models';
+	import { IsInViewport, resource } from 'runed';
 
 	interface Props {
 		container: DemographicDataContainer;
@@ -16,6 +24,60 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
+
+	let header = $state<HTMLElement>();
+
+	const inViewport = new IsInViewport(() => header);
+
+	let inViewportOnce = $state(false);
+
+	$effect(() => {
+		if (inViewport.current) {
+			inViewportOnce = true;
+		}
+	});
+
+	const actualData = resource(
+		[() => inViewportOnce],
+		async (_, __, { signal }) => {
+			return (await fetchContainers(
+				{
+					organization: [container.organization],
+					organizationalUnit: container.organizational_unit
+						? [container.organizational_unit]
+						: [''],
+					payloadType: [payloadTypes.enum.actual_data]
+				},
+				'alpha',
+				{ signal }
+			)) as ActualDataContainer[];
+		},
+		{ lazy: true }
+	);
+
+	const population = $derived.by(() => {
+		const populationDataContainer = actualData.current?.find(
+			({ payload }) => payload.indicator == env.PUBLIC_PNK_POPULATION_INDICATOR
+		);
+		if (populationDataContainer) {
+			return populationDataContainer.payload.values.at(-1)?.[1];
+		}
+	});
+
+	const populationDensity = $derived.by(() => {
+		const populationDensityDataContainer = actualData.current?.find(
+			({ payload }) => payload.indicator == env.PUBLIC_PNK_POPULATION_DENSITY_INDICATOR
+		);
+		if (populationDensityDataContainer) {
+			return populationDensityDataContainer.payload.values.at(-1)?.[1];
+		}
+	});
+
+	const area = $derived.by(() => {
+		if (population && populationDensity) {
+			return population / populationDensity;
+		}
+	});
 </script>
 
 <header>
@@ -32,8 +94,8 @@
 	<li class="stat-card">
 		<span class="label">{$_('demographic_data.population')}</span>
 		<span class="value">
-			{#if container.payload.population}
-				{$number(container.payload.population)}
+			{#if population}
+				{$number(population)}
 			{:else}
 				-
 			{/if}
@@ -43,11 +105,9 @@
 	<li class="stat-card">
 		<span class="label">{$_('demographic_data.area')}</span>
 		<span class="value">
-			{#if container.payload.area}
-				{$number(container.payload.area, {
-					maximumFractionDigits: 0
-				})}
-				<span class="unit">km²</span>
+			{#if area}
+				{$number(area, { maximumFractionDigits: 0 })}
+				<span class="unit">ha</span>
 			{:else}
 				-
 			{/if}
@@ -57,11 +117,9 @@
 	<li class="stat-card">
 		<span class="label">{$_('demographic_data.population_density')}</span>
 		<span class="value">
-			{#if container.payload.population != null && container.payload.area != null}
-				{$number(container.payload.population / container.payload.area, {
-					maximumFractionDigits: 0
-				})}
-				<span class="unit">/km²</span>
+			{#if populationDensity}
+				{$number(populationDensity)}
+				<span class="unit">/ ha</span>
 			{:else}
 				-
 			{/if}

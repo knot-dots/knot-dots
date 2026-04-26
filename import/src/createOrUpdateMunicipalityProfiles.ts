@@ -158,8 +158,7 @@ const envSchema = z
 
 				let demographicDataContainer = await createOrUpdateDemographicDataContainer(
 					tx,
-					ouContainer,
-					bbsr
+					ouContainer
 				);
 
 				let reportCollectionContainer = await createOrUpdateReportCollectionContainer(
@@ -340,18 +339,15 @@ async function createOrGetMapContainer(
 
 async function createOrUpdateDemographicDataContainer(
 	tx: DatabaseTransactionConnection,
-	ouContainer: OrganizationalUnitContainer,
-	bbsr: AdministrativeAreaBBSR | null
+	ouContainer: OrganizationalUnitContainer
 ) {
 	const newDemographicDataContainer = demographicDataContainer.parse({
 		managed_by: ouContainer.guid,
 		organization: ouContainer.organization,
 		organizational_unit: ouContainer.guid,
 		payload: {
-			type: 'demographic_data',
 			title: 'Basisindikatoren',
-			area: bbsr?.area,
-			population: bbsr?.population
+			type: 'demographic_data'
 		},
 		realm: ouContainer.realm,
 		user: ouContainer.user
