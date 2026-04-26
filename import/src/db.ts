@@ -1,4 +1,21 @@
 import {
+	mapPayload,
+	administrativeAreaBasicDataPayload,
+	demographicDataPayload,
+	organizationalUnitPayload,
+	indicatorTemplatePayload,
+	actualDataPayload,
+	categoryPayload,
+	termPayload,
+	customCollectionPayload,
+	anyContainer,
+	AnyContainer,
+	categoryContainer as persistedCategoryContainer,
+	CategoryContainer,
+	termContainer as persistedTermContainer,
+	TermContainer
+} from '@knot-dots/app/src/lib/models.ts';
+import {
 	createPool,
 	DatabasePool,
 	DatabaseTransactionConnection,
@@ -155,40 +172,9 @@ export const spatialFeature = z.object({
 	guid: z.string().uuid()
 });
 
-import {
-	mapPayload,
-	administrativeAreaBasicDataPayload,
-	demographicDataPayload,
-	organizationalUnitPayload,
-	indicatorTemplatePayload,
-	actualDataPayload,
-	categoryPayload,
-	termPayload,
-	customCollectionPayload,
-	anyContainer,
-	AnyContainer,
-	categoryContainer as persistedCategoryContainer,
-	CategoryContainer,
-	termContainer as persistedTermContainer,
-	TermContainer
-} from '../../app/src/lib/models.ts';
+export { categoryPayload, termPayload };
 
-export {
-	mapPayload,
-	administrativeAreaBasicDataPayload,
-	categoryPayload,
-	organizationalUnitPayload,
-	indicatorTemplatePayload,
-	actualDataPayload,
-	termPayload
-};
-
-export type { AnyContainer as PersistedContainer, CategoryContainer, TermContainer };
-
-export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
-export type ActualDataPayload = z.infer<typeof actualDataPayload>;
-export type CategoryPayload = z.infer<typeof categoryPayload>;
-export type TermPayload = z.infer<typeof termPayload>;
+export type { CategoryContainer, TermContainer };
 
 export const containerUser = z.array(
 	z.object({
