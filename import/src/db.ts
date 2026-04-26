@@ -167,8 +167,6 @@ import {
 	customCollectionPayload,
 	anyContainer,
 	AnyContainer,
-	organizationalUnitContainer as persistedOrganizationalUnitContainer,
-	OrganizationalUnitContainer,
 	categoryContainer as persistedCategoryContainer,
 	CategoryContainer,
 	termContainer as persistedTermContainer,
@@ -185,12 +183,7 @@ export {
 	termPayload
 };
 
-export type {
-	AnyContainer as PersistedContainer,
-	OrganizationalUnitContainer,
-	CategoryContainer,
-	TermContainer
-};
+export type { AnyContainer as PersistedContainer, CategoryContainer, TermContainer };
 
 export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
 export type ActualDataPayload = z.infer<typeof actualDataPayload>;
