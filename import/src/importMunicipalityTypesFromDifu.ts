@@ -17,7 +17,7 @@ import {
 	TermContainer,
 	updateContainer
 } from './db.ts';
-import { getAdministrativeAreasDifu, parsedRow } from './difu.ts';
+import { type AdministrativeAreaDifu, getAdministrativeAreasDifu } from './difu.ts';
 import assert from 'node:assert';
 
 const categoryKey = 'kommunaltyp';
@@ -34,15 +34,13 @@ const env = z
 	})
 	.parse(process.env);
 
-type ParsedRow = z.infer<typeof parsedRow>;
-
 type Assignment = {
 	codes: string[];
 	official_municipality_key: string;
-	rows: ParsedRow[];
+	rows: AdministrativeAreaDifu[];
 };
 
-function addAssignment(assignments: Map<string, Assignment>, row: ParsedRow) {
+function addAssignment(assignments: Map<string, Assignment>, row: AdministrativeAreaDifu) {
 	const existing = assignments.get(row.official_municipality_key);
 
 	if (!existing) {
@@ -241,7 +239,7 @@ function isSame<T>(a: T, b: T) {
 		duplicateKeys: 0,
 		termsCreated: 0,
 		termsUpdated: 0,
-		unmatchedRows: [] as ParsedRow[]
+		unmatchedRows: [] as AdministrativeAreaDifu[]
 	};
 
 	const pool = await getPool();
