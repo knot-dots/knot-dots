@@ -105,16 +105,20 @@ function fetchIndicatorData$(pool: DatabasePool) {
 			concatMap(async (statistics) => {
 				await pool.query(
 					insertIntoIndicatorDataWegweiserKommune(
-						statistics.data.regions.map((region, regionIndex) =>
-							indicatorDataWegweiserKommune.parse({
-								indicator_id: statistics.indicatorsAndTopics[0].id,
-								official_regional_code: region.ars.padEnd(12, '0'),
-								actual_values: statistics.years.map((year, yearIndex) => [
-									year,
-									statistics.data.indicators[0].regionYearValues[regionIndex][yearIndex]
-								])
-							})
-						)
+						statistics.data.regions
+							.map((region, regionIndex) =>
+								indicatorDataWegweiserKommune.parse({
+									indicator_id: statistics.indicatorsAndTopics[0].id,
+									official_regional_code: region.ars.padEnd(12, '0'),
+									actual_values: statistics.years
+										.map((year, yearIndex) => [
+											year,
+											statistics.data.indicators[0].regionYearValues[regionIndex][yearIndex]
+										])
+										.filter(([, value]) => value !== null)
+								})
+							)
+							.filter(({ actual_values }) => actual_values.length > 0)
 					)
 				);
 			})
