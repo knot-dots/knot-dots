@@ -1,17 +1,19 @@
+import {
+	CategoryContainer,
+	categoryPayload,
+	TermContainer,
+	termPayload
+} from '@knot-dots/app/src/lib/models.ts';
 import { type DatabaseTransactionConnection } from 'slonik';
 import * as z from 'zod';
 import {
 	categoryContainer,
-	categoryPayload,
-	CategoryContainer,
 	createContainer,
 	createRelation,
 	getCategoryContainer,
 	getTermContainersForCategory,
 	getPool,
 	termContainer,
-	termPayload,
-	TermContainer,
 	updateContainer
 } from './db.ts';
 import { getAdministrativeAreasDifu } from './difu.ts';

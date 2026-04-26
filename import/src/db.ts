@@ -172,10 +172,6 @@ export const spatialFeature = z.object({
 	guid: z.string().uuid()
 });
 
-export { categoryPayload, termPayload };
-
-export type { CategoryContainer, TermContainer };
-
 export const containerUser = z.array(
 	z.object({
 		object: z.number().int().positive().optional(),
