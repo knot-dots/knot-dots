@@ -13,6 +13,7 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -156,6 +157,9 @@
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
 					/>
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+					{/if}
 				</div>
 
 				{#if linkedProfile}
@@ -185,17 +189,19 @@
 						bind:value={container.payload.image}
 					/>
 
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<h1
-							class="details-title"
-							contenteditable="plaintext-only"
-							bind:textContent={container.payload.name}
-							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-						></h1>
-					{:else}
-						<h1 class="details-title" contenteditable="false">
-							{container.payload.name}
-						</h1>
+					{#if !container.payload.imageReplacesName}
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<h1
+								class="details-title"
+								contenteditable="plaintext-only"
+								bind:textContent={container.payload.name}
+								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							></h1>
+						{:else}
+							<h1 class="details-title" contenteditable="false">
+								{container.payload.name}
+							</h1>
+						{/if}
 					{/if}
 
 					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
