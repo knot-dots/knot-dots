@@ -283,7 +283,7 @@
 	{filterBar}
 	{sortBar}
 	onResetFilters={resetFilters}
-	title={$_('compare_search_municipality')}
+	title={$_('compare_dialog_title')}
 >
 	{#snippet filterContent()}
 		<InlineFilterDropDown
@@ -328,7 +328,7 @@
 				</button>
 
 				<span class="selection-count">
-					{$_('compare_municipalities_selected', { values: { count: localSelected.length } })}
+					{$_('compare_datasets_selected', { values: { count: localSelected.length } })}
 					{#if localSelected.length >= MAX_SELECTION}
 						<span class="max-indicator">
 							({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})

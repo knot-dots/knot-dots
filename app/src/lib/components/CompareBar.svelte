@@ -121,7 +121,7 @@
 			type="button"
 		>
 			<Plus />
-			{$_('compare_add_municipality')}
+			{$_('compare_add_dataset')}
 		</button>
 	</fieldset>
 {/if}
