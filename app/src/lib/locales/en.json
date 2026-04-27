@@ -347,6 +347,7 @@
 	"indicator.historical_values_intro": "Intro for historical values tab",
 	"indicator.legend": "Indicator",
 	"indicator.measures_intro": "Intro for measures tab",
+	"indicator.no_data": "No data available",
 	"indicator.objectives_intro": "Intro for objectives tab",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Quantity",

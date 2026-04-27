@@ -348,6 +348,7 @@
 	"indicator.historical_values_intro": "Einleitungstext für Ist-Werte",
 	"indicator.legend": "Indikator",
 	"indicator.measures_intro": "Einleitungstext für Aktuelle Planung",
+	"indicator.no_data": "Noch keine Daten vorhanden",
 	"indicator.objectives_intro": "Einleitungstext für Gewünschte Entwicklung",
 	"indicator.okr": "OKR",
 	"indicator.quantity": "Größe",
