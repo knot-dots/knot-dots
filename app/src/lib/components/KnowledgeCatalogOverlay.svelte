@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import { knowledgeContainer, payloadTypes, type KnowledgeContainer } from '$lib/models';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -31,7 +32,6 @@
 	);
 
 	let visibleCount = $state(PAGE_SIZE);
-	let showMoreSentinel: HTMLElement | undefined = $state(undefined);
 
 	// Stable string key — avoids re-fetching when only the URL hash changes
 	// (which would produce a new object reference from activeCategories but the
@@ -42,6 +42,7 @@
 			.map(([k, vs]) => `${k}:${[...vs].sort().join(',')}`)
 			.join('|')
 	);
+	let previousCategoriesKey = $state<string | undefined>();
 
 	const containersResource = resource(
 		() => categoriesKey,
@@ -68,9 +69,10 @@
 
 	// Reset visible count when categories (and thus the result set) change
 	$effect.pre(() => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		containersResource.current;
-		visibleCount = PAGE_SIZE;
+		if (categoriesKey !== previousCategoriesKey) {
+			previousCategoriesKey = categoriesKey;
+			visibleCount = PAGE_SIZE;
+		}
 	});
 
 	function countMatchingTerms(
@@ -103,24 +105,6 @@
 		if (!hasMore) return;
 		visibleCount += PAGE_SIZE;
 	}
-
-	// Infinite scroll: observe sentinel element to reveal more items
-	$effect(() => {
-		if (!showMoreSentinel) return;
-
-		const observer = new IntersectionObserver(
-			() => {
-				showMore();
-			},
-			{ threshold: 0, rootMargin: '200px' }
-		);
-
-		observer.observe(showMoreSentinel);
-
-		return () => {
-			observer.disconnect();
-		};
-	});
 </script>
 
 <Header workspaceOptions={[]} />
@@ -132,9 +116,7 @@
 		hideCreateButton={true}
 	>
 		{#snippet footer()}
-			{#if hasMore}
-				<div bind:this={showMoreSentinel} class="load-more-sentinel"></div>
-			{/if}
+			<LazyLoadSentinel {hasMore} onLoadMore={showMore} />
 		{/snippet}
 	</Catalog>
 {:else if !containersResource.loading}
@@ -151,12 +133,5 @@
 	.empty-state h2 {
 		color: var(--color-gray-700);
 		margin: 0;
-	}
-
-	.load-more-sentinel {
-		display: flex;
-		justify-content: center;
-		min-height: 2rem;
-		padding: 1rem 0;
 	}
 </style>
