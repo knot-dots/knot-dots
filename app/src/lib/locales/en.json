@@ -895,6 +895,8 @@
 	"workspace.type.resources": "Resources",
 	"workspace.type.rules": "Rules",
 	"workspace.type.tasks": "Tasks",
+	"workspace.type.templates": "Templates",
+	"workspace.helper.templates": "Reusable templates",
 	"workspace.view.catalog": "Catalog",
 	"workspace.view.level": "Level board",
 	"workspace.view.monitoring": "Monitoring",
