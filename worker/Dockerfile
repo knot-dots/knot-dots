@@ -1,7 +1,7 @@
 FROM node:24-slim
 WORKDIR /srv/knot-dots
 COPY package*.json ./
-COPY app/package.json ./app
+COPY app/package.json ./app/
 COPY shared/package.json ./shared/
 COPY worker/package.json ./worker/
 RUN npm clean-install --silent --workspace app --workspace shared --workspace worker
