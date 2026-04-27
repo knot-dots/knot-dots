@@ -189,19 +189,26 @@
 						bind:value={container.payload.image}
 					/>
 
-					{#if !container.payload.imageReplacesName}
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class="details-title"
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.name}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-						{:else}
-							<h1 class="details-title" contenteditable="false">
-								{container.payload.name}
-							</h1>
-						{/if}
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<h1
+							class={{
+								'details-title': true,
+								'is-visually-hidden': container.payload.imageReplacesName
+							}}
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.name}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+					{:else}
+						<h1
+							class={{
+								'details-title': true,
+								'is-visually-hidden': container.payload.imageReplacesName
+							}}
+							contenteditable="false"
+						>
+							{container.payload.name}
+						</h1>
 					{/if}
 
 					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
