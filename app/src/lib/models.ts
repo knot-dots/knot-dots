@@ -888,8 +888,6 @@ const initialCustomCollectionPayload = customCollectionPayload.partial({ title: 
 
 export const demographicDataPayload = z
 	.object({
-		area: z.number().nonnegative().optional(),
-		population: z.number().int().nonnegative().optional(),
 		title: z
 			.string()
 			.trim()
@@ -3095,21 +3093,27 @@ export function createCopyOf(
 
 	if (isMeasureContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload)
+			...container.payload
 		} as typeof copy.payload;
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
+			...container.payload,
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
 		} as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
+			...container.payload,
 			achievedValues: container.payload.achievedValues.map(
 				([year]) => [year, 0] as [number, number]
 			)
 		} as typeof copy.payload;
+	} else if (isOrganizationalUnitContainer(container)) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { organizationalUnitType, ...rest } = container.payload;
+		// The organizationalUnitType is used to identify externally managed
+		// organizational units.
+		copy.payload = rest;
 	} else {
 		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
 	}

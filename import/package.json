@@ -4,14 +4,15 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"administrative-areas-from-open-street-map": "tsx src/importAdministrativeAreasFromOpenStreetMap.ts",
-		"administrative-areas-from-wikidata": "tsx src/importAdministrativeAreasFromWikidata.ts",
+		"create-or-update-municipality-profiles": "tsx src/createOrUpdateMunicipalityProfiles.ts",
 		"administrative-areas-from-bbsr": "tsx src/importAdministrativeAreasFromBBSR.ts",
-		"municipality-types-from-difu": "tsx src/importMunicipalityTypesFromDifu.ts",
+		"administrative-areas-from-open-street-map": "tsx src/importAdministrativeAreasFromOpenStreetMap.ts",
 		"administrative-areas-from-wegweiser-kommune": "tsx src/importAdministrativeAreasFromWegweiserKommune.ts",
+		"administrative-areas-from-wikidata": "tsx src/importAdministrativeAreasFromWikidata.ts",
 		"indicators-from-wegweiser-kommune": "tsx src/importIndicatorsFromWegweiserKommune.ts",
 		"indicator-data-from-wegweiser-kommune": "tsx src/importIndicatorDataFromWegweiserKommune.ts",
-		"index-containers-to-elasticsearch": "tsx src/indexContainersToElasticsearch.ts"
+		"index-containers-to-elasticsearch": "tsx src/indexContainersToElasticsearch.ts",
+		"municipality-types-from-difu": "tsx src/importMunicipalityTypesFromDifu.ts"
 	},
 	"dependencies": {
 		"@elastic/elasticsearch": "^9.3.4",
