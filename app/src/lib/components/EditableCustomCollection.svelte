@@ -16,10 +16,12 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
+	import Editor from '$lib/components/Editor.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
+	import Viewer from '$lib/components/Viewer.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
@@ -389,6 +391,14 @@
 		{/if}
 	</ul>
 </header>
+
+{#if container.payload.showDescription}
+	{#if editable && $ability.can('update', container)}
+		<Editor bind:value={container.payload.description} />
+	{:else}
+		<Viewer value={container.payload.description} />
+	{/if}
+{/if}
 
 {#if hasConfiguredContent && container.payload.allowSort}
 	<div class="carousel-toolbar">

@@ -8,6 +8,7 @@
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
+	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
@@ -89,6 +90,19 @@
 >
 	{#snippet children(closeDropdown)}
 		{#if settingsSubview === 'main'}
+			<label class="button settings-item">
+				<Text />
+				<span>
+					{$_('custom_collection.settings.description')}
+				</span>
+				<input
+					class="toggle"
+					name="descriptionToggle"
+					type="checkbox"
+					bind:checked={container.payload.showDescription}
+				/>
+			</label>
+
 			<button class="settings-item" onclick={() => openSubview('view')} type="button">
 				{#if container.payload.listType === 'carousel'}
 					<CarouselIcon />
@@ -102,6 +116,7 @@
 				<ChevronRight />
 			</button>
 
+			<div class="settings-divider" role="presentation"></div>
 			{#if $ability.can('update', container, 'visibility')}
 				<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
 					<Eye />
@@ -254,6 +269,10 @@
 		width: 100%;
 	}
 
+	.settings-item.button {
+		padding: 0.5rem;
+	}
+
 	.settings-item:hover {
 		background-color: var(--color-gray-100);
 	}
@@ -368,5 +387,10 @@
 	.settings-item--danger > :global(svg:first-child),
 	.settings-item--danger strong {
 		color: var(--color-gray-700);
+	}
+
+	.toggle {
+		--height: 1rem;
+		--width: 2.25rem;
 	}
 </style>
