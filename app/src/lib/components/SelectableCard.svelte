@@ -2,6 +2,7 @@
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import Cog from '~icons/knotdots/cog';
+	import { page } from '$app/state';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
@@ -87,7 +88,10 @@
 
 			<label bind:this={label} for={id}>
 				{#if 'title' in container.payload}
-					{container.payload.title}
+					{container.payload.title.replace(
+						/@current_organizational_unit_name/g,
+						page.data.currentOrganizationalUnit?.payload.name ?? ''
+					)}
 				{:else if 'name' in container.payload}
 					{container.payload.name}
 				{/if}

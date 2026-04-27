@@ -76,6 +76,17 @@
 
 	let overlayContext = getContext('overlay');
 
+	let title = $derived(
+		'title' in container.payload
+			? container.payload.title.replace(
+					/@current_organizational_unit_name/g,
+					page.data.currentOrganizationalUnit?.payload.name ?? ''
+				)
+			: 'name' in container.payload
+				? container.payload.name
+				: undefined
+	);
+
 	let relatedTo = $derived(
 		overlayContext
 			? paramsFromFragment(page.url).get('related-to')
@@ -204,11 +215,7 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <article
 	tabindex="-1"
-	title={'title' in container.payload
-		? container.payload.title
-		: 'name' in container.payload
-			? container.payload.name
-			: undefined}
+	{title}
 	data-sveltekit-keepfocus
 	class="card"
 	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid ||
@@ -239,19 +246,17 @@
 									) > -1
 							)}
 						{#if goal}
-							{goal.payload.title} ({container.payload.title})
+							{title} ({container.payload.title})
 						{/if}
 					{:else if titleOverride && isEffectContainer(container)}
 						{@const measure = findAncestors(container, relatedContainers, [
 							predicates.enum['is-part-of']
 						]).find(isContainerWithEffect)}
 						{#if measure}
-							{measure.payload.title} ({container.payload.title})
+							{title} ({container.payload.title})
 						{/if}
-					{:else if 'title' in container.payload}
-						{container.payload.title}
-					{:else if 'name' in container.payload}
-						{container.payload.name}
+					{:else}
+						{title}
 					{/if}
 				</a>
 			</h3>
