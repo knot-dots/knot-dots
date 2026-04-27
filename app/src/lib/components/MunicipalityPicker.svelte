@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { resource } from 'runed';
-	import { untrack } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
 	import { page } from '$app/state';
+	import createPaginatedResource from '$lib/client/createPaginatedResource.svelte';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
@@ -73,27 +73,25 @@
 	const PAGE_SIZE = 50;
 	const MAX_SELECTION = 5;
 
-	let offset = $state(0);
-	let allMunicipalities: OrganizationalUnitContainer[] = $state([]);
-	let hasMore = $state(true);
-	let isLoadingMore = $state(false);
-	let previousResults: OrganizationalUnitContainer[] | undefined;
-	let loadMoreSentinel: HTMLElement | undefined = $state(undefined);
-
 	// Maintain a map of all encountered municipalities to preserve selections
 	// even if they are no longer in the current visible list (e.g. after search)
 	let knownMunicipalities = new SvelteMap<string, OrganizationalUnitContainer>();
 
-	// Fetch municipalities based on search terms
-	const municipalitiesResource = resource(
-		[() => $state.snapshot(filter), () => terms, () => offset],
-		async ([filter, terms, offset], _, { signal }) => {
+	// Reset pagination when search terms or filters change
+	const filterKey = $derived(`${Object.values(filter).join(',')}|${terms}`);
+
+	const municipalities = createPaginatedResource({
+		pageSize: PAGE_SIZE,
+		resetKey: () => filterKey,
+		getKey: (municipality: OrganizationalUnitContainer) => municipality.guid,
+		fetchPage: async ({ limit, offset, signal }) => {
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
 			params.append('payloadType', payloadTypes.enum.organizational_unit);
 
-			for (const key in filter) {
-				for (const value of filter[key]) {
+			const currentFilter = $state.snapshot(filter);
+			for (const key in currentFilter) {
+				for (const value of currentFilter[key]) {
 					params.append(key, value);
 				}
 			}
@@ -102,62 +100,17 @@
 				params.append('terms', terms);
 			}
 
-			// Append pagination parameters
-			params.append('limit', String(PAGE_SIZE));
+			params.append('limit', String(limit));
 			params.append('offset', String(offset));
-
 			params.append('sort', 'alpha');
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
 			return z.array(organizationalUnitContainer).parse(await response.json());
 		},
-		{ debounce: 300 }
-	);
-
-	// When search results change, update the list
-	$effect(() => {
-		const results = municipalitiesResource.current;
-		if (results && results !== previousResults) {
-			previousResults = results;
-			if (untrack(() => offset === 0)) {
-				// First load or search - replace results
-				allMunicipalities = results;
-			} else {
-				// Loading more - append results
-				allMunicipalities = [...untrack(() => allMunicipalities), ...results];
-			}
-
-			// Add to known municipalities
-			for (const m of results) {
-				knownMunicipalities.set(m.guid, m);
-			}
-
-			// Check if there might be more results
-			// If we got less than PAGE_SIZE, we're at the end
-			hasMore = results.length === PAGE_SIZE;
-			isLoadingMore = false;
-		}
+		debounce: 300
 	});
 
-	// Reset pagination when search terms or filters change
-	const filterKey = $derived(`${Object.values(filter).join(',')}|${terms}`);
-	let previousFilterKey = '';
-	$effect.pre(() => {
-		if (filterKey !== previousFilterKey) {
-			previousFilterKey = filterKey;
-			offset = 0;
-			hasMore = true;
-			isLoadingMore = false;
-			previousResults = undefined;
-			allMunicipalities = [];
-		}
-	});
-
-	async function loadMore() {
-		if (isLoadingMore || !hasMore) return;
-		isLoadingMore = true;
-		offset += PAGE_SIZE;
-	}
+	const allMunicipalities = $derived(municipalities.items);
 
 	let activeFilters = $derived(
 		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
@@ -239,34 +192,10 @@
 		}
 	});
 
-	// Infinite scroll: observe sentinel element to load more data
 	$effect(() => {
-		if (!loadMoreSentinel) return;
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				// Check conditions at the time of intersection, not at effect setup time.
-				// We also check allMunicipalities.length > 0 to ensure we don't skip the first page.
-				if (
-					entries[0].isIntersecting &&
-					hasMore &&
-					!isLoadingMore &&
-					allMunicipalities.length > 0
-				) {
-					loadMore();
-				}
-			},
-			{
-				threshold: 0,
-				rootMargin: '200px'
-			}
-		);
-
-		observer.observe(loadMoreSentinel);
-
-		return () => {
-			observer.disconnect();
-		};
+		for (const municipality of municipalities.current ?? []) {
+			knownMunicipalities.set(municipality.guid, municipality);
+		}
 	});
 
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
@@ -392,13 +321,13 @@
 								/>
 							</li>
 						{/each}
-						{#if hasMore}
-							<li bind:this={loadMoreSentinel} class="load-more-sentinel">
-								{#if isLoadingMore}
-									<span class="loading-indicator">{$_('loading')}</span>
-								{/if}
-							</li>
-						{/if}
+						<LazyLoadSentinel
+							as="li"
+							disabled={allMunicipalities.length === 0}
+							hasMore={municipalities.hasMore}
+							loading={municipalities.loadingMore}
+							onLoadMore={municipalities.loadMore}
+						/>
 					</ul>
 				</div>
 
@@ -553,18 +482,6 @@
 	.catalog li.disabled {
 		opacity: 0.5;
 		pointer-events: none;
-	}
-
-	.load-more-sentinel {
-		display: flex;
-		justify-content: center;
-		min-height: 2rem;
-		padding: 1rem 0;
-	}
-
-	.loading-indicator {
-		color: var(--color-gray-600);
-		font-size: 0.875rem;
 	}
 
 	.selection-panel {
