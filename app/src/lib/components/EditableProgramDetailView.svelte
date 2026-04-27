@@ -382,7 +382,7 @@
 			<RelationButton {container} />
 			<CreateAnotherButton {container} {relatedContainers} />
 			<CreateCopyButton {container} />
-			{#if container.payload.programType === programTypes.enum['program_type.guide'] && createFeatureDecisions(page.data.features).useMistral()}
+			{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
 				<KnowledgeAIButton {container} />
 			{:else if createFeatureDecisions(page.data.features).useOpenAI()}
 				<AskAIButton {container} />

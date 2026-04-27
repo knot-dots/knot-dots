@@ -271,7 +271,12 @@
 						revisions={[]}
 					/>
 				{:else if isTeaserContainer($newContainer)}
-					<TeaserProperties bind:container={$newContainer} editable revisions={[]} />
+					<TeaserProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isTextContainer($newContainer)}
 					<TextProperties
 						bind:container={$newContainer}

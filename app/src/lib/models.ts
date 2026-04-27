@@ -429,6 +429,7 @@ const programTypeValues = [
 	'program_type.package_of_measures',
 	'program_type.funding_program',
 	'program_type.guide',
+	'program_type.publication',
 	'program_type.agenda'
 ] as const;
 
@@ -1517,6 +1518,7 @@ const organizationPayload = z.object({
 		)
 		.default([]),
 	image: z.string().url().optional(),
+	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
@@ -1547,6 +1549,7 @@ export const organizationalUnitPayload = z.object({
 	federalState: z.string().optional(),
 	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
+	imageReplacesName: z.boolean().default(false),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
 	nameBBSR: z.string().optional(),

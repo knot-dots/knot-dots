@@ -578,6 +578,8 @@
 	"program_type.mobility.plural": "Mobility strategies",
 	"program_type.package_of_measures": "Package of measures",
 	"program_type.package_of_measures.plural": "Packages of measures",
+	"program_type.publication": "Publication",
+	"program_type.publication.plural": "Publications",
 	"program_type.report": "Report",
 	"program_type.report.plural": "Reports",
 	"program_type.set_of_rules": "Set of rules",
@@ -854,11 +856,13 @@
 	"value": "Value",
 	"visible_for": "Visible for",
 	"visibility": {
-		"creator": "Creator only",
+		"creator": "Only me",
 		"label": "Visibility",
 		"members": "Members only",
-		"organization": "Organization",
-		"public": "Public"
+		"members_of": "Members of {name}",
+		"organization": "Members of the organization",
+		"public": "Public",
+		"team": "Team {title}"
 	},
 	"vision": "Vision",
 	"visions": "Visions",

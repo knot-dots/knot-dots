@@ -36,7 +36,7 @@
 
 {#if editable}
 	<span class="dropdown" use:popperRef>
-		<label class="button action-button" use:popover.button>
+		<label class="button action-button action-button--size-l" use:popover.button>
 			{#if buttonStyle === 'button'}
 				<Background /> {label}
 			{:else}

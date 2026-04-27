@@ -6,8 +6,9 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyContainer, visibility } from '$lib/models';
+	import { type AnyContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
 	interface Props {
 		container: AnyContainer;
@@ -67,7 +68,7 @@
 						<p class="dropdown-panel-group-title">
 							{$_('container_settings_dropdown.visibility.title')}
 						</p>
-						{#each visibility.options.map( (o) => ({ value: o, label: $_(`visibility.${o}`) }) ) as option (option.value)}
+						{#each visibilityOptions(container, relatedContainers) as option (option.value)}
 							<label>
 								<input
 									type="radio"
