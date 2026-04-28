@@ -679,6 +679,7 @@
 	"rule_status.in_planning": "In Planung",
 	"rule_status.adopted": "Beschlossen",
 	"rule_status.rejected": "Verworfen",
+	"rules_catalog.empty": "Keine Regeln verfügbar.",
 	"save": "Speichern",
 	"sdg": {
 		"01": "1 - Keine Armut",

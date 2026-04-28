@@ -27,7 +27,8 @@ export const overlayKey = z.enum([
 	'teasers',
 	'view',
 	'view-help',
-	'view-knowledge'
+	'view-knowledge',
+	'view-rules'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
@@ -2013,7 +2014,7 @@ export function isReportContainer(
 	return container.payload.type === payloadTypes.enum.report;
 }
 
-const ruleContainer = container.extend({
+export const ruleContainer = container.extend({
 	payload: rulePayload
 });
 

@@ -234,6 +234,11 @@ export type OverlayData =
 			key: 'view-knowledge';
 			container?: undefined;
 			categories: Record<string, string[]> | undefined;
+	  }
+	| {
+			key: 'view-rules';
+			container?: undefined;
+			categories: Record<string, string[]> | undefined;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -316,6 +321,22 @@ if (browser) {
 
 			setOverlayIfLatest({
 				key: overlayKey.enum['view-knowledge'],
+				container: undefined,
+				categories
+			});
+		} else if (hashParams.has(overlayKey.enum['view-rules'])) {
+			const currentOverlay = get(overlay);
+			// Container from the #view= overlay, or — when using fullscreen routes — from page data
+			const container =
+				(currentOverlay?.key === overlayKey.enum.view ? currentOverlay.container : undefined) ??
+				(useFullScreenRoutes ? (values.data.container as AnyContainer | undefined) : undefined);
+			const categories =
+				container && isContainerWithCategory(container)
+					? (container.payload.category as Record<string, string[]>)
+					: undefined;
+
+			setOverlayIfLatest({
+				key: overlayKey.enum['view-rules'],
 				container: undefined,
 				categories
 			});
