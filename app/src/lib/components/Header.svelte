@@ -37,7 +37,8 @@
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
-	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
+	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
+	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
@@ -221,10 +222,10 @@
 		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces {container} />
 		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-			<WorkspacesMenu />
+			<WorkspacesMegaMenu />
 		{/if}
 	{:else}
-		<WorkspacesMenu />
+		<WorkspacesMegaMenu />
 	{/if}
 
 	<div class="actions">
@@ -289,6 +290,12 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
+	{#if !container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+		<div class="commands-leading">
+			<ViewSelect />
+		</div>
+	{/if}
+
 	{#if search}
 		<Search />
 	{/if}
@@ -429,7 +436,7 @@
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		padding: 0.375rem 0.75rem;
-		z-index: 2;
+		z-index: 3;
 	}
 
 	header :global(svg) {
@@ -464,6 +471,10 @@
 
 	.commands > * {
 		width: fit-content;
+	}
+
+	.commands-leading {
+		margin-right: auto;
 	}
 
 	.action-button--favorite {

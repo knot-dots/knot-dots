@@ -1556,7 +1556,8 @@ const organizationPayload = z.object({
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility.default(visibility.enum['organization']),
+	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
