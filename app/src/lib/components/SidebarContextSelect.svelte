@@ -176,14 +176,25 @@
 			<ul class="context-select-list">
 				{#each filteredOptions as option (option.guid)}
 					<li>
-						<a class="context-select-option" href={optionURL(option)} title={option.payload.name}>
+						<a
+							class="context-select-option"
+							data-sveltekit-preload-code="tap"
+							data-sveltekit-preload-data="tap"
+							href={optionURL(option)}
+							title={option.payload.name}
+						>
 							{option.payload.name}
 						</a>
 					</li>
 				{/each}
 			</ul>
 			{#if defaultOrganization}
-				<a class="context-select-footer" href={optionURL(defaultOrganization)}>
+				<a
+					class="context-select-footer"
+					data-sveltekit-preload-code="tap"
+					data-sveltekit-preload-data="tap"
+					href={optionURL(defaultOrganization)}
+				>
 					<Relation />
 					<span class="context-select-footer-label">{defaultOrganization.payload.name}</span>
 					<ChevronRight />
