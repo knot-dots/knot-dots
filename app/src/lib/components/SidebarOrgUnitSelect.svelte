@@ -251,7 +251,13 @@
 				{:else}
 					<span class="tree-expand-spacer"></span>
 				{/if}
-				<a class="tree-item-link" href={child.item.url} title={child.item.name}>
+				<a
+					class="tree-item-link"
+					data-sveltekit-preload-code="tap"
+					data-sveltekit-preload-data="tap"
+					href={child.item.url}
+					title={child.item.name}
+				>
 					{child.item.name}
 				</a>
 				{#if canCreateOrgUnit && depth < 3}
@@ -324,7 +330,12 @@
 				</ul>
 			</div>
 			{#if defaultOrganization}
-				<a class="context-select-footer" href={optionURL(defaultOrganization)}>
+				<a
+					class="context-select-footer"
+					data-sveltekit-preload-code="tap"
+					data-sveltekit-preload-data="tap"
+					href={optionURL(defaultOrganization)}
+				>
 					<Relation />
 					<span class="context-select-footer-label">{defaultOrganization.payload.name}</span>
 					<ChevronRight />
