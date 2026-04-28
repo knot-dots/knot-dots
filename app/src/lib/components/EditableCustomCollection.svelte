@@ -378,7 +378,7 @@
 			</li>
 		{/if}
 
-		{#if editable}
+		{#if editable && $ability.can('update', container)}
 			<li>
 				<CustomCollectionSettingsDropdown
 					bind:container
