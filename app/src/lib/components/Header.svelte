@@ -324,7 +324,7 @@
 
 	{#if container && isReportContainer(container)}
 		<button
-			class="dropdown-button dropdown-button--command"
+			class="button button-xs button-primary"
 			type="button"
 			use:compareBar.button
 			onclick={() => {

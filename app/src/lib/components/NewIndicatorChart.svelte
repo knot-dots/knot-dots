@@ -218,6 +218,10 @@
 			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
 		{/if}
 	</figure>
+{:else}
+	<div class="no-data">
+		{$_('indicator.no_data')}
+	</div>
 {/if}
 
 <style>
@@ -239,5 +243,11 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
+	}
+
+	.no-data {
+		aspect-ratio: 8 / 5;
+		align-content: center;
+		text-align: center;
 	}
 </style>

@@ -9,7 +9,7 @@ export interface RehypeReplaceOptions {
 const rehypeReplace: Plugin<[RehypeReplaceOptions], Root> = ({ context }) => {
 	return (tree: Root) => {
 		findAndReplace(tree, [
-			/@current_organizational_unit_name/,
+			/@current_organizational_unit_name/g,
 			context.currentOrganizationalUnit?.payload.name ?? ''
 		]);
 	};
