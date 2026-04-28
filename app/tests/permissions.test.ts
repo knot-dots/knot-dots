@@ -166,9 +166,11 @@ test.describe('Permissions', () => {
 				dotsBoard.overlay.locator.getByRole('heading', { name: testMeasure.payload.title })
 			).toBeVisible();
 			await dotsBoard.overlay.locator.getByLabel('Organizational unit').click();
-			const invalidateRequest = dotsBoard.page.waitForRequest(/x-sveltekit-invalidated/);
+			const saveResponse = dotsBoard.page.waitForResponse(
+				(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+			);
 			await dotsBoard.overlay.locator.getByLabel(testOrganizationalUnit.payload.name).click();
-			await invalidateRequest;
+			await saveResponse;
 
 			// Assert descendant goal' organizational unit is updated, too
 			await section.getByRole('link', { name: titleOfFirstGoal }).click();

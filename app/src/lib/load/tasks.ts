@@ -86,7 +86,9 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							terms: url.searchParams.get('terms') ?? '',
 							type: [payloadTypes.enum.task]
 						},
-						url.searchParams.get('sort') ?? defaultSort
+						url.searchParams.get('sort') ?? defaultSort,
+						undefined,
+						{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 					),
 					getManyContainersWithES(
 						currentOrganization.payload.default ? [] : [currentOrganization.guid],
@@ -160,7 +162,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 				[string, Map<string, number>]
 			>),
 			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
-			['assignee', new Map()]
+			['assignee', fromCounts([], data?.assignee)]
 		]);
 
 		if (useCustomCategories && categoryContext) {
@@ -169,10 +171,12 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			}
 		}
 
-		const computedFacets = computeFacetCount(_facets, taskContainers, {
-			useCategoryPayload: useCustomCategories
-		});
-		const facets = features.useElasticsearch() && data ? _facets : computedFacets;
+		const facets =
+			features.useElasticsearch() && data
+				? _facets
+				: computeFacetCount(_facets, taskContainers, {
+						useCategoryPayload: useCustomCategories
+					});
 
 		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;

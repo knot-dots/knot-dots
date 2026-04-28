@@ -7,16 +7,18 @@
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import { programStatus } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import { programStatusBackgrounds, programStatusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage data={{ ...data, containers }}>
 	<Board>
 		{#each programStatus.options as statusOption (statusOption)}
 			<BoardColumn

@@ -13,8 +13,14 @@
 		topics
 	} from '$lib/models';
 	import Header from '$lib/components/Header.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let facets = $derived(
 		computeFacetCount(
@@ -26,7 +32,7 @@
 				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
 				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
 			]),
-			data.containers.filter(isIndicatorTemplateContainer)
+			containers.filter(isIndicatorTemplateContainer)
 		)
 	);
 </script>
@@ -37,6 +43,6 @@
 	{/snippet}
 
 	{#snippet main()}
-		<NewIndicators containers={data.containers} />
+		<NewIndicators {containers} />
 	{/snippet}
 </Layout>

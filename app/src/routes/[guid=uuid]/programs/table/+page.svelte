@@ -6,9 +6,15 @@
 	import Table from '$lib/components/Table.svelte';
 	import { getCategoryKeys } from '$lib/categoryOptions';
 	import { createFeatureDecisions } from '$lib/features';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
 
@@ -40,11 +46,11 @@
 	]);
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage data={{ ...data, containers }}>
 	<Table
 		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
-		rows={data.containers}
+		rows={containers}
 	/>
 	<Help slug="programs-table" />
 </ProgramsPage>

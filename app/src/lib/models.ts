@@ -623,7 +623,9 @@ export function isQuantity(value: unknown): value is Quantity {
 export function fromCounts(options: string[], counts: Record<string, number> = {}) {
 	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
 	for (const [key, count] of Object.entries(counts)) {
-		m.set(key, count);
+		if (m.has(key)) {
+			m.set(key, count);
+		}
 	}
 	return m;
 }

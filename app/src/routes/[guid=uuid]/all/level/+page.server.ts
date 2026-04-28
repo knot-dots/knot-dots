@@ -36,7 +36,8 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const typeFilter = [
+	const typeFilterFromURL = url.searchParams.getAll('type');
+	const allTypeOptions = [
 		payloadTypes.enum.goal,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.program,
@@ -44,6 +45,9 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 		payloadTypes.enum.rule,
 		payloadTypes.enum.simple_measure
 	];
+	const typeFilter = allTypeOptions.filter(
+		(type) => typeFilterFromURL.length == 0 || typeFilterFromURL.includes(type)
+	);
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, typeFilter, { matchAll: true })
 		: null;
@@ -186,6 +190,7 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
+	_facets.set('type', fromCounts(allTypeOptions, data?.type));
 
 	const facets = features.useElasticsearch()
 		? _facets

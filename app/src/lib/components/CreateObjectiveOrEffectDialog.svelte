@@ -4,7 +4,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
 	import ChevronDoubleRight from '~icons/flowbite/chevron-double-right-outline';
-	import { invalidateAll, pushState } from '$app/navigation';
+	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import createEffect from '$lib/client/createEffect';
@@ -83,7 +83,6 @@
 	};
 
 	function onclose() {
-		invalidateAll();
 		pushState(page.url, {});
 		newObjectiveOrEffect = undefined;
 		selected = undefined;
@@ -146,7 +145,6 @@
 						{#if isEffectContainer(newObjectiveOrEffect)}
 							<EditableEffectDetailView
 								bind:container={newObjectiveOrEffect}
-								disableRefreshOnSave
 								revisions={[newObjectiveOrEffect]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
@@ -157,7 +155,6 @@
 						{:else if isObjectiveContainer(newObjectiveOrEffect)}
 							<EditableObjectiveDetailView
 								bind:container={newObjectiveOrEffect}
-								disableRefreshOnSave
 								revisions={[newObjectiveOrEffect]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->

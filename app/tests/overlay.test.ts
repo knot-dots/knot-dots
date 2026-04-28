@@ -31,22 +31,26 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfFirstGoal);
 	await dotsBoard.overlay.editModeToggle.check();
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
-	const firstInvalidateResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+	const firstSaveResponse = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
 	const typeOfFirstGoal = 'Vision';
 	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfFirstGoal }).check();
-	await firstInvalidateResponse;
+	await firstSaveResponse;
 
 	// Change description of the second goal
 	await dotsBoard.card(titleOfSecondGoal).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfSecondGoal);
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveCount(1);
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
-	const secondInvalidateResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+	const secondSaveResponse = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
 	const typeOfSecondGoal = 'Strategic goal';
 	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfSecondGoal }).check();
-	await secondInvalidateResponse;
+	await secondSaveResponse;
 
 	// Verify goal and measure descriptions are persisted
 	await dotsBoard.card(titleOfFirstGoal).click();

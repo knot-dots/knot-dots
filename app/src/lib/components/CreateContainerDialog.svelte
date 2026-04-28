@@ -50,7 +50,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { addItemState, lastCreatedContainer, newContainer } from '$lib/stores';
+	import { addItemState, newContainer } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -62,9 +62,6 @@
 		const response = await saveContainer(container);
 		if (response.ok) {
 			const savedContainer = await response.json();
-
-			// Signal that a container was successfully created
-			$lastCreatedContainer = savedContainer;
 
 			if (isOrganizationalUnitContainer(savedContainer)) {
 				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));

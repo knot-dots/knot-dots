@@ -284,7 +284,7 @@ export function updateContainer(container: ModifiedContainer) {
 				});
 			}
 
-			return { ...containerResult, user: userResult };
+			return { ...containerResult, relation: container.relation, user: userResult };
 		});
 	};
 }

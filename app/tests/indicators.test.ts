@@ -30,19 +30,23 @@ test('create custom indicator with actual data', async ({ indicatorCatalog, test
 		.getByRole('row', { name: 'Custom actual data' })
 		.locator('input[data-year]');
 	const firstValue = '101.5';
-	const firstInvalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	const firstSaveResponse = indicatorCatalog.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
 	await expect(customActualDataInputs).toHaveCount(2);
 	await customActualDataInputs.first().fill(firstValue);
-	await firstInvalidateRequest;
+	await firstSaveResponse;
 
 	// Add another column and fill actual data
 	await table.getByRole('button', { name: 'Add column right' }).click();
 	await expect(table.getByRole('columnheader', { name: /\d+/ })).toHaveCount(3);
 	const secondValue = '246.7';
-	const secondInvalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	const secondSaveResponse = indicatorCatalog.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
 	await expect(customActualDataInputs).toHaveCount(3);
 	await customActualDataInputs.last().fill(secondValue);
-	await secondInvalidateRequest;
+	await secondSaveResponse;
 
 	// Verify actual data is persisted
 	await indicatorCatalog.page.reload();
@@ -67,12 +71,14 @@ test('add section to indicator', async ({ indicatorCatalog, testOrganization }) 
 
 	// Add a text section
 	const section = await indicatorCatalog.overlay.addSection('Text');
-	const invalidateRequest = indicatorCatalog.page.waitForRequest(/x-sveltekit-invalidated/);
+	const saveResponse = indicatorCatalog.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
 	await section.getByRole('heading').fill('Lorem ipsum');
 	await section
 		.getByRole('textbox')
 		.fill('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
-	await invalidateRequest;
+	await saveResponse;
 
 	// Verify section is persisted
 	await indicatorCatalog.page.reload();

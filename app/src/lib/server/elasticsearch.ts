@@ -31,7 +31,9 @@ const defaultFacetKeys = [
 	'indicatorType',
 	'taskCategory',
 	'resourceCategory',
-	'resourceUnit'
+	'resourceUnit',
+	'type',
+	'assignee'
 ] as const;
 
 const facetFieldMap: Record<string, string> = {
@@ -45,7 +47,9 @@ const facetFieldMap: Record<string, string> = {
 	indicatorType: 'payload.indicatorType',
 	taskCategory: 'payload.taskCategory',
 	resourceCategory: 'payload.resourceCategory',
-	resourceUnit: 'payload.resourceUnit'
+	resourceUnit: 'payload.resourceUnit',
+	type: 'type',
+	assignee: 'payload.assignee'
 };
 
 const facetSizeMap: Record<string, number> = {
@@ -59,7 +63,9 @@ const facetSizeMap: Record<string, number> = {
 	indicatorType: 20,
 	taskCategory: 50,
 	resourceCategory: 20,
-	resourceUnit: 20
+	resourceUnit: 20,
+	type: 50,
+	assignee: 200
 };
 
 type FacetFilterMap = Record<string, estypes.QueryDslQueryContainer[]>;
@@ -153,7 +159,7 @@ export async function getManyContainersWithES(
 			multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
 		});
 	}
-	if (filters.type?.length) nonFacetFilters.push({ terms: { type: filters.type } });
+	if (filters.type?.length) addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
 	if (filters.sdg?.length)
 		addFacetFilter(facetFilters, 'sdg', { terms: { 'payload.sdg': filters.sdg } });
 	if (filters.topics?.length)
@@ -191,7 +197,9 @@ export async function getManyContainersWithES(
 		}
 	}
 	if (filters.assignees?.length)
-		nonFacetFilters.push({ terms: { 'payload.assignee': filters.assignees } });
+		addFacetFilter(facetFilters, 'assignee', {
+			terms: { 'payload.assignee': filters.assignees }
+		});
 	if (filters.organizationalUnits?.length)
 		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
 	if (organizations.length) nonFacetFilters.push({ terms: { organization: organizations } });
@@ -269,6 +277,7 @@ export async function getManyContainersWithES(
 			const valuesAgg = filterAgg.values;
 			facets[key] = toCounts(valuesAgg);
 		}
+		console.log('[ES facets]', JSON.stringify(facets));
 	}
 
 	return { containers, facets };
