@@ -10,15 +10,18 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import { unified } from 'unified';
+	import { page } from '$app/state';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import rehypeReplace from '$lib/unified/rehype-replace';
 
 	interface Props {
 		editable?: boolean;
+		offset?: [number, number];
 		value: string | undefined;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, offset = [-24, -39], value = $bindable() }: Props = $props();
 
 	const popover = createPopover();
 
@@ -27,9 +30,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [-24, -39] } }]
-	};
+	const extraOpts = $derived({
+		modifiers: [{ name: 'offset', options: { offset } }]
+	});
 </script>
 
 <div class="dropdown" use:popperRef>
@@ -40,6 +43,7 @@
 		.use(remarkRehype)
 		.use(rehypeSanitize)
 		.use(rehypeExtractExcerpt, { maxLength: 200 })
+		.use(rehypeReplace, { context: page.data })
 		.use(rehypeStringify)
 		.process(value) then content}
 		<button class="dropdown-button truncated" type="button" use:popover.button>

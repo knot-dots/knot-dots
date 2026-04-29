@@ -47,7 +47,7 @@
 		/>
 
 		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}
 	{/snippet}
 

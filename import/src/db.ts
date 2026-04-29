@@ -1,4 +1,21 @@
 import {
+	mapPayload,
+	administrativeAreaBasicDataPayload,
+	demographicDataPayload,
+	organizationalUnitPayload,
+	indicatorTemplatePayload,
+	actualDataPayload,
+	categoryPayload,
+	termPayload,
+	customCollectionPayload,
+	anyContainer,
+	AnyContainer,
+	categoryContainer as persistedCategoryContainer,
+	CategoryContainer,
+	termContainer as persistedTermContainer,
+	TermContainer
+} from '@knot-dots/app/src/lib/models.ts';
+import {
 	createPool,
 	DatabasePool,
 	DatabaseTransactionConnection,
@@ -155,48 +172,6 @@ export const spatialFeature = z.object({
 	guid: z.string().uuid()
 });
 
-import {
-	mapPayload,
-	administrativeAreaBasicDataPayload,
-	demographicDataPayload,
-	organizationalUnitPayload,
-	indicatorTemplatePayload,
-	actualDataPayload,
-	categoryPayload,
-	termPayload,
-	customCollectionPayload,
-	anyContainer,
-	AnyContainer,
-	organizationalUnitContainer as persistedOrganizationalUnitContainer,
-	OrganizationalUnitContainer,
-	categoryContainer as persistedCategoryContainer,
-	CategoryContainer,
-	termContainer as persistedTermContainer,
-	TermContainer
-} from '../../app/src/lib/models.ts';
-
-export {
-	mapPayload,
-	administrativeAreaBasicDataPayload,
-	categoryPayload,
-	organizationalUnitPayload,
-	indicatorTemplatePayload,
-	actualDataPayload,
-	termPayload
-};
-
-export type {
-	AnyContainer as PersistedContainer,
-	OrganizationalUnitContainer,
-	CategoryContainer,
-	TermContainer
-};
-
-export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
-export type ActualDataPayload = z.infer<typeof actualDataPayload>;
-export type CategoryPayload = z.infer<typeof categoryPayload>;
-export type TermPayload = z.infer<typeof termPayload>;
-
 export const containerUser = z.array(
 	z.object({
 		object: z.number().int().positive().optional(),
@@ -323,6 +298,14 @@ export function insertIntoAdministrativeAreaWegweiserKommune(data: Json) {
 	`;
 }
 
+export function getAllAdministrativeAreaWegweiserKommune() {
+	return sql.type(administrativeAreaWegweiserKommune)`
+		SELECT DISTINCT ON (friendly_url) *
+		FROM administrative_area_wegweiser_kommune
+		ORDER BY friendly_url, valid_from DESC
+	`;
+}
+
 export function insertIntoIndicatorWegweiserKommune(data: IndicatorWegweiserKommune[]) {
 	return sql.type(empty)`
 		INSERT INTO indicator_wegweiser_kommune (calculation, color_schema, decimal_places, explanation, friendly_url, hint, id, maximum_classification, maximum_region_type, minimum_classification, minimum_region_type, name, source, title, top_low_regions_available, topics, type, unit, years)
@@ -348,6 +331,17 @@ export function insertIntoIndicatorDataWegweiserKommune(data: IndicatorDataWegwe
 		SELECT t.indicator_id, a.boundary, t.actual_values
 		FROM jsonb_to_recordset(${sql.jsonb(data as SerializableValue)}) AS t(indicator_id int8, official_regional_code text, actual_values jsonb)
 		JOIN current_administrative_area a ON a.official_regional_code = t.official_regional_code
+	`;
+}
+
+export function getIndicatorDataWegweiserKommune(spatialReference: string, topic?: string[]) {
+	return sql.type(indicatorDataWegweiserKommune.extend({ friendly_url: z.string() }))`
+		SELECT DISTINCT ON (id.indicator_id) id.*, i.friendly_url
+		FROM indicator_data_wegweiser_kommune id
+		JOIN indicator_wegweiser_kommune i ON i.id = id.indicator_id
+		WHERE spatial_reference = ${spatialReference}
+		${topic ? sql.fragment`AND i.topics && (${sql.array(topic, 'varchar')})` : sql.fragment``}
+		ORDER BY id.indicator_id, id.valid_from DESC
 	`;
 }
 
@@ -530,23 +524,6 @@ export async function getTermContainersForCategory(
 			AND NOT c.deleted
 			AND c.payload->>'type' = 'term'
 		ORDER BY c.payload->>'value', c.guid
-	`);
-}
-
-export async function getOrganizationalUnitContainers(
-	tx: DatabaseTransactionConnection,
-	organizationGuid: string
-): Promise<Readonly<Array<OrganizationalUnitContainer>>> {
-	return tx.any(sql.type(persistedOrganizationalUnitContainer)`
-		SELECT *
-		FROM container
-		WHERE organization = ${organizationGuid}
-			AND valid_currently
-			AND NOT deleted
-			AND payload->>'type' = 'organizational_unit'
-			AND payload->>'officialMunicipalityKey' IS NOT NULL
-			AND payload->>'officialMunicipalityKey' <> ''
-		ORDER BY payload->>'officialMunicipalityKey', guid
 	`);
 }
 

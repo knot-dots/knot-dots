@@ -10,13 +10,21 @@
 
 	interface Props {
 		addItem: (event: Event) => void;
+		addItemSnippet?: Snippet;
 		items: Item[];
 		itemSnippet: Snippet<[Item]>;
 		mayAddItem?: boolean;
 		onLoadMore?: () => void;
 	}
 
-	let { addItem, items, itemSnippet, mayAddItem = false, onLoadMore }: Props = $props();
+	let {
+		addItem,
+		addItemSnippet,
+		items,
+		itemSnippet,
+		mayAddItem = false,
+		onLoadMore
+	}: Props = $props();
 </script>
 
 {#if items.length > 0 || mayAddItem}
@@ -35,7 +43,9 @@
 			</li>
 		{/if}
 
-		{#if mayAddItem}
+		{#if addItemSnippet}
+			{@render addItemSnippet()}
+		{:else if mayAddItem}
 			<li>
 				<button class="card" onclick={addItem} type="button" {@attach tooltip($_('add_item'))}>
 					<CirclePlus />

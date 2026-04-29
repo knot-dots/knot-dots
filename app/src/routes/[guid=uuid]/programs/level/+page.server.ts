@@ -99,20 +99,18 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 		containers = filterVisible(containers, locals.user);
 	} else {
 		if (features.useElasticsearch()) {
-			const esResult = await locals.pool.connect(
-				getManyContainersWithES(
-					[],
-					{
-						...coreCategoryFilters,
-						customCategories,
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.program]
-					},
-					url.searchParams.get('sort') ?? '',
-					undefined,
-					{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-				)
+			const esResult = await getManyContainersWithES(
+				[],
+				{
+					...coreCategoryFilters,
+					customCategories,
+					programTypes: url.searchParams.getAll('programType'),
+					terms: url.searchParams.get('terms') ?? '',
+					type: [payloadTypes.enum.program]
+				},
+				url.searchParams.get('sort') ?? '',
+				undefined,
+				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = await filterOrganizationalUnitsAsync(Promise.resolve(esResult.containers));
 			data = esResult.facets;

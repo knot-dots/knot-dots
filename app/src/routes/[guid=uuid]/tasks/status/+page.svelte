@@ -19,12 +19,14 @@
 	} from '$lib/models';
 	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	function goalsColumnTitle(containers: GoalContainer[]) {
 		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
@@ -37,7 +39,7 @@
 	}
 </script>
 
-<TasksPage {data} sortOptions={[]}>
+<TasksPage data={{ ...data, containers }} sortOptions={[]}>
 	<Board>
 		{#if data.relatedContainers.length > 0}
 			<BoardColumn

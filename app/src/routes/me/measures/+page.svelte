@@ -4,6 +4,8 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -12,6 +14,10 @@
 		{ label: $_('workspace.profile.tasks'), value: '/me/tasks' },
 		{ label: $_('workspace.profile.measures'), value: '/me/measures' }
 	];
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let facets = $derived(data.facets);
 </script>
@@ -28,7 +34,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Measures containers={data.containers} />
+		<Measures {containers} />
 		<Help slug="measures-status" />
 	{/snippet}
 </Layout>

@@ -50,7 +50,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { lastCreatedContainer, newContainer } from '$lib/stores';
+	import { addItemState, newContainer } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -63,14 +63,22 @@
 		if (response.ok) {
 			const savedContainer = await response.json();
 
-			// Signal that a container was successfully created
-			$lastCreatedContainer = savedContainer;
-
 			if (isOrganizationalUnitContainer(savedContainer)) {
 				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
 			}
+
+			if ($addItemState.target) {
+				await saveContainer({
+					...$addItemState.target,
+					payload: {
+						...$addItemState.target.payload,
+						item: [...$addItemState.target.payload.item, savedContainer.guid]
+					}
+				});
+			}
+
 			await invalidateAll();
 		} else {
 			const error = await response.json();
@@ -133,6 +141,7 @@
 				<header class="details-section">
 					{#if isContainerWithName($newContainer)}
 						<textarea
+							aria-label={$_('title')}
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
@@ -143,6 +152,7 @@
 						></textarea>
 					{:else if isContainerWithTitle($newContainer)}
 						<textarea
+							aria-label={$_('title')}
 							onkeydown={handleKeyDown}
 							onkeyup={resizeTextarea}
 							placeholder={$_('title')}
@@ -258,7 +268,12 @@
 						revisions={[]}
 					/>
 				{:else if isTeaserContainer($newContainer)}
-					<TeaserProperties bind:container={$newContainer} editable revisions={[]} />
+					<TeaserProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isTextContainer($newContainer)}
 					<TextProperties
 						bind:container={$newContainer}

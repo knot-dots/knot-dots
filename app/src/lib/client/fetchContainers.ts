@@ -21,6 +21,7 @@ export default async function fetchContainers(
 		relationType?: string[];
 		sdg?: string[];
 		taskCategory?: string[];
+		template?: string;
 		terms?: string;
 		topic?: string[];
 	},
@@ -69,6 +70,9 @@ export default async function fetchContainers(
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
 	}
+	for (const value of filters.programType ?? []) {
+		params.append('programType', value);
+	}
 	for (const value of filters.relatedTo ?? []) {
 		params.append('relatedTo', value);
 	}
@@ -78,15 +82,20 @@ export default async function fetchContainers(
 	if (sort) {
 		params.append('sort', sort);
 	}
-	for (const value of filters.programType ?? []) {
-		params.append('programType', value);
-	}
 	for (const value of filters.taskCategory ?? []) {
 		params.append('taskCategory', value);
+	}
+	if (filters.template) {
+		params.append('template', 'true');
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);
 	}
 	const response = await withRequestCoalescing(fetch)(`/container?${params}`, init);
+	if (!response.ok) {
+		throw new Error(
+			`Failed to fetch containers: ${response.status} ${await response.clone().text()}`
+		);
+	}
 	return z.array(anyContainer).parse(await response.clone().json());
 }

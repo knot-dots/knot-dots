@@ -4,13 +4,13 @@
 	import { taskCategories } from '$lib/models';
 
 	interface Props {
-		compact?: boolean;
 		editable?: boolean;
 		labelledBy?: string;
+		offset?: [number, number];
 		value: string;
 	}
 
-	let { compact = false, editable = false, labelledBy, value = $bindable() }: Props = $props();
+	let { editable = false, labelledBy, offset, value = $bindable() }: Props = $props();
 
 	let options = taskCategories.options.map((o) => ({ label: $_(o), value: o }));
 
@@ -18,12 +18,7 @@
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown
-		{labelledBy}
-		offset={[compact ? -41 : 0, compact ? -39 : 4]}
-		{options}
-		bind:value
-	/>
+	<SingleChoiceDropdown {labelledBy} {offset} {options} bind:value />
 {:else}
 	<div class="value">
 		{#if selected}

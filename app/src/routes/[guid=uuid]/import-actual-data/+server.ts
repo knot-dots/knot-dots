@@ -114,7 +114,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				newActualDataContainer.payload = {
 					...newActualDataContainer.payload,
 					indicator: currentIndicator,
-					source: statisticsForIndicator.source,
+					source: 'Wegweiser Kommune',
 					title: statisticsForIndicator.indicator_title,
 					values: statisticsForIndicator.actual_values.filter(([, v]) => v !== null) as [
 						number,

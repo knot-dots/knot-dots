@@ -15,8 +15,8 @@ test.describe(() => {
 			await expect(page.getByText('BB')).toBeVisible();
 		}
 
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
+		await page.getByRole('button', { name: 'Pages', exact: true }).click();
+		await page.getByRole('menuitem', { name: /^Goals\b/ }).click();
 
 		await expect(page.getByRole('article', { name: testGoal.payload.title }).first()).toBeVisible();
 	});

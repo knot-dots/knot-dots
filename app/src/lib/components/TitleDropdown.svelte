@@ -4,10 +4,11 @@
 
 	interface Props {
 		editable?: boolean;
+		offset?: [number, number];
 		value: string;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, offset = [-24, -39], value = $bindable() }: Props = $props();
 
 	const popover = createPopover();
 
@@ -16,9 +17,9 @@
 		strategy: 'absolute'
 	});
 
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [-24, -39] } }]
-	};
+	const extraOpts = $derived({
+		modifiers: [{ name: 'offset', options: { offset } }]
+	});
 
 	function init(element: HTMLElement) {
 		element.focus();

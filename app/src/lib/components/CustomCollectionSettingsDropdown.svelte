@@ -8,6 +8,7 @@
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
+	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
@@ -19,6 +20,7 @@
 	interface Props {
 		container: CustomCollectionContainer;
 		onAddItems: () => void;
+		onAddTemplates: () => void;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
@@ -26,6 +28,7 @@
 	let {
 		container = $bindable(),
 		onAddItems,
+		onAddTemplates,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
@@ -72,7 +75,6 @@
 </script>
 
 <MultilevelSettingsDropdown
-	dropdownClass="custom-collection-settings"
 	isRoot={settingsSubview === 'main'}
 	label={$_('custom_collection.settings.title')}
 	handleBack={backToMain}
@@ -88,6 +90,19 @@
 >
 	{#snippet children(closeDropdown)}
 		{#if settingsSubview === 'main'}
+			<label class="button settings-item">
+				<Text />
+				<span>
+					{$_('custom_collection.settings.description')}
+				</span>
+				<input
+					class="toggle"
+					name="descriptionToggle"
+					type="checkbox"
+					bind:checked={container.payload.showDescription}
+				/>
+			</label>
+
 			<button class="settings-item" onclick={() => openSubview('view')} type="button">
 				{#if container.payload.listType === 'carousel'}
 					<CarouselIcon />
@@ -101,6 +116,7 @@
 				<ChevronRight />
 			</button>
 
+			<div class="settings-divider" role="presentation"></div>
 			{#if $ability.can('update', container, 'visibility')}
 				<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
 					<Eye />
@@ -126,7 +142,7 @@
 				{$_('custom_collection.settings.objects_title')}
 			</p>
 			<button
-				class="settings-embed"
+				class="settings-button"
 				onclick={() => {
 					closeDropdown();
 					onAddItems();
@@ -134,6 +150,23 @@
 				type="button"
 			>
 				{$_('custom_collection.settings.embed_objects')}
+			</button>
+
+			<div class="settings-divider" role="presentation"></div>
+
+			<p class="dropdown-panel-group-title">
+				{$_('custom_collection.settings.create_objects_title')}
+			</p>
+
+			<button
+				class="settings-button"
+				onclick={() => {
+					closeDropdown();
+					onAddTemplates();
+				}}
+				type="button"
+			>
+				{$_('template_picker_title')}
 			</button>
 
 			<div class="settings-divider" role="presentation"></div>
@@ -236,6 +269,10 @@
 		width: 100%;
 	}
 
+	.settings-item.button {
+		padding: 0.5rem;
+	}
+
 	.settings-item:hover {
 		background-color: var(--color-gray-100);
 	}
@@ -333,7 +370,7 @@
 		padding: 0.5rem;
 	}
 
-	.settings-embed {
+	.settings-button {
 		--button-background: var(--color-white);
 		--button-hover-background: var(--color-gray-100);
 		--button-active-background: var(--color-gray-200);
@@ -350,5 +387,10 @@
 	.settings-item--danger > :global(svg:first-child),
 	.settings-item--danger strong {
 		color: var(--color-gray-700);
+	}
+
+	.toggle {
+		--height: 1rem;
+		--width: 2.25rem;
 	}
 </style>

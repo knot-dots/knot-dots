@@ -14,10 +14,11 @@
 	interface Props {
 		container: TeaserContainer;
 		editable?: boolean;
+		relatedContainers: AnyContainer[];
 		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), editable = false, revisions }: Props = $props();
+	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
 </script>
 
 <PropertyGrid>
@@ -59,7 +60,7 @@
 		<EditableAudience {editable} bind:value={container.payload.audience} />
 
 		{#if $ability.can('update', container, 'visibility')}
-			<EditableVisibility {editable} bind:value={container.payload.visibility} />
+			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}
 	{/snippet}
 

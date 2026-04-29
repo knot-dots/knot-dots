@@ -13,6 +13,7 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -55,7 +56,7 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	const handleSubmit = $derived(autoSave(container, 2000, container.payload.type));
+	const handleSubmit = $derived(autoSave(container, 2000));
 
 	let isIndividualProfile = $derived(
 		container.relation.some(
@@ -156,6 +157,9 @@
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
 					/>
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+					{/if}
 				</div>
 
 				{#if linkedProfile}
@@ -187,13 +191,22 @@
 
 					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 						<h1
-							class="details-title"
+							class={{
+								'details-title': true,
+								'is-visually-hidden': container.payload.imageReplacesName
+							}}
 							contenteditable="plaintext-only"
 							bind:textContent={container.payload.name}
 							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 						></h1>
 					{:else}
-						<h1 class="details-title" contenteditable="false">
+						<h1
+							class={{
+								'details-title': true,
+								'is-visually-hidden': container.payload.imageReplacesName
+							}}
+							contenteditable="false"
+						>
 							{container.payload.name}
 						</h1>
 					{/if}

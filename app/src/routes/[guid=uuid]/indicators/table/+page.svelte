@@ -25,10 +25,15 @@
 		containerOfType,
 		payloadTypes
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { ability, lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let toast = getToastContext();
 
@@ -64,10 +69,10 @@
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
 	let uppy: Uppy | undefined = $state();
 
-	let actualDataContainers = $derived(data.containers.filter(isActualDataContainer));
+	let actualDataContainers = $derived(containers.filter(isActualDataContainer));
 
 	let filteredRows = $derived(
-		data.containers.filter(
+		containers.filter(
 			(c) =>
 				isIndicatorTemplateContainer(c) &&
 				actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
@@ -206,7 +211,7 @@
 	});
 </script>
 
-<IndicatorsPage {data}>
+<IndicatorsPage data={{ ...data, containers }}>
 	{#snippet actions()}
 		{#if canUploadCsv}
 			<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>

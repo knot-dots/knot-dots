@@ -128,6 +128,8 @@ services:
       context: .
       dockerfile: worker/Dockerfile
     depends_on:
+      elasticmq:
+        condition: service_started
       elasticsearch:
         condition: service_healthy
       migrate:
@@ -146,10 +148,33 @@ services:
       - ./shared/src:/srv/knot-dots/shared/src
       - ./worker/src:/srv/knot-dots/worker/src
     healthcheck:
-      test: ["CMD-SHELL", "ps -o pid= 1 >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "test -d /proc/1"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  index-containers:
+    build:
+      context: .
+      dockerfile: import/Dockerfile
+    command: ["index-containers-to-elasticsearch"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      elasticsearch:
+        condition: service_healthy
+    env_file:
+      - ./db/.env
+      - ./app/.env
+    environment:
+      - DE_LABELS_PATH=/opt/labels/de.json
+      - ROARR_LOG=true
+    profiles:
+      - qa
+    volumes:
+      - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
+      - ./import/src:/srv/knot-dots/import/src
+      - ./shared/src:/srv/knot-dots/shared/src
 
   preview:
     # Use the variable TEST_IMAGE if provided, otherwise build locally
@@ -159,6 +184,12 @@ services:
       dockerfile: app/Dockerfile
       target: production
     depends_on:
+      elasticsearch:
+        condition: service_healthy
+      index-containers:
+        condition: service_completed_successfully
+      indexing-worker:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
       migrate:

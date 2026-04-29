@@ -155,6 +155,7 @@ jobs:
           context: "."
           file: "./app/Dockerfile"
           target: production
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.REGISTRY }}/app:${{ github.sha }}

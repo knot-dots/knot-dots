@@ -35,8 +35,6 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
-import { createFeatureDecisions } from '$lib/features';
-import { getFeatures } from '$lib/server/features';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -205,10 +203,7 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(containerResult.payload.type)
-			) {
+			if (shouldIndexType(containerResult.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -281,10 +276,7 @@ export function updateContainer(container: ModifiedContainer) {
 				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 			}
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(containerResult.payload.type)
-			) {
+			if (shouldIndexType(containerResult.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
 					guid: containerResult.guid,
@@ -292,7 +284,7 @@ export function updateContainer(container: ModifiedContainer) {
 				});
 			}
 
-			return { ...containerResult, user: userResult };
+			return { ...containerResult, relation: container.relation, user: userResult };
 		});
 	};
 }
@@ -341,10 +333,7 @@ export function deleteContainer(container: AnyContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			if (
-				createFeatureDecisions(getFeatures()).useElasticsearch() &&
-				shouldIndexType(container.payload.type)
-			) {
+			if (shouldIndexType(container.payload.type)) {
 				await enqueueIndexingEvent({
 					action: 'delete',
 					guid: container.guid,
@@ -451,7 +440,7 @@ export function getContainerByGuid(guid: string) {
 			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 		return {
 			...containerResult,
@@ -483,7 +472,7 @@ export function getContainerBySlug(slug: HelpSlug) {
 			WHERE (cr.subject = ${containerResult.guid} OR cr.object = ${containerResult.guid})
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 		return {
 			...containerResult,
@@ -520,7 +509,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			WHERE (cr.subject IN (${guid}) OR cr.object IN (${guid}))
 				AND cr.valid_currently
 				AND NOT cr.deleted
-			ORDER BY cr.position
+			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 
 		return containerResult.map((c) => ({
@@ -536,9 +525,12 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 }
 
 function prepareWhereCondition(filters: {
+	administrativeTypes?: string[];
 	assignees?: string[];
 	audience?: string[];
 	customCategories?: Record<string, string[]>;
+	customCategoryMatch?: 'any' | 'all';
+	federalStates?: string[];
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
@@ -558,11 +550,16 @@ function prepareWhereCondition(filters: {
 	type?: PayloadType[];
 }) {
 	const conditions = [sql.fragment`c.valid_currently`, sql.fragment`NOT c.deleted`];
-	if (!filters.type?.includes(payloadTypes.enum.organization)) {
+	if (!filters.type?.includes(payloadTypes.enum.organization) && !filters.guid?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organization}`);
 	}
-	if (!filters.type?.includes(payloadTypes.enum.organizational_unit)) {
+	if (!filters.type?.includes(payloadTypes.enum.organizational_unit) && !filters.guid?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' != ${payloadTypes.enum.organizational_unit}`);
+	}
+	if (filters.administrativeTypes?.length) {
+		conditions.push(
+			sql.fragment`c.payload->'administrativeType' ?| ${sql.array(filters.administrativeTypes, 'text')}`
+		);
 	}
 	if (filters.assignees?.length) {
 		conditions.push(sql.fragment`c.payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
@@ -570,14 +567,30 @@ function prepareWhereCondition(filters: {
 	if (filters.audience?.length) {
 		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
+	if (filters.customCategories) {
+		const categoryFragments = Object.entries(filters.customCategories)
+			.filter(([, values]) => values?.length)
+			.map(
+				([key, values]) =>
+					sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`
+			);
+		if (categoryFragments.length > 0) {
+			if (filters.customCategoryMatch === 'any') {
+				conditions.push(sql.fragment`(${sql.join(categoryFragments, sql.fragment` OR `)})`);
+			} else {
+				for (const fragment of categoryFragments) {
+					conditions.push(fragment);
+				}
+			}
+		}
+	}
+	if (filters.federalStates?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.federalStates, 'text')})`
+		);
+	}
 	if (filters.guid?.length) {
 		conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.guid, 'uuid')})`);
-	}
-	if (filters.customCategories) {
-		for (const [key, values] of Object.entries(filters.customCategories)) {
-			if (!values?.length) continue;
-			conditions.push(sql.fragment`c.payload->'category'->${key} ?| ${sql.array(values, 'text')}`);
-		}
 	}
 	if (filters.helpSlugs?.length) {
 		conditions.push(sql.fragment`c.payload->>'type' = 'help'`);
@@ -716,7 +729,7 @@ export async function withUserAndRelation<T extends AnyContainer>(
 				WHERE (cr.object IN (${guids}) OR cr.subject IN (${guids}))
 					AND cr.valid_currently
 					AND NOT cr.deleted
-				ORDER BY cr.position
+				ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 			`)
 			: [];
 
@@ -735,9 +748,12 @@ export async function withUserAndRelation<T extends AnyContainer>(
 export function getManyContainers(
 	organizations: string[],
 	filters: {
+		administrativeTypes?: string[];
 		assignees?: string[];
 		audience?: string[];
 		customCategories?: Record<string, string[]>;
+		customCategoryMatch?: 'any' | 'all';
+		federalStates?: string[];
 		guid?: string[];
 		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];
@@ -909,7 +925,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			), container_relation_result AS (
 				SELECT
 					c.guid,
-					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+					coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
@@ -965,7 +981,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 				LEFT JOIN container_user cu ON c.revision = cu.object
 				GROUP BY c.guid
 			), container_relation_result AS (
-				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
+				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER ( WHERE cr.object IS NOT NULL ), '[]') AS relation
 				FROM container_result c
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
@@ -1326,7 +1342,7 @@ export function getAllContainersRelatedToProgram(
 						sql.fragment`, `
 					)})
 						AND ${prepareWhereCondition(filters)}
-					ORDER BY cr.position;
+					ORDER BY cr.predicate, cr.position, cr.subject, cr.object;
 				`)
 				: [];
 
@@ -1500,13 +1516,31 @@ export function getAllContainersRelatedToUser(guid: string) {
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
 	return async (connection: DatabaseConnection) => {
 		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
-		return await connection.any(sql.typeAlias('relation')`
+		const result = await connection.any(sql.typeAlias('relation')`
 			INSERT INTO container_relation (object, position, predicate, subject)
 			SELECT *
 			FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
 			RETURNING *
 		`);
+
+		if (result.length > 0) {
+			const affectedGuids = new Set<string>();
+			for (const r of result) {
+				affectedGuids.add(r.object);
+				affectedGuids.add(r.subject);
+			}
+
+			for (const guid of affectedGuids) {
+				await enqueueIndexingEvent({
+					action: 'upsert',
+					guid,
+					timestamp: new Date().toISOString()
+				});
+			}
+		}
+
+		return result;
 	};
 }
 
@@ -1543,6 +1577,21 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 				SELECT *, true
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			`);
+
+			if (relations.length > 0) {
+				const affectedGuids = new Set<string>();
+				for (const r of relations) {
+					affectedGuids.add(r.object);
+					affectedGuids.add(r.subject);
+				}
+				for (const guid of affectedGuids) {
+					await enqueueIndexingEvent({
+						action: 'upsert',
+						guid,
+						timestamp: new Date().toISOString()
+					});
+				}
+			}
 		});
 	};
 }
@@ -1750,10 +1799,7 @@ export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 			`);
 		});
 
-		if (
-			createFeatureDecisions(getFeatures()).useElasticsearch() &&
-			shouldIndexType(payloadTypes.enum.task)
-		) {
+		if (shouldIndexType(payloadTypes.enum.task)) {
 			for (const taskGuid of new Set(tasks)) {
 				await enqueueIndexingEvent({
 					action: 'upsert',
@@ -1843,9 +1889,11 @@ export function setUp(name: string, realm: string) {
 				default: true,
 				description: '',
 				favorite: [],
+				imageReplacesName: false,
 				name,
 				type: payloadTypes.enum.organization,
-				visibility: visibility.enum.public
+				visibility: visibility.enum.public,
+				visibleWorkspaces: []
 			},
 			realm,
 			relation: [],

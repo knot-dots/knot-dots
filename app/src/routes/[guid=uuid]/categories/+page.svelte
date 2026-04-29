@@ -11,7 +11,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { predicates, type Container, type Predicate } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
 	type PageProps = {
 		data: {
@@ -23,7 +23,9 @@
 
 	let { data }: PageProps = $props();
 
-	let allContainers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let allContainers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	const defaultRelationPredicates: Predicate[] = [
 		predicates.enum['is-equivalent-to'],

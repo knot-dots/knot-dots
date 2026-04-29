@@ -4,7 +4,9 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import { predicates } from '$lib/models';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -17,6 +19,10 @@
 			predicates.enum['is-prerequisite-for']
 		]
 	});
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let facets = $derived(data.facets);
 </script>
@@ -34,7 +40,7 @@
 	{#snippet main()}
 		<div>
 			<ul>
-				{#each data.containers as container (container.guid)}
+				{#each containers as container (container.guid)}
 					<li>
 						<Card --height="100%" {container} />
 					</li>

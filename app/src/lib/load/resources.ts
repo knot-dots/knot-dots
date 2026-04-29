@@ -48,18 +48,16 @@ export async function fetchResources({
 	let data: Record<string, Record<string, number>> | undefined;
 
 	if (features.useElasticsearch()) {
-		const esResult = await pool.connect(
-			getManyContainersWithES(
-				scope,
-				{
-					customCategories,
-					resourceCategories: resourceCategoryFilters,
-					type: [payloadTypes.enum.resource_v2]
-				},
-				sort,
-				undefined,
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-			)
+		const esResult = await getManyContainersWithES(
+			scope,
+			{
+				customCategories,
+				resourceCategories: resourceCategoryFilters,
+				type: [payloadTypes.enum.resource_v2]
+			},
+			sort,
+			undefined,
+			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 		);
 		resourceContainers = esResult.containers as ResourceV2Container[];
 		data = esResult.facets;

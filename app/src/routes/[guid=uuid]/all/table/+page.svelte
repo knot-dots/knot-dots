@@ -8,8 +8,14 @@
 	import Table from '$lib/components/Table.svelte';
 	import { getCategoryKeys } from '$lib/categoryOptions';
 	import { createFeatureDecisions } from '$lib/features';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
 
@@ -45,11 +51,11 @@
 	]);
 </script>
 
-<AllPage {data}>
+<AllPage data={{ ...data, containers }}>
 	<Table
 		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
-		rows={data.containers.slice(0, browser ? undefined : 20)}
+		rows={containers.slice(0, browser ? undefined : 20)}
 	/>
 	<Help slug="all-table" />
 </AllPage>

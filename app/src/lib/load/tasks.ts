@@ -77,29 +77,27 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		} else {
 			if (features.useElasticsearch()) {
 				const [taskResult, otherResult] = await Promise.all([
-					locals.pool.connect(
-						getManyContainersWithES(
-							currentOrganization.payload.default ? [] : [currentOrganization.guid],
-							{
-								assignees: url.searchParams.getAll('assignee'),
-								customCategories,
-								taskCategories: url.searchParams.getAll('taskCategory'),
-								terms: url.searchParams.get('terms') ?? '',
-								type: [payloadTypes.enum.task]
-							},
-							url.searchParams.get('sort') ?? defaultSort
-						)
+					getManyContainersWithES(
+						currentOrganization.payload.default ? [] : [currentOrganization.guid],
+						{
+							assignees: url.searchParams.getAll('assignee'),
+							customCategories,
+							taskCategories: url.searchParams.getAll('taskCategory'),
+							terms: url.searchParams.get('terms') ?? '',
+							type: [payloadTypes.enum.task]
+						},
+						url.searchParams.get('sort') ?? defaultSort,
+						undefined,
+						{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 					),
-					locals.pool.connect(
-						getManyContainersWithES(
-							currentOrganization.payload.default ? [] : [currentOrganization.guid],
-							{
-								type: [payloadTypes.enum.goal]
-							},
-							'alpha',
-							undefined,
-							{ includeFacets: false }
-						)
+					getManyContainersWithES(
+						currentOrganization.payload.default ? [] : [currentOrganization.guid],
+						{
+							type: [payloadTypes.enum.goal]
+						},
+						'alpha',
+						undefined,
+						{ includeFacets: false }
 					)
 				]);
 				taskContainers = taskResult.containers as TaskContainer[];
@@ -164,7 +162,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 				[string, Map<string, number>]
 			>),
 			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
-			['assignee', new Map()]
+			['assignee', fromCounts([], data?.assignee)]
 		]);
 
 		if (useCustomCategories && categoryContext) {
@@ -173,10 +171,12 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			}
 		}
 
-		const computedFacets = computeFacetCount(_facets, taskContainers, {
-			useCategoryPayload: useCustomCategories
-		});
-		const facets = features.useElasticsearch() && data ? _facets : computedFacets;
+		const facets =
+			features.useElasticsearch() && data
+				? _facets
+				: computeFacetCount(_facets, taskContainers, {
+						useCategoryPayload: useCustomCategories
+					});
 
 		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;

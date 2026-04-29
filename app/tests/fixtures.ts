@@ -34,6 +34,8 @@ type MyFixtures = {
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
 	landingPage: LandingPage;
+	landingPageWithCustomCollection: LandingPage;
+	reportTemplate: ReportContainer;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
 	testCategoryWithTerms: {
@@ -194,6 +196,27 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	landingPage: async ({ page }, use) => {
 		await use(new LandingPage(page));
+	},
+	reportTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newReport = containerOfType(
+			payloadTypes.enum.report,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as ReportContainer;
+		const reportTemplate = await createContainer(adminContext, {
+			...newReport,
+			payload: {
+				...newReport.payload,
+				template: true,
+				title: `Report template ${workerInfo.workerIndex}`
+			}
+		});
+
+		await use(reportTemplate);
+
+		await deleteContainer(adminContext, reportTemplate);
 	},
 	resourceCatalog: async ({ page }, use) => {
 		await use(new ResourceCatalog(page));

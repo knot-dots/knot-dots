@@ -6,6 +6,7 @@
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import HelpCatalogOverlay from '$lib/components/HelpCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
+	import KnowledgeCatalogOverlay from '$lib/components/KnowledgeCatalogOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
@@ -69,6 +70,8 @@
 	<div class="resize-handle" onmousedown={startExpand}></div>
 	{#if data.key === overlayKey.enum['view-help']}
 		<HelpCatalogOverlay containers={data.containers} slug={data.slug} />
+	{:else if data.key === overlayKey.enum['view-knowledge']}
+		<KnowledgeCatalogOverlay categories={data.categories} />
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}

@@ -28,28 +28,28 @@ test.describe('Document titles', () => {
 	});
 
 	test('title updates when switching between workspaces', async ({ page, testOrganization }) => {
-		// Start at the organization's home (All workspace)
+		// Start at the organization's home (Pages workspace at /all/page)
 		await page.goto(`/${testOrganization.guid}/all/page`);
 		await expect(page).toHaveTitle(/\/\s*All$/);
 
 		// Navigate to Goals workspace
-		await page.getByRole('button', { name: 'All', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Goals' }).click();
+		await page.getByRole('button', { name: 'Pages', exact: true }).click();
+		await page.getByRole('menuitem', { name: /^Goals\b/ }).click();
 		await expect(page).toHaveTitle(/\/\s*Goals$/);
 
-		// Navigate to Programs workspace
+		// Navigate to Strategies workspace
 		await page.getByRole('button', { name: 'Goals', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Programs' }).click();
-		await expect(page).toHaveTitle(/\/\s*Programs$/);
+		await page.getByRole('menuitem', { name: /^Strategies\b/ }).click();
+		await expect(page).toHaveTitle(/\/\s*Strategies$/);
 
 		// Navigate to Measures workspace
-		await page.getByRole('button', { name: 'Programs', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Measures' }).click();
+		await page.getByRole('button', { name: 'Strategies', exact: true }).click();
+		await page.getByRole('menuitem', { name: /^Measures\b/ }).click();
 		await expect(page).toHaveTitle(/\/\s*Measures$/);
 
 		// Navigate to Resources workspace
 		await page.getByRole('button', { name: 'Measures', exact: true }).click();
-		await page.getByRole('menuitem', { name: 'Resources' }).click();
+		await page.getByRole('menuitem', { name: /^Resources\b/ }).click();
 		await expect(page).toHaveTitle(/\/\s*Resources$/);
 	});
 

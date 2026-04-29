@@ -20,7 +20,7 @@
 		offset?: [number, number];
 	}
 
-	let { container = $bindable(), editable = false, labelledBy, offset = [0, 4] }: Props = $props();
+	let { container = $bindable(), editable = false, labelledBy, offset }: Props = $props();
 
 	let programGuid = $derived(
 		container.relation.find(({ predicate }) => predicate === predicates.enum['is-part-of-program'])

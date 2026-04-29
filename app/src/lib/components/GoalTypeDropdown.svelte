@@ -5,10 +5,11 @@
 
 	interface Props {
 		editable?: boolean;
+		offset?: [number, number];
 		value: GoalType | undefined;
 	}
 
-	let { editable = false, value = $bindable() }: Props = $props();
+	let { editable = false, offset, value = $bindable() }: Props = $props();
 
 	const options = $derived([
 		{ label: $_('empty'), value: undefined },
@@ -17,7 +18,7 @@
 </script>
 
 {#if editable}
-	<SingleChoiceDropdown offset={[0, -39]} {options} bind:value />
+	<SingleChoiceDropdown {offset} {options} bind:value />
 {:else}
 	<span class="value">{value ? $_(value) : $_('empty')}</span>
 {/if}

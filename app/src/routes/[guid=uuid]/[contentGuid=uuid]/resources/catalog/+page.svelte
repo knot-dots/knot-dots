@@ -4,9 +4,15 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { payloadTypes } from '$lib/models';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 </script>
 
 <Layout>
@@ -20,11 +26,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<Catalog
-			containers={data.containers}
-			payloadType={[payloadTypes.enum.resource_v2]}
-			hideCreateButton={true}
-		/>
+		<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
 		<Help slug="resources-catalog" />
 	{/snippet}
 </Layout>

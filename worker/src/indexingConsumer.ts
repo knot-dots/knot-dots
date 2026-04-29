@@ -15,6 +15,11 @@ import { Client as ESClient } from '@elastic/elasticsearch';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { toDoc } from '@knot-dots/shared/src/indexing.ts';
+import { container, relation, userRelation } from '@knot-dots/app/src/lib/models.ts';
+
+const containerRow = container
+  .omit({ relation: true, user: true })
+  .extend({ priority: z.number().int().nullable() });
 
 const envSchema = z
   .object({
@@ -65,7 +70,7 @@ process.on('SIGTERM', () => {
 
 async function fetchContainerRow(guid: string) {
   const pool = await getPool();
-  const row = await pool.maybeOne<any>(sql.unsafe`
+  return pool.maybeOne(sql.type(containerRow)`
     SELECT c.*, tp.priority
     FROM container c
     LEFT JOIN task_priority tp ON tp.task = c.guid
@@ -73,7 +78,27 @@ async function fetchContainerRow(guid: string) {
       AND c.valid_currently
       AND NOT c.deleted
   `);
-  return row as any;
+}
+
+async function fetchContainerRelations(guid: string) {
+  const pool = await getPool();
+  return pool.any(sql.type(relation)`
+    SELECT object, predicate, position, subject
+    FROM container_relation
+    WHERE (subject = ${guid} OR object = ${guid})
+      AND valid_currently
+      AND NOT deleted
+    ORDER BY predicate, position, subject, object
+  `);
+}
+
+async function fetchContainerUsers(revision: number) {
+  const pool = await getPool();
+  return pool.any(sql.type(userRelation)`
+    SELECT predicate, subject
+    FROM container_user
+    WHERE object = ${revision}
+  `);
 }
 
 async function processBatch(events: IndexingEvent[], client: ESClient) {
@@ -91,6 +116,8 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         log.warn({ guid: evt.guid }, '[indexing-consumer] Upsert skipped; container missing');
         continue;
       }
+      const relation = await fetchContainerRelations(evt.guid);
+      const user = await fetchContainerUsers(row.revision);
       const doc = toDoc({
         guid: row.guid,
         revision: row.revision,
@@ -100,7 +127,9 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         organization: String(row.organization),
         organizational_unit: row.organizational_unit ?? null,
         managed_by: String(row.managed_by),
-        payload: (row as any).payload || {}
+        payload: row.payload || {},
+        relation: [...relation],
+        user: [...user]
       });
       operations.push({ index: { _index: esIndex, _id: evt.guid } });
       operations.push(doc);

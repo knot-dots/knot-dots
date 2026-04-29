@@ -14,12 +14,7 @@
 		value: Status;
 	}
 
-	let {
-		buttonStyle = 'default',
-		editable = false,
-		offset = [0, 4],
-		value = $bindable()
-	}: Props = $props();
+	let { buttonStyle = 'default', editable = false, offset, value = $bindable() }: Props = $props();
 
 	const popover = createPopover({ label: $_('status') });
 

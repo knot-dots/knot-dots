@@ -59,20 +59,18 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	let containers;
 	let data: Record<string, Record<string, number>> | undefined;
 	if (features.useElasticsearch()) {
-		const esResult = await locals.pool.connect(
-			getManyContainersWithES(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{
-					...coreCategoryFilters,
-					customCategories,
-					template: true,
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.measure]
-				},
-				url.searchParams.get('sort') ?? '',
-				undefined,
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-			)
+		const esResult = await getManyContainersWithES(
+			currentOrganization.payload.default ? [] : [currentOrganization.guid],
+			{
+				...coreCategoryFilters,
+				customCategories,
+				template: true,
+				terms: url.searchParams.get('terms') ?? '',
+				type: [payloadTypes.enum.measure]
+			},
+			url.searchParams.get('sort') ?? '',
+			undefined,
+			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 		);
 		containers = esResult.containers;
 		data = esResult.facets;

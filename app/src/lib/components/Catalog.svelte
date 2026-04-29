@@ -6,9 +6,11 @@
 	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
+	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
 		type AnyContainer,
 		containerOfType,
+		isOrganizationalUnitContainer,
 		type NewContainer,
 		type PayloadType
 	} from '$lib/models';
@@ -19,9 +21,10 @@
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
 		hideCreateButton?: boolean;
+		footer?: Snippet;
 	}
 
-	let { containers, item, payloadType, hideCreateButton = false }: Props = $props();
+	let { containers, item, payloadType, hideCreateButton = false, footer }: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -80,12 +83,17 @@
 			<li>
 				{#if item}
 					{@render item(container)}
+				{:else if isOrganizationalUnitContainer(container)}
+					<OrganizationCard --height="100%" {container} />
 				{:else}
 					<Card --height="100%" {container} />
 				{/if}
 			</li>
 		{/each}
 	</ul>
+	{#if footer}
+		{@render footer()}
+	{/if}
 </div>
 
 <style>
@@ -115,7 +123,7 @@
 	ul {
 		display: grid;
 		gap: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(19.5rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(19.5rem, 1fr));
 	}
 
 	ul:nth-child(2) {

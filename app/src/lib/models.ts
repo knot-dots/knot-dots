@@ -26,7 +26,8 @@ export const overlayKey = z.enum([
 	'tasks',
 	'teasers',
 	'view',
-	'view-help'
+	'view-help',
+	'view-knowledge'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
@@ -120,6 +121,27 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+/**
+ * Payload types that derive from `basePayload` and therefore support the
+ * `template` flag. These are the candidate types for the central Vorlagen
+ * workspace at `/[guid]/templates`.
+ */
+export const templatablePayloadTypes = [
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.chapter,
+	payloadTypes.enum.content_partner,
+	payloadTypes.enum.goal,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.program,
+	payloadTypes.enum.report,
+	payloadTypes.enum.resource_v2,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure
+] as const;
+
 const helpSlugValues = [
 	'all-catalog',
 	'all-level',
@@ -134,6 +156,8 @@ const helpSlugValues = [
 	'goals-level',
 	'goals-status',
 	'goals-table',
+	'guides-catalog',
+	'guides-table',
 	'help-catalog',
 	'help-view',
 	'import',
@@ -173,9 +197,16 @@ const helpSlugValues = [
 	'resources-table',
 	'rule-view',
 	'rules-catalog',
+	'set-of-rules-catalog',
+	'set-of-rules-status',
+	'set-of-rules-table',
 	'rules-status',
 	'rules-table',
 	'simple-measure-view',
+	'strategies-catalog',
+	'strategies-level',
+	'strategies-status',
+	'strategies-table',
 	'task-view',
 	'tasks-catalog',
 	'tasks-status',
@@ -428,6 +459,7 @@ const programTypeValues = [
 	'program_type.package_of_measures',
 	'program_type.funding_program',
 	'program_type.guide',
+	'program_type.publication',
 	'program_type.agenda'
 ] as const;
 
@@ -621,7 +653,9 @@ export function isQuantity(value: unknown): value is Quantity {
 export function fromCounts(options: string[], counts: Record<string, number> = {}) {
 	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
 	for (const [key, count] of Object.entries(counts)) {
-		m.set(key, count);
+		if (m.has(key)) {
+			m.set(key, count);
+		}
 	}
 	return m;
 }
@@ -774,6 +808,7 @@ const basePayload = z.object({
 	editorialState: editorialState.optional(),
 	policyFieldBNK: z.array(policyFieldBNK).transform(deduplicate).default([]),
 	summary: z.string().trim().max(200).optional(),
+	template: z.boolean().default(false),
 	title: z.string().trim(),
 	topic: z.array(topics).transform(deduplicate).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -868,11 +903,14 @@ const initialChapterPayload = chapterPayload.partial({ number: true, title: true
 
 export const customCollectionPayload = z
 	.object({
+		allowSearch: z.boolean().default(false),
+		allowSort: z.boolean().default(false),
+		description: z.string().trim().optional(),
 		filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
 		item: z.array(z.uuid()).default([]),
 		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
-		allowSearch: z.boolean().default(false),
-		allowSort: z.boolean().default(false),
+		newItemTemplate: z.array(z.uuid()).default([]),
+		showDescription: z.boolean().default(false),
 		sort: z.enum(['alpha', 'modified']).default('alpha'),
 		terms: z.string().default(''),
 		title: z.string(),
@@ -885,8 +923,6 @@ const initialCustomCollectionPayload = customCollectionPayload.partial({ title: 
 
 export const demographicDataPayload = z
 	.object({
-		area: z.number().nonnegative().optional(),
-		population: z.number().int().nonnegative().optional(),
 		title: z
 			.string()
 			.trim()
@@ -1033,7 +1069,6 @@ const measurePayload = basePayload
 		result: z.string().trim().optional(),
 		startDate: z.string().date().optional(),
 		status: status.default(status.enum['status.idea']),
-		template: z.boolean().default(false),
 		type: z.literal(payloadTypes.enum.measure)
 	})
 	.strict();
@@ -1517,10 +1552,12 @@ const organizationPayload = z.object({
 		)
 		.default([]),
 	image: z.string().url().optional(),
+	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility.default(visibility.enum['organization']),
+	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
@@ -1547,6 +1584,7 @@ export const organizationalUnitPayload = z.object({
 	federalState: z.string().optional(),
 	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
+	imageReplacesName: z.boolean().default(false),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
 	nameBBSR: z.string().optional(),
@@ -1880,7 +1918,7 @@ export function isIndicatorTemplateContainer(
 	return container.payload.type === payloadTypes.enum.indicator_template;
 }
 
-const knowledgeContainer = container.extend({
+export const knowledgeContainer = container.extend({
 	payload: knowledgePayload
 });
 
@@ -3093,29 +3131,35 @@ export function createCopyOf(
 
 	if (isMeasureContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
-			template: false
+			...container.payload
 		} as typeof copy.payload;
 	} else if (isTaskContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
+			...container.payload,
 			assignee: [],
 			taskStatus: taskStatus.enum['task_status.idea']
 		} as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
-			...(container.payload as typeof copy.payload),
+			...container.payload,
 			achievedValues: container.payload.achievedValues.map(
 				([year]) => [year, 0] as [number, number]
 			)
 		} as typeof copy.payload;
+	} else if (isOrganizationalUnitContainer(container)) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { organizationalUnitType, ...rest } = container.payload;
+		// The organizationalUnitType is used to identify externally managed
+		// organizational units.
+		copy.payload = rest;
 	} else {
 		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
 	}
 
 	copy.payload = {
 		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined)
+		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
+		...('template' in container.payload ? { template: false } : undefined)
 	} as typeof copy.payload;
 
 	copy.relation.push({

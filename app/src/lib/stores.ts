@@ -1,4 +1,4 @@
-import { derived, writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { preloadData } from '$app/navigation';
 import { resolve } from '$app/paths';
@@ -14,12 +14,13 @@ import {
 	type ApplicationState,
 	type Container,
 	containerOfType,
+	type CustomCollectionContainer,
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
 	type HelpSlug,
-	isHelpSlug,
 	type IooiType,
+	isHelpSlug,
 	mayDelete,
 	type MeasureContainer,
 	type NewContainer,
@@ -29,7 +30,8 @@ import {
 	type PayloadType,
 	payloadTypes,
 	predicates,
-	type User as UserRecord
+	type User as UserRecord,
+	isContainerWithCategory
 } from '$lib/models';
 
 export const applicationState = writable<ApplicationState>({
@@ -145,10 +147,19 @@ type AddObjectiveState = {
 
 export const addObjectiveState = writable<AddObjectiveState>({});
 
+type AddItemState = {
+	target?: CustomCollectionContainer;
+};
+
+export const addItemState = writable<AddItemState>({});
+
 export const newContainer = writable<NewContainer | undefined>();
 
 // Store to track last successfully created container
 export const lastCreatedContainer = writable<Container | undefined>(undefined);
+
+// Store to track optimistically updated containers (guid -> latest saved version)
+export const lastUpdatedContainers = writable<Map<string, Container>>(new Map());
 
 export type OverlayData =
 	| {
@@ -221,6 +232,11 @@ export type OverlayData =
 			container?: undefined;
 			containers: HelpContainer[];
 			slug: HelpSlug;
+	  }
+	| {
+			key: 'view-knowledge';
+			container?: undefined;
+			categories: Record<string, string[]> | undefined;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -289,6 +305,22 @@ if (browser) {
 				container: undefined,
 				containers,
 				slug: helpSlug
+			});
+		} else if (hashParams.has(overlayKey.enum['view-knowledge'])) {
+			const currentOverlay = get(overlay);
+			// Container from the #view= overlay, or — when using fullscreen routes — from page data
+			const container =
+				(currentOverlay?.key === overlayKey.enum.view ? currentOverlay.container : undefined) ??
+				(useFullScreenRoutes ? (values.data.container as AnyContainer | undefined) : undefined);
+			const categories =
+				container && isContainerWithCategory(container)
+					? (container.payload.category as Record<string, string[]>)
+					: undefined;
+
+			setOverlayIfLatest({
+				key: overlayKey.enum['view-knowledge'],
+				container: undefined,
+				categories
 			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
 			if (useFullScreenRoutes) {

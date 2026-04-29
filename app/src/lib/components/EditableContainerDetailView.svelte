@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
@@ -17,14 +18,13 @@
 	interface Props {
 		container: Container;
 		data?: Snippet;
-		invalidateResource?: string;
 	}
 
-	let { container = $bindable(), data, invalidateResource = 'containers' }: Props = $props();
+	let { container = $bindable(), data }: Props = $props();
 
 	let w = $state(0);
 
-	const handleSubmit = $derived(autoSave(container, 2000, invalidateResource));
+	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
 </script>
 
@@ -51,26 +51,27 @@
 					></h1>
 				{:else}
 					<h1 class="details-title" contenteditable="false">
-						{container.payload.title}
+						{container.payload.title.replace(
+							/@current_organizational_unit_name/g,
+							page.data.currentOrganizationalUnit?.payload.name ?? ''
+						)}
 					</h1>
 				{/if}
 			</div>
 
-			<div class="details-meta">
-				<Badges
-					bind:container
+			<Badges
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+			/>
+
+			{#if isSimpleMeasureContainer(container)}
+				<EditableProgress
 					editable={$applicationState.containerDetailView.editable &&
 						$ability.can('update', container)}
+					bind:value={container.payload.progress}
 				/>
-
-				{#if isSimpleMeasureContainer(container)}
-					<EditableProgress
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.progress}
-					/>
-				{/if}
-			</div>
+			{/if}
 		</header>
 
 		{@render data?.()}
@@ -86,19 +87,13 @@
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
+		margin-bottom: 0.375rem;
 	}
 
 	.details-header :global(.logo),
 	.details-header :global(.logo-upload) {
 		--logo-height: 2.5rem;
 		flex-shrink: 0;
-	}
-
-	.details-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		margin-top: 0.5rem;
 	}
 
 	.details-title {
