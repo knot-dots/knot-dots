@@ -1593,7 +1593,8 @@ export const organizationalUnitPayload = z.object({
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationalUnitType: organizationalUnitType.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility.default(visibility.enum['organization']),
+	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
