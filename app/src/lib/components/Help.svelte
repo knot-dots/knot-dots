@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import QuestionCircle from '~icons/flowbite/question-circle-outline';
 	import BookOutline from '~icons/flowbite/book-outline';
+	import Gavel from '~icons/knotdots/gavel';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { type HelpSlug, overlayKey, paramsFromFragment } from '$lib/models';
@@ -39,7 +40,24 @@
 				newParams = new URLSearchParams();
 			}
 		} else {
+			newParams.delete(overlayKey.enum['view-rules']);
 			newParams.set(overlayKey.enum['view-knowledge'], '');
+		}
+		await goto(`#${newParams.toString()}`);
+	}
+
+	async function toggleRules(url: URL) {
+		let newParams = paramsFromFragment(url);
+		if (newParams.has(overlayKey.enum['view-rules'])) {
+			if ($overlayHistory.length > 1) {
+				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+				newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+			} else {
+				newParams = new URLSearchParams();
+			}
+		} else {
+			newParams.delete(overlayKey.enum['view-knowledge']);
+			newParams.set(overlayKey.enum['view-rules'], '');
 		}
 		await goto(`#${newParams.toString()}`);
 	}
@@ -55,6 +73,13 @@
 		{@attach tooltip($_('knowledge'))}
 	>
 		<BookOutline />
+	</button>
+	<button
+		onclick={() => toggleRules(page.url)}
+		type="button"
+		{@attach tooltip($_('workspace.rules'))}
+	>
+		<Gavel />
 	</button>
 </aside>
 
