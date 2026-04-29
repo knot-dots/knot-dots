@@ -121,6 +121,27 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
+/**
+ * Payload types that derive from `basePayload` and therefore support the
+ * `template` flag. These are the candidate types for the central Vorlagen
+ * workspace at `/[guid]/templates`.
+ */
+export const templatablePayloadTypes = [
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.chapter,
+	payloadTypes.enum.content_partner,
+	payloadTypes.enum.goal,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.program,
+	payloadTypes.enum.report,
+	payloadTypes.enum.resource_v2,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure
+] as const;
+
 const helpSlugValues = [
 	'all-catalog',
 	'all-level',
@@ -135,6 +156,8 @@ const helpSlugValues = [
 	'goals-level',
 	'goals-status',
 	'goals-table',
+	'guides-catalog',
+	'guides-table',
 	'help-catalog',
 	'help-view',
 	'import',
@@ -174,9 +197,16 @@ const helpSlugValues = [
 	'resources-table',
 	'rule-view',
 	'rules-catalog',
+	'set-of-rules-catalog',
+	'set-of-rules-status',
+	'set-of-rules-table',
 	'rules-status',
 	'rules-table',
 	'simple-measure-view',
+	'strategies-catalog',
+	'strategies-level',
+	'strategies-status',
+	'strategies-table',
 	'task-view',
 	'tasks-catalog',
 	'tasks-status',
@@ -1526,7 +1556,8 @@ const organizationPayload = z.object({
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility.default(visibility.enum['organization']),
+	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
