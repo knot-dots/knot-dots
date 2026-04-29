@@ -102,7 +102,8 @@ export const strategyProgramTypes = [
 	'program_type.mobility',
 	'program_type.sustainability',
 	'program_type.smart_city',
-	'program_type.isek'
+	'program_type.isek',
+	'program_type.agenda'
 ] as const;
 
 export const workspaces: WorkspaceDefinition[] = [
