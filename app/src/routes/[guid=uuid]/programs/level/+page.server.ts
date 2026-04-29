@@ -109,7 +109,6 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 					type: [payloadTypes.enum.program]
 				},
 				url.searchParams.get('sort') ?? '',
-				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = await filterOrganizationalUnitsAsync(Promise.resolve(esResult.containers));

@@ -530,8 +530,10 @@ export const GET = (async ({ locals, url }) => {
 				type: parseResult.data.payloadType
 			},
 			parseResult.data.sort[0],
-			parseResult.data.limit,
-			parseResult.data.offset
+			{
+				limit: parseResult.data.limit,
+				offset: parseResult.data.offset
+			}
 		)
 	);
 

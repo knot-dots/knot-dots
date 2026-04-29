@@ -745,6 +745,11 @@ export async function withUserAndRelation<T extends AnyContainer>(
 }
 
 // Get containers using pure SQL (no Elasticsearch)
+export type ContainerQueryOptions = {
+	limit?: number;
+	offset?: number;
+};
+
 export function getManyContainers(
 	organizations: string[],
 	filters: {
@@ -772,8 +777,7 @@ export function getManyContainers(
 		type?: PayloadType[];
 	},
 	sort: string,
-	limit?: number,
-	offset?: number
+	options?: ContainerQueryOptions
 ) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
@@ -781,8 +785,8 @@ export function getManyContainers(
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
-			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
-			${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``};
+			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
+			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``};
     `);
 		return withUserAndRelation<AnyContainer>(connection, containerResult);
 	};

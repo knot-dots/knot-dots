@@ -91,7 +91,6 @@ export default (async function load({ depends, locals, parent, url }) {
 					type: [payloadTypes.enum.program]
 				},
 				url.searchParams.get('sort') ?? '',
-				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = esResult.containers;

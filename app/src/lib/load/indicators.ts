@@ -93,7 +93,6 @@ export async function getIndicatorsData(params: {
 				type: [payloadTypes.enum.indicator_template]
 			},
 			'alpha',
-			undefined,
 			{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
 		);
 		indicators = esResult.containers as IndicatorTemplateContainer[];
