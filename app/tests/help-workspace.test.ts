@@ -14,7 +14,7 @@ test.describe('Admin users', () => {
 		await catalog.header.editModeToggle.check();
 
 		// Create a help object
-		const helpTitle = 'E2E Help Object';
+		const helpTitle = `E2E Help Object ${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 		await page.getByRole('paragraph').getByRole('button', { name: 'Help' }).click();
 		await page.getByRole('dialog').locator('textarea').fill(helpTitle);
 		await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
@@ -53,13 +53,13 @@ test.describe('Regular users', () => {
 		await page.goto(`/${defaultOrganization.guid}/all/catalog`);
 
 		// Open the workspace menu by clicking the dropdown button
-		await page.getByRole('button', { name: 'All', exact: true }).click();
+		await page.getByRole('button', { name: 'All objects', exact: true }).click();
 
 		// Verify that Help is not among the available workspace options
-		await expect(page.getByRole('menuitem', { name: 'Help' })).not.toBeVisible();
+		await expect(page.getByRole('menuitem', { name: /^Help\b/ })).not.toBeVisible();
 
 		// Close the menu
-		await page.getByRole('button', { name: 'All', exact: true }).click();
+		await page.getByRole('button', { name: 'All objects', exact: true }).click();
 
 		// Also verify that directly navigating to the help catalog page
 		// doesn't show the create button since Bob lacks the permission
