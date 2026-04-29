@@ -19,6 +19,7 @@ export const featureFlags = new Map([
 			'FullScreenRoutes',
 			'ImportFromCsv',
 			'Mistral',
+			'NewNavigation',
 			'Report',
 			'TeaserCollection'
 		] as const
@@ -80,6 +81,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useFullScreenRoutes() {
 			return features.includes('FullScreenRoutes');
+		},
+		useMegaMenu() {
+			return features.includes('NewNavigation');
 		}
 	} satisfies Record<string, () => boolean>;
 }

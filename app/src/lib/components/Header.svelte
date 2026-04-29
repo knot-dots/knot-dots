@@ -36,9 +36,10 @@
 	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
-	import ViewSelect from '$lib/components/ViewSelect.svelte';
+	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
@@ -222,10 +223,16 @@
 		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces {container} />
 		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-			<WorkspacesMegaMenu />
+			{#if createFeatureDecisions(page.data.features).useMegaMenu()}
+				<WorkspacesMegaMenu />
+			{:else}
+				<WorkspacesMenu />
+			{/if}
 		{/if}
-	{:else}
+	{:else if createFeatureDecisions(page.data.features).useMegaMenu()}
 		<WorkspacesMegaMenu />
+	{:else}
+		<WorkspacesMenu />
 	{/if}
 
 	<div class="actions">
@@ -290,7 +297,7 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if !container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+	{#if (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)) && createFeatureDecisions(page.data.features).useMegaMenu()}
 		<div class="commands-leading">
 			<ViewSelect />
 		</div>

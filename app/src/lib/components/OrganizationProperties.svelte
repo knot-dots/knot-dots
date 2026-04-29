@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
@@ -51,12 +53,14 @@
 			bind:value={container.payload.boards}
 		/>
 
-		<EditableMultipleChoice
-			{editable}
-			label={$_('properties.subheading.visible_workspaces')}
-			options={workspaceOptions}
-			bind:value={container.payload.visibleWorkspaces}
-		/>
+		{#if createFeatureDecisions(page.data.features).useMegaMenu()}
+			<EditableMultipleChoice
+				{editable}
+				label={$_('properties.subheading.visible_workspaces')}
+				options={workspaceOptions}
+				bind:value={container.payload.visibleWorkspaces}
+			/>
+		{/if}
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:container />
