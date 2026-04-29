@@ -366,10 +366,12 @@ interface VisibilityContext {
  * - Workspaces with a `featureFlag` are hidden when the flag is off.
  * - Workspaces with a `boardFlag` are hidden when the board is not enabled
  *   on the organization or organizational unit.
- * - When `organization.payload.visibleWorkspaces` is empty, all remaining
- *   workspaces are visible (default for organizations without explicit choice).
- * - When `organization.payload.visibleWorkspaces` is populated, only the
- *   listed workspace keys are visible (in addition to `alwaysVisible`).
+ * - When the organizational unit has a non-empty `visibleWorkspaces`, it takes
+ *   precedence over the organization's setting (suborg admins can override).
+ * - Otherwise the organization's `visibleWorkspaces` applies; when also empty,
+ *   all remaining workspaces are visible (default without explicit choice).
+ * - When `visibleWorkspaces` is populated, only the listed workspace keys are
+ *   visible (in addition to `alwaysVisible`).
  * - `hasPermission` provides an extra hook for permission-based filtering
  *   (e.g. categories require `mayCreateContainer` permission).
  */
@@ -377,7 +379,9 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 	const { organization, organizationalUnit, features, hasPermission } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const enabledBoards = new Set(selectedContext.payload.boards);
-	const explicit = organization.payload.visibleWorkspaces ?? [];
+	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
+	const explicit =
+		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
 	const explicitSet = new Set(explicit);
 
 	return workspaces.filter((workspace) => {
