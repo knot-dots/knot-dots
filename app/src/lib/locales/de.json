@@ -145,6 +145,7 @@
 	"custom_collection.settings.allow_search": "Suche im Karussell erlauben",
 	"custom_collection.settings.allow_sort": "Sortierung im Karussell erlauben",
 	"custom_collection.settings.create_objects_title": "Objekte erstellen",
+	"custom_collection.settings.description": "Beschreibung verwenden",
 	"custom_collection.settings.embed_objects": "Objekte einbinden",
 	"custom_collection.settings.interactions": "Interaktionen",
 	"custom_collection.settings.max_items_hint": "Im Abschnitt werden zunächst maximal {count} Objekte angezeigt.",

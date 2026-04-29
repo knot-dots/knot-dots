@@ -1545,7 +1545,7 @@ img.cover {
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
-	margin: 1.5rem var(--carousel-margin-right) 0.5rem var(--carousel-margin-left);
+	margin: 1rem var(--carousel-margin-right) 0.5rem var(--carousel-margin-left);
 	overflow-x: auto;
 	padding-left: calc(var(--carousel-margin-left) * -1);
 }
@@ -1574,7 +1574,7 @@ img.cover {
 
 	display: flex;
 	gap: 0.5rem;
-	padding: 0.25rem 0;
+	margin: 0.875rem 0 1rem;
 }
 
 /* Wall */
