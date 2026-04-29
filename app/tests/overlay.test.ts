@@ -113,7 +113,7 @@ test.describe('Full-screen', () => {
 			testProgram.payload.title
 		);
 
-		await dotsBoard.page.getByRole('link', { name: 'My workspace' }).click();
+		await dotsBoard.page.goto(`/${testProgram.organization}`);
 		await expect(dotsBoard.page.getByRole('link', { name: 'Back to overlay' })).not.toBeVisible();
 	});
 });

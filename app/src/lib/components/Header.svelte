@@ -27,7 +27,7 @@
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
 	import MemberFilterDropDown from '$lib/components/MemberFilterDropDown.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
-	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
 	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
@@ -38,7 +38,7 @@
 	import Search from '$lib/components/Search.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
-	import { popover } from '$lib/components/OrganizationMenu.svelte';
+
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -199,14 +199,13 @@
 </script>
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
-<header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
+<header data-sveltekit-preload-data="hover" role="banner">
 	{#if overlay}
 		<OverlayCloseButton />
 		<OverlayFullscreenToggle />
 		<OverlayBackButton />
 		<OverlayTitle />
 	{:else}
-		<OrganizationMenu />
 		<DotsBoardButton />
 		<BackToOverlayButton />
 	{/if}
@@ -261,7 +260,7 @@
 			</a>
 		{/if}
 
-		{#if createFeatureDecisions(page.data.features).useFavoriteList() && !overlay && page.data.title && $ability.can('update', selectedContext)}
+		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}
 			<button
 				aria-label={$_('favorite')}
 				class="action-button action-button--size-l action-button--favorite"
@@ -528,10 +527,6 @@
 		position: absolute;
 		right: -0.375rem;
 		top: -0.375rem;
-	}
-
-	.is-elevated {
-		z-index: 4;
 	}
 
 	.sort-option {

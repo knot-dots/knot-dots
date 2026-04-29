@@ -434,6 +434,8 @@
 		"unit": "Unit"
 	},
 	"landing_page": "Landing page",
+	"favorites": "Favorites",
+	"main_pages": "Main pages",
 	"level": {
 		"global": "Global",
 		"label": "Level",
@@ -509,10 +511,12 @@
 		"political": "Political"
 	},
 	"organizational_unit": "Organizational unit",
+	"organizational_unit.create": "Add organizational unit",
 	"organizational_unit.level": "Level",
 	"organizational_unit.properties.title": "Settings",
 	"organizational_unit_level": "Level {level, number}",
 	"organizational_units": "Organizational units",
+	"organization.create": "Add organization",
 	"organizations": "Organizations",
 	"organizations_and_organizational_units": "Organizations and organizational units",
 	"other_organizations": "Other organizations",
