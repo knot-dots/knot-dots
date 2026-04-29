@@ -33,5 +33,5 @@
 			</BoardColumn>
 		{/each}
 	</Board>
-	<Help slug="rules-of-procedure-status" />
+	<Help slug="set-of-rules-status" />
 </ProgramsPage>

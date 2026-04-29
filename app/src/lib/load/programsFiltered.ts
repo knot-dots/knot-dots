@@ -17,5 +17,5 @@ export function loadProgramsFilteredBy(
 }
 
 export const STRATEGY_PROGRAM_TYPES = strategyProgramTypes;
-export const RULES_OF_PROCEDURE_PROGRAM_TYPES = ['program_type.set_of_rules'] as const;
+export const SET_OF_RULES_PROGRAM_TYPES = ['program_type.set_of_rules'] as const;
 export const GUIDE_PROGRAM_TYPES = ['program_type.guide'] as const;

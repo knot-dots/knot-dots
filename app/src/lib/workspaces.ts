@@ -266,16 +266,16 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	// Rules
 	{
-		key: 'rules-of-procedure',
-		i18nKey: 'workspace.type.rules_of_procedure',
-		helperI18nKey: 'workspace.helper.rules_of_procedure',
+		key: 'set-of-rules',
+		i18nKey: 'workspace.type.set_of_rules',
+		helperI18nKey: 'workspace.helper.set_of_rules',
 		icon: Gavel,
 		module: 'rules',
 		views: {
-			default: '/rules-of-procedure/catalog',
-			catalog: '/rules-of-procedure/catalog',
-			status: '/rules-of-procedure/status',
-			table: '/rules-of-procedure/table'
+			default: '/set-of-rules/catalog',
+			catalog: '/set-of-rules/catalog',
+			status: '/set-of-rules/status',
+			table: '/set-of-rules/table'
 		}
 	},
 	{

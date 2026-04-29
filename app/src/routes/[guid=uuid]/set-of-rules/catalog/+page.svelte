@@ -10,5 +10,5 @@
 
 <ProgramsPage {data} filterBarInitiallyOpen>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.program]} />
-	<Help slug="rules-of-procedure-catalog" />
+	<Help slug="set-of-rules-catalog" />
 </ProgramsPage>

@@ -46,5 +46,5 @@
 		{columns}
 		rows={data.containers}
 	/>
-	<Help slug="rules-of-procedure-table" />
+	<Help slug="set-of-rules-table" />
 </ProgramsPage>
