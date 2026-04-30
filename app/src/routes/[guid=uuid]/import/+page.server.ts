@@ -41,6 +41,7 @@ export const actions = {
 		}
 
 		let currentOrganizationGuid: string;
+		let currentOrganizationalUnitGuid: string | undefined;
 
 		try {
 			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
@@ -48,6 +49,7 @@ export const actions = {
 				isOrganizationalUnitContainer(containerFromParams) &&
 				defineAbilityFor(locals.user).can('read', containerFromParams)
 			) {
+				currentOrganizationalUnitGuid = containerFromParams.guid;
 				currentOrganizationGuid = containerFromParams.organization;
 			} else if (
 				isOrganizationContainer(containerFromParams) &&
@@ -63,6 +65,21 @@ export const actions = {
 			} else {
 				throw e;
 			}
+		}
+
+		if (
+			!defineAbilityFor(locals.user).can(
+				'create',
+				containerOfType(
+					payloadTypes.enum.program,
+					currentOrganizationGuid,
+					currentOrganizationalUnitGuid ?? null,
+					currentOrganizationalUnitGuid ?? currentOrganizationGuid,
+					env.PUBLIC_KC_REALM
+				)
+			)
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 
 		const organizationalUnits = await locals.pool.connect(
@@ -217,8 +234,11 @@ export const actions = {
 		}
 
 		await locals.pool.transaction(async (connection) => {
+			const ability = defineAbilityFor(locals.user);
 			for (const container of containers) {
-				await createContainer(container)(connection);
+				if (ability.can('create', container)) {
+					await createContainer(container)(connection);
+				}
 			}
 		});
 	}
