@@ -155,8 +155,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		module: 'goals_planning',
 		views: {
 			default: '/reports/catalog',
-			catalog: '/reports/catalog',
-			table: '/reports/table'
+			catalog: '/reports/catalog'
 		},
 		featureFlag: 'useReport'
 	},
@@ -285,10 +284,8 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: Gavel,
 		module: 'rules',
 		views: {
-			default: '/rules/status',
-			catalog: '/rules/catalog',
-			status: '/rules/status',
-			table: '/rules/table'
+			default: '/rules/catalog',
+			catalog: '/rules/catalog'
 		}
 	},
 	// Organizing (always visible)
@@ -299,9 +296,10 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: LandingPage,
 		module: 'organizing',
 		views: {
-			default: '/all/page',
-			page: '/all/page'
+			default: '/pages/catalog',
+			catalog: '/pages/catalog'
 		},
+		featureFlag: 'usePage',
 		alwaysVisible: true
 	},
 	{

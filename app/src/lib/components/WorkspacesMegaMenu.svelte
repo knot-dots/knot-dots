@@ -136,7 +136,7 @@
 							<ul class="menu-segment-items">
 								{#each group.workspaces as workspace (workspace.key)}
 									{@const path = pathFor(workspace)}
-							{@const isCurrent = !isOnPage && currentWorkspace?.key === workspace.key}
+									{@const isCurrent = !isOnPage && currentWorkspace?.key === workspace.key}
 									<li class="menu-segment-item" class:menu-segment-item--current={isCurrent}>
 										<button type="button" use:menu.item={{ value: path }}>
 											<span class="menu-segment-item-icon">
