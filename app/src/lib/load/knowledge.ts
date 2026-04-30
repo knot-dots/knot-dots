@@ -12,12 +12,21 @@ import {
 	sustainableDevelopmentGoals,
 	topics
 } from '$lib/models';
+import {
+	applyPagination,
+	type PaginatedLoadOptions,
+	queryLimit,
+	queryOffset
+} from '$lib/pagination';
 import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
-export default (async function load({ depends, locals, parent, url }) {
+export default (async function load(
+	{ depends, locals, parent, url },
+	options?: PaginatedLoadOptions
+) {
 	depends('containers');
 
 	let containers: AnyContainer[];
@@ -49,7 +58,9 @@ export default (async function load({ depends, locals, parent, url }) {
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
 				{ customCategories, type: [payloadTypes.enum.knowledge] },
-				url.searchParams.get('sort') ?? ''
+				url.searchParams.get('sort') ?? '',
+				queryLimit(options),
+				queryOffset(options)
 			)
 		);
 	} else {
@@ -64,7 +75,12 @@ export default (async function load({ depends, locals, parent, url }) {
 					type: [payloadTypes.enum.knowledge]
 				},
 				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				{
+					customCategoryKeys: categoryContext?.keys ?? [],
+					includeFacets: true,
+					limit: queryLimit(options),
+					offset: queryOffset(options)
+				}
 			);
 			containers = esResult.containers;
 			data = esResult.facets;
@@ -79,13 +95,18 @@ export default (async function load({ depends, locals, parent, url }) {
 						terms: url.searchParams.get('terms') ?? '',
 						type: [payloadTypes.enum.knowledge]
 					},
-					url.searchParams.get('sort') ?? ''
+					url.searchParams.get('sort') ?? '',
+					{
+						limit: queryLimit(options),
+						offset: queryOffset(options)
+					}
 				)
 			);
 		}
 	}
 
-	const filtered = filterVisible(containers, locals.user);
+	const page = applyPagination(containers, options);
+	const filtered = filterVisible(page.containers, locals.user);
 
 	const _facets = new Map<string, Map<string, number>>([
 		...((url.searchParams.has('related-to')
@@ -124,6 +145,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		containers: filtered,
 		facets,
 		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options
+		categoryOptions: categoryContext?.options,
+		hasMore: page.hasMore
 	};
 } satisfies PageServerLoad);
