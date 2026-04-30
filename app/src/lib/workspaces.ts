@@ -147,18 +147,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			level: '/programs/level'
 		}
 	},
-	{
-		key: 'reports',
-		i18nKey: 'workspace.type.reports',
-		helperI18nKey: 'workspace.helper.reports',
-		icon: Chapter,
-		module: 'goals_planning',
-		views: {
-			default: '/reports/catalog',
-			catalog: '/reports/catalog'
-		},
-		featureFlag: 'useReport'
-	},
 	// Implementation planning
 	{
 		key: 'measures',
@@ -210,6 +198,18 @@ export const workspaces: WorkspaceDefinition[] = [
 			table: '/indicators/table'
 		},
 		boardFlag: 'board.indicators'
+	},
+	{
+		key: 'reports',
+		i18nKey: 'workspace.type.reports',
+		helperI18nKey: 'workspace.helper.reports',
+		icon: Chapter,
+		module: 'effect_measurement',
+		views: {
+			default: '/reports/catalog',
+			catalog: '/reports/catalog'
+		},
+		featureFlag: 'useReport'
 	},
 	{
 		key: 'objectives-and-effects',
