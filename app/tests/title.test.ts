@@ -33,7 +33,7 @@ test.describe('Document titles', () => {
 		await expect(page).toHaveTitle(/\/\s*All$/);
 
 		// Navigate to Goals workspace
-		await page.getByRole('button', { name: 'Pages', exact: true }).click();
+		await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
 		await page.getByRole('menuitem', { name: /^Goals\b/ }).click();
 		await expect(page).toHaveTitle(/\/\s*Goals$/);
 

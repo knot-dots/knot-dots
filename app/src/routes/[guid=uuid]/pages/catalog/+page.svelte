@@ -17,6 +17,6 @@
 <AllPage data={{ ...data, containers }} filterBarInitiallyOpen>
 	<Catalog
 		containers={containers.slice(0, browser ? undefined : 20)}
-		payloadType={[payloadTypes.enum.rule]}
+		payloadType={[payloadTypes.enum.page]}
 	/>
 </AllPage>

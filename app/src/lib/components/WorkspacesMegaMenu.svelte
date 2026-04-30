@@ -44,6 +44,12 @@
 
 	let currentWorkspace = $derived(workspaceFromPathname(pathnameWithoutContextSegment));
 
+	const isOnPage = $derived(
+		pathnameWithoutContextSegment === '/all/page' ||
+			pathnameWithoutContextSegment === '' ||
+			pathnameWithoutContextSegment === '/'
+	);
+
 	const visible = $derived(
 		getVisibleWorkspaces({
 			organization: page.data.currentOrganization,
@@ -109,11 +115,11 @@
 		type="button"
 		use:menu.button
 	>
-		{#if currentWorkspace}
+		{#if currentWorkspace && !isOnPage}
 			<currentWorkspace.icon />
 			<span class="label">{$_(currentWorkspace.i18nKey)}</span>
 		{:else}
-			<span class="label">{$_('workspaces')}</span>
+			<span class="label">{$_('workspace.choose')}</span>
 		{/if}
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
@@ -130,7 +136,7 @@
 							<ul class="menu-segment-items">
 								{#each group.workspaces as workspace (workspace.key)}
 									{@const path = pathFor(workspace)}
-									{@const isCurrent = currentWorkspace?.key === workspace.key}
+									{@const isCurrent = !isOnPage && currentWorkspace?.key === workspace.key}
 									<li class="menu-segment-item" class:menu-segment-item--current={isCurrent}>
 										<button type="button" use:menu.item={{ value: path }}>
 											<span class="menu-segment-item-icon">
