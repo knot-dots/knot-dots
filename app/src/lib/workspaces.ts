@@ -337,7 +337,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: Objects,
 		module: 'organizing',
 		views: {
-			default: '/all/level',
+			default: '/all/catalog',
 			catalog: '/all/catalog',
 			level: '/all/level',
 			page: '/all/page',
