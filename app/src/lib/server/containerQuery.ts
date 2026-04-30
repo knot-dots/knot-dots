@@ -233,7 +233,6 @@ function buildElasticsearchFilters(
 
 function canUseElasticsearch(params: ContainerQueryParams) {
 	return (
-		!params.payloadType.includes(payloadTypes.enum.help) && // Remove later when ES supports help containers
 		params.relatedTo.length === 0 &&
 		params.administrativeType.length === 0 &&
 		params.federalState.length === 0 &&
