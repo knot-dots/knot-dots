@@ -171,8 +171,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/measures/status',
 			catalog: '/measures/catalog',
 			status: '/measures/status',
-			table: '/measures/table',
-			monitoring: '/measures/monitoring'
+			table: '/measures/table'
 		}
 	},
 	{
