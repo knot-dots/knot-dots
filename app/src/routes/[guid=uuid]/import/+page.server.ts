@@ -65,6 +65,21 @@ export const actions = {
 			}
 		}
 
+		if (
+			!defineAbilityFor(locals.user).can(
+				'create',
+				containerOfType(
+					payloadTypes.enum.goal,
+					currentOrganizationGuid,
+					null,
+					currentOrganizationGuid,
+					env.PUBLIC_KC_REALM
+				)
+			)
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
 				include: {
@@ -217,7 +232,11 @@ export const actions = {
 		}
 
 		await locals.pool.transaction(async (connection) => {
+			const ability = defineAbilityFor(locals.user);
 			for (const container of containers) {
+				if (!ability.can('create', container)) {
+					error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+				}
 				await createContainer(container)(connection);
 			}
 		});
