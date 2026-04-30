@@ -279,7 +279,6 @@ export async function getManyContainersWithES(
 			const valuesAgg = filterAgg.values;
 			facets[key] = toCounts(valuesAgg);
 		}
-		console.log('[ES facets]', JSON.stringify(facets));
 	}
 
 	return { containers, facets };
