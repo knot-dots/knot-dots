@@ -147,19 +147,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			level: '/programs/level'
 		}
 	},
-	{
-		key: 'reports',
-		i18nKey: 'workspace.type.reports',
-		helperI18nKey: 'workspace.helper.reports',
-		icon: Chapter,
-		module: 'goals_planning',
-		views: {
-			default: '/reports/catalog',
-			catalog: '/reports/catalog',
-			table: '/reports/table'
-		},
-		featureFlag: 'useReport'
-	},
 	// Implementation planning
 	{
 		key: 'measures',
@@ -171,8 +158,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/measures/status',
 			catalog: '/measures/catalog',
 			status: '/measures/status',
-			table: '/measures/table',
-			monitoring: '/measures/monitoring'
+			table: '/measures/table'
 		}
 	},
 	{
@@ -212,6 +198,18 @@ export const workspaces: WorkspaceDefinition[] = [
 			table: '/indicators/table'
 		},
 		boardFlag: 'board.indicators'
+	},
+	{
+		key: 'reports',
+		i18nKey: 'workspace.type.reports',
+		helperI18nKey: 'workspace.helper.reports',
+		icon: Chapter,
+		module: 'effect_measurement',
+		views: {
+			default: '/reports/catalog',
+			catalog: '/reports/catalog'
+		},
+		featureFlag: 'useReport'
 	},
 	{
 		key: 'objectives-and-effects',
@@ -286,10 +284,8 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: Gavel,
 		module: 'rules',
 		views: {
-			default: '/rules/status',
-			catalog: '/rules/catalog',
-			status: '/rules/status',
-			table: '/rules/table'
+			default: '/rules/catalog',
+			catalog: '/rules/catalog'
 		}
 	},
 	// Organizing (always visible)
@@ -300,9 +296,10 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: LandingPage,
 		module: 'organizing',
 		views: {
-			default: '/all/page',
-			page: '/all/page'
+			default: '/pages/catalog',
+			catalog: '/pages/catalog'
 		},
+		featureFlag: 'usePage',
 		alwaysVisible: true
 	},
 	{
@@ -337,7 +334,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: Objects,
 		module: 'organizing',
 		views: {
-			default: '/all/level',
+			default: '/all/catalog',
 			catalog: '/all/catalog',
 			level: '/all/level',
 			page: '/all/page',
