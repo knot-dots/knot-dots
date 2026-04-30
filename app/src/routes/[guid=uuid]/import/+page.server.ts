@@ -1,4 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
+import { NotFoundError } from 'slonik';
 import { parse } from 'csv-parse';
 import stream from 'node:stream';
 import type { ReadableStream } from 'node:stream/web';
@@ -10,6 +11,8 @@ import {
 	containerOfType,
 	editorialState,
 	emptyContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	type NewContainer,
 	payloadTypes,
 	predicates,
@@ -26,8 +29,10 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 export const actions = {
-	default: async ({ locals, url, request }) => {
-		if (!createFeatureDecisions(locals.features).useImportFromCsv()) {
+	default: async ({ locals, params, request }) => {
+		const featureDecisions = createFeatureDecisions(locals.features);
+
+		if (!featureDecisions.useImportFromCsv()) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 
@@ -35,18 +40,55 @@ export const actions = {
 			error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 		}
 
-		const organization = await locals.pool.connect(
-			getContainerByGuid(url.hostname?.split('.').at(0) ?? ('' as string))
-		);
+		let currentOrganizationGuid: string;
+
+		try {
+			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
+			if (
+				isOrganizationalUnitContainer(containerFromParams) &&
+				defineAbilityFor(locals.user).can('read', containerFromParams)
+			) {
+				currentOrganizationGuid = containerFromParams.organization;
+			} else if (
+				isOrganizationContainer(containerFromParams) &&
+				defineAbilityFor(locals.user).can('read', containerFromParams)
+			) {
+				currentOrganizationGuid = containerFromParams.guid;
+			} else {
+				error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+			}
+		} catch (e: unknown) {
+			if (e instanceof NotFoundError) {
+				error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+			} else {
+				throw e;
+			}
+		}
+
+		if (
+			!defineAbilityFor(locals.user).can(
+				'create',
+				containerOfType(
+					payloadTypes.enum.goal,
+					currentOrganizationGuid,
+					null,
+					currentOrganizationGuid,
+					env.PUBLIC_KC_REALM
+				)
+			)
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
 				include: {
-					organization: organization.guid
+					organization: currentOrganizationGuid
 				}
 			})
 		);
 		const programs = (await locals.pool.connect(
-			getManyContainers([organization.guid], { type: [payloadTypes.enum.program] }, '')
+			getManyContainers([currentOrganizationGuid], { type: [payloadTypes.enum.program] }, '')
 		)) as ProgramContainer[];
 
 		const data = await request.formData();
@@ -73,7 +115,7 @@ export const actions = {
 					'organizationalUnit',
 					'program',
 					'topic',
-					'category',
+					'sdg',
 					'startDate',
 					'endDate',
 					'audience'
@@ -87,26 +129,65 @@ export const actions = {
 		const containers: NewContainer[] = [];
 		const errors = [];
 
+		const useCustomCategories = featureDecisions.useCustomCategories();
+
 		try {
 			for await (const record of parser) {
 				try {
 					const organizationalUnit = organizationalUnits.find(
 						({ payload }) => payload.name == record.organizationalUnit
 					);
+
+					const audience = record.audience?.trim()
+						? record.audience
+								.split(',')
+								.map((v: string) => v.trim())
+								.map((v: string) => reverseTranslationMap.get(v))
+								.filter((v: string | undefined): v is string => v !== undefined)
+						: [];
+					const policyFieldBNK = record.policyFieldBNK?.trim()
+						? record.policyFieldBNK
+								.split(',')
+								.map((v: string) => v.trim())
+								.map((v: string) => reverseTranslationMap.get(v))
+								.filter((v: string | undefined): v is string => v !== undefined)
+						: [];
+					const sdg = record.sdg?.trim()
+						? record.sdg
+								.split(',')
+								.map((v: string) => v.trim().toLowerCase())
+								.filter(Boolean)
+						: [];
+					const topic = record.topic?.trim()
+						? record.topic
+								.split(',')
+								.map((v: string) => v.trim())
+								.map((v: string) => reverseTranslationMap.get(v))
+								.filter((v: string | undefined): v is string => v !== undefined)
+						: [];
+
 					const program = programs.find(({ payload }) => payload.title == record.program);
 					const container = emptyContainer.parse({
-						managed_by: organizationalUnit?.guid ?? organization.guid,
-						organization: organization.guid,
+						managed_by: organizationalUnit?.guid ?? currentOrganizationGuid,
+						organization: currentOrganizationGuid,
 						organizational_unit: organizationalUnit?.guid ?? null,
 						payload: {
-							...(record.audience
+							category: useCustomCategories
 								? {
-										audience: record.audience
-											.split(', ')
-											.map((t: string) => reverseTranslationMap.get(t))
+										...(audience.length > 0 ? { audience } : {}),
+										...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
+										...(sdg.length > 0 ? { sdg } : {}),
+										...(topic.length > 0 ? { topic } : {})
 									}
-								: {}),
-							sdg: record.sdg?.toLowerCase().split(', ') ?? [],
+								: {},
+							...(useCustomCategories
+								? { audience: [], policyFieldBNK: [], sdg: [], topic: [] }
+								: {
+										...(audience.length > 0 ? { audience } : {}),
+										...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
+										sdg,
+										...(topic.length > 0 ? { topic } : {})
+									}),
 							description: record.description,
 							...(record.endDate ? { endDate: record.endDate } : {}),
 							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),
@@ -114,14 +195,6 @@ export const actions = {
 							...(record.summary ? { summary: record.summary } : {}),
 							editorialState: editorialState.enum['editorial_state.draft'],
 							title: record.title,
-							...(record.topic
-								? {
-										topic: record.topic
-											?.trim()
-											.split(', ')
-											.map((t: string) => reverseTranslationMap.get(t))
-									}
-								: {}),
 							type: reverseTranslationMap.get(record.type)
 						},
 						realm: env.PUBLIC_KC_REALM,
@@ -159,7 +232,11 @@ export const actions = {
 		}
 
 		await locals.pool.transaction(async (connection) => {
+			const ability = defineAbilityFor(locals.user);
 			for (const container of containers) {
+				if (!ability.can('create', container)) {
+					error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+				}
 				await createContainer(container)(connection);
 			}
 		});

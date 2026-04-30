@@ -43,7 +43,9 @@ function reverseTranslateList(value: string | undefined): string[] {
 }
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
-	if (!createFeatureDecisions(locals.features).useImportFromCsv()) {
+	const featureDecisions = createFeatureDecisions(locals.features);
+
+	if (!featureDecisions.useImportFromCsv()) {
 		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 	}
 
@@ -175,6 +177,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const errors: string[] = [];
 	let lineNumber = 1;
 
+	const useCustomCategories = featureDecisions.useCustomCategories();
+
 	try {
 		for await (const record of parser) {
 			lineNumber++;
@@ -234,6 +238,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 				yearValues.sort((a, b) => a[0] - b[0]);
 
+				const topic = reverseTranslateList(fields.topic);
+				const sdg = fields.sdg ? parseSdgValues(fields.sdg) : [];
+				const policyFieldBNK = reverseTranslateList(fields.policyFieldBNK);
+				const audience = reverseTranslateList(fields.audience);
+
 				containers.push({
 					indicator: emptyContainer.parse({
 						managed_by: orgUnit?.guid ?? currentOrganizationGuid,
@@ -244,10 +253,17 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 							...(fields.description ? { description: fields.description } : {}),
 							indicatorCategory,
 							indicatorType: reverseTranslateList(fields.indicatorType),
-							topic: reverseTranslateList(fields.topic),
-							sdg: fields.sdg ? parseSdgValues(fields.sdg) : [],
-							policyFieldBNK: reverseTranslateList(fields.policyFieldBNK),
-							audience: reverseTranslateList(fields.audience),
+							category: useCustomCategories
+								? {
+										...(audience.length > 0 ? { audience } : {}),
+										...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
+										...(sdg.length > 0 ? { sdg } : {}),
+										...(topic.length > 0 ? { topic } : {})
+									}
+								: {},
+							...(useCustomCategories
+								? { audience: [], policyFieldBNK: [], sdg: [], topic: [] }
+								: { topic, sdg, policyFieldBNK, audience }),
 							unit,
 							visibility,
 							editorialState: editorialStateValue,
