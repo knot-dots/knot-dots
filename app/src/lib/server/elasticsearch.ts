@@ -1,6 +1,7 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
 import { anyContainer, type AnyContainer, type PayloadType } from '$lib/models';
+import type { ContainerQueryOptions } from '$lib/server/db';
 
 const es = new Client({
 	auth:
@@ -15,7 +16,7 @@ const es = new Client({
 
 type FacetCounts = Record<string, Record<string, number>>;
 
-type GetManyContainersWithESOptions = {
+type ContainerElasticsearchOptions = ContainerQueryOptions & {
 	customCategoryKeys?: string[];
 	includeFacets?: boolean;
 };
@@ -147,8 +148,7 @@ export async function getManyContainersWithES(
 		type?: PayloadType[];
 	},
 	sort: string,
-	limit?: number,
-	options?: GetManyContainersWithESOptions
+	options?: ContainerElasticsearchOptions
 ): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> {
 	const must: estypes.QueryDslQueryContainer[] = [];
 	const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
@@ -226,7 +226,8 @@ export async function getManyContainersWithES(
 	const postFilter: estypes.QueryDslQueryContainer | undefined =
 		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 	const esSortClauses = buildElasticsearchSortClause(sort);
-	const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
+	const sizeParam =
+		options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? options.limit : 10000;
 	const aggs = options?.includeFacets
 		? buildFacetAggregations({
 				facetFilters,
@@ -240,6 +241,7 @@ export async function getManyContainersWithES(
 		post_filter: postFilter,
 		sort: esSortClauses,
 		size: sizeParam,
+		from: options?.offset,
 		aggs
 	};
 

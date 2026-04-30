@@ -104,7 +104,6 @@ export default (async function load({ depends, locals, parent, url }) {
 					type: [payloadTypes.enum.rule]
 				},
 				url.searchParams.get('sort') ?? '',
-				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = esResult.containers;

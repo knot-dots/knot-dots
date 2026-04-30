@@ -122,7 +122,6 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 					type: typeFilter
 				},
 				url.searchParams.get('sort') ?? '',
-				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = esResult.containers;

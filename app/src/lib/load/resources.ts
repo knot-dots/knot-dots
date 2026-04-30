@@ -56,7 +56,6 @@ export async function fetchResources({
 				type: [payloadTypes.enum.resource_v2]
 			},
 			sort,
-			undefined,
 			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 		);
 		resourceContainers = esResult.containers as ResourceV2Container[];

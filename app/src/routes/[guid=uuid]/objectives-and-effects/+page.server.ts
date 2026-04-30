@@ -62,7 +62,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				type: [payloadTypes.enum.indicator_template]
 			},
 			'',
-			undefined,
 			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 		);
 		containers = esResult.containers as IndicatorTemplateContainer[];

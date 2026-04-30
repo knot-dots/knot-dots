@@ -108,7 +108,6 @@ export default (async function load({ depends, locals, parent, url }) {
 					type: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
 				},
 				url.searchParams.get('sort') ?? '',
-				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = esResult.containers;
