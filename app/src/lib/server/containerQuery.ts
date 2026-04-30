@@ -41,36 +41,6 @@ import type { DatabaseConnection } from 'slonik';
 
 type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 
-type ContainerQueryParams = {
-	administrativeType: string[];
-	assignee: string[];
-	audience: string[];
-	categoryMatch: 'any' | 'all';
-	contextGuid: string | undefined;
-	federalState: string[];
-	guid: string[];
-	indicator: string[];
-	indicatorCategory: string[];
-	indicatorType: string[];
-	limit: number;
-	offset: number;
-	organization: string[];
-	organizationalUnit: string[] | null;
-	payloadType: z.infer<typeof payloadTypes>[];
-	policyFieldBNK: string[];
-	programType: string[];
-	relatedTo: string[];
-	relationType: z.infer<typeof predicates>[];
-	resource: string[];
-	resourceCategory: string[];
-	sdg: string[];
-	sort: 'alpha' | 'modified' | 'priority';
-	taskCategory: string[];
-	template: boolean | undefined;
-	terms: string | undefined;
-	topic: string[];
-};
-
 export type ContainerV2Response = {
 	containers: AnyContainer[];
 	page: {
@@ -122,6 +92,17 @@ const querySchema = z.object({
 	topic: z.array(topics).catch([]).default([])
 });
 
+type ContainerQueryParams = Omit<
+	z.infer<typeof querySchema>,
+	'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'terms'
+> & {
+	categoryMatch: 'any' | 'all';
+	contextGuid: string | undefined;
+	sort: 'alpha' | 'modified' | 'priority';
+	template: boolean | undefined;
+	terms: string;
+};
+
 function parseContainerQuery(url: URL): ContainerQueryParams {
 	const raw = Object.fromEntries(
 		Object.keys(querySchema.shape).map((key) => {
@@ -144,11 +125,11 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 
 	return {
 		...parseResult.data,
-		categoryMatch: parseResult.data.categoryMatch[0],
+		categoryMatch: parseResult.data.categoryMatch[0] ?? 'all',
 		contextGuid: parseResult.data.contextGuid[0],
-		sort: parseResult.data.sort[0],
+		sort: parseResult.data.sort[0] ?? 'alpha',
 		template: parseResult.data.template[0],
-		terms: parseResult.data.terms[0]
+		terms: parseResult.data.terms[0] ?? ''
 	};
 }
 
