@@ -1051,7 +1051,9 @@ export function getAllRelatedContainers(
 		topics?: string[];
 		type?: PayloadType[];
 	},
-	sort: string
+	sort: string,
+	limit?: number,
+	offset?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
@@ -1105,12 +1107,14 @@ export function getAllRelatedContainers(
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
-      WHERE c.guid IN (${sql.join(
+			WHERE c.guid IN (${sql.join(
 				[...isPartOfResult, ...otherRelationResult, [guid]].flatMap((r) => Object.values(r)),
 				sql.fragment`, `
 			)})
 				AND ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
+			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
+			${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``}
 		`);
 
 		const objectivesAndEffects = containerResult
@@ -1176,7 +1180,9 @@ export function getAllRelatedContainersByProgramType(
 		topics?: string[];
 		type?: PayloadType[];
 	},
-	sort: string
+	sort: string,
+	limit?: number,
+	offset?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
@@ -1201,6 +1207,8 @@ export function getAllRelatedContainersByProgramType(
 					)})
 						AND ${prepareWhereCondition({ ...filters, organizations })}
 					ORDER BY ${prepareOrderByExpression(sort)}
+					${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
+					${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``}
 				`)
 				: [];
 
