@@ -98,8 +98,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	return {
 		container: currentOrganization,
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext.labels,
-		categoryOptions: categoryContext.options
+		facets
 	};
 }) satisfies PageServerLoad;

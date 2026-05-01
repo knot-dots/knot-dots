@@ -147,8 +147,6 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 
 	return {
 		containers,
-		facets,
-		facetLabels: categoryContext.labels,
-		categoryOptions: categoryContext.options
+		facets
 	};
 };

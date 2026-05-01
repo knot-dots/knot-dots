@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import type { PageProps } from './$types';
 	import Table from '$lib/components/Table.svelte';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
 	let { data }: PageProps = $props();
@@ -16,12 +16,12 @@
 	);
 
 	const customCategoryColumns = $derived(
-		data.categoryOptions
-			? getCategoryKeys(data.categoryOptions).map((key) => ({
-					heading: data.categoryOptions.__categoryLabels__?.[key] ?? key,
-					key
-				}))
-			: []
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -41,10 +41,6 @@
 </script>
 
 <AllPage data={{ ...data, containers }}>
-	<Table
-		categoryOptions={data.categoryOptions}
-		{columns}
-		rows={containers.slice(0, browser ? undefined : 20)}
-	/>
+	<Table {columns} rows={containers.slice(0, browser ? undefined : 20)} />
 	<Help slug="all-table" />
 </AllPage>

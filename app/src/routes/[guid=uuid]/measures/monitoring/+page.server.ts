@@ -67,8 +67,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			subordinateOrganizationalUnits,
 			currentOrganizationalUnit
 		),
-		facets: new Map(),
-		facetLabels: new Map(),
-		categoryOptions: {}
+		facets: new Map()
 	};
 }) satisfies PageServerLoad;

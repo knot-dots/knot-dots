@@ -132,8 +132,6 @@ export const load = (async ({ locals, url, parent }) => {
 	return {
 		containers: filtered,
 		programs: filteredPrograms,
-		facets,
-		facetLabels: categoryContext.labels,
-		categoryOptions: categoryContext.options
+		facets
 	};
 }) satisfies PageServerLoad;

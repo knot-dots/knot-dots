@@ -4,7 +4,6 @@
 	import Help from '$lib/components/Help.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import Table from '$lib/components/Table.svelte';
-	import { getCategoryKeys } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -52,10 +51,12 @@
 	);
 
 	const customCategoryColumns = $derived(
-		getCategoryKeys(data.categoryOptions).map((key) => ({
-			heading: data.categoryOptions.__categoryLabels__?.[key] ?? key,
-			key
-		}))
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -69,7 +70,7 @@
 </script>
 
 <KnowledgePage data={{ ...data, containers }}>
-	<Table categoryOptions={data.categoryOptions} {columns} rows={containers}>
+	<Table {columns} rows={containers}>
 		{#snippet footer()}
 			<LazyLoadSentinel
 				hasMore={list.hasMore}

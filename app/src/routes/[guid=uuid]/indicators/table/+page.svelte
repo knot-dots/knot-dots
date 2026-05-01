@@ -11,13 +11,13 @@
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import { getToastContext } from '$lib/contexts/toast';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isActualDataContainer,
@@ -26,7 +26,6 @@
 		payloadTypes,
 		isBinaryIndicatorContainer
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { ability, lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -87,10 +86,12 @@
 	);
 
 	const customCategoryColumns = $derived(
-		getCategoryKeys(data.categoryOptions).map((key) => ({
-			heading: data.categoryOptions.__categoryLabels__?.[key] ?? key,
-			key
-		}))
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -212,7 +213,7 @@
 			</button>
 		{/if}
 	{/snippet}
-	<Table {actualDataContainers} categoryOptions={data.categoryOptions} {columns} {rows} />
+	<Table {actualDataContainers} {columns} {rows} />
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 

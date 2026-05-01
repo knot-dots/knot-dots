@@ -1,11 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
-import {
-	buildCategoryFacetsWithCounts,
-	type CategoryContext,
-	type CategoryOptions
-} from '$lib/categoryOptions';
+import { buildCategoryFacetsWithCounts, type CategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
@@ -46,8 +42,6 @@ export type ContainerV2Response = {
 		nextOffset: number | null;
 	};
 	facets: Record<string, Record<string, number>>;
-	facetLabels: Record<string, string>;
-	categoryOptions: CategoryOptions;
 };
 
 const querySchema = z.object({
@@ -132,10 +126,6 @@ function mapToRecord(
 	return Object.fromEntries(
 		Array.from(map.entries()).map(([key, values]) => [key, Object.fromEntries(values)])
 	);
-}
-
-function categoryLabelsToRecord(labels: Map<string, string>): Record<string, string> {
-	return Object.fromEntries(labels);
 }
 
 function baseFacetMap(
@@ -300,9 +290,7 @@ export async function loadContainerV2(params: {
 		return {
 			containers,
 			page: page.page,
-			facets: mapToRecord(baseFacetMap(result.facets, categoryContext)),
-			facetLabels: categoryLabelsToRecord(categoryContext.labels),
-			categoryOptions: categoryContext.options
+			facets: mapToRecord(baseFacetMap(result.facets, categoryContext))
 		};
 	}
 
@@ -340,8 +328,6 @@ export async function loadContainerV2(params: {
 	return {
 		containers,
 		page: page.page,
-		facets: mapToRecord(facets),
-		facetLabels: categoryLabelsToRecord(categoryContext.labels),
-		categoryOptions: categoryContext.options
+		facets: mapToRecord(facets)
 	};
 }

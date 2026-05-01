@@ -6,7 +6,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import { buildCategoryFacetsWithCounts, getCategoryKeys } from '$lib/categoryOptions';
+	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
@@ -94,11 +94,7 @@
 		)
 	);
 
-	let usedCategoryKeys = $derived(
-		getCategoryKeys(categoryContext.options).filter((key) =>
-			parts.some((part) => 'category' in part.payload && part.payload.category[key]?.length > 0)
-		)
-	);
+	let customCategoryColumn = $derived(categoryContext.keys.filter((key) => facets.has(key)));
 
 	let viewMode = $derived(
 		paramsFromFragment(page.url).has('table') ? 'view_mode.table' : 'view_mode.preview'
@@ -220,7 +216,7 @@
 					'description',
 					'visibility',
 					'status',
-					...usedCategoryKeys,
+					...customCategoryColumn,
 					'fulfillmentDate',
 					'duration',
 					'editorialState',
@@ -229,7 +225,6 @@
 					'objectType'
 				]}
 				bind:container={parts[i]}
-				categoryOptions={categoryContext.options}
 				{dragEnabled}
 				editable={$applicationState.containerDetailView.editable}
 			/>
@@ -238,12 +233,7 @@
 {/snippet}
 
 {#snippet header()}
-	<Header
-		{facets}
-		facetLabels={categoryContext.labels}
-		categoryOptions={categoryContext.options}
-		search
-	/>
+	<Header {facets} search />
 {/snippet}
 
 {#snippet main()}
@@ -304,7 +294,7 @@
 						<div class="cell">{$_('description')}</div>
 						<div class="cell">{$_('visibility.label')}</div>
 						<div class="cell">{$_('status')}</div>
-						{#each usedCategoryKeys as key (key)}
+						{#each customCategoryColumn as key (key)}
 							<div class="cell">{categoryContext.labels.get(key) ?? key}</div>
 						{/each}
 						<div class="cell">{$_('fulfillment_date')}</div>

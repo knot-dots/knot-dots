@@ -4,7 +4,6 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
-	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
@@ -46,7 +45,6 @@
 
 	interface Props {
 		actualDataContainers?: ActualDataContainer[];
-		categoryOptions?: CategoryOptions;
 		columns: string[];
 		container: AnyContainer;
 		dragEnabled?: boolean;
@@ -55,7 +53,6 @@
 
 	let {
 		actualDataContainers = [],
-		categoryOptions = {},
 		columns,
 		container = $bindable(),
 		dragEnabled = false,
@@ -95,7 +92,7 @@
 		};
 	}
 
-	const customCategoryKeys = $derived(getCategoryKeys(categoryOptions));
+	const customCategoryKeys = $derived(page.data.categoryContext.keys);
 </script>
 
 <div class="cell cell--action">
@@ -337,7 +334,7 @@
 					compact
 					editable={editable && $ability.can('update', container)}
 					offset={[40, -41]}
-					options={categoryOptions[col] ?? []}
+					options={page.data.categoryContext.options[col] ?? []}
 					bind:value={container.payload.category[col]}
 				/>
 			{/if}

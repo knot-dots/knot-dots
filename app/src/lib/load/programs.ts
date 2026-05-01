@@ -131,8 +131,6 @@ export default (async function load({ depends, locals, parent, url }) {
 
 	return {
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext.labels,
-		categoryOptions: categoryContext.options
+		facets
 	};
 } satisfies PageServerLoad);

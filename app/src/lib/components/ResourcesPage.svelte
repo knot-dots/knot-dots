@@ -24,14 +24,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{filterBarInitiallyOpen}
-			{facets}
-			facetLabels={data.facetLabels}
-			categoryOptions={data.categoryOptions}
-			search
-			{sortOptions}
-		/>
+		<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
 	{/snippet}
 
 	{#snippet main()}

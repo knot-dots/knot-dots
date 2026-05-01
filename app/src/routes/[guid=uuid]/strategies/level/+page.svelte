@@ -30,7 +30,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} facetLabels={data.facetLabels} categoryOptions={data.categoryOptions} search />
+		<Header {facets} search />
 	{/snippet}
 
 	{#snippet main()}

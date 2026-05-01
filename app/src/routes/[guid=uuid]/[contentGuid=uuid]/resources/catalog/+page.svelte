@@ -17,12 +17,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			facets={data.facets}
-			facetLabels={data.facetLabels}
-			categoryOptions={data.categoryOptions}
-			search
-		/>
+		<Header facets={data.facets} search />
 	{/snippet}
 
 	{#snippet main()}

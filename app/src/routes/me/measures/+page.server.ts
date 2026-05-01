@@ -37,8 +37,6 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext.labels,
-		categoryOptions: categoryContext.options
+		facets
 	};
 }) satisfies PageServerLoad;

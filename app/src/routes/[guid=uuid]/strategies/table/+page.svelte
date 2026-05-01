@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import Help from '$lib/components/Help.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
-	import { getCategoryKeys } from '$lib/categoryOptions';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	const customCategoryColumns = $derived(
-		getCategoryKeys(data.categoryOptions).map((key) => ({
-			heading: data.categoryOptions.__categoryLabels__?.[key] ?? key,
-			key
-		}))
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -28,6 +30,6 @@
 </script>
 
 <ProgramsPage {data}>
-	<Table categoryOptions={data.categoryOptions} {columns} rows={data.containers} />
+	<Table {columns} rows={data.containers} />
 	<Help slug="strategies-table" />
 </ProgramsPage>

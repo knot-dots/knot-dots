@@ -1,37 +1,30 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
+	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
+	import { filterCategoryContext } from '$lib/categoryOptions';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableRow from '$lib/components/EditableRow.svelte';
 	import type { ActualDataContainer, AnyContainer } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
-		categoryOptions?: CategoryOptions;
 		columns: Array<{ heading: string; key: string }>;
 		footer?: Snippet;
 		rows: AnyContainer[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
-	let {
-		categoryOptions,
-		columns,
-		footer,
-		rows: originalRows,
-		actualDataContainers = []
-	}: Props = $props();
-
-	const initialCategory = $derived(
-		Object.fromEntries(
-			(categoryOptions ? getCategoryKeys(categoryOptions) : []).map((key) => [key, []])
-		)
-	);
+	let { columns, footer, rows: originalRows, actualDataContainers = [] }: Props = $props();
 
 	function ensureAllCategoriesArePresent(container: AnyContainer): AnyContainer {
 		if ('category' in container.payload) {
+			const initialCategory = Object.fromEntries(
+				filterCategoryContext(page.data.categoryContext, [container.payload.type]).keys.map(
+					(key) => [key, []]
+				)
+			);
 			return {
 				...container,
 				payload: {
@@ -44,15 +37,12 @@
 		}
 	}
 
-	let rows = $state([] as AnyContainer[]);
-
-	$effect(() => {
-		if (categoryOptions) {
-			rows = $state.snapshot(originalRows.map(ensureAllCategoriesArePresent));
-		} else {
-			rows = $state.snapshot(originalRows);
-		}
-	});
+	let rows = $derived(
+		originalRows.map((row) => {
+			let _ = $state(ensureAllCategoriesArePresent(row));
+			return _;
+		})
+	);
 </script>
 
 <div class="table-wrapper">
@@ -76,7 +66,6 @@
 					novalidate
 				>
 					<EditableRow
-						{categoryOptions}
 						columns={columns.map(({ key }) => key)}
 						bind:container={rows[i]}
 						editable={$applicationState.containerDetailView.editable}

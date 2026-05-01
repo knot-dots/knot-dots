@@ -35,12 +35,7 @@
 	);
 </script>
 
-<Header
-	{facets}
-	facetLabels={categoryContext.labels}
-	categoryOptions={categoryContext.options}
-	search
-/>
+<Header {facets} search />
 
 <Tasks
 	{container}

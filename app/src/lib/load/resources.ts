@@ -160,9 +160,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 
 		return {
 			containers,
-			facets,
-			facetLabels: categoryContext.labels,
-			categoryOptions: categoryContext.options
+			facets
 		};
 	}) satisfies PageServerLoad;
 }

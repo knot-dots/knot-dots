@@ -70,8 +70,6 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 			container,
 			containers,
 			facets,
-			facetLabels: categoryContext.labels,
-			categoryOptions: categoryContext.options,
 			revisions: filterVisible(revisions, locals.user),
 			title: `${container.payload.title} / ${t('workspace.type.resources')} / ${t('workspace.view.catalog')}`
 		};

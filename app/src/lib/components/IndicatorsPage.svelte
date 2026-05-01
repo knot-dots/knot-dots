@@ -21,13 +21,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{facets}
-			facetLabels={data.facetLabels}
-			{filterBarInitiallyOpen}
-			categoryOptions={data.categoryOptions}
-			search
-		/>
+		<Header {facets} {filterBarInitiallyOpen} search />
 		{#if actions && featureDecisions.useImportFromCsv()}
 			<div class="indicator-actions">
 				{@render actions()}
