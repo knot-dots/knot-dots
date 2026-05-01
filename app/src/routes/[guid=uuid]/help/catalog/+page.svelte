@@ -22,14 +22,13 @@
 		fetchPage: async ({ offset, signal }) => {
 			const result = await fetchContainerPage<HelpContainer>({
 				contextGuid: page.params.guid,
-				filters: {
-					payloadType: [payloadTypes.enum.help],
-					terms: page.url.searchParams.get('terms') ?? undefined
-				},
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
-				signal,
-				sort: page.url.searchParams.get('sort') ?? undefined
+				query: new URLSearchParams([
+					...page.url.searchParams,
+					['payloadType', payloadTypes.enum.help]
+				]),
+				signal
 			});
 
 			return {

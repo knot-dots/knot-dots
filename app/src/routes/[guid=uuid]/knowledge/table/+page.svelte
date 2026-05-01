@@ -17,46 +17,6 @@
 
 	let { data }: PageProps = $props();
 
-	function customCategoryFilters() {
-		const result: Record<string, string[]> = {};
-		for (const key of Object.keys(data.categoryOptions ?? {})) {
-			if (key === '__categoryLabels__') continue;
-			const values = page.url.searchParams.getAll(key);
-			if (values.length > 0) {
-				result[key] = values;
-			}
-		}
-		return result;
-	}
-
-	function filters() {
-		const relatedTo = page.url.searchParams.get('related-to');
-		const categoryFilters = customCategoryFilters();
-
-		if (relatedTo) {
-			return {
-				...categoryFilters,
-				payloadType: [payloadTypes.enum.knowledge],
-				'related-to': relatedTo
-			};
-		}
-
-		return {
-			...categoryFilters,
-			...(featureDecisions.useCustomCategories()
-				? {}
-				: {
-						audience: page.url.searchParams.getAll('audience'),
-						policyFieldBNK: page.url.searchParams.getAll('policyFieldBNK'),
-						sdg: page.url.searchParams.getAll('sdg'),
-						topic: page.url.searchParams.getAll('topic')
-					}),
-			payloadType: [payloadTypes.enum.knowledge],
-			programType: page.url.searchParams.getAll('programType'),
-			terms: page.url.searchParams.get('terms') ?? undefined
-		};
-	}
-
 	const initialItemsKey = $derived(data.containers.map(({ guid }) => guid).join(','));
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
@@ -65,11 +25,13 @@
 		fetchPage: async ({ offset, signal }) => {
 			const result = await fetchContainerPage<KnowledgeContainer>({
 				contextGuid: page.params.guid,
-				filters: filters(),
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
-				signal,
-				sort: page.url.searchParams.get('sort') ?? undefined
+				query: new URLSearchParams([
+					...page.url.searchParams,
+					['payloadType', payloadTypes.enum.knowledge]
+				]),
+				signal
 			});
 
 			return {

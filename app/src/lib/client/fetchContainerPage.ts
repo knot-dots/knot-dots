@@ -1,15 +1,12 @@
 import { z } from 'zod';
 import { anyContainer, type AnyContainer } from '$lib/models';
 
-type FilterValue = string | string[] | undefined;
-
 interface FetchContainerPageOptions {
 	contextGuid?: string;
-	filters: Record<string, FilterValue>;
 	limit: number;
 	offset: number;
+	query: URLSearchParams;
 	signal: AbortSignal;
-	sort?: string;
 }
 
 const responseSchema = z.object({
@@ -24,32 +21,17 @@ const responseSchema = z.object({
 
 export default async function fetchContainerPage<T extends AnyContainer>({
 	contextGuid,
-	filters,
 	limit,
 	offset,
-	signal,
-	sort
+	query,
+	signal
 }: FetchContainerPageOptions) {
-	const params = new URLSearchParams();
+	const params = new URLSearchParams(query);
 
 	if (contextGuid) {
 		params.set('contextGuid', contextGuid);
 	}
 
-	for (const [key, value] of Object.entries(filters)) {
-		if (value === undefined) continue;
-		if (Array.isArray(value)) {
-			for (const singleValue of value) {
-				params.append(key, singleValue);
-			}
-		} else {
-			params.append(key, value);
-		}
-	}
-
-	if (sort) {
-		params.set('sort', sort);
-	}
 	params.set('limit', String(limit));
 	params.set('offset', String(offset));
 
