@@ -149,7 +149,7 @@
 		{/if}
 
 		<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
-		<EditableCategories bind:container {editable} organizationGuid={container.organization} />
+		<EditableCategories bind:container {editable} />
 	</div>
 </div>
 
