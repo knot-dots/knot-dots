@@ -7,9 +7,9 @@
 	import Help from '$lib/components/Help.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import { type KnowledgeContainer, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -22,6 +22,7 @@
 		fetchPage: async ({ offset, signal }) => {
 			const result = await fetchContainerPage<KnowledgeContainer>({
 				contextGuid: page.params.guid,
+				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
 				query: new URLSearchParams([
@@ -38,8 +39,8 @@
 			};
 		},
 		getKey: ({ guid }) => guid,
-		initialHasMore: () => data.hasMore,
-		initialItems: () => data.containers as KnowledgeContainer[],
+		initialHasMore: () => data.page.hasMore,
+		initialItems: () => data.containers,
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

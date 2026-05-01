@@ -25,6 +25,7 @@
 		fetchPage: async ({ offset, signal }) => {
 			const result = await fetchContainerPage<KnowledgeContainer>({
 				contextGuid: page.params.guid,
+				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset,
 				query: new URLSearchParams([
@@ -41,7 +42,7 @@
 			};
 		},
 		getKey: ({ guid }) => guid,
-		initialHasMore: () => data.hasMore,
+		initialHasMore: () => data.page.hasMore,
 		initialItems: () => data.containers as KnowledgeContainer[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey

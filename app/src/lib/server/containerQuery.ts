@@ -89,7 +89,8 @@ const querySchema = z.object({
 	taskCategory: z.array(taskCategories).default([]),
 	template: z.array(z.stringbool()).default([]),
 	terms: z.array(z.string()).default([]),
-	topic: z.array(topics).catch([]).default([])
+	topic: z.array(topics).catch([]).default([]),
+	type: z.array(payloadTypes).default([])
 });
 
 type ContainerQueryParams = Omit<
@@ -204,7 +205,7 @@ function buildFilters(params: ContainerQueryParams, customCategories: Record<str
 		template: params.template,
 		terms: params.terms,
 		topics: customCategories['topic'] ? [] : params.topic,
-		type: params.payloadType
+		type: params.payloadType.length > 0 ? params.payloadType : params.type
 	};
 }
 
@@ -227,7 +228,7 @@ function buildElasticsearchFilters(
 		template: params.template,
 		terms: params.terms,
 		topics: customCategories['topic'] ? [] : params.topic,
-		type: params.payloadType
+		type: params.payloadType.length > 0 ? params.payloadType : params.type
 	};
 }
 

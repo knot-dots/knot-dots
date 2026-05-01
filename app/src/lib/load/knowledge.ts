@@ -1,151 +1,16 @@
-import { filterVisible } from '$lib/authorization';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
-import {
-	type AnyContainer,
-	audience,
-	computeFacetCount,
-	fromCounts,
-	payloadTypes,
-	policyFieldBNK,
-	predicates,
-	sustainableDevelopmentGoals,
-	topics
-} from '$lib/models';
-import {
-	applyPagination,
-	type PaginatedLoadOptions,
-	queryLimit,
-	queryOffset
-} from '$lib/pagination';
-import { getAllRelatedContainers, getManyContainers } from '$lib/server/db';
-import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import fetchContainerPage from '$lib/client/fetchContainerPage';
+import { type KnowledgeContainer, payloadTypes } from '$lib/models';
+import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
-export default (async function load(
-	{ depends, locals, parent, url },
-	options?: PaginatedLoadOptions
-) {
+export default (async function load({ depends, fetch, params, url }) {
 	depends('containers');
 
-	let containers: AnyContainer[];
-	let data: Record<string, Record<string, number>> | undefined;
-	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
-	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge])
-		: null;
-	const useCustomCategories = features.useCustomCategories();
-
-	const customCategories = useCustomCategories
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
-	const coreCategoryFilters = useCustomCategories
-		? {}
-		: {
-				audience: url.searchParams.getAll('audience'),
-				sdg: url.searchParams.getAll('sdg'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic')
-			};
-
-	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.get('related-to') as string,
-				[predicates.enum['is-part-of']],
-				{ customCategories, type: [payloadTypes.enum.knowledge] },
-				url.searchParams.get('sort') ?? '',
-				queryLimit(options),
-				queryOffset(options)
-			)
-		);
-	} else {
-		if (features.useElasticsearch()) {
-			const esResult = await getManyContainersWithES(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{
-					...coreCategoryFilters,
-					customCategories,
-					programTypes: url.searchParams.getAll('programType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.knowledge]
-				},
-				url.searchParams.get('sort') ?? '',
-				{
-					customCategoryKeys: categoryContext?.keys ?? [],
-					includeFacets: true,
-					limit: queryLimit(options),
-					offset: queryOffset(options)
-				}
-			);
-			containers = esResult.containers;
-			data = esResult.facets;
-		} else {
-			containers = await locals.pool.connect(
-				getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						...coreCategoryFilters,
-						customCategories,
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.knowledge]
-					},
-					url.searchParams.get('sort') ?? '',
-					{
-						limit: queryLimit(options),
-						offset: queryOffset(options)
-					}
-				)
-			);
-		}
-	}
-
-	const page = applyPagination(containers, options);
-	const filtered = filterVisible(page.containers, locals.user);
-
-	const _facets = new Map<string, Map<string, number>>([
-		...((url.searchParams.has('related-to')
-			? [['relationType', new Map([[predicates.enum['is-part-of'], 0]])]]
-			: []) as Array<[string, Map<string, number>]>),
-		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
-			[string, Map<string, number>]
-		>)
-	]);
-
-	if (useCustomCategories && categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
-	}
-
-	const facets = features.useElasticsearch()
-		? _facets
-		: computeFacetCount(_facets, containers, {
-				useCategoryPayload: useCustomCategories
-			});
-
-	return {
-		containers: filtered,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options,
-		hasMore: page.hasMore
-	};
+	return await fetchContainerPage<KnowledgeContainer>({
+		contextGuid: params.guid,
+		fetch,
+		limit: DEFAULT_PAGE_SIZE,
+		offset: 0,
+		query: new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.knowledge]])
+	});
 } satisfies PageServerLoad);
