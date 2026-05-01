@@ -25,22 +25,14 @@
 	let categoryContext = $derived(page.data.categoryContext);
 
 	let facets = $derived(
-		categoryContext
-			? computeFacetCount(
-					new Map([
-						...buildCategoryFacetsWithCounts(categoryContext.options),
-						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-						['assignee', new Map()]
-					]),
-					containers
-				)
-			: computeFacetCount(
-					new Map([
-						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-						['assignee', new Map()]
-					]),
-					containers
-				)
+		computeFacetCount(
+			new Map([
+				...buildCategoryFacetsWithCounts(categoryContext.options),
+				['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+				['assignee', new Map()]
+			]),
+			containers
+		)
 	);
 </script>
 
@@ -48,8 +40,8 @@
 	{#snippet header()}
 		<Header
 			{facets}
-			facetLabels={categoryContext?.labels}
-			categoryOptions={categoryContext?.options}
+			facetLabels={categoryContext.labels}
+			categoryOptions={categoryContext.options}
 			search
 		/>
 	{/snippet}

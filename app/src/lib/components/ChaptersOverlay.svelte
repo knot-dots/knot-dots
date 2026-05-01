@@ -21,16 +21,14 @@
 	let categoryContext = $derived(page.data.categoryContext);
 
 	let facets = $derived(
-		categoryContext
-			? computeFacetCount(buildCategoryFacetsWithCounts(categoryContext.options), containers)
-			: computeFacetCount(new Map([]), containers)
+		computeFacetCount(buildCategoryFacetsWithCounts(categoryContext.options), containers)
 	);
 </script>
 
 <Header
 	{facets}
-	facetLabels={categoryContext ? categoryContext.labels : undefined}
-	categoryOptions={categoryContext ? categoryContext.options : null}
+	facetLabels={categoryContext.labels}
+	categoryOptions={categoryContext.options}
 	search
 />
 

@@ -12,12 +12,10 @@ export const load = (async ({ locals, parent }) => {
 	}
 
 	const { categoryContext: rawCategoryContext } = await parent();
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [
-				payloadTypes.enum.measure,
-				payloadTypes.enum.simple_measure
-			])
-		: null;
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.measure,
+		payloadTypes.enum.simple_measure
+	]);
 
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
@@ -40,7 +38,7 @@ export const load = (async ({ locals, parent }) => {
 	return {
 		containers: filtered,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 }) satisfies PageServerLoad;

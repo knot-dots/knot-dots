@@ -27,8 +27,8 @@
 		<Header
 			{filterBarInitiallyOpen}
 			{facets}
-			facetLabels={data.facetLabels ?? undefined}
-			categoryOptions={data.categoryOptions ?? null}
+			facetLabels={data.facetLabels}
+			categoryOptions={data.categoryOptions}
 			search
 			{sortOptions}
 		/>

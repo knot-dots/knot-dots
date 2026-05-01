@@ -44,10 +44,8 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 	const typeFilter = allTypeOptions.filter(
 		(type) => typeFilterFromURL.length == 0 || typeFilterFromURL.includes(type)
 	);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, typeFilter, { matchAll: true })
-		: null;
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, typeFilter, { matchAll: true });
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = (await locals.pool.connect(
@@ -103,7 +101,7 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 					type: typeFilter
 				},
 				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 			);
 			containers = esResult.containers;
 			data = esResult.facets;
@@ -150,14 +148,12 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 		>)
 	]);
 
-	if (categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
+	const customFacets = buildCategoryFacetsWithCounts(
+		categoryContext.options,
+		data ? Object.fromEntries(Object.entries(data)) : {}
+	);
+	for (const [key, values] of customFacets.entries()) {
+		_facets.set(key, values);
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
@@ -168,7 +164,7 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 	return {
 		containers: filtered,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 };

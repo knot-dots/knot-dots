@@ -32,10 +32,8 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	const typeFilter: PayloadType[] =
 		requestedTypes.length > 0 ? requestedTypes : [...templatablePayloadTypes];
 
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, typeFilter)
-		: null;
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, typeFilter);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -58,7 +56,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				type: typeFilter
 			},
 			url.searchParams.get('sort') ?? '',
-			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 		);
 		containers = esResult.containers;
 		data = esResult.facets;
@@ -107,7 +105,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	return {
 		containers: filtered,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 }) satisfies PageServerLoad;

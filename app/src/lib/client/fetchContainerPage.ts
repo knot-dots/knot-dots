@@ -23,8 +23,7 @@ const responseSchema = z.object({
 				})
 			)
 		)
-		.and(z.object({ __categoryLabels__: z.record(z.string(), z.string()).optional() }))
-		.optional(),
+		.and(z.object({ __categoryLabels__: z.record(z.string(), z.string()).optional() })),
 	containers: z.array(anyContainer),
 	facets: z
 		.record(z.string(), z.record(z.string(), z.number()))
@@ -36,8 +35,7 @@ const responseSchema = z.object({
 		),
 	facetLabels: z
 		.record(z.string(), z.string())
-		.transform((record) => (record ? new Map(Object.entries(record)) : undefined))
-		.optional(),
+		.transform((record) => (record ? new Map(Object.entries(record)) : undefined)),
 	page: z.object({
 		hasMore: z.boolean(),
 		limit: z.number(),

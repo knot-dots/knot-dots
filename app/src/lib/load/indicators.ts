@@ -50,7 +50,7 @@ export async function getIndicatorsData(params: {
 	filters: IndicatorFilters;
 	user: User;
 	useElasticsearch?: boolean;
-	customCategoryKeys?: string[];
+	customCategoryKeys: string[];
 	connect: <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 }): Promise<IndicatorLoadResult> {
 	const {
@@ -89,7 +89,7 @@ export async function getIndicatorsData(params: {
 				type: [payloadTypes.enum.indicator_template]
 			},
 			'alpha',
-			{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
+			{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 		);
 		indicators = esResult.containers as IndicatorTemplateContainer[];
 		facetData = esResult.facets;
@@ -159,11 +159,10 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.indicator_template])
-		: null;
-
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.indicator_template
+	]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	const filters = {
 		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
@@ -178,7 +177,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		filters,
 		user: locals.user,
 		useElasticsearch: features.useElasticsearch(),
-		customCategoryKeys: categoryContext?.keys ?? [],
+		customCategoryKeys: categoryContext.keys,
 		connect: locals.pool.connect
 	});
 
@@ -213,7 +212,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		containers: result.combined,
 		filters,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 } satisfies PageServerLoad);

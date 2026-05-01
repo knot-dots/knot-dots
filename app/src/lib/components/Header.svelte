@@ -71,7 +71,7 @@
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
 		facetLabels?: Map<string, string>;
-		categoryOptions?: CategoryOptions | null;
+		categoryOptions?: CategoryOptions;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
@@ -88,7 +88,7 @@
 			[$_('sort_modified'), 'modified']
 		],
 		workspaceOptions,
-		categoryOptions = null
+		categoryOptions
 	}: Props = $props();
 
 	let overlay = getContext('overlay');

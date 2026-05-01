@@ -24,7 +24,7 @@ export default async function fetchContainers(
 	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
-	page.data.categoryContext?.keys.forEach((key) => {
+	page.data.categoryContext.keys.forEach((key) => {
 		for (const value of (filters[key] as string[]) ?? []) {
 			params.append(key, value);
 		}

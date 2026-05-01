@@ -41,7 +41,7 @@ export async function fetchResources({
 	customCategories: Record<string, string[]>;
 	resourceCategoryFilters: string[];
 	sort: 'alpha' | 'modified' | 'priority';
-	categoryContext?: CategoryContext;
+	categoryContext: CategoryContext;
 }) {
 	// Fetch all resource containers
 	let resourceContainers: ResourceV2Container[];
@@ -56,7 +56,7 @@ export async function fetchResources({
 				type: [payloadTypes.enum.resource_v2]
 			},
 			sort,
-			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 		);
 		resourceContainers = esResult.containers as ResourceV2Container[];
 		data = esResult.facets;
@@ -110,11 +110,10 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			currentOrganizationalUnit
 		} = await parent();
 		const features = createFeatureDecisions(locals.features);
-		const categoryContext = rawCategoryContext
-			? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.resource_v2])
-			: null;
+		const categoryContext = rawCategoryContext;
+		filterCategoryContext(rawCategoryContext, [payloadTypes.enum.resource_v2]);
 
-		const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+		const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
 		const programGuid = url.searchParams.get('program') ?? undefined;
 
@@ -126,7 +125,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			customCategories,
 			resourceCategoryFilters: url.searchParams.getAll('resourceCategory'),
 			sort: (url.searchParams.get('sort') ?? defaultSort) as 'alpha' | 'modified' | 'priority',
-			...(categoryContext && { categoryContext })
+			categoryContext
 		});
 
 		const containers = filterOrganizationalUnits(
@@ -162,8 +161,8 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		return {
 			containers,
 			facets,
-			facetLabels: categoryContext?.labels,
-			categoryOptions: categoryContext?.options
+			facetLabels: categoryContext.labels,
+			categoryOptions: categoryContext.options
 		};
 	}) satisfies PageServerLoad;
 }

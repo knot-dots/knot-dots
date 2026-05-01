@@ -20,11 +20,10 @@ export const load = (async ({ locals, parent, url }) => {
 		categoryContext: rawCategoryContext
 	} = await parent();
 
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.organizational_unit])
-		: null;
-
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.organizational_unit
+	]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	if (currentOrganization.payload.default) {
 		error(404, 'No organizational units found');
 	}
@@ -110,7 +109,7 @@ export const load = (async ({ locals, parent, url }) => {
 	return {
 		containers: filtered,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 }) satisfies PageServerLoad;

@@ -23,14 +23,12 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [
-				payloadTypes.enum.objective,
-				payloadTypes.enum.effect,
-				payloadTypes.enum.indicator_template
-			])
-		: null;
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.objective,
+		payloadTypes.enum.effect,
+		payloadTypes.enum.indicator_template
+	]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	let containers: IndicatorTemplateContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
@@ -44,7 +42,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				type: [payloadTypes.enum.indicator_template]
 			},
 			'',
-			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 		);
 		containers = esResult.containers as IndicatorTemplateContainer[];
 		data = esResult.facets;
@@ -101,7 +99,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		container: currentOrganization,
 		containers: filtered,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 }) satisfies PageServerLoad;

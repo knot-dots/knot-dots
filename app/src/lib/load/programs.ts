@@ -31,10 +31,8 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.program])
-		: null;
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.program]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -73,7 +71,7 @@ export default (async function load({ depends, locals, parent, url }) {
 					type: [payloadTypes.enum.program]
 				},
 				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 			);
 			containers = esResult.containers;
 			data = esResult.facets;
@@ -119,14 +117,12 @@ export default (async function load({ depends, locals, parent, url }) {
 		>)
 	]);
 
-	if (categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
+	const customFacets = buildCategoryFacetsWithCounts(
+		categoryContext.options,
+		data ? Object.fromEntries(Object.entries(data)) : {}
+	);
+	for (const [key, values] of customFacets.entries()) {
+		_facets.set(key, values);
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
@@ -136,7 +132,7 @@ export default (async function load({ depends, locals, parent, url }) {
 	return {
 		containers: filtered,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 } satisfies PageServerLoad);

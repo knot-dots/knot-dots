@@ -24,7 +24,7 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 	const { categoryContext } = await parent();
 	const features = createFeatureDecisions(locals.features);
 
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
 		const container = revisions.at(-1) as AnyContainer;
@@ -70,8 +70,8 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 			container,
 			containers,
 			facets,
-			facetLabels: categoryContext?.labels,
-			categoryOptions: categoryContext?.options ?? null,
+			facetLabels: categoryContext.labels,
+			categoryOptions: categoryContext.options,
 			revisions: filterVisible(revisions, locals.user),
 			title: `${container.payload.title} / ${t('workspace.type.resources')} / ${t('workspace.view.catalog')}`
 		};

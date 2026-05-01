@@ -28,10 +28,8 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.program])
-		: null;
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.program]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	async function filterOrganizationalUnitsAsync<T extends AnyContainer>(
 		promise: Promise<Array<T>>
@@ -91,7 +89,7 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 					type: [payloadTypes.enum.program]
 				},
 				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 			);
 			containers = await filterOrganizationalUnitsAsync(Promise.resolve(esResult.containers));
 			data = esResult.facets;
@@ -150,7 +148,7 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 	return {
 		containers,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 };

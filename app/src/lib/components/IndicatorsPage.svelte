@@ -23,9 +23,9 @@
 	{#snippet header()}
 		<Header
 			{facets}
-			facetLabels={data.facetLabels ?? undefined}
+			facetLabels={data.facetLabels}
 			{filterBarInitiallyOpen}
-			categoryOptions={data.categoryOptions ?? null}
+			categoryOptions={data.categoryOptions}
 			search
 		/>
 		{#if actions && featureDecisions.useImportFromCsv()}

@@ -46,8 +46,8 @@ export type ContainerV2Response = {
 		nextOffset: number | null;
 	};
 	facets: Record<string, Record<string, number>>;
-	facetLabels?: Record<string, string>;
-	categoryOptions?: CategoryOptions | null;
+	facetLabels: Record<string, string>;
+	categoryOptions: CategoryOptions;
 };
 
 const querySchema = z.object({
@@ -134,14 +134,13 @@ function mapToRecord(
 	);
 }
 
-function categoryLabelsToRecord(labels?: Map<string, string>): Record<string, string> | undefined {
-	if (!labels) return undefined;
+function categoryLabelsToRecord(labels: Map<string, string>): Record<string, string> {
 	return Object.fromEntries(labels);
 }
 
 function baseFacetMap(
 	counts: Record<string, Record<string, number>> = {},
-	categoryContext?: CategoryContext
+	categoryContext: CategoryContext
 ) {
 	const facets = new Map<string, Map<string, number>>([
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
@@ -159,13 +158,11 @@ function baseFacetMap(
 		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)]
 	]);
 
-	if (categoryContext) {
-		for (const [key, values] of buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			counts
-		).entries()) {
-			facets.set(key, values);
-		}
+	for (const [key, values] of buildCategoryFacetsWithCounts(
+		categoryContext.options,
+		counts
+	).entries()) {
+		facets.set(key, values);
 	}
 
 	return facets;
@@ -288,11 +285,11 @@ export async function loadContainerV2(params: {
 			scopedQuery.organization,
 			buildElasticsearchFilters(
 				scopedQuery,
-				extractCustomCategoryFilters(params.url, categoryContext?.keys ?? [])
+				extractCustomCategoryFilters(params.url, categoryContext.keys)
 			),
 			query.sort,
 			{
-				customCategoryKeys: categoryContext?.keys ?? [],
+				customCategoryKeys: categoryContext.keys,
 				includeFacets: true,
 				limit: requestedLimit,
 				offset: query.offset
@@ -304,14 +301,14 @@ export async function loadContainerV2(params: {
 			containers,
 			page: page.page,
 			facets: mapToRecord(baseFacetMap(result.facets, categoryContext)),
-			facetLabels: categoryLabelsToRecord(categoryContext?.labels),
-			categoryOptions: categoryContext?.options
+			facetLabels: categoryLabelsToRecord(categoryContext.labels),
+			categoryOptions: categoryContext.options
 		};
 	}
 
 	const filters = buildFilters(
 		scopedQuery,
-		extractCustomCategoryFilters(params.url, categoryContext?.keys ?? [])
+		extractCustomCategoryFilters(params.url, categoryContext.keys)
 	);
 	const rawContainers =
 		query.relatedTo.length > 0
@@ -344,7 +341,7 @@ export async function loadContainerV2(params: {
 		containers,
 		page: page.page,
 		facets: mapToRecord(facets),
-		facetLabels: categoryLabelsToRecord(categoryContext?.labels),
-		categoryOptions: categoryContext?.options
+		facetLabels: categoryLabelsToRecord(categoryContext.labels),
+		categoryOptions: categoryContext.options
 	};
 }

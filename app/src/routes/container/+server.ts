@@ -503,7 +503,7 @@ export const GET = (async ({ locals, url }) => {
 		user: locals.user
 	});
 
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	const containers = await locals.pool.connect(
 		getManyContainers(

@@ -52,25 +52,23 @@
 	] satisfies PayloadType[]);
 
 	const categoryContext = $derived(
-		page.data.categoryContext
-			? filterCategoryContext(
-					page.data.categoryContext,
-					filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
-					{
-						matchAll: true
-					}
-				)
-			: undefined
+		filterCategoryContext(
+			page.data.categoryContext,
+			filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
+			{
+				matchAll: true
+			}
+		)
 	);
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
-			...(categoryContext?.keys.map((k) => [
+			...categoryContext.keys.map((k) => [
 				k,
 				new Map(categoryContext.options[k].map((v) => [v.value, 0]))
-			]) ?? [])
+			])
 		] as [string, Map<string, number>][]);
 
 		return computeFacetCount(facets, searchResource.current ?? []);
@@ -92,7 +90,7 @@
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 							...Object.fromEntries(
-								categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
+								categoryContext.keys.map((k) => (k in filter ? [[k], filter[k]] : []))
 							),
 							template: 'true',
 							terms
@@ -152,7 +150,7 @@
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
 			{@const options =
-				categoryContext?.options[key]?.map((option) => ({
+				categoryContext.options[key]?.map((option) => ({
 					...option,
 					count: foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
 					subOptions: option.subOptions?.map((sub) => ({
@@ -177,7 +175,7 @@
 				<InlineFilterDropDown
 					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
-					label={categoryContext?.labels.get(key)}
+					label={categoryContext.labels.get(key)}
 					mode="select"
 					{options}
 				/>

@@ -87,12 +87,10 @@
 	);
 
 	const customCategoryColumns = $derived(
-		data.categoryOptions
-			? getCategoryKeys(data.categoryOptions).map((key) => ({
-					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
-					key
-				}))
-			: []
+		getCategoryKeys(data.categoryOptions).map((key) => ({
+			heading: data.categoryOptions.__categoryLabels__?.[key] ?? key,
+			key
+		}))
 	);
 
 	const columns = $derived([

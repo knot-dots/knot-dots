@@ -25,10 +25,7 @@
 	// are reflected immediately without needing a hash change.
 	const activeCategories = $derived(
 		categories ??
-			extractCustomCategoryFiltersFromParams(
-				page.url.searchParams,
-				page.data.categoryContext?.keys ?? []
-			)
+			extractCustomCategoryFiltersFromParams(page.url.searchParams, page.data.categoryContext.keys)
 	);
 
 	let visibleCount = $state(PAGE_SIZE);

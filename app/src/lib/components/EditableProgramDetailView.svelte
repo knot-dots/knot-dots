@@ -59,7 +59,7 @@
 				...{
 					customCategories: extractCustomCategoryFiltersFromParams(
 						paramsFromFragment(page.url),
-						categoryContext?.keys ?? []
+						categoryContext.keys
 					)
 				},
 				terms: paramsFromFragment(page.url).get('terms') ?? ''
@@ -85,26 +85,19 @@
 	);
 
 	let facets = $derived(
-		categoryContext
-			? computeFacetCount(
-					new Map([
-						...buildCategoryFacetsWithCounts(categoryContext.options),
-						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
-					]),
-					relatedParts
-				)
-			: computeFacetCount(
-					new Map([['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]]),
-					relatedParts
-				)
+		computeFacetCount(
+			new Map([
+				...buildCategoryFacetsWithCounts(categoryContext.options),
+				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
+			]),
+			relatedParts
+		)
 	);
 
 	let usedCategoryKeys = $derived(
-		categoryContext
-			? getCategoryKeys(categoryContext.options).filter((key) =>
-					parts.some((part) => 'category' in part.payload && part.payload.category[key]?.length > 0)
-				)
-			: []
+		getCategoryKeys(categoryContext.options).filter((key) =>
+			parts.some((part) => 'category' in part.payload && part.payload.category[key]?.length > 0)
+		)
 	);
 
 	let viewMode = $derived(
@@ -125,7 +118,7 @@
 
 			for (const part of filtered) {
 				if ('category' in part.payload) {
-					for (const key of categoryContext!.keys) {
+					for (const key of categoryContext.keys) {
 						if (!part.payload.category[key]) {
 							part.payload.category[key] = [];
 						}
@@ -236,7 +229,7 @@
 					'objectType'
 				]}
 				bind:container={parts[i]}
-				categoryOptions={categoryContext?.options}
+				categoryOptions={categoryContext.options}
 				{dragEnabled}
 				editable={$applicationState.containerDetailView.editable}
 			/>
@@ -247,8 +240,8 @@
 {#snippet header()}
 	<Header
 		{facets}
-		facetLabels={categoryContext?.labels}
-		categoryOptions={categoryContext?.options}
+		facetLabels={categoryContext.labels}
+		categoryOptions={categoryContext.options}
 		search
 	/>
 {/snippet}
@@ -312,7 +305,7 @@
 						<div class="cell">{$_('visibility.label')}</div>
 						<div class="cell">{$_('status')}</div>
 						{#each usedCategoryKeys as key (key)}
-							<div class="cell">{categoryContext?.labels.get(key) ?? key}</div>
+							<div class="cell">{categoryContext.labels.get(key) ?? key}</div>
 						{/each}
 						<div class="cell">{$_('fulfillment_date')}</div>
 						<div class="cell">{$_('planned_duration')}</div>

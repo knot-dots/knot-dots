@@ -34,10 +34,8 @@ export const load = (async ({ locals, url, parent }) => {
 	let data: Record<string, Record<string, number>> | undefined;
 	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge])
-		: null;
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -73,7 +71,7 @@ export const load = (async ({ locals, url, parent }) => {
 					type: [payloadTypes.enum.knowledge]
 				},
 				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 			);
 			containers = esResult.containers;
 			data = esResult.facets;
@@ -117,14 +115,12 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const _facets = new Map<string, Map<string, number>>();
 
-	if (categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
+	const customFacets = buildCategoryFacetsWithCounts(
+		categoryContext.options,
+		data ? Object.fromEntries(Object.entries(data)) : {}
+	);
+	for (const [key, values] of customFacets.entries()) {
+		_facets.set(key, values);
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
@@ -137,7 +133,7 @@ export const load = (async ({ locals, url, parent }) => {
 		containers: filtered,
 		programs: filteredPrograms,
 		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facetLabels: categoryContext.labels,
+		categoryOptions: categoryContext.options
 	};
 }) satisfies PageServerLoad;

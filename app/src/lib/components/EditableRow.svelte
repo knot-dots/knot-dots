@@ -46,7 +46,7 @@
 
 	interface Props {
 		actualDataContainers?: ActualDataContainer[];
-		categoryOptions?: CategoryOptions | null;
+		categoryOptions?: CategoryOptions;
 		columns: string[];
 		container: AnyContainer;
 		dragEnabled?: boolean;
@@ -55,7 +55,7 @@
 
 	let {
 		actualDataContainers = [],
-		categoryOptions = null,
+		categoryOptions = {},
 		columns,
 		container = $bindable(),
 		dragEnabled = false,
@@ -95,7 +95,7 @@
 		};
 	}
 
-	const customCategoryKeys = $derived(categoryOptions ? getCategoryKeys(categoryOptions) : []);
+	const customCategoryKeys = $derived(getCategoryKeys(categoryOptions));
 </script>
 
 <div class="cell cell--action">
@@ -337,7 +337,7 @@
 					compact
 					editable={editable && $ability.can('update', container)}
 					offset={[40, -41]}
-					options={categoryOptions?.[col] ?? []}
+					options={categoryOptions[col] ?? []}
 					bind:value={container.payload.category[col]}
 				/>
 			{/if}
