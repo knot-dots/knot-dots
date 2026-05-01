@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
@@ -10,11 +11,18 @@
 	interface Props {
 		categoryOptions?: CategoryOptions;
 		columns: Array<{ heading: string; key: string }>;
+		footer?: Snippet;
 		rows: AnyContainer[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
-	let { categoryOptions, columns, rows: originalRows, actualDataContainers = [] }: Props = $props();
+	let {
+		categoryOptions,
+		columns,
+		footer,
+		rows: originalRows,
+		actualDataContainers = []
+	}: Props = $props();
 
 	const initialCategory = $derived(
 		Object.fromEntries(
@@ -78,6 +86,9 @@
 			{/each}
 		</div>
 	</div>
+	{#if footer}
+		{@render footer()}
+	{/if}
 </div>
 
 <style>

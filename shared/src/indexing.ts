@@ -184,8 +184,6 @@ function resolveLabel(code: string): string | undefined {
 	return typeof cur === 'string' ? cur : undefined;
 }
 
-
-
 export function normalizePayload(payload: any) {
 	const normalized = { ...payload };
 	for (const key of [
@@ -240,6 +238,7 @@ export function toDoc(row: {
 	const type: string | undefined = normalized?.type;
 	const title: string | undefined = normalized?.title ?? normalized?.name;
 	const description: string | undefined = normalized?.description;
+	const body: string | undefined = normalized?.body;
 	const visibility: string | undefined = normalized?.visibility;
 	const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
 	const priority = row.priority ?? undefined;
@@ -304,6 +303,7 @@ export function toDoc(row: {
 		text: [
 			title,
 			description,
+			body,
 			...sdgLabels,
 			...topicLabels,
 			...audienceLabels,

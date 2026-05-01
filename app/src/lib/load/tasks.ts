@@ -87,7 +87,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							type: [payloadTypes.enum.task]
 						},
 						url.searchParams.get('sort') ?? defaultSort,
-						undefined,
 						{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 					),
 					getManyContainersWithES(
@@ -96,7 +95,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 							type: [payloadTypes.enum.goal]
 						},
 						'alpha',
-						undefined,
 						{ includeFacets: false }
 					)
 				]);

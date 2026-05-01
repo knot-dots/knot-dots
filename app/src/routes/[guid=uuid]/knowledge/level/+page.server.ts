@@ -91,7 +91,6 @@ export const load = (async ({ locals, url, parent }) => {
 					type: [payloadTypes.enum.knowledge]
 				},
 				url.searchParams.get('sort') ?? '',
-				undefined,
 				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
 			);
 			containers = esResult.containers;
@@ -119,7 +118,6 @@ export const load = (async ({ locals, url, parent }) => {
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{ type: [payloadTypes.enum.program] },
 			url.searchParams.get('sort') ?? '',
-			undefined,
 			{ includeFacets: false }
 		);
 		programs = esPrograms.containers as ProgramContainer[];
