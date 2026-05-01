@@ -3265,17 +3265,12 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
-	containers: AnyContainer[],
-	options?: { useCategoryPayload?: boolean }
+	containers: AnyContainer[]
 ) {
-	const useCategoryPayload = options?.useCategoryPayload ?? false;
-
 	for (const container of containers) {
 		for (const key of facets.keys()) {
 			const categoryPayload =
-				useCategoryPayload && 'category' in container.payload
-					? container.payload.category
-					: undefined;
+				'category' in container.payload ? container.payload.category : undefined;
 			const hasCategoryValue = categoryPayload && key in categoryPayload;
 			const hasPayloadValue = key in container.payload;
 			const valueSource = hasCategoryValue

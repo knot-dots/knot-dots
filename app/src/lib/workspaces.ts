@@ -324,7 +324,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/categories',
 			level: '/categories'
 		},
-		featureFlag: 'useCustomCategories',
 		alwaysVisible: true
 	},
 	{

@@ -1,16 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
 import { type AnyContainer, payloadTypes, predicates } from '$lib/models';
 import { getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, parent, url }) => {
-	if (!createFeatureDecisions(locals.features ?? []).useCustomCategories()) {
-		error(404, { message: 'not_found' });
-	}
-
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}

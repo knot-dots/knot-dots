@@ -114,10 +114,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.resource_v2])
 			: null;
 
-		const customCategories = features.useCustomCategories()
-			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-			: {};
-
+		const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
 		const programGuid = url.searchParams.get('program') ?? undefined;
 
@@ -150,7 +147,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			['resourceUnit', fromCounts(resourceUnits.options as string[], facetData?.resourceUnit)]
 		]);
 
-		if (features.useCustomCategories() && categoryContext) {
+		if (categoryContext) {
 			const customFacets = buildCategoryFacetsWithCounts(
 				categoryContext.options,
 				facetData ? Object.fromEntries(Object.entries(facetData)) : {}
@@ -160,11 +157,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			}
 		}
 
-		const facets = features.useElasticsearch()
-			? _facets
-			: computeFacetCount(_facets, containers, {
-					useCategoryPayload: features.useCustomCategories()
-				});
+		const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
 
 		return {
 			containers,

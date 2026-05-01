@@ -3,16 +3,12 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
 	type AnyContainer,
-	audience,
 	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
 	payloadTypes,
-	policyFieldBNK,
 	predicates,
-	programTypes,
-	sustainableDevelopmentGoals,
-	topics
+	programTypes
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -38,20 +34,7 @@ export default (async function load({ depends, locals, parent, url }) {
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.program])
 		: null;
-	const useCustomCategories = features.useCustomCategories();
-
-	const customCategories = useCustomCategories
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
-	const coreCategoryFilters = useCustomCategories
-		? {}
-		: {
-				audience: url.searchParams.getAll('audience'),
-				sdg: url.searchParams.getAll('sdg'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic')
-			};
+	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -84,7 +67,6 @@ export default (async function load({ depends, locals, parent, url }) {
 			const esResult = await getManyContainersWithES(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					...coreCategoryFilters,
 					customCategories,
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
@@ -100,7 +82,6 @@ export default (async function load({ depends, locals, parent, url }) {
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						...coreCategoryFilters,
 						customCategories,
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
@@ -138,7 +119,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		>)
 	]);
 
-	if (useCustomCategories && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -146,23 +127,11 @@ export default (async function load({ depends, locals, parent, url }) {
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
-	const facets = features.useElasticsearch()
-		? _facets
-		: computeFacetCount(_facets, containers, {
-				useCategoryPayload: useCustomCategories
-			});
+	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
 
 	return {
 		containers: filtered,

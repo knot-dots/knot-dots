@@ -42,11 +42,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 
 		const { currentOrganization, currentOrganizationalUnit, categoryContext } = await parent();
 		const features = createFeatureDecisions(locals.features);
-		const useCustomCategories = features.useCustomCategories();
-
-		const customCategories = useCustomCategories
-			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-			: {};
+		const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
 
 		if (currentOrganization.payload.default) {
 			error(404, unwrapFunctionStore(_)('error.not_found'));
@@ -163,18 +159,14 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			['assignee', fromCounts([], data?.assignee)]
 		]);
 
-		if (useCustomCategories && categoryContext) {
+		if (categoryContext) {
 			for (const [key, facetMap] of buildCategoryFacetsWithCounts(categoryContext.options)) {
 				_facets.set(key, facetMap);
 			}
 		}
 
 		const facets =
-			features.useElasticsearch() && data
-				? _facets
-				: computeFacetCount(_facets, taskContainers, {
-						useCategoryPayload: useCustomCategories
-					});
+			features.useElasticsearch() && data ? _facets : computeFacetCount(_facets, taskContainers);
 
 		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;

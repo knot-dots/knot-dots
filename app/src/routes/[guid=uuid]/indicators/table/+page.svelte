@@ -86,22 +86,13 @@
 		allYears.map((year) => ({ heading: String(year), key: `year:${year}` }))
 	);
 
-	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
-
-	const legacyCategoryColumns = [
-		{ heading: $_('topic'), key: 'topic' },
-		{ heading: $_('category'), key: 'sdg' },
-		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
-		{ heading: $_('audience'), key: 'audience' }
-	];
-
 	const customCategoryColumns = $derived(
-		featureDecisions.useCustomCategories() && data.categoryOptions
+		data.categoryOptions
 			? getCategoryKeys(data.categoryOptions).map((key) => ({
 					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
 					key
 				}))
-			: null
+			: []
 	);
 
 	const columns = $derived([
@@ -110,7 +101,7 @@
 		{ heading: $_('visibility.label'), key: 'visibility' },
 		{ heading: $_('indicator_category'), key: 'indicatorCategory' },
 		{ heading: $_('indicator_type'), key: 'indicatorType' },
-		...(customCategoryColumns ?? legacyCategoryColumns),
+		...customCategoryColumns,
 		{ heading: $_('editorial_state'), key: 'editorialState' },
 		{ heading: $_('organizational_unit'), key: 'organizationalUnit' },
 		{ heading: $_('label.unit'), key: 'unit' },
@@ -223,12 +214,7 @@
 			</button>
 		{/if}
 	{/snippet}
-	<Table
-		{actualDataContainers}
-		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
-		{columns}
-		{rows}
-	/>
+	<Table {actualDataContainers} categoryOptions={data.categoryOptions} {columns} {rows} />
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 

@@ -8,7 +8,6 @@ import {
 	payloadTypes
 } from '$lib/models';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
-import { createFeatureDecisions } from '$lib/features';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
@@ -21,16 +20,11 @@ export const load = (async ({ locals, parent, url }) => {
 		categoryContext: rawCategoryContext
 	} = await parent();
 
-	const features = createFeatureDecisions(locals.features);
-
 	const categoryContext = rawCategoryContext
 		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.organizational_unit])
 		: null;
 
-	const customCategories = features.useCustomCategories()
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
+	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
 	if (currentOrganization.payload.default) {
 		error(404, 'No organizational units found');
 	}
@@ -104,16 +98,14 @@ export const load = (async ({ locals, parent, url }) => {
 		]
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(categoryContext.options);
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
 	}
 
-	const facets = computeFacetCount(_facets, filtered, {
-		useCategoryPayload: features.useCustomCategories()
-	});
+	const facets = computeFacetCount(_facets, filtered);
 
 	return {
 		containers: filtered,

@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableChapterType from '$lib/components/EditableChapterType.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
@@ -13,13 +10,10 @@
 	import EditablePDF from '$lib/components/EditablePDF.svelte';
 	import EditableProgramStatus from '$lib/components/EditableProgramStatus.svelte';
 	import EditableProgramType from '$lib/components/EditableProgramType.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, type Container, type ProgramContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -31,8 +25,6 @@
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
-
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 </script>
 
 <PropertyGrid>
@@ -72,14 +64,7 @@
 	{/snippet}
 
 	{#snippet categories()}
-		{#if featureDecisions.useCustomCategories()}
-			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{:else}
-			<EditableCategory {editable} bind:value={container.payload.sdg} />
-			<EditableTopic {editable} bind:value={container.payload.topic} />
-			<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
-			<EditableAudience {editable} bind:value={container.payload.audience} />
-		{/if}
+		<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 	{/snippet}
 
 	{#snippet ownership()}

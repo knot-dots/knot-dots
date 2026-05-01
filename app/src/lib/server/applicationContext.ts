@@ -2,7 +2,6 @@ import { error } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	isOrganizationalUnitContainer,
@@ -108,14 +107,11 @@ export async function loadApplicationContext({
 		const defaultOrganizationGuid =
 			organizations.find(({ payload }) => payload.default)?.guid ?? currentOrganization.guid;
 
-		const categoryContext = createFeatureDecisions(locals.features).useCustomCategories()
-			? await loadCategoryContext({
-					connect,
-					scope: [currentOrganization.guid, defaultOrganizationGuid],
-					user: locals.user
-				})
-			: null;
-
+		const categoryContext = await loadCategoryContext({
+			connect,
+			scope: [currentOrganization.guid, defaultOrganizationGuid],
+			user: locals.user
+		});
 		return {
 			categoryContext,
 			currentOrganization,

@@ -3,7 +3,6 @@
 	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { predicates } from '$lib/models';
 
 	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
@@ -22,9 +21,7 @@
 		predicates: [predicates.enum['is-prerequisite-for']]
 	});
 
-	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 	let categoryContext = $derived(page.data.categoryContext);
-	let useCustomCategories = $derived(featureDecisions.useCustomCategories() && !!categoryContext);
 
 	let facets = $derived(data.facets);
 </script>
@@ -34,8 +31,8 @@
 		<Header
 			{filterBarInitiallyOpen}
 			{facets}
-			facetLabels={useCustomCategories ? categoryContext!.labels : undefined}
-			categoryOptions={useCustomCategories ? categoryContext!.options : null}
+			facetLabels={categoryContext!.labels}
+			categoryOptions={categoryContext!.options}
 			search
 			{sortOptions}
 		/>

@@ -11,15 +11,11 @@
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		audience,
 		computeFacetCount,
 		type CustomCollectionContainer,
 		indicatorCategories,
 		type PayloadType,
-		payloadTypes,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
+		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
 
@@ -71,22 +67,13 @@
 		const facets = new Map([
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
-			...(createFeatureDecisions(page.data.features).useCustomCategories()
-				? (categoryContext?.keys.map((k) => [
-						k,
-						new Map(categoryContext.options[k].map((v) => [v.value, 0]))
-					]) ?? [])
-				: [
-						['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-						['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-						['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-						['topic', new Map(topics.options.map((v) => [v as string, 0]))]
-					])
+			...(categoryContext?.keys.map((k) => [
+				k,
+				new Map(categoryContext.options[k].map((v) => [v.value, 0]))
+			]) ?? [])
 		] as [string, Map<string, number>][]);
 
-		return computeFacetCount(facets, searchResource.current ?? [], {
-			useCategoryPayload: createFeatureDecisions(page.data.features).useCustomCategories()
-		});
+		return computeFacetCount(facets, searchResource.current ?? []);
 	});
 
 	let activeFilters = $derived(
@@ -104,16 +91,9 @@
 							indicatorCategory: filter.indicatorCategory,
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
-							...(createFeatureDecisions(page.data.features).useCustomCategories()
-								? Object.fromEntries(
-										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
-									)
-								: {
-										audience: filter.audience,
-										policyFieldBNK: filter.policyFieldBNK,
-										topic: filter.topic,
-										sdg: filter.sdg
-									}),
+							...Object.fromEntries(
+								categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
+							),
 							template: 'true',
 							terms
 						},

@@ -1,7 +1,6 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
-	audience,
 	computeFacetCount,
 	type Container,
 	fromCounts,
@@ -11,10 +10,7 @@ import {
 	isActualDataContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
-	policyFieldBNK,
-	predicates,
-	sustainableDevelopmentGoals,
-	topics
+	predicates
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicatorTemplates,
@@ -34,7 +30,6 @@ export interface IndicatorFilters {
 	indicatorTypes: string[];
 	included: string[];
 	terms: string;
-	sdg: string[];
 }
 
 export interface IndicatorLoadResult {
@@ -90,7 +85,6 @@ export async function getIndicatorsData(params: {
 				customCategories: filters.customCategories,
 				indicatorCategories: filters.indicatorCategories,
 				indicatorTypes: filters.indicatorTypes,
-				sdg: filters.sdg,
 				terms: filters.terms,
 				type: [payloadTypes.enum.indicator_template]
 			},
@@ -107,7 +101,6 @@ export async function getIndicatorsData(params: {
 					customCategories: filters.customCategories,
 					indicatorCategories: filters.indicatorCategories,
 					indicatorTypes: filters.indicatorTypes,
-					sdg: filters.sdg,
 					terms: filters.terms,
 					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
@@ -170,17 +163,13 @@ export default (async function load({ depends, locals, parent, url }) {
 		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.indicator_template])
 		: null;
 
-	const customCategories = features.useCustomCategories()
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
+	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
 	const filters = {
 		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
 		included: url.searchParams.getAll('included'),
-		terms: url.searchParams.get('terms') ?? '',
-		sdg: url.searchParams.getAll('sdg')
+		terms: url.searchParams.get('terms') ?? ''
 	} as const;
 
 	const result = await getIndicatorsData({
@@ -202,7 +191,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -210,14 +199,6 @@ export default (async function load({ depends, locals, parent, url }) {
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
 	}
 
 	_facets.set('indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType));
@@ -225,11 +206,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		'indicatorCategory',
 		fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
 	);
-	const facets = useFacetData
-		? _facets
-		: computeFacetCount(_facets, result.containers, {
-				useCategoryPayload: features.useCustomCategories()
-			});
+	const facets = useFacetData ? _facets : computeFacetCount(_facets, result.containers);
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
-	import EditableCategory from '$lib/components/EditableCategory.svelte';
 	import EditableDuration from '$lib/components/EditableDuration.svelte';
 	import EditableEditorialState from '$lib/components/EditableEditorialState.svelte';
 	import EditableMeasureHierarchyLevel from '$lib/components/EditableMeasureHierarchyLevel.svelte';
@@ -11,9 +9,7 @@
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableParent from '$lib/components/EditableParent.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
-	import EditablePolicyFieldBNK from '$lib/components/EditablePolicyFieldBNK.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
-	import EditableTopic from '$lib/components/EditableTopic.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
@@ -94,14 +90,7 @@
 	{/snippet}
 
 	{#snippet categories()}
-		{#if featureDecisions.useCustomCategories()}
-			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{:else}
-			<EditableCategory {editable} bind:value={container.payload.sdg} />
-			<EditableTopic {editable} bind:value={container.payload.topic} />
-			<EditablePolicyFieldBNK {editable} bind:value={container.payload.policyFieldBNK} />
-			<EditableAudience {editable} bind:value={container.payload.audience} />
-		{/if}
+		<EditableCategories bind:container {editable} organizationGuid={container.organization} />
 	{/snippet}
 
 	{#snippet ownership()}

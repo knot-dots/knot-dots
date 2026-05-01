@@ -131,8 +131,6 @@ export const actions = {
 		const containers: NewContainer[] = [];
 		const errors = [];
 
-		const useCustomCategories = featureDecisions.useCustomCategories();
-
 		try {
 			for await (const record of parser) {
 				try {
@@ -174,22 +172,12 @@ export const actions = {
 						organization: currentOrganizationGuid,
 						organizational_unit: organizationalUnit?.guid ?? null,
 						payload: {
-							category: useCustomCategories
-								? {
-										...(audience.length > 0 ? { audience } : {}),
-										...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
-										...(sdg.length > 0 ? { sdg } : {}),
-										...(topic.length > 0 ? { topic } : {})
-									}
-								: {},
-							...(useCustomCategories
-								? { audience: [], policyFieldBNK: [], sdg: [], topic: [] }
-								: {
-										...(audience.length > 0 ? { audience } : {}),
-										...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
-										sdg,
-										...(topic.length > 0 ? { topic } : {})
-									}),
+							category: {
+								...(audience.length > 0 ? { audience } : {}),
+								...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
+								...(sdg.length > 0 ? { sdg } : {}),
+								...(topic.length > 0 ? { topic } : {})
+							},
 							description: record.description,
 							...(record.endDate ? { endDate: record.endDate } : {}),
 							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),

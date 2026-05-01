@@ -4,7 +4,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		computeFacetCount,
@@ -22,19 +21,17 @@
 
 	let { container, containers }: Props = $props();
 
-	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 	let categoryContext = $derived(page.data.categoryContext);
 
 	let facets = $derived(
-		featureDecisions.useCustomCategories() && categoryContext
+		categoryContext
 			? computeFacetCount(
 					new Map([
 						...buildCategoryFacetsWithCounts(categoryContext.options),
 						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
 						['assignee', new Map()]
 					]),
-					containers,
-					{ useCategoryPayload: true }
+					containers
 				)
 			: computeFacetCount(
 					new Map([
@@ -48,12 +45,8 @@
 
 <Header
 	{facets}
-	facetLabels={featureDecisions.useCustomCategories() && categoryContext
-		? categoryContext.labels
-		: undefined}
-	categoryOptions={featureDecisions.useCustomCategories() && categoryContext
-		? categoryContext.options
-		: null}
+	facetLabels={categoryContext ? categoryContext.labels : undefined}
+	categoryOptions={categoryContext ? categoryContext.options : null}
 	search
 />
 
