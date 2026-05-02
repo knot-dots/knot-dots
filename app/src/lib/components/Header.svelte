@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { getContext, untrack } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
@@ -144,14 +143,14 @@
 
 	function applySort() {
 		if (overlay) {
-			const query = new SvelteURLSearchParams(page.url.hash.substring(1));
+			const query = new URLSearchParams(page.url.hash.substring(1));
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new SvelteURLSearchParams(page.url.searchParams);
+			const query = new URLSearchParams(page.url.searchParams);
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
@@ -168,7 +167,7 @@
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new SvelteURLSearchParams(page.url.searchParams);
+			const query = new URLSearchParams(page.url.searchParams);
 			for (const key of facets.keys()) {
 				query.delete(key);
 			}
