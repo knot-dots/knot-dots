@@ -23,7 +23,8 @@
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		containerOfType,
-		payloadTypes
+		payloadTypes,
+		isBinaryIndicatorContainer
 	} from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { ability, lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
@@ -71,12 +72,8 @@
 
 	let actualDataContainers = $derived(containers.filter(isActualDataContainer));
 
-	let filteredRows = $derived(
-		containers.filter(
-			(c) =>
-				isIndicatorTemplateContainer(c) &&
-				actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
-		)
+	let rows = $derived(
+		containers.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
 	);
 
 	let allYears = $derived(
@@ -126,7 +123,7 @@
 				(ou: { guid: string; payload: { name: string } }) => [ou.guid, ou.payload.name]
 			)
 		);
-		const csv = generateIndicatorCsv(filteredRows, allYears, orgUnits, actualDataContainers);
+		const csv = generateIndicatorCsv(rows, allYears, orgUnits, actualDataContainers);
 		downloadCsv(csv, 'indicators.csv');
 	}
 
@@ -230,7 +227,7 @@
 		{actualDataContainers}
 		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
-		rows={data.containers.filter((c) => isIndicatorTemplateContainer(c))}
+		{rows}
 	/>
 	<Help slug="indicators-table" />
 </IndicatorsPage>
