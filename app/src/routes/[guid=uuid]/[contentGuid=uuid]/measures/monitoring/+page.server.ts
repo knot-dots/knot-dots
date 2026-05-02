@@ -29,7 +29,6 @@ export const load = (async ({ depends, locals, params, url }) => {
 				container.guid,
 				[predicates.enum['is-part-of-program']],
 				{
-					taskCategories: url.searchParams.getAll('taskCategory'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [
 						payloadTypes.enum.effect,

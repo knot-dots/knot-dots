@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
-		computeFacetCount,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
@@ -27,15 +24,11 @@
 			? [container]
 			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
 	);
-
-	let facets = $derived(
-		computeFacetCount(buildCategoryFacetsWithCounts(page.data.categoryContext.options), containers)
-	);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header search />
 	{/snippet}
 
 	{#snippet main()}

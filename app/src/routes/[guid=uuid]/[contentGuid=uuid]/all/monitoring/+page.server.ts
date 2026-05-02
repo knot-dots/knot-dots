@@ -40,7 +40,6 @@ export const load = (async ({ depends, locals, params, url }) => {
 						url.searchParams.get('related-to') as string,
 						[predicates.enum['is-part-of']],
 						{
-							taskCategories: url.searchParams.getAll('taskCategory'),
 							terms: url.searchParams.get('terms') ?? '',
 							type: [
 								payloadTypes.enum.effect,
@@ -54,7 +53,6 @@ export const load = (async ({ depends, locals, params, url }) => {
 				: getAllContainersRelatedToMeasure(
 						container.guid,
 						{
-							taskCategories: url.searchParams.getAll('taskCategory'),
 							terms: url.searchParams.get('terms') ?? '',
 							type: [
 								payloadTypes.enum.effect,

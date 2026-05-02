@@ -4,16 +4,11 @@
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
 		type AnyContainer,
-		audience,
-		computeFacetCount,
 		type Container,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
-		isSimpleMeasureContainer,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
+		isSimpleMeasureContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -28,21 +23,9 @@
 			? [container]
 			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
 	);
-
-	let facets = $derived(
-		computeFacetCount(
-			new Map([
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
-			containers
-		)
-	);
 </script>
 
-<Header {facets} search />
+<Header search />
 
 <MeasureMonitoring
 	measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
