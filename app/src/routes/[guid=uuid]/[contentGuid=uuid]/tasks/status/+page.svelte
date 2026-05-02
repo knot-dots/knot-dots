@@ -1,20 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
+	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import Tasks from '$lib/components/Tasks.svelte';
 	import {
 		computeFacetCount,
 		isGoalContainer,
 		isPartOf,
 		isTaskContainer,
+		payloadTypes,
 		taskCategories
 	} from '$lib/models';
-	import type { PageProps } from './$types';
-	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
-	import Tasks from '$lib/components/Tasks.svelte';
-	import Layout from '$lib/components/Layout.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer } from '$lib/stores';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
@@ -22,7 +23,9 @@
 
 	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
-	let categoryContext = $derived(page.data.categoryContext);
+	let categoryContext = $derived(
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.task])
+	);
 
 	let facets = $derived(
 		computeFacetCount(

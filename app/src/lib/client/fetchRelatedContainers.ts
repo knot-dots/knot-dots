@@ -1,35 +1,32 @@
 import { z } from 'zod';
+import { page } from '$app/state';
 import { container } from '$lib/models';
 
 export default async function fetchRelatedContainers(
 	guid: string,
 	filters: {
+		[key: string]: string | string[] | undefined;
 		assignee?: string[];
-		audience?: string[];
-		sdg?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
-		policyFieldBNK?: string[];
 		relationType?: string[];
 		program?: string[];
 		programType?: string[];
 		taskCategory?: string[];
 		terms?: string;
-		topic?: string[];
 	},
 	sort?: string,
 	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
+	for (const key of page.data.categoryContext.keys) {
+		for (const value of (filters[key] as string[]) ?? []) {
+			params.append(key, value);
+		}
+	}
 	for (const value of filters.assignee ?? []) {
 		params.append('assignee', value);
-	}
-	for (const value of filters.audience ?? []) {
-		params.append('audience', value);
-	}
-	for (const value of filters.sdg ?? []) {
-		params.append('sdg', value);
 	}
 	for (const value of filters.organization ?? []) {
 		params.append('organization', value);
@@ -39,9 +36,6 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.payloadType ?? []) {
 		params.append('payloadType', value);
-	}
-	for (const value of filters.policyFieldBNK ?? []) {
-		params.append('policyFieldBNK', value);
 	}
 	for (const value of filters.program ?? []) {
 		params.append('program', value);
@@ -60,9 +54,6 @@ export default async function fetchRelatedContainers(
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);
-	}
-	for (const value of filters.topic ?? []) {
-		params.append('topic', value);
 	}
 	const response = await fetch(`/container/${guid}/relation?${params}`, init);
 	const data = await response.json();

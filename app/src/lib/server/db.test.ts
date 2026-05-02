@@ -8,6 +8,7 @@ import {
 	type NewContainer,
 	newContainer,
 	type PartialRelation,
+	type PayloadType,
 	payloadTypes,
 	predicates,
 	type ProgramContainer,
@@ -247,6 +248,16 @@ test('adding more relations does not interfere with existing relations', async (
 	expect(programWithRelations.relation).toEqual(expectedRelationsOfProgram);
 });
 
+type Test = {
+	name: string;
+	filters: {
+		customCategories?: Record<string, string[]>;
+		terms?: string;
+		type?: PayloadType[];
+	};
+	sort: string;
+};
+
 test.for([
 	{
 		name: 'all',
@@ -287,12 +298,15 @@ test.for([
 	},
 	{
 		name: 'goal with categories',
-		filters: { type: [payloadTypes.enum.goal], sdg: ['sdg.11', 'sdg.13'] as string[] },
+		filters: { type: [payloadTypes.enum.goal], customCategories: { sdg: ['sdg.11', 'sdg.13'] } },
 		sort: 'alpha'
 	},
 	{
 		name: 'goal with audience',
-		filters: { type: [payloadTypes.enum.goal], audience: ['audience.public'] as string[] },
+		filters: {
+			type: [payloadTypes.enum.goal],
+			customCategories: { audience: ['audience.public'] }
+		},
 		sort: 'modified'
 	},
 	{
@@ -302,7 +316,10 @@ test.for([
 	},
 	{
 		name: 'indicator with topics',
-		filters: { type: [payloadTypes.enum.indicator_template], topics: ['topic.health'] as string[] },
+		filters: {
+			type: [payloadTypes.enum.indicator_template],
+			customCategories: { topics: ['topic.health'] }
+		},
 		sort: 'alpha'
 	},
 	{
@@ -312,7 +329,7 @@ test.for([
 	},
 	{
 		name: 'knowledge with categories',
-		filters: { type: [payloadTypes.enum.knowledge], sdg: ['sdg.11'] as string[] },
+		filters: { type: [payloadTypes.enum.knowledge], customCategories: { sdg: ['sdg.11'] } },
 		sort: 'modified'
 	},
 	{
@@ -324,8 +341,10 @@ test.for([
 		name: 'measure with topics and audience',
 		filters: {
 			type: [payloadTypes.enum.measure],
-			topics: ['topic.economy'] as string[],
-			audience: ['audience.business'] as string[]
+			customCategories: {
+				topics: ['topic.economy'],
+				audience: ['audience.business']
+			}
 		},
 		sort: 'modified'
 	},
@@ -336,7 +355,10 @@ test.for([
 	},
 	{
 		name: 'objective with categories',
-		filters: { type: [payloadTypes.enum.objective], sdg: ['sdg.13'] as string[] },
+		filters: {
+			type: [payloadTypes.enum.objective],
+			customCategories: { sdg: ['sdg.13'] }
+		},
 		sort: 'alpha'
 	},
 	{
@@ -348,7 +370,9 @@ test.for([
 		name: 'program with audience',
 		filters: {
 			type: [payloadTypes.enum.program],
-			audience: ['audience.public', 'audience.business'] as string[]
+			customCategories: {
+				audience: ['audience.public', 'audience.business']
+			}
 		},
 		sort: 'modified'
 	},
@@ -361,8 +385,10 @@ test.for([
 		name: 'resource with categories and topics',
 		filters: {
 			type: [payloadTypes.enum.resource],
-			sdg: ['sdg.11'] as string[],
-			topics: ['topic.environment'] as string[]
+			customCategories: {
+				sdg: ['sdg.11'],
+				topics: ['topic.environment']
+			}
 		},
 		sort: 'alpha'
 	},
@@ -373,7 +399,7 @@ test.for([
 	},
 	{
 		name: 'rule with topics',
-		filters: { type: [payloadTypes.enum.rule], topics: ['topic.legal'] as string[] },
+		filters: { type: [payloadTypes.enum.rule], customCategories: { topic: ['topic.legal'] } },
 		sort: 'alpha'
 	},
 	{
@@ -383,7 +409,7 @@ test.for([
 	},
 	{
 		name: 'task with categories',
-		filters: { type: [payloadTypes.enum.task], sdg: ['sdg.13'] as string[] },
+		filters: { type: [payloadTypes.enum.task], customCategories: { sdg: ['sdg.13'] } },
 		sort: 'modified'
 	},
 	{
@@ -391,7 +417,7 @@ test.for([
 		filters: { type: [payloadTypes.enum.task] },
 		sort: 'priority'
 	}
-])(
+] as Test[])(
 	`getManyContainers and getManyContainersWithES: $name`,
 	async ({ filters, sort }, { connection }) => {
 		// Get the organization GUID for Musterhausen

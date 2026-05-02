@@ -1,15 +1,17 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
 	import Close from '~icons/knotdots/close';
 	import Filter from '~icons/knotdots/filter';
+	import type { CategoryContext } from '$lib/categoryOptions';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import SearchInput from '$lib/components/SearchInput.svelte';
 	import { sortIcons } from '$lib/theme/models';
-	import type { Snippet } from 'svelte';
 
 	interface Props {
+		categoryContext: CategoryContext;
 		extraPrimaryContent?: Snippet;
 		facets: Map<string, Map<string, number>>;
 		filter: Record<string, string[]>;
@@ -19,6 +21,7 @@
 	}
 
 	let {
+		categoryContext,
 		extraPrimaryContent,
 		facets,
 		filter = $bindable(),
@@ -87,14 +90,23 @@
 			{/if}
 
 			{#each facets.entries() as [key, foci] (key)}
-				{@const options = [...foci.entries()]
-					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-					.toSorted((a, b) =>
-						a.label.localeCompare(b.label, undefined, {
-							numeric: true,
-							sensitivity: 'base'
-						})
-					)}
+				{@const options =
+					categoryContext.options[key]?.map((option) => ({
+						...option,
+						count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
+						subOptions: option.subOptions?.map((sub) => ({
+							...sub,
+							count: foci.get(sub.value) ?? foci.get(sub.guid) ?? 0
+						}))
+					})) ??
+					[...foci.entries()]
+						.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+						.toSorted((a, b) =>
+							a.label.localeCompare(b.label, undefined, {
+								numeric: true,
+								sensitivity: 'base'
+							})
+						)}
 				{#if options.some(({ count }) => count > 0)}
 					<InlineFilterDropDown
 						bind:value={filter[key as keyof typeof filter] as string[]}

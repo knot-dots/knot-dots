@@ -95,13 +95,15 @@ export const POST = (async ({ locals, request }) => {
 									organizational_unit: container.organizational_unit,
 									payload: {
 										aiSuggestion: true,
-										sdg: project.sdg,
+										category: {
+											sdg: project.sdg,
+											topic: project.topicArea
+										},
 										description: project.description,
 										editorialState: editorialState.enum['editorial_state.draft'],
 										...('goalType' in project ? { goalType: project.goalType } : undefined),
 										...('status' in project ? { status: project.status } : undefined),
 										title: project.title,
-										topic: project.topicArea,
 										type: project.type
 									},
 									realm: env.PUBLIC_KC_REALM,

@@ -35,10 +35,8 @@
 		['indicatorCategory', 'indicator_category'],
 		['federalState', 'administrative_area.basic_data.federal_state'],
 		['member', 'member_filter.label'],
-		['policyFieldBNK', 'policy_field_bnk'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
-		['sdg', 'category'],
 		['taskCategory', 'task_category.label'],
 		['type', 'payload_type']
 	]);

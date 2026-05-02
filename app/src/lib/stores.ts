@@ -33,6 +33,7 @@ import {
 	type User as UserRecord,
 	isContainerWithCategory
 } from '$lib/models';
+import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 export const applicationState = writable<ApplicationState>({
 	containerDetailView: {
@@ -436,15 +437,12 @@ if (browser) {
 				const containers = (await fetchRelatedContainers(
 					hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 					{
-						audience: hashParams.getAll('audience'),
-						sdg: hashParams.getAll('sdg'),
+						...extractCustomCategoryFiltersFromParams(hashParams, values.data.categoryContext.keys),
 						organization: [container.organization],
 						...(hashParams.has('related-to')
 							? { relationType: [predicates.enum['is-part-of']] }
 							: {}),
-						policyFieldBNK: hashParams.getAll('policyFieldBNK'),
-						terms: hashParams.get('terms') ?? '',
-						topic: hashParams.getAll('topic')
+						terms: hashParams.get('terms') ?? ''
 					},
 					hashParams.get('sort') ?? 'alpha'
 				)) as Container[];
@@ -462,15 +460,12 @@ if (browser) {
 			const containers = (await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
-					audience: hashParams.getAll('audience'),
-					sdg: hashParams.getAll('sdg'),
+					...extractCustomCategoryFiltersFromParams(hashParams, values.data.categoryContext.keys),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
 						: {}),
-					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
-					terms: hashParams.get('terms') ?? '',
-					topic: hashParams.getAll('topic')
+					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as Container[];
@@ -483,14 +478,11 @@ if (browser) {
 			const containers = (await fetchRelatedContainers(
 				hashParams.get(overlayKey.enum['measures']) as string,
 				{
-					audience: hashParams.getAll('audience'),
-					sdg: hashParams.getAll('sdg'),
+					...extractCustomCategoryFiltersFromParams(hashParams, values.data.categoryContext.keys),
 					organization: [container.organization],
 					payloadType: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
-					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
 					relationType: [predicates.enum['is-part-of-program']],
-					terms: hashParams.get('terms') ?? '',
-					topic: hashParams.getAll('topic')
+					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as MeasureContainer[];
@@ -700,15 +692,12 @@ if (browser) {
 			const containers = (await fetchRelatedContainers(
 				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
 				{
-					audience: hashParams.getAll('audience'),
-					sdg: hashParams.getAll('sdg'),
+					...extractCustomCategoryFiltersFromParams(hashParams, values.data.categoryContext.keys),
 					organization: [container.organization],
 					...(hashParams.has('related-to')
 						? { relationType: [predicates.enum['is-part-of']] }
 						: {}),
-					policyFieldBNK: hashParams.getAll('policyFieldBNK'),
-					terms: hashParams.get('terms') ?? '',
-					topic: hashParams.getAll('topic')
+					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
 			)) as Container[];
