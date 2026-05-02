@@ -227,6 +227,7 @@
 		{/if}
 	{/snippet}
 	<Table
+		{actualDataContainers}
 		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
 		{columns}
 		rows={data.containers.filter((c) => isIndicatorTemplateContainer(c))}
