@@ -4,9 +4,10 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { type AnyContainer, isProgramContainer, predicates } from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ depends, locals, params, url }) => {
+export const load = (async ({ depends, locals, params, parent, url }) => {
 	depends('containers');
 
 	const t = unwrapFunctionStore(_);
@@ -23,12 +24,15 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
+		const { categoryContext } = await parent();
+
 		const containers = await locals.pool.connect(
 			getAllRelatedContainers(
 				[container.organization],
 				url.searchParams.get('related-to') ?? container.guid,
 				[predicates.enum['is-part-of']],
 				{
+					customCategories: extractCustomCategoryFilters(url, categoryContext.keys),
 					terms: url.searchParams.get('terms') ?? ''
 				},
 				url.searchParams.get('sort') ?? ''
