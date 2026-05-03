@@ -1365,6 +1365,7 @@ const imagePayload = z
 		body: z.string().trim().optional(),
 		image: z.string().url().optional(),
 		imageAltText: z.string().optional(),
+		imageSource: z.string().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.image),
 		visibility: visibility.default(visibility.enum['organization'])

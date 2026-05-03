@@ -326,6 +326,7 @@
 	"home": "Startseite",
 	"homepage": "Homepage",
 	"image": "Bild",
+	"image_source": "Bildquelle",
 	"inline_help": "Inline-Hilfe",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",

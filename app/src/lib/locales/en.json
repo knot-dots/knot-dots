@@ -325,6 +325,7 @@
 	"home": "Home screen",
 	"homepage": "Homepage",
 	"image": "Image",
+	"image_source": "Image source",
 	"inline_help": "Inline help",
 	"import.csv_file": "CSV file",
 	"import.error.invalid_record": "Error in line {line}: {errors}",
