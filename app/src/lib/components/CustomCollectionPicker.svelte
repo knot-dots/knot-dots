@@ -24,6 +24,7 @@
 		payloadTypes,
 		programTypes
 	} from '$lib/models';
+	import { user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -96,6 +97,12 @@
 		selected.length > 0 || activeFilters == 0 ? 'select' : 'apply_rule'
 	);
 
+	let organizationsUserIsMemberOf = $derived(
+		[...$user.adminOf, ...$user.headOf, ...$user.memberOf].filter((value) =>
+			page.data.organizations.map((o) => o.guid).includes(value)
+		)
+	);
+
 	const inViewport = new IsInViewport(() => dialog);
 
 	const searchResource = resource(
@@ -105,7 +112,12 @@
 				? fetchContainers(
 						{
 							indicatorCategory: filter.indicatorCategory,
-							organization: [page.data.currentOrganization.guid],
+							organization:
+								mode === 'select'
+									? Array.from(
+											new Set([page.data.currentOrganization.guid, ...organizationsUserIsMemberOf])
+										)
+									: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 							programType: filter.programType,
 							...Object.fromEntries(
