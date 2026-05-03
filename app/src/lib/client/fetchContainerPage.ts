@@ -12,8 +12,8 @@ interface FetchContainerPageOptions {
 
 const responseSchema = z.object({
 	categoryOptions: z
-		.record(
-			z.string(),
+		.looseRecord(
+			z.string().refine((value) => value !== '__categoryLabels__'),
 			z.array(
 				z.object({
 					guid: z.string(),

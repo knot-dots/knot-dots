@@ -8,9 +8,11 @@ import {
 	indicatorCategories,
 	type IndicatorTemplateContainer,
 	indicatorTypes,
+	isActualDataContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	policyFieldBNK,
+	predicates,
 	sustainableDevelopmentGoals,
 	topics
 } from '$lib/models';
@@ -131,10 +133,24 @@ export async function getIndicatorsData(params: {
 		)
 	);
 
-	const combinedVisible = filterVisible([...indicators, ...related], user);
+	const containers = indicators.filter(
+		(c) =>
+			related.filter(isActualDataContainer).some(({ payload }) => payload.indicator === c.guid) ||
+			related.some(
+				({ guid, relation }) =>
+					relation.some(
+						({ object, predicate }) =>
+							object === c.guid &&
+							(predicate === predicates.enum['is-measured-by'] ||
+								predicate === predicates.enum['is-objective-for'])
+					) && guid !== c.guid
+			)
+	);
+
+	const combinedVisible = filterVisible([...containers, ...related], user);
 
 	return {
-		containers: indicators,
+		containers,
 		related,
 		combined: combinedVisible,
 		facetData
