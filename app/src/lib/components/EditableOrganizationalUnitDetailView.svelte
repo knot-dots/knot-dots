@@ -8,7 +8,7 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
-	import EditableCover from '$lib/components/EditableCover.svelte';
+	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -154,7 +154,7 @@
 		>
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 				<div class="stage--buttons details-section">
-					<EditableCover
+					<CoverUpload
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
 						label={$_('add_cover')}

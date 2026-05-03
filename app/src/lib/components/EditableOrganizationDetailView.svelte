@@ -5,7 +5,7 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
-	import EditableCover from '$lib/components/EditableCover.svelte';
+	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -16,8 +16,8 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import { type AnyContainer, helpSlug, type OrganizationContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import transformFileURL from '$lib/transformFileURL.js';
 	import { backgroundColors } from '$lib/theme/models';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		container: OrganizationContainer;
@@ -69,7 +69,7 @@
 		>
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 				<div class="stage--buttons details-section">
-					<EditableCover
+					<CoverUpload
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
 						label={$_('add_cover')}
