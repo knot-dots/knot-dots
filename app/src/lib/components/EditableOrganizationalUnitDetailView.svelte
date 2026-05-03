@@ -9,6 +9,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
+	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -33,7 +34,6 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
-	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		container: OrganizationalUnitContainer;
@@ -131,21 +131,10 @@
 {/snippet}
 
 {#snippet main()}
-	{#if container.payload.cover}
-		<div class="cover-section">
-			<img alt={$_('cover')} class="cover" src={transformFileURL(container.payload.cover)} />
-			{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-				<label class="cover-source">
-					{$_('image_source')}:
-					<input bind:value={container.payload.coverSource} name="coverSource" type="text" />
-				</label>
-			{:else if container.payload.coverSource}
-				<span class="cover-source">
-					{$_('image_source')}: {container.payload.coverSource}
-				</span>
-			{/if}
-		</div>
-	{/if}
+	<EditableCoverSection
+		bind:container
+		editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
+	/>
 	<article>
 		<div
 			class="details stage stage--{container.payload.color
@@ -346,33 +335,5 @@
 
 	.stage + .details {
 		padding-top: 4rem;
-	}
-
-	.cover-section {
-		position: relative;
-	}
-
-	.cover-source {
-		background-color: rgba(255, 255, 255, 0.85);
-		bottom: 0;
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-		font-weight: 400;
-		padding: 0.125rem 0.25rem;
-		position: absolute;
-		right: 0;
-	}
-
-	.cover-source input {
-		border: none;
-		border-radius: 4px;
-		display: inline;
-		color: inherit;
-		field-sizing: content;
-		font-size: inherit;
-		font-weight: inherit;
-		padding: 0.125rem 0.25rem;
-		min-width: 4rem;
-		width: fit-content;
 	}
 </style>
