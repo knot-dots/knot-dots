@@ -2,18 +2,14 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	type AnyContainer,
+	computeFacetCount,
 	type Container,
+	fromCounts,
 	payloadTypes,
 	predicates,
 	type ProgramContainer,
-	computeFacetCount,
-	audience,
-	fromCounts,
-	policyFieldBNK,
-	programTypes,
-	sustainableDevelopmentGoals,
-	topics,
-	type AnyContainer
+	programTypes
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -38,23 +34,8 @@ export const load = (async ({ locals, url, parent }) => {
 	let data: Record<string, Record<string, number>> | undefined;
 	const { categoryContext: rawCategoryContext, currentOrganization } = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge])
-		: null;
-	const useCustomCategories = features.useCustomCategories();
-
-	const customCategories = useCustomCategories
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
-	const coreCategoryFilters = useCustomCategories
-		? {}
-		: {
-				audience: url.searchParams.getAll('audience'),
-				sdg: url.searchParams.getAll('sdg'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic')
-			};
+	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.knowledge]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	if (url.searchParams.has('related-to')) {
 		containers = await locals.pool.connect(
@@ -84,14 +65,13 @@ export const load = (async ({ locals, url, parent }) => {
 			const esResult = await getManyContainersWithES(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					...coreCategoryFilters,
 					customCategories,
 					programTypes: url.searchParams.getAll('programType'),
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.knowledge]
 				},
 				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 			);
 			containers = esResult.containers;
 			data = esResult.facets;
@@ -100,7 +80,6 @@ export const load = (async ({ locals, url, parent }) => {
 				getManyContainers(
 					currentOrganization.payload.default ? [] : [currentOrganization.guid],
 					{
-						...coreCategoryFilters,
 						customCategories,
 						programTypes: url.searchParams.getAll('programType'),
 						terms: url.searchParams.get('terms') ?? '',
@@ -136,37 +115,23 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const _facets = new Map<string, Map<string, number>>();
 
-	if (useCustomCategories && categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
+	const customFacets = buildCategoryFacetsWithCounts(
+		categoryContext.options,
+		data ? Object.fromEntries(Object.entries(data)) : {}
+	);
+	for (const [key, values] of customFacets.entries()) {
+		_facets.set(key, values);
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
 	const facets = features.useElasticsearch()
 		? _facets
-		: computeFacetCount(_facets, [...filtered, ...filteredPrograms], {
-				useCategoryPayload: useCustomCategories
-			});
+		: computeFacetCount(_facets, [...filtered, ...filteredPrograms]);
 
 	return {
 		containers: filtered,
 		programs: filteredPrograms,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facets
 	};
 }) satisfies PageServerLoad;

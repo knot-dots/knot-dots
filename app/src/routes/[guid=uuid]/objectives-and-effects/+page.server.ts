@@ -2,16 +2,12 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
-	audience,
-	payloadTypes,
 	computeFacetCount,
 	fromCounts,
 	indicatorCategories,
+	type IndicatorTemplateContainer,
 	indicatorTypes,
-	policyFieldBNK,
-	sustainableDevelopmentGoals,
-	topics,
-	type IndicatorTemplateContainer
+	payloadTypes
 } from '$lib/models';
 import { getAllContainersRelatedToIndicatorTemplates, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
@@ -27,27 +23,12 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [
-				payloadTypes.enum.objective,
-				payloadTypes.enum.effect,
-				payloadTypes.enum.indicator_template
-			])
-		: null;
-	const useCustomCategories = features.useCustomCategories();
-
-	const customCategories = useCustomCategories
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
-	const coreCategoryFilters = useCustomCategories
-		? {}
-		: {
-				audience: url.searchParams.getAll('audience'),
-				sdg: url.searchParams.getAll('sdg'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic')
-			};
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.objective,
+		payloadTypes.enum.effect,
+		payloadTypes.enum.indicator_template
+	]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	let containers: IndicatorTemplateContainer[];
 	let data: Record<string, Record<string, number>> | undefined;
@@ -55,14 +36,13 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		const esResult = await getManyContainersWithES(
 			[],
 			{
-				...coreCategoryFilters,
 				customCategories,
 				indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 				indicatorTypes: url.searchParams.getAll('indicatorType'),
 				type: [payloadTypes.enum.indicator_template]
 			},
 			'',
-			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 		);
 		containers = esResult.containers as IndicatorTemplateContainer[];
 		data = esResult.facets;
@@ -71,7 +51,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				[],
 				{
-					...coreCategoryFilters,
 					customCategories,
 					indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 					indicatorTypes: url.searchParams.getAll('indicatorType'),
@@ -103,7 +82,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		]
 	]);
 
-	if (useCustomCategories && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -111,14 +90,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
 	}
 
 	const facets =
@@ -127,8 +98,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	return {
 		container: currentOrganization,
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facets
 	};
 }) satisfies PageServerLoad;

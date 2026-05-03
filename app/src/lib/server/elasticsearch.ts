@@ -22,10 +22,6 @@ type ContainerElasticsearchOptions = ContainerQueryOptions & {
 };
 
 const defaultFacetKeys = [
-	'audience',
-	'sdg',
-	'topic',
-	'policyFieldBNK',
 	'programType',
 	'measureType',
 	'indicatorCategory',
@@ -38,10 +34,6 @@ const defaultFacetKeys = [
 ] as const;
 
 const facetFieldMap: Record<string, string> = {
-	audience: 'payload.audience',
-	sdg: 'payload.sdg',
-	topic: 'payload.topic',
-	policyFieldBNK: 'payload.policyFieldBNK',
 	programType: 'payload.programType',
 	measureType: 'payload.measureType',
 	indicatorCategory: 'payload.indicatorCategory',
@@ -54,10 +46,6 @@ const facetFieldMap: Record<string, string> = {
 };
 
 const facetSizeMap: Record<string, number> = {
-	audience: 50,
-	sdg: 100,
-	topic: 100,
-	policyFieldBNK: 100,
 	programType: 20,
 	measureType: 20,
 	indicatorCategory: 100,
@@ -131,20 +119,16 @@ export async function getManyContainersWithES(
 	organizations: string[],
 	filters: {
 		assignees?: string[];
-		audience?: string[];
-		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		resourceCategories?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
@@ -160,16 +144,6 @@ export async function getManyContainersWithES(
 		});
 	}
 	if (filters.type?.length) addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
-	if (filters.sdg?.length)
-		addFacetFilter(facetFilters, 'sdg', { terms: { 'payload.sdg': filters.sdg } });
-	if (filters.topics?.length)
-		addFacetFilter(facetFilters, 'topic', { terms: { 'payload.topic': filters.topics } });
-	if (filters.audience?.length)
-		addFacetFilter(facetFilters, 'audience', { terms: { 'payload.audience': filters.audience } });
-	if (filters.policyFieldsBNK?.length)
-		addFacetFilter(facetFilters, 'policyFieldBNK', {
-			terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK }
-		});
 	if (filters.programTypes?.length)
 		addFacetFilter(facetFilters, 'programType', {
 			terms: { 'payload.programType': filters.programTypes }

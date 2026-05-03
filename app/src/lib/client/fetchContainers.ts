@@ -1,54 +1,34 @@
 import { z } from 'zod';
 import { page } from '$app/state';
 import withRequestCoalescing from '$lib/client/withRequestCoalescing';
-import { createFeatureDecisions } from '$lib/features';
 import { anyContainer } from '$lib/models';
 
 export default async function fetchContainers(
 	filters: {
 		[key: string]: string | string[] | undefined;
 		assignee?: string[];
-		audience?: string[];
 		guid?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
-		policyFieldBNK?: string[];
 		programType?: string[];
 		relatedTo?: string[];
 		relationType?: string[];
-		sdg?: string[];
 		taskCategory?: string[];
 		template?: string;
 		terms?: string;
-		topic?: string[];
 	},
 	sort?: string,
 	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
-	if (createFeatureDecisions(page.data.features).useCustomCategories()) {
-		page.data.categoryContext?.keys.forEach((key) => {
-			for (const value of (filters[key] as string[]) ?? []) {
-				params.append(key, value);
-			}
-		});
-	} else {
-		for (const value of filters.audience ?? []) {
-			params.append('audience', value);
+	page.data.categoryContext.keys.forEach((key) => {
+		for (const value of (filters[key] as string[]) ?? []) {
+			params.append(key, value);
 		}
-		for (const value of filters.policyFieldBNK ?? []) {
-			params.append('policyFieldBNK', value);
-		}
-		for (const value of filters.sdg ?? []) {
-			params.append('sdg', value);
-		}
-		for (const value of filters.topic ?? []) {
-			params.append('topic', value);
-		}
-	}
+	});
 	for (const value of filters.assignee ?? []) {
 		params.append('assignee', value);
 	}

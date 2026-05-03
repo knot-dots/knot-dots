@@ -125,12 +125,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{facets}
-			facetLabels={data.facetLabels ?? undefined}
-			categoryOptions={data.categoryOptions ?? null}
-			search
-		/>
+		<Header {facets} search />
 	{/snippet}
 
 	{#snippet main()}

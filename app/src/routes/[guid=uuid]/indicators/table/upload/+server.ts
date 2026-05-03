@@ -22,8 +22,8 @@ import {
 import {
 	detectDelimiter,
 	parseSdgValues,
-	reverseTranslationMap,
-	resolveColumnHeader
+	resolveColumnHeader,
+	reverseTranslationMap
 } from '$lib/server/csv';
 import {
 	createContainer,
@@ -177,8 +177,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const errors: string[] = [];
 	let lineNumber = 1;
 
-	const useCustomCategories = featureDecisions.useCustomCategories();
-
 	try {
 		for await (const record of parser) {
 			lineNumber++;
@@ -253,17 +251,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 							...(fields.description ? { description: fields.description } : {}),
 							indicatorCategory,
 							indicatorType: reverseTranslateList(fields.indicatorType),
-							category: useCustomCategories
-								? {
-										...(audience.length > 0 ? { audience } : {}),
-										...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
-										...(sdg.length > 0 ? { sdg } : {}),
-										...(topic.length > 0 ? { topic } : {})
-									}
-								: {},
-							...(useCustomCategories
-								? { audience: [], policyFieldBNK: [], sdg: [], topic: [] }
-								: { topic, sdg, policyFieldBNK, audience }),
+							category: {
+								...(audience.length > 0 ? { audience } : {}),
+								...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
+								...(sdg.length > 0 ? { sdg } : {}),
+								...(topic.length > 0 ? { topic } : {})
+							},
 							unit,
 							visibility,
 							editorialState: editorialStateValue,

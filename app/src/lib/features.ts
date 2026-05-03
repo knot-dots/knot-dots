@@ -7,7 +7,6 @@ export const featureFlags = new Map([
 			'EmbedObjects',
 			'ContentPartner',
 			'ResourceV2',
-			'CustomCategories',
 			'IOOI',
 			'SubMeasures'
 		] as const
@@ -54,9 +53,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useResourcePlanning() {
 			return features.includes('ResourceV2');
-		},
-		useCustomCategories() {
-			return features.includes('CustomCategories');
 		},
 		useIOOI() {
 			return features.includes('IOOI');

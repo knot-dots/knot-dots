@@ -1,16 +1,7 @@
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
-import {
-	filterOrganizationalUnits,
-	payloadTypes,
-	computeFacetCount,
-	audience,
-	fromCounts,
-	policyFieldBNK,
-	sustainableDevelopmentGoals,
-	topics
-} from '$lib/models';
+import { computeFacetCount, filterOrganizationalUnits, payloadTypes } from '$lib/models';
 import { getAllRelatedOrganizationalUnitContainers, getManyContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -26,26 +17,11 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [
-				payloadTypes.enum.measure,
-				payloadTypes.enum.simple_measure
-			])
-		: null;
-	const useCustomCategories = features.useCustomCategories();
-
-	const customCategories = useCustomCategories
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
-	const coreCategoryFilters = useCustomCategories
-		? {}
-		: {
-				audience: url.searchParams.getAll('audience'),
-				sdg: url.searchParams.getAll('sdg'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic')
-			};
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.measure,
+		payloadTypes.enum.simple_measure
+	]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	if (currentOrganizationalUnit) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -62,14 +38,13 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		const esResult = await getManyContainersWithES(
 			currentOrganization.payload.default ? [] : [currentOrganization.guid],
 			{
-				...coreCategoryFilters,
 				customCategories,
 				template: true,
 				terms: url.searchParams.get('terms') ?? '',
 				type: [payloadTypes.enum.measure]
 			},
 			url.searchParams.get('sort') ?? '',
-			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 		);
 		containers = esResult.containers;
 		data = esResult.facets;
@@ -78,7 +53,6 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
-					...coreCategoryFilters,
 					customCategories,
 					template: true,
 					terms: url.searchParams.get('terms') ?? '',
@@ -102,7 +76,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		>)
 	]);
 
-	if (useCustomCategories && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -110,22 +84,12 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
 	}
 
 	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, filtered);
 
 	return {
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facets
 	};
 }) satisfies PageServerLoad;

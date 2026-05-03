@@ -40,11 +40,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 						url.searchParams.get('related-to') as string,
 						[predicates.enum['is-part-of']],
 						{
-							sdg: url.searchParams.getAll('sdg'),
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							taskCategories: url.searchParams.getAll('taskCategory'),
 							terms: url.searchParams.get('terms') ?? '',
-							topics: url.searchParams.getAll('topic'),
 							type: [
 								payloadTypes.enum.effect,
 								payloadTypes.enum.goal,
@@ -57,11 +53,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 				: getAllContainersRelatedToMeasure(
 						container.guid,
 						{
-							sdg: url.searchParams.getAll('sdg'),
-							policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-							taskCategories: url.searchParams.getAll('taskCategory'),
 							terms: url.searchParams.get('terms') ?? '',
-							topics: url.searchParams.getAll('topic'),
 							type: [
 								payloadTypes.enum.effect,
 								payloadTypes.enum.goal,

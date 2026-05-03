@@ -3,6 +3,9 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
+	import { page } from '$app/state';
+	import { invalidate } from '$app/navigation';
+	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
@@ -11,12 +14,9 @@
 		indicatorCategories,
 		indicatorTemplateContainer,
 		indicatorTypes,
-		payloadTypes,
-		sustainableDevelopmentGoals
+		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
-	import { page } from '$app/state';
-	import { invalidate } from '$app/navigation';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -28,8 +28,12 @@
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
-	let filter = $state({
-		sdg: [],
+	const categoryContext = $derived(
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+	);
+
+	let filter = $state<Record<string, string[]>>({
+		...Object.fromEntries(categoryContext.keys.map((k) => [k, []])),
 		indicatorCategory: [],
 		indicatorType: []
 	});
@@ -47,21 +51,15 @@
 	const mode = 'select';
 
 	const searchResource = resource(
-		[
-			() => filter.sdg,
-			() => filter.indicatorCategory,
-			() => filter.indicatorType,
-			() => sort,
-			() => terms
-		],
-		async ([sdg, indicatorCategory, indicatorType, sort, terms], _, { signal }) => {
+		[() => $state.snapshot(filter), () => sort, () => terms],
+		async ([filter, sort, terms], _, { signal }) => {
 			const params = new URLSearchParams([
-				...sdg.map((v) => ['sdg', v]),
-				...indicatorCategory.map((v) => ['indicatorCategory', v]),
-				...indicatorType.map((v) => ['indicatorType', v]),
+				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
+				...filter.indicatorType.map((v) => ['indicatorType', v]),
 				['payloadType', payloadTypes.enum.indicator_template],
 				['sort', sort],
-				['terms', terms]
+				['terms', terms],
+				...categoryContext.keys.flatMap((k) => (k in filter ? filter[k].map((v) => [k, v]) : []))
 			]);
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
@@ -74,7 +72,7 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			...buildCategoryFacetsWithCounts(categoryContext.options),
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 			['indicatorTypes', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
 		]);
@@ -83,11 +81,9 @@
 	});
 
 	function resetFilters() {
-		filter = {
-			sdg: [],
-			indicatorCategory: [],
-			indicatorType: []
-		};
+		for (const key in filter) {
+			filter[key] = [];
+		}
 	}
 
 	function selectAll() {
@@ -134,14 +130,23 @@
 >
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
-			{@const options = [...foci.entries()]
-				.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
-				.toSorted((a, b) =>
-					a.label.localeCompare(b.label, undefined, {
-						numeric: true,
-						sensitivity: 'base'
-					})
-				)}
+			{@const options =
+				categoryContext.options[key]?.map((option) => ({
+					...option,
+					count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
+					subOptions: option.subOptions?.map((sub) => ({
+						...sub,
+						count: foci.get(sub.value) ?? foci.get(sub.guid) ?? 0
+					}))
+				})) ??
+				[...foci.entries()]
+					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+					.toSorted((a, b) =>
+						a.label.localeCompare(b.label, undefined, {
+							numeric: true,
+							sensitivity: 'base'
+						})
+					)}
 			{#if options.some(({ count }) => count > 0)}
 				<InlineFilterDropDown
 					bind:value={filter[key as keyof typeof filter] as string[]}

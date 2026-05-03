@@ -18,7 +18,7 @@ export async function loadCategoryContext(params: {
 	connect: Connect;
 	scope: Scope;
 	user: User;
-}): Promise<CategoryContext | undefined> {
+}): Promise<CategoryContext> {
 	const containers = await params.connect(
 		getManyContainers(
 			params.scope,
@@ -35,20 +35,18 @@ export async function loadCategoryContext(params: {
 	);
 	const keys = getCategoryKeys(options);
 
-	if (keys.length > 0) {
-		const objectTypesPerKey: Record<string, string[]> = {};
-		for (const category of categories) {
-			const key = category.payload.key;
-			if (key) {
-				objectTypesPerKey[key] = category.payload.objectTypes ?? [];
-			}
+	const objectTypesPerKey: Record<string, string[]> = {};
+	for (const category of categories) {
+		const key = category.payload.key;
+		if (key) {
+			objectTypesPerKey[key] = category.payload.objectTypes ?? [];
 		}
-
-		return {
-			options,
-			labels: buildCategoryLabels(options),
-			keys,
-			objectTypesPerKey
-		};
 	}
+
+	return {
+		options,
+		labels: buildCategoryLabels(options),
+		keys,
+		objectTypesPerKey
+	};
 }

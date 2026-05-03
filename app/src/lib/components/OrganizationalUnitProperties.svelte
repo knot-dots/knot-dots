@@ -148,10 +148,8 @@
 			<EditableVisibility {editable} bind:container />
 		{/if}
 
-		{#if featureDecisions.useCustomCategories()}
-			<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
-			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{/if}
+		<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
+		<EditableCategories bind:container {editable} />
 	</div>
 </div>
 

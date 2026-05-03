@@ -4,8 +4,6 @@
 	import Help from '$lib/components/Help.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import Table from '$lib/components/Table.svelte';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import { createFeatureDecisions } from '$lib/features';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -52,40 +50,27 @@
 		withOptimistic(list.items, $lastCreatedContainer, $lastUpdatedContainers)
 	);
 
-	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
-
-	const legacyCategoryColumns = [
-		{ heading: $_('category'), key: 'sdg' },
-		{ heading: $_('topic'), key: 'topic' },
-		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
-		{ heading: $_('audience'), key: 'audience' }
-	];
-
 	const customCategoryColumns = $derived(
-		featureDecisions.useCustomCategories() && data.categoryOptions
-			? getCategoryKeys(data.categoryOptions).map((key) => ({
-					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
-					key
-				}))
-			: null
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
 		{ heading: $_('title'), key: 'title' },
 		{ heading: $_('description'), key: 'description' },
 		{ heading: $_('visibility.label'), key: 'visibility' },
-		...(customCategoryColumns ?? legacyCategoryColumns),
+		...customCategoryColumns,
 		{ heading: $_('editorial_state'), key: 'editorialState' },
 		{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
 	]);
 </script>
 
 <KnowledgePage data={{ ...data, containers }}>
-	<Table
-		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
-		{columns}
-		rows={containers}
-	>
+	<Table {columns} rows={containers}>
 		{#snippet footer()}
 			<LazyLoadSentinel
 				hasMore={list.hasMore}

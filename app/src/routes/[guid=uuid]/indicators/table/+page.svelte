@@ -11,13 +11,13 @@
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import { getToastContext } from '$lib/contexts/toast';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isActualDataContainer,
@@ -26,7 +26,6 @@
 		payloadTypes,
 		isBinaryIndicatorContainer
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { ability, lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -86,22 +85,13 @@
 		allYears.map((year) => ({ heading: String(year), key: `year:${year}` }))
 	);
 
-	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
-
-	const legacyCategoryColumns = [
-		{ heading: $_('topic'), key: 'topic' },
-		{ heading: $_('category'), key: 'sdg' },
-		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
-		{ heading: $_('audience'), key: 'audience' }
-	];
-
 	const customCategoryColumns = $derived(
-		featureDecisions.useCustomCategories() && data.categoryOptions
-			? getCategoryKeys(data.categoryOptions).map((key) => ({
-					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
-					key
-				}))
-			: null
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -110,7 +100,7 @@
 		{ heading: $_('visibility.label'), key: 'visibility' },
 		{ heading: $_('indicator_category'), key: 'indicatorCategory' },
 		{ heading: $_('indicator_type'), key: 'indicatorType' },
-		...(customCategoryColumns ?? legacyCategoryColumns),
+		...customCategoryColumns,
 		{ heading: $_('editorial_state'), key: 'editorialState' },
 		{ heading: $_('organizational_unit'), key: 'organizationalUnit' },
 		{ heading: $_('label.unit'), key: 'unit' },
@@ -223,12 +213,7 @@
 			</button>
 		{/if}
 	{/snippet}
-	<Table
-		{actualDataContainers}
-		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
-		{columns}
-		{rows}
-	/>
+	<Table {actualDataContainers} {columns} {rows} />
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 

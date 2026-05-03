@@ -1,17 +1,6 @@
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
-import {
-	isContainerWithEffect,
-	isMemberOf,
-	computeFacetCount,
-	audience,
-	fromCounts,
-	payloadTypes,
-	policyFieldBNK,
-	sustainableDevelopmentGoals,
-	topics
-} from '$lib/models';
+import { isContainerWithEffect, isMemberOf, computeFacetCount, payloadTypes } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
@@ -23,12 +12,10 @@ export const load = (async ({ locals, parent }) => {
 	}
 
 	const { categoryContext: rawCategoryContext } = await parent();
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [
-				payloadTypes.enum.measure,
-				payloadTypes.enum.simple_measure
-			])
-		: null;
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.measure,
+		payloadTypes.enum.simple_measure
+	]);
 
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
@@ -37,30 +24,19 @@ export const load = (async ({ locals, parent }) => {
 		locals.user
 	);
 
-	const features = createFeatureDecisions(locals.features);
-
 	const _facets = new Map<string, Map<string, number>>();
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(categoryContext.options);
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[]));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[]));
-		_facets.set('topic', fromCounts(topics.options as string[]));
-		_facets.set('policyFieldBNK', fromCounts(policyFieldBNK.options as string[]));
 	}
 
-	const facets = computeFacetCount(_facets, filtered, {
-		useCategoryPayload: features.useCustomCategories()
-	});
+	const facets = computeFacetCount(_facets, filtered);
 
 	return {
 		containers: filtered,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options ?? null
+		facets
 	};
 }) satisfies PageServerLoad;

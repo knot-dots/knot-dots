@@ -11,20 +11,6 @@ interface FetchContainerPageOptions {
 }
 
 const responseSchema = z.object({
-	categoryOptions: z
-		.looseRecord(
-			z.string().refine((value) => value !== '__categoryLabels__'),
-			z.array(
-				z.object({
-					guid: z.string(),
-					icon: z.url().optional(),
-					label: z.string(),
-					value: z.string()
-				})
-			)
-		)
-		.and(z.object({ __categoryLabels__: z.record(z.string(), z.string()).optional() }))
-		.optional(),
 	containers: z.array(anyContainer),
 	facets: z
 		.record(z.string(), z.record(z.string(), z.number()))
@@ -34,10 +20,6 @@ const responseSchema = z.object({
 					Object.entries(record).map(([key, values]) => [key, new Map(Object.entries(values))])
 				)
 		),
-	facetLabels: z
-		.record(z.string(), z.string())
-		.transform((record) => (record ? new Map(Object.entries(record)) : undefined))
-		.optional(),
 	page: z.object({
 		hasMore: z.boolean(),
 		limit: z.number(),

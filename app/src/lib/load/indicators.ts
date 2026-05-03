@@ -1,7 +1,6 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
-	audience,
 	computeFacetCount,
 	type Container,
 	fromCounts,
@@ -11,10 +10,7 @@ import {
 	isActualDataContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
-	policyFieldBNK,
-	predicates,
-	sustainableDevelopmentGoals,
-	topics
+	predicates
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicatorTemplates,
@@ -34,7 +30,6 @@ export interface IndicatorFilters {
 	indicatorTypes: string[];
 	included: string[];
 	terms: string;
-	sdg: string[];
 }
 
 export interface IndicatorLoadResult {
@@ -55,7 +50,7 @@ export async function getIndicatorsData(params: {
 	filters: IndicatorFilters;
 	user: User;
 	useElasticsearch?: boolean;
-	customCategoryKeys?: string[];
+	customCategoryKeys: string[];
 	connect: <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 }): Promise<IndicatorLoadResult> {
 	const {
@@ -90,12 +85,11 @@ export async function getIndicatorsData(params: {
 				customCategories: filters.customCategories,
 				indicatorCategories: filters.indicatorCategories,
 				indicatorTypes: filters.indicatorTypes,
-				sdg: filters.sdg,
 				terms: filters.terms,
 				type: [payloadTypes.enum.indicator_template]
 			},
 			'alpha',
-			{ customCategoryKeys: customCategoryKeys ?? [], includeFacets: true }
+			{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 		);
 		indicators = esResult.containers as IndicatorTemplateContainer[];
 		facetData = esResult.facets;
@@ -107,7 +101,6 @@ export async function getIndicatorsData(params: {
 					customCategories: filters.customCategories,
 					indicatorCategories: filters.indicatorCategories,
 					indicatorTypes: filters.indicatorTypes,
-					sdg: filters.sdg,
 					terms: filters.terms,
 					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
@@ -166,21 +159,16 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.indicator_template])
-		: null;
-
-	const customCategories = features.useCustomCategories()
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
+	const categoryContext = filterCategoryContext(rawCategoryContext, [
+		payloadTypes.enum.indicator_template
+	]);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	const filters = {
 		customCategories,
 		indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 		indicatorTypes: url.searchParams.getAll('indicatorType'),
 		included: url.searchParams.getAll('included'),
-		terms: url.searchParams.get('terms') ?? '',
-		sdg: url.searchParams.getAll('sdg')
+		terms: url.searchParams.get('terms') ?? ''
 	} as const;
 
 	const result = await getIndicatorsData({
@@ -189,7 +177,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		filters,
 		user: locals.user,
 		useElasticsearch: features.useElasticsearch(),
-		customCategoryKeys: categoryContext?.keys ?? [],
+		customCategoryKeys: categoryContext.keys,
 		connect: locals.pool.connect
 	});
 
@@ -202,7 +190,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		>)
 	]);
 
-	if (features.useCustomCategories() && categoryContext) {
+	if (categoryContext) {
 		const customFacets = buildCategoryFacetsWithCounts(
 			categoryContext.options,
 			data ? Object.fromEntries(Object.entries(data)) : {}
@@ -210,14 +198,6 @@ export default (async function load({ depends, locals, parent, url }) {
 		for (const [key, values] of customFacets.entries()) {
 			_facets.set(key, values);
 		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
 	}
 
 	_facets.set('indicatorType', fromCounts(indicatorTypes.options as string[], data?.indicatorType));
@@ -225,18 +205,12 @@ export default (async function load({ depends, locals, parent, url }) {
 		'indicatorCategory',
 		fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
 	);
-	const facets = useFacetData
-		? _facets
-		: computeFacetCount(_facets, result.containers, {
-				useCategoryPayload: features.useCustomCategories()
-			});
+	const facets = useFacetData ? _facets : computeFacetCount(_facets, result.containers);
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,
 		containers: result.combined,
 		filters,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options
+		facets
 	};
 } satisfies PageServerLoad);

@@ -24,10 +24,7 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 	const { categoryContext } = await parent();
 	const features = createFeatureDecisions(locals.features);
 
-	const customCategories = features.useCustomCategories()
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
 		const container = revisions.at(-1) as AnyContainer;
@@ -60,23 +57,19 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 			['resourceUnit', fromCounts(resourceUnits.options as string[], undefined)]
 		]);
 
-		if (features.useCustomCategories() && categoryContext) {
+		if (categoryContext) {
 			const customFacets = buildCategoryFacetsWithCounts(categoryContext.options, {});
 			for (const [key, values] of customFacets.entries()) {
 				_facets.set(key, values);
 			}
 		}
 
-		const facets = computeFacetCount(_facets, containers, {
-			useCategoryPayload: features.useCustomCategories()
-		});
+		const facets = computeFacetCount(_facets, containers);
 
 		return {
 			container,
 			containers,
 			facets,
-			facetLabels: categoryContext?.labels,
-			categoryOptions: categoryContext?.options ?? null,
 			revisions: filterVisible(revisions, locals.user),
 			title: `${container.payload.title} / ${t('workspace.type.resources')} / ${t('workspace.view.catalog')}`
 		};

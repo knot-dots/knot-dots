@@ -2,12 +2,12 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
 import { type AnyContainer, isProgramContainer, predicates } from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
-export const load = (async ({ depends, locals, params, url }) => {
+export const load = (async ({ depends, locals, params, parent, url }) => {
 	depends('containers');
 
 	const t = unwrapFunctionStore(_);
@@ -24,17 +24,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		const features = createFeatureDecisions(locals.features);
-		const useCustomCategories = features.useCustomCategories();
-
-		const coreCategoryFilters = useCustomCategories
-			? {}
-			: {
-					audience: url.searchParams.getAll('audience'),
-					sdg: url.searchParams.getAll('sdg'),
-					policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-					topics: url.searchParams.getAll('topic')
-				};
+		const { categoryContext } = await parent();
 
 		const containers = await locals.pool.connect(
 			getAllRelatedContainers(
@@ -42,7 +32,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 				url.searchParams.get('related-to') ?? container.guid,
 				[predicates.enum['is-part-of']],
 				{
-					...coreCategoryFilters,
+					customCategories: extractCustomCategoryFilters(url, categoryContext.keys),
 					terms: url.searchParams.get('terms') ?? ''
 				},
 				url.searchParams.get('sort') ?? ''

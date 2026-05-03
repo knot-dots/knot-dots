@@ -1,19 +1,25 @@
 import { z } from 'zod';
+import { page } from '$app/state';
 import { container } from '$lib/models';
 
 export default async function fetchSuggestedContainers(
 	guid: string,
 	filters: {
+		[key: string]: string | string[] | undefined;
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
-		sdg?: string[];
 		terms?: string;
 	},
 	init?: RequestInit
 ) {
 	const params = new URLSearchParams();
+	for (const key of page.data.categoryContext.keys) {
+		for (const value of (filters[key] as string[]) ?? []) {
+			params.append(key, value);
+		}
+	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
 	}
@@ -25,9 +31,6 @@ export default async function fetchSuggestedContainers(
 	}
 	for (const value of filters.organizationalUnit ?? []) {
 		params.append('organizationalUnit', value);
-	}
-	for (const value of filters.sdg ?? []) {
-		params.append('sdg', value);
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);

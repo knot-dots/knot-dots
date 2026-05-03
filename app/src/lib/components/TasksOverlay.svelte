@@ -4,7 +4,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		computeFacetCount,
@@ -22,40 +21,21 @@
 
 	let { container, containers }: Props = $props();
 
-	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 	let categoryContext = $derived(page.data.categoryContext);
 
 	let facets = $derived(
-		featureDecisions.useCustomCategories() && categoryContext
-			? computeFacetCount(
-					new Map([
-						...buildCategoryFacetsWithCounts(categoryContext.options),
-						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-						['assignee', new Map()]
-					]),
-					containers,
-					{ useCategoryPayload: true }
-				)
-			: computeFacetCount(
-					new Map([
-						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-						['assignee', new Map()]
-					]),
-					containers
-				)
+		computeFacetCount(
+			new Map([
+				...buildCategoryFacetsWithCounts(categoryContext.options),
+				['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+				['assignee', new Map()]
+			]),
+			containers
+		)
 	);
 </script>
 
-<Header
-	{facets}
-	facetLabels={featureDecisions.useCustomCategories() && categoryContext
-		? categoryContext.labels
-		: undefined}
-	categoryOptions={featureDecisions.useCustomCategories() && categoryContext
-		? categoryContext.options
-		: null}
-	search
-/>
+<Header {facets} search />
 
 <Tasks
 	{container}

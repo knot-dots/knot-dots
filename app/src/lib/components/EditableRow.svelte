@@ -4,10 +4,7 @@
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
-	import { type CategoryOptions, getCategoryKeys } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
-	import AudienceDropdown from '$lib/components/AudienceDropdown.svelte';
-	import CategoryDropdown from '$lib/components/CategoryDropdown.svelte';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
@@ -20,7 +17,6 @@
 	import MeasureTypeDropdown from '$lib/components/MeasureTypeDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import ParentDropdown from '$lib/components/ParentDropdown.svelte';
-	import PolicyFieldBNKDropdown from '$lib/components/PolicyFieldBNKDropdown.svelte';
 	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
 	import ProgramTypeDropdown from '$lib/components/ProgramTypeDropdown.svelte';
 	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
@@ -28,9 +24,7 @@
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
 	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
-	import TopicDropdown from '$lib/components/TopicDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
 		type AnyContainer,
@@ -51,7 +45,6 @@
 
 	interface Props {
 		actualDataContainers?: ActualDataContainer[];
-		categoryOptions?: CategoryOptions | null;
 		columns: string[];
 		container: AnyContainer;
 		dragEnabled?: boolean;
@@ -60,7 +53,6 @@
 
 	let {
 		actualDataContainers = [],
-		categoryOptions = null,
 		columns,
 		container = $bindable(),
 		dragEnabled = false,
@@ -100,9 +92,7 @@
 		};
 	}
 
-	const customCategoryKeys = $derived(categoryOptions ? getCategoryKeys(categoryOptions) : []);
-
-	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
+	const customCategoryKeys = $derived(page.data.categoryContext.keys);
 </script>
 
 <div class="cell cell--action">
@@ -192,17 +182,6 @@
 				/>
 			{/if}
 		</div>
-	{:else if col === 'sdg' && !featureDecisions.useCustomCategories()}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'sdg' in container.payload}
-				<CategoryDropdown
-					compact
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -43]}
-					bind:value={container.payload.sdg}
-				/>
-			{/if}
-		</div>
 	{:else if col === 'indicatorType'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'indicatorType' in container.payload}
@@ -233,28 +212,6 @@
 				/>
 			{/if}
 		</div>
-	{:else if col === 'topic' && !featureDecisions.useCustomCategories()}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'topic' in container.payload}
-				<TopicDropdown
-					compact
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -41]}
-					bind:value={container.payload.topic}
-				/>
-			{/if}
-		</div>
-	{:else if col === 'policyFieldBNK' && !featureDecisions.useCustomCategories()}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'policyFieldBNK' in container.payload}
-				<PolicyFieldBNKDropdown
-					compact
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -41]}
-					bind:value={container.payload.policyFieldBNK}
-				/>
-			{/if}
-		</div>
 	{:else if col === 'taskCategory'}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'taskCategory' in container.payload}
@@ -262,17 +219,6 @@
 					editable={editable && $ability.can('update', container)}
 					offset={[40, -39]}
 					bind:value={container.payload.taskCategory}
-				/>
-			{/if}
-		</div>
-	{:else if col === 'audience' && !featureDecisions.useCustomCategories()}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'audience' in container.payload}
-				<AudienceDropdown
-					compact
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -39]}
-					bind:value={container.payload.audience}
 				/>
 			{/if}
 		</div>
@@ -381,14 +327,14 @@
 				<span>{values[idx][1]}</span>
 			{/if}
 		</div>
-	{:else if featureDecisions.useCustomCategories() && customCategoryKeys.includes(col)}
+	{:else if customCategoryKeys.includes(col)}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
 			{#if 'category' in container.payload}
 				<CustomCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
 					offset={[40, -41]}
-					options={categoryOptions?.[col] ?? []}
+					options={page.data.categoryContext.options[col] ?? []}
 					bind:value={container.payload.category[col]}
 				/>
 			{/if}

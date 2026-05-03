@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { getContext, untrack } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
@@ -15,7 +14,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
-	import type { CategoryOptions } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
@@ -70,8 +68,6 @@
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
-		facetLabels?: Map<string, string>;
-		categoryOptions?: CategoryOptions | null;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
@@ -80,15 +76,13 @@
 
 	let {
 		facets = new Map(),
-		facetLabels = new Map(),
 		filterBarInitiallyOpen = false,
 		search = false,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions,
-		categoryOptions = null
+		workspaceOptions
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
@@ -143,16 +137,20 @@
 		) > -1
 	);
 
+	let facetLabels = $derived(page.data.categoryContext.labels);
+
+	let categoryOptions = $derived(page.data.categoryContext.options);
+
 	function applySort() {
 		if (overlay) {
-			const query = new SvelteURLSearchParams(page.url.hash.substring(1));
+			const query = new URLSearchParams(page.url.hash.substring(1));
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new SvelteURLSearchParams(page.url.searchParams);
+			const query = new URLSearchParams(page.url.searchParams);
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
@@ -169,7 +167,7 @@
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new SvelteURLSearchParams(page.url.searchParams);
+			const query = new URLSearchParams(page.url.searchParams);
 			for (const key of facets.keys()) {
 				query.delete(key);
 			}
@@ -366,7 +364,7 @@
 
 				{#each facets.entries() as [key, foci] (key)}
 					{@const labelOverride = facetLabels.get(key)}
-					{@const categoryOptionList = categoryOptions?.[key]}
+					{@const categoryOptionList = categoryOptions[key]}
 					{@const options = (
 						categoryOptionList
 							? categoryOptionList.map((option) => ({

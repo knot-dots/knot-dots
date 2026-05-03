@@ -6,7 +6,6 @@ import { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
 	type AnyContainer,
-	audience,
 	type Container,
 	createCopyOf,
 	type GoalContainer,
@@ -25,15 +24,12 @@ import {
 	type OrganizationalUnitContainer,
 	type PartialRelation,
 	payloadTypes,
-	policyFieldBNK,
 	predicates,
 	type ProgramContainer,
 	programTypes,
 	type Relation,
 	type ReportContainer,
-	sustainableDevelopmentGoals,
-	taskCategories,
-	topics
+	taskCategories
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
@@ -446,7 +442,6 @@ export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		administrativeType: z.array(administrativeTypes).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
-		audience: z.array(audience).catch([]).default([]),
 		federalState: z.array(z.string()).default([]),
 		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
@@ -465,17 +460,14 @@ export const GET = (async ({ locals, url }) => {
 			)
 			.default([]),
 		payloadType: z.array(payloadTypes).default([]),
-		policyFieldBNK: z.array(policyFieldBNK).catch([]).default([]),
 		programType: z.array(programTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
-		sdg: z.array(sustainableDevelopmentGoals).catch([]).default([]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 		taskCategory: z.array(taskCategories).default([]),
 		template: z.array(z.stringbool()).default([]),
-		terms: z.array(z.string()).default([]),
-		topic: z.array(topics).catch([]).default([])
+		terms: z.array(z.string()).default([])
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
@@ -503,16 +495,13 @@ export const GET = (async ({ locals, url }) => {
 		user: locals.user
 	});
 
-	const customCategories = extractCustomCategoryFilters(url, categoryContext?.keys ?? []);
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	const containers = await locals.pool.connect(
 		getManyContainers(
 			parseResult.data.organization,
 			{
 				administrativeTypes: parseResult.data.administrativeType,
-				// Skip legacy filters for any key that is handled as a custom category,
-				// to avoid conflicting AND conditions against different JSON paths.
-				audience: customCategories['audience'] ? [] : parseResult.data.audience,
 				customCategories,
 				customCategoryMatch: parseResult.data.categoryMatch[0],
 				guid: parseResult.data.guid,
@@ -521,12 +510,9 @@ export const GET = (async ({ locals, url }) => {
 				indicatorCategories: parseResult.data.indicatorCategory,
 				indicatorTypes: parseResult.data.indicatorType,
 				organizationalUnits: parseResult.data.organizationalUnit,
-				policyFieldsBNK: customCategories['policyFieldBNK'] ? [] : parseResult.data.policyFieldBNK,
 				programTypes: parseResult.data.programType,
-				sdg: customCategories['sdg'] ? [] : parseResult.data.sdg,
 				template: parseResult.data.template[0],
 				terms: parseResult.data.terms[0],
-				topics: customCategories['topic'] ? [] : parseResult.data.topic,
 				type: parseResult.data.payloadType
 			},
 			parseResult.data.sort[0],

@@ -4,14 +4,13 @@
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
 	import {
-		audience,
 		computeFacetCount,
 		type Container,
 		type TeaserContainer,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
+		payloadTypes
 	} from '$lib/models';
+	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+	import { page } from '$app/state';
 
 	interface Props {
 		containers: Container[];
@@ -21,12 +20,11 @@
 
 	let facets = $derived(
 		computeFacetCount(
-			new Map([
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
+			buildCategoryFacetsWithCounts(
+				filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.teaser], {
+					matchAll: true
+				}).options
+			),
 			containers
 		)
 	);

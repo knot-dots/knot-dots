@@ -3,15 +3,16 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import { goto } from '$app/navigation';
+	import { env } from '$env/dynamic/public';
+	import tooltip from '$lib/attachments/tooltip';
+	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
 	import {
 		type ActualDataContainer,
-		audience,
 		computeFacetCount,
 		containerOfType,
 		indicatorCategories,
@@ -21,14 +22,10 @@
 		overlayKey,
 		overlayURL,
 		payloadTypes,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics,
 		units
 	} from '$lib/models';
 	import { fetchIndicatorDataWegweiserKommune } from '$lib/remote/indicatorDataWegweiserKommune.remote.js';
 	import { newContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		containers: IndicatorTemplateContainer[];
@@ -126,12 +123,13 @@
 	let facets = $derived(
 		computeFacetCount(
 			new Map([
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+				...buildCategoryFacetsWithCounts(
+					filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template], {
+						matchAll: true
+					}).options
+				),
 				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
-				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))]
+				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]
 			]),
 			containers
 		)

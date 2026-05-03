@@ -24,13 +24,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{facets}
-			facetLabels={data.facetLabels ?? undefined}
-			categoryOptions={data.categoryOptions ?? null}
-			search
-			{workspaceOptions}
-		/>
+		<Header {facets} search {workspaceOptions} />
 	{/snippet}
 
 	{#snippet main()}

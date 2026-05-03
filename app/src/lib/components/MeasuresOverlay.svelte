@@ -1,17 +1,15 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import {
-		audience,
 		computeFacetCount,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		type MeasureContainer,
-		policyFieldBNK,
-		predicates,
-		sustainableDevelopmentGoals,
-		topics
+		predicates
 	} from '$lib/models';
 
 	interface Props {
@@ -19,6 +17,8 @@
 	}
 
 	let { containers }: Props = $props();
+
+	let categoryContext = $derived(page.data.categoryContext);
 
 	let memberFacet = $derived(
 		containers
@@ -40,13 +40,7 @@
 
 	let facets = $derived(
 		computeFacetCount(
-			new Map([
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-				['member', memberFacet]
-			]),
+			new Map([...buildCategoryFacetsWithCounts(categoryContext.options), ['member', memberFacet]]),
 			containers
 		)
 	);

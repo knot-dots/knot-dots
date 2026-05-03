@@ -1,30 +1,22 @@
 import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
-import {
-	buildCategoryFacetsWithCounts,
-	type CategoryOptions,
-	type CategoryContext
-} from '$lib/categoryOptions';
+import { buildCategoryFacetsWithCounts, type CategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
 	type AnyContainer,
-	audience,
 	computeFacetCount,
 	fromCounts,
 	indicatorCategories,
 	indicatorTypes,
 	measureTypes,
 	payloadTypes,
-	policyFieldBNK,
 	predicates,
 	programTypes,
 	resourceCategories,
 	resourceUnits,
-	sustainableDevelopmentGoals,
-	taskCategories,
-	topics
+	taskCategories
 } from '$lib/models';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '$lib/pagination';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
@@ -50,14 +42,11 @@ export type ContainerV2Response = {
 		nextOffset: number | null;
 	};
 	facets: Record<string, Record<string, number>>;
-	facetLabels?: Record<string, string>;
-	categoryOptions?: CategoryOptions | null;
 };
 
 const querySchema = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
 	assignee: z.array(z.string().uuid()).default([]),
-	audience: z.array(audience).catch([]).default([]),
 	categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 	contextGuid: z.array(z.string().uuid()).default([]),
 	federalState: z.array(z.string()).default([]),
@@ -78,18 +67,15 @@ const querySchema = z.object({
 		)
 		.default([]),
 	payloadType: z.array(payloadTypes).default([]),
-	policyFieldBNK: z.array(policyFieldBNK).catch([]).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 	resource: z.array(z.string()).default([]),
 	resourceCategory: z.array(resourceCategories).default([]),
-	sdg: z.array(sustainableDevelopmentGoals).catch([]).default([]),
 	sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 	taskCategory: z.array(taskCategories).default([]),
 	template: z.array(z.stringbool()).default([]),
 	terms: z.array(z.string()).default([]),
-	topic: z.array(topics).catch([]).default([]),
 	type: z.array(payloadTypes).default([])
 });
 
@@ -142,20 +128,11 @@ function mapToRecord(
 	);
 }
 
-function categoryLabelsToRecord(labels?: Map<string, string>): Record<string, string> | undefined {
-	if (!labels) return undefined;
-	return Object.fromEntries(labels);
-}
-
 function baseFacetMap(
 	counts: Record<string, Record<string, number>> = {},
-	categoryContext?: CategoryContext
+	categoryContext: CategoryContext
 ) {
 	const facets = new Map<string, Map<string, number>>([
-		['audience', fromCounts(audience.options as string[], counts.audience)],
-		['sdg', fromCounts(sustainableDevelopmentGoals.options as string[], counts.sdg)],
-		['topic', fromCounts(topics.options as string[], counts.topic)],
-		['policyFieldBNK', fromCounts(policyFieldBNK.options as string[], counts.policyFieldBNK)],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
 		['measureType', fromCounts(measureTypes.options as string[], counts.measureType)],
 		[
@@ -171,13 +148,11 @@ function baseFacetMap(
 		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)]
 	]);
 
-	if (categoryContext) {
-		for (const [key, values] of buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			counts
-		).entries()) {
-			facets.set(key, values);
-		}
+	for (const [key, values] of buildCategoryFacetsWithCounts(
+		categoryContext.options,
+		counts
+	).entries()) {
+		facets.set(key, values);
 	}
 
 	return facets;
@@ -187,7 +162,6 @@ function buildFilters(params: ContainerQueryParams, customCategories: Record<str
 	return {
 		administrativeTypes: params.administrativeType,
 		assignees: params.assignee,
-		audience: customCategories['audience'] ? [] : params.audience,
 		customCategories,
 		customCategoryMatch: params.categoryMatch,
 		federalStates: params.federalState,
@@ -196,15 +170,12 @@ function buildFilters(params: ContainerQueryParams, customCategories: Record<str
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
 		organizationalUnits: params.organizationalUnit,
-		policyFieldsBNK: customCategories['policyFieldBNK'] ? [] : params.policyFieldBNK,
 		programTypes: params.programType,
 		resource: params.resource,
 		resourceCategories: params.resourceCategory,
-		sdg: customCategories['sdg'] ? [] : params.sdg,
 		taskCategories: params.taskCategory,
 		template: params.template,
 		terms: params.terms,
-		topics: customCategories['topic'] ? [] : params.topic,
 		type: params.payloadType.length > 0 ? params.payloadType : params.type
 	};
 }
@@ -215,19 +186,15 @@ function buildElasticsearchFilters(
 ) {
 	return {
 		assignees: params.assignee,
-		audience: customCategories['audience'] ? [] : params.audience,
 		customCategories,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
 		organizationalUnits: params.organizationalUnit ?? undefined,
-		policyFieldsBNK: customCategories['policyFieldBNK'] ? [] : params.policyFieldBNK,
 		programTypes: params.programType,
 		resourceCategories: params.resourceCategory,
-		sdg: customCategories['sdg'] ? [] : params.sdg,
 		taskCategories: params.taskCategory,
 		template: params.template,
 		terms: params.terms,
-		topics: customCategories['topic'] ? [] : params.topic,
 		type: params.payloadType.length > 0 ? params.payloadType : params.type
 	};
 }
@@ -293,27 +260,26 @@ export async function loadContainerV2(params: {
 				? [applicationContext.currentOrganization.guid]
 				: [];
 	const scopedQuery = { ...query, organization };
-	const categoryContext = features.useCustomCategories()
-		? (applicationContext?.categoryContext ??
-			(await loadCategoryContextForQuery(
-				scopedQuery,
-				params.locals.pool.connect,
-				params.locals.user
-			)))
-		: undefined;
-	const customCategories = features.useCustomCategories()
-		? extractCustomCategoryFilters(params.url, categoryContext?.keys ?? [])
-		: {};
+	const categoryContext =
+		applicationContext?.categoryContext ??
+		(await loadCategoryContextForQuery(
+			scopedQuery,
+			params.locals.pool.connect,
+			params.locals.user
+		));
 	const useElasticsearch = features.useElasticsearch() && canUseElasticsearch(scopedQuery);
 	const requestedLimit = query.limit + 1;
 
 	if (useElasticsearch) {
 		const result = await getManyContainersWithES(
 			scopedQuery.organization,
-			buildElasticsearchFilters(scopedQuery, customCategories),
+			buildElasticsearchFilters(
+				scopedQuery,
+				extractCustomCategoryFilters(params.url, categoryContext.keys)
+			),
 			query.sort,
 			{
-				customCategoryKeys: categoryContext?.keys ?? [],
+				customCategoryKeys: categoryContext.keys,
 				includeFacets: true,
 				limit: requestedLimit,
 				offset: query.offset
@@ -324,13 +290,14 @@ export async function loadContainerV2(params: {
 		return {
 			containers,
 			page: page.page,
-			facets: mapToRecord(baseFacetMap(result.facets, categoryContext)),
-			facetLabels: categoryLabelsToRecord(categoryContext?.labels),
-			categoryOptions: categoryContext?.options
+			facets: mapToRecord(baseFacetMap(result.facets, categoryContext))
 		};
 	}
 
-	const filters = buildFilters(scopedQuery, customCategories);
+	const filters = buildFilters(
+		scopedQuery,
+		extractCustomCategoryFilters(params.url, categoryContext.keys)
+	);
 	const rawContainers =
 		query.relatedTo.length > 0
 			? await params.locals.pool.connect(
@@ -356,15 +323,11 @@ export async function loadContainerV2(params: {
 
 	const page = paginate(rawContainers, query.limit, query.offset);
 	const containers = filterVisible(page.containers, params.locals.user);
-	const facets = computeFacetCount(baseFacetMap({}, categoryContext), containers, {
-		useCategoryPayload: features.useCustomCategories()
-	});
+	const facets = computeFacetCount(baseFacetMap({}, categoryContext), containers);
 
 	return {
 		containers,
 		page: page.page,
-		facets: mapToRecord(facets),
-		facetLabels: categoryLabelsToRecord(categoryContext?.labels),
-		categoryOptions: categoryContext?.options
+		facets: mapToRecord(facets)
 	};
 }

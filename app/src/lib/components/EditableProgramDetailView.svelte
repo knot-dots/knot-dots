@@ -6,7 +6,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import { buildCategoryFacetsWithCounts, getCategoryKeys } from '$lib/categoryOptions';
+	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
@@ -24,7 +24,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
-		audience,
 		computeFacetCount,
 		type Container,
 		containerOfType,
@@ -32,12 +31,9 @@
 		paramsFromFragment,
 		type PayloadType,
 		payloadTypes,
-		policyFieldBNK,
 		predicates,
 		type ProgramContainer,
-		programTypes,
-		sustainableDevelopmentGoals,
-		topics
+		programTypes
 	} from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability, applicationState, newContainer } from '$lib/stores';
@@ -55,27 +51,17 @@
 
 	let isGuide = $derived(container.payload.programType === programTypes.enum['program_type.guide']);
 
-	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 	let categoryContext = $derived(page.data.categoryContext);
-	let useCustomCategories = $derived(featureDecisions.useCustomCategories());
-
 	let relatedContainersQuery = $derived(
 		fetchContainersRelatedToProgram({
 			guid,
 			params: {
-				...(useCustomCategories
-					? {
-							customCategories: extractCustomCategoryFiltersFromParams(
-								paramsFromFragment(page.url),
-								categoryContext?.keys ?? []
-							)
-						}
-					: {
-							audience: paramsFromFragment(page.url).getAll('audience'),
-							sdg: paramsFromFragment(page.url).getAll('sdg'),
-							policyFieldsBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
-							topics: paramsFromFragment(page.url).getAll('topic')
-						}),
+				...{
+					customCategories: extractCustomCategoryFiltersFromParams(
+						paramsFromFragment(page.url),
+						categoryContext.keys
+					)
+				},
 				terms: paramsFromFragment(page.url).get('terms') ?? ''
 			}
 		})
@@ -99,34 +85,16 @@
 	);
 
 	let facets = $derived(
-		useCustomCategories && categoryContext
-			? computeFacetCount(
-					new Map([
-						...buildCategoryFacetsWithCounts(categoryContext.options),
-						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
-					]),
-					relatedParts,
-					{ useCategoryPayload: true }
-				)
-			: computeFacetCount(
-					new Map([
-						['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))],
-						['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-						['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-						['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-						['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-					]),
-					relatedParts
-				)
+		computeFacetCount(
+			new Map([
+				...buildCategoryFacetsWithCounts(categoryContext.options),
+				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
+			]),
+			relatedParts
+		)
 	);
 
-	let usedCategoryKeys = $derived(
-		useCustomCategories && categoryContext
-			? getCategoryKeys(categoryContext.options).filter((key) =>
-					parts.some((part) => 'category' in part.payload && part.payload.category[key]?.length > 0)
-				)
-			: []
-	);
+	let customCategoryColumn = $derived(categoryContext.keys.filter((key) => facets.has(key)));
 
 	let viewMode = $derived(
 		paramsFromFragment(page.url).has('table') ? 'view_mode.table' : 'view_mode.preview'
@@ -144,13 +112,11 @@
 				)
 			);
 
-			if (useCustomCategories) {
-				for (const part of filtered) {
-					if ('category' in part.payload) {
-						for (const key of categoryContext!.keys) {
-							if (!part.payload.category[key]) {
-								part.payload.category[key] = [];
-							}
+			for (const part of filtered) {
+				if ('category' in part.payload) {
+					for (const key of categoryContext.keys) {
+						if (!part.payload.category[key]) {
+							part.payload.category[key] = [];
 						}
 					}
 				}
@@ -250,9 +216,7 @@
 					'description',
 					'visibility',
 					'status',
-					...(useCustomCategories
-						? usedCategoryKeys
-						: ['sdg', 'topic', 'policyFieldBNK', 'audience']),
+					...customCategoryColumn,
 					'fulfillmentDate',
 					'duration',
 					'editorialState',
@@ -261,7 +225,6 @@
 					'objectType'
 				]}
 				bind:container={parts[i]}
-				categoryOptions={useCustomCategories ? categoryContext?.options : null}
 				{dragEnabled}
 				editable={$applicationState.containerDetailView.editable}
 			/>
@@ -270,12 +233,7 @@
 {/snippet}
 
 {#snippet header()}
-	<Header
-		{facets}
-		facetLabels={useCustomCategories ? categoryContext?.labels : undefined}
-		categoryOptions={useCustomCategories ? categoryContext?.options : null}
-		search
-	/>
+	<Header {facets} search />
 {/snippet}
 
 {#snippet main()}
@@ -336,16 +294,9 @@
 						<div class="cell">{$_('description')}</div>
 						<div class="cell">{$_('visibility.label')}</div>
 						<div class="cell">{$_('status')}</div>
-						{#if useCustomCategories}
-							{#each usedCategoryKeys as key (key)}
-								<div class="cell">{categoryContext?.labels.get(key) ?? key}</div>
-							{/each}
-						{:else}
-							<div class="cell">{$_('category')}</div>
-							<div class="cell">{$_('topic')}</div>
-							<div class="cell">{$_('policy_field_bnk')}</div>
-							<div class="cell">{$_('audience')}</div>
-						{/if}
+						{#each customCategoryColumn as key (key)}
+							<div class="cell">{categoryContext.labels.get(key) ?? key}</div>
+						{/each}
 						<div class="cell">{$_('fulfillment_date')}</div>
 						<div class="cell">{$_('planned_duration')}</div>
 						<div class="cell">{$_('editorial_state')}</div>

@@ -1,21 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
+	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import Header from '$lib/components/Header.svelte';
+	import Help from '$lib/components/Help.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import Tasks from '$lib/components/Tasks.svelte';
 	import {
 		computeFacetCount,
 		isGoalContainer,
 		isPartOf,
 		isTaskContainer,
+		payloadTypes,
 		taskCategories
 	} from '$lib/models';
-	import type { PageProps } from './$types';
-	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
-	import Tasks from '$lib/components/Tasks.svelte';
-	import Layout from '$lib/components/Layout.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { createFeatureDecisions } from '$lib/features';
 	import { lastCreatedContainer } from '$lib/stores';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
@@ -23,39 +23,25 @@
 
 	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
 
-	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
-	let categoryContext = $derived(page.data.categoryContext);
-	let useCustomCategories = $derived(featureDecisions.useCustomCategories());
+	let categoryContext = $derived(
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.task])
+	);
 
 	let facets = $derived(
-		useCustomCategories && categoryContext
-			? computeFacetCount(
-					new Map([
-						...buildCategoryFacetsWithCounts(categoryContext.options),
-						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-						['assignee', new Map()]
-					]),
-					containers,
-					{ useCategoryPayload: true }
-				)
-			: computeFacetCount(
-					new Map([
-						['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
-						['assignee', new Map()]
-					]),
-					containers
-				)
+		computeFacetCount(
+			new Map([
+				...buildCategoryFacetsWithCounts(categoryContext.options),
+				['taskCategory', new Map(taskCategories.options.map((v) => [v as string, 0]))],
+				['assignee', new Map()]
+			]),
+			containers
+		)
 	);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{facets}
-			facetLabels={useCustomCategories ? categoryContext?.labels : undefined}
-			categoryOptions={useCustomCategories ? categoryContext?.options : null}
-			search
-		/>
+		<Header {facets} search />
 	{/snippet}
 
 	{#snippet main()}

@@ -527,7 +527,6 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	administrativeTypes?: string[];
 	assignees?: string[];
-	audience?: string[];
 	customCategories?: Record<string, string[]>;
 	customCategoryMatch?: 'any' | 'all';
 	federalStates?: string[];
@@ -538,15 +537,12 @@ function prepareWhereCondition(filters: {
 	indicatorTypes?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[] | null;
-	policyFieldsBNK?: string[];
 	programTypes?: string[];
 	resource?: string[];
 	resourceCategories?: string[];
-	sdg?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
-	topics?: string[];
 	type?: PayloadType[];
 }) {
 	const conditions = [sql.fragment`c.valid_currently`, sql.fragment`NOT c.deleted`];
@@ -563,9 +559,6 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.assignees?.length) {
 		conditions.push(sql.fragment`c.payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
-	}
-	if (filters.audience?.length) {
-		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
 	if (filters.customCategories) {
 		const categoryFragments = Object.entries(filters.customCategories)
@@ -629,11 +622,6 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
-	if (filters.policyFieldsBNK?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'policyFieldBNK' ?| ${sql.array(filters.policyFieldsBNK, 'text')}`
-		);
-	}
 	if (filters.programTypes?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'programType' IN (${sql.join(
@@ -651,9 +639,6 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
-	}
-	if (filters.sdg?.length) {
-		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.taskCategories?.length) {
 		conditions.push(
@@ -676,9 +661,6 @@ function prepareWhereCondition(filters: {
 				.map((t) => `${t}:*`)
 				.join(' & ')}) @@ jsonb_to_tsvector('german', c.payload, '["string", "numeric"]')`
 		);
-	}
-	if (filters.topics?.length) {
-		conditions.push(sql.fragment`c.payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
 	}
 	if (filters.type?.length) {
 		conditions.push(
@@ -755,7 +737,6 @@ export function getManyContainers(
 	filters: {
 		administrativeTypes?: string[];
 		assignees?: string[];
-		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		customCategoryMatch?: 'any' | 'all';
 		federalStates?: string[];
@@ -765,15 +746,12 @@ export function getManyContainers(
 		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[] | null;
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		resource?: string[];
 		resourceCategories?: string[];
-		sdg?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
@@ -1039,16 +1017,12 @@ export function getAllRelatedContainers(
 	relations: string[],
 	filters: {
 		assignees?: string[];
-		audience?: string[];
-		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		taskCategories?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
@@ -1171,13 +1145,9 @@ export function getAllRelatedContainersByProgramType(
 	organizations: string[],
 	programTypes: string[],
 	filters: {
-		audience?: string[];
 		customCategories?: Record<string, string[]>;
-		sdg?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
@@ -1306,12 +1276,8 @@ export function getAllContainersRelatedToIndicatorTemplates(
 export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
-		audience?: string[];
 		customCategories?: Record<string, string[]>;
-		sdg?: string[];
-		policyFieldsBNK?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	}
 ) {
@@ -1394,11 +1360,8 @@ export function getAllContainersRelatedToMeasure(
 	filters: {
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
-		sdg?: string[];
-		policyFieldsBNK?: string[];
 		taskCategories?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string
@@ -1759,8 +1722,6 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 			const containerResult =
 				container.payload.type == payloadTypes.enum.program
 					? await getAllContainersRelatedToProgram(container.guid, {
-							sdg: [],
-							topics: [],
 							type: [
 								payloadTypes.enum.goal,
 								payloadTypes.enum.measure,
