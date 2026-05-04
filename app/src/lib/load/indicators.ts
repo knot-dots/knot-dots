@@ -1,7 +1,6 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
-	computeFacetCount,
 	type Container,
 	fromCounts,
 	indicatorCategories,
@@ -14,11 +13,9 @@ import {
 } from '$lib/models';
 import {
 	getAllContainersRelatedToIndicatorTemplates,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getAllRelatedOrganizationalUnitContainers
 } from '$lib/server/db';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
@@ -49,7 +46,6 @@ export async function getIndicatorsData(params: {
 	currentOrganizationalUnit: OrganizationalUnitContainer | null;
 	filters: IndicatorFilters;
 	user: User;
-	useElasticsearch?: boolean;
 	customCategoryKeys: string[];
 	connect: <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 }): Promise<IndicatorLoadResult> {
@@ -58,7 +54,6 @@ export async function getIndicatorsData(params: {
 		currentOrganizationalUnit,
 		filters,
 		user,
-		useElasticsearch,
 		customCategoryKeys,
 		connect
 	} = params;
@@ -75,40 +70,20 @@ export async function getIndicatorsData(params: {
 			.concat(currentOrganizationalUnit.guid);
 	}
 
-	let indicators: IndicatorTemplateContainer[];
-	let facetData: Record<string, Record<string, number>> | undefined;
-
-	if (useElasticsearch) {
-		const esResult = await getManyContainersWithES(
-			[],
-			{
-				customCategories: filters.customCategories,
-				indicatorCategories: filters.indicatorCategories,
-				indicatorTypes: filters.indicatorTypes,
-				terms: filters.terms,
-				type: [payloadTypes.enum.indicator_template]
-			},
-			'alpha',
-			{ customCategoryKeys: customCategoryKeys, includeFacets: true }
-		);
-		indicators = esResult.containers as IndicatorTemplateContainer[];
-		facetData = esResult.facets;
-	} else {
-		indicators = (await connect(
-			getManyContainers(
-				[],
-				{
-					customCategories: filters.customCategories,
-					indicatorCategories: filters.indicatorCategories,
-					indicatorTypes: filters.indicatorTypes,
-					terms: filters.terms,
-					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
-				},
-				'alpha'
-			)
-		)) as IndicatorTemplateContainer[];
-		facetData = undefined;
-	}
+	const esResult = await getManyContainersWithES(
+		[],
+		{
+			customCategories: filters.customCategories,
+			indicatorCategories: filters.indicatorCategories,
+			indicatorTypes: filters.indicatorTypes,
+			terms: filters.terms,
+			type: [payloadTypes.enum.indicator_template]
+		},
+		'alpha',
+		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
+	);
+	const indicators = esResult.containers as IndicatorTemplateContainer[];
+	const facetData = esResult.facets;
 
 	const related = await connect(
 		getAllContainersRelatedToIndicatorTemplates(
@@ -158,7 +133,6 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganization,
 		currentOrganizationalUnit
 	} = await parent();
-	const features = createFeatureDecisions(locals.features);
 	const categoryContext = filterCategoryContext(rawCategoryContext, [
 		payloadTypes.enum.indicator_template
 	]);
@@ -176,13 +150,11 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit: currentOrganizationalUnit ?? null,
 		filters,
 		user: locals.user,
-		useElasticsearch: features.useElasticsearch(),
 		customCategoryKeys: categoryContext.keys,
 		connect: locals.pool.connect
 	});
 
-	const useFacetData = features.useElasticsearch();
-	const data = useFacetData ? result.facetData : undefined;
+	const data = result.facetData;
 
 	const _facets = new Map<string, Map<string, number>>([
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
@@ -205,7 +177,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		'indicatorCategory',
 		fromCounts(indicatorCategories.options as string[], data?.indicatorCategory)
 	);
-	const facets = useFacetData ? _facets : computeFacetCount(_facets, result.containers);
+	const facets = _facets;
 
 	return {
 		container: currentOrganizationalUnit ?? currentOrganization,

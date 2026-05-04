@@ -2,7 +2,6 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
-	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
 	type OrganizationalUnitContainer,
@@ -13,8 +12,7 @@ import {
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getAllRelatedOrganizationalUnitContainers
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -91,34 +89,19 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 			)
 		);
 	} else {
-		if (features.useElasticsearch()) {
-			const esResult = await getManyContainersWithES(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{
-					customCategories,
-					programTypes: url.searchParams.getAll('programType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: typeFilter
-				},
-				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-			);
-			containers = esResult.containers;
-			data = esResult.facets;
-		} else {
-			containers = await locals.pool.connect(
-				getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						customCategories,
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: typeFilter
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-			);
-		}
+		const esResult = await getManyContainersWithES(
+			currentOrganization.payload.default ? [] : [currentOrganization.guid],
+			{
+				customCategories,
+				programTypes: url.searchParams.getAll('programType'),
+				terms: url.searchParams.get('terms') ?? '',
+				type: typeFilter
+			},
+			url.searchParams.get('sort') ?? '',
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
+		);
+		containers = esResult.containers;
+		data = esResult.facets;
 	}
 
 	const filtered = filterOrganizationalUnits(
@@ -159,7 +142,7 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 	_facets.set('type', fromCounts(allTypeOptions, data?.type));
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = _facets;
 
 	return {
 		containers: filtered,

@@ -2,7 +2,6 @@ import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, type CategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
 	type AnyContainer,
@@ -245,7 +244,6 @@ export async function loadContainerV2(params: {
 	url: URL;
 }): Promise<ContainerV2Response> {
 	const query = parseContainerQuery(params.url);
-	const features = createFeatureDecisions(params.locals.features);
 	const applicationContext = query.contextGuid
 		? await loadApplicationContext({
 				locals: params.locals,
@@ -267,7 +265,7 @@ export async function loadContainerV2(params: {
 			params.locals.pool.connect,
 			params.locals.user
 		));
-	const useElasticsearch = features.useElasticsearch() && canUseElasticsearch(scopedQuery);
+	const useElasticsearch = canUseElasticsearch(scopedQuery);
 	const requestedLimit = query.limit + 1;
 
 	if (useElasticsearch) {

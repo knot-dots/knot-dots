@@ -1,13 +1,11 @@
 import {
 	getAllRelatedContainers,
 	getAllRelatedContainersByProgramType,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
+	getAllRelatedOrganizationalUnitContainers
 } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import {
 	type AnyContainer,
-	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
 	payloadTypes,
@@ -16,7 +14,6 @@ import {
 } from '$lib/models';
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 
@@ -31,7 +28,6 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganization,
 		currentOrganizationalUnit
 	} = await parent();
-	const features = createFeatureDecisions(locals.features);
 	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.rule]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
@@ -74,34 +70,19 @@ export default (async function load({ depends, locals, parent, url }) {
 			)
 		);
 	} else {
-		if (features.useElasticsearch()) {
-			const esResult = await getManyContainersWithES(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{
-					customCategories,
-					programTypes: url.searchParams.getAll('programType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.rule]
-				},
-				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-			);
-			containers = esResult.containers;
-			data = esResult.facets;
-		} else {
-			containers = await locals.pool.connect(
-				getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						customCategories,
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.rule]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-			);
-		}
+		const esResult = await getManyContainersWithES(
+			currentOrganization.payload.default ? [] : [currentOrganization.guid],
+			{
+				customCategories,
+				programTypes: url.searchParams.getAll('programType'),
+				terms: url.searchParams.get('terms') ?? '',
+				type: [payloadTypes.enum.rule]
+			},
+			url.searchParams.get('sort') ?? '',
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
+		);
+		containers = esResult.containers;
+		data = esResult.facets;
 	}
 
 	const filtered = filterOrganizationalUnits(
@@ -139,7 +120,7 @@ export default (async function load({ depends, locals, parent, url }) {
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = _facets;
 
 	return {
 		containers: filtered,

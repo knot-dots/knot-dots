@@ -3,7 +3,6 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
 	computeFacetCount,
@@ -22,7 +21,6 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 
 	const t = unwrapFunctionStore(_);
 	const { categoryContext } = await parent();
-	const features = createFeatureDecisions(locals.features);
 
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	try {
@@ -42,7 +40,6 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 			pool: locals.pool,
 			scope: [container.organization],
 			programGuid: container.guid,
-			features,
 			customCategories,
 			resourceCategoryFilters: url.searchParams.getAll('resourceCategory'),
 			sort: (url.searchParams.get('sort') ?? 'alpha') as 'alpha' | 'modified' | 'priority',

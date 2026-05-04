@@ -1,15 +1,7 @@
 export const featureFlags = new Map([
 	[
 		'alpha',
-		[
-			'OpenAI',
-			'Elasticsearch',
-			'EmbedObjects',
-			'ContentPartner',
-			'ResourceV2',
-			'IOOI',
-			'SubMeasures'
-		] as const
+		['OpenAI', 'EmbedObjects', 'ContentPartner', 'ResourceV2', 'IOOI', 'SubMeasures'] as const
 	],
 	[
 		'beta',
@@ -35,9 +27,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMistral() {
 			return features.includes('Mistral');
-		},
-		useElasticsearch() {
-			return features.includes('Elasticsearch');
 		},
 		useChapter() {
 			return features.includes('Report');

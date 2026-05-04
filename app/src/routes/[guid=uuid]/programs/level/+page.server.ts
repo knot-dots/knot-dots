@@ -1,20 +1,14 @@
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyContainer,
-	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
 	payloadTypes,
 	predicates,
 	programTypes
 } from '$lib/models';
-import {
-	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
-} from '$lib/server/db';
+import { getAllRelatedContainers, getAllRelatedOrganizationalUnitContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
@@ -27,7 +21,6 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 		currentOrganization,
 		currentOrganizationalUnit
 	} = await parent();
-	const features = createFeatureDecisions(locals.features);
 	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.program]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
@@ -79,36 +72,19 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 		);
 		containers = filterVisible(containers, locals.user);
 	} else {
-		if (features.useElasticsearch()) {
-			const esResult = await getManyContainersWithES(
-				[],
-				{
-					customCategories,
-					programTypes: url.searchParams.getAll('programType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.program]
-				},
-				url.searchParams.get('sort') ?? '',
-				{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-			);
-			containers = await filterOrganizationalUnitsAsync(Promise.resolve(esResult.containers));
-			data = esResult.facets;
-		} else {
-			containers = await filterOrganizationalUnitsAsync(
-				locals.pool.connect(
-					getManyContainers(
-						[],
-						{
-							customCategories,
-							programTypes: url.searchParams.getAll('programType'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.program]
-						},
-						url.searchParams.get('sort') ?? ''
-					)
-				)
-			);
-		}
+		const esResult = await getManyContainersWithES(
+			[],
+			{
+				customCategories,
+				programTypes: url.searchParams.getAll('programType'),
+				terms: url.searchParams.get('terms') ?? '',
+				type: [payloadTypes.enum.program]
+			},
+			url.searchParams.get('sort') ?? '',
+			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
+		);
+		containers = await filterOrganizationalUnitsAsync(Promise.resolve(esResult.containers));
+		data = esResult.facets;
 		containers = filterVisible(containers, locals.user);
 	}
 
@@ -143,7 +119,7 @@ export const load: PageServerLoad = async ({ locals, url, parent }) => {
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
 
-	const facets = features.useElasticsearch() ? _facets : computeFacetCount(_facets, containers);
+	const facets = _facets;
 
 	return {
 		containers,
