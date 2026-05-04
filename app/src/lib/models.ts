@@ -1120,6 +1120,7 @@ const pagePayload = z.object({
 	body: z.string().trim(),
 	color: backgroundColor.optional(),
 	cover: z.url().optional(),
+	coverSource: z.string().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -1365,6 +1366,7 @@ const imagePayload = z
 		body: z.string().trim().optional(),
 		image: z.string().url().optional(),
 		imageAltText: z.string().optional(),
+		imageSource: z.string().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.image),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -1540,6 +1542,7 @@ const organizationPayload = z.object({
 	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
+	coverSource: z.string().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	favorite: z
@@ -1570,6 +1573,7 @@ export const organizationalUnitPayload = z.object({
 		.default({}),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
+	coverSource: z.string().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	favorite: z

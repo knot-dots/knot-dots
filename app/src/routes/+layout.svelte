@@ -44,14 +44,10 @@
 
 	setToastContext(addToast);
 
-	let favoriteList = $state({
-		organization: page.data.currentOrganization.payload.favorite,
-		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? []
-	});
-
-	$effect(() => {
-		favoriteList.organization = page.data.currentOrganization.payload.favorite;
-		favoriteList.organizationalUnit = page.data.currentOrganizationalUnit?.payload.favorite ?? [];
+	let favoriteList = $derived.by(() => {
+		const organization = $state(page.data.currentOrganization.payload.favorite);
+		const organizationalUnit = $state(page.data.currentOrganizationalUnit?.payload.favorite ?? []);
+		return { organization, organizationalUnit };
 	});
 
 	setFavoriteListContext(favoriteList);

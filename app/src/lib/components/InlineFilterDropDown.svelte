@@ -101,7 +101,7 @@
 		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdwon-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-panel-max-height: calc(100vh - 8rem);
+		--dropdown-panel-max-height: calc(100vh - 12rem);
 
 		position: static;
 	}
