@@ -13,6 +13,7 @@
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
+	import RulesCatalogOverlay from '$lib/components/RulesCatalogOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
@@ -72,6 +73,8 @@
 		<HelpCatalogOverlay containers={data.containers} slug={data.slug} />
 	{:else if data.key === overlayKey.enum['view-knowledge']}
 		<KnowledgeCatalogOverlay categories={data.categories} />
+	{:else if data.key === overlayKey.enum['view-rules']}
+		<RulesCatalogOverlay categories={data.categories} />
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}

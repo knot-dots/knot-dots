@@ -683,6 +683,7 @@
 	"rule_status.in_planning": "In planning",
 	"rule_status.adopted": "Adopted",
 	"rule_status.rejected": "Rejected",
+	"rules_catalog.empty": "No rules are available.",
 	"save": "Save",
 	"sdg": {
 		"01": "No poverty",
