@@ -89,6 +89,13 @@
 		return header.getBoundingClientRect().bottom;
 	});
 
+	const panelLeft = $derived.by(() => {
+		if (!$menu.expanded || !buttonEl) return '0';
+		const nav = buttonEl.closest('.app-wrapper')?.querySelector(':scope > nav');
+		if (!nav) return '0';
+		return `${(nav as HTMLElement).offsetWidth}px`;
+	});
+
 	const panelRight = $derived($overlay ? `calc(100vw * ${$overlayWidth})` : '0');
 
 	function pathFor(workspace: WorkspaceDefinition): string {
@@ -125,7 +132,13 @@
 	</button>
 
 	{#if $menu.expanded}
-		<div class="mega-menu-panel" style:top="{panelTop}px" style:right={panelRight} use:menu.items>
+		<div
+			class="mega-menu-panel"
+			style:top="{panelTop}px"
+			style:left={panelLeft}
+			style:right={panelRight}
+			use:menu.items
+		>
 			{#each columns as column, colIdx (colIdx)}
 				<div class="mega-menu-column">
 					{#each column as group (group.module.key)}
@@ -201,7 +214,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-		left: var(--sidebar-max-width);
 		max-height: calc(100vh - var(--header-height));
 		overflow: auto;
 		padding: 0.5rem;
