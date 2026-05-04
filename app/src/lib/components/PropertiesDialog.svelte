@@ -1,19 +1,20 @@
 <script lang="ts">
+	import { onMount, onDestroy } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { env } from '$env/dynamic/public';
+	import deleteContainer from '$lib/client/deleteContainer';
 	import {
 		type AnyContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		type PageContainer
 	} from '$lib/models';
-	import deleteContainer from '$lib/client/deleteContainer';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import { onMount, onDestroy } from 'svelte';
+	import { applicationState, mayDeleteContainer } from '$lib/stores';
 
 	interface Props {
 		actions?: Snippet;
@@ -118,22 +119,24 @@
 				{@render children()}
 
 				<footer class="dialog-footer-actions">
-					<button
-						class="button button-xs button-red"
-						onclick={(e) => {
-							e.preventDefault();
-							confirmDelete = true;
-						}}
-						type="button"
-					>
-						<TrashBin />
-						{$_('delete.name', {
-							values: {
-								name:
-									'title' in container.payload ? container.payload.title : container.payload.name
-							}
-						})}
-					</button>
+					{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+						<button
+							class="button button-xs button-red"
+							onclick={(e) => {
+								e.preventDefault();
+								confirmDelete = true;
+							}}
+							type="button"
+						>
+							<TrashBin />
+							{$_('delete.name', {
+								values: {
+									name:
+										'title' in container.payload ? container.payload.title : container.payload.name
+								}
+							})}
+						</button>
+					{/if}
 
 					{@render actions?.()}
 				</footer>
