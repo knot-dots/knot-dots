@@ -98,8 +98,8 @@
 	);
 
 	let organizationsUserIsMemberOf = $derived(
-		[...$user.adminOf, ...$user.headOf, ...$user.memberOf].filter((value) =>
-			page.data.organizations.map((o) => o.guid).includes(value)
+		[...$user.adminOf, ...$user.headOf, ...$user.collaboratorOf, ...$user.memberOf].filter(
+			(value) => page.data.organizations.map((o) => o.guid).includes(value)
 		)
 	);
 
