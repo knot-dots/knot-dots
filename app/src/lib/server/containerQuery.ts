@@ -1,7 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
-import { buildCategoryFacetsWithCounts, type CategoryContext } from '$lib/categoryOptions';
+import {
+	buildCategoryFacetsWithCounts,
+	type CategoryContext,
+	filterCategoryContext
+} from '$lib/categoryOptions';
 import {
 	administrativeTypes,
 	type AnyContainer,
@@ -10,6 +14,7 @@ import {
 	indicatorCategories,
 	indicatorTypes,
 	measureTypes,
+	type OrganizationalUnitContainer,
 	payloadTypes,
 	predicates,
 	programTypes,
@@ -22,6 +27,7 @@ import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
 	getAllRelatedContainers,
+	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
@@ -48,12 +54,17 @@ const querySchema = z.object({
 	assignee: z.array(z.string().uuid()).default([]),
 	categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
 	contextGuid: z.array(z.string().uuid()).default([]),
+	excludeRelation: z.array(predicates).default([]),
 	federalState: z.array(z.string()).default([]),
 	guid: z.array(z.string().uuid()).default([]),
 	indicator: z.array(z.string().uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
+	included: z
+		.array(z.enum(['subordinate_organizational_units', 'superordinate_organizational_units']))
+		.default(['subordinate_organizational_units']),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
+	member: z.array(z.string().uuid()).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
 	organization: z.array(z.string().uuid()).default([]),
 	organizationalUnit: z
@@ -157,18 +168,28 @@ function baseFacetMap(
 	return facets;
 }
 
-function buildFilters(params: ContainerQueryParams, customCategories: Record<string, string[]>) {
+function buildFilters(
+	params: ContainerQueryParams,
+	customCategories: Record<string, string[]>,
+	overrides: { organizationalUnits?: string[] | null; includeOrganizationalUnitNull?: boolean } = {}
+) {
 	return {
 		administrativeTypes: params.administrativeType,
 		assignees: params.assignee,
 		customCategories,
 		customCategoryMatch: params.categoryMatch,
+		excludeRelation: params.excludeRelation,
 		federalStates: params.federalState,
 		guid: params.guid,
 		indicators: params.indicator,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
-		organizationalUnits: params.organizationalUnit,
+		includeOrganizationalUnitNull: overrides.includeOrganizationalUnitNull,
+		members: params.member,
+		organizationalUnits:
+			'organizationalUnits' in overrides
+				? overrides.organizationalUnits
+				: params.organizationalUnit,
 		programTypes: params.programType,
 		resource: params.resource,
 		resourceCategories: params.resourceCategory,
@@ -202,9 +223,11 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 	return (
 		params.relatedTo.length === 0 &&
 		params.administrativeType.length === 0 &&
+		params.excludeRelation.length === 0 &&
 		params.federalState.length === 0 &&
 		params.guid.length === 0 &&
 		params.indicator.length === 0 &&
+		params.member.length === 0 &&
 		params.resource.length === 0 &&
 		params.organizationalUnit !== null
 	);
@@ -239,6 +262,33 @@ async function loadCategoryContextForQuery(
 	});
 }
 
+function expandOrganizationalUnitScope(
+	allRelated: OrganizationalUnitContainer[],
+	currentOrgUnit: OrganizationalUnitContainer,
+	included: string[]
+): { organizationalUnits: string[]; includeOrganizationalUnitNull: boolean } {
+	const subordinateGuids = allRelated
+		.filter((u) => u.payload.level > currentOrgUnit.payload.level)
+		.map((u) => u.guid);
+	const superordinateGuids = allRelated
+		.filter((u) => u.payload.level < currentOrgUnit.payload.level)
+		.map((u) => u.guid);
+
+	const scopeGuids = new Set<string>([currentOrgUnit.guid]);
+	let includeOrganizationalUnitNull = false;
+
+	if (included.includes('subordinate_organizational_units')) {
+		for (const g of subordinateGuids) scopeGuids.add(g);
+	}
+
+	if (included.includes('superordinate_organizational_units')) {
+		for (const g of superordinateGuids) scopeGuids.add(g);
+		includeOrganizationalUnitNull = true;
+	}
+
+	return { organizationalUnits: [...scopeGuids], includeOrganizationalUnitNull };
+}
+
 export async function loadContainerV2(params: {
 	locals: App.Locals;
 	url: URL;
@@ -265,37 +315,56 @@ export async function loadContainerV2(params: {
 			params.locals.pool.connect,
 			params.locals.user
 		));
-	const useElasticsearch = canUseElasticsearch(scopedQuery);
+
+	const queriedCategoryContext =
+		scopedQuery.type.length > 0
+			? filterCategoryContext(categoryContext, scopedQuery.type)
+			: categoryContext;
+
+	// Expand organizational unit scope from the context's current org unit, unless the caller
+	// explicitly passed organizationalUnit params or the query uses related-to (no ou filtering).
+	let ouOverrides: {
+		organizationalUnits?: string[] | null;
+		includeOrganizationalUnitNull?: boolean;
+	} = {};
+	const currentOrgUnit = applicationContext?.currentOrganizationalUnit;
+	if (
+		currentOrgUnit &&
+		scopedQuery.relatedTo.length === 0 &&
+		(scopedQuery.organizationalUnit === null || scopedQuery.organizationalUnit.length === 0)
+	) {
+		const allRelated = await params.locals.pool.connect(
+			getAllRelatedOrganizationalUnitContainers(currentOrgUnit.guid)
+		);
+		ouOverrides = expandOrganizationalUnitScope(allRelated, currentOrgUnit, scopedQuery.included);
+	}
+
+	const useElasticsearch =
+		canUseElasticsearch(scopedQuery) && !ouOverrides.includeOrganizationalUnitNull;
 	const requestedLimit = query.limit + 1;
+	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
 
 	if (useElasticsearch) {
-		const result = await getManyContainersWithES(
-			scopedQuery.organization,
-			buildElasticsearchFilters(
-				scopedQuery,
-				extractCustomCategoryFilters(params.url, categoryContext.keys)
-			),
-			query.sort,
-			{
-				customCategoryKeys: categoryContext.keys,
-				includeFacets: true,
-				limit: requestedLimit,
-				offset: query.offset
-			}
-		);
+		const esFilters = buildElasticsearchFilters(scopedQuery, customCategories);
+		if (ouOverrides.organizationalUnits) {
+			esFilters.organizationalUnits = ouOverrides.organizationalUnits;
+		}
+		const result = await getManyContainersWithES(scopedQuery.organization, esFilters, query.sort, {
+			customCategoryKeys: queriedCategoryContext.keys,
+			includeFacets: true,
+			limit: requestedLimit,
+			offset: query.offset
+		});
 		const page = paginate(result.containers, query.limit, query.offset);
 		const containers = filterVisible(page.containers, params.locals.user);
 		return {
 			containers,
 			page: page.page,
-			facets: mapToRecord(baseFacetMap(result.facets, categoryContext))
+			facets: mapToRecord(baseFacetMap(result.facets, queriedCategoryContext))
 		};
 	}
 
-	const filters = buildFilters(
-		scopedQuery,
-		extractCustomCategoryFilters(params.url, categoryContext.keys)
-	);
+	const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
 	const rawContainers =
 		query.relatedTo.length > 0
 			? await params.locals.pool.connect(
@@ -321,7 +390,7 @@ export async function loadContainerV2(params: {
 
 	const page = paginate(rawContainers, query.limit, query.offset);
 	const containers = filterVisible(page.containers, params.locals.user);
-	const facets = computeFacetCount(baseFacetMap({}, categoryContext), containers);
+	const facets = computeFacetCount(baseFacetMap({}, queriedCategoryContext), containers);
 
 	return {
 		containers,
