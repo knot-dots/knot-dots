@@ -108,6 +108,17 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
+	let isOnPage = $derived.by(() => {
+		const segments = page.url.pathname.split('/');
+		const pathWithoutContext =
+			segments.length > 1 && segments[1] === selectedContext?.guid
+				? '/' + segments.slice(2).join('/')
+				: page.url.pathname;
+		return (
+			pathWithoutContext === '/all/page' || pathWithoutContext === '/' || pathWithoutContext === ''
+		);
+	});
+
 	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
 
 	let activeFilters = $derived.by(() => {
@@ -295,7 +306,7 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)) && createFeatureDecisions(page.data.features).useMegaMenu()}
+	{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)) && createFeatureDecisions(page.data.features).useMegaMenu()}
 		<div class="commands-leading">
 			<ViewSelect />
 		</div>
