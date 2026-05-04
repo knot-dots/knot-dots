@@ -23,11 +23,9 @@
 	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 	const administrativeAreaLabelId = crypto.randomUUID();
 
-	const selectableWorkspaces = $derived(workspaces.filter((w) => !w.alwaysVisible));
-
 	const workspaceOptions = $derived(
 		workspaceModules.flatMap((module) =>
-			selectableWorkspaces
+			workspaces
 				.filter((w) => w.module === module.key)
 				.map((w) => ({
 					value: w.key,
@@ -41,7 +39,7 @@
 	// that workspace; without this, unchecking reads as "still empty = show all".
 	$effect(() => {
 		if (editable && container.payload.visibleWorkspaces.length === 0) {
-			container.payload.visibleWorkspaces = selectableWorkspaces.map((w) => w.key);
+			container.payload.visibleWorkspaces = workspaces.map((w) => w.key);
 		}
 	});
 

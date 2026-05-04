@@ -93,8 +93,6 @@ export interface WorkspaceDefinition {
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
 	boardFlag?: WorkspaceBoardFlag;
-	/** Always shown regardless of `visibleWorkspaces` configuration. */
-	alwaysVisible?: boolean;
 }
 
 export const strategyProgramTypes = [
@@ -287,7 +285,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			catalog: '/rules/catalog'
 		}
 	},
-	// Organizing (always visible)
+	// Organizing
 	{
 		key: 'pages',
 		i18nKey: 'workspace.type.pages',
@@ -297,8 +295,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/pages/catalog',
 			catalog: '/pages/catalog'
-		},
-		alwaysVisible: true
+		}
 	},
 	{
 		key: 'templates',
@@ -309,8 +306,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/templates',
 			catalog: '/templates'
-		},
-		alwaysVisible: true
+		}
 	},
 	{
 		key: 'categories',
@@ -321,8 +317,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/categories',
 			level: '/categories'
-		},
-		alwaysVisible: true
+		}
 	},
 	{
 		key: 'overview',
@@ -336,8 +331,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			level: '/all/level',
 			page: '/all/page',
 			table: '/all/table'
-		},
-		alwaysVisible: true
+		}
 	}
 ];
 
@@ -357,7 +351,6 @@ interface VisibilityContext {
  * Returns the workspaces that should be shown for the given organization context.
  *
  * Visibility rules:
- * - `alwaysVisible` workspaces are always shown (subject to feature flag).
  * - Workspaces with a `featureFlag` are hidden when the flag is off.
  * - Workspaces with a `boardFlag` are hidden when the board is not enabled
  *   on the organization or organizational unit.
@@ -366,7 +359,7 @@ interface VisibilityContext {
  * - Otherwise the organization's `visibleWorkspaces` applies; when also empty,
  *   all remaining workspaces are visible (default without explicit choice).
  * - When `visibleWorkspaces` is populated, only the listed workspace keys are
- *   visible (in addition to `alwaysVisible`).
+ *   visible.
  * - `hasPermission` provides an extra hook for permission-based filtering
  *   (e.g. categories require `mayCreateContainer` permission).
  */
@@ -388,9 +381,6 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		}
 		if (hasPermission && !hasPermission(workspace.key)) {
 			return false;
-		}
-		if (workspace.alwaysVisible) {
-			return true;
 		}
 		if (explicitSet.size === 0) {
 			return true;
