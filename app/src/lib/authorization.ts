@@ -140,6 +140,9 @@ export default function defineAbilityFor(user: User) {
 				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
+		can('invite-members', [payloadTypes.enum.organizational_unit], {
+			guid: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can('create', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
