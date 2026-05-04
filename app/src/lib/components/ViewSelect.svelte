@@ -110,15 +110,15 @@
 
 	.dropdown-button {
 		align-items: center;
-		background-color: var(--color-white);
+		background-color: var(--color-gray-050);
 		border: 1px solid var(--color-gray-200);
 		border-radius: 9999px;
-		box-shadow: var(--shadow-sm);
 		color: var(--color-gray-900);
 		cursor: pointer;
 		display: inline-flex;
 		gap: 0.375rem;
-		padding: 0.375rem 0.625rem;
+		height: 2rem;
+		padding: 0 0.75rem;
 	}
 
 	.dropdown-button:hover {
