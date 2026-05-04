@@ -15,6 +15,18 @@
 
 	let { slug }: Props = $props();
 
+	const helpOverlayKeys = [
+		overlayKey.enum['view-help'],
+		overlayKey.enum['view-knowledge'],
+		overlayKey.enum['view-rules']
+	];
+
+	function clearOverlay(params: URLSearchParams) {
+		for (const key of helpOverlayKeys) {
+			params.delete(key);
+		}
+	}
+
 	async function toggleHelp(url: URL) {
 		let newParams = paramsFromFragment(url);
 		if (newParams.get(overlayKey.enum['view-help']) === slug) {
@@ -25,6 +37,7 @@
 				newParams = new URLSearchParams();
 			}
 		} else {
+			clearOverlay(newParams);
 			newParams.set(overlayKey.enum['view-help'], slug);
 		}
 		await goto(`#${newParams.toString()}`);
@@ -40,7 +53,7 @@
 				newParams = new URLSearchParams();
 			}
 		} else {
-			newParams.delete(overlayKey.enum['view-rules']);
+			clearOverlay(newParams);
 			newParams.set(overlayKey.enum['view-knowledge'], '');
 		}
 		await goto(`#${newParams.toString()}`);
@@ -56,7 +69,7 @@
 				newParams = new URLSearchParams();
 			}
 		} else {
-			newParams.delete(overlayKey.enum['view-knowledge']);
+			clearOverlay(newParams);
 			newParams.set(overlayKey.enum['view-rules'], '');
 		}
 		await goto(`#${newParams.toString()}`);
