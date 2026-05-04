@@ -146,6 +146,7 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 
 	return {
 		containers: filtered,
-		facets
+		facets,
+		page: { hasMore: false, limit: filtered.length, offset: 0, nextOffset: null }
 	};
 };
