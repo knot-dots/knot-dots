@@ -10,14 +10,16 @@
 		isMeasureMonitoringContainer,
 		isSimpleMeasureContainer
 	} from '$lib/models';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let container = $derived(data.container);
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let measures = $derived(
 		isMeasureContainer(container) || isSimpleMeasureContainer(container)
