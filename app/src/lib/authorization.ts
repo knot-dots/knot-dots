@@ -238,6 +238,7 @@ export default function defineAbilityFor(user: User) {
 		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
+		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});

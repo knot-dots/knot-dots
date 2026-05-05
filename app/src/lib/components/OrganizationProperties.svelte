@@ -63,7 +63,9 @@
 			/>
 		{/if}
 
-		<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
+		{#if $ability.can('update', container, 'customDomain')}
+			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
+		{/if}
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:container />
