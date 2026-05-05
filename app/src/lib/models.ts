@@ -3312,7 +3312,10 @@ export function getOrganizationURL(
 
 		// Default organization uses the base domain without subdomain
 		if (!isDefaultOrganization) {
-			url.hostname = `${container.organization}.${url.hostname}`;
+			url.hostname =
+				'customDomain' in container.payload && container.payload.customDomain
+					? container.payload.customDomain
+					: `${container.organization}.${url.hostname}`;
 		}
 	}
 
