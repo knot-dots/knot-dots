@@ -109,8 +109,9 @@
 						)}
 				{#if options.some(({ count }) => count > 0)}
 					<InlineFilterDropDown
-						bind:value={filter[key as keyof typeof filter] as string[]}
+						bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 						{key}
+						label={categoryContext.labels.get(key)}
 						{mode}
 						{options}
 					/>
