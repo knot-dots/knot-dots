@@ -7,16 +7,17 @@
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		computeFacetCount,
+		type AnyContainer,
 		type CustomCollectionContainer,
 		indicatorCategories,
 		isOrganizationalUnitContainer,
@@ -24,6 +25,7 @@
 		payloadTypes,
 		programTypes
 	} from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
@@ -71,7 +73,8 @@
 	);
 
 	let facets = $derived.by(() => {
-		const facets = new Map([
+		// Build the base facet map with zeroed counts for each option
+		const baseFacets = new Map([
 			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
 			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.program)
 				? [['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]]
@@ -85,7 +88,21 @@
 			])
 		] as [string, Map<string, number>][]);
 
-		return computeFacetCount(facets, searchResource.current ?? []);
+		// Merge server-provided facet counts (all keys except 'type' which server doesn't return)
+		const serverFacets = searchResource.current?.facets;
+		if (serverFacets) {
+			for (const [key, counts] of baseFacets.entries()) {
+				if (key === 'type') continue;
+				const serverCounts = serverFacets.get(key);
+				if (serverCounts) {
+					for (const [value, count] of serverCounts.entries()) {
+						counts.set(value, count);
+					}
+				}
+			}
+		}
+
+		return baseFacets;
 	});
 
 	let activeFilters = $derived(
@@ -105,36 +122,114 @@
 
 	const inViewport = new IsInViewport(() => dialog);
 
+	// Accumulated items across loaded pages
+	let searchItems = $state<AnyContainer[]>([]);
+	let searchHasMore = $state(false);
+	let searchNextOffset = $state<number | null>(null);
+	let searchLoadingMore = $state(false);
+	let searchLoadAbortController: AbortController | undefined;
+
+	function buildSearchQuery() {
+		const query = new URLSearchParams();
+		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
+
+		const orgs =
+			mode === 'select'
+				? Array.from(new Set([page.data.currentOrganization.guid, ...organizationsUserIsMemberOf]))
+				: [page.data.currentOrganization.guid];
+		for (const org of orgs) query.append('organization', org);
+
+		for (const t of payloadType) query.append('payloadType', t);
+		if (filter.indicatorCategory) {
+			for (const v of filter.indicatorCategory) query.append('indicatorCategory', v);
+		}
+		if (filter.programType) {
+			for (const v of filter.programType) query.append('programType', v);
+		}
+		for (const k of categoryContext.keys) {
+			if (k in filter) {
+				for (const v of filter[k]) query.append(k, v);
+			}
+		}
+		if (terms) query.set('terms', terms);
+		query.set('sort', sort);
+		return query;
+	}
+
+	interface SearchPage {
+		containers: AnyContainer[];
+		facets: Map<string, Map<string, number>>;
+		hasMore: boolean;
+		nextOffset: number | null;
+	}
+
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current],
-		async ([filter, sort, terms, inViewport], _, { signal }) => {
-			return inViewport
-				? fetchContainers(
-						{
-							indicatorCategory: filter.indicatorCategory,
-							organization:
-								mode === 'select'
-									? Array.from(
-											new Set([page.data.currentOrganization.guid, ...organizationsUserIsMemberOf])
-										)
-									: [page.data.currentOrganization.guid],
-							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
-							programType: filter.programType,
-							...Object.fromEntries(
-								categoryContext.keys.map((k) => (k in filter ? [[k], filter[k]] : []))
-							),
-							terms
-						},
-						sort,
-						{ signal }
-					)
-				: [];
+		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current, () => mode],
+		async ([, , , inViewport], _, { signal }): Promise<SearchPage> => {
+			if (!inViewport)
+				return { containers: [], facets: new Map(), hasMore: false, nextOffset: null };
+
+			const query = buildSearchQuery();
+			const result = await fetchContainerPage({
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset: 0,
+				query,
+				signal
+			});
+			return {
+				containers: result.containers,
+				facets: result.facets,
+				hasMore: result.page.hasMore,
+				nextOffset: result.page.nextOffset
+			};
 		},
 		{
 			debounce: 300,
 			lazy: true
 		}
 	);
+
+	$effect(() => {
+		const result = searchResource.current;
+		if (result) {
+			searchItems = result.containers;
+			searchHasMore = result.hasMore;
+			searchNextOffset = result.nextOffset;
+		}
+	});
+
+	async function loadMoreSearch() {
+		if (searchLoadingMore || !searchHasMore || searchNextOffset === null) return;
+
+		searchLoadAbortController?.abort();
+		const controller = new AbortController();
+		searchLoadAbortController = controller;
+		searchLoadingMore = true;
+
+		try {
+			const query = buildSearchQuery();
+			const result = await fetchContainerPage({
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset: searchNextOffset,
+				query,
+				signal: controller.signal
+			});
+
+			if (controller.signal.aborted || searchLoadAbortController !== controller) return;
+
+			searchItems = [...searchItems, ...result.containers];
+			searchHasMore = result.page.hasMore;
+			searchNextOffset = result.page.nextOffset;
+		} catch (error) {
+			if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
+		} finally {
+			if (!controller.signal.aborted && searchLoadAbortController === controller) {
+				searchLoadingMore = false;
+			}
+		}
+	}
 
 	function resetFilters() {
 		for (const key in filter) {
@@ -265,9 +360,9 @@
 					</li>
 				</ul>
 
-				{#if searchResource.current}
+				{#if searchItems.length > 0 || searchResource.current !== undefined}
 					<ul class="catalog">
-						{#each searchResource.current as item (item.guid)}
+						{#each searchItems as item (item.guid)}
 							<li>
 								{#if mode === 'select'}
 									<SelectableCard
@@ -284,6 +379,12 @@
 								{/if}
 							</li>
 						{/each}
+						<LazyLoadSentinel
+							as="li"
+							hasMore={searchHasMore}
+							loading={searchLoadingMore}
+							onLoadMore={loadMoreSearch}
+						/>
 					</ul>
 				{/if}
 			</div>
@@ -306,7 +407,7 @@
 				{#if mode === 'select' && selected.length > 0}
 					<ul>
 						{#each selected as guid (guid)}
-							{@const item = searchResource.current?.find((item) => item.guid === guid)}
+							{@const item = searchItems.find((item) => item.guid === guid)}
 							{#if item}
 								<li class="preview-item">
 									<input bind:group={selected} name="selected" type="checkbox" value={guid} />
@@ -320,7 +421,7 @@
 							{/if}
 						{/each}
 					</ul>
-				{:else if mode === 'apply_rule' && searchResource.current}
+				{:else if mode === 'apply_rule'}
 					<ul>
 						{#each Object.entries(filter) as [key, valueList] (key)}
 							{#if valueList.length > 0}
