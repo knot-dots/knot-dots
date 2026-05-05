@@ -96,7 +96,10 @@ export async function loadApplicationContext({
 					)) as OrganizationContainer;
 				}
 			} else {
-				currentOrganization = organizations.find(({ guid }) => url.hostname.startsWith(`${guid}.`));
+				currentOrganization = organizations.find(
+					({ guid, payload }) =>
+						url.hostname.startsWith(`${guid}.`) || url.hostname === payload.customDomain
+				);
 			}
 		}
 

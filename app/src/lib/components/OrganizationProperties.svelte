@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -60,6 +61,10 @@
 				options={workspaceOptions}
 				bind:value={container.payload.visibleWorkspaces}
 			/>
+		{/if}
+
+		{#if $ability.can('update', container, 'customDomain')}
+			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
 		{/if}
 
 		{#if $ability.can('update', container, 'visibility')}

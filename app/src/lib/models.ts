@@ -1544,6 +1544,7 @@ const organizationPayload = z.object({
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	coverSource: z.string().optional(),
+	customDomain: z.hostname().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	favorite: z
@@ -3294,7 +3295,10 @@ export function getOrganizationURL(
 
 		// Default organization uses the base domain without subdomain
 		if (!isDefaultOrganization) {
-			url.hostname = `${container.organization}.${url.hostname}`;
+			url.hostname =
+				'customDomain' in container.payload && container.payload.customDomain
+					? container.payload.customDomain
+					: `${container.organization}.${url.hostname}`;
 		}
 	}
 
