@@ -73,6 +73,7 @@
 	async function handleConfirmPublishAll(c: AnyContainer) {
 		const response = await publishAll(c);
 		if (response.ok) {
+			await invalidateAll();
 			toast({
 				icon: Check,
 				heading: $_('publish_all_success'),
