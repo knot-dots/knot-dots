@@ -88,7 +88,7 @@ export async function createContainer(context: BrowserContext, newContainer: New
 	const container = await response.json();
 
 	// Wait for the indexing worker to pick up the event and refresh ES
-	await new Promise((r) => setTimeout(r, 300));
+	await new Promise((r) => setTimeout(r, 500));
 
 	return container;
 }

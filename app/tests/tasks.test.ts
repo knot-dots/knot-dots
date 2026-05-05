@@ -18,6 +18,10 @@ test.describe('Task status board', () => {
 		await taskStatusBoard.moveCardToColumn(testTask.payload.title, 'In Planning');
 		await expect(taskStatusBoard.column('In Planning').card(testTask.payload.title)).toBeVisible();
 
+		// Wait for the save request to complete and ES to index the update
+		await taskStatusBoard.page.waitForLoadState('networkidle');
+		await taskStatusBoard.page.waitForTimeout(500);
+
 		// Verify persistence
 		await taskStatusBoard.page.reload();
 		await expect(taskStatusBoard.column('In Planning').card(testTask.payload.title)).toBeVisible();
