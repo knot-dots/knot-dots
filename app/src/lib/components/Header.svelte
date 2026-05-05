@@ -47,6 +47,7 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		isProgramContainer,
 		isReportContainer,
 		isSimpleMeasureContainer,
@@ -231,7 +232,7 @@
 			<MeasureWorkspaces {container} />
 		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces {container} />
-		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || isPageContainer(container)}
 			{#if createFeatureDecisions(page.data.features).useMegaMenu()}
 				<WorkspacesMegaMenu />
 			{:else}
