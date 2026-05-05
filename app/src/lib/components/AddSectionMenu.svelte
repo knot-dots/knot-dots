@@ -41,6 +41,7 @@
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
+		isHelpContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -225,7 +226,8 @@
 	);
 
 	let mayAddCustomCollection = $derived(
-		isOrganizationContainer(parentContainer) ||
+		isHelpContainer(parentContainer) ||
+			isOrganizationContainer(parentContainer) ||
 			isOrganizationalUnitContainer(parentContainer) ||
 			isPageContainer(parentContainer) ||
 			isReportContainer(parentContainer)
