@@ -355,24 +355,20 @@ export async function loadContainerV2(params: {
 							...filters,
 							organizationalUnits: filters.organizationalUnits ?? undefined
 						},
-						query.sort,
-						requestedLimit,
-						query.offset
+						query.sort
 					)
 				)
 			: await params.locals.pool.connect(
-					getManyContainers(scopedQuery.organization, filters, query.sort, {
-						limit: requestedLimit,
-						offset: query.offset
-					})
+					getManyContainers(scopedQuery.organization, filters, query.sort)
 				);
 
-	const page = paginate(rawContainers, query.limit, query.offset);
-	const containers = filterVisible(page.containers, params.locals.user);
-	const facets = computeFacetCount(baseFacetMap({}, queriedCategoryContext), containers);
+	const allVisible = filterVisible(rawContainers, params.locals.user);
+	const pageSlice = allVisible.slice(query.offset, query.offset + query.limit + 1);
+	const page = paginate(pageSlice, query.limit, query.offset);
+	const facets = computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
 
 	return {
-		containers,
+		containers: page.containers,
 		page: page.page,
 		facets: mapToRecord(facets)
 	};
