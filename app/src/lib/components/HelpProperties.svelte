@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { _ } from 'svelte-i18n';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import EditableHelpSlug from '$lib/components/EditableHelpSlug.svelte';
+	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import EditableOrganizationalUnit from '$lib/components/EditableOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -22,12 +24,20 @@
 
 <PropertyGrid>
 	{#snippet top()}
+		{#if $ability.can('update', container, 'visibility')}
+			<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
+		{/if}
+
 		{#if $ability.can('update', container, 'slug')}
 			<EditableHelpSlug {editable} bind:value={container.payload.slug} />
 		{/if}
 	{/snippet}
 
 	{#snippet general()}
+		{#if $ability.can('update', container, 'visibility')}
+			<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
+		{/if}
+
 		{#if $ability.can('update', container, 'slug')}
 			<EditableHelpSlug {editable} bind:value={container.payload.slug} />
 		{/if}

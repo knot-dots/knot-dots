@@ -995,6 +995,7 @@ const helpPayload = z.object({
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
+	image: z.url().optional(),
 	slug: z
 		.preprocess((v) => (Array.isArray(v) ? v.filter(isHelpSlug) : []), z.array(helpSlug))
 		.transform(deduplicate)
@@ -1254,6 +1255,7 @@ const initialEffectCollectionPayload = effectCollectionPayload;
 
 const reportPayload = basePayload
 	.extend({
+		image: z.url().optional(),
 		type: z.literal(payloadTypes.enum.report)
 	})
 	.strict();
