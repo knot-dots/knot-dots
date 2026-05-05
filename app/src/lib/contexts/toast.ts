@@ -7,7 +7,7 @@ export interface ToastProps {
 	icon?: Component<SvelteHTMLElements['svg']>;
 	heading: string;
 	message?: string;
-	status: 'info' | 'success';
+	status: 'error' | 'info' | 'success';
 }
 
 export interface AddToast {
