@@ -1,129 +1,28 @@
-import {
-	getAllRelatedContainers,
-	getAllRelatedContainersByProgramType,
-	getAllRelatedOrganizationalUnitContainers
-} from '$lib/server/db';
-import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import {
-	type AnyContainer,
-	filterOrganizationalUnits,
-	fromCounts,
-	payloadTypes,
-	predicates,
-	programTypes
-} from '$lib/models';
-import { filterVisible } from '$lib/authorization';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import fetchContainerPage from '$lib/client/fetchContainerPage';
+import { type RuleContainer, payloadTypes, predicates } from '$lib/models';
+import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 
-export default (async function load({ depends, locals, parent, url }) {
+const DEFAULT_RELATION_TYPES = [
+	predicates.enum['is-consistent-with'],
+	predicates.enum['is-equivalent-to'],
+	predicates.enum['is-inconsistent-with']
+];
+
+export default (async function load({ depends, fetch, params, url }) {
 	depends('containers');
 
-	let containers: AnyContainer[];
-	let data: Record<string, Record<string, number>> | undefined;
-	let subordinateOrganizationalUnits: string[] = [];
-	const {
-		categoryContext: rawCategoryContext,
-		currentOrganization,
-		currentOrganizationalUnit
-	} = await parent();
-	const categoryContext = filterCategoryContext(rawCategoryContext, [payloadTypes.enum.rule]);
-	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
+	const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.rule]]);
 
-	if (currentOrganizationalUnit) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		);
-		subordinateOrganizationalUnits = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-			.map(({ guid }) => guid);
+	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
+		for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
 	}
 
-	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.get('related-to') as string,
-				url.searchParams.getAll('relationType').length == 0
-					? [
-							predicates.enum['is-consistent-with'],
-							predicates.enum['is-equivalent-to'],
-							predicates.enum['is-inconsistent-with']
-						]
-					: url.searchParams.getAll('relationType'),
-				{ customCategories },
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	} else if (url.searchParams.has('programType')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainersByProgramType(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.getAll('programType'),
-				{
-					customCategories,
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.rule]
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	} else {
-		const esResult = await getManyContainersWithES(
-			currentOrganization.payload.default ? [] : [currentOrganization.guid],
-			{
-				customCategories,
-				programTypes: url.searchParams.getAll('programType'),
-				terms: url.searchParams.get('terms') ?? '',
-				type: [payloadTypes.enum.rule]
-			},
-			url.searchParams.get('sort') ?? '',
-			{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-		);
-		containers = esResult.containers;
-		data = esResult.facets;
-	}
-
-	const filtered = filterOrganizationalUnits(
-		filterVisible(containers, locals.user),
-		url,
-		subordinateOrganizationalUnits,
-		currentOrganizationalUnit ?? undefined
-	);
-
-	const _facets = new Map<string, Map<string, number>>([
-		...((url.searchParams.has('related-to')
-			? [
-					[
-						'relationType',
-						new Map([
-							[predicates.enum['is-consistent-with'], 0],
-							[predicates.enum['is-equivalent-to'], 0],
-							[predicates.enum['is-inconsistent-with'], 0]
-						])
-					]
-				]
-			: []) as Array<[string, Map<string, number>]>),
-		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
-			[string, Map<string, number>]
-		>)
-	]);
-
-	const customFacets = buildCategoryFacetsWithCounts(
-		categoryContext.options,
-		data ? Object.fromEntries(Object.entries(data)) : {}
-	);
-	for (const [key, values] of customFacets.entries()) {
-		_facets.set(key, values);
-	}
-
-	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
-
-	const facets = _facets;
-
-	return {
-		containers: filtered,
-		facets
-	};
+	return await fetchContainerPage<RuleContainer>({
+		contextGuid: params.guid,
+		fetch,
+		limit: DEFAULT_PAGE_SIZE,
+		offset: 0,
+		query
+	});
 } satisfies PageServerLoad);

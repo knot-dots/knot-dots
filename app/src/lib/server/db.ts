@@ -529,12 +529,14 @@ function prepareWhereCondition(filters: {
 	assignees?: string[];
 	customCategories?: Record<string, string[]>;
 	customCategoryMatch?: 'any' | 'all';
+	excludeRelation?: string[];
 	federalStates?: string[];
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
+	members?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[] | null;
 	programTypes?: string[];
@@ -665,6 +667,27 @@ function prepareWhereCondition(filters: {
 	if (filters.type?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'type' IN (${sql.join(filters.type, sql.fragment`, `)})`
+		);
+	}
+	if (filters.excludeRelation?.length) {
+		conditions.push(
+			sql.fragment`NOT EXISTS (
+				SELECT 1 FROM container_relation cr2
+				WHERE cr2.subject = c.guid
+					AND cr2.predicate = ANY (${sql.array(filters.excludeRelation, 'text')})
+					AND cr2.valid_currently
+					AND NOT cr2.deleted
+			)`
+		);
+	}
+	if (filters.members?.length) {
+		conditions.push(
+			sql.fragment`EXISTS (
+				SELECT 1 FROM container_user cu
+				WHERE cu.object = c.revision
+					AND cu.predicate = ${predicates.enum['is-member-of']}
+					AND cu.subject = ANY (${sql.array(filters.members, 'uuid')})
+			)`
 		);
 	}
 	return sql.join(conditions, sql.fragment` AND `);

@@ -3085,23 +3085,6 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 					return true;
 				}
 
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit == null
-				) {
-					return true;
-				}
-
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit != null &&
-					!subordinateOrganizationalUnits
-						.filter((ou) => ou != currentOrganizationalUnit?.guid)
-						.includes(c.organizational_unit)
-				) {
-					return true;
-				}
-
 				return false;
 			});
 }

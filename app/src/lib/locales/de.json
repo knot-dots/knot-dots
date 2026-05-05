@@ -350,8 +350,7 @@
 		"label": "Angezeigte Organisationsebenen",
 		"options": {
 			"all_organizational_units": "Alle Organisations-Ebenen",
-			"subordinate_organizational_units": "Mit unteren Ebenen",
-			"superordinate_organizational_units": "Mit übergeordneten Ebenen"
+			"subordinate_organizational_units": "Mit unteren Ebenen"
 		}
 	},
 	"indicator": "Indikator",

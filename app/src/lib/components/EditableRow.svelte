@@ -329,7 +329,7 @@
 		</div>
 	{:else if customCategoryKeys.includes(col)}
 		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-			{#if 'category' in container.payload}
+			{#if 'category' in container.payload && container.payload.category[col] !== undefined}
 				<CustomCategoryDropdown
 					compact
 					editable={editable && $ability.can('update', container)}
