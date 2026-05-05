@@ -61,7 +61,7 @@ const querySchema = z.object({
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
 	included: z
-		.array(z.enum(['subordinate_organizational_units', 'superordinate_organizational_units']))
+		.array(z.enum(['subordinate_organizational_units']))
 		.default(['subordinate_organizational_units']),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
@@ -171,7 +171,7 @@ function baseFacetMap(
 function buildFilters(
 	params: ContainerQueryParams,
 	customCategories: Record<string, string[]>,
-	overrides: { organizationalUnits?: string[] | null; includeOrganizationalUnitNull?: boolean } = {}
+	overrides: { organizationalUnits?: string[] | null } = {}
 ) {
 	return {
 		administrativeTypes: params.administrativeType,
@@ -184,7 +184,6 @@ function buildFilters(
 		indicators: params.indicator,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
-		includeOrganizationalUnitNull: overrides.includeOrganizationalUnitNull,
 		members: params.member,
 		organizationalUnits:
 			'organizationalUnits' in overrides
@@ -264,29 +263,13 @@ async function loadCategoryContextForQuery(
 
 function expandOrganizationalUnitScope(
 	allRelated: OrganizationalUnitContainer[],
-	currentOrgUnit: OrganizationalUnitContainer,
-	included: string[]
-): { organizationalUnits: string[]; includeOrganizationalUnitNull: boolean } {
+	currentOrgUnit: OrganizationalUnitContainer
+): { organizationalUnits: string[] } {
 	const subordinateGuids = allRelated
 		.filter((u) => u.payload.level > currentOrgUnit.payload.level)
 		.map((u) => u.guid);
-	const superordinateGuids = allRelated
-		.filter((u) => u.payload.level < currentOrgUnit.payload.level)
-		.map((u) => u.guid);
 
-	const scopeGuids = new Set<string>([currentOrgUnit.guid]);
-	let includeOrganizationalUnitNull = false;
-
-	if (included.includes('subordinate_organizational_units')) {
-		for (const g of subordinateGuids) scopeGuids.add(g);
-	}
-
-	if (included.includes('superordinate_organizational_units')) {
-		for (const g of superordinateGuids) scopeGuids.add(g);
-		includeOrganizationalUnitNull = true;
-	}
-
-	return { organizationalUnits: [...scopeGuids], includeOrganizationalUnitNull };
+	return { organizationalUnits: [currentOrgUnit.guid, ...subordinateGuids] };
 }
 
 export async function loadContainerV2(params: {
@@ -323,10 +306,7 @@ export async function loadContainerV2(params: {
 
 	// Expand organizational unit scope from the context's current org unit, unless the caller
 	// explicitly passed organizationalUnit params or the query uses related-to (no ou filtering).
-	let ouOverrides: {
-		organizationalUnits?: string[] | null;
-		includeOrganizationalUnitNull?: boolean;
-	} = {};
+	let ouOverrides: { organizationalUnits?: string[] | null } = {};
 	const currentOrgUnit = applicationContext?.currentOrganizationalUnit;
 	if (
 		currentOrgUnit &&
@@ -336,11 +316,10 @@ export async function loadContainerV2(params: {
 		const allRelated = await params.locals.pool.connect(
 			getAllRelatedOrganizationalUnitContainers(currentOrgUnit.guid)
 		);
-		ouOverrides = expandOrganizationalUnitScope(allRelated, currentOrgUnit, scopedQuery.included);
+		ouOverrides = expandOrganizationalUnitScope(allRelated, currentOrgUnit);
 	}
 
-	const useElasticsearch =
-		canUseElasticsearch(scopedQuery) && !ouOverrides.includeOrganizationalUnitNull;
+	const useElasticsearch = canUseElasticsearch(scopedQuery);
 	const requestedLimit = query.limit + 1;
 	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
 

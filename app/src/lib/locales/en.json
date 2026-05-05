@@ -349,8 +349,7 @@
 		"label": "Included organization levels",
 		"options": {
 			"all_organizational_units": "All organizational units",
-			"subordinate_organizational_units": "With subordinate units",
-			"superordinate_organizational_units": "With superordinate units"
+			"subordinate_organizational_units": "With subordinate units"
 		}
 	},
 	"indicator": "Indicator",

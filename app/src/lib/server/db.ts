@@ -536,7 +536,6 @@ function prepareWhereCondition(filters: {
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
-	includeOrganizationalUnitNull?: boolean;
 	members?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[] | null;
@@ -618,21 +617,12 @@ function prepareWhereCondition(filters: {
 	if (filters.organizationalUnits === null) {
 		conditions.push(sql.fragment`c.organizational_unit IS NULL`);
 	} else if (filters.organizationalUnits?.length) {
-		if (filters.includeOrganizationalUnitNull) {
-			conditions.push(
-				sql.fragment`(c.organizational_unit IS NULL OR c.organizational_unit IN (${sql.join(
-					filters.organizationalUnits,
-					sql.fragment`, `
-				)}))`
-			);
-		} else {
-			conditions.push(
-				sql.fragment`c.organizational_unit IN (${sql.join(
-					filters.organizationalUnits,
-					sql.fragment`, `
-				)})`
-			);
-		}
+		conditions.push(
+			sql.fragment`c.organizational_unit IN (${sql.join(
+				filters.organizationalUnits,
+				sql.fragment`, `
+			)})`
+		);
 	}
 	if (filters.programTypes?.length) {
 		conditions.push(
