@@ -13,12 +13,14 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [

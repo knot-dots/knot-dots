@@ -1,7 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import { filterVisible } from '$lib/authorization';
 import {
 	computeFacetCount,
@@ -16,11 +15,7 @@ import {
 	taskCategories,
 	type TaskContainer
 } from '$lib/models';
-import {
-	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
-} from '$lib/server/db';
+import { getAllRelatedContainers, getAllRelatedOrganizationalUnitContainers } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
@@ -41,7 +36,6 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 		let subordinateOrganizationalUnits: string[] = [];
 
 		const { currentOrganization, currentOrganizationalUnit, categoryContext } = await parent();
-		const features = createFeatureDecisions(locals.features);
 		const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 		if (currentOrganization.payload.default) {
@@ -71,60 +65,31 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			taskContainers = containers.filter(isTaskContainer);
 			otherContainers = containers.filter(isGoalContainer);
 		} else {
-			if (features.useElasticsearch()) {
-				const [taskResult, otherResult] = await Promise.all([
-					getManyContainersWithES(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							assignees: url.searchParams.getAll('assignee'),
-							customCategories,
-							taskCategories: url.searchParams.getAll('taskCategory'),
-							terms: url.searchParams.get('terms') ?? '',
-							type: [payloadTypes.enum.task]
-						},
-						url.searchParams.get('sort') ?? defaultSort,
-						{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-					),
-					getManyContainersWithES(
-						currentOrganization.payload.default ? [] : [currentOrganization.guid],
-						{
-							type: [payloadTypes.enum.goal]
-						},
-						'alpha',
-						{ includeFacets: false }
-					)
-				]);
-				taskContainers = taskResult.containers as TaskContainer[];
-				otherContainers = otherResult.containers as GoalContainer[];
-				data = taskResult.facets;
-			} else {
-				const [taskResult, otherResult] = await Promise.all([
-					locals.pool.connect(
-						getManyContainers(
-							currentOrganization.payload.default ? [] : [currentOrganization.guid],
-							{
-								assignees: url.searchParams.getAll('assignee'),
-								customCategories,
-								taskCategories: url.searchParams.getAll('taskCategory'),
-								terms: url.searchParams.get('terms') ?? '',
-								type: [payloadTypes.enum.task]
-							},
-							url.searchParams.get('sort') ?? defaultSort
-						)
-					),
-					locals.pool.connect(
-						getManyContainers(
-							currentOrganization.payload.default ? [] : [currentOrganization.guid],
-							{
-								type: [payloadTypes.enum.goal]
-							},
-							'alpha'
-						)
-					)
-				]);
-				taskContainers = taskResult as TaskContainer[];
-				otherContainers = otherResult as GoalContainer[];
-			}
+			const [taskResult, otherResult] = await Promise.all([
+				getManyContainersWithES(
+					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					{
+						assignees: url.searchParams.getAll('assignee'),
+						customCategories,
+						taskCategories: url.searchParams.getAll('taskCategory'),
+						terms: url.searchParams.get('terms') ?? '',
+						type: [payloadTypes.enum.task]
+					},
+					url.searchParams.get('sort') ?? defaultSort,
+					{ customCategoryKeys: categoryContext.keys, includeFacets: true }
+				),
+				getManyContainersWithES(
+					currentOrganization.payload.default ? [] : [currentOrganization.guid],
+					{
+						type: [payloadTypes.enum.goal]
+					},
+					'alpha',
+					{ includeFacets: false }
+				)
+			]);
+			taskContainers = taskResult.containers as TaskContainer[];
+			otherContainers = otherResult.containers as GoalContainer[];
+			data = taskResult.facets;
 		}
 
 		const containers = filterOrganizationalUnits(
@@ -163,8 +128,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			_facets.set(key, facetMap);
 		}
 
-		const facets =
-			features.useElasticsearch() && data ? _facets : computeFacetCount(_facets, taskContainers);
+		const facets = data ? _facets : computeFacetCount(_facets, taskContainers);
 
 		return { containers, relatedContainers, facets };
 	}) satisfies PageServerLoad;

@@ -85,7 +85,12 @@ export async function createContainer(context: BrowserContext, newContainer: New
 		throw new Error(`Failed to create ${newContainer.payload.type}: ${await response.text()}`);
 	}
 
-	return response.json();
+	const container = await response.json();
+
+	// Wait for the indexing worker to pick up the event and refresh ES
+	await new Promise((r) => setTimeout(r, 500));
+
+	return container;
 }
 
 export async function deleteContainer(context: BrowserContext, container: AnyContainer) {

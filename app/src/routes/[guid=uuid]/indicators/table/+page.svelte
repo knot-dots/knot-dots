@@ -20,6 +20,7 @@
 	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type Container,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		containerOfType,
@@ -31,8 +32,17 @@
 
 	let { data }: PageProps = $props();
 
+	let uploadedContainers: Container[] = $state([]);
+
 	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			[
+				...data.containers,
+				...uploadedContainers.filter((c) => !data.containers.some((d) => d.guid === c.guid))
+			],
+			$lastCreatedContainer,
+			$lastUpdatedContainers
+		)
 	);
 
 	let toast = getToastContext();
@@ -166,7 +176,9 @@
 		});
 
 		instance.on('upload-success', (file, response) => {
-			const body = response?.body as { success?: boolean; errors?: string[] } | undefined;
+			const body = response?.body as
+				| { success?: boolean; errors?: string[]; containers?: Container[] }
+				| undefined;
 			if (body?.success) {
 				uploadErrors = [];
 				uploadDialog.close();
@@ -175,6 +187,9 @@
 					heading: $_('indicator_csv.upload'),
 					message: $_('indicator_csv.upload_success')
 				});
+				if (body.containers?.length) {
+					uploadedContainers = [...uploadedContainers, ...body.containers];
+				}
 				void invalidateAll();
 			} else if (body?.errors) {
 				uploadErrors = body.errors;

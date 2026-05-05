@@ -288,6 +288,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		return json({ errors }, { status: 422 });
 	}
 
+	const createdIndicators: IndicatorTemplateContainer[] = [];
+
 	await locals.pool.transaction(async (connection) => {
 		for (const { indicator, yearValues } of containers) {
 			let indicatorGuid: string;
@@ -306,6 +308,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);
 				indicatorGuid = created.guid;
+				createdIndicators.push(created as IndicatorTemplateContainer);
 			}
 
 			if (yearValues.length > 0) {
@@ -350,5 +353,5 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		}
 	});
 
-	return json({ success: true });
+	return json({ success: true, containers: createdIndicators });
 };

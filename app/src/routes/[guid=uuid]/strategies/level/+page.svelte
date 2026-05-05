@@ -9,7 +9,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { levels, predicates } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer } from '$lib/stores';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -25,7 +25,9 @@
 
 	let facets = $derived(data.facets);
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 </script>
 
 <Layout>
