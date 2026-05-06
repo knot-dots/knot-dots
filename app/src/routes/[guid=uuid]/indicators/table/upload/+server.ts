@@ -286,13 +286,14 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 			const existingContainer = existingByTitle.get(indicator.payload.title);
 
-			if (existingContainer && ability.can('update', existingContainer)) {
+			if (existingContainer) {
 				// Overwriting unchanged values is fine and keeps the upsert logic simple.
-				await updateContainer({
-					...existingContainer,
-					payload: { ...existingContainer.payload, ...indicator.payload }
-				})(connection);
-
+				if (ability.can('update', existingContainer)) {
+					await updateContainer({
+						...existingContainer,
+						payload: { ...existingContainer.payload, ...indicator.payload }
+					})(connection);
+				}
 				indicatorGuid = existingContainer.guid;
 			} else if (ability.can('create', indicator)) {
 				// Create new indicator
