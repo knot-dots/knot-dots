@@ -3,15 +3,27 @@
 	import Dots from '~icons/knotdots/dots';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
+	import { getVisibleWorkspaces } from '$lib/workspaces';
 
 	let context = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
+
+	let visible = $derived(
+		getVisibleWorkspaces({
+			organization: page.data.currentOrganization,
+			organizationalUnit: page.data.currentOrganizationalUnit,
+			features: createFeatureDecisions(page.data.features)
+		}).findIndex(({ key }) => key == 'overview') > -1
+	);
 </script>
 
-{#if !page.params.contentGuid}
+{#if visible && !page.params.contentGuid}
 	<a class="button" href={resolve('/[guid=uuid]/all/level', { guid: context.guid })}>
 		<Dots />
 		<span class="is-visually-hidden">{$_('dots')}</span>
 	</a>
+{:else}
+	<span class="spacer"></span>
 {/if}
 
 <style>
@@ -32,6 +44,10 @@
 
 	a > :global(svg) {
 		max-width: none;
+	}
+
+	.spacer {
+		margin-left: auto;
 	}
 
 	@container (min-width: 30rem) {
