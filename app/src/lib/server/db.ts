@@ -1888,6 +1888,7 @@ export function setUp(name: string, realm: string) {
 				imageReplacesName: false,
 				name,
 				type: payloadTypes.enum.organization,
+				useAnalytics: true,
 				visibility: visibility.enum.public,
 				visibleWorkspaces: []
 			},

@@ -96,9 +96,10 @@
 
 <svelte:head>
 	<title>{title}</title>
-	{#if env.PUBLIC_MATOMO_CONTAINER_ID}
+	{#if env.PUBLIC_MATOMO_CONTAINER_ID && data.currentOrganization.payload.useAnalytics}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html `<script>
+	// eslint-disable-next-line no-useless-assignment
   var _mtm = window._mtm = window._mtm || [];
   _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
   (function() {
