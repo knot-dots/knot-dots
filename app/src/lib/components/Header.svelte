@@ -37,7 +37,6 @@
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
-	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
 	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
@@ -47,6 +46,7 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		isProgramContainer,
 		isReportContainer,
 		isSimpleMeasureContainer,
@@ -56,15 +56,6 @@
 	} from '$lib/models';
 	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
-
-	type FilterOption = {
-		count: number;
-		label: string;
-		value: string;
-		guid?: string;
-		icon?: string;
-		subOptions?: FilterOption[];
-	};
 
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
@@ -107,6 +98,17 @@
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
+
+	let isOnPage = $derived.by(() => {
+		const segments = page.url.pathname.split('/');
+		const pathWithoutContext =
+			segments.length > 1 && segments[1] === selectedContext?.guid
+				? '/' + segments.slice(2).join('/')
+				: page.url.pathname;
+		return (
+			pathWithoutContext === '/all/page' || pathWithoutContext === '/' || pathWithoutContext === ''
+		);
+	});
 
 	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
 
@@ -220,17 +222,11 @@
 			<MeasureWorkspaces {container} />
 		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces {container} />
-		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-			{#if createFeatureDecisions(page.data.features).useMegaMenu()}
-				<WorkspacesMegaMenu />
-			{:else}
-				<WorkspacesMenu />
-			{/if}
+		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || isPageContainer(container)}
+			<WorkspacesMegaMenu />
 		{/if}
-	{:else if createFeatureDecisions(page.data.features).useMegaMenu()}
-		<WorkspacesMegaMenu />
 	{:else}
-		<WorkspacesMenu />
+		<WorkspacesMegaMenu />
 	{/if}
 
 	<div class="actions">
@@ -295,7 +291,7 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)) && createFeatureDecisions(page.data.features).useMegaMenu()}
+	{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
 		<div class="commands-leading">
 			<ViewSelect />
 		</div>
@@ -365,33 +361,29 @@
 				{#each facets.entries() as [key, foci] (key)}
 					{@const labelOverride = facetLabels.get(key)}
 					{@const categoryOptionList = categoryOptions[key]}
-					{@const options = (
-						categoryOptionList
-							? categoryOptionList.map((option) => ({
-									...option,
-									count:
-										foci.get(option.value) ??
-										(option.guid ? foci.get(option.guid) : undefined) ??
-										0,
-									subOptions: option.subOptions?.map((sub) => ({
-										...sub,
-										count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
-									}))
+					{@const options = categoryOptionList
+						? categoryOptionList.map((option) => ({
+								...option,
+								count:
+									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+								subOptions: option.subOptions?.map((sub) => ({
+									...sub,
+									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
 								}))
-							: [...foci.entries()]
-									.map(([k, v]) => ({
-										count: v,
-										label: facetLabels.get(k) ?? $_(k),
-										value: k,
-										subOptions: undefined
-									}))
-									.toSorted((a, b) =>
-										a.label.localeCompare(b.label, undefined, {
-											numeric: true,
-											sensitivity: 'base'
-										})
-									)
-					) as FilterOption[]}
+							}))
+						: [...foci.entries()]
+								.map(([k, v]) => ({
+									count: v,
+									label: facetLabels.get(k) ?? $_(k),
+									value: k,
+									subOptions: undefined
+								}))
+								.toSorted((a, b) =>
+									a.label.localeCompare(b.label, undefined, {
+										numeric: true,
+										sensitivity: 'base'
+									})
+								)}
 					{#if key === 'assignee'}
 						<AssigneeFilterDropDown {options} />
 					{:else if key === 'included'}
@@ -400,7 +392,7 @@
 						<RelationTypeFilterDropDown {options} />
 					{:else if key === 'member'}
 						<MemberFilterDropDown {options} />
-					{:else if options.some(({ count, subOptions }: FilterOption) => (count ?? 0) > 0 || subOptions?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
+					{:else if options.some(({ count, subOptions }) => (count ?? 0) > 0 || subOptions?.some((s) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 						<FilterDropDown {key} {options} label={labelOverride} />
 					{/if}
 				{/each}

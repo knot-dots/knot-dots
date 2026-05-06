@@ -3,7 +3,7 @@ export const featureFlags = new Map([
 		'alpha',
 		['OpenAI', 'EmbedObjects', 'ContentPartner', 'ResourceV2', 'IOOI', 'SubMeasures'] as const
 	],
-	['beta', ['ImportFromCsv', 'Mistral', 'NewNavigation'] as const]
+	['beta', ['ImportFromCsv', 'Mistral'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -40,9 +40,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');
-		},
-		useMegaMenu() {
-			return features.includes('NewNavigation');
 		}
 	} satisfies Record<string, () => boolean>;
 }

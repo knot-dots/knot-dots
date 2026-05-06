@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
@@ -8,7 +7,6 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
@@ -20,14 +18,11 @@
 
 	let { container = $bindable(), editable = false }: Props = $props();
 
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 	const administrativeAreaLabelId = crypto.randomUUID();
-
-	const selectableWorkspaces = $derived(workspaces.filter((w) => !w.alwaysVisible));
 
 	const workspaceOptions = $derived(
 		workspaceModules.flatMap((module) =>
-			selectableWorkspaces
+			workspaces
 				.filter((w) => w.module === module.key)
 				.map((w) => ({
 					value: w.key,
@@ -41,7 +36,7 @@
 	// that workspace; without this, unchecking reads as "still empty = show all".
 	$effect(() => {
 		if (editable && container.payload.visibleWorkspaces.length === 0) {
-			container.payload.visibleWorkspaces = selectableWorkspaces.map((w) => w.key);
+			container.payload.visibleWorkspaces = workspaces.map((w) => w.key);
 		}
 	});
 
@@ -135,14 +130,12 @@
 			bind:value={container.payload.boards}
 		/>
 
-		{#if featureDecisions.useMegaMenu()}
-			<EditableMultipleChoice
-				{editable}
-				label={$_('properties.subheading.visible_workspaces')}
-				options={workspaceOptions}
-				bind:value={container.payload.visibleWorkspaces}
-			/>
-		{/if}
+		<EditableMultipleChoice
+			{editable}
+			label={$_('properties.subheading.visible_workspaces')}
+			options={workspaceOptions}
+			bind:value={container.payload.visibleWorkspaces}
+		/>
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:container />
