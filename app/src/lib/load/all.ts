@@ -1,5 +1,4 @@
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import { createFeatureDecisions } from '$lib/features';
 import { type AnyContainer, payloadTypes, predicates } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/all/$types';
@@ -12,19 +11,18 @@ const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-part-of']
 ];
 
-export default (async function load({ depends, fetch, locals, params, url }) {
+export default (async function load({ depends, fetch, params, url }) {
 	depends('containers');
 
-	const features = createFeatureDecisions(locals.features);
 	const allTypeOptions = [
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
-		...(features.usePage() ? [payloadTypes.enum.page] : []),
+		payloadTypes.enum.page,
 		payloadTypes.enum.program,
-		...(features.useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
 		payloadTypes.enum.simple_measure,
 		payloadTypes.enum.task

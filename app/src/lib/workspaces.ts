@@ -208,8 +208,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/reports/catalog',
 			catalog: '/reports/catalog'
-		},
-		featureFlag: 'useReport'
+		}
 	},
 	{
 		key: 'objectives-and-effects',
@@ -299,7 +298,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/pages/catalog',
 			catalog: '/pages/catalog'
 		},
-		featureFlag: 'usePage',
 		alwaysVisible: true
 	},
 	{

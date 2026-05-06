@@ -22,7 +22,6 @@
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
 		actualDataContainer,
@@ -81,9 +80,9 @@
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
-		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.page,
 		payloadTypes.enum.program,
-		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
 		payloadTypes.enum.task
 	]);

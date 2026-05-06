@@ -3,18 +3,7 @@ export const featureFlags = new Map([
 		'alpha',
 		['OpenAI', 'EmbedObjects', 'ContentPartner', 'ResourceV2', 'IOOI', 'SubMeasures'] as const
 	],
-	[
-		'beta',
-		[
-			'EditorialPages',
-			'FullScreenRoutes',
-			'ImportFromCsv',
-			'Mistral',
-			'NewNavigation',
-			'Report',
-			'TeaserCollection'
-		] as const
-	]
+	['beta', ['ImportFromCsv', 'Mistral', 'NewNavigation'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
@@ -27,12 +16,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMistral() {
 			return features.includes('Mistral');
-		},
-		useChapter() {
-			return features.includes('Report');
-		},
-		useReport() {
-			return features.includes('Report');
 		},
 		useContentPartner() {
 			return features.includes('ContentPartner');
@@ -52,20 +35,11 @@ export function createFeatureDecisions(features: string[]) {
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
 		},
-		usePage() {
-			return features.includes('EditorialPages');
-		},
-		useFavoriteList() {
-			return features.includes('EditorialPages');
-		},
 		useEmbedObjects() {
 			return features.includes('EmbedObjects');
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');
-		},
-		useFullScreenRoutes() {
-			return features.includes('FullScreenRoutes');
 		},
 		useMegaMenu() {
 			return features.includes('NewNavigation');

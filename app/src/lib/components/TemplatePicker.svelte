@@ -9,7 +9,6 @@
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		computeFacetCount,
 		type CustomCollectionContainer,
@@ -45,9 +44,9 @@
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
-		...(createFeatureDecisions(page.data.features).usePage() ? [payloadTypes.enum.page] : []),
+		payloadTypes.enum.page,
 		payloadTypes.enum.program,
-		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.report,
 		payloadTypes.enum.task
 	] satisfies PayloadType[]);
 

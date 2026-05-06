@@ -7,7 +7,6 @@
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import { getLastOverlayContext } from '$lib/contexts/lastOverlay';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isMeasureContainer,
 		isProgramContainer,
@@ -23,10 +22,6 @@
 
 	let href = $derived.by(() => {
 		if (!$overlay?.container) {
-			return '';
-		}
-
-		if (!createFeatureDecisions(page.data.features).useFullScreenRoutes()) {
 			return '';
 		}
 
