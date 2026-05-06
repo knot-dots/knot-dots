@@ -133,7 +133,7 @@ export async function getManyContainersWithES(
 	},
 	sort: string,
 	options?: ContainerElasticsearchOptions
-): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> {
+): Promise<{ containers: AnyContainer[]; facets: FacetCounts; total: number }> {
 	const must: estypes.QueryDslQueryContainer[] = [];
 	const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
 	const facetFilters: FacetFilterMap = {};
@@ -255,5 +255,8 @@ export async function getManyContainersWithES(
 		}
 	}
 
-	return { containers, facets };
+	const total =
+		typeof hits.total === 'number' ? hits.total : (hits.total?.value ?? containers.length);
+
+	return { containers, facets, total };
 }

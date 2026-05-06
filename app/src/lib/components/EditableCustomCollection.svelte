@@ -109,6 +109,7 @@
 
 	// Accumulated items across all loaded pages
 	let savedItems = $state<AnyContainer[]>([]);
+	let savedTotal = $state<number | null>(null);
 	let savedHasMore = $state(false);
 	let savedNextOffset = $state<number | null>(null);
 	let savedLoadingMore = $state(false);
@@ -154,10 +155,10 @@
 			() => inViewportOnce
 		],
 		async ([item, filter, terms, searchTerms, sort, inViewportOnce], _, { signal }) => {
-			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null };
+			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
 			const query = buildSavedQuery(item, filter, terms, searchTerms, sort);
-			if (!query) return { containers: [], hasMore: false, nextOffset: null };
+			if (!query) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
 			const result = await fetchContainerPage({
 				fetch,
@@ -169,7 +170,8 @@
 			return {
 				containers: result.containers,
 				hasMore: result.page.hasMore,
-				nextOffset: result.page.nextOffset
+				nextOffset: result.page.nextOffset,
+				total: result.page.total
 			};
 		},
 		{ lazy: true }
@@ -179,6 +181,7 @@
 		const result = savedResource.current;
 		if (result) {
 			savedItems = result.containers;
+			savedTotal = result.total;
 			savedHasMore = result.hasMore;
 			savedNextOffset = result.nextOffset;
 		}
@@ -415,8 +418,8 @@
 		{:else}
 			{container.payload.title}
 		{/if}
-		{#if hasConfiguredContent}
-			<span class="details-count">({items.length})</span>
+		{#if hasConfiguredContent && savedTotal != null}
+			<span class="details-count">({savedTotal})</span>
 		{/if}
 	</svelte:element>
 

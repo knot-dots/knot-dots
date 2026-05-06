@@ -43,6 +43,7 @@ export type ContainerV2Response = {
 	page: {
 		limit: number;
 		offset: number;
+		total: number;
 		hasMore: boolean;
 		nextOffset: number | null;
 	};
@@ -232,13 +233,14 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 	);
 }
 
-function paginate(containers: AnyContainer[], limit: number, offset: number) {
+function paginate(containers: AnyContainer[], limit: number, offset: number, total?: number) {
 	const hasMore = containers.length > limit;
 	return {
 		containers: containers.slice(0, limit),
 		page: {
 			limit,
 			offset,
+			total: total ?? containers.length,
 			hasMore,
 			nextOffset: hasMore ? offset + limit : null
 		}
@@ -320,7 +322,6 @@ export async function loadContainerV2(params: {
 	}
 
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
-	const requestedLimit = query.limit + 1;
 	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
 
 	if (useElasticsearch) {
@@ -331,14 +332,20 @@ export async function loadContainerV2(params: {
 		const result = await getManyContainersWithES(scopedQuery.organization, esFilters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
 			includeFacets: true,
-			limit: requestedLimit,
+			limit: query.limit,
 			offset: query.offset
 		});
-		const page = paginate(result.containers, query.limit, query.offset);
-		const containers = filterVisible(page.containers, params.locals.user);
+		const containers = filterVisible(result.containers, params.locals.user);
+		const hasMore = result.total > query.offset + result.containers.length;
 		return {
 			containers,
-			page: page.page,
+			page: {
+				limit: query.limit,
+				offset: query.offset,
+				total: result.total,
+				hasMore,
+				nextOffset: hasMore ? query.offset + query.limit : null
+			},
 			facets: mapToRecord(baseFacetMap(result.facets, queriedCategoryContext))
 		};
 	}
@@ -364,7 +371,7 @@ export async function loadContainerV2(params: {
 
 	const allVisible = filterVisible(rawContainers, params.locals.user);
 	const pageSlice = allVisible.slice(query.offset, query.offset + query.limit + 1);
-	const page = paginate(pageSlice, query.limit, query.offset);
+	const page = paginate(pageSlice, query.limit, query.offset, allVisible.length);
 	const facets = computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
 
 	return {
