@@ -56,17 +56,19 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	let currentOrganizationGuid: string;
 	let currentOrganizationalUnitGuid: string | undefined;
 
+	const ability = defineAbilityFor(locals.user);
+
 	try {
 		const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
 		if (
 			isOrganizationalUnitContainer(containerFromParams) &&
-			defineAbilityFor(locals.user).can('read', containerFromParams)
+			ability.can('read', containerFromParams)
 		) {
 			currentOrganizationalUnitGuid = containerFromParams.guid;
 			currentOrganizationGuid = containerFromParams.organization;
 		} else if (
 			isOrganizationContainer(containerFromParams) &&
-			defineAbilityFor(locals.user).can('read', containerFromParams)
+			ability.can('read', containerFromParams)
 		) {
 			currentOrganizationGuid = containerFromParams.guid;
 		} else {
@@ -81,7 +83,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	if (
-		!defineAbilityFor(locals.user).can(
+		!ability.can(
 			'create',
 			containerOfType(
 				payloadTypes.enum.indicator_template,
@@ -296,7 +298,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 			const existingContainer = existingByTitle.get(indicator.payload.title);
 
-			if (existingContainer) {
+			if (existingContainer && ability.can('update', existingContainer)) {
 				// Overwriting unchanged values is fine and keeps the upsert logic simple.
 				await updateContainer({
 					...existingContainer,
@@ -304,17 +306,23 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				})(connection);
 
 				indicatorGuid = existingContainer.guid;
-			} else {
+			} else if (ability.can('create', indicator)) {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);
 				indicatorGuid = created.guid;
 				createdIndicators.push(created as IndicatorTemplateContainer);
+			} else {
+				indicatorGuid = '';
+			}
+
+			if (!indicatorGuid) {
+				continue;
 			}
 
 			if (yearValues.length > 0) {
 				const existingActualDataContainer = actualDataByIndicator.get(indicatorGuid);
 
-				if (existingActualDataContainer) {
+				if (existingActualDataContainer && ability.can('update', existingActualDataContainer)) {
 					// Overwrite existing actual data values
 					await updateContainer({
 						...existingActualDataContainer,
@@ -347,7 +355,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 						}
 					];
 
-					await createContainer(actualDataContainer)(connection);
+					if (ability.can('create', actualDataContainer))
+						await createContainer(actualDataContainer)(connection);
 				}
 			}
 		}
