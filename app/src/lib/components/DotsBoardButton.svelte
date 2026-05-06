@@ -33,7 +33,6 @@
 		align-items: center;
 		border: none;
 		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
 		color: var(--color-gray-900);
 		display: none;
 		font-weight: 500;

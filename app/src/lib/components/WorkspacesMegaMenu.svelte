@@ -124,9 +124,9 @@
 	>
 		{#if currentWorkspace && !isOnPage}
 			<currentWorkspace.icon />
-			<span class="label">{$_(currentWorkspace.i18nKey)}</span>
+			<span>{$_(currentWorkspace.i18nKey)}</span>
 		{:else}
-			<span class="label">{$_('workspace.choose')}</span>
+			<span>{$_('workspace.choose')}</span>
 		{/if}
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
@@ -173,32 +173,10 @@
 
 <style>
 	.mega-menu {
+		--dropdown-button-box-shadow: none;
 		--dropdown-button-default-color: var(--color-gray-900);
-		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 		--dropdown-button-min-height: 2.25rem;
-
-		position: relative;
-	}
-
-	.dropdown-button {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border: 1px solid var(--color-gray-100);
-		border-radius: 8px;
-		color: var(--dropdown-button-default-color);
-		cursor: pointer;
-		display: inline-flex;
-		gap: 0.5rem;
-		min-height: var(--dropdown-button-min-height);
-		padding: var(--dropdown-button-padding);
-	}
-
-	.dropdown-button:hover {
-		background-color: var(--color-gray-050);
-	}
-
-	.label {
-		font-weight: 500;
+		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 	}
 
 	.mega-menu-panel {

@@ -75,7 +75,7 @@
 </script>
 
 {#if viewOptions.length > 1}
-	<div class="view-select" use:popperRef>
+	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" onchange={handleChange} type="button" use:menu.button>
 			{#if currentView}
 				<currentView.icon />
@@ -101,61 +101,24 @@
 {/if}
 
 <style>
-	.view-select {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.5rem;
-		position: relative;
-	}
-
-	.dropdown-button {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 9999px;
-		color: var(--color-gray-900);
-		cursor: pointer;
-		display: inline-flex;
-		gap: 0.375rem;
-		height: 2rem;
-		padding: 0 0.75rem;
-	}
-
-	.dropdown-button:hover {
-		background-color: var(--color-gray-050);
+	.dropdown {
+		--dropdown-button-border-radius: calc(infinity * 1px);
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-default-border-color: var(--color-gray-200);
+		--dropdown-button-default-color: var(--color-gray-900);
+		--dropdown-button-padding: 0.375rem 0.5rem;
 	}
 
 	.dropdown-panel {
-		background-color: var(--color-white);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 0.5rem;
-		box-shadow: var(--shadow-lg);
-		list-style: none;
-		margin: 0;
-		min-width: 12rem;
-		padding: 0.25rem;
-		z-index: 50;
+		border-radius: 16px;
+		gap: 0;
 	}
 
 	.menu-item > button {
-		align-items: center;
-		background: transparent;
-		border: 0;
-		border-radius: 0.375rem;
-		cursor: pointer;
-		display: flex;
-		gap: 0.5rem;
-		padding: 0.375rem 0.5rem;
-		text-align: left;
-		width: 100%;
+		color: var(--color-gray-700);
 	}
 
-	.menu-item > button:hover {
-		background-color: var(--color-gray-050);
-	}
-
-	.menu-item.menu-item--selected > button {
-		background-color: var(--color-primary-100);
-		color: var(--color-primary-700);
+	.menu-item > button > :global(svg) {
+		color: var(--color-gray-500);
 	}
 </style>
