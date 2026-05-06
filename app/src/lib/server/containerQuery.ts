@@ -144,6 +144,7 @@ function baseFacetMap(
 	categoryContext: CategoryContext
 ) {
 	const facets = new Map<string, Map<string, number>>([
+		['type', fromCounts(payloadTypes.options as string[], counts.type)],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
 		['measureType', fromCounts(measureTypes.options as string[], counts.measureType)],
 		[

@@ -19,11 +19,9 @@
 	import {
 		type AnyContainer,
 		type CustomCollectionContainer,
-		indicatorCategories,
 		isOrganizationalUnitContainer,
 		type PayloadType,
-		payloadTypes,
-		programTypes
+		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { user } from '$lib/stores';
@@ -71,39 +69,6 @@
 			}
 		)
 	);
-
-	let facets = $derived.by(() => {
-		// Build the base facet map with zeroed counts for each option
-		const baseFacets = new Map([
-			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
-			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.program)
-				? [['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]]
-				: []),
-			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.indicator_template)
-				? [['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]]
-				: []),
-			...categoryContext.keys.map((k) => [
-				k,
-				new Map(categoryContext.options[k].map((v) => [v.value, 0]))
-			])
-		] as [string, Map<string, number>][]);
-
-		// Merge server-provided facet counts (all keys except 'type' which server doesn't return)
-		const serverFacets = searchResource.current?.facets;
-		if (serverFacets) {
-			for (const [key, counts] of baseFacets.entries()) {
-				if (key === 'type') continue;
-				const serverCounts = serverFacets.get(key);
-				if (serverCounts) {
-					for (const [value, count] of serverCounts.entries()) {
-						counts.set(value, count);
-					}
-				}
-			}
-		}
-
-		return baseFacets;
-	});
 
 	let activeFilters = $derived(
 		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
@@ -189,6 +154,8 @@
 			lazy: true
 		}
 	);
+
+	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
 
 	$effect(() => {
 		const result = searchResource.current;
