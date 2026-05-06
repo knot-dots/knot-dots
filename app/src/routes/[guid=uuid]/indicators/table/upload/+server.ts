@@ -29,7 +29,6 @@ import {
 	createContainer,
 	getContainerByGuid,
 	getManyContainers,
-	getManyOrganizationalUnitContainers,
 	updateContainer
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -96,12 +95,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
-
-	const organizationalUnits = await locals.pool.connect(
-		getManyOrganizationalUnitContainers({
-			include: { organization: currentOrganizationGuid }
-		})
-	);
 
 	// Fetch existing custom indicators for upsert matching.
 	// Only match against indicators in the "Eigene" (custom) category to avoid
@@ -215,11 +208,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					continue;
 				}
 
-				// Resolve organizational unit by name
-				const orgUnit = fields.organizationalUnit
-					? organizationalUnits.find(({ payload }) => payload.name === fields.organizationalUnit)
-					: organizationalUnits.find(({ guid }) => guid === currentOrganizationalUnitGuid);
-
 				// Always include indicator_category.custom so CSV-uploaded indicators
 				// can be identified and matched for future upserts.
 				const parsedCategories = reverseTranslateList(fields.indicatorCategory);
@@ -245,9 +233,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 				containers.push({
 					indicator: emptyContainer.parse({
-						managed_by: orgUnit?.guid ?? currentOrganizationGuid,
+						managed_by: currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
-						organizational_unit: orgUnit?.guid ?? null,
+						organizational_unit: currentOrganizationalUnitGuid ?? null,
 						payload: {
 							title: fields.title,
 							...(fields.description ? { description: fields.description } : {}),
@@ -335,9 +323,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					// Create new actual_data container
 					const actualDataContainer = containerOfType(
 						payloadTypes.enum.actual_data,
-						indicator.organization,
-						indicator.organizational_unit,
-						indicator.managed_by,
+						currentOrganizationGuid,
+						currentOrganizationalUnitGuid ?? null,
+						currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 						env.PUBLIC_KC_REALM
 					) as Omit<NewContainer, 'payload'> & { payload: ActualDataContainer['payload'] };
 
