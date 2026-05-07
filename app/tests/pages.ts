@@ -22,6 +22,14 @@ class BasePage {
 		return this.page.getByRole('heading', { level: 1 });
 	}
 
+	get settingsButton() {
+		return this.page.getByRole('button', { name: 'Settings' });
+	}
+
+	get settingsDialog() {
+		return this.page.getByRole('dialog').filter({ hasText: 'Settings' });
+	}
+
 	async addSection(type: string) {
 		const numberOfSections = await this.sections.count();
 
