@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
+	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
@@ -67,6 +68,15 @@
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
+
+	const mobileMenu: { open: boolean; toggle: () => void; close: () => void } | undefined =
+		getContext('mobileMenu');
+
+	$effect(() => {
+		if (mobileMenu?.open) {
+			sidebarExpanded = true;
+		}
+	});
 
 	function updateFavorite(
 		container: OrganizationContainer | OrganizationalUnitContainer,
@@ -154,7 +164,14 @@
 		/>
 	</a>
 
-	<button class="action-button" onclick={collapseSidebar} type="button">
+	<button
+		class="action-button collapse-button"
+		onclick={() => {
+			collapseSidebar();
+			mobileMenu?.close();
+		}}
+		type="button"
+	>
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
@@ -166,7 +183,7 @@
 </header>
 
 <ul
-	class="sidebar-menu"
+	class="sidebar-menu collapsible"
 	class:collapsed={sidebarExpanded === false}
 	class:expanded={sidebarExpanded === true}
 	data-sveltekit-preload-data="hover"
@@ -265,7 +282,7 @@
 
 {#if page.data.currentOrganizationalUnit}
 	<ul
-		class="sidebar-menu"
+		class="sidebar-menu collapsible"
 		class:collapsed={sidebarExpanded === false}
 		class:expanded={sidebarExpanded === true}
 		data-sveltekit-preload-data="hover"
@@ -365,7 +382,7 @@
 {/if}
 
 <ul
-	class="sidebar-menu"
+	class="sidebar-menu collapsible"
 	class:collapsed={sidebarExpanded === false}
 	class:expanded={sidebarExpanded === true}
 	data-sveltekit-preload-data="hover"
@@ -396,7 +413,7 @@
 </ul>
 
 <ul
-	class="sidebar-menu sidebar-menu--about"
+	class="sidebar-menu sidebar-menu--about collapsible"
 	class:collapsed={sidebarExpanded === false}
 	class:expanded={sidebarExpanded === true}
 >
@@ -454,7 +471,7 @@
 
 {#if $userMenu.expanded}
 	<ul
-		class="sidebar-menu sidebar-menu--profile"
+		class="sidebar-menu sidebar-menu--profile collapsible"
 		class:collapsed={sidebarExpanded === false}
 		class:expanded={sidebarExpanded === true}
 		transition:slide={{ duration: 125, easing: cubicInOut }}
@@ -616,11 +633,11 @@
 		gap: 0.375rem;
 	}
 
-	.sidebar-menu.expanded > li:has(> .sidebar-menu-item--collapsed) {
+	.sidebar-menu.collapsible.expanded > li:has(> .sidebar-menu-item--collapsed) {
 		display: none;
 	}
 
-	.sidebar-menu:not(.expanded) > li:not(:has(> .sidebar-menu-item--collapsed)) {
+	.sidebar-menu.collapsible:not(.expanded) > li:not(:has(> .sidebar-menu-item--collapsed)) {
 		display: none;
 	}
 
@@ -688,7 +705,7 @@
 		text-overflow: ellipsis;
 	}
 
-	.sidebar-menu:not(.expanded) .sidebar-menu-item > span {
+	.sidebar-menu.collapsible:not(.expanded) .sidebar-menu-item > span {
 		display: none;
 	}
 
@@ -726,23 +743,23 @@
 			display: none;
 		}
 
-		.sidebar-menu:not(.collapsed) {
+		.sidebar-menu.collapsible:not(.collapsed) {
 			max-width: var(--sidebar-max-width);
 		}
 
-		.sidebar-menu:not(.collapsed) .sidebar-menu {
+		.sidebar-menu.collapsible:not(.collapsed) .sidebar-menu {
 			max-width: 100%;
 		}
 
-		.sidebar-menu:not(.collapsed) .sidebar-menu-item > span {
+		.sidebar-menu.collapsible:not(.collapsed) .sidebar-menu-item > span {
 			display: revert;
 		}
 
-		.sidebar-menu:not(.collapsed) > li:not(:has(> .sidebar-menu-item--collapsed)) {
+		.sidebar-menu.collapsible:not(.collapsed) > li:not(:has(> .sidebar-menu-item--collapsed)) {
 			display: flex;
 		}
 
-		.sidebar-menu:not(.collapsed) > li:has(> .sidebar-menu-item--collapsed) {
+		.sidebar-menu.collapsible:not(.collapsed) > li:has(> .sidebar-menu-item--collapsed) {
 			display: none;
 		}
 
