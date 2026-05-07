@@ -34,6 +34,7 @@
 		['indicatorType', 'indicator_type'],
 		['indicatorCategory', 'indicator_category'],
 		['federalState', 'administrative_area.basic_data.federal_state'],
+		['measureType', 'measure_type'],
 		['member', 'member_filter.label'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
