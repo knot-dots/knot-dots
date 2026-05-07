@@ -258,7 +258,9 @@ async function copySectionsFromOriginal(
 		const copy = createCopyOf(
 			copyFrom,
 			createdContainer.organization,
-			createdContainer.organizational_unit
+			isOrganizationalUnitContainer(createdContainer)
+				? createdContainer.guid
+				: createdContainer.organizational_unit
 		);
 
 		copy.relation.push(

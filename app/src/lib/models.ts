@@ -3118,7 +3118,7 @@ export function createCopyOf(
 		container.payload.type,
 		organization,
 		organizationalUnit,
-		container.managed_by,
+		organizationalUnit ?? organization,
 		container.realm
 	);
 
