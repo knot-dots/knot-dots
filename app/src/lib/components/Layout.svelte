@@ -34,10 +34,24 @@
 
 	// svelte-ignore non_reactive_update
 	let createEffectDialog: HTMLDialogElement;
+
+	let mobileMenuOpen = $state(false);
+
+	setContext('mobileMenu', {
+		get open() {
+			return mobileMenuOpen;
+		},
+		toggle() {
+			mobileMenuOpen = !mobileMenuOpen;
+		},
+		close() {
+			mobileMenuOpen = false;
+		}
+	});
 </script>
 
 <div class="app-wrapper">
-	<nav>
+	<nav class:mobile-open={mobileMenuOpen}>
 		{#if sidebar}
 			{@render sidebar()}
 		{:else if createFeatureDecisions(page.data.features).useFavoriteList()}
@@ -104,5 +118,22 @@
 
 	main > :global(:is(:not(aside))) {
 		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
+	}
+
+	@media (max-width: 480px) {
+		nav {
+			background-color: white;
+			display: none;
+			height: 100vh;
+			left: 0;
+			position: fixed;
+			top: 0;
+			width: var(--sidebar-max-width);
+			z-index: 100;
+		}
+
+		nav.mobile-open {
+			display: flex;
+		}
 	}
 </style>

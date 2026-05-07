@@ -6,6 +6,7 @@
 	import Sort from '~icons/flowbite/sort-outline';
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
+	import Bars from '~icons/flowbite/bars-outline';
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
@@ -86,6 +87,9 @@
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
+
+	let mobileMenu: { open: boolean; toggle: () => void; close: () => void } =
+		getContext('mobileMenu');
 
 	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
 
@@ -200,6 +204,17 @@
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
 <header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
+	{#if mobileMenu}
+		<button
+			class="mobile-menu-button"
+			type="button"
+			onclick={() => mobileMenu.toggle()}
+			aria-label={$_('menu')}
+		>
+			<Bars />
+		</button>
+	{/if}
+
 	{#if overlay}
 		<OverlayCloseButton />
 		<OverlayFullscreenToggle />
@@ -586,6 +601,27 @@
 			.is-visually-hidden.is-visually-hidden--mobile-only {
 				all: revert-layer;
 			}
+		}
+	}
+
+	.mobile-menu-button {
+		align-items: center;
+		border: none;
+		border-radius: 8px;
+		display: none;
+		height: 2rem;
+		justify-content: center;
+		padding: 0.5rem;
+		width: 2rem;
+	}
+
+	.mobile-menu-button:hover {
+		background-color: var(--color-gray-100);
+	}
+
+	@media (max-width: 480px) {
+		.mobile-menu-button {
+			display: inline-flex;
 		}
 	}
 </style>

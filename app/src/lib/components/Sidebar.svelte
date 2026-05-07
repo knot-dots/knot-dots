@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
+	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createDisclosure } from 'svelte-headlessui';
@@ -48,6 +49,15 @@
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
+
+	const mobileMenu: { open: boolean; toggle: () => void; close: () => void } | undefined =
+		getContext('mobileMenu');
+
+	$effect(() => {
+		if (mobileMenu?.open) {
+			sidebarExpanded = true;
+		}
+	});
 </script>
 
 <header class:collapsed={sidebarExpanded === false} class:expanded={sidebarExpanded === true}>
@@ -61,7 +71,14 @@
 		/>
 	</a>
 
-	<button class="action-button" onclick={collapseSidebar} type="button">
+	<button
+		class="action-button collapse-button"
+		onclick={() => {
+			collapseSidebar();
+			mobileMenu?.close();
+		}}
+		type="button"
+	>
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
