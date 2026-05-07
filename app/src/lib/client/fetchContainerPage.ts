@@ -24,7 +24,8 @@ const responseSchema = z.object({
 		hasMore: z.boolean(),
 		limit: z.number(),
 		nextOffset: z.number().nullable(),
-		offset: z.number()
+		offset: z.number(),
+		total: z.number()
 	})
 });
 

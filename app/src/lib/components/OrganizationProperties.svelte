@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { page } from '$app/state';
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
@@ -17,11 +15,9 @@
 
 	let { container = $bindable(), editable = false }: Props = $props();
 
-	const selectableWorkspaces = $derived(workspaces.filter((w) => !w.alwaysVisible));
-
 	const workspaceOptions = $derived(
 		workspaceModules.flatMap((module) =>
-			selectableWorkspaces
+			workspaces
 				.filter((w) => w.module === module.key)
 				.map((w) => ({
 					value: w.key,
@@ -35,7 +31,7 @@
 	// that workspace; without this, unchecking reads as "still empty = show all".
 	$effect(() => {
 		if (editable && container.payload.visibleWorkspaces.length === 0) {
-			container.payload.visibleWorkspaces = selectableWorkspaces.map((w) => w.key);
+			container.payload.visibleWorkspaces = workspaces.map((w) => w.key);
 		}
 	});
 </script>
@@ -54,14 +50,12 @@
 			bind:value={container.payload.boards}
 		/>
 
-		{#if createFeatureDecisions(page.data.features).useMegaMenu()}
-			<EditableMultipleChoice
-				{editable}
-				label={$_('properties.subheading.visible_workspaces')}
-				options={workspaceOptions}
-				bind:value={container.payload.visibleWorkspaces}
-			/>
-		{/if}
+		<EditableMultipleChoice
+			{editable}
+			label={$_('properties.subheading.visible_workspaces')}
+			options={workspaceOptions}
+			bind:value={container.payload.visibleWorkspaces}
+		/>
 
 		{#if $ability.can('update', container, 'customDomain')}
 			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />

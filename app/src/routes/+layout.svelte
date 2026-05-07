@@ -44,10 +44,14 @@
 
 	setToastContext(addToast);
 
-	let favoriteList = $derived.by(() => {
-		const organization = $state(page.data.currentOrganization.payload.favorite);
-		const organizationalUnit = $state(page.data.currentOrganizationalUnit?.payload.favorite ?? []);
-		return { organization, organizationalUnit };
+	let favoriteList = $state({
+		organization: page.data.currentOrganization.payload.favorite,
+		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? []
+	});
+
+	$effect(() => {
+		favoriteList.organization = page.data.currentOrganization.payload.favorite;
+		favoriteList.organizationalUnit = page.data.currentOrganizationalUnit?.payload.favorite ?? [];
 	});
 
 	setFavoriteListContext(favoriteList);
@@ -96,9 +100,10 @@
 
 <svelte:head>
 	<title>{title}</title>
-	{#if env.PUBLIC_MATOMO_CONTAINER_ID}
+	{#if env.PUBLIC_MATOMO_CONTAINER_ID && data.currentOrganization.payload.useAnalytics}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html `<script>
+	// eslint-disable-next-line no-useless-assignment
   var _mtm = window._mtm = window._mtm || [];
   _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
   (function() {

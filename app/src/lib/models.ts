@@ -1563,6 +1563,7 @@ const organizationPayload = z.object({
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
+	useAnalytics: z.boolean().default(true),
 	visibility: visibility.default(visibility.enum['organization']),
 	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
@@ -3117,7 +3118,7 @@ export function createCopyOf(
 		container.payload.type,
 		organization,
 		organizationalUnit,
-		container.managed_by,
+		organizationalUnit ?? organization,
 		container.realm
 	);
 

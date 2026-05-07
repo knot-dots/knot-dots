@@ -43,6 +43,7 @@ export type ContainerV2Response = {
 	page: {
 		limit: number;
 		offset: number;
+		total: number;
 		hasMore: boolean;
 		nextOffset: number | null;
 	};
@@ -148,6 +149,7 @@ function baseFacetMap(
 			fromCounts(administrativeTypes.options as string[], counts.administrativeType)
 		],
 		['federalState', fromCounts(Object.keys(counts.federalState ?? {}), counts.federalState)],
+		['type', fromCounts(payloadTypes.options as string[], counts.type)],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
 		['measureType', fromCounts(measureTypes.options as string[], counts.measureType)],
 		[
@@ -237,13 +239,14 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 	);
 }
 
-function paginate(containers: AnyContainer[], limit: number, offset: number) {
-	const hasMore = containers.length > limit;
+function paginate(containers: AnyContainer[], limit: number, offset: number, total: number) {
+	const hasMore = offset + limit < total;
 	return {
-		containers: containers.slice(0, limit),
+		containers: containers.slice(offset, offset + limit),
 		page: {
 			limit,
 			offset,
+			total,
 			hasMore,
 			nextOffset: hasMore ? offset + limit : null
 		}
@@ -325,8 +328,10 @@ export async function loadContainerV2(params: {
 	}
 
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
-	const requestedLimit = query.limit + 1;
 	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
+
+	let rawContainers: AnyContainer[];
+	let esFacets: Record<string, Record<string, number>> | undefined;
 
 	if (useElasticsearch) {
 		const esFilters = buildElasticsearchFilters(scopedQuery, customCategories);
@@ -335,42 +340,36 @@ export async function loadContainerV2(params: {
 		}
 		const result = await getManyContainersWithES(scopedQuery.organization, esFilters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
-			includeFacets: true,
-			limit: requestedLimit,
-			offset: query.offset
+			includeFacets: true
 		});
-		const page = paginate(result.containers, query.limit, query.offset);
-		const containers = filterVisible(page.containers, params.locals.user);
-		return {
-			containers,
-			page: page.page,
-			facets: mapToRecord(baseFacetMap(result.facets, queriedCategoryContext))
-		};
+		rawContainers = result.containers;
+		esFacets = result.facets;
+	} else {
+		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
+		rawContainers =
+			query.relatedTo.length > 0
+				? await params.locals.pool.connect(
+						getAllRelatedContainers(
+							scopedQuery.organization,
+							query.relatedTo[0],
+							query.relationType,
+							{
+								...filters,
+								organizationalUnits: filters.organizationalUnits ?? undefined
+							},
+							query.sort
+						)
+					)
+				: await params.locals.pool.connect(
+						getManyContainers(scopedQuery.organization, filters, query.sort)
+					);
 	}
 
-	const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
-	const rawContainers =
-		query.relatedTo.length > 0
-			? await params.locals.pool.connect(
-					getAllRelatedContainers(
-						scopedQuery.organization,
-						query.relatedTo[0],
-						query.relationType,
-						{
-							...filters,
-							organizationalUnits: filters.organizationalUnits ?? undefined
-						},
-						query.sort
-					)
-				)
-			: await params.locals.pool.connect(
-					getManyContainers(scopedQuery.organization, filters, query.sort)
-				);
-
 	const allVisible = filterVisible(rawContainers, params.locals.user);
-	const pageSlice = allVisible.slice(query.offset, query.offset + query.limit + 1);
-	const page = paginate(pageSlice, query.limit, query.offset);
-	const facets = computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
+	const page = paginate(allVisible, query.limit, query.offset, allVisible.length);
+	const facets = esFacets
+		? baseFacetMap(esFacets, queriedCategoryContext)
+		: computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
 
 	return {
 		containers: page.containers,

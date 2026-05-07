@@ -187,7 +187,6 @@
 <style>
 	.organization-menu {
 		--dropdown-button-default-color: var(--color-gray-900);
-		--dropdown-button-box-shadow: var(--shadow-sm);
 		--dropdown-button-min-height: 2.25rem;
 
 		display: none;

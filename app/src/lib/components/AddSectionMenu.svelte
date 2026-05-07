@@ -221,9 +221,7 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(
-		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
-	);
+	let mayAddChapter = $derived(isReportContainer(parentContainer));
 
 	let mayAddCustomCollection = $derived(
 		isHelpContainer(parentContainer) ||

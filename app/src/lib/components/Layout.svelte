@@ -6,10 +6,8 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import { overlay } from '$lib/stores';
 
 	interface Props {
@@ -40,10 +38,8 @@
 	<nav>
 		{#if sidebar}
 			{@render sidebar()}
-		{:else if createFeatureDecisions(page.data.features).useFavoriteList()}
-			<SidebarWithFavorites />
 		{:else}
-			<Sidebar />
+			<SidebarWithFavorites />
 		{/if}
 	</nav>
 

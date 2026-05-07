@@ -1,6 +1,5 @@
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { createFeatureDecisions } from '$lib/features';
 import {
 	filterOrganizationalUnits,
 	fromCounts,
@@ -29,13 +28,12 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 		currentOrganization,
 		currentOrganizationalUnit
 	} = await parent();
-	const features = createFeatureDecisions(locals.features);
 	const typeFilterFromURL = url.searchParams.getAll('type');
 	const allTypeOptions = [
 		payloadTypes.enum.goal,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.program,
-		...(features.useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
 		payloadTypes.enum.simple_measure
 	];

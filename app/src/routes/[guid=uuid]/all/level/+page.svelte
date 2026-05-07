@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { page } from '$app/state';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
-		titleForGoalCollection,
 		containersByHierarchyLevel,
 		isGoalContainer,
 		isMeasureContainer,
@@ -17,6 +14,7 @@
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		predicates,
+		titleForGoalCollection,
 		titleForMeasureCollection,
 		titleForProgramCollection
 	} from '$lib/models';
@@ -48,11 +46,9 @@
 		)
 	);
 
-	const useReport = createFeatureDecisions(page.data.features).useReport();
-
 	let columns = $derived([
 		{
-			addItemUrl: `#create=program${useReport ? '&create=report' : ''}`,
+			addItemUrl: '#create=program&create=report',
 			containers: containers
 				.filter((c) => isProgramContainer(c) || isReportContainer(c))
 				.slice(0, browser ? undefined : 10),

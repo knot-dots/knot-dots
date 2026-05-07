@@ -7,7 +7,6 @@
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { createFeatureDecisions } from '$lib/features';
 	import { type AnyContainer, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
@@ -21,16 +20,15 @@
 	);
 	const list = createPaginatedList<AnyContainer>({
 		fetchPage: async ({ offset, signal }) => {
-			const features = createFeatureDecisions(page.data.features);
 			const allTypeOptions = [
 				payloadTypes.enum.goal,
 				payloadTypes.enum.help,
 				payloadTypes.enum.knowledge,
 				payloadTypes.enum.measure,
 				payloadTypes.enum.organizational_unit,
-				...(features.usePage() ? [payloadTypes.enum.page] : []),
+				payloadTypes.enum.page,
 				payloadTypes.enum.program,
-				...(features.useReport() ? [payloadTypes.enum.report] : []),
+				payloadTypes.enum.report,
 				payloadTypes.enum.rule,
 				payloadTypes.enum.simple_measure,
 				payloadTypes.enum.task
@@ -66,8 +64,6 @@
 	let containers = $derived(
 		withOptimistic(list.items, $lastCreatedContainer, $lastUpdatedContainers)
 	);
-
-	let featureDecisions = $derived(createFeatureDecisions(page.data.features));
 </script>
 
 <AllPage {data} filterBarInitiallyOpen>
@@ -76,9 +72,9 @@
 		payloadType={[
 			payloadTypes.enum.goal,
 			payloadTypes.enum.measure,
-			...(featureDecisions.usePage() ? [payloadTypes.enum.page] : []),
+			payloadTypes.enum.page,
 			payloadTypes.enum.program,
-			...(featureDecisions.useReport() ? [payloadTypes.enum.report] : []),
+			payloadTypes.enum.report,
 			payloadTypes.enum.rule,
 			payloadTypes.enum.simple_measure
 		]}

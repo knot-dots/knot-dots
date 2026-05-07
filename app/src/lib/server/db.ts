@@ -1498,7 +1498,16 @@ export function getAllContainersRelatedToUser(guid: string) {
 				AND cu.object = m.revision
 				AND m.valid_currently
 				AND NOT m.deleted
-			WHERE c.valid_currently
+			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
+			  AND c.valid_currently
+				AND NOT c.deleted
+			UNION
+			SELECT c.* FROM container c
+			JOIN container_user cu ON cu.subject = ${guid}
+				AND cu.predicate = 'is-member-of'
+				AND cu.object = c.revision
+				AND c.payload->>'type' IN ('organization', 'organizational_unit')
+				AND c.valid_currently
 				AND NOT c.deleted
 			UNION
 			SELECT c.* FROM container c
@@ -1888,6 +1897,7 @@ export function setUp(name: string, realm: string) {
 				imageReplacesName: false,
 				name,
 				type: payloadTypes.enum.organization,
+				useAnalytics: true,
 				visibility: visibility.enum.public,
 				visibleWorkspaces: []
 			},

@@ -89,6 +89,13 @@
 		return header.getBoundingClientRect().bottom;
 	});
 
+	const panelLeft = $derived.by(() => {
+		if (!$menu.expanded || !buttonEl) return '0';
+		const nav = buttonEl.closest('.app-wrapper')?.querySelector(':scope > nav');
+		if (!nav) return '0';
+		return `${(nav as HTMLElement).offsetWidth}px`;
+	});
+
 	const panelRight = $derived($overlay ? `calc(100vw * ${$overlayWidth})` : '0');
 
 	function pathFor(workspace: WorkspaceDefinition): string {
@@ -117,15 +124,21 @@
 	>
 		{#if currentWorkspace && !isOnPage}
 			<currentWorkspace.icon />
-			<span class="label">{$_(currentWorkspace.i18nKey)}</span>
+			<span>{$_(currentWorkspace.i18nKey)}</span>
 		{:else}
-			<span class="label">{$_('workspace.choose')}</span>
+			<span>{$_('workspace.choose')}</span>
 		{/if}
 		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 
 	{#if $menu.expanded}
-		<div class="mega-menu-panel" style:top="{panelTop}px" style:right={panelRight} use:menu.items>
+		<div
+			class="mega-menu-panel"
+			style:top="{panelTop}px"
+			style:left={panelLeft}
+			style:right={panelRight}
+			use:menu.items
+		>
 			{#each columns as column, colIdx (colIdx)}
 				<div class="mega-menu-column">
 					{#each column as group (group.module.key)}
@@ -160,34 +173,10 @@
 
 <style>
 	.mega-menu {
+		--dropdown-button-box-shadow: none;
 		--dropdown-button-default-color: var(--color-gray-900);
-		--dropdown-button-box-shadow: var(--shadow-sm);
-		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 		--dropdown-button-min-height: 2.25rem;
-
-		position: relative;
-	}
-
-	.dropdown-button {
-		align-items: center;
-		background-color: var(--color-white);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 0.375rem;
-		box-shadow: var(--dropdown-button-box-shadow);
-		color: var(--dropdown-button-default-color);
-		cursor: pointer;
-		display: inline-flex;
-		gap: 0.5rem;
-		min-height: var(--dropdown-button-min-height);
-		padding: var(--dropdown-button-padding);
-	}
-
-	.dropdown-button:hover {
-		background-color: var(--color-gray-050);
-	}
-
-	.label {
-		font-weight: 500;
+		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
 	}
 
 	.mega-menu-panel {
@@ -201,7 +190,6 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-		left: var(--sidebar-max-width);
 		max-height: calc(100vh - var(--header-height));
 		overflow: auto;
 		padding: 0.5rem;
@@ -305,16 +293,19 @@
 	}
 
 	.menu-segment-item-icon {
-		--icon-color: var(--menu-segment-accent);
-
 		align-items: center;
-		background-color: var(--color-white);
-		border-radius: 0.375rem;
+		background-color: var(--menu-segment-accent);
+		border-radius: 0.5rem;
 		display: inline-flex;
 		flex-shrink: 0;
-		height: 2rem;
+		height: 1.5rem;
 		justify-content: center;
-		width: 2rem;
+		padding: 0.25rem;
+		width: 1.5rem;
+	}
+
+	.menu-segment-item-icon :global(svg) {
+		color: var(--color-gray-900);
 	}
 
 	.menu-segment-item-text {
