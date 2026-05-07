@@ -302,10 +302,28 @@ export async function loadContainerV2(params: {
 			params.locals.user
 		));
 
-	const queriedCategoryContext =
-		scopedQuery.type.length > 0
-			? filterCategoryContext(categoryContext, scopedQuery.type)
-			: categoryContext;
+	const allTypeOptions = [
+		payloadTypes.enum.goal,
+		payloadTypes.enum.help,
+		payloadTypes.enum.indicator_template,
+		payloadTypes.enum.knowledge,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.organizational_unit,
+		payloadTypes.enum.page,
+		payloadTypes.enum.program,
+		payloadTypes.enum.report,
+		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure,
+		payloadTypes.enum.task
+	];
+	const typeFilterFromURL =
+		scopedQuery.payloadType.length > 0 ? scopedQuery.payloadType : scopedQuery.type;
+	const typeFilter = allTypeOptions.filter(
+		(type) => typeFilterFromURL.length === 0 || (typeFilterFromURL as string[]).includes(type)
+	);
+	const queriedCategoryContext = filterCategoryContext(categoryContext, typeFilter, {
+		matchAll: true
+	});
 
 	// Expand organizational unit scope from the context's current org unit, unless the caller
 	// explicitly passed organizationalUnit params or the query uses related-to (no ou filtering).
@@ -365,6 +383,10 @@ export async function loadContainerV2(params: {
 	const facets = esFacets
 		? baseFacetMap(esFacets, queriedCategoryContext)
 		: computeFacetCount(baseFacetMap({}, queriedCategoryContext), allVisible);
+
+	// Always show the full curated type list in the facet, with counts from results
+	const existingTypeCounts = Object.fromEntries(facets.get('type') ?? []);
+	facets.set('type', fromCounts(allTypeOptions as string[], existingTypeCounts));
 
 	return {
 		containers: page.containers,
