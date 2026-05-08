@@ -1,15 +1,8 @@
 import type { GeoJsonObject } from 'geojson';
 import { filterVisible } from '$lib/authorization';
-import {
-	isMapContainer,
-	isOrganizationalUnitContainer,
-	payloadTypes,
-	predicates
-} from '$lib/models';
+import { isMapContainer, isOrganizationalUnitContainer, predicates } from '$lib/models';
 import {
 	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers,
 	getRelatedOrganizationalUnitContainersByPredicates,
 	getManySpatialFeatures
 } from '$lib/server/db';
@@ -18,47 +11,8 @@ import type { PageServerLoad } from './$types';
 export const load = (async ({ locals, parent }) => {
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const container = currentOrganizationalUnit ?? currentOrganization;
-	let organizationalUnits: string[] = [];
 
-	if (isOrganizationalUnitContainer(container)) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(container.guid)
-		);
-		organizationalUnits = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level > container.payload.level)
-			.map(({ guid }) => guid)
-			.concat(container.guid);
-	}
-
-	const [containers, actualData, sections, linkedProfiles] = await Promise.all([
-		locals.pool.connect(
-			getManyContainers(
-				[container.organization],
-				{
-					organizationalUnits,
-					type: [
-						payloadTypes.enum.effect,
-						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator_template,
-						payloadTypes.enum.measure,
-						payloadTypes.enum.objective,
-						payloadTypes.enum.program,
-						payloadTypes.enum.simple_measure
-					]
-				},
-				'alpha'
-			)
-		),
-		locals.pool.connect(
-			getManyContainers(
-				[container.organization],
-				{
-					organizationalUnits: currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : null,
-					type: [payloadTypes.enum.actual_data]
-				},
-				'alpha'
-			)
-		),
+	const [sections, linkedProfiles] = await Promise.all([
 		locals.pool.connect(
 			getAllRelatedContainers(
 				[container.organization],
@@ -102,7 +56,7 @@ export const load = (async ({ locals, parent }) => {
 	return {
 		container,
 		linkedProfiles: filterVisible(linkedProfiles, locals.user),
-		relatedContainers: filterVisible([...containers, ...actualData, ...sections], locals.user),
+		relatedContainers: filterVisible(sections, locals.user),
 		spatialFeatures
 	};
 }) satisfies PageServerLoad;
