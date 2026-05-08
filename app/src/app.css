@@ -1160,31 +1160,44 @@ label > input[type='checkbox'].toggle {
 		max(var(--details-padding-left), calc(var(--content-width, 100%) - var(--details-max-width)))
 	);
 
-	--carousel-margin-left: calc(
-		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
-	);
-	--carousel-margin-right: calc(
-		var(--details-padding-right) * -1 - var(--details-section-padding-x)
-	);
 	--editable-table-margin-left: calc(
 		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
 	);
 	--editable-table-margin-right: calc(
-		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+		(var(--details-padding-right) + var(--details-section-padding-x)) * -1
 	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
 	font-size: 0.875rem;
 	min-width: min(var(--details-max-width), calc(100% - 8rem));
-	padding: var(--details-padding-y) var(--details-padding-right) var(--details-padding-y)
-		var(--details-padding-left);
+	padding: var(--details-padding-y) 0;
 	position: relative;
 }
 
 .details-section {
 	border-radius: 24px;
-	padding: var(--details-section-padding-y, 1rem) var(--details-section-padding-x, 1.5rem);
+	padding: var(--details-section-padding-y, 1rem)
+		calc(var(--details-padding-right) + var(--details-section-padding-x, 1.5rem))
+		var(--details-section-padding-y, 1rem)
+		calc(var(--details-padding-left) + var(--details-section-padding-x, 1.5rem));
+}
+
+.details-section--carousel,
+.details-section:has(.carousel) {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.details-section--carousel header,
+.details-section:has(.carousel) > form > header,
+.details-section:has(.carousel) > header,
+.details-section--carousel .carousel-toolbar,
+.details-section:has(.carousel) .carousel-toolbar,
+.details-section--carousel .markdown-body,
+.details-section:has(.carousel) .markdown-body {
+	padding-left: calc(var(--details-padding-left) + var(--details-section-padding-x, 1.5rem));
+	padding-right: calc(var(--details-padding-right) + var(--details-section-padding-x, 1.5rem));
 }
 
 header.details-section + div.details-section,
@@ -1534,10 +1547,6 @@ img.cover {
 }
 
 /* Carousel */
-:root {
-	--carousel-margin-left: 0rem;
-	--carousel-margin-right: 0rem;
-}
 
 .carousel {
 	display: grid;
@@ -1545,9 +1554,9 @@ img.cover {
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
-	margin: 1rem var(--carousel-margin-right) 0.5rem var(--carousel-margin-left);
+	margin: 1rem 0 0.5rem 0;
 	overflow-x: auto;
-	padding-left: calc(var(--carousel-margin-left) * -1);
+	padding-left: calc(var(--details-padding-left, 0) + var(--details-section-padding-x, 1.5rem));
 }
 
 .carousel > li {

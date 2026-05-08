@@ -536,8 +536,6 @@
 
 <style>
 	.drop-zone-wrapper {
-		--carousel-margin-left: 0;
-
 		color: var(--color-gray-500);
 		stroke: var(--color-gray-500);
 	}
