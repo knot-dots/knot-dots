@@ -1208,7 +1208,15 @@ header.details-section + dialog + div.details-section {
 .details-section header {
 	align-items: start;
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.5rem;
+}
+
+@container (max-inline-size: 40rem) {
+	.details-section header .inline-actions {
+		margin-left: 0;
+		width: 100%;
+	}
 }
 
 .details-title {
