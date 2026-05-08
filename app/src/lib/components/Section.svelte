@@ -181,7 +181,6 @@
 			<EditableGoalCollection
 				bind:container
 				bind:parentContainer
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
@@ -205,7 +204,6 @@
 			<EditableIndicatorCollection
 				bind:container
 				bind:parentContainer
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
@@ -221,7 +219,6 @@
 			<EditableMeasureCollection
 				bind:container
 				bind:parentContainer
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
@@ -237,7 +234,6 @@
 			<EditableProgramCollection
 				bind:container
 				bind:parentContainer
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
@@ -276,7 +272,6 @@
 			<EditableTaskCollection
 				bind:container
 				bind:parentContainer
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>

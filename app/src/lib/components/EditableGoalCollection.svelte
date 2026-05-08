@@ -1,16 +1,16 @@
 <script lang="ts">
+	import { IsInViewport, resource } from 'runed';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import {
 		type AnyContainer,
 		containerOfType,
 		type GoalCollectionContainer,
-		isPartOf,
-		isPartOfMeasure,
 		type NewContainer,
 		payloadTypes,
 		predicates
@@ -23,24 +23,44 @@
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
 		heading,
-		parentContainer = $bindable(),
-		relatedContainers = $bindable()
+		parentContainer = $bindable()
 	}: Props = $props();
 
-	let items = $derived(
-		parentContainer
-			? relatedContainers
-					.filter(({ payload }) => payload.type == payloadTypes.enum.goal)
-					.filter((rc) => isPartOfMeasure(parentContainer)(rc) || isPartOf(parentContainer)(rc))
-			: []
+	let header = $state<HTMLElement>();
+	const inViewport = new IsInViewport(() => header);
+	let inViewportOnce = $state(false);
+	$effect(() => {
+		if (inViewport.current) {
+			inViewportOnce = true;
+		}
+	});
+
+	const goalsResource = resource(
+		[() => parentContainer, () => inViewportOnce],
+		async ([parent], _, { signal }) => {
+			if (!parent || !inViewportOnce) return [] as AnyContainer[];
+			return fetchRelatedContainers(
+				parent.guid,
+				{ payloadType: [payloadTypes.enum.goal] },
+				'alpha',
+				{ signal }
+			);
+		},
+		{ lazy: true }
 	);
+
+	let items = $state<AnyContainer[]>([]);
+	$effect(() => {
+		if (goalsResource.current !== undefined) {
+			items = goalsResource.current;
+		}
+	});
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -74,7 +94,7 @@
 	}
 </script>
 
-<header>
+<header bind:this={header}>
 	<svelte:element this={heading} class="details-heading">{$_('goals')}</svelte:element>
 
 	{#if editable}
@@ -93,7 +113,11 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+				<ContainerSettingsDropdown
+					bind:container
+					bind:parentContainer
+					bind:relatedContainers={items}
+				/>
 			</li>
 		</ul>
 	{/if}
@@ -107,10 +131,8 @@
 	{#snippet itemSnippet(item)}
 		<Card
 			container={item}
-			relatedContainers={relatedContainers.filter(
-				({ payload, relation }) =>
-					payload.type === payloadTypes.enum.indicator_template ||
-					relation.some(({ object, subject }) => [object, subject].includes(item.guid))
+			relatedContainers={items.filter(({ relation }) =>
+				relation.some(({ object, subject }) => [object, subject].includes(item.guid))
 			)}
 		/>
 	{/snippet}

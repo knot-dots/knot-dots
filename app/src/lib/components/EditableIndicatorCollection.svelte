@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { IsInViewport, resource } from 'runed';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -6,6 +7,7 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import {
 		type AnyContainer,
 		containerOfType,
@@ -27,25 +29,63 @@
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
 		heading,
-		parentContainer = $bindable(),
-		relatedContainers = $bindable()
+		parentContainer = $bindable()
 	}: Props = $props();
 
-	let actualDataContainers = $derived(relatedContainers.filter(isActualDataContainer));
+	let header = $state<HTMLElement>();
+	const inViewport = new IsInViewport(() => header);
+	let inViewportOnce = $state(false);
+	$effect(() => {
+		if (inViewport.current) {
+			inViewportOnce = true;
+		}
+	});
 
-	let effectContainers = $derived(relatedContainers.filter(isEffectContainer));
+	const indicatorDataResource = resource(
+		[() => parentContainer, () => inViewportOnce],
+		async (_, __, { signal }) => {
+			if (!inViewportOnce) return [] as AnyContainer[];
+			return fetchContainers(
+				{
+					payloadType: [
+						payloadTypes.enum.indicator_template,
+						payloadTypes.enum.actual_data,
+						payloadTypes.enum.effect,
+						payloadTypes.enum.objective
+					],
+					organization: [container.organization],
+					...(container.organizational_unit
+						? { organizationalUnit: [container.organizational_unit] }
+						: {})
+				},
+				'alpha',
+				{ signal }
+			);
+		},
+		{ lazy: true }
+	);
 
-	let objectiveContainers = $derived(relatedContainers.filter(isObjectiveContainer));
+	let allContainers = $state<AnyContainer[]>([]);
+	$effect(() => {
+		if (indicatorDataResource.current !== undefined) {
+			allContainers = indicatorDataResource.current;
+		}
+	});
+
+	let actualDataContainers = $derived(allContainers.filter(isActualDataContainer));
+
+	let effectContainers = $derived(allContainers.filter(isEffectContainer));
+
+	let objectiveContainers = $derived(allContainers.filter(isObjectiveContainer));
 
 	let items = $derived(
-		relatedContainers
+		allContainers
 			.filter(isIndicatorTemplateContainer)
 			.filter((item) =>
 				[
@@ -83,7 +123,7 @@
 	}
 </script>
 
-<header>
+<header bind:this={header}>
 	<svelte:element this={heading} class="details-heading">{$_('indicators')}</svelte:element>
 
 	{#if editable}
@@ -102,7 +142,11 @@
 			{/if}
 
 			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+				<ContainerSettingsDropdown
+					bind:container
+					bind:parentContainer
+					bind:relatedContainers={allContainers}
+				/>
 			</li>
 		</ul>
 	{/if}
@@ -131,8 +175,8 @@
 							object === item.guid && predicate === predicates.enum['is-objective-for']
 					)
 				),
-				...relatedContainers.filter(isGoalContainer),
-				...relatedContainers.filter(isMeasureContainer)
+				...allContainers.filter(isGoalContainer),
+				...allContainers.filter(isMeasureContainer)
 			]}
 		/>
 	{/snippet}

@@ -41,7 +41,6 @@
 			<EditableGoalCollection
 				bind:container
 				bind:parentContainer
-				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				heading="h3"
 			/>
