@@ -326,6 +326,7 @@
 
 <style>
 	.details-section {
+		--actions-left: calc(var(--details-padding-left, 5rem) - 3.25rem);
 		position: relative;
 	}
 
