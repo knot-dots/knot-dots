@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { getContext, type Snippet } from 'svelte';
-	import { tick } from 'svelte';
+	import { getContext, tick, untrack, type Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
+	import { createPopperActions } from 'svelte-popperjs';
+	import { Combobox } from 'melt/builders';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/flowbite/close-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
@@ -27,13 +28,31 @@
 		defaultOrganization?: OrganizationContainer;
 		options: (OrganizationContainer | OrganizationalUnitContainer)[];
 		title: string;
-		onselect?: () => void;
 		children: Snippet;
 	}
 
-	let { defaultOrganization, options, title, onselect, children }: Props = $props();
+	let { defaultOrganization, options, title, children }: Props = $props();
 
-	const popover = createPopover({});
+	type OptionContainer = OrganizationContainer | OrganizationalUnitContainer;
+
+	const popover = createPopover({ label: untrack(() => title) });
+
+	const [popperRef, popperContent] = createPopperActions({
+		placement: 'bottom-start',
+		strategy: 'absolute'
+	});
+
+	const extraOpts = {
+		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+	};
+
+	const combobox = new Combobox<OptionContainer>({
+		sameWidth: false
+	});
+
+	$effect(() => {
+		combobox.open = $popover.expanded;
+	});
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -56,51 +75,26 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	$effect(() => {
-		popover.set({ label: title });
-	});
-
 	$effect.pre(() => {
 		if (page.url) {
 			popover.close();
 		}
 	});
 
-	let buttonEl: HTMLButtonElement | undefined = $state();
-	let panelEl: HTMLDivElement | undefined = $state();
-	let searchQuery = $state('');
 	let searchInputEl: HTMLInputElement | undefined = $state();
 
 	let filteredOptions = $derived(
-		searchQuery
-			? options.filter((o) => o.payload.name.toLowerCase().includes(searchQuery.toLowerCase()))
+		combobox.inputValue
+			? options.filter((o) =>
+					o.payload.name.toLowerCase().includes(combobox.inputValue.trim().toLowerCase())
+				)
 			: options
 	);
-	let popoverPosition = $state({ top: 0, left: 0, minWidth: 0 });
-
-	function updatePosition() {
-		if (buttonEl) {
-			const rect = buttonEl.getBoundingClientRect();
-			popoverPosition = {
-				top: rect.bottom + 4,
-				left: rect.left,
-				minWidth: rect.width
-			};
-		}
-	}
 
 	$effect(() => {
 		if ($popover.expanded) {
-			searchQuery = '';
-			updatePosition();
+			combobox.inputValue = '';
 			tick().then(() => searchInputEl?.focus());
-
-			const onScroll = (e: Event) => {
-				if (panelEl && e.target instanceof Node && panelEl.contains(e.target)) return;
-				popover.close();
-			};
-			window.addEventListener('scroll', onScroll, { capture: true });
-			return () => window.removeEventListener('scroll', onScroll, { capture: true });
 		}
 	});
 
@@ -117,20 +111,10 @@
 	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, pathnameWithoutContextSegment(), env).toString();
 	}
-
-	function handleButtonClick() {
-		onselect?.();
-	}
 </script>
 
-<div class="context-select">
-	<button
-		class="context-select-button"
-		bind:this={buttonEl}
-		onclick={handleButtonClick}
-		type="button"
-		use:popover.button
-	>
+<div class="context-select" use:popperRef>
+	<button class="context-select-button" type="button" use:popover.button>
 		{@render children()}
 		{#if options.length > 0}
 			<ChevronSort />
@@ -139,11 +123,10 @@
 
 	{#if $popover.expanded && options.length > 0}
 		<div
-			bind:this={panelEl}
 			class="context-select-popover"
-			style="top: {popoverPosition.top}px; left: {popoverPosition.left}px; min-width: {popoverPosition.minWidth}px;"
 			transition:slide={{ duration: 125, easing: cubicInOut }}
 			use:popover.panel
+			use:popperContent={extraOpts}
 		>
 			<div class="context-select-header">
 				<span class="context-select-title">{title}</span>
@@ -168,7 +151,20 @@
 				<Search />
 				<input
 					bind:this={searchInputEl}
-					bind:value={searchQuery}
+					value={combobox.inputValue}
+					oninput={(e) => (combobox.inputValue = e.currentTarget.value)}
+					onkeydown={(e) => {
+						if (e.key === 'ArrowDown') {
+							e.preventDefault();
+							combobox.highlightNext();
+						} else if (e.key === 'ArrowUp') {
+							e.preventDefault();
+							combobox.highlightPrev();
+						} else if (e.key === 'Enter' && combobox.highlighted) {
+							e.preventDefault();
+							combobox.select(combobox.highlighted);
+						}
+					}}
 					placeholder={$_('search')}
 					type="search"
 				/>
@@ -178,6 +174,7 @@
 					<li>
 						<a
 							class="context-select-option"
+							{...combobox.getOption(option, option.payload.name)}
 							data-sveltekit-preload-code="tap"
 							data-sveltekit-preload-data="tap"
 							href={optionURL(option)}
@@ -371,7 +368,8 @@
 		white-space: nowrap;
 	}
 
-	.context-select-option:hover {
+	.context-select-option:hover,
+	.context-select-option[data-highlighted] {
 		background-color: var(--color-gray-050);
 	}
 
