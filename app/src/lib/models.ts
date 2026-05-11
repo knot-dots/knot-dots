@@ -122,27 +122,6 @@ export function isPayloadType(value: unknown): value is PayloadType {
 	return payloadTypeValues.includes(value as PayloadType);
 }
 
-/**
- * Payload types that derive from `basePayload` and therefore support the
- * `template` flag. These are the candidate types for the central Vorlagen
- * workspace at `/[guid]/templates`.
- */
-export const templatablePayloadTypes = [
-	payloadTypes.enum.binary_indicator,
-	payloadTypes.enum.chapter,
-	payloadTypes.enum.content_partner,
-	payloadTypes.enum.goal,
-	payloadTypes.enum.indicator_template,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.measure,
-	payloadTypes.enum.objective,
-	payloadTypes.enum.program,
-	payloadTypes.enum.report,
-	payloadTypes.enum.resource_v2,
-	payloadTypes.enum.rule,
-	payloadTypes.enum.simple_measure
-] as const;
-
 const helpSlugValues = [
 	'all-catalog',
 	'all-level',
@@ -1685,6 +1664,10 @@ const payload = z.discriminatedUnion('type', [
 ]);
 
 export type Payload = z.infer<typeof payload>;
+
+export const templatablePayloadTypes = payload.options
+	.filter(({ shape }) => 'template' in shape)
+	.map(({ shape }) => (shape.type as z.ZodLiteral<PayloadType>).value);
 
 export const container = z.object({
 	guid: z.string().uuid(),
