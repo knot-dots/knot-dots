@@ -120,17 +120,16 @@
 	@media (max-width: 480px) {
 		nav {
 			background-color: white;
-			display: none;
+			width: 3rem;
+		}
+
+		nav.mobile-open {
 			height: 100vh;
 			left: 0;
 			position: fixed;
 			top: 0;
 			width: var(--sidebar-max-width);
 			z-index: 100;
-		}
-
-		nav.mobile-open {
-			display: flex;
 		}
 	}
 </style>

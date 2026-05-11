@@ -24,6 +24,7 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
+	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
@@ -192,6 +193,81 @@
 		<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
 	</button>
 </header>
+
+<div
+	class="collapsed-menu"
+	class:collapsed={sidebarExpanded === false}
+	class:expanded={sidebarExpanded === true}
+>
+	<div class="collapsed-menu-top">
+		<div class="collapsed-panel">
+			<a
+				{@attach tooltip(page.data.currentOrganization.payload.name)}
+				class="collapsed-panel-item"
+				href={landingPageURL(page.data.currentOrganization)}
+			>
+				<img
+					alt=""
+					class="panel-select-icon"
+					src={page.data.currentOrganization.payload.image
+						? transformFileURL(page.data.currentOrganization.payload.image)
+						: logo}
+				/>
+			</a>
+		</div>
+		{#if organizationalUnits.length > 0}
+			<div
+				class="collapsed-panel"
+				class:collapsed-panel--active={!!page.data.currentOrganizationalUnit}
+			>
+				<a
+					{@attach tooltip(
+						page.data.currentOrganizationalUnit?.payload.name ?? $_('organizational_units')
+					)}
+					class="collapsed-panel-item"
+					href={page.data.currentOrganizationalUnit
+						? landingPageURL(page.data.currentOrganizationalUnit)
+						: landingPageURL(page.data.currentOrganization)}
+				>
+					<OrganizationalUnitIcon />
+				</a>
+			</div>
+		{/if}
+		{#if $user.isAuthenticated}
+			<div class="collapsed-panel">
+				<a {@attach tooltip($_('workspace.profile'))} class="collapsed-panel-item" href="/me">
+					<Favicon />
+				</a>
+			</div>
+		{/if}
+	</div>
+	<div class="collapsed-menu-bottom">
+		{#if $user.isAuthenticated}
+			<div class="collapsed-panel">
+				<button
+					{@attach tooltip(`${$user.givenName} ${$user.familyName}`)}
+					class="collapsed-panel-item"
+					onclick={() => expandSidebar()}
+					type="button"
+				>
+					<span class="avatar avatar-s">
+						{$user.givenName.at(0)}{$user.familyName.at(0)}
+					</span>
+				</button>
+			</div>
+		{/if}
+		<div class="collapsed-panel">
+			<a
+				{@attach tooltip('knot dots')}
+				class="collapsed-panel-item"
+				href={env.PUBLIC_BASE_URL}
+				rel="external"
+			>
+				<Favicon />
+			</a>
+		</div>
+	</div>
+</div>
 
 <div
 	class="scroll-wrapper"
@@ -511,6 +587,72 @@
 		display: none;
 	}
 
+	/* Collapsed menu (icon-only, visible when sidebar is collapsed) */
+	.collapsed-menu {
+		display: flex;
+		flex-direction: column;
+		flex: 1 0 0;
+		gap: 0.25rem;
+		justify-content: space-between;
+		min-height: 0;
+		padding: 0.25rem;
+	}
+
+	.collapsed-menu.expanded {
+		display: none;
+	}
+
+	.collapsed-menu-top,
+	.collapsed-menu-bottom {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.collapsed-panel {
+		background:
+			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
+			var(--color-gray-050);
+		border: 1px solid var(--color-gray-100);
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.25rem;
+	}
+
+	.collapsed-panel--active {
+		background:
+			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
+			var(--color-primary-050);
+		border-color: var(--color-primary-200);
+	}
+
+	.collapsed-panel-item {
+		align-items: center;
+		background: none;
+		border: none;
+		border-radius: 8px;
+		color: var(--color-gray-600);
+		cursor: pointer;
+		display: flex;
+		height: 2rem;
+		justify-content: center;
+		padding: 0.5rem;
+		width: 2rem;
+	}
+
+	.collapsed-panel-item:hover {
+		background-color: rgba(0, 0, 0, 0.04);
+	}
+
+	.collapsed-panel-item :global(svg) {
+		color: var(--color-gray-400);
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
 	.scroll-wrapper {
 		display: flex;
 		flex: 1 0 0;
@@ -807,6 +949,14 @@
 
 		header:not(.collapsed) > button:last-of-type {
 			display: none;
+		}
+
+		.collapsed-menu:not(.collapsed) {
+			display: none;
+		}
+
+		.collapsed-menu.collapsed {
+			max-width: 3rem;
 		}
 
 		.scroll-wrapper:not(.collapsed) {
