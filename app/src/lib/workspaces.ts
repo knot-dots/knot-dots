@@ -19,9 +19,9 @@ import { boards, type OrganizationContainer, type OrganizationalUnitContainer } 
 import type { createFeatureDecisions } from '$lib/features';
 
 export type WorkspaceModuleKey =
-	| 'goals_planning'
+	| 'goal_setting'
 	| 'implementation_planning'
-	| 'effect_measurement'
+	| 'impact_measurement'
 	| 'resource_planning'
 	| 'knowledge_transfer'
 	| 'rules'
@@ -35,8 +35,8 @@ export interface WorkspaceModule {
 
 export const workspaceModules: WorkspaceModule[] = [
 	{
-		key: 'goals_planning',
-		i18nKey: 'workspace.module.goals_planning',
+		key: 'goal_setting',
+		i18nKey: 'workspace.module.goal_setting',
 		colorClass: 'menu-segment--goals'
 	},
 	{
@@ -45,8 +45,8 @@ export const workspaceModules: WorkspaceModule[] = [
 		colorClass: 'menu-segment--implementation'
 	},
 	{
-		key: 'effect_measurement',
-		i18nKey: 'workspace.module.effect_measurement',
+		key: 'impact_measurement',
+		i18nKey: 'workspace.module.impact_measurement',
 		colorClass: 'menu-segment--effects'
 	},
 	{
@@ -111,7 +111,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		i18nKey: 'workspace.type.strategies',
 		helperI18nKey: 'workspace.helper.strategies',
 		icon: Compass,
-		module: 'goals_planning',
+		module: 'goal_setting',
 		views: {
 			default: '/strategies/catalog',
 			catalog: '/strategies/catalog',
@@ -125,7 +125,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		i18nKey: 'workspace.type.goals',
 		helperI18nKey: 'workspace.helper.goals',
 		icon: Goal,
-		module: 'goals_planning',
+		module: 'goal_setting',
 		views: {
 			default: '/goals/level',
 			catalog: '/goals/catalog',
@@ -139,7 +139,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		i18nKey: 'workspace.type.federal_levels',
 		helperI18nKey: 'workspace.helper.federal_levels',
 		icon: Program,
-		module: 'goals_planning',
+		module: 'goal_setting',
 		views: {
 			default: '/programs/level',
 			level: '/programs/level'
@@ -189,7 +189,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		i18nKey: 'workspace.type.indicators',
 		helperI18nKey: 'workspace.helper.indicators',
 		icon: ChartBar,
-		module: 'effect_measurement',
+		module: 'impact_measurement',
 		views: {
 			default: '/indicators/catalog',
 			catalog: '/indicators/catalog',
@@ -202,7 +202,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		i18nKey: 'workspace.type.reports',
 		helperI18nKey: 'workspace.helper.reports',
 		icon: Chapter,
-		module: 'effect_measurement',
+		module: 'impact_measurement',
 		views: {
 			default: '/reports/catalog',
 			catalog: '/reports/catalog'
@@ -213,7 +213,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		i18nKey: 'workspace.type.objectives_and_effects',
 		helperI18nKey: 'workspace.helper.objectives_and_effects',
 		icon: ChartMixed,
-		module: 'effect_measurement',
+		module: 'impact_measurement',
 		views: {
 			default: '/objectives-and-effects',
 			level: '/objectives-and-effects'

@@ -34,7 +34,7 @@ test('workspaces mega-menu groups workspaces by module', async ({ page, testOrga
 	await expect(menu).toBeVisible();
 
 	// Module headings group the workspaces in the panel.
-	await expect(menu.getByRole('heading', { name: 'Goal planning' })).toBeVisible();
+	await expect(menu.getByRole('heading', { name: 'Goal setting' })).toBeVisible();
 	await expect(menu.getByRole('heading', { name: 'Implementation planning' })).toBeVisible();
 
 	// Workspaces from different modules are reachable as menu items.

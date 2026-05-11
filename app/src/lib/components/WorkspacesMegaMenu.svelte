@@ -21,9 +21,9 @@
 	 * Modules in the same sub-array are stacked vertically within one column.
 	 */
 	const megaMenuColumns: WorkspaceModuleKey[][] = [
-		['goals_planning'],
+		['goal_setting'],
 		['implementation_planning'],
-		['effect_measurement', 'resource_planning'],
+		['impact_measurement', 'resource_planning'],
 		['knowledge_transfer', 'rules'],
 		['organizing']
 	];
