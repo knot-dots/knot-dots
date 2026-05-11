@@ -34,7 +34,9 @@ persons.forEach((person) => {
 		await expect(page).toHaveTitle('knotdots.net / All');
 
 		// Add an assertion to confirm successful login
-		await expect(page.getByText(person.name)).toBeVisible();
+		await expect(
+			page.getByRole('navigation').getByRole('button', { name: 'User menu' })
+		).toBeVisible();
 
 		// Enable feature flags required for some tests
 		await page.getByRole('navigation').getByRole('button', { name: 'User menu' }).click();
