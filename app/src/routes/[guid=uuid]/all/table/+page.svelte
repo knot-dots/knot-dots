@@ -1,38 +1,78 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Help from '$lib/components/Help.svelte';
-	import type { PageProps } from './$types';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Table from '$lib/components/Table.svelte';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import { createFeatureDecisions } from '$lib/features';
+	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import { type AnyContainer, payloadTypes } from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	const initialItemsKey = $derived(data.containers.map(({ guid }) => guid).join(','));
+	const resetKey = $derived(
+		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
+	);
+	const list = createPaginatedList<AnyContainer>({
+		fetchPage: async ({ offset, signal }) => {
+			const allTypeOptions = [
+				payloadTypes.enum.goal,
+				payloadTypes.enum.help,
+				payloadTypes.enum.knowledge,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.organizational_unit,
+				payloadTypes.enum.page,
+				payloadTypes.enum.program,
+				payloadTypes.enum.report,
+				payloadTypes.enum.rule,
+				payloadTypes.enum.simple_measure,
+				payloadTypes.enum.task
+			];
+			const typeFilterFromURL = page.url.searchParams.getAll('type');
+			const typeFilter = allTypeOptions.filter(
+				(t) => typeFilterFromURL.length === 0 || typeFilterFromURL.includes(t)
+			);
+			const query = new URLSearchParams(page.url.searchParams);
+			query.delete('type');
+			for (const t of typeFilter) query.append('type', t);
+
+			const result = await fetchContainerPage<AnyContainer>({
+				contextGuid: page.params.guid,
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset,
+				query,
+				signal
+			});
+			return {
+				hasMore: result.page.hasMore,
+				items: result.containers,
+				nextOffset: result.page.nextOffset
+			};
+		},
+		getKey: ({ guid }) => guid,
+		initialHasMore: () => data.page.hasMore,
+		initialItems: () => data.containers,
+		pageSize: DEFAULT_PAGE_SIZE,
+		resetKey: () => resetKey
+	});
 	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(list.items, $lastCreatedContainer, $lastUpdatedContainers)
 	);
 
-	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
-
-	const legacyCategoryColumns = [
-		{ heading: $_('category'), key: 'sdg' },
-		{ heading: $_('topic'), key: 'topic' },
-		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
-		{ heading: $_('audience'), key: 'audience' }
-	];
-
 	const customCategoryColumns = $derived(
-		featureDecisions.useCustomCategories() && data.categoryOptions
-			? getCategoryKeys(data.categoryOptions).map((key) => ({
-					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
-					key
-				}))
-			: null
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -41,7 +81,7 @@
 		{ heading: $_('description'), key: 'description' },
 		{ heading: $_('visibility.label'), key: 'visibility' },
 		{ heading: $_('status'), key: 'status' },
-		...(customCategoryColumns ?? legacyCategoryColumns),
+		...customCategoryColumns,
 		{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
 		{ heading: $_('planned_duration'), key: 'duration' },
 		{ heading: $_('editorial_state'), key: 'editorialState' },
@@ -51,11 +91,15 @@
 	]);
 </script>
 
-<AllPage data={{ ...data, containers }}>
-	<Table
-		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
-		{columns}
-		rows={containers.slice(0, browser ? undefined : 20)}
-	/>
+<AllPage {data}>
+	<Table {columns} rows={containers}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Table>
 	<Help slug="all-table" />
 </AllPage>

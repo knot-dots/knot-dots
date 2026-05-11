@@ -5,7 +5,8 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
-	import EditableCover from '$lib/components/EditableCover.svelte';
+	import CoverUpload from '$lib/components/CoverUpload.svelte';
+	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
@@ -16,7 +17,6 @@
 	import { fetchRelatedContainers } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
-	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		container: PageContainer;
@@ -65,11 +65,10 @@
 
 {#snippet main()}
 	<div class="content-details">
-		{#if container.payload.cover}
-			<div class="cover-section">
-				<img alt={$_('cover')} class="cover" src={transformFileURL(container.payload.cover)} />
-			</div>
-		{/if}
+		<EditableCoverSection
+			bind:container
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
+		/>
 		<article>
 			<div
 				class="details stage stage--{container.payload.color
@@ -78,7 +77,7 @@
 			>
 				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
 					<div class="stage--buttons details-section">
-						<EditableCover
+						<CoverUpload
 							editable={$applicationState.containerDetailView.editable &&
 								$ability.can('update', container)}
 							label={$_('add_cover')}

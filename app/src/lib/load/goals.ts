@@ -1,201 +1,33 @@
-import { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
-import {
-	type AnyContainer,
-	audience,
-	computeFacetCount,
-	filterOrganizationalUnits,
-	fromCounts,
-	type OrganizationalUnitContainer,
-	payloadTypes,
-	policyFieldBNK,
-	predicates,
-	programTypes,
-	sustainableDevelopmentGoals,
-	topics
-} from '$lib/models';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import {
-	getAllRelatedContainers,
-	getAllRelatedContainersByProgramType,
-	getAllRelatedOrganizationalUnitContainers,
-	getManyContainers
-} from '$lib/server/db';
-import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import fetchContainerPage from '$lib/client/fetchContainerPage';
+import { type GoalContainer, payloadTypes, predicates } from '$lib/models';
+import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/goals/$types';
 
-export default (async function load({ depends, locals, parent, url }) {
+const DEFAULT_RELATION_TYPES = [
+	predicates.enum['is-consistent-with'],
+	predicates.enum['is-equivalent-to'],
+	predicates.enum['is-inconsistent-with'],
+	predicates.enum['is-part-of']
+];
+
+export default (async function load({ depends, fetch, params, url }) {
 	depends('containers');
 
-	let containers: AnyContainer[];
-	let data: Record<string, Record<string, number>> | undefined;
-	let subordinateOrganizationalUnits: string[] = [];
-	const {
-		categoryContext: rawCategoryContext,
-		currentOrganization,
-		currentOrganizationalUnit
-	} = await parent();
-	const features = createFeatureDecisions(locals.features);
-	const categoryContext = rawCategoryContext
-		? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.goal])
-		: null;
-	const useCustomCategories = features.useCustomCategories();
-
-	const customCategories = useCustomCategories
-		? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-		: {};
-
-	const coreCategoryFilters = useCustomCategories
-		? {}
-		: {
-				audience: url.searchParams.getAll('audience'),
-				sdg: url.searchParams.getAll('sdg'),
-				policyFieldsBNK: url.searchParams.getAll('policyFieldBNK'),
-				topics: url.searchParams.getAll('topic')
-			};
-
-	if (currentOrganizationalUnit) {
-		const relatedOrganizationalUnits = (await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		)) as OrganizationalUnitContainer[];
-		subordinateOrganizationalUnits = relatedOrganizationalUnits
-			.filter(
-				(unit: OrganizationalUnitContainer) =>
-					unit.payload.level > currentOrganizationalUnit.payload.level
-			)
-			.map((unit: OrganizationalUnitContainer) => unit.guid);
-	}
-
-	if (url.searchParams.has('related-to')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.get('related-to') as string,
-				url.searchParams.getAll('relationType').length === 0
-					? [
-							predicates.enum['is-consistent-with'],
-							predicates.enum['is-equivalent-to'],
-							predicates.enum['is-inconsistent-with'],
-							predicates.enum['is-part-of']
-						]
-					: url.searchParams.getAll('relationType'),
-				{
-					customCategories,
-					type: [payloadTypes.enum.goal]
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	} else if (url.searchParams.has('programType')) {
-		containers = await locals.pool.connect(
-			getAllRelatedContainersByProgramType(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				url.searchParams.getAll('programType'),
-				{
-					customCategories,
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.goal]
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
-	} else {
-		if (features.useElasticsearch()) {
-			const esResult = await getManyContainersWithES(
-				currentOrganization.payload.default ? [] : [currentOrganization.guid],
-				{
-					...coreCategoryFilters,
-					customCategories,
-					programTypes: url.searchParams.getAll('programType'),
-					terms: url.searchParams.get('terms') ?? '',
-					type: [payloadTypes.enum.goal]
-				},
-				url.searchParams.get('sort') ?? '',
-				undefined,
-				{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-			);
-			containers = esResult.containers;
-			data = esResult.facets;
-		} else {
-			containers = await locals.pool.connect(
-				getManyContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						...coreCategoryFilters,
-						customCategories,
-						programTypes: url.searchParams.getAll('programType'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.goal]
-					},
-					url.searchParams.get('sort') ?? ''
-				)
-			);
-		}
-	}
-
-	const filtered = filterOrganizationalUnits(
-		filterVisible(
-			containers.filter(
-				(container: AnyContainer) =>
-					!container.relation.some((rel) => rel.predicate === predicates.enum['is-part-of-measure'])
-			),
-			locals.user
-		),
-		url,
-		subordinateOrganizationalUnits,
-		currentOrganizationalUnit ?? undefined
-	);
-
-	const _facets = new Map<string, Map<string, number>>([
-		...((url.searchParams.has('related-to')
-			? [
-					[
-						'relationType',
-						new Map([
-							[predicates.enum['is-part-of'], 0],
-							[predicates.enum['is-consistent-with'], 0],
-							[predicates.enum['is-equivalent-to'], 0],
-							[predicates.enum['is-inconsistent-with'], 0]
-						])
-					]
-				]
-			: []) as Array<[string, Map<string, number>]>),
-		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
-			[string, Map<string, number>]
-		>)
+	const query = new URLSearchParams([
+		...url.searchParams,
+		['type', payloadTypes.enum.goal],
+		['excludeRelation', predicates.enum['is-part-of-measure']]
 	]);
 
-	if (useCustomCategories && categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
-	} else {
-		_facets.set('audience', fromCounts(audience.options as string[], data?.audience));
-		_facets.set('sdg', fromCounts(sustainableDevelopmentGoals.options as string[], data?.sdg));
-		_facets.set('topic', fromCounts(topics.options as string[], data?.topic));
-		_facets.set(
-			'policyFieldBNK',
-			fromCounts(policyFieldBNK.options as string[], data?.policyFieldBNK)
-		);
+	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
+		for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
 	}
 
-	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
-
-	const facets = features.useElasticsearch()
-		? _facets
-		: computeFacetCount(_facets, containers, {
-				useCategoryPayload: useCustomCategories
-			});
-
-	return {
-		containers: filtered,
-		facets,
-		facetLabels: categoryContext?.labels,
-		categoryOptions: categoryContext?.options
-	};
+	return await fetchContainerPage<GoalContainer>({
+		contextGuid: params.guid,
+		fetch,
+		limit: DEFAULT_PAGE_SIZE,
+		offset: 0,
+		query
+	});
 } satisfies PageServerLoad);

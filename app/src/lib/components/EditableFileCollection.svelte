@@ -7,6 +7,7 @@
 	import { _, locale } from 'svelte-i18n';
 	import File from '~icons/flowbite/file-solid';
 	import FileDoc from '~icons/flowbite/file-doc-solid';
+	import FileImage from '~icons/flowbite/file-image-solid';
 	import FilePDF from '~icons/flowbite/file-pdf-solid';
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
@@ -41,7 +42,8 @@
 			allowedFileTypes: [
 				'application/pdf',
 				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-				'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+				'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+				'image/*'
 			],
 			maxTotalFileSize: 105 * 1024 * 1024 // bytes
 		}
@@ -112,6 +114,8 @@
 				<FilePDF />
 			{:else if type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}
 				<FileDoc />
+			{:else if type.startsWith('image/')}
+				<FileImage />
 			{:else}
 				<File />
 			{/if}
@@ -121,8 +125,10 @@
 					class="file-name truncated"
 					href={transformFileURL(url)}
 					rel={type === 'application/pdf' ? 'noopener noreferrer' : undefined}
-					target={type === 'application/pdf' ? '_blank' : undefined}>{name}</a
+					target={type === 'application/pdf' ? '_blank' : undefined}
 				>
+					{name}
+				</a>
 				{#if size}
 					<span class="file-size">{prettierBytes(size)}</span>
 				{/if}

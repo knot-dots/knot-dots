@@ -2,8 +2,8 @@ import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { user as userSchema } from '$lib/models';
 import { createOrUpdateUser } from '$lib/server/db';
-import type { RequestHandler } from './$types';
 import { updateUser } from '$lib/server/keycloak';
+import type { RequestHandler } from './$types';
 
 export const PUT = (async ({ locals, request }) => {
 	if (!locals.user.isAuthenticated) {
@@ -21,6 +21,10 @@ export const PUT = (async ({ locals, request }) => {
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
+	}
+
+	if (parseResult.data.guid !== locals.user.guid) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
 	const [user] = await Promise.all([

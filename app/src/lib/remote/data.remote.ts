@@ -51,24 +51,16 @@ export const fetchContainersRelatedToProgram = query(
 	z.object({
 		guid: z.string().uuid(),
 		params: z.object({
-			audience: z.array(z.string()).default([]),
 			customCategories: z.record(z.string(), z.array(z.string())).optional(),
-			sdg: z.array(z.string()).default([]),
-			policyFieldBNK: z.array(z.string()).default([]),
-			terms: z.string().optional(),
-			topic: z.array(z.string()).default([])
+			terms: z.string().optional()
 		})
 	}),
 	async ({ guid, params }) => {
 		const { locals } = getRequestEvent();
 		const relatedContainers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(guid, {
-				audience: params.audience,
 				customCategories: params.customCategories,
-				sdg: params.sdg,
-				policyFieldsBNK: params.policyFieldBNK,
-				...(params.terms ? { terms: params.terms } : undefined),
-				topics: params.topic
+				...(params.terms ? { terms: params.terms } : undefined)
 			})
 		);
 		return filterVisible(relatedContainers, locals.user);

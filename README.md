@@ -47,7 +47,6 @@ one for upgrading the schema and one for restoring the current state.
 ## Elasticsearch
 
 We use Elasticsearch for fast full-text search and faceted filtering.
-The Elasticsearch feature is controlled by the `Elasticsearch` feature flag (configured in `app/src/lib/features.ts`).
 
 To index containers to Elasticsearch, run:
 

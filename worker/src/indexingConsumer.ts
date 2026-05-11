@@ -141,7 +141,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      const res = await client.bulk({ operations });
+      const res = await client.bulk({ operations, refresh: true });
       if (res.errors) {
         const failed = (res.items || []).filter((i: any) => i.index?.error || i.delete?.error);
         log.error({ failedCount: failed.length }, '[indexing-consumer] Bulk indexing encountered errors');

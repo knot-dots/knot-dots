@@ -1,7 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import type { RequestHandler } from './$types';
 import {
 	indicatorCategories,
 	type IndicatorTemplateContainer,
@@ -9,22 +8,24 @@ import {
 	isGoalContainer,
 	isMeasureContainer,
 	payloadTypes,
-	sortIndicatorsByRelevanceForGoalOrMeasure,
-	sustainableDevelopmentGoals
+	sortIndicatorsByRelevanceForGoalOrMeasure
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getAllContainersRelatedToIndicatorTemplates,
 	getContainerByGuid,
-	getManyContainers
+	getManyContainers,
+	getManyOrganizationContainers
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		organization: z.array(z.uuid()).default([]),
-		organizationalUnit: z.array(z.uuid()).default([]),
-		sdg: z.array(sustainableDevelopmentGoals).default([])
+		organizationalUnit: z.array(z.uuid()).default([])
 	});
 
 	const parseResult = expectedParams.safeParse(
@@ -40,15 +41,30 @@ export const GET = (async ({ locals, params, url }) => {
 		error(400, { message: parseResult.error.message });
 	}
 
+	const organizations = await locals.pool.connect(
+		getManyOrganizationContainers({ default: true }, '')
+	);
+
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope:
+			organizations.length > 0
+				? [organizations[0].guid, ...parseResult.data.organization]
+				: parseResult.data.organization,
+		user: locals.user
+	});
+
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
+
 	const suggestion = await locals.pool.connect(async (connection) => {
 		const [container, indicatorTemplateContainers] = await Promise.all([
 			getContainerByGuid(params.guid)(connection),
 			getManyContainers(
 				[],
 				{
+					customCategories,
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
-					sdg: parseResult.data.sdg,
 					type: [payloadTypes.enum.indicator_template]
 				},
 				'alpha'

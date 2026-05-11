@@ -124,10 +124,6 @@ export function createIndexWithMappings(client: Client, index: string) {
 				},
 				visibility: { type: 'keyword' },
 				text: { type: 'text' },
-				sdg_labels: { type: 'text' },
-				topic_labels: { type: 'text' },
-				audience_labels: { type: 'text' },
-				policy_field_labels: { type: 'text' },
 				program_type_labels: { type: 'text' },
 				measure_type_labels: { type: 'text' },
 				indicator_category_labels: { type: 'text' },
@@ -153,11 +149,7 @@ export function createIndexWithMappings(client: Client, index: string) {
 				},
 				payload: {
 					properties: {
-						audience: { type: 'keyword' },
-						sdg: { type: 'keyword' },
-						topic: { type: 'keyword' },
 						level: { type: 'keyword' },
-						policyFieldBNK: { type: 'keyword' },
 						programType: { type: 'keyword' },
 						indicatorCategory: { type: 'keyword' },
 						indicatorType: { type: 'keyword' },
@@ -184,15 +176,9 @@ function resolveLabel(code: string): string | undefined {
 	return typeof cur === 'string' ? cur : undefined;
 }
 
-
-
 export function normalizePayload(payload: any) {
 	const normalized = { ...payload };
 	for (const key of [
-		'sdg',
-		'topic',
-		'audience',
-		'policyFieldBNK',
 		'programType',
 		'indicatorCategory',
 		'indicatorType',
@@ -240,21 +226,18 @@ export function toDoc(row: {
 	const type: string | undefined = normalized?.type;
 	const title: string | undefined = normalized?.title ?? normalized?.name;
 	const description: string | undefined = normalized?.description;
+	const body: string | undefined = normalized?.body;
 	const visibility: string | undefined = normalized?.visibility;
 	const validFrom = row.valid_from ? new Date(row.valid_from).toISOString() : undefined;
 	const priority = row.priority ?? undefined;
 
 	const mapLabels = (arr?: string[]) => (arr || []).map(resolveLabel).filter(Boolean) as string[];
-	const topicLabels = mapLabels(normalized.topic);
-	const audienceLabels = mapLabels(normalized.audience);
-	const policyFieldLabels = mapLabels(normalized.policyFieldBNK);
 	const programTypeLabels = mapLabels(normalized.programType);
 	const indicatorCategoryLabels = mapLabels(normalized.indicatorCategory);
 	const indicatorTypeLabels = mapLabels(normalized.indicatorType);
 	const taskCategoryLabels = mapLabels(normalized.taskCategory);
 	const resourceCategoryLabels = mapLabels(normalized.resourceCategory);
 	const resourceUnitLabels = mapLabels(normalized.resourceUnit);
-	const sdgLabels = mapLabels(normalized.sdg);
 
 	const additionalText = Object.entries(normalized)
 		.filter(([, value]) => Array.isArray(value))
@@ -291,10 +274,6 @@ export function toDoc(row: {
 		relation,
 		user,
 		payload: originalPayload,
-		sdg_labels: sdgLabels,
-		topic_labels: topicLabels,
-		audience_labels: audienceLabels,
-		policy_field_labels: policyFieldLabels,
 		program_type_labels: programTypeLabels,
 		indicator_category_labels: indicatorCategoryLabels,
 		indicator_type_labels: indicatorTypeLabels,
@@ -304,10 +283,7 @@ export function toDoc(row: {
 		text: [
 			title,
 			description,
-			...sdgLabels,
-			...topicLabels,
-			...audienceLabels,
-			...policyFieldLabels,
+			body,
 			...programTypeLabels,
 			...indicatorCategoryLabels,
 			...indicatorTypeLabels,

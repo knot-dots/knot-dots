@@ -1,51 +1,36 @@
 <script lang="ts">
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer } from '$lib/stores';
-	import type { PageProps } from './$types';
 	import {
-		audience,
-		computeFacetCount,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
-		isSimpleMeasureContainer,
-		policyFieldBNK,
-		sustainableDevelopmentGoals,
-		topics
+		isSimpleMeasureContainer
 	} from '$lib/models';
+	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let container = $derived(data.container);
 
-	let containers = $derived(withOptimistic(data.containers, $lastCreatedContainer));
+	let containers = $derived(
+		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+	);
 
 	let measures = $derived(
 		isMeasureContainer(container) || isSimpleMeasureContainer(container)
 			? [container]
 			: containers.filter((c) => isMeasureContainer(c) || isSimpleMeasureContainer(c))
 	);
-
-	let facets = $derived(
-		computeFacetCount(
-			new Map([
-				['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-				['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-				['topic', new Map(topics.options.map((v) => [v as string, 0]))],
-				['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))]
-			]),
-			containers
-		)
-	);
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header {facets} search />
+		<Header search />
 	{/snippet}
 
 	{#snippet main()}

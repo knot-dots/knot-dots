@@ -1,4 +1,6 @@
-import rules from '$lib/load/rules';
+import { loadAllFilteredBy } from '$lib/load/allFiltered';
+import { payloadTypes } from '$lib/models';
 import type { PageServerLoad } from '../$types';
 
-export const load = rules satisfies PageServerLoad;
+export const load = ((event) =>
+	loadAllFilteredBy(event, [payloadTypes.enum.rule])) satisfies PageServerLoad;

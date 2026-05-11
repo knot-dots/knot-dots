@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
@@ -8,9 +7,9 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { workspaceModules, workspaces } from '$lib/workspaces';
 
 	interface Props {
 		container: OrganizationalUnitContainer;
@@ -19,8 +18,27 @@
 
 	let { container = $bindable(), editable = false }: Props = $props();
 
-	const featureDecisions = createFeatureDecisions(page.data.features ?? []);
 	const administrativeAreaLabelId = crypto.randomUUID();
+
+	const workspaceOptions = $derived(
+		workspaceModules.flatMap((module) =>
+			workspaces
+				.filter((w) => w.module === module.key)
+				.map((w) => ({
+					value: w.key,
+					label: `${$_(module.i18nKey)} \u2013 ${$_(w.i18nKey)}`
+				}))
+		)
+	);
+
+	// In edit mode, an empty `visibleWorkspaces` historically meant "show all".
+	// Prefill with every selectable workspace so unchecking a box reliably hides
+	// that workspace; without this, unchecking reads as "still empty = show all".
+	$effect(() => {
+		if (editable && container.payload.visibleWorkspaces.length === 0) {
+			container.payload.visibleWorkspaces = workspaces.map((w) => w.key);
+		}
+	});
 
 	const stateFromOfficialRegionalCode = new Map([
 		['01', 'Schleswig-Holstein'],
@@ -112,14 +130,19 @@
 			bind:value={container.payload.boards}
 		/>
 
+		<EditableMultipleChoice
+			{editable}
+			label={$_('properties.subheading.visible_workspaces')}
+			options={workspaceOptions}
+			bind:value={container.payload.visibleWorkspaces}
+		/>
+
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:container />
 		{/if}
 
-		{#if featureDecisions.useCustomCategories()}
-			<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
-			<EditableCategories bind:container {editable} organizationGuid={container.organization} />
-		{/if}
+		<div class="data-grid-subheading">{$_('properties.subheading.categories')}</div>
+		<EditableCategories bind:container {editable} />
 	</div>
 </div>
 

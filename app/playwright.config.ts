@@ -37,7 +37,7 @@ const config: PlaywrightTestConfig = {
 			: 'docker compose up --build preview',
 		port: 3000,
 		reuseExistingServer: !process.env.CI,
-		timeout: 180 * 1000
+		timeout: 240 * 1000
 	}
 };
 

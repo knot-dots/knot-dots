@@ -9,7 +9,6 @@ import {
 	taskCategories
 } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
-import { createFeatureDecisions } from '$lib/features';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -24,13 +23,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 		locals.user
 	);
 
-	const features = createFeatureDecisions(locals.features);
 	const _facets = new Map<string, Map<string, number>>([
 		['taskCategory', fromCounts(taskCategories.options as string[])]
 	]);
-	const facets = computeFacetCount(_facets, filtered, {
-		useCategoryPayload: features.useCustomCategories()
-	});
+	const facets = computeFacetCount(_facets, filtered);
 
 	return {
 		containers: filtered,

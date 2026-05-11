@@ -23,6 +23,7 @@ test('adding and removing a summary sections updates the card', async ({
 
 	// Verify the card shows the summary
 	await dotsBoard.overlay.closeButton.click();
+	await expect(dotsBoard.overlay.locator).not.toBeVisible();
 	await expect(dotsBoard.card(testMeasure.payload.title)).toContainText(summary);
 
 	// Remove the Summary section
@@ -63,6 +64,7 @@ test('adding and removing a progress section updates the card', async ({ dotsBoa
 
 	// Verify the card shows a progress bar in the footer
 	await dotsBoard.overlay.closeButton.click();
+	await expect(dotsBoard.overlay.locator).not.toBeVisible();
 	await expect(dotsBoard.card(testGoal.payload.title).getByRole('progressbar')).toBeVisible();
 
 	// Remove the Summary section

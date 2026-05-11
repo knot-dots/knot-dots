@@ -27,7 +27,8 @@ export const overlayKey = z.enum([
 	'teasers',
 	'view',
 	'view-help',
-	'view-knowledge'
+	'view-knowledge',
+	'view-rules'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;
@@ -994,6 +995,7 @@ const helpPayload = z.object({
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
+	image: z.url().optional(),
 	slug: z
 		.preprocess((v) => (Array.isArray(v) ? v.filter(isHelpSlug) : []), z.array(helpSlug))
 		.transform(deduplicate)
@@ -1120,6 +1122,7 @@ const pagePayload = z.object({
 	body: z.string().trim(),
 	color: backgroundColor.optional(),
 	cover: z.url().optional(),
+	coverSource: z.string().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -1252,6 +1255,7 @@ const initialEffectCollectionPayload = effectCollectionPayload;
 
 const reportPayload = basePayload
 	.extend({
+		image: z.url().optional(),
 		type: z.literal(payloadTypes.enum.report)
 	})
 	.strict();
@@ -1365,6 +1369,7 @@ const imagePayload = z
 		body: z.string().trim().optional(),
 		image: z.string().url().optional(),
 		imageAltText: z.string().optional(),
+		imageSource: z.string().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.image),
 		visibility: visibility.default(visibility.enum['organization'])
@@ -1540,6 +1545,8 @@ const organizationPayload = z.object({
 	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
+	coverSource: z.string().optional(),
+	customDomain: z.hostname().optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	favorite: z
@@ -1556,6 +1563,7 @@ const organizationPayload = z.object({
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
+	useAnalytics: z.boolean().default(true),
 	visibility: visibility.default(visibility.enum['organization']),
 	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
@@ -1570,6 +1578,7 @@ export const organizationalUnitPayload = z.object({
 		.default({}),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
+	coverSource: z.string().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	favorite: z
@@ -1593,7 +1602,8 @@ export const organizationalUnitPayload = z.object({
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationalUnitType: organizationalUnitType.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility.default(visibility.enum['organization']),
+	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
@@ -2048,7 +2058,7 @@ export function isReportContainer(
 	return container.payload.type === payloadTypes.enum.report;
 }
 
-const ruleContainer = container.extend({
+export const ruleContainer = container.extend({
 	payload: rulePayload
 });
 
@@ -3079,23 +3089,6 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 					return true;
 				}
 
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit == null
-				) {
-					return true;
-				}
-
-				if (
-					included.includes('superordinate_organizational_units') &&
-					c.organizational_unit != null &&
-					!subordinateOrganizationalUnits
-						.filter((ou) => ou != currentOrganizationalUnit?.guid)
-						.includes(c.organizational_unit)
-				) {
-					return true;
-				}
-
 				return false;
 			});
 }
@@ -3125,7 +3118,7 @@ export function createCopyOf(
 		container.payload.type,
 		organization,
 		organizationalUnit,
-		container.managed_by,
+		organizationalUnit ?? organization,
 		container.realm
 	);
 
@@ -3264,17 +3257,12 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
-	containers: AnyContainer[],
-	options?: { useCategoryPayload?: boolean }
+	containers: AnyContainer[]
 ) {
-	const useCategoryPayload = options?.useCategoryPayload ?? false;
-
 	for (const container of containers) {
 		for (const key of facets.keys()) {
 			const categoryPayload =
-				useCategoryPayload && 'category' in container.payload
-					? container.payload.category
-					: undefined;
+				'category' in container.payload ? container.payload.category : undefined;
 			const hasCategoryValue = categoryPayload && key in categoryPayload;
 			const hasPayloadValue = key in container.payload;
 			const valueSource = hasCategoryValue
@@ -3310,7 +3298,10 @@ export function getOrganizationURL(
 
 		// Default organization uses the base domain without subdomain
 		if (!isDefaultOrganization) {
-			url.hostname = `${container.organization}.${url.hostname}`;
+			url.hostname =
+				'customDomain' in container.payload && container.payload.customDomain
+					? container.payload.customDomain
+					: `${container.organization}.${url.hostname}`;
 		}
 	}
 

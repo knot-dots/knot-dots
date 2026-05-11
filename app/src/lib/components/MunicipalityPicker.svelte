@@ -32,16 +32,14 @@
 	let localSelected: string[] = $state([]);
 
 	const categoryContext = $derived(
-		page.data.categoryContext
-			? filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.organizational_unit])
-			: undefined
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.organizational_unit])
 	);
 
 	// svelte-ignore state_referenced_locally
 	let filter = $state<Record<string, string[]>>({
 		administrativeType: [],
 		federalState: [],
-		...(categoryContext ? Object.fromEntries(categoryContext.keys.map((key) => [key, []])) : {})
+		...Object.fromEntries(categoryContext.keys.map((key) => [key, []]))
 	});
 
 	const federalStates = [

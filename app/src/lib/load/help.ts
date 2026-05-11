@@ -1,11 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { filterVisible } from '$lib/authorization';
-import { payloadTypes } from '$lib/models';
-import { getManyContainers } from '$lib/server/db';
+import fetchContainerPage from '$lib/client/fetchContainerPage';
+import { type HelpContainer, payloadTypes } from '$lib/models';
+import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/help/$types';
 
-export default (async function load({ depends, locals, parent, url }) {
+export default (async function load({ depends, fetch, params, parent, url }) {
 	depends('containers');
 
 	const { currentOrganization } = await parent();
@@ -14,20 +14,11 @@ export default (async function load({ depends, locals, parent, url }) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	const containers = await locals.pool.connect(
-		getManyContainers(
-			currentOrganization.payload.default ? [] : [currentOrganization.guid],
-			{
-				terms: url.searchParams.get('terms') ?? '',
-				type: [payloadTypes.enum.help]
-			},
-			url.searchParams.get('sort') ?? ''
-		)
-	);
-
-	const filtered = filterVisible(containers, locals.user);
-
-	return {
-		containers: filtered
-	};
+	return await fetchContainerPage<HelpContainer>({
+		contextGuid: params.guid,
+		fetch,
+		limit: DEFAULT_PAGE_SIZE,
+		offset: 0,
+		query: new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.help]])
+	});
 } satisfies PageServerLoad);

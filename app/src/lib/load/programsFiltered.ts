@@ -6,14 +6,16 @@ import { strategyProgramTypes } from '$lib/workspaces';
  * forced into the URL search params, regardless of any incoming `programType`
  * query parameter. Returns the loader's strongly typed result.
  */
-export function loadProgramsFilteredBy(
+export async function loadProgramsFilteredBy(
 	event: { url: URL },
 	programTypes: readonly string[]
 ): ReturnType<typeof programs> {
 	const url = new URL(event.url);
 	url.searchParams.delete('programType');
 	for (const t of programTypes) url.searchParams.append('programType', t);
-	return programs({ ...event, url } as Parameters<typeof programs>[0]);
+	const result = await programs({ ...event, url } as Parameters<typeof programs>[0]);
+	result.facets.delete('programType');
+	return result;
 }
 
 export const STRATEGY_PROGRAM_TYPES = strategyProgramTypes;

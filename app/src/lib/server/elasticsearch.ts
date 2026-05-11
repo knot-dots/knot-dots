@@ -1,6 +1,7 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
 import { anyContainer, type AnyContainer, type PayloadType } from '$lib/models';
+import type { ContainerQueryOptions } from '$lib/server/db';
 
 const es = new Client({
 	auth:
@@ -15,16 +16,12 @@ const es = new Client({
 
 type FacetCounts = Record<string, Record<string, number>>;
 
-type GetManyContainersWithESOptions = {
+type ContainerElasticsearchOptions = ContainerQueryOptions & {
 	customCategoryKeys?: string[];
 	includeFacets?: boolean;
 };
 
 const defaultFacetKeys = [
-	'audience',
-	'sdg',
-	'topic',
-	'policyFieldBNK',
 	'programType',
 	'measureType',
 	'indicatorCategory',
@@ -37,10 +34,6 @@ const defaultFacetKeys = [
 ] as const;
 
 const facetFieldMap: Record<string, string> = {
-	audience: 'payload.audience',
-	sdg: 'payload.sdg',
-	topic: 'payload.topic',
-	policyFieldBNK: 'payload.policyFieldBNK',
 	programType: 'payload.programType',
 	measureType: 'payload.measureType',
 	indicatorCategory: 'payload.indicatorCategory',
@@ -53,10 +46,6 @@ const facetFieldMap: Record<string, string> = {
 };
 
 const facetSizeMap: Record<string, number> = {
-	audience: 50,
-	sdg: 100,
-	topic: 100,
-	policyFieldBNK: 100,
 	programType: 20,
 	measureType: 20,
 	indicatorCategory: 100,
@@ -130,26 +119,21 @@ export async function getManyContainersWithES(
 	organizations: string[],
 	filters: {
 		assignees?: string[];
-		audience?: string[];
-		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		resourceCategories?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
-	limit?: number,
-	options?: GetManyContainersWithESOptions
-): Promise<{ containers: AnyContainer[]; facets: FacetCounts }> {
+	options?: ContainerElasticsearchOptions
+): Promise<{ containers: AnyContainer[]; facets: FacetCounts; total: number }> {
 	const must: estypes.QueryDslQueryContainer[] = [];
 	const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
 	const facetFilters: FacetFilterMap = {};
@@ -160,16 +144,6 @@ export async function getManyContainersWithES(
 		});
 	}
 	if (filters.type?.length) addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
-	if (filters.sdg?.length)
-		addFacetFilter(facetFilters, 'sdg', { terms: { 'payload.sdg': filters.sdg } });
-	if (filters.topics?.length)
-		addFacetFilter(facetFilters, 'topic', { terms: { 'payload.topic': filters.topics } });
-	if (filters.audience?.length)
-		addFacetFilter(facetFilters, 'audience', { terms: { 'payload.audience': filters.audience } });
-	if (filters.policyFieldsBNK?.length)
-		addFacetFilter(facetFilters, 'policyFieldBNK', {
-			terms: { 'payload.policyFieldBNK': filters.policyFieldsBNK }
-		});
 	if (filters.programTypes?.length)
 		addFacetFilter(facetFilters, 'programType', {
 			terms: { 'payload.programType': filters.programTypes }
@@ -226,7 +200,8 @@ export async function getManyContainersWithES(
 	const postFilter: estypes.QueryDslQueryContainer | undefined =
 		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 	const esSortClauses = buildElasticsearchSortClause(sort);
-	const sizeParam = limit && Number.isInteger(limit) && limit >= 0 ? limit : 10000;
+	const sizeParam =
+		options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? options.limit : 10000;
 	const aggs = options?.includeFacets
 		? buildFacetAggregations({
 				facetFilters,
@@ -240,6 +215,7 @@ export async function getManyContainersWithES(
 		post_filter: postFilter,
 		sort: esSortClauses,
 		size: sizeParam,
+		from: options?.offset,
 		aggs
 	};
 
@@ -277,8 +253,10 @@ export async function getManyContainersWithES(
 			const valuesAgg = filterAgg.values;
 			facets[key] = toCounts(valuesAgg);
 		}
-		console.log('[ES facets]', JSON.stringify(facets));
 	}
 
-	return { containers, facets };
+	const total =
+		typeof hits.total === 'number' ? hits.total : (hits.total?.value ?? containers.length);
+
+	return { containers, facets, total };
 }

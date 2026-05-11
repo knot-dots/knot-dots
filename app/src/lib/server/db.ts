@@ -527,26 +527,24 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	administrativeTypes?: string[];
 	assignees?: string[];
-	audience?: string[];
 	customCategories?: Record<string, string[]>;
 	customCategoryMatch?: 'any' | 'all';
+	excludeRelation?: string[];
 	federalStates?: string[];
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
+	members?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[] | null;
-	policyFieldsBNK?: string[];
 	programTypes?: string[];
 	resource?: string[];
 	resourceCategories?: string[];
-	sdg?: string[];
 	taskCategories?: string[];
 	template?: boolean;
 	terms?: string;
-	topics?: string[];
 	type?: PayloadType[];
 }) {
 	const conditions = [sql.fragment`c.valid_currently`, sql.fragment`NOT c.deleted`];
@@ -563,9 +561,6 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.assignees?.length) {
 		conditions.push(sql.fragment`c.payload->'assignee' ?| ${sql.array(filters.assignees, 'text')}`);
-	}
-	if (filters.audience?.length) {
-		conditions.push(sql.fragment`c.payload->'audience' ?| ${sql.array(filters.audience, 'text')}`);
 	}
 	if (filters.customCategories) {
 		const categoryFragments = Object.entries(filters.customCategories)
@@ -629,11 +624,6 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
-	if (filters.policyFieldsBNK?.length) {
-		conditions.push(
-			sql.fragment`c.payload->'policyFieldBNK' ?| ${sql.array(filters.policyFieldsBNK, 'text')}`
-		);
-	}
 	if (filters.programTypes?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'programType' IN (${sql.join(
@@ -651,9 +641,6 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
-	}
-	if (filters.sdg?.length) {
-		conditions.push(sql.fragment`c.payload->'sdg' ?| ${sql.array(filters.sdg, 'text')}`);
 	}
 	if (filters.taskCategories?.length) {
 		conditions.push(
@@ -677,12 +664,30 @@ function prepareWhereCondition(filters: {
 				.join(' & ')}) @@ jsonb_to_tsvector('german', c.payload, '["string", "numeric"]')`
 		);
 	}
-	if (filters.topics?.length) {
-		conditions.push(sql.fragment`c.payload->'topic' ?| ${sql.array(filters.topics, 'text')}`);
-	}
 	if (filters.type?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'type' IN (${sql.join(filters.type, sql.fragment`, `)})`
+		);
+	}
+	if (filters.excludeRelation?.length) {
+		conditions.push(
+			sql.fragment`NOT EXISTS (
+				SELECT 1 FROM container_relation cr2
+				WHERE cr2.subject = c.guid
+					AND cr2.predicate = ANY (${sql.array(filters.excludeRelation, 'text')})
+					AND cr2.valid_currently
+					AND NOT cr2.deleted
+			)`
+		);
+	}
+	if (filters.members?.length) {
+		conditions.push(
+			sql.fragment`EXISTS (
+				SELECT 1 FROM container_user cu
+				WHERE cu.object = c.revision
+					AND cu.predicate = ${predicates.enum['is-member-of']}
+					AND cu.subject = ANY (${sql.array(filters.members, 'uuid')})
+			)`
 		);
 	}
 	return sql.join(conditions, sql.fragment` AND `);
@@ -745,12 +750,16 @@ export async function withUserAndRelation<T extends AnyContainer>(
 }
 
 // Get containers using pure SQL (no Elasticsearch)
+export type ContainerQueryOptions = {
+	limit?: number;
+	offset?: number;
+};
+
 export function getManyContainers(
 	organizations: string[],
 	filters: {
 		administrativeTypes?: string[];
 		assignees?: string[];
-		audience?: string[];
 		customCategories?: Record<string, string[]>;
 		customCategoryMatch?: 'any' | 'all';
 		federalStates?: string[];
@@ -760,20 +769,16 @@ export function getManyContainers(
 		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[] | null;
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		resource?: string[];
 		resourceCategories?: string[];
-		sdg?: string[];
 		taskCategories?: string[];
 		template?: boolean;
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string,
-	limit?: number,
-	offset?: number
+	options?: ContainerQueryOptions
 ) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
@@ -781,8 +786,8 @@ export function getManyContainers(
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			WHERE ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
-			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
-			${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``};
+			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
+			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``};
     `);
 		return withUserAndRelation<AnyContainer>(connection, containerResult);
 	};
@@ -1035,19 +1040,17 @@ export function getAllRelatedContainers(
 	relations: string[],
 	filters: {
 		assignees?: string[];
-		audience?: string[];
-		sdg?: string[];
 		customCategories?: Record<string, string[]>;
 		indicatorCategories?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		programTypes?: string[];
 		taskCategories?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
-	sort: string
+	sort: string,
+	limit?: number,
+	offset?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
@@ -1101,12 +1104,14 @@ export function getAllRelatedContainers(
 		const containerResult = await connection.any(sql.typeAlias('container')`
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
-      WHERE c.guid IN (${sql.join(
+			WHERE c.guid IN (${sql.join(
 				[...isPartOfResult, ...otherRelationResult, [guid]].flatMap((r) => Object.values(r)),
 				sql.fragment`, `
 			)})
 				AND ${prepareWhereCondition({ ...filters, organizations })}
 			ORDER BY ${prepareOrderByExpression(sort)}
+			${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
+			${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``}
 		`);
 
 		const objectivesAndEffects = containerResult
@@ -1163,16 +1168,14 @@ export function getAllRelatedContainersByProgramType(
 	organizations: string[],
 	programTypes: string[],
 	filters: {
-		audience?: string[];
 		customCategories?: Record<string, string[]>;
-		sdg?: string[];
 		organizationalUnits?: string[];
-		policyFieldsBNK?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
-	sort: string
+	sort: string,
+	limit?: number,
+	offset?: number
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const relationPathResult = await connection.any(sql.typeAlias('relationPath')`
@@ -1197,6 +1200,8 @@ export function getAllRelatedContainersByProgramType(
 					)})
 						AND ${prepareWhereCondition({ ...filters, organizations })}
 					ORDER BY ${prepareOrderByExpression(sort)}
+					${limit && Number.isInteger(limit) && limit >= 0 ? sql.fragment`LIMIT ${limit}` : sql.fragment``}
+					${offset && Number.isInteger(offset) && offset > 0 ? sql.fragment`OFFSET ${offset}` : sql.fragment``}
 				`)
 				: [];
 
@@ -1294,12 +1299,8 @@ export function getAllContainersRelatedToIndicatorTemplates(
 export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
-		audience?: string[];
 		customCategories?: Record<string, string[]>;
-		sdg?: string[];
-		policyFieldsBNK?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	}
 ) {
@@ -1382,11 +1383,8 @@ export function getAllContainersRelatedToMeasure(
 	filters: {
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
-		sdg?: string[];
-		policyFieldsBNK?: string[];
 		taskCategories?: string[];
 		terms?: string;
-		topics?: string[];
 		type?: PayloadType[];
 	},
 	sort: string
@@ -1500,7 +1498,16 @@ export function getAllContainersRelatedToUser(guid: string) {
 				AND cu.object = m.revision
 				AND m.valid_currently
 				AND NOT m.deleted
-			WHERE c.valid_currently
+			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
+			  AND c.valid_currently
+				AND NOT c.deleted
+			UNION
+			SELECT c.* FROM container c
+			JOIN container_user cu ON cu.subject = ${guid}
+				AND cu.predicate = 'is-member-of'
+				AND cu.object = c.revision
+				AND c.payload->>'type' IN ('organization', 'organizational_unit')
+				AND c.valid_currently
 				AND NOT c.deleted
 			UNION
 			SELECT c.* FROM container c
@@ -1747,8 +1754,6 @@ export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) 
 			const containerResult =
 				container.payload.type == payloadTypes.enum.program
 					? await getAllContainersRelatedToProgram(container.guid, {
-							sdg: [],
-							topics: [],
 							type: [
 								payloadTypes.enum.goal,
 								payloadTypes.enum.measure,
@@ -1839,13 +1844,13 @@ export function getAdministrativeAreas(name: string) {
 					officialRegionalCode: v.official_regional_code
 				}))
 		)`
-			SELECT sf.geom::jsonb, sf.guid, osm.name, bbsr.city_and_municipality_type, osm.official_municipality_key, osm.official_regional_code
+			SELECT DISTINCT ON (osm.name) sf.geom::jsonb, sf.guid, osm.name, bbsr.city_and_municipality_type, osm.official_municipality_key, osm.official_regional_code
 			FROM administrative_area_open_street_map osm
 			JOIN spatial_feature sf ON osm.boundary = sf.guid
 			LEFT JOIN administrative_area_bbsr bbsr USING (official_regional_code)
 			WHERE osm.official_regional_code IS NOT NULL
 				AND regexp_replace(osm.name, '^(Landkreis|Kreis)\\s+', '') ILIKE ${name + '%'}
-			ORDER BY osm.name
+			ORDER BY osm.name, osm.valid_from DESC
 		`);
 	};
 }
@@ -1892,6 +1897,7 @@ export function setUp(name: string, realm: string) {
 				imageReplacesName: false,
 				name,
 				type: payloadTypes.enum.organization,
+				useAnalytics: true,
 				visibility: visibility.enum.public,
 				visibleWorkspaces: []
 			},

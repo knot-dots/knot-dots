@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-	import EditableImageInline from './EditableImageInline.svelte';
+	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
+	import EditableImageSource from '$lib/components/EditableImageSource.svelte';
 	import { type AnyContainer, type ImageContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -47,4 +48,13 @@
 	{/if}
 </header>
 
-<EditableImageInline {editable} label={$_('image')} bind:value={container.payload.image} />
+<EditableImageInline
+	editable={editable && $ability.can('update', container)}
+	label={$_('image')}
+	bind:value={container.payload.image}
+/>
+
+<EditableImageSource
+	editable={editable && $ability.can('update', container)}
+	bind:value={() => container.payload.imageSource ?? '', (v) => (container.payload.imageSource = v)}
+/>

@@ -4,11 +4,9 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { predicates } from '$lib/models';
 
-	import type { PageData } from '../../routes/[guid=uuid]/all/catalog/$types';
-
 	interface Props {
 		children: Snippet;
-		data: PageData;
+		data: { facets: Map<string, Map<string, number>> };
 		filterBarInitiallyOpen?: boolean;
 	}
 
@@ -28,13 +26,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header
-			{filterBarInitiallyOpen}
-			{facets}
-			facetLabels={data.facetLabels ?? undefined}
-			categoryOptions={data.categoryOptions ?? null}
-			search
-		/>
+		<Header {filterBarInitiallyOpen} {facets} search />
 	{/snippet}
 
 	{#snippet main()}

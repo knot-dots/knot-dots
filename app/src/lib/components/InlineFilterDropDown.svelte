@@ -35,10 +35,8 @@
 		['indicatorCategory', 'indicator_category'],
 		['federalState', 'administrative_area.basic_data.federal_state'],
 		['member', 'member_filter.label'],
-		['policyFieldBNK', 'policy_field_bnk'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
-		['sdg', 'category'],
 		['taskCategory', 'task_category.label'],
 		['type', 'payload_type']
 	]);
@@ -103,7 +101,7 @@
 		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdwon-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-panel-max-height: calc(100vh - 8rem);
+		--dropdown-panel-max-height: calc(100vh - 12rem);
 
 		position: static;
 	}

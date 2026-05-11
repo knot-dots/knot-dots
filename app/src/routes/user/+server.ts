@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
+import defineAbilityFor from '$lib/authorization';
 import type { User } from '$lib/models';
 import { newUser, predicates } from '$lib/models';
 import {
@@ -27,6 +28,8 @@ export const POST = (async ({ locals, request }) => {
 		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
 	}
 
+	const ability = defineAbilityFor(locals.user);
+
 	const data = await request.json().catch((reason: SyntaxError) => {
 		error(400, { message: reason.message });
 	});
@@ -34,6 +37,14 @@ export const POST = (async ({ locals, request }) => {
 	const parseResult = newUser.safeParse(data);
 	if (!parseResult.success) {
 		error(422, parseResult.error);
+	}
+
+	const container = await locals.pool.transaction(
+		getContainerByGuid(parseResult.data.container.guid)
+	);
+
+	if (!ability.can('invite-members', container)) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
 	let user: User;
@@ -72,17 +83,16 @@ export const POST = (async ({ locals, request }) => {
 		await sendVerificationEmail(parseResult.data.email, signupURL);
 	}
 
-	await locals.pool.transaction(async (txConnection) => {
-		const container = await getContainerByGuid(parseResult.data.container.guid)(txConnection);
-		await updateContainer({
+	await locals.pool.transaction(
+		updateContainer({
 			...container,
 			managed_by: container.guid,
 			user: [
 				...parseResult.data.container.user,
 				{ subject: user.guid, predicate: predicates.enum['is-member-of'] }
 			]
-		})(txConnection);
-	});
+		})
+	);
 
 	await addUserToGroup(user, parseResult.data.container.organization);
 

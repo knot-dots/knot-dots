@@ -203,7 +203,7 @@
 			onfinalize={handleDndFinalize}
 		>
 			{#each items as { guid, container } (guid)}
-				{@const dataContainers = [
+				{@const relatedContainers = [
 					...containers
 						.filter(isActualDataContainer)
 						.filter(({ payload }) => payload.indicator === guid),
@@ -216,24 +216,19 @@
 										predicate === predicates.enum['is-objective-for'])
 							)
 						)
-						.filter((c) => c.guid !== guid)
-				]}
-				{@const relatedContainers = [
-					...dataContainers,
+						.filter((c) => c.guid !== guid),
 					...containers.filter(isContainerWithEffect),
 					...containers.filter(isContainerWithObjective)
 				]}
-				{#if dataContainers.length > 0}
-					<li>
-						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
-					</li>
-				{/if}
+				<li>
+					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+				</li>
 			{/each}
 		</ul>
 	{:else}
 		<ul>
 			{#each items as { guid, container } (guid)}
-				{@const dataContainers = [
+				{@const relatedContainers = [
 					...containers
 						.filter(isActualDataContainer)
 						.filter(({ payload }) => payload.indicator === guid),
@@ -246,18 +241,13 @@
 										predicate === predicates.enum['is-objective-for'])
 							)
 						)
-						.filter((c) => c.guid !== guid)
-				]}
-				{@const relatedContainers = [
-					...dataContainers,
+						.filter((c) => c.guid !== guid),
 					...containers.filter(isContainerWithEffect),
 					...containers.filter(isContainerWithObjective)
 				]}
-				{#if dataContainers.length > 0}
-					<li>
-						<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
-					</li>
-				{/if}
+				<li>
+					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+				</li>
 			{/each}
 		</ul>
 	{/if}

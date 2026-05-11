@@ -93,8 +93,6 @@ export interface WorkspaceDefinition {
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
 	boardFlag?: WorkspaceBoardFlag;
-	/** Always shown regardless of `visibleWorkspaces` configuration. */
-	alwaysVisible?: boolean;
 }
 
 export const strategyProgramTypes = [
@@ -102,7 +100,8 @@ export const strategyProgramTypes = [
 	'program_type.mobility',
 	'program_type.sustainability',
 	'program_type.smart_city',
-	'program_type.isek'
+	'program_type.isek',
+	'program_type.agenda'
 ] as const;
 
 export const workspaces: WorkspaceDefinition[] = [
@@ -146,19 +145,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			level: '/programs/level'
 		}
 	},
-	{
-		key: 'reports',
-		i18nKey: 'workspace.type.reports',
-		helperI18nKey: 'workspace.helper.reports',
-		icon: Chapter,
-		module: 'goals_planning',
-		views: {
-			default: '/reports/catalog',
-			catalog: '/reports/catalog',
-			table: '/reports/table'
-		},
-		featureFlag: 'useReport'
-	},
 	// Implementation planning
 	{
 		key: 'measures',
@@ -170,8 +156,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/measures/status',
 			catalog: '/measures/catalog',
 			status: '/measures/status',
-			table: '/measures/table',
-			monitoring: '/measures/monitoring'
+			table: '/measures/table'
 		}
 	},
 	{
@@ -211,6 +196,17 @@ export const workspaces: WorkspaceDefinition[] = [
 			table: '/indicators/table'
 		},
 		boardFlag: 'board.indicators'
+	},
+	{
+		key: 'reports',
+		i18nKey: 'workspace.type.reports',
+		helperI18nKey: 'workspace.helper.reports',
+		icon: Chapter,
+		module: 'effect_measurement',
+		views: {
+			default: '/reports/catalog',
+			catalog: '/reports/catalog'
+		}
 	},
 	{
 		key: 'objectives-and-effects',
@@ -285,13 +281,11 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: Gavel,
 		module: 'rules',
 		views: {
-			default: '/rules/status',
-			catalog: '/rules/catalog',
-			status: '/rules/status',
-			table: '/rules/table'
+			default: '/rules/catalog',
+			catalog: '/rules/catalog'
 		}
 	},
-	// Organizing (always visible)
+	// Organizing
 	{
 		key: 'pages',
 		i18nKey: 'workspace.type.pages',
@@ -299,10 +293,9 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: LandingPage,
 		module: 'organizing',
 		views: {
-			default: '/all/page',
-			page: '/all/page'
-		},
-		alwaysVisible: true
+			default: '/pages/catalog',
+			catalog: '/pages/catalog'
+		}
 	},
 	{
 		key: 'templates',
@@ -313,8 +306,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/templates',
 			catalog: '/templates'
-		},
-		alwaysVisible: true
+		}
 	},
 	{
 		key: 'categories',
@@ -325,9 +317,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/categories',
 			level: '/categories'
-		},
-		featureFlag: 'useCustomCategories',
-		alwaysVisible: true
+		}
 	},
 	{
 		key: 'overview',
@@ -336,13 +326,12 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: Objects,
 		module: 'organizing',
 		views: {
-			default: '/all/level',
+			default: '/all/catalog',
 			catalog: '/all/catalog',
 			level: '/all/level',
 			page: '/all/page',
 			table: '/all/table'
-		},
-		alwaysVisible: true
+		}
 	}
 ];
 
@@ -362,14 +351,15 @@ interface VisibilityContext {
  * Returns the workspaces that should be shown for the given organization context.
  *
  * Visibility rules:
- * - `alwaysVisible` workspaces are always shown (subject to feature flag).
  * - Workspaces with a `featureFlag` are hidden when the flag is off.
  * - Workspaces with a `boardFlag` are hidden when the board is not enabled
  *   on the organization or organizational unit.
- * - When `organization.payload.visibleWorkspaces` is empty, all remaining
- *   workspaces are visible (default for organizations without explicit choice).
- * - When `organization.payload.visibleWorkspaces` is populated, only the
- *   listed workspace keys are visible (in addition to `alwaysVisible`).
+ * - When the organizational unit has a non-empty `visibleWorkspaces`, it takes
+ *   precedence over the organization's setting (suborg admins can override).
+ * - Otherwise the organization's `visibleWorkspaces` applies; when also empty,
+ *   all remaining workspaces are visible (default without explicit choice).
+ * - When `visibleWorkspaces` is populated, only the listed workspace keys are
+ *   visible.
  * - `hasPermission` provides an extra hook for permission-based filtering
  *   (e.g. categories require `mayCreateContainer` permission).
  */
@@ -377,7 +367,9 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 	const { organization, organizationalUnit, features, hasPermission } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const enabledBoards = new Set(selectedContext.payload.boards);
-	const explicit = organization.payload.visibleWorkspaces ?? [];
+	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
+	const explicit =
+		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
 	const explicitSet = new Set(explicit);
 
 	return workspaces.filter((workspace) => {
@@ -389,9 +381,6 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		}
 		if (hasPermission && !hasPermission(workspace.key)) {
 			return false;
-		}
-		if (workspace.alwaysVisible) {
-			return true;
 		}
 		if (explicitSet.size === 0) {
 			return true;

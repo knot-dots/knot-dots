@@ -1,6 +1,6 @@
 import Keycloak from '@auth/core/providers/keycloak';
 import { SvelteKitAuth } from '@auth/sveltekit';
-import { redirect } from '@sveltejs/kit';
+import { type Handle, redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
@@ -20,96 +20,102 @@ import { withLogger } from '$lib/server/logger';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
-const { handle: withAuthentication } = SvelteKitAuth({
-	callbacks: {
-		async jwt({ token, account }) {
-			if (account?.access_token) {
-				// decode without validating
-				const {
-					family_name,
-					given_name,
-					realm_access,
-					sub
-				}: {
-					family_name: string;
-					given_name: string;
-					realm_access: { roles: string[] };
-					sub: string;
-				} = JSON.parse(Buffer.from(account.access_token.split('.')[1], 'base64').toString());
-				token.roles = realm_access.roles;
-				token.sub = sub;
+
+const withAuthentication: Handle = ({ event, resolve }) => {
+	const { handle } = SvelteKitAuth({
+		callbacks: {
+			async jwt({ token, account }) {
+				if (account?.access_token) {
+					// decode without validating
+					const {
+						family_name,
+						given_name,
+						realm_access,
+						sub
+					}: {
+						family_name: string;
+						given_name: string;
+						realm_access: { roles: string[] };
+						sub: string;
+					} = JSON.parse(Buffer.from(account.access_token.split('.')[1], 'base64').toString());
+					token.roles = realm_access.roles;
+					token.sub = sub;
+					const pool = await getPool();
+					await pool.connect(
+						createOrUpdateUser(
+							{
+								family_name: family_name,
+								given_name: given_name,
+								guid: sub,
+								realm: env.PUBLIC_KC_REALM ?? '',
+								settings: {}
+							},
+							true
+						)
+					);
+				}
+				return token;
+			},
+			async session({ session, token }) {
 				const pool = await getPool();
-				await pool.connect(
-					createOrUpdateUser(
-						{
-							family_name: family_name,
-							given_name: given_name,
-							guid: sub,
-							realm: env.PUBLIC_KC_REALM ?? '',
-							settings: {}
-						},
-						true
-					)
-				);
+				const [user, containerUserRelations] = await Promise.all([
+					pool.connect(getUser(token.sub as string)),
+					pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
+				]);
+				session.user.adminOf = containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+					.map(({ object }) => object);
+				session.user.collaboratorOf = containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
+					.map(({ object }) => object);
+				session.user.familyName = user.family_name;
+				session.user.givenName = user.given_name;
+				session.user.guid = user.guid;
+				session.user.headOf = containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
+					.map(({ object }) => object);
+				session.user.memberOf = containerUserRelations
+					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+					.map(({ object }) => object);
+				session.user.roles = token.roles as string[];
+				session.user.settings = user.settings;
+				return session;
 			}
-			return token;
 		},
-		async session({ session, token }) {
-			const pool = await getPool();
-			const [user, containerUserRelations] = await Promise.all([
-				pool.connect(getUser(token.sub as string)),
-				pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
-			]);
-			session.user.adminOf = containerUserRelations
-				.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
-				.map(({ object }) => object);
-			session.user.collaboratorOf = containerUserRelations
-				.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
-				.map(({ object }) => object);
-			session.user.familyName = user.family_name;
-			session.user.givenName = user.given_name;
-			session.user.guid = user.guid;
-			session.user.headOf = containerUserRelations
-				.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
-				.map(({ object }) => object);
-			session.user.memberOf = containerUserRelations
-				.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
-				.map(({ object }) => object);
-			session.user.roles = token.roles as string[];
-			session.user.settings = user.settings;
-			return session;
-		}
-	},
-	cookies: {
-		sessionToken: {
-			name: `${useSecureCookies ? '__Secure-' : ''}next-auth.session-token`,
-			options: {
-				domain: `.${baseURL.hostname}`,
-				httpOnly: true,
-				path: '/',
-				sameSite: 'lax',
-				secure: useSecureCookies
+		cookies: {
+			sessionToken: {
+				name: `${useSecureCookies ? '__Secure-' : ''}next-auth.session-token`,
+				options: {
+					domain: event.url.hostname.endsWith(baseURL.hostname)
+						? `.${baseURL.hostname}`
+						: event.url.hostname,
+					httpOnly: true,
+					path: '/',
+					sameSite: 'lax',
+					secure: useSecureCookies
+				}
 			}
-		}
-	},
-	providers: [
-		Keycloak({
-			clientId: env.PUBLIC_KC_CLIENT_ID,
-			clientSecret: privateEnv.KC_CLIENT_SECRET,
-			issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
-			profile(profile) {
-				return {
-					email: profile.email,
-					familyName: profile.family_name,
-					givenName: profile.given_name,
-					id: profile.sub
-				};
-			}
-		})
-	],
-	secret: privateEnv.AUTH_SECRET,
-	trustHost: true
-});
+		},
+		providers: [
+			Keycloak({
+				clientId: env.PUBLIC_KC_CLIENT_ID,
+				clientSecret: privateEnv.KC_CLIENT_SECRET,
+				issuer: `${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}`,
+				profile(profile) {
+					return {
+						email: profile.email,
+						familyName: profile.family_name,
+						givenName: profile.given_name,
+						id: profile.sub
+					};
+				}
+			})
+		],
+		secret: privateEnv.AUTH_SECRET,
+		trustHost: true
+	});
+	return handle({ event, resolve });
+};
 
 export const handle = sequence(
 	withLogger,

@@ -1,6 +1,7 @@
 import {
 	IndicatorTemplateContainer,
-	OrganizationalUnitContainer
+	OrganizationalUnitContainer,
+	visibility
 } from '@knot-dots/app/src/lib/models.ts';
 import assert from 'node:assert';
 import { DatabaseTransactionConnection } from 'slonik';
@@ -152,9 +153,9 @@ const envSchema = z
 				);
 
 				const administrativeAreaBasicDataContainer =
-					await createOrGetAdministrativeAreaBasicDataContainer(tx, ouContainer);
+					await createOrUpdateAdministrativeAreaBasicDataContainer(tx, ouContainer);
 
-				const mapContainer = await createOrGetMapContainer(tx, ouContainer);
+				const mapContainer = await createOrUpdateMapContainer(tx, ouContainer);
 
 				let demographicDataContainer = await createOrUpdateDemographicDataContainer(
 					tx,
@@ -245,7 +246,9 @@ async function createOrUpdateOrganizationalUnitContainer(
 			officialMunicipalityKey: region.official_municipality_key,
 			officialRegionalCode: region.official_regional_code,
 			organizationalUnitType: 'organizational_unit_type.administrative_area',
-			type: 'organizational_unit'
+			type: 'organizational_unit',
+			visibility: visibility.enum.public,
+			visibleWorkspaces: ['indicators']
 		},
 		realm,
 		user: [{ predicate: 'is-creator-of', subject: user }]
@@ -282,59 +285,97 @@ async function createOrUpdateOrganizationalUnitContainer(
 	return result as OrganizationalUnitContainer;
 }
 
-async function createOrGetAdministrativeAreaBasicDataContainer(
+async function createOrUpdateAdministrativeAreaBasicDataContainer(
 	tx: DatabaseTransactionConnection,
 	ouContainer: OrganizationalUnitContainer
 ) {
+	const newAdministrativeAreaBasicDataContainer = administrativeAreaBasicDataContainer.parse({
+		managed_by: ouContainer.guid,
+		organization: ouContainer.organization,
+		organizational_unit: ouContainer.guid,
+		payload: {
+			type: 'administrative_area_basic_data',
+			title: 'Basisinformationen',
+			visibility: visibility.enum.public
+		},
+		realm: ouContainer.realm,
+		user: ouContainer.user
+	});
+
 	const foundAdministrativeAreaBasicDataContainer = await getContainer({
 		organization: ouContainer.organization,
 		organizationalUnit: ouContainer.guid,
 		payload: { type: 'administrative_area_basic_data' }
 	})(tx);
 
+	let result;
+
 	if (foundAdministrativeAreaBasicDataContainer) {
-		return foundAdministrativeAreaBasicDataContainer;
+		if (
+			!isSame(
+				foundAdministrativeAreaBasicDataContainer.payload,
+				newAdministrativeAreaBasicDataContainer.payload
+			)
+		) {
+			result = await updateContainer({
+				...foundAdministrativeAreaBasicDataContainer,
+				payload: {
+					...newAdministrativeAreaBasicDataContainer.payload
+				}
+			})(tx);
+			console.log(`Updated basic data for ${ouContainer.payload.name} (${result.guid})`);
+		} else {
+			result = foundAdministrativeAreaBasicDataContainer;
+			console.log(`Ignored basic data for ${ouContainer.payload.name} (${result.guid})`);
+		}
+	} else {
+		result = await createContainer(newAdministrativeAreaBasicDataContainer)(tx);
+		console.log(`Created basic data for ${ouContainer.payload.name} (${result.guid})`);
 	}
 
-	return await createContainer(
-		administrativeAreaBasicDataContainer.parse({
-			managed_by: ouContainer.guid,
-			organization: ouContainer.organization,
-			organizational_unit: ouContainer.guid,
-			payload: {
-				type: 'administrative_area_basic_data',
-				title: 'Basisinformationen'
-			},
-			realm: ouContainer.realm,
-			user: ouContainer.user
-		})
-	)(tx);
+	return result;
 }
 
-async function createOrGetMapContainer(
+async function createOrUpdateMapContainer(
 	tx: DatabaseTransactionConnection,
 	ouContainer: OrganizationalUnitContainer
 ) {
+	const newMapContainer = mapContainer.parse({
+		managed_by: ouContainer.guid,
+		organization: ouContainer.organization,
+		organizational_unit: ouContainer.guid,
+		payload: { type: 'map', title: 'Gebietsgrenze', visibility: visibility.enum.public },
+		realm: ouContainer.realm,
+		user: ouContainer.user
+	});
+
 	const foundMapContainer = await getContainer({
 		organization: ouContainer.organization,
 		organizationalUnit: ouContainer.guid,
 		payload: { type: 'map' }
 	})(tx);
 
+	let result;
+
 	if (foundMapContainer) {
-		return foundMapContainer;
+		if (!isSame(foundMapContainer.payload, newMapContainer.payload)) {
+			result = await updateContainer({
+				...foundMapContainer,
+				payload: {
+					...newMapContainer.payload
+				}
+			})(tx);
+			console.log(`Updated map for ${ouContainer.payload.name} (${result.guid})`);
+		} else {
+			result = foundMapContainer;
+			console.log(`Ignored mapa for ${ouContainer.payload.name} (${result.guid})`);
+		}
+	} else {
+		result = await createContainer(newMapContainer)(tx);
+		console.log(`Created map for ${ouContainer.payload.name} (${result.guid})`);
 	}
 
-	return await createContainer(
-		mapContainer.parse({
-			managed_by: ouContainer.guid,
-			organization: ouContainer.organization,
-			organizational_unit: ouContainer.guid,
-			payload: { type: 'map', title: 'Gebietsgrenze' },
-			realm: ouContainer.realm,
-			user: ouContainer.user
-		})
-	)(tx);
+	return result;
 }
 
 async function createOrUpdateDemographicDataContainer(
@@ -347,7 +388,8 @@ async function createOrUpdateDemographicDataContainer(
 		organizational_unit: ouContainer.guid,
 		payload: {
 			title: 'Basisindikatoren',
-			type: 'demographic_data'
+			type: 'demographic_data',
+			visibility: visibility.enum.public
 		},
 		realm: ouContainer.realm,
 		user: ouContainer.user
@@ -396,7 +438,8 @@ async function createOrUpdateReportCollectionContainer(
 		payload: {
 			type: 'custom_collection',
 			item: reports,
-			title: reportCollectionTitle
+			title: reportCollectionTitle,
+			visibility: visibility.enum.public
 		},
 		realm: ouContainer.realm,
 		user: ouContainer.user
@@ -472,7 +515,8 @@ async function createOrUpdateActualDataContainers(
 					indicator: indicatorTemplate.guid,
 					source: 'Wegweiser Kommune',
 					title: indicatorTemplate.payload.title,
-					values: data.actual_values.filter(([, value]) => value !== null)
+					values: data.actual_values.filter(([, value]) => value !== null),
+					visibility: visibility.enum.public
 				},
 				realm: ouContainer.realm,
 				user: ouContainer.user

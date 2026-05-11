@@ -11,28 +11,38 @@
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import { getCategoryKeys } from '$lib/categoryOptions';
-	import { getToastContext } from '$lib/contexts/toast';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type Container,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		containerOfType,
-		payloadTypes
+		payloadTypes,
+		isBinaryIndicatorContainer
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { ability, lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	let uploadedContainers: Container[] = $state([]);
+
 	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			[
+				...data.containers,
+				...uploadedContainers.filter((c) => !data.containers.some((d) => d.guid === c.guid))
+			],
+			$lastCreatedContainer,
+			$lastUpdatedContainers
+		)
 	);
 
 	let toast = getToastContext();
@@ -71,12 +81,8 @@
 
 	let actualDataContainers = $derived(containers.filter(isActualDataContainer));
 
-	let filteredRows = $derived(
-		containers.filter(
-			(c) =>
-				isIndicatorTemplateContainer(c) &&
-				actualDataContainers.some(({ payload }) => payload.indicator === c.guid)
-		)
+	let rows = $derived(
+		containers.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
 	);
 
 	let allYears = $derived(
@@ -89,22 +95,13 @@
 		allYears.map((year) => ({ heading: String(year), key: `year:${year}` }))
 	);
 
-	const featureDecisions = $derived(createFeatureDecisions(page.data.features ?? []));
-
-	const legacyCategoryColumns = [
-		{ heading: $_('topic'), key: 'topic' },
-		{ heading: $_('category'), key: 'sdg' },
-		{ heading: $_('policy_field_bnk'), key: 'policyFieldBNK' },
-		{ heading: $_('audience'), key: 'audience' }
-	];
-
 	const customCategoryColumns = $derived(
-		featureDecisions.useCustomCategories() && data.categoryOptions
-			? getCategoryKeys(data.categoryOptions).map((key) => ({
-					heading: data.categoryOptions?.__categoryLabels__?.[key] ?? key,
-					key
-				}))
-			: null
+		page.data.categoryContext.keys
+			.filter((key) => data.facets.has(key))
+			.map((key) => ({
+				heading: page.data.categoryContext.labels.get(key) ?? key,
+				key
+			}))
 	);
 
 	const columns = $derived([
@@ -113,7 +110,7 @@
 		{ heading: $_('visibility.label'), key: 'visibility' },
 		{ heading: $_('indicator_category'), key: 'indicatorCategory' },
 		{ heading: $_('indicator_type'), key: 'indicatorType' },
-		...(customCategoryColumns ?? legacyCategoryColumns),
+		...customCategoryColumns,
 		{ heading: $_('editorial_state'), key: 'editorialState' },
 		{ heading: $_('organizational_unit'), key: 'organizationalUnit' },
 		{ heading: $_('label.unit'), key: 'unit' },
@@ -126,7 +123,7 @@
 				(ou: { guid: string; payload: { name: string } }) => [ou.guid, ou.payload.name]
 			)
 		);
-		const csv = generateIndicatorCsv(filteredRows, allYears, orgUnits, actualDataContainers);
+		const csv = generateIndicatorCsv(rows, allYears, orgUnits, actualDataContainers);
 		downloadCsv(csv, 'indicators.csv');
 	}
 
@@ -179,7 +176,9 @@
 		});
 
 		instance.on('upload-success', (file, response) => {
-			const body = response?.body as { success?: boolean; errors?: string[] } | undefined;
+			const body = response?.body as
+				| { success?: boolean; errors?: string[]; containers?: Container[] }
+				| undefined;
 			if (body?.success) {
 				uploadErrors = [];
 				uploadDialog.close();
@@ -188,6 +187,9 @@
 					heading: $_('indicator_csv.upload'),
 					message: $_('indicator_csv.upload_success')
 				});
+				if (body.containers?.length) {
+					uploadedContainers = [...uploadedContainers, ...body.containers];
+				}
 				void invalidateAll();
 			} else if (body?.errors) {
 				uploadErrors = body.errors;
@@ -226,11 +228,7 @@
 			</button>
 		{/if}
 	{/snippet}
-	<Table
-		categoryOptions={featureDecisions.useCustomCategories() ? data.categoryOptions : undefined}
-		{columns}
-		rows={data.containers.filter((c) => isIndicatorTemplateContainer(c))}
-	/>
+	<Table {actualDataContainers} {columns} {rows} />
 	<Help slug="indicators-table" />
 </IndicatorsPage>
 

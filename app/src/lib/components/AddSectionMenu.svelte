@@ -41,6 +41,7 @@
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
+		isHelpContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
@@ -220,12 +221,11 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(
-		createFeatureDecisions(page.data.features).useChapter() && isReportContainer(parentContainer)
-	);
+	let mayAddChapter = $derived(isReportContainer(parentContainer));
 
 	let mayAddCustomCollection = $derived(
-		isOrganizationContainer(parentContainer) ||
+		isHelpContainer(parentContainer) ||
+			isOrganizationContainer(parentContainer) ||
 			isOrganizationalUnitContainer(parentContainer) ||
 			isPageContainer(parentContainer) ||
 			isReportContainer(parentContainer)

@@ -9,6 +9,7 @@
 	import { paramsFromFragment, payloadTypes, type ProgramContainer } from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
+	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
 		container: ProgramContainer;
@@ -18,13 +19,12 @@
 
 	let isThinking = $state(false);
 
-	let params = $derived({
-		audience: paramsFromFragment(page.url).getAll('audience'),
-		sdg: paramsFromFragment(page.url).getAll('sdg'),
-		policyFieldBNK: paramsFromFragment(page.url).getAll('policyFieldBNK'),
-		terms: paramsFromFragment(page.url).get('terms') ?? '',
-		topic: paramsFromFragment(page.url).getAll('topic')
-	});
+	let params = $derived(
+		extractCustomCategoryFiltersFromParams(
+			paramsFromFragment(page.url),
+			page.data.categoryContext.keys
+		)
+	);
 
 	let toast = getToastContext();
 

@@ -9,7 +9,6 @@
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { type AnyContainer, type TeaserContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
 
 	interface Props {
 		container: TeaserContainer;
@@ -56,8 +55,6 @@
 			label={$_('teaser.link_caption')}
 			bind:value={container.payload.linkCaption}
 		/>
-
-		<EditableAudience {editable} bind:value={container.payload.audience} />
 
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:container {relatedContainers} />

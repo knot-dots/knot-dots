@@ -140,7 +140,7 @@ services:
       - ./db/.env
       - ./app/.env
     environment:
-      - INDEXING_WORKER_POLL_INTERVAL_MS=2000
+      - INDEXING_WORKER_POLL_INTERVAL_MS=200
       - DE_LABELS_PATH=/opt/labels/de.json
       - ROARR_LOG=true
     volumes:

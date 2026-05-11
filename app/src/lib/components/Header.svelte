@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
 	import { getContext, untrack } from 'svelte';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
+	import Bars from '~icons/flowbite/bars-outline';
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
@@ -15,7 +15,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
-	import type { CategoryOptions } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
@@ -39,8 +38,7 @@
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
-	import WorkspacesMenu from '$lib/components/WorkspacesMenu.svelte';
-
+	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -49,6 +47,7 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPageContainer,
 		isProgramContainer,
 		isReportContainer,
 		isSimpleMeasureContainer,
@@ -59,19 +58,8 @@
 	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
-	type FilterOption = {
-		count: number;
-		label: string;
-		value: string;
-		guid?: string;
-		icon?: string;
-		subOptions?: FilterOption[];
-	};
-
 	interface Props {
 		facets?: Map<string, Map<string, number>>;
-		facetLabels?: Map<string, string>;
-		categoryOptions?: CategoryOptions | null;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
 		sortOptions?: [string, string][];
@@ -80,18 +68,19 @@
 
 	let {
 		facets = new Map(),
-		facetLabels = new Map(),
 		filterBarInitiallyOpen = false,
 		search = false,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions,
-		categoryOptions = null
+		workspaceOptions
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
+
+	let mobileMenu: { open: boolean; toggle: () => void; close: () => void } =
+		getContext('mobileMenu');
 
 	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
 
@@ -113,6 +102,17 @@
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
+
+	let isOnPage = $derived.by(() => {
+		const segments = page.url.pathname.split('/');
+		const pathWithoutContext =
+			segments.length > 1 && segments[1] === selectedContext?.guid
+				? '/' + segments.slice(2).join('/')
+				: page.url.pathname;
+		return (
+			pathWithoutContext === '/all/page' || pathWithoutContext === '/' || pathWithoutContext === ''
+		);
+	});
 
 	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
 
@@ -143,16 +143,20 @@
 		) > -1
 	);
 
+	let facetLabels = $derived(page.data.categoryContext.labels);
+
+	let categoryOptions = $derived(page.data.categoryContext.options);
+
 	function applySort() {
 		if (overlay) {
-			const query = new SvelteURLSearchParams(page.url.hash.substring(1));
+			const query = new URLSearchParams(page.url.hash.substring(1));
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new SvelteURLSearchParams(page.url.searchParams);
+			const query = new URLSearchParams(page.url.searchParams);
 			query.delete('sort');
 			if (selectedSort != 'alpha') {
 				query.append('sort', selectedSort);
@@ -169,7 +173,7 @@
 			}
 			goto(`#${query.toString()}`, { keepFocus: true });
 		} else {
-			const query = new SvelteURLSearchParams(page.url.searchParams);
+			const query = new URLSearchParams(page.url.searchParams);
 			for (const key of facets.keys()) {
 				query.delete(key);
 			}
@@ -201,7 +205,18 @@
 </script>
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
-<header data-sveltekit-preload-data="hover" role="banner">
+<header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
+	{#if mobileMenu}
+		<button
+			class="mobile-menu-button"
+			type="button"
+			onclick={() => mobileMenu.toggle()}
+			aria-label={$_('menu')}
+		>
+			<Bars />
+		</button>
+	{/if}
+
 	{#if overlay}
 		<OverlayCloseButton />
 		<OverlayFullscreenToggle />
@@ -221,17 +236,11 @@
 			<MeasureWorkspaces {container} />
 		{:else if isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()}
 			<GoalWorkspaces {container} />
-		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-			{#if createFeatureDecisions(page.data.features).useMegaMenu()}
-				<WorkspacesMegaMenu />
-			{:else}
-				<WorkspacesMenu />
-			{/if}
+		{:else if isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || isPageContainer(container)}
+			<WorkspacesMegaMenu />
 		{/if}
-	{:else if createFeatureDecisions(page.data.features).useMegaMenu()}
-		<WorkspacesMegaMenu />
 	{:else}
-		<WorkspacesMenu />
+		<WorkspacesMegaMenu />
 	{/if}
 
 	<div class="actions">
@@ -296,7 +305,7 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)) && createFeatureDecisions(page.data.features).useMegaMenu()}
+	{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
 		<div class="commands-leading">
 			<ViewSelect />
 		</div>
@@ -365,34 +374,30 @@
 
 				{#each facets.entries() as [key, foci] (key)}
 					{@const labelOverride = facetLabels.get(key)}
-					{@const categoryOptionList = categoryOptions?.[key]}
-					{@const options = (
-						categoryOptionList
-							? categoryOptionList.map((option) => ({
-									...option,
-									count:
-										foci.get(option.value) ??
-										(option.guid ? foci.get(option.guid) : undefined) ??
-										0,
-									subOptions: option.subOptions?.map((sub) => ({
-										...sub,
-										count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
-									}))
+					{@const categoryOptionList = categoryOptions[key]}
+					{@const options = categoryOptionList
+						? categoryOptionList.map((option) => ({
+								...option,
+								count:
+									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+								subOptions: option.subOptions?.map((sub) => ({
+									...sub,
+									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
 								}))
-							: [...foci.entries()]
-									.map(([k, v]) => ({
-										count: v,
-										label: facetLabels.get(k) ?? $_(k),
-										value: k,
-										subOptions: undefined
-									}))
-									.toSorted((a, b) =>
-										a.label.localeCompare(b.label, undefined, {
-											numeric: true,
-											sensitivity: 'base'
-										})
-									)
-					) as FilterOption[]}
+							}))
+						: [...foci.entries()]
+								.map(([k, v]) => ({
+									count: v,
+									label: facetLabels.get(k) ?? $_(k),
+									value: k,
+									subOptions: undefined
+								}))
+								.toSorted((a, b) =>
+									a.label.localeCompare(b.label, undefined, {
+										numeric: true,
+										sensitivity: 'base'
+									})
+								)}
 					{#if key === 'assignee'}
 						<AssigneeFilterDropDown {options} />
 					{:else if key === 'included'}
@@ -401,7 +406,7 @@
 						<RelationTypeFilterDropDown {options} />
 					{:else if key === 'member'}
 						<MemberFilterDropDown {options} />
-					{:else if options.some(({ count, subOptions }: FilterOption) => (count ?? 0) > 0 || subOptions?.some((s: FilterOption) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
+					{:else if options.some(({ count, subOptions }) => (count ?? 0) > 0 || subOptions?.some((s) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 						<FilterDropDown {key} {options} label={labelOverride} />
 					{/if}
 				{/each}
@@ -583,6 +588,27 @@
 			.is-visually-hidden.is-visually-hidden--mobile-only {
 				all: revert-layer;
 			}
+		}
+	}
+
+	.mobile-menu-button {
+		align-items: center;
+		border: none;
+		border-radius: 8px;
+		display: none;
+		height: 2rem;
+		justify-content: center;
+		padding: 0.5rem;
+		width: 2rem;
+	}
+
+	.mobile-menu-button:hover {
+		background-color: var(--color-gray-100);
+	}
+
+	@media (max-width: 480px) {
+		.mobile-menu-button {
+			display: inline-flex;
 		}
 	}
 </style>

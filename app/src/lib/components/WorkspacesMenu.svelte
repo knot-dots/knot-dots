@@ -56,13 +56,9 @@
 			level: '/knowledge/level',
 			table: '/knowledge/table'
 		},
-		...(featureDecisions.useCustomCategories()
-			? {
-					categories: {
-						level: '/categories'
-					}
-				}
-			: undefined),
+		categories: {
+			level: '/categories'
+		},
 		measures: {
 			catalog: '/measures/catalog',
 			monitoring: '/measures/monitoring',
@@ -127,7 +123,7 @@
 		level: {
 			all: '/all/level',
 			knowledge: '/knowledge/level',
-			...(featureDecisions.useCustomCategories() ? { categories: '/categories' } : undefined),
+			categories: '/categories',
 			goals: '/goals/level',
 			'objectives-and-effects': '/objectives-and-effects',
 			programs: '/programs/level'
@@ -232,7 +228,7 @@
 		...($mayCreateContainer(
 			payloadTypes.enum.category,
 			(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
-		) && featureDecisions.useCustomCategories()
+		)
 			? [
 					{
 						exists: true,

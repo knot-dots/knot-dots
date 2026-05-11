@@ -3,6 +3,8 @@
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import InfoCircle from '~icons/flowbite/info-circle-solid';
+	import { page } from '$app/state';
+	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
@@ -15,9 +17,8 @@
 		indicatorTypes,
 		isEffectContainer,
 		type MeasureContainer,
-		sustainableDevelopmentGoals
+		payloadTypes
 	} from '$lib/models';
-	import { page } from '$app/state';
 
 	interface Props {
 		onSelect: (container: IndicatorTemplateContainer) => void;
@@ -27,8 +28,12 @@
 
 	let { onSelect, target, value }: Props = $props();
 
-	let filter = $state({
-		sdg: [],
+	const categoryContext = $derived(
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+	);
+
+	let filter = $state<Record<string, string[]>>({
+		...Object.fromEntries(categoryContext.keys.map((k) => [k, []])),
 		indicatorCategory: [],
 		indicatorType: []
 	});
@@ -57,7 +62,7 @@
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
-			['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
+			...buildCategoryFacetsWithCounts(categoryContext.options),
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
 			['indicatorTypes', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
 		]);
@@ -66,7 +71,7 @@
 	});
 </script>
 
-<SearchToolbar bind:filter bind:terms {facets}>
+<SearchToolbar bind:filter bind:terms {categoryContext} {facets}>
 	{#snippet extraPrimaryContent()}
 		<span class="prompt">
 			<InfoCircle />

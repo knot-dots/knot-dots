@@ -1,12 +1,10 @@
 import { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
 import {
 	buildCategoryFacetsWithCounts,
 	type CategoryContext,
 	filterCategoryContext
 } from '$lib/categoryOptions';
 import {
-	computeFacetCount,
 	filterOrganizationalUnits,
 	fromCounts,
 	isResourceDataContainer,
@@ -15,7 +13,7 @@ import {
 	resourceUnits,
 	type ResourceV2Container
 } from '$lib/models';
-import { getAllContainersRelatedToProgram, getManyContainers } from '$lib/server/db';
+import { getAllContainersRelatedToProgram } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { DatabasePool } from 'slonik';
@@ -28,7 +26,6 @@ export async function fetchResources({
 	pool,
 	scope,
 	programGuid,
-	features,
 	customCategories,
 	resourceCategoryFilters,
 	sort,
@@ -37,43 +34,24 @@ export async function fetchResources({
 	pool: DatabasePool;
 	scope: string[];
 	programGuid?: string;
-	features: ReturnType<typeof createFeatureDecisions>;
 	customCategories: Record<string, string[]>;
 	resourceCategoryFilters: string[];
 	sort: 'alpha' | 'modified' | 'priority';
-	categoryContext?: CategoryContext;
+	categoryContext: CategoryContext;
 }) {
 	// Fetch all resource containers
-	let resourceContainers: ResourceV2Container[];
-	let data: Record<string, Record<string, number>> | undefined;
-
-	if (features.useElasticsearch()) {
-		const esResult = await getManyContainersWithES(
-			scope,
-			{
-				customCategories,
-				resourceCategories: resourceCategoryFilters,
-				type: [payloadTypes.enum.resource_v2]
-			},
-			sort,
-			undefined,
-			{ customCategoryKeys: categoryContext?.keys ?? [], includeFacets: true }
-		);
-		resourceContainers = esResult.containers as ResourceV2Container[];
-		data = esResult.facets;
-	} else {
-		resourceContainers = (await pool.connect(
-			getManyContainers(
-				scope,
-				{
-					customCategories,
-					resourceCategories: resourceCategoryFilters,
-					type: [payloadTypes.enum.resource_v2]
-				},
-				sort
-			)
-		)) as ResourceV2Container[];
-	}
+	const esResult = await getManyContainersWithES(
+		scope,
+		{
+			customCategories,
+			resourceCategories: resourceCategoryFilters,
+			type: [payloadTypes.enum.resource_v2]
+		},
+		sort,
+		{ customCategoryKeys: categoryContext.keys, includeFacets: true }
+	);
+	let resourceContainers = esResult.containers as ResourceV2Container[];
+	const data = esResult.facets;
 
 	// Filter by program if specified
 	if (programGuid) {
@@ -110,15 +88,10 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			currentOrganization,
 			currentOrganizationalUnit
 		} = await parent();
-		const features = createFeatureDecisions(locals.features);
-		const categoryContext = rawCategoryContext
-			? filterCategoryContext(rawCategoryContext, [payloadTypes.enum.resource_v2])
-			: null;
+		const categoryContext = rawCategoryContext;
+		filterCategoryContext(rawCategoryContext, [payloadTypes.enum.resource_v2]);
 
-		const customCategories = features.useCustomCategories()
-			? extractCustomCategoryFilters(url, categoryContext?.keys ?? [])
-			: {};
-
+		const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 		const scope = currentOrganization.payload.default ? [] : [currentOrganization.guid];
 		const programGuid = url.searchParams.get('program') ?? undefined;
 
@@ -126,11 +99,10 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			pool: locals.pool,
 			scope,
 			programGuid,
-			features,
 			customCategories,
 			resourceCategoryFilters: url.searchParams.getAll('resourceCategory'),
 			sort: (url.searchParams.get('sort') ?? defaultSort) as 'alpha' | 'modified' | 'priority',
-			...(categoryContext && { categoryContext })
+			categoryContext
 		});
 
 		const containers = filterOrganizationalUnits(
@@ -151,7 +123,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			['resourceUnit', fromCounts(resourceUnits.options as string[], facetData?.resourceUnit)]
 		]);
 
-		if (features.useCustomCategories() && categoryContext) {
+		if (categoryContext) {
 			const customFacets = buildCategoryFacetsWithCounts(
 				categoryContext.options,
 				facetData ? Object.fromEntries(Object.entries(facetData)) : {}
@@ -161,17 +133,11 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			}
 		}
 
-		const facets = features.useElasticsearch()
-			? _facets
-			: computeFacetCount(_facets, containers, {
-					useCategoryPayload: features.useCustomCategories()
-				});
+		const facets = _facets;
 
 		return {
 			containers,
-			facets,
-			facetLabels: categoryContext?.labels,
-			categoryOptions: categoryContext?.options
+			facets
 		};
 	}) satisfies PageServerLoad;
 }

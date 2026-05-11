@@ -9,6 +9,7 @@
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import AddItemMenu from '$lib/components/AddItemMenu.svelte';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
@@ -17,12 +18,12 @@
 	import CustomCollectionPicker from '$lib/components/CustomCollectionPicker.svelte';
 	import CustomCollectionSettingsDropdown from '$lib/components/CustomCollectionSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
 		actualDataContainer,
@@ -35,6 +36,7 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import {
 		ability,
 		addItemState,
@@ -42,8 +44,6 @@
 		mayCreateContainer,
 		newContainer
 	} from '$lib/stores';
-
-	const MAX_ITEMS_PER_PAGE = 50;
 
 	const sortOptions = [
 		{ value: 'modified', label: $_('sort_modified') },
@@ -81,9 +81,9 @@
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
-		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.page,
 		payloadTypes.enum.program,
-		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
 		payloadTypes.enum.task
 	]);
@@ -91,8 +91,6 @@
 	let localTerms = $state('');
 
 	let localSort = $derived(container.payload.sort);
-
-	let visibleCount = $state(MAX_ITEMS_PER_PAGE);
 
 	const idForTitle = crypto.randomUUID();
 
@@ -108,6 +106,44 @@
 		}
 	});
 
+	// Accumulated items across all loaded pages
+	let savedItems = $state<AnyContainer[]>([]);
+	let savedTotal = $state<number | null>(null);
+	let savedHasMore = $state(false);
+	let savedNextOffset = $state<number | null>(null);
+	let savedLoadingMore = $state(false);
+	let savedLoadAbortController: AbortController | undefined;
+
+	function buildSavedQuery(
+		item: string[],
+		filter: typeof container.payload.filter,
+		terms: string,
+		searchTerms: string,
+		sort: string
+	) {
+		const type = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
+		const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
+		const activeFilters = Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0);
+
+		if (item.length === 0 && activeFilters === 0) return null;
+
+		const query = new URLSearchParams();
+		if (item.length > 0) {
+			for (const guid of item) query.append('guid', guid);
+		} else {
+			for (const t of type) query.append('payloadType', t);
+			query.append('organization', page.data.currentOrganization.guid);
+			for (const key in filter) {
+				for (const value of filter[key]) {
+					query.append(key, value);
+				}
+			}
+		}
+		if (combinedTerms) query.set('terms', combinedTerms);
+		query.set('sort', sort);
+		return query;
+	}
+
 	const savedResource = resource(
 		[
 			() => container.payload.item,
@@ -117,34 +153,88 @@
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewportOnce
 		],
-		async ([item, filter, terms, searchTerms, sort], _, { signal }) => {
-			const type = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
-			const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
+		async ([item, filter, terms, searchTerms, sort, inViewportOnce], _, { signal }) => {
+			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
-			const activeFilters = Object.values(filter).reduce(
-				(acc, v) => acc + (v.length > 0 ? 1 : 0),
-				0
-			);
+			const query = buildSavedQuery(item, filter, terms, searchTerms, sort);
+			if (!query) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
-			return item.length > 0 || activeFilters > 0
-				? fetchContainers(
-						{
-							...(item.length > 0
-								? { guid: item, terms: combinedTerms }
-								: {
-										...filter,
-										organization: [page.data.currentOrganization.guid],
-										payloadType: type,
-										terms: combinedTerms
-									})
-						},
-						sort,
-						{ signal }
-					)
-				: [];
+			const result = await fetchContainerPage({
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset: 0,
+				query,
+				signal
+			});
+			return {
+				containers: result.containers,
+				hasMore: result.page.hasMore,
+				nextOffset: result.page.nextOffset,
+				total: result.page.total
+			};
 		},
 		{ lazy: true }
 	);
+
+	$effect(() => {
+		const result = savedResource.current;
+		if (result) {
+			savedItems = result.containers;
+			savedTotal = result.total;
+			savedHasMore = result.hasMore;
+			savedNextOffset = result.nextOffset;
+		}
+	});
+
+	async function loadMoreSaved() {
+		if (savedLoadingMore || !savedHasMore || savedNextOffset === null) return;
+
+		savedLoadAbortController?.abort();
+		const controller = new AbortController();
+		savedLoadAbortController = controller;
+		savedLoadingMore = true;
+
+		try {
+			const item = container.payload.item;
+			const filter = $state.snapshot(container.payload.filter);
+			const terms = container.payload.terms;
+			const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';
+			const sort = container.payload.allowSort ? localSort : container.payload.sort;
+
+			const query = buildSavedQuery(item, filter, terms, searchTerms, sort);
+			if (!query) return;
+
+			const result = await fetchContainerPage({
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset: savedNextOffset,
+				query,
+				signal: controller.signal
+			});
+
+			if (controller.signal.aborted || savedLoadAbortController !== controller) return;
+
+			savedItems = [...savedItems, ...result.containers];
+			savedHasMore = result.page.hasMore;
+			savedNextOffset = result.page.nextOffset;
+		} catch (error) {
+			if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
+		} finally {
+			if (!controller.signal.aborted && savedLoadAbortController === controller) {
+				savedLoadingMore = false;
+			}
+		}
+	}
+
+	let items = $derived.by(() => {
+		if (container.payload.item.length > 0 && !container.payload.allowSort) {
+			// Preserve the manually-defined order
+			return container.payload.item
+				.map((guid) => savedItems.find((item) => item.guid === guid))
+				.filter((item): item is AnyContainer => item !== undefined);
+		}
+		return savedItems;
+	});
 
 	const templateResource = resource(
 		[() => container.payload.newItemTemplate, () => inViewportOnce],
@@ -179,24 +269,6 @@
 		);
 		return z.array(actualDataContainer).parse(response);
 	});
-
-	let items = $derived.by(() => {
-		if (container.payload.item.length > 0) {
-			if (container.payload.allowSort) {
-				const selectedSet = new Set(container.payload.item);
-				return (savedResource.current ?? []).filter(({ guid }) => selectedSet.has(guid));
-			}
-			return container.payload.item
-				.map((item) => savedResource.current?.find(({ guid }) => guid === item))
-				.filter((item): item is AnyContainer => item !== undefined);
-		} else {
-			return savedResource.current ?? [];
-		}
-	});
-
-	let visibleItems = $derived(items.slice(0, visibleCount));
-
-	let hasMoreItems = $derived(items.length > visibleCount);
 
 	let isRuleBasedCollection = $derived(
 		container.payload.item.length == 0 &&
@@ -241,7 +313,7 @@
 	);
 
 	let indicatorGuids = $derived(
-		visibleItems.filter(isIndicatorTemplateContainer).map((item) => item.guid)
+		items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
 	);
 
 	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
@@ -345,8 +417,8 @@
 		{:else}
 			{container.payload.title}
 		{/if}
-		{#if hasConfiguredContent}
-			<span class="details-count">({items.length})</span>
+		{#if hasConfiguredContent && savedTotal != null}
+			<span class="details-count">({savedTotal})</span>
 		{/if}
 	</svelte:element>
 
@@ -371,7 +443,6 @@
 						bind:value={localTerms}
 						oninput={(e) => {
 							e.stopPropagation();
-							visibleCount = MAX_ITEMS_PER_PAGE;
 						}}
 					/>
 				</label>
@@ -410,9 +481,9 @@
 	{#if container.payload.listType === 'carousel'}
 		<Carousel
 			addItem={addItems}
-			items={visibleItems}
+			{items}
 			{mayAddItem}
-			onLoadMore={hasMoreItems ? () => (visibleCount += MAX_ITEMS_PER_PAGE) : undefined}
+			onLoadMore={savedHasMore ? loadMoreSaved : undefined}
 		>
 			{#snippet itemSnippet(item)}
 				{#if isIndicatorTemplateContainer(item)}
@@ -444,7 +515,7 @@
 		</Carousel>
 	{:else}
 		<ul class="catalog">
-			{#each visibleItems as item (item.guid)}
+			{#each items as item (item.guid)}
 				<li>
 					{#if isIndicatorTemplateContainer(item)}
 						{@const relatedContainers =
@@ -479,14 +550,11 @@
 				</li>
 			{/if}
 		</ul>
-	{/if}
-
-	{#if hasMoreItems && container.payload.listType !== 'carousel'}
-		<p class="load-more">
-			<button class="button" onclick={() => (visibleCount += MAX_ITEMS_PER_PAGE)} type="button">
-				{$_('load_more')}
-			</button>
-		</p>
+		<LazyLoadSentinel
+			hasMore={savedHasMore}
+			loading={savedLoadingMore}
+			onLoadMore={loadMoreSaved}
+		/>
 	{/if}
 {:else if editable}
 	<div class="catalog">
@@ -543,11 +611,5 @@
 
 	.inline-actions-search input:focus {
 		outline: none;
-	}
-
-	.load-more {
-		display: flex;
-		justify-content: center;
-		margin-top: 1rem;
 	}
 </style>

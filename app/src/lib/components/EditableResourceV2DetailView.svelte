@@ -87,12 +87,7 @@
 		programGuid
 			? fetchContainersRelatedToProgram({
 					guid: programGuid,
-					params: {
-						audience: [],
-						sdg: [],
-						policyFieldBNK: [],
-						topic: []
-					}
+					params: {}
 				})
 			: null
 	);

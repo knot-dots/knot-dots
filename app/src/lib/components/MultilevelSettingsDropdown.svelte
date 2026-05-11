@@ -41,7 +41,12 @@
 		strategy: 'fixed'
 	});
 
-	const popperOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 8] } }] };
+	const popperOpts = {
+		modifiers: [
+			{ name: 'offset', options: { offset: [0, 8] } },
+			{ name: 'flip', options: { fallbackPlacements: ['top-end'] } }
+		]
+	};
 
 	function handleTriggerOpen() {
 		if (!$popover.expanded) {

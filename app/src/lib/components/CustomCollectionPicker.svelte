@@ -7,27 +7,23 @@
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
-		audience,
-		computeFacetCount,
+		type AnyContainer,
 		type CustomCollectionContainer,
-		indicatorCategories,
 		isOrganizationalUnitContainer,
 		type PayloadType,
-		payloadTypes,
-		policyFieldBNK,
-		programTypes,
-		sustainableDevelopmentGoals,
-		topics
+		payloadTypes
 	} from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
+	import { user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -56,51 +52,22 @@
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
-		...(createFeatureDecisions(page.data.features).usePage() ? [payloadTypes.enum.page] : []),
+		payloadTypes.enum.page,
 		payloadTypes.enum.program,
-		...(createFeatureDecisions(page.data.features).useReport() ? [payloadTypes.enum.report] : []),
+		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
 		payloadTypes.enum.task
 	] satisfies PayloadType[]);
 
 	const categoryContext = $derived(
-		page.data.categoryContext
-			? filterCategoryContext(
-					page.data.categoryContext,
-					filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
-					{
-						matchAll: true
-					}
-				)
-			: undefined
+		filterCategoryContext(
+			page.data.categoryContext,
+			filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
+			{
+				matchAll: true
+			}
+		)
 	);
-
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			['type', new Map(defaultPayloadType.map((v) => [v as string, 0]))],
-			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.program)
-				? [['programType', new Map(programTypes.options.map((v) => [v as string, 0]))]]
-				: []),
-			...(filter.type?.length == 1 && filter.type.includes(payloadTypes.enum.indicator_template)
-				? [['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]]
-				: []),
-			...(createFeatureDecisions(page.data.features).useCustomCategories()
-				? (categoryContext?.keys.map((k) => [
-						k,
-						new Map(categoryContext.options[k].map((v) => [v.value, 0]))
-					]) ?? [])
-				: [
-						['audience', new Map(audience.options.map((v) => [v as string, 0]))],
-						['sdg', new Map(sustainableDevelopmentGoals.options.map((v) => [v as string, 0]))],
-						['policyFieldBNK', new Map(policyFieldBNK.options.map((v) => [v as string, 0]))],
-						['topic', new Map(topics.options.map((v) => [v as string, 0]))]
-					])
-		] as [string, Map<string, number>][]);
-
-		return computeFacetCount(facets, searchResource.current ?? [], {
-			useCategoryPayload: createFeatureDecisions(page.data.features).useCustomCategories()
-		});
-	});
 
 	let activeFilters = $derived(
 		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
@@ -111,40 +78,124 @@
 		selected.length > 0 || activeFilters == 0 ? 'select' : 'apply_rule'
 	);
 
+	let organizationsUserIsMemberOf = $derived(
+		[...$user.adminOf, ...$user.headOf, ...$user.collaboratorOf, ...$user.memberOf].filter(
+			(value) => page.data.organizations.map((o) => o.guid).includes(value)
+		)
+	);
+
 	const inViewport = new IsInViewport(() => dialog);
 
+	// Accumulated items across loaded pages
+	let searchItems = $state<AnyContainer[]>([]);
+	let searchHasMore = $state(false);
+	let searchNextOffset = $state<number | null>(null);
+	let searchLoadingMore = $state(false);
+	let searchLoadAbortController: AbortController | undefined;
+
+	function buildSearchQuery() {
+		const query = new URLSearchParams();
+		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
+
+		const orgs =
+			mode === 'select'
+				? Array.from(new Set([page.data.currentOrganization.guid, ...organizationsUserIsMemberOf]))
+				: [page.data.currentOrganization.guid];
+		for (const org of orgs) query.append('organization', org);
+
+		for (const t of payloadType) query.append('payloadType', t);
+		if (filter.indicatorCategory) {
+			for (const v of filter.indicatorCategory) query.append('indicatorCategory', v);
+		}
+		if (filter.programType) {
+			for (const v of filter.programType) query.append('programType', v);
+		}
+		for (const k of categoryContext.keys) {
+			if (k in filter) {
+				for (const v of filter[k]) query.append(k, v);
+			}
+		}
+		if (terms) query.set('terms', terms);
+		query.set('sort', sort);
+		return query;
+	}
+
+	interface SearchPage {
+		containers: AnyContainer[];
+		facets: Map<string, Map<string, number>>;
+		hasMore: boolean;
+		nextOffset: number | null;
+	}
+
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current],
-		async ([filter, sort, terms, inViewport], _, { signal }) => {
-			return inViewport
-				? fetchContainers(
-						{
-							indicatorCategory: filter.indicatorCategory,
-							organization: [page.data.currentOrganization.guid],
-							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
-							programType: filter.programType,
-							...(createFeatureDecisions(page.data.features).useCustomCategories()
-								? Object.fromEntries(
-										categoryContext?.keys.map((k) => (k in filter ? [[k], filter[k]] : [])) ?? []
-									)
-								: {
-										audience: filter.audience,
-										policyFieldBNK: filter.policyFieldBNK,
-										topic: filter.topic,
-										sdg: filter.sdg
-									}),
-							terms
-						},
-						sort,
-						{ signal }
-					)
-				: [];
+		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current, () => mode],
+		async ([, , , inViewport], _, { signal }): Promise<SearchPage> => {
+			if (!inViewport)
+				return { containers: [], facets: new Map(), hasMore: false, nextOffset: null };
+
+			const query = buildSearchQuery();
+			const result = await fetchContainerPage({
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset: 0,
+				query,
+				signal
+			});
+			return {
+				containers: result.containers,
+				facets: result.facets,
+				hasMore: result.page.hasMore,
+				nextOffset: result.page.nextOffset
+			};
 		},
 		{
 			debounce: 300,
 			lazy: true
 		}
 	);
+
+	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
+
+	$effect(() => {
+		const result = searchResource.current;
+		if (result) {
+			searchItems = result.containers;
+			searchHasMore = result.hasMore;
+			searchNextOffset = result.nextOffset;
+		}
+	});
+
+	async function loadMoreSearch() {
+		if (searchLoadingMore || !searchHasMore || searchNextOffset === null) return;
+
+		searchLoadAbortController?.abort();
+		const controller = new AbortController();
+		searchLoadAbortController = controller;
+		searchLoadingMore = true;
+
+		try {
+			const query = buildSearchQuery();
+			const result = await fetchContainerPage({
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset: searchNextOffset,
+				query,
+				signal: controller.signal
+			});
+
+			if (controller.signal.aborted || searchLoadAbortController !== controller) return;
+
+			searchItems = [...searchItems, ...result.containers];
+			searchHasMore = result.page.hasMore;
+			searchNextOffset = result.page.nextOffset;
+		} catch (error) {
+			if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
+		} finally {
+			if (!controller.signal.aborted && searchLoadAbortController === controller) {
+				searchLoadingMore = false;
+			}
+		}
+	}
 
 	function resetFilters() {
 		for (const key in filter) {
@@ -199,7 +250,7 @@
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
 			{@const options =
-				categoryContext?.options[key]?.map((option) => ({
+				categoryContext.options[key]?.map((option) => ({
 					...option,
 					count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
 					subOptions: option.subOptions?.map((sub) => ({
@@ -224,7 +275,7 @@
 				<InlineFilterDropDown
 					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
-					label={categoryContext?.labels.get(key)}
+					label={categoryContext.labels.get(key)}
 					{mode}
 					{options}
 				/>
@@ -275,9 +326,9 @@
 					</li>
 				</ul>
 
-				{#if searchResource.current}
+				{#if searchItems.length > 0 || searchResource.current !== undefined}
 					<ul class="catalog">
-						{#each searchResource.current as item (item.guid)}
+						{#each searchItems as item (item.guid)}
 							<li>
 								{#if mode === 'select'}
 									<SelectableCard
@@ -294,6 +345,12 @@
 								{/if}
 							</li>
 						{/each}
+						<LazyLoadSentinel
+							as="li"
+							hasMore={searchHasMore}
+							loading={searchLoadingMore}
+							onLoadMore={loadMoreSearch}
+						/>
 					</ul>
 				{/if}
 			</div>
@@ -316,7 +373,7 @@
 				{#if mode === 'select' && selected.length > 0}
 					<ul>
 						{#each selected as guid (guid)}
-							{@const item = searchResource.current?.find((item) => item.guid === guid)}
+							{@const item = searchItems.find((item) => item.guid === guid)}
 							{#if item}
 								<li class="preview-item">
 									<input bind:group={selected} name="selected" type="checkbox" value={guid} />
@@ -330,14 +387,14 @@
 							{/if}
 						{/each}
 					</ul>
-				{:else if mode === 'apply_rule' && searchResource.current}
+				{:else if mode === 'apply_rule'}
 					<ul>
 						{#each Object.entries(filter) as [key, valueList] (key)}
 							{#if valueList.length > 0}
 								{#each valueList as value (value)}
 									<li class="preview-item">
 										<LightningBolt />
-										{page.data.categoryContext?.labels.get(value) ?? $_(value)}
+										{page.data.categoryContext.labels.get(value) ?? $_(value)}
 										<button
 											class="button button-remove"
 											type="button"

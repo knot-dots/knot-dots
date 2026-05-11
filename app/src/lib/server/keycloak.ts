@@ -163,7 +163,7 @@ export async function deleteGroup(id: string) {
 export async function getMembers(group: string) {
 	const token = await getToken();
 	const response = await fetch(
-		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${group}/members`,
+		`${env.PUBLIC_KC_URL}/admin/realms/${env.PUBLIC_KC_REALM}/groups/${group}/members?max=1000`,
 		{
 			headers: {
 				Authorization: `Bearer ${token}`,

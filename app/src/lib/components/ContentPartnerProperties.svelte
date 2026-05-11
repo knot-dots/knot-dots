@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AuthoredBy from '$lib/components/AuthoredBy.svelte';
-	import EditableAudience from '$lib/components/EditableAudience.svelte';
 	import EditableImage from '$lib/components/EditableImage.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
@@ -25,8 +24,6 @@
 	{/snippet}
 
 	{#snippet general()}
-		<EditableAudience {editable} bind:value={container.payload.audience} />
-
 		{#if $ability.can('update', container, 'visibility')}
 			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}

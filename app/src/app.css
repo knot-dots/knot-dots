@@ -1945,6 +1945,25 @@ img.cover {
 	cursor: none;
 }
 
+@media (max-width: 480px) {
+	:root {
+		--details-padding-y: 1.5rem;
+		--details-section-padding-x: 0.75rem;
+	}
+
+	.details {
+		--details-padding-x: 0.75rem;
+	}
+
+	.content-footer {
+		padding: 0 0.75rem 0.75rem;
+	}
+
+	.content-footer.bottom-actions-bar {
+		padding: 0.75rem;
+	}
+}
+
 @media print {
 	nav,
 	header[role='banner'],

@@ -4,6 +4,7 @@
 
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
+	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
@@ -152,6 +153,14 @@
 		);
 		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
 	}
+	const mobileMenu: { open: boolean; toggle: () => void; close: () => void } | undefined =
+		getContext('mobileMenu');
+
+	$effect(() => {
+		if (mobileMenu?.open) {
+			sidebarExpanded = true;
+		}
+	});
 </script>
 
 <header class:collapsed={sidebarExpanded === false} class:expanded={sidebarExpanded === true}>
@@ -165,7 +174,14 @@
 		/>
 	</a>
 
-	<button class="action-button" onclick={collapseSidebar} type="button">
+	<button
+		class="action-button collapse-button"
+		onclick={() => {
+			collapseSidebar();
+			mobileMenu?.close();
+		}}
+		type="button"
+	>
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>

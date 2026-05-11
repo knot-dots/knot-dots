@@ -4,20 +4,17 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
-	audience,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
 	isProgramContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes,
-	policyFieldBNK,
 	predicates,
 	programTypes,
 	relation,
-	sustainableDevelopmentGoals,
-	taskCategories,
-	topics
+	taskCategories
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getAllContainersRelatedToIndicatorTemplates,
 	getAllContainersRelatedToMeasure,
@@ -25,26 +22,24 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
+	getManyOrganizationContainers,
 	updateManyContainerRelations
 } from '$lib/server/db';
+import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
-		audience: z.array(audience).default([]),
-		sdg: z.array(sustainableDevelopmentGoals).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
-		policyFieldBNK: z.array(policyFieldBNK).default([]),
 		program: z.array(z.string()).default([]),
 		programType: z.array(programTypes).default([]),
 		relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 		sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
 		taskCategory: z.array(taskCategories).default([]),
-		terms: z.array(z.string()).default([]),
-		topic: z.array(topics).default([])
+		terms: z.array(z.string()).default([])
 	});
 	const parseResult = expectedParams.safeParse(
 		Object.fromEntries(
@@ -58,6 +53,21 @@ export const GET = (async ({ locals, params, url }) => {
 	if (!parseResult.success) {
 		error(400, { message: parseResult.error.message });
 	}
+
+	const organizations = await locals.pool.connect(
+		getManyOrganizationContainers({ default: true }, '')
+	);
+
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope:
+			organizations.length > 0
+				? [organizations[0].guid, ...parseResult.data.organization]
+				: parseResult.data.organization,
+		user: locals.user
+	});
+
+	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	try {
 		const container = await locals.pool.connect(getContainerByGuid(params.guid));
@@ -127,11 +137,8 @@ export const GET = (async ({ locals, params, url }) => {
 		} else if (isProgramContainer(container)) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToProgram(container.guid, {
-					audience: parseResult.data.audience,
-					sdg: parseResult.data.sdg,
-					policyFieldsBNK: parseResult.data.policyFieldBNK,
+					customCategories,
 					terms: parseResult.data.terms[0],
-					topics: parseResult.data.topic,
 					type: parseResult.data.payloadType
 				})
 			);
@@ -141,11 +148,9 @@ export const GET = (async ({ locals, params, url }) => {
 					container.guid,
 					{
 						assignees: parseResult.data.assignee,
-						sdg: parseResult.data.sdg,
-						policyFieldsBNK: parseResult.data.policyFieldBNK,
+						customCategories,
 						taskCategories: parseResult.data.taskCategory,
 						terms: parseResult.data.terms[0],
-						topics: parseResult.data.topic,
 						type: parseResult.data.payloadType
 					},
 					parseResult.data.sort[0]
@@ -159,14 +164,11 @@ export const GET = (async ({ locals, params, url }) => {
 					parseResult.data.relationType,
 					{
 						assignees: parseResult.data.assignee,
-						audience: parseResult.data.audience,
-						sdg: parseResult.data.sdg,
+						customCategories,
 						organizationalUnits: parseResult.data.organizationalUnit,
-						policyFieldsBNK: parseResult.data.policyFieldBNK,
 						programTypes: parseResult.data.programType,
 						taskCategories: parseResult.data.taskCategory,
 						terms: parseResult.data.terms[0],
-						topics: parseResult.data.topic,
 						type: parseResult.data.payloadType
 					},
 					parseResult.data.sort[0]

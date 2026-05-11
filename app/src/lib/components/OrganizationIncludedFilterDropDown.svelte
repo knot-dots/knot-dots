@@ -6,9 +6,7 @@
 	let options = $derived(
 		page.url.pathname.endsWith('indicators')
 			? ['all_organizational_units']
-			: page.data.currentOrganizationalUnit
-				? ['superordinate_organizational_units', 'subordinate_organizational_units']
-				: ['subordinate_organizational_units']
+			: ['subordinate_organizational_units']
 	);
 </script>
 

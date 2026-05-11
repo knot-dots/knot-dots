@@ -140,6 +140,9 @@ export default function defineAbilityFor(user: User) {
 				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
+		can('invite-members', [payloadTypes.enum.organizational_unit], {
+			guid: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can('create', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
@@ -235,6 +238,7 @@ export default function defineAbilityFor(user: User) {
 		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
+		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
