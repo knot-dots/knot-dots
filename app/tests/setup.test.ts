@@ -12,7 +12,9 @@ test.describe(() => {
 
 		// Expect to be logged in as Bob
 		if (!isMobile) {
-			await expect(page.getByText('BB')).toBeVisible();
+			await expect(
+				page.getByRole('navigation').getByRole('button', { name: 'User menu' })
+			).toBeVisible();
 		}
 
 		await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();
