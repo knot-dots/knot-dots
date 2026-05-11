@@ -50,11 +50,19 @@ export class TaskStatusBoard extends Board {
 		await this.page.waitForLoadState('networkidle');
 	}
 
-	async moveCardToColumn(cardTitle: string, columnHeading: string) {
+	async addTaskToColumn(title: string, columnHeading: string) {
+		await this.column(columnHeading).addItemButton.click();
+		await this.page.getByRole('dialog').getByRole('textbox', { name: 'Title' }).fill(title);
+		await this.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+		await this.overlay.closeButton.click();
+		await expect(this.overlay.locator).not.toBeVisible();
+	}
+
+	async moveCardToColumn(cardTitle: string, columnHeading: string, position: number) {
 		const card = this.card(cardTitle);
 		const targetColumn = this.column(columnHeading);
 		const sourceBox = await card.boundingBox();
-		const targetBox = await targetColumn.locator.boundingBox();
+		const targetBox = await targetColumn.locator.getByRole('listitem').nth(position).boundingBox();
 
 		if (!sourceBox || !targetBox) {
 			throw new Error('Could not determine bounding boxes for drag-and-drop');

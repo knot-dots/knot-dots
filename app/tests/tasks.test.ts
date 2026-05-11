@@ -8,23 +8,34 @@ test.describe('Task status board', () => {
 	test('task status can be changed via drag-and-drop', async ({
 		isMobile,
 		taskStatusBoard,
-		testTask
+		testOrganization
 	}) => {
 		test.skip(isMobile, 'Drag-and-drop is not supported on mobile');
 
-		await taskStatusBoard.goto(`/${testTask.organization}`);
+		await taskStatusBoard.goto(`/${testOrganization.guid}`);
+		await taskStatusBoard.addTaskToColumn('Task 1', 'Idea');
+		await taskStatusBoard.addTaskToColumn('Task 2', 'In Planning');
+		await taskStatusBoard.addTaskToColumn('Task 3', 'In Planning');
 
-		await expect(taskStatusBoard.column('Idea').card(testTask.payload.title)).toBeVisible();
-		await taskStatusBoard.moveCardToColumn(testTask.payload.title, 'In Planning');
-		await expect(taskStatusBoard.column('In Planning').card(testTask.payload.title)).toBeVisible();
+		const saveResponse = taskStatusBoard.page.waitForResponse((r) => r.url().includes('/revision'));
+		await taskStatusBoard.moveCardToColumn('Task 1', 'In Planning', 1);
+		await expect(
+			taskStatusBoard.column('In Planning').locator.getByRole('listitem').nth(1)
+		).toHaveText('Task 1');
 
-		// Wait for the save request to complete and ES to index the update
-		await taskStatusBoard.page.waitForLoadState('networkidle');
-		await taskStatusBoard.page.waitForTimeout(500);
+		// Assert card does not move up or down because of re-rendering triggered
+		// by optimistic update
+		await saveResponse;
+		await taskStatusBoard.page.waitForTimeout(100);
+		await expect(
+			taskStatusBoard.column('In Planning').locator.getByRole('listitem').nth(1)
+		).toHaveText('Task 1');
 
 		// Verify persistence
 		await taskStatusBoard.page.reload();
-		await expect(taskStatusBoard.column('In Planning').card(testTask.payload.title)).toBeVisible();
+		await expect(
+			taskStatusBoard.column('In Planning').locator.getByRole('listitem').nth(1)
+		).toHaveText('Task 1');
 	});
 });
 
