@@ -789,7 +789,10 @@
 	}
 
 	.sidebar-menu > li {
+		align-items: center;
+		display: flex;
 		gap: 0.375rem;
+		min-width: 0;
 	}
 
 	.sidebar-menu-item {
@@ -809,7 +812,6 @@
 		font-weight: 500;
 		gap: 0.375rem;
 		line-height: 1.5;
-		max-width: 100%;
 		min-width: 0;
 		padding: 0.375rem 0.5rem;
 		text-wrap: nowrap;
@@ -835,6 +837,7 @@
 
 	.sidebar-menu .sidebar-menu {
 		flex-grow: 1;
+		min-width: 0;
 		padding: 0;
 	}
 

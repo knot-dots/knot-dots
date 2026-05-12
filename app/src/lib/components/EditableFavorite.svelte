@@ -19,8 +19,8 @@
 	const popover = createPopover({ label: $_('favorite.edit') });
 
 	const [popperRef, popperContent] = createPopperActions({
-		placement: 'left-start',
-		strategy: 'absolute'
+		placement: 'right-start',
+		strategy: 'fixed'
 	});
 
 	const id = crypto.randomUUID();
