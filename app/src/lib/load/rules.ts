@@ -3,11 +3,7 @@ import { type RuleContainer, payloadTypes, predicates } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 
-const DEFAULT_RELATION_TYPES = [
-	predicates.enum['is-consistent-with'],
-	predicates.enum['is-equivalent-to'],
-	predicates.enum['is-inconsistent-with']
-];
+const DEFAULT_RELATION_TYPES = [predicates.enum['is-inconsistent-with']] as string[];
 
 export default (async function load({ depends, fetch, params, url }) {
 	depends('containers');
