@@ -116,13 +116,18 @@
 		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
 	}
 
+	nav:has(:global(.collapsed)) {
+		border-right: none;
+	}
+
 	@media (max-width: 480px) {
 		nav {
 			background-color: white;
-			width: 3rem;
+			display: none;
 		}
 
 		nav.mobile-open {
+			display: flex;
 			height: 100vh;
 			left: 0;
 			position: fixed;

@@ -282,13 +282,6 @@
 				options={organizations}
 				title={$_('organizations')}
 			>
-				<img
-					alt=""
-					class="panel-select-icon"
-					src={page.data.currentOrganization.payload.image
-						? transformFileURL(page.data.currentOrganization.payload.image)
-						: logo}
-				/>
 				<span class="panel-select-label truncated">
 					{page.data.currentOrganization.payload.name}
 				</span>
@@ -574,6 +567,11 @@
 		display: none;
 	}
 
+	header.collapsed {
+		border-bottom: none;
+		height: auto;
+	}
+
 	header img {
 		margin-left: 0.25rem;
 	}
@@ -612,7 +610,7 @@
 		background:
 			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
 			var(--color-gray-050);
-		border: 1px solid var(--color-gray-100);
+		border: none;
 		border-radius: 12px;
 		display: flex;
 		align-items: center;
@@ -624,7 +622,6 @@
 		background:
 			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
 			var(--color-primary-050);
-		border-color: var(--color-primary-200);
 	}
 
 	.collapsed-panel-item {
