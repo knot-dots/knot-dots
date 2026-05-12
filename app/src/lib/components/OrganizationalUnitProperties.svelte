@@ -26,7 +26,7 @@
 				.filter((w) => w.module === module.key)
 				.map((w) => ({
 					value: w.key,
-					label: `${$_(module.i18nKey)} \u2013 ${$_(w.i18nKey)}`
+					label: `${$_(`workspace.module.${module.key}`)} \u2013 ${$_(`workspace.${w.key}.title`)}`
 				}))
 		)
 	);

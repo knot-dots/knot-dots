@@ -65,7 +65,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 			container,
 			containers: filterVisible(containers, locals.user),
 			revisions: filterVisible(revisions, locals.user),
-			title: `${container.payload.title} / ${t('workspace.type.tasks')} / ${t('workspace.view.status')}`
+			title: `${container.payload.title} / ${t('workspace.tasks.title')} / ${t('workspace.view.status')}`
 		};
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {

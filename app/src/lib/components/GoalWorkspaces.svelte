@@ -63,7 +63,7 @@
 		{
 			exists: true,
 			icon: Objects,
-			label: $_('workspace.type.all'),
+			label: $_('workspace.all.title'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/'
 		},
 		{

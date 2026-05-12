@@ -29,44 +29,36 @@ export type WorkspaceModuleKey =
 
 export interface WorkspaceModule {
 	key: WorkspaceModuleKey;
-	i18nKey: string;
 	colorClass: string;
 }
 
 export const workspaceModules: WorkspaceModule[] = [
 	{
 		key: 'goal_setting',
-		i18nKey: 'workspace.module.goal_setting',
 		colorClass: 'menu-segment--goals'
 	},
 	{
 		key: 'implementation_planning',
-		i18nKey: 'workspace.module.implementation_planning',
 		colorClass: 'menu-segment--implementation'
 	},
 	{
 		key: 'impact_measurement',
-		i18nKey: 'workspace.module.impact_measurement',
 		colorClass: 'menu-segment--effects'
 	},
 	{
 		key: 'resource_planning',
-		i18nKey: 'workspace.module.resource_planning',
 		colorClass: 'menu-segment--resources'
 	},
 	{
 		key: 'knowledge_transfer',
-		i18nKey: 'workspace.module.knowledge_transfer',
 		colorClass: 'menu-segment--knowledge'
 	},
 	{
 		key: 'rules',
-		i18nKey: 'workspace.module.rules',
 		colorClass: 'menu-segment--rules'
 	},
 	{
 		key: 'organizing',
-		i18nKey: 'workspace.module.organizing',
 		colorClass: 'menu-segment--organize'
 	}
 ];
@@ -85,8 +77,6 @@ export type WorkspaceViewKey = 'page' | 'catalog' | 'level' | 'status' | 'table'
 
 export interface WorkspaceDefinition {
 	key: string;
-	i18nKey: string;
-	helperI18nKey: string;
 	icon: Component<SvelteHTMLElements['svg']>;
 	module: WorkspaceModuleKey;
 	/** Map view → URL path (without context segment). The `default` view is the entry view. */
@@ -108,8 +98,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Goals planning
 	{
 		key: 'strategies',
-		i18nKey: 'workspace.type.strategies',
-		helperI18nKey: 'workspace.helper.strategies',
 		icon: Compass,
 		module: 'goal_setting',
 		views: {
@@ -122,8 +110,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'goals',
-		i18nKey: 'workspace.type.goals',
-		helperI18nKey: 'workspace.helper.goals',
 		icon: Goal,
 		module: 'goal_setting',
 		views: {
@@ -136,8 +122,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'federal-levels',
-		i18nKey: 'workspace.type.federal_levels',
-		helperI18nKey: 'workspace.helper.federal_levels',
 		icon: Program,
 		module: 'goal_setting',
 		views: {
@@ -148,8 +132,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Implementation planning
 	{
 		key: 'measures',
-		i18nKey: 'workspace.type.measures',
-		helperI18nKey: 'workspace.helper.measures',
 		icon: Clipboard,
 		module: 'implementation_planning',
 		views: {
@@ -161,8 +143,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'measure-monitoring',
-		i18nKey: 'workspace.type.measure_monitoring',
-		helperI18nKey: 'workspace.helper.measure_monitoring',
 		icon: ChartBar,
 		module: 'implementation_planning',
 		views: {
@@ -172,8 +152,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'tasks',
-		i18nKey: 'workspace.type.tasks',
-		helperI18nKey: 'workspace.helper.tasks',
 		icon: ClipboardCheck,
 		module: 'implementation_planning',
 		views: {
@@ -186,8 +164,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Effect measurement
 	{
 		key: 'indicators',
-		i18nKey: 'workspace.type.indicators',
-		helperI18nKey: 'workspace.helper.indicators',
 		icon: ChartBar,
 		module: 'impact_measurement',
 		views: {
@@ -199,8 +175,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'reports',
-		i18nKey: 'workspace.type.reports',
-		helperI18nKey: 'workspace.helper.reports',
 		icon: Chapter,
 		module: 'impact_measurement',
 		views: {
@@ -210,8 +184,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'objectives-and-effects',
-		i18nKey: 'workspace.type.objectives_and_effects',
-		helperI18nKey: 'workspace.helper.objectives_and_effects',
 		icon: ChartMixed,
 		module: 'impact_measurement',
 		views: {
@@ -223,8 +195,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Resource planning
 	{
 		key: 'resources',
-		i18nKey: 'workspace.type.resources',
-		helperI18nKey: 'workspace.helper.resources',
 		icon: Resources,
 		module: 'resource_planning',
 		views: {
@@ -237,8 +207,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Knowledge transfer
 	{
 		key: 'guides',
-		i18nKey: 'workspace.type.guides',
-		helperI18nKey: 'workspace.helper.guides',
 		icon: Help,
 		module: 'knowledge_transfer',
 		views: {
@@ -249,8 +217,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'knowledge',
-		i18nKey: 'workspace.type.knowledge',
-		helperI18nKey: 'workspace.helper.knowledge',
 		icon: Compass,
 		module: 'knowledge_transfer',
 		views: {
@@ -263,8 +229,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Rules
 	{
 		key: 'set-of-rules',
-		i18nKey: 'workspace.type.set_of_rules',
-		helperI18nKey: 'workspace.helper.set_of_rules',
 		icon: Gavel,
 		module: 'rules',
 		views: {
@@ -276,8 +240,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'rules',
-		i18nKey: 'workspace.type.rules',
-		helperI18nKey: 'workspace.helper.rules',
 		icon: Gavel,
 		module: 'rules',
 		views: {
@@ -288,8 +250,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Organizing
 	{
 		key: 'pages',
-		i18nKey: 'workspace.type.pages',
-		helperI18nKey: 'workspace.helper.pages',
 		icon: LandingPage,
 		module: 'organizing',
 		views: {
@@ -299,8 +259,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'templates',
-		i18nKey: 'workspace.type.templates',
-		helperI18nKey: 'workspace.helper.templates',
 		icon: Collection,
 		module: 'organizing',
 		views: {
@@ -310,8 +268,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'categories',
-		i18nKey: 'workspace.type.categories',
-		helperI18nKey: 'workspace.helper.categories',
 		icon: Tag,
 		module: 'organizing',
 		views: {
@@ -321,8 +277,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'overview',
-		i18nKey: 'workspace.type.overview',
-		helperI18nKey: 'workspace.helper.overview',
 		icon: Objects,
 		module: 'organizing',
 		views: {

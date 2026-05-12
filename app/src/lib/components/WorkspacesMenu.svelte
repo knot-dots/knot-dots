@@ -186,42 +186,42 @@
 		{
 			exists: true,
 			icon: Objects,
-			label: $_('workspace.type.all'),
+			label: $_('workspace.all.title'),
 			recommended: false,
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
 		{
 			exists: true,
 			icon: Program,
-			label: $_('workspace.type.programs'),
+			label: $_('workspace.programs.title'),
 			recommended: false,
 			value: workspacesLeft.programs[selectedItem[1]] ?? '/programs/catalog'
 		},
 		{
 			exists: true,
 			icon: Goal,
-			label: $_('workspace.type.goals'),
+			label: $_('workspace.goals.title'),
 			recommended: false,
 			value: workspacesLeft.goals[selectedItem[1]] ?? '/goals/level'
 		},
 		{
 			exists: true,
 			icon: Gavel,
-			label: $_('workspace.type.rules'),
+			label: $_('workspace.rules.title'),
 			recommended: false,
 			value: workspacesLeft.rules[selectedItem[1]] ?? '/rules/status'
 		},
 		{
 			exists: true,
 			icon: Clipboard,
-			label: $_('workspace.type.measures'),
+			label: $_('workspace.measures.title'),
 			recommended: false,
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
 		{
 			exists: true,
 			icon: GraduationCap,
-			label: $_('workspace.type.knowledge'),
+			label: $_('workspace.knowledge.title'),
 			recommended: false,
 			value: workspacesLeft.knowledge[selectedItem[1]] ?? '/knowledge/level'
 		},
@@ -233,7 +233,7 @@
 					{
 						exists: true,
 						icon: Tag,
-						label: $_('workspace.type.categories'),
+						label: $_('workspace.categories.title'),
 						recommended: false,
 						value: workspacesLeft.categories[selectedItem[1]] ?? '/categories'
 					}
@@ -244,7 +244,7 @@
 					{
 						exists: true,
 						icon: Resources,
-						label: $_('workspace.type.resources'),
+						label: $_('workspace.resources.title'),
 						recommended: false,
 						value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
 					}
@@ -255,7 +255,7 @@
 					{
 						exists: true,
 						icon: ClipboardCheck,
-						label: $_('workspace.type.tasks'),
+						label: $_('workspace.tasks.title'),
 						recommended: false,
 						value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
 					}
@@ -266,14 +266,14 @@
 					{
 						exists: true,
 						icon: ChartBar,
-						label: $_('workspace.type.indicators'),
+						label: $_('workspace.indicators.title'),
 						recommended: false,
 						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators/catalog'
 					},
 					{
 						exists: true,
 						icon: ChartMixed,
-						label: $_('workspace.type.objectives_and_effects'),
+						label: $_('workspace.objectives-and-effects.title'),
 						recommended: false,
 						value:
 							workspacesLeft['objectives-and-effects'][selectedItem[1]] ?? '/objectives-and-effects'
@@ -286,7 +286,7 @@
 					{
 						exists: true,
 						icon: QuestionCircle,
-						label: $_('workspace.type.help'),
+						label: $_('workspace.help.title'),
 						recommended: false,
 						value: workspacesLeft.help[selectedItem[1]] ?? '/help/catalog'
 					}

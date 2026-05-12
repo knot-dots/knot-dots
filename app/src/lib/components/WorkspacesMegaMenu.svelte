@@ -124,7 +124,7 @@
 	>
 		{#if currentWorkspace && !isOnPage}
 			<currentWorkspace.icon />
-			<span>{$_(currentWorkspace.i18nKey)}</span>
+			<span>{$_(`workspace.${currentWorkspace.key}.title`)}</span>
 		{:else}
 			<span>{$_('workspace.choose')}</span>
 		{/if}
@@ -144,7 +144,7 @@
 					{#each column as group (group.module.key)}
 						<section class="menu-segment {group.module.colorClass}">
 							<header class="menu-segment-header">
-								<h2>{$_(group.module.i18nKey)}</h2>
+								<h2>{$_(`workspace.module.${group.module.key}`)}</h2>
 							</header>
 							<ul class="menu-segment-items">
 								{#each group.workspaces as workspace (workspace.key)}
@@ -156,8 +156,12 @@
 												<workspace.icon />
 											</span>
 											<span class="menu-segment-item-text">
-												<span class="menu-segment-item-label">{$_(workspace.i18nKey)}</span>
-												<span class="menu-segment-item-helper">{$_(workspace.helperI18nKey)}</span>
+												<span class="menu-segment-item-label"
+													>{$_(`workspace.${workspace.key}.title`)}</span
+												>
+												<span class="menu-segment-item-helper"
+													>{$_(`workspace.${workspace.key}.description`)}</span
+												>
 											</span>
 										</button>
 									</li>

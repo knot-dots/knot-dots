@@ -87,7 +87,7 @@
 		{
 			exists: true,
 			icon: Objects,
-			label: $_('workspace.type.all'),
+			label: $_('workspace.all.title'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/monitoring'
 		},
 		...(createFeatureDecisions(page.data.features).useIOOI()
@@ -103,7 +103,7 @@
 		{
 			exists: true,
 			icon: ClipboardCheck,
-			label: $_('workspace.type.tasks'),
+			label: $_('workspace.tasks.title'),
 			value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
 		}
 	]);
