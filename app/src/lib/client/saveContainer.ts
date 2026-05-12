@@ -4,7 +4,10 @@ import { etag, modifiedContainer, type NewContainer, newContainer } from '$lib/m
 import type { AnyContainer } from '$lib/models';
 import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
-export default async function saveContainer(container: AnyContainer | NewContainer) {
+export default async function saveContainer(
+	container: AnyContainer | NewContainer,
+	optimisticUpdate: boolean = true
+) {
 	let url = '/container';
 	const isUpdate = 'guid' in container;
 	if (isUpdate) {
@@ -29,7 +32,7 @@ export default async function saveContainer(container: AnyContainer | NewContain
 		}
 	});
 
-	if (response.ok) {
+	if (response.ok && optimisticUpdate) {
 		const cloned = response.clone();
 		cloned.json().then((savedContainer) => {
 			if (isUpdate) {

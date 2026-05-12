@@ -76,6 +76,14 @@
 					items={containers
 						.filter(isTaskContainer)
 						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
+					onSort={(items) => {
+						data.containers = [
+							...data.containers.filter(
+								({ guid }) => !items.some(({ guid: itemGuid }) => guid === itemGuid)
+							),
+							...items
+						];
+					}}
 					status={taskStatusOption}
 				>
 					{#snippet itemSnippet(container)}

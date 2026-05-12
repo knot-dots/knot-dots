@@ -1,11 +1,11 @@
-import type { Container } from '$lib/models';
+import type { AnyContainer } from '$lib/models';
 
 const confirmed = new Set<string>();
 
-export default function withOptimistic<T extends { guid: string; revision: number }>(
+export default function withOptimistic<T extends AnyContainer>(
 	containers: T[],
-	created: Container | undefined,
-	updated: Map<string, Container> = new Map()
+	created: AnyContainer | undefined,
+	updated: Map<string, AnyContainer> = new Map()
 ): T[] {
 	let result = containers;
 
@@ -13,7 +13,7 @@ export default function withOptimistic<T extends { guid: string; revision: numbe
 		result = result.map((c) => {
 			const optimistic = updated.get(c.guid);
 			if (optimistic && optimistic.revision > c.revision) {
-				return optimistic as unknown as T;
+				return optimistic as T;
 			}
 			return c;
 		});
@@ -25,5 +25,5 @@ export default function withOptimistic<T extends { guid: string; revision: numbe
 		return result;
 	}
 	if (confirmed.has(created.guid)) return result;
-	return [...result, created as unknown as T];
+	return [...result, created as T];
 }

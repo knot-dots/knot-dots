@@ -16,10 +16,11 @@
 		addItemUrl?: string;
 		itemSnippet: Snippet<[TaskContainer]>;
 		items: TaskContainer[];
+		onSort?: (items: TaskContainer[]) => void;
 		status: TaskStatus;
 	}
 
-	let { addItemUrl, itemSnippet, items = [], status }: Props = $props();
+	let { addItemUrl, onSort, itemSnippet, items = [], status }: Props = $props();
 
 	function containerOfTypeTask() {
 		return containerOfType(
@@ -42,7 +43,7 @@
 
 			if (droppedItem && droppedItem.payload.taskStatus != status) {
 				droppedItem.payload.taskStatus = status;
-				const response = await saveContainer(droppedItem);
+				const response = await saveContainer(droppedItem, false);
 
 				if (response.ok) {
 					const updatedContainer = await response.json();
@@ -53,9 +54,15 @@
 				}
 			}
 
-			saveTaskPriority(items.map(({ guid }, index) => ({ priority: index, task: guid }))).catch(
-				(reason) => console.log(reason)
+			const priorityResponse = await saveTaskPriority(
+				items.map(({ guid }, index) => ({ priority: index, task: guid }))
 			);
+			if (priorityResponse.ok) {
+				onSort?.(items);
+			} else {
+				const error = await priorityResponse.json();
+				alert(error.message);
+			}
 		}
 	}
 </script>
