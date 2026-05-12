@@ -2,11 +2,6 @@ import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'navigation', storageState: 'tests/.auth/admin.json' });
 
-// The mega-menu is rendered in the header when the current container is an
-// organization or organizational unit (i.e. on workspace overview pages).
-// `/strategies/catalog` is one such page, so the trigger shows the current
-// workspace label "Strategies".
-
 test('workspaces mega-menu opens and navigates to selected workspace', async ({
 	page,
 	testOrganization
@@ -51,4 +46,50 @@ test('workspaces mega-menu groups workspaces by module', async ({ page, testOrga
 	await page.keyboard.press('Escape');
 	await expect(menu).toBeHidden();
 	expect(page.url()).toBe(urlBefore);
+});
+
+test('Organization menu links to workspace or landing page', async ({
+	defaultOrganization,
+	landingPage,
+	page,
+	testOrganization
+}) => {
+	await page.goto(`/${defaultOrganization.guid}/all/level`);
+
+	const organizationMenuButton = page.getByRole('button', {
+		name: 'Organizations and organizational units'
+	});
+
+	// Open the organization menu and verify the test organization card links to
+	// the dots board.
+	await organizationMenuButton.click();
+	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
+		'href',
+		new RegExp(`/${testOrganization.guid}/all/level`)
+	);
+
+	// Ensure the measures workspace is disabled for the test organization.
+	await landingPage.goto(`/${testOrganization.guid}`);
+	await landingPage.header.editModeToggle.check();
+	await landingPage.settingsButton.click();
+	await landingPage.settingsDialog.getByRole('button', { name: 'Visible workspaces' }).click();
+	const saveResponse = page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await landingPage.settingsDialog.getByRole('checkbox', { name: 'All objects' }).check();
+	await landingPage.settingsDialog.getByRole('checkbox', { name: 'Measures' }).uncheck();
+	await saveResponse;
+	await landingPage.settingsDialog.getByRole('button', { name: 'Close' }).click();
+
+	await page.goto(`/${defaultOrganization.guid}/measures/status`);
+	await expect(page).toHaveURL(new RegExp(`/${defaultOrganization.guid}/measures/status`));
+
+	// Open the organization menu and verify the default organization card links
+	// to the landing page, since the test organization does not support the
+	// measures workspace.
+	await organizationMenuButton.click();
+	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
+		'href',
+		new RegExp(`/${testOrganization.guid}/all/page`)
+	);
 });

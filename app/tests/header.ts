@@ -10,4 +10,8 @@ export default class Header {
 	get editModeToggle() {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
+
+	get organizationMenu() {
+		return this.locator.getByRole('button', { name: 'Organizations and organizational units' });
+	}
 }
