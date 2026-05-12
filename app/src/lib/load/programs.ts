@@ -10,20 +10,23 @@ const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-superordinate-of']
 ];
 
-export default (async function load({ depends, fetch, params, url }) {
-	depends('containers');
+export const loadPage = (limit: number) =>
+	(async ({ depends, fetch, params, url }) => {
+		depends('containers');
 
-	const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.program]]);
+		const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.program]]);
 
-	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
-		for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
-	}
+		if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
+			for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
+		}
 
-	return await fetchContainerPage<ProgramContainer>({
-		contextGuid: params.guid,
-		fetch,
-		limit: DEFAULT_PAGE_SIZE,
-		offset: 0,
-		query
-	});
-} satisfies PageServerLoad);
+		return await fetchContainerPage<ProgramContainer>({
+			contextGuid: params.guid,
+			fetch,
+			limit,
+			offset: 0,
+			query
+		});
+	}) satisfies PageServerLoad;
+
+export default loadPage(DEFAULT_PAGE_SIZE);

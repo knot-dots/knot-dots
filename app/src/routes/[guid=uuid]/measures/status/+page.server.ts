@@ -1,4 +1,3 @@
-import measures from '$lib/load/measures';
-import type { PageServerLoad } from '../$types';
+import { loadPage } from '$lib/load/measures';
 
-export const load = measures satisfies PageServerLoad;
+export const load = loadPage(10_000);

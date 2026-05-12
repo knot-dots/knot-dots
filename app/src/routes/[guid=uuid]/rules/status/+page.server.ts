@@ -1,4 +1,3 @@
-import rules from '$lib/load/rules';
-import type { PageServerLoad } from '../$types';
+import { loadPage } from '$lib/load/rules';
 
-export const load = rules satisfies PageServerLoad;
+export const load = loadPage(10_000);

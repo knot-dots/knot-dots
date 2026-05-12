@@ -1,3 +1,3 @@
-import setOfRules from '$lib/load/set-of-rules';
+import { loadPage } from '$lib/load/set-of-rules';
 
-export const load = setOfRules;
+export const load = loadPage(10_000);

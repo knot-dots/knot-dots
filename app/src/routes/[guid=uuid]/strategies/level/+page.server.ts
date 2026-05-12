@@ -1,3 +1,3 @@
-import strategies from '$lib/load/strategies';
+import { loadPage } from '$lib/load/strategies';
 
-export const load = strategies;
+export const load = loadPage(10_000);

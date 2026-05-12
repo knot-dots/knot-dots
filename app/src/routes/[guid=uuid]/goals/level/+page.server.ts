@@ -1,4 +1,3 @@
-import goals from '$lib/load/goals';
-import type { PageServerLoad } from '../$types';
+import { loadPage } from '$lib/load/goals';
 
-export const load = goals satisfies PageServerLoad;
+export const load = loadPage(10_000);
