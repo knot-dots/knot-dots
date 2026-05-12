@@ -53,6 +53,7 @@
 
 	function closeDialog() {
 		confirmDelete = false;
+		confirmPublishAll = false;
 		dialog.close();
 	}
 
