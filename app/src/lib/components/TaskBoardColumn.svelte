@@ -42,7 +42,7 @@
 
 			if (droppedItem && droppedItem.payload.taskStatus != status) {
 				droppedItem.payload.taskStatus = status;
-				const response = await saveContainer(droppedItem);
+				const response = await saveContainer(droppedItem, false);
 
 				if (response.ok) {
 					const updatedContainer = await response.json();
