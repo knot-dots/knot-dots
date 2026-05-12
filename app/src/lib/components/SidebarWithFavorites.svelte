@@ -606,6 +606,10 @@
 		flex-shrink: 0;
 	}
 
+	.drag-zone > li {
+		display: flex;
+	}
+
 	.is-visible-on-hover {
 		display: none;
 	}
