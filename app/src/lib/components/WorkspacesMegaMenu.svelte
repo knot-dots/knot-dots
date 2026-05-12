@@ -6,8 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
-	import { payloadTypes } from '$lib/models';
-	import { mayCreateContainer, overlay, overlayWidth } from '$lib/stores';
+	import { ability, overlay, overlayWidth } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
 		groupWorkspacesByModule,
@@ -55,16 +54,7 @@
 			organization: page.data.currentOrganization,
 			organizationalUnit: page.data.currentOrganizationalUnit,
 			features,
-			hasPermission: (key) => {
-				if (key === 'categories') {
-					return $mayCreateContainer(payloadTypes.enum.category, selectedContext.guid);
-				}
-				if (key === 'tasks') {
-					// Hidden on default organization (consistent with previous behavior).
-					return !('default' in selectedContext.payload) || !selectedContext.payload.default;
-				}
-				return true;
-			}
+			ability: $ability
 		})
 	);
 

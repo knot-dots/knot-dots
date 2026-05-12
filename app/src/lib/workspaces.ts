@@ -15,8 +15,15 @@ import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
 import Tag from '~icons/knotdots/tag';
-import { boards, type OrganizationContainer, type OrganizationalUnitContainer } from '$lib/models';
+import {
+	boards,
+	containerOfType,
+	payloadTypes,
+	type OrganizationContainer,
+	type OrganizationalUnitContainer
+} from '$lib/models';
 import type { createFeatureDecisions } from '$lib/features';
+import type { MongoAbility } from '@casl/ability';
 
 export type WorkspaceModuleKey =
 	| 'goal_setting'
@@ -297,8 +304,7 @@ interface VisibilityContext {
 	organization: OrganizationContainer;
 	organizationalUnit?: OrganizationalUnitContainer | null;
 	features: WorkspaceFeatureDecisions;
-	/** Returns true if the user is allowed to see / create the given workspace key. */
-	hasPermission?: (workspaceKey: string) => boolean;
+	ability?: MongoAbility;
 }
 
 /**
@@ -318,7 +324,7 @@ interface VisibilityContext {
  *   (e.g. categories require `mayCreateContainer` permission).
  */
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
-	const { organization, organizationalUnit, features, hasPermission } = ctx;
+	const { organization, organizationalUnit, features, ability } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const enabledBoards = new Set(selectedContext.payload.boards);
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
@@ -333,8 +339,24 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		if (workspace.boardFlag && !enabledBoards.has(workspace.boardFlag)) {
 			return false;
 		}
-		if (hasPermission && !hasPermission(workspace.key)) {
-			return false;
+		if (ability) {
+			if (workspace.key === 'categories') {
+				const container = containerOfType(
+					payloadTypes.enum.category,
+					organization.guid,
+					organizationalUnit?.guid ?? null,
+					selectedContext.guid,
+					''
+				);
+				if (!ability.can('create', container)) {
+					return false;
+				}
+			}
+			if (workspace.key === 'tasks') {
+				if ('default' in selectedContext.payload && selectedContext.payload.default) {
+					return false;
+				}
+			}
 		}
 		if (explicitSet.size === 0) {
 			return true;
