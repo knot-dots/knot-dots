@@ -276,7 +276,7 @@
 	data-sveltekit-preload-data="hover"
 >
 	<!-- Organization (Mandant) Panel -->
-	<div class="panel-section panel-section--active">
+	<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
 		<div class="panel-header">
 			<SidebarContextSelect
 				{defaultOrganization}
@@ -376,7 +376,7 @@
 
 	<!-- Organizational Unit Panel -->
 	{#if organizationalUnits.length > 0}
-		<div class="panel-section panel-section--active">
+		<div class="panel-section" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
 			<div class="panel-header">
 				<SidebarOrgUnitSelect
 					{defaultOrganization}
