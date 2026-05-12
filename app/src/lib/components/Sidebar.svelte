@@ -683,8 +683,7 @@
 	}
 
 	.panel-section--user {
-		flex: 1 0 0;
-		min-height: 0;
+		flex: 0 0 auto;
 	}
 
 	/* Panel Header (select button) */
