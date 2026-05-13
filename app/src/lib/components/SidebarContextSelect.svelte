@@ -16,12 +16,16 @@
 	import {
 		containerOfType,
 		getOrganizationURL,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		type NewContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		payloadTypes
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
+	import { createFeatureDecisions } from '$lib/features';
+	import { getVisibleWorkspaces } from '$lib/workspaces';
 	import { env } from '$env/dynamic/public';
 
 	interface Props {
@@ -108,8 +112,24 @@
 		}
 	}
 
+	function linkPathForContainer(container: OrganizationContainer | OrganizationalUnitContainer) {
+		const pathname = pathnameWithoutContextSegment();
+		const organization = isOrganizationContainer(container)
+			? container
+			: page.data.organizations.find(({ guid }) => guid === container.organization);
+		const workspacePaths = organization
+			? getVisibleWorkspaces({
+					organization,
+					organizationalUnit: isOrganizationalUnitContainer(container) ? container : null,
+					features: createFeatureDecisions(page.data.features)
+				}).flatMap((w) => Object.values(w.views))
+			: [];
+
+		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
+	}
+
 	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		return getOrganizationURL(container, pathnameWithoutContextSegment(), env).toString();
+		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
 </script>
 
