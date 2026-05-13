@@ -119,6 +119,11 @@ export function createIndexWithMappings(client: Client, index: string) {
 							type: 'keyword',
 							normalizer: 'title_norm',
 							ignore_above: 2048
+						},
+						icu_collation_keyword: {
+							type: 'icu_collation_keyword',
+							language: 'de',
+							numeric: true
 						}
 					}
 				},

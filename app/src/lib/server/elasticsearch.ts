@@ -118,7 +118,10 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 			{ guid: { order: 'asc' } }
 		];
 	}
-	return [{ 'title.keyword': { order: 'asc', missing: '_last' } }, { guid: { order: 'asc' } }];
+	return [
+		{ 'title.icu_collation_keyword': { order: 'asc', missing: '_last' } },
+		{ guid: { order: 'asc' } }
+	];
 }
 
 export async function getManyContainersWithES(
