@@ -144,6 +144,11 @@ function baseFacetMap(
 	categoryContext: CategoryContext
 ) {
 	const facets = new Map<string, Map<string, number>>([
+		[
+			'administrativeType',
+			fromCounts(administrativeTypes.options as string[], counts.administrativeType)
+		],
+		['federalState', fromCounts(Object.keys(counts.federalState ?? {}), counts.federalState)],
 		['type', fromCounts(payloadTypes.options as string[], counts.type)],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
 		['measureType', fromCounts(measureTypes.options as string[], counts.measureType)],
@@ -206,8 +211,11 @@ function buildElasticsearchFilters(
 	customCategories: Record<string, string[]>
 ) {
 	return {
+		administrativeTypes: params.administrativeType,
 		assignees: params.assignee,
 		customCategories,
+		federalStates: params.federalState,
+		guid: params.guid,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
 		organizationalUnits: params.organizationalUnit ?? undefined,
@@ -223,10 +231,7 @@ function buildElasticsearchFilters(
 function canUseElasticsearch(params: ContainerQueryParams) {
 	return (
 		params.relatedTo.length === 0 &&
-		params.administrativeType.length === 0 &&
 		params.excludeRelation.length === 0 &&
-		params.federalState.length === 0 &&
-		params.guid.length === 0 &&
 		params.indicator.length === 0 &&
 		params.member.length === 0 &&
 		params.resource.length === 0 &&

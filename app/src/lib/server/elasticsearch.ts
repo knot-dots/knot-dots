@@ -22,6 +22,8 @@ type ContainerElasticsearchOptions = ContainerQueryOptions & {
 };
 
 const defaultFacetKeys = [
+	'administrativeType',
+	'federalState',
 	'programType',
 	'measureType',
 	'indicatorCategory',
@@ -34,6 +36,8 @@ const defaultFacetKeys = [
 ] as const;
 
 const facetFieldMap: Record<string, string> = {
+	administrativeType: 'payload.administrativeType',
+	federalState: 'payload.federalState',
 	programType: 'payload.programType',
 	measureType: 'payload.measureType',
 	indicatorCategory: 'payload.indicatorCategory',
@@ -46,6 +50,8 @@ const facetFieldMap: Record<string, string> = {
 };
 
 const facetSizeMap: Record<string, number> = {
+	administrativeType: 20,
+	federalState: 20,
 	programType: 20,
 	measureType: 20,
 	indicatorCategory: 100,
@@ -118,8 +124,11 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 export async function getManyContainersWithES(
 	organizations: string[],
 	filters: {
+		administrativeTypes?: string[];
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
+		federalStates?: string[];
+		guid?: string[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
@@ -144,6 +153,15 @@ export async function getManyContainersWithES(
 		});
 	}
 	if (filters.type?.length) addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
+	if (filters.administrativeTypes?.length)
+		addFacetFilter(facetFilters, 'administrativeType', {
+			terms: { 'payload.administrativeType': filters.administrativeTypes }
+		});
+	if (filters.federalStates?.length)
+		addFacetFilter(facetFilters, 'federalState', {
+			terms: { 'payload.federalState': filters.federalStates }
+		});
+	if (filters.guid?.length) nonFacetFilters.push({ terms: { guid: filters.guid } });
 	if (filters.programTypes?.length)
 		addFacetFilter(facetFilters, 'programType', {
 			terms: { 'payload.programType': filters.programTypes }
