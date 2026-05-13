@@ -1667,7 +1667,7 @@ export type Payload = z.infer<typeof payload>;
 
 export const templatablePayloadTypes = payload.options
 	.filter(({ shape }) => 'template' in shape)
-	.map(({ shape }) => (shape.type as z.ZodLiteral<PayloadType>).value);
+	.map(({ shape }) => shape.type.value);
 
 export const container = z.object({
 	guid: z.string().uuid(),
