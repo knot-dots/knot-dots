@@ -6,8 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
-	import { payloadTypes } from '$lib/models';
-	import { mayCreateContainer, overlay, overlayWidth } from '$lib/stores';
+	import { ability, overlay, overlayWidth } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
 		groupWorkspacesByModule,
@@ -21,9 +20,9 @@
 	 * Modules in the same sub-array are stacked vertically within one column.
 	 */
 	const megaMenuColumns: WorkspaceModuleKey[][] = [
-		['goals_planning'],
+		['goal_setting'],
 		['implementation_planning'],
-		['effect_measurement', 'resource_planning'],
+		['impact_measurement', 'resource_planning'],
 		['knowledge_transfer', 'rules'],
 		['organizing']
 	];
@@ -55,16 +54,7 @@
 			organization: page.data.currentOrganization,
 			organizationalUnit: page.data.currentOrganizationalUnit,
 			features,
-			hasPermission: (key) => {
-				if (key === 'categories') {
-					return $mayCreateContainer(payloadTypes.enum.category, selectedContext.guid);
-				}
-				if (key === 'tasks') {
-					// Hidden on default organization (consistent with previous behavior).
-					return !('default' in selectedContext.payload) || !selectedContext.payload.default;
-				}
-				return true;
-			}
+			ability: $ability
 		})
 	);
 
@@ -124,7 +114,7 @@
 	>
 		{#if currentWorkspace && !isOnPage}
 			<currentWorkspace.icon />
-			<span>{$_(currentWorkspace.i18nKey)}</span>
+			<span>{$_(`workspace.${currentWorkspace.key}.title`)}</span>
 		{:else}
 			<span>{$_('workspace.choose')}</span>
 		{/if}
@@ -144,7 +134,7 @@
 					{#each column as group (group.module.key)}
 						<section class="menu-segment {group.module.colorClass}">
 							<header class="menu-segment-header">
-								<h2>{$_(group.module.i18nKey)}</h2>
+								<h2>{$_(`workspace.module.${group.module.key}`)}</h2>
 							</header>
 							<ul class="menu-segment-items">
 								{#each group.workspaces as workspace (workspace.key)}
@@ -156,8 +146,12 @@
 												<workspace.icon />
 											</span>
 											<span class="menu-segment-item-text">
-												<span class="menu-segment-item-label">{$_(workspace.i18nKey)}</span>
-												<span class="menu-segment-item-helper">{$_(workspace.helperI18nKey)}</span>
+												<span class="menu-segment-item-label"
+													>{$_(`workspace.${workspace.key}.title`)}</span
+												>
+												<span class="menu-segment-item-helper"
+													>{$_(`workspace.${workspace.key}.description`)}</span
+												>
 											</span>
 										</button>
 									</li>

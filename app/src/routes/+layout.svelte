@@ -73,7 +73,7 @@
 
 			if (!workspaceType) return null;
 
-			msgId = 'workspace.type.' + workspaceType;
+			msgId = 'workspace.' + workspaceType + '.title';
 		}
 
 		const translation = $_(msgId);

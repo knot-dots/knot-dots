@@ -15,13 +15,20 @@ import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
 import Tag from '~icons/knotdots/tag';
-import { boards, type OrganizationContainer, type OrganizationalUnitContainer } from '$lib/models';
+import {
+	boards,
+	containerOfType,
+	payloadTypes,
+	type OrganizationContainer,
+	type OrganizationalUnitContainer
+} from '$lib/models';
 import type { createFeatureDecisions } from '$lib/features';
+import type { MongoAbility } from '@casl/ability';
 
 export type WorkspaceModuleKey =
-	| 'goals_planning'
+	| 'goal_setting'
 	| 'implementation_planning'
-	| 'effect_measurement'
+	| 'impact_measurement'
 	| 'resource_planning'
 	| 'knowledge_transfer'
 	| 'rules'
@@ -29,44 +36,36 @@ export type WorkspaceModuleKey =
 
 export interface WorkspaceModule {
 	key: WorkspaceModuleKey;
-	i18nKey: string;
 	colorClass: string;
 }
 
 export const workspaceModules: WorkspaceModule[] = [
 	{
-		key: 'goals_planning',
-		i18nKey: 'workspace.module.goals_planning',
+		key: 'goal_setting',
 		colorClass: 'menu-segment--goals'
 	},
 	{
 		key: 'implementation_planning',
-		i18nKey: 'workspace.module.implementation_planning',
 		colorClass: 'menu-segment--implementation'
 	},
 	{
-		key: 'effect_measurement',
-		i18nKey: 'workspace.module.effect_measurement',
+		key: 'impact_measurement',
 		colorClass: 'menu-segment--effects'
 	},
 	{
 		key: 'resource_planning',
-		i18nKey: 'workspace.module.resource_planning',
 		colorClass: 'menu-segment--resources'
 	},
 	{
 		key: 'knowledge_transfer',
-		i18nKey: 'workspace.module.knowledge_transfer',
 		colorClass: 'menu-segment--knowledge'
 	},
 	{
 		key: 'rules',
-		i18nKey: 'workspace.module.rules',
 		colorClass: 'menu-segment--rules'
 	},
 	{
 		key: 'organizing',
-		i18nKey: 'workspace.module.organizing',
 		colorClass: 'menu-segment--organize'
 	}
 ];
@@ -85,8 +84,6 @@ export type WorkspaceViewKey = 'page' | 'catalog' | 'level' | 'status' | 'table'
 
 export interface WorkspaceDefinition {
 	key: string;
-	i18nKey: string;
-	helperI18nKey: string;
 	icon: Component<SvelteHTMLElements['svg']>;
 	module: WorkspaceModuleKey;
 	/** Map view → URL path (without context segment). The `default` view is the entry view. */
@@ -108,10 +105,8 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Goals planning
 	{
 		key: 'strategies',
-		i18nKey: 'workspace.type.strategies',
-		helperI18nKey: 'workspace.helper.strategies',
 		icon: Compass,
-		module: 'goals_planning',
+		module: 'goal_setting',
 		views: {
 			default: '/strategies/catalog',
 			catalog: '/strategies/catalog',
@@ -122,10 +117,8 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'goals',
-		i18nKey: 'workspace.type.goals',
-		helperI18nKey: 'workspace.helper.goals',
 		icon: Goal,
-		module: 'goals_planning',
+		module: 'goal_setting',
 		views: {
 			default: '/goals/level',
 			catalog: '/goals/catalog',
@@ -136,10 +129,8 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'federal-levels',
-		i18nKey: 'workspace.type.federal_levels',
-		helperI18nKey: 'workspace.helper.federal_levels',
 		icon: Program,
-		module: 'goals_planning',
+		module: 'goal_setting',
 		views: {
 			default: '/programs/level',
 			level: '/programs/level'
@@ -148,8 +139,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Implementation planning
 	{
 		key: 'measures',
-		i18nKey: 'workspace.type.measures',
-		helperI18nKey: 'workspace.helper.measures',
 		icon: Clipboard,
 		module: 'implementation_planning',
 		views: {
@@ -161,8 +150,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'measure-monitoring',
-		i18nKey: 'workspace.type.measure_monitoring',
-		helperI18nKey: 'workspace.helper.measure_monitoring',
 		icon: ChartBar,
 		module: 'implementation_planning',
 		views: {
@@ -172,8 +159,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'tasks',
-		i18nKey: 'workspace.type.tasks',
-		helperI18nKey: 'workspace.helper.tasks',
 		icon: ClipboardCheck,
 		module: 'implementation_planning',
 		views: {
@@ -186,10 +171,8 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Effect measurement
 	{
 		key: 'indicators',
-		i18nKey: 'workspace.type.indicators',
-		helperI18nKey: 'workspace.helper.indicators',
 		icon: ChartBar,
-		module: 'effect_measurement',
+		module: 'impact_measurement',
 		views: {
 			default: '/indicators/catalog',
 			catalog: '/indicators/catalog',
@@ -199,10 +182,8 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'reports',
-		i18nKey: 'workspace.type.reports',
-		helperI18nKey: 'workspace.helper.reports',
 		icon: Chapter,
-		module: 'effect_measurement',
+		module: 'impact_measurement',
 		views: {
 			default: '/reports/catalog',
 			catalog: '/reports/catalog'
@@ -210,10 +191,8 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'objectives-and-effects',
-		i18nKey: 'workspace.type.objectives_and_effects',
-		helperI18nKey: 'workspace.helper.objectives_and_effects',
 		icon: ChartMixed,
-		module: 'effect_measurement',
+		module: 'impact_measurement',
 		views: {
 			default: '/objectives-and-effects',
 			level: '/objectives-and-effects'
@@ -223,8 +202,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Resource planning
 	{
 		key: 'resources',
-		i18nKey: 'workspace.type.resources',
-		helperI18nKey: 'workspace.helper.resources',
 		icon: Resources,
 		module: 'resource_planning',
 		views: {
@@ -237,8 +214,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Knowledge transfer
 	{
 		key: 'guides',
-		i18nKey: 'workspace.type.guides',
-		helperI18nKey: 'workspace.helper.guides',
 		icon: Help,
 		module: 'knowledge_transfer',
 		views: {
@@ -249,8 +224,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'knowledge',
-		i18nKey: 'workspace.type.knowledge',
-		helperI18nKey: 'workspace.helper.knowledge',
 		icon: Compass,
 		module: 'knowledge_transfer',
 		views: {
@@ -263,8 +236,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Rules
 	{
 		key: 'set-of-rules',
-		i18nKey: 'workspace.type.set_of_rules',
-		helperI18nKey: 'workspace.helper.set_of_rules',
 		icon: Gavel,
 		module: 'rules',
 		views: {
@@ -276,8 +247,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'rules',
-		i18nKey: 'workspace.type.rules',
-		helperI18nKey: 'workspace.helper.rules',
 		icon: Gavel,
 		module: 'rules',
 		views: {
@@ -288,8 +257,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Organizing
 	{
 		key: 'pages',
-		i18nKey: 'workspace.type.pages',
-		helperI18nKey: 'workspace.helper.pages',
 		icon: LandingPage,
 		module: 'organizing',
 		views: {
@@ -299,8 +266,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'templates',
-		i18nKey: 'workspace.type.templates',
-		helperI18nKey: 'workspace.helper.templates',
 		icon: Collection,
 		module: 'organizing',
 		views: {
@@ -310,8 +275,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'categories',
-		i18nKey: 'workspace.type.categories',
-		helperI18nKey: 'workspace.helper.categories',
 		icon: Tag,
 		module: 'organizing',
 		views: {
@@ -321,8 +284,6 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'overview',
-		i18nKey: 'workspace.type.overview',
-		helperI18nKey: 'workspace.helper.overview',
 		icon: Objects,
 		module: 'organizing',
 		views: {
@@ -343,8 +304,7 @@ interface VisibilityContext {
 	organization: OrganizationContainer;
 	organizationalUnit?: OrganizationalUnitContainer | null;
 	features: WorkspaceFeatureDecisions;
-	/** Returns true if the user is allowed to see / create the given workspace key. */
-	hasPermission?: (workspaceKey: string) => boolean;
+	ability?: MongoAbility;
 }
 
 /**
@@ -364,7 +324,7 @@ interface VisibilityContext {
  *   (e.g. categories require `mayCreateContainer` permission).
  */
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
-	const { organization, organizationalUnit, features, hasPermission } = ctx;
+	const { organization, organizationalUnit, features, ability } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const enabledBoards = new Set(selectedContext.payload.boards);
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
@@ -379,8 +339,24 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		if (workspace.boardFlag && !enabledBoards.has(workspace.boardFlag)) {
 			return false;
 		}
-		if (hasPermission && !hasPermission(workspace.key)) {
-			return false;
+		if (ability) {
+			if (workspace.key === 'categories') {
+				const container = containerOfType(
+					payloadTypes.enum.category,
+					organization.guid,
+					organizationalUnit?.guid ?? null,
+					selectedContext.guid,
+					''
+				);
+				if (!ability.can('create', container)) {
+					return false;
+				}
+			}
+			if (workspace.key === 'tasks') {
+				if ('default' in selectedContext.payload && selectedContext.payload.default) {
+					return false;
+				}
+			}
 		}
 		if (explicitSet.size === 0) {
 			return true;

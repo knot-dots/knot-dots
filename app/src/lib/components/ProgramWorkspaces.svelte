@@ -119,13 +119,13 @@
 		{
 			exists: true,
 			icon: Objects,
-			label: $_('workspace.type.all'),
+			label: $_('workspace.all.title'),
 			value: workspacesLeft.all[selectedItem[1]] ?? '/all/level'
 		},
 		{
 			exists: true,
 			icon: Clipboard,
-			label: $_('workspace.type.measures'),
+			label: $_('workspace.measures.title'),
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
 		...(createFeatureDecisions(page.data.features).useResourcePlanning()
@@ -133,7 +133,7 @@
 					{
 						exists: true,
 						icon: Resources,
-						label: $_('workspace.type.resources'),
+						label: $_('workspace.resources.title'),
 						value: workspacesLeft.resources[selectedItem[1]] ?? '/resources/catalog'
 					}
 				]
@@ -143,7 +143,7 @@
 					{
 						exists: true,
 						icon: ChartBar,
-						label: $_('workspace.type.indicators'),
+						label: $_('workspace.indicators.title'),
 						value: workspacesLeft.indicators[selectedItem[1]] ?? '/indicators/catalog'
 					}
 				]

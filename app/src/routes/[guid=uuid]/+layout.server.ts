@@ -17,7 +17,7 @@ function pageTitle(url: URL) {
 	}
 
 	return (
-		unwrapFunctionStore(_)('workspace.type.' + workspaceType) +
+		unwrapFunctionStore(_)('workspace.' + workspaceType + '.title') +
 		' / ' +
 		unwrapFunctionStore(_)('workspace.view.' + workspaceView)
 	);
