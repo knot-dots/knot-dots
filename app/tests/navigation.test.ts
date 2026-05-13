@@ -50,10 +50,13 @@ test('workspaces mega-menu groups workspaces by module', async ({ page, testOrga
 
 test('Organization menu links to workspace or landing page', async ({
 	defaultOrganization,
+	isMobile,
 	landingPage,
 	page,
 	testOrganization
 }) => {
+	test.skip(isMobile, 'Sidebar is not visible on mobile');
+
 	await page.goto(`/${defaultOrganization.guid}/all/level`);
 
 	const nav = page.getByRole('navigation');
