@@ -19,7 +19,6 @@
 		type AnyContainer,
 		type CustomCollectionContainer,
 		isOrganizationalUnitContainer,
-		type PayloadType,
 		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -57,7 +56,7 @@
 		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
 		payloadTypes.enum.task
-	] satisfies PayloadType[]);
+	] as string[]);
 
 	const categoryContext = $derived(
 		filterCategoryContext(
@@ -154,7 +153,27 @@
 		}
 	);
 
-	let facets = $derived(searchResource.current?.facets ?? new Map<string, Map<string, number>>());
+	let facets = $derived(
+		searchResource.current
+			? new Map([
+					...[...searchResource.current.facets].filter(([k]) => categoryContext.keys.includes(k)),
+					...((filter.type?.length == 1 && filter.type[0] == 'program'
+						? [['programType', searchResource.current.facets.get('programType')!]]
+						: []) as Array<[string, Map<string, number>]>),
+					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
+						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
+						: []) as Array<[string, Map<string, number>]>),
+					[
+						'type',
+						new Map(
+							[...(searchResource.current.facets.get('type') ?? [])].filter(([k]) =>
+								defaultPayloadType.includes(k)
+							)
+						)
+					]
+				])
+			: new Map<string, Map<string, number>>()
+	);
 
 	$effect(() => {
 		const result = searchResource.current;
