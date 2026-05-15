@@ -206,28 +206,6 @@ function buildFilters(
 	};
 }
 
-function buildElasticsearchFilters(
-	params: ContainerQueryParams,
-	customCategories: Record<string, string[]>
-) {
-	return {
-		administrativeTypes: params.administrativeType,
-		assignees: params.assignee,
-		customCategories,
-		federalStates: params.federalState,
-		guid: params.guid,
-		indicatorCategories: params.indicatorCategory,
-		indicatorTypes: params.indicatorType,
-		organizationalUnits: params.organizationalUnit,
-		programTypes: params.programType,
-		resourceCategories: params.resourceCategory,
-		taskCategories: params.taskCategory,
-		template: params.template,
-		terms: params.terms,
-		type: params.payloadType.length > 0 ? params.payloadType : params.type
-	};
-}
-
 function canUseElasticsearch(params: ContainerQueryParams) {
 	return (
 		params.relatedTo.length === 0 &&
@@ -333,11 +311,8 @@ export async function loadContainerV2(params: {
 	let esFacets: Record<string, Record<string, number>> | undefined;
 
 	if (useElasticsearch) {
-		const esFilters = buildElasticsearchFilters(scopedQuery, customCategories);
-		if (ouOverrides.organizationalUnits !== undefined) {
-			esFilters.organizationalUnits = ouOverrides.organizationalUnits;
-		}
-		const result = await getManyContainersWithES(scopedQuery.organization, esFilters, query.sort, {
+		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
+		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
 			includeFacets: true
 		});
