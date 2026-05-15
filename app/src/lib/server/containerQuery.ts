@@ -10,11 +10,11 @@ import {
 	administrativeTypes,
 	type AnyContainer,
 	computeFacetCount,
+	findDescendants,
 	fromCounts,
 	indicatorCategories,
 	indicatorTypes,
 	measureTypes,
-	type OrganizationalUnitContainer,
 	payloadTypes,
 	predicates,
 	programTypes,
@@ -27,7 +27,6 @@ import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
 	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
@@ -61,9 +60,7 @@ const querySchema = z.object({
 	indicator: z.array(z.string().uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
-	included: z
-		.array(z.enum(['subordinate_organizational_units']))
-		.default(['subordinate_organizational_units']),
+	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
@@ -111,6 +108,8 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 						? url.searchParams.getAll('relatedTo')
 						: url.searchParams.getAll('related-to')
 				];
+			} else if (key === 'included' && !url.searchParams.has('includedChanged')) {
+				return [key, ['subordinate_organizational_units']];
 			}
 			return [key, url.searchParams.has(key) ? url.searchParams.getAll(key) : undefined];
 		})
@@ -246,17 +245,6 @@ async function loadCategoryContextForQuery(
 	});
 }
 
-function expandOrganizationalUnitScope(
-	allRelated: OrganizationalUnitContainer[],
-	currentOrgUnit: OrganizationalUnitContainer
-): { organizationalUnits: string[] } {
-	const subordinateGuids = allRelated
-		.filter((u) => u.payload.level > currentOrgUnit.payload.level)
-		.map((u) => u.guid);
-
-	return { organizationalUnits: [currentOrgUnit.guid, ...subordinateGuids] };
-}
-
 export async function loadContainerV2(params: {
 	locals: App.Locals;
 	url: URL;
@@ -289,19 +277,26 @@ export async function loadContainerV2(params: {
 			? filterCategoryContext(categoryContext, scopedQuery.type)
 			: categoryContext;
 
-	// Expand organizational unit scope from the context's current org unit, unless the caller
-	// explicitly passed organizationalUnit params or the query uses related-to (no ou filtering).
-	let ouOverrides: { organizationalUnits?: string[] | null } = {};
-	const currentOrgUnit = applicationContext?.currentOrganizationalUnit;
-	if (
-		currentOrgUnit &&
-		scopedQuery.relatedTo.length === 0 &&
-		(scopedQuery.organizationalUnit === null || scopedQuery.organizationalUnit.length === 0)
-	) {
-		const allRelated = await params.locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrgUnit.guid)
-		);
-		ouOverrides = expandOrganizationalUnitScope(allRelated, currentOrgUnit);
+	const ouOverrides: { organizationalUnits?: string[] | null } = {};
+
+	if (applicationContext) {
+		if (applicationContext.currentOrganizationalUnit) {
+			if (scopedQuery.included.includes('subordinate_organizational_units')) {
+				ouOverrides.organizationalUnits = findDescendants(
+					applicationContext.currentOrganizationalUnit,
+					applicationContext.organizationalUnits,
+					[predicates.enum['is-part-of']]
+				).map(({ guid }) => guid);
+			} else {
+				ouOverrides.organizationalUnits = [applicationContext.currentOrganizationalUnit.guid];
+			}
+		} else {
+			if (scopedQuery.included.includes('subordinate_organizational_units')) {
+				ouOverrides.organizationalUnits = [];
+			} else {
+				ouOverrides.organizationalUnits = null;
+			}
+		}
 	}
 
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
