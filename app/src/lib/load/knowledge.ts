@@ -1,16 +1,34 @@
+import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { type KnowledgeContainer, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
-export default (async function load({ depends, fetch, params, url }) {
+export default (async function load({ depends, fetch, params, parent, url }) {
 	depends('containers');
 
-	return await fetchContainerPage<KnowledgeContainer>({
-		contextGuid: params.guid,
-		fetch,
-		limit: DEFAULT_PAGE_SIZE,
-		offset: 0,
-		query: new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.knowledge]])
-	});
+	const [data, { categoryContext, currentOrganization }] = await Promise.all([
+		fetchContainerPage<KnowledgeContainer>({
+			contextGuid: params.guid,
+			fetch,
+			limit: DEFAULT_PAGE_SIZE,
+			offset: 0,
+			query: new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.knowledge]])
+		}),
+		parent()
+	]);
+
+	const filteredCategoryContext = filterCategoryContext(categoryContext, [
+		payloadTypes.enum.knowledge
+	]);
+
+	return {
+		...data,
+		facets: new Map([
+			...((!currentOrganization.payload.default
+				? [['included', new Map<string, number>()]]
+				: []) as Array<[string, Map<string, number>]>),
+			...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
+		])
+	};
 } satisfies PageServerLoad);
