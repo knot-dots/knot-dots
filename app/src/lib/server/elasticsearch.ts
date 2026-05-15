@@ -23,44 +23,41 @@ type ContainerElasticsearchOptions = ContainerQueryOptions & {
 
 const defaultFacetKeys = [
 	'administrativeType',
+	'assignee',
 	'federalState',
 	'programType',
-	'measureType',
 	'indicatorCategory',
 	'indicatorType',
 	'taskCategory',
 	'resourceCategory',
 	'resourceUnit',
-	'type',
-	'assignee'
+	'type'
 ] as const;
 
 const facetFieldMap: Record<string, string> = {
 	administrativeType: 'payload.administrativeType',
+	assignee: 'payload.assignee',
 	federalState: 'payload.federalState',
 	programType: 'payload.programType',
-	measureType: 'payload.measureType',
 	indicatorCategory: 'payload.indicatorCategory',
 	indicatorType: 'payload.indicatorType',
 	taskCategory: 'payload.taskCategory',
 	resourceCategory: 'payload.resourceCategory',
 	resourceUnit: 'payload.resourceUnit',
-	type: 'type',
-	assignee: 'payload.assignee'
+	type: 'type'
 };
 
 const facetSizeMap: Record<string, number> = {
 	administrativeType: 20,
+	assignee: 200,
 	federalState: 20,
 	programType: 20,
-	measureType: 20,
 	indicatorCategory: 100,
 	indicatorType: 20,
 	taskCategory: 50,
 	resourceCategory: 20,
 	resourceUnit: 20,
-	type: 50,
-	assignee: 200
+	type: 50
 };
 
 type FacetFilterMap = Record<string, estypes.QueryDslQueryContainer[]>;

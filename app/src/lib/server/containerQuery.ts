@@ -14,7 +14,6 @@ import {
 	fromCounts,
 	indicatorCategories,
 	indicatorTypes,
-	measureTypes,
 	payloadTypes,
 	predicates,
 	programTypes,
@@ -154,20 +153,19 @@ function baseFacetMap(
 			fromCounts(administrativeTypes.options as string[], counts.administrativeType)
 		],
 		['federalState', fromCounts(Object.keys(counts.federalState ?? {}), counts.federalState)],
-		['type', fromCounts(payloadTypes.options as string[], counts.type)],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
-		['measureType', fromCounts(measureTypes.options as string[], counts.measureType)],
 		[
 			'indicatorCategory',
 			fromCounts(indicatorCategories.options as string[], counts.indicatorCategory)
 		],
 		['indicatorType', fromCounts(indicatorTypes.options as string[], counts.indicatorType)],
-		['taskCategory', fromCounts(taskCategories.options as string[], counts.taskCategory)],
 		[
 			'resourceCategory',
 			fromCounts(resourceCategories.options as string[], counts.resourceCategory)
 		],
-		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)]
+		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)],
+		['taskCategory', fromCounts(taskCategories.options as string[], counts.taskCategory)],
+		['type', fromCounts(payloadTypes.options as string[], counts.type)]
 	]);
 
 	for (const [key, values] of buildCategoryFacetsWithCounts(
