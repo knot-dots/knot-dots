@@ -138,7 +138,6 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
-	_facets.set('type', fromCounts(allTypeOptions, data?.type));
 
 	const facets = _facets;
 
