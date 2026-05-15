@@ -218,7 +218,7 @@ function buildElasticsearchFilters(
 		guid: params.guid,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
-		organizationalUnits: params.organizationalUnit ?? undefined,
+		organizationalUnits: params.organizationalUnit,
 		programTypes: params.programType,
 		resourceCategories: params.resourceCategory,
 		taskCategories: params.taskCategory,
@@ -234,8 +234,7 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 		params.excludeRelation.length === 0 &&
 		params.indicator.length === 0 &&
 		params.member.length === 0 &&
-		params.resource.length === 0 &&
-		params.organizationalUnit !== null
+		params.resource.length === 0
 	);
 }
 
@@ -335,7 +334,7 @@ export async function loadContainerV2(params: {
 
 	if (useElasticsearch) {
 		const esFilters = buildElasticsearchFilters(scopedQuery, customCategories);
-		if (ouOverrides.organizationalUnits) {
+		if (ouOverrides.organizationalUnits !== undefined) {
 			esFilters.organizationalUnits = ouOverrides.organizationalUnits;
 		}
 		const result = await getManyContainersWithES(scopedQuery.organization, esFilters, query.sort, {
