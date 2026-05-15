@@ -93,30 +93,20 @@
 	let searchLoadAbortController: AbortController | undefined;
 
 	function buildSearchQuery() {
-		const query = new URLSearchParams();
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
-
-		const orgs =
+		const organization =
 			mode === 'select'
 				? Array.from(new Set([page.data.currentOrganization.guid, ...organizationsUserIsMemberOf]))
 				: [page.data.currentOrganization.guid];
-		for (const org of orgs) query.append('organization', org);
-
-		for (const t of payloadType) query.append('payloadType', t);
-		if (filter.indicatorCategory) {
-			for (const v of filter.indicatorCategory) query.append('indicatorCategory', v);
-		}
-		if (filter.programType) {
-			for (const v of filter.programType) query.append('programType', v);
-		}
-		for (const k of categoryContext.keys) {
-			if (k in filter) {
-				for (const v of filter[k]) query.append(k, v);
-			}
-		}
-		if (terms) query.set('terms', terms);
-		query.set('sort', sort);
-		return query;
+		return new URLSearchParams([
+			...organization.map((org) => ['organization', org]),
+			...payloadType.map((t) => ['payloadType', t]),
+			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
+			...(filter.programType ?? []).map((v) => ['programType', v]),
+			...categoryContext.keys.flatMap((k) => (filter[k] ?? []).map((v) => [k, v])),
+			['terms', terms],
+			['sort', sort]
+		]);
 	}
 
 	interface SearchPage {
