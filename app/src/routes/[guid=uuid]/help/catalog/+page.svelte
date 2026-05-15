@@ -49,7 +49,7 @@
 	);
 </script>
 
-<HelpPage>
+<HelpPage {data}>
 	<Catalog {containers} payloadType={[payloadTypes.enum.help]}>
 		{#snippet footer()}
 			<LazyLoadSentinel

@@ -2,16 +2,19 @@
 	import { type Snippet } from 'svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import { type PageData } from '../../routes/[guid=uuid]/help/catalog/$types';
 
 	interface Props {
 		children: Snippet;
+		data: PageData;
 	}
-	let { children }: Props = $props();
+
+	let { children, data }: Props = $props();
 </script>
 
 <Layout>
 	{#snippet header()}
-		<Header search />
+		<Header facets={data.facets} search />
 	{/snippet}
 
 	{#snippet main()}

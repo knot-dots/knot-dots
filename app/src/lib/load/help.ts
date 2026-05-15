@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { type HelpContainer, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -14,11 +15,26 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	return await fetchContainerPage<HelpContainer>({
-		contextGuid: params.guid,
-		fetch,
-		limit: DEFAULT_PAGE_SIZE,
-		offset: 0,
-		query: new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.help]])
-	});
+	const [data, { categoryContext }] = await Promise.all([
+		fetchContainerPage<HelpContainer>({
+			contextGuid: params.guid,
+			fetch,
+			limit: DEFAULT_PAGE_SIZE,
+			offset: 0,
+			query: new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.help]])
+		}),
+		parent()
+	]);
+
+	const filteredCategoryContext = filterCategoryContext(categoryContext, [payloadTypes.enum.help]);
+
+	return {
+		...data,
+		facets: new Map([
+			...((!currentOrganization.payload.default
+				? [['included', new Map<string, number>()]]
+				: []) as Array<[string, Map<string, number>]>),
+			...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
+		])
+	};
 } satisfies PageServerLoad);
