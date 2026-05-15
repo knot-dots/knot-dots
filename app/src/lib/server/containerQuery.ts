@@ -74,7 +74,6 @@ const querySchema = z.object({
 				.transform(() => null)
 		)
 		.default([]),
-	payloadType: z.array(payloadTypes).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
@@ -107,6 +106,13 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 					url.searchParams.has('relatedTo')
 						? url.searchParams.getAll('relatedTo')
 						: url.searchParams.getAll('related-to')
+				];
+			} else if (key === 'type') {
+				return [
+					key,
+					url.searchParams.has('type')
+						? url.searchParams.getAll('type')
+						: url.searchParams.getAll('payloadType')
 				];
 			} else if (key === 'included' && !url.searchParams.has('includedChanged')) {
 				return [key, ['subordinate_organizational_units']];
@@ -201,7 +207,7 @@ function buildFilters(
 		taskCategories: params.taskCategory,
 		template: params.template,
 		terms: params.terms,
-		type: params.payloadType.length > 0 ? params.payloadType : params.type
+		type: params.type
 	};
 }
 
