@@ -46,10 +46,12 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableCoverSection
-		bind:container
-		editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-	/>
+	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+		<EditableCoverSection
+			bind:container
+			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
+		/>
+	</form>
 	<article>
 		<div
 			class="details stage stage--{container.payload.color
