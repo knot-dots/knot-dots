@@ -76,6 +76,7 @@ test.describe('Measures section', () => {
 
 		// Verify persistence
 		await dotsBoard.page.reload();
+		await subMeasureSection.scrollIntoViewIfNeeded();
 		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
 		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
 	});

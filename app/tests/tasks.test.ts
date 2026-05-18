@@ -62,6 +62,7 @@ test.describe('Subtask creation', () => {
 
 		// Verify persistence
 		await taskStatusBoard.page.reload();
+		await subtaskSection.scrollIntoViewIfNeeded();
 		await expect(subtaskSection.getByTitle(subtaskTitle)).toBeVisible();
 		await expect(subtaskSection.getByTitle(testTask.payload.title)).not.toBeVisible();
 	});

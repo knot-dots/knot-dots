@@ -173,6 +173,7 @@ test.describe('Permissions', () => {
 			await saveResponse;
 
 			// Assert descendant goal' organizational unit is updated, too
+			await section.scrollIntoViewIfNeeded();
 			await section.getByRole('link', { name: titleOfFirstGoal }).click();
 			await expect(
 				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })

@@ -59,6 +59,11 @@ test.describe(() => {
 	test('task badge shows category', async ({ dotsBoard, testGoal, testTask }) => {
 		await dotsBoard.goto(`/${testGoal.organization}`);
 		await dotsBoard.card(testGoal.payload.title).click();
+		const taskSection = dotsBoard.overlay.sections.filter({
+			has: dotsBoard.page.getByRole('heading', { name: /tasks/i })
+		});
+		await taskSection.scrollIntoViewIfNeeded();
+
 		await dotsBoard.overlay.locator.getByText(testTask.payload.title).click();
 
 		await dotsBoard.overlay.editModeToggle.check();
