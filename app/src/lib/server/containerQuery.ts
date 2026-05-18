@@ -10,11 +10,10 @@ import {
 	administrativeTypes,
 	type AnyContainer,
 	computeFacetCount,
+	findDescendants,
 	fromCounts,
 	indicatorCategories,
 	indicatorTypes,
-	measureTypes,
-	type OrganizationalUnitContainer,
 	payloadTypes,
 	predicates,
 	programTypes,
@@ -27,7 +26,6 @@ import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
 	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
 	getManyContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
@@ -61,9 +59,7 @@ const querySchema = z.object({
 	indicator: z.array(z.string().uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
-	included: z
-		.array(z.enum(['subordinate_organizational_units']))
-		.default(['subordinate_organizational_units']),
+	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
@@ -77,7 +73,6 @@ const querySchema = z.object({
 				.transform(() => null)
 		)
 		.default([]),
-	payloadType: z.array(payloadTypes).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
@@ -111,6 +106,15 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 						? url.searchParams.getAll('relatedTo')
 						: url.searchParams.getAll('related-to')
 				];
+			} else if (key === 'type') {
+				return [
+					key,
+					url.searchParams.has('type')
+						? url.searchParams.getAll('type')
+						: url.searchParams.getAll('payloadType')
+				];
+			} else if (key === 'included' && !url.searchParams.has('includedChanged')) {
+				return [key, ['subordinate_organizational_units']];
 			}
 			return [key, url.searchParams.has(key) ? url.searchParams.getAll(key) : undefined];
 		})
@@ -149,20 +153,19 @@ function baseFacetMap(
 			fromCounts(administrativeTypes.options as string[], counts.administrativeType)
 		],
 		['federalState', fromCounts(Object.keys(counts.federalState ?? {}), counts.federalState)],
-		['type', fromCounts(payloadTypes.options as string[], counts.type)],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
-		['measureType', fromCounts(measureTypes.options as string[], counts.measureType)],
 		[
 			'indicatorCategory',
 			fromCounts(indicatorCategories.options as string[], counts.indicatorCategory)
 		],
 		['indicatorType', fromCounts(indicatorTypes.options as string[], counts.indicatorType)],
-		['taskCategory', fromCounts(taskCategories.options as string[], counts.taskCategory)],
 		[
 			'resourceCategory',
 			fromCounts(resourceCategories.options as string[], counts.resourceCategory)
 		],
-		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)]
+		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)],
+		['taskCategory', fromCounts(taskCategories.options as string[], counts.taskCategory)],
+		['type', fromCounts(payloadTypes.options as string[], counts.type)]
 	]);
 
 	for (const [key, values] of buildCategoryFacetsWithCounts(
@@ -202,29 +205,7 @@ function buildFilters(
 		taskCategories: params.taskCategory,
 		template: params.template,
 		terms: params.terms,
-		type: params.payloadType.length > 0 ? params.payloadType : params.type
-	};
-}
-
-function buildElasticsearchFilters(
-	params: ContainerQueryParams,
-	customCategories: Record<string, string[]>
-) {
-	return {
-		administrativeTypes: params.administrativeType,
-		assignees: params.assignee,
-		customCategories,
-		federalStates: params.federalState,
-		guid: params.guid,
-		indicatorCategories: params.indicatorCategory,
-		indicatorTypes: params.indicatorType,
-		organizationalUnits: params.organizationalUnit ?? undefined,
-		programTypes: params.programType,
-		resourceCategories: params.resourceCategory,
-		taskCategories: params.taskCategory,
-		template: params.template,
-		terms: params.terms,
-		type: params.payloadType.length > 0 ? params.payloadType : params.type
+		type: params.type
 	};
 }
 
@@ -234,8 +215,7 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 		params.excludeRelation.length === 0 &&
 		params.indicator.length === 0 &&
 		params.member.length === 0 &&
-		params.resource.length === 0 &&
-		params.organizationalUnit !== null
+		params.resource.length === 0
 	);
 }
 
@@ -267,17 +247,6 @@ async function loadCategoryContextForQuery(
 				: params.organization,
 		user
 	});
-}
-
-function expandOrganizationalUnitScope(
-	allRelated: OrganizationalUnitContainer[],
-	currentOrgUnit: OrganizationalUnitContainer
-): { organizationalUnits: string[] } {
-	const subordinateGuids = allRelated
-		.filter((u) => u.payload.level > currentOrgUnit.payload.level)
-		.map((u) => u.guid);
-
-	return { organizationalUnits: [currentOrgUnit.guid, ...subordinateGuids] };
 }
 
 export async function loadContainerV2(params: {
@@ -312,19 +281,26 @@ export async function loadContainerV2(params: {
 			? filterCategoryContext(categoryContext, scopedQuery.type)
 			: categoryContext;
 
-	// Expand organizational unit scope from the context's current org unit, unless the caller
-	// explicitly passed organizationalUnit params or the query uses related-to (no ou filtering).
-	let ouOverrides: { organizationalUnits?: string[] | null } = {};
-	const currentOrgUnit = applicationContext?.currentOrganizationalUnit;
-	if (
-		currentOrgUnit &&
-		scopedQuery.relatedTo.length === 0 &&
-		(scopedQuery.organizationalUnit === null || scopedQuery.organizationalUnit.length === 0)
-	) {
-		const allRelated = await params.locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrgUnit.guid)
-		);
-		ouOverrides = expandOrganizationalUnitScope(allRelated, currentOrgUnit);
+	const ouOverrides: { organizationalUnits?: string[] | null } = {};
+
+	if (applicationContext) {
+		if (applicationContext.currentOrganizationalUnit) {
+			if (scopedQuery.included.includes('subordinate_organizational_units')) {
+				ouOverrides.organizationalUnits = findDescendants(
+					applicationContext.currentOrganizationalUnit,
+					applicationContext.organizationalUnits,
+					[predicates.enum['is-part-of']]
+				).map(({ guid }) => guid);
+			} else {
+				ouOverrides.organizationalUnits = [applicationContext.currentOrganizationalUnit.guid];
+			}
+		} else {
+			if (scopedQuery.included.includes('subordinate_organizational_units')) {
+				ouOverrides.organizationalUnits = [];
+			} else {
+				ouOverrides.organizationalUnits = null;
+			}
+		}
 	}
 
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
@@ -334,11 +310,8 @@ export async function loadContainerV2(params: {
 	let esFacets: Record<string, Record<string, number>> | undefined;
 
 	if (useElasticsearch) {
-		const esFilters = buildElasticsearchFilters(scopedQuery, customCategories);
-		if (ouOverrides.organizationalUnits) {
-			esFilters.organizationalUnits = ouOverrides.organizationalUnits;
-		}
-		const result = await getManyContainersWithES(scopedQuery.organization, esFilters, query.sort, {
+		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
+		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
 			includeFacets: true
 		});

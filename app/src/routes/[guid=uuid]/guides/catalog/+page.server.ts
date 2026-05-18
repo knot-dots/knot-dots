@@ -1,5 +1,3 @@
-import { GUIDE_PROGRAM_TYPES, loadProgramsFilteredBy } from '$lib/load/programsFiltered';
-import type { PageServerLoad } from './$types';
+import guides from '$lib/load/guides';
 
-export const load = ((event) =>
-	loadProgramsFilteredBy(event, GUIDE_PROGRAM_TYPES)) satisfies PageServerLoad;
+export const load = guides;

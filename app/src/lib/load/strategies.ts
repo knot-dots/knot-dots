@@ -1,19 +1,15 @@
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import {
-	type MeasureContainer,
-	type SimpleMeasureContainer,
-	payloadTypes,
-	predicates
-} from '$lib/models';
+import { type ProgramContainer, payloadTypes, predicates } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-import type { PageServerLoad } from '../../routes/[guid=uuid]/measures/$types';
+import { strategyProgramTypes } from '$lib/workspaces';
+import type { PageServerLoad } from '../../routes/[guid=uuid]/strategies/$types';
 
 const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-consistent-with'],
 	predicates.enum['is-equivalent-to'],
 	predicates.enum['is-inconsistent-with'],
-	predicates.enum['is-prerequisite-for']
+	predicates.enum['is-superordinate-of']
 ];
 
 export const loadPage = (limit: number) =>
@@ -22,8 +18,8 @@ export const loadPage = (limit: number) =>
 
 		const query = new URLSearchParams([
 			...url.searchParams,
-			['type', payloadTypes.enum.measure],
-			['type', payloadTypes.enum.simple_measure]
+			...strategyProgramTypes.map((t) => ['programType', t]),
+			['type', payloadTypes.enum.program]
 		]);
 
 		if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
@@ -31,7 +27,7 @@ export const loadPage = (limit: number) =>
 		}
 
 		const [data, { categoryContext, currentOrganization }] = await Promise.all([
-			fetchContainerPage<MeasureContainer | SimpleMeasureContainer>({
+			fetchContainerPage<ProgramContainer>({
 				contextGuid: params.guid,
 				fetch,
 				limit,
@@ -42,8 +38,7 @@ export const loadPage = (limit: number) =>
 		]);
 
 		const filteredCategoryContext = filterCategoryContext(categoryContext, [
-			payloadTypes.enum.measure,
-			payloadTypes.enum.simple_measure
+			payloadTypes.enum.program
 		]);
 
 		return {

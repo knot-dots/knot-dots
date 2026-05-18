@@ -1,28 +1,47 @@
+import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { type RuleContainer, payloadTypes, predicates } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/rules/$types';
 
-const DEFAULT_RELATION_TYPES = [
-	predicates.enum['is-consistent-with'],
-	predicates.enum['is-equivalent-to'],
-	predicates.enum['is-inconsistent-with']
-];
+const DEFAULT_RELATION_TYPES = [predicates.enum['is-inconsistent-with']] as string[];
 
-export default (async function load({ depends, fetch, params, url }) {
-	depends('containers');
+export const loadPage = (limit: number) =>
+	(async ({ depends, fetch, params, parent, url }) => {
+		depends('containers');
 
-	const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.rule]]);
+		const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.rule]]);
 
-	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
-		for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
-	}
+		if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
+			for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
+		}
 
-	return await fetchContainerPage<RuleContainer>({
-		contextGuid: params.guid,
-		fetch,
-		limit: DEFAULT_PAGE_SIZE,
-		offset: 0,
-		query
-	});
-} satisfies PageServerLoad);
+		const [data, { categoryContext, currentOrganization }] = await Promise.all([
+			fetchContainerPage<RuleContainer>({
+				contextGuid: params.guid,
+				fetch,
+				limit,
+				offset: 0,
+				query
+			}),
+			parent()
+		]);
+
+		const filteredCategoryContext = filterCategoryContext(categoryContext, [
+			payloadTypes.enum.rule
+		]);
+
+		return {
+			...data,
+			facets: url.searchParams.has('related-to')
+				? new Map([['relationType', new Map(DEFAULT_RELATION_TYPES.map((rt) => [rt, 0]))]])
+				: new Map([
+						...((!currentOrganization.payload.default
+							? [['included', new Map<string, number>()]]
+							: []) as Array<[string, Map<string, number>]>),
+						...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
+					])
+		};
+	}) satisfies PageServerLoad;
+
+export default loadPage(DEFAULT_PAGE_SIZE);

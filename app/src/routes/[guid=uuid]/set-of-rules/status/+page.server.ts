@@ -1,5 +1,3 @@
-import { SET_OF_RULES_PROGRAM_TYPES, loadProgramsFilteredBy } from '$lib/load/programsFiltered';
-import type { PageServerLoad } from './$types';
+import { loadPage } from '$lib/load/set-of-rules';
 
-export const load = ((event) =>
-	loadProgramsFilteredBy(event, SET_OF_RULES_PROGRAM_TYPES)) satisfies PageServerLoad;
+export const load = loadPage(10_000);

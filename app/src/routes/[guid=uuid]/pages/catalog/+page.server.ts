@@ -1,6 +1,18 @@
-import { loadAllFilteredBy } from '$lib/load/allFiltered';
-import { payloadTypes } from '$lib/models';
+import fetchContainerPage from '$lib/client/fetchContainerPage';
+import { type PageContainer, payloadTypes } from '$lib/models';
+import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from './$types';
 
-export const load = ((event) =>
-	loadAllFilteredBy(event, [payloadTypes.enum.page])) satisfies PageServerLoad;
+export const load = (async ({ depends, fetch, params, url }) => {
+	depends('containers');
+
+	const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.page]]);
+
+	return await fetchContainerPage<PageContainer>({
+		contextGuid: params.guid,
+		fetch,
+		limit: DEFAULT_PAGE_SIZE,
+		offset: 0,
+		query
+	});
+}) satisfies PageServerLoad;

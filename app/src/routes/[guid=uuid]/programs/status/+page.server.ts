@@ -1,4 +1,3 @@
-import programs from '$lib/load/programs';
-import type { PageServerLoad } from '../$types';
+import { loadPage } from '$lib/load/programs';
 
-export const load = programs satisfies PageServerLoad;
+export const load = loadPage(10_000);

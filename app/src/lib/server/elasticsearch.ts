@@ -23,44 +23,41 @@ type ContainerElasticsearchOptions = ContainerQueryOptions & {
 
 const defaultFacetKeys = [
 	'administrativeType',
+	'assignee',
 	'federalState',
 	'programType',
-	'measureType',
 	'indicatorCategory',
 	'indicatorType',
 	'taskCategory',
 	'resourceCategory',
 	'resourceUnit',
-	'type',
-	'assignee'
+	'type'
 ] as const;
 
 const facetFieldMap: Record<string, string> = {
 	administrativeType: 'payload.administrativeType',
+	assignee: 'payload.assignee',
 	federalState: 'payload.federalState',
 	programType: 'payload.programType',
-	measureType: 'payload.measureType',
 	indicatorCategory: 'payload.indicatorCategory',
 	indicatorType: 'payload.indicatorType',
 	taskCategory: 'payload.taskCategory',
 	resourceCategory: 'payload.resourceCategory',
 	resourceUnit: 'payload.resourceUnit',
-	type: 'type',
-	assignee: 'payload.assignee'
+	type: 'type'
 };
 
 const facetSizeMap: Record<string, number> = {
 	administrativeType: 20,
+	assignee: 200,
 	federalState: 20,
 	programType: 20,
-	measureType: 20,
 	indicatorCategory: 100,
 	indicatorType: 20,
 	taskCategory: 50,
 	resourceCategory: 20,
 	resourceUnit: 20,
-	type: 50,
-	assignee: 200
+	type: 50
 };
 
 type FacetFilterMap = Record<string, estypes.QueryDslQueryContainer[]>;
@@ -135,7 +132,7 @@ export async function getManyContainersWithES(
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
-		organizationalUnits?: string[];
+		organizationalUnits?: string[] | null;
 		programTypes?: string[];
 		resourceCategories?: string[];
 		taskCategories?: string[];
@@ -155,49 +152,66 @@ export async function getManyContainersWithES(
 			multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
 		});
 	}
-	if (filters.type?.length) addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
-	if (filters.administrativeTypes?.length)
+	if (filters.type?.length) {
+		addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
+	}
+	if (filters.administrativeTypes?.length) {
 		addFacetFilter(facetFilters, 'administrativeType', {
 			terms: { 'payload.administrativeType': filters.administrativeTypes }
 		});
-	if (filters.federalStates?.length)
+	}
+	if (filters.federalStates?.length) {
 		addFacetFilter(facetFilters, 'federalState', {
 			terms: { 'payload.federalState': filters.federalStates }
 		});
-	if (filters.guid?.length) nonFacetFilters.push({ terms: { guid: filters.guid } });
-	if (filters.programTypes?.length)
+	}
+	if (filters.guid?.length) {
+		nonFacetFilters.push({ terms: { guid: filters.guid } });
+	}
+	if (filters.programTypes?.length) {
 		addFacetFilter(facetFilters, 'programType', {
 			terms: { 'payload.programType': filters.programTypes }
 		});
-	if (filters.indicatorCategories?.length)
+	}
+	if (filters.indicatorCategories?.length) {
 		addFacetFilter(facetFilters, 'indicatorCategory', {
 			terms: { 'payload.indicatorCategory': filters.indicatorCategories }
 		});
-	if (filters.indicatorTypes?.length)
+	}
+	if (filters.indicatorTypes?.length) {
 		addFacetFilter(facetFilters, 'indicatorType', {
 			terms: { 'payload.indicatorType': filters.indicatorTypes }
 		});
-	if (filters.taskCategories?.length)
+	}
+	if (filters.taskCategories?.length) {
 		addFacetFilter(facetFilters, 'taskCategory', {
 			terms: { 'payload.taskCategory': filters.taskCategories }
 		});
-	if (filters.resourceCategories?.length)
+	}
+	if (filters.resourceCategories?.length) {
 		addFacetFilter(facetFilters, 'resourceCategory', {
 			terms: { 'payload.resourceCategory': filters.resourceCategories }
 		});
+	}
 	if (filters.customCategories) {
 		for (const [key, values] of Object.entries(filters.customCategories)) {
 			if (!values?.length) continue;
 			addFacetFilter(facetFilters, key, { terms: { [`payload.category.${key}`]: values } });
 		}
 	}
-	if (filters.assignees?.length)
+	if (filters.assignees?.length) {
 		addFacetFilter(facetFilters, 'assignee', {
 			terms: { 'payload.assignee': filters.assignees }
 		});
-	if (filters.organizationalUnits?.length)
+	}
+	if (filters.organizationalUnits == null) {
+		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
+	} else if (filters.organizationalUnits?.length) {
 		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
-	if (organizations.length) nonFacetFilters.push({ terms: { organization: organizations } });
+	}
+	if (organizations.length) {
+		nonFacetFilters.push({ terms: { organization: organizations } });
+	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
 	} else {

@@ -3,9 +3,9 @@
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import AllPage from '$lib/components/AllPage.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import RulesPage from '$lib/components/RulesPage.svelte';
 	import { type RuleContainer, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
@@ -47,7 +47,7 @@
 	);
 </script>
 
-<AllPage {data} filterBarInitiallyOpen>
+<RulesPage {data} filterBarInitiallyOpen>
 	<Catalog {containers} payloadType={[payloadTypes.enum.rule]}>
 		{#snippet footer()}
 			<LazyLoadSentinel
@@ -57,4 +57,4 @@
 			/>
 		{/snippet}
 	</Catalog>
-</AllPage>
+</RulesPage>
