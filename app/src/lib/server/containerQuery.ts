@@ -286,11 +286,14 @@ export async function loadContainerV2(params: {
 	if (applicationContext) {
 		if (applicationContext.currentOrganizationalUnit) {
 			if (scopedQuery.included.includes('subordinate_organizational_units')) {
-				ouOverrides.organizationalUnits = findDescendants(
-					applicationContext.currentOrganizationalUnit,
-					applicationContext.organizationalUnits,
-					[predicates.enum['is-part-of']]
-				).map(({ guid }) => guid);
+				ouOverrides.organizationalUnits = [
+					applicationContext.currentOrganizationalUnit.guid,
+					...findDescendants(
+						applicationContext.currentOrganizationalUnit,
+						applicationContext.organizationalUnits,
+						[predicates.enum['is-part-of']]
+					).map(({ guid }) => guid)
+				];
 			} else {
 				ouOverrides.organizationalUnits = [applicationContext.currentOrganizationalUnit.guid];
 			}
