@@ -204,7 +204,7 @@ export async function getManyContainersWithES(
 			terms: { 'payload.assignee': filters.assignees }
 		});
 	}
-	if (filters.organizationalUnits == null) {
+	if (filters.organizationalUnits === null) {
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
 	} else if (filters.organizationalUnits?.length) {
 		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
