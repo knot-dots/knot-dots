@@ -56,10 +56,12 @@
 					'alpha',
 					{ signal }
 				);
-				return all.filter((item) =>
-					item.relation.some(
-						(r) => r.predicate === predicates.enum['is-part-of'] && r.object === parent.guid
-					)
+				return all.filter(
+					(item) =>
+						item.guid !== parent.guid &&
+						item.relation.some(
+							(r) => r.predicate === predicates.enum['is-part-of'] && r.object === parent.guid
+						)
 				);
 			}
 			return fetchContainers(
