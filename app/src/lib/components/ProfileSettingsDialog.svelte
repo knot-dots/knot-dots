@@ -172,6 +172,14 @@
 		margin-bottom: 1rem;
 	}
 
+	fieldset :global(label) {
+		color: var(--color-gray-700);
+	}
+
+	li {
+		padding: 0.25rem 0;
+	}
+
 	input {
 		border: none;
 		border-radius: 4px;
