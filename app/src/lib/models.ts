@@ -558,7 +558,9 @@ const taskCategoryValues = [
 	'task_category.bugfix',
 	'task_category.design',
 	'task_category.function',
-	'task_category.wording'
+	'task_category.wording',
+	'task_category.user_story',
+	'task_category.epic'
 ] as const;
 
 export const taskCategories = z.enum(taskCategoryValues);

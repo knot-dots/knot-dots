@@ -769,9 +769,11 @@
 		"bugfix": "Fehler",
 		"default": "Aufgabe",
 		"design": "Design",
+		"epic": "Epic",
 		"function": "Funktion",
 		"label": "Kategorie",
 		"program_management": "Programm-Management",
+		"user_story": "User Story",
 		"wording": "Formulierung"
 	},
 	"task_status": {

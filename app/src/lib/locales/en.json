@@ -768,9 +768,11 @@
 		"bugfix": "Bug fix",
 		"default": "Task",
 		"design": "Design",
+		"epic": "Epic",
 		"function": "Function",
 		"label": "Category",
 		"program_management": "Program management",
+		"user_story": "User story",
 		"wording": "Wording"
 	},
 	"task_status": {
