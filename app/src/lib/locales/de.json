@@ -476,6 +476,7 @@
 	"logo": "Logo",
 	"logout": "Abmelden",
 	"managed_by": "Verantwortlich für die Ausarbeitung",
+	"matomo_opt_out": "Webanalyse-Opt-Out",
 	"measure": "Maßnahme",
 	"measure.hierarchy_level": "Umsetzungs-Ebene",
 	"measure_by_hierarchy_level": "Umsetzungs-Ebene {level}",

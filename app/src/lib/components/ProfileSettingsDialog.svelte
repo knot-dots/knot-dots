@@ -97,6 +97,14 @@
 			</fieldset>
 
 			<fieldset>
+				<legend>{$_('matomo_opt_out')}</legend>
+				<div id="matomo-opt-out"></div>
+				<script
+					src="https://knotdots.matomo.cloud/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=auto&showIntro=0"
+				></script>
+			</fieldset>
+
+			<fieldset>
 				<legend>{$_('feature_flags')}</legend>
 				<ul>
 					{#each featureFlags.entries() as [key, value] (key)}
@@ -138,6 +146,19 @@
 		container-type: inline-size;
 		overflow: auto;
 		padding: 1.5rem;
+	}
+
+	div#matomo-opt-out {
+		padding: 0;
+	}
+
+	div#matomo-opt-out :global(strong) {
+		font-weight: inherit;
+	}
+
+	div#matomo-opt-out :global(input) {
+		margin: 0 0.5rem 0 0;
+		vertical-align: -1px;
 	}
 
 	@media (min-width: 768px) {
