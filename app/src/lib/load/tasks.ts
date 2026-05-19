@@ -121,7 +121,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 				[string, Map<string, number>]
 			>),
 			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
-			['assignee', fromCounts([], data?.assignee)]
+			['assignee', fromCounts(Object.keys(data?.assignee ?? []), data?.assignee)]
 		]);
 
 		for (const [key, facetMap] of buildCategoryFacetsWithCounts(categoryContext.options)) {
