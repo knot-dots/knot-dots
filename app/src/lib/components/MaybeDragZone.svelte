@@ -14,10 +14,11 @@
 
 	interface Props {
 		containers: AnyContainer[];
+		footer?: Snippet;
 		itemSnippet?: Snippet<[AnyContainer]>;
 	}
 
-	let { containers, itemSnippet }: Props = $props();
+	let { containers, footer, itemSnippet }: Props = $props();
 
 	let items = $derived(containers.map((container) => ({ guid: container.guid, container })));
 
@@ -73,6 +74,9 @@
 				{/if}
 			</div>
 		{/each}
+		{#if footer}
+			{@render footer()}
+		{/if}
 	</div>
 {:else}
 	<div class="vertical-scroll-wrapper">
@@ -83,5 +87,8 @@
 				<Card {container} showRelationFilter />
 			{/if}
 		{/each}
+		{#if footer}
+			{@render footer()}
+		{/if}
 	</div>
 {/if}
