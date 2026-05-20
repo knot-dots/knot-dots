@@ -29,7 +29,7 @@
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
-	import SidebarOrgUnitSelect from '$lib/components/SidebarOrgUnitSelect.svelte';
+	import OrganizationalUnitMenu from '$lib/components/OrganizationalUnitMenu.svelte';
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		getOrganizationURL,
@@ -367,7 +367,7 @@
 	{#if organizationalUnits.length > 0}
 		<div class="panel-section" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
 			<div class="panel-header">
-				<SidebarOrgUnitSelect
+				<OrganizationalUnitMenu
 					{defaultOrganization}
 					{organizationalUnits}
 					currentOrganizationalUnit={page.data.currentOrganizationalUnit}
