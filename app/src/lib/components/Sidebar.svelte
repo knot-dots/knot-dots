@@ -28,7 +28,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
-	import SidebarContextSelect from '$lib/components/SidebarContextSelect.svelte';
+	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import SidebarOrgUnitSelect from '$lib/components/SidebarOrgUnitSelect.svelte';
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
@@ -278,7 +278,7 @@
 	<!-- Organization (Mandant) Panel -->
 	<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
 		<div class="panel-header">
-			<SidebarContextSelect
+			<OrganizationMenu
 				{defaultOrganization}
 				options={organizations}
 				selected={page.data.currentOrganization}
