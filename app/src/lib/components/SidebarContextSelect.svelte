@@ -16,10 +16,7 @@
 	import {
 		containerOfType,
 		getOrganizationURL,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
 		type NewContainer,
-		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		payloadTypes
 	} from '$lib/models';
@@ -28,7 +25,7 @@
 
 	interface Props {
 		defaultOrganization?: OrganizationContainer;
-		options: (OrganizationContainer | OrganizationalUnitContainer)[];
+		options: OrganizationContainer[];
 		title: string;
 		children: Snippet;
 	}
@@ -77,23 +74,18 @@
 		}
 	}
 
-	function linkPathForContainer(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function linkPathForContainer(container: OrganizationContainer) {
 		const pathname = pathnameWithoutContextSegment();
-		const organization = isOrganizationContainer(container)
-			? container
-			: page.data.organizations.find(({ guid }) => guid === container.organization);
-		const workspacePaths = organization
-			? getVisibleWorkspaces({
-					organization,
-					organizationalUnit: isOrganizationalUnitContainer(container) ? container : null,
-					features: createFeatureDecisions(page.data.features)
-				}).flatMap((w) => Object.values(w.views))
-			: [];
+		const workspacePaths = getVisibleWorkspaces({
+			organization: container,
+			organizationalUnit: null,
+			features: createFeatureDecisions(page.data.features)
+		}).flatMap((w) => Object.values(w.views));
 
 		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
 	}
 
-	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function optionURL(container: OrganizationContainer) {
 		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
 
