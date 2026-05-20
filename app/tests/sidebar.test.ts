@@ -15,16 +15,15 @@ test('organization dropdown shows options and filters', async ({
 	await page.goto(`/${defaultOrganization.guid}/all/page`);
 
 	const orgButton = page
-		.locator('.context-select-button')
+		.getByRole('button', { name: 'Organizations' })
 		.filter({ hasText: defaultOrganization.payload.name });
 	await orgButton.click();
 
-	const popover = page.locator('.context-select-popover').filter({ hasText: 'Organizations' });
+	const popoverId = await orgButton.getAttribute('aria-controls');
+	const popover = page.locator(`[id="${popoverId}"]`);
 	await expect(popover).toBeVisible();
 
-	await expect(
-		popover.locator('.context-select-option', { hasText: testOrganization.payload.name })
-	).toBeVisible();
+	await expect(popover.getByRole('link', { name: testOrganization.payload.name })).toBeVisible();
 });
 
 test('organizational unit dropdown shows tree and filters', async ({

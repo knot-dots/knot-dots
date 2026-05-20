@@ -3,14 +3,16 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createMenu } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
 	import { _ } from 'svelte-i18n';
+	import { createPopperActions } from 'svelte-popperjs';
 	import Close from '~icons/flowbite/close-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		containerOfType,
 		getOrganizationURL,
@@ -22,9 +24,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
-	import { createFeatureDecisions } from '$lib/features';
 	import { getVisibleWorkspaces } from '$lib/workspaces';
-	import { env } from '$env/dynamic/public';
 
 	interface Props {
 		defaultOrganization?: OrganizationContainer;
@@ -106,63 +106,66 @@
 	}
 </script>
 
-<div class="context-select" use:popperRef>
-	<button class="context-select-button" {onchange} type="button" use:menu.button>
+<div class="dropdown" use:popperRef>
+	<button class="dropdown-button" {onchange} type="button" use:menu.button>
 		{@render children()}
 		<ChevronSort />
 	</button>
 
 	{#if $menu.expanded}
 		<div
-			class="context-select-popover"
+			class="dropdown-panel"
 			transition:slide={{ duration: 125, easing: cubicInOut }}
 			use:menu.items
 			use:popperContent={extraOpts}
 		>
-			<div class="context-select-header">
-				<span class="context-select-title">{title}</span>
-				<div class="context-select-header-actions">
-					{#if canCreateOrganization}
-						<button
-							class="context-select-add"
-							onclick={handleCreateOrganization}
-							title={$_('organization.create')}
-							type="button"
-						>
-							<Plus />
-						</button>
-					{/if}
-					<button class="context-select-close" onclick={() => menu.close()} type="button">
-						<Close />
-						<span class="is-visually-hidden">{$_('close')}</span>
+			<div class="dropdown-panel-title">
+				<span>{title}</span>
+				{#if canCreateOrganization}
+					<button
+						class="action-button"
+						onclick={handleCreateOrganization}
+						title={$_('organization.create')}
+						type="button"
+					>
+						<Plus />
 					</button>
-				</div>
+				{/if}
+				<button class="action-button" onclick={() => menu.close()} type="button">
+					<Close />
+					<span class="is-visually-hidden">{$_('close')}</span>
+				</button>
 			</div>
-			<ul class="context-select-list">
+			<ul class="menu">
 				{#each options as option (option.guid)}
 					{@const value = optionURL(option)}
-					<li use:menu.item={{ value }}>
+					{@const active = $menu.active === value}
+					<li
+						class={['menu-item', ...(active ? ['menu-item--active'] : [])]}
+						use:menu.item={{ value }}
+					>
 						<a
-							class="context-select-option"
+							class="button"
 							data-sveltekit-preload-code="tap"
 							data-sveltekit-preload-data="tap"
 							href={value}
-							title={option.payload.name}
 						>
-							{option.payload.name}
+							<span class="truncated">
+								{option.payload.name}
+							</span>
 						</a>
 					</li>
 				{/each}
 			</ul>
 			{#if defaultOrganization}
 				<a
-					class="context-select-footer"
+					class="dropdown-button dropdown-button--footer"
 					data-sveltekit-preload-code="tap"
 					data-sveltekit-preload-data="tap"
 					href={optionURL(defaultOrganization)}
 				>
 					<Relation />
-					<span class="context-select-footer-label">{defaultOrganization.payload.name}</span>
+					<span>{defaultOrganization.payload.name}</span>
 					<ChevronRight />
 				</a>
 			{/if}
@@ -171,210 +174,61 @@
 </div>
 
 <style>
-	.context-select {
+	.dropdown {
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-chevron-icon-size: 1rem;
+		--dropdown-button-chevron-default-color: var(--color-gray-400);
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-gray-900);
+		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
+		--dropdown-button-expanded-color: var(--color-primary-700);
+		--dropdown-button-min-height: 2rem;
+		--dropdown-panel-background-color: var(--color-gray-025);
+		--dropdown-panel-box-shadow: var(--shadow-lg);
+		--dropdown-panel-gap: 0;
+		--dropdown-panel-padding: 0;
+
 		display: flex;
-		flex: 1 0 0;
-		min-width: 0;
-	}
-
-	.context-select-button {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: inherit;
-		cursor: pointer;
-		display: flex;
-		flex: 1 0 0;
-		gap: 0.375rem;
-		height: 2.25rem;
-		min-width: 0;
-		padding: 0 0.5rem;
-	}
-
-	.context-select-button:hover {
-		background-color: rgba(0, 0, 0, 0.04);
-	}
-
-	.context-select-button :global(svg) {
-		color: inherit;
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.context-select-popover {
-		background: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow:
-			0 4px 6px -1px rgba(0, 0, 0, 0.1),
-			0 10px 15px -3px rgba(0, 0, 0, 0.06);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		position: fixed;
-		width: 260px;
-		z-index: 10;
-	}
-
-	.context-select-header {
-		align-items: center;
-		display: flex;
-		justify-content: space-between;
-		padding: 0.375rem 0.5rem;
-	}
-
-	.context-select-header-actions {
-		align-items: center;
-		display: flex;
-		gap: 0.125rem;
-	}
-
-	.context-select-add {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-400);
-		cursor: pointer;
-		display: flex;
-		justify-content: center;
-		padding: 0.25rem;
-	}
-
-	.context-select-add:hover {
-		background-color: var(--color-gray-050);
-		color: var(--color-gray-600);
-	}
-
-	.context-select-add :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
-	}
-
-	.context-select-title {
-		color: var(--color-gray-400);
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-
-	.context-select-close {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-400);
-		cursor: pointer;
-		display: flex;
-		justify-content: center;
-		padding: 0.25rem;
-	}
-
-	.context-select-close:hover {
-		background-color: var(--color-gray-050);
-		color: var(--color-gray-600);
-	}
-
-	.context-select-close :global(svg) {
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.context-select-search {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border-radius: 6px;
-		color: var(--color-gray-400);
-		display: flex;
-		gap: 0.375rem;
-		margin: 0.25rem;
-		padding: 0.25rem 0.5rem;
-	}
-
-	.context-select-search :global(svg) {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.context-select-search input {
-		background: transparent;
-		border: none;
-		color: var(--color-gray-700);
-		font-size: 0.875rem;
-		height: 1.5rem;
-		outline: none;
-		padding: 0;
+		position: static;
 		width: 100%;
 	}
 
-	.context-select-search input::placeholder {
-		color: var(--color-gray-400);
-	}
-
-	.context-select-list {
-		display: flex;
-		flex-direction: column;
-		list-style: none;
-		margin: 0;
-		max-height: calc(4 * 2.125rem + 0.5rem);
-		overflow-y: auto;
-		padding: 0.25rem;
-	}
-
-	.context-select-option {
+	.dropdown-panel-title {
 		align-items: center;
-		border-radius: 6px;
-		color: var(--color-gray-600);
-		display: flex;
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.5;
-		overflow: hidden;
-		padding: 0.375rem 0.5rem;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.context-select-option:hover,
-	.context-select-option[data-highlighted] {
-		background-color: var(--color-gray-050);
-	}
-
-	.context-select-footer {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border-top: 1px solid var(--color-gray-200);
 		color: var(--color-gray-700);
 		display: flex;
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 0.25rem 0.25rem 0 0.75rem;
+	}
+
+	.dropdown-panel-title > span {
+		margin-right: auto;
+	}
+
+	.dropdown-button--footer {
+		--dropdown-button-border-radius: 0;
+		--dropdown-button-box-shadow: none;
+		--dropdown-button-default-background: var(--color-gray-050);
+		--dropdown-button-padding: 0.5rem 0.75rem;
+
+		border-top: 1px solid var(--color-gray-200);
 		flex-shrink: 0;
-		font-size: 0.875rem;
-		font-weight: 500;
 		gap: 0.5rem;
-		line-height: 1.25;
-		padding: 0.625rem 0.75rem;
+		height: 2.375rem;
 	}
 
-	.context-select-footer:hover {
+	.dropdown-button--footer > span {
+		margin-right: auto;
+	}
+
+	.menu {
+		padding: 0 0.25rem;
+		overflow-y: auto;
+		width: 16rem;
+	}
+
+	.menu-item.menu-item--active > a {
 		background-color: var(--color-gray-100);
-	}
-
-	.context-select-footer :global(svg) {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.context-select-footer :global(svg:last-child) {
-		margin-left: auto;
-	}
-
-	.context-select-footer-label {
-		flex: 1 0 0;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 </style>

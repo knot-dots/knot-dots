@@ -1659,6 +1659,7 @@ img.cover {
 	--dropdown-button-chevron-expanded-color: var(--color-primary-600);
 	--dropdown-button-chevron-icon-size: 1.25rem;
 	--dropdown-button-align-items: center;
+	--dropdown-panel-gap: 0.5rem;
 	--dropdown-panel-max-height: 21rem;
 	--dropdown-panel-max-width: none;
 	--dropdown-panel-padding: 0.5rem;
@@ -1732,7 +1733,7 @@ img.cover {
 	box-shadow: var(--shadow-lg);
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
+	gap: var(--dropdown-panel-gap, 0.5rem);
 	margin: 0;
 	max-height: var(--dropdown-panel-max-height);
 	max-width: var(--dropdown-panel-max-width);
@@ -1757,14 +1758,15 @@ img.cover {
 	background-color: var(--color-gray-025);
 }
 
-.menu-item > button {
+.menu-item > button,
+.menu-item > a {
 	--button-active-background: transparent;
 	--button-hover-background: var(--color-gray-100);
-	--padding-x: 0.75rem;
+	--padding-x: 0.5rem;
 	--padding-y: 0.5rem;
 
 	align-items: center;
-	color: var(--color-gray-900);
+	color: var(--color-gray-700);
 	border: none;
 	display: flex;
 	font-weight: 500;
