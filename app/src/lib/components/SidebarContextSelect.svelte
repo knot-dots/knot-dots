@@ -26,11 +26,12 @@
 	interface Props {
 		defaultOrganization?: OrganizationContainer;
 		options: OrganizationContainer[];
-		title: string;
 		children: Snippet;
 	}
 
-	let { defaultOrganization, options, title, children }: Props = $props();
+	let { defaultOrganization, options, children }: Props = $props();
+
+	const title = $_('organizations');
 
 	const menu = createMenu({ label: title });
 

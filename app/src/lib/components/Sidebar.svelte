@@ -278,11 +278,7 @@
 	<!-- Organization (Mandant) Panel -->
 	<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
 		<div class="panel-header">
-			<SidebarContextSelect
-				{defaultOrganization}
-				options={organizations}
-				title={$_('organizations')}
-			>
+			<SidebarContextSelect {defaultOrganization} options={organizations}>
 				<span class="panel-select-label truncated">
 					{page.data.currentOrganization.payload.name}
 				</span>
