@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, type Snippet } from 'svelte';
+	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -38,11 +38,9 @@
 		defaultOrganization?: OrganizationContainer;
 		organizationalUnits: OrganizationalUnitContainer[];
 		currentOrganizationalUnit?: OrganizationalUnitContainer;
-		children: Snippet;
 	}
 
-	let { defaultOrganization, organizationalUnits, currentOrganizationalUnit, children }: Props =
-		$props();
+	let { defaultOrganization, organizationalUnits, currentOrganizationalUnit }: Props = $props();
 
 	const title = $_('organizational_units');
 
@@ -240,7 +238,9 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		{@render children()}
+		<span class="truncated">
+			{currentOrganizationalUnit?.payload.name ?? $_('organizational_units')}
+		</span>
 		<ChevronSort />
 	</button>
 

@@ -371,12 +371,7 @@
 					{defaultOrganization}
 					{organizationalUnits}
 					currentOrganizationalUnit={page.data.currentOrganizationalUnit}
-				>
-					<OrganizationalUnitIcon />
-					<span class="panel-select-label truncated">
-						{page.data.currentOrganizationalUnit?.payload.name ?? $_('organizational_units')}
-					</span>
-				</SidebarOrgUnitSelect>
+				/>
 			</div>
 
 			{#if page.data.currentOrganizationalUnit}
