@@ -16,9 +16,12 @@
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
 	import SearchInput from '$lib/components/SearchInput.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		containerOfType,
 		getOrganizationURL,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		type NewContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
@@ -27,6 +30,7 @@
 	} from '$lib/models';
 	import { hasPart, isPartOf } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
+	import { getVisibleWorkspaces } from '$lib/workspaces';
 
 	interface OrgUnitTreeItem extends TreeItem {
 		name: string;
@@ -95,8 +99,24 @@
 		}
 	}
 
+	function linkPathForContainer(container: OrganizationContainer | OrganizationalUnitContainer) {
+		const pathname = pathnameWithoutContextSegment();
+		const organization = isOrganizationContainer(container)
+			? container
+			: page.data.organizations.find(({ guid }) => guid === container.organization);
+		const workspacePaths = organization
+			? getVisibleWorkspaces({
+					organization,
+					organizationalUnit: isOrganizationalUnitContainer(container) ? container : null,
+					features: createFeatureDecisions(page.data.features)
+				}).flatMap((w) => Object.values(w.views))
+			: [];
+
+		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
+	}
+
 	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		return getOrganizationURL(container, pathnameWithoutContextSegment(), env).toString();
+		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
 
 	function buildTree(units: OrganizationalUnitContainer[]): OrgUnitTreeItem[] {
