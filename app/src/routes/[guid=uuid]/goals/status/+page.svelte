@@ -18,7 +18,7 @@
 	);
 </script>
 
-<GoalsPage data={{ ...data, containers }}>
+<GoalsPage facets={data.facets}>
 	<Board>
 		{#each goalStatus.options as statusOption (statusOption)}
 			<BoardColumn

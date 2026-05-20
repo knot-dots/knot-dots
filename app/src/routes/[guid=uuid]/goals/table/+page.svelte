@@ -72,7 +72,7 @@
 	]);
 </script>
 
-<GoalsPage data={{ ...data, containers }}>
+<GoalsPage facets={data.facets}>
 	<Table {columns} rows={containers}>
 		{#snippet footer()}
 			<LazyLoadSentinel
