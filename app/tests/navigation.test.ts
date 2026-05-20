@@ -64,7 +64,7 @@ test('Organization menu links to workspace or landing page', async ({
 	// Open the sidebar organization select and verify the test organization
 	// link points to the dots board.
 	await nav.getByRole('button', { name: 'Organizations' }).click();
-	await expect(page.getByRole('option', { name: testOrganization.payload.name })).toHaveAttribute(
+	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
 		'href',
 		new RegExp(`/${testOrganization.guid}/all/level`)
 	);
@@ -90,7 +90,7 @@ test('Organization menu links to workspace or landing page', async ({
 	// link points to the landing page, since it does not support the measures
 	// workspace.
 	await nav.getByRole('button', { name: 'Organizations' }).click();
-	await expect(page.getByRole('option', { name: testOrganization.payload.name })).toHaveAttribute(
+	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
 		'href',
 		new RegExp(`/${testOrganization.guid}/all/page`)
 	);

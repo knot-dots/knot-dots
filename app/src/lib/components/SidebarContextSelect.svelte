@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { getContext, tick, untrack, type Snippet } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
-	import { createPopover } from 'svelte-headlessui';
+	import { createMenu } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
-	import { Combobox } from 'melt/builders';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/flowbite/close-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
 	import Plus from '~icons/knotdots/plus';
-	import Search from '~icons/knotdots/search';
 	import Relation from '~icons/knotdots/relation';
 	import { page } from '$app/state';
 	import {
@@ -37,9 +35,7 @@
 
 	let { defaultOrganization, options, title, children }: Props = $props();
 
-	type OptionContainer = OrganizationContainer | OrganizationalUnitContainer;
-
-	const popover = createPopover({ label: untrack(() => title) });
+	const menu = createMenu({ label: title });
 
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
@@ -49,14 +45,6 @@
 	const extraOpts = {
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
-
-	const combobox = new Combobox<OptionContainer>({
-		sameWidth: false
-	});
-
-	$effect(() => {
-		combobox.open = $popover.expanded;
-	});
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -78,29 +66,6 @@
 		$newContainer = container;
 		createContainerDialog.getElement().showModal();
 	}
-
-	$effect.pre(() => {
-		if (page.url) {
-			popover.close();
-		}
-	});
-
-	let searchInputEl: HTMLInputElement | undefined = $state();
-
-	let filteredOptions = $derived(
-		combobox.inputValue
-			? options.filter((o) =>
-					o.payload.name.toLowerCase().includes(combobox.inputValue.trim().toLowerCase())
-				)
-			: options
-	);
-
-	$effect(() => {
-		if ($popover.expanded) {
-			combobox.inputValue = '';
-			tick().then(() => searchInputEl?.focus());
-		}
-	});
 
 	function pathnameWithoutContextSegment() {
 		const pathnameSegments = page.url.pathname.split('/');
@@ -131,21 +96,27 @@
 	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
+
+	function onchange(event: Event) {
+		const selected = (event as CustomEvent).detail.selected;
+
+		if (selected) {
+			window.location.href = selected;
+		}
+	}
 </script>
 
 <div class="context-select" use:popperRef>
-	<button class="context-select-button" type="button" use:popover.button>
+	<button class="context-select-button" {onchange} type="button" use:menu.button>
 		{@render children()}
-		{#if options.length > 0}
-			<ChevronSort />
-		{/if}
+		<ChevronSort />
 	</button>
 
-	{#if $popover.expanded && options.length > 0}
+	{#if $menu.expanded}
 		<div
 			class="context-select-popover"
 			transition:slide={{ duration: 125, easing: cubicInOut }}
-			use:popover.panel
+			use:menu.items
 			use:popperContent={extraOpts}
 		>
 			<div class="context-select-header">
@@ -161,43 +132,21 @@
 							<Plus />
 						</button>
 					{/if}
-					<button class="context-select-close" onclick={() => popover.close()} type="button">
+					<button class="context-select-close" onclick={() => menu.close()} type="button">
 						<Close />
 						<span class="is-visually-hidden">{$_('close')}</span>
 					</button>
 				</div>
 			</div>
-			<div class="context-select-search">
-				<Search />
-				<input
-					bind:this={searchInputEl}
-					value={combobox.inputValue}
-					oninput={(e) => (combobox.inputValue = e.currentTarget.value)}
-					onkeydown={(e) => {
-						if (e.key === 'ArrowDown') {
-							e.preventDefault();
-							combobox.highlightNext();
-						} else if (e.key === 'ArrowUp') {
-							e.preventDefault();
-							combobox.highlightPrev();
-						} else if (e.key === 'Enter' && combobox.highlighted) {
-							e.preventDefault();
-							combobox.select(combobox.highlighted);
-						}
-					}}
-					placeholder={$_('search')}
-					type="search"
-				/>
-			</div>
 			<ul class="context-select-list">
-				{#each filteredOptions as option (option.guid)}
-					<li>
+				{#each options as option (option.guid)}
+					{@const value = optionURL(option)}
+					<li use:menu.item={{ value }}>
 						<a
 							class="context-select-option"
-							{...combobox.getOption(option, option.payload.name)}
 							data-sveltekit-preload-code="tap"
 							data-sveltekit-preload-data="tap"
-							href={optionURL(option)}
+							href={value}
 							title={option.payload.name}
 						>
 							{option.payload.name}

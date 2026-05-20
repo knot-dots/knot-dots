@@ -25,15 +25,6 @@ test('organization dropdown shows options and filters', async ({
 	await expect(
 		popover.locator('.context-select-option', { hasText: testOrganization.payload.name })
 	).toBeVisible();
-
-	const searchInput = popover.locator('input[type="search"]');
-	await searchInput.fill(testOrganization.payload.name);
-	await expect(
-		popover.locator('.context-select-option', { hasText: testOrganization.payload.name })
-	).toBeVisible();
-
-	await searchInput.fill('zzzzz_no_match');
-	await expect(popover.locator('.context-select-option')).toHaveCount(0);
 });
 
 test('organizational unit dropdown shows tree and filters', async ({
