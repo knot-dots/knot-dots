@@ -37,25 +37,24 @@ test('organizational unit dropdown shows tree and filters', async ({
 	await page.goto(`/${testOrganization.guid}/all/page`);
 
 	const orgUnitButton = page
-		.locator('.context-select-button')
+		.getByRole('button', { name: 'Organizational units' })
 		.filter({ hasText: 'Organizational units' });
 	await orgUnitButton.click();
 
-	const popover = page
-		.locator('.context-select-popover')
-		.filter({ hasText: 'Organizational units' });
+	const popoverId = await orgUnitButton.getAttribute('aria-controls');
+	const popover = page.locator(`[id="${popoverId}"]`);
 	await expect(popover).toBeVisible();
 
 	await expect(
-		popover.locator('.tree-item-link', { hasText: testOrganizationalUnit.payload.name })
+		popover.getByRole('link', { name: testOrganizationalUnit.payload.name })
 	).toBeVisible();
 
-	const searchInput = popover.locator('input[type="search"]');
+	const searchInput = popover.getByRole('searchbox');
 	await searchInput.fill(testOrganizationalUnit.payload.name);
-	await expect(popover.locator('.tree-item-link')).toHaveCount(1);
+	await expect(popover.getByRole('treeitem')).toHaveCount(1);
 
 	await searchInput.fill('zzzzz_no_match');
-	await expect(popover.locator('.tree-item-link')).toHaveCount(0);
+	await expect(popover.getByRole('treeitem')).toHaveCount(0);
 });
 
 test('organizational unit dropdown navigates on click', async ({
@@ -68,17 +67,11 @@ test('organizational unit dropdown navigates on click', async ({
 
 	await page.goto(`/${testOrganization.guid}/all/page`);
 
-	const orgUnitButton = page
-		.locator('.context-select-button')
-		.filter({ hasText: 'Organizational units' });
+	const orgUnitButton = page.getByRole('button', { name: 'Organizational units' });
 	await orgUnitButton.click();
 
-	const popover = page
-		.locator('.context-select-popover')
-		.filter({ hasText: 'Organizational units' });
-	await popover
-		.locator('.tree-item-link', { hasText: testOrganizationalUnit.payload.name })
-		.click();
+	const popover = page.getByRole('tree');
+	await popover.getByRole('treeitem', { name: testOrganizationalUnit.payload.name }).click();
 
 	await page.waitForURL(new RegExp(`/${testOrganizationalUnit.guid}/`));
 });

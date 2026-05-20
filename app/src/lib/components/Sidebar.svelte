@@ -704,10 +704,6 @@
 		padding: 0 0.5rem;
 	}
 
-	.panel-section--active :global(.context-select-button) {
-		color: var(--color-gray-900);
-	}
-
 	.panel-select-button:hover {
 		background-color: rgba(0, 0, 0, 0.04);
 	}

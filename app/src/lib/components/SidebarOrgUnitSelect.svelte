@@ -80,12 +80,6 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	$effect.pre(() => {
-		if (page.url) {
-			popover.close();
-		}
-	});
-
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
 		strategy: 'absolute'
@@ -117,10 +111,6 @@
 
 	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, pathnameWithoutContextSegment(), env).toString();
-	}
-
-	function handleButtonClick() {
-		// Popover toggle handled by svelte-headlessui
 	}
 
 	function buildTree(units: OrganizationalUnitContainer[]): OrgUnitTreeItem[] {
@@ -211,11 +201,11 @@
 
 {#snippet renderChildren(children: typeof tree.children, depth: number)}
 	{#each children as child (child.id)}
-		<li {...child.attrs} class="tree-item" class:tree-item--selected={child.selected}>
+		<li {...child.attrs} class={['tree-item', ...(child.selected ? ['tree-item--selected'] : [])]}>
 			<div class="tree-item-content" style="padding-left: {depth * 1.25 + 0.25}rem">
 				{#if child.canExpand}
 					<button
-						class="tree-expand-button"
+						class="action-button"
 						onclick={(e) => {
 							e.stopPropagation();
 							child.toggleExpand();
@@ -229,23 +219,22 @@
 					<span class="tree-expand-spacer"></span>
 				{/if}
 				<a
-					class="tree-item-link"
+					class="truncated"
 					data-sveltekit-preload-code="tap"
 					data-sveltekit-preload-data="tap"
 					href={child.item.url}
-					title={child.item.name}
 				>
 					{child.item.name}
 				</a>
 				{#if canCreateOrgUnit && depth < 3}
 					<button
-						class="tree-item-add"
+						aria-label={$_('organizational_unit.create')}
+						class="action-button action-button--size-s"
 						onclick={(e) => {
 							e.stopPropagation();
 							handleCreateOrgUnit(child.id);
 						}}
 						tabindex={-1}
-						title={$_('organizational_unit.create')}
 						type="button"
 					>
 						<Plus />
@@ -261,13 +250,8 @@
 	{/each}
 {/snippet}
 
-<div class="context-select" use:popperRef>
-	<button
-		class="context-select-button"
-		onclick={handleButtonClick}
-		type="button"
-		use:popover.button
-	>
+<div class="dropdown" use:popperRef>
+	<button class="dropdown-button" type="button" use:popover.button>
 		{@render children()}
 		{#if organizationalUnits.length > 0}
 			<ChevronSort />
@@ -276,19 +260,19 @@
 
 	{#if $popover.expanded && organizationalUnits.length > 0}
 		<div
-			class="context-select-popover"
+			class="dropdown-panel"
 			transition:slide={{ duration: 125, easing: cubicInOut }}
 			use:popover.panel
 			use:popperContent={extraOpts}
 		>
-			<div class="context-select-header">
-				<span class="context-select-title">{title}</span>
-				<button class="context-select-close" onclick={() => popover.close()} type="button">
+			<div class="dropdown-panel-title">
+				<span>{title}</span>
+				<button class="action-button" onclick={() => popover.close()} type="button">
 					<Close />
 					<span class="is-visually-hidden">{$_('close')}</span>
 				</button>
 			</div>
-			<div class="context-select-search">
+			<div class="search">
 				<Search />
 				<input
 					bind:this={searchInputEl}
@@ -297,20 +281,18 @@
 					type="search"
 				/>
 			</div>
-			<div class="tree-container">
-				<ul class="tree-root" {...tree.root}>
-					{@render renderChildren(tree.children, 0)}
-				</ul>
-			</div>
+			<ul class="tree-root" {...tree.root}>
+				{@render renderChildren(tree.children, 0)}
+			</ul>
 			{#if defaultOrganization}
 				<a
-					class="context-select-footer"
+					class="dropdown-button dropdown-button--footer"
 					data-sveltekit-preload-code="tap"
 					data-sveltekit-preload-data="tap"
 					href={optionURL(defaultOrganization)}
 				>
 					<Relation />
-					<span class="context-select-footer-label">{defaultOrganization.payload.name}</span>
+					<span>{defaultOrganization.payload.name}</span>
 					<ChevronRight />
 				</a>
 			{/if}
@@ -319,89 +301,59 @@
 </div>
 
 <style>
-	.context-select {
+	.dropdown {
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-chevron-icon-size: 1rem;
+		--dropdown-button-chevron-default-color: var(--color-gray-400);
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-gray-900);
+		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
+		--dropdown-button-expanded-color: var(--color-primary-700);
+		--dropdown-button-min-height: 2rem;
+		--dropdown-panel-background-color: var(--color-gray-025);
+		--dropdown-panel-box-shadow: var(--shadow-lg);
+		--dropdown-panel-gap: 0;
+		--dropdown-panel-padding: 0;
+
 		display: flex;
-		flex: 1 0 0;
-		min-width: 0;
+		position: static;
+		width: 100%;
 	}
 
-	.context-select-button {
+	.dropdown-panel {
+		background-color: var(--color-gray-025);
+	}
+
+	.dropdown-panel-title {
 		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: inherit;
-		cursor: pointer;
+		color: var(--color-gray-700);
 		display: flex;
-		flex: 1 0 0;
-		gap: 0.375rem;
-		height: 2.25rem;
-		min-width: 0;
-		padding: 0 0.5rem;
-	}
-
-	.context-select-button:hover {
-		background-color: rgba(0, 0, 0, 0.04);
-	}
-
-	.context-select-button :global(svg) {
-		color: inherit;
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.context-select-popover {
-		background: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
-		box-shadow:
-			0 4px 6px -1px rgba(0, 0, 0, 0.1),
-			0 10px 15px -3px rgba(0, 0, 0, 0.06);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		position: fixed;
-		width: 260px;
-		z-index: 10;
-	}
-
-	.context-select-header {
-		align-items: center;
-		display: flex;
-		justify-content: space-between;
-		padding: 0.375rem 0.5rem;
-	}
-
-	.context-select-title {
-		color: var(--color-gray-400);
 		font-size: 0.75rem;
 		font-weight: 600;
+		padding: 0.25rem 0.25rem 0 0.75rem;
 	}
 
-	.context-select-close {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-400);
-		cursor: pointer;
-		display: flex;
-		justify-content: center;
-		padding: 0.25rem;
+	.dropdown-panel-title > span {
+		margin-right: auto;
 	}
 
-	.context-select-close:hover {
-		background-color: var(--color-gray-050);
-		color: var(--color-gray-600);
+	.dropdown-button--footer {
+		--dropdown-button-border-radius: 0;
+		--dropdown-button-box-shadow: none;
+		--dropdown-button-default-background: var(--color-gray-050);
+		--dropdown-button-padding: 0.5rem 0.75rem;
+
+		border-top: 1px solid var(--color-gray-200);
+		flex-shrink: 0;
+		gap: 0.5rem;
+		height: 2.375rem;
 	}
 
-	.context-select-close :global(svg) {
-		height: 1rem;
-		width: 1rem;
+	.dropdown-button--footer > span {
+		margin-right: auto;
 	}
 
-	.context-select-search {
+	.search {
 		align-items: center;
 		background-color: var(--color-gray-050);
 		border-radius: 6px;
@@ -412,13 +364,13 @@
 		padding: 0.25rem 0.5rem;
 	}
 
-	.context-select-search :global(svg) {
+	.search :global(svg) {
 		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.context-select-search input {
+	.search input {
 		background: transparent;
 		border: none;
 		color: var(--color-gray-700);
@@ -429,149 +381,46 @@
 		width: 100%;
 	}
 
-	.context-select-search input::placeholder {
+	.search input::placeholder {
 		color: var(--color-gray-400);
 	}
 
-	.tree-container {
-		max-height: calc(4 * 2.125rem + 0.5rem);
-		overflow-y: auto;
-		padding: 0.25rem;
+	ul {
+		margin: 0;
+		padding: 0;
 	}
 
 	.tree-root {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.tree-root :global(ul) {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.tree-item {
-		outline: none;
+		overflow-y: auto;
+		padding: 0.25rem;
+		width: 16rem;
 	}
 
 	.tree-item-content {
 		align-items: center;
-		border-radius: 6px;
+		border-radius: 8px;
+		color: var(--color-gray-700);
 		display: flex;
+		font-weight: 500;
 		gap: 0.125rem;
-		min-height: 2rem;
+		padding: 0.25rem;
 	}
 
 	.tree-item-content:hover {
-		background-color: var(--color-gray-050);
+		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
 	}
 
-	.tree-item--selected > .tree-item-content {
-		background-color: var(--color-primary-050, var(--color-gray-100));
+	.tree-item.tree-item--selected > .tree-item-content {
+		background-color: rgb(from var(--color-primary-500) r g b / 0.15);
+		color: var(--color-primary-700);
 	}
 
-	.tree-expand-button {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-400);
-		cursor: pointer;
-		display: flex;
-		flex-shrink: 0;
-		height: 1.25rem;
-		justify-content: center;
-		padding: 0;
-		width: 1.25rem;
-	}
-
-	.tree-expand-button:hover {
-		background-color: var(--color-gray-100);
-		color: var(--color-gray-600);
-	}
-
-	.tree-expand-button :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
+	.tree-item-content > a {
+		flex: 1 1 0;
 	}
 
 	.tree-expand-spacer {
 		flex-shrink: 0;
-		width: 1.25rem;
-	}
-
-	.tree-item-link {
-		color: var(--color-gray-600);
-		flex: 1 1 0;
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.5;
-		overflow: hidden;
-		padding: 0.25rem 0.5rem 0.25rem 0.125rem;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.tree-item--selected > .tree-item-content .tree-item-link {
-		color: var(--color-primary-700, var(--color-gray-800));
-		font-weight: 600;
-	}
-
-	.tree-item-add {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 4px;
-		color: var(--color-gray-400);
-		cursor: pointer;
-		display: flex;
-		flex-shrink: 0;
-		height: 1.25rem;
-		justify-content: center;
-		opacity: 0;
-		padding: 0;
-		width: 1.25rem;
-	}
-
-	.tree-item-content:hover .tree-item-add {
-		opacity: 1;
-	}
-
-	.tree-item-add:hover {
-		background-color: var(--color-gray-100);
-		color: var(--color-gray-600);
-	}
-
-	.tree-item-add :global(svg) {
-		height: 0.625rem;
-		width: 0.625rem;
-	}
-
-	.context-select-footer {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border-top: 1px solid var(--color-gray-200);
-		color: var(--color-gray-700);
-		display: flex;
-		flex-shrink: 0;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.5rem;
-		line-height: 1.25;
-		padding: 0.625rem 0.75rem;
-	}
-
-	.context-select-footer :global(svg) {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.context-select-footer-label {
-		flex: 1 1 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		width: 2rem;
 	}
 </style>
