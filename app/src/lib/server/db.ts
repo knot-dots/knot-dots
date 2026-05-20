@@ -531,6 +531,7 @@ function prepareWhereCondition(filters: {
 	customCategoryMatch?: 'any' | 'all';
 	excludeRelation?: string[];
 	federalStates?: string[];
+	goalStatuses?: string[];
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	indicatorCategories?: string[];
@@ -539,10 +540,14 @@ function prepareWhereCondition(filters: {
 	members?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[] | null;
+	programStatuses?: string[];
 	programTypes?: string[];
 	resource?: string[];
 	resourceCategories?: string[];
+	ruleStatuses?: string[];
+	statuses?: string[];
 	taskCategories?: string[];
+	taskStatuses?: string[];
 	template?: boolean;
 	terms?: string;
 	type?: PayloadType[];
@@ -582,6 +587,11 @@ function prepareWhereCondition(filters: {
 	if (filters.federalStates?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.federalStates, 'text')})`
+		);
+	}
+	if (filters.goalStatuses?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'goalStatus' = ANY (${sql.array(filters.goalStatuses, 'text')})`
 		);
 	}
 	if (filters.guid?.length) {
@@ -624,6 +634,11 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
+	if (filters.programStatuses?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'programStatus' = ANY (${sql.array(filters.programStatuses, 'text')})`
+		);
+	}
 	if (filters.programTypes?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'programType' IN (${sql.join(
@@ -642,12 +657,27 @@ function prepareWhereCondition(filters: {
 			sql.fragment`c.payload->>'resourceCategory' IN (${sql.join(filters.resourceCategories, sql.fragment`, `)})`
 		);
 	}
+	if (filters.ruleStatuses?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'ruleStatus' = ANY (${sql.array(filters.ruleStatuses, 'text')})`
+		);
+	}
+	if (filters.statuses?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'status' = ANY (${sql.array(filters.statuses, 'text')})`
+		);
+	}
 	if (filters.taskCategories?.length) {
 		conditions.push(
 			sql.fragment`c.payload->>'taskCategory' IN (${sql.join(
 				filters.taskCategories,
 				sql.fragment`, `
 			)})`
+		);
+	}
+	if (filters.taskStatuses?.length) {
+		conditions.push(
+			sql.fragment`c.payload->>'taskStatus' = ANY (${sql.array(filters.taskStatuses, 'text')})`
 		);
 	}
 	if (filters.template) {
@@ -763,16 +793,21 @@ export function getManyContainers(
 		customCategories?: Record<string, string[]>;
 		customCategoryMatch?: 'any' | 'all';
 		federalStates?: string[];
+		goalStatuses?: string[];
 		guid?: string[];
 		helpSlugs?: HelpSlug[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[] | null;
+		programStatuses?: string[];
 		programTypes?: string[];
 		resource?: string[];
 		resourceCategories?: string[];
+		ruleStatuses?: string[];
+		statuses?: string[];
 		taskCategories?: string[];
+		taskStatuses?: string[];
 		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
@@ -1041,10 +1076,15 @@ export function getAllRelatedContainers(
 	filters: {
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
+		goalStatuses?: string[];
 		indicatorCategories?: string[];
 		organizationalUnits?: string[];
+		programStatuses?: string[];
 		programTypes?: string[];
+		ruleStatuses?: string[];
+		statuses?: string[];
 		taskCategories?: string[];
+		taskStatuses?: string[];
 		terms?: string;
 		type?: PayloadType[];
 	},

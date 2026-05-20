@@ -12,14 +12,19 @@ import {
 	computeFacetCount,
 	findDescendants,
 	fromCounts,
+	goalStatus,
 	indicatorCategories,
 	indicatorTypes,
 	payloadTypes,
 	predicates,
+	programStatus,
 	programTypes,
 	resourceCategories,
 	resourceUnits,
-	taskCategories
+	ruleStatus,
+	status,
+	taskCategories,
+	taskStatus
 } from '$lib/models';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '$lib/pagination';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
@@ -55,6 +60,7 @@ const querySchema = z.object({
 	contextGuid: z.array(z.string().uuid()).default([]),
 	excludeRelation: z.array(predicates).default([]),
 	federalState: z.array(z.string()).default([]),
+	goalStatus: z.array(goalStatus).default([]),
 	guid: z.array(z.string().uuid()).default([]),
 	indicator: z.array(z.string().uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
@@ -73,13 +79,17 @@ const querySchema = z.object({
 				.transform(() => null)
 		)
 		.default([]),
+	programStatus: z.array(programStatus).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 	resource: z.array(z.string()).default([]),
 	resourceCategory: z.array(resourceCategories).default([]),
+	ruleStatus: z.array(ruleStatus).default([]),
 	sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
+	status: z.array(status).default([]),
 	taskCategory: z.array(taskCategories).default([]),
+	taskStatus: z.array(taskStatus).default([]),
 	template: z.array(z.stringbool()).default([]),
 	terms: z.array(z.string()).default([]),
 	type: z.array(payloadTypes).default([])
@@ -190,6 +200,7 @@ function buildFilters(
 		customCategoryMatch: params.categoryMatch,
 		excludeRelation: params.excludeRelation,
 		federalStates: params.federalState,
+		goalStatuses: params.goalStatus,
 		guid: params.guid,
 		indicators: params.indicator,
 		indicatorCategories: params.indicatorCategory,
@@ -199,10 +210,14 @@ function buildFilters(
 			'organizationalUnits' in overrides
 				? overrides.organizationalUnits
 				: params.organizationalUnit,
+		programStatuses: params.programStatus,
 		programTypes: params.programType,
 		resource: params.resource,
 		resourceCategories: params.resourceCategory,
+		ruleStatuses: params.ruleStatus,
+		statuses: params.status,
 		taskCategories: params.taskCategory,
+		taskStatuses: params.taskStatus,
 		template: params.template,
 		terms: params.terms,
 		type: params.type
