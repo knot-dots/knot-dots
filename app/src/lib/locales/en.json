@@ -475,6 +475,7 @@
 	"logo": "Logo",
 	"logout": "Log out",
 	"managed_by": "Managed by",
+	"matomo_opt_out": "Web analytics opt-out",
 	"measure": "Measure",
 	"measure.hierarchy_level": "Hierarchy level",
 	"measure_by_hierarchy_level": "Measures {level}",
