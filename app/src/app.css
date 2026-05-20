@@ -723,7 +723,7 @@ button.button-square,
 
 .action-button:focus,
 .action-button:hover {
-	background-color: var(--color-gray-100);
+	background-color: rgb(from var(--color-gray-500) r g b / 0.1);
 }
 
 .action-button.action-button--padding-tight {

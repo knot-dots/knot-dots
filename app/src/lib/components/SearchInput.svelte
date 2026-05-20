@@ -23,7 +23,7 @@
 	label {
 		background-color: var(--color-gray-050);
 		align-items: center;
-		border-radius: 6px;
+		border-radius: 8px;
 		display: flex;
 		padding-left: 0.5rem;
 	}
