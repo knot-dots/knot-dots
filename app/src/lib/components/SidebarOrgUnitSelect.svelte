@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, type Snippet, untrack } from 'svelte';
+	import { getContext, type Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -38,19 +38,15 @@
 		defaultOrganization?: OrganizationContainer;
 		organizationalUnits: OrganizationalUnitContainer[];
 		currentOrganizationalUnit?: OrganizationalUnitContainer;
-		title: string;
 		children: Snippet;
 	}
 
-	let {
-		defaultOrganization,
-		organizationalUnits,
-		currentOrganizationalUnit,
-		title,
-		children
-	}: Props = $props();
+	let { defaultOrganization, organizationalUnits, currentOrganizationalUnit, children }: Props =
+		$props();
 
-	const popover = createPopover({ label: untrack(() => title) });
+	const title = $_('organizational_units');
+
+	const popover = createPopover({ label: title });
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

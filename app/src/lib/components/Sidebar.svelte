@@ -371,7 +371,6 @@
 					{defaultOrganization}
 					{organizationalUnits}
 					currentOrganizationalUnit={page.data.currentOrganizationalUnit}
-					title={$_('organizational_units')}
 				>
 					<OrganizationalUnitIcon />
 					<span class="panel-select-label truncated">
