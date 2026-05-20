@@ -241,12 +241,10 @@
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		{@render children()}
-		{#if organizationalUnits.length > 0}
-			<ChevronSort />
-		{/if}
+		<ChevronSort />
 	</button>
 
-	{#if $popover.expanded && organizationalUnits.length > 0}
+	{#if $popover.expanded}
 		<div
 			class="dropdown-panel"
 			transition:slide={{ duration: 125, easing: cubicInOut }}
