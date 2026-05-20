@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, tick, untrack, type Snippet } from 'svelte';
+	import { getContext, type Snippet, untrack } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -9,13 +9,13 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import Close from '~icons/flowbite/close-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import Close from '~icons/flowbite/close-outline';
 	import Plus from '~icons/knotdots/plus';
-	import Search from '~icons/knotdots/search';
 	import Relation from '~icons/knotdots/relation';
+	import SearchInput from '$lib/components/SearchInput.svelte';
 	import {
 		containerOfType,
 		getOrganizationURL,
@@ -90,14 +90,6 @@
 	};
 
 	let searchQuery = $state('');
-	let searchInputEl: HTMLInputElement | undefined = $state();
-
-	$effect(() => {
-		if ($popover.expanded) {
-			searchQuery = '';
-			tick().then(() => searchInputEl?.focus());
-		}
-	});
 
 	function pathnameWithoutContextSegment() {
 		const pathnameSegments = page.url.pathname.split('/');
@@ -273,13 +265,7 @@
 				</button>
 			</div>
 			<div class="search">
-				<Search />
-				<input
-					bind:this={searchInputEl}
-					bind:value={searchQuery}
-					placeholder={$_('search')}
-					type="search"
-				/>
+				<SearchInput bind:value={searchQuery} />
 			</div>
 			<ul class="tree-root" {...tree.root}>
 				{@render renderChildren(tree.children, 0)}
@@ -354,35 +340,10 @@
 	}
 
 	.search {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border-radius: 6px;
-		color: var(--color-gray-400);
-		display: flex;
-		gap: 0.375rem;
-		margin: 0.25rem;
-		padding: 0.25rem 0.5rem;
-	}
+		--search-icon-size: 1rem;
 
-	.search :global(svg) {
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.search input {
-		background: transparent;
-		border: none;
-		color: var(--color-gray-700);
-		font-size: 0.875rem;
-		height: 1.5rem;
-		outline: none;
-		padding: 0;
-		width: 100%;
-	}
-
-	.search input::placeholder {
-		color: var(--color-gray-400);
+		color: var(--color-gray-500);
+		padding: 0 0.25rem;
 	}
 
 	ul {
