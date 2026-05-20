@@ -278,11 +278,11 @@
 	<!-- Organization (Mandant) Panel -->
 	<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
 		<div class="panel-header">
-			<SidebarContextSelect {defaultOrganization} options={organizations}>
-				<span class="panel-select-label truncated">
-					{page.data.currentOrganization.payload.name}
-				</span>
-			</SidebarContextSelect>
+			<SidebarContextSelect
+				{defaultOrganization}
+				options={organizations}
+				selected={page.data.currentOrganization}
+			/>
 		</div>
 
 		<!-- Hauptseiten toggle + favorites -->

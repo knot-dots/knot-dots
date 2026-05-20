@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, type Snippet } from 'svelte';
+	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createMenu } from 'svelte-headlessui';
@@ -26,10 +26,10 @@
 	interface Props {
 		defaultOrganization?: OrganizationContainer;
 		options: OrganizationContainer[];
-		children: Snippet;
+		selected: OrganizationContainer;
 	}
 
-	let { defaultOrganization, options, children }: Props = $props();
+	let { defaultOrganization, options, selected }: Props = $props();
 
 	const title = $_('organizations');
 
@@ -101,7 +101,7 @@
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" {onchange} type="button" use:menu.button>
-		{@render children()}
+		<span class="truncated">{selected.payload.name}</span>
 		<ChevronSort />
 	</button>
 
