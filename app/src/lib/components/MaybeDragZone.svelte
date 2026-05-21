@@ -97,3 +97,9 @@
 		{/if}
 	</div>
 {/if}
+
+<style>
+	li:not(:last-child) {
+		margin-bottom: 0.75rem;
+	}
+</style>
