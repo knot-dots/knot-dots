@@ -1,6 +1,6 @@
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'EmbedObjects', 'ResourceV2', 'IOOI', 'SubMeasures'] as const],
-	['beta', ['ImportFromCsv', 'Mistral'] as const]
+	['alpha', ['OpenAI', 'EmbedObjects'] as const],
+	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'SubMeasures'] as const]
 ]);
 
 export function createFeatureDecisions(features: string[]) {
