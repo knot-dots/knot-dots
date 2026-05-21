@@ -57,11 +57,11 @@
 			bind:value={container.payload.visibleWorkspaces}
 		/>
 
-		{#if $ability.can('update', container, 'customDomain')}
+		{#if $ability.can('update', container, 'payload.customDomain')}
 			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
 		{/if}
 
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />
 		{/if}
 	</div>

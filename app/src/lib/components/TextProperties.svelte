@@ -24,7 +24,7 @@
 	{/snippet}
 
 	{#snippet general()}
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}
 	{/snippet}

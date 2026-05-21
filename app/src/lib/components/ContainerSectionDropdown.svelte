@@ -100,7 +100,7 @@
 	</div>
 {/snippet}
 
-{#if $ability.can('update', container, 'visibility') || $ability.can('delete', container)}
+{#if $ability.can('update', container, 'payload.visibility') || $ability.can('delete', container)}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<Plus />
@@ -109,7 +109,7 @@
 		{#if $popover.expanded}
 			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
 				<div class="dropdown-panel-scroll-wrapper">
-					{#if $ability.can('update', container, 'visibility')}
+					{#if $ability.can('update', container, 'payload.visibility')}
 						<!-- Group: Text -->
 						<p class="dropdown-panel-group-title">Text</p>
 						{@render CheckboxItem('titleEnable', 'Titel einblenden')}
