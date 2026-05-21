@@ -2,7 +2,6 @@
 	import { setContext, type Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
-	import ContentPartnersOverlay from '$lib/components/ContentPartnersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import HelpCatalogOverlay from '$lib/components/HelpCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
@@ -79,8 +78,6 @@
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}
 		<ChaptersOverlay container={data.container} containers={data.containers} />
-	{:else if data.key === overlayKey.enum['content-partners']}
-		<ContentPartnersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['goal-iooi'] && isGoalContainer(data.container)}
 		<IOOIOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['measure-iooi'] && isMeasureContainer(data.container)}

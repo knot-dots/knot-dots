@@ -11,8 +11,6 @@
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
-	import EditableContentPartnerSection from '$lib/components/EditableContentPartnerSection.svelte';
-	import EditableContentPartnerCollection from '$lib/components/EditableContentPartnerCollection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
@@ -34,8 +32,6 @@
 		isChapterContainer,
 		isContainerWithProgress,
 		isContainerWithSummary,
-		isContentPartnerCollectionContainer,
-		isContentPartnerContainer,
 		isCustomCollectionContainer,
 		isDemographicDataContainer,
 		isEffectCollectionContainer,
@@ -179,22 +175,6 @@
 			/>
 		{:else if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-				{heading}
-			/>
-		{:else if isContentPartnerCollectionContainer(container)}
-			<EditableContentPartnerCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-				{heading}
-			/>
-		{:else if isContentPartnerContainer(container)}
-			<EditableContentPartnerSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers

@@ -1,8 +1,5 @@
 export const featureFlags = new Map([
-	[
-		'alpha',
-		['OpenAI', 'EmbedObjects', 'ContentPartner', 'ResourceV2', 'IOOI', 'SubMeasures'] as const
-	],
+	['alpha', ['OpenAI', 'EmbedObjects', 'ResourceV2', 'IOOI', 'SubMeasures'] as const],
 	['beta', ['ImportFromCsv', 'Mistral'] as const]
 ]);
 
@@ -16,9 +13,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useMistral() {
 			return features.includes('Mistral');
-		},
-		useContentPartner() {
-			return features.includes('ContentPartner');
 		},
 		useResourceWorkspace() {
 			return features.includes('ResourceV2');

@@ -3,7 +3,6 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
-	import Briefcase from '~icons/flowbite/briefcase-solid';
 	import File from '~icons/flowbite/file-solid';
 	import Quote from '~icons/flowbite/quote-solid';
 	import BasicData from '~icons/knotdots/basic-data';
@@ -35,7 +34,6 @@
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
 		isContainerWithSummary,
-		isContentPartnerCollectionContainer,
 		isDemographicDataContainer,
 		isEffectCollectionContainer,
 		isFileCollectionContainer,
@@ -173,14 +171,6 @@
 		isOrganizationContainer(parentContainer) ||
 			isOrganizationalUnitContainer(parentContainer) ||
 			isPageContainer(parentContainer)
-	);
-
-	let mayAddContentPartnerCollection = $derived(
-		createFeatureDecisions(page.data.features).useContentPartner() &&
-			(isOrganizationContainer(parentContainer) ||
-				isOrganizationalUnitContainer(parentContainer) ||
-				isPageContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isContentPartnerCollectionContainer)
 	);
 
 	let mayAddActualResourceAllocationCollection = $derived(
@@ -421,16 +411,7 @@
 			{ icon: Link, label: $_('teaser'), value: payloadTypes.enum.teaser },
 			{ icon: Star, label: $_('teaser_highlight'), value: payloadTypes.enum.teaser_highlight },
 			{ icon: ExclamationCircle, label: $_('info_box'), value: payloadTypes.enum.info_box },
-			{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote },
-			...(mayAddContentPartnerCollection
-				? [
-						{
-							icon: Briefcase,
-							label: $_('partners'),
-							value: payloadTypes.enum.content_partner_collection
-						}
-					]
-				: [])
+			{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 </script>
