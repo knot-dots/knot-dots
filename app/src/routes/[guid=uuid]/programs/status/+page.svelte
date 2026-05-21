@@ -18,7 +18,7 @@
 	);
 </script>
 
-<ProgramsPage data={{ ...data, containers }}>
+<ProgramsPage facets={data.facets}>
 	<Board>
 		{#each programStatus.options as statusOption (statusOption)}
 			<BoardColumn

@@ -48,7 +48,7 @@
 	);
 </script>
 
-<ProgramsPage data={{ ...data, containers }} filterBarInitiallyOpen>
+<ProgramsPage facets={data.facets} filterBarInitiallyOpen>
 	<Catalog {containers} payloadType={[payloadTypes.enum.program]}>
 		{#snippet footer()}
 			<LazyLoadSentinel

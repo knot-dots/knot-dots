@@ -29,7 +29,7 @@
 	]);
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage facets={data.facets}>
 	<Table {columns} rows={data.containers} />
 	<Help slug="strategies-table" />
 </ProgramsPage>

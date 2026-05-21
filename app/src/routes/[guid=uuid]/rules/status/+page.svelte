@@ -18,7 +18,7 @@
 	);
 </script>
 
-<RulesPage data={{ ...data, containers }}>
+<RulesPage facets={data.facets}>
 	<Board>
 		{#each ruleStatus.options as statusOption (statusOption)}
 			<BoardColumn

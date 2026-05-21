@@ -18,7 +18,7 @@
 	);
 </script>
 
-<MeasuresPage data={{ ...data, containers }}>
+<MeasuresPage facets={data.facets}>
 	<Board>
 		{#each status.options as statusOption (statusOption)}
 			<BoardColumn
