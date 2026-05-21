@@ -27,6 +27,24 @@ test.describe('Categories', () => {
 	}) => {
 		const sharedCategoryTitle = testCategoryWithTerms.category.payload.title;
 		const sharedTermNames = testCategoryWithTerms.termNames;
+		const gotoGoalsBoard = async () => {
+			await dotsBoard.page.goto(`/${testGoal.organization}/goals/level`);
+			await dotsBoard.page.waitForLoadState('networkidle');
+		};
+		const openSharedCategoryFilter = async () => {
+			const termCheckbox = dotsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] });
+			if (await termCheckbox.isVisible()) {
+				return;
+			}
+
+			const categoryButton = dotsBoard.page.getByRole('button', { name: sharedCategoryTitle });
+			if (!(await categoryButton.isVisible())) {
+				await dotsBoard.page.getByRole('button', { name: 'Filter' }).click();
+			}
+			if (!(await termCheckbox.isVisible())) {
+				await categoryButton.click();
+			}
+		};
 
 		await categoriesBoard.goto(`/${testGoal.organization}`);
 		await categoriesBoard.column('Categories').card(sharedCategoryTitle).click();
@@ -43,30 +61,33 @@ test.describe('Categories', () => {
 			await expect(categoriesBoard.column('Terms').card(termName)).toBeVisible();
 		}
 
-		await dotsBoard.goto(`/${testGoal.organization}`);
-		await dotsBoard.page.waitForTimeout(100);
+		await gotoGoalsBoard();
+		await expect(dotsBoard.card(testGoal.payload.title)).toBeVisible();
 		await dotsBoard.card(testGoal.payload.title).click();
 		await expect(dotsBoard.overlay.title).toHaveText(testGoal.payload.title);
 
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.disclosePropertiesButton.click();
 		await dotsBoard.overlay.locator.getByLabel(sharedCategoryTitle).click();
-		await dotsBoard.overlay.locator.getByRole('checkbox', { name: sharedTermNames[0] }).check();
 		const saveResponse = dotsBoard.page.waitForResponse((r) => r.url().includes('/revision'));
+		await dotsBoard.overlay.locator.getByRole('checkbox', { name: sharedTermNames[0] }).check();
 		await saveResponse;
 		await dotsBoard.overlay.closeButton.click();
 
 		await dotsBoard.page.reload();
+		await dotsBoard.page.waitForLoadState('networkidle');
 
-		await dotsBoard.page.getByRole('button', { name: 'Filter' }).click();
-		await dotsBoard.page.getByRole('button', { name: sharedCategoryTitle }).click();
+		await openSharedCategoryFilter();
 		const firstFilterResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] }).check();
 		await firstFilterResponse;
 		await expect(dotsBoard.card(testGoal.payload.title)).toBeVisible();
 
-		const secondFilterResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
+		await openSharedCategoryFilter();
+		const clearFilterResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] }).uncheck();
+		await clearFilterResponse;
+		const secondFilterResponse = dotsBoard.page.waitForResponse(/x-sveltekit-invalidated/);
 		await dotsBoard.page.getByRole('checkbox', { name: sharedTermNames[1] }).check();
 		await secondFilterResponse;
 		await expect(dotsBoard.card(testGoal.payload.title)).not.toBeVisible();

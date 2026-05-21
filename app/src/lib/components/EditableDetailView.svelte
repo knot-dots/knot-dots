@@ -2,7 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
-	import EditableContentPartnerDetailView from '$lib/components/EditableContentPartnerDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
@@ -27,7 +26,6 @@
 		type AnyContainer,
 		isCategoryContainer,
 		isContainerWithEffect,
-		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isHelpContainer,
@@ -66,8 +64,6 @@
 
 {#if isBinaryIndicatorContainer(container)}
 	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} />
-{:else if isContentPartnerContainer(container)}
-	<EditableContentPartnerDetailView bind:container {layout} {revisions} />
 {:else if isEffectContainer(container)}
 	<EditableEffectDetailView bind:container {layout} {revisions} />
 {:else if isGoalContainer(container)}

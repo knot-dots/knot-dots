@@ -197,11 +197,6 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
-			key: 'content-partners';
-			container: AnyContainer;
-			containers: Container[];
-	  }
-	| {
 			key: 'goal-iooi';
 			container: AnyContainer;
 			containers: Container[];
@@ -413,24 +408,6 @@ if (browser) {
 				container: result.data.container,
 				containers: result.data.containers
 			});
-		} else if (hashParams.has(overlayKey.enum['content-partners'])) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum['content-partners']) as string
-			);
-			const container = revisions[revisions.length - 1];
-			const containers = (await fetchRelatedContainers(
-				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-				{
-					...extractCustomCategoryFiltersFromParams(hashParams, values.data.categoryContext.keys),
-					organization: [container.organization],
-					...(hashParams.has('related-to')
-						? { relationType: [predicates.enum['is-part-of']] }
-						: {}),
-					terms: hashParams.get('terms') ?? ''
-				},
-				hashParams.get('sort') ?? 'alpha'
-			)) as Container[];
-			setOverlayIfLatest({ key: overlayKey.enum['content-partners'], container, containers });
 		} else if (hashParams.has(overlayKey.enum.measures)) {
 			const revisions = await fetchContainerRevisions(
 				hashParams.get(overlayKey.enum['measures']) as string

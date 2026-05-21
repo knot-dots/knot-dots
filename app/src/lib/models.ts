@@ -11,7 +11,6 @@ export type ApplicationState = {
 
 export const overlayKey = z.enum([
 	'chapters',
-	'content-partners',
 	'create',
 	'goal-iooi',
 	'indicators',
@@ -129,7 +128,6 @@ const helpSlugValues = [
 	'binary-indicator-view',
 	'categories',
 	'category-view',
-	'content-partner-view',
 	'effect-view',
 	'goal-view',
 	'goals-catalog',
@@ -207,7 +205,6 @@ export function isHelpSlug(value: unknown): value is HelpSlug {
 const detailViewHelpSlugByPayloadType = {
 	[payloadTypes.enum.binary_indicator]: helpSlug.enum['binary-indicator-view'],
 	[payloadTypes.enum.category]: helpSlug.enum['category-view'],
-	[payloadTypes.enum.content_partner]: helpSlug.enum['content-partner-view'],
 	[payloadTypes.enum.effect]: helpSlug.enum['effect-view'],
 	[payloadTypes.enum.goal]: helpSlug.enum['goal-view'],
 	[payloadTypes.enum.help]: helpSlug.enum['help-view'],
@@ -1471,28 +1468,6 @@ const colContentPayload = teaserPayload
 // For creating new empty teasers (title optional during creation)
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
-const contentPartnerPayload = basePayload
-	.extend({
-		image: z.string().url().optional(),
-		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.content_partner),
-		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.strict();
-
-const initialContentPartnerPayload = contentPartnerPayload.partial({ title: true });
-
-const contentPartnerCollectionPayload = z
-	.object({
-		title: z.string().readonly().default('Partners'),
-		type: z.literal(payloadTypes.enum.content_partner_collection),
-		listType: listTypes.default(listTypes.enum.list),
-		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.strict();
-
-const initialContentPartnerCollectionPayload = contentPartnerCollectionPayload;
-
 const teaserCollectionPayload = z
 	.object({
 		title: z
@@ -1622,8 +1597,6 @@ const payload = z.discriminatedUnion('type', [
 	chapterPayload,
 	categoryPayload,
 	colContentPayload,
-	contentPartnerCollectionPayload,
-	contentPartnerPayload,
 	customCollectionPayload,
 	demographicDataPayload,
 	effectCollectionPayload,
@@ -2320,31 +2293,6 @@ export function isTeaserHighlightContainer(
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
-// #ContentPartner
-const contentPartnerContainer = container.extend({
-	payload: contentPartnerPayload
-});
-
-export type ContentPartnerContainer = z.infer<typeof contentPartnerContainer>;
-
-export function isContentPartnerContainer(
-	container: AnyContainer | EmptyContainer
-): container is ContentPartnerContainer {
-	return container.payload.type === payloadTypes.enum.content_partner;
-}
-
-const contentPartnerCollectionContainer = container.extend({
-	payload: contentPartnerCollectionPayload
-});
-
-export type ContentPartnerCollectionContainer = z.infer<typeof contentPartnerCollectionContainer>;
-
-export function isContentPartnerCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is ContentPartnerCollectionContainer {
-	return container.payload.type === payloadTypes.enum.content_partner_collection;
-}
-
 // #ColContent
 const colContentContainer = container.extend({
 	payload: colContentPayload
@@ -2376,8 +2324,6 @@ const teaserCollectionContainer = container.extend({
 
 export type TeaserCollectionContainer = z.infer<typeof teaserCollectionContainer>;
 
-export type CollectionContainer = TeaserCollectionContainer | ContentPartnerCollectionContainer;
-
 export type TeaserLikeContainer =
 	| TeaserContainer
 	| InfoBoxContainer
@@ -2401,17 +2347,6 @@ export function isTeaserCollectionContainer(
 	container: AnyContainer | EmptyContainer
 ): container is TeaserCollectionContainer {
 	return container.payload.type === payloadTypes.enum.teaser_collection;
-}
-
-export function isCollectionContainer(
-	container: AnyContainer | EmptyContainer
-): container is CollectionContainer {
-	return (
-		[
-			payloadTypes.enum.teaser_collection,
-			payloadTypes.enum.content_partner_collection
-		] as PayloadType[]
-	).includes(container.payload.type);
 }
 
 export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
@@ -2592,8 +2527,6 @@ export const emptyContainer = newContainer.extend({
 		initialChapterPayload,
 		initialCategoryPayload,
 		initialColContentPayload,
-		initialContentPartnerCollectionPayload,
-		initialContentPartnerPayload,
 		initialCustomCollectionPayload,
 		initialEffectCollectionPayload,
 		initialEffectPayload,

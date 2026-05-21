@@ -21,7 +21,6 @@
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isContainerWithProgress,
-		isContentPartnerContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorTemplateContainer,
@@ -225,7 +224,7 @@
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
-	{#if !isTeaserContainer(container) && !isContentPartnerContainer(container)}
+	{#if !isTeaserContainer(container)}
 		<header>
 			<h3>
 				<a
@@ -311,18 +310,6 @@
 			{:else}
 				<Tendency {container} />
 			{/if}
-		{:else if isContentPartnerContainer(container)}
-			<a href={computeHref(page.url)} bind:this={previewLink} onclick={updateOverlayHistory}>
-				{#if 'image' in container.payload && container.payload.image}
-					<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
-				{:else}
-					<header>
-						<h3>
-							{container.payload.title}
-						</h3>
-					</header>
-				{/if}
-			</a>
 		{:else if isTeaserContainer(container)}
 			{#if 'image' in container.payload && container.payload.image}
 				<p>
