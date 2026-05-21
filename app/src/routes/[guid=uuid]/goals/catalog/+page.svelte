@@ -49,7 +49,7 @@
 	);
 </script>
 
-<GoalsPage data={{ ...data, containers }} filterBarInitiallyOpen>
+<GoalsPage facets={data.facets} filterBarInitiallyOpen>
 	<Catalog {containers} payloadType={[payloadTypes.enum.goal]}>
 		{#snippet footer()}
 			<LazyLoadSentinel

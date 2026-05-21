@@ -14,10 +14,11 @@
 
 	interface Props {
 		containers: AnyContainer[];
+		footer?: Snippet;
 		itemSnippet?: Snippet<[AnyContainer]>;
 	}
 
-	let { containers, itemSnippet }: Props = $props();
+	let { containers, footer, itemSnippet }: Props = $props();
 
 	let items = $derived(containers.map((container) => ({ guid: container.guid, container })));
 
@@ -58,30 +59,47 @@
 </script>
 
 {#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relations && $ability.can('relate', $overlay.container)}
-	<div
-		class="vertical-scroll-wrapper"
-		use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
-		onconsider={handleDndConsider}
-		onfinalize={handleDndFinalize}
-	>
-		{#each items as { guid, container } (guid)}
-			<div>
-				{#if itemSnippet}
-					{@render itemSnippet(container)}
-				{:else}
-					<Card {container} showRelationFilter />
-				{/if}
-			</div>
-		{/each}
+	<div class="vertical-scroll-wrapper">
+		<ul
+			use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}
+			onconsider={handleDndConsider}
+			onfinalize={handleDndFinalize}
+		>
+			{#each items as { guid, container } (guid)}
+				<li>
+					{#if itemSnippet}
+						{@render itemSnippet(container)}
+					{:else}
+						<Card {container} showRelationFilter />
+					{/if}
+				</li>
+			{/each}
+		</ul>
+		{#if footer}
+			{@render footer()}
+		{/if}
 	</div>
 {:else}
 	<div class="vertical-scroll-wrapper">
-		{#each items as { container, guid } (guid)}
-			{#if itemSnippet}
-				{@render itemSnippet(container)}
-			{:else}
-				<Card {container} showRelationFilter />
-			{/if}
-		{/each}
+		<ul>
+			{#each items as { container, guid } (guid)}
+				<li>
+					{#if itemSnippet}
+						{@render itemSnippet(container)}
+					{:else}
+						<Card {container} showRelationFilter />
+					{/if}
+				</li>
+			{/each}
+		</ul>
+		{#if footer}
+			{@render footer()}
+		{/if}
 	</div>
 {/if}
+
+<style>
+	li:not(:last-child) {
+		margin-bottom: 0.75rem;
+	}
+</style>

@@ -29,7 +29,7 @@
 	);
 </script>
 
-<GoalsPage data={{ ...data, containers }}>
+<GoalsPage facets={data.facets}>
 	<Board>
 		{#each columns as column (column.key)}
 			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
