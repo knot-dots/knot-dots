@@ -24,11 +24,11 @@
 
 <PropertyGrid>
 	{#snippet general()}
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
 		{/if}
 
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}
 

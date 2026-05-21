@@ -156,6 +156,7 @@
 	"custom_collection.settings.title": "Abschnittseinstellungen",
 	"custom_collection.settings.view": "Ansicht",
 	"custom_collection.show_all": "Alle anzeigen",
+	"custom_domain": "Eigene Domain",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
 	"delete.name": "{name} löschen",

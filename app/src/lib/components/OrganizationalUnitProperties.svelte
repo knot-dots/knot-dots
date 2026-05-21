@@ -137,7 +137,7 @@
 			bind:value={container.payload.visibleWorkspaces}
 		/>
 
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />
 		{/if}
 

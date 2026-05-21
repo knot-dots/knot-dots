@@ -117,7 +117,7 @@
 			</button>
 
 			<div class="settings-divider" role="presentation"></div>
-			{#if $ability.can('update', container, 'visibility')}
+			{#if $ability.can('update', container, 'payload.visibility')}
 				<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
 					<Eye />
 					<span>

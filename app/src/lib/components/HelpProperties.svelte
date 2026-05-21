@@ -24,7 +24,7 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
 		{/if}
 
@@ -34,7 +34,7 @@
 	{/snippet}
 
 	{#snippet general()}
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableImage {editable} label={$_('cover')} bind:value={container.payload.image} />
 		{/if}
 
@@ -42,7 +42,7 @@
 			<EditableHelpSlug {editable} bind:value={container.payload.slug} />
 		{/if}
 
-		{#if $ability.can('update', container, 'visibility')}
+		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}
 	{/snippet}
