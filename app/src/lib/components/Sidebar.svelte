@@ -8,6 +8,7 @@
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
 	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
+	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
@@ -39,8 +40,9 @@
 
 	let favoriteList = getFavoriteListContext();
 
-	let orgMainPagesExpanded = $state(true);
-	let orgUnitMainPagesExpanded = $state(true);
+	let organizationLinks = createDisclosure({ expanded: true, label: $_('main pages') });
+
+	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
 	function expandSidebar() {
 		sidebarExpanded = true;
@@ -272,17 +274,22 @@
 
 		<!-- Hauptseiten toggle + favorites -->
 		<div class="panel-links">
-			<button
-				class="toggle-label"
-				onclick={() => (orgMainPagesExpanded = !orgMainPagesExpanded)}
-				type="button"
-			>
-				{#if orgMainPagesExpanded}<ChevronDown />{:else}<ChevronRight />{/if}
-				<span>{$_('main_pages')}</span>
+			<button class="panel-links-toggle" use:organizationLinks.button type="button">
+				{#if $organizationLinks.expanded}
+					<ChevronDown />
+					<span>{$_('hide_links')}</span>
+				{:else}
+					<ChevronRight />
+					<span>{$_('show_links')}</span>
+				{/if}
 			</button>
 
-			{#if orgMainPagesExpanded}
-				<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+			{#if $organizationLinks.expanded}
+				<ul
+					class="sidebar-menu"
+					transition:slide={{ duration: 125, easing: cubicInOut }}
+					use:organizationLinks.panel
+				>
 					<li>
 						<a
 							class="sidebar-menu-item"
@@ -362,17 +369,22 @@
 			{#if page.data.currentOrganizationalUnit}
 				<!-- Hauptseiten toggle + favorites -->
 				<div class="panel-links">
-					<button
-						class="toggle-label"
-						onclick={() => (orgUnitMainPagesExpanded = !orgUnitMainPagesExpanded)}
-						type="button"
-					>
-						{#if orgUnitMainPagesExpanded}<ChevronDown />{:else}<ChevronRight />{/if}
-						<span>{$_('main_pages')}</span>
+					<button class="panel-links-toggle" type="button" use:organizationalUnitLinks.button>
+						{#if $organizationalUnitLinks.expanded}
+							<ChevronDown />
+							<span>{$_('hide_links')}</span>
+						{:else}
+							<ChevronRight />
+							<span>{$_('show_links')}</span>
+						{/if}
 					</button>
 
-					{#if orgUnitMainPagesExpanded}
-						<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+					{#if $organizationalUnitLinks.expanded}
+						<ul
+							class="sidebar-menu"
+							transition:slide={{ duration: 125, easing: cubicInOut }}
+							use:organizationalUnitLinks.panel
+						>
 							<li>
 								<a
 									class="sidebar-menu-item"
@@ -633,30 +645,24 @@
 	}
 
 	/* Toggle label (Hauptseiten / Favoriten) */
-	.toggle-label {
+	.panel-links-toggle {
 		align-items: center;
-		background: none;
 		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-400);
-		cursor: pointer;
+		color: var(--color-gray-500);
 		display: flex;
 		font-size: 0.75rem;
 		font-weight: 600;
-		gap: 0.25rem;
+		gap: 0.375rem;
 		height: 2rem;
-		padding: 0.25rem 0.5rem;
-		position: sticky;
-		top: 0;
+		padding: 0 0.5rem;
 		width: 100%;
 	}
 
-	.toggle-label:hover {
+	.panel-links-toggle:hover {
 		background-color: rgba(0, 0, 0, 0.04);
 	}
 
-	.toggle-label :global(svg) {
-		color: inherit;
+	.panel-links-toggle :global(svg) {
 		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
