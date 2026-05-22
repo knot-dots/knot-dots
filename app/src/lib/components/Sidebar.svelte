@@ -262,7 +262,6 @@
 	class:expanded={sidebarExpanded === true}
 	data-sveltekit-preload-data="hover"
 >
-	<!-- Organization (Mandant) Panel -->
 	<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
 		<div class="panel-header">
 			<OrganizationMenu
@@ -272,7 +271,6 @@
 			/>
 		</div>
 
-		<!-- Hauptseiten toggle + favorites -->
 		<div class="panel-links">
 			<button class="panel-links-toggle" use:organizationLinks.button type="button">
 				{#if $organizationLinks.expanded}
@@ -355,7 +353,6 @@
 		</div>
 	</div>
 
-	<!-- Organizational Unit Panel -->
 	{#if organizationalUnits.length > 0}
 		<div class="panel-section" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
 			<div class="panel-header">
@@ -367,7 +364,6 @@
 			</div>
 
 			{#if page.data.currentOrganizationalUnit}
-				<!-- Hauptseiten toggle + favorites -->
 				<div class="panel-links">
 					<button class="panel-links-toggle" type="button" use:organizationalUnitLinks.button>
 						{#if $organizationalUnitLinks.expanded}
@@ -453,7 +449,6 @@
 		</div>
 	{/if}
 
-	<!-- User Panel -->
 	{#if $user.isAuthenticated}
 		<div class="panel-section panel-section--user">
 			<div class="panel-header">
@@ -476,7 +471,6 @@
 	{/if}
 </div>
 
-<!-- Platform footer -->
 <div
 	class="panel-section panel-section--footer"
 	class:collapsed={sidebarExpanded === false}
@@ -526,7 +520,6 @@
 		display: none;
 	}
 
-	/* Collapsed menu (icon-only, visible when sidebar is collapsed) */
 	.collapsed-menu {
 		display: flex;
 		flex-direction: column;
@@ -605,7 +598,6 @@
 		display: none;
 	}
 
-	/* Panel Section */
 	.panel-section {
 		background:
 			linear-gradient(226deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
@@ -636,7 +628,6 @@
 		display: none;
 	}
 
-	/* Panel Header (select button) */
 	.panel-header {
 		--dropdown-button-border-radius: 8px;
 		--dropdown-button-chevron-icon-size: 1rem;
@@ -650,9 +641,8 @@
 		--dropdown-panel-box-shadow: var(--shadow-lg);
 		--dropdown-panel-gap: 0;
 		--dropdown-panel-padding: 0;
-		}
+	}
 
-	/* Toggle label (Hauptseiten / Favoriten) */
 	.panel-links-toggle {
 		align-items: center;
 		border: none;
@@ -676,13 +666,11 @@
 		width: 1rem;
 	}
 
-	/* Panel links wrapper */
 	.panel-links {
 		display: flex;
 		flex-direction: column;
 	}
 
-	/* Sidebar menu items (reused for favorites) */
 	.sidebar-menu {
 		display: flex;
 		flex-direction: column;
