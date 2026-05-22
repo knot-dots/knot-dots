@@ -493,7 +493,6 @@
 <style>
 	header {
 		align-items: center;
-		border-bottom: solid 1px var(--color-gray-200);
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;

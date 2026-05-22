@@ -96,7 +96,6 @@
 	}
 
 	nav {
-		border-right: 1px solid var(--color-gray-200);
 		display: flex;
 		flex-direction: column;
 		flex-shrink: 0;
