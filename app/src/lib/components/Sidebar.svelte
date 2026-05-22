@@ -16,6 +16,8 @@
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
+	import Grid from '~icons/flowbite/grid-solid';
+	import Home from '~icons/flowbite/home-solid';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Cog from '~icons/knotdots/cog';
 	import DragHandle from '~icons/knotdots/draghandle';
@@ -206,13 +208,7 @@
 				class="collapsed-panel-item"
 				href={landingPageURL(page.data.currentOrganization)}
 			>
-				<img
-					alt=""
-					class="panel-select-icon"
-					src={page.data.currentOrganization.payload.image
-						? transformFileURL(page.data.currentOrganization.payload.image)
-						: logo}
-				/>
+				<Home />
 			</a>
 		</div>
 		{#if organizationalUnits.length > 0}
@@ -236,7 +232,7 @@
 		{#if $user.isAuthenticated}
 			<div class="collapsed-panel">
 				<a {@attach tooltip($_('workspace.profile'))} class="collapsed-panel-item" href="/me">
-					<Favicon />
+					<Grid />
 				</a>
 			</div>
 		{/if}
@@ -305,7 +301,7 @@
 								page.url.toString()}
 							href={landingPageURL(page.data.currentOrganization)}
 						>
-							<OrganizationalUnitIcon />
+							<Home />
 							<span>{$_('landing_page')}</span>
 						</a>
 					</li>
@@ -495,7 +491,7 @@
 									class:sidebar-menu-item--active={'/me' === page.url.pathname}
 									href="/me"
 								>
-									<Favicon />
+									<Grid />
 									<span>{$_('workspace.profile')}</span>
 								</a>
 							</li>
@@ -719,13 +715,6 @@
 		color: inherit;
 		flex-shrink: 0;
 		height: 1rem;
-		width: 1rem;
-	}
-
-	.panel-select-icon {
-		border-radius: 2px;
-		height: 1rem;
-		object-fit: contain;
 		width: 1rem;
 	}
 
