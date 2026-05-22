@@ -257,219 +257,226 @@
 </div>
 
 <div
-	class="scroll-wrapper"
+	class="panel-section"
+	class:panel-section--active={!page.data.currentOrganizationalUnit}
 	class:collapsed={sidebarExpanded === false}
 	class:expanded={sidebarExpanded === true}
-	data-sveltekit-preload-data="hover"
 >
-	<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
-		<div class="panel-header">
-			<OrganizationMenu
-				{defaultOrganization}
-				options={organizations}
-				selected={page.data.currentOrganization}
-			/>
-		</div>
-
-		<div class="panel-links">
-			<button class="panel-links-toggle" use:organizationLinks.button type="button">
-				{#if $organizationLinks.expanded}
-					<ChevronDown />
-					<span>{$_('hide_links')}</span>
-				{:else}
-					<ChevronRight />
-					<span>{$_('show_links')}</span>
-				{/if}
-			</button>
-
-			{#if $organizationLinks.expanded}
-				<ul
-					class="sidebar-menu"
-					transition:slide={{ duration: 125, easing: cubicInOut }}
-					use:organizationLinks.panel
-				>
-					<li>
-						<a
-							class="sidebar-menu-item"
-							class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
-								page.url.toString()}
-							href={landingPageURL(page.data.currentOrganization)}
-						>
-							<Home />
-							<span>{$_('landing_page')}</span>
-						</a>
-					</li>
-
-					<li>
-						<ul
-							class="sidebar-menu drag-zone"
-							onconsider={handleDndConsiderOrganization}
-							onfinalize={handleDndFinalizeOrganization}
-							use:dragHandleZone={{
-								dropTargetStyle: {},
-								flipDurationMs: 100,
-								items: favoriteItemsOrganization,
-								type: 'organization'
-							}}
-						>
-							{#each favoriteItemsOrganization as item, index (item.guid)}
-								{@const href = page.url.searchParams.size
-									? `${page.url.pathname}?${page.url.searchParams.toString()}`
-									: page.url.pathname}
-								<li animate:flip={{ duration: 100 }}>
-									{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
-										<span
-											class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
-											use:dragHandle
-										>
-											<DragHandle />
-										</span>
-									{/if}
-									<a
-										class="sidebar-menu-item"
-										class:sidebar-menu-item--active={item.href === href}
-										href={item.href}
-									>
-										{#if item.icon}
-											<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
-										{:else}
-											<StarSolid />
-										{/if}
-										<span>{item.title}</span>
-									</a>
-									<EditableFavorite
-										bind:favorite={favoriteList.organization[index]}
-										onchange={updateFavorite(
-											page.data.currentOrganization,
-											favoriteList.organization
-										)}
-									/>
-								</li>
-							{/each}
-						</ul>
-					</li>
-				</ul>
-			{/if}
-		</div>
+	<div class="panel-header">
+		<OrganizationMenu
+			{defaultOrganization}
+			options={organizations}
+			selected={page.data.currentOrganization}
+		/>
 	</div>
 
-	{#if organizationalUnits.length > 0}
-		<div class="panel-section" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
-			<div class="panel-header">
-				<OrganizationalUnitMenu
-					{defaultOrganization}
-					{organizationalUnits}
-					currentOrganizationalUnit={page.data.currentOrganizationalUnit}
-				/>
-			</div>
-
-			{#if page.data.currentOrganizationalUnit}
-				<div class="panel-links">
-					<button class="panel-links-toggle" type="button" use:organizationalUnitLinks.button>
-						{#if $organizationalUnitLinks.expanded}
-							<ChevronDown />
-							<span>{$_('hide_links')}</span>
-						{:else}
-							<ChevronRight />
-							<span>{$_('show_links')}</span>
-						{/if}
-					</button>
-
-					{#if $organizationalUnitLinks.expanded}
-						<ul
-							class="sidebar-menu"
-							transition:slide={{ duration: 125, easing: cubicInOut }}
-							use:organizationalUnitLinks.panel
-						>
-							<li>
-								<a
-									class="sidebar-menu-item"
-									class:sidebar-menu-item--active={landingPageURL(
-										page.data.currentOrganizationalUnit
-									) === page.url.toString()}
-									href={landingPageURL(page.data.currentOrganizationalUnit)}
-								>
-									<OrganizationalUnitIcon />
-									<span>{$_('overview')}</span>
-								</a>
-							</li>
-
-							<li>
-								<ul
-									class="sidebar-menu"
-									onconsider={handleDndConsiderOrganizationalUnit}
-									onfinalize={handleDndFinalizeOrganizationalUnit}
-									use:dragHandleZone={{
-										dropTargetStyle: {},
-										flipDurationMs: 100,
-										items: favoriteItemsOrganizationalUnit,
-										type: 'organizationalUnit'
-									}}
-								>
-									{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
-										{@const href = page.url.searchParams.size
-											? `${page.url.pathname}?${page.url.searchParams.toString()}`
-											: page.url.pathname}
-										<li>
-											{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
-												<span
-													class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
-													use:dragHandle
-												>
-													<DragHandle />
-												</span>
-											{/if}
-											<a
-												class="sidebar-menu-item"
-												class:sidebar-menu-item--active={item.href === href}
-												href={item.href}
-											>
-												{#if item.icon}
-													<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
-												{:else}
-													<StarSolid />
-												{/if}
-												<span>{item.title}</span>
-											</a>
-											<EditableFavorite
-												bind:favorite={favoriteList.organizationalUnit[index]}
-												onchange={updateFavorite(
-													page.data.currentOrganizationalUnit,
-													favoriteList.organizationalUnit
-												)}
-											/>
-										</li>
-									{/each}
-								</ul>
-							</li>
-						</ul>
-					{/if}
-				</div>
+	<div class="panel-links">
+		<button class="panel-links-toggle" use:organizationLinks.button type="button">
+			{#if $organizationLinks.expanded}
+				<ChevronDown />
+				<span>{$_('hide_links')}</span>
+			{:else}
+				<ChevronRight />
+				<span>{$_('show_links')}</span>
 			{/if}
-		</div>
-	{/if}
+		</button>
 
-	{#if $user.isAuthenticated}
-		<div class="panel-section panel-section--user">
-			<div class="panel-header">
-				<UserMenu />
-			</div>
-
-			<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+		{#if $organizationLinks.expanded}
+			<ul
+				class="sidebar-menu"
+				transition:slide={{ duration: 125, easing: cubicInOut }}
+				use:organizationLinks.panel
+			>
 				<li>
 					<a
 						class="sidebar-menu-item"
-						class:sidebar-menu-item--active={'/me' === page.url.pathname}
-						href="/me"
+						class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+							page.url.toString()}
+						href={landingPageURL(page.data.currentOrganization)}
 					>
-						<Grid />
-						<span>{$_('workspace.profile')}</span>
+						<Home />
+						<span>{$_('landing_page')}</span>
 					</a>
 				</li>
+
+				<li>
+					<ul
+						class="sidebar-menu drag-zone"
+						onconsider={handleDndConsiderOrganization}
+						onfinalize={handleDndFinalizeOrganization}
+						use:dragHandleZone={{
+							dropTargetStyle: {},
+							flipDurationMs: 100,
+							items: favoriteItemsOrganization,
+							type: 'organization'
+						}}
+					>
+						{#each favoriteItemsOrganization as item, index (item.guid)}
+							{@const href = page.url.searchParams.size
+								? `${page.url.pathname}?${page.url.searchParams.toString()}`
+								: page.url.pathname}
+							<li animate:flip={{ duration: 100 }}>
+								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
+									<span
+										class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+										use:dragHandle
+									>
+										<DragHandle />
+									</span>
+								{/if}
+								<a
+									class="sidebar-menu-item"
+									class:sidebar-menu-item--active={item.href === href}
+									href={item.href}
+								>
+									{#if item.icon}
+										<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+									{:else}
+										<StarSolid />
+									{/if}
+									<span>{item.title}</span>
+								</a>
+								<EditableFavorite
+									bind:favorite={favoriteList.organization[index]}
+									onchange={updateFavorite(
+										page.data.currentOrganization,
+										favoriteList.organization
+									)}
+								/>
+							</li>
+						{/each}
+					</ul>
+				</li>
 			</ul>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
+
+{#if organizationalUnits.length > 0}
+	<div
+		class="panel-section"
+		class:panel-section--active={!!page.data.currentOrganizationalUnit}
+		class:collapsed={sidebarExpanded === false}
+		class:expanded={sidebarExpanded === true}
+	>
+		<div class="panel-header">
+			<OrganizationalUnitMenu
+				{defaultOrganization}
+				{organizationalUnits}
+				currentOrganizationalUnit={page.data.currentOrganizationalUnit}
+			/>
+		</div>
+
+		{#if page.data.currentOrganizationalUnit}
+			<div class="panel-links">
+				<button class="panel-links-toggle" type="button" use:organizationalUnitLinks.button>
+					{#if $organizationalUnitLinks.expanded}
+						<ChevronDown />
+						<span>{$_('hide_links')}</span>
+					{:else}
+						<ChevronRight />
+						<span>{$_('show_links')}</span>
+					{/if}
+				</button>
+
+				{#if $organizationalUnitLinks.expanded}
+					<ul
+						class="sidebar-menu"
+						transition:slide={{ duration: 125, easing: cubicInOut }}
+						use:organizationalUnitLinks.panel
+					>
+						<li>
+							<a
+								class="sidebar-menu-item"
+								class:sidebar-menu-item--active={landingPageURL(
+									page.data.currentOrganizationalUnit
+								) === page.url.toString()}
+								href={landingPageURL(page.data.currentOrganizationalUnit)}
+							>
+								<OrganizationalUnitIcon />
+								<span>{$_('overview')}</span>
+							</a>
+						</li>
+
+						<li>
+							<ul
+								class="sidebar-menu"
+								onconsider={handleDndConsiderOrganizationalUnit}
+								onfinalize={handleDndFinalizeOrganizationalUnit}
+								use:dragHandleZone={{
+									dropTargetStyle: {},
+									flipDurationMs: 100,
+									items: favoriteItemsOrganizationalUnit,
+									type: 'organizationalUnit'
+								}}
+							>
+								{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
+									{@const href = page.url.searchParams.size
+										? `${page.url.pathname}?${page.url.searchParams.toString()}`
+										: page.url.pathname}
+									<li>
+										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
+											<span
+												class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+												use:dragHandle
+											>
+												<DragHandle />
+											</span>
+										{/if}
+										<a
+											class="sidebar-menu-item"
+											class:sidebar-menu-item--active={item.href === href}
+											href={item.href}
+										>
+											{#if item.icon}
+												<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+											{:else}
+												<StarSolid />
+											{/if}
+											<span>{item.title}</span>
+										</a>
+										<EditableFavorite
+											bind:favorite={favoriteList.organizationalUnit[index]}
+											onchange={updateFavorite(
+												page.data.currentOrganizationalUnit,
+												favoriteList.organizationalUnit
+											)}
+										/>
+									</li>
+								{/each}
+							</ul>
+						</li>
+					</ul>
+				{/if}
+			</div>
+		{/if}
+	</div>
+{/if}
+
+{#if $user.isAuthenticated}
+	<div
+		class="panel-section panel-section--user"
+		class:collapsed={sidebarExpanded === false}
+		class:expanded={sidebarExpanded === true}
+	>
+		<div class="panel-header">
+			<UserMenu />
+		</div>
+
+		<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+			<li>
+				<a
+					class="sidebar-menu-item"
+					class:sidebar-menu-item--active={'/me' === page.url.pathname}
+					href="/me"
+				>
+					<Grid />
+					<span>{$_('workspace.profile')}</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+{/if}
 
 <div
 	class="panel-section panel-section--footer"
@@ -489,27 +496,12 @@
 		border-bottom: solid 1px var(--color-gray-200);
 		display: flex;
 		flex-direction: row;
-		gap: 0.5rem;
-		height: var(--header-height);
 		justify-content: space-between;
-		padding: 0.5rem 0.5rem;
-	}
-
-	header.expanded {
-		width: var(--sidebar-max-width);
+		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 	}
 
 	header:not(.expanded) a {
 		display: none;
-	}
-
-	header.collapsed {
-		border-bottom: none;
-		height: auto;
-	}
-
-	header img {
-		margin-left: 0.25rem;
 	}
 
 	header:not(.expanded) > button:first-of-type {
@@ -584,29 +576,19 @@
 		width: 1rem;
 	}
 
-	.scroll-wrapper {
-		display: flex;
-		flex: 1 0 0;
-		flex-direction: column;
-		gap: 0.25rem;
-		min-height: 0;
-		overflow-y: auto;
-		padding: 0.25rem;
-	}
-
-	.scroll-wrapper:not(.expanded) {
-		display: none;
-	}
-
 	.panel-section {
 		background:
 			linear-gradient(226deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
 			var(--color-gray-050);
 		border: 1px solid var(--color-gray-100);
 		border-radius: 12px;
-		display: flex;
-		flex-direction: column;
+		flex: 0 1 auto;
+		overflow-y: auto;
 		padding: 0.25rem;
+	}
+
+	.panel-section:not(.expanded) {
+		display: none;
 	}
 
 	.panel-section.panel-section--active {
@@ -616,16 +598,9 @@
 		border-color: var(--color-primary-200);
 	}
 
-	.panel-section.panel-section--user {
-		flex: 0 0 auto;
-	}
-
 	.panel-section.panel-section--footer {
-		margin: 0.25rem;
-	}
-
-	.panel-section.panel-section--footer:not(.expanded) {
-		display: none;
+		margin-top: auto;
+		flex: 0 0 auto;
 	}
 
 	.panel-header {
@@ -768,10 +743,6 @@
 	}
 
 	@media (min-width: 60rem) {
-		header:not(.collapsed) {
-			width: var(--sidebar-max-width);
-		}
-
 		header:not(.collapsed) a {
 			display: block;
 		}
@@ -792,14 +763,8 @@
 			max-width: 3rem;
 		}
 
-		.scroll-wrapper:not(.collapsed) {
-			display: flex;
-			max-width: var(--sidebar-max-width);
-		}
-
-		.panel-section.panel-section--footer:not(.collapsed) {
+		.panel-section:not(.collapsed) {
 			display: block;
-			max-width: var(--sidebar-max-width);
 		}
 	}
 </style>
