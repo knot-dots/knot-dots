@@ -478,11 +478,11 @@
 
 <!-- Platform footer -->
 <div
-	class="platform-footer"
+	class="panel-section panel-section--footer"
 	class:collapsed={sidebarExpanded === false}
 	class:expanded={sidebarExpanded === true}
 >
-	<a class="platform-footer-link" href={env.PUBLIC_BASE_URL} rel="external">
+	<a class="sidebar-menu-item sidebar-menu-item--footer" href={env.PUBLIC_BASE_URL} rel="external">
 		<Favicon />
 		<span class="truncated">knot dots</span>
 		<ChevronRight />
@@ -617,15 +617,23 @@
 		padding: 0.25rem;
 	}
 
-	.panel-section--active {
+	.panel-section.panel-section--active {
 		background:
 			linear-gradient(203deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
 			var(--color-primary-050);
 		border-color: var(--color-primary-200);
 	}
 
-	.panel-section--user {
+	.panel-section.panel-section--user {
 		flex: 0 0 auto;
+	}
+
+	.panel-section.panel-section--footer {
+		margin: 0.25rem;
+	}
+
+	.panel-section.panel-section--footer:not(.expanded) {
+		display: none;
 	}
 
 	/* Panel Header (select button) */
@@ -642,7 +650,7 @@
 		--dropdown-panel-box-shadow: var(--shadow-lg);
 		--dropdown-panel-gap: 0;
 		--dropdown-panel-padding: 0;
-	}
+		}
 
 	/* Toggle label (Hauptseiten / Favoriten) */
 	.panel-links-toggle {
@@ -686,7 +694,6 @@
 	.sidebar-menu > li {
 		align-items: center;
 		display: flex;
-		gap: 0.375rem;
 		min-width: 0;
 	}
 
@@ -695,34 +702,41 @@
 		--icon-color: var(--color-gray-400);
 
 		align-items: center;
-		background: none;
-		border: none;
 		border-radius: 8px;
 		color: var(--color);
-		cursor: pointer;
 		display: flex;
 		flex-direction: row;
 		flex-grow: 1;
 		font-size: 0.875rem;
-		font-weight: 500;
+		font-weight: 400;
 		gap: 0.375rem;
 		line-height: 1.5;
 		min-width: 0;
-		padding: 0.375rem 0.5rem;
+		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 		text-wrap: nowrap;
 	}
 
-	.sidebar-menu-item--active {
-		background-color: var(--color-gray-100);
+	.sidebar-menu-item.sidebar-menu-item--footer {
+		color: var(--color-gray-900);
+		font-weight: 500;
+	}
+
+	.sidebar-menu-item.sidebar-menu-item--footer > :global(svg:last-child) {
+		margin-left: auto;
+	}
+
+	.sidebar-menu-item.sidebar-menu-item--active {
+		background-color: rgb(from var(--color-primary-500) r g b / 0.15);
+		color: var(--color-gray-900);
 	}
 
 	.sidebar-menu-item:active {
-		background-color: var(--color-gray-100);
+		background-color: rgb(from var(--color-gray-500) r g b / 0.25);
 	}
 
 	.sidebar-menu-item:focus,
 	.sidebar-menu-item:hover {
-		background-color: var(--color-gray-050);
+		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
 	}
 
 	.sidebar-menu .sidebar-menu {
@@ -752,47 +766,8 @@
 
 	.drag-handle {
 		align-self: center;
-		flex-shrink: 0;
-	}
-
-	/* Platform footer */
-	.platform-footer {
-		background-color: var(--color-gray-050);
-		border: 1px solid var(--color-gray-100);
-		border-radius: 12px;
-		margin: 0 0.25rem 0.25rem;
-		padding: 0.25rem;
-	}
-
-	.platform-footer:not(.expanded) {
-		display: none;
-	}
-
-	.platform-footer-link {
-		align-items: center;
 		border-radius: 8px;
-		color: var(--color-gray-900);
-		display: flex;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.375rem;
-		height: 2rem;
-		padding: 0.25rem 0.5rem;
-	}
-
-	.platform-footer-link:hover {
-		background-color: rgba(0, 0, 0, 0.04);
-	}
-
-	.platform-footer-link :global(svg) {
-		color: var(--color-gray-400);
 		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.platform-footer-link :global(svg:last-child) {
-		margin-left: auto;
 	}
 
 	@media (hover: hover) {
@@ -834,7 +809,7 @@
 			max-width: var(--sidebar-max-width);
 		}
 
-		.platform-footer:not(.collapsed) {
+		.panel-section.panel-section--footer:not(.collapsed) {
 			display: block;
 			max-width: var(--sidebar-max-width);
 		}
