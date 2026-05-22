@@ -3,15 +3,12 @@
 </script>
 
 <script lang="ts">
-	import { signOut } from '@auth/sveltekit/client';
 	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
 	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
-	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import ArrowRightToBracket from '~icons/flowbite/arrow-right-to-bracket-outline';
 	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
@@ -19,7 +16,6 @@
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
 	import StarSolid from '~icons/flowbite/star-solid';
-	import Cog from '~icons/knotdots/cog';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Favicon from '~icons/knotdots/favicon';
 	import OrganizationalUnitIcon from '~icons/knotdots/organizational-unit';
@@ -29,29 +25,22 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
-	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OrganizationalUnitMenu from '$lib/components/OrganizationalUnitMenu.svelte';
+	import UserMenu from '$lib/components/UserMenu.svelte';
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer
 	} from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability, applicationState, user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
-	import { ability, applicationState } from '$lib/stores';
 
 	let favoriteList = getFavoriteListContext();
 
-	const userMenu = createDisclosure({ label: $_('user_menu') });
-
 	let orgMainPagesExpanded = $state(true);
 	let orgUnitMainPagesExpanded = $state(true);
-	let userFavoritesExpanded = $state(true);
-
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
 
 	function expandSidebar() {
 		sidebarExpanded = true;
@@ -456,65 +445,21 @@
 	{#if $user.isAuthenticated}
 		<div class="panel-section panel-section--user">
 			<div class="panel-header">
-				<button class="panel-select-button" type="button" use:userMenu.button>
-					<span class="avatar avatar-s">
-						{$user.givenName.at(0)}{$user.familyName.at(0)}
-					</span>
-					<span class="panel-select-label truncated">
-						{$user.givenName}
-						{$user.familyName}
-					</span>
-					<ChevronDown />
-				</button>
+				<UserMenu />
 			</div>
 
-			{#if $userMenu.expanded}
-				<div
-					class="panel-links"
-					transition:slide={{ duration: 125, easing: cubicInOut }}
-					use:userMenu.panel
-				>
-					<button
-						class="toggle-label"
-						onclick={() => (userFavoritesExpanded = !userFavoritesExpanded)}
-						type="button"
+			<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+				<li>
+					<a
+						class="sidebar-menu-item"
+						class:sidebar-menu-item--active={'/me' === page.url.pathname}
+						href="/me"
 					>
-						{#if userFavoritesExpanded}<ChevronDown />{:else}<ChevronRight />{/if}
-						<span>{$_('favorites')}</span>
-					</button>
-
-					{#if userFavoritesExpanded}
-						<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
-							<li>
-								<a
-									class="sidebar-menu-item"
-									class:sidebar-menu-item--active={'/me' === page.url.pathname}
-									href="/me"
-								>
-									<Grid />
-									<span>{$_('workspace.profile')}</span>
-								</a>
-							</li>
-							<li>
-								<button class="sidebar-menu-item" onclick={() => dialog.showModal()} type="button">
-									<Cog />
-									<span>{$_('profile.settings')}</span>
-								</button>
-							</li>
-							<li>
-								<button
-									class="sidebar-menu-item sidebar-menu-item--logout"
-									onclick={() => signOut()}
-									type="button"
-								>
-									<ArrowRightToBracket />
-									<span>{$_('logout')}</span>
-								</button>
-							</li>
-						</ul>
-					{/if}
-				</div>
-			{/if}
+						<Grid />
+						<span>{$_('workspace.profile')}</span>
+					</a>
+				</li>
+			</ul>
 		</div>
 	{/if}
 </div>
@@ -531,8 +476,6 @@
 		<ChevronRight />
 	</a>
 </div>
-
-<ProfileSettingsDialog bind:dialog />
 
 <style>
 	header {
@@ -692,44 +635,6 @@
 		align-items: center;
 	}
 
-	.panel-select-button {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-900);
-		cursor: pointer;
-		display: flex;
-		flex: 1 0 0;
-		gap: 0.375rem;
-		height: 2.25rem;
-		min-width: 0;
-		padding: 0 0.5rem;
-	}
-
-	.panel-select-button:hover {
-		background-color: rgba(0, 0, 0, 0.04);
-	}
-
-	.panel-select-button :global(svg) {
-		color: inherit;
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.panel-select-label {
-		flex: 1 0 0;
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.25;
-		min-width: 0;
-		overflow: hidden;
-		text-align: left;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	/* Toggle label (Hauptseiten / Favoriten) */
 	.toggle-label {
 		align-items: center;
@@ -808,11 +713,6 @@
 		background-color: var(--color-gray-100);
 	}
 
-	.sidebar-menu-item--logout {
-		--color: var(--color-red-600);
-		--icon-color: var(--color-red-600);
-	}
-
 	.sidebar-menu-item:active {
 		background-color: var(--color-gray-100);
 	}
@@ -850,26 +750,6 @@
 	.drag-handle {
 		align-self: center;
 		flex-shrink: 0;
-	}
-
-	.is-visible-on-hover {
-		display: none;
-	}
-
-	.avatar {
-		align-items: center;
-		background-color: var(--color-gray-100);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 50px;
-		box-sizing: border-box;
-		display: flex;
-		flex-shrink: 0;
-		font-size: 0.625rem;
-		font-weight: 500;
-		height: 1.5rem;
-		justify-content: center;
-		text-align: center;
-		width: 1.5rem;
 	}
 
 	/* Platform footer */

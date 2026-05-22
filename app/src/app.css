@@ -1051,8 +1051,12 @@ label > input[type='checkbox'].toggle {
 
 /* Avatars */
 .avatar {
+	background-color: var(--color-gray-100);
+	border: solid 1px var(--color-gray-200);
 	border-radius: 50%;
+	color: var(--color-gray-900);
 	display: inline-block;
+	flex-shrink: 0;
 	font-size: var(--font-size);
 	height: calc(2 * var(--radius));
 	line-height: 1;
@@ -1062,8 +1066,8 @@ label > input[type='checkbox'].toggle {
 }
 
 .avatar.avatar-s {
-	--radius: 1rem;
-	--font-size: 0.75rem;
+	--radius: 0.75rem;
+	--font-size: 0.625rem;
 }
 
 /* Logos of organizations */
