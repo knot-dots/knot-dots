@@ -302,19 +302,6 @@
 
 <style>
 	.dropdown {
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
-		--dropdown-button-chevron-default-color: var(--color-gray-400);
-		--dropdown-button-default-background: transparent;
-		--dropdown-button-default-color: var(--color-gray-900);
-		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
-		--dropdown-button-expanded-color: var(--color-primary-700);
-		--dropdown-button-min-height: 2rem;
-		--dropdown-panel-background-color: var(--color-gray-025);
-		--dropdown-panel-box-shadow: var(--shadow-lg);
-		--dropdown-panel-gap: 0;
-		--dropdown-panel-padding: 0;
-
 		display: flex;
 		position: static;
 		width: 100%;
