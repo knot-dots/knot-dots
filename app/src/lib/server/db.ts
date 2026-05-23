@@ -816,15 +816,34 @@ export function getManyContainers(
 	options?: ContainerQueryOptions
 ) {
 	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
-		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
-			SELECT c.*
-			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
-			WHERE ${prepareWhereCondition({ ...filters, organizations })}
+		return (await connection.any(sql.type(anyContainer)`
+			WITH container_result AS (
+				SELECT c.*
+				FROM container c
+				WHERE ${prepareWhereCondition({
+					...filters,
+					organizations
+				})}
+			), container_user_result AS (
+				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER (WHERE cu.object IS NOT NULL), '[]') AS "user"
+				FROM container_result c
+				LEFT JOIN container_user cu ON c.revision = cu.object
+				GROUP BY c.guid
+			), container_relation_result AS (
+				SELECT c.guid, coalesce(json_agg(json_build_object('object', cr.object, 'position', cr.position, 'predicate', cr.predicate, 'subject', cr.subject) ORDER BY cr.predicate, cr.position, cr.subject, cr.object) FILTER (WHERE cr.object IS NOT NULL), '[]') AS relation
+				FROM container_result c
+				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
+				GROUP BY c.guid
+			)
+			SELECT c.*, r.relation, u.user
+			FROM container_result c
+			JOIN container_relation_result r ON c.guid = r.guid
+			JOIN container_user_result u ON c.guid = u.guid
+			${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
-			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``};
-    `);
-		return withUserAndRelation<AnyContainer>(connection, containerResult);
+			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``}
+		`)) as AnyContainer[];
 	};
 }
 
