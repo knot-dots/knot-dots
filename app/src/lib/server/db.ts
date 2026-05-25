@@ -1246,6 +1246,8 @@ export function getAllRelatedContainersByProgramType(
 				AND NOT cr.deleted
 			WHERE co.organization IN (${sql.join(organizations, sql.fragment`, `)})
 				AND co.payload->>'programType' IN (${sql.join(programTypes, sql.fragment`, `)})
+				AND co.valid_currently
+				AND NOT co.deleted
 		`);
 
 		const containerResult =
