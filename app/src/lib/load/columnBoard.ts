@@ -16,6 +16,7 @@ type Column<T extends AnyContainer> = {
 interface LoadColumnBoardOptions<ColumnId extends string> {
 	createQuery: (url: URL, columnId?: ColumnId) => URLSearchParams;
 	defaultRelationTypes: string[];
+	facetKeys?: readonly string[];
 	getColumnIds: (context: { url: URL }) => Promise<readonly ColumnId[]> | readonly ColumnId[];
 	limit: number;
 	payloadTypes: PayloadType[];
@@ -67,6 +68,9 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 		const columns = Object.fromEntries(columnEntries) as unknown as Record<ColumnId, Column<T>>;
 		const columnValues = Object.values(columns) as Column<T>[];
 		const filteredCategoryContext = filterCategoryContext(categoryContext, options.payloadTypes);
+		const requestedFacets = (options.facetKeys ?? [])
+			.map((key) => [key, facetData.facets.get(key)] as const)
+			.filter((entry): entry is [string, Map<string, number>] => entry[1] !== undefined);
 
 		return {
 			columnIds,
@@ -77,13 +81,15 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 						[
 							'relationType',
 							new Map(options.defaultRelationTypes.map((relationType) => [relationType, 0]))
-						]
+						],
+						...requestedFacets
 					])
 				: new Map([
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
-						...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
+						...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
+						...requestedFacets
 					])
 		};
 	};

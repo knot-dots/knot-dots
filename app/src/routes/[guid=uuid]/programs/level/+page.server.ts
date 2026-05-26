@@ -7,6 +7,7 @@ import type { PageServerLoad } from './$types';
 export const load = loadColumnBoardPage<ProgramContainer, Level>({
 	createQuery: createProgramLevelQuery,
 	defaultRelationTypes: DEFAULT_RELATION_TYPES,
+	facetKeys: ['programType'],
 	getColumnIds: () => levels.options.filter((l) => l !== levels.enum['level.regional']),
 	limit: DEFAULT_PAGE_SIZE,
 	payloadTypes: [payloadTypes.enum.program]
