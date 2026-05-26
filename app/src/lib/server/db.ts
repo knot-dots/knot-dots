@@ -502,9 +502,11 @@ function prepareWhereCondition(filters: {
 	goalStatuses?: string[];
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
+	hierarchyLevels?: number[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
+	levels?: string[];
 	members?: string[];
 	organizations?: string[];
 	organizationalUnits?: string[] | null;
@@ -569,6 +571,11 @@ function prepareWhereCondition(filters: {
 		conditions.push(sql.fragment`c.payload->>'type' = 'help'`);
 		conditions.push(sql.fragment`c.payload->'slug' ?| ${sql.array(filters.helpSlugs, 'text')}`);
 	}
+	if (filters.hierarchyLevels?.length) {
+		conditions.push(
+			sql.fragment`COALESCE((c.payload->>'hierarchyLevel')::int, 1) = ANY (${sql.array(filters.hierarchyLevels, 'int4')})`
+		);
+	}
 	if (filters.indicatorCategories?.length) {
 		conditions.push(
 			sql.fragment`c.payload->'indicatorCategory' ?| ${sql.array(
@@ -586,6 +593,9 @@ function prepareWhereCondition(filters: {
 		conditions.push(
 			sql.fragment`c.payload->'indicatorType' ?| ${sql.array(filters.indicatorTypes, 'text')}`
 		);
+	}
+	if (filters.levels?.length) {
+		conditions.push(sql.fragment`c.payload->>'level' = ANY (${sql.array(filters.levels, 'text')})`);
 	}
 	if (filters.organizations?.length) {
 		conditions.push(
@@ -764,9 +774,11 @@ export function getManyContainers(
 		goalStatuses?: string[];
 		guid?: string[];
 		helpSlugs?: HelpSlug[];
+		hierarchyLevels?: number[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
+		levels?: string[];
 		organizationalUnits?: string[] | null;
 		programStatuses?: string[];
 		programTypes?: string[];
