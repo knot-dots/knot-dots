@@ -1,7 +1,3 @@
-<script lang="ts" module>
-	let sidebarExpanded: boolean | undefined = $state(undefined);
-</script>
-
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
@@ -10,7 +6,6 @@
 	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
@@ -23,7 +18,6 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
-	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
@@ -44,26 +38,12 @@
 
 	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
-	function expandSidebar() {
-		sidebarExpanded = true;
-	}
-
-	function collapseSidebar() {
-		sidebarExpanded = false;
-	}
-
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 
-	const mobileMenu: { open: boolean; toggle: () => void; close: () => void } | undefined =
-		getContext('mobileMenu');
-
-	$effect(() => {
-		if (mobileMenu?.open) {
-			sidebarExpanded = true;
-		}
-	});
+	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
+		getContext('sidebar');
 
 	let defaultOrganization = $derived(
 		page.data.organizations.find((c: OrganizationContainer) => c.payload.default)
@@ -158,7 +138,7 @@
 	}
 </script>
 
-<header class:collapsed={sidebarExpanded === false} class:expanded={sidebarExpanded === true}>
+<header>
 	<a href={landingPageURL(page.data.currentOrganization)}>
 		<img
 			class="logo"
@@ -169,99 +149,13 @@
 		/>
 	</a>
 
-	<button
-		class="action-button collapse-button"
-		onclick={() => {
-			collapseSidebar();
-			mobileMenu?.close();
-		}}
-		type="button"
-	>
+	<button class="action-button" onclick={() => sidebar.collapse()} type="button">
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
-
-	<button class="action-button" onclick={expandSidebar} type="button">
-		<Bars />
-		<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
-	</button>
 </header>
 
-<div
-	class="collapsed-menu"
-	class:collapsed={sidebarExpanded === false}
-	class:expanded={sidebarExpanded === true}
->
-	<div class="collapsed-menu-top">
-		<div class="collapsed-panel">
-			<a
-				{@attach tooltip(page.data.currentOrganization.payload.name)}
-				class="collapsed-panel-item"
-				href={landingPageURL(page.data.currentOrganization)}
-			>
-				<Home />
-			</a>
-		</div>
-		{#if organizationalUnits.length > 0}
-			<div
-				class="collapsed-panel"
-				class:collapsed-panel--active={!!page.data.currentOrganizationalUnit}
-			>
-				<a
-					{@attach tooltip(
-						page.data.currentOrganizationalUnit?.payload.name ?? $_('organizational_units')
-					)}
-					class="collapsed-panel-item"
-					href={page.data.currentOrganizationalUnit
-						? landingPageURL(page.data.currentOrganizationalUnit)
-						: landingPageURL(page.data.currentOrganization)}
-				>
-					<OrganizationalUnitIcon />
-				</a>
-			</div>
-		{/if}
-		{#if $user.isAuthenticated}
-			<div class="collapsed-panel">
-				<a {@attach tooltip($_('workspace.profile'))} class="collapsed-panel-item" href="/me">
-					<Grid />
-				</a>
-			</div>
-		{/if}
-	</div>
-	<div class="collapsed-menu-bottom">
-		{#if $user.isAuthenticated}
-			<div class="collapsed-panel">
-				<button
-					{@attach tooltip(`${$user.givenName} ${$user.familyName}`)}
-					class="collapsed-panel-item"
-					onclick={() => expandSidebar()}
-					type="button"
-				>
-					<span class="avatar avatar-s">
-						{$user.givenName.at(0)}{$user.familyName.at(0)}
-					</span>
-				</button>
-			</div>
-		{/if}
-		<div class="collapsed-panel">
-			<a
-				{@attach tooltip('knot dots')}
-				class="collapsed-panel-item"
-				href={env.PUBLIC_BASE_URL}
-				rel="external"
-			>
-				<Favicon />
-			</a>
-		</div>
-	</div>
-</div>
-
-<div
-	class="panel-section"
-	class:panel-section--active={!page.data.currentOrganizationalUnit}
-	class:collapsed={sidebarExpanded === false}
-	class:expanded={sidebarExpanded === true}
->
+<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
 	<div class="panel-header">
 		<OrganizationMenu
 			{defaultOrganization}
@@ -353,12 +247,7 @@
 </div>
 
 {#if organizationalUnits.length > 0}
-	<div
-		class="panel-section"
-		class:panel-section--active={!!page.data.currentOrganizationalUnit}
-		class:collapsed={sidebarExpanded === false}
-		class:expanded={sidebarExpanded === true}
-	>
+	<div class="panel-section" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
 		<div class="panel-header">
 			<OrganizationalUnitMenu
 				{defaultOrganization}
@@ -454,11 +343,7 @@
 {/if}
 
 {#if $user.isAuthenticated}
-	<div
-		class="panel-section panel-section--user"
-		class:collapsed={sidebarExpanded === false}
-		class:expanded={sidebarExpanded === true}
-	>
+	<div class="panel-section panel-section--user">
 		<div class="panel-header">
 			<UserMenu />
 		</div>
@@ -478,11 +363,7 @@
 	</div>
 {/if}
 
-<div
-	class="panel-section panel-section--footer"
-	class:collapsed={sidebarExpanded === false}
-	class:expanded={sidebarExpanded === true}
->
+<div class="panel-section panel-section--footer">
 	<a class="sidebar-menu-item sidebar-menu-item--footer" href={env.PUBLIC_BASE_URL} rel="external">
 		<Favicon />
 		<span class="truncated">knot dots</span>
@@ -499,82 +380,6 @@
 		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 	}
 
-	header:not(.expanded) a {
-		display: none;
-	}
-
-	header:not(.expanded) > button:first-of-type {
-		display: none;
-	}
-
-	header.expanded > button:last-of-type {
-		display: none;
-	}
-
-	.collapsed-menu {
-		display: flex;
-		flex-direction: column;
-		flex: 1 0 0;
-		gap: 0.25rem;
-		justify-content: space-between;
-		min-height: 0;
-		padding: 0.25rem;
-	}
-
-	.collapsed-menu.expanded {
-		display: none;
-	}
-
-	.collapsed-menu-top,
-	.collapsed-menu-bottom {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.collapsed-panel {
-		background:
-			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
-			var(--color-gray-050);
-		border: none;
-		border-radius: 12px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0.25rem;
-	}
-
-	.collapsed-panel--active {
-		background:
-			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
-			var(--color-primary-050);
-	}
-
-	.collapsed-panel-item {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-600);
-		cursor: pointer;
-		display: flex;
-		height: 2rem;
-		justify-content: center;
-		padding: 0.5rem;
-		width: 2rem;
-	}
-
-	.collapsed-panel-item:hover {
-		background-color: rgba(0, 0, 0, 0.04);
-	}
-
-	.collapsed-panel-item :global(svg) {
-		color: var(--color-gray-400);
-		flex-shrink: 0;
-		height: 1rem;
-		width: 1rem;
-	}
-
 	.panel-section {
 		background:
 			linear-gradient(226deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
@@ -584,10 +389,6 @@
 		flex: 0 1 auto;
 		overflow-y: auto;
 		padding: 0.25rem;
-	}
-
-	.panel-section:not(.expanded) {
-		display: none;
 	}
 
 	.panel-section.panel-section--active {
@@ -737,32 +538,6 @@
 			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
 			--is-visible-on-hover-visibility: visible;
 
-			display: block;
-		}
-	}
-
-	@media (min-width: 60rem) {
-		header:not(.collapsed) a {
-			display: block;
-		}
-
-		header:not(.collapsed) > button:first-of-type {
-			display: block;
-		}
-
-		header:not(.collapsed) > button:last-of-type {
-			display: none;
-		}
-
-		.collapsed-menu:not(.collapsed) {
-			display: none;
-		}
-
-		.collapsed-menu.collapsed {
-			max-width: 3rem;
-		}
-
-		.panel-section:not(.collapsed) {
 			display: block;
 		}
 	}

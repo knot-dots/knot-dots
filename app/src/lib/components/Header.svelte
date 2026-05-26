@@ -77,8 +77,8 @@
 
 	let overlay = getContext('overlay');
 
-	let mobileMenu: { open: boolean; toggle: () => void; close: () => void } =
-		getContext('mobileMenu');
+	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
+		getContext('sidebar');
 
 	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
 
@@ -204,16 +204,18 @@
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
 <header data-sveltekit-preload-data="hover" role="banner">
-	{#if mobileMenu}
-		<button
-			class="mobile-menu-button"
-			type="button"
-			onclick={() => mobileMenu.toggle()}
-			aria-label={$_('menu')}
-		>
-			<Bars />
-		</button>
-	{/if}
+	<button
+		aria-label={$_('menu')}
+		class={{
+			'action-button': true,
+			'sidebar-toggle': true,
+			collapsed: sidebar.expanded === false
+		}}
+		onclick={() => sidebar.expand()}
+		type="button"
+	>
+		<Bars />
+	</button>
 
 	{#if overlay}
 		<OverlayCloseButton />
@@ -581,32 +583,17 @@
 		color: var(--color-primary-700);
 	}
 
+	@media (min-width: 30rem) {
+		.sidebar-toggle:not(.collapsed) {
+			display: none;
+		}
+	}
+
 	@layer visually-hidden {
 		@container (min-width: 60rem) {
 			.is-visually-hidden.is-visually-hidden--mobile-only {
 				all: revert-layer;
 			}
-		}
-	}
-
-	.mobile-menu-button {
-		align-items: center;
-		border: none;
-		border-radius: 8px;
-		display: none;
-		height: 2rem;
-		justify-content: center;
-		padding: 0.5rem;
-		width: 2rem;
-	}
-
-	.mobile-menu-button:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	@media (max-width: 480px) {
-		.mobile-menu-button {
-			display: inline-flex;
 		}
 	}
 </style>

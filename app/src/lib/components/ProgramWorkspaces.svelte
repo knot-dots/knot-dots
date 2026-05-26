@@ -450,7 +450,7 @@
 		margin-left: auto;
 	}
 
-	@container (min-width: 40rem) {
+	@container (min-width: 30rem) {
 		.dropdown-group {
 			display: flex;
 		}
