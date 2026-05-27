@@ -15,9 +15,9 @@
 		overlayKey,
 		paramsFromFragment,
 		payloadTypes,
-		taskStatus
+		status
 	} from '$lib/models';
-	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -54,28 +54,28 @@
 				</div>
 			</BoardColumn>
 		{/if}
-		{#each taskStatus.options as taskStatusOption (taskStatusOption)}
+		{#each status.options.filter((s) => s !== 'status.in_operation') as taskStatusOption (taskStatusOption)}
 			{#if paramsFromFragment(page.url).has(overlayKey.enum['relations'])}
 				<BoardColumn
-					--background={taskStatusBackgrounds.get(taskStatusOption)}
-					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
+					--background={statusBackgrounds.get(taskStatusOption)}
+					--hover-border-color={statusHoverColors.get(taskStatusOption)}
+					addItemUrl={`#create=${payloadTypes.enum.task}&status=${taskStatusOption}`}
 					title={$_(taskStatusOption)}
 				>
 					<MaybeDragZone
 						containers={containers
 							.filter(isTaskContainer)
-							.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
+							.filter(({ payload }) => payload.status === taskStatusOption)}
 					/>
 				</BoardColumn>
 			{:else}
 				<TaskBoardColumn
-					--background={taskStatusBackgrounds.get(taskStatusOption)}
-					--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
-					addItemUrl={`#create=${payloadTypes.enum.task}&taskStatus=${taskStatusOption}`}
+					--background={statusBackgrounds.get(taskStatusOption)}
+					--hover-border-color={statusHoverColors.get(taskStatusOption)}
+					addItemUrl={`#create=${payloadTypes.enum.task}&status=${taskStatusOption}`}
 					items={containers
 						.filter(isTaskContainer)
-						.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
+						.filter(({ payload }) => payload.status === taskStatusOption)}
 					onSort={(items) => {
 						data.containers = [
 							...data.containers.filter(

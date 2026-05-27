@@ -5,10 +5,10 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
-	import { programStatus } from '$lib/models';
+	import { status } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
-	import { programStatusBackgrounds, programStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -20,16 +20,16 @@
 
 <ProgramsPage data={{ ...data, containers }}>
 	<Board>
-		{#each programStatus.options as statusOption (statusOption)}
+		{#each status.options as statusOption (statusOption)}
 			<BoardColumn
-				--background={programStatusBackgrounds.get(statusOption)}
-				--hover-border-color={programStatusHoverColors.get(statusOption)}
-				addItemUrl={`#create=program&programStatus=${statusOption}`}
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=program&status=${statusOption}`}
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone
 					containers={containers.filter(
-						(c) => 'programStatus' in c.payload && c.payload.programStatus === statusOption
+						(c) => 'status' in c.payload && c.payload.status === statusOption
 					)}
 				/>
 			</BoardColumn>

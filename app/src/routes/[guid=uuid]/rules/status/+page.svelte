@@ -5,10 +5,10 @@
 	import Help from '$lib/components/Help.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
-	import { ruleStatus } from '$lib/models';
+	import { status } from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
-	import { ruleStatusBackgrounds, ruleStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -20,16 +20,18 @@
 
 <RulesPage data={{ ...data, containers }}>
 	<Board>
-		{#each ruleStatus.options as statusOption (statusOption)}
+		{#each status.options as statusOption (statusOption)}
 			<BoardColumn
-				--background={ruleStatusBackgrounds.get(statusOption)}
-				--hover-border-color={ruleStatusHoverColors.get(statusOption)}
-				addItemUrl={`#create=rule&ruleStatus=${statusOption}`}
-				title={$_(statusOption)}
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=rule&status=${statusOption}`}
+				title={statusOption === 'status.in_operation'
+					? $_('status.in_application')
+					: $_(statusOption)}
 			>
 				<MaybeDragZone
 					containers={containers.filter(
-						(c) => 'ruleStatus' in c.payload && c.payload.ruleStatus === statusOption
+						(c) => 'status' in c.payload && c.payload.status === statusOption
 					)}
 				/>
 			</BoardColumn>
