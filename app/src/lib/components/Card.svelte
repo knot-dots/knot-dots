@@ -341,6 +341,8 @@
 	<footer>
 		{#if footer}
 			{@render footer()}
+		{:else if isContainerWithProgress(container) && container.payload.progress != null}
+			<Progress value={container.payload.progress} />
 		{:else if 'status' in container.payload}
 			{@const status = container.payload.status as Status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
@@ -348,8 +350,6 @@
 				<StatusIcon />
 				{$_(status)}
 			</span>
-		{:else if isContainerWithProgress(container) && container.payload.progress != null}
-			<Progress value={container.payload.progress} />
 		{:else if 'programType' in container.payload}}
 			{@const programType = container.payload.programType as string}
 			<span class="badge">{$_(programType)}</span>
