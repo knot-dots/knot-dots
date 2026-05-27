@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
-	import type { TaskStatus } from '$lib/models';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import { type Status, status } from '$lib/models';
 
 	interface Props {
 		editable?: boolean;
-		value: TaskStatus;
+		value: Status;
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
 
-	const id = crypto.randomUUID();
+	const options = status.options.filter((s) => s !== 'status.in_operation');
 </script>
 
-<div class="label" {id}>{$_('task_status.label')}</div>
-<TaskStatusDropdown {editable} labelledBy={id} bind:value />
+<div class="label">{$_('status')}</div>
+<StatusDropdown {editable} {options} bind:value />

@@ -2,7 +2,6 @@
 	import { getContext, type Snippet } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
-	import Cog from '~icons/knotdots/cog';
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -15,6 +14,7 @@
 	import {
 		type AnyContainer,
 		type Container,
+		type Status,
 		findAncestors,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
@@ -37,15 +37,7 @@
 		predicates
 	} from '$lib/models';
 	import { overlay, overlayHistory } from '$lib/stores';
-	import {
-		predicateIcons,
-		ruleStatusColors,
-		ruleStatusIcons,
-		statusColors,
-		statusIcons,
-		taskStatusColors,
-		taskStatusIcons
-	} from '$lib/theme/models';
+	import { predicateIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
 	import tooltip from '$lib/attachments/tooltip';
 
@@ -349,31 +341,17 @@
 	<footer>
 		{#if footer}
 			{@render footer()}
-		{:else if 'ruleStatus' in container.payload}
-			{@const ruleStatus = container.payload.ruleStatus}
-			{@const RuleStatusIcon = ruleStatusIcons.get(ruleStatus) ?? Cog}
-			<span class="badge badge--{ruleStatusColors.get(ruleStatus)}">
-				<RuleStatusIcon />
-				{$_(ruleStatus)}
-			</span>
 		{:else if 'status' in container.payload}
-			{@const status = container.payload.status}
+			{@const status = container.payload.status as Status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
 				{$_(status)}
 			</span>
-		{:else if 'taskStatus' in container.payload}
-			{@const taskStatus = container.payload.taskStatus}
-			{@const TaskStatusIcon = taskStatusIcons.get(taskStatus) ?? Lightbulb}
-			<span class="badge badge--{taskStatusColors.get(taskStatus)}">
-				<TaskStatusIcon />
-				{$_(taskStatus)}
-			</span>
 		{:else if isContainerWithProgress(container) && container.payload.progress != null}
 			<Progress value={container.payload.progress} />
-		{:else if 'programType' in container.payload}
-			{@const programType = container.payload.programType}
+		{:else if 'programType' in container.payload}}
+			{@const programType = container.payload.programType as string}
 			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>

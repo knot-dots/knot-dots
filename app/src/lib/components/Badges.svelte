@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
-	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
-	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
-	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
-	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import {
 		type Container,
+		type Status,
 		isContainerWithStatus,
 		isGoalContainer,
-		isProgramContainer,
 		isRuleContainer,
 		isSuggestedByAI,
 		isTaskContainer,
 		programTypes,
+		status,
 		isResourceDataContainer
 	} from '$lib/models';
 
@@ -24,6 +21,20 @@
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();
+
+	let statusOptions = $derived.by(() => {
+		if (isGoalContainer(container) || isTaskContainer(container)) {
+			return status.options.filter((s) => s !== 'status.in_operation');
+		}
+		return status.options;
+	});
+
+	function statusLabelFn(s: Status): string {
+		if (isRuleContainer(container) && s === 'status.in_operation') {
+			return $_('status.in_application');
+		}
+		return $_(s);
+	}
 </script>
 
 <ul class="badges">
@@ -53,38 +64,12 @@
 	{/if}
 	{#if isContainerWithStatus(container)}
 		<li>
-			<StatusDropdown buttonStyle="badge" {editable} bind:value={container.payload.status} />
-		</li>
-	{:else if isTaskContainer(container)}
-		<li>
-			<TaskStatusDropdown
+			<StatusDropdown
 				buttonStyle="badge"
 				{editable}
-				bind:value={container.payload.taskStatus}
-			/>
-		</li>
-	{:else if isRuleContainer(container)}
-		<li>
-			<RuleStatusDropdown
-				buttonStyle="badge"
-				{editable}
-				bind:value={container.payload.ruleStatus}
-			/>
-		</li>
-	{:else if isGoalContainer(container)}
-		<li>
-			<GoalStatusDropdown
-				buttonStyle="badge"
-				{editable}
-				bind:value={container.payload.goalStatus}
-			/>
-		</li>
-	{:else if isProgramContainer(container)}
-		<li>
-			<ProgramStatusDropdown
-				buttonStyle="badge"
-				{editable}
-				bind:value={container.payload.programStatus}
+				labelFn={statusLabelFn}
+				options={statusOptions}
+				bind:value={container.payload.status}
 			/>
 		</li>
 	{/if}

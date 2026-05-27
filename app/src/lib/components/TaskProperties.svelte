@@ -61,7 +61,7 @@
 
 		<EditablePlainText {editable} label={$_('effort')} bind:value={container.payload.effort} />
 
-		<EditableTaskStatus {editable} bind:value={container.payload.taskStatus} />
+		<EditableTaskStatus {editable} bind:value={container.payload.status} />
 
 		<EditableDate
 			{editable}

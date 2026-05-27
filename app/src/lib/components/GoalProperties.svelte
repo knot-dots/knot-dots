@@ -60,7 +60,7 @@
 	{#snippet general()}
 		<EditableGoalType {editable} bind:value={container.payload.goalType} />
 
-		<EditableGoalStatus {editable} bind:value={container.payload.goalStatus} />
+		<EditableGoalStatus {editable} bind:value={container.payload.status} />
 
 		<EditableGoalHierarchyLevel {editable} bind:value={container.payload.hierarchyLevel} />
 

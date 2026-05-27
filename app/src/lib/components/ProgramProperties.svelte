@@ -51,7 +51,7 @@
 
 		<EditableLevel {editable} bind:value={container.payload.level} />
 
-		<EditableProgramStatus {editable} bind:value={container.payload.programStatus} />
+		<EditableProgramStatus {editable} bind:value={container.payload.status} />
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
