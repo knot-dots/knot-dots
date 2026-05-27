@@ -131,19 +131,15 @@ export async function getManyContainersWithES(
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
 		federalStates?: string[];
-		goalStatuses?: string[];
 		guid?: string[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
 		organizationalUnits?: string[] | null;
-		programStatuses?: string[];
 		programTypes?: string[];
 		resourceCategories?: string[];
-		ruleStatuses?: string[];
 		statuses?: string[];
 		taskCategories?: string[];
-		taskStatuses?: string[];
 		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
@@ -173,9 +169,9 @@ export async function getManyContainersWithES(
 			terms: { 'payload.federalState': filters.federalStates }
 		});
 	}
-	if (filters.goalStatuses?.length) {
+	if (filters.statuses?.length) {
 		addFacetFilter(facetFilters, 'status', {
-			terms: { 'payload.status': filters.goalStatuses }
+			terms: { 'payload.status': filters.statuses }
 		});
 	}
 	if (filters.guid?.length) {
@@ -184,11 +180,6 @@ export async function getManyContainersWithES(
 	if (filters.programTypes?.length) {
 		addFacetFilter(facetFilters, 'programType', {
 			terms: { 'payload.programType': filters.programTypes }
-		});
-	}
-	if (filters.programStatuses?.length) {
-		addFacetFilter(facetFilters, 'status', {
-			terms: { 'payload.status': filters.programStatuses }
 		});
 	}
 	if (filters.indicatorCategories?.length) {
@@ -211,11 +202,6 @@ export async function getManyContainersWithES(
 			terms: { 'payload.resourceCategory': filters.resourceCategories }
 		});
 	}
-	if (filters.ruleStatuses?.length) {
-		addFacetFilter(facetFilters, 'status', {
-			terms: { 'payload.status': filters.ruleStatuses }
-		});
-	}
 	if (filters.statuses?.length) {
 		addFacetFilter(facetFilters, 'status', {
 			terms: { 'payload.status': filters.statuses }
@@ -230,11 +216,6 @@ export async function getManyContainersWithES(
 	if (filters.assignees?.length) {
 		addFacetFilter(facetFilters, 'assignee', {
 			terms: { 'payload.assignee': filters.assignees }
-		});
-	}
-	if (filters.taskStatuses?.length) {
-		addFacetFilter(facetFilters, 'status', {
-			terms: { 'payload.status': filters.taskStatuses }
 		});
 	}
 	if (filters.organizationalUnits === null) {

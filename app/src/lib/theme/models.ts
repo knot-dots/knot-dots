@@ -96,36 +96,3 @@ export const statusIcons = new Map<Status, Component<SvelteHTMLElements['svg']>>
 	[status.enum['status.done'], BadgeCheck],
 	[status.enum['status.rejected'], ThumbsDown]
 ]);
-
-/** @deprecated Use statusColors instead */
-export const taskStatusColors = statusColors;
-/** @deprecated Use statusBackgrounds instead */
-export const taskStatusBackgrounds = statusBackgrounds;
-/** @deprecated Use statusHoverColors instead */
-export const taskStatusHoverColors = statusHoverColors;
-/** @deprecated Use statusIcons instead */
-export const taskStatusIcons = statusIcons;
-/** @deprecated Use statusColors instead */
-export const ruleStatusColors = statusColors;
-/** @deprecated Use statusBackgrounds instead */
-export const ruleStatusBackgrounds = statusBackgrounds;
-/** @deprecated Use statusHoverColors instead */
-export const ruleStatusHoverColors = statusHoverColors;
-/** @deprecated Use statusIcons instead */
-export const ruleStatusIcons = statusIcons;
-/** @deprecated Use statusColors instead */
-export const goalStatusColors = statusColors;
-/** @deprecated Use statusBackgrounds instead */
-export const goalStatusBackgrounds = statusBackgrounds;
-/** @deprecated Use statusHoverColors instead */
-export const goalStatusHoverColors = statusHoverColors;
-/** @deprecated Use statusIcons instead */
-export const goalStatusIcons = statusIcons;
-/** @deprecated Use statusColors instead */
-export const programStatusColors = statusColors;
-/** @deprecated Use statusBackgrounds instead */
-export const programStatusBackgrounds = statusBackgrounds;
-/** @deprecated Use statusHoverColors instead */
-export const programStatusHoverColors = statusHoverColors;
-/** @deprecated Use statusIcons instead */
-export const programStatusIcons = statusIcons;

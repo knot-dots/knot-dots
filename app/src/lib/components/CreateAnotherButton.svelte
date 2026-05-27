@@ -81,17 +81,11 @@
 				...('category' in container.payload && 'category' in derived.payload
 					? { category: container.payload.category }
 					: undefined),
-				...('ruleStatus' in container.payload && 'ruleStatus' in derived.payload
-					? { ruleStatus: container.payload.ruleStatus }
-					: undefined),
 				...('status' in container.payload && 'status' in derived.payload
 					? { status: container.payload.status }
 					: undefined),
 				...('taskCategory' in container.payload && 'taskCategory' in derived.payload
 					? { taskCategory: container.payload.taskCategory }
-					: undefined),
-				...('taskStatus' in container.payload && 'taskStatus' in derived.payload
-					? { taskStatus: container.payload.taskStatus }
 					: undefined),
 				...('visibility' in container.payload && 'visibility' in derived.payload
 					? { visibility: container.payload.visibility }

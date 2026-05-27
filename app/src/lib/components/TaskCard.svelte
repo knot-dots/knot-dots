@@ -4,7 +4,7 @@
 	import ExclamationCircle from '~icons/heroicons/exclamation-circle-16-solid';
 	import Card from '$lib/components/Card.svelte';
 	import { type Container, type TaskContainer } from '$lib/models';
-	import { taskStatusIcons, taskStatusColors } from '$lib/theme/models';
+	import { statusIcons, statusColors } from '$lib/theme/models';
 
 	interface Props {
 		container: TaskContainer;
@@ -46,7 +46,7 @@
 
 <Card {container} {relatedContainers} {showRelationFilter}>
 	{#snippet footer()}
-		{@const StatusIcon = taskStatusIcons.get(container.payload.status)}
+		{@const StatusIcon = statusIcons.get(container.payload.status)}
 
 		<div class="badges">
 			{#if container.payload.fulfillmentDate}
@@ -70,7 +70,7 @@
 			{/if}
 
 			{#if showTaskStatusBadge}
-				<span class="status-icon badge badge--{taskStatusColors.get(container.payload.status)}">
+				<span class="status-icon badge badge--{statusColors.get(container.payload.status)}">
 					<StatusIcon />
 					{$_(container.payload.status)}
 				</span>

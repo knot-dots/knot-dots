@@ -1,4 +1,4 @@
-import { type ProgramStatus, payloadTypes, predicates } from '$lib/models';
+import { type Status, payloadTypes, predicates } from '$lib/models';
 
 export const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-consistent-with'],
@@ -7,15 +7,15 @@ export const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-superordinate-of']
 ];
 
-export function createProgramStatusQuery(url: URL, status?: ProgramStatus) {
+export function createProgramStatusQuery(url: URL, status?: Status) {
 	const query = new URLSearchParams(url.searchParams);
 	query.delete('payloadType');
 	query.delete('type');
-	query.delete('programStatus');
+	query.delete('status');
 	query.append('type', payloadTypes.enum.program);
 
 	if (status) {
-		query.append('programStatus', status);
+		query.append('status', status);
 	}
 
 	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {

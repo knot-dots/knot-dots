@@ -375,23 +375,6 @@ export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
 
-/** @deprecated Use `status` instead */
-export const goalStatus = status;
-/** @deprecated Use `status` instead */
-export const programStatus = status;
-/** @deprecated Use `status` instead */
-export const ruleStatus = status;
-/** @deprecated Use `status` instead */
-export const taskStatus = status;
-/** @deprecated Use `Status` instead */
-export type GoalStatus = Status;
-/** @deprecated Use `Status` instead */
-export type ProgramStatus = Status;
-/** @deprecated Use `Status` instead */
-export type RuleStatus = Status;
-/** @deprecated Use `Status` instead */
-export type TaskStatus = Status;
-
 const programTypeValues = [
 	'program_type.misc',
 	'program_type.strategy',
