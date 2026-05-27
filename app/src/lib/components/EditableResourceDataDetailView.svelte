@@ -23,7 +23,6 @@
 		payloadTypes,
 		findDescendants,
 		type AnyContainer,
-		type Container,
 		type GoalContainer,
 		type MeasureContainer,
 		type ResourceDataContainer,
@@ -34,7 +33,8 @@
 	import EditableFormattedText from './EditableFormattedText.svelte';
 	import Sections from './Sections.svelte';
 	import Header from './Header.svelte';
-	import { fetchRelatedContainers } from '$lib/remote/data.remote';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
@@ -50,28 +50,30 @@
 
 	let organization = $derived(container.organization);
 
-	let relatedContainers = $state<Container[]>([]);
+	let relatedContainersQuery = resource(
+		[() => guid, () => organization],
+		async ([guid, organization], _, { signal }) =>
+			fetchRelatedContainers(
+				guid,
+				{
+					organization: [organization],
+					relationType: [
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-category'],
+						predicates.enum['is-section-of']
+					]
+				},
+				'alpha',
+				{ signal }
+			)
+	);
 
-	$effect(() => {
-		fetchRelatedContainers({
-			guid,
-			params: {
-				organization: [organization],
-				relationType: [
-					predicates.enum['is-consistent-with'],
-					predicates.enum['is-equivalent-to'],
-					predicates.enum['is-inconsistent-with'],
-					predicates.enum['is-measured-by'],
-					predicates.enum['is-objective-for'],
-					predicates.enum['is-part-of'],
-					predicates.enum['is-part-of-category'],
-					predicates.enum['is-section-of']
-				]
-			}
-		}).then((containers) => {
-			relatedContainers = containers;
-		});
-	});
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let currentResource = $state<ResourceV2Container | undefined>(undefined);
 

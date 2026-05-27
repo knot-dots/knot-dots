@@ -9,7 +9,8 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import type { AnyContainer, HelpContainer } from '$lib/models';
 	import { predicates } from '$lib/models';
-	import { fetchRelatedContainers } from '$lib/remote/data.remote';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -23,14 +24,18 @@
 	let guid = $derived(container.guid);
 	let organization = $derived(container.organization);
 
-	let relatedContainersQuery = $derived(
-		fetchRelatedContainers({
-			guid,
-			params: {
-				organization: [organization],
-				relationType: [predicates.enum['is-part-of-category'], predicates.enum['is-section-of']]
-			}
-		})
+	let relatedContainersQuery = resource(
+		[() => guid, () => organization],
+		async ([guid, organization], _, { signal }) =>
+			fetchRelatedContainers(
+				guid,
+				{
+					organization: [organization],
+					relationType: [predicates.enum['is-part-of-category'], predicates.enum['is-section-of']]
+				},
+				'alpha',
+				{ signal }
+			)
 	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
