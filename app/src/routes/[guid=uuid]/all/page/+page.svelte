@@ -13,9 +13,11 @@
 		return _;
 	});
 
-	let relatedContainers = $derived(data.relatedContainers);
-
 	let linkedProfiles = $derived(data.linkedProfiles ?? []);
+
+	let relatedOrganizationalUnitGuids = $derived(data.relatedOrganizationalUnitGuids ?? []);
+
+	let sections = $derived(data.sections ?? []);
 </script>
 
 {#snippet layout(header: Snippet, main: Snippet)}
@@ -23,12 +25,13 @@
 {/snippet}
 
 {#if isOrganizationContainer(container)}
-	<EditableOrganizationDetailView bind:container {layout} {relatedContainers} />
+	<EditableOrganizationDetailView bind:container {layout} {sections} />
 {:else if isOrganizationalUnitContainer(container)}
 	<EditableOrganizationalUnitDetailView
 		bind:container
 		{layout}
 		{linkedProfiles}
-		{relatedContainers}
+		{relatedOrganizationalUnitGuids}
+		{sections}
 	/>
 {/if}
