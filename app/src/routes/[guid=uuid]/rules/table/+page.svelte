@@ -68,7 +68,7 @@
 	]);
 </script>
 
-<RulesPage data={{ ...data, containers }}>
+<RulesPage facets={data.facets}>
 	<Table {columns} rows={containers}>
 		{#snippet footer()}
 			<LazyLoadSentinel

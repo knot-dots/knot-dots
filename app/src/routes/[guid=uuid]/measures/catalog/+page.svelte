@@ -49,7 +49,7 @@
 	);
 </script>
 
-<MeasuresPage data={{ ...data, containers }} filterBarInitiallyOpen>
+<MeasuresPage facets={data.facets} filterBarInitiallyOpen>
 	<Catalog {containers} payloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}>
 		{#snippet footer()}
 			<LazyLoadSentinel

@@ -47,7 +47,7 @@
 	);
 </script>
 
-<RulesPage {data} filterBarInitiallyOpen>
+<RulesPage facets={data.facets} filterBarInitiallyOpen>
 	<Catalog {containers} payloadType={[payloadTypes.enum.rule]}>
 		{#snippet footer()}
 			<LazyLoadSentinel
