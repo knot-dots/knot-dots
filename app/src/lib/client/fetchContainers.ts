@@ -11,6 +11,7 @@ export default async function fetchContainers(
 		indicator?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
+		resource?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
@@ -59,6 +60,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.relatedTo ?? []) {
 		params.append('relatedTo', value);
+	}
+	for (const value of filters.resource ?? []) {
+		params.append('resource', value);
 	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);
