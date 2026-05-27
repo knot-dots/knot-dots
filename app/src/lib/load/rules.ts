@@ -39,7 +39,9 @@ export const loadPage = (limit: number) =>
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
-						...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
+						...[...data.facets].filter(
+							([key]) => key === 'status' || filteredCategoryContext.keys.includes(key)
+						)
 					])
 		};
 	}) satisfies PageServerLoad;

@@ -64,7 +64,9 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 					...((!currentOrganization.payload.default
 						? [['included', new Map<string, number>()]]
 						: []) as Array<[string, Map<string, number>]>),
-					...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
+					...[...data.facets].filter(
+						([key]) => key === 'status' || filteredCategoryContext.keys.includes(key)
+					),
 					...((typeFilter.length == 1 && typeFilter[0] == 'program'
 						? [['programType', data.facets.get('programType')!]]
 						: []) as Array<[string, Map<string, number>]>),

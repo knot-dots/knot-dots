@@ -174,6 +174,7 @@ function baseFacetMap(
 			fromCounts(resourceCategories.options as string[], counts.resourceCategory)
 		],
 		['resourceUnit', fromCounts(resourceUnits.options as string[], counts.resourceUnit)],
+		['status', fromCounts(status.options as string[], counts.status)],
 		['taskCategory', fromCounts(taskCategories.options as string[], counts.taskCategory)],
 		['type', fromCounts(payloadTypes.options as string[], counts.type)]
 	]);

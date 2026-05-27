@@ -1,4 +1,4 @@
-import { type GoalStatus, payloadTypes, predicates } from '$lib/models';
+import { type Status, payloadTypes, predicates } from '$lib/models';
 
 export const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-consistent-with'],
@@ -7,16 +7,16 @@ export const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-part-of']
 ];
 
-export function createGoalStatusQuery(url: URL, status?: GoalStatus) {
+export function createGoalStatusQuery(url: URL, status?: Status) {
 	const query = new URLSearchParams(url.searchParams);
 	query.delete('payloadType');
 	query.delete('type');
-	query.delete('goalStatus');
+	query.delete('status');
 	query.append('type', payloadTypes.enum.goal);
 	query.append('excludeRelation', predicates.enum['is-part-of-measure']);
 
 	if (status) {
-		query.append('goalStatus', status);
+		query.append('status', status);
 	}
 
 	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {

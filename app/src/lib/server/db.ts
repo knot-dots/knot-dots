@@ -559,7 +559,7 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.goalStatuses?.length) {
 		conditions.push(
-			sql.fragment`c.payload->>'goalStatus' = ANY (${sql.array(filters.goalStatuses, 'text')})`
+			sql.fragment`c.payload->>'status' = ANY (${sql.array(filters.goalStatuses, 'text')})`
 		);
 	}
 	if (filters.guid?.length) {
@@ -604,7 +604,7 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.programStatuses?.length) {
 		conditions.push(
-			sql.fragment`c.payload->>'programStatus' = ANY (${sql.array(filters.programStatuses, 'text')})`
+			sql.fragment`c.payload->>'status' = ANY (${sql.array(filters.programStatuses, 'text')})`
 		);
 	}
 	if (filters.programTypes?.length) {
@@ -627,7 +627,7 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.ruleStatuses?.length) {
 		conditions.push(
-			sql.fragment`c.payload->>'ruleStatus' = ANY (${sql.array(filters.ruleStatuses, 'text')})`
+			sql.fragment`c.payload->>'status' = ANY (${sql.array(filters.ruleStatuses, 'text')})`
 		);
 	}
 	if (filters.statuses?.length) {
@@ -645,7 +645,7 @@ function prepareWhereCondition(filters: {
 	}
 	if (filters.taskStatuses?.length) {
 		conditions.push(
-			sql.fragment`c.payload->>'taskStatus' = ANY (${sql.array(filters.taskStatuses, 'text')})`
+			sql.fragment`c.payload->>'status' = ANY (${sql.array(filters.taskStatuses, 'text')})`
 		);
 	}
 	if (filters.template) {
