@@ -19,9 +19,12 @@
 		containerOfType,
 		isActualDataContainer,
 		type NewContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
-	import { fetchContainersRelatedToIndicatorTemplates } from '$lib/remote/data.remote';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -49,16 +52,32 @@
 		return newActualDataContainer;
 	});
 
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToIndicatorTemplates({
-			guid,
-			params: {
-				organization: page.data.currentOrganization.guid,
-				...(page.data.currentOrganizationalUnit
-					? { organizationalUnit: page.data.currentOrganizationalUnit.guid }
-					: undefined)
-			}
-		})
+	let organization = $derived(page.data.currentOrganization.guid);
+	let organizationalUnit = $derived(page.data.currentOrganizationalUnit?.guid);
+
+	let relatedContainersQuery = resource(
+		[() => guid, () => organization, () => organizationalUnit],
+		async ([guid, organization, organizationalUnit], _, { signal }) => {
+			const [actualData, sections] = await Promise.all([
+				fetchContainers(
+					{
+						organization: [organization],
+						...(organizationalUnit ? { organizationalUnit: [organizationalUnit] } : {}),
+						payloadType: [payloadTypes.enum.actual_data],
+						indicator: [guid]
+					},
+					'alpha',
+					{ signal }
+				),
+				fetchRelatedContainers(
+					guid,
+					{ organization: [organization], relationType: [predicates.enum['is-section-of']] },
+					'alpha',
+					{ signal }
+				)
+			]);
+			return [...actualData, ...sections];
+		}
 	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
@@ -84,7 +103,7 @@
 			try {
 				const response = await saveContainer(container);
 				if (response.ok) {
-					await relatedContainersQuery.refresh();
+					await relatedContainersQuery.refetch();
 					await invalidate('containers');
 				} else {
 					const error = await response.json();

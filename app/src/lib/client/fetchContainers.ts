@@ -8,6 +8,7 @@ export default async function fetchContainers(
 		[key: string]: string | string[] | undefined;
 		assignee?: string[];
 		guid?: string[];
+		indicator?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
 		organization?: string[];
@@ -34,6 +35,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.guid ?? []) {
 		params.append('guid', value);
+	}
+	for (const value of filters.indicator ?? []) {
+		params.append('indicator', value);
 	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
