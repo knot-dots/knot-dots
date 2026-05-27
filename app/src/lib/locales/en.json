@@ -747,6 +747,7 @@
 	"status.adopted": "Adopted",
 	"status.done": "Done",
 	"status.idea": "Idea",
+	"status.in_application": "In application",
 	"status.in_implementation": "In implementation",
 	"status.in_operation": "In operation",
 	"status.in_planning": "In planning",

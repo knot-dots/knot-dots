@@ -748,6 +748,7 @@
 	"status.adopted": "Beschlossen",
 	"status.done": "Erledigt",
 	"status.idea": "Idee",
+	"status.in_application": "In Anwendung",
 	"status.in_implementation": "In Umsetzung",
 	"status.in_operation": "In Betrieb",
 	"status.in_planning": "In Planung",

@@ -350,18 +350,6 @@ export const predicates = z.enum(predicateValues);
 
 export type Predicate = z.infer<typeof predicates>;
 
-const goalStatusValues = [
-	'goal_status.idea',
-	'goal_status.in_planning',
-	'goal_status.adopted',
-	'goal_status.achieved',
-	'goal_status.rejected'
-] as const;
-
-export const goalStatus = z.enum(goalStatusValues);
-
-export type GoalStatus = z.infer<typeof goalStatus>;
-
 const backgroundColorValues = [
 	'color.white',
 	'color.blue',
@@ -377,7 +365,6 @@ export type BackgroundColor = z.infer<typeof backgroundColor>;
 const statusValues = [
 	'status.idea',
 	'status.in_planning',
-	'status.adopted',
 	'status.in_implementation',
 	'status.in_operation',
 	'status.done',
@@ -388,41 +375,22 @@ export const status = z.enum(statusValues);
 
 export type Status = z.infer<typeof status>;
 
-const programStatusValues = [
-	'program_status.idea',
-	'program_status.in_planning',
-	'program_status.adopted',
-	'program_status.in_implementation',
-	'program_status.done',
-	'program_status.rejected'
-] as const;
-
-export const programStatus = z.enum(programStatusValues);
-
-export type ProgramStatus = z.infer<typeof programStatus>;
-
-const ruleStatusValues = [
-	'rule_status.idea',
-	'rule_status.in_planning',
-	'rule_status.adopted',
-	'rule_status.rejected'
-] as const;
-
-export const ruleStatus = z.enum(ruleStatusValues);
-
-export type RuleStatus = z.infer<typeof ruleStatus>;
-
-const taskStatusValues = [
-	'task_status.idea',
-	'task_status.in_planning',
-	'task_status.in_progress',
-	'task_status.done',
-	'task_status.rejected'
-] as const;
-
-export const taskStatus = z.enum(taskStatusValues);
-
-export type TaskStatus = z.infer<typeof taskStatus>;
+/** @deprecated Use `status` instead */
+export const goalStatus = status;
+/** @deprecated Use `status` instead */
+export const programStatus = status;
+/** @deprecated Use `status` instead */
+export const ruleStatus = status;
+/** @deprecated Use `status` instead */
+export const taskStatus = status;
+/** @deprecated Use `Status` instead */
+export type GoalStatus = Status;
+/** @deprecated Use `Status` instead */
+export type ProgramStatus = Status;
+/** @deprecated Use `Status` instead */
+export type RuleStatus = Status;
+/** @deprecated Use `Status` instead */
+export type TaskStatus = Status;
 
 const programTypeValues = [
 	'program_type.misc',
@@ -944,7 +912,7 @@ const goalPayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		goalStatus: goalStatus.default(goalStatus.enum['goal_status.idea']),
+		status: status.default(status.enum['status.idea']),
 		goalType: goalType.optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 		progress: z.number().nonnegative().optional(),
@@ -1121,7 +1089,7 @@ const initialProgressPayload = progressPayload;
 
 const rulePayload = basePayload
 	.extend({
-		ruleStatus: ruleStatus.default(ruleStatus.enum['rule_status.idea']),
+		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.rule),
 		validFrom: z
 			.string()
@@ -1176,7 +1144,7 @@ const programPayload = basePayload
 		image: z.string().url().optional(),
 		level: levels.default(levels.enum['level.local']),
 		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
-		programStatus: programStatus.default(programStatus.enum['program_status.idea']),
+		status: status.default(status.enum['status.idea']),
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
 	})
@@ -1337,7 +1305,7 @@ const taskPayload = measureMonitoringBasePayload
 		effort: z.string().optional(),
 		fulfillmentDate: z.string().date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
-		taskStatus: taskStatus.default(taskStatus.enum['task_status.idea']),
+		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.task)
 	})
 	.strict();
@@ -3048,7 +3016,7 @@ export function createCopyOf(
 		copy.payload = {
 			...container.payload,
 			assignee: [],
-			taskStatus: taskStatus.enum['task_status.idea']
+			status: status.enum['status.idea']
 		} as typeof copy.payload;
 	} else if (isEffectContainer(container)) {
 		copy.payload = {
