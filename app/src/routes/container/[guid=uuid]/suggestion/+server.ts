@@ -25,7 +25,8 @@ export const GET = (async ({ locals, params, url }) => {
 		indicatorCategory: z.array(indicatorCategories).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		organization: z.array(z.uuid()).default([]),
-		organizationalUnit: z.array(z.uuid()).default([])
+		organizationalUnit: z.array(z.uuid()).default([]),
+		terms: z.array(z.string()).default([])
 	});
 
 	const parseResult = expectedParams.safeParse(
@@ -65,6 +66,7 @@ export const GET = (async ({ locals, params, url }) => {
 					customCategories,
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
+					terms: parseResult.data.terms[0],
 					type: [payloadTypes.enum.indicator_template]
 				},
 				'alpha'
