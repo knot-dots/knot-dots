@@ -36,7 +36,8 @@
 		programTypes,
 		status
 	} from '$lib/models';
-	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -53,23 +54,23 @@
 	let isGuide = $derived(container.payload.programType === programTypes.enum['program_type.guide']);
 
 	let categoryContext = $derived(page.data.categoryContext);
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToProgram({
-			guid,
-			params: {
-				...{
-					customCategories: extractCustomCategoryFiltersFromParams(
-						paramsFromFragment(page.url),
-						categoryContext.keys
-					)
-				},
-				statuses: paramsFromFragment(page.url).getAll('status'),
-				terms: paramsFromFragment(page.url).get('terms') ?? ''
-			}
-		})
+	let relatedContainersQuery = resource(
+		[() => guid, () => paramsFromFragment(page.url).toString()],
+		async ([guid, urlHash], _, { signal }) => {
+			const hashParams = new URLSearchParams(urlHash);
+			const terms = hashParams.get('terms') ?? '';
+			const statuses = hashParams.getAll('status');
+			const customCategories = extractCustomCategoryFiltersFromParams(
+				hashParams,
+				categoryContext.keys
+			);
+			return fetchRelatedContainers(guid, { terms, statuses, ...customCategories }, 'alpha', {
+				signal
+			});
+		}
 	);
 
-	let relatedContainers = $state.raw([]) as Container[];
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let parts = $state([]) as Container[];
 
@@ -106,9 +107,9 @@
 	let overlay = getContext('overlay');
 
 	$effect(() => {
-		if (relatedContainersQuery.current) {
-			relatedContainers = relatedContainersQuery.current;
-			const filtered = relatedContainers.filter(({ guid, relation }) =>
+		const containers = relatedContainersQuery.current;
+		if (containers) {
+			const filtered = containers.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
 						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
@@ -162,7 +163,7 @@
 			}
 		});
 
-		await relatedContainersQuery.refresh();
+		await relatedContainersQuery.refetch();
 	}
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
