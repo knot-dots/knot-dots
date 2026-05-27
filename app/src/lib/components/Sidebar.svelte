@@ -155,8 +155,8 @@
 	</button>
 </header>
 
-<div class="panel-section" class:panel-section--active={!page.data.currentOrganizationalUnit}>
-	<div class="panel-header">
+<div class="sidebar-panel" class:panel-section--active={!page.data.currentOrganizationalUnit}>
+	<div class="sidebar-panel-header">
 		<OrganizationMenu
 			{defaultOrganization}
 			options={organizations}
@@ -164,8 +164,8 @@
 		/>
 	</div>
 
-	<div class="panel-links">
-		<button class="panel-links-toggle" use:organizationLinks.button type="button">
+	<div class="sidebar-panel-links">
+		<button class="sidebar-panel-links-toggle" use:organizationLinks.button type="button">
 			{#if $organizationLinks.expanded}
 				<ChevronDown />
 				<span>{$_('hide_links')}</span>
@@ -247,8 +247,8 @@
 </div>
 
 {#if organizationalUnits.length > 0}
-	<div class="panel-section" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
-		<div class="panel-header">
+	<div class="sidebar-panel" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
+		<div class="sidebar-panel-header">
 			<OrganizationalUnitMenu
 				{defaultOrganization}
 				{organizationalUnits}
@@ -257,8 +257,8 @@
 		</div>
 
 		{#if page.data.currentOrganizationalUnit}
-			<div class="panel-links">
-				<button class="panel-links-toggle" type="button" use:organizationalUnitLinks.button>
+			<div class="sidebar-panel-links">
+				<button class="sidebar-panel-links-toggle" type="button" use:organizationalUnitLinks.button>
 					{#if $organizationalUnitLinks.expanded}
 						<ChevronDown />
 						<span>{$_('hide_links')}</span>
@@ -343,8 +343,8 @@
 {/if}
 
 {#if $user.isAuthenticated}
-	<div class="panel-section panel-section--user">
-		<div class="panel-header">
+	<div class="sidebar-panel sidebar-panel--user">
+		<div class="sidebar-panel-header">
 			<UserMenu />
 		</div>
 
@@ -363,7 +363,7 @@
 	</div>
 {/if}
 
-<div class="panel-section panel-section--footer">
+<div class="sidebar-panel sidebar-panel--footer">
 	<a class="sidebar-menu-item sidebar-menu-item--footer" href={env.PUBLIC_BASE_URL} rel="external">
 		<Favicon />
 		<span class="truncated">knot dots</span>
@@ -380,7 +380,7 @@
 		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 	}
 
-	.panel-section {
+	.sidebar-panel {
 		background:
 			linear-gradient(226deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
 			var(--color-gray-050);
@@ -391,19 +391,19 @@
 		padding: 0.25rem;
 	}
 
-	.panel-section.panel-section--active {
+	.sidebar-panel.sidebar-panel--active {
 		background:
 			linear-gradient(203deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
 			var(--color-primary-050);
 		border-color: var(--color-primary-200);
 	}
 
-	.panel-section.panel-section--footer {
+	.sidebar-panel.sidebar-panel--footer {
 		margin-top: auto;
 		flex: 0 0 auto;
 	}
 
-	.panel-header {
+	.sidebar-panel-header {
 		--dropdown-button-border-radius: 8px;
 		--dropdown-button-chevron-icon-size: 1rem;
 		--dropdown-button-chevron-default-color: var(--color-gray-400);
@@ -418,7 +418,7 @@
 		--dropdown-panel-padding: 0;
 	}
 
-	.panel-links-toggle {
+	.sidebar-panel-links-toggle {
 		align-items: center;
 		border: none;
 		color: var(--color-gray-500);
@@ -431,17 +431,17 @@
 		width: 100%;
 	}
 
-	.panel-links-toggle:hover {
+	.sidebar-panel-links-toggle:hover {
 		background-color: rgba(0, 0, 0, 0.04);
 	}
 
-	.panel-links-toggle :global(svg) {
+	.sidebar-panel-links-toggle :global(svg) {
 		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.panel-links {
+	.sidebar-panel-links {
 		display: flex;
 		flex-direction: column;
 	}
