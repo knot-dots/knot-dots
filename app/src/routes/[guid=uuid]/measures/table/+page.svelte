@@ -71,7 +71,7 @@
 	]);
 </script>
 
-<MeasuresPage data={{ ...data, containers }}>
+<MeasuresPage facets={data.facets}>
 	<Table {columns} rows={containers}>
 		{#snippet footer()}
 			<LazyLoadSentinel

@@ -4,22 +4,18 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import { predicates } from '$lib/models';
 
-	import type { PageData } from '../../routes/[guid=uuid]/rules/catalog/$types';
-
 	interface Props {
 		children: Snippet;
-		data: PageData;
+		facets: Map<string, Map<string, number>>;
 		filterBarInitiallyOpen?: boolean;
 	}
 
-	let { children, data, filterBarInitiallyOpen = false }: Props = $props();
+	let { children, facets, filterBarInitiallyOpen = false }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-inconsistent-with']]
 	});
-
-	let facets = $derived(data.facets);
 </script>
 
 <Layout>

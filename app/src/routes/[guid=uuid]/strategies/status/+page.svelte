@@ -1,37 +1,70 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
+	import createColumnBoardPagination from '$lib/client/createColumnBoardPagination.svelte';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Help from '$lib/components/Help.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
-	import { programStatus } from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
+	import { type ProgramContainer, type ProgramStatus } from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import { programStatusBackgrounds, programStatusHoverColors } from '$lib/theme/models';
+	import { createStrategyStatusQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
-	);
+	const board = createColumnBoardPagination<ProgramContainer, ProgramStatus>({
+		columnForItem: ({ payload }) => payload.programStatus,
+		columnIds: () => data.columnIds,
+		columns: () => data.columns,
+		created: () => $lastCreatedContainer,
+		fetchPage: async ({ columnId, offset, signal }) => {
+			const result = await fetchContainerPage<ProgramContainer>({
+				contextGuid: page.params.guid,
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset,
+				query: createStrategyStatusQuery(page.url, columnId),
+				signal
+			});
+			return {
+				hasMore: result.page.hasMore,
+				items: result.containers,
+				nextOffset: result.page.nextOffset
+			};
+		},
+		pageSize: DEFAULT_PAGE_SIZE,
+		resetKey: () => `${page.url.pathname}?${page.url.searchParams.toString()}`,
+		updated: () => $lastUpdatedContainers
+	});
 </script>
 
-<ProgramsPage {data}>
+<ProgramsPage facets={data.facets}>
 	<Board>
-		{#each programStatus.options as statusOption (statusOption)}
+		{#each data.columnIds as statusOption (statusOption)}
 			<BoardColumn
 				--background={programStatusBackgrounds.get(statusOption)}
 				--hover-border-color={programStatusHoverColors.get(statusOption)}
 				addItemUrl={`#create=program&programStatus=${statusOption}`}
 				title={$_(statusOption)}
 			>
-				<MaybeDragZone
-					containers={containers.filter(
-						(c) => 'programStatus' in c.payload && c.payload.programStatus === statusOption
-					)}
-				/>
+				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(statusOption)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
 			</BoardColumn>
 		{/each}
 	</Board>

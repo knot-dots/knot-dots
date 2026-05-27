@@ -69,7 +69,7 @@
 	]);
 </script>
 
-<ProgramsPage data={{ ...data, containers }}>
+<ProgramsPage facets={data.facets}>
 	<Table {columns} rows={containers}>
 		{#snippet footer()}
 			<LazyLoadSentinel
