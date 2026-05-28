@@ -68,9 +68,6 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 		const columns = Object.fromEntries(columnEntries) as unknown as Record<ColumnId, Column<T>>;
 		const columnValues = Object.values(columns) as Column<T>[];
 		const filteredCategoryContext = filterCategoryContext(categoryContext, options.payloadTypes);
-		const requestedFacets = (options.facetKeys ?? [])
-			.map((key) => [key, facetData.facets.get(key)] as const)
-			.filter((entry): entry is [string, Map<string, number>] => entry[1] !== undefined);
 
 		return {
 			columnIds,
@@ -81,15 +78,15 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 						[
 							'relationType',
 							new Map(options.defaultRelationTypes.map((relationType) => [relationType, 0]))
-						],
-						...requestedFacets
+						]
 					])
 				: new Map([
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
-						...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
-						...requestedFacets
+						...[...facetData.facets].filter(([key]) =>
+							[...filteredCategoryContext.keys, ...(options.facetKeys ?? [])].includes(key)
+						)
 					])
 		};
 	};
