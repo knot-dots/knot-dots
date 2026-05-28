@@ -103,6 +103,7 @@
 			...payloadType.map((t) => ['payloadType', t]),
 			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
 			...(filter.programType ?? []).map((v) => ['programType', v]),
+			...(filter.status ?? []).map((v) => ['status', v]),
 			...categoryContext.keys.flatMap((k) => (filter[k] ?? []).map((v) => [k, v])),
 			['terms', terms],
 			['sort', sort]
@@ -153,6 +154,7 @@
 					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
 						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
 						: []) as Array<[string, Map<string, number>]>),
+					['status', searchResource.current.facets.get('status') ?? new Map()],
 					[
 						'type',
 						new Map(
