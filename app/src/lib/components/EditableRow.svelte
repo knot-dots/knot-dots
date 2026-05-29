@@ -67,8 +67,10 @@
 	});
 
 	function statusLabelFn(s: Status): string {
-		if (isRuleContainer(container) && s === 'status.in_operation') {
-			return $_('status.in_application');
+		if (s === 'status.in_operation') {
+			return isRuleContainer(container)
+				? $_('status.in_application')
+				: $_('status.in_operation.short');
 		}
 		return $_(s);
 	}
