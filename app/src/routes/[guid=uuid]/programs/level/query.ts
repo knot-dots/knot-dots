@@ -12,6 +12,8 @@ export function createProgramLevelQuery(url: URL, level?: Level) {
 	query.delete('payloadType');
 	query.delete('type');
 	query.delete('level');
+	query.delete('organization');
+	query.append('organization', 'ANY');
 	query.append('type', payloadTypes.enum.program);
 
 	if (level) {

@@ -72,7 +72,15 @@ const querySchema = z.object({
 	member: z.array(z.string().uuid()).default([]),
 	level: z.array(levels).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
-	organization: z.array(z.string().uuid()).default([]),
+	organization: z
+		.array(z.string().uuid())
+		.or(
+			z
+				.array(z.literal('ANY'))
+				.length(1)
+				.transform(() => undefined)
+		)
+		.default([]),
 	organizationalUnit: z
 		.array(z.string().uuid())
 		.or(
@@ -282,11 +290,13 @@ export async function loadContainerV2(params: {
 			})
 		: undefined;
 	const organization =
-		query.organization.length > 0
-			? query.organization
-			: applicationContext && !applicationContext.currentOrganization.payload.default
-				? [applicationContext.currentOrganization.guid]
-				: [];
+		query.organization === undefined
+			? []
+			: query.organization.length > 0
+				? query.organization
+				: applicationContext && !applicationContext.currentOrganization.payload.default
+					? [applicationContext.currentOrganization.guid]
+					: [];
 	const scopedQuery = { ...query, organization };
 	const categoryContext =
 		applicationContext?.categoryContext ??
