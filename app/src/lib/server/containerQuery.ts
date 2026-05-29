@@ -270,8 +270,8 @@ async function loadCategoryContextForQuery(
 		connect,
 		scope:
 			organizations.length > 0
-				? [organizations[0].guid, ...params.organization]
-				: params.organization,
+				? [organizations[0].guid, ...(params.organization ?? [])]
+				: (params.organization ?? []),
 		user
 	});
 }
