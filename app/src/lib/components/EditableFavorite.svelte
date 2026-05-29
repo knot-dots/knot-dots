@@ -105,7 +105,7 @@
 		--dropdown-button-icon-size: 1rem;
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-expanded-background: transparent;
-		--dropdown-button-padding: 0.25rem;
+		--dropdown-button-padding: 0.375rem;
 	}
 
 	.dropdown-button {
