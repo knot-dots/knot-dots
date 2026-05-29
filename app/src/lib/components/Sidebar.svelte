@@ -155,7 +155,12 @@
 	</button>
 </header>
 
-<div class="sidebar-panel" class:panel-section--active={!page.data.currentOrganizationalUnit}>
+<div
+	class={[
+		'sidebar-panel',
+		...(page.data.currentOrganizationalUnit ? [] : ['sidebar-panel--active'])
+	]}
+>
 	<div class="sidebar-panel-header">
 		<OrganizationMenu
 			{defaultOrganization}
@@ -247,7 +252,12 @@
 </div>
 
 {#if organizationalUnits.length > 0}
-	<div class="sidebar-panel" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
+	<div
+		class={[
+			'sidebar-panel',
+			...(page.data.currentOrganizationalUnit ? ['sidebar-panel--active'] : [])
+		]}
+	>
 		<div class="sidebar-panel-header">
 			<OrganizationalUnitMenu
 				{defaultOrganization}
