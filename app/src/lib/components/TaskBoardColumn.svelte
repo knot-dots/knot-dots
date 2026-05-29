@@ -9,7 +9,7 @@
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import { containerOfType, payloadTypes, type TaskContainer, type TaskStatus } from '$lib/models';
+	import { containerOfType, payloadTypes, type TaskContainer, type Status } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
@@ -17,7 +17,7 @@
 		itemSnippet: Snippet<[TaskContainer]>;
 		items: TaskContainer[];
 		onSort?: (items: TaskContainer[]) => void;
-		status: TaskStatus;
+		status: Status;
 	}
 
 	let { addItemUrl, onSort, itemSnippet, items = [], status }: Props = $props();
@@ -41,8 +41,8 @@
 		if (e.detail.info.trigger == 'droppedIntoZone') {
 			const droppedItem = items.find(({ guid }) => guid == e.detail.info.id);
 
-			if (droppedItem && droppedItem.payload.taskStatus != status) {
-				droppedItem.payload.taskStatus = status;
+			if (droppedItem && droppedItem.payload.status != status) {
+				droppedItem.payload.status = status;
 				const response = await saveContainer(droppedItem, false);
 
 				if (response.ok) {

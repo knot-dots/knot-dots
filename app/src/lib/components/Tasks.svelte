@@ -15,9 +15,9 @@
 		payloadTypes,
 		predicates,
 		type TaskContainer,
-		taskStatus
+		status
 	} from '$lib/models';
-	import { taskStatusBackgrounds, taskStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
 	interface Props {
 		container?: AnyContainer;
@@ -69,13 +69,13 @@
 			</div>
 		</BoardColumn>
 	{/if}
-	{#each taskStatus.options as taskStatusOption (taskStatusOption)}
+	{#each status.options.filter((s) => s !== 'status.in_operation') as taskStatusOption (taskStatusOption)}
 		<TaskBoardColumn
-			--background={taskStatusBackgrounds.get(taskStatusOption)}
-			--hover-border-color={taskStatusHoverColors.get(taskStatusOption)}
+			--background={statusBackgrounds.get(taskStatusOption)}
+			--hover-border-color={statusHoverColors.get(taskStatusOption)}
 			addItemUrl={addItemUrl([
 				[overlayKey.enum.create, payloadTypes.enum.task],
-				['taskStatus', taskStatusOption],
+				['status', taskStatusOption],
 				...(container && (isMeasureContainer(container) || isSimpleMeasureContainer(container))
 					? [
 							[predicates.enum['is-part-of-measure'], container.guid],
@@ -83,7 +83,7 @@
 						]
 					: [])
 			])}
-			items={containers.filter(({ payload }) => payload.taskStatus === taskStatusOption)}
+			items={containers.filter(({ payload }) => payload.status === taskStatusOption)}
 			status={taskStatusOption}
 		>
 			{#snippet itemSnippet(container)}

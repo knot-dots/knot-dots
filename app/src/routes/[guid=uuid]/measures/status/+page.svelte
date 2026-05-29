@@ -51,7 +51,9 @@
 				--background={statusBackgrounds.get(statusOption)}
 				--hover-border-color={statusHoverColors.get(statusOption)}
 				addItemUrl={`#create=measure&status=${statusOption}`}
-				title={$_(statusOption)}
+				title={statusOption === 'status.in_operation'
+					? $_('status.in_operation.short')
+					: $_(statusOption)}
 			>
 				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
 					{#snippet footer()}

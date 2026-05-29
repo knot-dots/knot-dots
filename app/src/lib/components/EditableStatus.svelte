@@ -9,7 +9,12 @@
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
+
+	function labelFn(s: Status): string {
+		if (s === 'status.in_operation') return $_('status.in_operation.short');
+		return $_(s);
+	}
 </script>
 
 <div class="label">{$_('status')}</div>
-<StatusDropdown {editable} bind:value />
+<StatusDropdown {editable} {labelFn} bind:value />

@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
-	import type { GoalStatus } from '$lib/models';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import { type Status, status } from '$lib/models';
 
 	interface Props {
 		editable?: boolean;
-		value: GoalStatus;
+		value: Status;
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
+
+	const options = status.options.filter((s) => s !== 'status.in_operation');
 </script>
 
-<div class="label">{$_('goal_status')}</div>
-<GoalStatusDropdown {editable} bind:value />
+<div class="label">{$_('status')}</div>
+<StatusDropdown {editable} {options} bind:value />

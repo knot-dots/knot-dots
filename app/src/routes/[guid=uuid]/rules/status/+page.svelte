@@ -9,17 +9,17 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
-	import { type RuleContainer, type RuleStatus } from '$lib/models';
+	import { type RuleContainer, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
-	import { ruleStatusBackgrounds, ruleStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import { createRuleStatusQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const board = createColumnBoardPagination<RuleContainer, RuleStatus>({
-		columnForItem: ({ payload }) => payload.ruleStatus,
+	const board = createColumnBoardPagination<RuleContainer, Status>({
+		columnForItem: ({ payload }) => payload.status,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
@@ -48,10 +48,12 @@
 	<Board>
 		{#each data.columnIds as statusOption (statusOption)}
 			<BoardColumn
-				--background={ruleStatusBackgrounds.get(statusOption)}
-				--hover-border-color={ruleStatusHoverColors.get(statusOption)}
-				addItemUrl={`#create=rule&ruleStatus=${statusOption}`}
-				title={$_(statusOption)}
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=rule&status=${statusOption}`}
+				title={statusOption === 'status.in_operation'
+					? $_('status.in_application')
+					: $_(statusOption)}
 			>
 				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
 					{#snippet footer()}

@@ -19,8 +19,8 @@
 		type OrganizationContainer,
 		type ProgramContainer,
 		type TaskContainer,
-		type TaskStatus,
-		taskStatus
+		type Status as TaskStatus,
+		status
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -33,13 +33,13 @@
 	let w = $state(0);
 
 	let taskStatusFilter: TaskStatus[] = $state([
-		taskStatus.enum['task_status.in_planning'],
-		taskStatus.enum['task_status.in_progress']
+		status.enum['status.in_planning'],
+		status.enum['status.in_implementation']
 	]);
 
 	function byTaskStatus(value: TaskStatus[]) {
 		return (container: TaskContainer) =>
-			value.length == 0 || value.includes(container.payload.taskStatus);
+			value.length == 0 || value.includes(container.payload.status);
 	}
 
 	const sortOptions = [

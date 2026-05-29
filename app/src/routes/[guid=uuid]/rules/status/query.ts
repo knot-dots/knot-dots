@@ -1,16 +1,16 @@
-import { type RuleStatus, payloadTypes, predicates } from '$lib/models';
+import { type Status, payloadTypes, predicates } from '$lib/models';
 
 export const DEFAULT_RELATION_TYPES = [predicates.enum['is-inconsistent-with']] as string[];
 
-export function createRuleStatusQuery(url: URL, status?: RuleStatus) {
+export function createRuleStatusQuery(url: URL, status?: Status) {
 	const query = new URLSearchParams(url.searchParams);
 	query.delete('payloadType');
 	query.delete('type');
-	query.delete('ruleStatus');
+	query.delete('status');
 	query.append('type', payloadTypes.enum.rule);
 
 	if (status) {
-		query.append('ruleStatus', status);
+		query.append('status', status);
 	}
 
 	if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {

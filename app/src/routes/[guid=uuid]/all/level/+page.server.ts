@@ -6,7 +6,8 @@ import {
 	type OrganizationalUnitContainer,
 	payloadTypes,
 	predicates,
-	programTypes
+	programTypes,
+	status
 } from '$lib/models';
 import {
 	getAllRelatedContainers,
@@ -92,6 +93,7 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 			{
 				customCategories,
 				programTypes: url.searchParams.getAll('programType'),
+				statuses: url.searchParams.getAll('status'),
 				terms: url.searchParams.get('terms') ?? '',
 				type: typeFilter
 			},
@@ -126,7 +128,8 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 			: []) as Array<[string, Map<string, number>]>),
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 			[string, Map<string, number>]
-		>)
+		>),
+		['status', fromCounts(status.options as string[], data?.status)]
 	]);
 
 	const customFacets = buildCategoryFacetsWithCounts(

@@ -7,12 +7,11 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		containerOfType,
-		type GoalStatus,
 		isContainerWithHierarchyLevel,
-		isGoalContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isProgramContainer,
+		isGoalContainer,
 		isRuleContainer,
 		isTaskContainer,
 		type Level,
@@ -20,10 +19,7 @@
 		type PartialRelation,
 		type PayloadType,
 		predicates,
-		type ProgramStatus,
-		type RuleStatus,
-		type Status,
-		type TaskStatus
+		type Status
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
@@ -78,20 +74,20 @@
 
 		if (isOrganizationalUnitContainer(container) && params.has('level')) {
 			container.payload.level = parseInt(params.get('level') as string);
-		} else if (isRuleContainer(container) && params.has('ruleStatus')) {
-			container.payload.ruleStatus = params.get('ruleStatus') as RuleStatus;
-		} else if (isMeasureContainer(container) && params.has('status')) {
+		} else if (
+			(isMeasureContainer(container) ||
+				isRuleContainer(container) ||
+				isTaskContainer(container) ||
+				isGoalContainer(container)) &&
+			params.has('status')
+		) {
 			container.payload.status = params.get('status') as Status;
-		} else if (isTaskContainer(container) && params.has('taskStatus')) {
-			container.payload.taskStatus = params.get('taskStatus') as TaskStatus;
-		} else if (isGoalContainer(container) && params.has('goalStatus')) {
-			container.payload.goalStatus = params.get('goalStatus') as GoalStatus;
 		} else if (isProgramContainer(container)) {
 			if (params.has('level')) {
 				container.payload.level = params.get('level') as Level;
 			}
-			if (params.has('programStatus')) {
-				container.payload.programStatus = params.get('programStatus') as ProgramStatus;
+			if (params.has('status')) {
+				container.payload.status = params.get('status') as Status;
 			}
 		} else if (isContainerWithHierarchyLevel(container) && params.has('hierarchyLevel')) {
 			container.payload.hierarchyLevel = parseInt(params.get('hierarchyLevel') as string);

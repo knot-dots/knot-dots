@@ -9,17 +9,17 @@
 	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { type GoalContainer, type GoalStatus } from '$lib/models';
+	import { type GoalContainer, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
-	import { goalStatusBackgrounds, goalStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import { createGoalStatusQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const board = createColumnBoardPagination<GoalContainer, GoalStatus>({
-		columnForItem: ({ payload }) => payload.goalStatus,
+	const board = createColumnBoardPagination<GoalContainer, Status>({
+		columnForItem: ({ payload }) => payload.status,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
@@ -48,9 +48,9 @@
 	<Board>
 		{#each data.columnIds as statusOption (statusOption)}
 			<BoardColumn
-				--background={goalStatusBackgrounds.get(statusOption)}
-				--hover-border-color={goalStatusHoverColors.get(statusOption)}
-				addItemUrl={`#create=goal&goalStatus=${statusOption}`}
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=goal&status=${statusOption}`}
 				title={$_(statusOption)}
 			>
 				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>

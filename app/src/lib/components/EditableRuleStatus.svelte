@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
-	import type { RuleStatus } from '$lib/models';
+	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import type { Status } from '$lib/models';
 
 	interface Props {
 		editable?: boolean;
-		value: RuleStatus;
+		value: Status;
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
 
-	const id = crypto.randomUUID();
+	function labelFn(s: Status): string {
+		if (s === 'status.in_operation') return $_('status.in_application');
+		return $_(s);
+	}
 </script>
 
-<div class="label" {id}>{$_('rule_status')}</div>
-<RuleStatusDropdown {editable} labelledBy={id} bind:value />
+<div class="label">{$_('status')}</div>
+<StatusDropdown {editable} {labelFn} bind:value />

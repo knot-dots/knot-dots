@@ -10,11 +10,20 @@
 	interface Props {
 		buttonStyle?: 'badge' | 'default';
 		editable?: boolean;
+		labelFn?: (s: Status) => string;
 		offset?: [number, number];
+		options?: Status[];
 		value: Status;
 	}
 
-	let { buttonStyle = 'default', editable = false, offset, value = $bindable() }: Props = $props();
+	let {
+		buttonStyle = 'default',
+		editable = false,
+		labelFn,
+		offset,
+		options,
+		value = $bindable()
+	}: Props = $props();
 
 	const popover = createPopover({ label: $_('status') });
 
@@ -26,6 +35,12 @@
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset } }] };
 
 	const StatusIcon = $derived(statusIcons.get(value));
+
+	function label(s: Status): string {
+		return labelFn ? labelFn(s) : $_(s);
+	}
+
+	let effectiveOptions = $derived(options ?? status.options);
 </script>
 
 {#if editable}
@@ -33,12 +48,12 @@
 		<button class="dropdown-button" type="button" use:popover.button>
 			{#if buttonStyle === 'badge'}
 				<span class="badge badge--{statusColors.get(value)}">
-					<StatusIcon />{$_(value)}
+					<StatusIcon />{label(value)}
 					{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 				</span>
 			{:else}
 				<span class="badge badge--{statusColors.get(value)}">
-					<StatusIcon />{$_(value)}
+					<StatusIcon />{label(value)}
 				</span>
 				{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 			{/if}
@@ -46,7 +61,7 @@
 
 		{#if $popover.expanded}
 			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-				{#each status.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
+				{#each effectiveOptions.map( (o) => ({ label: label(o), value: o }) ) as option (option.value)}
 					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
 						<input type="radio" value={option.value} bind:group={value} />
@@ -64,7 +79,7 @@
 	<div class="value">
 		<span class="badge badge--{statusColors.get(value)}">
 			<StatusIcon />
-			{$_(value)}
+			{label(value)}
 		</span>
 	</div>
 {/if}
