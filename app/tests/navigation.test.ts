@@ -50,23 +50,25 @@ test('workspaces mega-menu groups workspaces by module', async ({ page, testOrga
 
 test('Organization menu links to workspace or landing page', async ({
 	defaultOrganization,
+	isMobile,
 	landingPage,
 	page,
 	testOrganization
 }) => {
+	test.skip(isMobile, 'Sidebar is not visible on mobile');
+
 	await page.goto(`/${defaultOrganization.guid}/all/level`);
 
-	const organizationMenuButton = page.getByRole('button', {
-		name: 'Organizations and organizational units'
-	});
+	const nav = page.getByRole('navigation');
 
-	// Open the organization menu and verify the test organization card links to
-	// the dots board.
-	await organizationMenuButton.click();
+	// Open the sidebar organization select and verify the test organization
+	// link points to the dots board.
+	await nav.getByRole('button', { name: 'Organizations' }).click();
 	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
 		'href',
 		new RegExp(`/${testOrganization.guid}/all/level`)
 	);
+	await page.keyboard.press('Escape');
 
 	// Ensure the measures workspace is disabled for the test organization.
 	await landingPage.goto(`/${testOrganization.guid}`);
@@ -84,10 +86,10 @@ test('Organization menu links to workspace or landing page', async ({
 	await page.goto(`/${defaultOrganization.guid}/measures/status`);
 	await expect(page).toHaveURL(new RegExp(`/${defaultOrganization.guid}/measures/status`));
 
-	// Open the organization menu and verify the default organization card links
-	// to the landing page, since the test organization does not support the
-	// measures workspace.
-	await organizationMenuButton.click();
+	// Open the sidebar organization select and verify the test organization
+	// link points to the landing page, since it does not support the measures
+	// workspace.
+	await nav.getByRole('button', { name: 'Organizations' }).click();
 	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
 		'href',
 		new RegExp(`/${testOrganization.guid}/all/page`)

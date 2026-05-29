@@ -26,7 +26,6 @@
 	import MeasureWorkspaces from '$lib/components/MeasureWorkspaces.svelte';
 	import MemberFilterDropDown from '$lib/components/MemberFilterDropDown.svelte';
 	import OrganizationIncludedFilterDropDown from '$lib/components/OrganizationIncludedFilterDropDown.svelte';
-	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OverlayBackButton from '$lib/components/OverlayBackButton.svelte';
 	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
@@ -38,7 +37,6 @@
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
-	import { popover } from '$lib/components/OrganizationMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -79,8 +77,8 @@
 
 	let overlay = getContext('overlay');
 
-	let mobileMenu: { open: boolean; toggle: () => void; close: () => void } =
-		getContext('mobileMenu');
+	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
+		getContext('sidebar');
 
 	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
 
@@ -205,17 +203,19 @@
 </script>
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
-<header class:is-elevated={$popover.expanded} data-sveltekit-preload-data="hover" role="banner">
-	{#if mobileMenu}
-		<button
-			class="mobile-menu-button"
-			type="button"
-			onclick={() => mobileMenu.toggle()}
-			aria-label={$_('menu')}
-		>
-			<Bars />
-		</button>
-	{/if}
+<header data-sveltekit-preload-data="hover" role="banner">
+	<button
+		aria-label={$_('menu')}
+		class={{
+			'action-button': true,
+			'sidebar-toggle': true,
+			collapsed: sidebar.expanded === false
+		}}
+		onclick={() => sidebar.expand()}
+		type="button"
+	>
+		<Bars />
+	</button>
 
 	{#if overlay}
 		<OverlayCloseButton />
@@ -223,7 +223,6 @@
 		<OverlayBackButton />
 		<OverlayTitle />
 	{:else}
-		<OrganizationMenu />
 		<DotsBoardButton />
 		<BackToOverlayButton />
 	{/if}
@@ -553,10 +552,6 @@
 		top: -0.375rem;
 	}
 
-	.is-elevated {
-		z-index: 4;
-	}
-
 	.sort-option {
 		border-radius: 8px;
 		gap: 0;
@@ -588,32 +583,17 @@
 		color: var(--color-primary-700);
 	}
 
+	@media (min-width: 60rem) {
+		.sidebar-toggle:not(.collapsed) {
+			display: none;
+		}
+	}
+
 	@layer visually-hidden {
 		@container (min-width: 60rem) {
 			.is-visually-hidden.is-visually-hidden--mobile-only {
 				all: revert-layer;
 			}
-		}
-	}
-
-	.mobile-menu-button {
-		align-items: center;
-		border: none;
-		border-radius: 8px;
-		display: none;
-		height: 2rem;
-		justify-content: center;
-		padding: 0.5rem;
-		width: 2rem;
-	}
-
-	.mobile-menu-button:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	@media (max-width: 480px) {
-		.mobile-menu-button {
-			display: inline-flex;
 		}
 	}
 </style>

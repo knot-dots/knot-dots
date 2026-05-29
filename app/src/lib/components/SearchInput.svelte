@@ -23,7 +23,7 @@
 	label {
 		background-color: var(--color-gray-050);
 		align-items: center;
-		border-radius: 6px;
+		border-radius: 8px;
 		display: flex;
 		padding-left: 0.5rem;
 	}
@@ -33,12 +33,17 @@
 		background-color: var(--color-gray-100);
 	}
 
+	label :global(svg) {
+		height: var(--search-icon-size, 1.25rem);
+		width: var(--search-icon-size, 1.25rem);
+	}
+
 	input {
 		background-color: transparent;
 		border: none;
 		display: inline-block;
 		flex-grow: 0;
-		height: 2rem;
+		min-height: 1.75rem;
 		padding: 0 0.5rem;
 	}
 

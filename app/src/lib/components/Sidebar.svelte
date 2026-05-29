@@ -1,66 +1,144 @@
-<script lang="ts" module>
-	let sidebarExpanded: boolean | undefined = $state(undefined);
-</script>
-
 <script lang="ts">
-	import { signOut } from '@auth/sveltekit/client';
 	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
+	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
+	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import ArrowRightToBracket from '~icons/flowbite/arrow-right-to-bracket-outline';
-	import Bars from '~icons/flowbite/bars-outline';
 	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronUp from '~icons/flowbite/chevron-up-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Grid from '~icons/flowbite/grid-solid';
 	import Home from '~icons/flowbite/home-solid';
-	import Cog from '~icons/knotdots/cog';
-	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import StarSolid from '~icons/flowbite/star-solid';
+	import DragHandle from '~icons/knotdots/draghandle';
 	import Favicon from '~icons/knotdots/favicon';
+	import OrganizationalUnitIcon from '~icons/knotdots/organizational-unit';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
-	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
+	import saveContainer from '$lib/client/saveContainer';
+	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
+	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
+	import OrganizationalUnitMenu from '$lib/components/OrganizationalUnitMenu.svelte';
+	import UserMenu from '$lib/components/UserMenu.svelte';
+	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer
 	} from '$lib/models';
-	import { user } from '$lib/stores';
+	import { ability, applicationState, user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
-	const userMenu = createDisclosure({ label: $_('user_menu') });
+	let favoriteList = getFavoriteListContext();
 
-	const platformMenu = createDisclosure({ label: $_('platform_menu') });
+	let organizationLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
-
-	function expandSidebar() {
-		sidebarExpanded = true;
-	}
-
-	function collapseSidebar() {
-		sidebarExpanded = false;
-	}
+	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 
-	const mobileMenu: { open: boolean; toggle: () => void; close: () => void } | undefined =
-		getContext('mobileMenu');
+	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
+		getContext('sidebar');
 
-	$effect(() => {
-		if (mobileMenu?.open) {
-			sidebarExpanded = true;
-		}
-	});
+	let defaultOrganization = $derived(
+		page.data.organizations.find((c: OrganizationContainer) => c.payload.default)
+	);
+
+	let organizations = $derived(
+		page.data.organizations.filter(
+			(c: OrganizationContainer) =>
+				!c.payload.default && c.guid !== page.data.currentOrganization.guid
+		)
+	);
+
+	let organizationalUnits = $derived(
+		page.data.organizationalUnits.filter(
+			(c: OrganizationalUnitContainer) =>
+				c.organization === page.data.currentOrganization.organization
+		)
+	);
+
+	function updateFavorite(
+		container: OrganizationContainer | OrganizationalUnitContainer,
+		favorite: Favorite[]
+	) {
+		return async () => {
+			const response = await saveContainer({
+				...container,
+				payload: {
+					...container.payload,
+					favorite
+				}
+			});
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.revision = updatedContainer.revision;
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		};
+	}
+
+	let favoriteItemsOrganization = $derived(
+		favoriteList.organization.map((favorite) => ({
+			...favorite,
+			guid: favorite.href
+		}))
+	);
+
+	let favoriteItemsOrganizationalUnit = $derived(
+		favoriteList.organizationalUnit.map((favorite) => ({
+			...favorite,
+			guid: favorite.href
+		}))
+	);
+
+	function handleDndConsiderOrganization(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganization = event.detail.items;
+	}
+
+	function handleDndFinalizeOrganization(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganization = event.detail.items;
+		favoriteList.organization = favoriteItemsOrganization.map(({ href, icon, title }) => ({
+			href,
+			icon,
+			title
+		}));
+		updateFavorite(page.data.currentOrganization, favoriteList.organization)();
+	}
+
+	function handleDndConsiderOrganizationalUnit(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganizationalUnit = event.detail.items;
+	}
+
+	function handleDndFinalizeOrganizationalUnit(
+		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
+	) {
+		favoriteItemsOrganizationalUnit = event.detail.items;
+		favoriteList.organizationalUnit = favoriteItemsOrganizationalUnit.map(
+			({ href, icon, title }) => ({
+				href,
+				icon,
+				title
+			})
+		);
+		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
+	}
 </script>
 
-<header class:collapsed={sidebarExpanded === false} class:expanded={sidebarExpanded === true}>
+<header>
 	<a href={landingPageURL(page.data.currentOrganization)}>
 		<img
 			class="logo"
@@ -71,292 +149,369 @@
 		/>
 	</a>
 
-	<button
-		class="action-button collapse-button"
-		onclick={() => {
-			collapseSidebar();
-			mobileMenu?.close();
-		}}
-		type="button"
-	>
+	<button class="action-button" onclick={() => sidebar.collapse()} type="button">
 		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
-
-	<button class="action-button" onclick={expandSidebar} type="button">
-		<Bars />
-		<span class="is-visually-hidden">{$_('expand_sidebar')}</span>
-	</button>
 </header>
 
-<ul
-	class="sidebar-menu sidebar-menu--navigation"
-	class:collapsed={sidebarExpanded === false}
-	class:expanded={sidebarExpanded === true}
-	data-sveltekit-preload-data="hover"
->
-	<li>
-		<a
-			class="sidebar-menu-item"
-			class:sidebar-menu-item--active={landingPageURL(
-				page.data.currentOrganizationalUnit ?? page.data.currentOrganization
-			) === page.url.toString()}
-			href={landingPageURL(page.data.currentOrganizationalUnit ?? page.data.currentOrganization)}
-		>
-			<Home />
-			<span>
-				{(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).payload.name}
-			</span>
-		</a>
-	</li>
-	{#if $user.isAuthenticated}
-		<li>
-			<a
-				aria-label={$_('workspace.profile')}
-				class="sidebar-menu-item"
-				class:sidebar-menu-item--active={'/me' === page.url.pathname}
-				href="/me"
-			>
-				<Grid />
-				<span>{$_('workspace.profile')}</span>
-			</a>
-		</li>
-	{/if}
-</ul>
+<div class="sidebar-panel" class:panel-section--active={!page.data.currentOrganizationalUnit}>
+	<div class="sidebar-panel-header">
+		<OrganizationMenu
+			{defaultOrganization}
+			options={organizations}
+			selected={page.data.currentOrganization}
+		/>
+	</div>
 
-<ul
-	class="sidebar-menu sidebar-menu--about"
-	class:collapsed={sidebarExpanded === false}
-	class:expanded={sidebarExpanded === true}
->
-	<li>
-		<button class="sidebar-menu-item sidebar-menu-item--about" use:platformMenu.button>
-			<Favicon />
-			<span>
-				{$_('about')}
-			</span>
-			{#if $platformMenu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+	<div class="sidebar-panel-links">
+		<button class="sidebar-panel-links-toggle" use:organizationLinks.button type="button">
+			{#if $organizationLinks.expanded}
+				<ChevronDown />
+				<span>{$_('hide_links')}</span>
+			{:else}
+				<ChevronRight />
+				<span>{$_('show_links')}</span>
+			{/if}
 		</button>
-	</li>
-	{#if $platformMenu.expanded}
-		<li use:platformMenu.panel>
-			<ul class="sidebar-menu">
+
+		{#if $organizationLinks.expanded}
+			<ul
+				class="sidebar-menu"
+				transition:slide={{ duration: 125, easing: cubicInOut }}
+				use:organizationLinks.panel
+			>
 				<li>
 					<a
-						class="sidebar-menu-item sidebar-menu-item--secondary"
-						href={env.PUBLIC_BASE_URL}
-						rel="external"
+						class="sidebar-menu-item"
+						class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+							page.url.toString()}
+						href={landingPageURL(page.data.currentOrganization)}
 					>
-						{$_('homepage')}
+						<Home />
+						<span>{$_('landing_page')}</span>
 					</a>
 				</li>
+
 				<li>
-					<a
-						class="sidebar-menu-item sidebar-menu-item--secondary"
-						href="{env.PUBLIC_BASE_URL}/impressum"
-						rel="external"
+					<ul
+						class="sidebar-menu drag-zone"
+						onconsider={handleDndConsiderOrganization}
+						onfinalize={handleDndFinalizeOrganization}
+						use:dragHandleZone={{
+							dropTargetStyle: {},
+							flipDurationMs: 100,
+							items: favoriteItemsOrganization,
+							type: 'organization'
+						}}
 					>
-						{$_('imprint')}
-					</a>
-				</li>
-				<li>
-					<a
-						class="sidebar-menu-item sidebar-menu-item--secondary"
-						href="{env.PUBLIC_BASE_URL}/datenschutz"
-						rel="external"
-					>
-						{$_('privacy_policy')}
-					</a>
+						{#each favoriteItemsOrganization as item, index (item.guid)}
+							{@const href = page.url.searchParams.size
+								? `${page.url.pathname}?${page.url.searchParams.toString()}`
+								: page.url.pathname}
+							<li animate:flip={{ duration: 100 }}>
+								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
+									<span
+										class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+										use:dragHandle
+									>
+										<DragHandle />
+									</span>
+								{/if}
+								<a
+									class="sidebar-menu-item"
+									class:sidebar-menu-item--active={item.href === href}
+									href={item.href}
+								>
+									{#if item.icon}
+										<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+									{:else}
+										<StarSolid />
+									{/if}
+									<span>{item.title}</span>
+								</a>
+								<EditableFavorite
+									bind:favorite={favoriteList.organization[index]}
+									onchange={updateFavorite(
+										page.data.currentOrganization,
+										favoriteList.organization
+									)}
+								/>
+							</li>
+						{/each}
+					</ul>
 				</li>
 			</ul>
-		</li>
-	{/if}
-	<li>
-		<a class="sidebar-menu-item" href={env.PUBLIC_BASE_URL}>
-			<Favicon />
-			<span>{$_('homepage')}</span>
-		</a>
-	</li>
-</ul>
+		{/if}
+	</div>
+</div>
 
-{#if $userMenu.expanded}
-	<ul
-		class="sidebar-menu"
-		class:collapsed={sidebarExpanded === false}
-		class:expanded={sidebarExpanded === true}
-		transition:slide={{ duration: 125, easing: cubicInOut }}
-		use:userMenu.panel
-	>
-		<li>
-			<button
-				aria-label={$_('profile.settings')}
-				class="sidebar-menu-item"
-				onclick={() => dialog.showModal()}
-				type="button"
-			>
-				<Cog />
-				<span>
-					{$_('profile.settings')}
-				</span>
-			</button>
-		</li>
-		<li>
-			<button
-				class="sidebar-menu-item sidebar-menu-item--logout"
-				onclick={() => signOut()}
-				type="button"
-			>
-				<ArrowRightToBracket />
-				<span>{$_('logout')}</span>
-			</button>
-		</li>
-	</ul>
+{#if organizationalUnits.length > 0}
+	<div class="sidebar-panel" class:panel-section--active={!!page.data.currentOrganizationalUnit}>
+		<div class="sidebar-panel-header">
+			<OrganizationalUnitMenu
+				{defaultOrganization}
+				{organizationalUnits}
+				currentOrganizationalUnit={page.data.currentOrganizationalUnit}
+			/>
+		</div>
+
+		{#if page.data.currentOrganizationalUnit}
+			<div class="sidebar-panel-links">
+				<button class="sidebar-panel-links-toggle" type="button" use:organizationalUnitLinks.button>
+					{#if $organizationalUnitLinks.expanded}
+						<ChevronDown />
+						<span>{$_('hide_links')}</span>
+					{:else}
+						<ChevronRight />
+						<span>{$_('show_links')}</span>
+					{/if}
+				</button>
+
+				{#if $organizationalUnitLinks.expanded}
+					<ul
+						class="sidebar-menu"
+						transition:slide={{ duration: 125, easing: cubicInOut }}
+						use:organizationalUnitLinks.panel
+					>
+						<li>
+							<a
+								class="sidebar-menu-item"
+								class:sidebar-menu-item--active={landingPageURL(
+									page.data.currentOrganizationalUnit
+								) === page.url.toString()}
+								href={landingPageURL(page.data.currentOrganizationalUnit)}
+							>
+								<OrganizationalUnitIcon />
+								<span>{$_('overview')}</span>
+							</a>
+						</li>
+
+						<li>
+							<ul
+								class="sidebar-menu"
+								onconsider={handleDndConsiderOrganizationalUnit}
+								onfinalize={handleDndFinalizeOrganizationalUnit}
+								use:dragHandleZone={{
+									dropTargetStyle: {},
+									flipDurationMs: 100,
+									items: favoriteItemsOrganizationalUnit,
+									type: 'organizationalUnit'
+								}}
+							>
+								{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
+									{@const href = page.url.searchParams.size
+										? `${page.url.pathname}?${page.url.searchParams.toString()}`
+										: page.url.pathname}
+									<li>
+										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
+											<span
+												class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+												use:dragHandle
+											>
+												<DragHandle />
+											</span>
+										{/if}
+										<a
+											class="sidebar-menu-item"
+											class:sidebar-menu-item--active={item.href === href}
+											href={item.href}
+										>
+											{#if item.icon}
+												<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+											{:else}
+												<StarSolid />
+											{/if}
+											<span>{item.title}</span>
+										</a>
+										<EditableFavorite
+											bind:favorite={favoriteList.organizationalUnit[index]}
+											onchange={updateFavorite(
+												page.data.currentOrganizationalUnit,
+												favoriteList.organizationalUnit
+											)}
+										/>
+									</li>
+								{/each}
+							</ul>
+						</li>
+					</ul>
+				{/if}
+			</div>
+		{/if}
+	</div>
 {/if}
 
 {#if $user.isAuthenticated}
-	<button class="dropdown-button" type="button" use:userMenu.button>
-		<span
-			class="avatar avatar-s"
-			class:collapsed={sidebarExpanded === false}
-			class:expanded={sidebarExpanded === true}
-		>
-			{$user.givenName.at(0)}{$user.familyName.at(0)}
-		</span>
-		<strong class="truncated">{$user.givenName} {$user.familyName}</strong>
-		<ChevronSort />
-	</button>
+	<div class="sidebar-panel sidebar-panel--user">
+		<div class="sidebar-panel-header">
+			<UserMenu />
+		</div>
+
+		<ul class="sidebar-menu" transition:slide={{ duration: 125, easing: cubicInOut }}>
+			<li>
+				<a
+					class="sidebar-menu-item"
+					class:sidebar-menu-item--active={'/me' === page.url.pathname}
+					href="/me"
+				>
+					<Grid />
+					<span>{$_('workspace.profile')}</span>
+				</a>
+			</li>
+		</ul>
+	</div>
 {/if}
 
-<ProfileSettingsDialog bind:dialog />
+<div class="sidebar-panel sidebar-panel--footer">
+	<a class="sidebar-menu-item sidebar-menu-item--footer" href={env.PUBLIC_BASE_URL} rel="external">
+		<Favicon />
+		<span class="truncated">knot dots</span>
+		<ChevronRight />
+	</a>
+</div>
 
 <style>
 	header {
 		align-items: center;
-		border-bottom: solid 1px var(--color-gray-200);
 		display: flex;
 		flex-direction: row;
-		gap: 0.5rem;
-		height: var(--header-height);
 		justify-content: space-between;
-		padding: 0.5rem 0.5rem;
+		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
 	}
 
-	header.expanded {
-		width: var(--sidebar-max-width);
+	.sidebar-panel {
+		background:
+			linear-gradient(226deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
+			var(--color-gray-050);
+		border: 1px solid var(--color-gray-100);
+		border-radius: 12px;
+		flex: 0 1 auto;
+		overflow-y: auto;
+		padding: 0.25rem;
 	}
 
-	header:not(.expanded) a {
-		display: none;
+	.sidebar-panel.sidebar-panel--active {
+		background:
+			linear-gradient(203deg, rgba(255, 255, 255, 0.75) 1%, rgba(255, 255, 255, 0) 98%),
+			var(--color-primary-050);
+		border-color: var(--color-primary-200);
 	}
 
-	header img {
-		margin-left: 0.25rem;
+	.sidebar-panel.sidebar-panel--footer {
+		margin-top: auto;
+		flex: 0 0 auto;
 	}
 
-	header:not(.expanded) > button:first-of-type {
-		display: none;
-	}
-
-	header.expanded > button:last-of-type {
-		display: none;
-	}
-
-	.avatar {
-		background-color: var(--color-gray-100);
-	}
-
-	.avatar:not(.expanded) ~ :global(*) {
-		display: none;
-	}
-
-	.dropdown-button {
-		--dropdown-button-default-background: transparent;
-		--dropdown-button-icon-size: 1rem;
+	.sidebar-panel-header {
+		--dropdown-button-border-radius: 8px;
 		--dropdown-button-chevron-icon-size: 1rem;
-
-		align-items: center;
-		border-radius: 0;
-		display: flex;
-		gap: 0.625rem;
-		padding: 0.75rem 0.5rem;
+		--dropdown-button-chevron-default-color: var(--color-gray-400);
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-gray-900);
+		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
+		--dropdown-button-expanded-color: var(--color-primary-700);
+		--dropdown-button-min-height: 2rem;
+		--dropdown-panel-background-color: var(--color-gray-025);
+		--dropdown-panel-box-shadow: var(--shadow-lg);
+		--dropdown-panel-gap: 0;
+		--dropdown-panel-padding: 0;
 	}
 
-	.dropdown-button strong {
+	.sidebar-panel-links-toggle {
+		align-items: center;
+		border: none;
+		color: var(--color-gray-500);
+		display: flex;
+		font-size: 0.75rem;
 		font-weight: 600;
+		gap: 0.375rem;
+		height: 2rem;
+		padding: 0 0.5rem;
+		width: 100%;
+	}
+
+	.sidebar-panel-links-toggle:hover {
+		background-color: rgba(0, 0, 0, 0.04);
+	}
+
+	.sidebar-panel-links-toggle :global(svg) {
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.sidebar-panel-links {
+		display: flex;
+		flex-direction: column;
 	}
 
 	.sidebar-menu {
-		border-bottom: 1px solid var(--gray-200, #e5e7eb);
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
-		padding: 0.75rem 0.5rem;
-	}
-
-	.sidebar-menu.sidebar-menu--about {
-		gap: 0.25rem;
-		margin-top: auto;
-		padding: 0.75rem 0.5rem;
-	}
-
-	.sidebar-menu.sidebar-menu--about.expanded > li:last-child {
-		display: none;
-	}
-
-	.sidebar-menu.sidebar-menu--about:not(.expanded) > li:not(:last-child) {
-		display: none;
-	}
-
-	.sidebar-menu.sidebar-menu--about .sidebar-menu {
-		border-bottom: none;
-		gap: 0.25rem;
+		list-style: none;
+		margin: 0;
 		padding: 0;
 	}
 
-	.sidebar-menu.sidebar-menu--navigation {
-		background-color: var(--color-gray-050);
+	.sidebar-menu > li {
+		align-items: center;
+		display: flex;
+		min-width: 0;
 	}
 
 	.sidebar-menu-item {
-		--color: var(--color-gray-700);
+		--color: var(--color-gray-600);
 		--icon-color: var(--color-gray-400);
 
 		align-items: center;
-		border: none;
 		border-radius: 8px;
 		color: var(--color);
 		display: flex;
 		flex-direction: row;
-		gap: 0.5rem;
-		line-height: 1.2;
-		padding: 0.5rem;
-		width: 100%;
+		flex-grow: 1;
+		font-size: 0.875rem;
+		font-weight: 400;
+		gap: 0.375rem;
+		line-height: 1.5;
+		min-width: 0;
+		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+		text-wrap: nowrap;
+	}
+
+	.sidebar-menu-item.sidebar-menu-item--footer {
+		color: var(--color-gray-900);
+		font-weight: 500;
+	}
+
+	.sidebar-menu-item.sidebar-menu-item--footer > :global(svg:last-child) {
+		margin-left: auto;
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--active {
-		background-color: var(--color-gray-200);
-	}
-
-	.sidebar-menu-item.sidebar-menu-item--logout {
-		--color: var(--color-red-600);
-		--icon-color: var(--color-red-600);
-	}
-
-	.sidebar-menu-item.sidebar-menu-item--secondary {
-		padding-left: 2.75rem;
+		background-color: rgb(from var(--color-primary-500) r g b / 0.15);
+		color: var(--color-gray-900);
 	}
 
 	.sidebar-menu-item:active {
-		background-color: var(--color-gray-300);
+		background-color: rgb(from var(--color-gray-500) r g b / 0.25);
 	}
 
 	.sidebar-menu-item:focus,
 	.sidebar-menu-item:hover {
-		background-color: var(--color-gray-100);
+		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
 	}
 
-	.sidebar-menu:not(.expanded) .sidebar-menu-item > span {
-		display: none;
+	.sidebar-menu .sidebar-menu {
+		flex-grow: 1;
+		min-width: 0;
+		padding: 0;
+	}
+
+	.sidebar-menu-item > span {
+		overflow: hidden;
+		text-align: left;
+		text-overflow: ellipsis;
 	}
 
 	.sidebar-menu-item :global(svg) {
@@ -367,46 +522,23 @@
 		width: 1rem;
 	}
 
-	.sidebar-menu-item.sidebar-menu-item--about span {
-		flex-grow: 1;
-		text-align: left;
+	.favorite-icon {
+		height: 1rem;
+		width: 1rem;
 	}
 
-	@media (min-width: 60rem) {
-		header:not(.collapsed) {
-			width: var(--sidebar-max-width);
-		}
+	.drag-handle {
+		align-self: center;
+		border-radius: 8px;
+		flex-shrink: 0;
+	}
 
-		header:not(.collapsed) a {
+	@media (hover: hover) {
+		li:hover > :global(.is-visible-on-hover) {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+
 			display: block;
-		}
-
-		header:not(.collapsed) > button:first-of-type {
-			display: block;
-		}
-
-		header:not(.collapsed) > button:last-of-type {
-			display: none;
-		}
-
-		.sidebar-menu:not(.collapsed) {
-			max-width: var(--sidebar-max-width);
-		}
-
-		.sidebar-menu:not(.collapsed) .sidebar-menu-item > span {
-			display: revert;
-		}
-
-		.sidebar-menu.sidebar-menu--about:not(.collapsed) > li:not(:last-child) {
-			display: block;
-		}
-
-		.sidebar-menu.sidebar-menu--about:not(.collapsed) > li:last-child {
-			display: none;
-		}
-
-		.avatar:not(.collapsed) ~ :global(*) {
-			display: revert;
 		}
 	}
 </style>

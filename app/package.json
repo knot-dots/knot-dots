@@ -63,6 +63,7 @@
 		"globals": "^17.6.0",
 		"hast-util-find-and-replace": "^5.0.1",
 		"leaflet": "^1.9.4",
+		"melt": "^0.44.0",
 		"nodemailer": "^7.0.13",
 		"postcss": "^8.5.14",
 		"prettier": "^3.8.3",

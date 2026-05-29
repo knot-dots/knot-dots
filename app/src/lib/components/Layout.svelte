@@ -6,7 +6,7 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import SidebarWithFavorites from '$lib/components/SidebarWithFavorites.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import { overlay } from '$lib/stores';
 
@@ -33,27 +33,27 @@
 	// svelte-ignore non_reactive_update
 	let createEffectDialog: HTMLDialogElement;
 
-	let mobileMenuOpen = $state(false);
+	let sidebarExpanded: boolean | undefined = $state(undefined);
 
-	setContext('mobileMenu', {
-		get open() {
-			return mobileMenuOpen;
+	setContext('sidebar', {
+		get expanded() {
+			return sidebarExpanded;
 		},
-		toggle() {
-			mobileMenuOpen = !mobileMenuOpen;
+		collapse() {
+			sidebarExpanded = false;
 		},
-		close() {
-			mobileMenuOpen = false;
+		expand() {
+			sidebarExpanded = true;
 		}
 	});
 </script>
 
 <div class="app-wrapper">
-	<nav class:mobile-open={mobileMenuOpen}>
+	<nav class={{ collapsed: sidebarExpanded === false, expanded: sidebarExpanded === true }}>
 		{#if sidebar}
 			{@render sidebar()}
 		{:else}
-			<SidebarWithFavorites />
+			<Sidebar />
 		{/if}
 	</nav>
 
@@ -96,13 +96,25 @@
 	}
 
 	nav {
-		border-right: 1px solid var(--color-gray-200);
-		display: flex;
+		background-color: var(--color-white);
+		display: none;
 		flex-direction: column;
 		flex-shrink: 0;
 		font-size: 0.875rem;
+		gap: 0.25rem;
+		height: 100vh;
+		left: 0;
 		max-width: var(--sidebar-max-width);
 		min-width: 0;
+		padding: 0.25rem;
+		position: fixed;
+		top: 0;
+		width: var(--sidebar-max-width);
+		z-index: 4;
+	}
+
+	nav.expanded {
+		display: flex;
 	}
 
 	main {
@@ -114,22 +126,15 @@
 	}
 
 	main > :global(:is(:not(aside))) {
-		min-width: calc(100vw - var(--sidebar-max-width) - 1px);
+		min-width: calc(100vw - var(--sidebar-max-width));
 	}
 
-	@media (max-width: 480px) {
+	@media (min-width: 60rem) {
 		nav {
-			background-color: white;
-			display: none;
-			height: 100vh;
-			left: 0;
-			position: fixed;
-			top: 0;
-			width: var(--sidebar-max-width);
-			z-index: 100;
+			position: static;
 		}
 
-		nav.mobile-open {
+		nav:not(.collapsed) {
 			display: flex;
 		}
 	}

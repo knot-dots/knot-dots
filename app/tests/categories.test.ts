@@ -73,6 +73,7 @@ test.describe('Categories', () => {
 		await dotsBoard.overlay.locator.getByRole('checkbox', { name: sharedTermNames[0] }).check();
 		await saveResponse;
 		await dotsBoard.overlay.closeButton.click();
+		await expect(dotsBoard.overlay.locator).not.toBeVisible();
 
 		await dotsBoard.page.reload();
 		await dotsBoard.page.waitForLoadState('networkidle');

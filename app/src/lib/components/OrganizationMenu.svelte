@@ -1,218 +1,214 @@
-<script module>
-	import { createPopover } from 'svelte-headlessui';
-
-	export const popover = createPopover({});
-</script>
-
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
+	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { z } from 'zod';
+	import { createPopperActions } from 'svelte-popperjs';
+	import Close from '~icons/flowbite/close-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/knotdots/chevron-sort';
-	import Organization from '~icons/knotdots/organization';
+	import Plus from '~icons/knotdots/plus';
+	import Relation from '~icons/knotdots/relation';
 	import { page } from '$app/state';
-	import AllOrganizationsCard from '$lib/components/AllOrganizationsCard.svelte';
-	import OrganizationMenuCard from '$lib/components/OrganizationMenuCard.svelte';
-	import Board from '$lib/components/Board.svelte';
-	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import { env } from '$env/dynamic/public';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
-		findAncestors,
-		findDescendants,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
-		type OrganizationalUnitContainer,
+		containerOfType,
+		getOrganizationURL,
+		type NewContainer,
 		type OrganizationContainer,
-		payloadTypes,
-		predicates
+		payloadTypes
 	} from '$lib/models';
-	import { mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer, newContainer } from '$lib/stores';
+	import { getVisibleWorkspaces } from '$lib/workspaces';
 
-	$effect.pre(() => {
-		if (page.url) {
-			popover.close();
-		}
+	interface Props {
+		defaultOrganization?: OrganizationContainer;
+		options: OrganizationContainer[];
+		selected: OrganizationContainer;
+	}
+
+	let { defaultOrganization, options, selected }: Props = $props();
+
+	const title = $_('organizations');
+
+	const menu = createMenu({ label: title });
+
+	const [popperRef, popperContent] = createPopperActions({
+		placement: 'bottom-start',
+		strategy: 'absolute'
 	});
 
-	popover.set({ label: $_('organizations_and_organizational_units') });
+	const extraOpts = {
+		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+	};
 
-	const currentContext = $derived(
-		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
+		'createContainerDialog'
 	);
 
-	let selectedContext = $derived(currentContext);
+	let canCreateOrganization = $derived(
+		$mayCreateContainer(payloadTypes.enum.organization, page.data.currentOrganization.guid)
+	);
 
-	let organizations = $derived.by(() => {
-		if ('default' in currentContext.payload && currentContext.payload.default) {
-			return page.data.organizations
-				.filter((c: OrganizationContainer) => !c.payload.default)
-				.filter((c: OrganizationContainer) =>
-					selectedContext && selectedContext.guid != currentContext.guid
-						? c.organization == selectedContext.organization
-						: true
-				);
-		} else {
-			return page.data.organizations
-				.filter((c: OrganizationContainer) => !c.payload.default)
-				.filter((c: OrganizationContainer) =>
-					selectedContext ? c.organization == selectedContext.organization : true
-				);
-		}
-	});
+	function handleCreateOrganization() {
+		const container = containerOfType(
+			payloadTypes.enum.organization,
+			page.data.currentOrganization.guid,
+			null,
+			page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
+		) as NewContainer;
 
-	let organizationalUnitsByLevel = $derived.by(() => {
-		let organizationalUnits = page.data.organizationalUnits.filter(
-			(c: OrganizationalUnitContainer) =>
-				selectedContext
-					? 'default' in selectedContext.payload && selectedContext.payload.default
-						? true
-						: c.organization == selectedContext.organization
-					: true
-		);
+		$newContainer = container;
+		createContainerDialog.getElement().showModal();
+	}
 
-		if (selectedContext && isOrganizationalUnitContainer(selectedContext)) {
-			organizationalUnits = [
-				selectedContext,
-				...findAncestors(selectedContext, organizationalUnits, [predicates.enum['is-part-of']]),
-				...findDescendants(selectedContext, organizationalUnits, [predicates.enum['is-part-of']])
-			];
-		}
-
-		let organizationalUnitsByLevel: OrganizationalUnitContainer[][] = [];
-
-		for (const level of [1, 2, 3, 4]) {
-			organizationalUnitsByLevel = [
-				...organizationalUnitsByLevel,
-				organizationalUnits.filter(({ payload }) => payload.level === level)
-			];
-		}
-
-		return organizationalUnitsByLevel;
-	});
-
-	// To preserve the context when switching the organization or organizational
-	// unit, the first URL segment is checked for a UUID. If present, it
-	// represents the GUID of the entity and is ignored to extract the remaining
-	// path (workspace).
-	let pathnameWithoutContextSegment = $derived.by(() => {
+	function pathnameWithoutContextSegment() {
 		const pathnameSegments = page.url.pathname.split('/');
-
-		if (pathnameSegments.length > 1 && z.uuid().safeParse(pathnameSegments[1]).success) {
+		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+		if (pathnameSegments.length > 1 && uuidRegex.test(pathnameSegments[1])) {
 			return [pathnameSegments.slice(0, 1), ...pathnameSegments.slice(2)].join('/');
 		} else {
 			return page.url.pathname;
 		}
-	});
+	}
+
+	function linkPathForContainer(container: OrganizationContainer) {
+		const pathname = pathnameWithoutContextSegment();
+		const workspacePaths = getVisibleWorkspaces({
+			organization: container,
+			organizationalUnit: null,
+			features: createFeatureDecisions(page.data.features)
+		}).flatMap((w) => Object.values(w.views));
+
+		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
+	}
+
+	function optionURL(container: OrganizationContainer) {
+		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
+	}
+
+	function onchange(event: Event) {
+		const selected = (event as CustomEvent).detail.selected;
+
+		if (selected) {
+			window.location.href = selected;
+		}
+	}
 </script>
 
-<div class="organization-menu">
-	<button class="dropdown-button" type="button" use:popover.button>
-		<Organization />
-		<span class="is-visually-hidden truncated">
-			{#if isOrganizationContainer(currentContext) && currentContext.payload.default}
-				{$_('all_organizations')}
-			{:else}
-				{currentContext.payload.name}
-			{/if}
-		</span>
+<div class="dropdown" use:popperRef>
+	<button class="dropdown-button" {onchange} type="button" use:menu.button>
+		<span class="truncated">{selected.payload.name}</span>
 		<ChevronSort />
 	</button>
 
-	{#if $popover.expanded}
+	{#if $menu.expanded}
 		<div
-			class="organization-menu-panel"
-			transition:slide={{ duration: 123, easing: cubicInOut }}
-			use:popover.panel
+			class="dropdown-panel"
+			transition:slide={{ duration: 125, easing: cubicInOut }}
+			use:menu.items
+			use:popperContent={extraOpts}
 		>
-			<Board>
-				<BoardColumn
-					--background="transparent"
-					--border="solid 1px var(--color-gray-900)"
-					addItemUrl={$mayCreateContainer(
-						payloadTypes.enum.organization,
-						page.data.currentOrganization.guid
-					)
-						? `#create=${payloadTypes.enum.organization}`
-						: undefined}
-					title={$_('organizations')}
-				>
-					<div class="vertical-scroll-wrapper">
-						{#if 'default' in currentContext.payload && currentContext.payload.default}
-							{#each organizations as container (container.guid)}
-								<OrganizationMenuCard
-									{container}
-									linkPath={pathnameWithoutContextSegment}
-									bind:selectedContext
-								/>
-							{/each}
-						{:else}
-							{#each organizations as container (container.guid)}
-								<OrganizationMenuCard
-									{container}
-									linkPath={pathnameWithoutContextSegment}
-									bind:selectedContext
-								/>
-							{/each}
-							<AllOrganizationsCard linkPath={pathnameWithoutContextSegment} />
-						{/if}
-					</div>
-				</BoardColumn>
-				{#each organizationalUnitsByLevel as containers, i (i)}
-					{@const level = i + 1}
-					<BoardColumn
-						--background="transparent"
-						--border="solid 1px var(--color-gray-900)"
-						addItemUrl={!page.data.currentOrganization.payload.default &&
-						page.data.currentOrganization.payload.boards.includes('board.organizational_units')
-							? `#create=${payloadTypes.enum.organizational_unit}&level=${level}`
-							: undefined}
-						title={$_('organizational_unit_level', { values: { level } })}
+			<div class="dropdown-panel-title">
+				<span>{title}</span>
+				{#if canCreateOrganization}
+					<button
+						class="action-button"
+						onclick={handleCreateOrganization}
+						title={$_('organization.create')}
+						type="button"
 					>
-						<div class="vertical-scroll-wrapper">
-							{#each containers as container (container.guid)}
-								<OrganizationMenuCard
-									{container}
-									linkPath={pathnameWithoutContextSegment}
-									bind:selectedContext
-								/>
-							{/each}
-						</div>
-					</BoardColumn>
+						<Plus />
+					</button>
+				{/if}
+				<button class="action-button" onclick={() => menu.close()} type="button">
+					<Close />
+					<span class="is-visually-hidden">{$_('close')}</span>
+				</button>
+			</div>
+			<ul class="menu">
+				{#each options as option (option.guid)}
+					{@const value = optionURL(option)}
+					{@const active = $menu.active === value}
+					<li
+						class={['menu-item', ...(active ? ['menu-item--active'] : [])]}
+						use:menu.item={{ value }}
+					>
+						<a
+							class="button"
+							data-sveltekit-preload-code="tap"
+							data-sveltekit-preload-data="tap"
+							href={value}
+						>
+							<span class="truncated">
+								{option.payload.name}
+							</span>
+						</a>
+					</li>
 				{/each}
-			</Board>
+			</ul>
+			{#if defaultOrganization}
+				<a
+					class="dropdown-button dropdown-button--footer"
+					data-sveltekit-preload-code="tap"
+					data-sveltekit-preload-data="tap"
+					href={optionURL(defaultOrganization)}
+				>
+					<Relation />
+					<span>{defaultOrganization.payload.name}</span>
+					<ChevronRight />
+				</a>
+			{/if}
 		</div>
 	{/if}
 </div>
 
 <style>
-	.organization-menu {
-		--dropdown-button-default-color: var(--color-gray-900);
-		--dropdown-button-min-height: 2.25rem;
-
-		display: none;
-		max-width: 20rem;
+	.dropdown {
+		display: flex;
+		position: static;
+		width: 100%;
 	}
 
-	@container (min-width: 40rem) {
-		.organization-menu {
-			display: revert;
-		}
+	.dropdown-panel-title {
+		align-items: center;
+		color: var(--color-gray-700);
+		display: flex;
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 0.25rem 0.25rem 0 0.75rem;
 	}
 
-	.organization-menu-panel {
-		background: white;
-		height: calc(100vh - var(--header-height));
-		left: 0;
-		position: absolute;
-		right: 0;
-		top: 3rem;
+	.dropdown-panel-title > span {
+		margin-right: auto;
 	}
 
-	@layer visually-hidden {
-		@container (min-width: 60rem) {
-			.is-visually-hidden {
-				all: revert-layer;
-			}
-		}
+	.dropdown-button--footer {
+		--dropdown-button-border-radius: 0;
+		--dropdown-button-box-shadow: none;
+		--dropdown-button-default-background: var(--color-gray-050);
+		--dropdown-button-padding: 0.5rem 0.75rem;
+
+		border-top: 1px solid var(--color-gray-200);
+		flex-shrink: 0;
+		gap: 0.5rem;
+		height: 2.375rem;
+	}
+
+	.dropdown-button--footer > span {
+		margin-right: auto;
+	}
+
+	.menu {
+		padding: 0 0.25rem;
+		overflow-y: auto;
+		width: 16rem;
+	}
+
+	.menu-item.menu-item--active > a {
+		background-color: var(--color-gray-100);
 	}
 </style>
