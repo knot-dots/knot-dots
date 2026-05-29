@@ -47,6 +47,7 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 					...((!currentOrganization.payload.default
 						? [['included', new Map<string, number>()]]
 						: []) as Array<[string, Map<string, number>]>),
+					['status', data.facets.get('status') ?? new Map()],
 					...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
 				])
 	};

@@ -25,7 +25,7 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditableRuleStatus {editable} bind:value={container.payload.ruleStatus} />
+		<EditableRuleStatus {editable} bind:value={container.payload.status} />
 
 		<EditableValidFrom editable bind:container />
 
@@ -39,7 +39,7 @@
 	{/snippet}
 
 	{#snippet general()}
-		<EditableRuleStatus {editable} bind:value={container.payload.ruleStatus} />
+		<EditableRuleStatus {editable} bind:value={container.payload.status} />
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState

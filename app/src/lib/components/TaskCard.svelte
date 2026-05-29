@@ -4,7 +4,7 @@
 	import ExclamationCircle from '~icons/heroicons/exclamation-circle-16-solid';
 	import Card from '$lib/components/Card.svelte';
 	import { type Container, type TaskContainer } from '$lib/models';
-	import { taskStatusIcons, taskStatusColors } from '$lib/theme/models';
+	import { statusIcons, statusColors } from '$lib/theme/models';
 
 	interface Props {
 		container: TaskContainer;
@@ -37,16 +37,16 @@
 
 	function isPending(container: TaskContainer): boolean {
 		return (
-			container.payload.taskStatus === 'task_status.idea' ||
-			container.payload.taskStatus === 'task_status.in_planning' ||
-			container.payload.taskStatus === 'task_status.in_progress'
+			container.payload.status === 'status.idea' ||
+			container.payload.status === 'status.in_planning' ||
+			container.payload.status === 'status.in_implementation'
 		);
 	}
 </script>
 
 <Card {container} {relatedContainers} {showRelationFilter}>
 	{#snippet footer()}
-		{@const StatusIcon = taskStatusIcons.get(container.payload.taskStatus)}
+		{@const StatusIcon = statusIcons.get(container.payload.status)}
 
 		<div class="badges">
 			{#if container.payload.fulfillmentDate}
@@ -70,9 +70,9 @@
 			{/if}
 
 			{#if showTaskStatusBadge}
-				<span class="status-icon badge badge--{taskStatusColors.get(container.payload.taskStatus)}">
+				<span class="status-icon badge badge--{statusColors.get(container.payload.status)}">
 					<StatusIcon />
-					{$_(container.payload.taskStatus)}
+					{$_(container.payload.status)}
 				</span>
 			{/if}
 		</div>

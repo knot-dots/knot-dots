@@ -9,7 +9,6 @@
 	import EditableGoalHierarchyLevel from '$lib/components/EditableGoalHierarchyLevel.svelte';
 	import EditorialStateDropdown from '$lib/components/EditorialStateDropdown.svelte';
 	import FormattedTextDropdown from '$lib/components/FormattedTextDropdown.svelte';
-	import GoalStatusDropdown from '$lib/components/GoalStatusDropdown.svelte';
 	import GoalTypeDropdown from '$lib/components/GoalTypeDropdown.svelte';
 	import IndicatorCategoryDropdown from '$lib/components/IndicatorCategoryDropdown.svelte';
 	import IndicatorTypeDropdown from '$lib/components/IndicatorTypeDropdown.svelte';
@@ -17,17 +16,15 @@
 	import MeasureTypeDropdown from '$lib/components/MeasureTypeDropdown.svelte';
 	import OrganizationalUnitDropdown from '$lib/components/OrganizationalUnitDropdown.svelte';
 	import ParentDropdown from '$lib/components/ParentDropdown.svelte';
-	import ProgramStatusDropdown from '$lib/components/ProgramStatusDropdown.svelte';
 	import ProgramTypeDropdown from '$lib/components/ProgramTypeDropdown.svelte';
-	import RuleStatusDropdown from '$lib/components/RuleStatusDropdown.svelte';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
-	import TaskStatusDropdown from '$lib/components/TaskStatusDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import {
 		type ActualDataContainer,
 		type AnyContainer,
+		type Status,
 		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
@@ -38,8 +35,11 @@
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isProgramContainer,
+		isRuleContainer,
+		isTaskContainer,
 		overlayKey,
-		overlayURL
+		overlayURL,
+		status
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -58,6 +58,22 @@
 		dragEnabled = false,
 		editable = false
 	}: Props = $props();
+
+	let statusOptions = $derived.by(() => {
+		if (isGoalContainer(container) || isTaskContainer(container)) {
+			return status.options.filter((s) => s !== 'status.in_operation');
+		}
+		return status.options;
+	});
+
+	function statusLabelFn(s: Status): string {
+		if (s === 'status.in_operation') {
+			return isRuleContainer(container)
+				? $_('status.in_application')
+				: $_('status.in_operation.short');
+		}
+		return $_(s);
+	}
 
 	function saveActualData(actualData: ActualDataContainer | undefined, year: number) {
 		return async (event: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
@@ -153,32 +169,10 @@
 			{#if 'status' in container.payload}
 				<StatusDropdown
 					editable={editable && $ability.can('update', container)}
+					labelFn={statusLabelFn}
 					offset={[40, -41]}
+					options={statusOptions}
 					bind:value={container.payload.status}
-				/>
-			{:else if 'taskStatus' in container.payload}
-				<TaskStatusDropdown
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -41]}
-					bind:value={container.payload.taskStatus}
-				/>
-			{:else if 'ruleStatus' in container.payload}
-				<RuleStatusDropdown
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -41]}
-					bind:value={container.payload.ruleStatus}
-				/>
-			{:else if 'goalStatus' in container.payload}
-				<GoalStatusDropdown
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -41]}
-					bind:value={container.payload.goalStatus}
-				/>
-			{:else if 'programStatus' in container.payload}
-				<ProgramStatusDropdown
-					editable={editable && $ability.can('update', container)}
-					offset={[40, -41]}
-					bind:value={container.payload.programStatus}
 				/>
 			{/if}
 		</div>

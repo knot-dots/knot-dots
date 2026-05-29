@@ -4,15 +4,15 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
-	import { type TaskStatus, taskStatus } from '$lib/models';
-	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
+	import { type Status, status } from '$lib/models';
+	import { statusColors, statusIcons } from '$lib/theme/models';
 
 	interface Props {
 		buttonStyle?: 'badge' | 'default';
 		editable?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];
-		value: TaskStatus;
+		value: Status;
 	}
 
 	let {
@@ -32,19 +32,19 @@
 
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset } }] };
 
-	const StatusIcon = $derived(taskStatusIcons.get(value));
+	const StatusIcon = $derived(statusIcons.get(value));
 </script>
 
 {#if editable}
 	<div class="dropdown" use:popperRef>
 		<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
 			{#if buttonStyle === 'badge'}
-				<span class="badge badge--{taskStatusColors.get(value)}">
+				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{$_(value)}
 					{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 				</span>
 			{:else}
-				<span class="badge badge--{taskStatusColors.get(value)}">
+				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{$_(value)}
 				</span>
 				{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -58,11 +58,11 @@
 				use:popperContent={extraOpts}
 				use:popover.panel
 			>
-				{#each taskStatus.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
-					{@const StatusIcon = taskStatusIcons.get(option.value)}
+				{#each status.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
+					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
 						<input type="radio" value={option.value} bind:group={value} />
-						<span class="badge badge--{taskStatusColors.get(option.value)}">
+						<span class="badge badge--{statusColors.get(option.value)}">
 							<StatusIcon />
 							{option.label}
 						</span>
@@ -72,9 +72,9 @@
 		{/if}
 	</div>
 {:else}
-	{@const StatusIcon = taskStatusIcons.get(value)}
+	{@const StatusIcon = statusIcons.get(value)}
 	<div class="value">
-		<span class="badge badge--{taskStatusColors.get(value)}">
+		<span class="badge badge--{statusColors.get(value)}">
 			<StatusIcon />
 			{$_(value)}
 		</span>

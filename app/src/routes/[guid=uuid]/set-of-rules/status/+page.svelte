@@ -9,17 +9,17 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
-	import { type ProgramContainer, type ProgramStatus } from '$lib/models';
+	import { type ProgramContainer, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
-	import { programStatusBackgrounds, programStatusHoverColors } from '$lib/theme/models';
+	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import { createSetOfRulesStatusQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	const board = createColumnBoardPagination<ProgramContainer, ProgramStatus>({
-		columnForItem: ({ payload }) => payload.programStatus,
+	const board = createColumnBoardPagination<ProgramContainer, Status>({
+		columnForItem: ({ payload }) => payload.status,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
@@ -48,10 +48,12 @@
 	<Board>
 		{#each data.columnIds as statusOption (statusOption)}
 			<BoardColumn
-				--background={programStatusBackgrounds.get(statusOption)}
-				--hover-border-color={programStatusHoverColors.get(statusOption)}
-				addItemUrl={`#create=program&programStatus=${statusOption}`}
-				title={$_(statusOption)}
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=program&status=${statusOption}`}
+				title={statusOption === 'status.in_operation'
+					? $_('status.in_application')
+					: $_(statusOption)}
 			>
 				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
 					{#snippet footer()}

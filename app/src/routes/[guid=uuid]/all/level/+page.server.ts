@@ -73,6 +73,7 @@ export const load: PageServerLoad = async ({ depends, fetch, params, parent, url
 					...((!currentOrganization.payload.default
 						? [['included', new Map<string, number>()]]
 						: []) as Array<[string, Map<string, number>]>),
+					['status', facetData.facets.get('status') ?? new Map()],
 					...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
 					['programType', facetData.facets.get('programType') ?? new Map()],
 					['type', facetData.facets.get('type') ?? new Map()]

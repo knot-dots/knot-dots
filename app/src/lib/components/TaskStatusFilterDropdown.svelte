@@ -5,14 +5,19 @@
 	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
 	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Filter from '~icons/knotdots/filter-badge';
-	import { type TaskStatus, taskStatus } from '$lib/models';
-	import { taskStatusColors, taskStatusIcons } from '$lib/theme/models';
+	import { type Status, status } from '$lib/models';
+	import { statusColors, statusIcons } from '$lib/theme/models';
 
 	interface Props {
-		value: TaskStatus[];
+		options?: Status[];
+		value: Status[];
 	}
 
-	let { value = $bindable() }: Props = $props();
+	let { options, value = $bindable() }: Props = $props();
+
+	let effectiveOptions = $derived(
+		options ?? status.options.filter((s) => s !== 'status.in_operation')
+	);
 
 	const popover = createPopover({ label: $_('filter') });
 
@@ -29,10 +34,10 @@
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
 		<Filter />
-		<strong class="label">{$_('task_status.label')}:</strong>
+		<strong class="label">{$_('status')}:</strong>
 		{#if value.length > 0}
 			<span class="selected">
-				{#each taskStatus.options
+				{#each effectiveOptions
 					.filter((o) => value.includes(o))
 					.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
 					<span class="value">{selectedOption.label}</span>
@@ -46,12 +51,12 @@
 
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			{#each taskStatus.options.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
-				{@const TaskStatusIcon = taskStatusIcons.get(option.value)}
+			{#each effectiveOptions.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
+				{@const StatusIcon = statusIcons.get(option.value)}
 				<label>
 					<input type="checkbox" value={option.value} bind:group={value} />
-					<span class="badge badge--{taskStatusColors.get(option.value)}">
-						<TaskStatusIcon />
+					<span class="badge badge--{statusColors.get(option.value)}">
+						<StatusIcon />
 						{option.label}
 					</span>
 				</label>

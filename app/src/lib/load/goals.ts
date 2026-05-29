@@ -48,6 +48,12 @@ export const loadPage = (limit: number) =>
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
+						[
+							'status',
+							new Map(
+								[...(data.facets.get('status') ?? [])].filter(([k]) => k !== 'status.in_operation')
+							)
+						],
 						...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
 					])
 		};

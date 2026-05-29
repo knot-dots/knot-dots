@@ -12,6 +12,7 @@ import {
 	isTaskContainer,
 	payloadTypes,
 	predicates,
+	status,
 	taskCategories,
 	type TaskContainer
 } from '$lib/models';
@@ -71,6 +72,7 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 					{
 						assignees: url.searchParams.getAll('assignee'),
 						customCategories,
+						statuses: url.searchParams.getAll('status'),
 						taskCategories: url.searchParams.getAll('taskCategory'),
 						terms: url.searchParams.get('terms') ?? '',
 						type: [payloadTypes.enum.task]
@@ -120,6 +122,13 @@ export default function load(defaultSort: 'alpha' | 'modified' | 'priority') {
 			...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 				[string, Map<string, number>]
 			>),
+			[
+				'status',
+				fromCounts(
+					status.options.filter((s) => s !== 'status.in_operation') as string[],
+					data?.status
+				)
+			],
 			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
 			['assignee', fromCounts(Object.keys(data?.assignee ?? []), data?.assignee)]
 		]);
