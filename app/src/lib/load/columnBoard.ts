@@ -83,9 +83,7 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
-						...[...facetData.facets].filter(
-							([key]) => filteredCategoryContext.keys.includes(key)
-						)
+						...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
 					])
 		};
 	};
