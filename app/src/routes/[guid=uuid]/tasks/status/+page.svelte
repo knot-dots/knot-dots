@@ -37,9 +37,10 @@
 			return $_('goals');
 		}
 	}
+	let facets = $derived(new Map([...data.facets].filter(([key]) => key !== 'status')));
 </script>
 
-<TasksPage data={{ ...data, containers }} sortOptions={[]}>
+<TasksPage data={{ ...data, containers, facets }} sortOptions={[]}>
 	<Board>
 		{#if data.relatedContainers.length > 0}
 			<BoardColumn
