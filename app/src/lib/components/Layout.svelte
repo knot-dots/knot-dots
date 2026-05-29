@@ -129,7 +129,7 @@
 		min-width: calc(100vw - var(--sidebar-max-width));
 	}
 
-	@media (min-width: 30rem) {
+	@media (min-width: 60rem) {
 		nav {
 			position: static;
 		}

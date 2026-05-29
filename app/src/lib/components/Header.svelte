@@ -583,7 +583,7 @@
 		color: var(--color-primary-700);
 	}
 
-	@media (min-width: 30rem) {
+	@media (min-width: 60rem) {
 		.sidebar-toggle:not(.collapsed) {
 			display: none;
 		}
