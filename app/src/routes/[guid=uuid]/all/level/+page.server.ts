@@ -128,7 +128,8 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 			: []) as Array<[string, Map<string, number>]>),
 		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
 			[string, Map<string, number>]
-		>)
+		>),
+		['status', fromCounts(status.options as string[], data?.status)]
 	]);
 
 	const customFacets = buildCategoryFacetsWithCounts(
@@ -140,7 +141,6 @@ export const load: PageServerLoad = async ({ depends, locals, parent, url }) => 
 	}
 
 	_facets.set('programType', fromCounts(programTypes.options as string[], data?.programType));
-	_facets.set('status', fromCounts(status.options as string[], data?.status));
 
 	const facets = _facets;
 

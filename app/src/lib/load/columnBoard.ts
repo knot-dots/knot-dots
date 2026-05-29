@@ -83,8 +83,9 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
+						['status', facetData.facets.get('status') ?? new Map()],
 						...[...facetData.facets].filter(
-							([key]) => key === 'status' || filteredCategoryContext.keys.includes(key)
+							([key]) => filteredCategoryContext.keys.includes(key)
 						)
 					])
 		};

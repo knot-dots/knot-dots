@@ -48,16 +48,17 @@ export const loadPage = (limit: number) =>
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
-						...[...data.facets]
-							.filter(([key]) => key === 'status' || filteredCategoryContext.keys.includes(key))
-							.map(([key, values]) =>
-								key === 'status'
-									? ([key, new Map([...values].filter(([k]) => k !== 'status.in_operation'))] as [
-											string,
-											Map<string, number>
-										])
-									: ([key, values] as [string, Map<string, number>])
+						[
+							'status',
+							new Map(
+								[...(data.facets.get('status') ?? [])].filter(
+									([k]) => k !== 'status.in_operation'
+								)
 							)
+						],
+						...[...data.facets].filter(
+							([key]) => filteredCategoryContext.keys.includes(key)
+						)
 					])
 		};
 	}) satisfies PageServerLoad;
