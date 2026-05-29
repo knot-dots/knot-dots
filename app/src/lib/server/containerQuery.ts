@@ -361,7 +361,7 @@ export async function loadContainerV2(params: {
 							query.relationType,
 							{
 								...filters,
-								organizationalUnits: filters.organizationalUnits ?? undefined
+								organizationalUnits: undefined
 							},
 							query.sort
 						)
