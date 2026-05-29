@@ -1645,8 +1645,8 @@ img.cover {
 	--dropdown-button-default-background: var(--color-gray-050);
 	--dropdown-button-default-border-color: var(--color-gray-200);
 	--dropdown-button-default-color: var(--color-gray-500);
-	--dropdown-button-hover-background: var(--color-gray-100);
-	--dropdown-button-active-background: var(--color-gray-300);
+	--dropdown-button-hover-background: rgb(from var(--color-gray-500) r g b / 0.1);
+	--dropdown-button-active-background: rgb(from var(--color-gray-500) r g b / 0.25);
 	--dropdown-button-expanded-background: var(--color-gray-050);
 	--dropdown-button-expanded-border-color: var(--dropdown-button-default-border-color);
 	--dropdown-button-expanded-color: var(--color-gray-700);
