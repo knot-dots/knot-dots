@@ -74,13 +74,13 @@ const querySchema = z.object({
 	offset: z.coerce.number().int().nonnegative().default(0),
 	organization: z
 		.array(z.string().uuid())
+		.default([])
 		.or(
 			z
 				.array(z.literal('ANY'))
 				.length(1)
 				.transform(() => undefined)
-		)
-		.default([]),
+		),
 	organizationalUnit: z
 		.array(z.string().uuid())
 		.or(
