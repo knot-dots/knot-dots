@@ -9,5 +9,6 @@ export const load = loadColumnBoardPage<RuleContainer, Status>({
 	defaultRelationTypes: DEFAULT_RELATION_TYPES,
 	getColumnIds: () => status.options,
 	limit: DEFAULT_PAGE_SIZE,
+	omitStatusFacet: true,
 	payloadTypes: [payloadTypes.enum.rule]
 }) satisfies PageServerLoad;

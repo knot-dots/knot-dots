@@ -19,6 +19,7 @@ interface LoadColumnBoardOptions<ColumnId extends string> {
 	facetKeys?: readonly string[];
 	getColumnIds: (context: { url: URL }) => Promise<readonly ColumnId[]> | readonly ColumnId[];
 	limit: number;
+	omitStatusFacet?: boolean;
 	payloadTypes: PayloadType[];
 }
 
@@ -84,6 +85,11 @@ export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends str
 						...((!currentOrganization.payload.default
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
+						...((options.omitStatusFacet
+							? []
+							: [['status', facetData.facets.get('status') ?? new Map()]]) as Array<
+							[string, Map<string, number>]
+						>),
 						...[...facetData.facets].filter(([key]) =>
 							[...filteredCategoryContext.keys, ...(options.facetKeys ?? [])].includes(key)
 						)
