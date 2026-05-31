@@ -76,6 +76,8 @@ function selectedTypeFilter(url: URL) {
 function appendTypes(query: URLSearchParams, selectedTypes: string[], columnTypes = selectedTypes) {
 	const types = columnTypes.filter((type) => selectedTypes.includes(type));
 	if (types.length === 0) {
+		// Append a dummy guid to ensure the query returns no results, since an empty type filter means "all types".
+		// Used for the facet request.
 		query.append('guid', '00000000-0000-0000-0000-000000000000');
 		return;
 	}
