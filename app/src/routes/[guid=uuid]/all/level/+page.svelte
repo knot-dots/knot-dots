@@ -1,98 +1,142 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { page } from '$app/state';
+	import createColumnBoardPagination from '$lib/client/createColumnBoardPagination.svelte';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Help from '$lib/components/Help.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
-		containersByHierarchyLevel,
+		type AnyContainer,
 		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
 		isReportContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
-		predicates,
 		titleForGoalCollection,
 		titleForMeasureCollection,
 		titleForProgramCollection
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { type AllLevelColumnId, createAllLevelQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
-	);
-
-	let goals = $derived(
-		containersByHierarchyLevel(
-			containers
-				.filter(isGoalContainer)
-				.filter(({ relation }) =>
-					relation.every(({ predicate }) => predicate !== predicates.enum['is-part-of-measure'])
-				)
-		)
-	);
-
-	let measuresAndRules = $derived(
-		containersByHierarchyLevel(
-			containers.filter(
-				(c) => isMeasureContainer(c) || isSimpleMeasureContainer(c) || isRuleContainer(c)
-			)
-		)
-	);
-
-	let columns = $derived([
-		{
-			addItemUrl: '#create=program&create=report',
-			containers: containers
-				.filter((c) => isProgramContainer(c) || isReportContainer(c))
-				.slice(0, browser ? undefined : 10),
-			key: 'programs',
-			title: titleForProgramCollection(containers.filter(isProgramContainer))
+	const board = createColumnBoardPagination<AnyContainer, AllLevelColumnId>({
+		columnForItem,
+		columnIds: () => data.columnIds,
+		columns: () => data.columns,
+		created: () => $lastCreatedContainer,
+		fetchPage: async ({ columnId, offset, signal }) => {
+			const result = await fetchContainerPage<AnyContainer>({
+				contextGuid: page.params.guid,
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset,
+				query: createAllLevelQuery(page.url, columnId),
+				signal
+			});
+			return {
+				hasMore: result.page.hasMore,
+				items: result.containers,
+				nextOffset: result.page.nextOffset
+			};
 		},
-		...Array.from(goals.entries())
-			.toSorted()
-			.map(([hierarchyLevel, containers]) => ({
-				addItemUrl: `#create=goal&hierarchyLevel=${hierarchyLevel}`,
-				containers: containers.slice(0, browser ? undefined : 10),
-				key: `goals-${hierarchyLevel}`,
-				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
-			})),
-		...Array.from(measuresAndRules.entries())
-			.toSorted()
-			.map(([hierarchyLevel, containers]) => {
-				if (hierarchyLevel === 1) {
-					return {
-						addItemUrl: `#create=measure&hierarchyLevel=${hierarchyLevel}&create=simple_measure&create=rule`,
-						containers: containers.slice(0, browser ? undefined : 10),
-						key: `implementation-${hierarchyLevel}`,
-						title: titleForMeasureCollection(
-							containers.filter(isMeasureContainer),
-							[...measuresAndRules.keys()].length > 1 ? hierarchyLevel : 0
-						)
-					};
-				} else {
-					return {
-						addItemUrl: `#create=measure&hierarchyLevel=${hierarchyLevel}`,
-						containers: containers.slice(0, browser ? undefined : 10),
-						key: `implementation-${hierarchyLevel}`,
-						title: titleForMeasureCollection(containers.filter(isMeasureContainer), hierarchyLevel)
-					};
-				}
-			})
-	]);
+		pageSize: DEFAULT_PAGE_SIZE,
+		resetKey: () => `${page.url.pathname}?${page.url.searchParams.toString()}`,
+		updated: () => $lastUpdatedContainers
+	});
+
+	let visibleColumnIds = $derived(
+		data.columnIds.filter(
+			(columnId) =>
+				columnId === 'programs' ||
+				columnId === 'goals-1' ||
+				columnId === 'implementation-1' ||
+				data.columns[columnId].page.total > 0 ||
+				board.itemsByColumn(columnId).length > 0
+		)
+	);
+
+	let visibleGoalColumnCount = $derived(
+		visibleColumnIds.filter((columnId) => columnId.startsWith('goals-')).length
+	);
+	let visibleImplementationColumnCount = $derived(
+		visibleColumnIds.filter((columnId) => columnId.startsWith('implementation-')).length
+	);
+
+	function columnForItem(container: AnyContainer): AllLevelColumnId {
+		if (isProgramContainer(container) || isReportContainer(container)) {
+			return 'programs';
+		}
+		if (isGoalContainer(container)) {
+			return `goals-${container.payload.hierarchyLevel}` as AllLevelColumnId;
+		}
+		if (isMeasureContainer(container) || isSimpleMeasureContainer(container)) {
+			const hierarchyLevel =
+				'hierarchyLevel' in container.payload ? container.payload.hierarchyLevel : 1;
+			return `implementation-${hierarchyLevel}` as AllLevelColumnId;
+		}
+		if (isRuleContainer(container)) {
+			return 'implementation-1';
+		}
+		return 'programs';
+	}
+
+	function addItemUrl(columnId: AllLevelColumnId) {
+		if (columnId === 'programs') {
+			return '#create=program&create=report';
+		}
+		if (columnId.startsWith('goals-')) {
+			return `#create=goal&hierarchyLevel=${columnId.substring('goals-'.length)}`;
+		}
+		const hierarchyLevel = columnId.substring('implementation-'.length);
+		return hierarchyLevel === '1'
+			? `#create=measure&hierarchyLevel=${hierarchyLevel}&create=simple_measure&create=rule`
+			: `#create=measure&hierarchyLevel=${hierarchyLevel}`;
+	}
+
+	function title(columnId: AllLevelColumnId, containers: AnyContainer[]) {
+		if (columnId === 'programs') {
+			return titleForProgramCollection(containers.filter(isProgramContainer));
+		}
+		if (columnId.startsWith('goals-')) {
+			const hierarchyLevel = Number(columnId.substring('goals-'.length));
+			return titleForGoalCollection(
+				containers.filter(isGoalContainer),
+				visibleGoalColumnCount > 1 ? hierarchyLevel : 0
+			);
+		}
+		const hierarchyLevel = Number(columnId.substring('implementation-'.length));
+		return titleForMeasureCollection(
+			containers.filter(isMeasureContainer),
+			visibleImplementationColumnCount > 1 ? hierarchyLevel : 0
+		);
+	}
 </script>
 
 <AllPage {data}>
 	<Board>
-		{#each columns as column (column.key)}
-			<BoardColumn addItemUrl={column.addItemUrl} title={column.title}>
-				<MaybeDragZone containers={column.containers} />
+		{#each visibleColumnIds as columnId (columnId)}
+			{@const containers = board.itemsByColumn(columnId)}
+			<BoardColumn addItemUrl={addItemUrl(columnId)} title={title(columnId, containers)}>
+				<MaybeDragZone {containers}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(columnId)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
 			</BoardColumn>
 		{/each}
 	</Board>

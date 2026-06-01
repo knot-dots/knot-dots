@@ -9,5 +9,6 @@ export const load = loadColumnBoardPage<ProgramContainer, Status>({
 	defaultRelationTypes: DEFAULT_RELATION_TYPES,
 	getColumnIds: () => status.options,
 	limit: DEFAULT_PAGE_SIZE,
+	omitStatusFacet: true,
 	payloadTypes: [payloadTypes.enum.program]
 }) satisfies PageServerLoad;

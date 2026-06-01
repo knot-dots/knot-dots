@@ -17,6 +17,9 @@ export const loadPage = (limit: number) =>
 
 		const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.program]]);
 
+		query.delete('organization');
+		query.append('organization', 'ANY');
+
 		if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
 			for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
 		}

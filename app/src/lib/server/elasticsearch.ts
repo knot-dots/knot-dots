@@ -132,9 +132,11 @@ export async function getManyContainersWithES(
 		customCategories?: Record<string, string[]>;
 		federalStates?: string[];
 		guid?: string[];
+		hierarchyLevels?: number[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
+		levels?: string[];
 		organizationalUnits?: string[] | null;
 		programTypes?: string[];
 		resourceCategories?: string[];
@@ -176,6 +178,22 @@ export async function getManyContainersWithES(
 	}
 	if (filters.guid?.length) {
 		nonFacetFilters.push({ terms: { guid: filters.guid } });
+	}
+	if (filters.hierarchyLevels?.length) {
+		nonFacetFilters.push({
+			bool: {
+				should: [
+					{ terms: { 'payload.hierarchyLevel': filters.hierarchyLevels } },
+					...(filters.hierarchyLevels.includes(1)
+						? [{ bool: { must_not: { exists: { field: 'payload.hierarchyLevel' } } } }]
+						: [])
+				],
+				minimum_should_match: 1
+			}
+		});
+	}
+	if (filters.levels?.length) {
+		nonFacetFilters.push({ terms: { 'payload.level': filters.levels } });
 	}
 	if (filters.programTypes?.length) {
 		addFacetFilter(facetFilters, 'programType', {

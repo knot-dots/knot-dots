@@ -1,15 +1,20 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
+	import createColumnBoardPagination from '$lib/client/createColumnBoardPagination.svelte';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { levels, predicates } from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
+	import { type Level, type ProgramContainer, predicates } from '$lib/models';
+	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { createProgramLevelQuery } from './query';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -23,9 +28,30 @@
 		]
 	});
 
-	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
-	);
+	const board = createColumnBoardPagination<ProgramContainer, Level>({
+		columnForItem: ({ payload }) => payload.level,
+		columnIds: () => data.columnIds,
+		columns: () => data.columns,
+		created: () => $lastCreatedContainer,
+		fetchPage: async ({ columnId, offset, signal }) => {
+			const result = await fetchContainerPage<ProgramContainer>({
+				contextGuid: page.params.guid,
+				fetch,
+				limit: DEFAULT_PAGE_SIZE,
+				offset,
+				query: createProgramLevelQuery(page.url, columnId),
+				signal
+			});
+			return {
+				hasMore: result.page.hasMore,
+				items: result.containers,
+				nextOffset: result.page.nextOffset
+			};
+		},
+		pageSize: DEFAULT_PAGE_SIZE,
+		resetKey: () => `${page.url.pathname}?${page.url.searchParams.toString()}`,
+		updated: () => $lastUpdatedContainers
+	});
 
 	let facets = $derived(data.facets);
 </script>
@@ -37,13 +63,20 @@
 
 	{#snippet main()}
 		<Board>
-			{#each levels.options.filter((l) => l !== levels.enum['level.regional']) as levelOption (levelOption)}
+			{#each data.columnIds as levelOption (levelOption)}
 				<BoardColumn addItemUrl={`#create=program&level=${levelOption}`} title={$_(levelOption)}>
-					<MaybeDragZone
-						containers={containers.filter(
-							(c) => 'level' in c.payload && c.payload.level === levelOption
-						)}
-					/>
+					<MaybeDragZone containers={board.itemsByColumn(levelOption)}>
+						{#snippet footer()}
+							{@const list = board.listByColumn(levelOption)}
+							{#if list}
+								<LazyLoadSentinel
+									hasMore={list.hasMore}
+									loading={list.loadingMore}
+									onLoadMore={list.loadMore}
+								/>
+							{/if}
+						{/snippet}
+					</MaybeDragZone>
 				</BoardColumn>
 			{/each}
 		</Board>

@@ -14,6 +14,7 @@ import {
 	fromCounts,
 	indicatorCategories,
 	indicatorTypes,
+	levels,
 	payloadTypes,
 	predicates,
 	programTypes,
@@ -58,14 +59,24 @@ const querySchema = z.object({
 	federalState: z.array(z.string()).default([]),
 	goalStatus: z.array(status).default([]),
 	guid: z.array(z.string().uuid()).default([]),
+	hierarchyLevel: z.array(z.coerce.number().int().gte(1).lte(6)).default([]),
 	indicator: z.array(z.string().uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
 	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
+	level: z.array(levels).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
-	organization: z.array(z.string().uuid()).default([]),
+	organization: z
+		.array(z.string().uuid())
+		.default([])
+		.or(
+			z
+				.array(z.literal('ANY'))
+				.length(1)
+				.transform(() => undefined)
+		),
 	organizationalUnit: z
 		.array(z.string().uuid())
 		.or(
@@ -198,9 +209,11 @@ function buildFilters(
 		excludeRelation: params.excludeRelation,
 		federalStates: params.federalState,
 		guid: params.guid,
+		hierarchyLevels: params.hierarchyLevel,
 		indicators: params.indicator,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
+		levels: params.level,
 		members: params.member,
 		organizationalUnits:
 			'organizationalUnits' in overrides
@@ -257,8 +270,8 @@ async function loadCategoryContextForQuery(
 		connect,
 		scope:
 			organizations.length > 0
-				? [organizations[0].guid, ...params.organization]
-				: params.organization,
+				? [organizations[0].guid, ...(params.organization ?? [])]
+				: (params.organization ?? []),
 		user
 	});
 }
@@ -276,11 +289,13 @@ export async function loadContainerV2(params: {
 			})
 		: undefined;
 	const organization =
-		query.organization.length > 0
-			? query.organization
-			: applicationContext && !applicationContext.currentOrganization.payload.default
-				? [applicationContext.currentOrganization.guid]
-				: [];
+		query.organization === undefined
+			? []
+			: query.organization.length > 0
+				? query.organization
+				: applicationContext && !applicationContext.currentOrganization.payload.default
+					? [applicationContext.currentOrganization.guid]
+					: [];
 	const scopedQuery = { ...query, organization };
 	const categoryContext =
 		applicationContext?.categoryContext ??
@@ -345,7 +360,7 @@ export async function loadContainerV2(params: {
 							query.relationType,
 							{
 								...filters,
-								organizationalUnits: filters.organizationalUnits ?? undefined
+								organizationalUnits: undefined
 							},
 							query.sort
 						)
