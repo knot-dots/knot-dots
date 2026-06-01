@@ -248,7 +248,24 @@ export async function getManyContainersWithES(
 				bool: {
 					should: [
 						{ terms: { organization: organizations } },
-						{ terms: { guid: options.includeGuids } }
+						{ terms: { guid: options.includeGuids } },
+						{
+							nested: {
+								path: 'relation',
+								query: {
+									bool: {
+										must: [
+											{ terms: { 'relation.object': options.includeGuids } },
+											{
+												terms: {
+													'relation.predicate': ['is-part-of', 'is-part-of-program']
+												}
+											}
+										]
+									}
+								}
+							}
+						}
 					],
 					minimum_should_match: 1
 				}
@@ -257,7 +274,31 @@ export async function getManyContainersWithES(
 			nonFacetFilters.push({ terms: { organization: organizations } });
 		}
 	} else if (options?.includeGuids?.length) {
-		nonFacetFilters.push({ terms: { guid: options.includeGuids } });
+		nonFacetFilters.push({
+			bool: {
+				should: [
+					{ terms: { guid: options.includeGuids } },
+					{
+						nested: {
+							path: 'relation',
+							query: {
+								bool: {
+									must: [
+										{ terms: { 'relation.object': options.includeGuids } },
+										{
+											terms: {
+												'relation.predicate': ['is-part-of', 'is-part-of-program']
+											}
+										}
+									]
+								}
+							}
+						}
+					}
+				],
+				minimum_should_match: 1
+			}
+		});
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
