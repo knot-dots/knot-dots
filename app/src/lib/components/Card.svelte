@@ -84,6 +84,14 @@
 			: page.url.searchParams.get('related-to')
 	);
 
+	let foreignOrgName = $derived.by(() => {
+		if (container.organization === page.data.currentOrganization?.guid) return undefined;
+		const org = page.data.organizations?.find(
+			(o: { guid: string }) => o.guid === container.organization
+		);
+		return org?.payload?.name;
+	});
+
 	let selected = $derived.by(() => {
 		if ($overlay?.key === overlayKey.enum.relations) {
 			return $overlay.container;
@@ -339,6 +347,9 @@
 	</div>
 
 	<footer>
+		{#if foreignOrgName}
+			<span class="badge badge--org">{foreignOrgName}</span>
+		{/if}
 		{#if footer}
 			{@render footer()}
 		{:else if isContainerWithProgress(container) && container.payload.progress != null}
@@ -459,6 +470,12 @@
 		flex-shrink: 1;
 		gap: 12px;
 		justify-content: space-between;
+	}
+
+	footer .badge--org {
+		background-color: var(--color-gray-100);
+		color: var(--color-gray-600);
+		font-size: 0.6875rem;
 	}
 
 	footer :global(.progress) {
