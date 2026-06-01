@@ -190,6 +190,8 @@
 	"empty": "Leer",
 	"end_date": "Ende",
 	"error": {
+		"bad_request": "Ungültige Anfrage.",
+		"forbidden": "Zugriff verweigert.",
 		"unauthorized": "Leider ist das nicht erlaubt.",
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
@@ -708,6 +710,10 @@
 	"rule_status.rejected": "Verworfen",
 	"rules_catalog.empty": "Keine Regeln verfügbar.",
 	"save": "Speichern",
+	"scope": {
+		"label": "Bereich",
+		"platform": "knotdots.net/Plattform"
+	},
 	"sdg": {
 		"01": "1 - Keine Armut",
 		"02": "2 - Kein Hunger",
@@ -763,6 +769,17 @@
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
 	"subtasks": "Unteraufgaben",
+	"subscribe_button": {
+		"subscribe": "Folgen",
+		"unsubscribe": "Nicht mehr folgen"
+	},
+	"subscribe_dialog": {
+		"confirm": "Folgen",
+		"description": "Welche Bereiche sollen diesem Programm folgen?",
+		"heading": "Programm folgen",
+		"no_organizations": "Es sind keine Bereiche verfügbar, die diesem Programm folgen können.",
+		"select_all": "Alle auswählen"
+	},
 	"summary": "Zusammenfassung",
 	"superordinate_element": "Übergeordnetes Element",
 	"superordinate_organizational_unit": "Übergeordnete Organisationseinheit",
