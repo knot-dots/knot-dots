@@ -343,6 +343,7 @@ const predicateValues = [
 	'is-prerequisite-for',
 	'is-section-of',
 	'is-sub-target-of',
+	'is-subscribed-to',
 	'is-superordinate-of'
 ] as const;
 

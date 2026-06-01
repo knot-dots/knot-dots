@@ -14,6 +14,7 @@ import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
+	getSubscribedProgramGuids,
 	setUp
 } from '$lib/server/db';
 import type { DatabaseConnection } from 'slonik';
@@ -115,6 +116,13 @@ export async function loadApplicationContext({
 			scope: [currentOrganization.guid, defaultOrganizationGuid],
 			user: locals.user
 		});
+
+		const subscriptionScope = currentOrganizationalUnit
+			? [currentOrganizationalUnit.guid, currentOrganization.guid]
+			: [currentOrganization.guid];
+		const subscriptionRelations = await connect(getSubscribedProgramGuids(subscriptionScope));
+		const subscribedPrograms = subscriptionRelations.map((r) => r.object);
+
 		return {
 			categoryContext,
 			currentOrganization,
@@ -122,7 +130,8 @@ export async function loadApplicationContext({
 			defaultOrganizationGuid,
 			features: locals.features,
 			organizations,
-			organizationalUnits
+			organizationalUnits,
+			subscribedPrograms
 		};
 	});
 }

@@ -345,6 +345,7 @@ export async function loadContainerV2(params: {
 		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
 		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
+			includeGuids: applicationContext?.subscribedPrograms,
 			includeFacets: true
 		});
 		rawContainers = result.containers;

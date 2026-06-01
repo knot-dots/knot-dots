@@ -18,6 +18,7 @@ type FacetCounts = Record<string, Record<string, number>>;
 
 type ContainerElasticsearchOptions = ContainerQueryOptions & {
 	customCategoryKeys?: string[];
+	includeGuids?: string[];
 	includeFacets?: boolean;
 };
 
@@ -242,7 +243,21 @@ export async function getManyContainersWithES(
 		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
 	}
 	if (organizations.length) {
-		nonFacetFilters.push({ terms: { organization: organizations } });
+		if (options?.includeGuids?.length) {
+			nonFacetFilters.push({
+				bool: {
+					should: [
+						{ terms: { organization: organizations } },
+						{ terms: { guid: options.includeGuids } }
+					],
+					minimum_should_match: 1
+				}
+			});
+		} else {
+			nonFacetFilters.push({ terms: { organization: organizations } });
+		}
+	} else if (options?.includeGuids?.length) {
+		nonFacetFilters.push({ terms: { guid: options.includeGuids } });
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });

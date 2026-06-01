@@ -1624,6 +1624,20 @@ export function getAllDirectContainerRelations(guid: string) {
 	};
 }
 
+export function getSubscribedProgramGuids(orgGuids: readonly string[]) {
+	return async (connection: DatabaseConnection) => {
+		if (orgGuids.length === 0) return [];
+		return await connection.any(sql.typeAlias('relation')`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE subject IN (${sql.join(orgGuids, sql.fragment`, `)})
+				AND predicate = ${predicates.enum['is-subscribed-to']}
+				AND valid_currently
+				AND NOT deleted
+		`);
+	};
+}
+
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
