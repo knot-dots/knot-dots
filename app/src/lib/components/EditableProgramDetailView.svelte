@@ -21,6 +21,7 @@
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import SubscribeButton from '$lib/components/SubscribeButton.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -331,6 +332,7 @@
 	<footer class="content-footer bottom-actions-bar">
 		<div class="content-actions">
 			<RelationButton {container} />
+			<SubscribeButton {container} />
 			<CreateAnotherButton {container} {relatedContainers} />
 			<CreateCopyButton {container} />
 			{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
