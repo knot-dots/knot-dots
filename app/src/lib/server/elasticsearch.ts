@@ -160,7 +160,7 @@ export async function getManyContainersWithES(
 		});
 	}
 	if (filters.type?.length) {
-		addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
+		nonFacetFilters.push({ terms: { type: filters.type } });
 	}
 	if (filters.administrativeTypes?.length) {
 		addFacetFilter(facetFilters, 'administrativeType', {
@@ -242,12 +242,12 @@ export async function getManyContainersWithES(
 	} else if (filters.organizationalUnits?.length) {
 		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
 	}
-	if (organizations.length) {
-		if (options?.includeGuids?.length) {
-			nonFacetFilters.push({
+
+	const subscribedMatchClause: estypes.QueryDslQueryContainer | undefined = options?.includeGuids
+		?.length
+		? {
 				bool: {
 					should: [
-						{ terms: { organization: organizations } },
 						{ terms: { guid: options.includeGuids } },
 						{
 							nested: {
@@ -269,36 +269,22 @@ export async function getManyContainersWithES(
 					],
 					minimum_should_match: 1
 				}
+			}
+		: undefined;
+
+	if (organizations.length) {
+		if (subscribedMatchClause) {
+			nonFacetFilters.push({
+				bool: {
+					should: [{ terms: { organization: organizations } }, subscribedMatchClause],
+					minimum_should_match: 1
+				}
 			});
 		} else {
 			nonFacetFilters.push({ terms: { organization: organizations } });
 		}
-	} else if (options?.includeGuids?.length) {
-		nonFacetFilters.push({
-			bool: {
-				should: [
-					{ terms: { guid: options.includeGuids } },
-					{
-						nested: {
-							path: 'relation',
-							query: {
-								bool: {
-									must: [
-										{ terms: { 'relation.object': options.includeGuids } },
-										{
-											terms: {
-												'relation.predicate': ['is-part-of', 'is-part-of-program']
-											}
-										}
-									]
-								}
-							}
-						}
-					}
-				],
-				minimum_should_match: 1
-			}
-		});
+	} else if (subscribedMatchClause) {
+		nonFacetFilters.push(subscribedMatchClause);
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
@@ -317,11 +303,21 @@ export async function getManyContainersWithES(
 	}
 
 	const allFacetFilters = Object.values(facetFilters).flat();
+
+	const postFilter: estypes.QueryDslQueryContainer | undefined =
+		allFacetFilters.length > 0
+			? subscribedMatchClause
+				? {
+						bool: {
+							should: [{ bool: { filter: allFacetFilters } }, subscribedMatchClause],
+							minimum_should_match: 1
+						}
+					}
+				: { bool: { filter: allFacetFilters } }
+			: undefined;
 	const query: estypes.QueryDslQueryContainer = {
 		bool: { must, filter: [...nonFacetFilters] }
 	};
-	const postFilter: estypes.QueryDslQueryContainer | undefined =
-		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 	const esSortClauses = buildElasticsearchSortClause(sort);
 	const sizeParam =
 		options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? options.limit : 10000;

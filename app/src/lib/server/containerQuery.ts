@@ -343,9 +343,11 @@ export async function loadContainerV2(params: {
 
 	if (useElasticsearch) {
 		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
+		const includeSubscribed =
+			query.type.includes('rule') || query.programType.includes('program_type.set_of_rules');
 		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
-			includeGuids: applicationContext?.subscribedPrograms,
+			includeGuids: includeSubscribed ? applicationContext?.subscribedPrograms : undefined,
 			includeFacets: true
 		});
 		rawContainers = result.containers;

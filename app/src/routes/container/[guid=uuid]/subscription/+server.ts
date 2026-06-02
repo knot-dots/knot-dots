@@ -6,7 +6,8 @@ import {
 	createManyContainerRelations,
 	deleteManyContainerRelations,
 	getContainerByGuid,
-	getSubscribedProgramGuids
+	getSubscribedProgramGuids,
+	sql
 } from '$lib/server/db';
 import type { RequestHandler } from '@sveltejs/kit';
 
@@ -71,7 +72,20 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		subject: orgGuid
 	}));
 
-	await locals.pool.connect(createManyContainerRelations(relations));
+	await locals.pool.connect(async (connection) => {
+		const values = relations.map((r) => [r.object, r.predicate, r.subject]);
+		await connection.query(sql.typeAlias('void')`
+			UPDATE container_relation cr
+			SET valid_currently = false
+			FROM ${sql.unnest(values, ['uuid', 'text', 'uuid'])} AS u(object, predicate, subject)
+			WHERE cr.object = u.object
+			  AND cr.predicate = u.predicate
+			  AND cr.subject = u.subject
+			  AND cr.valid_currently
+			  AND cr.deleted
+		`);
+		await createManyContainerRelations(relations)(connection);
+	});
 
 	return new Response(null, { status: 204 });
 };
