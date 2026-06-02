@@ -773,11 +773,12 @@
 		"unsubscribe": "Adopted"
 	},
 	"subscribe_dialog": {
-		"confirm": "Adopt",
+		"confirm": "Confirm selection",
 		"description": "Which areas should adopt this program?",
-		"heading": "Adopt program",
+		"heading": "Adopt program for...",
 		"no_organizations": "No areas available that can adopt this program.",
-		"select_all": "Select all"
+		"select_all": "All",
+		"selected": "{count} selected"
 	},
 	"summary": "Summary",
 	"superordinate_element": "Superordinate element",

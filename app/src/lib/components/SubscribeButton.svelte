@@ -16,7 +16,7 @@
 
 	let { container }: Props = $props();
 
-	let dialog = $state<HTMLDialogElement>();
+	let popoverOpen = $state(false);
 	let refetchTrigger = $state(0);
 
 	const subscribedPrograms = $derived((page.data.subscribedPrograms ?? []) as string[]);
@@ -76,26 +76,44 @@
 			await invalidateAll();
 		}
 	}
+
+	let buttonEl = $state<HTMLButtonElement>();
+
+	function togglePopover() {
+		popoverOpen = !popoverOpen;
+	}
 </script>
 
 {#if canSubscribe}
-	{#if isSubscribed}
-		<button class="subscribe-button is-subscribed" onclick={handleUnsubscribe}>
-			<CheckCircle />
-			{$_('subscribe_button.unsubscribe')}
-			<ChevronDown />
-		</button>
-	{:else}
-		<button class="subscribe-button" onclick={() => dialog?.showModal()}>
-			<Subscribe />
-			{$_('subscribe_button.subscribe')}
-			<ChevronDown />
-		</button>
-	{/if}
-	<SubscribeDialog {container} bind:dialog onsubscribed={() => refetchTrigger++} />
+	<div class="subscribe-wrapper">
+		{#if isSubscribed}
+			<button class="subscribe-button is-subscribed" onclick={handleUnsubscribe}>
+				<CheckCircle />
+				{$_('subscribe_button.unsubscribe')}
+				<ChevronDown />
+			</button>
+		{:else}
+			<button class="subscribe-button" bind:this={buttonEl} onclick={togglePopover}>
+				<Subscribe />
+				{$_('subscribe_button.subscribe')}
+				<ChevronDown />
+			</button>
+		{/if}
+		<SubscribeDialog
+			{container}
+			bind:open={popoverOpen}
+			anchor={buttonEl}
+			onsubscribed={() => refetchTrigger++}
+			onclose={() => (popoverOpen = false)}
+		/>
+	</div>
 {/if}
 
 <style>
+	.subscribe-wrapper {
+		position: relative;
+	}
+
 	.subscribe-button {
 		align-items: center;
 		background: transparent;
