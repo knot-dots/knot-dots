@@ -1,8 +1,15 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { filterVisible } from '$lib/authorization';
-import { etag, modifiedContainer, predicates } from '$lib/models';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import {
+	etag,
+	isContainerWithEditorialState,
+	isIndicatorTemplateContainer,
+	isOrganizationContainer,
+	modifiedContainer,
+	predicates
+} from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
 	getContainerByGuid,
@@ -56,6 +63,48 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		const ability = defineAbilityFor(locals.user);
+		if (ability.cannot('update', container)) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (
+			parseResult.data.organization !== container.organization &&
+			ability.cannot('update', container, 'organization')
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (
+			parseResult.data.organizational_unit !== container.organizational_unit &&
+			ability.cannot('update', container, 'organizational_unit')
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (
+			isOrganizationContainer(container) &&
+			isOrganizationContainer(parseResult.data) &&
+			parseResult.data.payload.customDomain !== container.payload.customDomain &&
+			ability.cannot('update', container, 'payload.customDomain')
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (
+			isIndicatorTemplateContainer(container) &&
+			isIndicatorTemplateContainer(parseResult.data) &&
+			JSON.stringify(parseResult.data.payload.indicatorCategory) !==
+				JSON.stringify(container.payload.indicatorCategory) &&
+			ability.cannot('update', container, 'indicatorCategory')
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (
+			isContainerWithEditorialState(container) &&
+			isContainerWithEditorialState(parseResult.data) &&
+			parseResult.data.payload.editorialState !== container.payload.editorialState &&
+			ability.cannot('update', container, 'payload.editorialState')
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+
 		// Auto-transfer managed_by when organizational_unit changes.
 		// Rules:
 		// 1. If organizational_unit changed from previous value to a new non-null value

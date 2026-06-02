@@ -242,7 +242,7 @@ export default function defineAbilityFor(user: User) {
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('update', payloadTypes.options, ['payload.editorialState'], {
+		can('update', [payloadTypes.enum.program, ...commonTypes], ['payload.editorialState'], {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 	}
