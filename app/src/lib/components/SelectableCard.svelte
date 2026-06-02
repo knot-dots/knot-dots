@@ -149,16 +149,16 @@
 	</div>
 
 	<footer>
-		{#if 'status' in container.payload}
+		{#if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
+			<Progress value={container.payload.progress} />
+		{:else if 'status' in container.payload}
 			{@const status = container.payload.status as Status}
 			{@const StatusIcon = statusIcons.get(status) ?? Lightbulb}
 			<span class="badge badge--{statusColors.get(status)}">
 				<StatusIcon />
 				{$_(status)}
 			</span>
-		{:else if isContainerWithProgress(container)}
-			<Progress value={container.payload.progress} />
-		{:else if 'programType' in container.payload}}
+		{:else if 'programType' in container.payload}
 			{@const programType = container.payload.programType as string}
 			<span class="badge">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
