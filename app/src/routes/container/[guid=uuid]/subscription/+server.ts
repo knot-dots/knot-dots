@@ -6,7 +6,6 @@ import {
 	createManyContainerRelations,
 	deleteManyContainerRelations,
 	getContainerByGuid,
-	getSubscribedProgramGuids,
 	sql
 } from '$lib/server/db';
 import type { RequestHandler } from '@sveltejs/kit';

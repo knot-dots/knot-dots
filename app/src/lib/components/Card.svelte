@@ -3,6 +3,7 @@
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import Relation from '~icons/knotdots/relation';
+	import Subscribe from '~icons/knotdots/subscribe';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
@@ -91,6 +92,12 @@
 		);
 		return org?.payload?.name;
 	});
+
+	let isAdopted = $derived(
+		(page.data.subscribedOrganizations ?? []).some(
+			(o: { guid: string }) => o.guid === container.organization
+		)
+	);
 
 	let selected = $derived.by(() => {
 		if ($overlay?.key === overlayKey.enum.relations) {
@@ -347,7 +354,9 @@
 	</div>
 
 	<footer>
-		{#if foreignOrgName}
+		{#if isAdopted && foreignOrgName}
+			<span class="badge badge--adopted"><Subscribe />{foreignOrgName}</span>
+		{:else if foreignOrgName}
 			<span class="badge badge--org">{foreignOrgName}</span>
 		{/if}
 		{#if footer}
@@ -476,6 +485,22 @@
 		background-color: var(--color-gray-100);
 		color: var(--color-gray-600);
 		font-size: 0.6875rem;
+	}
+
+	footer .badge--adopted {
+		background-color: var(--color-green-100);
+		color: var(--color-green-700);
+		font-size: 0.75rem;
+		font-weight: 500;
+		max-width: 180px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	footer .badge--adopted :global(svg) {
+		flex-shrink: 0;
+		height: 0.75rem;
+		width: 0.75rem;
 	}
 
 	footer :global(.progress) {
