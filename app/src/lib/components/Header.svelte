@@ -204,18 +204,20 @@
 
 <!-- svelte-ignore a11y_no_redundant_roles -->
 <header data-sveltekit-preload-data="hover" role="banner">
-	<button
-		aria-label={$_('menu')}
-		class={{
-			'action-button': true,
-			'sidebar-toggle': true,
-			collapsed: sidebar.expanded === false
-		}}
-		onclick={() => sidebar.expand()}
-		type="button"
-	>
-		<Bars />
-	</button>
+	{#if !overlay}
+		<button
+			aria-label={$_('menu')}
+			class={{
+				'action-button': true,
+				'sidebar-toggle': true,
+				collapsed: sidebar.expanded === false
+			}}
+			onclick={() => sidebar.expand()}
+			type="button"
+		>
+			<Bars />
+		</button>
+	{/if}
 
 	{#if overlay}
 		<OverlayCloseButton />
