@@ -64,6 +64,7 @@ const querySchema = z.object({
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
 	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
+	scope: z.array(z.string()).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
 	level: z.array(levels).default([]),
@@ -345,9 +346,29 @@ export async function loadContainerV2(params: {
 		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
 		const includeSubscribed =
 			query.type.includes('rule') || query.programType.includes('program_type.set_of_rules');
-		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
+
+		let effectiveOrganization = scopedQuery.organization;
+		let effectiveIncludeGuids = includeSubscribed
+			? applicationContext?.subscribedPrograms
+			: undefined;
+
+		if (query.scope.length > 0 && applicationContext) {
+			const ownGuid = applicationContext.currentOrganization.guid;
+			const hasOwn = query.scope.includes(ownGuid);
+			const foreignGuids = query.scope.filter((s) => s !== ownGuid && s !== 'platform');
+
+			if (!hasOwn && foreignGuids.length > 0) {
+				// Only foreign org(s) selected: show only subscribed content
+				effectiveOrganization = [];
+			} else if (hasOwn && foreignGuids.length === 0) {
+				// Only own org selected: hide subscribed content
+				effectiveIncludeGuids = undefined;
+			}
+		}
+
+		const result = await getManyContainersWithES(effectiveOrganization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
-			includeGuids: includeSubscribed ? applicationContext?.subscribedPrograms : undefined,
+			includeGuids: effectiveIncludeGuids,
 			includeFacets: true
 		});
 		rawContainers = result.containers;

@@ -37,6 +37,7 @@
 		['member', 'member_filter.label'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
+		['scope', 'scope.label'],
 		['taskCategory', 'task_category.label'],
 		['type', 'payload_type']
 	]);

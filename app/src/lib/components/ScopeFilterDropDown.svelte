@@ -8,6 +8,9 @@
 	const currentOrganizationalUnit = $derived(
 		page.data.currentOrganizationalUnit as OrganizationalUnitContainer | undefined
 	);
+	const subscribedOrganizations = $derived(
+		(page.data.subscribedOrganizations ?? []) as OrganizationContainer[]
+	);
 
 	const options = $derived.by(() => {
 		const opts: Array<{ label: string; value: string }> = [];
@@ -24,6 +27,13 @@
 			value: currentOrganization.guid
 		});
 
+		for (const org of subscribedOrganizations) {
+			opts.push({
+				label: org.payload.name,
+				value: org.guid
+			});
+		}
+
 		if (!currentOrganization.payload.default) {
 			opts.push({
 				label: $_('scope.platform'),
@@ -33,12 +43,8 @@
 
 		return opts;
 	});
-
-	const initialValue = $derived(
-		currentOrganizationalUnit ? [currentOrganizationalUnit.guid] : [currentOrganization.guid]
-	);
 </script>
 
 {#if options.length > 1}
-	<FilterDropDown {initialValue} key="scope" {options} />
+	<FilterDropDown key="scope" {options} />
 {/if}

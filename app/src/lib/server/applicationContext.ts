@@ -15,7 +15,8 @@ import {
 	getManyOrganizationalUnitContainers,
 	getManyOrganizationContainers,
 	getSubscribedProgramGuids,
-	setUp
+	setUp,
+	sql
 } from '$lib/server/db';
 import type { DatabaseConnection } from 'slonik';
 
@@ -123,6 +124,21 @@ export async function loadApplicationContext({
 		const subscriptionRelations = await connect(getSubscribedProgramGuids(subscriptionScope));
 		const subscribedPrograms = subscriptionRelations.map((r) => r.object);
 
+		let subscribedOrganizations: typeof organizations = [];
+		if (subscribedPrograms.length > 0) {
+			const rows = await connect(async (connection) =>
+				connection.any(sql.typeAlias('guid')`
+					SELECT DISTINCT organization AS guid FROM container
+					WHERE guid IN (${sql.join(subscribedPrograms, sql.fragment`, `)})
+						AND valid_currently AND NOT deleted
+				`)
+			);
+			const orgGuids = new Set(rows.map((r) => r.guid));
+			subscribedOrganizations = organizations.filter(
+				(o) => orgGuids.has(o.guid) && o.guid !== currentOrganization.guid
+			);
+		}
+
 		return {
 			categoryContext,
 			currentOrganization,
@@ -131,6 +147,7 @@ export async function loadApplicationContext({
 			features: locals.features,
 			organizations,
 			organizationalUnits,
+			subscribedOrganizations,
 			subscribedPrograms
 		};
 	});
