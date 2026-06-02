@@ -769,14 +769,14 @@
 	"strategic_goals": "Strategic goals",
 	"subtasks": "Subtasks",
 	"subscribe_button": {
-		"subscribe": "Follow",
-		"unsubscribe": "Unfollow"
+		"subscribe": "Adopt",
+		"unsubscribe": "Adopted"
 	},
 	"subscribe_dialog": {
-		"confirm": "Follow",
-		"description": "Which areas should follow this program?",
-		"heading": "Follow program",
-		"no_organizations": "No areas available that can follow this program.",
+		"confirm": "Adopt",
+		"description": "Which areas should adopt this program?",
+		"heading": "Adopt program",
+		"no_organizations": "No areas available that can adopt this program.",
 		"select_all": "Select all"
 	},
 	"summary": "Summary",

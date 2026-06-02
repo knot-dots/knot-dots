@@ -13,9 +13,10 @@
 	interface Props {
 		container: AnyContainer;
 		dialog: HTMLDialogElement | undefined;
+		onsubscribed?: () => void;
 	}
 
-	let { container, dialog = $bindable() }: Props = $props();
+	let { container, dialog = $bindable(), onsubscribed }: Props = $props();
 
 	const organizations = $derived(page.data.organizations as OrganizationContainer[]);
 	const organizationalUnits = $derived(
@@ -69,6 +70,7 @@
 		});
 
 		if (response.ok) {
+			onsubscribed?.();
 			await invalidateAll();
 			selected = [];
 			dialog?.close();

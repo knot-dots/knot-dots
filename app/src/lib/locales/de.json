@@ -770,14 +770,14 @@
 	"strategic_goals": "Strategische Ziele",
 	"subtasks": "Unteraufgaben",
 	"subscribe_button": {
-		"subscribe": "Folgen",
-		"unsubscribe": "Nicht mehr folgen"
+		"subscribe": "Übernehmen",
+		"unsubscribe": "Übernommen"
 	},
 	"subscribe_dialog": {
-		"confirm": "Folgen",
-		"description": "Welche Bereiche sollen diesem Programm folgen?",
-		"heading": "Programm folgen",
-		"no_organizations": "Es sind keine Bereiche verfügbar, die diesem Programm folgen können.",
+		"confirm": "Übernehmen",
+		"description": "Welche Bereiche sollen dieses Programm übernehmen?",
+		"heading": "Programm übernehmen",
+		"no_organizations": "Es sind keine Bereiche verfügbar, die dieses Programm übernehmen können.",
 		"select_all": "Alle auswählen"
 	},
 	"summary": "Zusammenfassung",

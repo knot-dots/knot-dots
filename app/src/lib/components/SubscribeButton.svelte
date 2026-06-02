@@ -5,6 +5,10 @@
 	import SubscribeDialog from '$lib/components/SubscribeDialog.svelte';
 	import type { AnyContainer } from '$lib/models';
 	import { user } from '$lib/stores';
+	import Subscribe from '~icons/knotdots/subscribe';
+	import CheckCircle from '~icons/knotdots/check-circle';
+	import ChevronDown from '~icons/knotdots/chevron-down';
+	import { resource } from 'runed';
 
 	interface Props {
 		container: AnyContainer;
@@ -13,10 +17,11 @@
 	let { container }: Props = $props();
 
 	let dialog = $state<HTMLDialogElement>();
+	let refetchTrigger = $state(0);
 
 	const subscribedPrograms = $derived((page.data.subscribedPrograms ?? []) as string[]);
 
-	const isSubscribed = $derived(subscribedPrograms.includes(container.guid));
+	const isSubscribedFromLayout = $derived(subscribedPrograms.includes(container.guid));
 
 	const isSysadmin = $derived($user.roles.includes('sysadmin'));
 
@@ -30,6 +35,20 @@
 		}
 		return orgs;
 	});
+
+	const subscriptionCheck = resource(
+		() => [container.guid, refetchTrigger] as const,
+		async ([guid], _, { signal }) => {
+			const res = await fetch(`/container/${guid}/subscription`, { signal });
+			if (!res.ok) return [];
+			return (await res.json()) as Array<{ subject: string }>;
+		}
+	);
+
+	const isSubscribed = $derived(
+		isSubscribedFromLayout ||
+			(subscriptionCheck.current ?? []).some((r) => allowedOrgs.has(r.subject))
+	);
 
 	const canSubscribe = $derived(
 		$user.isAuthenticated &&
@@ -53,6 +72,7 @@
 		});
 
 		if (response.ok) {
+			refetchTrigger++;
 			await invalidateAll();
 		}
 	}
@@ -60,13 +80,57 @@
 
 {#if canSubscribe}
 	{#if isSubscribed}
-		<button class="button-alternative button-xs" onclick={handleUnsubscribe}>
+		<button class="subscribe-button is-subscribed" onclick={handleUnsubscribe}>
+			<CheckCircle />
 			{$_('subscribe_button.unsubscribe')}
+			<ChevronDown />
 		</button>
 	{:else}
-		<button class="button-alternative button-xs" onclick={() => dialog?.showModal()}>
+		<button class="subscribe-button" onclick={() => dialog?.showModal()}>
+			<Subscribe />
 			{$_('subscribe_button.subscribe')}
+			<ChevronDown />
 		</button>
 	{/if}
-	<SubscribeDialog {container} bind:dialog />
+	<SubscribeDialog {container} bind:dialog onsubscribed={() => refetchTrigger++} />
 {/if}
+
+<style>
+	.subscribe-button {
+		align-items: center;
+		background: transparent;
+		border: none;
+		border-radius: 8px;
+		color: var(--color-primary-700);
+		cursor: pointer;
+		display: flex;
+		font-size: 0.875rem;
+		font-weight: 500;
+		gap: 0.5rem;
+		padding: 0.625rem 1rem;
+		white-space: nowrap;
+	}
+
+	.subscribe-button:hover {
+		background: var(--color-primary-100);
+	}
+
+	.subscribe-button.is-subscribed {
+		background: rgba(18, 183, 106, 0.15);
+		color: #027a48;
+	}
+
+	.subscribe-button.is-subscribed:hover {
+		background: rgba(18, 183, 106, 0.25);
+	}
+
+	.subscribe-button :global(svg) {
+		height: 1.25rem;
+		width: 1.25rem;
+	}
+
+	.subscribe-button :global(svg:last-child) {
+		height: 0.875rem;
+		width: 0.875rem;
+	}
+</style>

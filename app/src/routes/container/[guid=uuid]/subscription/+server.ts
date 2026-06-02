@@ -22,9 +22,18 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 
 	const guid = params.guid!;
 
-	const subscriptions = await locals.pool.connect(getSubscribedProgramGuids([guid]));
+	const subscriptions = await locals.pool.connect(async (connection) =>
+		connection.any(sql.typeAlias('relation')`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE object = ${guid}
+				AND predicate = ${predicates.enum['is-subscribed-to']}
+				AND valid_currently
+				AND NOT deleted
+		`)
+	);
 
-	return json(subscriptions.filter((r) => r.object === guid));
+	return json(subscriptions);
 };
 
 export const POST: RequestHandler = async ({ locals, params, request }) => {
