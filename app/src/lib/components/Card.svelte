@@ -341,7 +341,7 @@
 	<footer>
 		{#if footer}
 			{@render footer()}
-		{:else if isContainerWithProgress(container) && container.payload.progress != null}
+		{:else if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />
 		{:else if 'status' in container.payload}
 			{@const status = container.payload.status as Status}
