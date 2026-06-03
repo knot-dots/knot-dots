@@ -76,7 +76,14 @@ export const load: PageServerLoad = async ({ depends, fetch, params, parent, url
 					['status', facetData.facets.get('status') ?? new Map()],
 					...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
 					['programType', facetData.facets.get('programType') ?? new Map()],
-					['type', facetData.facets.get('type') ?? new Map()]
+					[
+						'type',
+						new Map(
+							[...(facetData.facets.get('type') ?? new Map())].filter(([key]) =>
+								ALL_LEVEL_PAYLOAD_TYPES.includes(key)
+							)
+						)
+					]
 				])
 	};
 };
