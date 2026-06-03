@@ -1638,6 +1638,35 @@ export function getSubscribedProgramGuids(orgGuids: readonly string[]) {
 	};
 }
 
+export function getSubscriptionsForProgram(programGuid: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.typeAlias('relation')`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE object = ${programGuid}
+				AND predicate = ${predicates.enum['is-subscribed-to']}
+				AND valid_currently
+				AND NOT deleted
+		`);
+	};
+}
+
+export function reactivateDeletedSubscriptions(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		const values = relations.map((r) => [r.object, r.predicate, r.subject]);
+		await connection.query(sql.typeAlias('void')`
+			UPDATE container_relation cr
+			SET valid_currently = true
+			FROM ${sql.unnest(values, ['uuid', 'text', 'uuid'])} AS u(object, predicate, subject)
+			WHERE cr.object = u.object
+			  AND cr.predicate = u.predicate
+			  AND cr.subject = u.subject
+			  AND cr.valid_currently = false
+			  AND cr.deleted
+		`);
+	};
+}
+
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`

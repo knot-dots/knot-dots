@@ -3,7 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import SubscribeDialog from '$lib/components/SubscribeDialog.svelte';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyContainer, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
 	import Subscribe from '~icons/knotdots/subscribe';
 	import CheckCircle from '~icons/knotdots/check-circle';
@@ -17,7 +17,6 @@
 	let { container }: Props = $props();
 
 	let popoverOpen = $state(false);
-	let refetchTrigger = $state(0);
 
 	const subscribedPrograms = $derived((page.data.subscribedPrograms ?? []) as string[]);
 
@@ -37,11 +36,11 @@
 	});
 
 	const subscriptionCheck = resource(
-		() => [container.guid, refetchTrigger] as const,
-		async ([guid], _, { signal }) => {
+		() => container.guid,
+		async (guid, _, { signal }) => {
 			const res = await fetch(`/container/${guid}/subscription`, { signal });
 			if (!res.ok) return [];
-			return (await res.json()) as Array<{ subject: string }>;
+			return (await res.json()) as Relation[];
 		}
 	);
 
@@ -72,7 +71,7 @@
 		});
 
 		if (response.ok) {
-			refetchTrigger++;
+			subscriptionCheck.refetch();
 			await invalidateAll();
 		}
 	}
@@ -103,7 +102,7 @@
 			{container}
 			bind:open={popoverOpen}
 			anchor={buttonEl}
-			onsubscribed={() => refetchTrigger++}
+			onsubscribed={() => subscriptionCheck.refetch()}
 			onclose={() => (popoverOpen = false)}
 		/>
 	</div>

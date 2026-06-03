@@ -6,7 +6,8 @@ import {
 	createManyContainerRelations,
 	deleteManyContainerRelations,
 	getContainerByGuid,
-	sql
+	getSubscriptionsForProgram,
+	reactivateDeletedSubscriptions
 } from '$lib/server/db';
 import type { RequestHandler } from '@sveltejs/kit';
 
@@ -21,16 +22,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 
 	const guid = params.guid!;
 
-	const subscriptions = await locals.pool.connect(async (connection) =>
-		connection.any(sql.typeAlias('relation')`
-			SELECT object, position, predicate, subject
-			FROM container_relation
-			WHERE object = ${guid}
-				AND predicate = ${predicates.enum['is-subscribed-to']}
-				AND valid_currently
-				AND NOT deleted
-		`)
-	);
+	const subscriptions = await locals.pool.connect(getSubscriptionsForProgram(guid));
 
 	return json(subscriptions);
 };
@@ -81,17 +73,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}));
 
 	await locals.pool.connect(async (connection) => {
-		const values = relations.map((r) => [r.object, r.predicate, r.subject]);
-		await connection.query(sql.typeAlias('void')`
-			UPDATE container_relation cr
-			SET valid_currently = false
-			FROM ${sql.unnest(values, ['uuid', 'text', 'uuid'])} AS u(object, predicate, subject)
-			WHERE cr.object = u.object
-			  AND cr.predicate = u.predicate
-			  AND cr.subject = u.subject
-			  AND cr.valid_currently
-			  AND cr.deleted
-		`);
+		await reactivateDeletedSubscriptions(relations)(connection);
 		await createManyContainerRelations(relations)(connection);
 	});
 

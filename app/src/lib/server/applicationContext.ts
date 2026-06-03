@@ -124,7 +124,7 @@ export async function loadApplicationContext({
 		const subscriptionRelations = await connect(getSubscribedProgramGuids(subscriptionScope));
 		const subscribedPrograms = subscriptionRelations.map((r) => r.object);
 
-		let subscribedOrganizations: typeof organizations = [];
+		let subscribedOrganizations: OrganizationContainer[] = [];
 		if (subscribedPrograms.length > 0) {
 			const rows = await connect(async (connection) =>
 				connection.any(sql.typeAlias('guid')`
