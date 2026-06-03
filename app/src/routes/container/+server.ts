@@ -2,7 +2,9 @@ import { error, json } from '@sveltejs/kit';
 import type { DatabaseConnection, DatabaseTransactionConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { igniteVideoURL } from '$lib/igniteVideo';
 import {
 	administrativeTypes,
 	type AnyContainer,
@@ -13,6 +15,7 @@ import {
 	indicatorTypes,
 	isEffectContainer,
 	isGoalContainer,
+	isIgniteVideoContainer,
 	isMeasureContainer,
 	isOrganizationalUnitContainer,
 	isProgramContainer,
@@ -549,6 +552,14 @@ export const POST = (async ({ locals, request }) => {
 	} else if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	} else {
+		if (
+			isIgniteVideoContainer(parseResult.data) &&
+			parseResult.data.payload.iframeUrl?.trim() &&
+			!igniteVideoURL(parseResult.data.payload.iframeUrl, env.PUBLIC_IGNITE_VIDEO_ALLOWED_ORIGINS)
+		) {
+			error(422, { message: unwrapFunctionStore(_)('ignite_video.invalid_url') });
+		}
+
 		const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
 			connection.transaction(async (txConnection) => {
 				const createdContainer = await createContainer({
