@@ -77,6 +77,7 @@ const payloadTypeValues = [
 	'goal',
 	'goal_collection',
 	'help',
+	'ignite_video',
 	'image',
 	'indicator_collection',
 	'indicator_template',
@@ -1301,6 +1302,17 @@ const imagePayload = z
 
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
+const igniteVideoPayload = z
+	.object({
+		iframeUrl: z.string().trim().pipe(z.url()).optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.ignite_video),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialIgniteVideoPayload = igniteVideoPayload.partial({ iframeUrl: true, title: true });
+
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
@@ -1555,6 +1567,7 @@ const payload = z.discriminatedUnion('type', [
 	goalPayload,
 	helpPayload,
 	imagePayload,
+	igniteVideoPayload,
 	indicatorCollectionPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
@@ -2205,6 +2218,17 @@ export function isImageContainer(
 	return container.payload.type === payloadTypes.enum.image;
 }
 
+const igniteVideoContainer = container.extend({
+	payload: igniteVideoPayload
+});
+export type IgniteVideoContainer = z.infer<typeof igniteVideoContainer>;
+
+export function isIgniteVideoContainer(
+	container: AnyContainer | EmptyContainer
+): container is IgniteVideoContainer {
+	return container.payload.type === payloadTypes.enum.ignite_video;
+}
+
 // #Teaser
 const teaserContainer = container.extend({
 	payload: teaserPayload
@@ -2485,6 +2509,7 @@ export const emptyContainer = newContainer.extend({
 		initialGoalPayload,
 		initialHelpPayload,
 		initialImagePayload,
+		initialIgniteVideoPayload,
 		initialIndicatorCollectionPayload,
 		initialIndicatorTemplatePayload,
 		initialInfoBoxPayload,
