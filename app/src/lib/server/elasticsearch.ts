@@ -25,6 +25,8 @@ const defaultFacetKeys = [
 	'administrativeType',
 	'assignee',
 	'federalState',
+	'organization',
+	'organizationalUnit',
 	'programType',
 	'indicatorCategory',
 	'indicatorType',
@@ -39,6 +41,8 @@ const facetFieldMap: Record<string, string> = {
 	administrativeType: 'payload.administrativeType',
 	assignee: 'payload.assignee',
 	federalState: 'payload.federalState',
+	organization: 'organization',
+	organizationalUnit: 'organizational_unit',
 	programType: 'payload.programType',
 	indicatorCategory: 'payload.indicatorCategory',
 	indicatorType: 'payload.indicatorType',
@@ -53,6 +57,8 @@ const facetSizeMap: Record<string, number> = {
 	administrativeType: 20,
 	assignee: 200,
 	federalState: 20,
+	organization: 100,
+	organizationalUnit: 500,
 	programType: 20,
 	indicatorCategory: 100,
 	indicatorType: 20,
@@ -239,10 +245,12 @@ export async function getManyContainersWithES(
 	if (filters.organizationalUnits === null) {
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
 	} else if (filters.organizationalUnits?.length) {
-		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
+		addFacetFilter(facetFilters, 'organizationalUnit', {
+			terms: { organizational_unit: filters.organizationalUnits }
+		});
 	}
 	if (organizations.length) {
-		nonFacetFilters.push({ terms: { organization: organizations } });
+		addFacetFilter(facetFilters, 'organization', { terms: { organization: organizations } });
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });

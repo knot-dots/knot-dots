@@ -123,20 +123,22 @@
 	) {
 		const type = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
 		const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
-		const activeFilters = Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0);
+		const hasAnyFilter = Object.values(filter).some((v) => v.length > 0);
 
-		if (item.length === 0 && activeFilters === 0) return null;
+		if (item.length === 0 && !hasAnyFilter) return null;
 
 		const query = new URLSearchParams();
 		if (item.length > 0) {
 			for (const guid of item) query.append('guid', guid);
 		} else {
 			for (const t of type) query.append('payloadType', t);
-			query.append('organization', page.data.currentOrganization.guid);
 			for (const key in filter) {
 				for (const value of filter[key]) {
 					query.append(key, value);
 				}
+			}
+			if (!filter.organization?.length) {
+				query.append('organization', page.data.currentOrganization.guid);
 			}
 		}
 		if (combinedTerms) query.set('terms', combinedTerms);
