@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import Close from '~icons/knotdots/close';
 	import Search from '~icons/knotdots/search';
+	import { canSubscribeForOrg } from '$lib/authorization';
 	import type {
 		AnyContainer,
 		OrganizationalUnitContainer,
@@ -38,11 +39,12 @@
 		page.data.organizationalUnits as OrganizationalUnitContainer[]
 	);
 
-	const isSysadmin = $derived($user.roles.includes('sysadmin'));
-
 	const allowedOrgs = $derived.by(() => {
-		const orgs = new Set([...$user.adminOf, ...$user.headOf]);
-		if (isSysadmin && orgs.size === 0) {
+		const orgs = new Set<string>();
+		for (const guid of [...$user.adminOf, ...$user.headOf]) {
+			if (canSubscribeForOrg($user, guid)) orgs.add(guid);
+		}
+		if ($user.roles.includes('sysadmin') && orgs.size === 0) {
 			const currentOrg = page.data.currentOrganization;
 			const currentOU = page.data.currentOrganizationalUnit;
 			if (currentOU) orgs.add(currentOU.guid);

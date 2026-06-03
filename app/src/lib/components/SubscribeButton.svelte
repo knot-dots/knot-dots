@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import SubscribeDialog from '$lib/components/SubscribeDialog.svelte';
+	import { canSubscribeForOrg } from '$lib/authorization';
 	import type { AnyContainer, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
 	import Subscribe from '~icons/knotdots/subscribe';
@@ -22,11 +23,12 @@
 
 	const isSubscribedFromLayout = $derived(subscribedPrograms.includes(container.guid));
 
-	const isSysadmin = $derived($user.roles.includes('sysadmin'));
-
 	const allowedOrgs = $derived.by(() => {
-		const orgs = new Set([...$user.adminOf, ...$user.headOf]);
-		if (isSysadmin && orgs.size === 0) {
+		const orgs = new Set<string>();
+		for (const guid of [...$user.adminOf, ...$user.headOf]) {
+			if (canSubscribeForOrg($user, guid)) orgs.add(guid);
+		}
+		if ($user.roles.includes('sysadmin') && orgs.size === 0) {
 			const currentOrg = page.data.currentOrganization;
 			const currentOU = page.data.currentOrganizationalUnit;
 			if (currentOU) orgs.add(currentOU.guid);

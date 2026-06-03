@@ -1,6 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { z } from 'zod';
+import { canSubscribeForOrg } from '$lib/authorization';
+import defineAbilityFor from '$lib/authorization';
 import { predicates } from '$lib/models';
 import {
 	createManyContainerRelations,
@@ -21,6 +23,12 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	}
 
 	const guid = params.guid!;
+
+	const container = await locals.pool.connect(getContainerByGuid(guid));
+
+	if (!defineAbilityFor(locals.user).can('read', container)) {
+		error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+	}
 
 	const subscriptions = await locals.pool.connect(getSubscriptionsForProgram(guid));
 
@@ -53,11 +61,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
-	const isSysadmin = locals.user.roles.includes('sysadmin');
-	const allowedOrgs = new Set([...locals.user.adminOf, ...locals.user.headOf]);
-
 	for (const orgGuid of parseResult.data.organizations) {
-		if (!isSysadmin && !allowedOrgs.has(orgGuid)) {
+		if (!canSubscribeForOrg(locals.user, orgGuid)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 		if (orgGuid === container.organization || orgGuid === container.organizational_unit) {
@@ -100,11 +105,8 @@ export const DELETE: RequestHandler = async ({ locals, params, request }) => {
 		error(422, parseResult.error);
 	}
 
-	const isSysadmin = locals.user.roles.includes('sysadmin');
-	const allowedOrgs = new Set([...locals.user.adminOf, ...locals.user.headOf]);
-
 	for (const orgGuid of parseResult.data.organizations) {
-		if (!isSysadmin && !allowedOrgs.has(orgGuid)) {
+		if (!canSubscribeForOrg(locals.user, orgGuid)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 	}

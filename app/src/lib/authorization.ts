@@ -260,3 +260,8 @@ export function filterVisible<T extends AnyContainer>(containers: Array<T>, user
 export function mayImportFromCSV(user: User) {
 	return defineAbilityFor(user).can('create', payloadTypes.enum.program);
 }
+
+export function canSubscribeForOrg(user: User, orgGuid: string): boolean {
+	if (user.roles.includes('sysadmin')) return true;
+	return user.adminOf.includes(orgGuid) || user.headOf.includes(orgGuid);
+}
