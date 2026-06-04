@@ -54,6 +54,9 @@
 	const canSubscribe = $derived(
 		$user.isAuthenticated &&
 			allowedOrgs.size > 0 &&
+			container.payload.type === 'program' &&
+			'programType' in container.payload &&
+			container.payload.programType === 'program_type.set_of_rules' &&
 			container.payload.visibility === 'public' &&
 			!allowedOrgs.has(container.organization) &&
 			!(container.organizational_unit && allowedOrgs.has(container.organizational_unit))

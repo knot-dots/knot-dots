@@ -305,16 +305,7 @@ export async function getManyContainersWithES(
 	const allFacetFilters = Object.values(facetFilters).flat();
 
 	const postFilter: estypes.QueryDslQueryContainer | undefined =
-		allFacetFilters.length > 0
-			? subscribedMatchClause
-				? {
-						bool: {
-							should: [{ bool: { filter: allFacetFilters } }, subscribedMatchClause],
-							minimum_should_match: 1
-						}
-					}
-				: { bool: { filter: allFacetFilters } }
-			: undefined;
+		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 	const query: estypes.QueryDslQueryContainer = {
 		bool: { must, filter: [...nonFacetFilters] }
 	};

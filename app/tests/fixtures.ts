@@ -928,6 +928,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				payload: {
 					...newProgram.payload,
 					title: `Test Public Program ${workerInfo.workerIndex}`,
+					programType: 'program_type.set_of_rules',
 					visibility: 'public'
 				}
 			});
