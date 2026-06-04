@@ -358,8 +358,13 @@ export async function loadContainerV2(params: {
 			const foreignGuids = query.scope.filter((s) => s !== ownGuid && s !== 'platform');
 
 			if (!hasOwn && foreignGuids.length > 0) {
-				// Only foreign org(s) selected: show only subscribed content
+				// Only foreign org(s) selected: show only subscribed content from those orgs
 				effectiveOrganization = [];
+				if (effectiveIncludeGuids) {
+					effectiveIncludeGuids = foreignGuids.flatMap(
+						(org) => applicationContext.subscribedProgramsByOrg.get(org) ?? []
+					);
+				}
 			} else if (hasOwn && foreignGuids.length === 0) {
 				// Only own org selected: hide subscribed content
 				effectiveIncludeGuids = undefined;

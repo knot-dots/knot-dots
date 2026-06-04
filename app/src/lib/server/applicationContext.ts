@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
@@ -125,18 +126,24 @@ export async function loadApplicationContext({
 		const subscribedPrograms = subscriptionRelations.map((r) => r.object);
 
 		let subscribedOrganizations: OrganizationContainer[] = [];
+		const subscribedProgramsByOrg = new Map<string, string[]>();
 		if (subscribedPrograms.length > 0) {
 			const rows = await connect(async (connection) =>
-				connection.any(sql.typeAlias('guid')`
-					SELECT DISTINCT organization AS guid FROM container
+				connection.any(sql.type(z.object({ guid: z.string(), organization: z.string() }))`
+					SELECT guid, organization FROM container
 					WHERE guid IN (${sql.join(subscribedPrograms, sql.fragment`, `)})
 						AND valid_currently AND NOT deleted
 				`)
 			);
-			const orgGuids = new Set(rows.map((r) => r.guid));
+			const orgGuids = new Set(rows.map((r) => r.organization));
 			subscribedOrganizations = organizations.filter(
 				(o) => orgGuids.has(o.guid) && o.guid !== currentOrganization.guid
 			);
+			for (const row of rows) {
+				const list = subscribedProgramsByOrg.get(row.organization) ?? [];
+				list.push(row.guid);
+				subscribedProgramsByOrg.set(row.organization, list);
+			}
 		}
 
 		return {
@@ -148,7 +155,8 @@ export async function loadApplicationContext({
 			organizations,
 			organizationalUnits,
 			subscribedOrganizations,
-			subscribedPrograms
+			subscribedPrograms,
+			subscribedProgramsByOrg
 		};
 	});
 }
