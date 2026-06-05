@@ -83,8 +83,12 @@
 <style>
 	.table-wrapper {
 		height: calc(100% - 3rem);
-		margin: 1.5rem 0 1.5rem 1.5rem;
+		margin: 1.5rem 0;
+		min-width: 0;
 		overflow: auto;
+		padding-left: 1.5rem;
+		padding-right: 16rem;
+		width: 100%;
 	}
 
 	.table {
