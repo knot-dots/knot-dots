@@ -25,6 +25,12 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
+	const playerSettings = {
+		colorPrimary: '#1a56db', // color-primary-700
+		colorSecondary: '#44546e', // color-gray-700
+		colorBackground: '#eff6ff'
+	};
+
 	let urlInput = $state(container.payload.iframeUrl ?? '');
 
 	const urlInputValid = $derived(
@@ -85,7 +91,13 @@
 			loading="lazy"
 			referrerpolicy="strict-origin-when-cross-origin"
 			sandbox="allow-scripts allow-same-origin allow-presentation"
-			src={iframeSrc}
+			src={iframeSrc +
+				'&colorPrimary=' +
+				encodeURIComponent(playerSettings.colorPrimary) +
+				'&colorSecondary=' +
+				encodeURIComponent(playerSettings.colorSecondary) +
+				'&colorBackground=' +
+				encodeURIComponent(playerSettings.colorBackground)}
 			title={container.payload.title || $_('ignite_video')}
 		></iframe>
 	</div>
