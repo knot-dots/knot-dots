@@ -3,7 +3,6 @@
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ChevronRight from '~icons/knotdots/chevron-right';
-	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import Video from '~icons/knotdots/video';
 	import { env } from '$env/dynamic/public';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -160,12 +159,6 @@
 							type="url"
 							bind:value={urlInput}
 						/>
-						{#if hasInvalidUrl}
-							<span class="error-label">
-								{$_('ignite_video.unsupported')}
-								<ExclamationCircle />
-							</span>
-						{/if}
 					</div>
 					<button
 						class="embed-button"
