@@ -120,10 +120,23 @@ export async function loadApplicationContext({
 		});
 
 		const subscriptionScope = currentOrganizationalUnit
-			? [currentOrganizationalUnit.guid, currentOrganization.guid]
-			: [currentOrganization.guid];
+			? [currentOrganizationalUnit.guid]
+			: [
+					currentOrganization.guid,
+					...organizationalUnits
+						.filter((ou) => ou.organization === currentOrganization.guid)
+						.map((ou) => ou.guid)
+				];
 		const subscriptionRelations = await connect(getSubscribedProgramGuids(subscriptionScope));
 		const subscribedPrograms = subscriptionRelations.map((r) => r.object);
+
+		const subscribedProgramSubscribers: Record<string, string> = {};
+		for (const rel of subscriptionRelations) {
+			const ou = organizationalUnits.find((u) => u.guid === rel.subject);
+			if (ou) {
+				subscribedProgramSubscribers[rel.object] = ou.payload.name;
+			}
+		}
 
 		let subscribedOrganizations: OrganizationContainer[] = [];
 		const subscribedProgramsByOrg = new Map<string, string[]>();
@@ -156,7 +169,8 @@ export async function loadApplicationContext({
 			organizationalUnits,
 			subscribedOrganizations,
 			subscribedPrograms,
-			subscribedProgramsByOrg
+			subscribedProgramsByOrg,
+			subscribedProgramSubscribers
 		};
 	});
 }

@@ -4,11 +4,13 @@
 	import { page } from '$app/state';
 	import Close from '~icons/knotdots/close';
 	import Search from '~icons/knotdots/search';
-	import { canSubscribeForOrg } from '$lib/authorization';
+	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import type {
 		AnyContainer,
 		OrganizationalUnitContainer,
-		OrganizationContainer
+		OrganizationContainer,
+		Relation
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -23,6 +25,7 @@
 	let { container, open = $bindable(), anchor, onsubscribed, onclose }: Props = $props();
 
 	let popoverEl = $state<HTMLDivElement>();
+	let initialSelected: string[] = $state([]);
 
 	$effect(() => {
 		if (open && anchor && popoverEl) {
@@ -34,50 +37,98 @@
 		}
 	});
 
+	$effect(() => {
+		if (open) {
+			loadCurrentSubscriptions();
+		}
+	});
+
+	async function loadCurrentSubscriptions() {
+		const res = await fetch(`/container/${container.guid}/subscription`);
+		if (!res.ok) return;
+		const relations: Relation[] = await res.json();
+		const subscribedGuids = relations.map((r) => r.subject).filter((guid) => allowedOUs.has(guid));
+		initialSelected = subscribedGuids;
+		selected = [...subscribedGuids];
+	}
+
 	const organizations = $derived(page.data.organizations as OrganizationContainer[]);
 	const organizationalUnits = $derived(
 		page.data.organizationalUnits as OrganizationalUnitContainer[]
 	);
 
-	const allowedOrgs = $derived.by(() => {
-		const orgs = new Set<string>();
-		for (const guid of [...$user.adminOf, ...$user.headOf]) {
-			if (canSubscribeForOrg($user, guid)) orgs.add(guid);
+	const allowedOUs = $derived.by(() => {
+		const guids = new Set<string>();
+		if ($user.roles.includes('sysadmin')) {
+			for (const ou of organizationalUnits) {
+				guids.add(ou.guid);
+			}
+		} else {
+			for (const ou of organizationalUnits) {
+				if ($user.adminOf.includes(ou.guid) || $user.headOf.includes(ou.guid)) {
+					guids.add(ou.guid);
+				}
+			}
 		}
-		if ($user.roles.includes('sysadmin') && orgs.size === 0) {
-			const currentOrg = page.data.currentOrganization;
-			const currentOU = page.data.currentOrganizationalUnit;
-			if (currentOU) orgs.add(currentOU.guid);
-			else if (currentOrg) orgs.add(currentOrg.guid);
-		}
-		return orgs;
+		return guids;
 	});
 
-	const selectableOrgs = $derived(
-		[...organizations, ...organizationalUnits].filter(
-			(org) =>
-				allowedOrgs.has(org.guid) &&
-				org.guid !== container.organization &&
-				org.guid !== container.organizational_unit
-		)
-	);
+	interface OrgGroup {
+		org: OrganizationContainer;
+		units: OrganizationalUnitContainer[];
+	}
 
+	const orgGroups = $derived.by(() => {
+		const groups: OrgGroup[] = [];
+		for (const org of organizations) {
+			const units = organizationalUnits.filter(
+				(ou) => ou.organization === org.guid && allowedOUs.has(ou.guid)
+			);
+			if (units.length > 0) {
+				groups.push({ org, units });
+			}
+		}
+		return groups;
+	});
+
+	const allSelectableOUs = $derived(orgGroups.flatMap((g) => g.units));
+
+	let expanded = $state(new Set<string>());
 	let selected: string[] = $state([]);
 	let searchTerm = $state('');
 
-	const filteredOrgs = $derived(
-		searchTerm
-			? selectableOrgs.filter((org) =>
-					org.payload.name.toLowerCase().includes(searchTerm.toLowerCase())
-				)
-			: selectableOrgs
-	);
+	$effect(() => {
+		if (open && orgGroups.length === 1) {
+			expanded = new Set([orgGroups[0].org.guid]);
+		}
+	});
+
+	const filteredGroups = $derived.by(() => {
+		if (!searchTerm) return orgGroups;
+		const lower = searchTerm.toLowerCase();
+		return orgGroups
+			.map((group) => ({
+				...group,
+				units: group.units.filter((ou) => ou.payload.name.toLowerCase().includes(lower))
+			}))
+			.filter((group) => group.units.length > 0);
+	});
+
+	function toggleGroup(orgGuid: string) {
+		const next = new Set(expanded);
+		if (next.has(orgGuid)) {
+			next.delete(orgGuid);
+		} else {
+			next.add(orgGuid);
+		}
+		expanded = next;
+	}
 
 	function selectAll() {
-		if (selected.length === selectableOrgs.length) {
+		if (selected.length === allSelectableOUs.length) {
 			selected = [];
 		} else {
-			selected = selectableOrgs.map((o) => o.guid);
+			selected = allSelectableOUs.map((ou) => ou.guid);
 		}
 	}
 
@@ -88,27 +139,46 @@
 	function close() {
 		open = false;
 		searchTerm = '';
+		expanded = new Set();
 		onclose?.();
 	}
 
 	async function handleConfirm() {
-		if (selected.length === 0) {
+		const added = selected.filter((guid) => !initialSelected.includes(guid));
+		const removed = initialSelected.filter((guid) => !selected.includes(guid));
+
+		if (added.length === 0 && removed.length === 0) {
 			close();
 			return;
 		}
 
-		const response = await fetch(`/container/${container.guid}/subscription`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ organizations: selected })
-		});
+		const promises: Promise<Response>[] = [];
 
-		if (response.ok) {
-			onsubscribed?.();
-			await invalidateAll();
-			selected = [];
-			close();
+		if (added.length > 0) {
+			promises.push(
+				fetch(`/container/${container.guid}/subscription`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ organizations: added })
+				})
+			);
 		}
+
+		if (removed.length > 0) {
+			promises.push(
+				fetch(`/container/${container.guid}/subscription`, {
+					method: 'DELETE',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ organizations: removed })
+				})
+			);
+		}
+
+		await Promise.all(promises);
+		onsubscribed?.();
+		await invalidateAll();
+		selected = [];
+		close();
 	}
 </script>
 
@@ -134,7 +204,7 @@
 			{/if}
 			<button
 				class="action-link"
-				class:disabled={selected.length === selectableOrgs.length}
+				class:disabled={selected.length === allSelectableOUs.length}
 				type="button"
 				onclick={selectAll}
 			>
@@ -143,11 +213,25 @@
 		</div>
 
 		<div class="popover-list">
-			{#each filteredOrgs as org (org.guid)}
-				<label class="popover-item">
-					<input type="checkbox" value={org.guid} bind:group={selected} />
-					<span class="item-label">{org.payload.name}</span>
-				</label>
+			{#each filteredGroups as group (group.org.guid)}
+				<button class="group-header" type="button" onclick={() => toggleGroup(group.org.guid)}>
+					<span class="group-chevron">
+						{#if expanded.has(group.org.guid)}
+							<ChevronDown />
+						{:else}
+							<ChevronRight />
+						{/if}
+					</span>
+					<span class="group-name">{group.org.payload.name}</span>
+				</button>
+				{#if expanded.has(group.org.guid)}
+					{#each group.units as ou (ou.guid)}
+						<label class="popover-item">
+							<input type="checkbox" value={ou.guid} bind:group={selected} />
+							<span class="item-label">{ou.payload.name}</span>
+						</label>
+					{/each}
+				{/if}
 			{:else}
 				<p class="empty">{$_('subscribe_dialog.no_organizations')}</p>
 			{/each}
@@ -157,7 +241,8 @@
 			<button
 				class="confirm-button"
 				type="button"
-				disabled={selected.length === 0}
+				disabled={selected.length === initialSelected.length &&
+					selected.every((g) => initialSelected.includes(g))}
 				onclick={handleConfirm}
 			>
 				{$_('subscribe_dialog.confirm')}
@@ -288,15 +373,52 @@
 		overflow-y: auto;
 	}
 
+	.group-header {
+		align-items: center;
+		background: none;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		display: flex;
+		flex-shrink: 0;
+		gap: 4px;
+		min-height: 36px;
+		padding: 8px;
+	}
+
+	.group-header:hover {
+		background: var(--color-gray-100);
+	}
+
+	.group-chevron {
+		align-items: center;
+		display: flex;
+		flex-shrink: 0;
+		height: 16px;
+		width: 16px;
+	}
+
+	.group-chevron :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.group-name {
+		color: var(--color-gray-900, #0f1726);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
 	.popover-item {
 		align-items: center;
 		border-radius: 8px;
 		cursor: pointer;
 		display: flex;
+		flex-shrink: 0;
 		gap: 8px;
-		height: 40px;
+		min-height: 40px;
 		min-width: 192px;
-		padding: 8px;
+		padding: 8px 8px 8px 28px;
 	}
 
 	.popover-item:hover {

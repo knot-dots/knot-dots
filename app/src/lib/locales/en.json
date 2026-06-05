@@ -772,6 +772,7 @@
 		"subscribe": "Adopt",
 		"unsubscribe": "Adopted"
 	},
+	"adopted": "Adopted",
 	"subscribe_dialog": {
 		"confirm": "Confirm selection",
 		"description": "Which areas should adopt this program?",

@@ -17,6 +17,10 @@ const subscriptionBody = z.object({
 	organizations: z.array(z.string().uuid()).min(1)
 });
 
+async function canSubscribeForSubject(locals: App.Locals, subjectGuid: string): Promise<boolean> {
+	return canSubscribeForOrg(locals.user, subjectGuid);
+}
+
 export const GET: RequestHandler = async ({ locals, params }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
@@ -62,7 +66,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	for (const orgGuid of parseResult.data.organizations) {
-		if (!canSubscribeForOrg(locals.user, orgGuid)) {
+		if (!(await canSubscribeForSubject(locals, orgGuid))) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 		if (orgGuid === container.organization || orgGuid === container.organizational_unit) {
@@ -106,7 +110,7 @@ export const DELETE: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	for (const orgGuid of parseResult.data.organizations) {
-		if (!canSubscribeForOrg(locals.user, orgGuid)) {
+		if (!(await canSubscribeForSubject(locals, orgGuid))) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 	}

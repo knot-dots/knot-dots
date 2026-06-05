@@ -239,8 +239,6 @@ export async function getManyContainersWithES(
 	}
 	if (filters.organizationalUnits === null) {
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
-	} else if (filters.organizationalUnits?.length) {
-		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
 	}
 
 	const subscribedMatchClause: estypes.QueryDslQueryContainer | undefined = options?.includeGuids
@@ -273,18 +271,36 @@ export async function getManyContainersWithES(
 		: undefined;
 
 	if (organizations.length) {
+		const orgFilter: estypes.QueryDslQueryContainer = filters.organizationalUnits?.length
+			? {
+					bool: {
+						filter: [
+							{ terms: { organization: organizations } },
+							{ terms: { organizational_unit: filters.organizationalUnits } }
+						]
+					}
+				}
+			: { terms: { organization: organizations } };
+
 		if (subscribedMatchClause) {
 			nonFacetFilters.push({
 				bool: {
-					should: [{ terms: { organization: organizations } }, subscribedMatchClause],
+					should: [orgFilter, subscribedMatchClause],
 					minimum_should_match: 1
 				}
 			});
 		} else {
-			nonFacetFilters.push({ terms: { organization: organizations } });
+			if (filters.organizationalUnits?.length) {
+				nonFacetFilters.push({ terms: { organization: organizations } });
+				nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
+			} else {
+				nonFacetFilters.push({ terms: { organization: organizations } });
+			}
 		}
 	} else if (subscribedMatchClause) {
 		nonFacetFilters.push(subscribedMatchClause);
+	} else if (filters.organizationalUnits?.length) {
+		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });

@@ -3,8 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import SubscribeDialog from '$lib/components/SubscribeDialog.svelte';
-	import { canSubscribeForOrg } from '$lib/authorization';
-	import type { AnyContainer, Relation } from '$lib/models';
+	import type { AnyContainer, OrganizationalUnitContainer, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
 	import Subscribe from '~icons/knotdots/subscribe';
 	import CheckCircle from '~icons/knotdots/check-circle';
@@ -23,20 +22,6 @@
 
 	const isSubscribedFromLayout = $derived(subscribedPrograms.includes(container.guid));
 
-	const allowedOrgs = $derived.by(() => {
-		const orgs = new Set<string>();
-		for (const guid of [...$user.adminOf, ...$user.headOf]) {
-			if (canSubscribeForOrg($user, guid)) orgs.add(guid);
-		}
-		if ($user.roles.includes('sysadmin') && orgs.size === 0) {
-			const currentOrg = page.data.currentOrganization;
-			const currentOU = page.data.currentOrganizationalUnit;
-			if (currentOU) orgs.add(currentOU.guid);
-			else if (currentOrg) orgs.add(currentOrg.guid);
-		}
-		return orgs;
-	});
-
 	const subscriptionCheck = resource(
 		() => container.guid,
 		async (guid, _, { signal }) => {
@@ -46,33 +31,64 @@
 		}
 	);
 
-	const isSubscribed = $derived(
-		isSubscribedFromLayout ||
-			(subscriptionCheck.current ?? []).some((r) => allowedOrgs.has(r.subject))
+	const organizationalUnits = $derived(
+		page.data.organizationalUnits as OrganizationalUnitContainer[]
 	);
+
+	const myOUs = $derived.by(() => {
+		const guids = new Set<string>();
+		if ($user.roles.includes('sysadmin')) {
+			for (const ou of organizationalUnits) {
+				guids.add(ou.guid);
+			}
+		} else {
+			for (const ou of organizationalUnits) {
+				if ($user.adminOf.includes(ou.guid) || $user.headOf.includes(ou.guid)) {
+					guids.add(ou.guid);
+				}
+			}
+		}
+		return guids;
+	});
+
+	const currentScope = $derived.by(() => {
+		const currentOU = page.data.currentOrganizationalUnit as
+			| OrganizationalUnitContainer
+			| undefined;
+		if (currentOU) return new Set([currentOU.guid]);
+		const currentOrg = page.data.currentOrganization as { guid: string } | undefined;
+		if (!currentOrg) return new Set<string>();
+		const ouGuids = organizationalUnits
+			.filter((ou) => ou.organization === currentOrg.guid)
+			.map((ou) => ou.guid);
+		return new Set([currentOrg.guid, ...ouGuids]);
+	});
+
+	const isSubscribed = $derived.by(() => {
+		if (isSubscribedFromLayout) return true;
+		const subs = subscriptionCheck.current ?? [];
+		return subs.some((r) => currentScope.has(r.subject));
+	});
 
 	const canSubscribe = $derived(
 		$user.isAuthenticated &&
-			allowedOrgs.size > 0 &&
+			myOUs.size > 0 &&
 			container.payload.type === 'program' &&
 			'programType' in container.payload &&
 			container.payload.programType === 'program_type.set_of_rules' &&
-			container.payload.visibility === 'public' &&
-			!allowedOrgs.has(container.organization) &&
-			!(container.organizational_unit && allowedOrgs.has(container.organizational_unit))
+			container.payload.visibility === 'public'
 	);
 
 	async function handleUnsubscribe() {
-		const orgGuids = [...allowedOrgs].filter(
-			(guid) => guid !== container.organization && guid !== container.organizational_unit
-		);
+		const subs = subscriptionCheck.current ?? [];
+		const ouGuids = subs.map((r) => r.subject).filter((guid) => currentScope.has(guid));
 
-		if (orgGuids.length === 0) return;
+		if (ouGuids.length === 0) return;
 
 		const response = await fetch(`/container/${container.guid}/subscription`, {
 			method: 'DELETE',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ organizations: orgGuids })
+			body: JSON.stringify({ organizations: ouGuids })
 		});
 
 		if (response.ok) {

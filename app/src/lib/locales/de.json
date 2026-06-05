@@ -773,6 +773,7 @@
 		"subscribe": "Übernehmen",
 		"unsubscribe": "Übernommen"
 	},
+	"adopted": "Übernommen",
 	"subscribe_dialog": {
 		"confirm": "Auswahl bestätigen",
 		"description": "Welche Bereiche sollen dieses Programm übernehmen?",

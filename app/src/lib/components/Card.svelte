@@ -93,11 +93,27 @@
 		return org?.payload?.name;
 	});
 
-	let isAdopted = $derived(
-		(page.data.subscribedOrganizations ?? []).some(
-			(o: { guid: string }) => o.guid === container.organization
-		)
-	);
+	let isAdopted = $derived.by(() => {
+		const subs = (page.data.subscribedPrograms ?? []) as string[];
+		if (subs.includes(container.guid)) return true;
+		return container.relation.some(
+			(r) =>
+				(r.predicate === predicates.enum['is-part-of'] ||
+					r.predicate === predicates.enum['is-part-of-program']) &&
+				subs.includes(r.object)
+		);
+	});
+
+	let adoptedLabel = $derived.by(() => {
+		if (!isAdopted) return undefined;
+		if (container.organizational_unit) {
+			const ou = page.data.organizationalUnits?.find(
+				(o: { guid: string }) => o.guid === container.organizational_unit
+			);
+			if (ou?.payload?.name) return ou.payload.name;
+		}
+		return foreignOrgName;
+	});
 
 	let selected = $derived.by(() => {
 		if ($overlay?.key === overlayKey.enum.relations) {
@@ -354,8 +370,10 @@
 	</div>
 
 	<footer>
-		{#if isAdopted && foreignOrgName}
-			<span class="badge badge--adopted"><Subscribe />{foreignOrgName}</span>
+		{#if isAdopted && adoptedLabel}
+			<span class="badge badge--adopted"
+				><Subscribe /><span class="badge-label">{adoptedLabel}</span></span
+			>
 		{:else if foreignOrgName}
 			<span class="badge badge--org">{foreignOrgName}</span>
 		{/if}
@@ -490,11 +508,18 @@
 	footer .badge--adopted {
 		background-color: var(--color-green-100);
 		color: var(--color-green-700);
+		display: inline-flex;
+		align-items: center;
 		font-size: 0.75rem;
 		font-weight: 500;
+		gap: 0.25rem;
 		max-width: 180px;
+	}
+
+	footer .badge--adopted .badge-label {
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	footer .badge--adopted :global(svg) {
