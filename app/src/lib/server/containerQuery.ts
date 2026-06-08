@@ -352,10 +352,10 @@ export async function loadContainerV2(params: {
 			? applicationContext?.subscribedPrograms
 			: undefined;
 
-		if (query.scope.length > 0 && applicationContext) {
+		if (query.scope.length > 0 && !query.scope.includes('platform') && applicationContext) {
 			const ownGuid = applicationContext.currentOrganization.guid;
 			const hasOwn = query.scope.includes(ownGuid);
-			const foreignGuids = query.scope.filter((s) => s !== ownGuid && s !== 'platform');
+			const foreignGuids = query.scope.filter((s) => s !== ownGuid);
 
 			if (!hasOwn && foreignGuids.length > 0) {
 				// Only foreign org(s) selected: show only subscribed content from those orgs

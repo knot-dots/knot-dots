@@ -9,7 +9,7 @@ import {
 	deleteManyContainerRelations,
 	getContainerByGuid,
 	getSubscriptionsForProgram,
-	reactivateDeletedSubscriptions
+	invalidateDeletedSubscriptions
 } from '$lib/server/db';
 import type { RequestHandler } from '@sveltejs/kit';
 
@@ -82,7 +82,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}));
 
 	await locals.pool.connect(async (connection) => {
-		await reactivateDeletedSubscriptions(relations)(connection);
+		await invalidateDeletedSubscriptions(relations)(connection);
 		await createManyContainerRelations(relations)(connection);
 	});
 

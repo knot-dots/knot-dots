@@ -1651,17 +1651,17 @@ export function getSubscriptionsForProgram(programGuid: string) {
 	};
 }
 
-export function reactivateDeletedSubscriptions(relations: ReadonlyArray<Relation>) {
+export function invalidateDeletedSubscriptions(relations: ReadonlyArray<Relation>) {
 	return async (connection: DatabaseConnection) => {
 		const values = relations.map((r) => [r.object, r.predicate, r.subject]);
 		await connection.query(sql.typeAlias('void')`
 			UPDATE container_relation cr
-			SET valid_currently = true
+			SET valid_currently = false
 			FROM ${sql.unnest(values, ['uuid', 'text', 'uuid'])} AS u(object, predicate, subject)
 			WHERE cr.object = u.object
 			  AND cr.predicate = u.predicate
 			  AND cr.subject = u.subject
-			  AND cr.valid_currently = false
+			  AND cr.valid_currently
 			  AND cr.deleted
 		`);
 	};
