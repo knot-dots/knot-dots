@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import type { CommonQueryMethods, DatabaseConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { filterVisible } from '$lib/authorization';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
 	type AnyContainer,
@@ -544,6 +544,8 @@ export const POST = (async ({ locals, request }) => {
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
+	} else if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	} else {
 		const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
 			connection.transaction(async (txConnection) => {
