@@ -1309,6 +1309,7 @@ export function getAllContainersRelatedToProgram(
 	guid: string,
 	filters: {
 		customCategories?: Record<string, string[]>;
+		statuses?: string[];
 		terms?: string;
 		type?: PayloadType[];
 	}

@@ -52,6 +52,7 @@ export const fetchContainersRelatedToProgram = query(
 		guid: z.string().uuid(),
 		params: z.object({
 			customCategories: z.record(z.string(), z.array(z.string())).optional(),
+			statuses: z.array(z.string()).optional(),
 			terms: z.string().optional()
 		})
 	}),
@@ -60,6 +61,7 @@ export const fetchContainersRelatedToProgram = query(
 		const relatedContainers = await locals.pool.connect(
 			getAllContainersRelatedToProgram(guid, {
 				customCategories: params.customCategories,
+				statuses: params.statuses,
 				...(params.terms ? { terms: params.terms } : undefined)
 			})
 		);

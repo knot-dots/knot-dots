@@ -33,7 +33,8 @@
 		payloadTypes,
 		predicates,
 		type ProgramContainer,
-		programTypes
+		programTypes,
+		status
 	} from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability, applicationState, newContainer } from '$lib/stores';
@@ -62,6 +63,7 @@
 						categoryContext.keys
 					)
 				},
+				statuses: paramsFromFragment(page.url).getAll('status'),
 				terms: paramsFromFragment(page.url).get('terms') ?? ''
 			}
 		})
@@ -87,6 +89,7 @@
 	let facets = $derived(
 		computeFacetCount(
 			new Map([
+				['status', new Map(status.options.map((s) => [s, 0]))],
 				...buildCategoryFacetsWithCounts(categoryContext.options),
 				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
 			]),

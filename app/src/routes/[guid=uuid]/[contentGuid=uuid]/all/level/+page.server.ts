@@ -33,6 +33,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 				[predicates.enum['is-part-of']],
 				{
 					customCategories: extractCustomCategoryFilters(url, categoryContext.keys),
+					statuses: url.searchParams.getAll('status'),
 					terms: url.searchParams.get('terms') ?? ''
 				},
 				url.searchParams.get('sort') ?? ''
