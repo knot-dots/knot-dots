@@ -426,6 +426,7 @@
 		--dropdown-panel-box-shadow: var(--shadow-lg);
 		--dropdown-panel-gap: 0;
 		--dropdown-panel-padding: 0;
+		--dropdown-panel-max-height: 30rem;
 	}
 
 	.sidebar-panel-links-toggle {

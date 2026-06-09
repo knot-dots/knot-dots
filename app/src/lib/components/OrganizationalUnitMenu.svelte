@@ -84,7 +84,13 @@
 	});
 
 	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+		modifiers: [
+			{ name: 'offset', options: { offset: [0, 4] } },
+			{
+				name: 'preventOverflow',
+				options: { altAxis: true, boundary: 'clippingParents', padding: 8 }
+			}
+		]
 	};
 
 	let searchQuery = $state('');
@@ -355,7 +361,7 @@
 	.tree-root {
 		overflow-y: auto;
 		padding: 0.25rem;
-		width: 16rem;
+		width: 22.5rem;
 	}
 
 	.tree-item-content {
