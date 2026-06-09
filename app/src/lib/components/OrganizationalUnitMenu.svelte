@@ -54,18 +54,19 @@
 		'createContainerDialog'
 	);
 
-	function handleCreateOrgUnit(parentGuid?: string) {
+	function handleCreateOrgUnit(level: number, parentGuid?: string) {
 		const container = containerOfType(
 			payloadTypes.enum.organizational_unit,
 			page.data.currentOrganization.guid,
 			null,
 			page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer;
+		) as Omit<NewContainer, 'payload'> & Pick<OrganizationalUnitContainer, 'payload'>;
+
+		container.payload.level = level;
 
 		if (parentGuid) {
 			container.relation = [
-				...container.relation,
 				{
 					object: parentGuid,
 					position: 0,
@@ -244,7 +245,7 @@
 						class="action-button action-button--size-s"
 						onclick={(e) => {
 							e.stopPropagation();
-							handleCreateOrgUnit(child.id);
+							handleCreateOrgUnit(depth + 2, child.id);
 						}}
 						tabindex={-1}
 						type="button"
