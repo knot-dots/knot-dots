@@ -220,10 +220,13 @@
 	{/if}
 
 	{#if overlay}
-		<OverlayCloseButton />
-		<OverlayFullscreenToggle />
-		<OverlayBackButton />
-		<OverlayTitle />
+		<div class="overlay-navigation">
+			<OverlayCloseButton />
+			<OverlayFullscreenToggle />
+			<div class="overlay-divider" role="presentation"></div>
+			<OverlayBackButton />
+			<OverlayTitle />
+		</div>
 	{:else}
 		<DotsBoardButton />
 		<BackToOverlayButton />
@@ -454,6 +457,19 @@
 
 	header :global(svg) {
 		color: var(--icon-color);
+	}
+
+	.overlay-navigation {
+		align-items: center;
+		display: flex;
+		gap: 0;
+	}
+
+	.overlay-divider {
+		border-left: solid 1px var(--color-gray-200);
+		height: 1.5rem;
+		margin: 0 0.5rem;
+		width: 0;
 	}
 
 	.actions {
