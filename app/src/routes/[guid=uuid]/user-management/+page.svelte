@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
+import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import Header from '$lib/components/Header.svelte';
@@ -41,8 +42,8 @@
 
 	const roleColors: Record<Role, string> = {
 		administrator: 'red',
-		head: 'amber',
-		collaborator: 'teal',
+		head: 'yellow',
+		collaborator: 'indigo',
 		observer: 'gray'
 	};
 
@@ -70,7 +71,7 @@
 
 	const headerIconStyle = 'color: var(--color-gray-500); flex: none;';
 
-	const users = $derived.by(() => {
+	const allUsers = $derived.by(() => {
 		const byGuid = new Map<string, User>();
 		for (const column of organizationColumns) {
 			for (const user of column.users) {
@@ -78,6 +79,44 @@
 			}
 		}
 		return [...byGuid.values()].sort((a, b) => displayName(a).localeCompare(displayName(b)));
+	});
+
+	const searchedUsers = $derived.by(() => {
+		const terms = page.url.searchParams.get('terms')?.trim().toLocaleLowerCase() ?? '';
+		if (!terms) return allUsers;
+
+		return allUsers.filter((user) =>
+			`${displayName(user)} ${user.email}`.toLocaleLowerCase().includes(terms)
+		);
+	});
+
+	const facets = $derived.by(() => {
+		const roleCounts = new Map<string, number>(roles.map((role) => [role, 0]));
+
+		for (const user of searchedUsers) {
+			const userRoles = new Set<Role>();
+			for (const { container } of organizationColumns) {
+				const role = visibleRoleFor(user, container);
+				if (role) userRoles.add(role);
+			}
+			for (const role of userRoles) {
+				roleCounts.set(role, (roleCounts.get(role) ?? 0) + 1);
+			}
+		}
+
+		return new Map([['role', roleCounts]]);
+	});
+
+	const users = $derived.by(() => {
+		const selectedRoles = page.url.searchParams.getAll('role').filter(isRole);
+		if (selectedRoles.length === 0) return searchedUsers;
+
+		return searchedUsers.filter((user) =>
+			organizationColumns.some(({ container }) => {
+				const role = visibleRoleFor(user, container);
+				return role && selectedRoles.includes(role);
+			})
+		);
 	});
 
 	function roleFor(user: User, container: AnyContainer): Role | undefined {
@@ -132,7 +171,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header workspaceOptions={[]} />
+		<Header workspaceOptions={[]} search {facets} sortOptions={[]} />
 	{/snippet}
 
 	{#snippet main()}
