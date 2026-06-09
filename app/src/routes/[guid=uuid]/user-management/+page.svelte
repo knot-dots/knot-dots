@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
-import { page } from '$app/state';
+	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import Header from '$lib/components/Header.svelte';
@@ -56,7 +56,7 @@ import { page } from '$app/state';
 
 	const roleRelationPredicates = new Set<Predicate>(Object.values(rolePredicates));
 
-	let roleOverrides = new SvelteMap<string, Role>();
+	let roleOverrides = new SvelteMap<string, Role | null>();
 
 	const organizationColumns = $derived([
 		{ container: data.container, users: data.users },
@@ -131,7 +131,9 @@ import { page } from '$app/state';
 	}
 
 	function visibleRoleFor(user: User, container: AnyContainer) {
-		return roleOverrides.get(roleKey(user, container)) ?? roleFor(user, container);
+		const key = roleKey(user, container);
+		if (roleOverrides.has(key)) return roleOverrides.get(key) ?? undefined;
+		return roleFor(user, container);
 	}
 
 	function isRole(value: BadgeDropdownValue): value is Role {
@@ -139,26 +141,29 @@ import { page } from '$app/state';
 	}
 
 	async function saveRole(user: User, container: AnyContainer, role: BadgeDropdownValue) {
-		if (!isRole(role)) return;
+		if (role != null && !isRole(role)) return;
 
 		const key = roleKey(user, container);
+		const hadPrevious = roleOverrides.has(key);
 		const previous = roleOverrides.get(key);
-		roleOverrides.set(key, role);
+		roleOverrides.set(key, role ?? null);
 
 		const userRelations = container.user.filter(({ predicate, subject }) => {
 			if (subject !== user.guid) return true;
 			return !roleRelationPredicates.has(predicate);
 		});
 
-		userRelations.push({
-			subject: user.guid,
-			predicate: rolePredicates[role]
-		});
+		if (isRole(role)) {
+			userRelations.push({
+				subject: user.guid,
+				predicate: rolePredicates[role]
+			});
+		}
 
 		const response = await saveContainerUser({ ...container, user: userRelations });
 
 		if (!response.ok) {
-			if (previous) roleOverrides.set(key, previous);
+			if (hadPrevious) roleOverrides.set(key, previous ?? null);
 			else roleOverrides.delete(key);
 			console.log(await response.json());
 			return;

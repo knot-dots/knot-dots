@@ -15,6 +15,7 @@
 
 	interface Props {
 		editable?: boolean;
+		emptyLabel?: string;
 		label?: string;
 		labelledBy?: string;
 		offset?: [number, number];
@@ -25,6 +26,7 @@
 
 	let {
 		editable = false,
+		emptyLabel,
 		label,
 		labelledBy,
 		offset,
@@ -49,6 +51,7 @@
 	}));
 
 	const selected = $derived(options.find((option) => option.value === value));
+	const selectedLabel = $derived(selected?.label ?? emptyLabel ?? $_('empty'));
 	const emptyBadgeStyle = '--badge-background-color: transparent; --badge-color: #44546e;';
 
 	function badgeClass(option?: BadgeDropdownOption) {
@@ -56,7 +59,15 @@
 	}
 
 	function badgeStyle(option?: BadgeDropdownOption) {
-		return option ? undefined : emptyBadgeStyle;
+		return option?.value == null ? emptyBadgeStyle : undefined;
+	}
+
+	function toggleOption(event: MouseEvent, option: BadgeDropdownOption) {
+		if (option.value !== value) return;
+
+		event.preventDefault();
+		value = undefined;
+		onchange?.(undefined);
 	}
 </script>
 
@@ -69,7 +80,7 @@
 			type="button"
 			use:popover.button
 		>
-			{selected?.label ?? $_('empty')}
+			{selectedLabel}
 			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 
@@ -86,6 +97,7 @@
 							type="radio"
 							value={option.value}
 							bind:group={value}
+							onclick={(event) => toggleOption(event, option)}
 							onchange={() => onchange?.(option.value)}
 						/>
 						<span class={badgeClass(option)}>{option.label}</span>
@@ -96,9 +108,7 @@
 	</div>
 {:else}
 	<div class="value">
-		<span class={badgeClass(selected)} style={badgeStyle(selected)}
-			>{selected?.label ?? $_('empty')}</span
-		>
+		<span class={badgeClass(selected)} style={badgeStyle(selected)}>{selectedLabel}</span>
 	</div>
 {/if}
 
