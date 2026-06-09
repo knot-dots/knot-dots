@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -12,12 +13,18 @@
 		isPartOf,
 		isTaskContainer,
 		payloadTypes,
+		predicates,
 		taskCategories
 	} from '$lib/models';
 	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [predicates.enum['is-prerequisite-for']]
+	});
 
 	let container = $derived(data.container);
 
