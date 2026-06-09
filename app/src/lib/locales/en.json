@@ -880,6 +880,7 @@
 	"user": {
 		"display_name": "Name",
 		"email": "Email",
+		"invitation_sent": "Invitation sent",
 		"remove": "Remove",
 		"role": "Role"
 	},

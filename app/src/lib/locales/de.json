@@ -882,6 +882,7 @@
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",
+		"invitation_sent": "Einladung versendet",
 		"remove": "Entfernen",
 		"role": "Rolle"
 	},

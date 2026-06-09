@@ -208,8 +208,11 @@
 				</thead>
 				<tbody>
 					{#each users as user (user.guid)}
+						{@const signedUp = user.family_name || user.given_name}
 						<tr>
-							<td class="col-name">{displayName(user)}</td>
+							<td class="col-name" class:not-signed-up={!signedUp}
+								>{signedUp ? displayName(user) : $_('user.invitation_sent')}</td
+							>
 							<td class="col-email">{user.email}</td>
 							{#each organizationColumns as org (org.container.guid)}
 								{@const canEdit = isEditMode && $ability.can('update', org.container)}
@@ -271,6 +274,11 @@
 		font-weight: 500;
 		height: 50px;
 		padding: 0.625rem 0.5rem;
+	}
+
+	td.not-signed-up {
+		color: var(--color-gray-500);
+		font-style: italic;
 	}
 
 	.header-content {
