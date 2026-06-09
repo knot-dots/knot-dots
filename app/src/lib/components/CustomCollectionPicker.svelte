@@ -13,6 +13,7 @@
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
+	import OrganizationFilterDropDown from '$lib/components/OrganizationFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
@@ -23,7 +24,6 @@
 		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { hasPart, isPartOf } from '$lib/relations';
 	import { user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
@@ -187,86 +187,32 @@
 	);
 
 	let organizationOptions = $derived.by(() => {
-		const orgFacetCounts = facets.get('organization') ?? new Map<string, number>();
+		const organizationFacetCounts = facets.get('organization') ?? new Map<string, number>();
+		const organizationalUnitFacetCounts =
+			facets.get('organizationalUnit') ?? new Map<string, number>();
+		const visibleOrgGuids = new Set([
+			...organizationsUserIsMemberOf,
+			page.data.currentOrganization.guid
+		]);
 		return page.data.organizations
-			.filter((o) => organizationsUserIsMemberOf.includes(o.guid))
-			.map((o) => ({
-				value: o.guid,
-				label: o.payload.name,
-				count: orgFacetCounts.get(o.guid) ?? 0,
-				subOptions: undefined
-			}));
-	});
-
-	let organizationalUnitOptions = $derived.by(() => {
-		const ouFacetCounts = facets.get('organizationalUnit') ?? new Map<string, number>();
-		const selectedOrgs = filter.organization ?? [];
-		const allOUs = page.data.organizationalUnits.filter(
-			(ou: OrganizationalUnitContainer) =>
-				selectedOrgs.includes(ou.organization) || selectedOrgs.length === 0
-		);
-
-		type OptionItem = {
-			value: string;
-			label: string;
-			count: number;
-			subOptions?: OptionItem[];
-		};
-
-		function buildOUOptions(units: OrganizationalUnitContainer[]): OptionItem[] {
-			const roots = units.filter((u) => !isPartOf(u, units));
-			return roots.map((u) => ({
-				value: u.guid,
-				label: u.payload.name,
-				count: ouFacetCounts.get(u.guid) ?? 0,
-				subOptions: hasPart(u, units).map((child) => ({
-					value: child.guid,
-					label: child.payload.name,
-					count: ouFacetCounts.get(child.guid) ?? 0,
-					subOptions: hasPart(child, units).map((grandchild) => ({
-						value: grandchild.guid,
-						label: grandchild.payload.name,
-						count: ouFacetCounts.get(grandchild.guid) ?? 0,
-						subOptions: undefined
-					}))
-				}))
-			}));
-		}
-
-		let options: OptionItem[] = [];
-
-		if (selectedOrgs.length > 1) {
-			for (const orgGuid of selectedOrgs) {
-				const org = page.data.organizations.find((o) => o.guid === orgGuid);
-				if (!org) continue;
-				const orgOUs = allOUs.filter(
-					(ou: OrganizationalUnitContainer) => ou.organization === orgGuid
+			.filter((o) => visibleOrgGuids.has(o.guid))
+			.map((o) => {
+				const organizationalUnits = page.data.organizationalUnits.filter(
+					(organizationalUnit: OrganizationalUnitContainer) =>
+						organizationalUnit.organization === o.guid
 				);
-				if (orgOUs.length === 0) continue;
-				const orgOptions = buildOUOptions(orgOUs);
-				options = [
-					...options,
-					...orgOptions.map((o) => ({ ...o, label: `${org.payload.name} / ${o.label}` }))
-				];
-			}
-		} else {
-			options = buildOUOptions(allOUs);
-		}
-
-		return options;
-	});
-
-	// Remove organizational units from filter when their org is deselected
-	$effect(() => {
-		const selectedOrgs = filter.organization ?? [];
-		if (selectedOrgs.length === 0 || !filter.organizationalUnit?.length) return;
-		const validOUs = page.data.organizationalUnits
-			.filter((ou: OrganizationalUnitContainer) => selectedOrgs.includes(ou.organization))
-			.map((ou) => ou.guid);
-		const filtered = filter.organizationalUnit.filter((guid) => validOUs.includes(guid));
-		if (filtered.length !== filter.organizationalUnit.length) {
-			filter.organizationalUnit = filtered;
-		}
+				return {
+					value: o.guid,
+					label: o.payload.name,
+					count: organizationFacetCounts.get(o.guid) ?? 0,
+					subOptions: organizationalUnits.map((organizationalUnit) => ({
+						value: organizationalUnit.guid,
+						label: organizationalUnit.payload.name,
+						count: organizationalUnitFacetCounts.get(organizationalUnit.guid) ?? 0,
+						subOptions: []
+					}))
+				};
+			});
 	});
 
 	$effect(() => {
@@ -326,6 +272,19 @@
 		}
 	}
 
+	function filterValueLabel(key: string, value: string): string {
+		if (key === 'organization') {
+			return page.data.organizations.find((o) => o.guid === value)?.payload.name ?? value;
+		}
+		if (key === 'organizationalUnit') {
+			return (
+				page.data.organizationalUnits.find((o: OrganizationalUnitContainer) => o.guid === value)
+					?.payload.name ?? value
+			);
+		}
+		return page.data.categoryContext.labels.get(value) ?? $_(value);
+	}
+
 	async function confirm() {
 		const response = await saveContainer({
 			...container,
@@ -366,21 +325,13 @@
 >
 	{#snippet filterContent()}
 		{#if organizationOptions.length > 0}
-			<InlineFilterDropDown
-				bind:value={() => filter.organization ?? [], (v) => (filter.organization = v)}
-				key="organization"
-				label={$_('organization')}
+			<OrganizationFilterDropDown
+				bind:organizationValue={() => filter.organization ?? [], (v) => (filter.organization = v)}
+				bind:organizationalUnitValue={
+					() => filter.organizationalUnit ?? [], (v) => (filter.organizationalUnit = v)
+				}
 				{mode}
 				options={organizationOptions}
-			/>
-		{/if}
-		{#if organizationalUnitOptions.length > 0}
-			<InlineFilterDropDown
-				bind:value={() => filter.organizationalUnit ?? [], (v) => (filter.organizationalUnit = v)}
-				key="organizationalUnit"
-				label={$_('organizational_unit')}
-				{mode}
-				options={organizationalUnitOptions}
 			/>
 		{/if}
 		{#each facets.entries() as [key, foci] (key)}
@@ -531,7 +482,7 @@
 								{#each valueList as value (value)}
 									<li class="preview-item">
 										<LightningBolt />
-										{page.data.categoryContext.labels.get(value) ?? $_(value)}
+										{filterValueLabel(key, value)}
 										<button
 											class="button button-remove"
 											type="button"

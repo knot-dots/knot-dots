@@ -89,16 +89,23 @@ function buildFacetAggregations(params: {
 
 	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {};
 
+	// Coupled facets: selecting one should not affect the other's counts
+	const coupledFacets: Record<string, string[]> = {
+		organization: ['organizationalUnit'],
+		organizationalUnit: ['organization']
+	};
+
 	for (const key of facetKeys) {
 		const useCategoryField = customCategoryKeys.includes(key);
 		const field = useCategoryField
 			? `payload.category.${key}`
 			: (facetFieldMap[key] ?? `payload.category.${key}`);
 		const size = facetSizeMap[key] ?? 200;
+		const excludeKeys = new Set([key, ...(coupledFacets[key] ?? [])]);
 		const filtersExceptKey: estypes.QueryDslQueryContainer[] = [];
 
 		for (const [facetKey, clauses] of Object.entries(facetFilters)) {
-			if (facetKey === key) continue;
+			if (excludeKeys.has(facetKey)) continue;
 			filtersExceptKey.push(...clauses);
 		}
 
