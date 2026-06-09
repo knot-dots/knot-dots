@@ -1669,6 +1669,34 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	};
 }
 
+export function getAllRelatedUsersByContainers(guids: string[], predicates: Predicate[]) {
+	return async (
+		connection: DatabaseConnection
+	): Promise<ReadonlyArray<{ container: string; user: User }>> => {
+		if (guids.length === 0 || predicates.length === 0) {
+			return [];
+		}
+
+		return await connection.any(
+			sql.type(z.object({ container: z.string().uuid(), user }))`
+				WITH related_users AS (
+					SELECT DISTINCT c.guid AS container, u.*
+					FROM "user" u
+					JOIN container_user cu ON u.guid = cu.subject AND cu.predicate IN (${sql.join(
+						predicates,
+						sql.fragment`, `
+					)})
+					JOIN container c ON cu.object = c.revision AND c.valid_currently
+					WHERE c.guid = ANY(${sql.array(guids, 'uuid')})
+				)
+				SELECT container, to_jsonb(related_users) - 'container' AS "user"
+				FROM related_users
+				ORDER BY container, family_name, given_name
+		`
+		);
+	};
+}
+
 export function getAllMembershipRelationsOfUser(guid: string) {
 	return async (connection: DatabaseConnection) => {
 		const rolePredicates = [
