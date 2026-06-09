@@ -15,6 +15,7 @@ import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
 import Tag from '~icons/knotdots/tag';
+import Users from '~icons/knotdots/users';
 import {
 	boards,
 	containerOfType,
@@ -24,6 +25,7 @@ import {
 } from '$lib/models';
 import type { createFeatureDecisions } from '$lib/features';
 import type { MongoAbility } from '@casl/ability';
+import type { User } from '$lib/stores';
 
 export type WorkspaceModuleKey =
 	| 'goal_setting'
@@ -90,6 +92,7 @@ export interface WorkspaceDefinition {
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
 	boardFlag?: WorkspaceBoardFlag;
+	adminOnly?: boolean;
 }
 
 export const strategyProgramTypes = [
@@ -293,6 +296,15 @@ export const workspaces: WorkspaceDefinition[] = [
 			page: '/all/page',
 			table: '/all/table'
 		}
+	},
+	{
+		key: 'users',
+		icon: Users,
+		module: 'organizing',
+		views: {
+			default: '/user-management'
+		},
+		adminOnly: true
 	}
 ];
 
@@ -305,6 +317,7 @@ interface VisibilityContext {
 	organizationalUnit?: OrganizationalUnitContainer | null;
 	features: WorkspaceFeatureDecisions;
 	ability?: MongoAbility;
+	user?: User;
 }
 
 /**
@@ -324,13 +337,16 @@ interface VisibilityContext {
  *   (e.g. categories require `mayCreateContainer` permission).
  */
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
-	const { organization, organizationalUnit, features, ability } = ctx;
+	const { organization, organizationalUnit, features, ability, user } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const enabledBoards = new Set(selectedContext.payload.boards);
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
 	const explicit =
 		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
 	const explicitSet = new Set(explicit);
+
+	const isCtxAdmin =
+		user?.roles.includes('sysadmin') || user?.adminOf.includes(selectedContext.guid);
 
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {
@@ -357,6 +373,9 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 					return false;
 				}
 			}
+		}
+		if (workspace.adminOnly) {
+			return isCtxAdmin;
 		}
 		if (explicitSet.size === 0) {
 			return true;

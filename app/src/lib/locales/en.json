@@ -960,6 +960,8 @@
 	"workspace.categories.description": "Define custom categories",
 	"workspace.overview.title": "All objects",
 	"workspace.overview.description": "All content at a glance",
+	"workspace.users.title": "Users",
+	"workspace.users.description": "Manage access and roles",
 	"workspace.view.label": "View",
 	"workspace.view.catalog": "Catalog",
 	"workspace.view.level": "Level board",

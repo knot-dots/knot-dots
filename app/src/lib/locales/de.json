@@ -962,6 +962,8 @@
 	"workspace.categories.description": "Eigene Kategorien definieren",
 	"workspace.overview.title": "Alle Objekte",
 	"workspace.overview.description": "Alle Inhalte im Überblick",
+	"workspace.users.title": "Nutzerverwaltung",
+	"workspace.users.description": "Zugriff und Rollen verwalten",
 	"workspace.view.label": "Ansicht",
 	"workspace.view.catalog": "Katalog",
 	"workspace.view.level": "Ebenen-Board",
