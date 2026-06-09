@@ -121,13 +121,9 @@
 			<div class="dropdown-panel-title">
 				<span>{title}</span>
 				{#if canCreateOrganization}
-					<button
-						class="action-button"
-						onclick={handleCreateOrganization}
-						title={$_('organization.create')}
-						type="button"
-					>
+					<button class="action-button" onclick={handleCreateOrganization} type="button">
 						<Plus />
+						<span class="is-visually-hidden">{$_('organization.create')}</span>
 					</button>
 				{/if}
 				<button class="action-button" onclick={() => menu.close()} type="button">

@@ -280,6 +280,12 @@
 		>
 			<div class="dropdown-panel-title">
 				<span>{title}</span>
+				{#if canCreateOrgUnit}
+					<button class="action-button" onclick={() => handleCreateOrgUnit(1)} type="button">
+						<Plus />
+						<span class="is-visually-hidden">{$_('organizational_unit.create')}</span>
+					</button>
+				{/if}
 				<button class="action-button" onclick={() => popover.close()} type="button">
 					<Close />
 					<span class="is-visually-hidden">{$_('close')}</span>
