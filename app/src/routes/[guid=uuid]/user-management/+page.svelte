@@ -173,7 +173,7 @@
 
 <Layout>
 	{#snippet header()}
-		<Header workspaceOptions={[]} search {facets} sortOptions={[]} />
+		<Header search {facets} sortOptions={[]} />
 	{/snippet}
 
 	{#snippet main()}
