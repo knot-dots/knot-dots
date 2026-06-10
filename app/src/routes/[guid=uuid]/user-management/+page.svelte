@@ -23,6 +23,7 @@
 		type BadgeDropdownOption,
 		type BadgeDropdownValue
 	} from '$lib/components/BadgeDropdown.svelte';
+	import tooltip from '$lib/attachments/tooltip';
 	import { ability, applicationState } from '$lib/stores';
 	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
 	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
@@ -198,7 +199,7 @@
 						</th>
 						{#each organizationColumns as org (org.container.guid)}
 							<th class="col-role">
-								<span class="header-content">
+								<span class="header-content" {@attach tooltip(org.container.payload.name)}>
 									<ArrowDownIcon height="16" style={headerIconStyle} width="16" />
 									<span class="header-label">{org.container.payload.name}</span>
 								</span>
