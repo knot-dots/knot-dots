@@ -43,19 +43,21 @@ export const load = (async ({ locals, parent }) => {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	const organizationalUnits = currentOrganizationalUnit
-		? findDescendants(
-				currentOrganizationalUnit,
-				await locals.pool.connect(
-					getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-				),
-				[predicates.enum['is-part-of']]
-			)
-		: await locals.pool.connect(
-				getManyOrganizationalUnitContainers({
-					include: { organization: currentOrganization.guid }
-				})
-			);
+	const organizationalUnits = (
+		currentOrganizationalUnit
+			? findDescendants(
+					currentOrganizationalUnit,
+					await locals.pool.connect(
+						getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
+					),
+					[predicates.enum['is-part-of']]
+				)
+			: await locals.pool.connect(
+					getManyOrganizationalUnitContainers({
+						include: { organization: currentOrganization.guid }
+					})
+				)
+	).filter(({ payload }) => !payload.organizationalUnitType);
 
 	const [members, organizationalUnitUsers] = await Promise.all([
 		getMembers(container.organization),
