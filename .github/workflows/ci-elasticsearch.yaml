@@ -20,7 +20,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     steps:
       - uses: actions/checkout@v6
@@ -34,7 +34,6 @@ jobs:
         with:
           build-args: ELASTICSEARCH_VERSION=${{ env.ELASTICSEARCH_VERSION }}
           context: elasticsearch
-          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.REGISTRY }}/elasticsearch:${{ github.sha }}
