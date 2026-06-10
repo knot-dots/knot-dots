@@ -18,11 +18,15 @@
 
 	let { container = $bindable(), editable = false }: Props = $props();
 
+	const selectableWorkspaces = $derived(workspaces.filter((w) => w.key !== 'help'));
+
+	const selectableWorkspaceKeys = $derived(selectableWorkspaces.map((w) => w.key));
+
 	const administrativeAreaLabelId = crypto.randomUUID();
 
 	const workspaceOptions = $derived(
 		workspaceModules.flatMap((module) =>
-			workspaces
+			selectableWorkspaces
 				.filter((w) => w.module === module.key)
 				.map((w) => ({
 					value: w.key,
@@ -35,8 +39,12 @@
 	// Prefill with every selectable workspace so unchecking a box reliably hides
 	// that workspace; without this, unchecking reads as "still empty = show all".
 	$effect(() => {
-		if (editable && container.payload.visibleWorkspaces.length === 0) {
-			container.payload.visibleWorkspaces = workspaces.map((w) => w.key);
+		if (!editable) {
+			return;
+		}
+
+		if (container.payload.visibleWorkspaces.length === 0) {
+			container.payload.visibleWorkspaces = [...selectableWorkspaceKeys];
 		}
 	});
 

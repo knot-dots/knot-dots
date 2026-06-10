@@ -18,6 +18,7 @@ import Tag from '~icons/knotdots/tag';
 import {
 	boards,
 	containerOfType,
+	isOrganizationContainer,
 	payloadTypes,
 	type OrganizationContainer,
 	type OrganizationalUnitContainer
@@ -213,6 +214,15 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	// Knowledge transfer
 	{
+		key: 'help',
+		icon: Help,
+		module: 'knowledge_transfer',
+		views: {
+			default: '/help/catalog',
+			catalog: '/help/catalog'
+		}
+	},
+	{
 		key: 'guides',
 		icon: Help,
 		module: 'knowledge_transfer',
@@ -339,10 +349,27 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		if (workspace.boardFlag && !enabledBoards.has(workspace.boardFlag)) {
 			return false;
 		}
+		if (workspace.key === 'help') {
+			if (!isOrganizationContainer(selectedContext) || !selectedContext.payload.default) {
+				return false;
+			}
+		}
 		if (ability) {
 			if (workspace.key === 'categories') {
 				const container = containerOfType(
 					payloadTypes.enum.category,
+					organization.guid,
+					organizationalUnit?.guid ?? null,
+					selectedContext.guid,
+					''
+				);
+				if (!ability.can('create', container)) {
+					return false;
+				}
+			}
+			if (workspace.key === 'help') {
+				const container = containerOfType(
+					payloadTypes.enum.help,
 					organization.guid,
 					organizationalUnit?.guid ?? null,
 					selectedContext.guid,
