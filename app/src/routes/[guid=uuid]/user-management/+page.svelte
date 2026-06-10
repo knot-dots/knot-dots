@@ -60,8 +60,10 @@
 	let roleOverrides = new SvelteMap<string, Role | null>();
 
 	const organizationColumns = $derived([
-		{ container: data.container, users: data.users },
-		...data.organizationalUnits
+		{ container: data.container },
+		...data.organizationalUnits.map((container) => ({
+			container
+		}))
 	]);
 
 	const roleOptions: BadgeDropdownOption[] = roles.map((role) => ({
@@ -73,13 +75,7 @@
 	const headerIconStyle = 'color: var(--color-gray-500); flex: none;';
 
 	const allUsers = $derived.by(() => {
-		const byGuid = new Map<string, User>();
-		for (const column of organizationColumns) {
-			for (const user of column.users) {
-				byGuid.set(user.guid, user);
-			}
-		}
-		return [...byGuid.values()].sort((a, b) => displayName(a).localeCompare(displayName(b)));
+		return [...data.users].sort((a, b) => displayName(a).localeCompare(displayName(b)));
 	});
 
 	const searchedUsers = $derived.by(() => {

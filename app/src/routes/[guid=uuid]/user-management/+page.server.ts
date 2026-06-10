@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { findDescendants, predicates } from '$lib/models';
-import { getAllRelatedUsers, getAllRelatedUsersByContainers } from '$lib/server/db';
+import { getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
@@ -35,36 +35,25 @@ export const load = (async ({ locals, parent }) => {
 				({ organization }) => organization === currentOrganization.guid
 			);
 
-	const [members, organizationalUnitUsers] = await Promise.all([
+	const displayedContainerGuids = [
+		...new Set([selectedContext.guid, ...organizationalUnits.map(({ guid }) => guid)])
+	];
+
+	const [members, relatedUsers] = await Promise.all([
 		getMembers(selectedContext.organization),
-		locals.pool.connect(
-			getAllRelatedUsersByContainers(
-				organizationalUnits.map(({ guid }) => guid),
-				userPredicates
-			)
-		)
+		locals.pool.connect(getAllRelatedUsersByContainers(displayedContainerGuids, userPredicates))
 	]);
 
-	const users = await locals.pool.connect(getAllRelatedUsers(selectedContext.guid, userPredicates));
+	const usersByGuid = new Map(relatedUsers.map(({ user }) => [user.guid, user]));
 
-	const usersByContainer = new Map<string, (typeof users)[number][]>();
-	for (const { container, user } of organizationalUnitUsers) {
-		const group = usersByContainer.get(container) ?? [];
-		group.push(user);
-		usersByContainer.set(container, group);
-	}
-
-	const withEmail = (user: (typeof users)[number]) => ({
+	const withEmail = (user: (typeof relatedUsers)[number]['user']) => ({
 		...user,
 		email: members.find(({ id }) => id === user.guid)?.username ?? user.guid
 	});
 
 	return {
 		container: selectedContext,
-		organizationalUnits: organizationalUnits.map((container) => ({
-			container,
-			users: (usersByContainer.get(container.guid) ?? []).map(withEmail)
-		})),
-		users: users.map(withEmail)
+		organizationalUnits,
+		users: [...usersByGuid.values()].map(withEmail)
 	};
 }) satisfies PageServerLoad;
