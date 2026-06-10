@@ -463,6 +463,7 @@
 		align-items: center;
 		display: flex;
 		gap: 0;
+		min-width: 0;
 	}
 
 	.overlay-divider {
