@@ -698,6 +698,7 @@
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
 		"head": "Head",
+		"none": "No role",
 		"observer": "Observer"
 	},
 	"rule": "Rule",

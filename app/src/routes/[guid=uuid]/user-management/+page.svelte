@@ -208,9 +208,9 @@
 						{#each users as user (user.guid)}
 							{@const signedUp = user.family_name || user.given_name}
 							<tr>
-								<td class="col-name" class:not-signed-up={!signedUp}
-									>{signedUp ? displayName(user) : $_('user.invitation_sent')}</td
-								>
+								<td class={['col-name', !signedUp && 'not-signed-up']}>
+									{signedUp ? displayName(user) : $_('user.invitation_sent')}
+								</td>
 								<td class="col-email">{user.email}</td>
 								{#each organizationColumns as org (org.container.guid)}
 									{@const canEdit = isEditMode && $ability.can('update', org.container)}
@@ -221,6 +221,7 @@
 												value={role}
 												options={roleOptions}
 												editable={canEdit}
+												emptyLabel={$_('role.none')}
 												onchange={(role) => saveRole(user, org.container, role)}
 											/>
 										{:else if canEdit}
@@ -228,6 +229,7 @@
 												value={role}
 												options={roleOptions}
 												editable={canEdit}
+												emptyLabel={$_('role.none')}
 												onchange={(role) => saveRole(user, org.container, role)}
 											/>
 										{/if}

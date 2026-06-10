@@ -52,6 +52,10 @@
 
 	const selected = $derived(options.find((option) => option.value === value));
 	const selectedLabel = $derived(selected?.label ?? emptyLabel ?? $_('empty'));
+	const effectiveOptions = $derived([
+		{ label: emptyLabel ?? $_('empty'), value: undefined },
+		...options
+	]);
 	const emptyBadgeStyle = '--badge-background-color: transparent; --badge-color: #44546e;';
 
 	function badgeClass(option?: BadgeDropdownOption) {
@@ -60,14 +64,6 @@
 
 	function badgeStyle(option?: BadgeDropdownOption) {
 		return option?.value == null ? emptyBadgeStyle : undefined;
-	}
-
-	function toggleOption(event: MouseEvent, option: BadgeDropdownOption) {
-		if (option.value !== value) return;
-
-		event.preventDefault();
-		value = undefined;
-		onchange?.(undefined);
 	}
 </script>
 
@@ -91,16 +87,15 @@
 				use:popperContent={extraOpts}
 				use:popover.panel
 			>
-				{#each options as option (option.value)}
+				{#each effectiveOptions as option (option.value)}
 					<label>
 						<input
 							type="radio"
 							value={option.value}
 							bind:group={value}
-							onclick={(event) => toggleOption(event, option)}
 							onchange={() => onchange?.(option.value)}
 						/>
-						<span class={badgeClass(option)}>{option.label}</span>
+						<span class={badgeClass(option)} style={badgeStyle(option)}>{option.label}</span>
 					</label>
 				{/each}
 			</fieldset>

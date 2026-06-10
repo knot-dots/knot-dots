@@ -698,6 +698,7 @@
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",
 		"head": "Leitung",
+		"none": "Keine Rolle",
 		"observer": "Beobachtung"
 	},
 	"rule": "Regel",
