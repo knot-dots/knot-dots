@@ -1,23 +1,23 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import {
-	findDescendants,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
-	predicates
-} from '$lib/models';
-import {
-	getAllRelatedOrganizationalUnitContainers,
-	getAllRelatedUsers,
-	getAllRelatedUsersByContainers,
-	getContainerByGuid,
-	getManyOrganizationalUnitContainers
-} from '$lib/server/db';
+import { findDescendants, predicates } from '$lib/models';
+import { getAllRelatedUsers, getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
+const userPredicates = [
+	predicates.enum['is-member-of'],
+	predicates.enum['is-admin-of'],
+	predicates.enum['is-collaborator-of'],
+	predicates.enum['is-head-of']
+];
+
 export const load = (async ({ locals, parent }) => {
-	const { currentOrganization, currentOrganizationalUnit } = await parent();
+	const {
+		currentOrganization,
+		currentOrganizationalUnit,
+		organizationalUnits: parentOrganizationalUnits
+	} = await parent();
 	const selectedContext = currentOrganizationalUnit ?? currentOrganization;
 
 	if (
@@ -27,40 +27,16 @@ export const load = (async ({ locals, parent }) => {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	const userPredicates = [
-		predicates.enum['is-member-of'],
-		predicates.enum['is-admin-of'],
-		predicates.enum['is-collaborator-of'],
-		predicates.enum['is-head-of']
-	];
-
-	const [container, users] = await Promise.all([
-		locals.pool.connect(getContainerByGuid(selectedContext.guid)),
-		locals.pool.connect(getAllRelatedUsers(selectedContext.guid, userPredicates))
-	]);
-
-	if (!isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)) {
-		error(404, unwrapFunctionStore(_)('error.not_found'));
-	}
-
-	const organizationalUnits = (
-		currentOrganizationalUnit
-			? findDescendants(
-					currentOrganizationalUnit,
-					await locals.pool.connect(
-						getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-					),
-					[predicates.enum['is-part-of']]
-				)
-			: await locals.pool.connect(
-					getManyOrganizationalUnitContainers({
-						include: { organization: currentOrganization.guid }
-					})
-				)
-	).filter(({ payload }) => !payload.organizationalUnitType);
+	const organizationalUnits = currentOrganizationalUnit
+		? findDescendants(currentOrganizationalUnit, parentOrganizationalUnits, [
+				predicates.enum['is-part-of']
+			])
+		: parentOrganizationalUnits.filter(
+				({ organization }) => organization === currentOrganization.guid
+			);
 
 	const [members, organizationalUnitUsers] = await Promise.all([
-		getMembers(container.organization),
+		getMembers(selectedContext.organization),
 		locals.pool.connect(
 			getAllRelatedUsersByContainers(
 				organizationalUnits.map(({ guid }) => guid),
@@ -68,6 +44,8 @@ export const load = (async ({ locals, parent }) => {
 			)
 		)
 	]);
+
+	const users = await locals.pool.connect(getAllRelatedUsers(selectedContext.guid, userPredicates));
 
 	const usersByContainer = new Map<string, (typeof users)[number][]>();
 	for (const { container, user } of organizationalUnitUsers) {
@@ -82,7 +60,7 @@ export const load = (async ({ locals, parent }) => {
 	});
 
 	return {
-		container,
+		container: selectedContext,
 		organizationalUnits: organizationalUnits.map((container) => ({
 			container,
 			users: (usersByContainer.get(container.guid) ?? []).map(withEmail)
