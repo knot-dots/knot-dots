@@ -177,79 +177,96 @@
 	{/snippet}
 
 	{#snippet main()}
-		<div class="table-wrapper">
-			<table>
-				<thead>
-					<tr>
-						<th class="col-name">
-							<span class="header-content">
-								<UserIcon height="16" style={headerIconStyle} width="16" />
-								<span class="header-label">{$_('user.display_name')}</span>
-							</span>
-						</th>
-						<th class="col-email">
-							<span class="header-content">
-								<EnvelopeIcon height="16" style={headerIconStyle} width="16" />
-								<span class="header-label">{$_('user.email')}</span>
-							</span>
-						</th>
-						{#each organizationColumns as org (org.container.guid)}
-							<th class="col-role">
-								<span class="header-content" {@attach tooltip(org.container.payload.name)}>
-									<ArrowDownIcon height="16" style={headerIconStyle} width="16" />
-									<span class="header-label">{org.container.payload.name}</span>
+		<div class="table-shell">
+			<div class="table-wrapper">
+				<table>
+					<thead>
+						<tr>
+							<th class="col-name">
+								<span class="header-content">
+									<UserIcon height="16" style={headerIconStyle} width="16" />
+									<span class="header-label">{$_('user.display_name')}</span>
 								</span>
 							</th>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each users as user (user.guid)}
-						{@const signedUp = user.family_name || user.given_name}
-						<tr>
-							<td class="col-name" class:not-signed-up={!signedUp}
-								>{signedUp ? displayName(user) : $_('user.invitation_sent')}</td
-							>
-							<td class="col-email">{user.email}</td>
+							<th class="col-email">
+								<span class="header-content">
+									<EnvelopeIcon height="16" style={headerIconStyle} width="16" />
+									<span class="header-label">{$_('user.email')}</span>
+								</span>
+							</th>
 							{#each organizationColumns as org (org.container.guid)}
-								{@const canEdit = isEditMode && $ability.can('update', org.container)}
-								{@const role = visibleRoleFor(user, org.container)}
-								<td class="col-role">
-									{#if role}
-										<BadgeDropdown
-											value={role}
-											options={roleOptions}
-											editable={canEdit}
-											onchange={(role) => saveRole(user, org.container, role)}
-										/>
-									{:else if canEdit}
-										<BadgeDropdown
-											value={role}
-											options={roleOptions}
-											editable={canEdit}
-											onchange={(role) => saveRole(user, org.container, role)}
-										/>
-									{/if}
-								</td>
+								<th class="col-role">
+									<span class="header-content" {@attach tooltip(org.container.payload.name)}>
+										<ArrowDownIcon height="16" style={headerIconStyle} width="16" />
+										<span class="header-label">{org.container.payload.name}</span>
+									</span>
+								</th>
 							{/each}
 						</tr>
-					{/each}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{#each users as user (user.guid)}
+							{@const signedUp = user.family_name || user.given_name}
+							<tr>
+								<td class="col-name" class:not-signed-up={!signedUp}
+									>{signedUp ? displayName(user) : $_('user.invitation_sent')}</td
+								>
+								<td class="col-email">{user.email}</td>
+								{#each organizationColumns as org (org.container.guid)}
+									{@const canEdit = isEditMode && $ability.can('update', org.container)}
+									{@const role = visibleRoleFor(user, org.container)}
+									<td class="col-role">
+										{#if role}
+											<BadgeDropdown
+												value={role}
+												options={roleOptions}
+												editable={canEdit}
+												onchange={(role) => saveRole(user, org.container, role)}
+											/>
+										{:else if canEdit}
+											<BadgeDropdown
+												value={role}
+												options={roleOptions}
+												editable={canEdit}
+												onchange={(role) => saveRole(user, org.container, role)}
+											/>
+										{/if}
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	{/snippet}
 </Layout>
 
 <style>
-	.table-wrapper {
-		overflow-x: auto;
+	.table-shell {
+		box-sizing: border-box;
+		flex: 1;
+		min-height: 0;
 		padding: 1rem 1.5rem 0;
+	}
+
+	.table-wrapper {
+		height: 100%;
+		overflow: auto;
 	}
 
 	table {
 		border-collapse: collapse;
 		border-style: hidden;
 		width: max-content;
+	}
+
+	thead th {
+		background: white;
+		position: sticky;
+		top: 0;
+		white-space: nowrap;
+		z-index: 1;
 	}
 
 	th,
@@ -260,7 +277,6 @@
 	}
 
 	th {
-		background: white;
 		color: var(--color-gray-600);
 		font-weight: 400;
 		height: 40px;
@@ -273,7 +289,7 @@
 		padding: 0.625rem 0.5rem;
 	}
 
-	td.not-signed-up {
+	.not-signed-up {
 		color: var(--color-gray-500);
 		font-style: italic;
 	}
