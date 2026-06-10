@@ -1,5 +1,4 @@
 import { Roarr as log } from 'roarr';
-import { serializeError } from 'serialize-error';
 import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
@@ -176,16 +175,11 @@ export async function getMembers(group: string) {
 
 	if (!response.ok) {
 		const body = await response.text();
-		const error = new Error(
+
+		log.error(
 			`Failed to fetch members for Keycloak group ${group}. Keycloak responded with ${response.status}: ${body}`
 		);
 
-		log.error(
-			{
-				error: serializeError(error)
-			},
-			'Failed to fetch Keycloak group members. Returning empty members.'
-		);
 		return [];
 	}
 
