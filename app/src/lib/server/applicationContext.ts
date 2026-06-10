@@ -1,25 +1,26 @@
 import { error } from '@sveltejs/kit';
+import type { DatabaseConnection } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
-import { z } from 'zod';
 import { env } from '$env/dynamic/public';
+import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	isOrganizationalUnitContainer,
 	organizationalUnitType,
 	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	type OrganizationalUnitContainer,
+	payloadTypes
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getContainerByGuid,
+	getManyContainers,
 	getManyOrganizationalUnitContainers,
-	getManyOrganizationContainers,
 	getSubscribedProgramGuids,
-	setUp,
-	sql
+	sql,
+	setUp
 } from '$lib/server/db';
-import type { DatabaseConnection } from 'slonik';
 
 interface LoadApplicationContextParams {
 	locals: App.Locals;
@@ -43,7 +44,9 @@ export async function loadApplicationContext({
 		}
 
 		const [organizations, organizationalUnits] = await Promise.all([
-			filterVisibleAsync(connect(getManyOrganizationContainers({}, 'alpha'))),
+			filterVisibleAsync(
+				connect(getManyContainers([], { type: [payloadTypes.enum.organization] }, 'alpha'))
+			) as Promise<OrganizationContainer[]>,
 			filterVisibleAsync(
 				connect(
 					getManyOrganizationalUnitContainers({

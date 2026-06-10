@@ -96,13 +96,15 @@
 				/>
 			</fieldset>
 
-			<fieldset>
-				<legend>{$_('matomo_opt_out')}</legend>
-				<div id="matomo-opt-out"></div>
-				<script
-					src="https://knotdots.matomo.cloud/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=auto&showIntro=0"
-				></script>
-			</fieldset>
+			{#if env.PUBLIC_MATOMO_CONTAINER_ID && page.data.currentOrganization.payload.useAnalytics}
+				<fieldset>
+					<legend>{$_('matomo_opt_out')}</legend>
+					<div id="matomo-opt-out"></div>
+					<script
+						src="https://knotdots.matomo.cloud/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=auto&showIntro=0"
+					></script>
+				</fieldset>
+			{/if}
 
 			<fieldset>
 				<legend>{$_('feature_flags')}</legend>

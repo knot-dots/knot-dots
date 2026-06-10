@@ -8,7 +8,8 @@
 		type AnyContainer,
 		computeFacetCount,
 		type Container,
-		isProgramContainer
+		isProgramContainer,
+		status
 	} from '$lib/models';
 
 	interface Props {
@@ -21,7 +22,13 @@
 	let categoryContext = $derived(page.data.categoryContext);
 
 	let facets = $derived(
-		computeFacetCount(buildCategoryFacetsWithCounts(categoryContext.options), containers)
+		computeFacetCount(
+			new Map([
+				['status', new Map(status.options.map((s) => [s, 0]))],
+				...buildCategoryFacetsWithCounts(categoryContext.options)
+			]),
+			containers
+		)
 	);
 </script>
 

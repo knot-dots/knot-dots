@@ -38,13 +38,13 @@
 
 	let [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-end',
-		strategy: 'fixed'
+		strategy: 'absolute'
 	});
 
 	const popperOpts = {
 		modifiers: [
 			{ name: 'offset', options: { offset: [0, 8] } },
-			{ name: 'flip', options: { fallbackPlacements: ['top-end'] } }
+			{ name: 'flip', options: { fallbackPlacements: ['left-start', 'top-end'] } }
 		]
 	};
 

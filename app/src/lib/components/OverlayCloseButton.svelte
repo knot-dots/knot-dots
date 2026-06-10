@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ChevronDoubleRight from '~icons/flowbite/chevron-double-right-outline';
+	import Close from '~icons/flowbite/close-outline';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 
@@ -12,7 +12,7 @@
 </script>
 
 <a class="action-button" href={closeURL(page.url)} {@attach tooltip($_('close'))}>
-	<ChevronDoubleRight />
+	<Close />
 </a>
 
 <style>

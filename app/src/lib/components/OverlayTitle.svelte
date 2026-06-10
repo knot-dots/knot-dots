@@ -24,6 +24,7 @@
 		flex-shrink: 1;
 		font-size: 0.75rem;
 		overflow: hidden;
+		padding: 0 0.5rem;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}

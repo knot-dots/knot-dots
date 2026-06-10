@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import Maximize from '~icons/flowbite/expand-outline';
-	import Minimize from '~icons/flowbite/minimize-outline';
+	import FullscreenCollapse from '~icons/knotdots/overlay-fullscreen-collapse';
+	import FullscreenExpand from '~icons/knotdots/overlay-fullscreen-expand';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -73,24 +73,25 @@
 	<a
 		{@attach tooltip($_('full_screen'))}
 		class="action-button"
+		aria-label={$_('full_screen')}
 		{href}
 		onclick={() => (lastOverlay.url = page.url)}
 	>
-		<Maximize />
+		<FullscreenExpand />
 	</a>
 {:else}
 	<button
 		class="action-button"
+		aria-label={$_('full_screen')}
 		onclick={() => (fullScreen.enabled = !fullScreen.enabled)}
 		{@attach tooltip($_('full_screen'))}
 	>
-		{#if fullScreen.enabled}<Minimize />{:else}<Maximize />{/if}
+		{#if fullScreen.enabled}<FullscreenCollapse />{:else}<FullscreenExpand />{/if}
 	</button>
 {/if}
 
 <style>
 	.action-button {
 		flex-shrink: 0;
-		margin-right: 0.5rem;
 	}
 </style>
