@@ -27,9 +27,10 @@
 	import {
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer
+		type OrganizationContainer,
+		payloadTypes
 	} from '$lib/models';
-	import { ability, applicationState, user } from '$lib/stores';
+	import { ability, applicationState, mayCreateContainer, user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
 	let favoriteList = getFavoriteListContext();
@@ -251,7 +252,7 @@
 	</div>
 </div>
 
-{#if organizationalUnits.length > 0}
+{#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)}
 	<div
 		class={[
 			'sidebar-panel',
@@ -426,6 +427,7 @@
 		--dropdown-panel-box-shadow: var(--shadow-lg);
 		--dropdown-panel-gap: 0;
 		--dropdown-panel-padding: 0;
+		--dropdown-panel-max-height: 30rem;
 	}
 
 	.sidebar-panel-links-toggle {

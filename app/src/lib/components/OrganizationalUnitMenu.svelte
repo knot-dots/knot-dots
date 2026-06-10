@@ -54,18 +54,19 @@
 		'createContainerDialog'
 	);
 
-	function handleCreateOrgUnit(parentGuid?: string) {
+	function handleCreateOrgUnit(level: number, parentGuid?: string) {
 		const container = containerOfType(
 			payloadTypes.enum.organizational_unit,
 			page.data.currentOrganization.guid,
 			null,
 			page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer;
+		) as Omit<NewContainer, 'payload'> & Pick<OrganizationalUnitContainer, 'payload'>;
+
+		container.payload.level = level;
 
 		if (parentGuid) {
 			container.relation = [
-				...container.relation,
 				{
 					object: parentGuid,
 					position: 0,
@@ -84,7 +85,13 @@
 	});
 
 	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+		modifiers: [
+			{ name: 'offset', options: { offset: [0, 4] } },
+			{
+				name: 'preventOverflow',
+				options: { altAxis: true, boundary: 'clippingParents', padding: 8 }
+			}
+		]
 	};
 
 	let searchQuery = $state('');
@@ -238,7 +245,7 @@
 						class="action-button action-button--size-s"
 						onclick={(e) => {
 							e.stopPropagation();
-							handleCreateOrgUnit(child.id);
+							handleCreateOrgUnit(depth + 2, child.id);
 						}}
 						tabindex={-1}
 						type="button"
@@ -273,6 +280,12 @@
 		>
 			<div class="dropdown-panel-title">
 				<span>{title}</span>
+				{#if canCreateOrgUnit}
+					<button class="action-button" onclick={() => handleCreateOrgUnit(1)} type="button">
+						<Plus />
+						<span class="is-visually-hidden">{$_('organizational_unit.create')}</span>
+					</button>
+				{/if}
 				<button class="action-button" onclick={() => popover.close()} type="button">
 					<Close />
 					<span class="is-visually-hidden">{$_('close')}</span>
@@ -355,7 +368,7 @@
 	.tree-root {
 		overflow-y: auto;
 		padding: 0.25rem;
-		width: 16rem;
+		width: 22.5rem;
 	}
 
 	.tree-item-content {
