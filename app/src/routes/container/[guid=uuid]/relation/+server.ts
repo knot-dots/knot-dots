@@ -16,9 +16,11 @@ import {
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
+	deleteManyContainerRelations,
 	getAllContainersRelatedToIndicatorTemplates,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
+	getAllDirectContainerRelations,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
@@ -31,6 +33,7 @@ import type { RequestHandler } from './$types';
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
+		format: z.array(z.enum(['containers', 'relations'])).default(['containers']),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
@@ -71,6 +74,21 @@ export const GET = (async ({ locals, params, url }) => {
 
 	try {
 		const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+		if (parseResult.data.format[0] === 'relations') {
+			const directRelations = await locals.pool.connect(
+				getAllDirectContainerRelations(container.guid)
+			);
+			const filteredRelations = directRelations.filter((r) => {
+				const parsedPredicate = predicates.safeParse(r.predicate);
+				return (
+					r.object === container.guid &&
+					parsedPredicate.success &&
+					parseResult.data.relationType.includes(parsedPredicate.data)
+				);
+			});
+			return json(filteredRelations);
+		}
 
 		let containers;
 
@@ -203,6 +221,28 @@ export const POST = (async ({ locals, request }) => {
 		error(422, parseResult.error);
 	} else {
 		await locals.pool.connect(updateManyContainerRelations(parseResult.data));
+		return new Response(null, { status: 204 });
+	}
+}) satisfies RequestHandler;
+
+export const DELETE = (async ({ locals, request }) => {
+	if (!locals.user.isAuthenticated) {
+		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
+	}
+
+	if (request.headers.get('Content-Type') != 'application/json') {
+		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
+	}
+
+	const data = await request.json().catch((reason: SyntaxError) => {
+		error(400, { message: reason.message });
+	});
+	const parseResult = z.array(relation).safeParse(data);
+
+	if (!parseResult.success) {
+		error(422, parseResult.error);
+	} else {
+		await locals.pool.connect(deleteManyContainerRelations(parseResult.data));
 		return new Response(null, { status: 204 });
 	}
 }) satisfies RequestHandler;

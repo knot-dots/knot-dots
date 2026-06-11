@@ -25,7 +25,14 @@
 	const subscriptionCheck = resource(
 		() => container.guid,
 		async (guid, _, { signal }) => {
-			const res = await fetch(`/container/${guid}/subscription`, { signal });
+			const relationType = encodeURIComponent('is-subscribed-to');
+			const format = encodeURIComponent('relations');
+			const res = await fetch(
+				`/container/${guid}/relation?format=${format}&relationType=${relationType}`,
+				{
+					signal
+				}
+			);
 			if (!res.ok) return [];
 			return (await res.json()) as Relation[];
 		}
@@ -85,10 +92,17 @@
 
 		if (ouGuids.length === 0) return;
 
-		const response = await fetch(`/container/${container.guid}/subscription`, {
+		const relations = ouGuids.map((orgGuid) => ({
+			object: container.guid,
+			position: 0,
+			predicate: 'is-subscribed-to',
+			subject: orgGuid
+		}));
+
+		const response = await fetch(`/container/${container.guid}/relation`, {
 			method: 'DELETE',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ organizations: ouGuids })
+			body: JSON.stringify(relations)
 		});
 
 		if (response.ok) {

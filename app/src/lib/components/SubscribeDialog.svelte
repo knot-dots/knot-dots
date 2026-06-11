@@ -44,7 +44,11 @@
 	});
 
 	async function loadCurrentSubscriptions() {
-		const res = await fetch(`/container/${container.guid}/subscription`);
+		const relationType = encodeURIComponent('is-subscribed-to');
+		const format = encodeURIComponent('relations');
+		const res = await fetch(
+			`/container/${container.guid}/relation?format=${format}&relationType=${relationType}`
+		);
 		if (!res.ok) return;
 		const relations: Relation[] = await res.json();
 		const subscribedGuids = relations.map((r) => r.subject).filter((guid) => allowedOUs.has(guid));
@@ -155,21 +159,33 @@
 		const promises: Promise<Response>[] = [];
 
 		if (added.length > 0) {
+			const relations = added.map((orgGuid) => ({
+				object: container.guid,
+				position: 0,
+				predicate: 'is-subscribed-to',
+				subject: orgGuid
+			}));
 			promises.push(
-				fetch(`/container/${container.guid}/subscription`, {
+				fetch(`/container/${container.guid}/relation`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ organizations: added })
+					body: JSON.stringify(relations)
 				})
 			);
 		}
 
 		if (removed.length > 0) {
+			const relations = removed.map((orgGuid) => ({
+				object: container.guid,
+				position: 0,
+				predicate: 'is-subscribed-to',
+				subject: orgGuid
+			}));
 			promises.push(
-				fetch(`/container/${container.guid}/subscription`, {
+				fetch(`/container/${container.guid}/relation`, {
 					method: 'DELETE',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ organizations: removed })
+					body: JSON.stringify(relations)
 				})
 			);
 		}
