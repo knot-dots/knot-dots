@@ -60,7 +60,7 @@ jobs:
   test:
     needs: build
     timeout-minutes: 60
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm-large
     strategy:
       fail-fast: false
       matrix:
@@ -110,7 +110,7 @@ jobs:
     needs: test
     if: ${{ !cancelled() }}
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     defaults:
       run:
         working-directory: app
