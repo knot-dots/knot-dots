@@ -125,6 +125,38 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	];
 }
 
+function buildIncludeGuidsMatchClause(params: {
+	includeGuids?: string[];
+	relationPredicates?: string[];
+}): estypes.QueryDslQueryContainer | undefined {
+	if (!params.includeGuids?.length) return undefined;
+
+	const should: estypes.QueryDslQueryContainer[] = [{ terms: { guid: params.includeGuids } }];
+
+	if (params.relationPredicates?.length) {
+		should.push({
+			nested: {
+				path: 'relation',
+				query: {
+					bool: {
+						must: [
+							{ terms: { 'relation.object': params.includeGuids } },
+							{ terms: { 'relation.predicate': params.relationPredicates } }
+						]
+					}
+				}
+			}
+		});
+	}
+
+	return {
+		bool: {
+			should,
+			minimum_should_match: 1
+		}
+	};
+}
+
 export async function getManyContainersWithES(
 	organizations: string[],
 	filters: {
@@ -241,34 +273,10 @@ export async function getManyContainersWithES(
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
 	}
 
-	const subscribedMatchClause: estypes.QueryDslQueryContainer | undefined = options?.includeGuids
-		?.length
-		? {
-				bool: {
-					should: [
-						{ terms: { guid: options.includeGuids } },
-						{
-							nested: {
-								path: 'relation',
-								query: {
-									bool: {
-										must: [
-											{ terms: { 'relation.object': options.includeGuids } },
-											{
-												terms: {
-													'relation.predicate': ['is-part-of', 'is-part-of-program']
-												}
-											}
-										]
-									}
-								}
-							}
-						}
-					],
-					minimum_should_match: 1
-				}
-			}
-		: undefined;
+	const subscribedMatchClause = buildIncludeGuidsMatchClause({
+		includeGuids: options?.includeGuids,
+		relationPredicates: ['is-part-of', 'is-part-of-program']
+	});
 
 	if (organizations.length) {
 		const orgFilter: estypes.QueryDslQueryContainer = filters.organizationalUnits?.length
