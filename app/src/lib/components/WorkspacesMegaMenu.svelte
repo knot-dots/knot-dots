@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
-	import { ability, overlay, overlayWidth } from '$lib/stores';
+	import { ability, overlay, overlayWidth, user } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
 		groupWorkspacesByModule,
@@ -54,7 +54,8 @@
 			organization: page.data.currentOrganization,
 			organizationalUnit: page.data.currentOrganizationalUnit,
 			features,
-			ability: $ability
+			ability: $ability,
+			user: $user
 		})
 	);
 

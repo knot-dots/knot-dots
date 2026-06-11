@@ -20,7 +20,7 @@
 		buttonStyle = 'default',
 		editable = false,
 		labelFn,
-		offset,
+		offset = [0, 4],
 		options,
 		value = $bindable()
 	}: Props = $props();

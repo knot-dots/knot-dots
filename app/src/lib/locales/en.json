@@ -698,6 +698,7 @@
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
 		"head": "Head",
+		"none": "No role",
 		"observer": "Observer"
 	},
 	"rule": "Rule",
@@ -880,6 +881,7 @@
 	"user": {
 		"display_name": "Name",
 		"email": "Email",
+		"invitation_sent": "Invitation sent",
 		"remove": "Remove",
 		"role": "Role"
 	},
@@ -961,6 +963,8 @@
 	"workspace.categories.description": "Define custom categories",
 	"workspace.overview.title": "All objects",
 	"workspace.overview.description": "All content at a glance",
+	"workspace.users.title": "Users",
+	"workspace.users.description": "Manage access and roles",
 	"workspace.view.label": "View",
 	"workspace.view.catalog": "Catalog",
 	"workspace.view.level": "Level board",

@@ -33,6 +33,7 @@
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
 	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
+	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
@@ -411,6 +412,8 @@
 						<RelationTypeFilterDropDown {options} />
 					{:else if key === 'member'}
 						<MemberFilterDropDown {options} />
+					{:else if key === 'role'}
+						<RoleFilterDropDown {options} />
 					{:else if options.some(({ count, subOptions }) => (count ?? 0) > 0 || subOptions?.some((s) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 						<FilterDropDown {key} {options} label={labelOverride} />
 					{/if}
