@@ -42,7 +42,7 @@
 	type Role = (typeof roles)[number];
 
 	const roleColors: Record<Role, string> = {
-		administrator: 'red',
+		administrator: 'orange',
 		head: 'yellow',
 		collaborator: 'indigo',
 		observer: 'gray'
