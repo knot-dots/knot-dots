@@ -25,6 +25,8 @@ const defaultFacetKeys = [
 	'administrativeType',
 	'assignee',
 	'federalState',
+	'organization',
+	'organizationalUnit',
 	'programType',
 	'indicatorCategory',
 	'indicatorType',
@@ -39,6 +41,8 @@ const facetFieldMap: Record<string, string> = {
 	administrativeType: 'payload.administrativeType',
 	assignee: 'payload.assignee',
 	federalState: 'payload.federalState',
+	organization: 'organization',
+	organizationalUnit: 'organizational_unit',
 	programType: 'payload.programType',
 	indicatorCategory: 'payload.indicatorCategory',
 	indicatorType: 'payload.indicatorType',
@@ -53,6 +57,8 @@ const facetSizeMap: Record<string, number> = {
 	administrativeType: 20,
 	assignee: 200,
 	federalState: 20,
+	organization: 100,
+	organizationalUnit: 500,
 	programType: 20,
 	indicatorCategory: 100,
 	indicatorType: 20,
@@ -83,16 +89,23 @@ function buildFacetAggregations(params: {
 
 	const aggs: Record<string, estypes.AggregationsAggregationContainer> = {};
 
+	// Coupled facets: selecting one should not affect the other's counts
+	const coupledFacets: Record<string, string[]> = {
+		organization: ['organizationalUnit'],
+		organizationalUnit: ['organization']
+	};
+
 	for (const key of facetKeys) {
 		const useCategoryField = customCategoryKeys.includes(key);
 		const field = useCategoryField
 			? `payload.category.${key}`
 			: (facetFieldMap[key] ?? `payload.category.${key}`);
 		const size = facetSizeMap[key] ?? 200;
+		const excludeKeys = new Set([key, ...(coupledFacets[key] ?? [])]);
 		const filtersExceptKey: estypes.QueryDslQueryContainer[] = [];
 
 		for (const [facetKey, clauses] of Object.entries(facetFilters)) {
-			if (facetKey === key) continue;
+			if (excludeKeys.has(facetKey)) continue;
 			filtersExceptKey.push(...clauses);
 		}
 
@@ -239,10 +252,12 @@ export async function getManyContainersWithES(
 	if (filters.organizationalUnits === null) {
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
 	} else if (filters.organizationalUnits?.length) {
-		nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
+		addFacetFilter(facetFilters, 'organizationalUnit', {
+			terms: { organizational_unit: filters.organizationalUnits }
+		});
 	}
 	if (organizations.length) {
-		nonFacetFilters.push({ terms: { organization: organizations } });
+		addFacetFilter(facetFilters, 'organization', { terms: { organization: organizations } });
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
