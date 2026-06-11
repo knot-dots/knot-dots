@@ -317,7 +317,7 @@
 	}
 
 	.col-role {
-		max-width: 10rem;
-		width: 10rem;
+		max-width: 12rem;
+		width: 12rem;
 	}
 </style>
