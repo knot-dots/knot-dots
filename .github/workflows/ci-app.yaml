@@ -21,7 +21,7 @@ env:
 jobs:
   check:
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     defaults:
       run:
         working-directory: app
@@ -39,7 +39,7 @@ jobs:
   build:
     needs: check
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
       - name: Set up Docker Buildx for caching
@@ -60,7 +60,7 @@ jobs:
   test:
     needs: build
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm-large
     strategy:
       fail-fast: false
       matrix:
@@ -110,7 +110,7 @@ jobs:
     needs: test
     if: ${{ !cancelled() }}
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     defaults:
       run:
         working-directory: app
@@ -140,7 +140,7 @@ jobs:
   publish:
     needs: test
     if: success() && github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -155,7 +155,6 @@ jobs:
           context: "."
           file: "./app/Dockerfile"
           target: production
-          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.REGISTRY }}/app:${{ github.sha }}
