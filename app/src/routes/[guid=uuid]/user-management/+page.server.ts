@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { findDescendants, predicates } from '$lib/models';
+import { findDescendants, predicates, type User } from '$lib/models';
 import { getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
@@ -44,9 +44,9 @@ export const load = (async ({ locals, parent }) => {
 		locals.pool.connect(getAllRelatedUsersByContainers(displayedContainerGuids, userPredicates))
 	]);
 
-	const usersByGuid = new Map(relatedUsers.map(({ user }) => [user.guid, user]));
+	const usersByGuid = new Map(relatedUsers.map((user) => [user.guid, user]));
 
-	const withEmail = (user: (typeof relatedUsers)[number]['user']) => ({
+	const withEmail = (user: User) => ({
 		...user,
 		email: members.find(({ id }) => id === user.guid)?.username ?? user.guid
 	});
