@@ -137,8 +137,8 @@ export const POST = (async ({ locals, request }) => {
 									);
 								}
 							} catch (error) {
-								log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 								log.error(
+									isErrorLike(error) ? { error: serializeError(error) } : {},
 									`failed to create container for project ${JSON.stringify(project)} of job ${job}`
 								);
 							} finally {

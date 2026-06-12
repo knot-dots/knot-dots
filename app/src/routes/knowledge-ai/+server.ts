@@ -142,8 +142,8 @@ export const POST = (async ({ locals, request }) => {
 								);
 							}
 						} catch (error) {
-							log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 							log.error(
+								isErrorLike(error) ? { error: serializeError(error) } : {},
 								`failed to create container for object ${JSON.stringify(object)} of job ${job}`
 							);
 						}
@@ -157,7 +157,7 @@ export const POST = (async ({ locals, request }) => {
 
 			const { error } = emit('message', 'complete');
 			if (error) {
-				log.error(serializeError(error), String(error));
+				log.error({ error: serializeError(error) }, String(error));
 			}
 
 			lock.set(false);
