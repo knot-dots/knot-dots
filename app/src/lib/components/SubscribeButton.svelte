@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import SubscribeDialog from '$lib/components/SubscribeDialog.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import type { AnyContainer, OrganizationalUnitContainer, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
 	import Subscribe from '~icons/knotdots/subscribe';
@@ -70,7 +71,8 @@
 	});
 
 	const canSubscribe = $derived(
-		$user.isAuthenticated &&
+		createFeatureDecisions(page.data.features).useSubscriptions() &&
+			$user.isAuthenticated &&
 			myOrganizationalUnitGuids.size > 0 &&
 			container.payload.type === 'program' &&
 			'programType' in container.payload &&

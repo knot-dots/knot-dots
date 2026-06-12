@@ -674,6 +674,7 @@
 	"resource": "Ressource",
 	"resource_v2": "Ressource",
 	"ResourceV2": "Ressourcenplanung",
+	"Subscriptions": "Abonnements",
 	"resource_data": "Ressourcendaten",
 	"resource_data_collection": "Ressourcendatensammlung",
 	"resource_category.material": "Sachmittel",

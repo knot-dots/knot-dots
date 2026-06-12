@@ -674,6 +674,7 @@
 	"resource": "Resource",
 	"resource_v2": "Resource",
 	"ResourceV2": "ResourceV2",
+	"Subscriptions": "Subscriptions",
 	"resource_data": "Resource data",
 	"resource_data_collection": "Resource data collection",
 	"resource_category.material": "Material",
