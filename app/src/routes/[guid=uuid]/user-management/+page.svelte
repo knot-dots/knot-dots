@@ -250,8 +250,8 @@
 	}
 
 	table {
-		border-collapse: collapse;
-		border-style: hidden;
+		border-collapse: separate;
+		border-spacing: 0;
 		width: max-content;
 	}
 
@@ -265,9 +265,14 @@
 
 	th,
 	td {
-		border: 1px solid var(--color-gray-100);
+		border-right: 1px solid var(--color-gray-100);
 		padding: 0.5rem;
 		white-space: nowrap;
+	}
+
+	th:last-child,
+	td:last-child {
+		border-right: none;
 	}
 
 	th {
@@ -281,6 +286,10 @@
 		font-weight: 500;
 		height: 50px;
 		padding: 0.625rem 0.5rem;
+	}
+
+	tbody tr:last-child td {
+		border-bottom: none;
 	}
 
 	.not-signed-up {
