@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import saveContainerUser from '$lib/client/saveContainerUser';
+	import Dialog from '$lib/components/Dialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
@@ -28,12 +29,19 @@
 	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
 	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
+	import UserAddIcon from '~icons/flowbite/user-add-outline';
+	import saveUser from '$lib/client/saveUser';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
+
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
+	let email: string = $state('');
 
 	const isEditMode = $derived($applicationState.containerDetailView.editable ?? false);
 
@@ -167,11 +175,60 @@
 		await invalidateAll();
 		roleOverrides.delete(key);
 	}
+
+	function handleInvite(container: AnyContainer) {
+		return async (event: Event) => {
+			event.preventDefault();
+
+			try {
+				const response = await saveUser({ email, container });
+				if (!response.ok) {
+					console.log(await response.json());
+					alert($_('invite.failure'));
+					return;
+				}
+
+				email = '';
+				await invalidateAll();
+				dialog.close();
+			} catch (error) {
+				console.log(error);
+				alert($_('invite.failure'));
+			}
+		};
+	}
 </script>
+
+<Dialog bind:dialog>
+	<form onsubmit={handleInvite(data.container)}>
+		<h3>{$_('invite.heading')}</h3>
+		<label>
+			{$_('invite.email')}
+			<!-- svelte-ignore a11y_autofocus -->
+			<input type="email" bind:value={email} autofocus required />
+		</label>
+		<button class="button-primary" type="submit">{$_('invite.submit')}</button>
+	</form>
+</Dialog>
 
 <Layout>
 	{#snippet header()}
-		<Header search {facets} sortOptions={[]} />
+		{#snippet commands()}
+			{#if $ability.can('invite-members', data.container)}
+				<button
+					aria-label={$_('invite.heading')}
+					class="button button-xs button-primary"
+					type="button"
+					{@attach tooltip($_('invite.heading'))}
+					onclick={() => dialog.showModal()}
+				>
+					<UserAddIcon />
+					<span>{$_('invite.heading')}</span>
+				</button>
+			{/if}
+		{/snippet}
+
+		<Header search {facets} sortOptions={[]} {commands} />
 	{/snippet}
 
 	{#snippet main()}
@@ -290,6 +347,26 @@
 	.not-signed-up {
 		color: var(--color-gray-500);
 		font-style: italic;
+	}
+
+	form h3 {
+		margin-bottom: 1rem;
+	}
+
+	form button {
+		display: block;
+		margin-top: 1.5rem;
+		width: 100%;
+	}
+
+	form label {
+		display: block;
+		margin-top: 1rem;
+	}
+
+	form input {
+		display: block;
+		width: 100%;
 	}
 
 	.header-content {
