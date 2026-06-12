@@ -281,7 +281,7 @@
 	td {
 		color: var(--color-gray-800);
 		font-weight: 500;
-		height: 50px;
+		height: 3.25rem;
 		padding: 0.625rem 0.5rem;
 	}
 
@@ -308,8 +308,8 @@
 
 	.col-name,
 	.col-email {
-		min-width: 236px;
-		width: 236px;
+		min-width: 14.75rem;
+		width: 14.75rem;
 	}
 
 	.col-role {
