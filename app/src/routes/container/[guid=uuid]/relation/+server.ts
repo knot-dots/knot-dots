@@ -17,7 +17,7 @@ import {
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
-	getAllContainersRelatedToIndicatorTemplates,
+	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
@@ -81,7 +81,7 @@ export const GET = (async ({ locals, params, url }) => {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
 					locals.pool.connect(
-						getAllContainersRelatedToIndicatorTemplates(
+						getAllContainersRelatedToIndicators(
 							[container],
 							{
 								organizations: parseResult.data.organization,
@@ -120,7 +120,7 @@ export const GET = (async ({ locals, params, url }) => {
 				}
 
 				containers = await locals.pool.connect(
-					getAllContainersRelatedToIndicatorTemplates(
+					getAllContainersRelatedToIndicators(
 						[container],
 						{
 							organizations: parseResult.data.organization,

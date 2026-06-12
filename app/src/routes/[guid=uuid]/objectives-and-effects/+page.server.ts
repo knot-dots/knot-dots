@@ -8,7 +8,7 @@ import {
 	indicatorTypes,
 	payloadTypes
 } from '$lib/models';
-import { getAllContainersRelatedToIndicatorTemplates } from '$lib/server/db';
+import { getAllContainersRelatedToIndicators } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
@@ -43,7 +43,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	const data = esResult.facets;
 
 	const relatedContainers = await locals.pool.connect(
-		getAllContainersRelatedToIndicatorTemplates(
+		getAllContainersRelatedToIndicators(
 			containers,
 			{ organizations: [currentOrganization.guid] },
 			{

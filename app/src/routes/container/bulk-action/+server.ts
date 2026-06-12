@@ -18,7 +18,7 @@ import {
 	deleteContainerRecursively,
 	deleteOrganizationalUnitContainer,
 	deleteOrganizationContainer,
-	getAllContainersRelatedToIndicatorTemplates,
+	getAllContainersRelatedToIndicators,
 	getManyContainers,
 	updateContainer
 } from '$lib/server/db';
@@ -56,8 +56,8 @@ export const POST = (async ({ locals, request }) => {
 			''
 		)(txConnection);
 
-		const relatedContainers = await getAllContainersRelatedToIndicatorTemplates(
-			containers.filter(isIndicatorTemplateContainer),
+		const relatedContainers = await getAllContainersRelatedToIndicators(
+			containers.filter((c) => isBinaryIndicatorContainer(c) || isIndicatorTemplateContainer(c)),
 			{},
 			{
 				organizations: [parseResult.data.organization],
@@ -78,7 +78,7 @@ export const POST = (async ({ locals, request }) => {
 		// Therefore, the indicators belonging to other organizational contexts
 		// need to be excluded from the bulk action targets.
 		const isNotForeignIndicator = (container: AnyContainer) =>
-			!(isIndicatorTemplateContainer(container) || isBinaryIndicatorContainer(container)) ||
+			!(isBinaryIndicatorContainer(container) || isIndicatorTemplateContainer(container)) ||
 			(container.organization == parseResult.data.organization &&
 				container.organizational_unit == parseResult.data.organizational_unit);
 

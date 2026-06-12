@@ -13,7 +13,7 @@ import {
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
-	getAllContainersRelatedToIndicatorTemplates,
+	getAllContainersRelatedToIndicators,
 	getContainerByGuid,
 	getManyContainers,
 	getManyOrganizationContainers
@@ -78,7 +78,7 @@ export const GET = (async ({ locals, params, url }) => {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 
-		const containersRelatedToIndicators = await getAllContainersRelatedToIndicatorTemplates(
+		const containersRelatedToIndicators = await getAllContainersRelatedToIndicators(
 			indicatorTemplateContainers,
 			{
 				organizations: parseResult.data.organization,
