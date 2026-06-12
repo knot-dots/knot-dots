@@ -56,14 +56,17 @@
 		{ label: emptyLabel ?? $_('empty'), value: undefined },
 		...options
 	]);
-	const emptyBadgeStyle = '--badge-background-color: transparent; --badge-color: #44546e;';
 
-	function badgeClass(option?: BadgeDropdownOption) {
-		return option?.badgeColor ? `badge badge--${option.badgeColor}` : 'badge';
+	function dropdownButtonClass(option?: BadgeDropdownOption) {
+		return option?.badgeColor
+			? `dropdown-button dropdown-button--${option.badgeColor}`
+			: 'dropdown-button dropdown-button--empty';
 	}
 
-	function badgeStyle(option?: BadgeDropdownOption) {
-		return option?.value == null ? emptyBadgeStyle : undefined;
+	function badgeClass(option?: BadgeDropdownOption) {
+		return option?.badgeColor
+			? `badge badge--large badge--${option.badgeColor}`
+			: 'badge badge--large badge--empty';
 	}
 </script>
 
@@ -71,8 +74,7 @@
 	<div class="dropdown" use:popperRef>
 		<button
 			aria-labelledby={labelledBy}
-			class={badgeClass(selected)}
-			style={badgeStyle(selected)}
+			class={dropdownButtonClass(selected)}
 			type="button"
 			use:popover.button
 		>
@@ -95,7 +97,7 @@
 							bind:group={value}
 							onchange={() => onchange?.(option.value)}
 						/>
-						<span class={badgeClass(option)} style={badgeStyle(option)}>{option.label}</span>
+						<span class={dropdownButtonClass(option)}>{option.label}</span>
 					</label>
 				{/each}
 			</fieldset>
@@ -103,18 +105,52 @@
 	</div>
 {:else}
 	<div class="value">
-		<span class={badgeClass(selected)} style={badgeStyle(selected)}>{selectedLabel}</span>
+		<span class={badgeClass(selected)}>{selectedLabel}</span>
 	</div>
 {/if}
 
 <style>
-	.badge {
-		float: left;
-		font-weight: 500;
+	.dropdown-button {
+		border-radius: 6px;
+		font-size: 0.875rem;
+		gap: 0.25rem;
+		padding: 0.25rem 0.75rem;
+		width: fit-content;
 	}
 
-	button.badge {
-		border: 0;
-		cursor: pointer;
+	.dropdown-button.dropdown-button--empty {
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-gray-500);
+		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
+	}
+
+	.dropdown-button.dropdown-button--orange {
+		--dropdown-button-active-background: rgb(from var(--color-orange-500) r g b / 0.25);
+		--dropdown-button-default-background: var(--color-orange-100);
+		--dropdown-button-default-color: var(--color-orange-700);
+		--dropdown-button-expanded-background: rgb(from var(--color-orange-500) r g b / 0.15);
+		--dropdown-button-hover-background: rgb(from var(--color-orange-500) r g b / 0.1);
+	}
+
+	.dropdown-button.dropdown-button--gray {
+		--dropdown-button-default-background: var(--color-gray-100);
+		--dropdown-button-default-color: var(--color-gray-700);
+		--dropdown-button-expanded-background: rgb(from var(--color-primary-500) r g b / 0.15);
+	}
+
+	.dropdown-button.dropdown-button--indigo {
+		--dropdown-button-active-background: rgb(from var(--color-indigo-500) r g b / 0.25);
+		--dropdown-button-default-background: var(--color-indigo-100);
+		--dropdown-button-default-color: var(--color-indigo-700);
+		--dropdown-button-expanded-background: rgb(from var(--color-indigo-500) r g b / 0.15);
+		--dropdown-button-hover-background: rgb(from var(--color-indigo-500) r g b / 0.1);
+	}
+
+	.dropdown-button.dropdown-button--yellow {
+		--dropdown-button-active-background: rgb(from var(--color-yellow-500) r g b / 0.25);
+		--dropdown-button-default-background: var(--color-yellow-100);
+		--dropdown-button-default-color: var(--color-yellow-700);
+		--dropdown-button-expanded-background: rgb(from var(--color-yellow-500) r g b / 0.15);
+		--dropdown-button-hover-background: rgb(from var(--color-yellow-500) r g b / 0.1);
 	}
 </style>

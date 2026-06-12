@@ -42,7 +42,7 @@
 	type Role = (typeof roles)[number];
 
 	const roleColors: Record<Role, string> = {
-		administrator: 'red',
+		administrator: 'orange',
 		head: 'yellow',
 		collaborator: 'indigo',
 		observer: 'gray'
@@ -71,8 +71,6 @@
 		value: role,
 		badgeColor: roleColors[role]
 	}));
-
-	const headerIconStyle = 'color: var(--color-gray-500); flex: none;';
 
 	const allUsers = $derived.by(() => {
 		return [...data.users].sort((a, b) => displayName(a).localeCompare(displayName(b)));
@@ -177,118 +175,116 @@
 	{/snippet}
 
 	{#snippet main()}
-		<div class="table-shell">
-			<div class="table-wrapper">
-				<table>
-					<thead>
+		<div class="table-wrapper">
+			<table>
+				<thead>
+					<tr>
+						<th class="col-name">
+							<span class="header-content">
+								<UserIcon />
+								<span class="header-label">{$_('user.display_name')}</span>
+							</span>
+						</th>
+						<th class="col-email">
+							<span class="header-content">
+								<EnvelopeIcon />
+								<span class="header-label">{$_('user.email')}</span>
+							</span>
+						</th>
+						{#each organizationColumns as org (org.container.guid)}
+							<th class="col-role">
+								<span class="header-content" {@attach tooltip(org.container.payload.name)}>
+									<ArrowDownIcon />
+									<span class="header-label">{org.container.payload.name}</span>
+								</span>
+							</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each users as user (user.guid)}
+						{@const signedUp = user.family_name || user.given_name}
 						<tr>
-							<th class="col-name">
-								<span class="header-content">
-									<UserIcon height="16" style={headerIconStyle} width="16" />
-									<span class="header-label">{$_('user.display_name')}</span>
-								</span>
-							</th>
-							<th class="col-email">
-								<span class="header-content">
-									<EnvelopeIcon height="16" style={headerIconStyle} width="16" />
-									<span class="header-label">{$_('user.email')}</span>
-								</span>
-							</th>
+							<td class={['col-name', !signedUp && 'not-signed-up']}>
+								{signedUp ? displayName(user) : $_('user.invitation_sent')}
+							</td>
+							<td class="col-email">{user.email}</td>
 							{#each organizationColumns as org (org.container.guid)}
-								<th class="col-role">
-									<span class="header-content" {@attach tooltip(org.container.payload.name)}>
-										<ArrowDownIcon height="16" style={headerIconStyle} width="16" />
-										<span class="header-label">{org.container.payload.name}</span>
-									</span>
-								</th>
+								{@const canEdit = isEditMode && $ability.can('update', org.container)}
+								{@const role = visibleRoleFor(user, org.container)}
+								<td class="col-role">
+									{#if role}
+										<BadgeDropdown
+											value={role}
+											options={roleOptions}
+											editable={canEdit}
+											emptyLabel={$_('role.none')}
+											onchange={(role) => saveRole(user, org.container, role)}
+										/>
+									{:else if canEdit}
+										<BadgeDropdown
+											value={role}
+											options={roleOptions}
+											editable={canEdit}
+											emptyLabel={$_('role.none')}
+											onchange={(role) => saveRole(user, org.container, role)}
+										/>
+									{/if}
+								</td>
 							{/each}
 						</tr>
-					</thead>
-					<tbody>
-						{#each users as user (user.guid)}
-							{@const signedUp = user.family_name || user.given_name}
-							<tr>
-								<td class={['col-name', !signedUp && 'not-signed-up']}>
-									{signedUp ? displayName(user) : $_('user.invitation_sent')}
-								</td>
-								<td class="col-email">{user.email}</td>
-								{#each organizationColumns as org (org.container.guid)}
-									{@const canEdit = isEditMode && $ability.can('update', org.container)}
-									{@const role = visibleRoleFor(user, org.container)}
-									<td class="col-role">
-										{#if role}
-											<BadgeDropdown
-												value={role}
-												options={roleOptions}
-												editable={canEdit}
-												emptyLabel={$_('role.none')}
-												onchange={(role) => saveRole(user, org.container, role)}
-											/>
-										{:else if canEdit}
-											<BadgeDropdown
-												value={role}
-												options={roleOptions}
-												editable={canEdit}
-												emptyLabel={$_('role.none')}
-												onchange={(role) => saveRole(user, org.container, role)}
-											/>
-										{/if}
-									</td>
-								{/each}
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
+					{/each}
+				</tbody>
+			</table>
 		</div>
 	{/snippet}
 </Layout>
 
 <style>
-	.table-shell {
-		box-sizing: border-box;
-		flex: 1;
-		min-height: 0;
-		padding: 1rem 1.5rem 0;
-	}
-
 	.table-wrapper {
-		height: 100%;
+		margin: 1rem 1.5rem 0;
 		overflow: auto;
+		position: relative;
 	}
 
 	table {
-		border-collapse: collapse;
-		border-style: hidden;
+		border-collapse: separate;
+		border-spacing: 0;
 		width: max-content;
 	}
 
 	thead th {
-		background: white;
 		position: sticky;
 		top: 0;
-		white-space: nowrap;
 		z-index: 1;
 	}
 
 	th,
 	td {
-		border: 1px solid var(--color-gray-100);
+		border-right: 1px solid var(--color-gray-100);
 		padding: 0.5rem;
 		white-space: nowrap;
+	}
+
+	th:last-child,
+	td:last-child {
+		border-right: none;
 	}
 
 	th {
 		color: var(--color-gray-600);
 		font-weight: 400;
-		height: 40px;
 	}
 
 	td {
 		color: var(--color-gray-800);
 		font-weight: 500;
-		height: 50px;
+		height: 3.25rem;
 		padding: 0.625rem 0.5rem;
+	}
+
+	tbody tr:last-child td {
+		border-bottom: none;
 	}
 
 	.not-signed-up {
@@ -300,11 +296,15 @@
 		align-items: center;
 		display: flex;
 		gap: 0.375rem;
-		min-width: 0;
+	}
+
+	.header-content :global(svg) {
+		height: 1rem;
+		flex-shrink: 0;
+		width: 1rem;
 	}
 
 	.header-label {
-		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -312,12 +312,12 @@
 
 	.col-name,
 	.col-email {
-		min-width: 236px;
-		width: 236px;
+		min-width: 14.75rem;
+		width: 14.75rem;
 	}
 
 	.col-role {
-		max-width: 10rem;
-		width: 10rem;
+		max-width: 12rem;
+		width: 12rem;
 	}
 </style>
