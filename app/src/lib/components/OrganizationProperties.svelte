@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
+	import EditableCustomFavicon from '$lib/components/EditableCustomFavicon.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
@@ -69,6 +70,10 @@
 
 		{#if $ability.can('update', container, 'payload.customDomain')}
 			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
+		{/if}
+
+		{#if $ability.can('update', container, 'payload.customFavicon')}
+			<EditableCustomFavicon {editable} bind:value={container.payload.customFavicon} />
 		{/if}
 
 		{#if $ability.can('update', container, 'payload.visibility')}

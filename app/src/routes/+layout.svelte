@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
+	import { asset } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
@@ -10,6 +11,7 @@
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
+	import transformFileURL from '$lib/transformFileURL';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
 
@@ -100,6 +102,17 @@
 
 <svelte:head>
 	<title>{title}</title>
+
+	{#if data.currentOrganization.payload.customFavicon}
+		<link
+			rel="icon"
+			href={transformFileURL(data.currentOrganization.payload.customFavicon.url)}
+			type={data.currentOrganization.payload.customFavicon.type}
+		/>
+	{:else}
+		<link rel="icon" href={asset('/favicon.png')} sizes="any" type="image/png" />
+	{/if}
+
 	{#if env.PUBLIC_MATOMO_CONTAINER_ID && data.currentOrganization.payload.useAnalytics}
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html `<script>
