@@ -256,10 +256,8 @@
 	}
 
 	thead th {
-		background: white;
 		position: sticky;
 		top: 0;
-		white-space: nowrap;
 		z-index: 1;
 	}
 
@@ -278,7 +276,6 @@
 	th {
 		color: var(--color-gray-600);
 		font-weight: 400;
-		height: 40px;
 	}
 
 	td {
@@ -301,11 +298,9 @@
 		align-items: center;
 		display: flex;
 		gap: 0.375rem;
-		min-width: 0;
 	}
 
 	.header-label {
-		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
