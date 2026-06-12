@@ -72,8 +72,6 @@
 		badgeColor: roleColors[role]
 	}));
 
-	const headerIconStyle = 'color: var(--color-gray-500); flex: none;';
-
 	const allUsers = $derived.by(() => {
 		return [...data.users].sort((a, b) => displayName(a).localeCompare(displayName(b)));
 	});
@@ -183,20 +181,20 @@
 					<tr>
 						<th class="col-name">
 							<span class="header-content">
-								<UserIcon height="16" style={headerIconStyle} width="16" />
+								<UserIcon />
 								<span class="header-label">{$_('user.display_name')}</span>
 							</span>
 						</th>
 						<th class="col-email">
 							<span class="header-content">
-								<EnvelopeIcon height="16" style={headerIconStyle} width="16" />
+								<EnvelopeIcon />
 								<span class="header-label">{$_('user.email')}</span>
 							</span>
 						</th>
 						{#each organizationColumns as org (org.container.guid)}
 							<th class="col-role">
 								<span class="header-content" {@attach tooltip(org.container.payload.name)}>
-									<ArrowDownIcon height="16" style={headerIconStyle} width="16" />
+									<ArrowDownIcon />
 									<span class="header-label">{org.container.payload.name}</span>
 								</span>
 							</th>
@@ -298,6 +296,12 @@
 		align-items: center;
 		display: flex;
 		gap: 0.375rem;
+	}
+
+	.header-content :global(svg) {
+		height: 1rem;
+		flex-shrink: 0;
+		width: 1rem;
 	}
 
 	.header-label {
