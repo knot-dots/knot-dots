@@ -110,7 +110,7 @@
 			type={data.currentOrganization.payload.customFavicon.type}
 		/>
 	{:else}
-		<link rel="icon" href={asset('/favicon.png')} sizes="any" type="image/png" />
+		<link rel="icon" href={asset('/favicon.svg')} sizes="any" type="image/svg+xml" />
 	{/if}
 
 	{#if env.PUBLIC_MATOMO_CONTAINER_ID && data.currentOrganization.payload.useAnalytics}
