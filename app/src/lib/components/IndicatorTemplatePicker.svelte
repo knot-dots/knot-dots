@@ -9,6 +9,8 @@
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
+		type BinaryIndicatorContainer,
+		binaryIndicatorContainer,
 		computeFacetCount,
 		type GoalContainer,
 		indicatorCategories,
@@ -21,9 +23,9 @@
 	} from '$lib/models';
 
 	interface Props {
-		onSelect: (container: IndicatorTemplateContainer) => void;
+		onSelect: (container: BinaryIndicatorContainer | IndicatorTemplateContainer) => void;
 		target: GoalContainer | MeasureContainer;
-		value?: IndicatorTemplateContainer;
+		value?: BinaryIndicatorContainer | IndicatorTemplateContainer;
 	}
 
 	let { onSelect, target, value }: Props = $props();
@@ -45,7 +47,7 @@
 		async ([filter, terms], _, { signal }) => {
 			if (target) {
 				return z
-					.array(indicatorTemplateContainer)
+					.array(z.union([indicatorTemplateContainer, binaryIndicatorContainer]))
 					.parse(
 						await fetchSuggestedContainers(
 							target.guid,

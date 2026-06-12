@@ -9,15 +9,20 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
+	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
 	import IndicatorTemplatePicker from '$lib/components/IndicatorTemplatePicker.svelte';
 	import IndicatorTemplatePreview from '$lib/components/IndicatorTemplatePreview.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import {
+		type BinaryIndicatorContainer,
 		type EffectContainer,
 		type IndicatorTemplateContainer,
+		isActualDataContainer,
+		isBinaryIndicatorContainer,
 		isEffectContainer,
+		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		type ObjectiveContainer
 	} from '$lib/models';
@@ -31,7 +36,7 @@
 
 	let target = $derived($addEffectState.target ?? $addObjectiveState.target);
 
-	let selected = $state<IndicatorTemplateContainer>();
+	let selected = $state<BinaryIndicatorContainer | IndicatorTemplateContainer>();
 
 	const actualDataResource = resource([() => selected?.guid], async ([guid], _, { signal }) => {
 		if (!guid) {
@@ -51,7 +56,7 @@
 		);
 	});
 
-	function handleSelect(value: IndicatorTemplateContainer) {
+	function handleSelect(value: BinaryIndicatorContainer | IndicatorTemplateContainer) {
 		selected = value;
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
@@ -136,10 +141,18 @@
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
 						<div class="step-3-layout-left">
-							<NewIndicatorChart
-								container={selected}
-								relatedContainers={actualDataResource.current}
-							/>
+							{#if isIndicatorTemplateContainer(selected)}
+								<NewIndicatorChart
+									container={selected}
+									relatedContainers={actualDataResource.current}
+								/>
+							{:else if isBinaryIndicatorContainer(selected)}
+								<BooleanValueToggle
+									checked={actualDataResource.current.filter(isActualDataContainer).at(0)?.payload
+										.booleanValue ?? false}
+									disabled
+								/>
+							{/if}
 						</div>
 					{/if}
 
@@ -249,6 +262,10 @@
 		height: 1.5rem;
 		margin-left: 0.375rem;
 		width: 1.5rem;
+	}
+
+	.step-3-layout-right {
+		--details-padding-x: 0;
 	}
 
 	.button-red {
