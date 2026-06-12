@@ -39,6 +39,7 @@ import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keyc
 
 // Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
 const INDEXABLE_TYPES = new Set<string>([
+	'binary_indicator',
 	'effect',
 	'goal',
 	'help',
