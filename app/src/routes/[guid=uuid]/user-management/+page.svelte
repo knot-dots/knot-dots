@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
@@ -28,6 +28,7 @@
 	import { ability, applicationState } from '$lib/stores';
 	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
 	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
+	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import UserAddIcon from '~icons/flowbite/user-add-outline';
 	import saveUser from '$lib/client/saveUser';
@@ -66,6 +67,7 @@
 	const roleRelationPredicates = new Set<Predicate>(Object.values(rolePredicates));
 
 	let roleOverrides = new SvelteMap<string, Role | null>();
+	let pendingRemovals = new SvelteSet<string>();
 
 	const organizationColumns = $derived([
 		{ container: data.container },
@@ -176,6 +178,68 @@
 		roleOverrides.delete(key);
 	}
 
+	function removableContainersFor(user: User) {
+		return organizationColumns
+			.map(({ container }) => container)
+			.filter((container) => roleFor(user, container))
+			.filter((container) => $ability.can('update', container));
+	}
+
+	function canRemoveUser(user: User) {
+		if (!isEditMode || pendingRemovals.has(user.guid)) return false;
+
+		const roleContainers = organizationColumns
+			.map(({ container }) => container)
+			.filter((container) => roleFor(user, container));
+
+		return (
+			roleContainers.length > 0 &&
+			roleContainers.every((container) => $ability.can('update', container))
+		);
+	}
+
+	async function logResponse(response: Response) {
+		try {
+			console.log(await response.json());
+		} catch {
+			console.log(response.statusText);
+		}
+	}
+
+	async function removeUser(user: User) {
+		const containers = removableContainersFor(user);
+		if (containers.length === 0) return;
+
+		pendingRemovals.add(user.guid);
+
+		try {
+			const responses = await Promise.all(
+				containers.map((container) =>
+					saveContainerUser({
+						...container,
+						user: container.user.filter(({ predicate, subject }) => {
+							if (subject !== user.guid) return true;
+							return !roleRelationPredicates.has(predicate);
+						})
+					})
+				)
+			);
+
+			const failedResponses = responses.filter((response) => !response.ok);
+			if (failedResponses.length > 0) {
+				await Promise.all(failedResponses.map(logResponse));
+				alert($_('user.remove_failure'));
+			}
+
+			await invalidateAll();
+		} catch (error) {
+			console.log(error);
+			alert($_('user.remove_failure'));
+		} finally {
+			pendingRemovals.delete(user.guid);
+		}
+	}
+
 	function handleInvite(container: AnyContainer) {
 		return async (event: Event) => {
 			event.preventDefault();
@@ -263,7 +327,21 @@
 						{@const signedUp = user.family_name || user.given_name}
 						<tr>
 							<td class={['col-name', !signedUp && 'not-signed-up']}>
-								{signedUp ? displayName(user) : $_('user.invitation_sent')}
+								<span class="name-cell-label">
+									{signedUp ? displayName(user) : $_('user.invitation_sent')}
+								</span>
+								{#if canRemoveUser(user)}
+									<button
+										aria-label={$_('user.remove')}
+										class="remove-user-button action-button action-button--size-s"
+										disabled={pendingRemovals.has(user.guid)}
+										type="button"
+										{@attach tooltip($_('user.remove'))}
+										onclick={() => removeUser(user)}
+									>
+										<TrashBinIcon />
+									</button>
+								{/if}
 							</td>
 							<td class="col-email">{user.email}</td>
 							{#each organizationColumns as org (org.container.guid)}
@@ -349,6 +427,29 @@
 		font-style: italic;
 	}
 
+	.name-cell-label {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.remove-user-button {
+		flex-shrink: 0;
+		opacity: 0;
+		pointer-events: none;
+		position: absolute;
+		right: 0.5rem;
+		top: 50%;
+		transform: translateY(-50%);
+		transition: opacity 120ms ease;
+	}
+
+	.col-name:hover .remove-user-button,
+	.col-name:focus-within .remove-user-button {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
 	form h3 {
 		margin-bottom: 1rem;
 	}
@@ -391,6 +492,11 @@
 	.col-email {
 		min-width: 14.75rem;
 		width: 14.75rem;
+	}
+
+	td.col-name {
+		padding-right: 2.5rem;
+		position: relative;
 	}
 
 	.col-role {
