@@ -8,7 +8,6 @@
 	import Subscribe from '~icons/knotdots/subscribe';
 	import CheckCircle from '~icons/knotdots/check-circle';
 	import ChevronDown from '~icons/knotdots/chevron-down';
-	import { resource } from 'runed';
 
 	interface Props {
 		container: AnyContainer;
@@ -22,64 +21,57 @@
 
 	const isSubscribedFromLayout = $derived(subscribedPrograms.includes(container.guid));
 
-	const subscriptionCheck = resource(
-		() => container.guid,
-		async (guid, _, { signal }) => {
-			const relationType = encodeURIComponent('is-subscribed-to');
-			const format = encodeURIComponent('relations');
-			const res = await fetch(
-				`/container/${guid}/relation?format=${format}&relationType=${relationType}`,
-				{
-					signal
-				}
-			);
-			if (!res.ok) return [];
-			return (await res.json()) as Relation[];
-		}
-	);
+	const subscriptionRelations = $derived.by(() => {
+		const relations = (container.relation ?? []) as Relation[];
+		return relations.filter(
+			(r) => r.object === container.guid && r.predicate === 'is-subscribed-to'
+		);
+	});
 
 	const organizationalUnits = $derived(
 		page.data.organizationalUnits as OrganizationalUnitContainer[]
 	);
 
-	const myOUs = $derived.by(() => {
-		const guids = new Set<string>();
+	const myOrganizationalUnitGuids = $derived.by(() => {
+		const organizationalUnitGuids = new Set<string>();
 		if ($user.roles.includes('sysadmin')) {
-			for (const ou of organizationalUnits) {
-				guids.add(ou.guid);
+			for (const organizationalUnit of organizationalUnits) {
+				organizationalUnitGuids.add(organizationalUnit.guid);
 			}
 		} else {
-			for (const ou of organizationalUnits) {
-				if ($user.adminOf.includes(ou.guid) || $user.headOf.includes(ou.guid)) {
-					guids.add(ou.guid);
+			for (const organizationalUnit of organizationalUnits) {
+				if (
+					$user.adminOf.includes(organizationalUnit.guid) ||
+					$user.headOf.includes(organizationalUnit.guid)
+				) {
+					organizationalUnitGuids.add(organizationalUnit.guid);
 				}
 			}
 		}
-		return guids;
+		return organizationalUnitGuids;
 	});
 
 	const currentScope = $derived.by(() => {
-		const currentOU = page.data.currentOrganizationalUnit as
+		const currentOrganizationalUnit = page.data.currentOrganizationalUnit as
 			| OrganizationalUnitContainer
 			| undefined;
-		if (currentOU) return new Set([currentOU.guid]);
+		if (currentOrganizationalUnit) return new Set([currentOrganizationalUnit.guid]);
 		const currentOrg = page.data.currentOrganization as { guid: string } | undefined;
 		if (!currentOrg) return new Set<string>();
-		const ouGuids = organizationalUnits
-			.filter((ou) => ou.organization === currentOrg.guid)
-			.map((ou) => ou.guid);
-		return new Set([currentOrg.guid, ...ouGuids]);
+		const organizationalUnitGuids = organizationalUnits
+			.filter((organizationalUnit) => organizationalUnit.organization === currentOrg.guid)
+			.map((organizationalUnit) => organizationalUnit.guid);
+		return new Set([currentOrg.guid, ...organizationalUnitGuids]);
 	});
 
 	const isSubscribed = $derived.by(() => {
 		if (isSubscribedFromLayout) return true;
-		const subs = subscriptionCheck.current ?? [];
-		return subs.some((r) => currentScope.has(r.subject));
+		return subscriptionRelations.some((r) => currentScope.has(r.subject));
 	});
 
 	const canSubscribe = $derived(
 		$user.isAuthenticated &&
-			myOUs.size > 0 &&
+			myOrganizationalUnitGuids.size > 0 &&
 			container.payload.type === 'program' &&
 			'programType' in container.payload &&
 			container.payload.programType === 'program_type.set_of_rules' &&
@@ -87,16 +79,17 @@
 	);
 
 	async function handleUnsubscribe() {
-		const subs = subscriptionCheck.current ?? [];
-		const ouGuids = subs.map((r) => r.subject).filter((guid) => currentScope.has(guid));
+		const organizationalUnitGuids = subscriptionRelations
+			.map((r) => r.subject)
+			.filter((guid) => currentScope.has(guid));
 
-		if (ouGuids.length === 0) return;
+		if (organizationalUnitGuids.length === 0) return;
 
-		const relations = ouGuids.map((orgGuid) => ({
+		const relations = organizationalUnitGuids.map((organizationalUnitGuid) => ({
 			object: container.guid,
 			position: 0,
 			predicate: 'is-subscribed-to',
-			subject: orgGuid
+			subject: organizationalUnitGuid
 		}));
 
 		const response = await fetch(`/container/${container.guid}/relation`, {
@@ -106,7 +99,6 @@
 		});
 
 		if (response.ok) {
-			subscriptionCheck.refetch();
 			await invalidateAll();
 		}
 	}
@@ -137,7 +129,6 @@
 			{container}
 			bind:open={popoverOpen}
 			anchor={buttonEl}
-			onsubscribed={() => subscriptionCheck.refetch()}
 			onclose={() => (popoverOpen = false)}
 		/>
 	</div>

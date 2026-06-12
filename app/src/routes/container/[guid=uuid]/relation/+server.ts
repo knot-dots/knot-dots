@@ -20,7 +20,6 @@ import {
 	getAllContainersRelatedToIndicatorTemplates,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
-	getAllDirectContainerRelations,
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
@@ -33,7 +32,6 @@ import type { RequestHandler } from './$types';
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
-		format: z.array(z.enum(['containers', 'relations'])).default(['containers']),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
@@ -74,21 +72,6 @@ export const GET = (async ({ locals, params, url }) => {
 
 	try {
 		const container = await locals.pool.connect(getContainerByGuid(params.guid));
-
-		if (parseResult.data.format[0] === 'relations') {
-			const directRelations = await locals.pool.connect(
-				getAllDirectContainerRelations(container.guid)
-			);
-			const filteredRelations = directRelations.filter((r) => {
-				const parsedPredicate = predicates.safeParse(r.predicate);
-				return (
-					r.object === container.guid &&
-					parsedPredicate.success &&
-					parseResult.data.relationType.includes(parsedPredicate.data)
-				);
-			});
-			return json(filteredRelations);
-		}
 
 		let containers;
 

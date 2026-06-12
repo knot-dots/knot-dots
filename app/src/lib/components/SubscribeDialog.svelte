@@ -39,42 +39,39 @@
 
 	$effect(() => {
 		if (open) {
-			loadCurrentSubscriptions();
+			const relations = ((container.relation ?? []) as Relation[]).filter(
+				(r) => r.object === container.guid && r.predicate === 'is-subscribed-to'
+			);
+			const subscribedGuids = relations
+				.map((r) => r.subject)
+				.filter((guid) => allowedOrganizationalUnitGuids.has(guid));
+			initialSelected = subscribedGuids;
+			selected = [...subscribedGuids];
 		}
 	});
-
-	async function loadCurrentSubscriptions() {
-		const relationType = encodeURIComponent('is-subscribed-to');
-		const format = encodeURIComponent('relations');
-		const res = await fetch(
-			`/container/${container.guid}/relation?format=${format}&relationType=${relationType}`
-		);
-		if (!res.ok) return;
-		const relations: Relation[] = await res.json();
-		const subscribedGuids = relations.map((r) => r.subject).filter((guid) => allowedOUs.has(guid));
-		initialSelected = subscribedGuids;
-		selected = [...subscribedGuids];
-	}
 
 	const organizations = $derived(page.data.organizations as OrganizationContainer[]);
 	const organizationalUnits = $derived(
 		page.data.organizationalUnits as OrganizationalUnitContainer[]
 	);
 
-	const allowedOUs = $derived.by(() => {
-		const guids = new Set<string>();
+	const allowedOrganizationalUnitGuids = $derived.by(() => {
+		const organizationalUnitGuids = new Set<string>();
 		if ($user.roles.includes('sysadmin')) {
-			for (const ou of organizationalUnits) {
-				guids.add(ou.guid);
+			for (const organizationalUnit of organizationalUnits) {
+				organizationalUnitGuids.add(organizationalUnit.guid);
 			}
 		} else {
-			for (const ou of organizationalUnits) {
-				if ($user.adminOf.includes(ou.guid) || $user.headOf.includes(ou.guid)) {
-					guids.add(ou.guid);
+			for (const organizationalUnit of organizationalUnits) {
+				if (
+					$user.adminOf.includes(organizationalUnit.guid) ||
+					$user.headOf.includes(organizationalUnit.guid)
+				) {
+					organizationalUnitGuids.add(organizationalUnit.guid);
 				}
 			}
 		}
-		return guids;
+		return organizationalUnitGuids;
 	});
 
 	interface OrgGroup {
@@ -86,7 +83,9 @@
 		const groups: OrgGroup[] = [];
 		for (const org of organizations) {
 			const units = organizationalUnits.filter(
-				(ou) => ou.organization === org.guid && allowedOUs.has(ou.guid)
+				(organizationalUnit) =>
+					organizationalUnit.organization === org.guid &&
+					allowedOrganizationalUnitGuids.has(organizationalUnit.guid)
 			);
 			if (units.length > 0) {
 				groups.push({ org, units });
@@ -95,7 +94,7 @@
 		return groups;
 	});
 
-	const allSelectableOUs = $derived(orgGroups.flatMap((g) => g.units));
+	const allSelectableOrganizationalUnits = $derived(orgGroups.flatMap((g) => g.units));
 
 	let expanded = $state(new Set<string>());
 	let selected: string[] = $state([]);
@@ -113,7 +112,9 @@
 		return orgGroups
 			.map((group) => ({
 				...group,
-				units: group.units.filter((ou) => ou.payload.name.toLowerCase().includes(lower))
+				units: group.units.filter((organizationalUnit) =>
+					organizationalUnit.payload.name.toLowerCase().includes(lower)
+				)
 			}))
 			.filter((group) => group.units.length > 0);
 	});
@@ -129,10 +130,12 @@
 	}
 
 	function selectAll() {
-		if (selected.length === allSelectableOUs.length) {
+		if (selected.length === allSelectableOrganizationalUnits.length) {
 			selected = [];
 		} else {
-			selected = allSelectableOUs.map((ou) => ou.guid);
+			selected = allSelectableOrganizationalUnits.map(
+				(organizationalUnit) => organizationalUnit.guid
+			);
 		}
 	}
 
@@ -191,6 +194,19 @@
 		}
 
 		await Promise.all(promises);
+
+		const otherRelations = ((container.relation ?? []) as Relation[]).filter(
+			(r) => !(r.object === container.guid && r.predicate === 'is-subscribed-to')
+		);
+		const nextSubscriptionRelations = selected.map((subject, index) => ({
+			object: container.guid,
+			position: index,
+			predicate: 'is-subscribed-to' as const,
+			subject
+		}));
+		container.relation = [...otherRelations, ...nextSubscriptionRelations];
+		initialSelected = [...selected];
+
 		onsubscribed?.();
 		await invalidateAll();
 		selected = [];
@@ -220,7 +236,7 @@
 			{/if}
 			<button
 				class="action-link"
-				class:disabled={selected.length === allSelectableOUs.length}
+				class:disabled={selected.length === allSelectableOrganizationalUnits.length}
 				type="button"
 				onclick={selectAll}
 			>
@@ -241,10 +257,10 @@
 					<span class="group-name">{group.org.payload.name}</span>
 				</button>
 				{#if expanded.has(group.org.guid)}
-					{#each group.units as ou (ou.guid)}
+					{#each group.units as organizationalUnit (organizationalUnit.guid)}
 						<label class="popover-item">
-							<input type="checkbox" value={ou.guid} bind:group={selected} />
-							<span class="item-label">{ou.payload.name}</span>
+							<input type="checkbox" value={organizationalUnit.guid} bind:group={selected} />
+							<span class="item-label">{organizationalUnit.payload.name}</span>
 						</label>
 					{/each}
 				{/if}
