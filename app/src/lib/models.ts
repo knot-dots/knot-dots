@@ -1698,7 +1698,7 @@ export function isAdministrativeAreaBasicDataContainer(
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
 
-const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
+export const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
 
 export type BinaryIndicatorContainer = z.infer<typeof binaryIndicatorContainer>;
 
