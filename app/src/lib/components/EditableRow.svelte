@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
@@ -22,6 +23,7 @@
 	import TaskCategoryDropdown from '$lib/components/TaskCategoryDropdown.svelte';
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
+	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type ActualDataContainer,
 		type AnyContainer,
@@ -42,7 +44,7 @@
 		overlayURL,
 		status
 	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		actualDataContainers?: ActualDataContainer[];
@@ -59,6 +61,10 @@
 		dragEnabled = false,
 		editable = false
 	}: Props = $props();
+
+	const overlayContext = getContext('overlay');
+
+	const bulkActionContext = getBulkActionContext();
 
 	let statusOptions = $derived.by(() => {
 		if (isGoalContainer(container) || isTaskContainer(container)) {
@@ -118,9 +124,28 @@
 			<DragHandle />
 		</span>
 	{/if}
+
 	<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
 		<Overlay />
 	</a>
+
+	{#if $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
+		<label>
+			<input
+				bind:checked={
+					() => bulkActionContext.selected.has(container.guid),
+					() =>
+						bulkActionContext.selected.has(container.guid)
+							? bulkActionContext.selected.delete(container.guid)
+							: bulkActionContext.selected.add(container.guid)
+				}
+				name="bulkActionContextSelection"
+				oninput={(e) => e.stopPropagation()}
+				type="checkbox"
+			/>
+			<span class="is-visually-hidden">{$_('bulk_actions_select')}</span>
+		</label>
+	{/if}
 </div>
 
 {#if columns.includes('title')}
@@ -440,6 +465,10 @@
 		text-align: right;
 	}
 
+	input[type='checkbox'] {
+		scale: 1.25;
+	}
+
 	.cell {
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-default-color: var(--color-gray-700);
@@ -464,6 +493,7 @@
 
 	.cell.cell--action > * {
 		display: inline-block;
+		vertical-align: middle;
 	}
 
 	.cell.cell--action :global(svg) {

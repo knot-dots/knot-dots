@@ -198,7 +198,7 @@
 		flex-direction: column;
 		flex-grow: 0;
 		flex-shrink: 0;
-		padding: 0.625rem;
+		padding: 0.625rem 0;
 	}
 
 	section:nth-child(1) {
@@ -233,7 +233,7 @@
 		color: var(--color-gray-800);
 		display: flex;
 		justify-content: space-between;
-		padding: 0.25rem 0.625rem 0;
+		padding: 0.25rem 0.875rem 0 1.625rem;
 	}
 
 	header h2 {
@@ -270,6 +270,7 @@
 		--dropdown-button-padding: 0.625rem;
 
 		flex-shrink: 0;
+		padding: 0 0.625rem;
 	}
 
 	footer :global(.dropdown) {
