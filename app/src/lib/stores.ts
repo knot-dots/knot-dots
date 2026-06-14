@@ -158,7 +158,7 @@ export const newContainer = writable<NewContainer | undefined>();
 export const lastCreatedContainer = writable<Container | undefined>(undefined);
 
 // Store to track optimistically updated containers (guid -> latest saved version)
-export const lastUpdatedContainers = writable<Map<string, Container>>(new Map());
+export const lastUpdatedContainers = writable<Map<string, AnyContainer>>(new Map());
 
 export type OverlayData =
 	| {
