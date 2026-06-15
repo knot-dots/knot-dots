@@ -100,10 +100,15 @@ export async function loadApplicationContext({
 					)) as Container<OrganizationPayload>;
 				}
 			} else {
-				currentOrganization = organizations.find(
-					({ guid, payload }) =>
-						url.hostname.startsWith(`${guid}.`) || url.hostname === payload.customDomain
-				);
+				currentOrganization = organizations.find(({ guid, payload }) => {
+					const slug = payload.slug?.toLowerCase();
+
+					return (
+						url.hostname.startsWith(`${guid}.`) ||
+						(slug ? url.hostname.startsWith(`${slug}.`) : false) ||
+						url.hostname === payload.customDomain
+					);
+				});
 			}
 		}
 

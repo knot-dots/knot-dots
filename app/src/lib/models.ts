@@ -660,6 +660,41 @@ export function slugify(source: string) {
 		.substring(0, 128);
 }
 
+export const contextSlugPattern = /^[a-z0-9-]+$/;
+
+export const reservedContextSlugs = new Set([
+	'ask-ai',
+	'container',
+	'help',
+	'knowledge-ai',
+	'me',
+	'task-priority',
+	'upload',
+	'user'
+]);
+
+export function isReservedContextSlug(slug: string) {
+	return reservedContextSlugs.has(slug.toLowerCase());
+}
+
+function parseContextSlug(value?: string) {
+	if (!value) {
+		return undefined;
+	}
+
+	const normalized = value.trim().toLowerCase();
+
+	if (normalized.length === 0) {
+		return undefined;
+	}
+
+	if (!contextSlugPattern.test(normalized) || isReservedContextSlug(normalized)) {
+		return undefined;
+	}
+
+	return normalized;
+}
+
 function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
@@ -1291,6 +1326,13 @@ export const organizationPayload = z.strictObject({
 	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
+	slug: z
+		.string()
+		.trim()
+		.toLowerCase()
+		.regex(contextSlugPattern)
+		.refine((value) => !isReservedContextSlug(value))
+		.optional(),
 	type: z.literal(payloadTypes.enum.organization),
 	useAnalytics: z.boolean().default(true),
 	visibility: visibility.default(visibility.enum['organization']),
@@ -1337,6 +1379,13 @@ export const organizationalUnitPayload = z.strictObject({
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationalUnitType: organizationalUnitType.optional(),
+	slug: z
+		.string()
+		.trim()
+		.toLowerCase()
+		.regex(contextSlugPattern)
+		.refine((value) => !isReservedContextSlug(value))
+		.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
 	visibility: visibility.default(visibility.enum['organization']),
 	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
@@ -2726,6 +2775,10 @@ export function getOrganizationURL(
 	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
 ): URL {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
+	const contextSlug =
+		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
+	const organizationSubdomainSlug =
+		container.payload.type === payloadTypes.enum.organization ? contextSlug : undefined;
 
 	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
@@ -2736,11 +2789,11 @@ export function getOrganizationURL(
 			url.hostname =
 				'customDomain' in container.payload && container.payload.customDomain
 					? container.payload.customDomain
-					: `${container.organization}.${url.hostname}`;
+					: `${organizationSubdomainSlug ?? container.organization}.${url.hostname}`;
 		}
 	}
 
-	url.pathname = `/${container.guid}${linkPath}`
+	url.pathname = `/${contextSlug ?? container.guid}${linkPath}`
 		.replace('/me/measures', '/measures/status')
 		.replace('/me/tasks', '/tasks/status')
 		.replace(/\/me$/, '/all/page');

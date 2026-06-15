@@ -206,6 +206,7 @@
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
+		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
 		"unexpected": "Wir arbeiten daran."
 	},
 	"establish_relations": "Beziehungen festlegen",
@@ -696,6 +697,7 @@
 	"report_section": "Abschnitt",
 	"resource": "Ressource",
 	"resource_v2": "Ressource",
+	"ContextSlug": "Lesbare URLs",
 	"ResourceV2": "Ressourcenplanung",
 	"resource_data": "Ressourcendaten",
 	"resource_data_collection": "Ressourcendatensammlung",
@@ -776,6 +778,7 @@
 	"sort_modified": "Zuletzt bearbeitet",
 	"sort_relevance": "Relevanz",
 	"slug": "Slug",
+	"slug.placeholder": "meine-organisation",
 	"start_date": "Beginn",
 	"status": "Status",
 	"status.adopted": "Beschlossen",

@@ -1,5 +1,9 @@
 import { error, json } from '@sveltejs/kit';
-import type { DatabaseConnection, DatabaseTransactionConnection } from 'slonik';
+import {
+	type DatabaseConnection,
+	type DatabaseTransactionConnection,
+	UniqueIntegrityConstraintViolationError
+} from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
@@ -549,42 +553,59 @@ export const POST = (async ({ locals, request }) => {
 	} else if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	} else {
-		const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
-			connection.transaction(async (txConnection) => {
-				const createdContainer = await createContainer({
-					...parseResult.data,
-					user: [
-						{
-							predicate: predicates.enum['is-creator-of'],
-							subject: locals.user.guid
-						}
-					]
-				})(txConnection);
+		try {
+			const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
+				connection.transaction(async (txConnection) => {
+					const createdContainer = await createContainer({
+						...parseResult.data,
+						user: [
+							{
+								predicate: predicates.enum['is-creator-of'],
+								subject: locals.user.guid
+							}
+						]
+					})(txConnection);
 
-				const isCopyOfRelation = parseResult.data.relation.find(
-					({ object, predicate }) =>
-						predicate === predicates.enum['is-copy-of'] && object !== undefined
-				);
-
-				if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
-					await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
-				} else if (isCopyOfRelation && isProgramContainer(createdContainer)) {
-					await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
-				} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
-					await copyReportContainer(createdContainer, isCopyOfRelation, locals.user, txConnection);
-				} else if (isCopyOfRelation && isOrganizationalUnitContainer(createdContainer)) {
-					await copyOrganizationalUnitContainer(
-						createdContainer,
-						isCopyOfRelation,
-						locals.user,
-						txConnection
+					const isCopyOfRelation = parseResult.data.relation.find(
+						({ object, predicate }) =>
+							predicate === predicates.enum['is-copy-of'] && object !== undefined
 					);
-				}
 
-				return createdContainer;
-			})
-		);
+					if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
+						await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
+					} else if (isCopyOfRelation && isProgramContainer(createdContainer)) {
+						await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
+					} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
+						await copyReportContainer(
+							createdContainer,
+							isCopyOfRelation,
+							locals.user,
+							txConnection
+						);
+					} else if (isCopyOfRelation && isOrganizationalUnitContainer(createdContainer)) {
+						await copyOrganizationalUnitContainer(
+							createdContainer,
+							isCopyOfRelation,
+							locals.user,
+							txConnection
+						);
+					}
 
-		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+					return createdContainer;
+				})
+			);
+
+			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+		} catch (e: unknown) {
+			if (
+				e instanceof UniqueIntegrityConstraintViolationError &&
+				(e.constraint == 'container_payload_organization_slug_key' ||
+					e.constraint == 'container_payload_organizational_unit_slug_key')
+			) {
+				error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
+			} else {
+				throw e;
+			}
+		}
 	}
 }) satisfies RequestHandler;

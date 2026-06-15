@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
+	import { isReservedContextSlug } from '$lib/models';
 	import { ability, user } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
@@ -33,9 +34,31 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
+	function contextPathSegment() {
+		const slug = 'slug' in selectedContext.payload ? selectedContext.payload.slug : undefined;
+		const normalizedSlug = slug?.trim().toLowerCase();
+
+		if (
+			normalizedSlug &&
+			/^[a-z0-9-]+$/.test(normalizedSlug) &&
+			!isReservedContextSlug(normalizedSlug)
+		) {
+			return normalizedSlug;
+		}
+
+		return selectedContext.guid;
+	}
+
 	let pathnameWithoutContextSegment = $derived.by(() => {
 		const segments = page.url.pathname.split('/');
-		if (segments.length > 1 && segments[1] === selectedContext.guid) {
+		const slug =
+			'slug' in selectedContext.payload
+				? selectedContext.payload.slug?.trim().toLowerCase()
+				: undefined;
+		if (
+			segments.length > 1 &&
+			(segments[1] === selectedContext.guid || (slug && segments[1] === slug))
+		) {
 			return [segments.slice(0, 1), ...segments.slice(2)].join('/');
 		}
 		return page.url.pathname;
@@ -72,7 +95,7 @@
 	const menu = createMenu({});
 
 	function pathFor(workspace: WorkspaceDefinition): string {
-		return `/${selectedContext.guid}${workspace.views.default}`;
+		return `/${contextPathSegment()}${workspace.views.default}`;
 	}
 
 	function handleChange(event: Event) {
