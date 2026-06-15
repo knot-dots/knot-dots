@@ -171,6 +171,11 @@ function baseFacetMap(
 			fromCounts(administrativeTypes.options as string[], counts.administrativeType)
 		],
 		['federalState', fromCounts(Object.keys(counts.federalState ?? {}), counts.federalState)],
+		['organization', fromCounts(Object.keys(counts.organization ?? {}), counts.organization)],
+		[
+			'organizationalUnit',
+			fromCounts(Object.keys(counts.organizationalUnit ?? {}), counts.organizationalUnit)
+		],
 		['programType', fromCounts(programTypes.options as string[], counts.programType)],
 		[
 			'indicatorCategory',

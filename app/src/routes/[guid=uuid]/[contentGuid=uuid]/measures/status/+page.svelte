@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import Header from '$lib/components/Header.svelte';
@@ -17,6 +18,16 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+
+	setContext('relationOverlay', {
+		enabled: true,
+		predicates: [
+			predicates.enum['is-consistent-with'],
+			predicates.enum['is-equivalent-to'],
+			predicates.enum['is-inconsistent-with'],
+			predicates.enum['is-prerequisite-for']
+		]
+	});
 
 	let containers = $derived(
 		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)

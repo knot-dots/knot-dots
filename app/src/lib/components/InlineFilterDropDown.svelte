@@ -35,6 +35,8 @@
 		['indicatorCategory', 'indicator_category'],
 		['federalState', 'administrative_area.basic_data.federal_state'],
 		['member', 'member_filter.label'],
+		['organization', 'organization'],
+		['organizationalUnit', 'organizational_unit'],
 		['programType', 'program_type'],
 		['relationType', 'relation_filter.label'],
 		['scope', 'scope.label'],

@@ -41,7 +41,13 @@
 	});
 
 	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
+		modifiers: [
+			{ name: 'offset', options: { offset: [0, 4] } },
+			{
+				name: 'preventOverflow',
+				options: { altAxis: true, boundary: 'clippingParents', padding: 8 }
+			}
+		]
 	};
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
@@ -115,13 +121,9 @@
 			<div class="dropdown-panel-title">
 				<span>{title}</span>
 				{#if canCreateOrganization}
-					<button
-						class="action-button"
-						onclick={handleCreateOrganization}
-						title={$_('organization.create')}
-						type="button"
-					>
+					<button class="action-button" onclick={handleCreateOrganization} type="button">
 						<Plus />
+						<span class="is-visually-hidden">{$_('organization.create')}</span>
 					</button>
 				{/if}
 				<button class="action-button" onclick={() => menu.close()} type="button">
@@ -205,7 +207,7 @@
 	.menu {
 		padding: 0 0.25rem;
 		overflow-y: auto;
-		width: 16rem;
+		width: 22.5rem;
 	}
 
 	.menu-item.menu-item--active > a {

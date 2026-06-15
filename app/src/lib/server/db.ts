@@ -1713,6 +1713,26 @@ export function getAllRelatedUsers(guid: string, predicates: Predicate[]) {
 	};
 }
 
+export function getAllRelatedUsersByContainers(guids: string[], predicates: Predicate[]) {
+	return async (connection: DatabaseConnection): Promise<ReadonlyArray<User>> => {
+		if (guids.length === 0 || predicates.length === 0) {
+			return [];
+		}
+
+		return await connection.any(sql.typeAlias('user')`
+			SELECT DISTINCT u.*
+			FROM "user" u
+			JOIN container_user cu ON u.guid = cu.subject AND cu.predicate IN (${sql.join(
+				predicates,
+				sql.fragment`, `
+			)})
+			JOIN container c ON cu.object = c.revision AND c.valid_currently
+			WHERE c.guid = ANY(${sql.array(guids, 'uuid')})
+			ORDER BY family_name, given_name
+		`);
+	};
+}
+
 export function getAllMembershipRelationsOfUser(guid: string) {
 	return async (connection: DatabaseConnection) => {
 		const rolePredicates = [

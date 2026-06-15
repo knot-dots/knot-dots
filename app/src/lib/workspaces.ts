@@ -15,15 +15,18 @@ import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
 import Tag from '~icons/knotdots/tag';
+import Users from '~icons/knotdots/users';
 import {
 	boards,
 	containerOfType,
+	isOrganizationContainer,
 	payloadTypes,
 	type OrganizationContainer,
 	type OrganizationalUnitContainer
 } from '$lib/models';
 import type { createFeatureDecisions } from '$lib/features';
 import type { MongoAbility } from '@casl/ability';
+import type { User } from '$lib/stores';
 
 export type WorkspaceModuleKey =
 	| 'goal_setting'
@@ -90,6 +93,7 @@ export interface WorkspaceDefinition {
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
 	boardFlag?: WorkspaceBoardFlag;
+	adminOnly?: boolean;
 }
 
 export const strategyProgramTypes = [
@@ -213,6 +217,15 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	// Knowledge transfer
 	{
+		key: 'help',
+		icon: Help,
+		module: 'knowledge_transfer',
+		views: {
+			default: '/help/catalog',
+			catalog: '/help/catalog'
+		}
+	},
+	{
 		key: 'guides',
 		icon: Help,
 		module: 'knowledge_transfer',
@@ -293,6 +306,15 @@ export const workspaces: WorkspaceDefinition[] = [
 			page: '/all/page',
 			table: '/all/table'
 		}
+	},
+	{
+		key: 'users',
+		icon: Users,
+		module: 'organizing',
+		views: {
+			default: '/user-management'
+		},
+		adminOnly: true
 	}
 ];
 
@@ -305,6 +327,7 @@ interface VisibilityContext {
 	organizationalUnit?: OrganizationalUnitContainer | null;
 	features: WorkspaceFeatureDecisions;
 	ability?: MongoAbility;
+	user?: User;
 }
 
 /**
@@ -324,7 +347,7 @@ interface VisibilityContext {
  *   (e.g. categories require `mayCreateContainer` permission).
  */
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
-	const { organization, organizationalUnit, features, ability } = ctx;
+	const { organization, organizationalUnit, features, ability, user } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const enabledBoards = new Set(selectedContext.payload.boards);
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
@@ -332,12 +355,20 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
 	const explicitSet = new Set(explicit);
 
+	const isCtxAdmin =
+		user?.roles.includes('sysadmin') || user?.adminOf.includes(selectedContext.guid);
+
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {
 			return false;
 		}
 		if (workspace.boardFlag && !enabledBoards.has(workspace.boardFlag)) {
 			return false;
+		}
+		if (workspace.key === 'help') {
+			if (!isOrganizationContainer(selectedContext) || !selectedContext.payload.default) {
+				return false;
+			}
 		}
 		if (ability) {
 			if (workspace.key === 'categories') {
@@ -352,11 +383,26 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 					return false;
 				}
 			}
+			if (workspace.key === 'help') {
+				const container = containerOfType(
+					payloadTypes.enum.help,
+					organization.guid,
+					organizationalUnit?.guid ?? null,
+					selectedContext.guid,
+					''
+				);
+				if (!ability.can('create', container)) {
+					return false;
+				}
+			}
 			if (workspace.key === 'tasks') {
 				if ('default' in selectedContext.payload && selectedContext.payload.default) {
 					return false;
 				}
 			}
+		}
+		if (workspace.adminOnly) {
+			return isCtxAdmin;
 		}
 		if (explicitSet.size === 0) {
 			return true;

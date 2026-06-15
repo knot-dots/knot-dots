@@ -701,6 +701,7 @@
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",
 		"head": "Leitung",
+		"none": "Keine Rolle",
 		"observer": "Beobachtung"
 	},
 	"rule": "Regel",
@@ -902,7 +903,9 @@
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",
+		"invitation_sent": "Einladung versendet",
 		"remove": "Entfernen",
+		"remove_failure": "Die Person konnte leider nicht entfernt werden.",
 		"role": "Rolle"
 	},
 	"user_menu": "Benutzermenü",
@@ -946,6 +949,7 @@
 	"workspace.strategies.title": "Strategien",
 	"workspace.all.title": "Alle",
 	"workspace.help.title": "Hilfe",
+	"workspace.help.description": "Anleitungen & Unterstützung",
 	"workspace.programs.title": "Programme",
 	"workspace.strategies.description": "Strategien & Programme",
 	"workspace.goals.title": "Ziele",
@@ -982,6 +986,8 @@
 	"workspace.categories.description": "Eigene Kategorien definieren",
 	"workspace.overview.title": "Alle Objekte",
 	"workspace.overview.description": "Alle Inhalte im Überblick",
+	"workspace.users.title": "Nutzerverwaltung",
+	"workspace.users.description": "Zugriff und Rollen verwalten",
 	"workspace.view.label": "Ansicht",
 	"workspace.view.catalog": "Katalog",
 	"workspace.view.level": "Ebenen-Board",

@@ -1,3 +1,4 @@
+import { Roarr as log } from 'roarr';
 import { boolean, z } from 'zod';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
@@ -171,9 +172,17 @@ export async function getMembers(group: string) {
 			}
 		}
 	);
+
 	if (!response.ok) {
-		throw new Error(`Failed to fetch members. Keycloak responded with ${response.status}`);
+		const body = await response.text();
+
+		log.error(
+			`Failed to fetch members for Keycloak group ${group}. Keycloak responded with ${response.status}: ${body}`
+		);
+
+		return [];
 	}
+
 	return z
 		.array(
 			z.object({

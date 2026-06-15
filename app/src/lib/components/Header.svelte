@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { getContext, untrack } from 'svelte';
+	import { getContext, untrack, type Snippet } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
@@ -34,6 +34,7 @@
 	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import ScopeFilterDropDown from '$lib/components/ScopeFilterDropDown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
+	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
@@ -63,6 +64,7 @@
 		search?: boolean;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
+		commands?: Snippet;
 	}
 
 	let {
@@ -73,7 +75,8 @@
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions
+		workspaceOptions,
+		commands
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
@@ -311,9 +314,15 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+	{#if commands || (!isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)))}
 		<div class="commands-leading">
-			<ViewSelect />
+			{#if commands}
+				{@render commands()}
+			{/if}
+
+			{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+				<ViewSelect />
+			{/if}
 		</div>
 	{/if}
 
@@ -414,6 +423,8 @@
 						<RelationTypeFilterDropDown {options} />
 					{:else if key === 'member'}
 						<MemberFilterDropDown {options} />
+					{:else if key === 'role'}
+						<RoleFilterDropDown {options} />
 					{:else if options.some(({ count, subOptions }) => (count ?? 0) > 0 || subOptions?.some((s) => (s.count ?? 0) > 0)) || (overlay && paramsFromFragment(page.url).has(key)) || (!overlay && page.url.searchParams.has(key))}
 						<FilterDropDown {key} {options} label={labelOverride} />
 					{/if}
@@ -466,6 +477,7 @@
 		align-items: center;
 		display: flex;
 		gap: 0;
+		min-width: 0;
 	}
 
 	.overlay-divider {

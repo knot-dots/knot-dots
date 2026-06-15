@@ -13,12 +13,14 @@
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
+	import OrganizationFilterDropDown from '$lib/components/OrganizationFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
 		type AnyContainer,
 		type CustomCollectionContainer,
 		isOrganizationalUnitContainer,
+		type OrganizationalUnitContainer,
 		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -32,7 +34,12 @@
 
 	let { container = $bindable(), dialog = $bindable() }: Props = $props();
 
-	let filter = $state({ ...container.payload.filter });
+	let filter: Record<string, string[]> = $state({
+		...container.payload.filter,
+		organization: container.payload.filter.organization?.length
+			? container.payload.filter.organization
+			: [page.data.currentOrganization.guid]
+	});
 
 	let selected = $state(container.payload.item);
 
@@ -68,8 +75,12 @@
 		)
 	);
 
+	const scopeFilterKeys = ['organization', 'organizationalUnit'];
+
 	let activeFilters = $derived(
-		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
+		Object.entries(filter)
+			.filter(([key]) => !scopeFilterKeys.includes(key))
+			.reduce((acc, [, v]) => acc + (v.length > 0 ? 1 : 0), 0)
 	);
 
 	// svelte-ignore state_referenced_locally
@@ -95,13 +106,16 @@
 	function buildSearchQuery() {
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
 		const organization =
-			mode === 'select'
-				? Array.from(new Set([page.data.currentOrganization.guid, ...organizationsUserIsMemberOf]))
-				: [page.data.currentOrganization.guid];
+			filter.organization && filter.organization.length > 0
+				? filter.organization
+				: organizationsUserIsMemberOf.length > 0
+					? organizationsUserIsMemberOf
+					: [page.data.currentOrganization.guid];
 		return new URLSearchParams([
 			...organization.map((org) => ['organization', org]),
 			...payloadType.map((t) => ['payloadType', t]),
 			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
+			...(filter.organizationalUnit ?? []).map((v) => ['organizationalUnit', v]),
 			...(filter.programType ?? []).map((v) => ['programType', v]),
 			...(filter.status ?? []).map((v) => ['status', v]),
 			...categoryContext.keys.flatMap((k) => (filter[k] ?? []).map((v) => [k, v])),
@@ -154,6 +168,11 @@
 					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
 						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
 						: []) as Array<[string, Map<string, number>]>),
+					['organization', searchResource.current.facets.get('organization') ?? new Map()],
+					[
+						'organizationalUnit',
+						searchResource.current.facets.get('organizationalUnit') ?? new Map()
+					],
 					['status', searchResource.current.facets.get('status') ?? new Map()],
 					[
 						'type',
@@ -166,6 +185,35 @@
 				])
 			: new Map<string, Map<string, number>>()
 	);
+
+	let organizationOptions = $derived.by(() => {
+		const organizationFacetCounts = facets.get('organization') ?? new Map<string, number>();
+		const organizationalUnitFacetCounts =
+			facets.get('organizationalUnit') ?? new Map<string, number>();
+		const visibleOrgGuids = new Set([
+			...organizationsUserIsMemberOf,
+			page.data.currentOrganization.guid
+		]);
+		return page.data.organizations
+			.filter((o) => visibleOrgGuids.has(o.guid))
+			.map((o) => {
+				const organizationalUnits = page.data.organizationalUnits.filter(
+					(organizationalUnit: OrganizationalUnitContainer) =>
+						organizationalUnit.organization === o.guid
+				);
+				return {
+					value: o.guid,
+					label: o.payload.name,
+					count: organizationFacetCounts.get(o.guid) ?? 0,
+					subOptions: organizationalUnits.map((organizationalUnit) => ({
+						value: organizationalUnit.guid,
+						label: organizationalUnit.payload.name,
+						count: organizationalUnitFacetCounts.get(organizationalUnit.guid) ?? 0,
+						subOptions: []
+					}))
+				};
+			});
+	});
 
 	$effect(() => {
 		const result = searchResource.current;
@@ -210,7 +258,11 @@
 
 	function resetFilters() {
 		for (const key in filter) {
-			filter[key] = [];
+			if (key === 'organization') {
+				filter[key] = [page.data.currentOrganization.guid];
+			} else {
+				filter[key] = [];
+			}
 		}
 	}
 
@@ -218,6 +270,19 @@
 		if (key in filter) {
 			filter = { ...filter, [key]: filter[key].filter((v) => v !== value) };
 		}
+	}
+
+	function filterValueLabel(key: string, value: string): string {
+		if (key === 'organization') {
+			return page.data.organizations.find((o) => o.guid === value)?.payload.name ?? value;
+		}
+		if (key === 'organizationalUnit') {
+			return (
+				page.data.organizationalUnits.find((o: OrganizationalUnitContainer) => o.guid === value)
+					?.payload.name ?? value
+			);
+		}
+		return page.data.categoryContext.labels.get(value) ?? $_(value);
 	}
 
 	async function confirm() {
@@ -259,37 +324,49 @@
 	title={$_('custom_collection.dialog.title')}
 >
 	{#snippet filterContent()}
+		{#if organizationOptions.length > 0}
+			<OrganizationFilterDropDown
+				bind:organizationValue={() => filter.organization ?? [], (v) => (filter.organization = v)}
+				bind:organizationalUnitValue={
+					() => filter.organizationalUnit ?? [], (v) => (filter.organizationalUnit = v)
+				}
+				{mode}
+				options={organizationOptions}
+			/>
+		{/if}
 		{#each facets.entries() as [key, foci] (key)}
-			{@const options =
-				categoryContext.options[key]?.map((option) => ({
-					...option,
-					count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
-					subOptions: option.subOptions?.map((sub) => ({
-						...sub,
-						count: foci.get(sub.value) ?? foci.get(sub.guid) ?? 0
-					}))
-				})) ??
-				[...foci.entries()]
-					.map(([k, v]) => ({
-						count: v,
-						label: $_(k),
-						value: k,
-						subOptions: undefined
-					}))
-					.toSorted((a, b) =>
-						a.label.localeCompare(b.label, undefined, {
-							numeric: true,
-							sensitivity: 'base'
-						})
-					)}
-			{#if options.some(({ count, subOptions }) => count > 0 || subOptions?.some(({ count }) => count > 0))}
-				<InlineFilterDropDown
-					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
-					{key}
-					label={categoryContext.labels.get(key)}
-					{mode}
-					{options}
-				/>
+			{#if key !== 'organization' && key !== 'organizationalUnit'}
+				{@const options =
+					categoryContext.options[key]?.map((option) => ({
+						...option,
+						count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
+						subOptions: option.subOptions?.map((sub) => ({
+							...sub,
+							count: foci.get(sub.value) ?? foci.get(sub.guid) ?? 0
+						}))
+					})) ??
+					[...foci.entries()]
+						.map(([k, v]) => ({
+							count: v,
+							label: $_(k),
+							value: k,
+							subOptions: undefined
+						}))
+						.toSorted((a, b) =>
+							a.label.localeCompare(b.label, undefined, {
+								numeric: true,
+								sensitivity: 'base'
+							})
+						)}
+				{#if options.some(({ count, subOptions }) => count > 0 || subOptions?.some(({ count }) => count > 0))}
+					<InlineFilterDropDown
+						bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
+						{key}
+						label={categoryContext.labels.get(key)}
+						{mode}
+						{options}
+					/>
+				{/if}
 			{/if}
 		{/each}
 	{/snippet}
@@ -405,7 +482,7 @@
 								{#each valueList as value (value)}
 									<li class="preview-item">
 										<LightningBolt />
-										{page.data.categoryContext.labels.get(value) ?? $_(value)}
+										{filterValueLabel(key, value)}
 										<button
 											class="button button-remove"
 											type="button"

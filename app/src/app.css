@@ -1378,8 +1378,8 @@ h4.details-heading {
 
 /* Badges */
 .badge {
-	--badge-background-color: var(--color-indigo-050);
-	--badge-color: var(--color-indigo-500);
+	--badge-background-color: var(--color-indigo-100);
+	--badge-color: var(--color-indigo-700);
 
 	align-items: center;
 	background-color: var(--badge-background-color);
@@ -1396,13 +1396,12 @@ h4.details-heading {
 }
 
 .badge.badge--large {
-	font-size: larger;
 	padding: 0.25rem 0.75rem;
 }
 
 .badge.badge--gray {
 	--badge-background-color: var(--color-gray-100);
-	--badge-color: var(--color-gray-900);
+	--badge-color: var(--color-gray-700);
 }
 
 .badge.badge--red {
