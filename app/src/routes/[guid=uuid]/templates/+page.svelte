@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -17,6 +19,11 @@
 			predicates.enum['is-inconsistent-with'],
 			predicates.enum['is-prerequisite-for']
 		]
+	});
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		selected: new SvelteSet<string>()
 	});
 
 	let facets = $derived(data.facets);
