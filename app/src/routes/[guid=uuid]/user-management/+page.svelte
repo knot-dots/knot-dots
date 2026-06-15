@@ -325,21 +325,20 @@
 						{@const signedUp = user.family_name || user.given_name}
 						<tr>
 							<td class={['col-name', !signedUp && 'not-signed-up']}>
-								<span class="name-cell-label">
+								<div>
 									{signedUp ? displayName(user) : $_('user.invitation_sent')}
-								</span>
-								{#if canRemoveUser(user)}
-									<button
-										aria-label={$_('user.remove')}
-										class="remove-user-button action-button action-button--size-s"
-										disabled={pendingRemovals.has(user.guid)}
-										type="button"
-										{@attach tooltip($_('user.remove'))}
-										onclick={() => removeUser(user)}
-									>
-										<TrashBinIcon />
-									</button>
-								{/if}
+									{#if canRemoveUser(user)}
+										<button
+											{@attach tooltip($_('user.remove'))}
+											class="action-button action-button--padding-tight is-visible-on-hover"
+											disabled={pendingRemovals.has(user.guid)}
+											onclick={() => removeUser(user)}
+											type="button"
+										>
+											<TrashBinIcon />
+										</button>
+									{/if}
+								</div>
 							</td>
 							<td class="col-email">{user.email}</td>
 							{#each organizationColumns as org (org.container.guid)}
@@ -425,29 +424,6 @@
 		font-style: italic;
 	}
 
-	.name-cell-label {
-		display: block;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.remove-user-button {
-		flex-shrink: 0;
-		opacity: 0;
-		pointer-events: none;
-		position: absolute;
-		right: 0.5rem;
-		top: 50%;
-		transform: translateY(-50%);
-		transition: opacity 120ms ease;
-	}
-
-	.col-name:hover .remove-user-button,
-	.col-name:focus-within .remove-user-button {
-		opacity: 1;
-		pointer-events: auto;
-	}
-
 	form h3 {
 		margin-bottom: 1rem;
 	}
@@ -492,13 +468,21 @@
 		width: 14.75rem;
 	}
 
-	td.col-name {
-		padding-right: 2.5rem;
-		position: relative;
+	.col-name > div {
+		align-items: center;
+		display: flex;
+		justify-content: space-between;
 	}
 
 	.col-role {
 		max-width: 12rem;
 		width: 12rem;
+	}
+
+	@media (hover: hover) {
+		td:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+		}
 	}
 </style>
