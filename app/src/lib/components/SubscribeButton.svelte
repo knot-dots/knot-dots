@@ -23,9 +23,8 @@
 	const isSubscribedFromLayout = $derived(subscribedPrograms.includes(container.guid));
 
 	const subscriptionRelations = $derived.by(() => {
-		const relations = (container.relation ?? []) as Relation[];
-		return relations.filter(
-			(r) => r.object === container.guid && r.predicate === 'is-subscribed-to'
+		return container.relation.filter(
+			(r: Relation) => r.object === container.guid && r.predicate === 'is-subscribed-to'
 		);
 	});
 
@@ -67,7 +66,7 @@
 
 	const isSubscribed = $derived.by(() => {
 		if (isSubscribedFromLayout) return true;
-		return subscriptionRelations.some((r) => currentScope.has(r.subject));
+		return subscriptionRelations.some((r: Relation) => currentScope.has(r.subject));
 	});
 
 	const canSubscribe = $derived(
@@ -82,12 +81,12 @@
 
 	async function handleUnsubscribe() {
 		const organizationalUnitGuids = subscriptionRelations
-			.map((r) => r.subject)
-			.filter((guid) => currentScope.has(guid));
+			.map((r: Relation) => r.subject)
+			.filter((guid: string) => currentScope.has(guid));
 
 		if (organizationalUnitGuids.length === 0) return;
 
-		const relations = organizationalUnitGuids.map((organizationalUnitGuid) => ({
+		const relations = organizationalUnitGuids.map((organizationalUnitGuid: string) => ({
 			object: container.guid,
 			position: 0,
 			predicate: 'is-subscribed-to',

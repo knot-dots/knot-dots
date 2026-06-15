@@ -39,12 +39,12 @@
 
 	$effect(() => {
 		if (open) {
-			const relations = ((container.relation ?? []) as Relation[]).filter(
-				(r) => r.object === container.guid && r.predicate === 'is-subscribed-to'
+			const relations = container.relation.filter(
+				(r: Relation) => r.object === container.guid && r.predicate === 'is-subscribed-to'
 			);
 			const subscribedGuids = relations
-				.map((r) => r.subject)
-				.filter((guid) => allowedOrganizationalUnitGuids.has(guid));
+				.map((r: Relation) => r.subject)
+				.filter((guid: string) => allowedOrganizationalUnitGuids.has(guid));
 			initialSelected = subscribedGuids;
 			selected = [...subscribedGuids];
 		}
@@ -195,8 +195,8 @@
 
 		await Promise.all(promises);
 
-		const otherRelations = ((container.relation ?? []) as Relation[]).filter(
-			(r) => !(r.object === container.guid && r.predicate === 'is-subscribed-to')
+		const otherRelations = container.relation.filter(
+			(r: Relation) => !(r.object === container.guid && r.predicate === 'is-subscribed-to')
 		);
 		const nextSubscriptionRelations = selected.map((subject, index) => ({
 			object: container.guid,
