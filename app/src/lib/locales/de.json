@@ -157,6 +157,8 @@
 	"custom_collection.settings.view": "Ansicht",
 	"custom_collection.show_all": "Alle anzeigen",
 	"custom_domain": "Eigene Domain",
+	"custom_favicon": "Eigenes Favicon",
+	"custom_favicon_help": "Ein quadratisches SVG oder PNG (32x32 Pixel) eignet sich als Favicon.",
 	"days_ago": "{daysAgo, plural, one {# Tag} other {# Tage}}",
 	"delete": "Löschen",
 	"delete.name": "{name} löschen",
