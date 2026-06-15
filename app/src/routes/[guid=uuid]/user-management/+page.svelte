@@ -280,10 +280,8 @@
 		{#snippet commands()}
 			{#if $ability.can('invite-members', data.container)}
 				<button
-					aria-label={$_('invite.heading')}
 					class="button button-xs button-primary"
 					type="button"
-					{@attach tooltip($_('invite.heading'))}
 					onclick={() => dialog.showModal()}
 				>
 					<UserAddIcon />
