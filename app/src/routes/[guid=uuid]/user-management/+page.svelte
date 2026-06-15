@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
 	import saveContainerUser from '$lib/client/saveContainerUser';
+	import Dialog from '$lib/components/Dialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import {
@@ -27,13 +28,21 @@
 	import { ability, applicationState } from '$lib/stores';
 	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
 	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
+	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
+	import UserAddIcon from '~icons/flowbite/user-add-outline';
+	import saveUser from '$lib/client/saveUser';
 
 	interface Props {
 		data: PageData;
 	}
 
 	let { data }: Props = $props();
+
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
+	let email: string = $state('');
 
 	const isEditMode = $derived($applicationState.containerDetailView.editable ?? false);
 
@@ -58,6 +67,7 @@
 	const roleRelationPredicates = new Set<Predicate>(Object.values(rolePredicates));
 
 	let roleOverrides = new SvelteMap<string, Role | null>();
+	let pendingRemovals = new SvelteSet<string>();
 
 	const organizationColumns = $derived([
 		{ container: data.container },
@@ -167,11 +177,120 @@
 		await invalidateAll();
 		roleOverrides.delete(key);
 	}
+
+	function removableContainersFor(user: User) {
+		return organizationColumns
+			.map(({ container }) => container)
+			.filter((container) => roleFor(user, container))
+			.filter((container) => $ability.can('update', container));
+	}
+
+	function canRemoveUser(user: User) {
+		if (!isEditMode || pendingRemovals.has(user.guid)) return false;
+
+		const roleContainers = organizationColumns
+			.map(({ container }) => container)
+			.filter((container) => roleFor(user, container));
+
+		return (
+			roleContainers.length > 0 &&
+			roleContainers.every((container) => $ability.can('update', container))
+		);
+	}
+
+	async function logResponse(response: Response) {
+		try {
+			console.log(await response.json());
+		} catch {
+			console.log(response.statusText);
+		}
+	}
+
+	async function removeUser(user: User) {
+		const containers = removableContainersFor(user);
+		if (containers.length === 0) return;
+
+		pendingRemovals.add(user.guid);
+
+		try {
+			const responses = await Promise.all(
+				containers.map((container) =>
+					saveContainerUser({
+						...container,
+						user: container.user.filter(({ predicate, subject }) => {
+							if (subject !== user.guid) return true;
+							return !roleRelationPredicates.has(predicate);
+						})
+					})
+				)
+			);
+
+			const failedResponses = responses.filter((response) => !response.ok);
+			if (failedResponses.length > 0) {
+				await Promise.all(failedResponses.map(logResponse));
+				alert($_('user.remove_failure'));
+			}
+
+			await invalidateAll();
+		} catch (error) {
+			console.log(error);
+			alert($_('user.remove_failure'));
+		} finally {
+			pendingRemovals.delete(user.guid);
+		}
+	}
+
+	function handleInvite(container: AnyContainer) {
+		return async (event: Event) => {
+			event.preventDefault();
+
+			try {
+				const response = await saveUser({ email, container });
+				if (!response.ok) {
+					console.log(await response.json());
+					alert($_('invite.failure'));
+					return;
+				}
+
+				email = '';
+				await invalidateAll();
+				dialog.close();
+			} catch (error) {
+				console.log(error);
+				alert($_('invite.failure'));
+			}
+		};
+	}
 </script>
+
+<Dialog bind:dialog>
+	<form onsubmit={handleInvite(data.container)}>
+		<h3>{$_('invite.heading')}</h3>
+		<label>
+			{$_('invite.email')}
+			<!-- svelte-ignore a11y_autofocus -->
+			<input type="email" bind:value={email} autofocus required />
+		</label>
+		<button class="button-primary" type="submit">{$_('invite.submit')}</button>
+	</form>
+</Dialog>
 
 <Layout>
 	{#snippet header()}
-		<Header search {facets} sortOptions={[]} />
+		{#snippet commands()}
+			{#if $ability.can('invite-members', data.container)}
+				<button
+					class="button button-xs button-primary"
+					type="button"
+					onclick={() => dialog.showModal()}
+				>
+					<UserAddIcon />
+					<span>{$_('invite.heading')}</span>
+				</button>
+			{/if}
+		{/snippet}
+
+		<Header search {facets} sortOptions={[]} {commands} />
 	{/snippet}
 
 	{#snippet main()}
@@ -206,7 +325,20 @@
 						{@const signedUp = user.family_name || user.given_name}
 						<tr>
 							<td class={['col-name', !signedUp && 'not-signed-up']}>
-								{signedUp ? displayName(user) : $_('user.invitation_sent')}
+								<div>
+									{signedUp ? displayName(user) : $_('user.invitation_sent')}
+									{#if canRemoveUser(user)}
+										<button
+											{@attach tooltip($_('user.remove'))}
+											class="action-button action-button--padding-tight is-visible-on-hover"
+											disabled={pendingRemovals.has(user.guid)}
+											onclick={() => removeUser(user)}
+											type="button"
+										>
+											<TrashBinIcon />
+										</button>
+									{/if}
+								</div>
 							</td>
 							<td class="col-email">{user.email}</td>
 							{#each organizationColumns as org (org.container.guid)}
@@ -292,6 +424,26 @@
 		font-style: italic;
 	}
 
+	form h3 {
+		margin-bottom: 1rem;
+	}
+
+	form button {
+		display: block;
+		margin-top: 1.5rem;
+		width: 100%;
+	}
+
+	form label {
+		display: block;
+		margin-top: 1rem;
+	}
+
+	form input {
+		display: block;
+		width: 100%;
+	}
+
 	.header-content {
 		align-items: center;
 		display: flex;
@@ -316,8 +468,21 @@
 		width: 14.75rem;
 	}
 
+	.col-name > div {
+		align-items: center;
+		display: flex;
+		justify-content: space-between;
+	}
+
 	.col-role {
 		max-width: 12rem;
 		width: 12rem;
+	}
+
+	@media (hover: hover) {
+		td:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+		}
 	}
 </style>

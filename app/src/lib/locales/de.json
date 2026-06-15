@@ -885,6 +885,7 @@
 		"email": "E-Mail-Adresse",
 		"invitation_sent": "Einladung versendet",
 		"remove": "Entfernen",
+		"remove_failure": "Die Person konnte leider nicht entfernt werden.",
 		"role": "Rolle"
 	},
 	"user_menu": "Benutzermenü",

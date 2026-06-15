@@ -883,6 +883,7 @@
 		"email": "Email",
 		"invitation_sent": "Invitation sent",
 		"remove": "Remove",
+		"remove_failure": "The user could not be removed.",
 		"role": "Role"
 	},
 	"user_menu": "User menu",
