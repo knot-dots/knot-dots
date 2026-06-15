@@ -6,6 +6,7 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	organizationalUnitType,
 	type OrganizationContainer,
 	type OrganizationalUnitContainer,
@@ -14,6 +15,7 @@ import {
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	getContainerByGuid,
+	getContainerByGuidOrSlug,
 	getManyContainers,
 	getManyOrganizationalUnitContainers,
 	setUp
@@ -58,15 +60,28 @@ export async function loadApplicationContext({
 		]);
 
 		let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+		let currentOrganizationFromParams: OrganizationContainer | undefined;
 
 		if (params?.guid) {
+			const guidOrSlug = params.guid.toLowerCase();
+			currentOrganizationalUnit = organizationalUnits.find(
+				({ guid, payload }) => guid === params.guid || payload.slug === guidOrSlug
+			);
+		}
+
+		if (params?.guid && !currentOrganizationalUnit) {
 			try {
-				const containerFromParams = await connect(getContainerByGuid(params.guid));
+				const containerFromParams = await connect(getContainerByGuidOrSlug(params.guid));
 				if (
 					isOrganizationalUnitContainer(containerFromParams) &&
 					defineAbilityFor(locals.user).can('read', containerFromParams)
 				) {
 					currentOrganizationalUnit = containerFromParams;
+				} else if (
+					isOrganizationContainer(containerFromParams) &&
+					defineAbilityFor(locals.user).can('read', containerFromParams)
+				) {
+					currentOrganizationFromParams = containerFromParams;
 				}
 			} catch {
 				// Do nothing.
@@ -80,8 +95,27 @@ export async function loadApplicationContext({
 				currentOrganization = organizations.find(
 					({ guid }) => guid === currentOrganizationalUnit.organization
 				);
+
+				if (!currentOrganization) {
+					try {
+						const organizationFromOrgUnit = await connect(
+							getContainerByGuid(currentOrganizationalUnit.organization)
+						);
+
+						if (isOrganizationContainer(organizationFromOrgUnit)) {
+							currentOrganization = organizationFromOrgUnit;
+						}
+					} catch {
+						// Keep fallback behavior and let standard not-found handling decide.
+					}
+				}
+			} else if (currentOrganizationFromParams) {
+				currentOrganization = currentOrganizationFromParams;
 			} else if (params?.guid) {
-				currentOrganization = organizations.find(({ guid }) => guid === params.guid);
+				const slug = params.guid.toLowerCase();
+				currentOrganization = organizations.find(
+					({ guid, payload }) => guid === params.guid || payload.slug === slug
+				);
 			} else {
 				currentOrganization = organizations.find(({ payload }) => payload.default);
 				if (!currentOrganization) {
@@ -99,10 +133,15 @@ export async function loadApplicationContext({
 					)) as OrganizationContainer;
 				}
 			} else {
-				currentOrganization = organizations.find(
-					({ guid, payload }) =>
-						url.hostname.startsWith(`${guid}.`) || url.hostname === payload.customDomain
-				);
+				currentOrganization = organizations.find(({ guid, payload }) => {
+					const slug = payload.slug?.toLowerCase();
+
+					return (
+						url.hostname.startsWith(`${guid}.`) ||
+						(slug ? url.hostname.startsWith(`${slug}.`) : false) ||
+						url.hostname === payload.customDomain
+					);
+				});
 			}
 		}
 

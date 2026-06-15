@@ -54,7 +54,7 @@ const querySchema = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
 	assignee: z.array(z.string().uuid()).default([]),
 	categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
-	contextGuid: z.array(z.string().uuid()).default([]),
+	contextGuid: z.array(z.string()).default([]),
 	excludeRelation: z.array(predicates).default([]),
 	federalState: z.array(z.string()).default([]),
 	goalStatus: z.array(status).default([]),

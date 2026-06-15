@@ -194,6 +194,7 @@
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
+		"slug_not_available": "Dieser Slug ist bereits vergeben.",
 		"unexpected": "Wir arbeiten daran."
 	},
 	"establish_relations": "Beziehungen festlegen",

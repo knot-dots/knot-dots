@@ -3,6 +3,7 @@
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
+	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import type { OrganizationContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -70,6 +71,8 @@
 		{#if $ability.can('update', container, 'payload.customDomain')}
 			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
 		{/if}
+
+		<EditableSlug {editable} bind:value={container.payload.slug} />
 
 		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />

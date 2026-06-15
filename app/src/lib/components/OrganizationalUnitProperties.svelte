@@ -7,6 +7,7 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
+	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
@@ -144,6 +145,8 @@
 			options={workspaceOptions}
 			bind:value={container.payload.visibleWorkspaces}
 		/>
+
+		<EditableSlug {editable} bind:value={container.payload.slug} />
 
 		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />

@@ -7,9 +7,10 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { predicates } from '$lib/models';
+import { predicates, reservedContextSlugs } from '$lib/models';
 import {
 	createOrUpdateUser,
+	getContextGuidBySlug,
 	getAllMembershipRelationsOfUser,
 	getPool,
 	getUser
@@ -154,6 +155,33 @@ export const handle = sequence(
 			event.url.searchParams.has('redirectToProfileIfLoggedIn')
 		) {
 			redirect(302, '/me');
+		}
+
+		const [, firstSegment, ...restSegments] = event.url.pathname.split('/');
+		const maybeSlug = firstSegment?.trim().toLowerCase();
+		const isUuid =
+			typeof maybeSlug === 'string' &&
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(maybeSlug);
+
+		if (
+			maybeSlug &&
+			!isUuid &&
+			!reservedContextSlugs.has(maybeSlug) &&
+			!maybeSlug.startsWith('_')
+		) {
+			let contextGuid: string | undefined;
+			try {
+				contextGuid = await event.locals.pool.connect(getContextGuidBySlug(maybeSlug));
+			} catch {
+				// Keep default routing behavior for unknown path segments.
+			}
+
+			if (contextGuid) {
+				const rewrittenPath = `/${[contextGuid, ...restSegments].filter(Boolean).join('/')}`;
+				if (rewrittenPath !== event.url.pathname) {
+					event.url.pathname = rewrittenPath;
+				}
+			}
 		}
 
 		return resolve(event);
