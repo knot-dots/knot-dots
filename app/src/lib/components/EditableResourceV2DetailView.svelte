@@ -359,7 +359,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container>
+	<EditableContainerDetailView bind:container {revisions}>
 		{#snippet data()}
 			<ResourceV2Properties
 				bind:container
