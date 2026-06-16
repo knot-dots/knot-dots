@@ -161,19 +161,11 @@
 	let facets = $derived(
 		searchResource.current
 			? new Map([
-					...[...searchResource.current.facets].filter(([k]) => categoryContext.keys.includes(k)),
-					...((filter.type?.length == 1 && filter.type[0] == 'program'
-						? [['programType', searchResource.current.facets.get('programType')!]]
-						: []) as Array<[string, Map<string, number>]>),
-					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
-						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
-						: []) as Array<[string, Map<string, number>]>),
 					['organization', searchResource.current.facets.get('organization') ?? new Map()],
 					[
 						'organizationalUnit',
 						searchResource.current.facets.get('organizationalUnit') ?? new Map()
 					],
-					['status', searchResource.current.facets.get('status') ?? new Map()],
 					[
 						'type',
 						new Map(
@@ -181,7 +173,15 @@
 								defaultPayloadType.includes(k)
 							)
 						)
-					]
+					],
+					['status', searchResource.current.facets.get('status') ?? new Map()],
+					...((filter.type?.length == 1 && filter.type[0] == 'program'
+						? [['programType', searchResource.current.facets.get('programType')!]]
+						: []) as Array<[string, Map<string, number>]>),
+					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
+						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
+						: []) as Array<[string, Map<string, number>]>),
+					...[...searchResource.current.facets].filter(([k]) => categoryContext.keys.includes(k))
 				])
 			: new Map<string, Map<string, number>>()
 	);
