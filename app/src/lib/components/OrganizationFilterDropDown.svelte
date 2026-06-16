@@ -56,16 +56,6 @@
 				: [...organizationValue, orgGuid];
 		} else {
 			organizationValue = organizationValue.filter((v) => v !== orgGuid);
-			// Remove organizational units belonging to this org
-			const orgOption = options.find((o) => o.value === orgGuid);
-			if (orgOption) {
-				const organizationalUnitGuids = orgOption.subOptions.map(
-					(organizationalUnit) => organizationalUnit.value
-				);
-				organizationalUnitValue = organizationalUnitValue.filter(
-					(v) => !organizationalUnitGuids.includes(v)
-				);
-			}
 		}
 	}
 
