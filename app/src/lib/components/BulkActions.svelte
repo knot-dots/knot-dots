@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { updateManyContainers } from '$lib/client/performBulkAction';
 	import BulkActionDropdown from '$lib/components/BulkActionDropdown.svelte';
+	import ConfirmBulkDeleteDialog from '$lib/components/ConfirmBulkDeleteDialog.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { getToastContext } from '$lib/contexts/toast';
 	import { status, visibility } from '$lib/models';
@@ -19,6 +20,9 @@
 	const bulkActionContext = getBulkActionContext();
 
 	const toast = getToastContext();
+
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
 
 	let payload = $state<UpdateAction['payload']>({ status: undefined, visibility: undefined });
 
@@ -94,7 +98,7 @@
 					class="action-button"
 					disabled={isLoading || bulkActionContext.selected.size == 0}
 					name="delete"
-					onclick={() => performBulkAction({ deleted: true })}
+					onclick={() => dialog.showModal()}
 					type="button"
 				>
 					<TrashBin />
@@ -103,6 +107,12 @@
 			{/if}
 		{/each}
 	</fieldset>
+
+	<ConfirmBulkDeleteDialog
+		bind:dialog
+		count={bulkActionContext.selected.size}
+		handleSubmit={() => performBulkAction({ deleted: true })}
+	/>
 {/if}
 
 <style>
