@@ -63,20 +63,33 @@
 		if (response.ok) {
 			const savedContainer = await response.json();
 
+			if ($addItemState.target) {
+				const items = $addItemState.target.payload.item.includes(savedContainer.guid)
+					? $addItemState.target.payload.item
+					: [...$addItemState.target.payload.item, savedContainer.guid];
+				const targetResponse = await saveContainer({
+					...$addItemState.target,
+					payload: {
+						...$addItemState.target.payload,
+						item: items
+					}
+				});
+
+				if (!targetResponse.ok) {
+					const error = await targetResponse.json();
+					alert(error.message);
+					return;
+				}
+
+				const savedTarget = await targetResponse.json();
+				Object.assign($addItemState.target, savedTarget);
+				$addItemState = {};
+			}
+
 			if (isOrganizationalUnitContainer(savedContainer)) {
 				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
 			} else {
 				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
-			}
-
-			if ($addItemState.target) {
-				await saveContainer({
-					...$addItemState.target,
-					payload: {
-						...$addItemState.target.payload,
-						item: [...$addItemState.target.payload.item, savedContainer.guid]
-					}
-				});
 			}
 
 			await invalidateAll();
