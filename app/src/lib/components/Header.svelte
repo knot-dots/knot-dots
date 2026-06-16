@@ -335,7 +335,7 @@
 				<ViewSelect />
 			{/if}
 
-			{#if !overlay && $applicationState.containerDetailView.editable}
+			{#if createFeatureDecisions(page.data.features).useBulkActions() && !overlay && $applicationState.containerDetailView.editable}
 				<BulkActions />
 			{/if}
 		</div>

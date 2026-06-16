@@ -24,6 +24,7 @@
 	import TitleDropdown from '$lib/components/TitleDropdown.svelte';
 	import VisibilityDropdown from '$lib/components/VisibilityDropdown.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
 		type AnyContainer,
@@ -129,7 +130,7 @@
 		<Overlay />
 	</a>
 
-	{#if $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
+	{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
 		<label>
 			<input
 				bind:checked={

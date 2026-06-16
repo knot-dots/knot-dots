@@ -13,6 +13,7 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -222,7 +223,7 @@
 	{#if !isTeaserContainer(container)}
 		<header>
 			<h3>
-				{#if $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
+				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
 					<label class="is-visible-on-hover">
 						<input
 							bind:checked={
