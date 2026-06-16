@@ -38,7 +38,12 @@
 		...container.payload.filter,
 		organization: container.payload.filter.organization?.length
 			? container.payload.filter.organization
-			: [page.data.currentOrganization.guid]
+			: [page.data.currentOrganization.guid],
+		organizationalUnit: container.payload.filter.organizationalUnit?.length
+			? container.payload.filter.organizationalUnit
+			: page.data.currentOrganizationalUnit
+				? [page.data.currentOrganizationalUnit.guid]
+				: []
 	});
 
 	let selected = $state(container.payload.item);
@@ -105,12 +110,21 @@
 
 	function buildSearchQuery() {
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
-		const organization =
+		const baseOrganization =
 			filter.organization && filter.organization.length > 0
 				? filter.organization
 				: organizationsUserIsMemberOf.length > 0
 					? organizationsUserIsMemberOf
 					: [page.data.currentOrganization.guid];
+		const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
+			.map(
+				(guid) =>
+					page.data.organizationalUnits.find(
+						(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
+					)?.organization
+			)
+			.filter((org): org is string => org != null);
+		const organization = [...new Set([...baseOrganization, ...organizationalUnitOrgs])];
 		return new URLSearchParams([
 			...organization.map((org) => ['organization', org]),
 			...payloadType.map((t) => ['payloadType', t]),
