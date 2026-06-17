@@ -2769,16 +2769,41 @@ export function computeFacetCount(
 	return facets;
 }
 
+export function getContextIdentifier(
+	container: Container<OrganizationPayload | OrganizationalUnitPayload>
+): string {
+	const contextSlug =
+		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
+	return contextSlug ?? container.guid;
+}
+
+export function pathnameWithoutContextSegment(
+	pathname: string,
+	context: Container<OrganizationPayload | OrganizationalUnitPayload>
+): string {
+	const segments = pathname.split('/');
+	const identifier = getContextIdentifier(context);
+
+	if (segments.length > 1 && (segments[1] === context.guid || segments[1] === identifier)) {
+		return ['', ...segments.slice(2)].join('/');
+	}
+
+	return pathname;
+}
+
 export function getOrganizationURL(
 	container: Container<OrganizationPayload | OrganizationalUnitPayload>,
 	linkPath = '/all/page',
-	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
+	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string },
+	options?: { organizationSlug?: string }
 ): URL {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
 	const contextSlug =
 		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
 	const organizationSubdomainSlug =
-		container.payload.type === payloadTypes.enum.organization ? contextSlug : undefined;
+		container.payload.type === payloadTypes.enum.organization
+			? contextSlug
+			: parseContextSlug(options?.organizationSlug);
 
 	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {

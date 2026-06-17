@@ -11,6 +11,7 @@
 	import Level from '~icons/knotdots/level';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { getContextIdentifier, pathnameWithoutContextSegment } from '$lib/models';
 	import { workspaceFromPathname, type WorkspaceViewKey } from '$lib/workspaces';
 
 	const VIEW_META: Record<WorkspaceViewKey, { icon: typeof Grid; labelKey: string }> = {
@@ -25,15 +26,11 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
-	let pathnameWithoutContextSegment = $derived.by(() => {
-		const segments = page.url.pathname.split('/');
-		if (segments.length > 1 && segments[1] === selectedContext.guid) {
-			return [segments.slice(0, 1), ...segments.slice(2)].join('/');
-		}
-		return page.url.pathname;
-	});
+	let pathnameWithoutContext = $derived(
+		pathnameWithoutContextSegment(page.url.pathname, selectedContext)
+	);
 
-	let workspace = $derived(workspaceFromPathname(pathnameWithoutContextSegment));
+	let workspace = $derived(workspaceFromPathname(pathnameWithoutContext));
 
 	let viewOptions = $derived.by(() => {
 		if (!workspace) return [];
@@ -43,7 +40,7 @@
 				const meta = VIEW_META[key as WorkspaceViewKey];
 				return {
 					key,
-					path: `/${selectedContext.guid}${path}`,
+					path: `/${getContextIdentifier(selectedContext)}${path}`,
 					icon: meta.icon,
 					label: $_(meta.labelKey)
 				};

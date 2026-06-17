@@ -50,7 +50,9 @@
 
 	function organizationURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return () => {
-			return getOrganizationURL(container, linkPath, env).toString();
+			return getOrganizationURL(container, linkPath, env, {
+				organizationSlug: page.data.currentOrganization.payload.slug
+			}).toString();
 		};
 	}
 </script>
