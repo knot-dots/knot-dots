@@ -90,8 +90,8 @@
 	};
 </script>
 
-{#if bulkActionContext?.selected.size > 0}
-	<fieldset>
+{#if bulkActionContext}
+	<fieldset class={{ 'is-visible-on-hover': bulkActionContext.selected.size == 0 }}>
 		<legend class="is-visually-hidden">{$_('bulk_actions')}</legend>
 
 		<label>
@@ -173,5 +173,11 @@
 		border-radius: calc(infinity * 1px);
 		font-size: 0.875rem;
 		padding: 0 1rem;
+	}
+
+	@media (hover: hover) {
+		fieldset:hover {
+			--is-visible-on-hover-visibility: visible;
+		}
 	}
 </style>
