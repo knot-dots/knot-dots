@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-solid';
 	import { page } from '$app/state';
@@ -27,6 +28,21 @@
 	let payload = $state<UpdateAction['payload']>({ status: undefined, visibility: undefined });
 
 	let isLoading = $state(false);
+
+	let selectAllResultCount = $state(0);
+
+	function updateSelection(event: Event & { currentTarget: HTMLInputElement }) {
+		if (!event.currentTarget.checked) {
+			bulkActionContext.selected.clear();
+		} else {
+			document
+				.querySelectorAll('input[name="bulkActionContextSelection"]:not(:checked)')
+				.forEach((node) => {
+					(node as HTMLInputElement).click();
+				});
+			selectAllResultCount = bulkActionContext.selected.size;
+		}
+	}
 
 	async function performBulkAction(action: DeleteAction | UpdateAction) {
 		isLoading = true;
@@ -64,11 +80,29 @@
 			payload = { status: undefined, visibility: undefined };
 		}
 	}
+
+	const checkState: Attachment<HTMLInputElement> = (element) => {
+		if (bulkActionContext.selected.size == 0) {
+			element.indeterminate = false;
+		} else if (selectAllResultCount != bulkActionContext.selected.size) {
+			element.indeterminate = true;
+		}
+	};
 </script>
 
 {#if bulkActionContext?.selected.size > 0}
 	<fieldset>
 		<legend class="is-visually-hidden">{$_('bulk_actions')}</legend>
+
+		<label>
+			<input
+				{@attach checkState}
+				name="bulkActionContextSelectAll"
+				onchange={updateSelection}
+				type="checkbox"
+			/>
+			<span class="is-visually-hidden">{$_('select_all')}</span>
+		</label>
 
 		<span class="selection-counter">
 			{$_('selection_counter', { values: { count: bulkActionContext.selected.size } })}
@@ -124,10 +158,14 @@
 		padding: 0;
 	}
 
+	label {
+		padding: 0 0.5rem 0 1rem;
+	}
+
 	.selection-counter {
 		color: var(--color-primary-700);
 		margin: auto 0;
-		padding: 0 1rem;
+		padding: 0 0.5rem;
 		white-space: nowrap;
 	}
 
