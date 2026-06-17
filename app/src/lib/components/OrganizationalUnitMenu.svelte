@@ -29,7 +29,7 @@
 		predicates
 	} from '$lib/models';
 	import { hasPart, isPartOf } from '$lib/relations';
-	import { mayCreateContainer, newContainer } from '$lib/stores';
+	import { ability, mayCreateContainer, newContainer, user } from '$lib/stores';
 	import { getVisibleWorkspaces } from '$lib/workspaces';
 
 	interface OrgUnitTreeItem extends TreeItem {
@@ -115,7 +115,9 @@
 			? getVisibleWorkspaces({
 					organization,
 					organizationalUnit: isOrganizationalUnitContainer(container) ? container : null,
-					features: createFeatureDecisions(page.data.features)
+					features: createFeatureDecisions(page.data.features),
+					ability: $ability,
+					user: $user
 				}).flatMap((w) => Object.values(w.views))
 			: [];
 

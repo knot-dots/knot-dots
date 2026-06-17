@@ -360,7 +360,9 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 	const explicitSet = new Set(explicit);
 
 	const isCtxAdmin =
-		user?.roles.includes('sysadmin') || user?.adminOf.includes(selectedContext.guid);
+		user?.roles.includes('sysadmin') ||
+		user?.adminOf.includes(selectedContext.guid) ||
+		user?.adminOf.includes(selectedContext.organization);
 
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {

@@ -77,7 +77,7 @@
 
 	const organizationColumns = $derived([
 		{ container: data.container },
-		...data.organizationalUnits.map((container) => ({
+		...data.managedOrganizationalUnits.map((container) => ({
 			container
 		}))
 	]);
