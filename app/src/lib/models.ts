@@ -3206,13 +3206,16 @@ export function computeFacetCount(
 export function getOrganizationURL(
 	container: OrganizationContainer | OrganizationalUnitContainer,
 	linkPath = '/all/page',
-	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
+	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string },
+	options?: { organizationSlug?: string }
 ): URL {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
 	const contextSlug =
 		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
 	const organizationSubdomainSlug =
-		container.payload.type === payloadTypes.enum.organization ? contextSlug : undefined;
+		container.payload.type === payloadTypes.enum.organization
+			? contextSlug
+			: parseContextSlug(options?.organizationSlug);
 
 	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {

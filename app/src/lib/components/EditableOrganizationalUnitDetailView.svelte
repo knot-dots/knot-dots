@@ -70,7 +70,11 @@
 	);
 
 	let linkedProfileURL = $derived(
-		linkedProfile ? getOrganizationURL(linkedProfile, '/all/page', env).toString() : undefined
+		linkedProfile
+			? getOrganizationURL(linkedProfile, '/all/page', env, {
+					organizationSlug: page.data.currentOrganization.payload.slug
+				}).toString()
+			: undefined
 	);
 
 	let hasGeometry = $derived(Boolean(container.payload.geometry));
@@ -115,7 +119,11 @@
 			if (response.ok) {
 				const created = await response.json();
 				dialog.close();
-				goto(getOrganizationURL(created, '/all/page', env).toString());
+				goto(
+					getOrganizationURL(created, '/all/page', env, {
+						organizationSlug: page.data.currentOrganization.payload.slug
+					}).toString()
+				);
 			} else {
 				const err = await response.json();
 				alert(err.message);

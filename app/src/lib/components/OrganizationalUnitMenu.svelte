@@ -123,7 +123,9 @@
 	}
 
 	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
+		return getOrganizationURL(container, linkPathForContainer(container), env, {
+			organizationSlug: page.data.currentOrganization.payload.slug
+		}).toString();
 	}
 
 	function buildTree(units: OrganizationalUnitContainer[]): OrgUnitTreeItem[] {
