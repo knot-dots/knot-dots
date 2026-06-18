@@ -317,7 +317,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<div class="table-wrapper">
+		<div class="table-wrapper table-wrapper--with-end-padding">
 			<table>
 				<thead>
 					<tr>
