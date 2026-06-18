@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	etag,
@@ -136,9 +137,25 @@ export const POST = (async ({ locals, params, request }) => {
 			}
 		}
 
+		let aiContribution;
+
+		if (
+			'aiContribution' in container.payload &&
+			container.payload.aiContribution == 1 &&
+			'aiContribution' in parseResult.data.payload
+		) {
+			const { aiContribution: _, ...originalPayload } = container.payload;
+			const { aiContribution: __, ...currentPayload } = parseResult.data.payload;
+			aiContribution = deepEqual(originalPayload, currentPayload) ? 1 : 0.5;
+		}
+
 		const result = await locals.pool.connect(
 			updateContainer({
 				...parseResult.data,
+				payload: {
+					...parseResult.data.payload,
+					...(aiContribution !== undefined ? { aiContribution } : undefined)
+				},
 				managed_by,
 				user: [
 					...parseResult.data.user.filter(
