@@ -16,7 +16,7 @@
 	},
 	"dependencies": {
 		"@elastic/elasticsearch": "^9.4.2",
-		"csv-parse": "^6.2.1",
+		"csv-parse": "^7.0.0",
 		"node-xlsx": "^0.24.0",
 		"osmtogeojson": "^3.0.0-beta.5",
 		"overpass-ql-ts": "^1.11.0",
