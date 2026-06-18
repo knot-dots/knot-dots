@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@elastic/elasticsearch": "^9.4.0",
-    "roarr": "^7.21.4",
+    "@elastic/elasticsearch": "^9.4.2",
+    "roarr": "^7.21.6",
     "serialize-error": "^13.0.1",
     "zod": "^4.4.3"
   },
