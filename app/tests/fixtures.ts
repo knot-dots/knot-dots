@@ -27,14 +27,16 @@ import {
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
-import { LandingPage } from './pages';
+import { ProgramPage, LandingPage } from './pages';
 
 type MyFixtures = {
+	aiGoal: GoalContainer;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
 	landingPage: LandingPage;
 	landingPageWithCustomCollection: LandingPage;
+	programPage: ProgramPage;
 	reportTemplate: ReportContainer;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
@@ -179,6 +181,36 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	aiGoal: async ({ adminContext, testProgram }, use) => {
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testProgram.organization,
+			null,
+			testProgram.organization,
+			'knot-dots'
+		) as GoalContainer;
+		const testGoal = await createContainer(adminContext, {
+			...newGoal,
+			payload: {
+				...newGoal.payload,
+				aiContribution: 1,
+				aiSuggestion: true,
+				description: 'Lorem ipsum',
+				title: 'Goal suggested by AI'
+			},
+			relation: [
+				{
+					position: 0,
+					predicate: predicates.enum['is-part-of-program'],
+					object: testProgram.guid
+				}
+			]
+		});
+
+		await use(testGoal);
+
+		await deleteContainer(adminContext, testGoal);
+	},
 	defaultOrganization: [
 		async ({ adminContext }, use) => {
 			const response = await adminContext.request.get('/', { maxRedirects: 0 });
@@ -201,6 +233,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	landingPage: async ({ page }, use) => {
 		await use(new LandingPage(page));
+	},
+	programPage: async ({ page }, use) => {
+		await use(new ProgramPage(page));
 	},
 	reportTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(

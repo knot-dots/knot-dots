@@ -95,3 +95,26 @@ test('custom favicon support', async ({ page, testOrganization }) => {
 	expect(await page.locator('head link[rel="icon"]').getAttribute('href')).toBe(url);
 	expect(await page.locator('head link[rel="icon"]').getAttribute('type')).toBe('image/png');
 });
+
+test('AI badge shows level of AI contribution', async ({ aiGoal, programPage, testProgram }) => {
+	await programPage.goto(testProgram);
+
+	const goalChapter = programPage.chapters.filter({
+		has: programPage.page.getByRole('heading', { level: 2, name: aiGoal.payload.title })
+	});
+
+	await expect(goalChapter).toBeVisible();
+	await expect(goalChapter.getByText('AI-generated')).toBeVisible();
+	await expect(goalChapter.getByText('AI-assisted')).not.toBeVisible();
+
+	await programPage.header.editModeToggle.check();
+	const firstSaveResponse = programPage.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await goalChapter.getByRole('textbox').fill('Lorem ipsum dolor sit');
+	await firstSaveResponse;
+
+	await programPage.page.reload();
+	await expect(goalChapter.getByText('AI-generated')).not.toBeVisible();
+	await expect(goalChapter.getByText('AI-assisted')).toBeVisible();
+});
