@@ -167,8 +167,14 @@
 		if (isRole(role)) {
 			userRelations.push({
 				subject: user.guid,
-				predicate: rolePredicates[role]
+				predicate: predicates.enum['is-member-of']
 			});
+			if (role != 'observer') {
+				userRelations.push({
+					subject: user.guid,
+					predicate: rolePredicates[role]
+				});
+			}
 		}
 
 		const response = await saveContainerUser({ ...container, user: userRelations });
