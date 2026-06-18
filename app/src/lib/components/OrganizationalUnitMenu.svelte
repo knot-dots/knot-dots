@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -204,13 +204,8 @@
 		}
 	});
 
-	$effect(() => {
-		if (currentOrganizationalUnit) {
-			const ancestorIds = findAncestorIds(currentOrganizationalUnit, organizationalUnits);
-			for (const id of ancestorIds) {
-				tree.expand(id);
-			}
-		}
+	onMount(() => {
+		tree.expandAll();
 	});
 </script>
 
