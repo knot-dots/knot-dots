@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import type { CommonQueryMethods, DatabaseConnection } from 'slonik';
+import type { DatabaseConnection, DatabaseTransactionConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
@@ -86,7 +86,7 @@ async function copyMeasureFromOriginal<T extends AnyContainer>(
 	createdContainer: T,
 	originalMeasure: MeasureContainer,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const copy = createCopyOf(
 		originalMeasure,
@@ -123,7 +123,7 @@ async function copyGoalsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originalGoals: GoalContainer[],
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
 
@@ -175,7 +175,7 @@ async function copyTasksFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	for (const copyFrom of originals.filter(isTaskContainer)) {
 		const copy = createCopyOf(
@@ -211,7 +211,7 @@ async function copyEffectsFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	for (const copyFrom of originals.filter(isEffectContainer)) {
 		const copy = createCopyOf(
@@ -248,7 +248,7 @@ async function copySectionsFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<AnyContainer>,
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	for (const copyFrom of originals.filter(({ guid, relation }) =>
 		relation.some(
@@ -283,7 +283,7 @@ async function copyMeasure(
 	createdContainer: MeasureContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllContainersRelatedToMeasure(isCopyOfRelation.object as string, {}, '')(txConnection),
@@ -333,7 +333,7 @@ async function copyProgram(
 	createdProgram: ProgramContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllContainersRelatedToProgram(isCopyOfRelation.object as string, {})(txConnection),
@@ -392,7 +392,7 @@ async function copyOrganizationalUnitContainer(
 	createdContainer: OrganizationalUnitContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllRelatedContainers(
@@ -418,7 +418,7 @@ async function copyReportContainer(
 	createdContainer: ReportContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllRelatedContainers(

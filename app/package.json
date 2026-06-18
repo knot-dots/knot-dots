@@ -76,7 +76,7 @@
 		"remark-rehype": "^11.1.2",
 		"runed": "^0.37.1",
 		"serialize-error": "^13.0.1",
-		"slonik": "^48.19.0",
+		"slonik": "^49.10.7",
 		"strip-markdown": "^6.0.0",
 		"svelte": "^5.56.3",
 		"svelte-check": "^4.6.0",
