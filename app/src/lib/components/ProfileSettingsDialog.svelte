@@ -101,6 +101,7 @@
 					<legend>{$_('matomo_opt_out')}</legend>
 					<div id="matomo-opt-out"></div>
 					<script
+						async
 						src="https://knotdots.matomo.cloud/index.php?module=CoreAdminHome&action=optOutJS&divId=matomo-opt-out&language=auto&showIntro=0"
 					></script>
 				</fieldset>
