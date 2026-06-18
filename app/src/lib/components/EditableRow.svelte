@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
+	import AskAI from '~icons/knotdots/ask-ai';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
@@ -294,8 +295,17 @@
 				bind:value={container.organizational_unit}
 			/>
 		</div>
+	{:else if col === 'aiContribution'}
+		<div class="cell cell--locked">
+			{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
+				<span class="badge badge--yellow">
+					<AskAI />
+					{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+				</span>
+			{/if}
+		</div>
 	{:else if col === 'aiSuggestionPageReference'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div class="cell cell--locked">
 			{#if isKnowledgeContainer(container) && container.payload.aiSuggestionPageReference}
 				<span>
 					{container.payload.aiSuggestionPageReference}

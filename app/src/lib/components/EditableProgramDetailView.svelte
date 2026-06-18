@@ -215,6 +215,7 @@
 					'action',
 					'title',
 					'type',
+					'aiContribution',
 					...(isGuide ? ['aiSuggestionPageReference'] : []),
 					'description',
 					'visibility',
@@ -291,6 +292,7 @@
 						<div class="cell cell--action"></div>
 						<div class="cell">{$_('title')}</div>
 						<div class="cell">{$_('object')}</div>
+						<div class="cell">{$_('ai_contribution')}</div>
 						{#if isGuide}
 							<div class="cell">{$_('page')}</div>
 						{/if}
