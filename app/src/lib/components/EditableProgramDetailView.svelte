@@ -241,7 +241,7 @@
 
 {#snippet main()}
 	{#if viewMode === 'view_mode.preview'}
-		<EditableContainerDetailView bind:container {revisions}>
+		<EditableContainerDetailView bind:container>
 			{#snippet data()}
 				<ProgramProperties
 					bind:container

@@ -8,21 +8,19 @@
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import {
-		type AnyContainer,
-		type Container,
 		helpSlugForDetailView,
-		isSimpleMeasureContainer,
-		payloadTypes
+		payloadTypes,
+		type Container,
+		isSimpleMeasureContainer
 	} from '$lib/models';
 	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
 		container: Container;
 		data?: Snippet;
-		revisions: AnyContainer[];
 	}
 
-	let { container = $bindable(), data, revisions = [] }: Props = $props();
+	let { container = $bindable(), data }: Props = $props();
 
 	let w = $state(0);
 
@@ -65,7 +63,6 @@
 				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				{revisions}
 			/>
 
 			{#if isSimpleMeasureContainer(container)}

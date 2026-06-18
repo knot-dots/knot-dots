@@ -1,30 +1,26 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { deepEqual } from 'ts-deep-equal';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
 	import {
-		type AnyContainer,
-		type AnyPayload,
 		type Container,
+		type Status,
 		isContainerWithStatus,
 		isGoalContainer,
-		isResourceDataContainer,
 		isRuleContainer,
 		isSuggestedByAI,
 		isTaskContainer,
 		programTypes,
-		type Status,
-		status
+		status,
+		isResourceDataContainer
 	} from '$lib/models';
 
 	interface Props {
 		container: Container;
-		revisions?: AnyContainer[];
 		editable?: boolean;
 	}
 
-	let { container = $bindable(), revisions = [], editable = false }: Props = $props();
+	let { container = $bindable(), editable = false }: Props = $props();
 
 	let statusOptions = $derived.by(() => {
 		if (isGoalContainer(container) || isTaskContainer(container)) {
@@ -40,10 +36,6 @@
 				: $_('status.in_operation.short');
 		}
 		return $_(s);
-	}
-
-	function hasBeenModified(originalPayload: AnyPayload, currentPayload: AnyPayload): boolean {
-		return !deepEqual(originalPayload, currentPayload);
 	}
 </script>
 
@@ -70,12 +62,7 @@
 		{/if}
 	</li>
 	{#if isSuggestedByAI(container)}
-		<li class="badge badge--yellow">
-			<AskAI />
-			{revisions.length > 1 && hasBeenModified(revisions[0].payload, container.payload)
-				? $_('ai_assisted')
-				: $_('ai_generated')}
-		</li>
+		<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
 	{/if}
 	{#if isContainerWithStatus(container)}
 		<li>
