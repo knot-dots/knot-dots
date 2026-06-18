@@ -52,7 +52,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container>
+	<EditableContainerDetailView bind:container {revisions}>
 		{#snippet data()}
 			<RuleProperties
 				bind:container

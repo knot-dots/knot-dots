@@ -119,11 +119,8 @@
 	function handleChange(event: Event) {
 		const detail = (event as CustomEvent).detail;
 		if (detail.selected) {
-			const url = new URL(page.url);
-			url.pathname = detail.selected;
-			url.searchParams.delete('related-to');
 			menu.close();
-			goto(url);
+			goto(detail.selected);
 		}
 	}
 </script>

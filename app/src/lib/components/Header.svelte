@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { signIn } from '@auth/sveltekit/client';
-	import { getContext, untrack } from 'svelte';
+	import { getContext, untrack, type Snippet } from 'svelte';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Sort from '~icons/flowbite/sort-outline';
@@ -63,6 +63,7 @@
 		search?: boolean;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
+		commands?: Snippet;
 	}
 
 	let {
@@ -73,7 +74,8 @@
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions
+		workspaceOptions,
+		commands
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
@@ -311,9 +313,15 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+	{#if commands || (!isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)))}
 		<div class="commands-leading">
-			<ViewSelect />
+			{#if commands}
+				{@render commands()}
+			{/if}
+
+			{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+				<ViewSelect />
+			{/if}
 		</div>
 	{/if}
 

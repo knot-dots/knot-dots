@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
+	import EditableCustomFavicon from '$lib/components/EditableCustomFavicon.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
@@ -78,6 +79,10 @@
 
 		{#if features.useContextSlug()}
 			<EditableSlug {editable} bind:value={container.payload.slug} />
+		{/if}
+
+		{#if $ability.can('update', container, 'payload.customFavicon')}
+			<EditableCustomFavicon {editable} bind:value={container.payload.customFavicon} />
 		{/if}
 
 		{#if $ability.can('update', container, 'payload.visibility')}

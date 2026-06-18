@@ -1,21 +1,25 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import ChartBar from '~icons/knotdots/chart-bar';
+import ChartLine from '~icons/knotdots/chart-line';
 import ChartMixed from '~icons/knotdots/chart-mixed';
+import BookOutline from '~icons/knotdots/book-outline';
+import BookOpenOutline from '~icons/knotdots/book-open-outline';
 import Chapter from '~icons/knotdots/chapter';
 import Clipboard from '~icons/knotdots/clipboard-simple';
 import ClipboardCheck from '~icons/knotdots/clipboard-check';
-import Collection from '~icons/knotdots/collection';
 import Compass from '~icons/knotdots/compass';
 import Gavel from '~icons/knotdots/gavel';
-import Goal from '~icons/knotdots/goal';
 import Help from '~icons/knotdots/help';
+import Goal from '~icons/knotdots/goal';
 import LandingPage from '~icons/knotdots/landing-page';
 import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
+import RuleDatabase from '~icons/knotdots/rule-database';
 import Tag from '~icons/knotdots/tag';
 import Users from '~icons/knotdots/users';
+import Template from '~icons/knotdots/template';
 import {
 	boards,
 	containerOfType,
@@ -175,7 +179,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Effect measurement
 	{
 		key: 'indicators',
-		icon: ChartBar,
+		icon: ChartLine,
 		module: 'impact_measurement',
 		views: {
 			default: '/indicators/catalog',
@@ -227,7 +231,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'guides',
-		icon: Help,
+		icon: BookOutline,
 		module: 'knowledge_transfer',
 		views: {
 			default: '/guides/catalog',
@@ -237,7 +241,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'knowledge',
-		icon: Compass,
+		icon: BookOpenOutline,
 		module: 'knowledge_transfer',
 		views: {
 			default: '/knowledge/level',
@@ -260,7 +264,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'rules',
-		icon: Gavel,
+		icon: RuleDatabase,
 		module: 'rules',
 		views: {
 			default: '/rules/catalog',
@@ -279,7 +283,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'templates',
-		icon: Collection,
+		icon: Template,
 		module: 'organizing',
 		views: {
 			default: '/templates',
@@ -356,7 +360,9 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 	const explicitSet = new Set(explicit);
 
 	const isCtxAdmin =
-		user?.roles.includes('sysadmin') || user?.adminOf.includes(selectedContext.guid);
+		user?.roles.includes('sysadmin') ||
+		user?.adminOf.includes(selectedContext.guid) ||
+		user?.adminOf.includes(selectedContext.organization);
 
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {

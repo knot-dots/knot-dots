@@ -1489,6 +1489,12 @@ const organizationPayload = z.object({
 	cover: z.string().url().optional(),
 	coverSource: z.string().optional(),
 	customDomain: z.hostname().optional(),
+	customFavicon: z
+		.object({
+			url: z.string().url(),
+			type: z.string()
+		})
+		.optional(),
 	default: z.boolean().default(false),
 	description: z.string().trim().optional(),
 	favorite: z
