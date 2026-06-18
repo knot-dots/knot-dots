@@ -19,10 +19,8 @@
 		columns={[
 			{ heading: $_('title'), key: 'title' },
 			{ heading: $_('description'), key: 'description' },
-			// { heading: $_('visibility.label'), key: 'visibility' },
 			{ heading: $_('resource_category'), key: 'resourceCategory' },
 			{ heading: $_('label.unit'), key: 'resourceUnit' }
-			// { heading: $_('organizational_unit'), key: 'organizationalUnit' }
 		]}
 		rows={containers}
 	/>
