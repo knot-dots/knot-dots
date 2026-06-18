@@ -1,0 +1,1 @@
+DROP INDEX container_payload_context_slug_unique_idx;
