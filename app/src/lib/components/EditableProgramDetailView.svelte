@@ -284,7 +284,7 @@
 			{/snippet}
 		</EditableContainerDetailView>
 	{:else if viewMode === 'view_mode.table'}
-		<div class="table-wrapper">
+		<div class="table-wrapper table-wrapper--with-end-padding">
 			<div class="table">
 				<div class="table-head">
 					<div class="row">
@@ -362,8 +362,6 @@
 	.table-wrapper {
 		container-type: inline-size;
 		height: 100%;
-		margin: 1.5rem 0 1.5rem 1.5rem;
-		overflow: auto;
 	}
 
 	.table {

@@ -397,6 +397,18 @@ progress::-moz-progress-bar {
 }
 
 /* Tables */
+.table-wrapper {
+	margin: 1.5rem 0;
+	min-width: 0;
+	overflow: auto;
+	padding-left: 1.5rem;
+	width: 100%;
+}
+
+.table-wrapper--with-end-padding {
+	padding-right: 16rem;
+}
+
 table,
 .table {
 	border-collapse: collapse;
