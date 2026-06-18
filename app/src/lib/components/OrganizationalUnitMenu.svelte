@@ -144,24 +144,6 @@
 		return roots.map(buildNode);
 	}
 
-	function findAncestorIds(
-		unit: OrganizationalUnitContainer,
-		units: OrganizationalUnitContainer[]
-	): string[] {
-		const ids: string[] = [];
-		let current: OrganizationalUnitContainer | undefined = unit;
-		while (current) {
-			const parent = isPartOf(current, units) as OrganizationalUnitContainer | undefined;
-			if (parent) {
-				ids.push(parent.guid);
-				current = parent;
-			} else {
-				break;
-			}
-		}
-		return ids;
-	}
-
 	let canCreateOrgUnit = $derived(
 		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)
 	);
