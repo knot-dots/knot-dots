@@ -672,6 +672,7 @@
 	"report_section": "Section",
 	"resource": "Resource",
 	"resource_v2": "Resource",
+	"ContextSlug": "Context slug URLs",
 	"ResourceV2": "ResourceV2",
 	"resource_data": "Resource data",
 	"resource_data_collection": "Resource data collection",
