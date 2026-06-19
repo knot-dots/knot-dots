@@ -54,7 +54,13 @@
 		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
-	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
+	import {
+		ability,
+		user,
+		overlay as overlayStore,
+		compareState,
+		lastUpdatedContainers
+	} from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -83,7 +89,11 @@
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
 
-	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
+	let container = $derived.by(() => {
+		const base = overlay ? $overlayStore?.container : page.data.container;
+		const optimistic = base && $lastUpdatedContainers.get(base.guid);
+		return optimistic && optimistic.revision > base.revision ? optimistic : base;
+	});
 
 	let filterBar = $derived(
 		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
