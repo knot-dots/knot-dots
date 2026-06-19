@@ -300,11 +300,23 @@
 	}
 
 	async function confirm() {
+		const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
+			.map(
+				(guid) =>
+					page.data.organizationalUnits.find(
+						(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
+					)?.organization
+			)
+			.filter((org): org is string => org != null);
+		const savedFilter = {
+			...filter,
+			organization: [...new Set([...(filter.organization ?? []), ...organizationalUnitOrgs])]
+		};
 		const response = await saveContainer({
 			...container,
 			payload: {
 				...container.payload,
-				filter,
+				filter: savedFilter,
 				item: mode == 'select' ? selected : [],
 				sort,
 				terms
