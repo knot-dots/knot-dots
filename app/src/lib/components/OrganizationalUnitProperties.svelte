@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
@@ -7,6 +8,8 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import EditableNumber from '$lib/components/EditableNumber.svelte';
+	import EditableSlug from '$lib/components/EditableSlug.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import type { OrganizationalUnitContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
@@ -34,6 +37,8 @@
 				}))
 		)
 	);
+
+	const features = $derived(createFeatureDecisions(page.data.features));
 
 	// In edit mode, an empty `visibleWorkspaces` historically meant "show all".
 	// Prefill with every selectable workspace so unchecking a box reliably hides
@@ -144,6 +149,10 @@
 			options={workspaceOptions}
 			bind:value={container.payload.visibleWorkspaces}
 		/>
+
+		{#if features.useContextSlug() && $ability.can('update', container, 'payload.slug')}
+			<EditableSlug {editable} bind:value={container.payload.slug} />
+		{/if}
 
 		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />

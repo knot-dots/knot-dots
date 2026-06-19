@@ -336,10 +336,14 @@ if (browser) {
 				categories
 			});
 		} else if (hashParams.has(overlayKey.enum.view)) {
+			const contentGuid = hashParams.get(overlayKey.enum.view) as string;
+			const contextGuid = (values.data.currentOrganizationalUnit ?? values.data.currentOrganization)
+				.guid;
+
 			const result = await preloadData(
 				resolve('/[guid=uuid]/[contentGuid=uuid]', {
-					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
-					contentGuid: hashParams.get(overlayKey.enum.view) as string
+					guid: contextGuid,
+					contentGuid
 				})
 			);
 			if (result.type !== 'loaded' || result.status !== 200) {

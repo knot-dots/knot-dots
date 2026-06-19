@@ -40,7 +40,9 @@
 	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
 	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
-		return getOrganizationURL(container, '/all/page', env).toString();
+		return getOrganizationURL(container, '/all/page', env, {
+			organizationSlug: page.data.currentOrganization.payload.slug
+		}).toString();
 	}
 
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =

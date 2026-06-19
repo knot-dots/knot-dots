@@ -13,6 +13,7 @@ import {
 import {
 	getAllContainerRevisionsByGuid,
 	getContainerByGuid,
+	SlugNotAvailableError,
 	updateContainer
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -136,18 +137,32 @@ export const POST = (async ({ locals, params, request }) => {
 			}
 		}
 
-		const result = await locals.pool.connect(
-			updateContainer({
-				...parseResult.data,
-				managed_by,
-				user: [
-					...parseResult.data.user.filter(
-						({ predicate }) => predicate != predicates.enum['is-creator-of']
-					),
-					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
-				]
-			})
-		);
-		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+		try {
+			const result = await locals.pool.connect(
+				updateContainer({
+					...parseResult.data,
+					managed_by,
+					user: [
+						...parseResult.data.user.filter(
+							({ predicate }) => predicate != predicates.enum['is-creator-of']
+						),
+						{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
+					]
+				})
+			);
+			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+		} catch (e: unknown) {
+			if (
+				e instanceof SlugNotAvailableError ||
+				(typeof e === 'object' &&
+					e !== null &&
+					'code' in e &&
+					(e as { code?: string }).code === '23505')
+			) {
+				error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
+			}
+
+			throw e;
+		}
 	}
 }) satisfies RequestHandler;
