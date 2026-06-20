@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
+	import AskAI from '~icons/knotdots/ask-ai';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import Overlay from '~icons/knotdots/overlay';
 	import { page } from '$app/state';
@@ -294,8 +295,17 @@
 				bind:value={container.organizational_unit}
 			/>
 		</div>
+	{:else if col === 'aiContribution'}
+		<div class="cell cell--locked">
+			{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
+				<span class="badge badge--yellow">
+					<AskAI />
+					{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+				</span>
+			{/if}
+		</div>
 	{:else if col === 'aiSuggestionPageReference'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div class="cell cell--locked">
 			{#if isKnowledgeContainer(container) && container.payload.aiSuggestionPageReference}
 				<span>
 					{container.payload.aiSuggestionPageReference}
@@ -333,87 +343,79 @@
 				/>
 			{/if}
 		</div>
+	{:else if col === 'resourceCategory'}
+		<div class="cell cell--locked">
+			{#if 'resourceCategory' in container.payload}
+				<span>{$_(container.payload.resourceCategory)}</span>
+			{/if}
+		</div>
+	{:else if col === 'resourceUnit'}
+		<div class="cell cell--locked">
+			{#if 'resourceUnit' in container.payload}
+				<span>{$_(container.payload.resourceUnit)}</span>
+			{/if}
+		</div>
+	{:else if col === 'hierarchyLevel'}
+		<div
+			class="cell"
+			class:cell--locked={editable &&
+				$ability.cannot('update', container, 'payload.hierarchyLevel')}
+		>
+			{#if isGoalContainer(container)}
+				<EditableGoalHierarchyLevel
+					editable={editable && $ability.can('update', container, 'payload.hierarchyLevel')}
+					showLabel={false}
+					bind:value={container.payload.hierarchyLevel}
+				/>
+			{/if}
+		</div>
+	{:else if col === 'objectType'}
+		{#if isGoalContainer(container)}
+			<div
+				class="cell"
+				class:cell--locked={editable && $ability.cannot('update', container, 'payload.goalType')}
+			>
+				<GoalTypeDropdown
+					editable={editable && $ability.can('update', container, 'payload.goalType')}
+					offset={[40, -39]}
+					bind:value={container.payload.goalType}
+				/>
+			</div>
+		{:else if isProgramContainer(container)}
+			<div
+				class="cell"
+				class:cell--locked={editable && $ability.cannot('update', container, 'payload.programType')}
+			>
+				<ProgramTypeDropdown
+					editable={editable && $ability.can('update', container, 'payload.programType')}
+					offset={[40, -39]}
+					bind:value={container.payload.programType}
+				/>
+			</div>
+		{:else if isMeasureContainer(container)}
+			<div
+				class="cell"
+				class:cell--locked={editable && $ability.cannot('update', container, 'payload.measureType')}
+			>
+				<MeasureTypeDropdown
+					editable={editable && $ability.can('update', container, 'payload.measureType')}
+					offset={[40, -39]}
+					bind:value={container.payload.measureType}
+				/>
+			</div>
+		{:else}
+			<div class="cell"></div>
+		{/if}
+	{:else if col === 'parentObject'}
+		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+			<ParentDropdown
+				offset={[40, -39]}
+				editable={editable && $ability.can('update', container)}
+				{container}
+			/>
+		</div>
 	{/if}
 {/each}
-
-{#if columns.includes('resourceCategory')}
-	<div class="cell cell--locked">
-		{#if 'resourceCategory' in container.payload}
-			<span>{$_(container.payload.resourceCategory)}</span>
-		{/if}
-	</div>
-{/if}
-
-{#if columns.includes('resourceUnit')}
-	<div class="cell cell--locked">
-		{#if 'resourceUnit' in container.payload}
-			<span>{$_(container.payload.resourceUnit)}</span>
-		{/if}
-	</div>
-{/if}
-
-{#if columns.includes('hierarchyLevel')}
-	<div
-		class="cell"
-		class:cell--locked={editable && $ability.cannot('update', container, 'payload.hierarchyLevel')}
-	>
-		{#if isGoalContainer(container)}
-			<EditableGoalHierarchyLevel
-				editable={editable && $ability.can('update', container, 'payload.hierarchyLevel')}
-				showLabel={false}
-				bind:value={container.payload.hierarchyLevel}
-			/>
-		{/if}
-	</div>
-{/if}
-{#if columns.includes('objectType')}
-	{#if isGoalContainer(container)}
-		<div
-			class="cell"
-			class:cell--locked={editable && $ability.cannot('update', container, 'payload.goalType')}
-		>
-			<GoalTypeDropdown
-				editable={editable && $ability.can('update', container, 'payload.goalType')}
-				offset={[40, -39]}
-				bind:value={container.payload.goalType}
-			/>
-		</div>
-	{:else if isProgramContainer(container)}
-		<div
-			class="cell"
-			class:cell--locked={editable && $ability.cannot('update', container, 'payload.programType')}
-		>
-			<ProgramTypeDropdown
-				editable={editable && $ability.can('update', container, 'payload.programType')}
-				offset={[40, -39]}
-				bind:value={container.payload.programType}
-			/>
-		</div>
-	{:else if isMeasureContainer(container)}
-		<div
-			class="cell"
-			class:cell--locked={editable && $ability.cannot('update', container, 'payload.measureType')}
-		>
-			<MeasureTypeDropdown
-				editable={editable && $ability.can('update', container, 'payload.measureType')}
-				offset={[40, -39]}
-				bind:value={container.payload.measureType}
-			/>
-		</div>
-	{:else}
-		<div class="cell"></div>
-	{/if}
-{/if}
-
-{#if columns.includes('parentObject')}
-	<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
-		<ParentDropdown
-			offset={[40, -39]}
-			editable={editable && $ability.can('update', container)}
-			{container}
-		/>
-	</div>
-{/if}
 
 <style>
 	fieldset {

@@ -728,6 +728,7 @@ function deduplicate(v: string[]) {
 }
 
 const basePayload = z.object({
+	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	sdg: z.array(sustainableDevelopmentGoals).transform(deduplicate).default([]),
@@ -3015,7 +3016,6 @@ export function createCopyOf(
 			)
 		} as typeof copy.payload;
 	} else if (isOrganizationalUnitContainer(container)) {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { organizationalUnitType, ...rest } = container.payload;
 		// The organizationalUnitType is used to identify externally managed
 		// organizational units.

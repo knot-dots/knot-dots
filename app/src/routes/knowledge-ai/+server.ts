@@ -95,6 +95,7 @@ export const POST = (async ({ locals, request }) => {
 								organization: container.organization,
 								organizational_unit: container.organizational_unit,
 								payload: {
+									aiContribution: 1,
 									aiSuggestion: true,
 									category: {
 										sdg: object.sdg,

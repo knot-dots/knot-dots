@@ -34,7 +34,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container {revisions}>
+	<EditableContainerDetailView bind:container>
 		{#snippet data()}
 			<MeasureProperties
 				bind:container
