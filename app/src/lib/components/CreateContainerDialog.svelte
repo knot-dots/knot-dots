@@ -161,8 +161,7 @@
 							required
 							rows="1"
 							bind:value={$newContainer.payload.name}
-							use:init
-						></textarea>
+							use:init></textarea>
 					{:else if isContainerWithTitle($newContainer)}
 						<textarea
 							aria-label={$_('title')}
@@ -172,8 +171,7 @@
 							required
 							rows="1"
 							bind:value={$newContainer.payload.title}
-							use:init
-						></textarea>
+							use:init></textarea>
 					{/if}
 
 					{#if isContainer($newContainer)}
