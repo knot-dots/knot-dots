@@ -11,7 +11,8 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { type AnyContainer, type ContainerWithEffect } from '$lib/models';
-	import { fetchContainersRelatedToMeasure } from '$lib/remote/data.remote';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -24,7 +25,9 @@
 
 	let guid = $derived(container.guid);
 
-	let relatedContainersQuery = $derived(fetchContainersRelatedToMeasure(guid));
+	let relatedContainersQuery = resource([() => guid], async ([guid], _, { signal }) =>
+		fetchRelatedContainers(guid, {}, 'alpha', { signal })
+	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>

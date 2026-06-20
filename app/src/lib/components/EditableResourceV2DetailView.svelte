@@ -41,10 +41,9 @@
 		predicates,
 		resourceDataTypes
 	} from '$lib/models';
-	import {
-		fetchContainersRelatedToProgram,
-		fetchContainersRelatedToResource
-	} from '$lib/remote/data.remote';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -63,37 +62,54 @@
 		return hashParams.get('program');
 	});
 
+	let organization = $derived(page.data.currentOrganization.guid);
+
 	// Fetch resource-related containers
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToResource({
-			guid,
-			params: {
-				organization: [page.data.currentOrganization.guid],
-				relationType: [
-					predicates.enum['is-consistent-with'],
-					predicates.enum['is-equivalent-to'],
-					predicates.enum['is-inconsistent-with'],
-					predicates.enum['is-measured-by'],
-					predicates.enum['is-objective-for'],
-					predicates.enum['is-part-of'],
-					predicates.enum['is-section-of']
-				]
-			}
-		})
+	let relatedContainersQuery = resource(
+		[() => guid, () => organization],
+		async ([guid, organization], _, { signal }) => {
+			const resourceData = await fetchContainers(
+				{ payloadType: [payloadTypes.enum.resource_data], resource: [guid] },
+				'alpha',
+				{ signal }
+			);
+			const relatedToResourceData = await Promise.all(
+				resourceData.map((rd) =>
+					fetchRelatedContainers(
+						rd.guid,
+						{
+							organization: [organization],
+							relationType: [
+								predicates.enum['is-consistent-with'],
+								predicates.enum['is-equivalent-to'],
+								predicates.enum['is-inconsistent-with'],
+								predicates.enum['is-measured-by'],
+								predicates.enum['is-objective-for'],
+								predicates.enum['is-part-of'],
+								predicates.enum['is-section-of']
+							]
+						},
+						'alpha',
+						{ signal }
+					)
+				)
+			);
+			const allContainers = [...resourceData, ...relatedToResourceData.flat()];
+			return Array.from(new Map(allContainers.map((c) => [c.guid, c])).values());
+		}
 	);
 
 	// Fetch program hierarchy containers if program is specified
-	let programContainersQuery = $derived(
-		programGuid
-			? fetchContainersRelatedToProgram({
-					guid: programGuid,
-					params: {}
-				})
-			: null
+	let programContainersQuery = resource(
+		[() => programGuid],
+		async ([programGuid], _, { signal }) => {
+			if (!programGuid) return [];
+			return fetchRelatedContainers(programGuid, {}, 'alpha', { signal });
+		}
 	);
 
 	const allRelatedContainers = $derived(relatedContainersQuery.current ?? []);
-	const programContainers = $derived(programContainersQuery?.current ?? []);
+	const programContainers = $derived(programContainersQuery.current ?? []);
 
 	// Filter related containers by program if program parameter is present
 	const relatedContainers = $derived.by(() => {

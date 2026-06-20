@@ -14,24 +14,69 @@
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
+	import { resource } from 'runed';
 	import Sections from '$lib/components/Sections.svelte';
-	import { type AnyContainer, helpSlug, type OrganizationContainer } from '$lib/models';
+	import {
+		helpSlug,
+		payloadTypes,
+		type AnyContainer,
+		type OrganizationContainer
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 
 	interface Props {
 		container: OrganizationContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		relatedContainers?: AnyContainer[];
+		sections?: AnyContainer[];
 	}
 
-	let {
-		container = $bindable(),
-		layout,
-		relatedContainers: originalRelatedContainers = []
-	}: Props = $props();
+	let { container = $bindable(), layout, sections = [] }: Props = $props();
 
-	let relatedContainers = $derived([container, ...originalRelatedContainers]);
+	let guid = $derived(container.guid);
+
+	let containersQuery = resource([() => guid], async ([guid], _, { signal }) => {
+		const [containers, actualData, sectionContainers] = await Promise.all([
+			fetchContainers(
+				{
+					organization: [container.organization],
+					payloadType: [
+						payloadTypes.enum.effect,
+						payloadTypes.enum.goal,
+						payloadTypes.enum.indicator_template,
+						payloadTypes.enum.measure,
+						payloadTypes.enum.objective,
+						payloadTypes.enum.program,
+						payloadTypes.enum.simple_measure
+					]
+				},
+				'alpha',
+				{ signal }
+			),
+			fetchContainers(
+				{
+					organization: [container.organization],
+					organizationalUnit: [''],
+					payloadType: [payloadTypes.enum.actual_data]
+				},
+				'alpha',
+				{ signal }
+			),
+			fetchRelatedContainers(
+				guid,
+				{
+					relationType: ['is-section-of']
+				},
+				'alpha',
+				{ signal }
+			)
+		]);
+		return [...containers, ...actualData, ...sectionContainers];
+	});
+
+	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
 	let w = $state(0);
 

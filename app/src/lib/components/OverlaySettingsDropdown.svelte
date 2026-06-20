@@ -4,6 +4,7 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Link from '~icons/knotdots/link';
+	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
@@ -70,10 +71,13 @@
 			if ($overlayHistory.length > 1) {
 				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
 				const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-				window.location.hash = newParams.toString();
+				await goto(`#${newParams.toString()}`, { invalidateAll: true });
 			} else {
-				window.location.hash = '';
+				await goto('#', { invalidateAll: true });
 			}
+		} else {
+			const error = await response.json();
+			alert(error.message);
 		}
 		confirmDeleteDialog.close();
 	}

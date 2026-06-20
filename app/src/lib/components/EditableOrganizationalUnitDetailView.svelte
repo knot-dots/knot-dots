@@ -17,6 +17,7 @@
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
+	import { resource } from 'runed';
 	import Sections from '$lib/components/Sections.svelte';
 	import {
 		type AnyContainer,
@@ -34,22 +35,71 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 
 	interface Props {
 		container: OrganizationalUnitContainer;
 		layout: Snippet<[Snippet, Snippet]>;
 		linkedProfiles?: AnyContainer[];
-		relatedContainers?: AnyContainer[];
+		relatedOrganizationalUnitGuids?: string[];
+		sections?: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
 		layout,
 		linkedProfiles = [],
-		relatedContainers: originalRelatedContainers = []
+		relatedOrganizationalUnitGuids = [],
+		sections = []
 	}: Props = $props();
 
-	let relatedContainers = $derived([container, ...originalRelatedContainers]);
+	let guid = $derived(container.guid);
+
+	let containersQuery = resource([() => guid], async ([guid], _, { signal }) => {
+		const [containers, actualData, sectionContainers] = await Promise.all([
+			fetchContainers(
+				{
+					organization: [container.organization],
+					organizationalUnit:
+						relatedOrganizationalUnitGuids.length > 0
+							? relatedOrganizationalUnitGuids
+							: [container.guid],
+					payloadType: [
+						payloadTypes.enum.effect,
+						payloadTypes.enum.goal,
+						payloadTypes.enum.indicator_template,
+						payloadTypes.enum.measure,
+						payloadTypes.enum.objective,
+						payloadTypes.enum.program,
+						payloadTypes.enum.simple_measure
+					]
+				},
+				'alpha',
+				{ signal }
+			),
+			fetchContainers(
+				{
+					organization: [container.organization],
+					organizationalUnit: [container.guid],
+					payloadType: [payloadTypes.enum.actual_data]
+				},
+				'alpha',
+				{ signal }
+			),
+			fetchRelatedContainers(
+				guid,
+				{
+					relationType: ['is-section-of']
+				},
+				'alpha',
+				{ signal }
+			)
+		]);
+		return [...containers, ...actualData, ...sectionContainers];
+	});
+
+	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
 	let w = $state(0);
 

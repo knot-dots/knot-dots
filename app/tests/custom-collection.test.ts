@@ -203,6 +203,7 @@ test('New item can be added to custom collection', async ({
 
 	// Assert new report appears in the section
 	await landingPage.overlay.closeButton.click();
+	await landingPage.goto(`/${testOrganization.guid}`);
 	await expect(section.getByRole('link', { name: 'My report' })).toBeVisible();
 });
 

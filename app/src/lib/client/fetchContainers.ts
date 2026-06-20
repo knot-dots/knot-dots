@@ -8,8 +8,10 @@ export default async function fetchContainers(
 		[key: string]: string | string[] | undefined;
 		assignee?: string[];
 		guid?: string[];
+		indicator?: string[];
 		indicatorCategory?: string[];
 		indicatorType?: string[];
+		resource?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
@@ -35,6 +37,9 @@ export default async function fetchContainers(
 	for (const value of filters.guid ?? []) {
 		params.append('guid', value);
 	}
+	for (const value of filters.indicator ?? []) {
+		params.append('indicator', value);
+	}
 	for (const value of filters.indicatorCategory ?? []) {
 		params.append('indicatorCategory', value);
 	}
@@ -55,6 +60,9 @@ export default async function fetchContainers(
 	}
 	for (const value of filters.relatedTo ?? []) {
 		params.append('relatedTo', value);
+	}
+	for (const value of filters.resource ?? []) {
+		params.append('resource', value);
 	}
 	for (const value of filters.relationType ?? []) {
 		params.append('relationType', value);
