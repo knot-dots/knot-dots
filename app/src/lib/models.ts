@@ -2698,7 +2698,7 @@ export function isObserverOf(user: { guid: string }, container: AnyContainer) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
-				user.guid == subject && predicate != predicates.enum['is-member-of']
+				user.guid == subject && predicate == predicates.enum['is-member-of']
 		) > -1 &&
 		!isAdminOf(user, container) &&
 		!isCollaboratorOf(user, container) &&
