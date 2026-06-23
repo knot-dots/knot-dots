@@ -5,7 +5,8 @@ const confirmed = new Set<string>();
 export default function withOptimistic<T extends AnyContainer>(
 	containers: T[],
 	created: AnyContainer | undefined,
-	updated: Map<string, AnyContainer> = new Map()
+	deleted: Map<string, AnyContainer>,
+	updated: Map<string, AnyContainer>
 ): T[] {
 	let result = containers;
 
@@ -19,11 +20,18 @@ export default function withOptimistic<T extends AnyContainer>(
 		});
 	}
 
-	if (!created) return result;
+	if (!created) {
+		return result.filter((c) => !deleted.has(c.guid));
+	}
+
 	if (result.some((c) => c.guid === created.guid)) {
 		confirmed.add(created.guid);
-		return result;
+		return result.filter((c) => !deleted.has(c.guid));
 	}
-	if (confirmed.has(created.guid)) return result;
-	return [...result, created as T];
+
+	if (confirmed.has(created.guid)) {
+		return result.filter((c) => !deleted.has(c.guid));
+	}
+
+	return [...result, created as T].filter((c) => !deleted.has(c.guid));
 }

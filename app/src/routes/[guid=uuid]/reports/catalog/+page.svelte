@@ -11,7 +11,7 @@
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type ReportContainer, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -54,7 +54,12 @@
 	});
 
 	let containers = $derived(
-		withOptimistic(list.items, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			list.items,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 </script>
 

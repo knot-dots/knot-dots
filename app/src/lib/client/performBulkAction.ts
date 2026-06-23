@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { type AnyContainer, anyContainer, type AnyPayload } from '$lib/models';
-import { lastUpdatedContainers } from '$lib/stores';
+import { lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 
 export async function updateManyContainers(data: {
 	deleted?: boolean;
@@ -21,7 +21,12 @@ export async function updateManyContainers(data: {
 
 	const updatedContainers = z.array(anyContainer).parse(await response.json());
 
-	if (!data.deleted) {
+	if (data.deleted) {
+		lastDeletedContainers.update(
+			(map) =>
+				new Map([...map, ...updatedContainers.map((c): [string, AnyContainer] => [c.guid, c])])
+		);
+	} else {
 		lastUpdatedContainers.update(
 			(map) =>
 				new Map([...map, ...updatedContainers.map((c): [string, AnyContainer] => [c.guid, c])])
