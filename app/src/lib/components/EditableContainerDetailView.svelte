@@ -42,7 +42,7 @@
 						/>
 					{/if}
 				{/if}
-				{#if $applicationState.containerDetailView.editable}
+				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 					<h1
 						class="details-title"
 						contenteditable="plaintext-only"
