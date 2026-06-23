@@ -90,13 +90,13 @@
 						class:value--compact={compact}
 						class:value--child={entry.isChild}
 					>
-						<span class="truncated">{entry.option.label}</span>
+						{entry.option.label}
 					</span>
 				{:else}
 					{$_('empty')}
 				{/each}
 				{#if value.length > 1 && compact}
-					<span class="badge badge--gray badge--more">
+					<span class="badge badge--gray">
 						{$_('n_more', { values: { count: value.length - 1 } })}
 					</span>
 				{/if}

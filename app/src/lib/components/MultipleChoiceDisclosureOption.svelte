@@ -181,4 +181,8 @@
 		width: 1.25rem;
 		object-fit: contain;
 	}
+
+	.badge {
+		display: inline;
+	}
 </style>
