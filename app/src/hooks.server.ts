@@ -8,11 +8,15 @@ import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { predicates } from '$lib/models';
+import { PUBLIC_SUBJECT } from '$lib/models';
 import {
 	createOrUpdateUser,
 	getAllMembershipRelationsOfUser,
 	getPool,
-	getUser
+	getTeamMembershipsOfUser,
+	getUser,
+	getWriteGrantsForSubjects,
+	visibleContainerGuids
 } from '$lib/server/db';
 import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
 import { withFeatures } from '$lib/server/features';
@@ -58,9 +62,15 @@ const withAuthentication: Handle = ({ event, resolve }) => {
 			},
 			async session({ session, token }) {
 				const pool = await getPool();
-				const [user, containerUserRelations] = await Promise.all([
+				const [user, containerUserRelations, teamGuids] = await Promise.all([
 					pool.connect(getUser(token.sub as string)),
-					pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
+					pool.connect(getAllMembershipRelationsOfUser(token.sub as string)),
+					pool.connect(getTeamMembershipsOfUser(token.sub as string))
+				]);
+				const subjects = [token.sub as string, ...teamGuids, PUBLIC_SUBJECT];
+				const [visibleGuids, writeGrants] = await Promise.all([
+					pool.connect(visibleContainerGuids(subjects)),
+					pool.connect(getWriteGrantsForSubjects([token.sub as string, ...teamGuids]))
 				]);
 				session.user.adminOf = containerUserRelations
 					.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
@@ -79,6 +89,9 @@ const withAuthentication: Handle = ({ event, resolve }) => {
 					.map(({ object }) => object);
 				session.user.roles = token.roles as string[];
 				session.user.settings = user.settings;
+				session.user.teamMemberOf = teamGuids;
+				session.user.visibleContainerGuids = visibleGuids;
+				session.user.permissionGrants = writeGrants;
 				return session;
 			}
 		},
@@ -145,7 +158,10 @@ export const handle = sequence(
 				isAuthenticated: false,
 				memberOf: [],
 				roles: [],
-				settings: {}
+				settings: {},
+				teamMemberOf: [],
+				visibleContainerGuids: [],
+				permissionGrants: []
 			};
 		}
 

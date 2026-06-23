@@ -6,9 +6,12 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	isOrganizationalUnitContainer,
+	isTeamContainer,
 	organizationalUnitType,
 	type OrganizationContainer,
 	type OrganizationalUnitContainer,
+	type TeamContainer,
+	predicates,
 	payloadTypes
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
@@ -16,6 +19,7 @@ import {
 	getContainerByGuid,
 	getManyContainers,
 	getManyOrganizationalUnitContainers,
+	getRelatedOrganizationContainersByPredicates,
 	setUp
 } from '$lib/server/db';
 
@@ -26,6 +30,8 @@ interface LoadApplicationContextParams {
 	};
 	url: URL;
 }
+
+type TeamWithOrganizations = TeamContainer & { organizations: OrganizationContainer[] };
 
 export async function loadApplicationContext({
 	locals,
@@ -40,7 +46,9 @@ export async function loadApplicationContext({
 			return filterVisible(containers, locals.user);
 		}
 
-		const [organizations, organizationalUnits] = await Promise.all([
+		const teamGuids = locals.user.teamMemberOf;
+
+		const [organizations, organizationalUnits, teamContainers] = await Promise.all([
 			filterVisibleAsync(
 				connect(getManyContainers([], { type: [payloadTypes.enum.organization] }, 'alpha'))
 			) as Promise<OrganizationContainer[]>,
@@ -54,10 +62,34 @@ export async function loadApplicationContext({
 						}
 					})
 				)
-			)
+			) as Promise<OrganizationalUnitContainer[]>,
+			teamGuids.length > 0
+				? (filterVisibleAsync(
+						connect(
+							getManyContainers([], { guid: teamGuids, type: [payloadTypes.enum.team] }, 'alpha')
+						)
+					) as Promise<TeamContainer[]>)
+				: Promise.resolve([] as TeamContainer[])
 		]);
 
+		const teams: TeamWithOrganizations[] = await Promise.all(
+			teamContainers.map(async (team) => {
+				const organizationsForTeam = await connect(
+					getRelatedOrganizationContainersByPredicates(team.guid, [
+						predicates.enum['is-part-of']
+					])
+				);
+
+				return {
+					...team,
+					organizations: organizationsForTeam
+				};
+			})
+		);
+
 		let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+		let currentTeam: TeamWithOrganizations | undefined;
+		const currentTeamOrganizations = () => currentTeam?.organizations ?? [];
 
 		if (params?.guid) {
 			try {
@@ -67,6 +99,20 @@ export async function loadApplicationContext({
 					defineAbilityFor(locals.user).can('read', containerFromParams)
 				) {
 					currentOrganizationalUnit = containerFromParams;
+				} else if (
+					isTeamContainer(containerFromParams) &&
+					defineAbilityFor(locals.user).can('read', containerFromParams)
+				) {
+					const organizationsForTeam = await connect(
+						getRelatedOrganizationContainersByPredicates(containerFromParams.guid, [
+							predicates.enum['is-part-of']
+						])
+					);
+
+					currentTeam = {
+						...containerFromParams,
+						organizations: organizationsForTeam
+					};
 				}
 			} catch {
 				// Do nothing.
@@ -82,6 +128,11 @@ export async function loadApplicationContext({
 				);
 			} else if (params?.guid) {
 				currentOrganization = organizations.find(({ guid }) => guid === params.guid);
+				if (!currentOrganization && currentTeamOrganizations().length > 0) {
+					const organizations = currentTeamOrganizations();
+					currentOrganization =
+						organizations.find(({ payload }) => payload.default) ?? organizations[0];
+				}
 			} else {
 				currentOrganization = organizations.find(({ payload }) => payload.default);
 				if (!currentOrganization) {
@@ -103,6 +154,11 @@ export async function loadApplicationContext({
 					({ guid, payload }) =>
 						url.hostname.startsWith(`${guid}.`) || url.hostname === payload.customDomain
 				);
+				if (!currentOrganization && currentTeamOrganizations().length > 0) {
+					const organizations = currentTeamOrganizations();
+					currentOrganization =
+						organizations.find(({ payload }) => payload.default) ?? organizations[0];
+				}
 			}
 		}
 
@@ -122,10 +178,12 @@ export async function loadApplicationContext({
 			categoryContext,
 			currentOrganization,
 			currentOrganizationalUnit,
+			currentTeam,
 			defaultOrganizationGuid,
 			features: locals.features,
 			organizations,
-			organizationalUnits
+			organizationalUnits,
+			teams
 		};
 	});
 }

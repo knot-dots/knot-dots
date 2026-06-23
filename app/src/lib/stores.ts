@@ -60,6 +60,18 @@ export type User = {
 	settings: {
 		features?: string[];
 	};
+	// GUIDs of team containers the user is a member of.
+	// Combined with the user's own GUID and the public pseudo-subject,
+	// this forms the full subjects list used for permission checks.
+	teamMemberOf: string[];
+	// All container GUIDs the user may read, pre-computed server-side via
+	// the recursive CTE over container_permission + container_relation.
+	// Used by defineAbilityFor to generate a single CASL read rule.
+	visibleContainerGuids: string[];
+	// Write-level grants from container_permission (is-admin-of, is-head-of,
+	// is-collaborator-of) for specific container GUIDs.
+	// Used by defineAbilityFor to generate per-container write rules.
+	permissionGrants: { guid: string; predicate: string }[];
 };
 
 export const user = derived(
@@ -81,7 +93,10 @@ export const user = derived(
 				isAuthenticated: false,
 				memberOf: [],
 				roles: [],
-				settings: {}
+				settings: {},
+				teamMemberOf: [],
+				visibleContainerGuids: [],
+				permissionGrants: []
 			};
 		}
 	},
@@ -95,7 +110,10 @@ export const user = derived(
 		isAuthenticated: false,
 		memberOf: [],
 		roles: [],
-		settings: {}
+		settings: {},
+		teamMemberOf: [],
+		visibleContainerGuids: [],
+		permissionGrants: []
 	}
 );
 

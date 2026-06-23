@@ -18,10 +18,18 @@ declare global {
 			categoryContext: CategoryContext;
 			currentOrganization: OrganizationContainer;
 			currentOrganizationalUnit?: OrganizationalUnitContainer;
+			currentTeam?: import('$lib/models').TeamContainer & {
+				organizations: OrganizationContainer[];
+			};
 			defaultOrganizationGuid: string;
 			features: string[];
 			organizations: OrganizationContainer[];
 			organizationalUnits: OrganizationalUnitContainer[];
+			teams: Array<
+				import('$lib/models').TeamContainer & {
+					organizations: OrganizationContainer[];
+				}
+			>;
 			session: Session | null;
 			user?: KeycloakUser;
 		}
@@ -45,6 +53,9 @@ declare module '@auth/sveltekit' {
 			memberOf: string[];
 			roles: string[];
 			settings: { features?: string[] };
+			teamMemberOf: string[];
+			visibleContainerGuids: string[];
+			permissionGrants: { guid: string; predicate: string }[];
 		} & DefaultSession['user'];
 	}
 }

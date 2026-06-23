@@ -69,18 +69,37 @@ export default function defineAbilityFor(user: User) {
 		);
 		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
-		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('update', payloadTypes.enum.organization, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can(['create', 'update', 'delete'], payloadTypes.enum.organizational_unit, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('update', payloadTypes.enum.organizational_unit, {
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		// Grant read access based on pre-computed visible container GUIDs
+		// (server-side recursive CTE over container_permission + container_relation).
+		// This runs alongside the existing visibility-based rules until the
+		// big-bang migration seeds grants for all existing containers.
+		if (user.visibleContainerGuids.length > 0) {
+			can('read', payloadTypes.options, { guid: { $in: user.visibleContainerGuids } });
+		}
+
+		// Per-container write grants from container_permission.
+		// Mirrors the existing org-level rules but scoped to specific container GUIDs.
+		const permAdminGuids = user.permissionGrants
+			.filter(
+				(g) =>
+					g.predicate === predicates.enum['is-admin-of'] ||
+					g.predicate === predicates.enum['is-head-of']
+			)
+			.map((g) => g.guid);
+		const permCollaboratorGuids = user.permissionGrants
+			.filter((g) => g.predicate === predicates.enum['is-collaborator-of'])
+			.map((g) => g.guid);
+
+		if (permAdminGuids.length > 0) {
+			can(['update', 'delete', 'relate', 'invite-members'], payloadTypes.options, {
+				guid: { $in: permAdminGuids }
+			});
+		}
+		if (permCollaboratorGuids.length > 0) {
+			can(['update', 'delete', 'relate'], payloadTypes.options, {
+				guid: { $in: permCollaboratorGuids }
+			});
+		}
 		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
@@ -188,54 +207,6 @@ export default function defineAbilityFor(user: User) {
 		can('prioritize', payloadTypes.enum.task, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.creator,
-			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.creator,
-			organization: { $in: user.adminOf }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.organization,
-			organization: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.organization,
-			organizational_unit: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.organization,
-			managed_by: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.enum.organizational_unit, {
-			'payload.visibility': visibility.enum.members,
-			guid: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.enum.organizational_unit, {
-			'payload.visibility': visibility.enum.organization,
-			guid: { $in: [...user.memberOf] }
-		});
-		can('read', payloadTypes.options, ['payload.editorialState'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.enum.task, ['assignee'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
@@ -253,6 +224,11 @@ export default function defineAbilityFor(user: User) {
 }
 
 export function filterVisible<T extends AnyContainer>(containers: Array<T>, user: User): Array<T> {
+	if (user.isAuthenticated && !user.roles.includes('sysadmin')) {
+		const visibleGuids = new Set(user.visibleContainerGuids);
+		return containers.filter((c) => visibleGuids.has(c.guid));
+	}
+
 	const ability = defineAbilityFor(user);
 	return containers.filter((c) => ability.can('read', c));
 }

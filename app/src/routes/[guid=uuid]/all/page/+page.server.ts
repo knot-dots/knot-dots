@@ -19,6 +19,9 @@ export const load = (async ({ locals, parent }) => {
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const container = currentOrganizationalUnit ?? currentOrganization;
 	let organizationalUnits: string[] = [];
+	const visibleGuids = new Set(locals.user.visibleContainerGuids);
+	const grantVisible = <T extends { guid: string }>(containers: T[]) =>
+		containers.filter(({ guid }) => visibleGuids.has(guid));
 
 	if (isOrganizationalUnitContainer(container)) {
 		const relatedOrganizationalUnits = await locals.pool.connect(
@@ -101,8 +104,8 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		container,
-		linkedProfiles: filterVisible(linkedProfiles, locals.user),
-		relatedContainers: filterVisible([...containers, ...actualData, ...sections], locals.user),
+		linkedProfiles: grantVisible(filterVisible(linkedProfiles, locals.user)),
+		relatedContainers: grantVisible(filterVisible([...containers, ...actualData, ...sections], locals.user)),
 		spatialFeatures
 	};
 }) satisfies PageServerLoad;

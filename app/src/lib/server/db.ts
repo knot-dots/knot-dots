@@ -25,6 +25,7 @@ import {
 	organizationContainer,
 	type PayloadType,
 	payloadTypes,
+	PUBLIC_SUBJECT,
 	type Predicate,
 	predicates,
 	type Relation,
@@ -33,7 +34,9 @@ import {
 	type User,
 	user,
 	userRelation,
-	visibility
+	visibility,
+	containerPermission,
+	type ContainerPermission
 } from '$lib/models';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
@@ -188,7 +191,23 @@ export function createContainer(container: NewContainer) {
 				object: r.object ?? containerResult.guid,
 				subject: r.subject ?? containerResult.guid
 			}));
+			if (containerResult.payload.type === payloadTypes.enum.team) {
+				relations.push({
+					object: containerResult.organization,
+					position: 0,
+					predicate: predicates.enum['is-part-of'],
+					subject: containerResult.guid
+				});
+			}
 			const relationResult = await createManyContainerRelations(relations)(txConnection);
+
+			if ('visibility' in containerResult.payload && containerResult.payload.visibility === visibility.enum.public) {
+				await saveContainerPermission({
+					object: containerResult.guid,
+					predicate: predicates.enum['is-member-of'],
+					subject: PUBLIC_SUBJECT
+				})(txConnection);
+			}
 
 			const isPartOfProgramRelation = relationResult.find(
 				({ predicate }) => predicate == predicates.enum['is-part-of-program']
@@ -263,17 +282,41 @@ export function updateContainer(container: ModifiedContainer) {
 			await deleteManyContainerRelations(deletedRelations)(txConnection);
 			await updateManyContainerRelations(container.relation)(txConnection);
 
-			if (previousRevision.organizational_unit != container.organizational_unit) {
+			if (
+				containerResult.payload.type !== payloadTypes.enum.team &&
+				previousRevision.organizational_unit != container.organizational_unit
+			) {
 				await bulkUpdateOrganizationalUnit(
 					previousRevision,
 					container.organizational_unit
 				)(txConnection);
 			}
-			if (previousRevision.organization != container.organization) {
+			if (
+				containerResult.payload.type !== payloadTypes.enum.team &&
+				previousRevision.organization != container.organization
+			) {
 				await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
 			}
-			if (previousRevision.managed_by != container.managed_by) {
+			if (
+				containerResult.payload.type !== payloadTypes.enum.team &&
+				previousRevision.managed_by != container.managed_by
+			) {
 				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+			}
+
+			if ('visibility' in containerResult.payload && containerResult.payload.visibility === visibility.enum.public) {
+				await saveContainerPermission({
+					object: containerResult.guid,
+					predicate: predicates.enum['is-member-of'],
+					subject: PUBLIC_SUBJECT
+				})(txConnection);
+			} else {
+				await txConnection.query(sql.typeAlias('void')`
+					DELETE FROM container_permission
+					WHERE object = ${sql.uuid(containerResult.guid)}
+					  AND subject = ${sql.uuid(PUBLIC_SUBJECT)}
+					  AND predicate = ${predicates.enum['is-member-of']}
+				`);
 			}
 
 			if (shouldIndexType(containerResult.payload.type)) {
@@ -314,6 +357,11 @@ export function deleteContainer(container: AnyContainer) {
 				UPDATE container
 				SET valid_currently = false
 				WHERE guid = ${container.guid}
+			`);
+
+			await txConnection.query(sql.typeAlias('void')`
+				DELETE FROM container_permission
+				WHERE object = ${sql.uuid(container.guid)}
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
@@ -517,6 +565,10 @@ function prepareWhereCondition(filters: {
 	template?: boolean;
 	terms?: string;
 	type?: PayloadType[];
+	// Pre-computed list of container GUIDs the current user may read.
+	// Populate by calling visibleContainerGuids(subjects) before building the query.
+	// When set, only containers whose guid is in this list are returned.
+	visibleGuids?: string[];
 }) {
 	const conditions = [sql.fragment`c.valid_currently`, sql.fragment`NOT c.deleted`];
 	if (!filters.type?.includes(payloadTypes.enum.organization) && !filters.guid?.length) {
@@ -672,6 +724,11 @@ function prepareWhereCondition(filters: {
 					AND cu.predicate = ${predicates.enum['is-member-of']}
 					AND cu.subject = ANY (${sql.array(filters.members, 'uuid')})
 			)`
+		);
+	}
+	if (filters.visibleGuids?.length) {
+		conditions.push(
+			sql.fragment`c.guid = ANY (${sql.array(filters.visibleGuids, 'uuid')})`
 		);
 	}
 	return sql.join(conditions, sql.fragment` AND `);
@@ -1037,6 +1094,40 @@ export function getRelatedOrganizationalUnitContainersByPredicates(
 		`);
 
 		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
+	};
+}
+
+export function getRelatedOrganizationContainersByPredicates(
+	guid: string,
+	relationTypes: Predicate[]
+) {
+	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
+		if (relationTypes.length === 0) {
+			return [];
+		}
+
+		const containerResult = await connection.any(sql.typeAlias('organizationContainer')`
+			WITH related_container AS (
+				SELECT
+					CASE
+						WHEN cr.subject = ${guid} THEN cr.object
+						ELSE cr.subject
+					END AS guid
+				FROM container_relation cr
+				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+					AND cr.predicate IN (${sql.join(relationTypes, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+			)
+			SELECT DISTINCT c.*
+			FROM container c
+			JOIN related_container rc ON rc.guid = c.guid
+			WHERE c.valid_currently
+				AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.organization}
+		`);
+
+		return await withUserAndRelation<OrganizationContainer>(connection, containerResult);
 	};
 }
 
@@ -1910,6 +2001,229 @@ export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
 			WHERE d.spatial_reference = ${spatialReference}
 			ORDER BY d.indicator_id, d.valid_from DESC
 		`);
+	};
+}
+
+// ---------------------------------------------------------------------------
+// container_permission – direct grants (no copying; hierarchy resolved at
+// query time via recursive CTE)
+// ---------------------------------------------------------------------------
+
+export function saveContainerPermission(permission: ContainerPermission) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			INSERT INTO container_permission (object, subject, predicate)
+			VALUES (
+				${sql.uuid(permission.object)},
+				${sql.uuid(permission.subject)},
+				${permission.predicate}
+			)
+			ON CONFLICT (object, subject, predicate) DO NOTHING
+		`);
+	};
+}
+
+export function deleteContainerPermission(
+	objectGuid: string,
+	subjectGuid: string,
+	predicate: string
+) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			DELETE FROM container_permission
+			WHERE object = ${sql.uuid(objectGuid)}
+			  AND subject = ${sql.uuid(subjectGuid)}
+			  AND predicate = ${predicate}
+		`);
+	};
+}
+
+export function getContainerPermissions(objectGuid: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.type(containerPermission)`
+			SELECT object, subject, predicate
+			FROM container_permission
+			WHERE object = ${sql.uuid(objectGuid)}
+		`);
+	};
+}
+
+/**
+ * Returns all container GUIDs visible to the given subjects.
+ *
+ * Visibility = direct grant OR any ancestor has a direct grant.
+ * Ancestry is resolved via container_relation predicates:
+ *   is-part-of, is-part-of-program, is-part-of-category, is-measured-by
+ *
+ * Note: container_relation.object/subject are REVISION foreign keys.
+ * We join through container to resolve to GUIDs.
+ *
+ * subjects should include:
+ *   [user.guid, ...user.teamMemberOf, PUBLIC_SUBJECT]
+ */
+export function visibleContainerGuids(subjects: string[]) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		if (subjects.length === 0) return [];
+		const hierarchyPredicates = sql.array(
+			['is-part-of', 'is-part-of-program', 'is-part-of-category', 'is-measured-by'],
+			'text'
+		);
+		const rows = await connection.any(sql.type(z.object({ guid: z.string().uuid() }))`
+			WITH RECURSIVE granted AS (
+				-- Seed: containers with a direct permission grant for any of the subjects
+				SELECT cp.object AS guid
+				FROM container_permission cp
+				WHERE cp.subject = ANY(${sql.array(subjects, 'uuid')})
+
+				UNION
+
+				-- Expand downward: children of already-visible containers
+				SELECT child.guid
+				FROM granted g
+				JOIN container parent
+				  ON parent.guid = g.guid
+				 AND parent.valid_currently
+				 AND NOT parent.deleted
+				JOIN container_relation cr
+				  ON cr.object = parent.guid
+				 AND cr.predicate = ANY(${hierarchyPredicates})
+				 AND cr.valid_currently
+				 AND NOT cr.deleted
+				JOIN container child
+				  ON child.guid = cr.subject
+				 AND child.valid_currently
+				 AND NOT child.deleted
+			)
+			SELECT DISTINCT guid FROM granted
+		`);
+		return rows.map((r) => r.guid);
+	};
+}
+
+/**
+ * Returns effective predicates (roles) for a user on a specific container.
+ *
+ * Checks direct grants on the container itself AND on all its ancestors.
+ * The union of all matching predicates is returned.
+ * Used to feed CASL for write/action checks.
+ */
+export function effectivePermissions(containerGuid: string, subjects: string[]) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		if (subjects.length === 0) return [];
+		const hierarchyPredicates = sql.array(
+			['is-part-of', 'is-part-of-program', 'is-part-of-category', 'is-measured-by'],
+			'text'
+		);
+		const rows = await connection.any(sql.type(z.object({ predicate: z.string() }))`
+			WITH RECURSIVE ancestors AS (
+				-- Seed: the container itself
+				SELECT c.guid, c.revision
+				FROM container c
+				WHERE c.guid = ${sql.uuid(containerGuid)}
+				  AND c.valid_currently
+				  AND NOT c.deleted
+
+				UNION
+
+				-- Walk upward to parents
+				SELECT parent.guid, parent.revision
+				FROM ancestors a
+				JOIN container_relation cr
+				  ON cr.subject = a.guid
+				 AND cr.predicate = ANY(${hierarchyPredicates})
+				 AND cr.valid_currently
+				 AND NOT cr.deleted
+				JOIN container parent
+				  ON parent.guid = cr.object
+				 AND parent.valid_currently
+				 AND NOT parent.deleted
+			)
+			SELECT DISTINCT cp.predicate
+			FROM ancestors anc
+			JOIN container_permission cp ON cp.object = anc.guid
+			WHERE cp.subject = ANY(${sql.array(subjects, 'uuid')})
+		`);
+		return rows.map((r) => r.predicate);
+	};
+}
+
+/**
+ * Returns GUIDs of team containers the user is a member of.
+ * Used in hooks.server.ts to populate session.user.teamMemberOf.
+ */
+export function getTeamMembershipsOfUser(userGuid: string) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		const rows = await connection.any(sql.type(z.object({ guid: z.string().uuid() }))`
+			SELECT c.guid
+			FROM container_user cu
+			JOIN container c ON cu.object = c.revision
+			  AND c.valid_currently
+			  AND NOT c.deleted
+			  AND c.payload->>'type' = 'team'
+			WHERE cu.subject = ${sql.uuid(userGuid)}
+		`);
+		return rows.map((r) => r.guid);
+	};
+}
+
+/**
+ * Returns all write-level permission grants for the given subjects,
+ * including inherited grants propagated downward to child containers.
+ *
+ * Seed: direct grants in container_permission for write predicates
+ * (is-admin-of, is-head-of, is-collaborator-of).
+ * Expand: recursively follows hierarchy relations downward
+ * (is-part-of, is-part-of-program, is-part-of-category, is-measured-by)
+ * so that a write grant on a parent is inherited by all its descendants.
+ * The predicate from the nearest ancestor is carried through.
+ *
+ * subjects should include: [user.guid, ...user.teamMemberOf]
+ */
+export function getWriteGrantsForSubjects(subjects: string[]) {
+	return async (connection: DatabaseConnection): Promise<{ guid: string; predicate: string }[]> => {
+		if (subjects.length === 0) return [];
+		const writePredicates = sql.array(
+			['is-admin-of', 'is-head-of', 'is-collaborator-of'],
+			'text'
+		);
+		const hierarchyPredicates = sql.array(
+			['is-part-of', 'is-part-of-program', 'is-part-of-category', 'is-measured-by'],
+			'text'
+		);
+		const rows = await connection.any(
+			sql.type(z.object({ guid: z.string().uuid(), predicate: z.string() }))`
+				WITH RECURSIVE write_grants AS (
+					-- Seed: containers with a direct write grant for any of the subjects
+					SELECT cp.object AS guid, cp.predicate
+					FROM container_permission cp
+					WHERE cp.subject = ANY(${sql.array(subjects, 'uuid')})
+					  AND cp.predicate = ANY(${writePredicates})
+
+					UNION
+
+					-- Expand downward: children of already-granted containers
+					SELECT child.guid, g.predicate
+					FROM write_grants g
+					JOIN container parent
+					  ON parent.guid = g.guid
+					 AND parent.valid_currently
+					 AND NOT parent.deleted
+					JOIN container_relation cr
+					  ON cr.object = parent.guid
+					 AND cr.predicate = ANY(${hierarchyPredicates})
+					 AND cr.valid_currently
+					 AND NOT cr.deleted
+					JOIN container child
+					  ON child.guid = cr.subject
+					 AND child.valid_currently
+					 AND NOT child.deleted
+				)
+				SELECT DISTINCT ON (guid) guid, predicate
+				FROM write_grants
+				ORDER BY guid, predicate
+			`
+		);
+		return rows.map((r) => ({ guid: r.guid, predicate: r.predicate }));
 	};
 }
 

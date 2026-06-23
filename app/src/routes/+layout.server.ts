@@ -6,7 +6,11 @@ import { findUserById } from '$lib/server/keycloak';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ depends, locals, params, url }) => {
-	depends(payloadTypes.enum.organization, payloadTypes.enum.organizational_unit);
+	depends(
+		payloadTypes.enum.organization,
+		payloadTypes.enum.organizational_unit,
+		payloadTypes.enum.team
+	);
 
 	let user: KeycloakUser | undefined = undefined;
 	const context = await loadApplicationContext({ locals, params, url });

@@ -17,7 +17,11 @@ export const load = (async ({ locals, params }) => {
 
 		const container = revisions.at(-1) as AnyContainer;
 
-		if (!defineAbilityFor(locals.user).can('read', container)) {
+		const ability = defineAbilityFor(locals.user);
+		const canRead = ability.can('read', container);
+		console.log('[perm-debug] guid:', container.guid, 'visibleGuids:', locals.user.visibleContainerGuids?.length, 'canRead:', canRead);
+
+		if (!canRead) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 

@@ -105,6 +105,7 @@ const payloadTypeValues = [
 	'summary',
 	'task',
 	'task_collection',
+	'team',
 	'term',
 	'teaser',
 	'teaser_collection',
@@ -682,6 +683,19 @@ export const userRelation = z.object({
 	predicate: predicates,
 	subject: z.string().uuid()
 });
+
+// The all-zero UUID is the well-known public pseudo-subject.
+// Every user's subjects list includes this value, giving public access to items
+// whose container_permission has subject = PUBLIC_SUBJECT.
+export const PUBLIC_SUBJECT = '00000000-0000-0000-0000-000000000000';
+
+export const containerPermission = z.object({
+	object: z.string().uuid(),
+	predicate: predicates,
+	subject: z.string().uuid()
+});
+
+export type ContainerPermission = z.infer<typeof containerPermission>;
 
 export const taskPriority = z.object({
 	priority: z.number().int(),
@@ -1521,6 +1535,47 @@ export const organizationalUnitPayload = z.object({
 
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
 
+export const teamPayload = z.object({
+	boards: z.array(boards).transform(deduplicate).default([]),
+	color: z.preprocess(
+		(value) => {
+			if (typeof value !== 'string') {
+				return value;
+			}
+
+			return value.startsWith('color.') ? value : `color.${value}`;
+		},
+		backgroundColor.optional()
+	),
+	cover: z.string().url().optional(),
+	coverSource: z.string().optional(),
+	description: z.string().trim().optional(),
+	favorite: z.preprocess(
+		(value) => {
+			if (Array.isArray(value)) {
+				return value;
+			}
+
+			return [];
+		},
+		z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([])
+	),
+	image: z.string().url().optional(),
+	imageReplacesName: z.boolean().default(false),
+	name: z.string().trim(),
+	type: z.literal(payloadTypes.enum.team)
+}).strict();
+
+const initialTeamPayload = teamPayload.partial({ name: true });
+
 const textPayload = z
 	.object({
 		audience: z
@@ -1621,6 +1676,7 @@ const anyPayload = z.discriminatedUnion('type', [
 	...payload.options,
 	organizationPayload,
 	organizationalUnitPayload,
+	teamPayload,
 	undefinedPayload
 ]);
 
@@ -1937,6 +1993,18 @@ export function isOrganizationalUnitContainer(
 	container: AnyContainer | EmptyContainer
 ): container is OrganizationalUnitContainer {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
+}
+
+export const teamContainer = container.extend({
+	payload: teamPayload
+});
+
+export type TeamContainer = z.infer<typeof teamContainer>;
+
+export function isTeamContainer(
+	container: AnyContainer | EmptyContainer
+): container is TeamContainer {
+	return container.payload.type === payloadTypes.enum.team;
 }
 
 const pageContainer = container.extend({ payload: pagePayload });
@@ -2521,6 +2589,7 @@ export const emptyContainer = newContainer.extend({
 		initialTextPayload,
 		initialTaskCollectionPayload,
 		initialTaskPayload,
+		initialTeamPayload,
 		initialTermPayload,
 		initialTeaserPayload,
 		initialTeaserCollectionPayload,
