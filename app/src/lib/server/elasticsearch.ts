@@ -131,6 +131,9 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 			{ guid: { order: 'asc' } }
 		];
 	}
+	if (sort === 'relevance') {
+		return [{ _score: { order: 'desc' } }, { guid: { order: 'asc' } }];
+	}
 	return [
 		{ 'title.icu_collation_keyword': { order: 'asc', missing: '_last' } },
 		{ guid: { order: 'asc' } }
