@@ -440,15 +440,6 @@
 		{/if}
 
 		<ul class="inline-actions" class:is-visible-on-hover={editable}>
-			{#if hasConfiguredContent && isRuleBasedCollection}
-				<li>
-					<a class="button button-xs" href={allCatalogHref}>
-						<ArrowRight />
-						{$_('custom_collection.show_all')}
-					</a>
-				</li>
-			{/if}
-
 			{#if container.payload.allowSearch && hasConfiguredContent}
 				<li class="inline-actions-search">
 					<label class="focus-indicator">
@@ -463,6 +454,15 @@
 							}}
 						/>
 					</label>
+				</li>
+			{/if}
+
+			{#if hasConfiguredContent && isRuleBasedCollection}
+				<li>
+					<a class="button button-xs" href={allCatalogHref}>
+						<ArrowRight />
+						{$_('custom_collection.show_all')}
+					</a>
 				</li>
 			{/if}
 
