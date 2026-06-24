@@ -567,9 +567,11 @@
 	</div>
 {/if}
 
-<CustomCollectionPicker bind:container bind:dialog />
+{#if editable}
+	<CustomCollectionPicker bind:container bind:dialog />
 
-<TemplatePicker bind:container bind:dialog={templatePickerDialog} />
+	<TemplatePicker bind:container bind:dialog={templatePickerDialog} />
+{/if}
 
 <style>
 	.details-heading {
