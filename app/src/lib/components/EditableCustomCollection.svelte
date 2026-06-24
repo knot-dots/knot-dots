@@ -423,46 +423,6 @@
 			<span class="details-count">({savedTotal})</span>
 		{/if}
 	</svelte:element>
-
-	<ul class="inline-actions" class:is-visible-on-hover={editable}>
-		{#if hasConfiguredContent && isRuleBasedCollection}
-			<li>
-				<a class="button button-xs" href={allCatalogHref}>
-					<ArrowRight />
-					{$_('custom_collection.show_all')}
-				</a>
-			</li>
-		{/if}
-
-		{#if container.payload.allowSearch && hasConfiguredContent}
-			<li class="inline-actions-search">
-				<label class="focus-indicator">
-					<Search />
-					<span class="is-visually-hidden">{$_('search')}</span>
-					<input
-						type="search"
-						placeholder={$_('search')}
-						bind:value={localTerms}
-						oninput={(e) => {
-							e.stopPropagation();
-						}}
-					/>
-				</label>
-			</li>
-		{/if}
-
-		{#if editable && $ability.can('update', container)}
-			<li>
-				<CustomCollectionSettingsDropdown
-					bind:container
-					onAddItems={addItems}
-					onAddTemplates={addTemplates}
-					bind:parentContainer
-					bind:relatedContainers
-				/>
-			</li>
-		{/if}
-	</ul>
 </header>
 
 {#if container.payload.showDescription}
@@ -473,9 +433,51 @@
 	{/if}
 {/if}
 
-{#if hasConfiguredContent && container.payload.allowSort}
+{#if (hasConfiguredContent && (container.payload.allowSort || isRuleBasedCollection || container.payload.allowSearch)) || (editable && $ability.can('update', container))}
 	<div class="carousel-toolbar">
-		<SortDropdown options={sortOptions} bind:value={localSort} />
+		{#if hasConfiguredContent && container.payload.allowSort}
+			<SortDropdown options={sortOptions} bind:value={localSort} />
+		{/if}
+
+		<ul class="inline-actions" class:is-visible-on-hover={editable}>
+			{#if hasConfiguredContent && isRuleBasedCollection}
+				<li>
+					<a class="button button-xs" href={allCatalogHref}>
+						<ArrowRight />
+						{$_('custom_collection.show_all')}
+					</a>
+				</li>
+			{/if}
+
+			{#if container.payload.allowSearch && hasConfiguredContent}
+				<li class="inline-actions-search">
+					<label class="focus-indicator">
+						<Search />
+						<span class="is-visually-hidden">{$_('search')}</span>
+						<input
+							type="search"
+							placeholder={$_('search')}
+							bind:value={localTerms}
+							oninput={(e) => {
+								e.stopPropagation();
+							}}
+						/>
+					</label>
+				</li>
+			{/if}
+
+			{#if editable && $ability.can('update', container)}
+				<li>
+					<CustomCollectionSettingsDropdown
+						bind:container
+						onAddItems={addItems}
+						onAddTemplates={addTemplates}
+						bind:parentContainer
+						bind:relatedContainers
+					/>
+				</li>
+			{/if}
+		</ul>
 	</div>
 {/if}
 
