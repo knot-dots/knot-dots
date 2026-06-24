@@ -115,12 +115,10 @@
 	class:details-section--inline-help={isInlineHelpSection &&
 		$applicationState.containerDetailView.editable}
 >
-	{#if $applicationState.containerDetailView.editable}
+	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 		<DraggableActionBar>
 			{#snippet actions()}
-				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
-				{/if}
+				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
 			{/snippet}
 		</DraggableActionBar>
 	{/if}

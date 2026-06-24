@@ -5,6 +5,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { produce } from 'sveltekit-sse';
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
+import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	audience,
@@ -47,8 +48,15 @@ export const POST = (async ({ locals, request }) => {
 	const container = await locals.pool.connect(
 		getContainerByGuid(formData.get('program') as string)
 	);
+
+	const ability = defineAbilityFor(locals.user);
+
 	if (!isProgramContainer(container)) {
 		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
+	}
+
+	if (ability.cannot('update', container)) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
 	const pdfResponse = await fetch(container.payload.pdf[0][0]);
@@ -127,10 +135,16 @@ export const POST = (async ({ locals, request }) => {
 									}
 								]
 							}) as NewContainer;
-							await locals.pool.connect(createContainer(newContainer));
+							if (ability.can('create', newContainer)) {
+								await locals.pool.connect(createContainer(newContainer));
+							} else {
+								log.error(
+									`may not create container for object ${JSON.stringify(object)} of job ${job}`
+								);
+							}
 						} catch (error) {
-							log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 							log.error(
+								isErrorLike(error) ? { error: serializeError(error) } : {},
 								`failed to create container for object ${JSON.stringify(object)} of job ${job}`
 							);
 						}
@@ -144,7 +158,7 @@ export const POST = (async ({ locals, request }) => {
 
 			const { error } = emit('message', 'complete');
 			if (error) {
-				log.error(serializeError(error), String(error));
+				log.error({ error: serializeError(error) }, String(error));
 			}
 
 			lock.set(false);
