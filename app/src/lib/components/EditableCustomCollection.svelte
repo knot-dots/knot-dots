@@ -439,7 +439,7 @@
 			<SortDropdown options={sortOptions} bind:value={localSort} />
 		{/if}
 
-		<ul class="inline-actions" class:is-visible-on-hover={editable}>
+		<ul class="inline-actions">
 			{#if container.payload.allowSearch && hasConfiguredContent}
 				<li class="inline-actions-search">
 					<label class="focus-indicator">
