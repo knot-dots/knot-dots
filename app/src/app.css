@@ -134,6 +134,91 @@
 	--color-blue-gray-800: #0d4872;
 	--color-blue-gray-900: #092b44;
 
+	--color-system-on-default: var(--color-primary-700);
+	--color-system-on-cta: var(--color-white);
+
+	--color-text-system-strong: var(--color-gray-900);
+	--color-text-system-default: var(--color-gray-700);
+	--color-text-system-subtle: var(--color-gray-500);
+	--color-text-system-muted: var(--color-gray-400);
+
+	--color-icon-system-strong: var(--color-gray-900);
+	--color-icon-system-default: var(--color-gray-700);
+	--color-icon-system-subtle: var(--color-gray-500);
+	--color-icon-system-muted: var(--color-gray-400);
+
+	--color-background-system-strong: var(--color-gray-300);
+	--color-background-system-default: var(--color-gray-100);
+	--color-background-system-muted: var(--color-gray-050);
+	--color-background-system-subtle: var(--color-gray-025);
+	--color-background-system-state-active: rgb(from var(--color-gray-500) r g b / 0.15);
+	--color-background-system-state-hover: rgb(from var(--color-gray-500) r g b / 0.1);
+	--color-background-system-state-selected: rgb(from var(--color-primary-500) r g b / 0.15);
+
+	--color-border-system-strong: var(--color-primary-400);
+	--color-border-system-default: var(--color-gray-200);
+	--color-border-system-subtle: var(--color-gray-100);
+	--color-border-system-muted: var(--color-gray-050);
+	--color-border-system-state-selected: var(--color-primary-200);
+
+	--color-surface-system-default: var(--color-white);
+	--color-surface-system-container: var(--color-gray-025);
+	--color-surface-system-container-raised: var(--color-gray-050);
+
+	--color-accent-on-default: var(--color-system-on-default);
+	--color-accent-on-cta: var(--color-system-on-cta);
+
+	--color-text-accent-strong: var(--color-text-system-strong);
+	--color-text-accent-default: var(--color-text-system-default);
+	--color-text-accent-subtle: var(--color-text-system-subtle);
+	--color-text-accent-muted: var(--color-text-system-muted);
+
+	--color-icon-accent-strong: var(--color-icon-system-strong);
+	--color-icon-accent-default: var(--color-icon-system-default);
+	--color-icon-accent-subtle: var(--color-icon-system-subtle);
+	--color-icon-accent-muted: var(--color-icon-system-muted);
+
+	--color-background-accent-strong: var(--color-background-system-strong);
+	--color-background-accent-default: var(--color-background-system-default);
+	--color-background-accent-subtle: var(--color-background-system-subtle);
+	--color-background-accent-muted: var(--color-background-system-muted);
+	--color-background-accent-state-active: var(--color-background-system-state-active);
+	--color-background-accent-state-hover: var(--color-background-system-state-hover);
+	--color-background-accent-state-selected: var(--color-background-system-state-selected);
+
+	--color-border-accent-strong: var(--color-border-system-strong);
+	--color-border-accent-default: var(--color-border-system-default);
+	--color-border-accent-subtle: var(--color-border-system-subtle);
+	--color-border-accent-muted: var(--color-border-system-muted);
+	--color-border-accent-state-selected: var(--color-border-system-state-selected);
+
+	--color-surface-accent-default: var(--color-surface-system-default);
+	--color-surface-accent-container: var(--color-surface-system-container);
+	--color-surface-accent-container-raised: var(--color-surface-system-container-raised);
+
+	--color-text-strong: var(--color-gray-900);
+	--color-text-default: var(--color-gray-700);
+	--color-text-subtle: var(--color-gray-500);
+	--color-text-muted: var(--color-gray-400);
+	--color-text-disabled: var(--color-gray-300);
+	--color-text-link: var(--color-primary-600);
+
+	--color-icon-strong: var(--color-gray-900);
+	--color-icon-default: var(--color-gray-700);
+	--color-icon-subtle: var(--color-gray-500);
+	--color-icon-muted: var(--color-gray-400);
+	--color-icon-disabled: var(--color-gray-300);
+
+	--color-border-default: var(--color-gray-200);
+	--color-border-subtle: var(--color-gray-300);
+	--color-border-raised: var(--color-black);
+
+	--color-surface-default: var(--color-white);
+	--color-surface-container: var(--color-gray-025);
+	--color-surface-container-raised: var(--color-gray-050);
+	--color-surface-overlay-backdrop: rgba(17, 25, 40, 0.5);
+	--color-surface-selected-background: var(--color-background-accent-subtle);
+
 	--color-contributes-to: #7ad0ff;
 	--color-is-affected-by: #7ad0ff;
 	--color-is-concrete-target-of: #7ad0ff;
@@ -146,7 +231,6 @@
 	--color-is-sub-target-of: #7ad0ff;
 	--color-is-superordinate-of: #7ad0ff;
 
-	--color-background-adopted: #fef7ea;
 	--color-background-done: #e3f5f7;
 	--color-background-idea: #f9e4e7;
 	--color-background-in-implementation: #fffeeb;
@@ -194,11 +278,6 @@
 		90deg,
 		var(--color-background-in-planning) 0%,
 		rgba(254, 241, 231, 0) 50%
-	);
-	--gradient-after-adopted: linear-gradient(
-		90deg,
-		var(--color-background-adopted) 0%,
-		rgba(254, 247, 234, 0) 50%
 	);
 	--gradient-after-in-implementation: linear-gradient(
 		90deg,
@@ -2079,4 +2158,222 @@ img.cover {
 	.card {
 		break-inside: avoid-page;
 	}
+}
+
+/* Modules */
+.module-goal-setting {
+	--color-accent-on-default: var(--color-indigo-700);
+
+	--color-text-accent-strong: var(--color-indigo-900);
+	--color-text-accent-default: var(--color-indigo-700);
+	--color-text-accent-subtle: var(--color-indigo-500);
+	--color-text-accent-muted: var(--color-indigo-400);
+
+	--color-icon-accent-strong: var(--color-indigo-900);
+	--color-icon-accent-default: var(--color-indigo-700);
+	--color-icon-accent-subtle: var(--color-indigo-500);
+	--color-icon-accent-muted: var(--color-indigo-400);
+
+	--color-background-accent-strong: var(--color-indigo-300);
+	--color-background-accent-default: var(--color-indigo-100);
+	--color-background-accent-subtle: var(--color-indigo-050);
+	--color-background-accent-muted: var(--color-indigo-025);
+	--color-background-accent-state-active: rgb(from var(--color-indigo-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-indigo-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-indigo-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-indigo-400);
+	--color-border-accent-default: var(--color-indigo-200);
+	--color-border-accent-subtle: var(--color-indigo-100);
+	--color-border-accent-muted: var(--color-indigo-050);
+	--color-border-accent-state-selected: var(--color-indigo-200);
+
+	--color-surface-accent-container: var(--color-indigo-025);
+	--color-surface-accent-container-raised: var(--color-indigo-050);
+}
+
+.module-implementation-planning {
+	--color-accent-on-default: var(--color-orange-700);
+
+	--color-text-accent-strong: var(--color-orange-900);
+	--color-text-accent-default: var(--color-orange-700);
+	--color-text-accent-subtle: var(--color-orange-500);
+	--color-text-accent-muted: var(--color-orange-400);
+
+	--color-icon-accent-strong: var(--color-orange-900);
+	--color-icon-accent-default: var(--color-orange-700);
+	--color-icon-accent-subtle: var(--color-orange-500);
+	--color-icon-accent-muted: var(--color-orange-400);
+
+	--color-background-accent-strong: var(--color-orange-300);
+	--color-background-accent-default: var(--color-orange-100);
+	--color-background-accent-subtle: var(--color-orange-050);
+	--color-background-accent-muted: var(--color-orange-025);
+	--color-background-accent-state-active: rgb(from var(--color-orange-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-orange-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-orange-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-orange-400);
+	--color-border-accent-default: var(--color-orange-200);
+	--color-border-accent-subtle: var(--color-orange-100);
+	--color-border-accent-muted: var(--color-orange-050);
+	--color-border-accent-state-selected: var(--color-orange-200);
+
+	--color-surface-accent-container: var(--color-orange-025);
+	--color-surface-accent-container-raised: var(--color-orange-050);
+}
+
+.module-impact-measurement {
+	--color-accent-on-default: var(--color-teal-700);
+
+	--color-text-accent-strong: var(--color-teal-900);
+	--color-text-accent-default: var(--color-teal-700);
+	--color-text-accent-subtle: var(--color-teal-500);
+	--color-text-accent-muted: var(--color-teal-400);
+
+	--color-icon-accent-strong: var(--color-teal-900);
+	--color-icon-accent-default: var(--color-teal-700);
+	--color-icon-accent-subtle: var(--color-teal-500);
+	--color-icon-accent-muted: var(--color-teal-400);
+
+	--color-background-accent-strong: var(--color-teal-300);
+	--color-background-accent-default: var(--color-teal-100);
+	--color-background-accent-subtle: var(--color-teal-050);
+	--color-background-accent-muted: var(--color-teal-025);
+	--color-background-accent-state-active: rgb(from var(--color-teal-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-teal-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-teal-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-teal-400);
+	--color-border-accent-default: var(--color-teal-200);
+	--color-border-accent-subtle: var(--color-teal-100);
+	--color-border-accent-muted: var(--color-teal-050);
+	--color-border-accent-state-selected: var(--color-teal-200);
+
+	--color-surface-accent-container: var(--color-teal-025);
+	--color-surface-accent-container-raised: var(--color-teal-050);
+}
+
+.module-knowledge-transfer {
+	--color-accent-on-default: var(--color-green-700);
+
+	--color-text-accent-strong: var(--color-green-900);
+	--color-text-accent-default: var(--color-green-700);
+	--color-text-accent-subtle: var(--color-green-500);
+	--color-text-accent-muted: var(--color-green-400);
+
+	--color-icon-accent-strong: var(--color-green-900);
+	--color-icon-accent-default: var(--color-green-700);
+	--color-icon-accent-subtle: var(--color-green-500);
+	--color-icon-accent-muted: var(--color-green-400);
+
+	--color-background-accent-strong: var(--color-green-300);
+	--color-background-accent-default: var(--color-green-100);
+	--color-background-accent-subtle: var(--color-green-050);
+	--color-background-accent-muted: var(--color-green-025);
+	--color-background-accent-state-active: rgb(from var(--color-green-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-green-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-green-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-green-400);
+	--color-border-accent-default: var(--color-green-200);
+	--color-border-accent-subtle: var(--color-green-100);
+	--color-border-accent-muted: var(--color-green-050);
+	--color-border-accent-state-selected: var(--color-green-200);
+
+	--color-surface-accent-container: var(--color-green-025);
+	--color-surface-accent-container-raised: var(--color-green-050);
+}
+
+.module-resource-planning {
+	--color-accent-on-default: var(--color-amber-700);
+
+	--color-text-accent-strong: var(--color-amber-900);
+	--color-text-accent-default: var(--color-amber-700);
+	--color-text-accent-subtle: var(--color-amber-500);
+	--color-text-accent-muted: var(--color-amber-400);
+
+	--color-icon-accent-strong: var(--color-amber-900);
+	--color-icon-accent-default: var(--color-amber-700);
+	--color-icon-accent-subtle: var(--color-amber-500);
+	--color-icon-accent-muted: var(--color-amber-400);
+
+	--color-background-accent-strong: var(--color-amber-300);
+	--color-background-accent-default: var(--color-amber-100);
+	--color-background-accent-subtle: var(--color-amber-050);
+	--color-background-accent-muted: var(--color-amber-025);
+	--color-background-accent-state-active: rgb(from var(--color-amber-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-amber-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-amber-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-amber-400);
+	--color-border-accent-default: var(--color-amber-200);
+	--color-border-accent-subtle: var(--color-amber-100);
+	--color-border-accent-muted: var(--color-amber-050);
+	--color-border-accent-state-selected: var(--color-amber-200);
+
+	--color-surface-accent-container: var(--color-amber-025);
+	--color-surface-accent-container-raised: var(--color-amber-050);
+}
+
+.module-rules {
+	--color-accent-on-default: var(--color-pink-700);
+
+	--color-text-accent-strong: var(--color-pink-900);
+	--color-text-accent-default: var(--color-pink-700);
+	--color-text-accent-subtle: var(--color-pink-500);
+	--color-text-accent-muted: var(--color-pink-400);
+
+	--color-icon-accent-strong: var(--color-pink-900);
+	--color-icon-accent-default: var(--color-pink-700);
+	--color-icon-accent-subtle: var(--color-pink-500);
+	--color-icon-accent-muted: var(--color-pink-400);
+
+	--color-background-accent-strong: var(--color-pink-300);
+	--color-background-accent-default: var(--color-pink-100);
+	--color-background-accent-subtle: var(--color-pink-050);
+	--color-background-accent-muted: var(--color-pink-025);
+	--color-background-accent-state-active: rgb(from var(--color-pink-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-pink-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-pink-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-pink-400);
+	--color-border-accent-default: var(--color-pink-200);
+	--color-border-accent-subtle: var(--color-pink-100);
+	--color-border-accent-muted: var(--color-pink-050);
+	--color-border-accent-state-selected: var(--color-pink-200);
+
+	--color-surface-accent-container: var(--color-pink-025);
+	--color-surface-accent-container-raised: var(--color-pink-050);
+}
+
+.module-organizing {
+	--color-accent-on-default: var(--color-purple-700);
+
+	--color-text-accent-strong: var(--color-purple-900);
+	--color-text-accent-default: var(--color-purple-700);
+	--color-text-accent-subtle: var(--color-purple-500);
+	--color-text-accent-muted: var(--color-purple-400);
+
+	--color-icon-accent-strong: var(--color-purple-900);
+	--color-icon-accent-default: var(--color-purple-700);
+	--color-icon-accent-subtle: var(--color-purple-500);
+	--color-icon-accent-muted: var(--color-purple-400);
+
+	--color-background-accent-strong: var(--color-purple-300);
+	--color-background-accent-default: var(--color-purple-100);
+	--color-background-accent-subtle: var(--color-purple-050);
+	--color-background-accent-muted: var(--color-purple-025);
+	--color-background-accent-state-active: rgb(from var(--color-purple-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-purple-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-purple-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-purple-400);
+	--color-border-accent-default: var(--color-purple-200);
+	--color-border-accent-subtle: var(--color-purple-100);
+	--color-border-accent-muted: var(--color-purple-050);
+	--color-border-accent-state-selected: var(--color-purple-200);
+
+	--color-surface-accent-container: var(--color-purple-025);
+	--color-surface-accent-container-raised: var(--color-purple-050);
 }
