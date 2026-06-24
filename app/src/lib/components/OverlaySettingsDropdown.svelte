@@ -28,7 +28,9 @@
 
 	let showCode = $derived(codeVisible);
 
-	let embedPath = $derived(`/${container.organization}/${container.guid}/embed`);
+	let embedPath = $derived(
+		`/${container.organizational_unit ?? container.organization}/${container.guid}/embed`
+	);
 	let containerTitle = $derived(
 		'title' in container.payload ? container.payload.title : container.payload.name
 	);
