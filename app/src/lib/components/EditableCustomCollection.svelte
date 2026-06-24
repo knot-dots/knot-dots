@@ -586,6 +586,17 @@
 		font-weight: 400;
 	}
 
+	.carousel-toolbar {
+		flex-wrap: wrap;
+		justify-content: space-between;
+	}
+
+	.inline-actions {
+		flex-shrink: 1;
+		flex-wrap: wrap;
+		margin-left: 0;
+	}
+
 	.inline-actions-search {
 		display: flex;
 		min-width: 10rem;
