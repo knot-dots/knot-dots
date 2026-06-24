@@ -171,7 +171,12 @@ export async function getManyContainersWithES(
 
 	if (filters.terms) {
 		must.push({
-			multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
+			multi_match: {
+				query: filters.terms,
+				fields: ['title^2', 'text'],
+				fuzziness: 'AUTO',
+				prefix_length: 3
+			}
 		});
 	}
 	if (filters.type?.length) {
