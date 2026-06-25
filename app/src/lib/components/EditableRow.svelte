@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
 	import { dragHandle } from 'svelte-dnd-action';
 	import { _, date } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
@@ -62,8 +61,6 @@
 		dragEnabled = false,
 		editable = false
 	}: Props = $props();
-
-	const overlayContext = getContext('overlay');
 
 	const bulkActionContext = getBulkActionContext();
 
@@ -130,7 +127,7 @@
 		<Overlay />
 	</a>
 
-	{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
+	{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext}
 		<label>
 			<input
 				bind:checked={
