@@ -16,6 +16,7 @@
 		terms: string;
 		onResetFilters: () => void;
 		// Snippets for customization
+		commands?: Snippet;
 		filterContent: Snippet;
 		sortContent: Snippet;
 		content: Snippet;
@@ -29,6 +30,7 @@
 		activeFilters,
 		terms = $bindable(),
 		onResetFilters,
+		commands,
 		filterContent,
 		sortContent,
 		content
@@ -37,56 +39,74 @@
 
 <dialog bind:this={dialog} oninput={(e) => e.stopPropagation()}>
 	<div>
-		<div class="commands">
-			<span>{title}</span>
+		<header>
+			<div class="title">
+				<span>{title}</span>
+				<button class="action-button" onclick={() => dialog?.close()} type="button">
+					<Close />
+					<span class="is-visually-hidden">{$_('cancel')}</span>
+				</button>
+			</div>
 
-			<SearchInput bind:value={terms} />
-
-			<button
-				class="dropdown-button dropdown-button--command"
-				onclick={() => sortBar.close()}
-				type="button"
-				use:filterBar.button
-			>
-				<Filter />
-				<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
-				{#if activeFilters > 0 && !$filterBar.expanded}
-					<span class="indicator">{activeFilters}</span>
-				{/if}
-			</button>
-
-			<button
-				class="dropdown-button dropdown-button--command"
-				onclick={() => filterBar.close()}
-				type="button"
-				use:sortBar.button
-			>
-				<Sort />
-				<span class="is-visually-hidden">{$_('sort')}</span>
-			</button>
-		</div>
-
-		<div class="filter-and-sort">
-			{#if $filterBar.expanded}
-				<fieldset use:filterBar.panel>
-					{#if activeFilters > 0}
-						<span class="active-filters">
-							{$_('active_filters', { values: { count: activeFilters } })}
-						</span>
-
-						<button class="button-outline button-xs" onclick={onResetFilters} type="button">
-							<Close />
-						</button>
+			<div class="commands">
+				<div class="commands-leading">
+					{#if commands}
+						{@render commands()}
 					{/if}
+				</div>
 
-					{@render filterContent()}
-				</fieldset>
-			{:else if $sortBar.expanded}
-				<fieldset use:sortBar.panel>
-					{@render sortContent()}
-				</fieldset>
+				<div class="commands-trailing">
+					<SearchInput bind:value={terms} />
+
+					<button
+						class="dropdown-button dropdown-button--command"
+						onclick={() => sortBar.close()}
+						type="button"
+						use:filterBar.button
+					>
+						<Filter />
+						<span class="is-visually-hidden is-visually-hidden--mobile-only">{$_('filter')}</span>
+						{#if activeFilters > 0 && !$filterBar.expanded}
+							<span class="indicator">{activeFilters}</span>
+						{/if}
+					</button>
+
+					<button
+						class="dropdown-button dropdown-button--command"
+						onclick={() => filterBar.close()}
+						type="button"
+						use:sortBar.button
+					>
+						<Sort />
+						<span class="is-visually-hidden">{$_('sort')}</span>
+					</button>
+				</div>
+			</div>
+
+			{#if $filterBar.expanded || $sortBar.expanded}
+				<div class="filter-and-sort">
+					{#if $filterBar.expanded}
+						<fieldset use:filterBar.panel>
+							{#if activeFilters > 0}
+								<span class="active-filters">
+									{$_('active_filters', { values: { count: activeFilters } })}
+								</span>
+
+								<button class="button-outline button-xs" onclick={onResetFilters} type="button">
+									<Close />
+								</button>
+							{/if}
+
+							{@render filterContent()}
+						</fieldset>
+					{:else}
+						<fieldset use:sortBar.panel>
+							{@render sortContent()}
+						</fieldset>
+					{/if}
+				</div>
 			{/if}
-		</div>
+		</header>
 
 		{@render content()}
 	</div>
@@ -118,6 +138,31 @@
 		backdrop-filter: blur(12px) brightness(0.75);
 	}
 
+	header {
+		align-items: stretch;
+		align-self: stretch;
+		display: flex;
+		flex-direction: column;
+		flex-shrink: 0;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.title {
+		align-items: center;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		min-width: 0;
+	}
+
+	.title > span {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	dialog > div {
 		display: flex;
 		flex-direction: column;
@@ -130,14 +175,30 @@
 		flex-direction: row;
 		flex-shrink: 0;
 		gap: 0.75rem;
-		margin-bottom: 0.5rem;
+		justify-content: space-between;
+		min-width: 0;
 	}
 
-	.commands > span {
+	.commands-leading {
+		align-items: center;
+		display: flex;
+		flex-direction: row;
+		gap: 0.75rem;
 		margin-right: auto;
+		min-width: 0;
 	}
 
-	.commands > :global(*) {
+	.commands-trailing {
+		align-items: center;
+		display: flex;
+		flex-direction: row;
+		gap: 0.75rem;
+		margin-left: auto;
+		min-width: 0;
+	}
+
+	.commands-leading > :global(*),
+	.commands-trailing > :global(*) {
 		width: fit-content;
 	}
 
@@ -157,9 +218,9 @@
 		display: flex;
 		flex-direction: row;
 		gap: 0.5rem;
-		overflow: auto;
 		margin-left: auto;
 		max-width: 100%;
+		overflow: auto;
 		padding: 0.5rem 1rem;
 		width: fit-content;
 	}
