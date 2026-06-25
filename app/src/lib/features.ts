@@ -1,5 +1,5 @@
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'EmbedObjects'] as const],
+	['alpha', ['OpenAI'] as const],
 	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'SubMeasures'] as const]
 ]);
 
@@ -28,9 +28,6 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
-		},
-		useEmbedObjects() {
-			return features.includes('EmbedObjects');
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');
