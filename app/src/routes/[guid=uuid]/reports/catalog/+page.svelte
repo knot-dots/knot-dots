@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
@@ -8,18 +7,12 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type ReportContainer, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	setBulkActionContext({
-		actions: ['visibility', 'delete'],
-		selected: new SvelteSet<string>()
-	});
 
 	const initialItemsKey = $derived(data.containers.map(({ guid }) => guid).join(','));
 
@@ -63,7 +56,7 @@
 	);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header />
 	{/snippet}

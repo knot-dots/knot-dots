@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -12,7 +12,6 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
-	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type Container,
 		findAncestors,
@@ -45,11 +44,6 @@
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-concrete-target-of'], predicates.enum['is-sub-target-of']]
-	});
-
-	setBulkActionContext({
-		actions: ['visibility', 'delete'],
-		selected: new SvelteSet<string>()
 	});
 
 	let containers = $derived.by(() => {
@@ -134,7 +128,7 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header {facets} search />
 	{/snippet}
