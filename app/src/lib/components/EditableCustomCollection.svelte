@@ -45,11 +45,6 @@
 		newContainer
 	} from '$lib/stores';
 
-	const sortOptions = [
-		{ value: 'modified', label: $_('sort_modified') },
-		{ value: 'alpha', label: $_('sort_alphabetically') }
-	];
-
 	interface Props {
 		container: CustomCollectionContainer;
 		editable?: boolean;
@@ -90,7 +85,13 @@
 
 	let localTerms = $state('');
 
-	let localSort = $derived(container.payload.sort);
+	let localSort = $derived(localTerms.length > 0 ? 'relevance' : container.payload.sort);
+
+	let sortOptions = $derived([
+		...(localTerms.length > 0 ? [{ value: 'relevance', label: $_('sort_relevance') }] : []),
+		{ value: 'modified', label: $_('sort_modified') },
+		{ value: 'alpha', label: $_('sort_alphabetically') }
+	]);
 
 	const idForTitle = crypto.randomUUID();
 

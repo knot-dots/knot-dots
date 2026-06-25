@@ -758,6 +758,7 @@
 	"sort_alphabetically": "Alphabetically",
 	"sort_fulfillment_date": "Fulfillment date",
 	"sort_modified": "Last modified",
+	"sort_relevance": "Relevance",
 	"start_date": "start",
 	"status": "Status",
 	"status.adopted": "Adopted",
