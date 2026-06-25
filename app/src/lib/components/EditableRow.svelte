@@ -140,7 +140,7 @@
 							? bulkActionContext.selected.delete(container.guid)
 							: bulkActionContext.selected.add(container.guid)
 				}
-				name="bulkActionContextSelection"
+				name={bulkActionContext.name}
 				oninput={(e) => e.stopPropagation()}
 				type="checkbox"
 			/>
