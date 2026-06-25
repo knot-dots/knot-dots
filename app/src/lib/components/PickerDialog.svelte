@@ -104,13 +104,18 @@
 
 		background-color: var(--color-gray-025);
 		border: solid 1px var(--color-gray-200);
-		border-radius: 8px;
+		border-color: var(--color-white);
+		border-radius: 24px;
 		box-shadow: var(--shadow-2xl);
 		color: var(--color-gray-500);
 		container-type: inline-size;
 		height: calc(100vh - 3rem);
 		padding: 1.5rem;
 		width: calc(100vw - 10rem);
+	}
+
+	dialog::backdrop {
+		backdrop-filter: blur(12px) brightness(0.75);
 	}
 
 	dialog > div {
