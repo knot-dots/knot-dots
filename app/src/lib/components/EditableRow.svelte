@@ -116,7 +116,7 @@
 	const customCategoryKeys = $derived(page.data.categoryContext.keys);
 </script>
 
-<div class="cell cell--action">
+<div class="cell cell--action" role="cell">
 	{#if editable && dragEnabled}
 		<span class="drag-handle" use:dragHandle>
 			<DragHandle />
@@ -147,7 +147,7 @@
 </div>
 
 {#if columns.includes('title')}
-	<div class="cell">
+	<div class="cell" role="cell">
 		<TitleDropdown
 			editable={editable && $ability.can('update', container)}
 			offset={[40, -39]}
@@ -164,7 +164,7 @@
 
 {#each columns as col (col)}
 	{#if col === 'type'}
-		<div class="cell" class:cell--locked={editable}>
+		<div class="cell" class:cell--locked={editable} role="cell">
 			<span>{$_(container.payload.type)}</span>
 		</div>
 	{:else if col === 'description'}
@@ -181,6 +181,7 @@
 		<div
 			class="cell"
 			class:cell--locked={editable && $ability.cannot('update', container, 'payload.visibility')}
+			role="cell"
 		>
 			<VisibilityDropdown
 				editable={editable && $ability.can('update', container, 'payload.visibility')}
@@ -189,7 +190,11 @@
 			/>
 		</div>
 	{:else if col === 'status'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if 'status' in container.payload}
 				<StatusDropdown
 					editable={editable && $ability.can('update', container)}
@@ -201,7 +206,11 @@
 			{/if}
 		</div>
 	{:else if col === 'indicatorType'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if 'indicatorType' in container.payload}
 				<IndicatorTypeDropdown
 					editable={editable && $ability.can('update', container)}
@@ -211,7 +220,11 @@
 			{/if}
 		</div>
 	{:else if col === 'unit'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if isIndicatorTemplateContainer(container)}
 				<IndicatorUnitDropdown
 					editable={editable && $ability.can('update', container)}
@@ -221,7 +234,11 @@
 			{/if}
 		</div>
 	{:else if col === 'indicatorCategory'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if 'indicatorCategory' in container.payload}
 				<IndicatorCategoryDropdown
 					editable={editable && $ability.can('update', container)}
@@ -231,7 +248,11 @@
 			{/if}
 		</div>
 	{:else if col === 'taskCategory'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if 'taskCategory' in container.payload}
 				<TaskCategoryDropdown
 					editable={editable && $ability.can('update', container)}
@@ -241,7 +262,11 @@
 			{/if}
 		</div>
 	{:else if col === 'fulfillmentDate'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if isContainerWithFulfillmentDate(container)}
 				{#if editable && $ability.can('update', container)}
 					<input type="date" bind:value={container.payload.fulfillmentDate} />
@@ -257,7 +282,11 @@
 			{/if}
 		</div>
 	{:else if col === 'duration'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if isContainerWithDuration(container)}
 				{#if editable && $ability.can('update', container)}
 					<fieldset>
@@ -296,6 +325,7 @@
 			class="cell"
 			class:cell--locked={editable &&
 				$ability.cannot('update', container, 'payload.editorialState')}
+			role="cell"
 		>
 			{#if isContainerWithEditorialState(container) && $ability.can('read', container, 'payload.editorialState')}
 				<EditorialStateDropdown
@@ -310,6 +340,7 @@
 		<div
 			class="cell"
 			class:cell--locked={editable && $ability.cannot('update', container, 'organizational_unit')}
+			role="cell"
 		>
 			<OrganizationalUnitDropdown
 				editable={editable && $ability.can('update', container, 'organizational_unit')}
@@ -319,7 +350,7 @@
 			/>
 		</div>
 	{:else if col === 'aiContribution'}
-		<div class="cell cell--locked">
+		<div class="cell cell--locked" role="cell">
 			{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
 				<span class="badge badge--yellow">
 					<AskAI />
@@ -328,7 +359,7 @@
 			{/if}
 		</div>
 	{:else if col === 'aiSuggestionPageReference'}
-		<div class="cell cell--locked">
+		<div class="cell cell--locked" role="cell">
 			{#if isKnowledgeContainer(container) && container.payload.aiSuggestionPageReference}
 				<span>
 					{container.payload.aiSuggestionPageReference}
@@ -342,7 +373,11 @@
 		)}
 		{@const values = actualData ? actualData.payload.values : []}
 		{@const idx = values.findIndex(([y]) => y === year)}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if editable && $ability.can('update', container)}
 				<input
 					type="text"
@@ -355,7 +390,11 @@
 			{/if}
 		</div>
 	{:else if customCategoryKeys.includes(col)}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			{#if 'category' in container.payload && container.payload.category[col] !== undefined}
 				<CustomCategoryDropdown
 					compact
@@ -367,13 +406,13 @@
 			{/if}
 		</div>
 	{:else if col === 'resourceCategory'}
-		<div class="cell cell--locked">
+		<div class="cell cell--locked" role="cell">
 			{#if 'resourceCategory' in container.payload}
 				<span>{$_(container.payload.resourceCategory)}</span>
 			{/if}
 		</div>
 	{:else if col === 'resourceUnit'}
-		<div class="cell cell--locked">
+		<div class="cell cell--locked" role="cell">
 			{#if 'resourceUnit' in container.payload}
 				<span>{$_(container.payload.resourceUnit)}</span>
 			{/if}
@@ -383,6 +422,7 @@
 			class="cell"
 			class:cell--locked={editable &&
 				$ability.cannot('update', container, 'payload.hierarchyLevel')}
+			role="cell"
 		>
 			{#if isGoalContainer(container)}
 				<EditableGoalHierarchyLevel
@@ -397,6 +437,7 @@
 			<div
 				class="cell"
 				class:cell--locked={editable && $ability.cannot('update', container, 'payload.goalType')}
+				role="cell"
 			>
 				<GoalTypeDropdown
 					editable={editable && $ability.can('update', container, 'payload.goalType')}
@@ -408,6 +449,7 @@
 			<div
 				class="cell"
 				class:cell--locked={editable && $ability.cannot('update', container, 'payload.programType')}
+				role="cell"
 			>
 				<ProgramTypeDropdown
 					editable={editable && $ability.can('update', container, 'payload.programType')}
@@ -419,6 +461,7 @@
 			<div
 				class="cell"
 				class:cell--locked={editable && $ability.cannot('update', container, 'payload.measureType')}
+				role="cell"
 			>
 				<MeasureTypeDropdown
 					editable={editable && $ability.can('update', container, 'payload.measureType')}
@@ -427,10 +470,14 @@
 				/>
 			</div>
 		{:else}
-			<div class="cell"></div>
+			<div class="cell" role="cell"></div>
 		{/if}
 	{:else if col === 'parentObject'}
-		<div class="cell" class:cell--locked={editable && $ability.cannot('update', container)}>
+		<div
+			class="cell"
+			class:cell--locked={editable && $ability.cannot('update', container)}
+			role="cell"
+		>
 			<ParentDropdown
 				offset={[40, -39]}
 				editable={editable && $ability.can('update', container)}
