@@ -199,76 +199,67 @@
 		{/each}
 	{/snippet}
 
-	{#snippet content()}
-		<div class="result-and-preview">
-			<div class="result">
-				<ul class="inline-actions">
-					<li>
-						<!-- svelte-ignore a11y_autofocus -->
-						<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
-							{$_('custom_collection.dialog.cancel')}
-						</button>
-					</li>
-				</ul>
+	{#snippet main()}
+		<div class="result">
+			<ul class="inline-actions">
+				<li>
+					<!-- svelte-ignore a11y_autofocus -->
+					<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
+						{$_('custom_collection.dialog.cancel')}
+					</button>
+				</li>
+			</ul>
 
-				{#if searchResource.current}
-					<ul class="catalog">
-						{#each searchResource.current as item (item.guid)}
-							<li>
-								<SelectableCard
-									--height="100%"
-									checked={selected.includes(item.guid)}
-									container={item}
-									inputType="checkbox"
-									{onchange}
-								/>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
-
-			<div class="preview">
-				<button class="button-primary" disabled={selected.length === 0} onclick={confirm}>
-					{$_('custom_collection.dialog.accept_selection', {
-						values: { count: selected.length }
-					})}
-				</button>
-				<ul>
-					{#each selected as guid (guid)}
-						{@const item = searchResource.current?.find((item) => item.guid === guid)}
-						{#if item}
-							<li class="preview-item">
-								<input bind:group={selected} name="selected" type="checkbox" value={guid} />
-
-								{#if 'name' in item.payload}
-									{item.payload.name}
-								{:else if 'title' in item.payload}
-									{item.payload.title}
-								{/if}
-							</li>
-						{/if}
+			{#if searchResource.current}
+				<ul class="catalog">
+					{#each searchResource.current as item (item.guid)}
+						<li>
+							<SelectableCard
+								--height="100%"
+								checked={selected.includes(item.guid)}
+								container={item}
+								inputType="checkbox"
+								{onchange}
+							/>
+						</li>
 					{/each}
 				</ul>
-			</div>
+			{/if}
+		</div>
+	{/snippet}
+
+	{#snippet selection()}
+		<div class="preview">
+			<button class="button-primary" disabled={selected.length === 0} onclick={confirm}>
+				{$_('custom_collection.dialog.accept_selection', {
+					values: { count: selected.length }
+				})}
+			</button>
+			<ul>
+				{#each selected as guid (guid)}
+					{@const item = searchResource.current?.find((item) => item.guid === guid)}
+					{#if item}
+						<li class="preview-item">
+							<input bind:group={selected} name="selected" type="checkbox" value={guid} />
+
+							{#if 'name' in item.payload}
+								{item.payload.name}
+							{:else if 'title' in item.payload}
+								{item.payload.title}
+							{/if}
+						</li>
+					{/if}
+				{/each}
+			</ul>
 		</div>
 	{/snippet}
 </PickerDialog>
 
 <style>
-	.result-and-preview {
-		display: flex;
-		flex-direction: row;
-		flex-grow: 1;
-		gap: 1.5rem;
-		margin-top: 1rem;
-		min-height: 1px;
-	}
-
 	.result {
 		display: flex;
 		flex-direction: column;
-		min-height: 1px;
+		min-height: 0;
 	}
 
 	.result .inline-actions {
@@ -302,8 +293,6 @@
 		border-radius: 24px;
 		display: flex;
 		flex-direction: column;
-		flex-basis: 20rem;
-		flex-shrink: 0;
 		height: 100%;
 		padding: 1rem;
 	}

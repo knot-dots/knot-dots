@@ -115,6 +115,8 @@
 	"compare_max_reached": "Maximum {max} datasets",
 	"compare_remove": "Remove",
 	"compare_search_hint": "Enter at least 2 characters to search for a dataset",
+	"compare_selection_apply": "Apply ({count})",
+	"compare_selection_clear": "Clear",
 	"compare_with": "Compare with",
 	"confirm": "Confirm",
 	"confirm_delete_dialog.heading": "Delete {title}",

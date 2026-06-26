@@ -19,7 +19,9 @@
 		commands?: Snippet;
 		filterContent: Snippet;
 		sortContent: Snippet;
-		content: Snippet;
+		sidebar?: Snippet;
+		main: Snippet;
+		selection?: Snippet;
 	}
 
 	let {
@@ -33,7 +35,9 @@
 		commands,
 		filterContent,
 		sortContent,
-		content
+		sidebar,
+		main,
+		selection
 	}: Props = $props();
 </script>
 
@@ -108,7 +112,23 @@
 			{/if}
 		</header>
 
-		{@render content()}
+		<div class="picker-layout" class:has-sidebar={!!sidebar} class:has-selection={!!selection}>
+			{#if sidebar}
+				<aside class="picker-sidebar">
+					{@render sidebar()}
+				</aside>
+			{/if}
+
+			<main class="picker-main">
+				{@render main()}
+			</main>
+
+			{#if selection}
+				<aside class="picker-selection">
+					{@render selection()}
+				</aside>
+			{/if}
+		</div>
 	</div>
 </dialog>
 
@@ -167,6 +187,7 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
+		min-height: 0;
 	}
 
 	.commands {
@@ -234,6 +255,46 @@
 		position: absolute;
 		right: -0.375rem;
 		top: -0.375rem;
+	}
+
+	.picker-layout {
+		--picker-sidebar-width: 13rem;
+		--picker-selection-width: 20rem;
+		--picker-layout-gap: 1.5rem;
+
+		display: grid;
+		flex: 1 1 auto;
+		gap: var(--picker-layout-gap);
+		grid-template-columns: minmax(0, 1fr);
+		min-height: 0;
+	}
+
+	.picker-layout.has-sidebar {
+		grid-template-columns: var(--picker-sidebar-width) minmax(0, 1fr);
+	}
+
+	.picker-layout.has-selection {
+		grid-template-columns: minmax(0, 1fr) var(--picker-selection-width);
+	}
+
+	.picker-layout.has-sidebar.has-selection {
+		grid-template-columns: var(--picker-sidebar-width) minmax(0, 1fr) var(--picker-selection-width);
+	}
+
+	.picker-sidebar,
+	.picker-main,
+	.picker-selection {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		min-width: 0;
+	}
+
+	.picker-sidebar > :global(*),
+	.picker-main > :global(*),
+	.picker-selection > :global(*) {
+		flex: 1 1 auto;
+		min-height: 0;
 	}
 
 	@layer visually-hidden {

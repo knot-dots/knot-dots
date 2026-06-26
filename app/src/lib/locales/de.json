@@ -115,6 +115,8 @@
 	"compare_max_reached": "Maximal {max} Datensätze",
 	"compare_remove": "Entfernen",
 	"compare_search_hint": "Geben Sie mindestens 2 Zeichen ein, um nach einem Datensatz zu suchen",
+	"compare_selection_apply": "Übernehmen ({count})",
+	"compare_selection_clear": "Aufheben",
 	"compare_with": "Vergleichen mit",
 	"confirm": "Bestätigen",
 	"confirm_delete_dialog.heading": "{title} löschen",
