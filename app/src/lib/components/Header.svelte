@@ -217,8 +217,7 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_redundant_roles -->
-<header data-sveltekit-preload-data="hover" role="banner">
+<header data-sveltekit-preload-data="hover">
 	{#if !overlay}
 		<button
 			aria-label={$_('menu')}
