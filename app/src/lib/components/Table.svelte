@@ -46,17 +46,17 @@
 </script>
 
 <div class="table-wrapper table-wrapper--with-end-padding">
-	<div class="table">
-		<div class="table-head">
+	<div class="table" role="table">
+		<div class="table-head" role="rowgroup">
 			<div class="row">
-				<div class="cell cell--action"></div>
+				<div class="cell cell--action" role="columnheader"></div>
 				{#each columns as { heading, key } (key)}
-					<div class="cell">{heading}</div>
+					<div class="cell" role="columnheader">{heading}</div>
 				{/each}
 			</div>
 		</div>
 
-		<div class="table-body">
+		<div class="table-body" role="rowgroup">
 			{#each rows as row, i (row.guid)}
 				<form
 					animate:flip={{ duration: 100 }}
@@ -64,6 +64,7 @@
 					oninput={requestSubmit}
 					onsubmit={autoSave(row, 2000)}
 					novalidate
+					role="row"
 				>
 					<EditableRow
 						columns={columns.map(({ key }) => key)}

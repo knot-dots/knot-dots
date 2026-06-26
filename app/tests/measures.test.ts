@@ -66,7 +66,7 @@ test.describe('Measures section', () => {
 			.getByRole('textbox', { name: 'Title' })
 			.fill(subMeasureTitle);
 		await dotsBoard.page.getByRole('dialog').getByLabel('Measure type').click();
-		await dotsBoard.page.getByRole('dialog').getByRole('radio', { name: 'Module' }).check();
+		await dotsBoard.page.getByRole('dialog').getByRole('radio', { name: 'Module' }).click();
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
 		await dotsBoard.overlay.backButton.click();

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -11,7 +10,6 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { predicates, type Predicate } from '$lib/models';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -41,11 +39,6 @@
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: defaultRelationPredicates
-	});
-
-	setBulkActionContext({
-		actions: ['visibility', 'delete'],
-		selected: new SvelteSet<string>()
 	});
 
 	let relationPredicates = $derived.by(() =>
@@ -130,7 +123,7 @@
 	);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header search />
 	{/snippet}

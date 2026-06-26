@@ -47,7 +47,16 @@
 			<div>
 				{#each options as option (option.value)}
 					<label>
-						<input {disabled} {onchange} type="radio" value={option.value} bind:group={value} />
+						<input
+							{disabled}
+							onchange={async (e) => {
+								await onchange?.(e);
+								popover.close();
+							}}
+							type="radio"
+							value={option.value}
+							bind:group={value}
+						/>
 						<span class="truncated">{option.label}</span>
 					</label>
 				{/each}

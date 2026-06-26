@@ -36,7 +36,7 @@
 			bulkActionContext.selected.clear();
 		} else {
 			document
-				.querySelectorAll('input[name="bulkActionContextSelection"]:not(:checked)')
+				.querySelectorAll(`input[name="${bulkActionContext.name}"]:not(:checked)`)
 				.forEach((node) => {
 					(node as HTMLInputElement).click();
 				});

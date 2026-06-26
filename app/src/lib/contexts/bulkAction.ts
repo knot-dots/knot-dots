@@ -5,13 +5,14 @@ const key = {};
 
 interface BulkAction {
 	actions: string[];
+	name?: string;
 	selected: SvelteSet<string>;
 }
 
 export function setBulkActionContext(context: BulkAction) {
-	setContext(key, context);
+	setContext(key, { name: `bulk-action-context-${crypto.randomUUID()}`, ...context });
 }
 
 export function getBulkActionContext() {
-	return getContext(key) as BulkAction;
+	return getContext(key) as Required<BulkAction>;
 }

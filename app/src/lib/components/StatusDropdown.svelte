@@ -64,7 +64,12 @@
 				{#each effectiveOptions.map( (o) => ({ label: label(o), value: o }) ) as option (option.value)}
 					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
-						<input type="radio" value={option.value} bind:group={value} />
+						<input
+							bind:group={value}
+							onchange={() => popover.close()}
+							type="radio"
+							value={option.value}
+						/>
 						<span class="badge badge--{statusColors.get(option.value)}">
 							<StatusIcon />
 							{option.label}

@@ -11,6 +11,10 @@ export default class Overlay {
 		return this.locator.getByRole('button', { name: 'Back' });
 	}
 
+	get bulkActionControls() {
+		return this.locator.getByRole('group', { name: 'Bulk actions' });
+	}
+
 	get closeButton() {
 		return this.locator.getByRole('link', { name: 'Close' });
 	}

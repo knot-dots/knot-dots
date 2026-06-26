@@ -223,7 +223,7 @@
 	{#if !isTeaserContainer(container)}
 		<header>
 			<h3>
-				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !overlayContext}
+				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext}
 					<label class="is-visible-on-hover">
 						<input
 							bind:checked={
@@ -233,7 +233,7 @@
 										? bulkActionContext.selected.delete(container.guid)
 										: bulkActionContext.selected.add(container.guid)
 							}
-							name="bulkActionContextSelection"
+							name={bulkActionContext.name}
 							onclick={(e) => e.stopPropagation()}
 							type="checkbox"
 						/>

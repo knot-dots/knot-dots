@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
-	import { SvelteSet } from 'svelte/reactivity';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { predicates } from '$lib/models';
 
 	interface Props {
@@ -24,15 +22,10 @@
 		]
 	});
 
-	setBulkActionContext({
-		actions: ['visibility', 'delete'],
-		selected: new SvelteSet<string>()
-	});
-
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header {filterBarInitiallyOpen} {facets} search />
 	{/snippet}

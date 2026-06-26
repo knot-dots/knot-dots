@@ -217,8 +217,7 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_redundant_roles -->
-<header data-sveltekit-preload-data="hover" role="banner">
+<header data-sveltekit-preload-data="hover">
 	{#if !overlay}
 		<button
 			aria-label={$_('menu')}
@@ -325,21 +324,19 @@
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if commands || (!isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)))}
-		<div class="commands-leading">
-			{#if commands}
-				{@render commands()}
-			{/if}
+	<div class="commands-leading">
+		{#if commands}
+			{@render commands()}
+		{/if}
 
-			{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
-				<ViewSelect />
-			{/if}
+		{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+			<ViewSelect />
+		{/if}
 
-			{#if createFeatureDecisions(page.data.features).useBulkActions() && !overlay && $applicationState.containerDetailView.editable}
-				<BulkActions />
-			{/if}
-		</div>
-	{/if}
+		{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable}
+			<BulkActions />
+		{/if}
+	</div>
 
 	{#if search}
 		<Search />
