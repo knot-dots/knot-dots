@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -9,22 +11,20 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { predicates, type Container, type Predicate } from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
-
-	type PageProps = {
-		data: {
-			containers: Container[];
-			terms: Container[];
-			subterms: Container[];
-		};
-	};
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
+	import { predicates, type Predicate } from '$lib/models';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let allContainers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			data.containers,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 
 	const defaultRelationPredicates: Predicate[] = [
@@ -41,6 +41,11 @@
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: defaultRelationPredicates
+	});
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		selected: new SvelteSet<string>()
 	});
 
 	let relationPredicates = $derived.by(() =>

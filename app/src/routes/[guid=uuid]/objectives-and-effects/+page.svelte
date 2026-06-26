@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -11,6 +12,7 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type Container,
 		findAncestors,
@@ -26,19 +28,28 @@
 		isRelatedTo,
 		predicates
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let allContainers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			data.containers,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-concrete-target-of'], predicates.enum['is-sub-target-of']]
+	});
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		selected: new SvelteSet<string>()
 	});
 
 	let containers = $derived.by(() => {

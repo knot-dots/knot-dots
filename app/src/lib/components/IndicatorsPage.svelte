@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
-
 	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
 	interface Props {
@@ -16,7 +17,13 @@
 	let { actions, children, data, filterBarInitiallyOpen = false }: Props = $props();
 
 	let facets = $derived(data.facets);
+
 	const featureDecisions = createFeatureDecisions(data.features ?? []);
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		selected: new SvelteSet<string>()
+	});
 </script>
 
 <Layout>

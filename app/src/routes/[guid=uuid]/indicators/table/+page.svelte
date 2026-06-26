@@ -27,7 +27,12 @@
 		payloadTypes,
 		isBinaryIndicatorContainer
 	} from '$lib/models';
-	import { ability, lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import {
+		ability,
+		lastCreatedContainer,
+		lastDeletedContainers,
+		lastUpdatedContainers
+	} from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -41,6 +46,7 @@
 				...uploadedContainers.filter((c) => !data.containers.some((d) => d.guid === c.guid))
 			],
 			$lastCreatedContainer,
+			$lastDeletedContainers,
 			$lastUpdatedContainers
 		)
 	);

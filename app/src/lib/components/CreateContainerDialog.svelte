@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
@@ -87,12 +87,14 @@
 			}
 
 			if (isOrganizationalUnitContainer(savedContainer)) {
-				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
+				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }), {
+					invalidateAll: true
+				});
 			} else {
-				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
+				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid), {
+					invalidateAll: true
+				});
 			}
-
-			await invalidateAll();
 		} else {
 			const error = await response.json();
 			alert(error.message);

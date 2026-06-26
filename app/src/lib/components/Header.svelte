@@ -18,6 +18,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
+	import BulkActions from '$lib/components/BulkActions.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -56,6 +57,7 @@
 	} from '$lib/models';
 	import {
 		ability,
+		applicationState,
 		user,
 		overlay as overlayStore,
 		compareState,
@@ -332,6 +334,10 @@
 			{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
 				<ViewSelect />
 			{/if}
+
+			{#if createFeatureDecisions(page.data.features).useBulkActions() && !overlay && $applicationState.containerDetailView.editable}
+				<BulkActions />
+			{/if}
 		</div>
 	{/if}
 
@@ -525,6 +531,8 @@
 	}
 
 	.commands-leading {
+		display: flex;
+		gap: inherit;
 		margin-right: auto;
 	}
 
