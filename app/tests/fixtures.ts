@@ -28,9 +28,11 @@ import {
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
 import { ProgramPage, LandingPage } from './pages';
+import { AllTable } from './tables';
 
 type MyFixtures = {
 	aiGoal: GoalContainer;
+	allTable: AllTable;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
@@ -210,6 +212,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testGoal);
 
 		await deleteContainer(adminContext, testGoal);
+	},
+	allTable: async ({ page }, use) => {
+		await use(new AllTable(page));
 	},
 	defaultOrganization: [
 		async ({ adminContext }, use) => {
