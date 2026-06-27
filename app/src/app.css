@@ -1748,12 +1748,12 @@ img.cover {
 
 .dropdown-button {
 	align-items: var(--dropdown-button-align-items, center);
-	background: var(--dropdown-button-default-background, var(--color-gray-050));
+	background: var(--dropdown-button-default-background, var(--color-background-accent-subtle));
 	border: solid var(--dropdown-button-border-width, 0)
-		var(--dropdown-button-default-border-color, var(--color-gray-200));
+		var(--dropdown-button-default-border-color, var(--color-border-accent-subtle));
 	border-radius: var(--dropdown-button-border-radius, 4px);
 	box-shadow: var(--dropdown-button-box-shadow, none);
-	color: var(--dropdown-button-default-color, var(--color-gray-200));
+	color: var(--dropdown-button-default-color, var(--color-text-strong));
 	display: flex;
 	font-weight: 500;
 	gap: 0.25rem;
@@ -1765,20 +1765,23 @@ img.cover {
 }
 
 .dropdown-button:active {
-	background: var(--dropdown-button-active-background, rgb(from var(--color-gray-500) r g b / 0.1));
+	background: var(--dropdown-button-active-background, var(--color-background-accent-state-active));
 }
 
 .dropdown-button:hover {
-	background: var(--dropdown-button-hover-background, rgb(from var(--color-gray-500) r g b / 0.1));
+	background: var(--dropdown-button-hover-background, var(--color-background-accent-state-hover));
 }
 
 .dropdown-button[aria-expanded='true'] {
-	background: var(--dropdown-button-expanded-background, var(--color-gray-050));
+	background: var(
+		--dropdown-button-expanded-background,
+		var(--color-background-accent-state-selected)
+	);
 	border-color: var(
 		--dropdown-button-expanded-border-color,
-		var(--dropdown-button-default-border-color, var(--color-gray-200))
+		var(--dropdown-button-default-border-color, var(--color-border-accent-state-selected))
 	);
-	color: var(--color-gray-700);
+	color: var(--color-accent-on-default);
 }
 
 .dropdown-button[disabled] {
@@ -1794,7 +1797,7 @@ img.cover {
 }
 
 .dropdown-button > svg:first-child {
-	color: var(--dropdown-button-icon-default-color, var(--color-gray-500));
+	color: var(--dropdown-button-icon-default-color, var(--color-icon-accent-subtle));
 }
 
 .dropdown-button[aria-expanded='true'] > svg:first-child {
@@ -1806,14 +1809,14 @@ img.cover {
 }
 
 .dropdown-button > svg:last-child {
-	color: var(--dropdown-button-chevron-default-color, var(--color-gray-500));
+	color: var(--dropdown-button-chevron-default-color, var(--color-icon-accent-subtle));
 	display: var(--dropdown-button-chevron-display, block);
 	height: var(--dropdown-button-chevron-icon-size, 1.25rem);
 	width: var(--dropdown-button-chevron-icon-size, 1.25rem);
 }
 
 .dropdown-button[aria-expanded='true'] > svg:last-child {
-	color: var(--dropdown-button-chevron-expanded-color, var(--color-primary-600));
+	color: var(--dropdown-button-chevron-expanded-color, var(--color-icon-accent-subtle));
 }
 
 .dropdown-button[disabled] > svg:last-child {
