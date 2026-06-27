@@ -34,7 +34,12 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
+	<button
+		aria-labelledby={labelledBy}
+		class="dropdown-button dropdown-button--select"
+		type="button"
+		use:popover.button
+	>
 		<span class="selected" class:truncated={compact}>
 			{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
 				<span class="value" class:value--compact={compact}>{selectedOption.label}</span>

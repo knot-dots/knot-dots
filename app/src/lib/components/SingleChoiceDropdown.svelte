@@ -28,7 +28,13 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
+	<button
+		aria-labelledby={labelledBy}
+		class="dropdown-button dropdown-button--select"
+		type="button"
+		use:popover.button
+		{value}
+	>
 		<span class="truncated">
 			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
 		</span>

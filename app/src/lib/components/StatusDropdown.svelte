@@ -45,7 +45,11 @@
 
 {#if editable}
 	<div class="dropdown" use:popperRef>
-		<button class="dropdown-button" type="button" use:popover.button>
+		<button
+			class={['dropdown-button', buttonStyle === 'default' ? 'dropdown-button--select' : '']}
+			type="button"
+			use:popover.button
+		>
 			{#if buttonStyle === 'badge'}
 				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{label(value)}
@@ -87,5 +91,6 @@
 <style>
 	.badge {
 		float: left;
+		font-weight: 400;
 	}
 </style>

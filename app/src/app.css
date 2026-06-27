@@ -340,7 +340,7 @@
 	--button-disabled-border-color: var(--color-gray-100);
 	--button-hover-background: var(--color-gray-100);
 	--button-hover-border-color: var(--button-border-color);
-	--form-control-background: var(--color-gray-050);
+	--form-control-background: var(--color-background-system-subtle);
 
 	--header-height: 63px;
 	--sidebar-max-width: 14.25rem;
@@ -1365,6 +1365,7 @@ h4.details-heading {
 	border-radius: 4px;
 	display: flex;
 	font-weight: 500;
+	min-height: 2.5rem;
 	padding: 0.375rem;
 }
 
@@ -1821,6 +1822,28 @@ img.cover {
 
 .dropdown-button[disabled] > svg:last-child {
 	color: var(--dropdown-button-chevron-disabled-color, inherit);
+}
+
+.dropdown-button.dropdown-button--select {
+	--dropdown-button-expanded-background: var(--color-background-system-muted);
+	--dropdown-button-chevron-icon-size: 1rem;
+
+	color: var(--dropdown-button-default-color, var(--color-text-subtle));
+}
+
+.dropdown-button.dropdown-button--select[aria-expanded='true']:after {
+	background: var(--color-background-accent-state-selected);
+	border-radius: 4px;
+	content: '';
+	display: block;
+	height: calc(var(--dropdown-button-chevron-icon-size) + 0.75rem);
+	right: 0.375rem;
+	position: absolute;
+	width: calc(var(--dropdown-button-chevron-icon-size) + 0.75rem);
+}
+
+.dropdown-button.dropdown-button--select > svg:last-child {
+	margin: 0.375rem;
 }
 
 .dropdown-panel {
