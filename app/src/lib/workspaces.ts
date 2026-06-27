@@ -10,8 +10,8 @@ import Clipboard from '~icons/knotdots/clipboard-simple';
 import ClipboardCheck from '~icons/knotdots/clipboard-check';
 import Compass from '~icons/knotdots/compass';
 import Gavel from '~icons/knotdots/gavel';
-import Help from '~icons/knotdots/help';
 import Goal from '~icons/knotdots/goal';
+import Help from '~icons/flowbite/question-circle-outline';
 import LandingPage from '~icons/knotdots/landing-page';
 import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
@@ -49,31 +49,31 @@ export interface WorkspaceModule {
 export const workspaceModules: WorkspaceModule[] = [
 	{
 		key: 'goal_setting',
-		colorClass: 'menu-segment--goals'
+		colorClass: 'module-goal-setting'
 	},
 	{
 		key: 'implementation_planning',
-		colorClass: 'menu-segment--implementation'
+		colorClass: 'module-implementation-planning'
 	},
 	{
 		key: 'impact_measurement',
-		colorClass: 'menu-segment--effects'
+		colorClass: 'module-impact-measurement'
 	},
 	{
 		key: 'resource_planning',
-		colorClass: 'menu-segment--resources'
+		colorClass: 'module-resource-planning'
 	},
 	{
 		key: 'knowledge_transfer',
-		colorClass: 'menu-segment--knowledge'
+		colorClass: 'module-knowledge-transfer'
 	},
 	{
 		key: 'rules',
-		colorClass: 'menu-segment--rules'
+		colorClass: 'module-rules'
 	},
 	{
 		key: 'organizing',
-		colorClass: 'menu-segment--organize'
+		colorClass: 'module-organizing'
 	}
 ];
 

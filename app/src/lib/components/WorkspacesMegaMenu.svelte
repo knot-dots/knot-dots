@@ -12,7 +12,8 @@
 		groupWorkspacesByModule,
 		workspaceFromPathname,
 		type WorkspaceDefinition,
-		type WorkspaceModuleKey
+		type WorkspaceModuleKey,
+		workspaceModules
 	} from '$lib/workspaces';
 
 	/**
@@ -105,7 +106,10 @@
 <div class="mega-menu">
 	<button
 		bind:this={buttonEl}
-		class="dropdown-button"
+		class={[
+			'dropdown-button',
+			workspaceModules.find((m) => m.key === currentWorkspace?.module)?.colorClass
+		]}
 		onchange={handleChange}
 		type="button"
 		use:menu.button
@@ -144,12 +148,12 @@
 												<workspace.icon />
 											</span>
 											<span class="menu-segment-item-text">
-												<span class="menu-segment-item-label"
-													>{$_(`workspace.${workspace.key}.title`)}</span
-												>
-												<span class="menu-segment-item-helper"
-													>{$_(`workspace.${workspace.key}.description`)}</span
-												>
+												<span class="menu-segment-item-label">
+													{$_(`workspace.${workspace.key}.title`)}
+												</span>
+												<span class="menu-segment-item-helper">
+													{$_(`workspace.${workspace.key}.description`)}
+												</span>
 											</span>
 										</button>
 									</li>
@@ -164,19 +168,10 @@
 </div>
 
 <style>
-	.mega-menu {
-		--dropdown-button-box-shadow: none;
-		--dropdown-button-default-color: var(--color-gray-900);
-		--dropdown-button-min-height: 2.25rem;
-		--dropdown-button-padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-	}
-
 	.mega-menu-panel {
 		background-color: var(--color-white);
 		border-radius: 0 0 1rem 1rem;
-		box-shadow:
-			0 20px 25px -5px rgba(0, 0, 0, 0.1),
-			0 10px 10px 0 rgba(0, 0, 0, 0.04);
+		box-shadow: var(--shadow-xl);
 		container-name: mega-menu;
 		container-type: inline-size;
 		display: flex;
@@ -187,7 +182,6 @@
 		padding: 0.5rem;
 		position: fixed;
 		right: 0;
-		z-index: 100;
 	}
 
 	.mega-menu-column {
@@ -216,20 +210,14 @@
 	}
 
 	.menu-segment {
-		--menu-segment-bg: var(--color-gray-050);
-		--menu-segment-fg: var(--color-gray-900);
-		--menu-segment-accent: var(--color-gray-300);
-		--menu-segment-border: var(--menu-segment-bg);
-
-		background-color: var(--menu-segment-bg);
+		background-color: var(--color-surface-accent-container-raised);
 		background-image: linear-gradient(
 			205deg,
 			rgba(255, 255, 255, 0.75) 1%,
 			rgba(255, 255, 255, 0) 98%
 		);
-		border: 1px solid var(--menu-segment-border);
+		border: 1px solid var(--color-border-accent-subtle);
 		border-radius: 0.5rem;
-		color: var(--menu-segment-fg);
 		display: flex;
 		flex: 1 0 0;
 		flex-direction: column;
@@ -242,12 +230,10 @@
 	}
 
 	.menu-segment-header > h2 {
-		color: var(--menu-segment-fg);
+		color: var(--color-text-accent-subtle);
 		font-size: 0.75rem;
 		font-weight: 600;
-		letter-spacing: 0.04em;
 		margin: 0;
-		text-transform: uppercase;
 	}
 
 	.menu-segment-items {
@@ -263,7 +249,7 @@
 		align-items: flex-start;
 		background: transparent;
 		border: 0;
-		border-radius: 0.375rem;
+		border-radius: 6px;
 		color: inherit;
 		cursor: pointer;
 		display: flex;
@@ -276,28 +262,24 @@
 
 	.menu-segment-item > button:hover,
 	.menu-segment-item > button:focus-visible {
-		background-color: var(--color-white);
+		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
 	}
 
 	.menu-segment-item--current > button {
-		background-color: var(--color-white);
-		box-shadow: inset 0 0 0 2px var(--menu-segment-accent);
+		background-color: var(--color-background-accent-state-selected);
 	}
 
 	.menu-segment-item-icon {
 		align-items: center;
-		background-color: var(--menu-segment-accent);
-		border-radius: 0.5rem;
+		background-color: var(--color-background-accent-strong);
+		border-radius: 8px;
+		color: var(--color-icon-accent-default);
 		display: inline-flex;
 		flex-shrink: 0;
 		height: 1.5rem;
 		justify-content: center;
 		padding: 0.25rem;
 		width: 1.5rem;
-	}
-
-	.menu-segment-item-icon :global(svg) {
-		color: var(--color-gray-900);
 	}
 
 	.menu-segment-item-text {
@@ -308,70 +290,15 @@
 	}
 
 	.menu-segment-item-label {
-		color: var(--color-gray-700);
+		color: var(--color-text-default);
 		font-size: 0.875rem;
 		font-weight: 500;
-		line-height: 0.875rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		line-height: 1;
 	}
 
 	.menu-segment-item-helper {
-		color: var(--color-gray-500);
+		color: var(--color-text-muted);
 		font-size: 0.75rem;
 		line-height: 1.5;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.menu-segment.menu-segment--goals {
-		--menu-segment-bg: #d1ebfa;
-		--menu-segment-fg: #3980ac;
-		--menu-segment-accent: #8cbbd9;
-		--menu-segment-border: #d1ebfa;
-	}
-
-	.menu-segment.menu-segment--implementation {
-		--menu-segment-bg: #fce4de;
-		--menu-segment-fg: #af4d36;
-		--menu-segment-accent: #f5a694;
-		--menu-segment-border: #fce4de;
-	}
-
-	.menu-segment.menu-segment--effects {
-		--menu-segment-bg: #d5f5f6;
-		--menu-segment-fg: #0b808e;
-		--menu-segment-accent: #82dde3;
-		--menu-segment-border: #d5f5f6;
-	}
-
-	.menu-segment.menu-segment--resources {
-		--menu-segment-bg: #fff7cc;
-		--menu-segment-fg: #d5b40b;
-		--menu-segment-accent: #fbde51;
-		--menu-segment-border: #fff7cc;
-	}
-
-	.menu-segment.menu-segment--knowledge {
-		--menu-segment-bg: #d1fadf;
-		--menu-segment-fg: #039855;
-		--menu-segment-accent: #6ce9a6;
-		--menu-segment-border: #d1fadf;
-	}
-
-	.menu-segment.menu-segment--rules {
-		--menu-segment-bg: #f7e8ee;
-		--menu-segment-fg: #b83d6a;
-		--menu-segment-accent: #efbdcf;
-		--menu-segment-border: #f7e8ee;
-	}
-
-	.menu-segment.menu-segment--organize {
-		--menu-segment-bg: #e7e4fc;
-		--menu-segment-fg: #824eda;
-		--menu-segment-border: #e7e4fc;
-		--menu-segment-accent: #c7bef4;
 	}
 </style>
