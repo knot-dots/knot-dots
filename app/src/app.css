@@ -808,18 +808,18 @@ button.button-square,
 .action-button {
 	border: none;
 	border-radius: 8px;
-	color: var(--color-gray-500);
+	color: var(--color-text-accent-default);
 	font-size: 0.75rem;
 	padding: 0.5rem;
 }
 
 .action-button:active {
-	background-color: var(--color-gray-200);
+	background-color: var(--color-background-accent-state-active);
 }
 
 .action-button:focus,
 .action-button:hover {
-	background-color: rgb(from var(--color-gray-500) r g b / 0.1);
+	background-color: var(--color-background-accent-state-hover);
 }
 
 .action-button[disabled],
