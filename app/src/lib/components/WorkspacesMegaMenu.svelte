@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
-	import { ability, overlay, overlayWidth, user } from '$lib/stores';
+	import { ability, user } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
 		groupWorkspacesByModule,
@@ -72,24 +72,6 @@
 
 	const menu = createMenu({});
 
-	let buttonEl: HTMLButtonElement;
-
-	const panelTop = $derived.by(() => {
-		if (!$menu.expanded || !buttonEl) return 0;
-		const header = buttonEl.closest('header');
-		if (!header) return 0;
-		return header.getBoundingClientRect().bottom;
-	});
-
-	const panelLeft = $derived.by(() => {
-		if (!$menu.expanded || !buttonEl) return '0';
-		const nav = buttonEl.closest('.app-wrapper')?.querySelector(':scope > nav');
-		if (!nav) return '0';
-		return `${(nav as HTMLElement).offsetWidth}px`;
-	});
-
-	const panelRight = $derived($overlay ? `calc(100vw * ${$overlayWidth})` : '0');
-
 	function pathFor(workspace: WorkspaceDefinition): string {
 		return `/${selectedContext.guid}${workspace.views.default}`;
 	}
@@ -105,7 +87,6 @@
 
 <div class="mega-menu">
 	<button
-		bind:this={buttonEl}
 		class={[
 			'dropdown-button',
 			workspaceModules.find((m) => m.key === currentWorkspace?.module)?.colorClass
@@ -124,13 +105,7 @@
 	</button>
 
 	{#if $menu.expanded}
-		<div
-			class="mega-menu-panel"
-			style:top="{panelTop}px"
-			style:left={panelLeft}
-			style:right={panelRight}
-			use:menu.items
-		>
+		<div class="mega-menu-panel" use:menu.items>
 			{#each columns as column, colIdx (colIdx)}
 				<div class="mega-menu-column">
 					{#each column as group (group.module.key)}
@@ -176,34 +151,35 @@
 		container-type: inline-size;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.375rem;
+		left: 0;
 		max-height: calc(100vh - var(--header-height));
 		overflow: auto;
-		padding: 0.5rem;
-		position: fixed;
+		padding: 0.375rem;
+		position: absolute;
 		right: 0;
 	}
 
 	.mega-menu-column {
 		display: flex;
-		flex: 1 1 220px;
+		flex: 1 1 100%;
 		flex-direction: column;
 		gap: 0.5rem;
 		min-width: 0;
 	}
 
-	@container mega-menu (max-width: 30rem) {
+	@container (min-width: 30rem) {
 		.mega-menu-panel {
-			gap: 0.375rem;
-			padding: 0.375rem;
+			gap: 0.5rem;
+			padding: 0.5rem;
 		}
 
 		.mega-menu-column {
-			flex-basis: 100%;
+			flex-basis: 13.75rem;
 		}
 	}
 
-	@container mega-menu (min-width: 60rem) {
+	@container (min-width: 60rem) {
 		.mega-menu-column {
 			flex: 1 1 0;
 		}
