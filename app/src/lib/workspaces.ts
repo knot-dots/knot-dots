@@ -21,7 +21,6 @@ import Tag from '~icons/knotdots/tag';
 import Users from '~icons/knotdots/users';
 import Template from '~icons/knotdots/template';
 import {
-	boards,
 	containerOfType,
 	isOrganizationContainer,
 	payloadTypes,
@@ -85,8 +84,6 @@ export type WorkspaceFeatureFlag = keyof {
 		: never]: true;
 };
 
-export type WorkspaceBoardFlag = (typeof boards.options)[number];
-
 export type WorkspaceViewKey = 'catalog' | 'level' | 'status' | 'table' | 'monitoring';
 
 export interface WorkspaceDefinition {
@@ -96,7 +93,6 @@ export interface WorkspaceDefinition {
 	/** Map view → URL path (without context segment). The `default` view is the entry view. */
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
-	boardFlag?: WorkspaceBoardFlag;
 	adminOnly?: boolean;
 }
 
@@ -185,8 +181,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/indicators/catalog',
 			catalog: '/indicators/catalog',
 			table: '/indicators/table'
-		},
-		boardFlag: 'board.indicators'
+		}
 	},
 	{
 		key: 'reports',
@@ -204,8 +199,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/objectives-and-effects',
 			level: '/objectives-and-effects'
-		},
-		boardFlag: 'board.indicators'
+		}
 	},
 	// Resource planning
 	{
@@ -352,7 +346,6 @@ interface VisibilityContext {
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
 	const { organization, organizationalUnit, features, ability, user } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
-	const enabledBoards = new Set(selectedContext.payload.boards);
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
 	const explicit =
 		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
@@ -365,9 +358,6 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {
-			return false;
-		}
-		if (workspace.boardFlag && !enabledBoards.has(workspace.boardFlag)) {
 			return false;
 		}
 		if (workspace.key === 'help') {

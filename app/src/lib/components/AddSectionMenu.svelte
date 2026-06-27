@@ -30,7 +30,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
-		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
 		isContainerWithSummary,
@@ -132,7 +131,7 @@
 
 	let mayAddIndicatorCollection = $derived(
 		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
-			parentContainer.payload.boards.includes(boards.enum['board.indicators']) &&
+			parentContainer.payload.visibleWorkspaces.includes('indicators') &&
 			!hasSection(parentContainer, relatedContainers).some(isIndicatorCollectionContainer)
 	);
 

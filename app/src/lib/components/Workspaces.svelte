@@ -7,7 +7,6 @@
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { boards } from '$lib/models';
 
 	interface Props {
 		options?: { label: string; value: string }[];
@@ -30,7 +29,7 @@
 			{ label: $_('workspace.measure_monitoring'), value: '/measures/monitoring' },
 			{ label: $_('workspace.measure_templates'), value: '/measures/templates' },
 			{ label: $_('workspace.rules'), value: '/rules/status' },
-			...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
+			...(selectedContext.payload.visibleWorkspaces.includes('indicators')
 				? [
 						{ label: $_('workspace.indicators'), value: '/indicators/catalog' },
 						{ label: $_('workspace.objectives_and_effects'), value: '/objectives-and-effects' }

@@ -19,13 +19,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import {
-		type AnyContainer,
-		boards,
-		overlayKey,
-		overlayURL,
-		paramsFromFragment
-	} from '$lib/models';
+	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
@@ -138,7 +132,7 @@
 					}
 				]
 			: []),
-		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
+		...(selectedContext.payload.visibleWorkspaces.includes('indicators')
 			? [
 					{
 						exists: true,

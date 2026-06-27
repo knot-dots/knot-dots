@@ -325,8 +325,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				...newOrganization,
 				payload: {
 					...newOrganization.payload,
-					name: `Test Organization ${workerInfo.workerIndex}`,
-					boards: ['board.indicators', 'board.organizational_units']
+					name: `Test Organization ${workerInfo.workerIndex}`
 				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
