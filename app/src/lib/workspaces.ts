@@ -87,7 +87,7 @@ export type WorkspaceFeatureFlag = keyof {
 
 export type WorkspaceBoardFlag = (typeof boards.options)[number];
 
-export type WorkspaceViewKey = 'page' | 'catalog' | 'level' | 'status' | 'table' | 'monitoring';
+export type WorkspaceViewKey = 'catalog' | 'level' | 'status' | 'table' | 'monitoring';
 
 export interface WorkspaceDefinition {
 	key: string;
@@ -307,7 +307,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/all/catalog',
 			catalog: '/all/catalog',
 			level: '/all/level',
-			page: '/all/page',
 			table: '/all/table'
 		}
 	},
