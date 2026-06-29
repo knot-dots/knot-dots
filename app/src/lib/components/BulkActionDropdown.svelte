@@ -72,7 +72,7 @@
 		--dropdown-button-default-color: var(--color-text-accent-default);
 		--dropdown-button-icon-default-color: var(--color-text-accent-default);
 		--dropdown-button-min-height: 100%;
-		--dropdown-button-padding: 0.375rem 0.5rem;
+		--dropdown-button-padding: 0.25rem 0.5rem;
 	}
 
 	.dropdown-button {
