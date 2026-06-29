@@ -238,7 +238,7 @@
 
 	.menu-segment-item > button:hover,
 	.menu-segment-item > button:focus-visible {
-		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
+		background-color: rgb(from var(--color-background-accent-state-hover) r g b / 0.1);
 	}
 
 	.menu-segment-item--current > button {
