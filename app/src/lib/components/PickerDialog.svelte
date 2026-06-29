@@ -43,7 +43,7 @@
 
 <dialog bind:this={dialog} oninput={(e) => e.stopPropagation()}>
 	<div>
-		<header>
+		<div class="header">
 			<div class="title">
 				<span>{title}</span>
 				<button class="action-button" onclick={() => dialog?.close()} type="button">
@@ -110,7 +110,7 @@
 					{/if}
 				</div>
 			{/if}
-		</header>
+		</div>
 
 		<div class="picker-layout" class:has-sidebar={!!sidebar} class:has-selection={!!selection}>
 			{#if sidebar}
@@ -119,9 +119,9 @@
 				</aside>
 			{/if}
 
-			<main class="picker-main">
+			<div class="picker-main">
 				{@render main()}
-			</main>
+			</div>
 
 			{#if selection}
 				<aside class="picker-selection">
@@ -158,7 +158,7 @@
 		backdrop-filter: blur(12px) brightness(0.75);
 	}
 
-	header {
+	.header {
 		align-items: stretch;
 		align-self: stretch;
 		display: flex;
