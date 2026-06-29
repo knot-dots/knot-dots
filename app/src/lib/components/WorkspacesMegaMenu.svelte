@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronUp from '~icons/flowbite/chevron-up-outline';
+	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
@@ -101,7 +100,7 @@
 		{:else}
 			<span>{$_('workspace.choose')}</span>
 		{/if}
-		{#if $menu.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
+		<ChevronSort />
 	</button>
 
 	{#if $menu.expanded}
