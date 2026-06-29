@@ -388,31 +388,23 @@
 		{/each}
 	{/snippet}
 
+	{#snippet commands()}
+		<div class="segmented-button">
+			<label class="button">
+				<CheckCircle />
+				{$_('custom_collection.dialog.select')}
+				<input name="mode" type="radio" value="select" bind:group={mode} />
+			</label>
+			<label class="button">
+				<LightningBolt />
+				{$_('custom_collection.dialog.apply_rule')}
+				<input name="mode" type="radio" value="apply_rule" bind:group={mode} />
+			</label>
+		</div>
+	{/snippet}
+
 	{#snippet main()}
 		<div class="result">
-			<ul class="inline-actions">
-				<li>
-					<div class="segmented-button">
-						<label class="button">
-							<CheckCircle />
-							{$_('custom_collection.dialog.select')}
-							<input name="mode" type="radio" value="select" bind:group={mode} />
-						</label>
-						<label class="button">
-							<LightningBolt />
-							{$_('custom_collection.dialog.apply_rule')}
-							<input name="mode" type="radio" value="apply_rule" bind:group={mode} />
-						</label>
-					</div>
-				</li>
-				<li>
-					<!-- svelte-ignore a11y_autofocus -->
-					<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
-						{$_('custom_collection.dialog.cancel')}
-					</button>
-				</li>
-			</ul>
-
 			{#if searchItems.length > 0 || searchResource.current !== undefined}
 				<ul class="catalog">
 					{#each searchItems as item (item.guid)}
@@ -541,15 +533,6 @@
 		min-height: 0;
 	}
 
-	.result .inline-actions {
-		margin-left: 0;
-		margin-top: 1rem;
-	}
-
-	.result .inline-actions > li:last-child {
-		margin-left: auto;
-	}
-
 	.segmented-button {
 		--button-border-color: var(--color-blue-gray-200);
 
@@ -589,18 +572,6 @@
 	.segmented-button .button:has(input:checked) {
 		background-color: var(--color-blue-gray-800);
 		border-color: var(--color-blue-gray-800);
-		color: var(--color-white);
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
 		color: var(--color-white);
 	}
 
