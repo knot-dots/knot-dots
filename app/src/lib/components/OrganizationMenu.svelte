@@ -7,7 +7,7 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import Close from '~icons/flowbite/close-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
-	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
 	import { page } from '$app/state';

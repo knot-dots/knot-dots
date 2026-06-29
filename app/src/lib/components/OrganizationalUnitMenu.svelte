@@ -11,7 +11,7 @@
 	import { env } from '$env/dynamic/public';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
-	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Close from '~icons/flowbite/close-outline';
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
