@@ -201,15 +201,6 @@
 
 	{#snippet main()}
 		<div class="result">
-			<ul class="inline-actions">
-				<li>
-					<!-- svelte-ignore a11y_autofocus -->
-					<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
-						{$_('custom_collection.dialog.cancel')}
-					</button>
-				</li>
-			</ul>
-
 			{#if searchResource.current}
 				<ul class="catalog">
 					{#each searchResource.current as item (item.guid)}
@@ -260,27 +251,6 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
-	}
-
-	.result .inline-actions {
-		margin-left: 0;
-		margin-top: 1rem;
-	}
-
-	.result .inline-actions > li:last-child {
-		margin-left: auto;
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
 	}
 
 	.catalog {
