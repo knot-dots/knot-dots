@@ -909,7 +909,7 @@
 	"upload.csv.help": "CSV files, max 100 MB",
 	"upload.image.add": "Add image",
 	"upload.image.choose": "Choose image",
-	"upload.image.help": "JPG, PNG, SVG, max 100 MB",
+	"upload.image.help": "JPG, PNG, SVG, WEBP, AVIF, max 100 MB",
 	"upload.image.remove": "Remove image",
 	"upload.image.svg_only_help": "SVG files only, up to 100 MB",
 	"upload.file.choose": "Choose file",

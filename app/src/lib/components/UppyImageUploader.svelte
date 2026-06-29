@@ -26,7 +26,7 @@
 	let {
 		value = $bindable(),
 		label = '',
-		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml'],
+		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp', 'image/avif'],
 		aspectRatio = 1,
 		onSuccess,
 		mode = 'button',
