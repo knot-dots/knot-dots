@@ -176,7 +176,7 @@
 		{/each}
 	{/snippet}
 
-	{#snippet content()}
+	{#snippet main()}
 		<div class="result">
 			<ul class="inline-actions">
 				<li>

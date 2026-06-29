@@ -388,116 +388,116 @@
 		{/each}
 	{/snippet}
 
-	{#snippet content()}
-		<div class="result-and-preview">
-			<div class="result">
-				<ul class="inline-actions">
-					<li>
-						<div class="segmented-button">
-							<label class="button">
-								<CheckCircle />
-								{$_('custom_collection.dialog.select')}
-								<input name="mode" type="radio" value="select" bind:group={mode} />
-							</label>
-							<label class="button">
-								<LightningBolt />
-								{$_('custom_collection.dialog.apply_rule')}
-								<input name="mode" type="radio" value="apply_rule" bind:group={mode} />
-							</label>
-						</div>
-					</li>
-					<li>
-						<!-- svelte-ignore a11y_autofocus -->
-						<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
-							{$_('custom_collection.dialog.cancel')}
-						</button>
-					</li>
-				</ul>
+	{#snippet main()}
+		<div class="result">
+			<ul class="inline-actions">
+				<li>
+					<div class="segmented-button">
+						<label class="button">
+							<CheckCircle />
+							{$_('custom_collection.dialog.select')}
+							<input name="mode" type="radio" value="select" bind:group={mode} />
+						</label>
+						<label class="button">
+							<LightningBolt />
+							{$_('custom_collection.dialog.apply_rule')}
+							<input name="mode" type="radio" value="apply_rule" bind:group={mode} />
+						</label>
+					</div>
+				</li>
+				<li>
+					<!-- svelte-ignore a11y_autofocus -->
+					<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
+						{$_('custom_collection.dialog.cancel')}
+					</button>
+				</li>
+			</ul>
 
-				{#if searchItems.length > 0 || searchResource.current !== undefined}
-					<ul class="catalog">
-						{#each searchItems as item (item.guid)}
-							<li>
-								{#if mode === 'select'}
-									<SelectableCard
-										--height="100%"
-										checked={selected.includes(item.guid)}
-										container={item}
-										inputType="checkbox"
-										{onchange}
-									/>
-								{:else if isOrganizationalUnitContainer(item)}
-									<OrganizationCard --height="100%" container={item} />
-								{:else}
-									<Card --height="100%" container={item} />
+			{#if searchItems.length > 0 || searchResource.current !== undefined}
+				<ul class="catalog">
+					{#each searchItems as item (item.guid)}
+						<li>
+							{#if mode === 'select'}
+								<SelectableCard
+									--height="100%"
+									checked={selected.includes(item.guid)}
+									container={item}
+									inputType="checkbox"
+									{onchange}
+								/>
+							{:else if isOrganizationalUnitContainer(item)}
+								<OrganizationCard --height="100%" container={item} />
+							{:else}
+								<Card --height="100%" container={item} />
+							{/if}
+						</li>
+					{/each}
+					<LazyLoadSentinel
+						as="li"
+						hasMore={searchHasMore}
+						loading={searchLoadingMore}
+						onLoadMore={loadMoreSearch}
+					/>
+				</ul>
+			{/if}
+		</div>
+	{/snippet}
+
+	{#snippet selection()}
+		<div class="preview">
+			<button
+				class="button-primary"
+				disabled={mode === 'select' && selected.length === 0}
+				onclick={confirm}
+				type="button"
+			>
+				{#if mode === 'select'}
+					{$_('custom_collection.dialog.accept_selection', {
+						values: { count: selected.length }
+					})}
+				{:else}
+					{$_('custom_collection.dialog.apply_rule')}
+				{/if}
+			</button>
+			{#if mode === 'select' && selected.length > 0}
+				<ul>
+					{#each selected as guid (guid)}
+						{@const item = searchItems.find((item) => item.guid === guid)}
+						{#if item}
+							<li class="preview-item">
+								<input bind:group={selected} name="selected" type="checkbox" value={guid} />
+
+								{#if 'name' in item.payload}
+									{item.payload.name}
+								{:else if 'title' in item.payload}
+									{item.payload.title}
 								{/if}
 							</li>
-						{/each}
-						<LazyLoadSentinel
-							as="li"
-							hasMore={searchHasMore}
-							loading={searchLoadingMore}
-							onLoadMore={loadMoreSearch}
-						/>
-					</ul>
-				{/if}
-			</div>
-
-			<div class="preview">
-				<button
-					class="button-primary"
-					disabled={mode === 'select' && selected.length === 0}
-					onclick={confirm}
-					type="button"
-				>
-					{#if mode === 'select'}
-						{$_('custom_collection.dialog.accept_selection', {
-							values: { count: selected.length }
-						})}
-					{:else}
-						{$_('custom_collection.dialog.apply_rule')}
-					{/if}
-				</button>
-				{#if mode === 'select' && selected.length > 0}
-					<ul>
-						{#each selected as guid (guid)}
-							{@const item = searchItems.find((item) => item.guid === guid)}
-							{#if item}
+						{/if}
+					{/each}
+				</ul>
+			{:else if mode === 'apply_rule'}
+				<ul>
+					{#each Object.entries(filter) as [key, valueList] (key)}
+						{#if valueList.length > 0}
+							{#each valueList as value (value)}
 								<li class="preview-item">
-									<input bind:group={selected} name="selected" type="checkbox" value={guid} />
-
-									{#if 'name' in item.payload}
-										{item.payload.name}
-									{:else if 'title' in item.payload}
-										{item.payload.title}
-									{/if}
+									<LightningBolt />
+									{filterValueLabel(key, value)}
+									<button
+										class="button button-remove"
+										type="button"
+										onclick={() => handleRemoveFilterValue(key, value)}
+									>
+										<CloseCircle />
+										<span class="is-visually-hidden">{$_('remove')}</span>
+									</button>
 								</li>
-							{/if}
-						{/each}
-					</ul>
-				{:else if mode === 'apply_rule'}
-					<ul>
-						{#each Object.entries(filter) as [key, valueList] (key)}
-							{#if valueList.length > 0}
-								{#each valueList as value (value)}
-									<li class="preview-item">
-										<LightningBolt />
-										{filterValueLabel(key, value)}
-										<button
-											class="button button-remove"
-											type="button"
-											onclick={() => handleRemoveFilterValue(key, value)}
-										>
-											<CloseCircle />
-											<span class="is-visually-hidden">{$_('remove')}</span>
-										</button>
-									</li>
-								{/each}
-							{/if}
-						{/each}
-					</ul>
-				{/if}
-			</div>
+							{/each}
+						{/if}
+					{/each}
+				</ul>
+			{/if}
 		</div>
 	{/snippet}
 </PickerDialog>
@@ -534,20 +534,11 @@
 		color: var(--color-primary-700);
 	}
 
-	.result-and-preview {
-		display: flex;
-		flex-direction: row;
-		flex-grow: 1;
-		gap: 1.5rem;
-		margin-top: 1rem;
-		min-height: 1px;
-	}
-
 	.result {
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
-		min-height: 1px;
+		min-height: 0;
 	}
 
 	.result .inline-actions {
@@ -639,8 +630,6 @@
 		border-radius: 24px;
 		display: flex;
 		flex-direction: column;
-		flex-basis: 20rem;
-		flex-shrink: 0;
 		height: 100%;
 		padding: 1rem;
 	}
