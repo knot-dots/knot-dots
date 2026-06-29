@@ -45,7 +45,7 @@
 	<div>
 		<div class="header">
 			<div class="title">
-				<span>{title}</span>
+				<span class="truncated">{title}</span>
 				<button class="action-button" onclick={() => dialog?.close()} type="button">
 					<Close />
 					<span class="is-visually-hidden">{$_('cancel')}</span>
@@ -143,8 +143,7 @@
 		--indicator-background-color: var(--color-primary-700);
 
 		background-color: var(--color-gray-025);
-		border: solid 1px var(--color-gray-200);
-		border-color: var(--color-white);
+		border: solid 1px var(--color-white);
 		border-radius: 24px;
 		box-shadow: var(--shadow-2xl);
 		color: var(--color-gray-500);
@@ -159,8 +158,6 @@
 	}
 
 	.header {
-		align-items: stretch;
-		align-self: stretch;
 		display: flex;
 		flex-direction: column;
 		flex-shrink: 0;
@@ -171,16 +168,7 @@
 	.title {
 		align-items: center;
 		display: flex;
-		flex-direction: row;
 		justify-content: space-between;
-		min-width: 0;
-	}
-
-	.title > span {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 
 	dialog > div {
@@ -193,17 +181,14 @@
 	.commands {
 		align-items: center;
 		display: flex;
-		flex-direction: row;
 		flex-shrink: 0;
 		gap: 0.75rem;
 		justify-content: space-between;
-		min-width: 0;
 	}
 
 	.commands-leading {
 		align-items: center;
 		display: flex;
-		flex-direction: row;
 		gap: 0.75rem;
 		margin-right: auto;
 		min-width: 0;
@@ -212,7 +197,6 @@
 	.commands-trailing {
 		align-items: center;
 		display: flex;
-		flex-direction: row;
 		gap: 0.75rem;
 		margin-left: auto;
 		min-width: 0;
@@ -237,7 +221,6 @@
 		border: solid 1px var(--color-primary-200);
 		border-radius: calc(infinity * 1px);
 		display: flex;
-		flex-direction: row;
 		gap: 0.5rem;
 		margin-left: auto;
 		max-width: 100%;
