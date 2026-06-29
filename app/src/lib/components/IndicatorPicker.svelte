@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteMap } from 'svelte/reactivity';
 	import { resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -17,6 +18,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
+	import Close from '~icons/knotdots/close';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -43,6 +45,7 @@
 	let terms = $state('');
 
 	let selected = $state([]) as string[];
+	let knownIndicators = new SvelteMap<string, z.infer<typeof indicatorTemplateContainer>>();
 
 	let activeFilters = $derived(
 		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
@@ -69,6 +72,12 @@
 			debounce: 300
 		}
 	);
+
+	$effect(() => {
+		for (const indicator of searchResource.current ?? []) {
+			knownIndicators.set(indicator.guid, indicator);
+		}
+	});
 
 	let facets = $derived.by(() => {
 		const facets = new Map([
@@ -176,36 +185,18 @@
 		{/each}
 	{/snippet}
 
+	{#snippet commands()}
+		<label>
+			<input
+				onclick={(e) => (e.currentTarget.checked ? selectAll() : unselectAll())}
+				type="checkbox"
+			/>
+			{$_('select_all')}
+		</label>
+	{/snippet}
+
 	{#snippet main()}
 		<div class="result">
-			<ul class="inline-actions">
-				<li>
-					<label>
-						<input
-							onclick={(e) => (e.currentTarget.checked ? selectAll() : unselectAll())}
-							type="checkbox"
-						/>
-						{$_('select_all')}
-					</label>
-				</li>
-				<li>
-					<button
-						class="button-primary"
-						disabled={selected.length === 0}
-						onclick={performImport}
-						type="button"
-					>
-						{$_('indicator_picker.import', { values: { count: selected.length } })}
-					</button>
-				</li>
-				<li>
-					<!-- svelte-ignore a11y_autofocus -->
-					<button class="button-red" autofocus>
-						{$_('custom_collection.dialog.cancel')}
-					</button>
-				</li>
-			</ul>
-
 			{#if searchResource.current}
 				<ul class="catalog">
 					{#each searchResource.current as item (item.guid)}
@@ -222,6 +213,47 @@
 			{/if}
 		</div>
 	{/snippet}
+
+	{#snippet selection()}
+		<div class="selection-panel">
+			<div class="selection-actions">
+				<button
+					class="button-outline selection-clear"
+					disabled={selected.length === 0}
+					onclick={unselectAll}
+					type="button"
+				>
+					<Close />
+					<span>{$_('compare_selection_clear')}</span>
+				</button>
+				<button
+					class="button-primary selection-apply"
+					disabled={selected.length === 0}
+					onclick={performImport}
+					type="button"
+				>
+					{$_('indicator_picker.import', { values: { count: selected.length } })}
+				</button>
+			</div>
+
+			{#if selected.length > 0}
+				<ul class="selection-list">
+					{#each selected as guid (guid)}
+						{@const item = knownIndicators.get(guid)}
+						{#if item}
+							{@const selectionId = `selected-${guid}`}
+							<li class="selection-item">
+								<input id={selectionId} type="checkbox" value={guid} bind:group={selected} />
+								<label for={selectionId}>
+									{item.payload.title}
+								</label>
+							</li>
+						{/if}
+					{/each}
+				</ul>
+			{/if}
+		</div>
+	{/snippet}
 </PickerDialog>
 
 <style>
@@ -229,32 +261,6 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 1px;
-	}
-
-	.result :global(.inline-actions) {
-		align-items: center;
-		margin-left: 0;
-		margin-top: 1rem;
-	}
-
-	.result :global(.inline-actions label) {
-		padding: 0.625rem 1.25rem;
-	}
-
-	.result :global(.inline-actions > li:last-child) {
-		margin-left: auto;
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
 	}
 
 	.catalog {
@@ -290,5 +296,85 @@
 	.sort-option:has(> input:checked) {
 		background-color: var(--color-primary-100);
 		color: var(--color-primary-700);
+	}
+
+	.selection-panel {
+		background: var(--color-white);
+		border: 1px solid var(--color-gray-100);
+		border-radius: 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		min-height: 0;
+		overflow: hidden;
+		padding: 0.5rem;
+	}
+
+	.selection-actions {
+		align-items: center;
+		display: flex;
+		gap: 0.25rem;
+		width: 100%;
+	}
+
+	.selection-actions button {
+		height: 2.3125rem;
+		justify-content: center;
+		white-space: nowrap;
+	}
+
+	.selection-clear {
+		--icon-color: var(--color-gray-900);
+
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+		flex: 0 0 7.125rem;
+	}
+
+	.selection-clear:hover:not(:disabled),
+	.selection-clear:active:not(:disabled) {
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+	}
+
+	.selection-clear :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.selection-apply {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.selection-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin: 0;
+		overflow: auto;
+		padding: 0;
+	}
+
+	.selection-item {
+		align-items: center;
+		background: var(--color-gray-050);
+		border-radius: 8px;
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+	}
+
+	.selection-item input {
+		accent-color: var(--color-primary-700);
+	}
+
+	.selection-item label {
+		color: var(--color-gray-800);
+		font-size: 0.875rem;
+		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
