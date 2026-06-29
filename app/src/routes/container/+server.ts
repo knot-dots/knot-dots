@@ -39,8 +39,7 @@ import {
 	getAllContainersRelatedToProgram,
 	getAllRelatedContainers,
 	getManyContainers,
-	getManyOrganizationContainers,
-	SlugNotAvailableError
+	getManyOrganizationContainers
 } from '$lib/server/db';
 import type { User } from '$lib/stores';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -591,11 +590,10 @@ export const POST = (async ({ locals, request }) => {
 			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 		} catch (e: unknown) {
 			if (
-				e instanceof SlugNotAvailableError ||
-				(typeof e === 'object' &&
-					e !== null &&
-					'code' in e &&
-					(e as { code?: string }).code === '23505')
+				typeof e === 'object' &&
+				e !== null &&
+				'code' in e &&
+				(e as { code?: string }).code === '23505'
 			) {
 				error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
 			}
