@@ -1812,8 +1812,8 @@ img.cover {
 .dropdown-button > svg:last-child {
 	color: var(--dropdown-button-chevron-default-color, var(--color-icon-accent-subtle));
 	display: var(--dropdown-button-chevron-display, block);
-	height: var(--dropdown-button-chevron-icon-size, 1.25rem);
-	width: var(--dropdown-button-chevron-icon-size, 1.25rem);
+	height: var(--dropdown-button-chevron-icon-size, 1rem);
+	width: var(--dropdown-button-chevron-icon-size, 1rem);
 }
 
 .dropdown-button[aria-expanded='true'] > svg:last-child {
@@ -1825,8 +1825,6 @@ img.cover {
 }
 
 .dropdown-button.dropdown-button--select {
-	--dropdown-button-chevron-icon-size: 1rem;
-
 	color: var(--dropdown-button-default-color, var(--color-text-subtle));
 }
 

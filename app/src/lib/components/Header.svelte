@@ -461,7 +461,6 @@
 <style>
 	header {
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
 		--dropdown-button-icon-size: 1rem;
 		--dropdown-button-min-height: 2rem;
 		--dropdown-button-padding: 0.25rem 0.5rem;
@@ -502,7 +501,6 @@
 		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
 
 		--indicator-background-color: var(--color-primary-700);
 

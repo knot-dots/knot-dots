@@ -138,7 +138,6 @@
 		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
 
 		--icon-color: var(--color-gray-500);
 		--indicator-background-color: var(--color-primary-700);
