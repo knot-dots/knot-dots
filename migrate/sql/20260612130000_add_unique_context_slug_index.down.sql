@@ -1,5 +1,6 @@
 BEGIN;
 
-DROP INDEX container_payload_context_slug_unique_idx;
+DROP INDEX container_payload_organizational_unit_slug_per_org_unique_idx;
+DROP INDEX container_payload_organization_slug_unique_idx;
 
 COMMIT; 

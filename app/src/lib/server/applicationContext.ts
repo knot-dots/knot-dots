@@ -1,28 +1,21 @@
-import { error } from '@sveltejs/kit';
+import { error, type Cookies } from '@sveltejs/kit';
 import type { DatabaseConnection } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
 	organizationalUnitType,
 	type OrganizationContainer,
 	type OrganizationalUnitContainer,
 	payloadTypes
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
-import {
-	getContainerByGuid,
-	getContainerByGuidOrSlug,
-	getManyContainers,
-	getManyOrganizationalUnitContainers,
-	setUp
-} from '$lib/server/db';
+import { getManyContainers, getManyOrganizationalUnitContainers, setUp } from '$lib/server/db';
 
 interface LoadApplicationContextParams {
 	locals: App.Locals;
+	cookies?: Cookies;
 	params?: {
 		guid?: string;
 	};
@@ -31,6 +24,7 @@ interface LoadApplicationContextParams {
 
 export async function loadApplicationContext({
 	locals,
+	cookies,
 	params,
 	url
 }: LoadApplicationContextParams) {
@@ -59,63 +53,31 @@ export async function loadApplicationContext({
 			)
 		]);
 
+		const rememberedOrganizationGuid = env.PUBLIC_DONT_USE_SUBDOMAINS
+			? cookies?.get('current-organization-guid')
+			: undefined;
+		const rememberedOrganization =
+			rememberedOrganizationGuid !== undefined
+				? organizations.find(({ guid }) => guid === rememberedOrganizationGuid)
+				: undefined;
+
 		let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
 		let currentOrganizationFromParams: OrganizationContainer | undefined;
 
 		if (params?.guid) {
 			const guidOrSlug = params.guid.toLowerCase();
-			currentOrganizationalUnit = organizationalUnits.find(
+			currentOrganizationFromParams = organizations.find(
 				({ guid, payload }) => guid === params.guid || payload.slug === guidOrSlug
 			);
-		}
-
-		if (params?.guid && !currentOrganizationalUnit) {
-			try {
-				const containerFromParams = await connect(getContainerByGuidOrSlug(params.guid));
-				if (
-					isOrganizationalUnitContainer(containerFromParams) &&
-					defineAbilityFor(locals.user).can('read', containerFromParams)
-				) {
-					currentOrganizationalUnit = containerFromParams;
-				} else if (
-					isOrganizationContainer(containerFromParams) &&
-					defineAbilityFor(locals.user).can('read', containerFromParams)
-				) {
-					currentOrganizationFromParams = containerFromParams;
-				}
-			} catch {
-				// Do nothing.
-			}
 		}
 
 		let currentOrganization: OrganizationContainer | undefined;
 
 		if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
-			if (currentOrganizationalUnit) {
-				currentOrganization = organizations.find(
-					({ guid }) => guid === currentOrganizationalUnit.organization
-				);
-
-				if (!currentOrganization) {
-					try {
-						const organizationFromOrgUnit = await connect(
-							getContainerByGuid(currentOrganizationalUnit.organization)
-						);
-
-						if (isOrganizationContainer(organizationFromOrgUnit)) {
-							currentOrganization = organizationFromOrgUnit;
-						}
-					} catch {
-						// Keep fallback behavior and let standard not-found handling decide.
-					}
-				}
-			} else if (currentOrganizationFromParams) {
+			if (currentOrganizationFromParams) {
 				currentOrganization = currentOrganizationFromParams;
-			} else if (params?.guid) {
-				const slug = params.guid.toLowerCase();
-				currentOrganization = organizations.find(
-					({ guid, payload }) => guid === params.guid || payload.slug === slug
-				);
+			} else if (rememberedOrganization) {
+				currentOrganization = rememberedOrganization;
 			} else {
 				currentOrganization = organizations.find(({ payload }) => payload.default);
 				if (!currentOrganization) {
@@ -147,6 +109,15 @@ export async function loadApplicationContext({
 
 		if (!currentOrganization) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		}
+
+		if (params?.guid) {
+			const guidOrSlug = params.guid.toLowerCase();
+			currentOrganizationalUnit = organizationalUnits.find(
+				({ guid, organization, payload }) =>
+					organization === currentOrganization.guid &&
+					(guid === params.guid || payload.slug === guidOrSlug)
+			);
 		}
 
 		const defaultOrganizationGuid =
