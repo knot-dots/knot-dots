@@ -1825,21 +1825,9 @@ img.cover {
 }
 
 .dropdown-button.dropdown-button--select {
-	--dropdown-button-expanded-background: var(--color-background-system-muted);
 	--dropdown-button-chevron-icon-size: 1rem;
 
 	color: var(--dropdown-button-default-color, var(--color-text-subtle));
-}
-
-.dropdown-button.dropdown-button--select[aria-expanded='true']:after {
-	background: var(--color-background-accent-state-selected);
-	border-radius: 4px;
-	content: '';
-	display: block;
-	height: calc(var(--dropdown-button-chevron-icon-size) + 0.75rem);
-	right: 0.375rem;
-	position: absolute;
-	width: calc(var(--dropdown-button-chevron-icon-size) + 0.75rem);
 }
 
 .dropdown-button.dropdown-button--select > svg:last-child {
