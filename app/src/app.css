@@ -526,6 +526,11 @@ tr:hover,
 	background-color: var(--color-gray-050);
 }
 
+tr:has(input[type='checkbox']:checked),
+.row:has(input[type='checkbox']:checked) {
+	background-color: var(--color-background-accent-state-selected);
+}
+
 td,
 th,
 .cell {
