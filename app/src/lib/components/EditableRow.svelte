@@ -511,7 +511,7 @@
 	}
 
 	input[type='checkbox'] {
-		scale: 1.25;
+		margin: 0.125rem;
 	}
 
 	.cell {
