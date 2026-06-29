@@ -12,6 +12,7 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		administrativeTypes,
 		payloadTypes,
@@ -209,6 +210,21 @@
 	onResetFilters={resetFilters}
 	title={$_('compare_dialog_title')}
 >
+	{#snippet commands()}
+		<div class="federal-levels-command">
+			<span class="is-visually-hidden" id="federal-levels-command-label">
+				{$_('compare_federal_levels')}
+			</span>
+			<SingleChoiceDropdown
+				labelledBy="federal-levels-command-label"
+				options={federalLevelItems.map(({ key, label }) => ({ value: key, label }))}
+				bind:value={
+					() => activeFederalLevel, (value) => selectFederalLevel(value as FederalLevelKey)
+				}
+			/>
+		</div>
+	{/snippet}
+
 	{#snippet filterContent()}
 		<InlineFilterDropDown
 			key="administrativeType"
@@ -487,5 +503,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	@container (min-width: 75rem) {
+		.federal-levels-command {
+			display: none;
+		}
 	}
 </style>
