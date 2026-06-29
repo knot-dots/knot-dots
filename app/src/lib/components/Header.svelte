@@ -460,27 +460,21 @@
 
 <style>
 	header {
-		--dropdown-button-expanded-background: var(--color-primary-100);
-		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
 		--dropdown-button-chevron-icon-size: 1rem;
+		--dropdown-button-icon-size: 1rem;
+		--dropdown-button-min-height: 2rem;
+		--dropdown-button-padding: 0.25rem 0.5rem;
 
-		--icon-color: var(--color-gray-500);
-
-		align-items: center;
-		background: white;
-		color: var(--color-gray-700);
+		color: var(--color-text-default);
 		container-type: inline-size;
 		display: flex;
 		flex-shrink: 0;
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		padding: 0.375rem 0.75rem;
+		position: relative;
 		z-index: 3;
-	}
-
-	header :global(svg) {
-		color: var(--icon-color);
 	}
 
 	.overlay-navigation {
@@ -533,10 +527,6 @@
 		margin-right: auto;
 	}
 
-	.action-button--favorite {
-		--icon-color: var(--color-yellow-400);
-	}
-
 	.divider {
 		border-left: solid 1px var(--color-gray-200);
 		height: 1.5rem;
@@ -544,6 +534,8 @@
 
 	.dropdown-button.dropdown-button--command {
 		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-text-default);
+		--dropdown-button-icon-default-color: var(--color-icon-default);
 		--dropdown-button-padding: 0 0.5rem 0 0.5rem;
 
 		height: 2rem;

@@ -692,13 +692,6 @@ export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'organization', 'public']);
 
-export const boards = z.enum([
-	'board.indicators',
-	'board.measure_monitoring',
-	'board.organizational_units',
-	'board.tasks'
-]);
-
 export const administrativeTypes = z.enum([
 	'administrative_type.country',
 	'administrative_type.federal_state',
@@ -1450,7 +1443,6 @@ const taskCollectionPayload = z
 const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
-	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	coverSource: z.string().optional(),
@@ -1486,7 +1478,6 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 export const organizationalUnitPayload = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
-	boards: z.array(boards).transform(deduplicate).default([]),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),

@@ -82,7 +82,12 @@
 
 {#if editable || (value.length > 1 && compact)}
 	<div class="dropdown" use:popperRef>
-		<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
+		<button
+			aria-labelledby={labelledBy}
+			class="dropdown-button dropdown-button--select"
+			type="button"
+			use:popover.button
+		>
 			<span class="value" class:value--compact={compact}>
 				{#each selectedEntries.slice(0, value.length > 1 && compact ? 1 : value.length) as entry (entry.option.value)}
 					<span
@@ -156,6 +161,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		line-height: 1.75rem;
 		min-width: 0;
 	}
 

@@ -71,16 +71,6 @@ if (!defineAbilityFor(locals.user).can("create", container)) {
 - **Principle**: Avoid creating custom stores - use runes in components when possible
 - Only use stores for truly global, cross-component shared state
 
-### 8. Boards Configuration
-
-Organizations and organizational units can enable specific "boards" (feature modules):
-
-- **`board.indicators`**: Enables indicator management and activation features
-- **`board.organizational_units`**: Enables organizational structure management
-- Configure via organization/org unit payload: `{ boards: ['board.indicators', ...] }`
-- UI features are conditionally rendered based on enabled boards
-- Check board availability: `organization.payload.boards.includes('board.indicators')`
-
 ### 9. Modern Svelte 5 Component Patterns
 
 - **Snippets**: Use for component composition and slot-like behavior
@@ -154,5 +144,4 @@ Organizations and organizational units can enable specific "boards" (feature mod
 4. **Consistency:** Match the exact indentation and style of existing Slonik queries.
 5. **Permissions first:** Check authorization before implementing features - use `$ability` and `$mayCreateContainer`.
 6. **Test with fixtures:** Use existing test fixtures and page objects for E2E tests.
-7. **Board awareness:** Check if features require specific boards to be enabled in organization config.
-8. **i18n completeness:** Never hardcode strings - add translations for both DE and EN.
+7. **i18n completeness:** Never hardcode strings - add translations for both DE and EN.

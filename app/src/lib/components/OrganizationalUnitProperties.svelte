@@ -130,16 +130,6 @@
 
 		<EditableMultipleChoice
 			{editable}
-			label={$_('boards')}
-			options={['board.indicators'].map((o) => ({
-				value: o,
-				label: $_(o)
-			}))}
-			bind:value={container.payload.boards}
-		/>
-
-		<EditableMultipleChoice
-			{editable}
 			label={$_('properties.subheading.visible_workspaces')}
 			options={workspaceOptions}
 			bind:value={container.payload.visibleWorkspaces}
