@@ -547,6 +547,7 @@
 	}
 
 	.filter-and-sort fieldset {
+		--dropdown-button-default-color: var(--color-text-default);
 		--dropdown-button-padding: 0.5rem 0.625rem;
 
 		--indicator-background-color: var(--color-primary-700);
