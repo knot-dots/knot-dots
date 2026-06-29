@@ -25,7 +25,7 @@
 
 	let { container = $bindable(), dialog = $bindable() }: Props = $props();
 
-	let filter = $state({ ...container.payload.filter });
+	let filter = $state<Record<string, string[]>>({});
 
 	let sort = $state(container.payload.sort);
 
@@ -85,7 +85,7 @@
 			return inViewport
 				? fetchContainers(
 						{
-							indicatorCategory: filter.indicatorCategory,
+							indicatorCategory: filter.indicatorCategory ?? [],
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 							...Object.fromEntries(
