@@ -7,7 +7,8 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
-	import type { AnyContainer } from '$lib/models';
+	import { type AnyContainer, getContextIdentifier } from '$lib/models';
+	import { page } from '$app/state';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
 	type SettingsSubview = 'main' | 'embed';
@@ -27,7 +28,13 @@
 
 	let showCode = $derived(codeVisible);
 
-	let embedPath = $derived(`/${container.organization}/${container.guid}/embed`);
+	let embedOrganizationIdentifier = $derived.by(() => {
+		const organization = page.data.organizations?.find(
+			({ guid }: { guid: string }) => guid === container.organization
+		);
+		return organization ? getContextIdentifier(organization) : container.organization;
+	});
+	let embedPath = $derived(`/${embedOrganizationIdentifier}/${container.guid}/embed`);
 	let containerTitle = $derived(
 		'title' in container.payload ? container.payload.title : container.payload.name
 	);

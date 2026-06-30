@@ -25,6 +25,7 @@
 	import UserMenu from '$lib/components/UserMenu.svelte';
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
+		getContextIdentifier,
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
@@ -88,17 +89,59 @@
 		};
 	}
 
+	function visibleFavoriteHref(href: string) {
+		let parsedUrl: URL;
+
+		try {
+			parsedUrl = new URL(href, page.url);
+		} catch {
+			return href;
+		}
+
+		if (parsedUrl.origin !== page.url.origin) {
+			return href;
+		}
+
+		const segments = parsedUrl.pathname.split('/').filter(Boolean);
+		if (segments.length === 0) {
+			return href;
+		}
+
+		const [contextSegment, ...restSegments] = segments;
+
+		const organization = page.data.organizations.find(({ guid }) => guid === contextSegment);
+		if (organization) {
+			const identifier = getContextIdentifier(organization);
+			const pathname = `/${[identifier, ...restSegments].join('/')}`;
+			return `${pathname}${parsedUrl.search}${parsedUrl.hash}`;
+		}
+
+		const organizationalUnit = page.data.organizationalUnits.find(
+			({ guid, organization }) =>
+				guid === contextSegment && organization === page.data.currentOrganization.guid
+		);
+		if (organizationalUnit) {
+			const identifier = getContextIdentifier(organizationalUnit);
+			const pathname = `/${[identifier, ...restSegments].join('/')}`;
+			return `${pathname}${parsedUrl.search}${parsedUrl.hash}`;
+		}
+
+		return href;
+	}
+
 	let favoriteItemsOrganization = $derived(
 		favoriteList.organization.map((favorite) => ({
 			...favorite,
-			guid: favorite.href
+			guid: favorite.href,
+			href: visibleFavoriteHref(favorite.href)
 		}))
 	);
 
 	let favoriteItemsOrganizationalUnit = $derived(
 		favoriteList.organizationalUnit.map((favorite) => ({
 			...favorite,
-			guid: favorite.href
+			guid: favorite.href,
+			href: visibleFavoriteHref(favorite.href)
 		}))
 	);
 

@@ -25,6 +25,7 @@
 		type NewContainer,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
+		pathnameWithoutContextSegment,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -96,18 +97,11 @@
 
 	let searchQuery = $state('');
 
-	function pathnameWithoutContextSegment() {
-		const pathnameSegments = page.url.pathname.split('/');
-		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-		if (pathnameSegments.length > 1 && uuidRegex.test(pathnameSegments[1])) {
-			return [pathnameSegments.slice(0, 1), ...pathnameSegments.slice(2)].join('/');
-		} else {
-			return page.url.pathname;
-		}
-	}
-
 	function linkPathForContainer(container: OrganizationContainer | OrganizationalUnitContainer) {
-		const pathname = pathnameWithoutContextSegment();
+		const pathname = pathnameWithoutContextSegment(
+			page.url.pathname,
+			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+		);
 		const organization = isOrganizationContainer(container)
 			? container
 			: page.data.organizations.find(({ guid }) => guid === container.organization);

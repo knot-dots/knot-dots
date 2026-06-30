@@ -3209,6 +3209,28 @@ export function computeFacetCount(
 	return facets;
 }
 
+export function getContextIdentifier(
+	container: OrganizationContainer | OrganizationalUnitContainer
+): string {
+	const contextSlug =
+		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
+	return contextSlug ?? container.guid;
+}
+
+export function pathnameWithoutContextSegment(
+	pathname: string,
+	context: OrganizationContainer | OrganizationalUnitContainer
+): string {
+	const segments = pathname.split('/');
+	const identifier = getContextIdentifier(context);
+
+	if (segments.length > 1 && (segments[1] === context.guid || segments[1] === identifier)) {
+		return ['', ...segments.slice(2)].join('/');
+	}
+
+	return pathname;
+}
+
 export function getOrganizationURL(
 	container: OrganizationContainer | OrganizationalUnitContainer,
 	linkPath = '/all/page',

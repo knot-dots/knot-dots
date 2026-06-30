@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
-	import { isReservedContextSlug } from '$lib/models';
+	import { getContextIdentifier, pathnameWithoutContextSegment } from '$lib/models';
 	import { ability, overlay, overlayWidth, user } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
@@ -34,42 +34,16 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
-	function contextPathSegment() {
-		const slug = 'slug' in selectedContext.payload ? selectedContext.payload.slug : undefined;
-		const normalizedSlug = slug?.trim().toLowerCase();
+	let pathnameWithoutContext = $derived(
+		pathnameWithoutContextSegment(page.url.pathname, selectedContext)
+	);
 
-		if (
-			normalizedSlug &&
-			/^[a-z0-9-]+$/.test(normalizedSlug) &&
-			!isReservedContextSlug(normalizedSlug)
-		) {
-			return normalizedSlug;
-		}
-
-		return selectedContext.guid;
-	}
-
-	let pathnameWithoutContextSegment = $derived.by(() => {
-		const segments = page.url.pathname.split('/');
-		const slug =
-			'slug' in selectedContext.payload
-				? selectedContext.payload.slug?.trim().toLowerCase()
-				: undefined;
-		if (
-			segments.length > 1 &&
-			(segments[1] === selectedContext.guid || (slug && segments[1] === slug))
-		) {
-			return [segments.slice(0, 1), ...segments.slice(2)].join('/');
-		}
-		return page.url.pathname;
-	});
-
-	let currentWorkspace = $derived(workspaceFromPathname(pathnameWithoutContextSegment));
+	let currentWorkspace = $derived(workspaceFromPathname(pathnameWithoutContext));
 
 	const isOnPage = $derived(
-		pathnameWithoutContextSegment === '/all/page' ||
-			pathnameWithoutContextSegment === '' ||
-			pathnameWithoutContextSegment === '/'
+		pathnameWithoutContext === '/all/page' ||
+			pathnameWithoutContext === '' ||
+			pathnameWithoutContext === '/'
 	);
 
 	const visible = $derived(
@@ -113,7 +87,7 @@
 	const panelRight = $derived($overlay ? `calc(100vw * ${$overlayWidth})` : '0');
 
 	function pathFor(workspace: WorkspaceDefinition): string {
-		return `/${contextPathSegment()}${workspace.views.default}`;
+		return `/${getContextIdentifier(selectedContext)}${workspace.views.default}`;
 	}
 
 	function handleChange(event: Event) {
