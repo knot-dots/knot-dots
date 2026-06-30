@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import CheckCircle from '~icons/flowbite/check-circle-outline';
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
+	import Close from '~icons/knotdots/close';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
@@ -436,46 +437,62 @@
 	{/snippet}
 
 	{#snippet selection()}
-		<div class="preview">
-			<button
-				class="button-primary"
-				disabled={mode === 'select' && selected.length === 0}
-				onclick={confirm}
-				type="button"
-			>
+		<div class="selection-panel">
+			<div class="selection-actions">
 				{#if mode === 'select'}
-					{$_('custom_collection.dialog.accept_selection', {
-						values: { count: selected.length }
-					})}
-				{:else}
-					{$_('custom_collection.dialog.apply_rule')}
+					<button
+						class="button-outline selection-clear"
+						disabled={selected.length === 0}
+						onclick={() => (selected = [])}
+						type="button"
+					>
+						<Close />
+						<span>{$_('picker_dialog.clear')}</span>
+					</button>
 				{/if}
-			</button>
+				<button
+					class="button-primary selection-apply"
+					disabled={mode === 'select' && selected.length === 0}
+					onclick={confirm}
+					type="button"
+				>
+					{#if mode === 'select'}
+						{$_('picker_dialog.confirm', {
+							values: { count: selected.length }
+						})}
+					{:else}
+						{$_('custom_collection.dialog.apply_rule')}
+					{/if}
+				</button>
+			</div>
+
 			{#if mode === 'select' && selected.length > 0}
-				<ul>
+				<ul class="selection-list">
 					{#each selected as guid (guid)}
 						{@const item = searchItems.find((item) => item.guid === guid)}
 						{#if item}
-							<li class="preview-item">
-								<input bind:group={selected} name="selected" type="checkbox" value={guid} />
-
-								{#if 'name' in item.payload}
-									{item.payload.name}
-								{:else if 'title' in item.payload}
-									{item.payload.title}
-								{/if}
+							{@const selectionId = `selected-${guid}`}
+							<li class="selection-item">
+								<input id={selectionId} type="checkbox" value={guid} bind:group={selected} />
+								<label for={selectionId}>
+									{#if 'name' in item.payload}
+										{item.payload.name}
+									{:else if 'title' in item.payload}
+										{item.payload.title}
+									{/if}
+								</label>
 							</li>
 						{/if}
 					{/each}
 				</ul>
 			{:else if mode === 'apply_rule'}
-				<ul>
+				<ul class="selection-list">
 					{#each Object.entries(filter) as [key, valueList] (key)}
 						{#if valueList.length > 0}
 							{#each valueList as value (value)}
-								<li class="preview-item">
+								<li class="selection-item">
 									<LightningBolt />
-									{filterValueLabel(key, value)}
+									<span>{filterValueLabel(key, value)}</span>
 									<button
 										class="button button-remove"
 										type="button"
@@ -595,41 +612,88 @@
 		margin-top: 1rem;
 	}
 
-	.preview {
-		background-color: var(--color-white);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 24px;
+	.selection-panel {
+		background: var(--color-white);
+		border: 1px solid var(--color-gray-100);
+		border-radius: 16px;
 		display: flex;
 		flex-direction: column;
-		height: 100%;
-		padding: 1rem;
+		gap: 0.5rem;
+		min-height: 0;
+		overflow: hidden;
+		padding: 0.5rem;
 	}
 
-	.preview > button {
-		justify-content: center;
+	.selection-actions {
+		align-items: center;
+		display: flex;
+		gap: 0.25rem;
 		width: 100%;
 	}
 
-	.preview > ul {
-		overflow: auto;
+	.selection-actions button {
+		height: 2.3125rem;
+		justify-content: center;
+		white-space: nowrap;
 	}
 
-	.preview-item {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 8px;
-		color: var(--color-gray-700);
+	.selection-clear {
+		--icon-color: var(--color-gray-900);
+
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+		flex: 0 0 7.125rem;
+	}
+
+	.selection-clear:hover:not(:disabled),
+	.selection-clear:active:not(:disabled) {
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+	}
+
+	.selection-clear :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.selection-apply {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.selection-list {
 		display: flex;
-		font-weight: 500;
+		flex-direction: column;
 		gap: 0.5rem;
-		margin-top: 1rem;
+		margin: 0;
+		overflow: auto;
+		padding: 0;
+	}
+
+	.selection-item {
+		align-items: center;
+		background: var(--color-gray-050);
+		border-radius: 8px;
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+	}
+
+	.selection-item input {
+		accent-color: var(--color-primary-700);
+	}
+
+	.selection-item label,
+	.selection-item span {
+		color: var(--color-gray-800);
+		font-size: 0.875rem;
+		font-weight: 500;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		padding: 0.375rem;
+		white-space: nowrap;
 	}
 
-	.preview-item > :global(svg) {
+	.selection-item > :global(svg) {
 		flex-shrink: 0;
 		max-width: none;
 	}

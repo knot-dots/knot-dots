@@ -317,7 +317,7 @@
 					type="button"
 				>
 					<Close />
-					<span>{$_('compare_selection_clear')}</span>
+					<span>{$_('picker_dialog.clear')}</span>
 				</button>
 				<button
 					class="button-primary selection-apply"
@@ -325,7 +325,7 @@
 					onclick={confirm}
 					type="button"
 				>
-					{$_('compare_selection_apply', {
+					{$_('picker_dialog.confirm', {
 						values: { count: localSelected.length }
 					})}
 				</button>

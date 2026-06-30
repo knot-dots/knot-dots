@@ -99,7 +99,10 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTem
 		.getByRole('dialog')
 		.getByRole('checkbox', { name: testIndicatorTemplate.payload.title })
 		.check();
-	await indicatorCatalog.page.getByRole('dialog').getByRole('button', { name: 'Activate' }).click();
+	await indicatorCatalog.page
+		.getByRole('dialog')
+		.getByRole('button', { name: 'Apply (1)' })
+		.click();
 
 	// Verify the indicator is activated and has custom actual data
 	await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();

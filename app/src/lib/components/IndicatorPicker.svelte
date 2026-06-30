@@ -224,7 +224,7 @@
 					type="button"
 				>
 					<Close />
-					<span>{$_('compare_selection_clear')}</span>
+					<span>{$_('picker_dialog.clear')}</span>
 				</button>
 				<button
 					class="button-primary selection-apply"
@@ -232,7 +232,7 @@
 					onclick={performImport}
 					type="button"
 				>
-					{$_('indicator_picker.import', { values: { count: selected.length } })}
+					{$_('picker_dialog.confirm', { values: { count: selected.length } })}
 				</button>
 			</div>
 
