@@ -2,7 +2,7 @@ import { error, type Cookies } from '@sveltejs/kit';
 import type { DatabaseConnection } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	organizationalUnitType,
@@ -18,6 +18,7 @@ interface LoadApplicationContextParams {
 	cookies?: Cookies;
 	params?: {
 		guid?: string;
+		contentGuid?: string;
 	};
 	url: URL;
 }
@@ -65,10 +66,7 @@ export async function loadApplicationContext({
 		let currentOrganizationFromParams: OrganizationContainer | undefined;
 
 		if (params?.guid) {
-			const guidOrSlug = params.guid.toLowerCase();
-			currentOrganizationFromParams = organizations.find(
-				({ guid, payload }) => guid === params.guid || payload.slug === guidOrSlug
-			);
+			currentOrganizationFromParams = organizations.find(({ guid }) => guid === params.guid);
 		}
 
 		let currentOrganization: OrganizationContainer | undefined;
@@ -111,12 +109,13 @@ export async function loadApplicationContext({
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 
-		if (params?.guid) {
-			const guidOrSlug = params.guid.toLowerCase();
+		const currentOrganizationalUnitGuidOrSlug =
+			params?.contentGuid ?? (!currentOrganizationFromParams ? params?.guid : undefined);
+
+		if (currentOrganizationalUnitGuidOrSlug) {
 			currentOrganizationalUnit = organizationalUnits.find(
-				({ guid, organization, payload }) =>
-					organization === currentOrganization.guid &&
-					(guid === params.guid || payload.slug === guidOrSlug)
+				({ guid, organization }) =>
+					organization === currentOrganization.guid && guid === currentOrganizationalUnitGuidOrSlug
 			);
 		}
 

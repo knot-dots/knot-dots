@@ -137,51 +137,6 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
-const slugPayloadTypes = [payloadTypes.enum.organization, payloadTypes.enum.organizational_unit];
-
-export function getContainerByGuidOrSlug(guidOrSlug: string) {
-	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
-		const normalized = guidOrSlug.trim().toLowerCase();
-		const isGuid = z.string().uuid().safeParse(guidOrSlug).success;
-
-		const containerResult = await connection.one(sql.typeAlias('container')`
-			SELECT *
-			FROM container
-			WHERE valid_currently
-				AND NOT deleted
-				AND (
-					${isGuid ? sql.fragment`guid = ${guidOrSlug}` : sql.fragment`false`}
-					OR (
-						lower(payload->>'slug') = ${normalized}
-						AND payload->>'type' IN (${sql.join(slugPayloadTypes, sql.fragment`, `)})
-					)
-				)
-			ORDER BY CASE WHEN guid::text = ${guidOrSlug} THEN 0 ELSE 1 END
-			LIMIT 1
-		`);
-
-		return (await withUserAndRelation<AnyContainer>(connection, [containerResult]))[0];
-	};
-}
-
-export function getContextGuidBySlug(slug: string) {
-	return async (connection: DatabaseConnection): Promise<string | undefined> => {
-		const normalized = slug.trim().toLowerCase();
-
-		const result = await connection.maybeOne(sql.typeAlias('guid')`
-			SELECT guid
-			FROM container
-			WHERE valid_currently
-				AND NOT deleted
-				AND lower(payload->>'slug') = ${normalized}
-				AND payload->>'type' IN (${sql.join(slugPayloadTypes, sql.fragment`, `)})
-			LIMIT 1
-		`);
-
-		return result?.guid;
-	};
-}
-
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection): Promise<AnyContainer> => {
 		return connection.transaction(async (txConnection) => {
