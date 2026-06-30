@@ -311,7 +311,7 @@
 		<div class="selection-panel">
 			<div class="selection-actions">
 				<button
-					class="button-outline selection-clear"
+					class="selection-clear"
 					disabled={localSelected.length === 0}
 					onclick={clearSelection}
 					type="button"

@@ -224,7 +224,7 @@
 		<div class="selection-panel">
 			<div class="selection-actions">
 				<button
-					class="button-outline selection-clear"
+					class="selection-clear"
 					disabled={selected.length === 0}
 					onclick={() => (selected = [])}
 					type="button"
