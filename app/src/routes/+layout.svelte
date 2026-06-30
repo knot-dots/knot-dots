@@ -11,6 +11,7 @@
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { getContextIdentifier } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
@@ -98,10 +99,36 @@
 		}
 		return title;
 	});
+
+	const canonicalURL = $derived.by(() => {
+		const context = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
+		if (!context) {
+			return undefined;
+		}
+
+		const identifier = getContextIdentifier(context);
+
+		// Only set a canonical URL when a slug is actually configured for the context.
+		if (identifier === context.guid) {
+			return undefined;
+		}
+
+		const segments = page.url.pathname.split('/');
+		if (segments.length > 1 && (segments[1] === context.guid || segments[1] === identifier)) {
+			segments[1] = identifier;
+			return new URL(`${segments.join('/')}${page.url.search}`, page.url.origin).toString();
+		}
+
+		return undefined;
+	});
 </script>
 
 <svelte:head>
 	<title>{title}</title>
+
+	{#if canonicalURL}
+		<link rel="canonical" href={canonicalURL} />
+	{/if}
 
 	{#if data.currentOrganization.payload.customFavicon}
 		<link
