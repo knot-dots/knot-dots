@@ -1,3 +1,5 @@
+@import './lib/styles/fonts.css';
+
 :root {
 	--color-black: #000000;
 	--color-white: #ffffff;
