@@ -117,6 +117,8 @@
 	function buildSavedQuery(
 		item: string[],
 		filter: typeof container.payload.filter,
+		scope: typeof container.payload.organizationScope,
+		includeSubordinate: boolean,
 		terms: string,
 		searchTerms: string,
 		sort: string
@@ -137,7 +139,11 @@
 					query.append(key, value);
 				}
 			}
-			if (!filter.organization?.length) {
+			if (scope === 'current') {
+				if (!includeSubordinate) {
+					query.append('includedChanged', 'true');
+				}
+			} else if (!filter.organization?.length) {
 				query.append('organization', page.data.currentOrganization.guid);
 			}
 		}
@@ -146,22 +152,41 @@
 		return query;
 	}
 
+	const savedContextGuid = $derived(
+		page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
+	);
+
 	const savedResource = resource(
 		[
 			() => container.payload.item,
 			() => $state.snapshot(container.payload.filter),
+			() => container.payload.organizationScope,
+			() => container.payload.includeSubordinateOrganizationalUnits,
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewportOnce
 		],
-		async ([item, filter, terms, searchTerms, sort, inViewportOnce], _, { signal }) => {
+		async (
+			[item, filter, scope, includeSubordinate, terms, searchTerms, sort, inViewportOnce],
+			_,
+			{ signal }
+		) => {
 			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
-			const query = buildSavedQuery(item, filter, terms, searchTerms, sort);
+			const query = buildSavedQuery(
+				item,
+				filter,
+				scope,
+				includeSubordinate,
+				terms,
+				searchTerms,
+				sort
+			);
 			if (!query) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
 			const result = await fetchContainerPage({
+				contextGuid: scope === 'current' ? savedContextGuid : undefined,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset: 0,
@@ -199,14 +224,25 @@
 		try {
 			const item = container.payload.item;
 			const filter = $state.snapshot(container.payload.filter);
+			const scope = container.payload.organizationScope;
+			const includeSubordinate = container.payload.includeSubordinateOrganizationalUnits;
 			const terms = container.payload.terms;
 			const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';
 			const sort = container.payload.allowSort ? localSort : container.payload.sort;
 
-			const query = buildSavedQuery(item, filter, terms, searchTerms, sort);
+			const query = buildSavedQuery(
+				item,
+				filter,
+				scope,
+				includeSubordinate,
+				terms,
+				searchTerms,
+				sort
+			);
 			if (!query) return;
 
 			const result = await fetchContainerPage({
+				contextGuid: scope === 'current' ? savedContextGuid : undefined,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset: savedNextOffset,

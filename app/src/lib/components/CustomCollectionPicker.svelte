@@ -52,6 +52,16 @@
 
 	let terms = $state(container.payload.terms);
 
+	let organizationScope = $state(container.payload.organizationScope);
+
+	let includeSubordinateOrganizationalUnits = $state(
+		container.payload.includeSubordinateOrganizationalUnits
+	);
+
+	const searchContextGuid = $derived(
+		page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
+	);
+
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 
 	let sortBar = createDisclosure({ label: $_('sort') });
@@ -110,32 +120,43 @@
 
 	function buildSearchQuery() {
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
-		const baseOrganization =
-			filter.organization && filter.organization.length > 0
-				? filter.organization
-				: organizationsUserIsMemberOf.length > 0
-					? organizationsUserIsMemberOf
-					: [page.data.currentOrganization.guid];
-		const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
-			.map(
-				(guid) =>
-					page.data.organizationalUnits.find(
-						(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
-					)?.organization
-			)
-			.filter((org): org is string => org != null);
-		const organization = [...new Set([...baseOrganization, ...organizationalUnitOrgs])];
-		return new URLSearchParams([
-			...organization.map((org) => ['organization', org]),
+		const params: string[][] = [
 			...payloadType.map((t) => ['payloadType', t]),
 			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
-			...(filter.organizationalUnit ?? []).map((v) => ['organizationalUnit', v]),
 			...(filter.programType ?? []).map((v) => ['programType', v]),
 			...(filter.status ?? []).map((v) => ['status', v]),
 			...categoryContext.keys.flatMap((k) => (filter[k] ?? []).map((v) => [k, v])),
 			['terms', terms],
 			['sort', sort]
-		]);
+		];
+
+		if (organizationScope === 'current') {
+			if (!includeSubordinateOrganizationalUnits) {
+				params.push(['includedChanged', 'true']);
+			}
+		} else {
+			const baseOrganization =
+				filter.organization && filter.organization.length > 0
+					? filter.organization
+					: organizationsUserIsMemberOf.length > 0
+						? organizationsUserIsMemberOf
+						: [page.data.currentOrganization.guid];
+			const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
+				.map(
+					(guid) =>
+						page.data.organizationalUnits.find(
+							(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
+						)?.organization
+				)
+				.filter((org): org is string => org != null);
+			const organization = [...new Set([...baseOrganization, ...organizationalUnitOrgs])];
+			params.push(
+				...organization.map((org) => ['organization', org]),
+				...(filter.organizationalUnit ?? []).map((v) => ['organizationalUnit', v])
+			);
+		}
+
+		return new URLSearchParams(params);
 	}
 
 	interface SearchPage {
@@ -146,13 +167,22 @@
 	}
 
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current, () => mode],
+		[
+			() => $state.snapshot(filter),
+			() => sort,
+			() => terms,
+			() => inViewport.current,
+			() => mode,
+			() => organizationScope,
+			() => includeSubordinateOrganizationalUnits
+		],
 		async ([, , , inViewport], _, { signal }): Promise<SearchPage> => {
 			if (!inViewport)
 				return { containers: [], facets: new Map(), hasMore: false, nextOffset: null };
 
 			const query = buildSearchQuery();
 			const result = await fetchContainerPage({
+				contextGuid: organizationScope === 'current' ? searchContextGuid : undefined,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset: 0,
@@ -249,6 +279,7 @@
 		try {
 			const query = buildSearchQuery();
 			const result = await fetchContainerPage({
+				contextGuid: organizationScope === 'current' ? searchContextGuid : undefined,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset: searchNextOffset,
@@ -300,24 +331,37 @@
 	}
 
 	async function confirm() {
-		const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
-			.map(
-				(guid) =>
-					page.data.organizationalUnits.find(
-						(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
-					)?.organization
-			)
-			.filter((org): org is string => org != null);
-		const savedFilter = {
-			...filter,
-			organization: [...new Set([...(filter.organization ?? []), ...organizationalUnitOrgs])]
-		};
+		let savedFilter: Record<string, string[]>;
+		if (organizationScope === 'current') {
+			// In "current area" mode the scope is resolved relative to where the
+			// collection is applied, so no explicit organizations are stored.
+			savedFilter = Object.fromEntries(
+				Object.entries(filter).filter(
+					([key]) => key !== 'organization' && key !== 'organizationalUnit'
+				)
+			);
+		} else {
+			const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
+				.map(
+					(guid) =>
+						page.data.organizationalUnits.find(
+							(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
+						)?.organization
+				)
+				.filter((org): org is string => org != null);
+			savedFilter = {
+				...filter,
+				organization: [...new Set([...(filter.organization ?? []), ...organizationalUnitOrgs])]
+			};
+		}
 		const response = await saveContainer({
 			...container,
 			payload: {
 				...container.payload,
 				filter: savedFilter,
+				includeSubordinateOrganizationalUnits,
 				item: mode == 'select' ? selected : [],
+				organizationScope,
 				sort,
 				terms
 			}
@@ -352,6 +396,8 @@
 	{#snippet filterContent()}
 		{#if organizationOptions.length > 0}
 			<OrganizationFilterDropDown
+				bind:scope={organizationScope}
+				bind:includeSubordinateOrganizationalUnits
 				bind:organizationValue={() => filter.organization ?? [], (v) => (filter.organization = v)}
 				bind:organizationalUnitValue={
 					() => filter.organizationalUnit ?? [], (v) => (filter.organizationalUnit = v)
