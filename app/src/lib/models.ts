@@ -1304,14 +1304,18 @@ const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
 const igniteVideoPayload = z
 	.object({
-		iframeUrl: z.string().trim().pipe(z.url()).optional(),
+		iframeUrl: z
+			.string()
+			.trim()
+			.pipe(z.url({ protocol: /^https$/, hostname: /^play\.ignite\.video$/ }))
+			.optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.ignite_video),
 		visibility: visibility.default(visibility.enum['organization'])
 	})
 	.strict();
 
-const initialIgniteVideoPayload = igniteVideoPayload.partial({ iframeUrl: true, title: true });
+const initialIgniteVideoPayload = igniteVideoPayload.partial({ title: true });
 
 // Add teaser payload schema here:
 const teaserPayload = z

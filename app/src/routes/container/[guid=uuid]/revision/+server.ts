@@ -3,11 +3,9 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { igniteVideoURL } from '$lib/igniteVideo';
 import {
 	etag,
 	isContainerWithEditorialState,
-	isIgniteVideoContainer,
 	isIndicatorTemplateContainer,
 	isOrganizationContainer,
 	modifiedContainer,
@@ -66,14 +64,6 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
-		if (
-			isIgniteVideoContainer(parseResult.data) &&
-			parseResult.data.payload.iframeUrl?.trim() &&
-			!igniteVideoURL(parseResult.data.payload.iframeUrl)
-		) {
-			error(422, { message: unwrapFunctionStore(_)('ignite_video.invalid_url') });
-		}
-
 		const ability = defineAbilityFor(locals.user);
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
