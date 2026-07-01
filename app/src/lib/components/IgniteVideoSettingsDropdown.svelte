@@ -4,7 +4,6 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Video from '~icons/knotdots/video';
-	import { env } from '$env/dynamic/public';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
@@ -40,9 +39,7 @@
 	const mayShowDropdown = $derived(
 		mayUpdateVisibility || (hasValidVideo && mayUpdateContainer) || mayDelete
 	);
-	const urlInputValid = $derived(
-		Boolean(igniteVideoURL(urlInput, env.PUBLIC_IGNITE_VIDEO_ALLOWED_ORIGINS))
-	);
+	const urlInputValid = $derived(Boolean(igniteVideoURL(urlInput)));
 	const hasInvalidUrl = $derived(!urlInputValid && urlInput.trim() !== '');
 
 	function openSubview(view: SettingsSubview) {
@@ -289,25 +286,6 @@
 
 	.input-row.invalid input {
 		color: var(--color-red-500);
-	}
-
-	.error-label {
-		align-items: center;
-		color: var(--color-red-700);
-		display: flex;
-		flex: 0 0 auto;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.125rem;
-		line-height: 1.5;
-		white-space: nowrap;
-	}
-
-	.error-label :global(svg) {
-		color: var(--color-red-700);
-		flex: 0 0 auto;
-		height: 1.25rem;
-		width: 1.25rem;
 	}
 
 	.embed-button {

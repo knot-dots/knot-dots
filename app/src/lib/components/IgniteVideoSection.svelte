@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import Video from '~icons/knotdots/video';
-	import { env } from '$env/dynamic/public';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import IgniteVideoSettingsDropdown from '$lib/components/IgniteVideoSettingsDropdown.svelte';
 	import { igniteVideoURL } from '$lib/igniteVideo';
@@ -33,13 +32,9 @@
 
 	let urlInput = $state(container.payload.iframeUrl ?? '');
 
-	const urlInputValid = $derived(
-		Boolean(igniteVideoURL(urlInput, env.PUBLIC_IGNITE_VIDEO_ALLOWED_ORIGINS))
-	);
+	const urlInputValid = $derived(Boolean(igniteVideoURL(urlInput)));
 
-	const iframeSrc = $derived(
-		igniteVideoURL(container.payload.iframeUrl, env.PUBLIC_IGNITE_VIDEO_ALLOWED_ORIGINS)
-	);
+	const iframeSrc = $derived(igniteVideoURL(container.payload.iframeUrl));
 	const mayEdit = $derived(editable && $ability.can('update', container));
 	const hasInvalidUrl = $derived(!urlInputValid && urlInput.trim() !== '');
 

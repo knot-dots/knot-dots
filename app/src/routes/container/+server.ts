@@ -2,7 +2,6 @@ import { error, json } from '@sveltejs/kit';
 import type { DatabaseConnection, DatabaseTransactionConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { igniteVideoURL } from '$lib/igniteVideo';
 import {
@@ -555,7 +554,7 @@ export const POST = (async ({ locals, request }) => {
 		if (
 			isIgniteVideoContainer(parseResult.data) &&
 			parseResult.data.payload.iframeUrl?.trim() &&
-			!igniteVideoURL(parseResult.data.payload.iframeUrl, env.PUBLIC_IGNITE_VIDEO_ALLOWED_ORIGINS)
+			!igniteVideoURL(parseResult.data.payload.iframeUrl)
 		) {
 			error(422, { message: unwrapFunctionStore(_)('ignite_video.invalid_url') });
 		}
