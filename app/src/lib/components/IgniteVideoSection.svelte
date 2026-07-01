@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import Video from '~icons/knotdots/video';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import IgniteVideoSettingsDropdown from '$lib/components/IgniteVideoSettingsDropdown.svelte';
-	import { igniteVideoURL } from '$lib/igniteVideo';
 	import type { AnyContainer, IgniteVideoContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -30,19 +28,21 @@
 		colorBackground: '#eff6ff'
 	};
 
-	let urlInput = $state(container.payload.iframeUrl ?? '');
+	let iframeUrl = $state(container.payload.iframeUrl ?? '');
 
-	const urlInputValid = $derived(Boolean(igniteVideoURL(urlInput)));
-
-	const iframeSrc = $derived(igniteVideoURL(container.payload.iframeUrl));
 	const mayEdit = $derived(editable && $ability.can('update', container));
-	const hasInvalidUrl = $derived(!urlInputValid && urlInput.trim() !== '');
 
-	function handleEmbed(event: MouseEvent) {
-		if (urlInputValid) {
-			container.payload.iframeUrl = urlInput.trim();
-			requestSubmit(event);
+	function handleInputIframeUrl(event: Event & { currentTarget: HTMLInputElement }) {
+		event.stopPropagation();
+
+		if (event.currentTarget.validity.valid) {
+			iframeUrl = event.currentTarget.value;
 		}
+	}
+
+	function handleEmbed(event: Event) {
+		container.payload.iframeUrl = iframeUrl;
+		requestSubmit(event);
 	}
 </script>
 
@@ -67,18 +67,13 @@
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>
-				<IgniteVideoSettingsDropdown
-					bind:container
-					bind:parentContainer
-					bind:relatedContainers
-					hasValidVideo={Boolean(iframeSrc)}
-				/>
+				<IgniteVideoSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
 			</li>
 		</ul>
 	{/if}
 </header>
 
-{#if iframeSrc}
+{#if container.payload.iframeUrl}
 	<div class="video-frame">
 		<iframe
 			allow="autoplay; encrypted-media; picture-in-picture;"
@@ -86,7 +81,7 @@
 			loading="lazy"
 			referrerpolicy="strict-origin-when-cross-origin"
 			sandbox="allow-scripts allow-same-origin allow-presentation"
-			src={iframeSrc +
+			src={container.payload.iframeUrl +
 				'&colorPrimary=' +
 				encodeURIComponent(playerSettings.colorPrimary) +
 				'&colorSecondary=' +
@@ -105,21 +100,15 @@
 
 		{#if mayEdit}
 			<div class="controls" oninput={(event) => event.stopPropagation()}>
-				<div class="input-row" class:invalid={hasInvalidUrl}>
-					<input
-						aria-invalid={hasInvalidUrl}
-						placeholder={$_('ignite_video.placeholder')}
-						type="url"
-						bind:value={urlInput}
-					/>
-					{#if hasInvalidUrl}
-						<span class="error-label">
-							{$_('ignite_video.unsupported')}
-							<ExclamationCircle />
-						</span>
-					{/if}
-				</div>
-				<button disabled={!urlInputValid} type="button" onclick={handleEmbed}>
+				<input
+					oninput={handleInputIframeUrl}
+					pattern="https:\/\/play\.ignite\.video\/player\/index\.html\?id=.+"
+					placeholder={$_('ignite_video.placeholder')}
+					required
+					type="url"
+					value={container.payload.iframeUrl}
+				/>
+				<button class="button-primary" disabled={!iframeUrl} type="button" onclick={handleEmbed}>
 					{$_('ignite_video.embed')}
 				</button>
 				<p class="hint">{$_('ignite_video.url_help')}</p>
@@ -178,88 +167,14 @@
 	}
 
 	.controls {
-		align-items: stretch;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
 		width: 100%;
 	}
 
-	.input-row {
-		align-items: center;
-		background: var(--color-gray-050);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 4px;
-		display: flex;
-		gap: 0.5rem;
-		min-height: 2.25rem;
-		padding: 0.375rem;
-		width: 100%;
-	}
-
-	.input-row.invalid {
-		background: var(--color-red-050);
-		border-color: var(--color-red-200);
-	}
-
-	input {
-		background: transparent;
-		border: 0;
-		color: var(--color-gray-900);
-		flex: 1 1 auto;
-		font: inherit;
-		min-width: 0;
-		outline: none;
-		padding: 0 0.125rem;
-		width: 100%;
-	}
-
-	input::placeholder {
-		color: var(--color-gray-500);
-	}
-
-	.input-row.invalid input {
-		color: var(--color-red-500);
-	}
-
-	.error-label {
-		align-items: center;
-		color: var(--color-red-700);
-		display: flex;
-		flex: 0 0 auto;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.125rem;
-		line-height: 1.5;
-		white-space: nowrap;
-	}
-
-	.error-label :global(svg) {
-		color: var(--color-red-700);
-		flex: 0 0 auto;
-		height: 1.25rem;
-		width: 1.25rem;
-	}
-
-	button {
-		align-items: center;
-		background: var(--color-primary-700);
-		border: 0;
-		border-radius: 8px;
-		color: white;
-		display: flex;
-		font-size: 0.75rem;
-		font-weight: 500;
+	.button-primary {
 		justify-content: center;
-		line-height: 1.5;
-		min-height: 2.25rem;
-		padding: 0.5rem 0.75rem;
-		width: 100%;
-	}
-
-	button:disabled {
-		background: var(--color-gray-300);
-		opacity: 1;
 	}
 
 	.hint {

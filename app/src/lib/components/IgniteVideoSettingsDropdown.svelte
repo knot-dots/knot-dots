@@ -8,7 +8,6 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
-	import { igniteVideoURL } from '$lib/igniteVideo';
 	import type { AnyContainer, IgniteVideoContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
@@ -17,53 +16,48 @@
 
 	interface Props {
 		container: IgniteVideoContainer;
-		hasValidVideo: boolean;
 		parentContainer: AnyContainer;
 		relatedContainers: AnyContainer[];
 	}
 
 	let {
 		container = $bindable(),
-		hasValidVideo,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let settingsSubview = $state<SettingsSubview>('main');
-	let urlInput = $state('');
-	let dialog: HTMLDialogElement = $state(undefined!);
+	let iframeUrl = $state(container.payload.iframeUrl ?? '');
+	let dialog: HTMLDialogElement;
 
 	const mayUpdateVisibility = $derived($ability.can('update', container, 'payload.visibility'));
 	const mayUpdateContainer = $derived($ability.can('update', container));
 	const mayDelete = $derived($ability.can('delete', container));
-	const mayShowDropdown = $derived(
-		mayUpdateVisibility || (hasValidVideo && mayUpdateContainer) || mayDelete
-	);
-	const urlInputValid = $derived(Boolean(igniteVideoURL(urlInput)));
-	const hasInvalidUrl = $derived(!urlInputValid && urlInput.trim() !== '');
+	const mayShowDropdown = $derived(mayUpdateVisibility || mayUpdateContainer || mayDelete);
 
 	function openSubview(view: SettingsSubview) {
 		settingsSubview = view;
-		if (view === 'link') {
-			urlInput = container.payload.iframeUrl ?? '';
-		}
 	}
 
 	function resetSettingsState() {
 		settingsSubview = 'main';
-		urlInput = '';
+		iframeUrl = container.payload.iframeUrl ?? '';
 	}
 
 	function backToMain() {
 		settingsSubview = 'main';
 	}
 
-	function handleEmbed(event: MouseEvent, closeDropdown: () => void) {
-		if (!urlInputValid) {
-			return;
-		}
+	function handleInputIframeUrl(event: Event & { currentTarget: HTMLInputElement }) {
+		event.stopPropagation();
 
-		container.payload.iframeUrl = urlInput.trim();
+		if (event.currentTarget.validity.valid) {
+			iframeUrl = event.currentTarget.value;
+		}
+	}
+
+	function handleEmbed(event: MouseEvent, closeDropdown: () => void) {
+		container.payload.iframeUrl = iframeUrl;
 		requestSubmit(event);
 		closeDropdown();
 	}
@@ -109,7 +103,7 @@
 					</button>
 				{/if}
 
-				{#if hasValidVideo && mayUpdateContainer}
+				{#if mayUpdateContainer}
 					<button class="settings-item" onclick={() => openSubview('link')} type="button">
 						<Video />
 						<span>
@@ -149,17 +143,17 @@
 				{/each}
 			{:else}
 				<div class="link-content" oninput={(event) => event.stopPropagation()}>
-					<div class="input-row" class:invalid={hasInvalidUrl}>
-						<input
-							aria-invalid={hasInvalidUrl}
-							placeholder={$_('ignite_video.placeholder')}
-							type="url"
-							bind:value={urlInput}
-						/>
-					</div>
+					<input
+						oninput={handleInputIframeUrl}
+						pattern="https:\/\/play\.ignite\.video\/player\/index\.html\?id=.+"
+						placeholder={$_('ignite_video.placeholder')}
+						required
+						type="url"
+						value={container.payload.iframeUrl}
+					/>
 					<button
-						class="embed-button"
-						disabled={!urlInputValid}
+						class="button-primary"
+						disabled={!iframeUrl || iframeUrl === container.payload.iframeUrl}
 						type="button"
 						onclick={(event) => handleEmbed(event, closeDropdown)}
 					>
@@ -251,62 +245,8 @@
 		width: 100%;
 	}
 
-	.input-row {
-		align-items: center;
-		background: var(--color-gray-050);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 4px;
-		display: flex;
-		gap: 0.5rem;
-		min-height: 2.25rem;
-		padding: 0.375rem;
-		width: 100%;
-	}
-
-	.input-row.invalid {
-		background: var(--color-red-050);
-		border-color: var(--color-red-200);
-	}
-
-	.input-row input {
-		background: transparent;
-		border: 0;
-		color: var(--color-gray-900);
-		flex: 1 1 auto;
-		font: inherit;
-		min-width: 0;
-		outline: none;
-		padding: 0 0.125rem;
-		width: 100%;
-	}
-
-	.input-row input::placeholder {
-		color: var(--color-gray-500);
-	}
-
-	.input-row.invalid input {
-		color: var(--color-red-500);
-	}
-
-	.embed-button {
-		align-items: center;
-		background: var(--color-primary-700);
-		border: 0;
-		border-radius: 8px;
-		color: white;
-		display: flex;
-		font-size: 0.75rem;
-		font-weight: 500;
+	.button-primary {
 		justify-content: center;
-		line-height: 1.5;
-		min-height: 2.25rem;
-		padding: 0.5rem 0.75rem;
-		width: 100%;
-	}
-
-	.embed-button:disabled {
-		background: var(--color-gray-300);
-		opacity: 1;
 	}
 
 	.hint {
