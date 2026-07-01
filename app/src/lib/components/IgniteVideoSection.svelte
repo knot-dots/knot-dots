@@ -99,8 +99,13 @@
 		</div>
 
 		{#if mayEdit}
+			{@const id = crypto.randomUUID()}
 			<div class="controls" oninput={(event) => event.stopPropagation()}>
+				<label class="is-visually-hidden" for={id}>
+					{$_('ignite_video.placeholder')}
+				</label>
 				<input
+					{id}
 					oninput={handleInputIframeUrl}
 					pattern="https:\/\/play\.ignite\.video\/player\/index\.html\?id=.+"
 					placeholder={$_('ignite_video.placeholder')}
