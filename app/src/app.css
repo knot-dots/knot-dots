@@ -996,6 +996,7 @@ input[type='number'],
 input[type='password'],
 input[type='search'],
 input[type='text'],
+input[type='url'],
 select,
 textarea {
 	appearance: none;
@@ -1059,6 +1060,7 @@ input[type='number']:active,
 input[type='password']:active,
 input[type='search']:active,
 input[type='text']:active,
+input[type='url']:active,
 select:active,
 textarea:active {
 	border-color: var(--color-primary-600);
@@ -1070,6 +1072,7 @@ input[type='number']:user-invalid,
 input[type='password']:user-invalid,
 input[type='search']:user-invalid,
 input[type='text']:user-invalid,
+input[type='url']:user-invalid,
 select:user-invalid,
 textarea:user-invalid {
 	background-color: var(--color-red-050);

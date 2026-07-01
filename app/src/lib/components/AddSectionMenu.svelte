@@ -17,6 +17,7 @@
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
 	import Link from '~icons/knotdots/link';
+	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
@@ -220,6 +221,8 @@
 			isReportContainer(parentContainer)
 	);
 
+	let mayAddIgniteVideo = $derived(isHelpContainer(parentContainer));
+
 	let mayAddSummary = $derived(
 		isContainerWithSummary(parentContainer) &&
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
@@ -397,6 +400,15 @@
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
 			{ icon: Image, label: $_('image'), value: payloadTypes.enum.image },
+			...(mayAddIgniteVideo
+				? [
+						{
+							icon: Video,
+							label: $_('ignite_video'),
+							value: payloadTypes.enum.ignite_video
+						}
+					]
+				: []),
 			...(mayAddTeaserCollection
 				? [
 						{

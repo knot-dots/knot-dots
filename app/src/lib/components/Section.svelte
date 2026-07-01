@@ -22,6 +22,7 @@
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
 	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
+	import IgniteVideoSection from '$lib/components/IgniteVideoSection.svelte';
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
 	import EditableTeaserSection from '$lib/components/EditableTeaserSection.svelte';
@@ -39,6 +40,7 @@
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isImageContainer,
+		isIgniteVideoContainer,
 		isInlineHelpTextContainer,
 		isIndicatorCollectionContainer,
 		isMapContainer,
@@ -283,6 +285,14 @@
 			/>
 		{:else if isImageContainer(container)}
 			<EditableImageSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
+				{heading}
+			/>
+		{:else if isIgniteVideoContainer(container)}
+			<IgniteVideoSection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
