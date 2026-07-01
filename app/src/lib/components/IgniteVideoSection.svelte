@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import Video from '~icons/knotdots/video';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import IgniteVideoSettingsDropdown from '$lib/components/IgniteVideoSettingsDropdown.svelte';
 	import type { AnyContainer, IgniteVideoContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -47,22 +48,25 @@
 </script>
 
 <header>
-	{#if mayEdit}
-		<svelte:element
-			this={heading}
-			bind:textContent={container.payload.title}
-			class="details-heading"
-			class:is-empty={!container.payload.title?.trim()}
-			contenteditable="plaintext-only"
-			data-placeholder={$_('ignite_video.title.placeholder')}
-			onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-			role="heading"
-		></svelte:element>
-	{:else}
-		<svelte:element this={heading} class="details-heading" contenteditable="false">
+	<svelte:element this={heading} class="details-heading">
+		{#if mayEdit}
+			{@const id = crypto.randomUUID()}
+			<label class="is-visually-hidden" for={id}>{$_('title')}</label>
+			<AutoresizingTextarea
+				bind:value={container.payload.title}
+				{id}
+				onkeydown={(e) => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+					}
+				}}
+				placeholder={$_('ignite_video.title.placeholder')}
+				rows={1}
+			/>
+		{:else}
 			{container.payload.title}
-		</svelte:element>
-	{/if}
+		{/if}
+	</svelte:element>
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
@@ -123,12 +127,6 @@
 {/if}
 
 <style>
-	.details-heading.is-empty::before {
-		color: var(--color-gray-400);
-		content: attr(data-placeholder);
-		pointer-events: none;
-	}
-
 	.video-frame {
 		aspect-ratio: 16 / 9;
 		background: var(--color-gray-050);
