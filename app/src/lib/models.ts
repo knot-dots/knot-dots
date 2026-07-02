@@ -1296,6 +1296,7 @@ export function isObjectiveCollectionContainer(
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 export const organizationPayload = z.strictObject({
+	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	color: backgroundColor.optional(),
 	cover: z.url().optional(),
 	coverSource: z.string().optional(),
@@ -1317,9 +1318,13 @@ export const organizationPayload = z.strictObject({
 			})
 		)
 		.default([]),
+	federalState: z.string().optional(),
+	geometry: z.string().uuid().optional(),
 	image: z.url().optional(),
 	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
+	officialMunicipalityKey: z.string().length(8).optional(),
+	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
 	slug: z
 		.string()

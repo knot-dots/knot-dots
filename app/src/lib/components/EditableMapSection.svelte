@@ -6,6 +6,7 @@
 		type AnyPayload,
 		type Container,
 		type MapPayload,
+		type OrganizationPayload,
 		type OrganizationalUnitPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -15,7 +16,7 @@
 		container: Container<MapPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: Container<OrganizationalUnitPayload>;
+		parentContainer: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 
