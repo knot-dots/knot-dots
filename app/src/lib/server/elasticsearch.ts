@@ -138,38 +138,6 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	];
 }
 
-function buildIncludeGuidsMatchClause(params: {
-	includeGuids?: string[];
-	relationPredicates?: string[];
-}): estypes.QueryDslQueryContainer | undefined {
-	if (!params.includeGuids?.length) return undefined;
-
-	const should: estypes.QueryDslQueryContainer[] = [{ terms: { guid: params.includeGuids } }];
-
-	if (params.relationPredicates?.length) {
-		should.push({
-			nested: {
-				path: 'relation',
-				query: {
-					bool: {
-						must: [
-							{ terms: { 'relation.object': params.includeGuids } },
-							{ terms: { 'relation.predicate': params.relationPredicates } }
-						]
-					}
-				}
-			}
-		});
-	}
-
-	return {
-		bool: {
-			should,
-			minimum_should_match: 1
-		}
-	};
-}
-
 export async function getManyContainersWithES(
 	organizations: string[],
 	filters: {
@@ -286,10 +254,10 @@ export async function getManyContainersWithES(
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
 	}
 
-	const subscribedMatchClause = buildIncludeGuidsMatchClause({
-		includeGuids: options?.includeGuids,
-		relationPredicates: ['is-part-of', 'is-part-of-program']
-	});
+	const includeGuidsClause: estypes.QueryDslQueryContainer | undefined = options?.includeGuids
+		?.length
+		? { terms: { guid: options.includeGuids } }
+		: undefined;
 
 	if (organizations.length) {
 		const orgFilter: estypes.QueryDslQueryContainer = filters.organizationalUnits?.length
@@ -303,23 +271,13 @@ export async function getManyContainersWithES(
 				}
 			: { terms: { organization: organizations } };
 
-		if (subscribedMatchClause) {
-			nonFacetFilters.push({
-				bool: {
-					should: [orgFilter, subscribedMatchClause],
-					minimum_should_match: 1
-				}
-			});
-		} else {
-			if (filters.organizationalUnits?.length) {
-				nonFacetFilters.push({ terms: { organization: organizations } });
-				nonFacetFilters.push({ terms: { organizational_unit: filters.organizationalUnits } });
-			} else {
-				nonFacetFilters.push({ terms: { organization: organizations } });
-			}
-		}
-	} else if (subscribedMatchClause) {
-		nonFacetFilters.push(subscribedMatchClause);
+		nonFacetFilters.push(
+			includeGuidsClause
+				? { bool: { should: [orgFilter, includeGuidsClause], minimum_should_match: 1 } }
+				: orgFilter
+		);
+	} else if (includeGuidsClause) {
+		nonFacetFilters.push(includeGuidsClause);
 	} else if (filters.organizationalUnits?.length) {
 		addFacetFilter(facetFilters, 'organizationalUnit', {
 			terms: { organizational_unit: filters.organizationalUnits }
@@ -331,10 +289,10 @@ export async function getManyContainersWithES(
 		addFacetFilter(
 			facetFilters,
 			'organization',
-			subscribedMatchClause
+			includeGuidsClause
 				? {
 						bool: {
-							should: [{ terms: { organization: organizations } }, subscribedMatchClause],
+							should: [{ terms: { organization: organizations } }, includeGuidsClause],
 							minimum_should_match: 1
 						}
 					}

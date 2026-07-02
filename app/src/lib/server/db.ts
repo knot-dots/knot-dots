@@ -1639,6 +1639,24 @@ export function getSubscribedProgramGuids(orgGuids: readonly string[]) {
 	};
 }
 
+export function getGuidsRelatedToObjects(
+	objects: readonly string[],
+	relationPredicates: readonly string[]
+) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		if (objects.length === 0 || relationPredicates.length === 0) return [];
+		const rows = await connection.any(sql.type(z.object({ subject: z.string() }))`
+			SELECT DISTINCT subject
+			FROM container_relation
+			WHERE object IN (${sql.join(objects, sql.fragment`, `)})
+				AND predicate IN (${sql.join(relationPredicates, sql.fragment`, `)})
+				AND valid_currently
+				AND NOT deleted
+		`);
+		return rows.map((r) => r.subject);
+	};
+}
+
 export function getSubscriptionsForProgram(programGuid: string) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.any(sql.typeAlias('relation')`

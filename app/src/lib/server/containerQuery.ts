@@ -28,6 +28,7 @@ import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
 	getAllRelatedContainers,
+	getGuidsRelatedToObjects,
 	getManyContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
@@ -374,6 +375,19 @@ export async function loadContainerV2(params: {
 				// Only own org selected: hide subscribed content
 				effectiveIncludeGuids = undefined;
 			}
+		}
+
+		// Expand subscribed program GUIDs to include the GUIDs of the containers (e.g. rules) that
+		// belong to those programs, so the Elasticsearch query can treat includeGuids as a plain
+		// set of GUIDs to include.
+		if (effectiveIncludeGuids?.length) {
+			const childGuids = await params.locals.pool.connect(
+				getGuidsRelatedToObjects(effectiveIncludeGuids, [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-program']
+				])
+			);
+			effectiveIncludeGuids = [...new Set([...effectiveIncludeGuids, ...childGuids])];
 		}
 
 		const result = await getManyContainersWithES(effectiveOrganization, filters, query.sort, {
