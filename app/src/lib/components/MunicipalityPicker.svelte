@@ -455,7 +455,7 @@
 
 		border-color: var(--color-gray-200);
 		color: var(--color-gray-900);
-		flex: 0 0 7.125rem;
+		flex: 1 1 auto;
 	}
 
 	.selection-clear:hover:not(:disabled),
