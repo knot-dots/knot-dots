@@ -253,13 +253,13 @@
 		gap: 0.5rem;
 	}
 
-	.toggle-option {
+	.scope-options label.toggle-option {
 		align-items: center;
 		cursor: pointer;
 		display: flex;
 		gap: 0.5rem;
 		justify-content: space-between;
-		padding-left: 1.5rem;
+		padding: 0.5rem 0.5rem 0.5rem 2rem;
 	}
 
 	.toggle-option > .toggle {
