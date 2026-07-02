@@ -6,6 +6,8 @@ import {
 	isActualDataContainer,
 	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	modifiedContainer,
 	predicates,
 	status,
@@ -13,6 +15,9 @@ import {
 } from '$lib/models';
 import {
 	deleteContainer,
+	deleteContainerRecursively,
+	deleteOrganizationalUnitContainer,
+	deleteOrganizationContainer,
 	getAllContainersRelatedToIndicatorTemplates,
 	getManyContainers,
 	updateContainer
@@ -89,8 +94,17 @@ export const POST = (async ({ locals, request }) => {
 				}
 			];
 
-			if (parseResult.data.deleted && ability.can('delete', container)) {
-				await deleteContainer({ ...container, user })(txConnection);
+			if (parseResult.data.deleted && ability.can('delete-recursively', container)) {
+				await deleteContainerRecursively({ ...container, user })(txConnection);
+				result.push(container);
+			} else if (parseResult.data.deleted && ability.can('delete', container)) {
+				if (isOrganizationContainer(container)) {
+					await deleteOrganizationContainer({ ...container, user })(txConnection);
+				} else if (isOrganizationalUnitContainer(container)) {
+					await deleteOrganizationalUnitContainer({ ...container, user })(txConnection);
+				} else {
+					await deleteContainer({ ...container, user })(txConnection);
+				}
 				result.push(container);
 			} else if (parseResult.data.payload && ability.can('update', container)) {
 				const updatedContainer = await updateContainer(

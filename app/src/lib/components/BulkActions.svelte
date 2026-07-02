@@ -149,11 +149,7 @@
 		{/if}
 	</fieldset>
 
-	<ConfirmBulkDeleteDialog
-		bind:dialog
-		count={bulkActionContext.selected.size}
-		handleSubmit={() => performBulkAction({ deleted: true })}
-	/>
+	<ConfirmBulkDeleteDialog bind:dialog handleSubmit={() => performBulkAction({ deleted: true })} />
 {/if}
 
 <style>
