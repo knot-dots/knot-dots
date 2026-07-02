@@ -4,6 +4,7 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	type AnyContainer,
 	isActualDataContainer,
+	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
 	modifiedContainer,
 	predicates,
@@ -63,7 +64,23 @@ export const POST = (async ({ locals, request }) => {
 
 		const result = [] as AnyContainer[];
 
-		for (const container of [...containers, ...relatedContainers.filter(isActualDataContainer)]) {
+		// In the case of indicators, the intention of the delete action depends
+		// on the context: An indicator is always owned by an organization or
+		// organizational unit and can be used anywhere. If the indicator to be
+		// deleted belongs to a different organizational context, only the
+		// actual data should be removed. Because of the filtering rules of the
+		// workspace, the associated indicator is effectively removed.
+		// Therefore, the indicators belonging to other organizational contexts
+		// need to be excluded from the bulk action targets.
+		const isNotForeignIndicator = (container: AnyContainer) =>
+			!(isIndicatorTemplateContainer(container) || isBinaryIndicatorContainer(container)) ||
+			(container.organization == parseResult.data.organization &&
+				container.organizational_unit == parseResult.data.organizational_unit);
+
+		for (const container of [
+			...containers.filter(isNotForeignIndicator),
+			...relatedContainers.filter(isActualDataContainer)
+		]) {
 			const user = [
 				...container.user.filter(({ predicate }) => predicate != predicates.enum['is-creator-of']),
 				{
