@@ -842,6 +842,7 @@ export const customCollectionPayload = z
 		listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
 		newItemTemplate: z.array(z.uuid()).default([]),
 		organizationScope: z.enum(['current', 'explicit']).default('current'),
+		ruleApplied: z.boolean().default(false),
 		showDescription: z.boolean().default(false),
 		sort: z.enum(['alpha', 'modified']).default('alpha'),
 		terms: z.string().default(''),

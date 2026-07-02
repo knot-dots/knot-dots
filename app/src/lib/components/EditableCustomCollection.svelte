@@ -119,6 +119,7 @@
 		filter: typeof container.payload.filter,
 		scope: typeof container.payload.organizationScope,
 		includeSubordinate: boolean,
+		ruleApplied: boolean,
 		terms: string,
 		searchTerms: string,
 		sort: string
@@ -127,7 +128,7 @@
 		const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 		const hasAnyFilter = Object.values(filter).some((v) => v.length > 0);
 
-		if (item.length === 0 && !hasAnyFilter) return null;
+		if (item.length === 0 && !hasAnyFilter && !ruleApplied) return null;
 
 		const query = new URLSearchParams();
 		if (item.length > 0) {
@@ -162,13 +163,24 @@
 			() => $state.snapshot(container.payload.filter),
 			() => container.payload.organizationScope,
 			() => container.payload.includeSubordinateOrganizationalUnits,
+			() => container.payload.ruleApplied,
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewportOnce
 		],
 		async (
-			[item, filter, scope, includeSubordinate, terms, searchTerms, sort, inViewportOnce],
+			[
+				item,
+				filter,
+				scope,
+				includeSubordinate,
+				ruleApplied,
+				terms,
+				searchTerms,
+				sort,
+				inViewportOnce
+			],
 			_,
 			{ signal }
 		) => {
@@ -179,6 +191,7 @@
 				filter,
 				scope,
 				includeSubordinate,
+				ruleApplied,
 				terms,
 				searchTerms,
 				sort
@@ -226,6 +239,7 @@
 			const filter = $state.snapshot(container.payload.filter);
 			const scope = container.payload.organizationScope;
 			const includeSubordinate = container.payload.includeSubordinateOrganizationalUnits;
+			const ruleApplied = container.payload.ruleApplied;
 			const terms = container.payload.terms;
 			const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';
 			const sort = container.payload.allowSort ? localSort : container.payload.sort;
@@ -235,6 +249,7 @@
 				filter,
 				scope,
 				includeSubordinate,
+				ruleApplied,
 				terms,
 				searchTerms,
 				sort
@@ -310,7 +325,8 @@
 
 	let isRuleBasedCollection = $derived(
 		container.payload.item.length == 0 &&
-			Object.values(container.payload.filter).some((v) => v.length > 0)
+			(container.payload.ruleApplied ||
+				Object.values(container.payload.filter).some((v) => v.length > 0))
 	);
 
 	let hasConfiguredContent = $derived(
@@ -330,6 +346,13 @@
 			for (const value of container.payload.filter[key]) {
 				params.append(key, value);
 			}
+		}
+
+		if (
+			container.payload.organizationScope === 'current' &&
+			!container.payload.includeSubordinateOrganizationalUnits
+		) {
+			params.append('includedChanged', 'true');
 		}
 
 		const searchTerms = container.payload.allowSearch ? localTerms.trim() : '';

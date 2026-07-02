@@ -100,7 +100,11 @@
 
 	// svelte-ignore state_referenced_locally
 	let mode: 'select' | 'apply_rule' = $state(
-		selected.length > 0 || activeFilters == 0 ? 'select' : 'apply_rule'
+		container.payload.ruleApplied
+			? 'apply_rule'
+			: selected.length > 0 || activeFilters == 0
+				? 'select'
+				: 'apply_rule'
 	);
 
 	let organizationsUserIsMemberOf = $derived(
@@ -362,6 +366,7 @@
 				includeSubordinateOrganizationalUnits,
 				item: mode == 'select' ? selected : [],
 				organizationScope,
+				ruleApplied: mode == 'apply_rule',
 				sort,
 				terms
 			}
