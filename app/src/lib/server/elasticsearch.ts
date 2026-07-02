@@ -131,6 +131,9 @@ function buildElasticsearchSortClause(sort: string): estypes.Sort {
 			{ guid: { order: 'asc' } }
 		];
 	}
+	if (sort === 'relevance') {
+		return [{ _score: { order: 'desc' } }, { guid: { order: 'asc' } }];
+	}
 	return [
 		{ 'title.icu_collation_keyword': { order: 'asc', missing: '_last' } },
 		{ guid: { order: 'asc' } }
@@ -168,7 +171,44 @@ export async function getManyContainersWithES(
 
 	if (filters.terms) {
 		must.push({
-			multi_match: { query: filters.terms, fields: ['title^2', 'text'], fuzziness: 'AUTO' }
+			bool: {
+				should: [
+					{
+						term: {
+							'title.keyword': {
+								value: filters.terms,
+								boost: 20
+							}
+						}
+					},
+					{
+						prefix: {
+							'title.keyword': {
+								value: filters.terms,
+								boost: 12
+							}
+						}
+					},
+					{
+						match_phrase_prefix: {
+							title: {
+								query: filters.terms,
+								boost: 8
+							}
+						}
+					},
+					{
+						multi_match: {
+							query: filters.terms,
+							fields: ['title^2', 'text'],
+							fuzziness: 'AUTO',
+							prefix_length: 3,
+							boost: 1
+						}
+					}
+				],
+				minimum_should_match: 1
+			}
 		});
 	}
 	if (filters.type?.length) {

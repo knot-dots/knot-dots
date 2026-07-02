@@ -131,7 +131,7 @@
 	}
 
 	.value.value--is-editable:hover {
-		background-color: var(--color-gray-100);
+		background-color: var(--color-background-system-state-hover);
 	}
 
 	.loader {

@@ -11,7 +11,7 @@
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
 	import { type MeasureContainer, type SimpleMeasureContainer, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import { createMeasureStatusQuery } from './query';
 	import type { PageProps } from './$types';
@@ -23,6 +23,7 @@
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
+		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
 			const result = await fetchContainerPage<MeasureContainer | SimpleMeasureContainer>({
 				contextGuid: page.params.guid,

@@ -1,8 +1,8 @@
 import { error, json } from '@sveltejs/kit';
-import type { CommonQueryMethods, DatabaseConnection } from 'slonik';
+import type { DatabaseConnection, DatabaseTransactionConnection } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { filterVisible } from '$lib/authorization';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
 	type AnyContainer,
@@ -86,7 +86,7 @@ async function copyMeasureFromOriginal<T extends AnyContainer>(
 	createdContainer: T,
 	originalMeasure: MeasureContainer,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const copy = createCopyOf(
 		originalMeasure,
@@ -123,7 +123,7 @@ async function copyGoalsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originalGoals: GoalContainer[],
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
 
@@ -175,7 +175,7 @@ async function copyTasksFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	for (const copyFrom of originals.filter(isTaskContainer)) {
 		const copy = createCopyOf(
@@ -211,7 +211,7 @@ async function copyEffectsFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	for (const copyFrom of originals.filter(isEffectContainer)) {
 		const copy = createCopyOf(
@@ -248,7 +248,7 @@ async function copySectionsFromOriginal(
 	originals: Container[],
 	isPartOfObjects: Array<AnyContainer>,
 	userGuid: string,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	for (const copyFrom of originals.filter(({ guid, relation }) =>
 		relation.some(
@@ -283,7 +283,7 @@ async function copyMeasure(
 	createdContainer: MeasureContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllContainersRelatedToMeasure(isCopyOfRelation.object as string, {}, '')(txConnection),
@@ -333,7 +333,7 @@ async function copyProgram(
 	createdProgram: ProgramContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllContainersRelatedToProgram(isCopyOfRelation.object as string, {})(txConnection),
@@ -392,7 +392,7 @@ async function copyOrganizationalUnitContainer(
 	createdContainer: OrganizationalUnitContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllRelatedContainers(
@@ -418,7 +418,7 @@ async function copyReportContainer(
 	createdContainer: ReportContainer,
 	isCopyOfRelation: PartialRelation,
 	user: User,
-	txConnection: CommonQueryMethods
+	txConnection: DatabaseTransactionConnection
 ) {
 	const containersRelatedToOriginal = filterVisible(
 		await getAllRelatedContainers(
@@ -448,6 +448,7 @@ export const GET = (async ({ locals, url }) => {
 		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
 		indicatorCategory: z.array(indicatorCategories).default([]),
+		resource: z.array(z.string().uuid()).default([]),
 		indicatorType: z.array(indicatorTypes).default([]),
 		limit: z.coerce.number().int().positive().optional(),
 		offset: z.coerce.number().int().nonnegative().default(0),
@@ -510,6 +511,7 @@ export const GET = (async ({ locals, url }) => {
 				federalStates: parseResult.data?.federalState,
 				indicators: parseResult.data.indicator,
 				indicatorCategories: parseResult.data.indicatorCategory,
+				resource: parseResult.data.resource,
 				indicatorTypes: parseResult.data.indicatorType,
 				organizationalUnits: parseResult.data.organizationalUnit,
 				programTypes: parseResult.data.programType,
@@ -544,6 +546,8 @@ export const POST = (async ({ locals, request }) => {
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
+	} else if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	} else {
 		const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
 			connection.transaction(async (txConnection) => {

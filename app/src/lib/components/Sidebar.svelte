@@ -416,7 +416,6 @@
 
 	.sidebar-panel-header {
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
 		--dropdown-button-chevron-default-color: var(--color-gray-400);
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-default-color: var(--color-gray-900);

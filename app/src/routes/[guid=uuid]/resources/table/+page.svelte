@@ -4,13 +4,18 @@
 	import ResourcesPage from '$lib/components/ResourcesPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			data.containers,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 </script>
 
@@ -19,10 +24,8 @@
 		columns={[
 			{ heading: $_('title'), key: 'title' },
 			{ heading: $_('description'), key: 'description' },
-			// { heading: $_('visibility.label'), key: 'visibility' },
 			{ heading: $_('resource_category'), key: 'resourceCategory' },
 			{ heading: $_('label.unit'), key: 'resourceUnit' }
-			// { heading: $_('organizational_unit'), key: 'organizationalUnit' }
 		]}
 		rows={containers}
 	/>

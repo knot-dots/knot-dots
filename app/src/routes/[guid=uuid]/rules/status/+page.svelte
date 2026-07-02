@@ -11,7 +11,7 @@
 	import RulesPage from '$lib/components/RulesPage.svelte';
 	import { type RuleContainer, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import { createRuleStatusQuery } from './query';
 	import type { PageProps } from './$types';
@@ -23,6 +23,7 @@
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
+		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
 			const result = await fetchContainerPage<RuleContainer>({
 				contextGuid: page.params.guid,

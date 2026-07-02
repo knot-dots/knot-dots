@@ -29,6 +29,7 @@ export default ts.config(
 	},
 	{
 		rules: {
+			'@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
 			'svelte/no-navigation-without-resolve': 'off',
 			'svelte/prefer-svelte-reactivity': 'off'
 		}

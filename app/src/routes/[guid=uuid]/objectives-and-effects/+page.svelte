@@ -3,6 +3,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -26,14 +27,18 @@
 		isRelatedTo,
 		predicates
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let allContainers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			data.containers,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 
 	setContext('relationOverlay', {
@@ -123,7 +128,7 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header {facets} search />
 	{/snippet}

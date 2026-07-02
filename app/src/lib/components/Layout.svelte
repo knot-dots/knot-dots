@@ -3,20 +3,22 @@
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	import { overlay } from '$lib/stores';
 
 	interface Props {
+		bulkActions?: string[];
 		header?: Snippet;
 		main: Snippet;
 		sidebar?: Snippet;
 	}
 
-	let { header, main, sidebar }: Props = $props();
+	let { bulkActions = [], header, main, sidebar }: Props = $props();
 
 	const duration = 300;
 	const delay = duration + 100;
@@ -58,15 +60,29 @@
 	</nav>
 
 	<div class="main-with-header-wrapper">
-		{#if header}
-			{@render header()}
-		{:else}
-			<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
-		{/if}
+		{#if bulkActions.length > 0}
+			<BulkActionContextProvider actions={bulkActions}>
+				{#if header}
+					{@render header()}
+				{:else}
+					<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
+				{/if}
 
-		<main in:fly={transitionIn} out:fly={transitionOut}>
-			{@render main()}
-		</main>
+				<main in:fly={transitionIn} out:fly={transitionOut}>
+					{@render main()}
+				</main>
+			</BulkActionContextProvider>
+		{:else}
+			{#if header}
+				{@render header()}
+			{:else}
+				<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
+			{/if}
+
+			<main in:fly={transitionIn} out:fly={transitionOut}>
+				{@render main()}
+			</main>
+		{/if}
 	</div>
 
 	{#if $overlay}

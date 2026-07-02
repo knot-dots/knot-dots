@@ -45,11 +45,6 @@
 		newContainer
 	} from '$lib/stores';
 
-	const sortOptions = [
-		{ value: 'modified', label: $_('sort_modified') },
-		{ value: 'alpha', label: $_('sort_alphabetically') }
-	];
-
 	interface Props {
 		container: CustomCollectionContainer;
 		editable?: boolean;
@@ -90,7 +85,13 @@
 
 	let localTerms = $state('');
 
-	let localSort = $derived(container.payload.sort);
+	let localSort = $derived(localTerms.length > 0 ? 'relevance' : container.payload.sort);
+
+	let sortOptions = $derived([
+		...(localTerms.length > 0 ? [{ value: 'relevance', label: $_('sort_relevance') }] : []),
+		{ value: 'modified', label: $_('sort_modified') },
+		{ value: 'alpha', label: $_('sort_alphabetically') }
+	]);
 
 	const idForTitle = crypto.randomUUID();
 
@@ -482,46 +483,6 @@
 			<span class="details-count">({savedTotal})</span>
 		{/if}
 	</svelte:element>
-
-	<ul class="inline-actions" class:is-visible-on-hover={editable}>
-		{#if hasConfiguredContent && isRuleBasedCollection}
-			<li>
-				<a class="button button-xs" href={allCatalogHref}>
-					<ArrowRight />
-					{$_('custom_collection.show_all')}
-				</a>
-			</li>
-		{/if}
-
-		{#if container.payload.allowSearch && hasConfiguredContent}
-			<li class="inline-actions-search">
-				<label class="focus-indicator">
-					<Search />
-					<span class="is-visually-hidden">{$_('search')}</span>
-					<input
-						type="search"
-						placeholder={$_('search')}
-						bind:value={localTerms}
-						oninput={(e) => {
-							e.stopPropagation();
-						}}
-					/>
-				</label>
-			</li>
-		{/if}
-
-		{#if editable && $ability.can('update', container)}
-			<li>
-				<CustomCollectionSettingsDropdown
-					bind:container
-					onAddItems={addItems}
-					onAddTemplates={addTemplates}
-					bind:parentContainer
-					bind:relatedContainers
-				/>
-			</li>
-		{/if}
-	</ul>
 </header>
 
 {#if container.payload.showDescription}
@@ -532,9 +493,51 @@
 	{/if}
 {/if}
 
-{#if hasConfiguredContent && container.payload.allowSort}
+{#if (hasConfiguredContent && (container.payload.allowSort || isRuleBasedCollection || container.payload.allowSearch)) || (editable && $ability.can('update', container))}
 	<div class="carousel-toolbar">
-		<SortDropdown options={sortOptions} bind:value={localSort} />
+		{#if hasConfiguredContent && container.payload.allowSort}
+			<SortDropdown options={sortOptions} bind:value={localSort} />
+		{/if}
+
+		<ul class="inline-actions">
+			{#if container.payload.allowSearch && hasConfiguredContent}
+				<li class="inline-actions-search">
+					<label class="focus-indicator">
+						<Search />
+						<span class="is-visually-hidden">{$_('search')}</span>
+						<input
+							type="search"
+							placeholder={$_('search')}
+							bind:value={localTerms}
+							oninput={(e) => {
+								e.stopPropagation();
+							}}
+						/>
+					</label>
+				</li>
+			{/if}
+
+			{#if hasConfiguredContent && isRuleBasedCollection}
+				<li>
+					<a class="button button-xs" href={allCatalogHref}>
+						<ArrowRight />
+						{$_('custom_collection.show_all')}
+					</a>
+				</li>
+			{/if}
+
+			{#if editable && $ability.can('update', container)}
+				<li>
+					<CustomCollectionSettingsDropdown
+						bind:container
+						onAddItems={addItems}
+						onAddTemplates={addTemplates}
+						bind:parentContainer
+						bind:relatedContainers
+					/>
+				</li>
+			{/if}
+		</ul>
 	</div>
 {/if}
 
@@ -626,9 +629,11 @@
 	</div>
 {/if}
 
-<CustomCollectionPicker bind:container bind:dialog />
+{#if editable}
+	<CustomCollectionPicker bind:container bind:dialog />
 
-<TemplatePicker bind:container bind:dialog={templatePickerDialog} />
+	<TemplatePicker bind:container bind:dialog={templatePickerDialog} />
+{/if}
 
 <style>
 	.details-heading {
@@ -641,6 +646,17 @@
 		color: var(--color-gray-400);
 		font-size: inherit;
 		font-weight: 400;
+	}
+
+	.carousel-toolbar {
+		flex-wrap: wrap;
+		justify-content: space-between;
+	}
+
+	.inline-actions {
+		flex-shrink: 1;
+		flex-wrap: wrap;
+		margin-left: 0;
 	}
 
 	.inline-actions-search {

@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import ClipboardIcon from '~icons/flowbite/clipboard-clean-solid';
+	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import createPaginatedResource from '$lib/client/createPaginatedResource.svelte';
 	import { filterCategoryContext } from '$lib/categoryOptions';
@@ -11,6 +12,7 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		administrativeTypes,
 		payloadTypes,
@@ -169,10 +171,6 @@
 		localSelected = [];
 	}
 
-	function cancel() {
-		dialog.close();
-	}
-
 	function confirm() {
 		selected = localSelected
 			.map((guid) => knownMunicipalities.get(guid))
@@ -212,6 +210,21 @@
 	onResetFilters={resetFilters}
 	title={$_('compare_dialog_title')}
 >
+	{#snippet commands()}
+		<div class="federal-levels-command">
+			<span class="is-visually-hidden" id="federal-levels-command-label">
+				{$_('compare_federal_levels')}
+			</span>
+			<SingleChoiceDropdown
+				labelledBy="federal-levels-command-label"
+				options={federalLevelItems.map(({ key, label }) => ({ value: key, label }))}
+				bind:value={
+					() => activeFederalLevel, (value) => selectFederalLevel(value as FederalLevelKey)
+				}
+			/>
+		</div>
+	{/snippet}
+
 	{#snippet filterContent()}
 		<InlineFilterDropDown
 			key="administrativeType"
@@ -242,177 +255,107 @@
 		<!-- No sorting options needed -->
 	{/snippet}
 
-	{#snippet content()}
-		<div class="result">
-			<div class="actions">
+	{#snippet sidebar()}
+		<div class="federal-levels-panel">
+			<span class="federal-levels-title" id="federal-levels-title">
+				{$_('compare_federal_levels')}
+			</span>
+			<ul aria-labelledby="federal-levels-title" class="federal-levels-list" role="radiogroup">
+				{#each federalLevelItems as item (item.key)}
+					<li>
+						<label class="federal-level-item">
+							<ClipboardIcon />
+							<input
+								class="is-visually-hidden"
+								type="radio"
+								name="federal-level"
+								value={item.key}
+								checked={activeFederalLevel === item.key}
+								onchange={() => selectFederalLevel(item.key)}
+							/>
+							<span class="federal-level-label">{item.label}</span>
+						</label>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/snippet}
+
+	{#snippet main()}
+		<div class="catalog-area">
+			<ul class="catalog">
+				{#each allMunicipalities as municipality (municipality.guid)}
+					{@const isDisabled =
+						!localSelected.includes(municipality.guid) && localSelected.length >= MAX_SELECTION}
+					<li class:disabled={isDisabled}>
+						<SelectableCard
+							--height="100%"
+							checked={localSelected.includes(municipality.guid)}
+							container={municipality}
+							{onchange}
+						/>
+					</li>
+				{/each}
+				<LazyLoadSentinel
+					as="li"
+					disabled={allMunicipalities.length === 0}
+					hasMore={municipalities.hasMore}
+					loading={municipalities.loadingMore}
+					onLoadMore={municipalities.loadMore}
+				/>
+			</ul>
+		</div>
+	{/snippet}
+
+	{#snippet selection()}
+		<div class="selection-panel">
+			<div class="selection-actions">
 				<button
-					class="button-outline button-xs"
+					class="selection-clear"
 					disabled={localSelected.length === 0}
 					onclick={clearSelection}
 					type="button"
 				>
-					{$_('compare_clear_all')}
+					<Close />
+					<span>{$_('picker_dialog.clear')}</span>
 				</button>
-
-				<span class="selection-count">
-					{$_('compare_datasets_selected', { values: { count: localSelected.length } })}
-					{#if localSelected.length >= MAX_SELECTION}
-						<span class="max-indicator">
-							({$_('compare_max_reached', { values: { max: MAX_SELECTION } })})
-						</span>
-					{/if}
-				</span>
-
-				<div class="actions-right">
-					<button class="button-red" onclick={cancel} type="button">
-						{$_('custom_collection.dialog.cancel')}
-					</button>
-					<button
-						class="button-primary"
-						disabled={localSelected.length === 0}
-						onclick={confirm}
-						type="button"
-					>
-						{$_('custom_collection.dialog.accept_selection', {
-							values: { count: localSelected.length }
-						})}
-					</button>
-				</div>
+				<button
+					class="button-primary selection-apply"
+					disabled={localSelected.length === 0}
+					onclick={confirm}
+					type="button"
+				>
+					{$_('picker_dialog.confirm', {
+						values: { count: localSelected.length }
+					})}
+				</button>
 			</div>
 
-			<div class="picker-layout">
-				<aside class="federal-levels-panel">
-					<span class="federal-levels-title" id="federal-levels-title">
-						{$_('compare_federal_levels')}
-					</span>
-					<ul aria-labelledby="federal-levels-title" class="federal-levels-list" role="radiogroup">
-						{#each federalLevelItems as item (item.key)}
-							<li>
-								<label class="federal-level-item">
-									<ClipboardIcon />
-									<input
-										class="is-visually-hidden"
-										type="radio"
-										name="federal-level"
-										value={item.key}
-										checked={activeFederalLevel === item.key}
-										onchange={() => selectFederalLevel(item.key)}
-									/>
-									<span class="federal-level-label">{item.label}</span>
+			{#if localSelected.length > 0}
+				<ul class="selection-list">
+					{#each localSelected as guid (guid)}
+						{@const item = knownMunicipalities.get(guid)}
+						{#if item}
+							{@const selectionId = `selected-${guid}`}
+							<li class="selection-item">
+								<input id={selectionId} type="checkbox" value={guid} bind:group={localSelected} />
+								<label for={selectionId}>
+									{#if 'title' in item.payload}
+										{item.payload.title}
+									{:else if 'name' in item.payload}
+										{item.payload.name}
+									{/if}
 								</label>
 							</li>
-						{/each}
-					</ul>
-				</aside>
-
-				<div class="catalog-area">
-					<ul class="catalog">
-						{#each allMunicipalities as municipality (municipality.guid)}
-							{@const isDisabled =
-								!localSelected.includes(municipality.guid) && localSelected.length >= MAX_SELECTION}
-							<li class:disabled={isDisabled}>
-								<SelectableCard
-									--height="100%"
-									checked={localSelected.includes(municipality.guid)}
-									container={municipality}
-									{onchange}
-								/>
-							</li>
-						{/each}
-						<LazyLoadSentinel
-							as="li"
-							disabled={allMunicipalities.length === 0}
-							hasMore={municipalities.hasMore}
-							loading={municipalities.loadingMore}
-							onLoadMore={municipalities.loadMore}
-						/>
-					</ul>
-				</div>
-
-				<aside class="selection-panel">
-					<div class="selection-header">
-						<span class="selection-title">{$_('compare_with')}</span>
-						<span class="selection-count-pill">{localSelected.length}</span>
-					</div>
-
-					<ul class="selection-list">
-						{#each localSelected as guid (guid)}
-							{@const item = knownMunicipalities.get(guid)}
-							{#if item}
-								{@const selectionId = `selected-${guid}`}
-								<li class="selection-item">
-									<input id={selectionId} type="checkbox" value={guid} bind:group={localSelected} />
-									<label for={selectionId}>
-										{#if 'title' in item.payload}
-											{item.payload.title}
-										{:else if 'name' in item.payload}
-											{item.payload.name}
-										{/if}
-									</label>
-								</li>
-							{/if}
-						{/each}
-					</ul>
-				</aside>
-			</div>
+						{/if}
+					{/each}
+				</ul>
+			{/if}
 		</div>
 	{/snippet}
 </PickerDialog>
 
 <style>
-	.result {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		height: 100%;
-		min-height: 1px;
-	}
-
-	.actions {
-		align-items: center;
-		display: flex;
-		gap: 1rem;
-		justify-content: space-between;
-		padding: 0.5rem 0;
-	}
-
-	.actions-right {
-		align-items: center;
-		display: flex;
-		gap: 0.75rem;
-		margin-left: auto;
-	}
-
-	.selection-count {
-		color: var(--color-gray-700);
-		font-size: 0.875rem;
-		font-weight: 500;
-	}
-
-	.max-indicator {
-		color: var(--color-orange-600);
-		font-weight: 600;
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
-	}
-
-	.picker-layout {
-		display: grid;
-		gap: 1.5rem;
-		grid-template-columns: 13rem minmax(0, 1fr) 16.5rem;
-		min-height: 0;
-	}
-
 	.federal-levels-panel {
 		display: flex;
 		flex-direction: column;
@@ -484,36 +427,51 @@
 
 	.selection-panel {
 		background: var(--color-white);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 12px;
-		box-shadow: var(--shadow-sm);
+		border: 1px solid var(--color-gray-100);
+		border-radius: 16px;
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 0.5rem;
 		min-height: 0;
-		padding: 1rem;
+		overflow: hidden;
+		padding: 0.5rem;
 	}
 
-	.selection-header {
+	.selection-actions {
 		align-items: center;
 		display: flex;
-		gap: 0.5rem;
-		justify-content: space-between;
+		gap: 0.25rem;
+		width: 100%;
 	}
 
-	.selection-title {
-		color: var(--color-gray-800);
-		font-size: 0.875rem;
-		font-weight: 600;
+	.selection-actions button {
+		height: 2.3125rem;
+		justify-content: center;
+		white-space: nowrap;
 	}
 
-	.selection-count-pill {
-		background: var(--color-primary-700);
-		border-radius: 999px;
-		color: var(--color-white);
-		font-size: 0.75rem;
-		font-weight: 600;
-		padding: 0.125rem 0.5rem;
+	.selection-clear {
+		--icon-color: var(--color-gray-900);
+
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+		flex: 1 1 auto;
+	}
+
+	.selection-clear:hover:not(:disabled),
+	.selection-clear:active:not(:disabled) {
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+	}
+
+	.selection-clear :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.selection-apply {
+		flex: 1 1 auto;
+		min-width: 0;
 	}
 
 	.selection-list {
@@ -547,27 +505,9 @@
 		white-space: nowrap;
 	}
 
-	@media (width <= 1200px) {
-		.picker-layout {
-			grid-template-columns: 13rem minmax(0, 1fr);
-		}
-
-		.selection-panel {
-			grid-column: 1 / -1;
-		}
-	}
-
-	@media (width <= 900px) {
-		.picker-layout {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.federal-levels-list {
-			flex-direction: row;
-		}
-
-		.federal-levels-list > li {
-			flex-shrink: 0;
+	@container (min-width: 75rem) {
+		.federal-levels-command {
+			display: none;
 		}
 	}
 </style>

@@ -9,13 +9,18 @@
 		isMeasureMonitoringContainer
 	} from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			data.containers,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 	let measures = $derived(containers.filter(isMeasureContainer));
 </script>

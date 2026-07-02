@@ -3,7 +3,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-
 	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
 	interface Props {
@@ -16,10 +15,11 @@
 	let { actions, children, data, filterBarInitiallyOpen = false }: Props = $props();
 
 	let facets = $derived(data.facets);
+
 	const featureDecisions = createFeatureDecisions(data.features ?? []);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header {facets} {filterBarInitiallyOpen} search />
 		{#if actions && featureDecisions.useImportFromCsv()}

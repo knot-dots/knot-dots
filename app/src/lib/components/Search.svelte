@@ -60,7 +60,7 @@
 
 <style>
 	.search {
-		background-color: var(--color-gray-050);
+		background-color: var(--color-background-system-subtle);
 		border: none;
 		display: flex;
 		padding: 0;
@@ -69,14 +69,14 @@
 
 	.search:focus-within,
 	.search:hover {
-		background-color: var(--color-gray-100);
+		background-color: var(--color-background-system-state-hover);
 	}
 
 	.search > button {
 		background: transparent;
 		border: none;
 		bottom: 0;
-		color: var(--color-gray-500);
+		color: var(--color-icon-default);
 		padding: 0.375rem 0.5rem;
 		position: absolute;
 		top: 0;

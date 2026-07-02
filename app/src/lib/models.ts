@@ -77,6 +77,7 @@ const payloadTypeValues = [
 	'goal',
 	'goal_collection',
 	'help',
+	'ignite_video',
 	'image',
 	'indicator_collection',
 	'indicator_template',
@@ -692,13 +693,6 @@ export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'organization', 'public']);
 
-export const boards = z.enum([
-	'board.indicators',
-	'board.measure_monitoring',
-	'board.organizational_units',
-	'board.tasks'
-]);
-
 export const administrativeTypes = z.enum([
 	'administrative_type.country',
 	'administrative_type.federal_state',
@@ -728,6 +722,7 @@ function deduplicate(v: string[]) {
 }
 
 const basePayload = z.object({
+	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	sdg: z.array(sustainableDevelopmentGoals).transform(deduplicate).default([]),
@@ -844,7 +839,7 @@ export const customCollectionPayload = z
 		organizationScope: z.enum(['current', 'explicit']).default('current'),
 		ruleApplied: z.boolean().default(false),
 		showDescription: z.boolean().default(false),
-		sort: z.enum(['alpha', 'modified']).default('alpha'),
+		sort: z.enum(['alpha', 'modified', 'relevance']).default('alpha'),
 		terms: z.string().default(''),
 		title: z.string(),
 		type: z.literal(payloadTypes.enum.custom_collection),
@@ -1310,6 +1305,21 @@ const imagePayload = z
 
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
+const igniteVideoPayload = z
+	.object({
+		iframeUrl: z
+			.string()
+			.trim()
+			.pipe(z.url({ protocol: /^https$/, hostname: /^play\.ignite\.video$/ }))
+			.optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.ignite_video),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
+
+const initialIgniteVideoPayload = igniteVideoPayload.partial({ title: true });
+
 // Add teaser payload schema here:
 const teaserPayload = z
 	.object({
@@ -1452,7 +1462,6 @@ const taskCollectionPayload = z
 const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
-	boards: z.array(boards).transform(deduplicate).default([]),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	coverSource: z.string().optional(),
@@ -1488,7 +1497,6 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 export const organizationalUnitPayload = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
-	boards: z.array(boards).transform(deduplicate).default([]),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
@@ -1566,6 +1574,7 @@ const payload = z.discriminatedUnion('type', [
 	goalPayload,
 	helpPayload,
 	imagePayload,
+	igniteVideoPayload,
 	indicatorCollectionPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
@@ -2216,6 +2225,17 @@ export function isImageContainer(
 	return container.payload.type === payloadTypes.enum.image;
 }
 
+const igniteVideoContainer = container.extend({
+	payload: igniteVideoPayload
+});
+export type IgniteVideoContainer = z.infer<typeof igniteVideoContainer>;
+
+export function isIgniteVideoContainer(
+	container: AnyContainer | EmptyContainer
+): container is IgniteVideoContainer {
+	return container.payload.type === payloadTypes.enum.ignite_video;
+}
+
 // #Teaser
 const teaserContainer = container.extend({
 	payload: teaserPayload
@@ -2496,6 +2516,7 @@ export const emptyContainer = newContainer.extend({
 		initialGoalPayload,
 		initialHelpPayload,
 		initialImagePayload,
+		initialIgniteVideoPayload,
 		initialIndicatorCollectionPayload,
 		initialIndicatorTemplatePayload,
 		initialInfoBoxPayload,
@@ -2700,7 +2721,7 @@ export function isObserverOf(user: { guid: string }, container: AnyContainer) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
-				user.guid == subject && predicate != predicates.enum['is-member-of']
+				user.guid == subject && predicate == predicates.enum['is-member-of']
 		) > -1 &&
 		!isAdminOf(user, container) &&
 		!isCollaboratorOf(user, container) &&
@@ -3018,7 +3039,6 @@ export function createCopyOf(
 			)
 		} as typeof copy.payload;
 	} else if (isOrganizationalUnitContainer(container)) {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { organizationalUnitType, ...rest } = container.payload;
 		// The organizationalUnitType is used to identify externally managed
 		// organizational units.

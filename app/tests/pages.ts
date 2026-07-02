@@ -2,6 +2,7 @@ import Header from './header';
 import Overlay from './overlay';
 import Sidebar from './sidebar';
 import type { Locator, Page } from '@playwright/test';
+import type { ProgramContainer } from '$lib/models';
 
 class BasePage {
 	readonly header: Header;
@@ -13,7 +14,9 @@ class BasePage {
 		this.overlay = new Overlay(page);
 		this.sidebar = new Sidebar(page);
 	}
+}
 
+class DetailPage extends BasePage {
 	get sections() {
 		return this.page.locator('.sections section');
 	}
@@ -54,8 +57,20 @@ class BasePage {
 	}
 }
 
-export class LandingPage extends BasePage {
+export class LandingPage extends DetailPage {
 	async goto(baseUrl: string) {
 		await this.page.goto(`${baseUrl}/all/page`);
+	}
+}
+
+export class ProgramPage extends BasePage {
+	get chapters() {
+		return this.page.locator('.chapters .details-section');
+	}
+
+	async goto(container: ProgramContainer) {
+		await this.page.goto(
+			`${container.organizational_unit ?? container.organization}/${container.guid}`
+		);
 	}
 }

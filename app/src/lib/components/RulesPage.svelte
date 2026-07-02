@@ -18,7 +18,7 @@
 	});
 </script>
 
-<Layout>
+<Layout bulkActions={['status', 'visibility', 'delete']}>
 	{#snippet header()}
 		<Header {filterBarInitiallyOpen} {facets} search />
 	{/snippet}

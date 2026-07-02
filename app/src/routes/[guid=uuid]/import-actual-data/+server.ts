@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import assert from 'node:assert';
-import { type CommonQueryMethods, NotFoundError } from 'slonik';
+import { type DatabaseTransactionConnection, NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
@@ -88,7 +88,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
-	await locals.pool.transaction(async (tx: CommonQueryMethods) => {
+	await locals.pool.transaction(async (tx: DatabaseTransactionConnection) => {
 		const statistics =
 			'geometry' in containerFromParams.payload && containerFromParams.payload.geometry
 				? await getManyIndicatorDataWegweiserKommune(containerFromParams.payload.geometry)(tx)

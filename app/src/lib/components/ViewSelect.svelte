@@ -8,14 +8,12 @@
 	import Grid from '~icons/flowbite/grid-solid';
 	import TableRow from '~icons/flowbite/table-row-solid';
 	import Compass from '~icons/knotdots/compass';
-	import LandingPage from '~icons/knotdots/landing-page';
 	import Level from '~icons/knotdots/level';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { workspaceFromPathname, type WorkspaceViewKey } from '$lib/workspaces';
 
 	const VIEW_META: Record<WorkspaceViewKey, { icon: typeof Grid; labelKey: string }> = {
-		page: { icon: LandingPage, labelKey: 'workspace.view.page' },
 		catalog: { icon: Grid, labelKey: 'workspace.view.catalog' },
 		level: { icon: Level, labelKey: 'workspace.view.level' },
 		status: { icon: ColumnSolid, labelKey: 'workspace.view.status' },

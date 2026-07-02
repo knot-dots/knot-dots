@@ -86,6 +86,8 @@
 		pushState(page.url, {});
 		newObjectiveOrEffect = undefined;
 		selected = undefined;
+		$addEffectState = {};
+		$addObjectiveState = {};
 	}
 </script>
 

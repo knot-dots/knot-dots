@@ -1,19 +1,20 @@
 import {
-	mapPayload,
-	administrativeAreaBasicDataPayload,
-	demographicDataPayload,
-	organizationalUnitPayload,
-	indicatorTemplatePayload,
 	actualDataPayload,
-	categoryPayload,
-	termPayload,
-	customCollectionPayload,
-	anyContainer,
+	administrativeAreaBasicDataPayload,
 	AnyContainer,
-	categoryContainer as persistedCategoryContainer,
+	anyContainer,
+	AnyPayload,
 	CategoryContainer,
+	categoryContainer as persistedCategoryContainer,
+	categoryPayload,
+	customCollectionPayload,
+	demographicDataPayload,
+	indicatorTemplatePayload,
+	mapPayload,
+	organizationalUnitPayload,
+	TermContainer,
 	termContainer as persistedTermContainer,
-	TermContainer
+	termPayload
 } from '@knot-dots/app/src/lib/models.ts';
 import {
 	createPool,
@@ -22,7 +23,6 @@ import {
 	Interceptor,
 	QueryResultRow,
 	SchemaValidationError,
-	SerializableValue,
 	sql
 } from 'slonik';
 import * as z from 'zod';
@@ -203,7 +203,9 @@ function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	});
 }
 
-type NewContainerInput = z.infer<ReturnType<typeof createContainerSchema<z.ZodTypeAny>>>;
+type NewContainerInput<P = AnyPayload> = z.infer<
+	ReturnType<typeof createContainerSchema<z.ZodType<P>>>
+>;
 
 export const mapContainer = createContainerSchema(mapPayload);
 
@@ -329,7 +331,7 @@ export function insertIntoIndicatorDataWegweiserKommune(data: IndicatorDataWegwe
 		)
 		INSERT INTO indicator_data_wegweiser_kommune (indicator_id, spatial_reference, actual_values)
 		SELECT t.indicator_id, a.boundary, t.actual_values
-		FROM jsonb_to_recordset(${sql.jsonb(data as SerializableValue)}) AS t(indicator_id int8, official_regional_code text, actual_values jsonb)
+		FROM jsonb_to_recordset(${sql.jsonb(data)}) AS t(indicator_id int8, official_regional_code text, actual_values jsonb)
 		JOIN current_administrative_area a ON a.official_regional_code = t.official_regional_code
 	`;
 }
@@ -361,7 +363,7 @@ export function createContainer(container: NewContainerInput) {
 				${container.managed_by},
 				${container.organization},
 				${container.organizational_unit},
-				${sql.jsonb(<SerializableValue>container.payload)},
+				${sql.jsonb(container.payload)},
 				${container.realm}
 			)
 			RETURNING *
@@ -394,7 +396,7 @@ export function updateContainer(container: AnyContainer) {
 				${container.managed_by},
 				${container.organization},
 				${container.organizational_unit},
-				${sql.jsonb(<SerializableValue>container.payload)},
+				${sql.jsonb(container.payload)},
 				${container.realm}
 			)
 			RETURNING *

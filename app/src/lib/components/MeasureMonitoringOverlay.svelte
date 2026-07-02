@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { SvelteSet } from 'svelte/reactivity';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type AnyContainer,
 		type Container,
@@ -17,6 +19,11 @@
 	}
 
 	let { container, containers }: Props = $props();
+
+	setBulkActionContext({
+		actions: ['status', 'visibility', 'delete'],
+		selected: new SvelteSet<string>()
+	});
 
 	let measures = $derived(
 		isMeasureContainer(container) || isSimpleMeasureContainer(container)

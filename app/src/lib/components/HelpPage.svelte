@@ -12,7 +12,7 @@
 	let { children, data }: Props = $props();
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header facets={data.facets} search />
 	{/snippet}

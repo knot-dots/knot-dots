@@ -3,7 +3,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { predicates } from '$lib/models';
-
 	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
 
 	interface Props {
@@ -15,15 +14,15 @@
 
 	let { children, data, filterBarInitiallyOpen = false, sortOptions }: Props = $props();
 
+	let facets = $derived(data.facets);
+
 	setContext('relationOverlay', {
 		enabled: true,
 		predicates: [predicates.enum['is-prerequisite-for']]
 	});
-
-	let facets = $derived(data.facets);
 </script>
 
-<Layout>
+<Layout bulkActions={['status', 'visibility', 'delete']}>
 	{#snippet header()}
 		<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
 	{/snippet}

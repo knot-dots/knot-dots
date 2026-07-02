@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import Header from '$lib/components/Header.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import NewIndicators from '$lib/components/NewIndicators.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		computeFacetCount,
 		type Container,
@@ -17,6 +19,11 @@
 	}
 
 	let { containers }: Props = $props();
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		selected: new SvelteSet<string>()
+	});
 
 	let facets = $derived(
 		computeFacetCount(

@@ -53,7 +53,6 @@ export function createIndexWithMappings(client: Client, index: string) {
 						filter: [
 							'lowercase',
 							'german_stop_words_filter',
-							'german_decompounder',
 							'german_normalization',
 							'german_stemmer'
 						]

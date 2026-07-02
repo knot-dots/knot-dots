@@ -10,7 +10,7 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { type MeasureContainer, type SimpleMeasureContainer, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -46,7 +46,12 @@
 		resetKey: () => resetKey
 	});
 	let containers = $derived(
-		withOptimistic(list.items, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			list.items,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 
 	const customCategoryColumns = $derived(

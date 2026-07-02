@@ -15,6 +15,7 @@ export default function createColumnBoardPagination<
 	columnForItem,
 	columns,
 	created,
+	deleted,
 	fetchPage,
 	pageSize,
 	resetKey,
@@ -23,7 +24,8 @@ export default function createColumnBoardPagination<
 	columnForItem: (container: T) => ColumnId;
 	columnIds: () => readonly ColumnId[];
 	columns: () => Record<ColumnId, Column<T>>;
-	created?: () => AnyContainer | undefined;
+	created: () => AnyContainer | undefined;
+	deleted: () => Map<string, AnyContainer>;
 	fetchPage: (params: { columnId: ColumnId; offset: number; signal: AbortSignal }) => Promise<{
 		hasMore: boolean;
 		items: T[];
@@ -31,7 +33,7 @@ export default function createColumnBoardPagination<
 	}>;
 	pageSize: number;
 	resetKey: () => string;
-	updated?: () => Map<string, AnyContainer>;
+	updated: () => Map<string, AnyContainer>;
 }) {
 	const initialItemsKey = $derived(
 		columnIds()
@@ -60,7 +62,9 @@ export default function createColumnBoardPagination<
 	);
 
 	const loadedItems = $derived(columnIds().flatMap((columnId) => lists.get(columnId)?.items ?? []));
-	const items = $derived(dedupeByGuid(withOptimistic(loadedItems, created?.(), updated?.())));
+	const items = $derived(
+		dedupeByGuid(withOptimistic(loadedItems, created(), deleted(), updated()))
+	);
 
 	return {
 		itemsByColumn(columnId: ColumnId) {

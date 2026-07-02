@@ -52,7 +52,9 @@
 	.embed-main :global(.bottom-actions-bar),
 	.embed-main :global(.stage--buttons),
 	.embed-main :global(.action-button),
-	.embed-main :global(.help-widget) {
+	.embed-main :global(.print-button),
+	.embed-main :global(.help-widget),
+	.embed-main :global(form.content-details + aside) {
 		display: none;
 	}
 

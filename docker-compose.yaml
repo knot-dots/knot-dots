@@ -147,11 +147,6 @@ services:
       - ./app/src/lib/locales/de.json:/opt/labels/de.json:ro
       - ./shared/src:/srv/knot-dots/shared/src
       - ./worker/src:/srv/knot-dots/worker/src
-    healthcheck:
-      test: ["CMD-SHELL", "test -d /proc/1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   index-containers:
     build:
@@ -189,7 +184,7 @@ services:
       index-containers:
         condition: service_completed_successfully
       indexing-worker:
-        condition: service_healthy
+        condition: service_started
       keycloak:
         condition: service_healthy
       migrate:

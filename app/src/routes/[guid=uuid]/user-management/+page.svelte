@@ -32,6 +32,7 @@
 	import UserIcon from '~icons/flowbite/user-outline';
 	import UserAddIcon from '~icons/flowbite/user-add-outline';
 	import saveUser from '$lib/client/saveUser';
+	import ConfirmRemoveUserDialog from '$lib/components/ConfirmRemoveUserDialog.svelte';
 
 	interface Props {
 		data: PageData;
@@ -40,7 +41,12 @@
 	let { data }: Props = $props();
 
 	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
+	let inviteDialog: HTMLDialogElement;
+
+	// svelte-ignore non_reactive_update
+	let confirmDeleteDialog: HTMLDialogElement;
+
+	let maybeSelectedUser: User | null = $state(null);
 
 	let email: string = $state('');
 
@@ -71,7 +77,7 @@
 
 	const organizationColumns = $derived([
 		{ container: data.container },
-		...data.organizationalUnits.map((container) => ({
+		...data.managedOrganizationalUnits.map((container) => ({
 			container
 		}))
 	]);
@@ -161,8 +167,14 @@
 		if (isRole(role)) {
 			userRelations.push({
 				subject: user.guid,
-				predicate: rolePredicates[role]
+				predicate: predicates.enum['is-member-of']
 			});
+			if (role != 'observer') {
+				userRelations.push({
+					subject: user.guid,
+					predicate: rolePredicates[role]
+				});
+			}
 		}
 
 		const response = await saveContainerUser({ ...container, user: userRelations });
@@ -206,7 +218,12 @@
 		}
 	}
 
-	async function removeUser(user: User) {
+	async function removeUser(user: User | null) {
+		if (!user) {
+			console.log('No user selected for removal');
+			return;
+		}
+
 		const containers = removableContainersFor(user);
 		if (containers.length === 0) return;
 
@@ -254,7 +271,7 @@
 
 				email = '';
 				await invalidateAll();
-				dialog.close();
+				inviteDialog.close();
 			} catch (error) {
 				console.log(error);
 				alert($_('invite.failure'));
@@ -263,7 +280,7 @@
 	}
 </script>
 
-<Dialog bind:dialog>
+<Dialog bind:dialog={inviteDialog}>
 	<form onsubmit={handleInvite(data.container)}>
 		<h3>{$_('invite.heading')}</h3>
 		<label>
@@ -275,6 +292,12 @@
 	</form>
 </Dialog>
 
+<ConfirmRemoveUserDialog
+	bind:dialog={confirmDeleteDialog}
+	handleSubmit={removeUser}
+	user={maybeSelectedUser}
+/>
+
 <Layout>
 	{#snippet header()}
 		{#snippet commands()}
@@ -282,7 +305,7 @@
 				<button
 					class="button button-xs button-primary"
 					type="button"
-					onclick={() => dialog.showModal()}
+					onclick={() => inviteDialog.showModal()}
 				>
 					<UserAddIcon />
 					<span>{$_('invite.heading')}</span>
@@ -294,7 +317,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<div class="table-wrapper">
+		<div class="table-wrapper table-wrapper--with-end-padding">
 			<table>
 				<thead>
 					<tr>
@@ -332,7 +355,10 @@
 											{@attach tooltip($_('user.remove'))}
 											class="action-button action-button--padding-tight is-visible-on-hover"
 											disabled={pendingRemovals.has(user.guid)}
-											onclick={() => removeUser(user)}
+											onclick={() => {
+												maybeSelectedUser = user;
+												confirmDeleteDialog.showModal();
+											}}
 											type="button"
 										>
 											<TrashBinIcon />

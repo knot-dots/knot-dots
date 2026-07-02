@@ -4,6 +4,7 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Link from '~icons/knotdots/link';
+	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
@@ -27,7 +28,9 @@
 
 	let showCode = $derived(codeVisible);
 
-	let embedPath = $derived(`/${container.organization}/${container.guid}/embed`);
+	let embedPath = $derived(
+		`/${container.organizational_unit ?? container.organization}/${container.guid}/embed`
+	);
 	let containerTitle = $derived(
 		'title' in container.payload ? container.payload.title : container.payload.name
 	);
@@ -35,7 +38,7 @@
 	let embedCode = $derived.by(() => {
 		const url = typeof window === 'undefined' ? embedPath : `${window.location.origin}${embedPath}`;
 		const escapedTitle = containerTitle.replaceAll('"', '&quot;');
-		return `<!-- knot-dots Embed -->\n<iframe\n  src="${url}"\n  style="width: 100%; height: 100%; min-height: 300px; border: 0;"\n  title="${escapedTitle}"\n  loading="lazy">\n</iframe>`;
+		return `<!-- knot-dots Embed -->\n<iframe\n  src="${url}"\n  style="width: 100%; height: clamp(700px, 85vh, 1400px); border: 0;"\n  title="${escapedTitle}"\n  loading="lazy">\n</iframe>`;
 	});
 
 	function openSubview(view: SettingsSubview) {
@@ -70,10 +73,13 @@
 			if ($overlayHistory.length > 1) {
 				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
 				const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-				window.location.hash = newParams.toString();
+				await goto(`#${newParams.toString()}`, { invalidateAll: true });
 			} else {
-				window.location.hash = '';
+				await goto('#', { invalidateAll: true });
 			}
+		} else {
+			const error = await response.json();
+			alert(error.message);
 		}
 		confirmDeleteDialog.close();
 	}
