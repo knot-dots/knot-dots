@@ -47,6 +47,7 @@
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
+		isOrganizationContainer,
 		isOrganizationalUnitContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
@@ -126,7 +127,7 @@
 	{/if}
 
 	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
-		{#if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+		{#if isAdministrativeAreaBasicDataContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
 			<ReadonlyAdministrativeAreaBasicDataSection
 				bind:container
 				bind:parentContainer
@@ -189,7 +190,7 @@
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
 			/>
-		{:else if isMapContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+		{:else if isMapContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
 			<EditableMapSection
 				bind:container
 				bind:parentContainer

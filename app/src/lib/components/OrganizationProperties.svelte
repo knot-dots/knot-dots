@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import requestSubmit from '$lib/client/requestSubmit';
+	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
 	import EditableCustomFavicon from '$lib/components/EditableCustomFavicon.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
@@ -15,6 +17,8 @@
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();
+
+	const administrativeAreaLabelId = crypto.randomUUID();
 
 	const selectableWorkspaces = $derived(
 		container.payload.default ? workspaces : workspaces.filter((w) => w.key !== 'help')
@@ -45,10 +49,77 @@
 			container.payload.visibleWorkspaces = [...selectableWorkspaceKeys];
 		}
 	});
+
+	const stateFromOfficialRegionalCode = new Map([
+		['01', 'Schleswig-Holstein'],
+		['02', 'Hamburg'],
+		['03', 'Niedersachsen'],
+		['04', 'Bremen'],
+		['05', 'Nordrhein-Westfalen'],
+		['06', 'Hessen'],
+		['07', 'Rheinland-Pfalz'],
+		['08', 'Baden-Württemberg'],
+		['09', 'Bayern'],
+		['10', 'Saarland'],
+		['11', 'Berlin'],
+		['12', 'Brandenburg'],
+		['13', 'Mecklenburg-Vorpommern'],
+		['14', 'Sachsen'],
+		['15', 'Sachsen-Anhalt'],
+		['16', 'Thüringen']
+	]);
+
+	function onchange(event: Event) {
+		const selected = (event as CustomEvent).detail.selected;
+
+		if (
+			selected === undefined ||
+			selected?.officialRegionalCode === container.payload.officialRegionalCode
+		) {
+			return;
+		}
+
+		if (selected === null) {
+			container.payload.administrativeType = [];
+			container.payload.geometry = undefined;
+			container.payload.cityAndMunicipalityTypeBBSR = undefined;
+			container.payload.federalState = undefined;
+			container.payload.officialMunicipalityKey = undefined;
+			container.payload.officialRegionalCode = undefined;
+		} else {
+			container.payload.geometry = selected.boundary.id;
+			container.payload.cityAndMunicipalityTypeBBSR =
+				selected.cityAndMunicipalityTypeBBSR ?? undefined;
+			container.payload.federalState = stateFromOfficialRegionalCode.get(
+				selected.officialRegionalCode.substring(0, 2)
+			);
+			container.payload.officialMunicipalityKey = selected.officialMunicipalityKey ?? undefined;
+			container.payload.officialRegionalCode = selected.officialRegionalCode ?? undefined;
+		}
+
+		requestSubmit(event);
+	}
 </script>
 
 <div class="details-section">
 	<div class="data-grid">
+		{#if editable}
+			<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
+			<AdministrativeAreaCombobox
+				labelledBy={administrativeAreaLabelId}
+				{onchange}
+				value={container.payload.officialRegionalCode
+					? {
+							geometry: container.payload.geometry,
+							officialRegionalCode: container.payload.officialRegionalCode
+						}
+					: undefined}
+			/>
+		{:else}
+			<span class="label">{$_('administrative_area')}</span>
+			<span class="value"></span>
+		{/if}
+
 		<EditableOrganizationCategory {editable} bind:value={container.payload.organizationCategory} />
 
 		<EditableMultipleChoice
