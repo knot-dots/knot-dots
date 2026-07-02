@@ -2,6 +2,7 @@
 	import { IsInViewport, resource } from 'runed';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
+	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchContainers from '$lib/client/fetchContainers';
@@ -25,7 +26,7 @@
 
 	let { container = $bindable(), dialog = $bindable() }: Props = $props();
 
-	let filter = $state({ ...container.payload.filter });
+	let filter = $state<Record<string, string[]>>({});
 
 	let sort = $state(container.payload.sort);
 
@@ -85,7 +86,7 @@
 			return inViewport
 				? fetchContainers(
 						{
-							indicatorCategory: filter.indicatorCategory,
+							indicatorCategory: filter.indicatorCategory ?? [],
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,
 							...Object.fromEntries(
@@ -201,15 +202,6 @@
 
 	{#snippet main()}
 		<div class="result">
-			<ul class="inline-actions">
-				<li>
-					<!-- svelte-ignore a11y_autofocus -->
-					<button autofocus class="button-red" onclick={() => dialog?.close()} type="button">
-						{$_('custom_collection.dialog.cancel')}
-					</button>
-				</li>
-			</ul>
-
 			{#if searchResource.current}
 				<ul class="catalog">
 					{#each searchResource.current as item (item.guid)}
@@ -229,28 +221,49 @@
 	{/snippet}
 
 	{#snippet selection()}
-		<div class="preview">
-			<button class="button-primary" disabled={selected.length === 0} onclick={confirm}>
-				{$_('custom_collection.dialog.accept_selection', {
-					values: { count: selected.length }
-				})}
-			</button>
-			<ul>
-				{#each selected as guid (guid)}
-					{@const item = searchResource.current?.find((item) => item.guid === guid)}
-					{#if item}
-						<li class="preview-item">
-							<input bind:group={selected} name="selected" type="checkbox" value={guid} />
+		<div class="selection-panel">
+			<div class="selection-actions">
+				<button
+					class="selection-clear"
+					disabled={selected.length === 0}
+					onclick={() => (selected = [])}
+					type="button"
+				>
+					<Close />
+					<span>{$_('picker_dialog.clear')}</span>
+				</button>
+				<button
+					class="button-primary selection-apply"
+					disabled={selected.length === 0}
+					onclick={confirm}
+					type="button"
+				>
+					{$_('picker_dialog.confirm', {
+						values: { count: selected.length }
+					})}
+				</button>
+			</div>
 
-							{#if 'name' in item.payload}
-								{item.payload.name}
-							{:else if 'title' in item.payload}
-								{item.payload.title}
-							{/if}
-						</li>
-					{/if}
-				{/each}
-			</ul>
+			{#if selected.length > 0}
+				<ul class="selection-list">
+					{#each selected as guid (guid)}
+						{@const item = searchResource.current?.find((item) => item.guid === guid)}
+						{#if item}
+							{@const selectionId = `selected-${guid}`}
+							<li class="selection-item">
+								<input id={selectionId} type="checkbox" value={guid} bind:group={selected} />
+								<label for={selectionId}>
+									{#if 'name' in item.payload}
+										{item.payload.name}
+									{:else if 'title' in item.payload}
+										{item.payload.title}
+									{/if}
+								</label>
+							</li>
+						{/if}
+					{/each}
+				</ul>
+			{/if}
 		</div>
 	{/snippet}
 </PickerDialog>
@@ -262,62 +275,87 @@
 		min-height: 0;
 	}
 
-	.result .inline-actions {
-		margin-left: 0;
-		margin-top: 1rem;
-	}
-
-	.result .inline-actions > li:last-child {
-		margin-left: auto;
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
-	}
-
 	.catalog {
 		margin-top: 1rem;
 	}
 
-	.preview {
-		background-color: var(--color-white);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 24px;
+	.selection-panel {
+		background: var(--color-white);
+		border: 1px solid var(--color-gray-100);
+		border-radius: 16px;
 		display: flex;
 		flex-direction: column;
-		height: 100%;
-		padding: 1rem;
+		gap: 0.5rem;
+		min-height: 0;
+		overflow: hidden;
+		padding: 0.5rem;
 	}
 
-	.preview > button {
-		justify-content: center;
+	.selection-actions {
+		align-items: center;
+		display: flex;
+		gap: 0.25rem;
 		width: 100%;
 	}
 
-	.preview > ul {
-		overflow: auto;
+	.selection-actions button {
+		height: 2.3125rem;
+		justify-content: center;
+		white-space: nowrap;
 	}
 
-	.preview-item {
-		align-items: center;
-		background-color: var(--color-gray-050);
-		border: solid 1px var(--color-gray-200);
-		border-radius: 8px;
-		color: var(--color-gray-700);
+	.selection-clear {
+		--icon-color: var(--color-gray-900);
+
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+		flex: 1 1 auto;
+	}
+
+	.selection-clear:hover:not(:disabled),
+	.selection-clear:active:not(:disabled) {
+		border-color: var(--color-gray-200);
+		color: var(--color-gray-900);
+	}
+
+	.selection-clear :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
+	.selection-apply {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.selection-list {
 		display: flex;
-		font-weight: 500;
+		flex-direction: column;
 		gap: 0.5rem;
-		margin-top: 1rem;
+		margin: 0;
+		overflow: auto;
+		padding: 0;
+	}
+
+	.selection-item {
+		align-items: center;
+		background: var(--color-gray-050);
+		border-radius: 8px;
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem 0.75rem;
+	}
+
+	.selection-item input {
+		accent-color: var(--color-primary-700);
+	}
+
+	.selection-item label {
+		color: var(--color-gray-800);
+		font-size: 0.875rem;
+		font-weight: 500;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		padding: 0.375rem;
+		white-space: nowrap;
 	}
 </style>

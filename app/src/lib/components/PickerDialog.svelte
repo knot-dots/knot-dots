@@ -147,9 +147,9 @@
 		box-shadow: var(--shadow-2xl);
 		color: var(--color-gray-500);
 		container-type: inline-size;
-		height: calc(100vh - 3rem);
-		padding: 1.5rem;
-		width: calc(100vw - 10rem);
+		height: calc(100vh - 1rem);
+		padding: 0.75rem;
+		width: calc(100vw - 1rem);
 	}
 
 	dialog::backdrop {
@@ -180,6 +180,7 @@
 	.commands {
 		align-items: center;
 		display: flex;
+		flex-wrap: wrap;
 		flex-shrink: 0;
 		gap: 0.75rem;
 		justify-content: space-between;
@@ -243,33 +244,44 @@
 		--picker-sidebar-width: 13rem;
 		--picker-selection-width: 20rem;
 		--picker-layout-gap: 1.5rem;
+		--picker-mobile-selection-max-height: 16rem;
 
 		display: grid;
 		flex: 1 1 auto;
 		gap: var(--picker-layout-gap);
+		grid-template-areas: 'main';
 		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
 		min-height: 0;
 	}
 
-	.picker-layout.has-sidebar {
-		grid-template-columns: var(--picker-sidebar-width) minmax(0, 1fr);
-	}
-
 	.picker-layout.has-selection {
-		grid-template-columns: minmax(0, 1fr) var(--picker-selection-width);
+		grid-template-areas:
+			'main'
+			'selection';
+		grid-template-rows: minmax(0, 1fr) minmax(0, var(--picker-mobile-selection-max-height));
 	}
 
-	.picker-layout.has-sidebar.has-selection {
-		grid-template-columns: var(--picker-sidebar-width) minmax(0, 1fr) var(--picker-selection-width);
+	.picker-sidebar {
+		grid-area: sidebar;
+		display: none;
 	}
 
-	.picker-sidebar,
+	.picker-main {
+		grid-area: main;
+	}
+
+	.picker-selection {
+		grid-area: selection;
+	}
+
 	.picker-main,
 	.picker-selection {
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
 		min-width: 0;
+		overflow: auto;
 	}
 
 	.picker-sidebar > :global(*),
@@ -277,6 +289,44 @@
 	.picker-selection > :global(*) {
 		flex: 1 1 auto;
 		min-height: 0;
+	}
+
+	@container (min-width: 48rem) {
+		.picker-layout.has-selection {
+			grid-template-areas: 'main selection';
+			grid-template-columns: minmax(0, 1fr) var(--picker-selection-width);
+			grid-template-rows: minmax(0, 1fr);
+		}
+	}
+
+	@container (min-width: 75rem) {
+		.picker-layout.has-sidebar {
+			grid-template-areas: 'sidebar main';
+			grid-template-columns: var(--picker-sidebar-width) minmax(0, 1fr);
+		}
+
+		.picker-layout.has-sidebar.has-selection {
+			grid-template-areas: 'sidebar main selection';
+			grid-template-columns: var(--picker-sidebar-width) minmax(0, 1fr) var(
+					--picker-selection-width
+				);
+		}
+
+		.picker-sidebar {
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+			min-width: 0;
+			overflow: auto;
+		}
+	}
+
+	@media (min-width: 48rem) {
+		dialog {
+			height: calc(100vh - 3rem);
+			padding: 1.5rem;
+			width: calc(100vw - 10rem);
+		}
 	}
 
 	@layer visually-hidden {

@@ -12,6 +12,7 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		administrativeTypes,
 		payloadTypes,
@@ -209,6 +210,21 @@
 	onResetFilters={resetFilters}
 	title={$_('compare_dialog_title')}
 >
+	{#snippet commands()}
+		<div class="federal-levels-command">
+			<span class="is-visually-hidden" id="federal-levels-command-label">
+				{$_('compare_federal_levels')}
+			</span>
+			<SingleChoiceDropdown
+				labelledBy="federal-levels-command-label"
+				options={federalLevelItems.map(({ key, label }) => ({ value: key, label }))}
+				bind:value={
+					() => activeFederalLevel, (value) => selectFederalLevel(value as FederalLevelKey)
+				}
+			/>
+		</div>
+	{/snippet}
+
 	{#snippet filterContent()}
 		<InlineFilterDropDown
 			key="administrativeType"
@@ -295,13 +311,13 @@
 		<div class="selection-panel">
 			<div class="selection-actions">
 				<button
-					class="button-outline selection-clear"
+					class="selection-clear"
 					disabled={localSelected.length === 0}
 					onclick={clearSelection}
 					type="button"
 				>
 					<Close />
-					<span>{$_('compare_selection_clear')}</span>
+					<span>{$_('picker_dialog.clear')}</span>
 				</button>
 				<button
 					class="button-primary selection-apply"
@@ -309,7 +325,7 @@
 					onclick={confirm}
 					type="button"
 				>
-					{$_('compare_selection_apply', {
+					{$_('picker_dialog.confirm', {
 						values: { count: localSelected.length }
 					})}
 				</button>
@@ -439,7 +455,7 @@
 
 		border-color: var(--color-gray-200);
 		color: var(--color-gray-900);
-		flex: 0 0 7.125rem;
+		flex: 1 1 auto;
 	}
 
 	.selection-clear:hover:not(:disabled),
@@ -487,5 +503,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	@container (min-width: 75rem) {
+		.federal-levels-command {
+			display: none;
+		}
 	}
 </style>

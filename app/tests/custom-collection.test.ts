@@ -57,8 +57,8 @@ test('Selected objects can be displayed in a section', async ({
 	await dialog.getByRole('checkbox', { name: testOrganizationalUnit.payload.name }).check();
 
 	// Assert selected objects are displayed in the preview
-	const confirmButton = dialog.getByRole('button', { name: 'Accept selection (3)' });
-	const preview = confirmButton.locator('//following-sibling::ul');
+	const confirmButton = dialog.getByRole('button', { name: 'Apply (3)' });
+	const preview = dialog.locator('.selection-panel .selection-list');
 
 	await expect(confirmButton).toBeVisible();
 	await expect(
@@ -124,7 +124,7 @@ test('Rule-based collections can be displayed in a section', async ({
 
 	// Assert selected filters are displayed in the preview
 	const confirmButton = dialog.getByRole('button', { name: 'Apply rule' });
-	const preview = confirmButton.locator('//following-sibling::ul');
+	const preview = dialog.locator('.selection-panel .selection-list');
 	await expect(confirmButton).toBeVisible();
 	await expect(preview.getByText('Program')).toBeVisible();
 	await expect(preview.getByText('Report')).toBeVisible();
@@ -177,8 +177,8 @@ test('New item can be added to custom collection', async ({
 	await dialog.getByRole('checkbox', { name: reportTemplate.payload.title }).check();
 
 	// Assert selected templates are displayed in the preview
-	const confirmButton = dialog.getByRole('button', { name: 'Accept selection (1)' });
-	const preview = confirmButton.locator('//following-sibling::ul');
+	const confirmButton = dialog.getByRole('button', { name: 'Apply (1)' });
+	const preview = dialog.locator('.selection-panel .selection-list');
 
 	await expect(confirmButton).toBeVisible();
 	await expect(
@@ -205,6 +205,29 @@ test('New item can be added to custom collection', async ({
 	await landingPage.overlay.closeButton.click();
 	await landingPage.goto(`/${testOrganization.guid}`);
 	await expect(section.getByRole('link', { name: 'My report' })).toBeVisible();
+});
+
+test('Template picker can be closed with the close button', async ({
+	landingPage,
+	testOrganization
+}) => {
+	await landingPage.goto(`/${testOrganization.guid}`);
+	await landingPage.header.editModeToggle.check();
+
+	const section = await landingPage.addSection('Embed objects');
+	await section.getByPlaceholder('Enter title').fill('My selection');
+	await section.hover();
+
+	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
+	await settingsDropdownButton.click();
+	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
+	await settingsPanel.getByRole('button', { name: 'Select templates' }).click();
+
+	const dialog = landingPage.page.getByRole('dialog');
+	await expect(dialog.getByText('Select templates')).toBeVisible();
+
+	await dialog.getByRole('button', { name: 'Cancel' }).click();
+	await expect(dialog).not.toBeVisible();
 });
 
 test('Custom collection can be configured', async ({ landingPage, testOrganization }) => {
