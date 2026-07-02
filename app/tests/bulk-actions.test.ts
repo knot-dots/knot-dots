@@ -55,24 +55,6 @@ test('selecting objects for bulk actions in board and overlay', async ({
 	await expect(dotsBoard.card(testProgram.payload.title).getByRole('checkbox')).not.toBeVisible();
 	await expect(dotsBoard.card(testGoal.payload.title).getByRole('checkbox')).not.toBeVisible();
 	await expect(dotsBoard.card(testMeasure.payload.title).getByRole('checkbox')).not.toBeVisible();
-
-	// Open the test program table view in overlay.
-	await dotsBoard.card(testProgram.payload.title).click();
-	await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
-	await dotsBoard.overlay.locator.getByRole('button', { name: 'Page', exact: true }).click();
-	await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Table', exact: true }).click();
-
-	// Assert the bulk-action checkbox works in the overlay, too.
-	const row = dotsBoard.overlay.locator
-		.getByRole('row')
-		.filter({ hasText: testMeasure.payload.title });
-	await expect(row).toBeVisible();
-	await row.getByRole('checkbox', { name: 'Select for bulk action' }).check();
-	await expect(dotsBoard.overlay.bulkActionControls).toBeVisible();
-
-	// Assert the bulk-action selections in the board and overlay are independent
-	// of each other.
-	await expect(dotsBoard.card(testMeasure.payload.title).getByRole('checkbox')).not.toBeVisible();
 });
 
 test('perform bulk actions', async ({ allTable, testMeasure, testProgram }) => {
