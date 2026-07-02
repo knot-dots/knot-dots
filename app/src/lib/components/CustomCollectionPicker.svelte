@@ -39,7 +39,12 @@
 		...container.payload.filter,
 		organization: container.payload.filter.organization?.length
 			? container.payload.filter.organization
-			: [page.data.currentOrganization.guid]
+			: [page.data.currentOrganization.guid],
+		organizationalUnit: container.payload.filter.organizationalUnit?.length
+			? container.payload.filter.organizationalUnit
+			: page.data.currentOrganizationalUnit
+				? [page.data.currentOrganizationalUnit.guid]
+				: []
 	});
 
 	let selected = $state(container.payload.item);
@@ -47,6 +52,16 @@
 	let sort = $state(container.payload.sort);
 
 	let terms = $state(container.payload.terms);
+
+	let organizationScope = $state(container.payload.organizationScope);
+
+	let includeSubordinateOrganizationalUnits = $state(
+		container.payload.includeSubordinateOrganizationalUnits
+	);
+
+	const searchContextGuid = $derived(
+		page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
+	);
 
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 
@@ -86,7 +101,11 @@
 
 	// svelte-ignore state_referenced_locally
 	let mode: 'select' | 'apply_rule' = $state(
-		selected.length > 0 || activeFilters == 0 ? 'select' : 'apply_rule'
+		container.payload.ruleApplied
+			? 'apply_rule'
+			: selected.length > 0 || activeFilters == 0
+				? 'select'
+				: 'apply_rule'
 	);
 
 	let organizationsUserIsMemberOf = $derived(
@@ -106,23 +125,43 @@
 
 	function buildSearchQuery() {
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
-		const organization =
-			filter.organization && filter.organization.length > 0
-				? filter.organization
-				: organizationsUserIsMemberOf.length > 0
-					? organizationsUserIsMemberOf
-					: [page.data.currentOrganization.guid];
-		return new URLSearchParams([
-			...organization.map((org) => ['organization', org]),
+		const params: string[][] = [
 			...payloadType.map((t) => ['payloadType', t]),
 			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
-			...(filter.organizationalUnit ?? []).map((v) => ['organizationalUnit', v]),
 			...(filter.programType ?? []).map((v) => ['programType', v]),
 			...(filter.status ?? []).map((v) => ['status', v]),
 			...categoryContext.keys.flatMap((k) => (filter[k] ?? []).map((v) => [k, v])),
 			['terms', terms],
 			['sort', sort]
-		]);
+		];
+
+		if (organizationScope === 'current') {
+			if (!includeSubordinateOrganizationalUnits) {
+				params.push(['includedChanged', 'true']);
+			}
+		} else {
+			const baseOrganization =
+				filter.organization && filter.organization.length > 0
+					? filter.organization
+					: organizationsUserIsMemberOf.length > 0
+						? organizationsUserIsMemberOf
+						: [page.data.currentOrganization.guid];
+			const organizationalUnitOrgs = filter.organizationalUnit
+				.map(
+					(guid) =>
+						page.data.organizationalUnits.find(
+							(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
+						)?.organization
+				)
+				.filter((org): org is string => org != null);
+			const organization = [...new Set([...baseOrganization, ...organizationalUnitOrgs])];
+			params.push(
+				...organization.map((org) => ['organization', org]),
+				...filter.organizationalUnit.map((v) => ['organizationalUnit', v])
+			);
+		}
+
+		return new URLSearchParams(params);
 	}
 
 	interface SearchPage {
@@ -133,13 +172,22 @@
 	}
 
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current, () => mode],
+		[
+			() => $state.snapshot(filter),
+			() => sort,
+			() => terms,
+			() => inViewport.current,
+			() => mode,
+			() => organizationScope,
+			() => includeSubordinateOrganizationalUnits
+		],
 		async ([, , , inViewport], _, { signal }): Promise<SearchPage> => {
 			if (!inViewport)
 				return { containers: [], facets: new Map(), hasMore: false, nextOffset: null };
 
 			const query = buildSearchQuery();
 			const result = await fetchContainerPage({
+				contextGuid: organizationScope === 'current' ? searchContextGuid : undefined,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset: 0,
@@ -162,19 +210,11 @@
 	let facets = $derived(
 		searchResource.current
 			? new Map([
-					...[...searchResource.current.facets].filter(([k]) => categoryContext.keys.includes(k)),
-					...((filter.type?.length == 1 && filter.type[0] == 'program'
-						? [['programType', searchResource.current.facets.get('programType')!]]
-						: []) as Array<[string, Map<string, number>]>),
-					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
-						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
-						: []) as Array<[string, Map<string, number>]>),
 					['organization', searchResource.current.facets.get('organization') ?? new Map()],
 					[
 						'organizationalUnit',
 						searchResource.current.facets.get('organizationalUnit') ?? new Map()
 					],
-					['status', searchResource.current.facets.get('status') ?? new Map()],
 					[
 						'type',
 						new Map(
@@ -182,7 +222,15 @@
 								defaultPayloadType.includes(k)
 							)
 						)
-					]
+					],
+					['status', searchResource.current.facets.get('status') ?? new Map()],
+					...((filter.type?.length == 1 && filter.type[0] == 'program'
+						? [['programType', searchResource.current.facets.get('programType')!]]
+						: []) as Array<[string, Map<string, number>]>),
+					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
+						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
+						: []) as Array<[string, Map<string, number>]>),
+					...[...searchResource.current.facets].filter(([k]) => categoryContext.keys.includes(k))
 				])
 			: new Map<string, Map<string, number>>()
 	);
@@ -236,6 +284,7 @@
 		try {
 			const query = buildSearchQuery();
 			const result = await fetchContainerPage({
+				contextGuid: organizationScope === 'current' ? searchContextGuid : undefined,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
 				offset: searchNextOffset,
@@ -287,12 +336,38 @@
 	}
 
 	async function confirm() {
+		let savedFilter: Record<string, string[]>;
+		if (organizationScope === 'current') {
+			// In "current area" mode the scope is resolved relative to where the
+			// collection is applied, so no explicit organizations are stored.
+			savedFilter = Object.fromEntries(
+				Object.entries(filter).filter(
+					([key]) => key !== 'organization' && key !== 'organizationalUnit'
+				)
+			);
+		} else {
+			const organizationalUnitOrgs = filter.organizationalUnit
+				.map(
+					(guid) =>
+						page.data.organizationalUnits.find(
+							(organizationalUnit: OrganizationalUnitContainer) => organizationalUnit.guid === guid
+						)?.organization
+				)
+				.filter((org): org is string => org != null);
+			savedFilter = {
+				...filter,
+				organization: [...new Set([...filter.organization, ...organizationalUnitOrgs])]
+			};
+		}
 		const response = await saveContainer({
 			...container,
 			payload: {
 				...container.payload,
-				filter,
+				filter: savedFilter,
+				includeSubordinateOrganizationalUnits,
 				item: mode == 'select' ? selected : [],
+				organizationScope,
+				ruleApplied: mode == 'apply_rule',
 				sort,
 				terms
 			}
@@ -327,6 +402,8 @@
 	{#snippet filterContent()}
 		{#if organizationOptions.length > 0}
 			<OrganizationFilterDropDown
+				bind:scope={organizationScope}
+				bind:includeSubordinateOrganizationalUnits
 				bind:organizationValue={() => filter.organization ?? [], (v) => (filter.organization = v)}
 				bind:organizationalUnitValue={
 					() => filter.organizationalUnit ?? [], (v) => (filter.organizationalUnit = v)
@@ -505,6 +582,20 @@
 							{/each}
 						{/if}
 					{/each}
+					{#if organizationScope === 'current' && !includeSubordinateOrganizationalUnits}
+						<li class="selection-item">
+							<LightningBolt />
+							<span>{$_('organization_filter.exclude_subordinate')}</span>
+							<button
+								class="button button-remove"
+								type="button"
+								onclick={() => (includeSubordinateOrganizationalUnits = true)}
+							>
+								<CloseCircle />
+								<span class="is-visually-hidden">{$_('remove')}</span>
+							</button>
+						</li>
+					{/if}
 				</ul>
 			{/if}
 		</div>
