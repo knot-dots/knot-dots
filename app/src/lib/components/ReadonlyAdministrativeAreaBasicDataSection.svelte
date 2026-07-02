@@ -4,14 +4,16 @@
 	import {
 		type AnyContainer,
 		type AdministrativeAreaBasicDataContainer,
-		type OrganizationalUnitContainer
+		type OrganizationContainer,
+		type OrganizationalUnitContainer,
+		isOrganizationalUnitContainer
 	} from '$lib/models';
 
 	interface Props {
 		container: AdministrativeAreaBasicDataContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: OrganizationalUnitContainer;
+		parentContainer: OrganizationContainer | OrganizationalUnitContainer;
 		relatedContainers: AnyContainer[];
 	}
 
@@ -47,7 +49,7 @@
 			</div>
 		{/if}
 
-		{#if parentContainer.payload.administrativeType?.length}
+		{#if isOrganizationalUnitContainer(parentContainer) && parentContainer.payload.administrativeType?.length}
 			<div>
 				<dt>{$_('administrative_area.basic_data.administrative_type')}</dt>
 				<dd>{parentContainer.payload.administrativeType.map((t) => $_(t)).join(', ')}</dd>

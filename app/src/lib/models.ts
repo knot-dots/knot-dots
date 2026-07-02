@@ -1462,6 +1462,7 @@ const taskCollectionPayload = z
 const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
+	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	color: backgroundColor.optional(),
 	cover: z.string().url().optional(),
 	coverSource: z.string().optional(),
@@ -1483,9 +1484,13 @@ const organizationPayload = z.object({
 			})
 		)
 		.default([]),
+	federalState: z.string().optional(),
+	geometry: z.string().uuid().optional(),
 	image: z.string().url().optional(),
 	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
+	officialMunicipalityKey: z.string().length(8).optional(),
+	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
 	type: z.literal(payloadTypes.enum.organization),
 	useAnalytics: z.boolean().default(true),

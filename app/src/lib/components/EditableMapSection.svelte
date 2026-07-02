@@ -5,6 +5,7 @@
 	import {
 		type AnyContainer,
 		type MapContainer,
+		type OrganizationContainer,
 		type OrganizationalUnitContainer
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -14,7 +15,7 @@
 		container: MapContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: OrganizationalUnitContainer;
+		parentContainer: OrganizationContainer | OrganizationalUnitContainer;
 		relatedContainers: AnyContainer[];
 	}
 
