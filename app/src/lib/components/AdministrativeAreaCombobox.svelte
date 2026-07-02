@@ -135,6 +135,7 @@
 		<input
 			use:combobox.input
 			aria-labelledby={labelledBy}
+			autocomplete="off"
 			{onchange}
 			oninput={(e) => e.stopPropagation()}
 			value={$combobox.selected?.nameOSM ?? ''}
