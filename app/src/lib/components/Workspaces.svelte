@@ -7,7 +7,6 @@
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { boards } from '$lib/models';
 
 	interface Props {
 		options?: { label: string; value: string }[];
@@ -30,7 +29,7 @@
 			{ label: $_('workspace.measure_monitoring'), value: '/measures/monitoring' },
 			{ label: $_('workspace.measure_templates'), value: '/measures/templates' },
 			{ label: $_('workspace.rules'), value: '/rules/status' },
-			...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
+			...(selectedContext.payload.visibleWorkspaces.includes('indicators')
 				? [
 						{ label: $_('workspace.indicators'), value: '/indicators/catalog' },
 						{ label: $_('workspace.objectives_and_effects'), value: '/objectives-and-effects' }
@@ -100,27 +99,6 @@
 	.dropdown {
 		flex-shrink: 0;
 		margin-left: 1rem;
-	}
-
-	.dropdown-button {
-		--button-background: var(--color-gray-050);
-
-		align-items: center;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		color: var(--color-gray-900);
-		font-weight: 500;
-		height: 2.25rem;
-		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-	}
-
-	.dropdown-button:global([aria-expanded='true']) {
-		background-color: var(--color-primary-100);
-		color: var(--color-primary-700);
-	}
-
-	.dropdown-button:global([aria-expanded='true'] svg) {
-		color: var(--color-primary-700);
 	}
 
 	.dropdown-panel {

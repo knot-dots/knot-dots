@@ -82,7 +82,12 @@
 
 {#if editable || (value.length > 1 && compact)}
 	<div class="dropdown" use:popperRef>
-		<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
+		<button
+			aria-labelledby={labelledBy}
+			class="dropdown-button dropdown-button--select"
+			type="button"
+			use:popover.button
+		>
 			<span class="value" class:value--compact={compact}>
 				{#each selectedEntries.slice(0, value.length > 1 && compact ? 1 : value.length) as entry (entry.option.value)}
 					<span
@@ -90,13 +95,13 @@
 						class:value--compact={compact}
 						class:value--child={entry.isChild}
 					>
-						<span class="truncated">{entry.option.label}</span>
+						{entry.option.label}
 					</span>
 				{:else}
 					{$_('empty')}
 				{/each}
 				{#if value.length > 1 && compact}
-					<span class="badge badge--gray badge--more">
+					<span class="badge badge--gray">
 						{$_('n_more', { values: { count: value.length - 1 } })}
 					</span>
 				{/if}
@@ -156,6 +161,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		line-height: 1.75rem;
 		min-width: 0;
 	}
 

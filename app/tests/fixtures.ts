@@ -27,14 +27,18 @@ import {
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
-import { LandingPage } from './pages';
+import { ProgramPage, LandingPage } from './pages';
+import { AllTable } from './tables';
 
 type MyFixtures = {
+	aiGoal: GoalContainer;
+	allTable: AllTable;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
 	landingPage: LandingPage;
 	landingPageWithCustomCollection: LandingPage;
+	programPage: ProgramPage;
 	reportTemplate: ReportContainer;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
@@ -180,6 +184,39 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
+	aiGoal: async ({ adminContext, testProgram }, use) => {
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testProgram.organization,
+			null,
+			testProgram.organization,
+			'knot-dots'
+		) as GoalContainer;
+		const testGoal = await createContainer(adminContext, {
+			...newGoal,
+			payload: {
+				...newGoal.payload,
+				aiContribution: 1,
+				aiSuggestion: true,
+				description: 'Lorem ipsum',
+				title: 'Goal suggested by AI'
+			},
+			relation: [
+				{
+					position: 0,
+					predicate: predicates.enum['is-part-of-program'],
+					object: testProgram.guid
+				}
+			]
+		});
+
+		await use(testGoal);
+
+		await deleteContainer(adminContext, testGoal);
+	},
+	allTable: async ({ page }, use) => {
+		await use(new AllTable(page));
+	},
 	defaultOrganization: [
 		async ({ adminContext }, use) => {
 			const response = await adminContext.request.get('/', { maxRedirects: 0 });
@@ -202,6 +239,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	landingPage: async ({ page }, use) => {
 		await use(new LandingPage(page));
+	},
+	programPage: async ({ page }, use) => {
+		await use(new ProgramPage(page));
 	},
 	reportTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(
@@ -291,8 +331,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				...newOrganization,
 				payload: {
 					...newOrganization.payload,
-					name: `Test Organization ${workerInfo.workerIndex}`,
-					boards: ['board.indicators', 'board.organizational_units']
+					name: `Test Organization ${workerInfo.workerIndex}`
 				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);

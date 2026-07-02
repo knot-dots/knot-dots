@@ -28,7 +28,13 @@
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button aria-labelledby={labelledBy} class="dropdown-button" type="button" use:popover.button>
+	<button
+		aria-labelledby={labelledBy}
+		class="dropdown-button dropdown-button--select"
+		type="button"
+		use:popover.button
+		{value}
+	>
 		<span class="truncated">
 			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
 		</span>
@@ -44,7 +50,12 @@
 			<div>
 				{#each options as option (option.value)}
 					<label>
-						<input type="radio" value={option.value} bind:group={value} />
+						<input
+							bind:group={value}
+							onchange={() => popover.close()}
+							type="radio"
+							value={option.value}
+						/>
 						<span class="truncated">{option.label}</span>
 					</label>
 				{/each}

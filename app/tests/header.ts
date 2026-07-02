@@ -11,7 +11,7 @@ export default class Header {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 
-	get organizationMenu() {
-		return this.locator.getByRole('button', { name: 'Organizations and organizational units' });
+	get bulkActionControls() {
+		return this.locator.locator('+ .commands').getByRole('group', { name: 'Bulk actions' });
 	}
 }

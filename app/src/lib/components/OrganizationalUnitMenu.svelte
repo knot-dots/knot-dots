@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
 	import { createPopover } from 'svelte-headlessui';
@@ -11,7 +11,7 @@
 	import { env } from '$env/dynamic/public';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
-	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Close from '~icons/flowbite/close-outline';
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
@@ -29,7 +29,7 @@
 		predicates
 	} from '$lib/models';
 	import { hasPart, isPartOf } from '$lib/relations';
-	import { mayCreateContainer, newContainer } from '$lib/stores';
+	import { ability, mayCreateContainer, newContainer, user } from '$lib/stores';
 	import { getVisibleWorkspaces } from '$lib/workspaces';
 
 	interface OrgUnitTreeItem extends TreeItem {
@@ -115,7 +115,9 @@
 			? getVisibleWorkspaces({
 					organization,
 					organizationalUnit: isOrganizationalUnitContainer(container) ? container : null,
-					features: createFeatureDecisions(page.data.features)
+					features: createFeatureDecisions(page.data.features),
+					ability: $ability,
+					user: $user
 				}).flatMap((w) => Object.values(w.views))
 			: [];
 
@@ -140,24 +142,6 @@
 		}
 
 		return roots.map(buildNode);
-	}
-
-	function findAncestorIds(
-		unit: OrganizationalUnitContainer,
-		units: OrganizationalUnitContainer[]
-	): string[] {
-		const ids: string[] = [];
-		let current: OrganizationalUnitContainer | undefined = unit;
-		while (current) {
-			const parent = isPartOf(current, units) as OrganizationalUnitContainer | undefined;
-			if (parent) {
-				ids.push(parent.guid);
-				current = parent;
-			} else {
-				break;
-			}
-		}
-		return ids;
 	}
 
 	let canCreateOrgUnit = $derived(
@@ -202,13 +186,8 @@
 		}
 	});
 
-	$effect(() => {
-		if (currentOrganizationalUnit) {
-			const ancestorIds = findAncestorIds(currentOrganizationalUnit, organizationalUnits);
-			for (const id of ancestorIds) {
-				tree.expand(id);
-			}
-		}
+	onMount(() => {
+		tree.expandAll();
 	});
 </script>
 

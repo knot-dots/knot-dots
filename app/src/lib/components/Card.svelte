@@ -6,12 +6,15 @@
 	import Subscribe from '~icons/knotdots/subscribe';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
+	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		type Container,
@@ -37,10 +40,9 @@
 		paramsFromFragment,
 		predicates
 	} from '$lib/models';
-	import { overlay, overlayHistory } from '$lib/stores';
+	import { applicationState, overlay, overlayHistory } from '$lib/stores';
 	import { predicateIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		body?: Snippet;
@@ -66,7 +68,9 @@
 		maxSummaryLength
 	}: Props = $props();
 
-	let overlayContext = getContext('overlay');
+	const overlayContext = getContext('overlay');
+
+	const bulkActionContext = getBulkActionContext();
 
 	let title = $derived(
 		'title' in container.payload
@@ -250,6 +254,24 @@
 	{#if !isTeaserContainer(container)}
 		<header>
 			<h3>
+				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext}
+					<label class="is-visible-on-hover">
+						<input
+							bind:checked={
+								() => bulkActionContext.selected.has(container.guid),
+								() =>
+									bulkActionContext.selected.has(container.guid)
+										? bulkActionContext.selected.delete(container.guid)
+										: bulkActionContext.selected.add(container.guid)
+							}
+							name={bulkActionContext.name}
+							onclick={(e) => e.stopPropagation()}
+							type="checkbox"
+						/>
+						<span class="is-visually-hidden">{$_('bulk_actions_select')}</span>
+					</label>
+				{/if}
+
 				<a
 					href={href ? href() : computeHref(page.url)}
 					bind:this={previewLink}
@@ -424,6 +446,7 @@
 		hyphens: auto;
 		justify-content: flex-end;
 		padding: 1rem;
+		position: relative;
 		width: 100%;
 		word-break: break-word;
 	}
@@ -461,9 +484,12 @@
 	}
 
 	header h3 {
+		align-items: start;
 		color: var(--color-gray-900);
+		display: flex;
 		font-size: 1rem;
 		font-weight: 600;
+		gap: 0.75rem;
 		margin-bottom: 0;
 	}
 
@@ -475,6 +501,25 @@
 	header :global(svg) {
 		height: 1.5rem;
 		width: 1.5rem;
+	}
+
+	label:has(input[type='checkbox']) {
+		--offset: -0.5rem;
+
+		aspect-ratio: 1 / 1;
+		background-color: var(--color-white);
+		border: solid 1px var(--color-gray-200);
+		border-radius: 6px;
+		box-shadow: var(--shadow-sm);
+		left: calc(var(--offset));
+		padding: 0.125rem;
+		position: absolute;
+		top: calc(var(--offset));
+		width: 1.25rem;
+	}
+
+	input[type='checkbox'] {
+		margin: auto;
 	}
 
 	.body {
@@ -555,6 +600,17 @@
 
 		footer {
 			grid-row: 3 / 4;
+		}
+	}
+
+	@media (hover: hover) {
+		.card:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+		}
+
+		label:has(input[type='checkbox']:checked) {
+			--is-visible-on-hover-visibility: visible;
 		}
 	}
 </style>

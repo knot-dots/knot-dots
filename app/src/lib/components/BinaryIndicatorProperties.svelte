@@ -40,7 +40,6 @@
 
 		{#if $ability.can('read', container, 'payload.editorialState')}
 			<EditableEditorialState
-				aiSuggestion={container.payload.aiSuggestion}
 				editable={editable && $ability.can('update', container, 'payload.editorialState')}
 				bind:value={container.payload.editorialState}
 			/>

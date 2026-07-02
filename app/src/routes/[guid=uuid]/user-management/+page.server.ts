@@ -27,7 +27,7 @@ export const load = (async ({ locals, parent }) => {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	const organizationalUnits = currentOrganizationalUnit
+	const managedOrganizationalUnits = currentOrganizationalUnit
 		? findDescendants(currentOrganizationalUnit, parentOrganizationalUnits, [
 				predicates.enum['is-part-of']
 			])
@@ -36,7 +36,7 @@ export const load = (async ({ locals, parent }) => {
 			);
 
 	const displayedContainerGuids = [
-		...new Set([selectedContext.guid, ...organizationalUnits.map(({ guid }) => guid)])
+		...new Set([selectedContext.guid, ...managedOrganizationalUnits.map(({ guid }) => guid)])
 	];
 
 	const [members, relatedUsers] = await Promise.all([
@@ -53,7 +53,7 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		container: selectedContext,
-		organizationalUnits,
+		managedOrganizationalUnits,
 		users: [...usersByGuid.values()].map(withEmail)
 	};
 }) satisfies PageServerLoad;

@@ -39,10 +39,8 @@
 		});
 
 		const stream = source('/ask-ai', {
-			options: {
-				body: new URLSearchParams([['program', container.guid]]),
-				headers: { 'content-type': 'application/x-www-form-urlencoded' }
-			}
+			body: new URLSearchParams([['program', container.guid]]),
+			headers: { 'content-type': 'application/x-www-form-urlencoded' }
 		}).select('message');
 		stream.subscribe((message) => {
 			console.log(message);

@@ -5,7 +5,7 @@
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import { type KnowledgeContainer, payloadTypes } from '$lib/models';
@@ -47,7 +47,12 @@
 	});
 
 	let containers = $derived(
-		withOptimistic(list.items, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			list.items,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 
 	const customCategoryColumns = $derived(

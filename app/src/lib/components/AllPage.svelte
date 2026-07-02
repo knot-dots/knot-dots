@@ -21,10 +21,11 @@
 			predicates.enum['contributes-to']
 		]
 	});
+
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
+<Layout bulkActions={['visibility', 'delete']}>
 	{#snippet header()}
 		<Header {filterBarInitiallyOpen} {facets} search />
 	{/snippet}

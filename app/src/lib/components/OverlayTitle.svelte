@@ -6,7 +6,7 @@
 
 {#if $overlay?.container}
 	<a
-		class:is-active={$overlay?.key === overlayKey.enum.view}
+		class={['truncated', $overlay?.key === overlayKey.enum.view ? 'is-active' : '']}
 		href={overlayURL(page.url, overlayKey.enum.view, $overlay.container.guid)}
 	>
 		{#if $overlay.container.payload.type === payloadTypes.enum.organization || $overlay.container.payload.type === payloadTypes.enum.organizational_unit}
@@ -19,13 +19,10 @@
 
 <style>
 	a {
-		color: var(--color-gray-400);
+		color: var(--color-text-strong);
 		display: inline-block;
 		flex-shrink: 1;
-		font-size: 0.75rem;
-		overflow: hidden;
+		font-size: 0.875rem;
 		padding: 0 0.5rem;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 </style>

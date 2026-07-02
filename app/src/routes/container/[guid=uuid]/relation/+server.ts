@@ -2,8 +2,9 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { filterVisible } from '$lib/authorization';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
+	type AnyContainer,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
 	isProgramContainer,
@@ -23,6 +24,7 @@ import {
 	getAllRelatedContainers,
 	getAllRelatedOrganizationalUnitContainers,
 	getContainerByGuid,
+	getManyContainers,
 	getManyOrganizationContainers,
 	updateManyContainerRelations
 } from '$lib/server/db';
@@ -186,7 +188,7 @@ export const GET = (async ({ locals, params, url }) => {
 	}
 }) satisfies RequestHandler;
 
-export const POST = (async ({ locals, request }) => {
+export const POST = (async ({ locals, params, request }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
@@ -202,10 +204,48 @@ export const POST = (async ({ locals, request }) => {
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
-	} else {
-		await locals.pool.connect(updateManyContainerRelations(parseResult.data));
-		return new Response(null, { status: 204 });
 	}
+
+	const ability = defineAbilityFor(locals.user);
+
+	await locals.pool.transaction(async (tx) => {
+		// This route only allows updating relations if the container
+		// represented by the guid parameter of the route is either the subject or
+		// the object. To ensure consistency with the front-end, the permission to
+		// relate the container represented by the guid parameter of the route and
+		// the permission to read the other are required.
+		const containers = await getManyContainers(
+			[],
+			{
+				guid: parseResult.data
+					.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+					.flatMap(({ object, subject }) => [object, subject])
+			},
+			'alpha'
+		)(tx);
+		await updateManyContainerRelations(
+			parseResult.data
+				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+				.filter(({ object, subject }) => {
+					const objectContainer = containers.find(
+						(c) => ability.can('read', c) && c.guid === object
+					);
+					const subjectContainer = containers.find(
+						(c) => ability.can('read', c) && c.guid === subject
+					);
+					return (
+						objectContainer &&
+						subjectContainer &&
+						ability.can(
+							'relate',
+							[subjectContainer, objectContainer].find((c) => c.guid == params.guid) as AnyContainer
+						)
+					);
+				})
+		)(tx);
+	});
+
+	return new Response(null, { status: 204 });
 }) satisfies RequestHandler;
 
 export const DELETE = (async ({ locals, request }) => {

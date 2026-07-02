@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
@@ -63,23 +63,38 @@
 		if (response.ok) {
 			const savedContainer = await response.json();
 
-			if (isOrganizationalUnitContainer(savedContainer)) {
-				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }));
-			} else {
-				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid));
-			}
-
 			if ($addItemState.target) {
-				await saveContainer({
+				const items = $addItemState.target.payload.item.includes(savedContainer.guid)
+					? $addItemState.target.payload.item
+					: [...$addItemState.target.payload.item, savedContainer.guid];
+				const targetResponse = await saveContainer({
 					...$addItemState.target,
 					payload: {
 						...$addItemState.target.payload,
-						item: [...$addItemState.target.payload.item, savedContainer.guid]
+						item: items
 					}
 				});
+
+				if (!targetResponse.ok) {
+					const error = await targetResponse.json();
+					alert(error.message);
+					return;
+				}
+
+				const savedTarget = await targetResponse.json();
+				Object.assign($addItemState.target, savedTarget);
+				$addItemState = {};
 			}
 
-			await invalidateAll();
+			if (isOrganizationalUnitContainer(savedContainer)) {
+				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }), {
+					invalidateAll: true
+				});
+			} else {
+				await goto(overlayURL(page.url, overlayKey.enum.view, savedContainer.guid), {
+					invalidateAll: true
+				});
+			}
 		} else {
 			const error = await response.json();
 			alert(error.message);
@@ -148,8 +163,7 @@
 							required
 							rows="1"
 							bind:value={$newContainer.payload.name}
-							use:init
-						></textarea>
+							use:init></textarea>
 					{:else if isContainerWithTitle($newContainer)}
 						<textarea
 							aria-label={$_('title')}
@@ -159,8 +173,7 @@
 							required
 							rows="1"
 							bind:value={$newContainer.payload.title}
-							use:init
-						></textarea>
+							use:init></textarea>
 					{/if}
 
 					{#if isContainer($newContainer)}

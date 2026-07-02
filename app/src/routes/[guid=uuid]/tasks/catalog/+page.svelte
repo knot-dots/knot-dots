@@ -3,14 +3,19 @@
 	import Help from '$lib/components/Help.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 	import { payloadTypes } from '$lib/models';
 
 	let { data }: PageProps = $props();
 
 	let containers = $derived(
-		withOptimistic(data.containers, $lastCreatedContainer, $lastUpdatedContainers)
+		withOptimistic(
+			data.containers,
+			$lastCreatedContainer,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		)
 	);
 </script>
 

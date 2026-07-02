@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext, type Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -22,6 +23,7 @@
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import SubscribeButton from '$lib/components/SubscribeButton.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -37,7 +39,8 @@
 		programTypes,
 		status
 	} from '$lib/models';
-	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -49,28 +52,33 @@
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
 
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		selected: new SvelteSet<string>()
+	});
+
 	let guid = $derived(container.guid);
 
 	let isGuide = $derived(container.payload.programType === programTypes.enum['program_type.guide']);
 
 	let categoryContext = $derived(page.data.categoryContext);
-	let relatedContainersQuery = $derived(
-		fetchContainersRelatedToProgram({
-			guid,
-			params: {
-				...{
-					customCategories: extractCustomCategoryFiltersFromParams(
-						paramsFromFragment(page.url),
-						categoryContext.keys
-					)
-				},
-				statuses: paramsFromFragment(page.url).getAll('status'),
-				terms: paramsFromFragment(page.url).get('terms') ?? ''
-			}
-		})
+	let relatedContainersQuery = resource(
+		[() => guid, () => paramsFromFragment(page.url).toString()],
+		async ([guid, urlHash], _, { signal }) => {
+			const hashParams = new URLSearchParams(urlHash);
+			const terms = hashParams.get('terms') ?? '';
+			const statuses = hashParams.getAll('status');
+			const customCategories = extractCustomCategoryFiltersFromParams(
+				hashParams,
+				categoryContext.keys
+			);
+			return fetchRelatedContainers(guid, { terms, statuses, ...customCategories }, 'alpha', {
+				signal
+			});
+		}
 	);
 
-	let relatedContainers = $state.raw([]) as Container[];
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let parts = $state([]) as Container[];
 
@@ -107,9 +115,9 @@
 	let overlay = getContext('overlay');
 
 	$effect(() => {
-		if (relatedContainersQuery.current) {
-			relatedContainers = relatedContainersQuery.current;
-			const filtered = relatedContainers.filter(({ guid, relation }) =>
+		const containers = relatedContainersQuery.current;
+		if (containers) {
+			const filtered = containers.filter(({ guid, relation }) =>
 				relation.some(
 					({ predicate }) =>
 						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
@@ -163,7 +171,7 @@
 			}
 		});
 
-		await relatedContainersQuery.refresh();
+		await relatedContainersQuery.refetch();
 	}
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
@@ -203,11 +211,12 @@
 {#snippet row(parts: Container[], dragEnabled: boolean)}
 	{#each parts as part, i (part.guid)}
 		<form
-			class="row"
 			animate:flip={{ duration: 100 }}
+			class="row"
 			oninput={requestSubmit}
 			onsubmit={autoSave(part, 2000)}
 			novalidate
+			role="row"
 		>
 			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 			<!-- svelte-ignore binding_property_non_reactive -->
@@ -216,6 +225,7 @@
 					'action',
 					'title',
 					'type',
+					'aiContribution',
 					...(isGuide ? ['aiSuggestionPageReference'] : []),
 					'description',
 					'visibility',
@@ -285,45 +295,48 @@
 			{/snippet}
 		</EditableContainerDetailView>
 	{:else if viewMode === 'view_mode.table'}
-		<div class="table-wrapper">
-			<div class="table">
-				<div class="table-head">
+		<div class="table-wrapper table-wrapper--with-end-padding">
+			<div class="table" role="table">
+				<div class="table-head" role="rowgroup">
 					<div class="row">
-						<div class="cell cell--action"></div>
-						<div class="cell">{$_('title')}</div>
-						<div class="cell">{$_('object')}</div>
+						<div class="cell cell--action" role="columnheader"></div>
+						<div class="cell" role="columnheader">{$_('title')}</div>
+						<div class="cell" role="columnheader">{$_('object')}</div>
+						<div class="cell" role="columnheader">{$_('ai_contribution')}</div>
 						{#if isGuide}
-							<div class="cell">{$_('page')}</div>
+							<div class="cell" role="columnheader">{$_('page')}</div>
 						{/if}
-						<div class="cell">{$_('description')}</div>
-						<div class="cell">{$_('visibility.label')}</div>
-						<div class="cell">{$_('status')}</div>
+						<div class="cell" role="columnheader">{$_('description')}</div>
+						<div class="cell" role="columnheader">{$_('visibility.label')}</div>
+						<div class="cell" role="columnheader">{$_('status')}</div>
 						{#each customCategoryColumn as key (key)}
-							<div class="cell">{categoryContext.labels.get(key) ?? key}</div>
+							<div class="cell" role="columnheader">{categoryContext.labels.get(key) ?? key}</div>
 						{/each}
-						<div class="cell">{$_('fulfillment_date')}</div>
-						<div class="cell">{$_('planned_duration')}</div>
-						<div class="cell">{$_('editorial_state')}</div>
-						<div class="cell">{$_('organizational_unit')}</div>
-						<div class="cell">{$_('goal.hierarchy_level')}</div>
-						<div class="cell">{$_('goal_type')}</div>
+						<div class="cell" role="columnheader">{$_('fulfillment_date')}</div>
+						<div class="cell" role="columnheader">{$_('planned_duration')}</div>
+						<div class="cell" role="columnheader">{$_('editorial_state')}</div>
+						<div class="cell" role="columnheader">{$_('organizational_unit')}</div>
+						<div class="cell" role="columnheader">{$_('goal.hierarchy_level')}</div>
+						<div class="cell" role="columnheader">{$_('goal_type')}</div>
 					</div>
 				</div>
 				{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}
-					<div class="table-body">
+					<div class="table-body" role="rowgroup">
 						{@render row(filteredParts, false)}
 					</div>
 				{:else}
 					<div
 						class="table-body"
+						onconsider={handleDndConsider}
+						onfinalize={handleDndFinalize}
+						role="rowgroup"
 						use:dragHandleZone={{
+							autoAriaDisabled: true,
 							dropTargetStyle: {},
 							items: filteredParts,
 							flipDurationMs: 100,
 							useCursorForDetection: true
 						}}
-						onconsider={handleDndConsider}
-						onfinalize={handleDndFinalize}
 					>
 						{@render row(filteredParts, true)}
 					</div>
@@ -364,8 +377,6 @@
 	.table-wrapper {
 		container-type: inline-size;
 		height: 100%;
-		margin: 1.5rem 0 1.5rem 1.5rem;
-		overflow: auto;
 	}
 
 	.table {

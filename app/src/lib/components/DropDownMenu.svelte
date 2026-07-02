@@ -56,8 +56,4 @@
 	.dropdown {
 		display: inline-block;
 	}
-
-	.dropdown-button.dropdown-button--menu > :global(svg) {
-		color: inherit;
-	}
 </style>

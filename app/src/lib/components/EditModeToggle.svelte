@@ -15,7 +15,7 @@
 
 <style>
 	.toggle {
-		--height: 1.75rem;
+		--height: 1.5rem;
 		--padding: 0.25rem;
 		--width: 4.5rem;
 
@@ -38,7 +38,7 @@
 	.toggle::before {
 		background-color: var(--color-gray-200);
 		background-image: url(/src/lib/assets/icons/edit-mode-off.svg);
-		background-position: 0.5rem center;
+		background-position: calc(var(--height) / 2 - 0.375rem) center;
 		background-repeat: no-repeat;
 	}
 

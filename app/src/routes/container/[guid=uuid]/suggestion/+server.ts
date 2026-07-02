@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { filterVisible } from '$lib/authorization';
 import {
 	indicatorCategories,
 	type IndicatorTemplateContainer,
@@ -99,5 +100,5 @@ export const GET = (async ({ locals, params, url }) => {
 		);
 	});
 
-	return json(suggestion);
+	return json(filterVisible(suggestion, locals.user));
 }) satisfies RequestHandler;

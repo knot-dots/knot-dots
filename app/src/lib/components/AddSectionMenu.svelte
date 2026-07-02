@@ -17,6 +17,7 @@
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
 	import Link from '~icons/knotdots/link';
+	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
@@ -30,7 +31,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
-		boards,
 		isAdministrativeAreaBasicDataContainer,
 		isContainerWithProgress,
 		isContainerWithSummary,
@@ -132,7 +132,7 @@
 
 	let mayAddIndicatorCollection = $derived(
 		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
-			parentContainer.payload.boards.includes(boards.enum['board.indicators']) &&
+			parentContainer.payload.visibleWorkspaces.includes('indicators') &&
 			!hasSection(parentContainer, relatedContainers).some(isIndicatorCollectionContainer)
 	);
 
@@ -220,6 +220,8 @@
 			isPageContainer(parentContainer) ||
 			isReportContainer(parentContainer)
 	);
+
+	let mayAddIgniteVideo = $derived(isHelpContainer(parentContainer));
 
 	let mayAddSummary = $derived(
 		isContainerWithSummary(parentContainer) &&
@@ -398,6 +400,15 @@
 				? [{ icon: Map, label: $_('administrative_area.boundary'), value: payloadTypes.enum.map }]
 				: []),
 			{ icon: Image, label: $_('image'), value: payloadTypes.enum.image },
+			...(mayAddIgniteVideo
+				? [
+						{
+							icon: Video,
+							label: $_('ignite_video'),
+							value: payloadTypes.enum.ignite_video
+						}
+					]
+				: []),
 			...(mayAddTeaserCollection
 				? [
 						{

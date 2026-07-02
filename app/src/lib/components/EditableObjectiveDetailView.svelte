@@ -28,7 +28,8 @@
 		type ObjectiveContainer,
 		predicates
 	} from '$lib/models';
-	import { fetchRelatedContainers } from '$lib/remote/data.remote';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
@@ -44,23 +45,27 @@
 
 	let organization = $derived(container.organization);
 
-	let relatedContainersQuery = $derived(
-		fetchRelatedContainers({
-			guid,
-			params: {
-				organization: [organization],
-				relationType: [
-					predicates.enum['is-consistent-with'],
-					predicates.enum['is-equivalent-to'],
-					predicates.enum['is-inconsistent-with'],
-					predicates.enum['is-measured-by'],
-					predicates.enum['is-objective-for'],
-					predicates.enum['is-part-of'],
-					predicates.enum['is-part-of-category'],
-					predicates.enum['is-section-of']
-				]
-			}
-		})
+	let relatedContainersQuery = resource(
+		[() => guid, () => organization],
+		async ([guid, organization], _, { signal }) =>
+			fetchRelatedContainers(
+				guid,
+				{
+					organization: [organization],
+					relationType: [
+						predicates.enum['is-consistent-with'],
+						predicates.enum['is-equivalent-to'],
+						predicates.enum['is-inconsistent-with'],
+						predicates.enum['is-measured-by'],
+						predicates.enum['is-objective-for'],
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-category'],
+						predicates.enum['is-section-of']
+					]
+				},
+				'alpha',
+				{ signal }
+			)
 	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);

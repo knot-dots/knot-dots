@@ -5,8 +5,7 @@ import {
 	type DatabasePool,
 	type Interceptor,
 	type QueryResultRow,
-	SchemaValidationError,
-	type SerializableValue
+	SchemaValidationError
 } from 'slonik';
 import { z } from 'zod';
 import {
@@ -154,7 +153,7 @@ export function createContainer(container: NewContainer) {
 						${organizationGuid},
             ${container.managed_by},
 						${organizationGuid},
-						${sql.jsonb(<SerializableValue>container.payload)},
+						${sql.jsonb(container.payload)},
 						${container.realm}
 					)
 					RETURNING *
@@ -165,7 +164,7 @@ export function createContainer(container: NewContainer) {
 						${container.managed_by},
 						${container.organization},
 						${container.organizational_unit},
-						${sql.jsonb(<SerializableValue>container.payload)},
+						${sql.jsonb(container.payload)},
 						${container.realm}
 					)
 					RETURNING *
@@ -234,7 +233,7 @@ export function updateContainer(container: ModifiedContainer) {
 					${container.managed_by},
 					${container.organization},
 					${container.organizational_unit},
-					${sql.jsonb(<SerializableValue>container.payload)},
+					${sql.jsonb(container.payload)},
 					${container.realm}
 				)
 				RETURNING *
@@ -1690,7 +1689,7 @@ export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
 			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
-			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)})
+			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(user.settings)})
 			RETURNING *
 		`);
 	};
@@ -1700,8 +1699,8 @@ export function createOrUpdateUser(user: User, ignoreSettingsOnUpdate: boolean =
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`
 			INSERT INTO "user" (family_name, given_name, realm, guid, settings)
-			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(<SerializableValue>user.settings)})
-			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name} ${ignoreSettingsOnUpdate ? sql.fragment`` : sql.fragment`, settings = ${sql.jsonb(<SerializableValue>user.settings)}`}
+			VALUES (${user.family_name}, ${user.given_name}, ${user.realm}, ${user.guid}, ${sql.jsonb(user.settings)})
+			ON CONFLICT (guid) DO UPDATE SET family_name = ${user.family_name}, given_name = ${user.given_name} ${ignoreSettingsOnUpdate ? sql.fragment`` : sql.fragment`, settings = ${sql.jsonb(user.settings)}`}
 			RETURNING *
 		`);
 	};
@@ -1981,7 +1980,6 @@ export function setUp(name: string, realm: string) {
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
 			payload: {
-				boards: [],
 				default: true,
 				description: '',
 				favorite: [],

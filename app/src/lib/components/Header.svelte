@@ -18,6 +18,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
+	import BulkActions from '$lib/components/BulkActions.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -55,7 +56,14 @@
 		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
-	import { ability, user, overlay as overlayStore, compareState } from '$lib/stores';
+	import {
+		ability,
+		applicationState,
+		user,
+		overlay as overlayStore,
+		compareState,
+		lastUpdatedContainers
+	} from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
@@ -84,7 +92,11 @@
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
 
-	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
+	let container = $derived.by(() => {
+		const base = overlay ? $overlayStore?.container : page.data.container;
+		const optimistic = base && $lastUpdatedContainers.get(base.guid);
+		return optimistic && optimistic.revision > base.revision ? optimistic : base;
+	});
 
 	let filterBar = $derived(
 		createDisclosure({ label: $_('filters'), expanded: filterBarInitiallyOpen })
@@ -206,8 +218,7 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_redundant_roles -->
-<header data-sveltekit-preload-data="hover" role="banner">
+<header data-sveltekit-preload-data="hover">
 	{#if !overlay}
 		<button
 			aria-label={$_('menu')}
@@ -307,24 +318,26 @@
 			{/if}
 		{/if}
 
-		{#if createFeatureDecisions(page.data.features).useEmbedObjects() && overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+		{#if overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
 			<OverlaySettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
 		{/if}
 	</div>
 </header>
 
 <div class="commands" data-sveltekit-keepfocus>
-	{#if commands || (!isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container)))}
-		<div class="commands-leading">
-			{#if commands}
-				{@render commands()}
-			{/if}
+	<div class="commands-leading">
+		{#if commands}
+			{@render commands()}
+		{/if}
 
-			{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
-				<ViewSelect />
-			{/if}
-		</div>
-	{/if}
+		{#if !isOnPage && (!container || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+			<ViewSelect />
+		{/if}
+
+		{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable}
+			<BulkActions />
+		{/if}
+	</div>
 
 	{#if search}
 		<Search />
@@ -450,27 +463,20 @@
 
 <style>
 	header {
-		--dropdown-button-expanded-background: var(--color-primary-100);
-		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
+		--dropdown-button-icon-size: 1rem;
+		--dropdown-button-min-height: 2rem;
+		--dropdown-button-padding: 0.25rem 0.5rem;
 
-		--icon-color: var(--color-gray-500);
-
-		align-items: center;
-		background: white;
-		color: var(--color-gray-700);
+		color: var(--color-text-default);
 		container-type: inline-size;
 		display: flex;
 		flex-shrink: 0;
 		font-size: 0.875rem;
 		gap: 0.5rem;
 		padding: 0.375rem 0.75rem;
+		position: relative;
 		z-index: 3;
-	}
-
-	header :global(svg) {
-		color: var(--icon-color);
 	}
 
 	.overlay-navigation {
@@ -498,7 +504,6 @@
 		--dropdown-button-expanded-background: var(--color-primary-100);
 		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon-size: 1rem;
 
 		--indicator-background-color: var(--color-primary-700);
 
@@ -518,11 +523,9 @@
 	}
 
 	.commands-leading {
+		display: flex;
+		gap: inherit;
 		margin-right: auto;
-	}
-
-	.action-button--favorite {
-		--icon-color: var(--color-yellow-400);
 	}
 
 	.divider {
@@ -532,6 +535,8 @@
 
 	.dropdown-button.dropdown-button--command {
 		--dropdown-button-default-background: transparent;
+		--dropdown-button-default-color: var(--color-text-default);
+		--dropdown-button-icon-default-color: var(--color-icon-default);
 		--dropdown-button-padding: 0 0.5rem 0 0.5rem;
 
 		height: 2rem;
@@ -543,6 +548,7 @@
 	}
 
 	.filter-and-sort fieldset {
+		--dropdown-button-default-color: var(--color-text-default);
 		--dropdown-button-padding: 0.5rem 0.625rem;
 
 		--indicator-background-color: var(--color-primary-700);

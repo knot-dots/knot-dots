@@ -19,13 +19,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import {
-		type AnyContainer,
-		boards,
-		overlayKey,
-		overlayURL,
-		paramsFromFragment
-	} from '$lib/models';
+	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
 	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
@@ -138,7 +132,7 @@
 					}
 				]
 			: []),
-		...(selectedContext.payload.boards.includes(boards.enum['board.indicators'])
+		...(selectedContext.payload.visibleWorkspaces.includes('indicators')
 			? [
 					{
 						exists: true,
@@ -399,30 +393,6 @@
 <style>
 	.dropdown {
 		flex-shrink: 0;
-	}
-
-	.dropdown-button {
-		--button-background: var(--color-gray-050);
-
-		align-items: center;
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		height: 2.25rem;
-		padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-	}
-
-	.dropdown-button {
-		color: var(--color-gray-900);
-		font-weight: 500;
-	}
-
-	.dropdown-button:global([aria-expanded='true']) {
-		background-color: var(--color-primary-100);
-		color: var(--color-primary-700);
-	}
-
-	.dropdown-button:global([aria-expanded='true'] svg) {
-		color: var(--color-primary-700);
 	}
 
 	.dropdown-panel {

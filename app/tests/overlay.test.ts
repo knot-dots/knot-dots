@@ -36,7 +36,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
 	const typeOfFirstGoal = 'Vision';
-	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfFirstGoal }).check();
+	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfFirstGoal }).click();
 	await firstSaveResponse;
 
 	// Change description of the second goal
@@ -49,7 +49,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	);
 	await dotsBoard.overlay.locator.getByLabel('Goal type').click();
 	const typeOfSecondGoal = 'Strategic goal';
-	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfSecondGoal }).check();
+	await dotsBoard.overlay.locator.getByRole('radio', { name: typeOfSecondGoal }).click();
 	await secondSaveResponse;
 
 	// Verify goal and measure descriptions are persisted

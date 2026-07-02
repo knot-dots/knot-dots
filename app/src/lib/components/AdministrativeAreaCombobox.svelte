@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createCombobox } from 'svelte-headlessui';
-	import ChevronSort from '~icons/knotdots/chevron-sort';
+	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Map from '$lib/components/Map.svelte';
 	import { fetchAdministrativeAreas } from '$lib/remote/administrativeArea.remote';
 

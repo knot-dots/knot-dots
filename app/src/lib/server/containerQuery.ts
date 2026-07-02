@@ -95,7 +95,7 @@ const querySchema = z.object({
 	resource: z.array(z.string()).default([]),
 	resourceCategory: z.array(resourceCategories).default([]),
 	ruleStatus: z.array(status).default([]),
-	sort: z.array(z.enum(['alpha', 'modified', 'priority'])).default(['alpha']),
+	sort: z.array(z.enum(['alpha', 'modified', 'priority', 'relevance'])).default(['alpha']),
 	status: z.array(status).default([]),
 	taskCategory: z.array(taskCategories).default([]),
 	taskStatus: z.array(status).default([]),
@@ -110,7 +110,7 @@ type ContainerQueryParams = Omit<
 > & {
 	categoryMatch: 'any' | 'all';
 	contextGuid: string | undefined;
-	sort: 'alpha' | 'modified' | 'priority';
+	sort: 'alpha' | 'modified' | 'priority' | 'relevance';
 	template: boolean | undefined;
 	terms: string;
 };

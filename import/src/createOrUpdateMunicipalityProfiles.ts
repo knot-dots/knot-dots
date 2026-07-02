@@ -232,7 +232,6 @@ async function createOrUpdateOrganizationalUnitContainer(
 		organizational_unit: null,
 		payload: {
 			administrativeType: getAdministrativeTypes(region.type, region.official_municipality_key),
-			boards: ['board.indicators'],
 			category: {
 				...category,
 				...(difu ? { kommunaltyp: [difu.code] } : undefined)

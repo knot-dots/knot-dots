@@ -18,7 +18,7 @@
 </script>
 
 {#if visible && !page.params.contentGuid}
-	<a class="button" href={resolve('/[guid=uuid]/all/level', { guid: context.guid })}>
+	<a class="dropdown-button" href={resolve('/[guid=uuid]/all/level', { guid: context.guid })}>
 		<Dots />
 		<span class="is-visually-hidden">{$_('dots')}</span>
 	</a>
@@ -28,17 +28,10 @@
 
 <style>
 	a {
-		--button-background: var(--color-gray-050);
-
-		align-items: center;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-900);
 		display: none;
-		font-weight: 500;
-		height: 2.25rem;
-		padding: 0.5rem 0.75rem;
+		height: 2rem;
 		margin-left: auto;
+		width: auto;
 	}
 
 	a > :global(svg) {

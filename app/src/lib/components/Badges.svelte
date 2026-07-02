@@ -8,7 +8,6 @@
 		isContainerWithStatus,
 		isGoalContainer,
 		isRuleContainer,
-		isSuggestedByAI,
 		isTaskContainer,
 		programTypes,
 		status,
@@ -61,8 +60,11 @@
 			{$_(container.payload.type)}
 		{/if}
 	</li>
-	{#if isSuggestedByAI(container)}
-		<li class="badge badge--yellow"><AskAI />{$_('ai_suggestion')}</li>
+	{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
+		<li class="badge badge--yellow">
+			<AskAI />
+			{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+		</li>
 	{/if}
 	{#if isContainerWithStatus(container)}
 		<li>

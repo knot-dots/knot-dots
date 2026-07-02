@@ -1,23 +1,26 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import ChartBar from '~icons/knotdots/chart-bar';
+import ChartLine from '~icons/knotdots/chart-line';
 import ChartMixed from '~icons/knotdots/chart-mixed';
+import BookOutline from '~icons/knotdots/book-outline';
+import BookOpenOutline from '~icons/knotdots/book-open-outline';
 import Chapter from '~icons/knotdots/chapter';
 import Clipboard from '~icons/knotdots/clipboard-simple';
 import ClipboardCheck from '~icons/knotdots/clipboard-check';
-import Collection from '~icons/knotdots/collection';
 import Compass from '~icons/knotdots/compass';
 import Gavel from '~icons/knotdots/gavel';
 import Goal from '~icons/knotdots/goal';
-import Help from '~icons/knotdots/help';
+import Help from '~icons/flowbite/question-circle-outline';
 import LandingPage from '~icons/knotdots/landing-page';
 import Objects from '~icons/knotdots/objects';
 import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
+import RuleDatabase from '~icons/knotdots/rule-database';
 import Tag from '~icons/knotdots/tag';
 import Users from '~icons/knotdots/users';
+import Template from '~icons/knotdots/template';
 import {
-	boards,
 	containerOfType,
 	isOrganizationContainer,
 	payloadTypes,
@@ -45,31 +48,31 @@ export interface WorkspaceModule {
 export const workspaceModules: WorkspaceModule[] = [
 	{
 		key: 'goal_setting',
-		colorClass: 'menu-segment--goals'
+		colorClass: 'module-goal-setting'
 	},
 	{
 		key: 'implementation_planning',
-		colorClass: 'menu-segment--implementation'
+		colorClass: 'module-implementation-planning'
 	},
 	{
 		key: 'impact_measurement',
-		colorClass: 'menu-segment--effects'
+		colorClass: 'module-impact-measurement'
 	},
 	{
 		key: 'resource_planning',
-		colorClass: 'menu-segment--resources'
+		colorClass: 'module-resource-planning'
 	},
 	{
 		key: 'knowledge_transfer',
-		colorClass: 'menu-segment--knowledge'
+		colorClass: 'module-knowledge-transfer'
 	},
 	{
 		key: 'rules',
-		colorClass: 'menu-segment--rules'
+		colorClass: 'module-rules'
 	},
 	{
 		key: 'organizing',
-		colorClass: 'menu-segment--organize'
+		colorClass: 'module-organizing'
 	}
 ];
 
@@ -81,9 +84,7 @@ export type WorkspaceFeatureFlag = keyof {
 		: never]: true;
 };
 
-export type WorkspaceBoardFlag = (typeof boards.options)[number];
-
-export type WorkspaceViewKey = 'page' | 'catalog' | 'level' | 'status' | 'table' | 'monitoring';
+export type WorkspaceViewKey = 'catalog' | 'level' | 'status' | 'table' | 'monitoring';
 
 export interface WorkspaceDefinition {
 	key: string;
@@ -92,7 +93,6 @@ export interface WorkspaceDefinition {
 	/** Map view → URL path (without context segment). The `default` view is the entry view. */
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
-	boardFlag?: WorkspaceBoardFlag;
 	adminOnly?: boolean;
 }
 
@@ -175,14 +175,13 @@ export const workspaces: WorkspaceDefinition[] = [
 	// Effect measurement
 	{
 		key: 'indicators',
-		icon: ChartBar,
+		icon: ChartLine,
 		module: 'impact_measurement',
 		views: {
 			default: '/indicators/catalog',
 			catalog: '/indicators/catalog',
 			table: '/indicators/table'
-		},
-		boardFlag: 'board.indicators'
+		}
 	},
 	{
 		key: 'reports',
@@ -200,8 +199,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/objectives-and-effects',
 			level: '/objectives-and-effects'
-		},
-		boardFlag: 'board.indicators'
+		}
 	},
 	// Resource planning
 	{
@@ -227,7 +225,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'guides',
-		icon: Help,
+		icon: BookOutline,
 		module: 'knowledge_transfer',
 		views: {
 			default: '/guides/catalog',
@@ -237,7 +235,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'knowledge',
-		icon: Compass,
+		icon: BookOpenOutline,
 		module: 'knowledge_transfer',
 		views: {
 			default: '/knowledge/level',
@@ -260,7 +258,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'rules',
-		icon: Gavel,
+		icon: RuleDatabase,
 		module: 'rules',
 		views: {
 			default: '/rules/catalog',
@@ -279,7 +277,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'templates',
-		icon: Collection,
+		icon: Template,
 		module: 'organizing',
 		views: {
 			default: '/templates',
@@ -303,7 +301,6 @@ export const workspaces: WorkspaceDefinition[] = [
 			default: '/all/catalog',
 			catalog: '/all/catalog',
 			level: '/all/level',
-			page: '/all/page',
 			table: '/all/table'
 		}
 	},
@@ -349,20 +346,18 @@ interface VisibilityContext {
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
 	const { organization, organizationalUnit, features, ability, user } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
-	const enabledBoards = new Set(selectedContext.payload.boards);
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
 	const explicit =
 		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
 	const explicitSet = new Set(explicit);
 
 	const isCtxAdmin =
-		user?.roles.includes('sysadmin') || user?.adminOf.includes(selectedContext.guid);
+		user?.roles.includes('sysadmin') ||
+		user?.adminOf.includes(selectedContext.guid) ||
+		user?.adminOf.includes(selectedContext.organization);
 
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {
-			return false;
-		}
-		if (workspace.boardFlag && !enabledBoards.has(workspace.boardFlag)) {
 			return false;
 		}
 		if (workspace.key === 'help') {
