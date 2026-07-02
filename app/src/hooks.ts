@@ -79,10 +79,6 @@ export const reroute: Reroute = async ({ fetch, url }) => {
 		return;
 	}
 
-	if (url.pathname === '/') {
-		return;
-	}
-
 	const segments = url.pathname.split('/').filter(Boolean);
 	if (segments.length === 0) {
 		return;

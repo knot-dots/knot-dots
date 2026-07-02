@@ -151,6 +151,13 @@ export const POST = (async ({ locals, params, request }) => {
 			);
 			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 		} catch (e: unknown) {
+			// A unique violation (SQLSTATE 23505) raised by updateContainer can only stem from the
+			// slug uniqueness constraints (container_payload_organization_slug_unique_idx and
+			// container_payload_organizational_unit_slug_per_org_unique_idx, see migration
+			// 20260612130000_add_unique_context_slug_index). The other rows written in the same
+			// transaction (container_user, container_relation) reference the freshly generated
+			// revision id, so they cannot collide with existing data. Therefore 23505 here always
+			// means the requested slug is already taken within its scope.
 			if (
 				typeof e === 'object' &&
 				e !== null &&
