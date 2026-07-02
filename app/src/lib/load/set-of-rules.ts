@@ -25,7 +25,7 @@ export const loadPage = (limit: number) =>
 			for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
 		}
 
-		const [data, { categoryContext, currentOrganization }] = await Promise.all([
+		const [data, { categoryContext, currentOrganization, subscribedPrograms }] = await Promise.all([
 			fetchContainerPage<ProgramContainer>({
 				contextGuid: params.guid,
 				fetch,
@@ -49,6 +49,9 @@ export const loadPage = (limit: number) =>
 							? [['included', new Map<string, number>()]]
 							: []) as Array<[string, Map<string, number>]>),
 						['status', data.facets.get('status') ?? new Map()],
+						...((subscribedPrograms.length > 0
+							? [['scope', new Map<string, number>()]]
+							: []) as Array<[string, Map<string, number>]>),
 						...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
 					])
 		};

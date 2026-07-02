@@ -200,6 +200,8 @@
 	"empty": "Leer",
 	"end_date": "Ende",
 	"error": {
+		"bad_request": "Ungültige Anfrage.",
+		"forbidden": "Zugriff verweigert.",
 		"unauthorized": "Leider ist das nicht erlaubt.",
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
@@ -694,6 +696,7 @@
 	"resource": "Ressource",
 	"resource_v2": "Ressource",
 	"ResourceV2": "Ressourcenplanung",
+	"Subscriptions": "Abonnements",
 	"resource_data": "Ressourcendaten",
 	"resource_data_collection": "Ressourcendatensammlung",
 	"resource_category.material": "Sachmittel",
@@ -731,6 +734,10 @@
 	"rule_status.rejected": "Verworfen",
 	"rules_catalog.empty": "Keine Regeln verfügbar.",
 	"save": "Speichern",
+	"scope": {
+		"label": "Bereich",
+		"platform": "knotdots.net/Plattform"
+	},
 	"sdg": {
 		"01": "1 - Keine Armut",
 		"02": "2 - Kein Hunger",
@@ -788,6 +795,19 @@
 	"strategic_goal": "Strategisches Ziel",
 	"strategic_goals": "Strategische Ziele",
 	"subtasks": "Unteraufgaben",
+	"subscribe_button": {
+		"subscribe": "Übernehmen",
+		"unsubscribe": "Übernommen"
+	},
+	"adopted": "Übernommen",
+	"subscribe_dialog": {
+		"confirm": "Auswahl bestätigen",
+		"description": "Welche Bereiche sollen dieses Programm übernehmen?",
+		"heading": "Programm übernehmen für...",
+		"no_organizations": "Es sind keine Bereiche verfügbar, die dieses Programm übernehmen können.",
+		"select_all": "Alles",
+		"selected": "{count} ausgewählt"
+	},
 	"summary": "Zusammenfassung",
 	"superordinate_element": "Übergeordnetes Element",
 	"superordinate_organizational_unit": "Übergeordnete Organisationseinheit",

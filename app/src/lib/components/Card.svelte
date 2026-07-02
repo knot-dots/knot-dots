@@ -3,6 +3,7 @@
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import Relation from '~icons/knotdots/relation';
+	import Subscribe from '~icons/knotdots/subscribe';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -87,6 +88,36 @@
 			? paramsFromFragment(page.url).get('related-to')
 			: page.url.searchParams.get('related-to')
 	);
+
+	let foreignOrgName = $derived.by(() => {
+		if (container.organization === page.data.currentOrganization?.guid) return undefined;
+		const org = page.data.organizations?.find(
+			(o: { guid: string }) => o.guid === container.organization
+		);
+		return org?.payload?.name;
+	});
+
+	let isAdopted = $derived.by(() => {
+		const subs = (page.data.subscribedPrograms ?? []) as string[];
+		if (subs.includes(container.guid)) return true;
+		return container.relation.some(
+			(r) =>
+				(r.predicate === predicates.enum['is-part-of'] ||
+					r.predicate === predicates.enum['is-part-of-program']) &&
+				subs.includes(r.object)
+		);
+	});
+
+	let adoptedLabel = $derived.by(() => {
+		if (!isAdopted) return undefined;
+		if (container.organizational_unit) {
+			const ou = page.data.organizationalUnits?.find(
+				(o: { guid: string }) => o.guid === container.organizational_unit
+			);
+			if (ou?.payload?.name) return ou.payload.name;
+		}
+		return foreignOrgName;
+	});
 
 	let selected = $derived.by(() => {
 		if ($overlay?.key === overlayKey.enum.relations) {
@@ -361,6 +392,13 @@
 	</div>
 
 	<footer>
+		{#if isAdopted && adoptedLabel}
+			<span class="badge badge--adopted"
+				><Subscribe /><span class="badge-label">{adoptedLabel}</span></span
+			>
+		{:else if foreignOrgName}
+			<span class="badge badge--org">{foreignOrgName}</span>
+		{/if}
 		{#if footer}
 			{@render footer()}
 		{:else if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
@@ -504,6 +542,35 @@
 		flex-shrink: 1;
 		gap: 12px;
 		justify-content: space-between;
+	}
+
+	footer .badge--org {
+		background-color: var(--color-gray-100);
+		color: var(--color-gray-600);
+		font-size: 0.6875rem;
+	}
+
+	footer .badge--adopted {
+		background-color: var(--color-green-100);
+		color: var(--color-green-700);
+		display: inline-flex;
+		align-items: center;
+		font-size: 0.75rem;
+		font-weight: 500;
+		gap: 0.25rem;
+		max-width: 180px;
+	}
+
+	footer .badge--adopted .badge-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	footer .badge--adopted :global(svg) {
+		flex-shrink: 0;
+		height: 0.75rem;
+		width: 0.75rem;
 	}
 
 	footer :global(.progress) {

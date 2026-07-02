@@ -1624,6 +1624,67 @@ export function getAllDirectContainerRelations(guid: string) {
 	};
 }
 
+export function getSubscribedProgramGuids(orgGuids: readonly string[]) {
+	return async (connection: DatabaseConnection) => {
+		if (orgGuids.length === 0) return [];
+		return await connection.any(sql.typeAlias('relation')`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE subject IN (${sql.join(orgGuids, sql.fragment`, `)})
+				AND predicate = ${predicates.enum['is-subscribed-to']}
+				AND valid_currently
+				AND NOT deleted
+		`);
+	};
+}
+
+export function getGuidsRelatedToObjects(
+	objects: readonly string[],
+	relationPredicates: readonly string[]
+) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		if (objects.length === 0 || relationPredicates.length === 0) return [];
+		const rows = await connection.any(sql.type(z.object({ subject: z.string() }))`
+			SELECT DISTINCT subject
+			FROM container_relation
+			WHERE object IN (${sql.join(objects, sql.fragment`, `)})
+				AND predicate IN (${sql.join(relationPredicates, sql.fragment`, `)})
+				AND valid_currently
+				AND NOT deleted
+		`);
+		return rows.map((r) => r.subject);
+	};
+}
+
+export function getSubscriptionsForProgram(programGuid: string) {
+	return async (connection: DatabaseConnection) => {
+		return await connection.any(sql.typeAlias('relation')`
+			SELECT object, position, predicate, subject
+			FROM container_relation
+			WHERE object = ${programGuid}
+				AND predicate = ${predicates.enum['is-subscribed-to']}
+				AND valid_currently
+				AND NOT deleted
+		`);
+	};
+}
+
+export function invalidateDeletedSubscriptions(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		const values = relations.map((r) => [r.object, r.predicate, r.subject]);
+		await connection.query(sql.typeAlias('void')`
+			UPDATE container_relation cr
+			SET valid_currently = false
+			FROM ${sql.unnest(values, ['uuid', 'text', 'uuid'])} AS u(object, predicate, subject)
+			WHERE cr.object = u.object
+			  AND cr.predicate = u.predicate
+			  AND cr.subject = u.subject
+			  AND cr.valid_currently
+			  AND cr.deleted
+		`);
+	};
+}
+
 export function createUser(user: User) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.one(sql.typeAlias('user')`

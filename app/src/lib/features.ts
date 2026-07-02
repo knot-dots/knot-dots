@@ -1,5 +1,5 @@
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'BulkActions'] as const],
+	['alpha', ['OpenAI', 'EmbedObjects', 'Subscriptions', 'BulkActions'] as const],
 	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'SubMeasures'] as const]
 ]);
 
@@ -31,6 +31,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');
+		},
+		useSubscriptions() {
+			return features.includes('Subscriptions');
 		},
 		useBulkActions() {
 			return features.includes('BulkActions');

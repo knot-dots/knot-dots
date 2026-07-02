@@ -33,6 +33,7 @@
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
 	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
+	import ScopeFilterDropDown from '$lib/components/ScopeFilterDropDown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -429,6 +430,8 @@
 						<AssigneeFilterDropDown {options} />
 					{:else if key === 'included'}
 						<OrganizationIncludedFilterDropDown />
+					{:else if key === 'scope'}
+						<ScopeFilterDropDown />
 					{:else if key === 'relationType'}
 						<RelationTypeFilterDropDown {options} />
 					{:else if key === 'member'}
