@@ -81,8 +81,6 @@
 			container.payload.geometry = undefined;
 			container.payload.cityAndMunicipalityTypeBBSR = undefined;
 			container.payload.federalState = undefined;
-			container.payload.nameBBSR = undefined;
-			container.payload.nameOSM = undefined;
 			container.payload.officialMunicipalityKey = undefined;
 			container.payload.officialRegionalCode = undefined;
 		} else {
@@ -92,7 +90,6 @@
 			container.payload.federalState = stateFromOfficialRegionalCode.get(
 				selected.officialRegionalCode.substring(0, 2)
 			);
-			container.payload.nameOSM = selected.nameOSM;
 			container.payload.officialMunicipalityKey = selected.officialMunicipalityKey ?? undefined;
 			container.payload.officialRegionalCode = selected.officialRegionalCode ?? undefined;
 		}
@@ -108,9 +105,9 @@
 			<AdministrativeAreaCombobox
 				labelledBy={administrativeAreaLabelId}
 				{onchange}
-				value={container.payload.nameOSM && container.payload.officialRegionalCode
+				value={container.payload.officialRegionalCode
 					? {
-							nameOSM: container.payload.nameOSM,
+							geometry: container.payload.geometry,
 							officialRegionalCode: container.payload.officialRegionalCode
 						}
 					: undefined}

@@ -1517,8 +1517,6 @@ export const organizationalUnitPayload = z.object({
 	imageReplacesName: z.boolean().default(false),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
-	nameBBSR: z.string().optional(),
-	nameOSM: z.string().optional(),
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationalUnitType: organizationalUnitType.optional(),

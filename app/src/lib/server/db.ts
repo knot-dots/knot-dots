@@ -1853,33 +1853,83 @@ export function getManySpatialFeatures(guid: string[]) {
 	};
 }
 
-export function getAdministrativeAreas(name: string) {
+const administrativeArea = z
+	.object({
+		bbsr_name: z.string().nullable(),
+		city_and_municipality_type: z.string().nullable(),
+		geom: z.object({}).passthrough(),
+		guid: z.string().uuid(),
+		name: z.string(),
+		official_municipality_key: z.string().nullable(),
+		official_regional_code: z.string()
+	})
+	.transform((v) => ({
+		boundary: { geometry: v.geom, id: v.guid, type: 'Feature' },
+		cityAndMunicipalityTypeBBSR: v.city_and_municipality_type,
+		nameBBSR: v.bbsr_name,
+		nameOSM: v.name,
+		officialMunicipalityKey: v.official_municipality_key,
+		officialRegionalCode: v.official_regional_code
+	}));
+
+const administrativeAreaSummary = z
+	.object({
+		city_and_municipality_type: z.string().nullable(),
+		guid: z.string().uuid(),
+		name: z.string(),
+		official_municipality_key: z.string().nullable(),
+		official_regional_code: z.string()
+	})
+	.transform((v) => ({
+		boundary: { id: v.guid, type: 'Feature' },
+		cityAndMunicipalityTypeBBSR: v.city_and_municipality_type,
+		nameOSM: v.name,
+		officialMunicipalityKey: v.official_municipality_key,
+		officialRegionalCode: v.official_regional_code
+	}));
+
+export function getAdministrativeAreaSummaries(name: string) {
 	return async (connection: DatabaseConnection) => {
-		return connection.any(sql.type(
-			z
-				.object({
-					city_and_municipality_type: z.string().nullable(),
-					geom: z.object({}).passthrough(),
-					guid: z.string().uuid(),
-					name: z.string(),
-					official_municipality_key: z.string().nullable(),
-					official_regional_code: z.string()
-				})
-				.transform((v) => ({
-					boundary: { geometry: v.geom, id: v.guid, type: 'Feature' },
-					cityAndMunicipalityTypeBBSR: v.city_and_municipality_type,
-					nameOSM: v.name,
-					officialMunicipalityKey: v.official_municipality_key,
-					officialRegionalCode: v.official_regional_code
-				}))
-		)`
-			SELECT DISTINCT ON (osm.name) sf.geom::jsonb, sf.guid, osm.name, bbsr.city_and_municipality_type, osm.official_municipality_key, osm.official_regional_code
+		return connection.any(sql.type(administrativeAreaSummary)`
+			SELECT DISTINCT ON (osm.name)
+				sf.guid,
+				osm.name,
+				bbsr.city_and_municipality_type,
+				COALESCE(
+					osm.official_municipality_key,
+					bbsr.official_municipality_key
+				) AS official_municipality_key,
+				osm.official_regional_code
 			FROM administrative_area_open_street_map osm
 			JOIN spatial_feature sf ON osm.boundary = sf.guid
 			LEFT JOIN administrative_area_bbsr bbsr USING (official_regional_code)
 			WHERE osm.official_regional_code IS NOT NULL
 				AND regexp_replace(osm.name, '^(Landkreis|Kreis)\\s+', '') ILIKE ${name + '%'}
 			ORDER BY osm.name, osm.valid_from DESC
+		`);
+	};
+}
+
+export function getAdministrativeAreaByGeometry(geometry: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.maybeOne(sql.type(administrativeArea)`
+			SELECT
+				sf.geom::jsonb,
+				sf.guid,
+				osm.name,
+				bbsr.name AS bbsr_name,
+				bbsr.city_and_municipality_type,
+				COALESCE(
+					osm.official_municipality_key,
+					bbsr.official_municipality_key
+				) AS official_municipality_key,
+				osm.official_regional_code
+			FROM administrative_area_open_street_map osm
+			JOIN spatial_feature sf ON osm.boundary = sf.guid
+			LEFT JOIN administrative_area_bbsr bbsr USING (official_regional_code)
+			WHERE osm.boundary = ${geometry}::uuid
+			ORDER BY osm.valid_from DESC
+			LIMIT 1
 		`);
 	};
 }
