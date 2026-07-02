@@ -141,7 +141,7 @@
 					: organizationsUserIsMemberOf.length > 0
 						? organizationsUserIsMemberOf
 						: [page.data.currentOrganization.guid];
-			const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
+			const organizationalUnitOrgs = filter.organizationalUnit
 				.map(
 					(guid) =>
 						page.data.organizationalUnits.find(
@@ -152,7 +152,7 @@
 			const organization = [...new Set([...baseOrganization, ...organizationalUnitOrgs])];
 			params.push(
 				...organization.map((org) => ['organization', org]),
-				...(filter.organizationalUnit ?? []).map((v) => ['organizationalUnit', v])
+				...filter.organizationalUnit.map((v) => ['organizationalUnit', v])
 			);
 		}
 
@@ -341,7 +341,7 @@
 				)
 			);
 		} else {
-			const organizationalUnitOrgs = (filter.organizationalUnit ?? [])
+			const organizationalUnitOrgs = filter.organizationalUnit
 				.map(
 					(guid) =>
 						page.data.organizationalUnits.find(
@@ -351,7 +351,7 @@
 				.filter((org): org is string => org != null);
 			savedFilter = {
 				...filter,
-				organization: [...new Set([...(filter.organization ?? []), ...organizationalUnitOrgs])]
+				organization: [...new Set([...filter.organization, ...organizationalUnitOrgs])]
 			};
 		}
 		const response = await saveContainer({
