@@ -538,7 +538,6 @@
 
 	@media (hover: hover) {
 		.card:hover {
-			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
 			--is-visible-on-hover-visibility: visible;
 		}
 

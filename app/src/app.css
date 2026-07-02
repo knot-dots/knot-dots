@@ -1944,7 +1944,7 @@ img.cover {
 
 @media (hover: hover) {
 	.is-visible-on-hover {
-		transition: var(--is-visible-on-hover-transition, visibility 0s 0.5s linear);
+		transition: var(--is-visible-on-hover-transition, visibility 0s 0.075s linear);
 		visibility: var(--is-visible-on-hover-visibility, hidden);
 	}
 
