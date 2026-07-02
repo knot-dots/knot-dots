@@ -572,6 +572,20 @@
 								{/each}
 							{/if}
 						{/each}
+						{#if organizationScope === 'current' && !includeSubordinateOrganizationalUnits}
+							<li class="preview-item">
+								<LightningBolt />
+								{$_('organization_filter.exclude_subordinate')}
+								<button
+									class="button button-remove"
+									type="button"
+									onclick={() => (includeSubordinateOrganizationalUnits = true)}
+								>
+									<CloseCircle />
+									<span class="is-visually-hidden">{$_('remove')}</span>
+								</button>
+							</li>
+						{/if}
 					</ul>
 				{/if}
 			</div>
