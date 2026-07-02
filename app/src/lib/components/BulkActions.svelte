@@ -68,14 +68,11 @@
 				status: 'success'
 			});
 		} catch (e) {
-			if (e instanceof Error) {
-				toast({ heading: $_('toast.bulk_actions.error'), message: e.message, status: 'error' });
-			} else {
-				toast({
-					heading: $_('toast.bulk_actions.error'),
-					status: 'error'
-				});
-			}
+			toast({
+				heading: $_('toast.bulk_actions.error'),
+				message: e instanceof Error ? e.message : undefined,
+				status: 'error'
+			});
 		} finally {
 			isLoading = false;
 			payload = { status: undefined, visibility: undefined };
@@ -88,7 +85,7 @@
 </script>
 
 {#if bulkActionContext}
-	<fieldset class={{ 'has-selection': bulkActionContext?.selected.size > 0 }}>
+	<fieldset class={{ 'has-selection': bulkActionContext.selected.size > 0 }}>
 		<legend class="is-visually-hidden">{$_('bulk_actions')}</legend>
 
 		<label>
@@ -104,7 +101,7 @@
 			</span>
 		</label>
 
-		{#if bulkActionContext?.selected.size > 0}
+		{#if bulkActionContext.selected.size > 0}
 			<span class="selection-counter">
 				{$_('selection_counter', { values: { count: bulkActionContext.selected.size } })}
 			</span>
@@ -112,7 +109,7 @@
 			{#each bulkActionContext.actions as action (action)}
 				{#if action === 'status'}
 					<BulkActionDropdown
-						disabled={isLoading || bulkActionContext.selected.size == 0}
+						disabled={isLoading}
 						label={$_('status')}
 						onchange={() => performBulkAction({ payload })}
 						options={status.options.map((o) => ({ value: o, label: $_(o) }))}
@@ -120,7 +117,7 @@
 					/>
 				{:else if action === 'visibility'}
 					<BulkActionDropdown
-						disabled={isLoading || bulkActionContext.selected.size == 0}
+						disabled={isLoading}
 						label={$_('visibility.label')}
 						onchange={() => performBulkAction({ payload })}
 						options={visibility.options
@@ -131,7 +128,7 @@
 				{:else if action === 'delete'}
 					<button
 						class="action-button"
-						disabled={isLoading || bulkActionContext.selected.size == 0}
+						disabled={isLoading}
 						name="delete"
 						onclick={() => dialog.showModal()}
 						type="button"
