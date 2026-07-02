@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Attachment } from 'svelte/attachments';
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-solid';
 	import { page } from '$app/state';
@@ -83,13 +82,9 @@
 		}
 	}
 
-	const checkState: Attachment<HTMLInputElement> = (element) => {
-		if (bulkActionContext.selected.size == 0) {
-			element.indeterminate = false;
-		} else if (selectAllResultCount != bulkActionContext.selected.size) {
-			element.indeterminate = true;
-		}
-	};
+	let selectAllIndeterminate = $derived(
+		bulkActionContext.selected.size > 0 && bulkActionContext.selected.size !== selectAllResultCount
+	);
 </script>
 
 {#if bulkActionContext}
@@ -98,8 +93,8 @@
 
 		<label>
 			<input
-				{@attach checkState}
 				bind:checked={selectAllChecked}
+				bind:indeterminate={selectAllIndeterminate}
 				name="bulkActionContextSelectAll"
 				onchange={updateSelection}
 				type="checkbox"
