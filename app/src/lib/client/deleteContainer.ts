@@ -1,8 +1,9 @@
 import { etag } from '$lib/models';
 import type { AnyContainer } from '$lib/models';
+import { lastDeletedContainers } from '$lib/stores';
 
 export default async function deleteContainer(container: AnyContainer) {
-	return await fetch(`/container/${container.guid}`, {
+	const response = await fetch(`/container/${container.guid}`, {
 		method: 'DELETE',
 		credentials: 'include',
 		headers: {
@@ -10,4 +11,12 @@ export default async function deleteContainer(container: AnyContainer) {
 			'If-Match': etag(container)
 		}
 	});
+
+	if (response.ok) {
+		lastDeletedContainers.update(
+			(containers) => new Map([...containers, [container.guid, container]])
+		);
+	}
+
+	return response;
 }
