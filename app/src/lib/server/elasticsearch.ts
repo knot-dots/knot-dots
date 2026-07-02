@@ -326,7 +326,20 @@ export async function getManyContainersWithES(
 		});
 	}
 	if (organizations.length) {
-		addFacetFilter(facetFilters, 'organization', { terms: { organization: organizations } });
+		// The organization facet is applied as a post_filter. Subscribed content lives in foreign
+		// organizations, so OR in the subscribed clause to keep it from being filtered out.
+		addFacetFilter(
+			facetFilters,
+			'organization',
+			subscribedMatchClause
+				? {
+						bool: {
+							should: [{ terms: { organization: organizations } }, subscribedMatchClause],
+							minimum_should_match: 1
+						}
+					}
+				: { terms: { organization: organizations } }
+		);
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
