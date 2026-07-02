@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import defineAbilityFor, { canSubscribeForOrg, filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
 	isContainerWithEffect,
@@ -13,7 +13,8 @@ import {
 	predicates,
 	programTypes,
 	relation,
-	taskCategories
+	taskCategories,
+	visibility
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
@@ -226,20 +227,35 @@ export const POST = (async ({ locals, params, request }) => {
 		await updateManyContainerRelations(
 			parseResult.data
 				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-				.filter(({ object, subject }) => {
+				.filter(({ object, predicate, subject }) => {
 					const objectContainer = containers.find(
 						(c) => ability.can('read', c) && c.guid === object
 					);
 					const subjectContainer = containers.find(
 						(c) => ability.can('read', c) && c.guid === subject
 					);
-					return (
-						objectContainer &&
-						subjectContainer &&
-						ability.can(
-							'relate',
-							[subjectContainer, objectContainer].find((c) => c.guid == params.guid) as AnyContainer
-						)
+
+					if (!objectContainer || !subjectContainer) {
+						return false;
+					}
+
+					// Subscribing an organization or organizational unit to a public rule-set
+					// program does not require 'relate' permission on the (foreign) program.
+					// Instead the user must be allowed to subscribe on behalf of the
+					// subscribing organization or organizational unit.
+					if (predicate === predicates.enum['is-subscribed-to']) {
+						return (
+							isProgramContainer(objectContainer) &&
+							objectContainer.payload.programType ===
+								programTypes.enum['program_type.set_of_rules'] &&
+							objectContainer.payload.visibility === visibility.enum.public &&
+							canSubscribeForOrg(locals.user, subject)
+						);
+					}
+
+					return ability.can(
+						'relate',
+						[subjectContainer, objectContainer].find((c) => c.guid == params.guid) as AnyContainer
 					);
 				})
 		)(tx);
