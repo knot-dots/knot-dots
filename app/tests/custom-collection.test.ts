@@ -22,7 +22,7 @@ test('Selected objects can be displayed in a section', async ({
 	await section.hover();
 
 	// Open dialog to select objects
-	await section.getByRole('button', { name: 'Add items' }).click();
+	await section.getByRole('button', { name: 'Add items', exact: true }).click();
 
 	// Assert catalog of available objects is displayed
 	const dialog = landingPage.page.getByRole('dialog');
@@ -76,7 +76,7 @@ test('Selected objects can be displayed in a section', async ({
 	await expect(
 		section.getByRole('link', { name: testOrganizationalUnit.payload.name })
 	).toBeVisible();
-	await expect(section.getByRole('button', { name: 'Add item' })).not.toBeVisible();
+	await expect(section.getByRole('button', { name: 'Add item', exact: true })).not.toBeVisible();
 
 	// Assert show-all link is not displayed
 	await section.hover();
@@ -101,7 +101,7 @@ test('Rule-based collections can be displayed in a section', async ({
 	await section.hover();
 
 	// Open dialog to select objects
-	await section.getByRole('button', { name: 'Add items' }).click();
+	await section.getByRole('button', { name: 'Add items', exact: true }).click();
 
 	// Assert catalog of available objects is displayed
 	const dialog = landingPage.page.getByRole('dialog');
@@ -134,7 +134,7 @@ test('Rule-based collections can be displayed in a section', async ({
 	await expect(dialog).not.toBeVisible();
 	await expect(section.getByRole('link', { name: testProgram.payload.title })).toBeVisible();
 	await expect(section.getByRole('link', { name: testReport.payload.title })).toBeVisible();
-	await expect(section.getByRole('button', { name: 'Add item' })).not.toBeVisible();
+	await expect(section.getByRole('button', { name: 'Add item', exact: true })).not.toBeVisible();
 
 	// Assert show-all link is displayed
 	await section.hover();
@@ -188,11 +188,15 @@ test('New item can be added to custom collection', async ({
 	// Assert dialog closes and selected objects are displayed in the section
 	await confirmButton.click();
 	await expect(dialog).not.toBeVisible();
-	await expect(section.getByRole('button', { name: 'Add item' })).toBeVisible();
+	const addItemButton = section.getByRole('button', { name: 'Add item', exact: true });
+	await expect(addItemButton).toBeVisible();
+	await expect(addItemButton).toHaveAttribute('aria-haspopup', 'true');
 
 	// Assert clicking the add item button creates a new report
-	await section.getByRole('button', { name: 'Add item' }).click();
-	await section.getByRole('menuitem', { name: reportTemplate.payload.title }).click();
+	await addItemButton.click();
+	const newItem = section.getByRole('menuitem', { name: reportTemplate.payload.title });
+	await expect(newItem).toBeVisible();
+	await newItem.click();
 	await expect(dialog.getByRole('textbox', { name: 'Title' })).toHaveValue(
 		reportTemplate.payload.title
 	);
