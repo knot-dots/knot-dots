@@ -511,7 +511,7 @@
 	}
 
 	input[type='checkbox'] {
-		margin: 0.125rem;
+		margin: 0.375rem;
 	}
 
 	.cell {

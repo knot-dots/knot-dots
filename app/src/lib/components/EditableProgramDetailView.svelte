@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { getContext, type Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
-	import { SvelteSet } from 'svelte/reactivity';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -22,7 +21,6 @@
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
@@ -50,11 +48,6 @@
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
-
-	setBulkActionContext({
-		actions: ['visibility', 'delete'],
-		selected: new SvelteSet<string>()
-	});
 
 	let guid = $derived(container.guid);
 

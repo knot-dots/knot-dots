@@ -3,12 +3,11 @@
 	import Close from '~icons/knotdots/close';
 
 	interface Props {
-		count: number;
 		dialog: HTMLDialogElement;
 		handleSubmit: (event: SubmitEvent) => void;
 	}
 
-	let { count, dialog = $bindable(), handleSubmit }: Props = $props();
+	let { dialog = $bindable(), handleSubmit }: Props = $props();
 </script>
 
 <dialog bind:this={dialog}>
@@ -27,7 +26,7 @@
 		</h2>
 
 		<p>
-			{$_('confirm_bulk_delete_dialog.message', { values: { count } })}
+			{$_('confirm_bulk_delete_dialog.message')}
 		</p>
 
 		<button class="button-primary button-xs" type="submit">

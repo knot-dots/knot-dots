@@ -474,10 +474,9 @@
 		border-radius: 6px;
 		box-shadow: var(--shadow-sm);
 		left: calc(var(--offset));
-		padding: 0.125rem;
 		position: absolute;
 		top: calc(var(--offset));
-		width: 1.25rem;
+		width: 1.5rem;
 	}
 
 	input[type='checkbox'] {
@@ -538,7 +537,6 @@
 
 	@media (hover: hover) {
 		.card:hover {
-			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
 			--is-visible-on-hover-visibility: visible;
 		}
 
