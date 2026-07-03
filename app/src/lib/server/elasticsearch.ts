@@ -18,6 +18,7 @@ type FacetCounts = Record<string, Record<string, number>>;
 
 type ContainerElasticsearchOptions = ContainerQueryOptions & {
 	customCategoryKeys?: string[];
+	includeGuids?: string[];
 	includeFacets?: boolean;
 };
 
@@ -212,7 +213,7 @@ export async function getManyContainersWithES(
 		});
 	}
 	if (filters.type?.length) {
-		addFacetFilter(facetFilters, 'type', { terms: { type: filters.type } });
+		nonFacetFilters.push({ terms: { type: filters.type } });
 	}
 	if (filters.administrativeTypes?.length) {
 		addFacetFilter(facetFilters, 'administrativeType', {
@@ -291,13 +292,52 @@ export async function getManyContainersWithES(
 	}
 	if (filters.organizationalUnits === null) {
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
+	}
+
+	const includeGuidsClause: estypes.QueryDslQueryContainer | undefined = options?.includeGuids
+		?.length
+		? { terms: { guid: options.includeGuids } }
+		: undefined;
+
+	if (organizations.length) {
+		const orgFilter: estypes.QueryDslQueryContainer = filters.organizationalUnits?.length
+			? {
+					bool: {
+						filter: [
+							{ terms: { organization: organizations } },
+							{ terms: { organizational_unit: filters.organizationalUnits } }
+						]
+					}
+				}
+			: { terms: { organization: organizations } };
+
+		nonFacetFilters.push(
+			includeGuidsClause
+				? { bool: { should: [orgFilter, includeGuidsClause], minimum_should_match: 1 } }
+				: orgFilter
+		);
+	} else if (includeGuidsClause) {
+		nonFacetFilters.push(includeGuidsClause);
 	} else if (filters.organizationalUnits?.length) {
 		addFacetFilter(facetFilters, 'organizationalUnit', {
 			terms: { organizational_unit: filters.organizationalUnits }
 		});
 	}
 	if (organizations.length) {
-		addFacetFilter(facetFilters, 'organization', { terms: { organization: organizations } });
+		// The organization facet is applied as a post_filter. Subscribed content lives in foreign
+		// organizations, so OR in the subscribed clause to keep it from being filtered out.
+		addFacetFilter(
+			facetFilters,
+			'organization',
+			includeGuidsClause
+				? {
+						bool: {
+							should: [{ terms: { organization: organizations } }, includeGuidsClause],
+							minimum_should_match: 1
+						}
+					}
+				: { terms: { organization: organizations } }
+		);
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
@@ -316,11 +356,12 @@ export async function getManyContainersWithES(
 	}
 
 	const allFacetFilters = Object.values(facetFilters).flat();
+
+	const postFilter: estypes.QueryDslQueryContainer | undefined =
+		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 	const query: estypes.QueryDslQueryContainer = {
 		bool: { must, filter: [...nonFacetFilters] }
 	};
-	const postFilter: estypes.QueryDslQueryContainer | undefined =
-		allFacetFilters.length > 0 ? { bool: { filter: allFacetFilters } } : undefined;
 	const esSortClauses = buildElasticsearchSortClause(sort);
 	const sizeParam =
 		options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? options.limit : 10000;

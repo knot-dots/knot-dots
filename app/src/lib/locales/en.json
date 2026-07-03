@@ -200,6 +200,8 @@
 	"empty": "Empty",
 	"end_date": "End",
 	"error": {
+		"bad_request": "Invalid request.",
+		"forbidden": "Access denied.",
 		"unauthorized": "Sorry, you are not allowed to do this.",
 		"not_found": "Sorry, there is nothing to show here.",
 		"precondition_failed": "The resource has been modified.",
@@ -701,6 +703,7 @@
 	"resource": "Resource",
 	"resource_v2": "Resource",
 	"ResourceV2": "ResourceV2",
+	"Subscriptions": "Subscriptions",
 	"resource_data": "Resource data",
 	"resource_data_collection": "Resource data collection",
 	"resource_category.material": "Material",
@@ -738,6 +741,10 @@
 	"rule_status.rejected": "Rejected",
 	"rules_catalog.empty": "No rules are available.",
 	"save": "Save",
+	"scope": {
+		"label": "Scope",
+		"platform": "knotdots.net/Platform"
+	},
 	"sdg": {
 		"01": "No poverty",
 		"02": "Zero hunger",
@@ -795,6 +802,19 @@
 	"strategic_goal": "Strategic goal",
 	"strategic_goals": "Strategic goals",
 	"subtasks": "Subtasks",
+	"subscribe_button": {
+		"subscribe": "Adopt",
+		"unsubscribe": "Adopted"
+	},
+	"adopted": "Adopted",
+	"subscribe_dialog": {
+		"confirm": "Confirm selection",
+		"description": "Which areas should adopt this program?",
+		"heading": "Adopt program for...",
+		"no_organizations": "No areas available that can adopt this program.",
+		"select_all": "All",
+		"selected": "{count} selected"
+	},
 	"summary": "Summary",
 	"superordinate_element": "Superordinate element",
 	"superordinate_organizational_unit": "Superordinate organizational unit",

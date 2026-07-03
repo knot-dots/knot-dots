@@ -28,6 +28,7 @@ import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
 	getAllRelatedContainers,
+	getGuidsRelatedToObjects,
 	getManyContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
@@ -64,6 +65,7 @@ const querySchema = z.object({
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
 	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
+	scope: z.array(z.string()).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
 	level: z.array(levels).default([]),
@@ -348,8 +350,49 @@ export async function loadContainerV2(params: {
 
 	if (useElasticsearch) {
 		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
-		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
+		const includeSubscribed =
+			query.type.includes('rule') || query.programType.includes('program_type.set_of_rules');
+
+		let effectiveOrganization = scopedQuery.organization;
+		let effectiveIncludeGuids = includeSubscribed
+			? applicationContext?.subscribedPrograms
+			: undefined;
+
+		if (query.scope.length > 0 && !query.scope.includes('platform') && applicationContext) {
+			const ownGuid = applicationContext.currentOrganization.guid;
+			const hasOwn = query.scope.includes(ownGuid);
+			const foreignGuids = query.scope.filter((s) => s !== ownGuid);
+
+			if (!hasOwn && foreignGuids.length > 0) {
+				// Only foreign org(s) selected: show only subscribed content from those orgs
+				effectiveOrganization = [];
+				if (effectiveIncludeGuids) {
+					effectiveIncludeGuids = foreignGuids.flatMap(
+						(org) => applicationContext.subscribedProgramsByOrg.get(org) ?? []
+					);
+				}
+			} else if (hasOwn && foreignGuids.length === 0) {
+				// Only own org selected: hide subscribed content
+				effectiveIncludeGuids = undefined;
+			}
+		}
+
+		// Expand subscribed program GUIDs to include the GUIDs of the containers (e.g. rules) that
+		// belong to those programs, so the Elasticsearch query can treat includeGuids as a plain
+		// set of GUIDs to include.
+		if (effectiveIncludeGuids?.length) {
+			const childGuids = await params.locals.pool.connect(
+				getGuidsRelatedToObjects(effectiveIncludeGuids, [
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-program']
+				])
+			);
+			effectiveIncludeGuids = [...new Set([...effectiveIncludeGuids, ...childGuids])];
+		}
+
+		const result = await getManyContainersWithES(effectiveOrganization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
+			includeGuids: effectiveIncludeGuids,
 			includeFacets: true
 		});
 		rawContainers = result.containers;
