@@ -11,6 +11,8 @@
 	"administrative_area.basic_data.federal_state": "Bundesland",
 	"administrative_area.basic_data.official_municipality_key": "Amtlicher Gemeindeschlüssel",
 	"administrative_area.boundary": "Gebietsgrenze",
+	"administrative_area.boundary.empty": "Keine Daten vorhanden",
+	"administrative_area.boundary.empty_hint": "In den Einstellungen ein Verwaltungsgebiet wählen, um die Karte anzuzeigen",
 	"administrative_type.country": "Staat",
 	"administrative_type.federal_state": "Bundesland",
 	"administrative_type.municipality": "Gemeinde",
