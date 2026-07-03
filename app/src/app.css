@@ -2152,6 +2152,38 @@ img.cover {
 	}
 }
 
+/* System */
+.system-info {
+	--color-accent-on-default: var(--color-yellow-700);
+
+	--color-text-accent-strong: var(--color-yellow-900);
+	--color-text-accent-default: var(--color-yellow-700);
+	--color-text-accent-subtle: var(--color-yellow-500);
+	--color-text-accent-muted: var(--color-yellow-400);
+
+	--color-icon-accent-strong: var(--color-yellow-900);
+	--color-icon-accent-default: var(--color-yellow-700);
+	--color-icon-accent-subtle: var(--color-yellow-500);
+	--color-icon-accent-muted: var(--color-yellow-400);
+
+	--color-background-accent-strong: var(--color-yellow-300);
+	--color-background-accent-default: var(--color-yellow-100);
+	--color-background-accent-subtle: var(--color-yellow-050);
+	--color-background-accent-muted: var(--color-yellow-025);
+	--color-background-accent-state-active: rgb(from var(--color-yellow-500) r g b / 0.25);
+	--color-background-accent-state-hover: rgb(from var(--color-yellow-500) r g b / 0.1);
+	--color-background-accent-state-selected: rgb(from var(--color-yellow-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-yellow-400);
+	--color-border-accent-default: var(--color-yellow-200);
+	--color-border-accent-subtle: var(--color-yellow-100);
+	--color-border-accent-muted: var(--color-yellow-050);
+	--color-border-accent-state-selected: var(--color-yellow-200);
+
+	--color-surface-accent-container: var(--color-yellow-025);
+	--color-surface-accent-container-raised: var(--color-yellow-050);
+}
+
 /* Modules */
 .module-goal-setting {
 	--color-accent-on-default: var(--color-indigo-700);
