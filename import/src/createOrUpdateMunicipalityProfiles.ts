@@ -238,7 +238,7 @@ async function createOrUpdateOrganizationalUnitContainer(
 			},
 			...(bbsr ? { cityAndMunicipalityTypeBBSR: bbsr.city_and_municipality_type } : undefined),
 			federalState: stateFromAGS.get(region.official_municipality_key.substring(0, 2)),
-			...(osm ? { geometry: osm.boundary, nameOSM: osm?.name } : undefined),
+			...(osm ? { geometry: osm.boundary } : undefined),
 			...(wikidata?.coat_of_arms ? { image: wikidata.coat_of_arms } : undefined),
 			level: organizationalUnitLevel,
 			name: region.title,

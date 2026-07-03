@@ -150,8 +150,7 @@
 	);
 
 	let mayAddAdministrativeAreaBasicData = $derived(
-		isOrganizationalUnitContainer(parentContainer) &&
-			parentContainer.payload.officialRegionalCode &&
+		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isAdministrativeAreaBasicDataContainer)
 	);
 
@@ -162,8 +161,7 @@
 	);
 
 	let mayAddMap = $derived(
-		isOrganizationalUnitContainer(parentContainer) &&
-			parentContainer.payload.geometry &&
+		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
