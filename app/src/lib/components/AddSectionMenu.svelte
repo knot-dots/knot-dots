@@ -162,7 +162,6 @@
 
 	let mayAddMap = $derived(
 		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
-			parentContainer.payload.geometry &&
 			!hasSection(parentContainer, relatedContainers).some(isMapContainer)
 	);
 
