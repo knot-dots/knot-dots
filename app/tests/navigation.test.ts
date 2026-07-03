@@ -1,3 +1,4 @@
+import Header from './header';
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'navigation', storageState: 'tests/.auth/admin.json' });
@@ -6,32 +7,20 @@ test('workspaces mega-menu opens and navigates to selected workspace', async ({
 	page,
 	testOrganization
 }) => {
+	const header = new Header(page);
 	await page.goto(`/${testOrganization.guid}/strategies/catalog`);
 
-	const trigger = page.getByRole('banner').getByRole('button', { name: 'Strategies', exact: true });
-	await expect(trigger).toBeVisible();
-
-	await trigger.click();
-
-	const goalsItem = page.getByRole('menuitem', { name: /^Goals\b/ });
-	await expect(goalsItem).toBeVisible();
-
-	await goalsItem.click();
+	await header.selectWorkspace('Strategies', /^Goals\b/);
 
 	await expect(page).toHaveURL(new RegExp(`/${testOrganization.guid}/goals(/|$)`));
-	await expect(
-		page.getByRole('banner').getByRole('button', { name: 'Goals', exact: true })
-	).toBeVisible();
+	await expect(header.locator.getByRole('button', { name: 'Goals', exact: true })).toBeVisible();
 });
 
 test('workspaces mega-menu groups workspaces by module', async ({ page, testOrganization }) => {
+	const header = new Header(page);
 	await page.goto(`/${testOrganization.guid}/strategies/catalog`);
 
-	const trigger = page.getByRole('banner').getByRole('button', { name: 'Strategies', exact: true });
-	await trigger.click();
-
-	const menu = page.getByRole('menu');
-	await expect(menu).toBeVisible();
+	const menu = await header.openWorkspaceMenu('Strategies');
 
 	// Module headings group the workspaces in the panel.
 	await expect(menu.getByRole('heading', { name: 'Goal setting' })).toBeVisible();
