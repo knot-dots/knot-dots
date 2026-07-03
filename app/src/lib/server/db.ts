@@ -1855,7 +1855,6 @@ export function getManySpatialFeatures(guid: string[]) {
 
 const administrativeArea = z
 	.object({
-		bbsr_name: z.string().nullable(),
 		city_and_municipality_type: z.string().nullable(),
 		geom: z.object({}).passthrough(),
 		guid: z.string().uuid(),
@@ -1866,7 +1865,6 @@ const administrativeArea = z
 	.transform((v) => ({
 		boundary: { geometry: v.geom, id: v.guid, type: 'Feature' },
 		cityAndMunicipalityTypeBBSR: v.city_and_municipality_type,
-		nameBBSR: v.bbsr_name,
 		nameOSM: v.name,
 		officialMunicipalityKey: v.official_municipality_key,
 		officialRegionalCode: v.official_regional_code
@@ -1917,7 +1915,6 @@ export function getAdministrativeAreaByGeometry(geometry: string) {
 				sf.geom::jsonb,
 				sf.guid,
 				osm.name,
-				bbsr.name AS bbsr_name,
 				bbsr.city_and_municipality_type,
 				COALESCE(
 					osm.official_municipality_key,

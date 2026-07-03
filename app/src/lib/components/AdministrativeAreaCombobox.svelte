@@ -19,8 +19,7 @@
 	const administrativeArea = administrativeAreaSummary.extend({
 		boundary: administrativeAreaSummary.shape.boundary.extend({
 			geometry: z.object({}).passthrough()
-		}),
-		nameBBSR: z.string().nullable()
+		})
 	});
 
 	type AdministrativeAreaComboboxValue = {
