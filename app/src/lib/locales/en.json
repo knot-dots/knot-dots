@@ -11,6 +11,8 @@
 	"administrative_area.basic_data.federal_state": "Federal state",
 	"administrative_area.basic_data.official_municipality_key": "Official municipality key",
 	"administrative_area.boundary": "Boundary",
+	"administrative_area.boundary.empty": "No data available",
+	"administrative_area.boundary.empty_hint": "Select an administrative area in the settings to show the map",
 	"administrative_type.country": "Country",
 	"administrative_type.federal_state": "Federal state",
 	"administrative_type.municipality": "Municipality",
