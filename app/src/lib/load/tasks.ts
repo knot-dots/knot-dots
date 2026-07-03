@@ -1,151 +1,93 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
-import { filterVisible } from '$lib/authorization';
+import { filterCategoryContext } from '$lib/categoryOptions';
+import fetchContainerPage from '$lib/client/fetchContainerPage';
 import {
-	computeFacetCount,
-	filterOrganizationalUnits,
-	fromCounts,
 	type GoalContainer,
-	isGoalContainer,
 	isPartOf,
-	isTaskContainer,
 	payloadTypes,
 	predicates,
-	status,
-	taskCategories,
 	type TaskContainer
 } from '$lib/models';
-import { getAllRelatedContainers, getAllRelatedOrganizationalUnitContainers } from '$lib/server/db';
-import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import { MAX_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
 
-function filterRelated(
-	containers: GoalContainer[],
-	taskContainers: TaskContainer[]
-): GoalContainer[] {
-	return containers.filter((c) => taskContainers.some(isPartOf(c)));
+const DEFAULT_RELATION_TYPES = [
+	predicates.enum['is-part-of'],
+	predicates.enum['is-prerequisite-for']
+];
+
+function filterRelated(goals: GoalContainer[], tasks: TaskContainer[]): GoalContainer[] {
+	return goals.filter((goal) => tasks.some(isPartOf(goal)));
 }
 
 export default function load(
 	defaultSort: 'alpha' | 'modified' | 'priority',
 	options: { omitStatusFacet?: boolean } = {}
 ) {
-	return (async ({ depends, locals, parent, url }) => {
+	return (async ({ depends, fetch, params, parent, url }) => {
 		depends('containers');
 
-		let taskContainers: TaskContainer[];
-		let otherContainers: GoalContainer[];
-		let subordinateOrganizationalUnits: string[] = [];
+		const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.task]]);
+		query.set('sort', url.searchParams.get('sort') ?? defaultSort);
 
-		const { currentOrganization, currentOrganizationalUnit, categoryContext } = await parent();
-		const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
+		if (url.searchParams.has('related-to') && !url.searchParams.has('relationType')) {
+			for (const rt of DEFAULT_RELATION_TYPES) query.append('relationType', rt);
+		}
+
+		const goalQuery = new URLSearchParams([['type', payloadTypes.enum.goal]]);
+
+		const [data, goalData, { categoryContext, currentOrganization }] = await Promise.all([
+			fetchContainerPage<TaskContainer>({
+				contextGuid: params.guid,
+				fetch,
+				limit: MAX_PAGE_SIZE,
+				offset: 0,
+				query
+			}),
+			fetchContainerPage<GoalContainer>({
+				contextGuid: params.guid,
+				fetch,
+				limit: MAX_PAGE_SIZE,
+				offset: 0,
+				query: goalQuery
+			}),
+			parent()
+		]);
 
 		if (currentOrganization.payload.default) {
 			error(404, unwrapFunctionStore(_)('error.not_found'));
 		}
 
-		if (currentOrganizationalUnit) {
-			const relatedOrganizationalUnits = (await locals.pool.connect(
-				getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-			)) as import('$lib/models').OrganizationalUnitContainer[];
-			subordinateOrganizationalUnits = relatedOrganizationalUnits
-				.filter((unit) => unit.payload.level > currentOrganizationalUnit.payload.level)
-				.map((unit) => unit.guid);
-		}
-
-		let data: Record<string, Record<string, number>> | undefined;
-		if (url.searchParams.has('related-to')) {
-			const containers = await locals.pool.connect(
-				getAllRelatedContainers(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					url.searchParams.get('related-to') as string,
-					[predicates.enum['is-part-of'], predicates.enum['is-prerequisite-for']],
-					{},
-					url.searchParams.get('sort') ?? defaultSort
-				)
-			);
-			taskContainers = containers.filter(isTaskContainer);
-			otherContainers = containers.filter(isGoalContainer);
-		} else {
-			const [taskResult, otherResult] = await Promise.all([
-				getManyContainersWithES(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						assignees: url.searchParams.getAll('assignee'),
-						customCategories,
-						statuses: url.searchParams.getAll('status'),
-						taskCategories: url.searchParams.getAll('taskCategory'),
-						terms: url.searchParams.get('terms') ?? '',
-						type: [payloadTypes.enum.task]
-					},
-					url.searchParams.get('sort') ?? defaultSort,
-					{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-				),
-				getManyContainersWithES(
-					currentOrganization.payload.default ? [] : [currentOrganization.guid],
-					{
-						type: [payloadTypes.enum.goal]
-					},
-					'alpha',
-					{ includeFacets: false }
-				)
-			]);
-			taskContainers = taskResult.containers as TaskContainer[];
-			otherContainers = otherResult.containers as GoalContainer[];
-			data = taskResult.facets;
-		}
-
-		const containers = filterOrganizationalUnits(
-			filterVisible(taskContainers, locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit ?? undefined
-		);
-		const relatedContainers = filterOrganizationalUnits(
-			filterVisible(filterRelated(otherContainers, containers), locals.user),
-			url,
-			subordinateOrganizationalUnits,
-			currentOrganizationalUnit ?? undefined
-		);
-
-		const _facets = new Map<string, Map<string, number>>([
-			...((url.searchParams.has('related-to')
-				? [
-						[
-							'relationType',
-							new Map([
-								[predicates.enum['is-part-of'], 0],
-								[predicates.enum['is-prerequisite-for'], 0]
-							])
-						]
-					]
-				: []) as Array<[string, Map<string, number>]>),
-			...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
-				[string, Map<string, number>]
-			>),
-			...((options.omitStatusFacet
-				? []
-				: [
-						[
-							'status',
-							fromCounts(
-								status.options.filter((s) => s !== 'status.in_operation') as string[],
-								data?.status
-							)
-						]
-					]) as Array<[string, Map<string, number>]>),
-			['taskCategory', fromCounts(taskCategories.options as string[], data?.taskCategory)],
-			['assignee', fromCounts(Object.keys(data?.assignee ?? []), data?.assignee)]
+		const filteredCategoryContext = filterCategoryContext(categoryContext, [
+			payloadTypes.enum.task
 		]);
 
-		for (const [key, facetMap] of buildCategoryFacetsWithCounts(categoryContext.options)) {
-			_facets.set(key, facetMap);
-		}
-
-		const facets = data ? _facets : computeFacetCount(_facets, taskContainers);
-
-		return { containers, relatedContainers, facets };
+		return {
+			containers: data.containers,
+			relatedContainers: filterRelated(goalData.containers, data.containers),
+			facets: url.searchParams.has('related-to')
+				? new Map([['relationType', new Map(DEFAULT_RELATION_TYPES.map((rt) => [rt, 0]))]])
+				: new Map([
+						...((!currentOrganization.payload.default
+							? [['included', new Map<string, number>()]]
+							: []) as Array<[string, Map<string, number>]>),
+						...((options.omitStatusFacet
+							? []
+							: [
+									[
+										'status',
+										new Map(
+											[...(data.facets.get('status') ?? [])].filter(
+												([k]) => k !== 'status.in_operation'
+											)
+										)
+									]
+								]) as Array<[string, Map<string, number>]>),
+						['taskCategory', data.facets.get('taskCategory') ?? new Map()],
+						['assignee', data.facets.get('assignee') ?? new Map()],
+						...[...data.facets].filter(([key]) => filteredCategoryContext.keys.includes(key))
+					])
+		};
 	}) satisfies PageServerLoad;
 }
