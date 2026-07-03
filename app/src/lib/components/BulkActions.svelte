@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-solid';
 	import { page } from '$app/state';
-	import { updateManyContainers } from '$lib/client/performBulkAction';
+	import { updateManyContainers } from '$lib/client/updateManyContainers';
 	import BulkActionDropdown from '$lib/components/BulkActionDropdown.svelte';
 	import ConfirmBulkDeleteDialog from '$lib/components/ConfirmBulkDeleteDialog.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
