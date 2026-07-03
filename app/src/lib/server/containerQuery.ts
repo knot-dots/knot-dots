@@ -169,6 +169,7 @@ function baseFacetMap(
 			'administrativeType',
 			fromCounts(administrativeTypes.options as string[], counts.administrativeType)
 		],
+		['assignee', fromCounts(Object.keys(counts.assignee ?? {}), counts.assignee)],
 		['federalState', fromCounts(Object.keys(counts.federalState ?? {}), counts.federalState)],
 		['organization', fromCounts(Object.keys(counts.organization ?? {}), counts.organization)],
 		[
