@@ -56,6 +56,7 @@
 				organizational_unit: page.data.currentOrganizationalUnit?.guid ?? null
 			});
 			bulkActionContext.selected.clear();
+			selectAllChecked = false;
 			toast({
 				heading:
 					'deleted' in action
