@@ -474,10 +474,9 @@
 		border-radius: 6px;
 		box-shadow: var(--shadow-sm);
 		left: calc(var(--offset));
-		padding: 0.125rem;
 		position: absolute;
 		top: calc(var(--offset));
-		width: 1.25rem;
+		width: 1.5rem;
 	}
 
 	input[type='checkbox'] {
