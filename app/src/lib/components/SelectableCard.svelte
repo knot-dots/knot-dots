@@ -65,11 +65,19 @@
 	<header>
 		<h3>
 			{#if inputType === 'checkbox'}
-				<input {checked} {id} name="item" {onchange} type="checkbox" value={container.guid} />
+				<input
+					{checked}
+					class="is-visually-hidden"
+					{id}
+					name="item"
+					{onchange}
+					type="checkbox"
+					value={container.guid}
+				/>
 			{:else}
 				<input
-					class="is-visually-hidden"
 					{checked}
+					class="is-visually-hidden"
 					{id}
 					name="item"
 					{onchange}

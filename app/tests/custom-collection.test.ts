@@ -46,15 +46,18 @@ test('Selected objects can be displayed in a section', async ({
 		).toBeVisible();
 	}
 
-	// Select individual objects by clicking on their checkboxes
+	// Select individual objects by clicking on their cards
 	await dialog.getByRole('button', { name: 'Type of element' }).click();
 	await dialog.getByRole('checkbox', { name: 'Goal (1)', exact: true }).check();
 	await dialog.getByRole('checkbox', { name: 'Measure (1)', exact: true }).check();
 	await dialog.getByRole('checkbox', { name: 'Organizational unit (1)', exact: true }).check();
 	await expect(dialog.getByRole('article')).toHaveCount(3);
-	await dialog.getByRole('checkbox', { name: testGoal.payload.title }).check();
-	await dialog.getByRole('checkbox', { name: testMeasure.payload.title }).check();
-	await dialog.getByRole('checkbox', { name: testOrganizationalUnit.payload.name }).check();
+	await dialog.getByRole('article').filter({ hasText: testGoal.payload.title }).click();
+	await dialog.getByRole('article').filter({ hasText: testMeasure.payload.title }).click();
+	await dialog
+		.getByRole('article')
+		.filter({ hasText: testOrganizationalUnit.payload.name })
+		.click();
 
 	// Assert selected objects are displayed in the preview
 	const confirmButton = dialog.getByRole('button', { name: 'Apply (3)' });
@@ -173,8 +176,8 @@ test('New item can be added to custom collection', async ({
 		).toBeVisible();
 	}
 
-	// Select templates by clicking on their checkboxes
-	await dialog.getByRole('checkbox', { name: reportTemplate.payload.title }).check();
+	// Select templates by clicking on their cards
+	await dialog.getByRole('article').filter({ hasText: reportTemplate.payload.title }).click();
 
 	// Assert selected templates are displayed in the preview
 	const confirmButton = dialog.getByRole('button', { name: 'Apply (1)' });

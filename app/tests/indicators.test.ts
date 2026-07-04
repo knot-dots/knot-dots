@@ -97,8 +97,9 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTem
 	);
 	await indicatorCatalog.page
 		.getByRole('dialog')
-		.getByRole('checkbox', { name: testIndicatorTemplate.payload.title })
-		.check();
+		.getByRole('article')
+		.filter({ hasText: testIndicatorTemplate.payload.title })
+		.click();
 	await indicatorCatalog.page
 		.getByRole('dialog')
 		.getByRole('button', { name: 'Apply (1)' })
