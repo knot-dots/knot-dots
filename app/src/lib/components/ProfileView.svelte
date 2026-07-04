@@ -30,8 +30,6 @@
 
 	let { containers }: Props = $props();
 
-	let w = $state(0);
-
 	let taskStatusFilter: TaskStatus[] = $state([
 		status.enum['status.in_planning'],
 		status.enum['status.in_implementation']
@@ -78,7 +76,7 @@
 	}
 </script>
 
-<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+<article class="details">
 	<header class="details-section">
 		<h1 class="details-title">{$_('workspace.profile')}</h1>
 	</header>

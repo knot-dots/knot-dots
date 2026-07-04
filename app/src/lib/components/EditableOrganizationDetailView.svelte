@@ -86,8 +86,6 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
-	let w = $state(0);
-
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
@@ -179,7 +177,7 @@
 			</form>
 		</div>
 
-		<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+		<div class="details">
 			<Sections bind:container {relatedContainers} />
 		</div>
 	</article>

@@ -20,28 +20,29 @@
 				</ul>
 			{/if}
 			<form class="details" method="POST" enctype="multipart/form-data">
-				<label>
-					{$_('import.csv_file')}
-					<input accept="text/csv,.csv" name="csv" type="file" required />
-				</label>
-				{#await data.users then users}
-					{#if users.length > 0}
-						<label>
-							{$_('creator')}
-							<select name="creator" value={users[0].guid}>
-								{#each users as user (user.guid)}
-									<option value={user.guid}>{displayName(user)}</option>
-								{/each}
-								/>
-							</select></label
-						>
-					{/if}
-				{/await}
-				<footer>
-					<button class="button-primary" type="submit" {@attach tooltip($_('import.submit'))}
-						>{$_('import.submit')}</button
-					>
-				</footer>
+				<section class="details-section">
+					<label>
+						{$_('import.csv_file')}
+						<input accept="text/csv,.csv" name="csv" type="file" required />
+					</label>
+					{#await data.users then users}
+						{#if users.length > 0}
+							<label>
+								{$_('creator')}
+								<select name="creator" value={users[0].guid}>
+									{#each users as user (user.guid)}
+										<option value={user.guid}>{displayName(user)}</option>
+									{/each}
+								</select>
+							</label>
+						{/if}
+					{/await}
+					<footer>
+						<button class="button-primary" type="submit" {@attach tooltip($_('import.submit'))}>
+							{$_('import.submit')}
+						</button>
+					</footer>
+				</section>
 			</form>
 		</div>
 

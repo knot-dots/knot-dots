@@ -22,14 +22,12 @@
 
 	let { container = $bindable(), data }: Props = $props();
 
-	let w = $state(0);
-
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
 </script>
 
 <form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-	<article class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+	<article class="details">
 		<header class="details-section">
 			<div class="details-header">
 				{#if container.payload.type === payloadTypes.enum.term}
