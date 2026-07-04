@@ -18,8 +18,6 @@
 	interface Props {
 		mode: 'select' | 'apply_rule';
 		options: Option[];
-		scope: 'current' | 'explicit';
-		includeSubordinateOrganizationalUnits: boolean;
 		organizationValue: string[];
 		organizationalUnitValue: string[];
 	}
@@ -27,8 +25,6 @@
 	let {
 		mode,
 		options,
-		scope = $bindable(),
-		includeSubordinateOrganizationalUnits = $bindable(),
 		organizationValue = $bindable(),
 		organizationalUnitValue = $bindable()
 	}: Props = $props();
@@ -60,6 +56,16 @@
 				: [...organizationValue, orgGuid];
 		} else {
 			organizationValue = organizationValue.filter((v) => v !== orgGuid);
+			// Remove organizational units belonging to this org
+			const orgOption = options.find((o) => o.value === orgGuid);
+			if (orgOption) {
+				const organizationalUnitGuids = orgOption.subOptions.map(
+					(organizationalUnit) => organizationalUnit.value
+				);
+				organizationalUnitValue = organizationalUnitValue.filter(
+					(v) => !organizationalUnitGuids.includes(v)
+				);
+			}
 		}
 	}
 
@@ -81,27 +87,15 @@
 		}
 		expandedOrgs = new Set(expandedOrgs);
 	}
-
-	function selectAllSubOptions(org: Option) {
-		const guids = org.subOptions.map(({ value }) => value);
-		organizationalUnitValue = [...new Set([...organizationalUnitValue, ...guids])];
-	}
-
-	function resetAll() {
-		organizationValue = [];
-		organizationalUnitValue = [];
-	}
-
-	const disabled = $derived(scope === 'current');
 </script>
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		{#if scope === 'explicit' && totalSelected > 0 && mode == 'apply_rule'}
+		{#if totalSelected > 0 && mode == 'apply_rule'}
 			<LightningBolt />
 		{/if}
 		<span>{$_('organization')}</span>
-		{#if scope === 'explicit' && totalSelected > 0}
+		{#if totalSelected > 0}
 			<span class="indicator">{totalSelected}</span>
 		{/if}
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -109,44 +103,13 @@
 
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			<div class="scope-options" role="radiogroup">
-				<label class="scope-option">
-					<input type="radio" value="current" bind:group={scope} />
-					<span>{$_('organization_filter.current_area')}</span>
-				</label>
-				{#if scope === 'current'}
-					<label class="toggle-option">
-						<span>{$_('organization_filter.exclude_subordinate')}</span>
-						<input
-							type="checkbox"
-							class="toggle"
-							bind:checked={
-								() => !includeSubordinateOrganizationalUnits,
-								(v) => (includeSubordinateOrganizationalUnits = !v)
-							}
-						/>
-					</label>
-				{/if}
-				<label class="scope-option">
-					<input type="radio" value="explicit" bind:group={scope} />
-					<span>{$_('organization_filter.explicit')}</span>
-				</label>
-			</div>
-
-			<div class="option-list" class:option-list--disabled={disabled}>
-				<div class="list-section-title">
-					<span class="section-label">{$_('organization_filter.select')}</span>
-					<button type="button" class="text-button text-button--reset" onclick={resetAll}>
-						{$_('organization_filter.reset')}
-					</button>
-				</div>
+			<div>
 				{#each options as org (org.value)}
 					<div class="option" role="presentation">
 						<label>
 							<input
 								type="checkbox"
 								value={org.value}
-								{disabled}
 								checked={organizationValue.includes(org.value)}
 								onchange={(event) =>
 									toggleOrg(org.value, (event.currentTarget as HTMLInputElement).checked)}
@@ -159,13 +122,6 @@
 							</span>
 						</label>
 						{#if org.subOptions.length > 0}
-							<button
-								type="button"
-								class="text-button text-button--all"
-								onclick={() => selectAllSubOptions(org)}
-							>
-								{$_('organization_filter.select_all')}
-							</button>
 							<button
 								type="button"
 								class="action-button action-button--size-l suboption-button"
@@ -187,30 +143,27 @@
 						{/if}
 					</div>
 					{#if org.subOptions.length > 0 && expandedOrgs.has(org.value)}
-						<div class="suboptions-section" role="presentation">
-							<div class="suboptions-list">
-								{#each org.subOptions as organizationalUnit (organizationalUnit.value)}
-									<label class="option option--suboption">
-										<input
-											type="checkbox"
-											value={organizationalUnit.value}
-											{disabled}
-											checked={organizationalUnitValue.includes(organizationalUnit.value)}
-											onchange={(event) =>
-												toggleOrganizationalUnit(
-													organizationalUnit.value,
-													(event.currentTarget as HTMLInputElement).checked
-												)}
-										/>
-										<span class="option-label">
-											<span class="truncated">{organizationalUnit.label}</span>
-											{#if organizationalUnit.count !== undefined}
-												<span class="counter">({organizationalUnit.count})</span>
-											{/if}
-										</span>
-									</label>
-								{/each}
-							</div>
+						<div class="suboptions-list" role="presentation">
+							{#each org.subOptions as organizationalUnit (organizationalUnit.value)}
+								<label class="option option--suboption">
+									<input
+										type="checkbox"
+										value={organizationalUnit.value}
+										checked={organizationalUnitValue.includes(organizationalUnit.value)}
+										onchange={(event) =>
+											toggleOrganizationalUnit(
+												organizationalUnit.value,
+												(event.currentTarget as HTMLInputElement).checked
+											)}
+									/>
+									<span class="option-label">
+										<span class="truncated">{organizationalUnit.label}</span>
+										{#if organizationalUnit.count !== undefined}
+											<span class="counter">({organizationalUnit.count})</span>
+										{/if}
+									</span>
+								</label>
+							{/each}
 						</div>
 					{/if}
 				{/each}
@@ -233,44 +186,8 @@
 	}
 
 	.dropdown-panel {
-		width: min(20rem, calc(100cqw - 3rem));
+		max-width: min(24rem, calc(100cqw - 3rem));
 		z-index: 2;
-	}
-
-	.scope-options {
-		border-bottom: solid 1px var(--color-gray-200);
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin-bottom: 0.5rem;
-		padding-bottom: 0.5rem;
-	}
-
-	.scope-option {
-		align-items: center;
-		cursor: pointer;
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.scope-options label.toggle-option {
-		align-items: center;
-		cursor: pointer;
-		display: flex;
-		gap: 0.5rem;
-		justify-content: space-between;
-		padding: 0.5rem 0.5rem 0.5rem 2rem;
-	}
-
-	.toggle-option > .toggle {
-		--height: 1rem;
-
-		flex-shrink: 0;
-	}
-
-	.option-list--disabled {
-		opacity: 0.5;
-		pointer-events: none;
 	}
 
 	.counter {
@@ -280,6 +197,7 @@
 	.suboption-button {
 		align-items: center;
 		display: inline-flex;
+		margin-left: auto;
 		position: relative;
 	}
 
@@ -300,7 +218,6 @@
 	.option {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
 	}
 
 	.option > label {
@@ -329,64 +246,9 @@
 		white-space: nowrap;
 	}
 
-	.suboptions-section {
-		padding: 0 0 0.5rem 1.5rem;
-	}
-
-	.list-section-title {
-		align-items: center;
-		display: flex;
-		justify-content: space-between;
-		padding: 0.5rem 0.5rem 0.25rem;
-	}
-
-	.section-label {
-		color: var(--color-gray-400);
-		font-size: 0.75rem;
-		font-weight: 500;
-	}
-
-	.text-button {
-		align-items: center;
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-primary-700);
-		cursor: pointer;
-		display: inline-flex;
-		font-weight: 500;
-		justify-content: center;
-	}
-
-	.text-button:hover {
-		background-color: var(--color-primary-100);
-	}
-
-	.text-button--reset {
-		color: var(--color-red-700);
-		font-size: 0.75rem;
-		height: 28px;
-		padding: 0 0.625rem;
-	}
-
-	.text-button--reset:hover {
-		background-color: var(--color-red-050);
-	}
-
-	.text-button--all {
-		font-size: 0.875rem;
-		height: 28px;
-		opacity: 0;
-		padding: 0 0.625rem;
-	}
-
-	.option:hover .text-button--all,
-	.text-button--all:focus-visible {
-		opacity: 1;
-	}
-
 	.suboptions-list {
 		display: flex;
 		flex-direction: column;
+		padding: 0.25rem 0 0.5rem 1.5rem;
 	}
 </style>
