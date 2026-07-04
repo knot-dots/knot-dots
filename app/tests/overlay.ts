@@ -36,7 +36,7 @@ export default class Overlay {
 	}
 
 	get sections() {
-		return this.locator.locator('.sections section');
+		return this.locator.locator('ul section');
 	}
 
 	get title() {
