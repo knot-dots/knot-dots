@@ -17,11 +17,18 @@
 	interface Props {
 		button?: Snippet;
 		container: OrganizationContainer | OrganizationalUnitContainer;
+		ignoreBulkActionContext?: boolean;
 		linkPath?: string;
 		showRelationFilter?: boolean;
 	}
 
-	let { button, container, linkPath = '/all/page', showRelationFilter = false }: Props = $props();
+	let {
+		button,
+		container,
+		ignoreBulkActionContext = false,
+		linkPath = '/all/page',
+		showRelationFilter = false
+	}: Props = $props();
 
 	let relatedTo = $derived(page.url.searchParams.get('related-to'));
 
@@ -62,9 +69,16 @@
 {/snippet}
 
 {#if button}
-	<Card {body} {button} {container} href={organizationURL(container)} {footer} />
+	<Card
+		{body}
+		{button}
+		{container}
+		{footer}
+		href={organizationURL(container)}
+		{ignoreBulkActionContext}
+	/>
 {:else}
-	<Card {body} {container} href={organizationURL(container)} {footer}>
+	<Card {body} {container} {footer} href={organizationURL(container)} {ignoreBulkActionContext}>
 		{#snippet button()}
 			{#if showRelationFilter}
 				<button

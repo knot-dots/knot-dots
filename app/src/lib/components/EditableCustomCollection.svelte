@@ -495,11 +495,16 @@
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
-					<NewIndicatorCard container={item} {relatedContainers} {comparisonDataMap} />
+					<NewIndicatorCard
+						{comparisonDataMap}
+						container={item}
+						ignoreBulkActionContext
+						{relatedContainers}
+					/>
 				{:else if isOrganizationalUnitContainer(item)}
-					<OrganizationCard container={item} />
+					<OrganizationCard container={item} ignoreBulkActionContext />
 				{:else}
-					<Card container={item} />
+					<Card container={item} ignoreBulkActionContext />
 				{/if}
 			{/snippet}
 			{#snippet addItemSnippet()}
@@ -529,14 +534,15 @@
 							) ?? []}
 						<NewIndicatorCard
 							--height="100%"
-							container={item}
-							{relatedContainers}
 							{comparisonDataMap}
+							container={item}
+							ignoreBulkActionContext
+							{relatedContainers}
 						/>
 					{:else if isOrganizationalUnitContainer(item)}
-						<OrganizationCard --height="100%" container={item} />
+						<OrganizationCard --height="100%" container={item} ignoreBulkActionContext />
 					{:else}
-						<Card --height="100%" container={item} />
+						<Card --height="100%" container={item} ignoreBulkActionContext />
 					{/if}
 				</li>
 			{/each}

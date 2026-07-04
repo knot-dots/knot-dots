@@ -21,6 +21,7 @@
 	interface Props {
 		button?: Snippet;
 		container: IndicatorTemplateContainer | BinaryIndicatorContainer;
+		ignoreBulkActionContext?: boolean;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;
 		comparisonDataMap?: SvelteMap<string, ActualDataContainer[]>;
@@ -29,6 +30,7 @@
 	const {
 		button,
 		container,
+		ignoreBulkActionContext = false,
 		relatedContainers = [],
 		showRelationFilter = false,
 		comparisonDataMap
@@ -38,7 +40,7 @@
 	let comparisonContainers = $derived(comparisonDataMap?.get(container.guid));
 </script>
 
-<Card {button} {container} {relatedContainers} {showRelationFilter}>
+<Card {button} {container} {ignoreBulkActionContext} {relatedContainers} {showRelationFilter}>
 	{#snippet body()}
 		{#if isBinaryIndicatorContainer(container)}
 			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
