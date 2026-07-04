@@ -1268,7 +1268,7 @@ label > input[type='checkbox'].toggle {
 }
 
 .details {
-	--details-padding-left: var(--details-padding-x, 5rem);
+	--details-padding-left: var(--details-padding-x, 6rem);
 	--details-padding-right: var(
 		--details-padding-x,
 		max(var(--details-padding-left), calc(var(--content-width, 100%) - var(--details-max-width)))

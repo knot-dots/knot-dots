@@ -98,7 +98,7 @@
 	{:else if term}
 		<div class="details-section">
 			{#if canEdit}
-				<DraggableActionBar>
+				<DraggableActionBar container={term}>
 					{#snippet actions()}
 						<div class="dropdown dropdown--compact">
 							<button
