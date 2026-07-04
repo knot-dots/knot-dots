@@ -57,6 +57,7 @@
 			});
 			bulkActionContext.selected.clear();
 			selectAllChecked = false;
+			bulkActionContext.onSuccess?.();
 			toast({
 				heading:
 					'deleted' in action
@@ -149,6 +150,7 @@
 	fieldset {
 		border: 1px solid transparent;
 		display: flex;
+		height: 2rem;
 		padding: 0;
 	}
 

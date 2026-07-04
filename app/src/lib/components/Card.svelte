@@ -235,6 +235,7 @@
 							}
 							name={bulkActionContext.name}
 							onclick={(e) => e.stopPropagation()}
+							oninput={(e) => e.stopPropagation()}
 							type="checkbox"
 						/>
 						<span class="is-visually-hidden">{$_('bulk_actions_select')}</span>

@@ -1,17 +1,27 @@
 <script lang="ts">
+	import { resource } from 'runed';
+	import type { Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import saveContainer from '$lib/client/saveContainer';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
+	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
 		EditableTableDataRow,
 		EditableTableSection,
 		EditableTableValue
 	} from '$lib/components/EditableTable.svelte';
+	import Header from '$lib/components/Header.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
-	import saveContainer from '$lib/client/saveContainer';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import Sections from '$lib/components/Sections.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		isResourceDataBudgetContainer,
 		isResourceDataContainer,
@@ -29,14 +39,6 @@
 		type ResourceV2Container
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import { _ } from 'svelte-i18n';
-	import EditableFormattedText from './EditableFormattedText.svelte';
-	import Sections from './Sections.svelte';
-	import Header from './Header.svelte';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
-	import type { Snippet } from 'svelte';
-	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
 	interface Props {
 		container: ResourceDataContainer;
@@ -72,6 +74,12 @@
 				{ signal }
 			)
 	);
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 

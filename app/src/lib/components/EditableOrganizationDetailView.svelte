@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
@@ -14,8 +18,8 @@
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
-	import { resource } from 'runed';
 	import Sections from '$lib/components/Sections.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		helpSlug,
 		payloadTypes,
@@ -24,8 +28,6 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
-	import fetchContainers from '$lib/client/fetchContainers';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 
 	interface Props {
 		container: OrganizationContainer;
@@ -74,6 +76,12 @@
 			)
 		]);
 		return [...containers, ...actualData, ...sectionContainers];
+	});
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: containersQuery.refetch,
+		selected: new SvelteSet<string>()
 	});
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
