@@ -321,11 +321,4 @@
 		background: var(--color-yellow-025);
 		border: 1px solid var(--color-yellow-200);
 	}
-
-	@media (hover: hover) {
-		section:hover {
-			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
-			--is-visible-on-hover-visibility: visible;
-		}
-	}
 </style>

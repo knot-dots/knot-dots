@@ -243,4 +243,11 @@
 		--dropdown-button-hover-border-color: transparent;
 		--dropdown-button-icon-expanded-color: inherit;
 	}
+
+	@media (hover: hover) {
+		li:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+		}
+	}
 </style>
