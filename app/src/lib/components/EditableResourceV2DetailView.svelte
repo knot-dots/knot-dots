@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
@@ -19,31 +23,29 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
 	import saveContainer from '$lib/client/saveContainer';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type AnyContainer,
 		type Container,
-		type NewContainer,
-		type ResourceDataContainer,
-		type ResourceV2Container,
 		containerOfType,
 		findAncestors,
 		isGoalContainer,
 		isMeasureContainer,
+		isResourceDataActualResourceAllocationContainer,
 		isResourceDataBudgetContainer,
 		isResourceDataPlannedResourceAllocationContainer,
-		isResourceDataActualResourceAllocationContainer,
 		isResourceDataTotalBudgetContainer,
 		isResourceDataTotalBudgetForecastContainer,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
-		resourceDataTypes
+		type ResourceDataContainer,
+		resourceDataTypes,
+		type ResourceV2Container
 	} from '$lib/models';
-	import fetchContainers from '$lib/client/fetchContainers';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -98,6 +100,12 @@
 			return Array.from(new Map(allContainers.map((c) => [c.guid, c])).values());
 		}
 	);
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 
 	// Fetch program hierarchy containers if program is specified
 	let programContainersQuery = resource(

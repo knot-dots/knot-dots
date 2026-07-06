@@ -118,7 +118,7 @@
 		$applicationState.containerDetailView.editable}
 >
 	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-		<DraggableActionBar>
+		<DraggableActionBar {container}>
 			{#snippet actions()}
 				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
 			{/snippet}

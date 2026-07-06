@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'bulk-actions' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
-test('selecting objects for bulk actions in board and overlay', async ({
+test('selecting objects for bulk actions in workspace', async ({
 	dotsBoard,
 	testGoal,
 	testMeasure,
@@ -57,7 +57,7 @@ test('selecting objects for bulk actions in board and overlay', async ({
 	await expect(dotsBoard.card(testMeasure.payload.title).getByRole('checkbox')).not.toBeVisible();
 });
 
-test('perform bulk actions', async ({ allTable, testMeasure, testProgram }) => {
+test('perform bulk action in workspace', async ({ allTable, testMeasure, testProgram }) => {
 	await allTable.goto(`/${testMeasure.organization}`);
 	await allTable.header.editModeToggle.check();
 
@@ -81,4 +81,50 @@ test('perform bulk actions', async ({ allTable, testMeasure, testProgram }) => {
 	await expect(allTable.page.getByRole('status')).toHaveText('2 objects updated');
 	await expect(programRow.getByRole('cell', { name: 'Public' })).toBeVisible();
 	await expect(measureRow.getByRole('cell', { name: 'Public' })).toBeVisible();
+});
+
+test('perform bulk action in detail view', async ({
+	dotsBoard,
+	testGoal,
+	testTask,
+	testTaskCollection
+}) => {
+	await dotsBoard.goto(`/${testGoal.organization}`);
+	await dotsBoard.card(testGoal.payload.title).click();
+	await expect(dotsBoard.overlay.title).toHaveText(testGoal.payload.title);
+	await dotsBoard.overlay.editModeToggle.check();
+
+	const section = dotsBoard.overlay.sections.filter({
+		has: dotsBoard.page.getByRole('heading', { name: testTaskCollection.payload.title })
+	});
+
+	// Verify the section is not public.
+	await section.hover();
+	await section.getByRole('button', { name: 'Settings' }).click();
+	await expect(section.getByLabel('Public')).not.toBeChecked();
+
+	// Select the section for bulk actions
+	await section.hover();
+	await section.getByRole('checkbox', { name: 'Select for bulk action' }).first().check();
+	await expect(
+		dotsBoard.overlay.bulkActionControls.getByText('1 selected', { exact: true })
+	).toBeVisible();
+	await section
+		.getByRole('article')
+		.filter({ has: dotsBoard.page.getByRole('heading', { name: testTask.payload.title }) })
+		.getByRole('checkbox', { name: 'Select for bulk action' })
+		.check();
+	await expect(
+		dotsBoard.overlay.bulkActionControls.getByText('2 selected', { exact: true })
+	).toBeVisible();
+
+	await dotsBoard.overlay.bulkActionControls.getByRole('button', { name: 'Visibility' }).click();
+	await dotsBoard.overlay.locator.getByRole('radio', { name: 'Public' }).click();
+
+	await expect(dotsBoard.overlay.page.getByRole('status')).toHaveText('2 objects updated');
+
+	// Verify the visibility has been updated.
+	await section.hover();
+	await section.getByRole('button', { name: 'Settings' }).click();
+	await expect(section.getByLabel('public')).toBeChecked();
 });

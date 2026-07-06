@@ -1,16 +1,17 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import HelpProperties from '$lib/components/HelpProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
-	import type { AnyContainer, HelpContainer } from '$lib/models';
-	import { predicates } from '$lib/models';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
+	import { type AnyContainer, type HelpContainer, predicates } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -22,6 +23,7 @@
 	let { container = $bindable(), layout, revisions }: Props = $props();
 
 	let guid = $derived(container.guid);
+
 	let organization = $derived(container.organization);
 
 	let relatedContainersQuery = resource(
@@ -37,6 +39,12 @@
 				{ signal }
 			)
 	);
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>

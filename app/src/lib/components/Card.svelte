@@ -49,6 +49,7 @@
 		container: AnyContainer;
 		footer?: Snippet;
 		href?: () => string;
+		ignoreBulkActionContext?: boolean;
 		relatedContainers?: AnyContainer[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
@@ -61,6 +62,7 @@
 		container,
 		footer,
 		href,
+		ignoreBulkActionContext = false,
 		relatedContainers = [],
 		showRelationFilter = false,
 		titleOverride = false,
@@ -223,7 +225,7 @@
 	{#if !isTeaserContainer(container)}
 		<header>
 			<h3>
-				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext}
+				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !ignoreBulkActionContext}
 					<label class="is-visible-on-hover">
 						<input
 							bind:checked={
@@ -235,6 +237,7 @@
 							}
 							name={bulkActionContext.name}
 							onclick={(e) => e.stopPropagation()}
+							oninput={(e) => e.stopPropagation()}
 							type="checkbox"
 						/>
 						<span class="is-visually-hidden">{$_('bulk_actions_select')}</span>

@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { resource } from 'runed';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import ChartLineIcon from '~icons/flowbite/chart-outline';
@@ -17,6 +18,7 @@
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type AnyContainer,
 		type IndicatorTemplateContainer,
@@ -62,6 +64,12 @@
 			);
 		}
 	);
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 
 	let relatedContainers = $derived(
 		relatedContainersQuery.current?.filter(

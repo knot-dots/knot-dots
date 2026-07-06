@@ -6,6 +6,7 @@ const key = {};
 interface BulkAction {
 	actions: string[];
 	name?: string;
+	onSuccess?: () => void;
 	selected: SvelteSet<string>;
 }
 
@@ -14,5 +15,5 @@ export function setBulkActionContext(context: BulkAction) {
 }
 
 export function getBulkActionContext() {
-	return getContext(key) as Required<BulkAction>;
+	return getContext(key) as Omit<BulkAction, 'name'> & Required<Pick<BulkAction, 'name'>>;
 }

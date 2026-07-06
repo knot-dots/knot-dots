@@ -221,7 +221,7 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+					<NewIndicatorCard --height="100%" {container} {relatedContainers} />
 				</li>
 			{/each}
 		</ul>
@@ -246,7 +246,7 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} showRelationFilter />
+					<NewIndicatorCard --height="100%" {container} {relatedContainers} />
 				</li>
 			{/each}
 		</ul>

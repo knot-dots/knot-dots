@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -7,10 +10,9 @@
 	import Header from '$lib/components/Header.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import Sections from './Sections.svelte';
+	import Sections from '$lib/components/Sections.svelte';
+	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyContainer, type KnowledgeContainer, predicates } from '$lib/models';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -47,6 +49,12 @@
 				{ signal }
 			)
 	);
+
+	setBulkActionContext({
+		actions: ['visibility', 'delete'],
+		onSuccess: relatedContainersQuery.refetch,
+		selected: new SvelteSet<string>()
+	});
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 </script>
