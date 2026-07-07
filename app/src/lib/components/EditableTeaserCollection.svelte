@@ -83,14 +83,7 @@
 		) as NewContainer;
 
 		item.relation = [
-			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			...parentContainer.relation
-				.filter(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
-				.map(({ object }) => ({
-					object,
-					position: 0,
-					predicate: predicates.enum['is-part-of-measure']
-				}))
+			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] }
 		];
 
 		$newContainer = item;
