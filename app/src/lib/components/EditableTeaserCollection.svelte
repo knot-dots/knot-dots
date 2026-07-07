@@ -83,7 +83,13 @@
 		) as NewContainer;
 
 		item.relation = [
-			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+			{
+				object: container.guid,
+				position: container.relation.filter(
+					(r) => r.predicate == predicates.enum['is-part-of'] && r.object == container.guid
+				).length,
+				predicate: predicates.enum['is-part-of']
+			}
 		];
 
 		$newContainer = item;
@@ -135,7 +141,13 @@
 </header>
 
 {#if teasers.current}
-	{@const items = teasers.current}
+	{@const items = container.relation
+		.filter(
+			({ object, predicate }) =>
+				object == container.guid && predicate == predicates.enum['is-part-of']
+		)
+		.map(({ subject }) => teasers.current?.find(({ guid }) => guid == subject))
+		.filter((c) => c !== undefined)}
 	{#if container.payload.listType === 'list'}
 		<List
 			{addItem}
