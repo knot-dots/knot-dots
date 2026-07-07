@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	import { invalidate } from '$app/navigation';
+	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import DemographicDataSection from '$lib/components/DemographicDataSection.svelte';
+	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
 	import EditableChapterSection from '$lib/components/EditableChapterSection.svelte';
 	import EditableCustomCollection from '$lib/components/EditableCustomCollection.svelte';
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
@@ -12,6 +14,7 @@
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
+	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
@@ -19,14 +22,14 @@
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableResourceDataCollection from '$lib/components/EditableResourceDataCollection.svelte';
+	import EditableSummarySection from '$lib/components/EditableSummarySection.svelte';
 	import EditableTaskCollection from '$lib/components/EditableTaskCollection.svelte';
-	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableTextSection from '$lib/components/EditableTextSection.svelte';
-	import IgniteVideoSection from '$lib/components/IgniteVideoSection.svelte';
-	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import EditableTeaserCollection from '$lib/components/EditableTeaserCollection.svelte';
 	import EditableTeaserSection from '$lib/components/EditableTeaserSection.svelte';
-	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
+	import IgniteVideoSection from '$lib/components/IgniteVideoSection.svelte';
+	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyContainer,
 		isAdministrativeAreaBasicDataContainer,
@@ -39,10 +42,10 @@
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
-		isImageContainer,
 		isIgniteVideoContainer,
-		isInlineHelpTextContainer,
+		isImageContainer,
 		isIndicatorCollectionContainer,
+		isInlineHelpTextContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
@@ -59,9 +62,6 @@
 		isTextContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import { createFeatureDecisions } from '$lib/features';
-	import { page } from '$app/state';
-	import EditableSummarySection from '$lib/components/EditableSummarySection.svelte';
 
 	interface Props {
 		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -112,20 +112,20 @@
 	}
 </script>
 
-<section
-	class="details-section"
-	class:details-section--inline-help={isInlineHelpSection &&
-		$applicationState.containerDetailView.editable}
->
-	{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-		<DraggableActionBar {container}>
-			{#snippet actions()}
-				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
-			{/snippet}
-		</DraggableActionBar>
-	{/if}
+<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
+	<section
+		class="details-section"
+		class:details-section--inline-help={isInlineHelpSection &&
+			$applicationState.containerDetailView.editable}
+	>
+		{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+			<DraggableActionBar {container}>
+				{#snippet actions()}
+					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
+				{/snippet}
+			</DraggableActionBar>
+		{/if}
 
-	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
 		{#if isAdministrativeAreaBasicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
 			<ReadonlyAdministrativeAreaBasicDataSection
 				bind:container
@@ -309,8 +309,8 @@
 				{heading}
 			/>
 		{/if}
-	</form>
-</section>
+	</section>
+</form>
 
 <style>
 	.details-section {
@@ -320,12 +320,5 @@
 	.details-section--inline-help {
 		background: var(--color-yellow-025);
 		border: 1px solid var(--color-yellow-200);
-	}
-
-	@media (hover: hover) {
-		section:hover {
-			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
-			--is-visible-on-hover-visibility: visible;
-		}
 	}
 </style>

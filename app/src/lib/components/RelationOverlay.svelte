@@ -26,8 +26,6 @@
 
 	let { object, relatedContainers }: Props = $props();
 
-	let w = $state(0);
-
 	let enabledPredicates = (getContext('relationOverlay') as { predicates: Predicate[] }).predicates;
 
 	type DropZone = {
@@ -462,7 +460,7 @@
 
 <Header workspaceOptions={[]} />
 <div class="content-details">
-	<div class="details" bind:clientWidth={w} style={w ? `--content-width: ${w}px;` : undefined}>
+	<div class="details">
 		<p class="details-section">
 			{$_('relation_overlay.help', {
 				values: {

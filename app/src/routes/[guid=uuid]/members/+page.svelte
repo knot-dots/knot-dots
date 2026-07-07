@@ -19,20 +19,22 @@
 	{/snippet}
 
 	{#snippet main()}
-		<div class="details">
-			<h1 class="details-title">
-				{'title' in data.container.payload
-					? data.container.payload.title
-					: data.container.payload.name}
-				<button class="action-button" type="button" onclick={() => window.history.back()}>
-					<ChevronLeft />
-				</button>
-			</h1>
+		<section class="details">
+			<header class="details-section">
+				<h1 class="details-title">
+					{'title' in data.container.payload
+						? data.container.payload.title
+						: data.container.payload.name}
+					<button class="action-button" type="button" onclick={() => window.history.back()}>
+						<ChevronLeft />
+					</button>
+				</h1>
+			</header>
 
 			<div class="details-section">
 				<Members container={data.container} users={data.users} />
 			</div>
-		</div>
+		</section>
 
 		<Help slug="members" />
 	{/snippet}

@@ -18,7 +18,7 @@ class BasePage {
 
 class DetailPage extends BasePage {
 	get sections() {
-		return this.page.locator('.sections section');
+		return this.page.locator('ul section');
 	}
 
 	get title() {

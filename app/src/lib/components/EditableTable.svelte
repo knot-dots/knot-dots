@@ -422,8 +422,9 @@
 		margin-left: var(--editable-table-margin-left, 0);
 		margin-right: var(--editable-table-margin-right, 0);
 		margin-top: 1rem;
+		max-width: var(--editable-table-max-width, 100%);
 		overflow: auto;
-		padding-left: calc(var(--carousel-margin-left) * -1);
+		padding-left: calc(var(--editable-table-margin-left) * -1);
 		padding-right: 4rem;
 	}
 

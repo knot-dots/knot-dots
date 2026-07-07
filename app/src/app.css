@@ -303,8 +303,6 @@
 	--color-hover-done: rgba(110, 218, 166, 0.35);
 	--color-hover-rejected: rgba(40, 169, 231, 0.35);
 
-	--content-width: 100%;
-
 	--indicator-background-color: var(--color-gray-700);
 	--indicator-color: white;
 	--indicator-font-size: 0.625rem;
@@ -1260,44 +1258,44 @@ label > input[type='checkbox'].toggle {
 }
 
 :root {
-	--details-max-width: 51.5rem;
+	--details-max-width: 41.5rem;
+	--details-padding-x: 6rem;
 	--details-padding-y: 5rem;
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
 }
 
 .details {
-	--details-padding-left: var(--details-padding-x, 6rem);
-	--details-padding-right: var(
-		--details-padding-x,
-		max(var(--details-padding-left), calc(var(--content-width, 100%) - var(--details-max-width)))
-	);
-
-	--carousel-margin-left: calc(
-		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
-	);
-	--carousel-margin-right: calc(
-		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+	--carousel-margin-left: calc((var(--details-padding-x) + var(--details-section-padding-x)) * -1);
+	--carousel-margin-right: calc((var(--details-padding-x) + var(--details-section-padding-x)) * -1);
+	--carousel-max-width: calc(
+		100% + var(--details-padding-x) * 2 + var(--details-section-padding-x) * 2
 	);
 	--editable-table-margin-left: calc(
-		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+		(var(--details-padding-x) + var(--details-section-padding-x)) * -1
 	);
 	--editable-table-margin-right: calc(
-		var(--details-padding-right) * -1 - var(--details-section-padding-x)
+		var(--details-padding-x) * -1 - var(--details-section-padding-x)
+	);
+	--editable-table-max-width: calc(
+		100% + var(--details-padding-x) * 2 + var(--details-section-padding-x) * 2
 	);
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
 	font-size: 0.875rem;
-	min-width: min(var(--details-max-width), calc(100% - 8rem));
-	padding: var(--details-padding-y) var(--details-padding-right) var(--details-padding-y)
-		var(--details-padding-left);
+	padding: var(--details-padding-y) 0;
 	position: relative;
 }
 
 .details-section {
 	border-radius: 24px;
-	padding: var(--details-section-padding-y, 1rem) var(--details-section-padding-x, 1.5rem);
+	margin: 0 var(--details-padding-x);
+	padding: var(--details-section-padding-y) var(--details-section-padding-x);
+}
+
+.details-section > * {
+	max-width: var(--details-max-width);
 }
 
 header.details-section + div.details-section,
@@ -1647,20 +1645,17 @@ img.cover {
 }
 
 /* Carousel */
-:root {
-	--carousel-margin-left: 0rem;
-	--carousel-margin-right: 0rem;
-}
-
 .carousel {
 	display: grid;
 	gap: 0.5rem 1rem;
 	grid-auto-columns: 20rem;
 	grid-auto-flow: column;
 	grid-template-rows: repeat(3, min-content);
-	margin: 0 var(--carousel-margin-right) 0 var(--carousel-margin-left);
+	margin: 0 var(--carousel-margin-right, 0) 0 var(--carousel-margin-left, 0);
+	max-width: var(--carousel-max-width, 100%);
 	overflow-x: auto;
-	padding: 1rem 0 0.5rem calc(var(--carousel-margin-left) * -1);
+	padding: 1rem calc(var(--carousel-margin-right, 0) * -1) 0.5rem
+		calc(var(--carousel-margin-left, 0) * -1);
 }
 
 .carousel > li {

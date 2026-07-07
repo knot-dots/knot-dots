@@ -201,37 +201,35 @@
 	}
 </script>
 
-<div class="sections">
-	{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length === 0}
-		<div class="details-section">
-			<AddSectionMenu
-				bind:relatedContainers
-				bind:parentContainer={container}
-				handleAddSection={createAddSectionHandler(0)}
-			/>
-		</div>
-	{/if}
+{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length === 0}
+	<div class="details-section">
+		<AddSectionMenu
+			bind:relatedContainers
+			bind:parentContainer={container}
+			handleAddSection={createAddSectionHandler(0)}
+		/>
+	</div>
+{/if}
 
-	<ul
-		use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
-		onconsider={handleDndConsider}
-		onfinalize={handleDndFinalize}
-	>
-		{#each sections as { guid }, i (guid)}
-			<li animate:flip={{ duration: 100 }}>
-				<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
-				<!-- svelte-ignore binding_property_non_reactive -->
-				<Section
-					bind:container={sections[i]}
-					bind:parentContainer={container}
-					bind:relatedContainers
-					handleAddSection={createAddSectionHandler(i + 1)}
-					heading={heading(i)}
-				/>
-			</li>
-		{/each}
-	</ul>
-</div>
+<ul
+	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
+	onconsider={handleDndConsider}
+	onfinalize={handleDndFinalize}
+>
+	{#each sections as { guid }, i (guid)}
+		<li animate:flip={{ duration: 100 }}>
+			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
+			<!-- svelte-ignore binding_property_non_reactive -->
+			<Section
+				bind:container={sections[i]}
+				bind:parentContainer={container}
+				bind:relatedContainers
+				handleAddSection={createAddSectionHandler(i + 1)}
+				heading={heading(i)}
+			/>
+		</li>
+	{/each}
+</ul>
 
 <style>
 	.details-section {
@@ -244,5 +242,12 @@
 		--dropdown-button-expanded-color: var(--color-primary-700);
 		--dropdown-button-hover-border-color: transparent;
 		--dropdown-button-icon-expanded-color: inherit;
+	}
+
+	@media (hover: hover) {
+		li:hover {
+			--is-visible-on-hover-transition: visibility 0s 0.3s linear;
+			--is-visible-on-hover-visibility: visible;
+		}
 	}
 </style>
