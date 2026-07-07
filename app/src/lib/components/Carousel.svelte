@@ -4,6 +4,8 @@
 
 <script lang="ts" generics="Item extends AnyContainer">
 	import type { Snippet } from 'svelte';
+	import { flip } from 'svelte/animate';
+	import { dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
 	import tooltip from '$lib/attachments/tooltip';
@@ -11,6 +13,7 @@
 	interface Props {
 		addItem: (event: Event) => void;
 		addItemSnippet?: Snippet;
+		handleSort?: (items: Item[]) => void;
 		items: Item[];
 		itemSnippet: Snippet<[Item]>;
 		mayAddItem?: boolean;
@@ -20,17 +23,33 @@
 	let {
 		addItem,
 		addItemSnippet,
+		handleSort,
 		items,
 		itemSnippet,
 		mayAddItem = false,
 		onLoadMore
 	}: Props = $props();
+
+	function onconsider(event: CustomEvent) {
+		items = event.detail.items;
+	}
+
+	function onfinalize(event: CustomEvent) {
+		items = event.detail.items;
+		handleSort?.(items);
+	}
 </script>
 
-{#if items.length > 0 || mayAddItem}
-	<ul class="carousel">
+{#if mayAddItem}
+	{@const type = crypto.randomUUID()}
+	<ul
+		class="carousel"
+		{onconsider}
+		{onfinalize}
+		use:dndzone={{ dropTargetStyle: {}, flipDurationMs: 100, items, type }}
+	>
 		{#each items as item (item.guid)}
-			<li>
+			<li animate:flip={{ duration: 100 }}>
 				{@render itemSnippet(item)}
 			</li>
 		{/each}
@@ -45,10 +64,26 @@
 
 		{#if addItemSnippet}
 			{@render addItemSnippet()}
-		{:else if mayAddItem}
+		{:else}
 			<li>
 				<button class="card" onclick={addItem} type="button" {@attach tooltip($_('add_item'))}>
 					<CirclePlus />
+				</button>
+			</li>
+		{/if}
+	</ul>
+{:else if items.length > 0}
+	<ul class="carousel">
+		{#each items as item (item.guid)}
+			<li>
+				{@render itemSnippet(item)}
+			</li>
+		{/each}
+
+		{#if onLoadMore}
+			<li>
+				<button class="card" onclick={onLoadMore} type="button">
+					{$_('load_more')}
 				</button>
 			</li>
 		{/if}

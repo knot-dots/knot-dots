@@ -96,6 +96,31 @@
 
 		createContainerDialog.getElement().showModal();
 	}
+
+	async function handleSort(items: TeaserContainer[]) {
+		container.relation = [
+			...items.map(({ guid }, index) => ({
+				object: container.guid,
+				position: index,
+				predicate: predicates.enum['is-part-of'],
+				subject: guid
+			})),
+			...container.relation.filter(
+				({ object, predicate }) =>
+					predicate !== predicates.enum['is-part-of'] || object !== container.guid
+			)
+		];
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(container.relation),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+	}
 </script>
 
 <header bind:this={header}>
@@ -151,6 +176,7 @@
 	{#if container.payload.listType === 'list'}
 		<List
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
@@ -161,6 +187,7 @@
 	{:else if container.payload.listType === 'wall'}
 		<Wall
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
@@ -171,6 +198,7 @@
 	{:else if container.payload.listType === 'accordion'}
 		<Accordion
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
@@ -181,6 +209,7 @@
 	{:else}
 		<Carousel
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
