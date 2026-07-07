@@ -1259,7 +1259,7 @@ label > input[type='checkbox'].toggle {
 
 :root {
 	--details-max-width: 41.5rem;
-	--details-padding-x: 6rem;
+	--details-padding-x: 5rem;
 	--details-padding-y: 5rem;
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;

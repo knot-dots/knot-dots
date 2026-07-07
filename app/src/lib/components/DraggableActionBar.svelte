@@ -16,10 +16,16 @@
 	let { actions, container }: Props = $props();
 
 	const bulkActionContext = getBulkActionContext();
+
+	const useBulkActions =
+		createFeatureDecisions(page.data.features).useBulkActions() && bulkActionContext;
 </script>
 
-<div class="actions is-visible-on-hover">
-	{#if createFeatureDecisions(page.data.features).useBulkActions() && bulkActionContext}
+<div
+	class="actions is-visible-on-hover"
+	style:--actions-left={useBulkActions ? '-4.75rem' : undefined}
+>
+	{#if useBulkActions}
 		<label class="bulk-action">
 			<input
 				bind:checked={
@@ -54,7 +60,7 @@
 		box-shadow: var(--shadow-sm);
 		display: flex;
 		gap: 0.25rem;
-		left: var(--actions-left, -5rem);
+		left: var(--actions-left, -3.125rem);
 		padding: 0.25rem;
 		position: absolute;
 		top: var(--actions-top, 1.25rem);
