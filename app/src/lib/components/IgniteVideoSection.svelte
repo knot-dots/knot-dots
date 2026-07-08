@@ -111,7 +111,7 @@
 				<input
 					{id}
 					oninput={handleInputIframeUrl}
-					pattern="https:\/\/play\.ignite\.video\/player\/index\.html\?id=.+"
+					pattern="https:\/\/knotdots\.euvideocdn\.com\/player\/index\.html\?id=.+"
 					placeholder={$_('ignite_video.placeholder')}
 					required
 					type="url"

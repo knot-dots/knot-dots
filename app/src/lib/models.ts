@@ -1307,7 +1307,7 @@ const igniteVideoPayload = z
 		iframeUrl: z
 			.string()
 			.trim()
-			.pipe(z.url({ protocol: /^https$/, hostname: /^play\.ignite\.video$/ }))
+			.pipe(z.url({ protocol: /^https$/, hostname: /^knotdots\.euvideocdn\.com$/ }))
 			.optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.ignite_video),
