@@ -117,6 +117,7 @@
 	{#snippet itemSnippet(item)}
 		<NewIndicatorCard
 			container={item}
+			ignoreBulkActionContext
 			relatedContainers={[
 				...actualDataContainers.filter(({ payload }) => payload.indicator === item.guid),
 				...effectContainers.filter(({ relation }) =>

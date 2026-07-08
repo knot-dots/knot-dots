@@ -109,19 +109,17 @@ test('perform bulk action in detail view', async ({
 	await expect(
 		dotsBoard.overlay.bulkActionControls.getByText('1 selected', { exact: true })
 	).toBeVisible();
-	await section
-		.getByRole('article')
-		.filter({ has: dotsBoard.page.getByRole('heading', { name: testTask.payload.title }) })
-		.getByRole('checkbox', { name: 'Select for bulk action' })
-		.check();
 	await expect(
-		dotsBoard.overlay.bulkActionControls.getByText('2 selected', { exact: true })
-	).toBeVisible();
+		section
+			.getByRole('article')
+			.filter({ has: dotsBoard.page.getByRole('heading', { name: testTask.payload.title }) })
+			.getByRole('checkbox', { name: 'Select for bulk action' })
+	).not.toBeVisible();
 
 	await dotsBoard.overlay.bulkActionControls.getByRole('button', { name: 'Visibility' }).click();
 	await dotsBoard.overlay.locator.getByRole('radio', { name: 'Public' }).click();
 
-	await expect(dotsBoard.overlay.page.getByRole('status')).toHaveText('2 objects updated');
+	await expect(dotsBoard.overlay.page.getByRole('status')).toHaveText('One object updated');
 
 	// Verify the visibility has been updated.
 	await section.hover();

@@ -8,6 +8,7 @@
 
 	interface Props {
 		container: TaskContainer;
+		ignoreBulkActionContext?: boolean;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;
 		showTaskStatusBadge?: boolean;
@@ -15,6 +16,7 @@
 
 	const {
 		container,
+		ignoreBulkActionContext = false,
 		relatedContainers = [],
 		showRelationFilter = false,
 		showTaskStatusBadge = false
@@ -44,7 +46,7 @@
 	}
 </script>
 
-<Card {container} {relatedContainers} {showRelationFilter}>
+<Card {container} {ignoreBulkActionContext} {relatedContainers} {showRelationFilter}>
 	{#snippet footer()}
 		{@const StatusIcon = statusIcons.get(container.payload.status)}
 

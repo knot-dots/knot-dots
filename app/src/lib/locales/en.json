@@ -837,7 +837,7 @@
 	"toast.ai_job_started.heading": "AI upload started",
 	"toast.bulk_actions.delete_success": "{count, plural, one {one object} other {# objects}} and subordinate objects deleted",
 	"toast.bulk_actions.error": "Bulk update failed",
-	"toast.bulk_actions.update_success": "{count, plural, one {one object} other {# objects}} updated",
+	"toast.bulk_actions.update_success": "{count, plural, one {One object} other {# objects}} updated",
 	"topic": "Topic",
 	"topic.citizen_participation": "Citizen participation",
 	"topic.cityscape": "Cityscape",

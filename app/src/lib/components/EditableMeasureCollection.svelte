@@ -128,6 +128,6 @@
 	mayAddItem={$mayCreateContainer(payloadTypes.enum.measure, container.managed_by) && editable}
 >
 	{#snippet itemSnippet(item)}
-		<Card container={item} />
+		<Card container={item} ignoreBulkActionContext />
 	{/snippet}
 </Carousel>

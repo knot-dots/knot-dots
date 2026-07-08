@@ -83,6 +83,7 @@
 	{#snippet itemSnippet(item)}
 		<Card
 			container={item}
+			ignoreBulkActionContext
 			relatedContainers={relatedContainers.filter(({ relation }) =>
 				relation.some(({ object, subject }) => [object, subject].includes(item.guid))
 			)}
