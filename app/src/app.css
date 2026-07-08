@@ -240,11 +240,6 @@
 	--color-background-in-planning: #fef1e7;
 	--color-background-rejected: #def0fd;
 
-	--color-border-subtle: var(--color-gray-100);
-
-	--color-text-accent-default: var(--color-gray-700);
-	--color-text-disabled: var(--color-gray-300);
-
 	--gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
 	--gradient-first-column: linear-gradient(
 		90deg,
