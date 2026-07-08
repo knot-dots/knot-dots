@@ -3,11 +3,12 @@
 	import Close from '~icons/knotdots/close';
 
 	interface Props {
+		cascadingDelete: boolean;
 		dialog: HTMLDialogElement;
 		handleSubmit: (event: SubmitEvent) => void;
 	}
 
-	let { dialog = $bindable(), handleSubmit }: Props = $props();
+	let { cascadingDelete, dialog = $bindable(), handleSubmit }: Props = $props();
 </script>
 
 <dialog bind:this={dialog}>
@@ -21,15 +22,15 @@
 			<span class="is-visually-hidden">{$_('cancel')}</span>
 		</button>
 
-		<h2>
-			{$_('confirm_bulk_delete_dialog.heading')}
-		</h2>
+		<h2>{$_('confirm_bulk_delete_dialog.heading')}</h2>
 
-		<p>
-			{$_('confirm_bulk_delete_dialog.message')}
+		<p class={cascadingDelete ? 'system-danger' : ''}>
+			{cascadingDelete
+				? $_('confirm_bulk_delete_dialog.message_cascading_delete')
+				: $_('confirm_bulk_delete_dialog.message')}
 		</p>
 
-		<button class="button-primary button-xs" type="submit">
+		<button class="button-primary button-xs button-red" type="submit">
 			{$_('confirm_bulk_delete_dialog.button')}
 		</button>
 	</form>
@@ -50,8 +51,16 @@
 	}
 
 	p {
-		color: var(--color-gray-500);
+		color: var(--color-text-accent-default);
 		margin: 0 0 1.5rem;
+	}
+
+	p.system-danger {
+		background: var(--color-background-accent-subtle);
+		border: 1px solid var(--color-border-accent-subtle);
+		border-radius: 24px;
+		margin: 1.5rem 0 1rem;
+		padding: 1rem;
 	}
 
 	.action-button {
