@@ -12,6 +12,7 @@
 
 	setBulkActionContext({
 		actions,
+		cascadingDelete: true,
 		selected: new SvelteSet<string>()
 	});
 </script>

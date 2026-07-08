@@ -8,12 +8,14 @@
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Help from '$lib/components/Help.svelte';
 	import {
-		helpSlugForDetailView,
-		payloadTypes,
 		type Container,
-		isSimpleMeasureContainer
+		helpSlugForDetailView,
+		isSimpleMeasureContainer,
+		payloadTypes
 	} from '$lib/models';
-	import { applicationState, ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
+	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
 		container: Container;
@@ -24,10 +26,13 @@
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
+
+	const useBulkActions =
+		createFeatureDecisions(page.data.features).useBulkActions() && getBulkActionContext();
 </script>
 
 <form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-	<article class="details">
+	<article style:--details-padding-x={useBulkActions ? '6rem' : undefined} class="details">
 		<header class="details-section">
 			<div class="details-header">
 				{#if container.payload.type === payloadTypes.enum.term}

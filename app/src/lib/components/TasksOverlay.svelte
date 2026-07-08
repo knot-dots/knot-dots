@@ -25,6 +25,7 @@
 
 	setBulkActionContext({
 		actions: ['status', 'visibility', 'delete'],
+		cascadingDelete: true,
 		selected: new SvelteSet<string>()
 	});
 

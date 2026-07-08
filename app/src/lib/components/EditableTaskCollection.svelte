@@ -124,7 +124,7 @@
 		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container.managed_by) && editable}
 	>
 		{#snippet itemSnippet(item)}
-			<TaskCard container={item} showTaskStatusBadge />
+			<TaskCard container={item} ignoreBulkActionContext showTaskStatusBadge />
 		{/snippet}
 	</Carousel>
 {/await}

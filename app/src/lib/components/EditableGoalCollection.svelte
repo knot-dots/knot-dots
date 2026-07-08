@@ -107,6 +107,7 @@
 	{#snippet itemSnippet(item)}
 		<Card
 			container={item}
+			ignoreBulkActionContext
 			relatedContainers={relatedContainers.filter(
 				({ payload, relation }) =>
 					payload.type === payloadTypes.enum.indicator_template ||
