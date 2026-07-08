@@ -4,6 +4,7 @@
 
 <script lang="ts" generics="Item extends Container">
 	import type { Snippet } from 'svelte';
+	import { dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
@@ -12,13 +13,14 @@
 
 	interface Props {
 		addItem: (event: Event) => void;
+		handleSort?: (items: Item[]) => void;
 		items: Item[];
 		itemSnippet: Snippet<[Item]>;
 		mayAddItem?: boolean;
 		titles?: string[];
 	}
 
-	let { addItem, items, itemSnippet, mayAddItem = false, titles }: Props = $props();
+	let { addItem, handleSort, items, itemSnippet, mayAddItem = false, titles }: Props = $props();
 
 	let openItems = new SvelteSet<string>();
 
@@ -29,10 +31,25 @@
 			openItems.add(guid);
 		}
 	}
+
+	function onconsider(event: CustomEvent) {
+		items = event.detail.items;
+	}
+
+	function onfinalize(event: CustomEvent) {
+		items = event.detail.items;
+		handleSort?.(items);
+	}
 </script>
 
-{#if items.length > 0 || mayAddItem}
-	<ul class="accordion-list">
+{#if mayAddItem}
+	{@const type = crypto.randomUUID()}
+	<ul
+		class="accordion-list"
+		{onconsider}
+		{onfinalize}
+		use:dndzone={{ dropTargetStyle: {}, flipDurationMs: 100, items, type }}
+	>
 		{#each items as item, idx (item.guid)}
 			<li class="accordion-item">
 				<button
@@ -64,6 +81,32 @@
 				</button>
 			</li>
 		{/if}
+	</ul>
+{:else if items.length > 0}
+	<ul class="accordion-list">
+		{#each items as item, idx (item.guid)}
+			<li class="accordion-item">
+				<button
+					class="accordion-header"
+					onclick={() => toggle(item.guid)}
+					type="button"
+					aria-expanded={openItems.has(item.guid)}
+				>
+					<span class="accordion-title">{titles?.[idx] || item.payload.title}</span>
+					{#if openItems.has(item.guid)}
+						<ChevronUp />
+					{:else}
+						<ChevronDown />
+					{/if}
+				</button>
+
+				{#if openItems.has(item.guid)}
+					<div class="accordion-content">
+						{@render itemSnippet(item)}
+					</div>
+				{/if}
+			</li>
+		{/each}
 	</ul>
 {/if}
 

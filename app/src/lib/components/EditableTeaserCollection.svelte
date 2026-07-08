@@ -83,19 +83,43 @@
 		) as NewContainer;
 
 		item.relation = [
-			{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			...parentContainer.relation
-				.filter(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
-				.map(({ object }) => ({
-					object,
-					position: 0,
-					predicate: predicates.enum['is-part-of-measure']
-				}))
+			{
+				object: container.guid,
+				position: container.relation.filter(
+					(r) => r.predicate == predicates.enum['is-part-of'] && r.object == container.guid
+				).length,
+				predicate: predicates.enum['is-part-of']
+			}
 		];
 
 		$newContainer = item;
 
 		createContainerDialog.getElement().showModal();
+	}
+
+	async function handleSort(items: TeaserContainer[]) {
+		container.relation = [
+			...items.map(({ guid }, index) => ({
+				object: container.guid,
+				position: index,
+				predicate: predicates.enum['is-part-of'],
+				subject: guid
+			})),
+			...container.relation.filter(
+				({ object, predicate }) =>
+					predicate !== predicates.enum['is-part-of'] || object !== container.guid
+			)
+		];
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(container.relation),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
 	}
 </script>
 
@@ -142,10 +166,17 @@
 </header>
 
 {#if teasers.current}
-	{@const items = teasers.current}
+	{@const items = container.relation
+		.filter(
+			({ object, predicate }) =>
+				object == container.guid && predicate == predicates.enum['is-part-of']
+		)
+		.map(({ subject }) => teasers.current?.find(({ guid }) => guid == subject))
+		.filter((c) => c !== undefined)}
 	{#if container.payload.listType === 'list'}
 		<List
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
@@ -156,6 +187,7 @@
 	{:else if container.payload.listType === 'wall'}
 		<Wall
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
@@ -166,6 +198,7 @@
 	{:else if container.payload.listType === 'accordion'}
 		<Accordion
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
@@ -176,6 +209,7 @@
 	{:else}
 		<Carousel
 			{addItem}
+			{handleSort}
 			{items}
 			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
 		>
