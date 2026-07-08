@@ -39,13 +39,7 @@ export default function defineAbilityFor(user: User) {
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
 		can('download-csv', [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template]);
-		can('relate', [
-			payloadTypes.enum.binary_indicator,
-			payloadTypes.enum.category,
-			payloadTypes.enum.program,
-			payloadTypes.enum.term,
-			...commonTypes
-		]);
+		can('relate', payloadTypes.options);
 		can('delete-recursively', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.program,
@@ -176,13 +170,13 @@ export default function defineAbilityFor(user: User) {
 				managed_by: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can('relate', [payloadTypes.enum.program, payloadTypes.enum.term, ...commonTypes], {
+		can('relate', payloadTypes.options, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
-		can('relate', [payloadTypes.enum.program, payloadTypes.enum.term, ...commonTypes], {
+		can('relate', payloadTypes.options, {
 			organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
-		can('relate', [payloadTypes.enum.program, payloadTypes.enum.term, ...commonTypes], {
+		can('relate', payloadTypes.options, {
 			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 		can('prioritize', payloadTypes.enum.task, {
