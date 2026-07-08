@@ -122,6 +122,10 @@
 		flex-shrink: 0;
 	}
 
+	.heading > :global(*:last-child) {
+		flex-shrink: 1;
+	}
+
 	.heading button {
 		margin-left: auto;
 	}
