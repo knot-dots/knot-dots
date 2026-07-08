@@ -836,7 +836,7 @@
 	"toast.ai_job_completed.heading": "AI upload completed",
 	"toast.ai_job_started.message": "This is going to take several minutes. We will notify you once the process has finished.",
 	"toast.ai_job_started.heading": "AI upload started",
-	"toast.bulk_actions.delete_success": "{count, plural, one {one object} other {# objects}} deleted",
+	"toast.bulk_actions.delete_success": "Selected objects removed",
 	"toast.bulk_actions.error": "Bulk update failed",
 	"toast.bulk_actions.update_success": "{count, plural, one {One object} other {# objects}} updated",
 	"topic": "Topic",

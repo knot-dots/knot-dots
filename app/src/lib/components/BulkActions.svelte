@@ -61,9 +61,7 @@
 			toast({
 				heading:
 					'deleted' in action
-						? $_('toast.bulk_actions.delete_success', {
-								values: { count: affectedContainers.length }
-							})
+						? $_('toast.bulk_actions.delete_success')
 						: $_('toast.bulk_actions.update_success', {
 								values: { count: affectedContainers.length }
 							}),

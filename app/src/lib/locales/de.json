@@ -835,7 +835,7 @@
 	"toast.ai_job_completed.heading": "KI-Upload abgeschlossen",
 	"toast.ai_job_started.message": "Wir informieren sie nach Abschluss. Der Upload dauert einige Minuten.",
 	"toast.ai_job_started.heading": "KI-Upload gestartet",
-	"toast.bulk_actions.delete_success": "{count, plural, one {Ein Objekt} other {# Objekte}} gelöscht",
+	"toast.bulk_actions.delete_success": "Ausgewählte Objekte entfernt",
 	"toast.bulk_actions.error": "Aktualisierung fehlgeschlagen",
 	"toast.bulk_actions.update_success": "{count, plural, one {Ein Objekt} other {# Objekte}} aktualisiert",
 	"topic": "Themenfeld",
