@@ -11,6 +11,7 @@ import { z } from 'zod';
 import {
 	type AnyContainer,
 	anyContainer,
+	type BinaryIndicatorContainer,
 	type Container,
 	container,
 	findDescendants,
@@ -39,6 +40,7 @@ import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keyc
 
 // Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
 const INDEXABLE_TYPES = new Set<string>([
+	'binary_indicator',
 	'effect',
 	'goal',
 	'help',
@@ -1217,8 +1219,8 @@ export function getAllRelatedContainersByProgramType(
 	};
 }
 
-export function getAllContainersRelatedToIndicatorTemplates(
-	containers: IndicatorTemplateContainer[],
+export function getAllContainersRelatedToIndicators(
+	containers: Array<BinaryIndicatorContainer | IndicatorTemplateContainer>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
 	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
 ) {

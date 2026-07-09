@@ -3,6 +3,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
+	type BinaryIndicatorContainer,
 	indicatorCategories,
 	type IndicatorTemplateContainer,
 	indicatorTypes,
@@ -13,7 +14,7 @@ import {
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
-	getAllContainersRelatedToIndicatorTemplates,
+	getAllContainersRelatedToIndicators,
 	getContainerByGuid,
 	getManyContainers,
 	getManyOrganizationContainers
@@ -59,7 +60,7 @@ export const GET = (async ({ locals, params, url }) => {
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	const suggestion = await locals.pool.connect(async (connection) => {
-		const [container, indicatorTemplateContainers] = await Promise.all([
+		const [container, indicatorContainers] = await Promise.all([
 			getContainerByGuid(params.guid)(connection),
 			getManyContainers(
 				[],
@@ -68,18 +69,18 @@ export const GET = (async ({ locals, params, url }) => {
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
 					terms: parseResult.data.terms[0],
-					type: [payloadTypes.enum.indicator_template]
+					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
-			)(connection) as Promise<IndicatorTemplateContainer[]>
+			)(connection) as Promise<Array<BinaryIndicatorContainer | IndicatorTemplateContainer>>
 		]);
 
 		if (!isGoalContainer(container) && !isMeasureContainer(container)) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 
-		const containersRelatedToIndicators = await getAllContainersRelatedToIndicatorTemplates(
-			indicatorTemplateContainers,
+		const containersRelatedToIndicators = await getAllContainersRelatedToIndicators(
+			indicatorContainers,
 			{
 				organizations: parseResult.data.organization,
 				organizationalUnits: parseResult.data.organizationalUnit
@@ -94,7 +95,7 @@ export const GET = (async ({ locals, params, url }) => {
 		)(connection);
 
 		return sortIndicatorsByRelevanceForGoalOrMeasure(
-			indicatorTemplateContainers,
+			indicatorContainers,
 			containersRelatedToIndicators,
 			container
 		);

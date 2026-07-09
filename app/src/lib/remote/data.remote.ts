@@ -9,7 +9,7 @@ import {
 	getManyContainers
 } from '$lib/server/db';
 
-export const fetchContainersRelatedToIndicatorTemplates = query(
+export const fetchContainersRelatedToIndicators = query(
 	z.object({
 		guid: z.string().uuid(),
 		params: z.object({

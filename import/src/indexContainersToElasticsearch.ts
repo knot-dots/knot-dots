@@ -42,35 +42,36 @@ async function* fetchContainers(batchSize = 500) {
 	// We paginate by guid; it is indexed in migrations (container_guid_idx)
 	for (;;) {
 		const rows = (await pool.any(sql.unsafe`
-      SELECT c.guid, c.revision, c.valid_from, tp.priority, c.realm, c.organization::text, c.organizational_unit::text, c.managed_by::text, c.payload
-      FROM container c
-      LEFT JOIN task_priority tp ON tp.task = c.guid
-      WHERE deleted = false
-        AND valid_currently
-        AND (c.payload ->> 'type') IN (
-          'effect',
-          'goal',
-          'help',
-          'indicator_template',
-          'knowledge',
-          'measure',
-          'objective',
-          'organization',
-          'organizational_unit',
-          'page',
-          'program',
-          'report',
-          'resource',
-          'resource_data',
-          'resource_v2',
-          'rule',
-          'simple_measure',
-          'task'
-        )
-        AND (${lastGuid ? sql.fragment`c.guid > ${lastGuid}::uuid` : sql.fragment`true`})
-      ORDER BY c.guid
-      LIMIT ${batchSize}
-    `)) as Row[];
+			SELECT c.guid, c.revision, c.valid_from, tp.priority, c.realm, c.organization::text, c.organizational_unit::text, c.managed_by::text, c.payload
+			FROM container c
+			LEFT JOIN task_priority tp ON tp.task = c.guid
+			WHERE deleted = false
+				AND valid_currently
+				AND (c.payload ->> 'type') IN (
+					'binary_indicator',
+					'effect',
+					'goal',
+					'help',
+					'indicator_template',
+					'knowledge',
+					'measure',
+					'objective',
+					'organization',
+					'organizational_unit',
+					'page',
+					'program',
+					'report',
+					'resource',
+					'resource_data',
+					'resource_v2',
+					'rule',
+					'simple_measure',
+					'task'
+				)
+				AND (${lastGuid ? sql.fragment`c.guid > ${lastGuid}::uuid` : sql.fragment`true`})
+			ORDER BY c.guid
+			LIMIT ${batchSize}
+		`)) as Row[];
 
 		if (rows.length === 0) return;
 
@@ -110,7 +111,9 @@ async function fetchRelationsForGuids(guids: string[]): Promise<Map<string, Rela
 	return map;
 }
 
-async function fetchUsersForRevisions(revisions: number[]): Promise<Map<number, { predicate: string; subject: string }[]>> {
+async function fetchUsersForRevisions(
+	revisions: number[]
+): Promise<Map<number, { predicate: string; subject: string }[]>> {
 	if (revisions.length === 0) return new Map();
 	const pool = await getPool();
 	const rows = (await pool.any(sql.unsafe`
@@ -171,7 +174,11 @@ async function run() {
 			const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
 			const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
 			for (const r of batchRows) {
-				const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [], user: usersMap.get(r.revision) ?? [] });
+				const doc = toDoc({
+					...r,
+					relation: relationsMap.get(r.guid) ?? [],
+					user: usersMap.get(r.revision) ?? []
+				});
 				ops.push({ index: { _index: newIndexName, _id: r.guid } });
 				ops.push(doc);
 			}
@@ -208,7 +215,11 @@ async function run() {
 		const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
 		const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
 		for (const r of batchRows) {
-			const doc = toDoc({ ...r, relation: relationsMap.get(r.guid) ?? [], user: usersMap.get(r.revision) ?? [] });
+			const doc = toDoc({
+				...r,
+				relation: relationsMap.get(r.guid) ?? [],
+				user: usersMap.get(r.revision) ?? []
+			});
 			ops.push({ index: { _index: newIndexName, _id: r.guid } });
 			ops.push(doc);
 		}

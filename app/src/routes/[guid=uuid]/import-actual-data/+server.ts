@@ -8,6 +8,7 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	type ActualDataContainer,
 	containerOfType,
+	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
@@ -124,15 +125,14 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			} else {
 				try {
 					const indicator = await getContainerByGuid(currentIndicator)(tx);
-					if (!isIndicatorTemplateContainer(indicator)) {
+					if (!(isIndicatorTemplateContainer(indicator) || isBinaryIndicatorContainer(indicator))) {
 						continue;
 					}
 
 					newActualDataContainer.payload = {
 						...newActualDataContainer.payload,
 						indicator: currentIndicator,
-						title: indicator.payload.title,
-						values: []
+						title: indicator.payload.title
 					};
 				} catch {
 					continue;

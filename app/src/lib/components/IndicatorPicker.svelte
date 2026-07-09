@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { SvelteMap } from 'svelte/reactivity';
 	import { resource } from 'runed';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
+	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import { invalidate } from '$app/navigation';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
@@ -11,14 +12,16 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
+		type BinaryIndicatorContainer,
+		binaryIndicatorContainer,
 		computeFacetCount,
 		indicatorCategories,
+		type IndicatorTemplateContainer,
 		indicatorTemplateContainer,
 		indicatorTypes,
 		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
-	import Close from '~icons/knotdots/close';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -45,7 +48,10 @@
 	let terms = $state('');
 
 	let selected = $state([]) as string[];
-	let knownIndicators = new SvelteMap<string, z.infer<typeof indicatorTemplateContainer>>();
+	let knownIndicators = new SvelteMap<
+		string,
+		BinaryIndicatorContainer | IndicatorTemplateContainer
+	>();
 
 	let activeFilters = $derived(
 		Object.values(filter).reduce((acc, v) => acc + (v.length > 0 ? 1 : 0), 0)
@@ -59,6 +65,7 @@
 			const params = new URLSearchParams([
 				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
 				...filter.indicatorType.map((v) => ['indicatorType', v]),
+				['payloadType', payloadTypes.enum.binary_indicator],
 				['payloadType', payloadTypes.enum.indicator_template],
 				['sort', sort],
 				['terms', terms],
@@ -66,7 +73,9 @@
 			]);
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z.array(indicatorTemplateContainer).parse(await response.json());
+			return z
+				.array(z.union([binaryIndicatorContainer, indicatorTemplateContainer]))
+				.parse(await response.json());
 		},
 		{
 			debounce: 300

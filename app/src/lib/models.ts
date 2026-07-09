@@ -1698,7 +1698,7 @@ export function isAdministrativeAreaBasicDataContainer(
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
 
-const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
+export const binaryIndicatorContainer = container.extend({ payload: binaryIndicatorPayload });
 
 export type BinaryIndicatorContainer = z.infer<typeof binaryIndicatorContainer>;
 
@@ -3209,7 +3209,7 @@ export function getOrganizationURL(
 }
 
 function computeRelevanceScore(
-	indicator: IndicatorTemplateContainer,
+	indicator: BinaryIndicatorContainer | IndicatorTemplateContainer,
 	containersRelatedToIndicator: Container[],
 	container: MeasureContainer | GoalContainer
 ): number {
@@ -3255,10 +3255,10 @@ function computeRelevanceScore(
 }
 
 export function sortIndicatorsByRelevanceForGoalOrMeasure(
-	indicators: IndicatorTemplateContainer[],
+	indicators: Array<BinaryIndicatorContainer | IndicatorTemplateContainer>,
 	containersRelatedToIndicators: Container[],
 	container: GoalContainer | MeasureContainer
-): IndicatorTemplateContainer[] {
+): Array<BinaryIndicatorContainer | IndicatorTemplateContainer> {
 	return indicators
 		.map((i) => ({
 			indicator: i,

@@ -1,6 +1,7 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
+	type BinaryIndicatorContainer,
 	type Container,
 	fromCounts,
 	indicatorCategories,
@@ -12,7 +13,7 @@ import {
 	predicates
 } from '$lib/models';
 import {
-	getAllContainersRelatedToIndicatorTemplates,
+	getAllContainersRelatedToIndicators,
 	getAllRelatedOrganizationalUnitContainers
 } from '$lib/server/db';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
@@ -30,7 +31,7 @@ export interface IndicatorFilters {
 }
 
 export interface IndicatorLoadResult {
-	containers: IndicatorTemplateContainer[];
+	containers: Array<BinaryIndicatorContainer | IndicatorTemplateContainer>;
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
@@ -77,16 +78,18 @@ export async function getIndicatorsData(params: {
 			indicatorCategories: filters.indicatorCategories,
 			indicatorTypes: filters.indicatorTypes,
 			terms: filters.terms,
-			type: [payloadTypes.enum.indicator_template]
+			type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 		},
 		'alpha',
 		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 	);
-	const indicators = esResult.containers as IndicatorTemplateContainer[];
+	const indicators = esResult.containers as Array<
+		BinaryIndicatorContainer | IndicatorTemplateContainer
+	>;
 	const facetData = esResult.facets;
 
 	const related = await connect(
-		getAllContainersRelatedToIndicatorTemplates(
+		getAllContainersRelatedToIndicators(
 			indicators,
 			{
 				organizations: [organizationGuid],
@@ -134,7 +137,8 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const categoryContext = filterCategoryContext(rawCategoryContext, [
-		payloadTypes.enum.indicator_template
+		payloadTypes.enum.indicator_template,
+		payloadTypes.enum.binary_indicator
 	]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	const filters = {
