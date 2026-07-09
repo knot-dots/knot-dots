@@ -1294,7 +1294,7 @@ label > input[type='checkbox'].toggle {
 	padding: var(--details-section-padding-y) var(--details-section-padding-x);
 }
 
-.details-section > * {
+.details-section > :where(:not(dialog)) {
 	max-width: var(--details-max-width);
 }
 
