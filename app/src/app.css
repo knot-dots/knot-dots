@@ -2144,6 +2144,28 @@ img.cover {
 	.card {
 		break-inside: avoid-page;
 	}
+
+	.carousel {
+		display: grid;
+		gap: 1rem;
+		grid-auto-columns: unset;
+		grid-auto-flow: unset;
+		grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+		grid-template-rows: unset;
+		margin: 0;
+		max-width: var(--details-max-width);
+		overflow-x: unset;
+		padding: 0;
+	}
+
+	.carousel > li {
+		--card-style: ;
+		--height: 100%;
+
+		display: block;
+		grid-row: unset;
+		grid-template-rows: unset;
+	}
 }
 
 /* Modules */
