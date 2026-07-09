@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
-	import { user } from '$lib/stores';
 
 	interface Props {
 		editable?: boolean;
@@ -18,12 +17,10 @@
 	<SingleChoiceDropdown
 		{labelledBy}
 		{offset}
-		options={page.data.organizations
-			.filter(({ guid }) => $user.adminOf.includes(guid))
-			.map(({ guid, payload }) => ({
-				value: guid,
-				label: payload.name
-			}))}
+		options={page.data.organizations.map(({ guid, payload }) => ({
+			value: guid,
+			label: payload.name
+		}))}
 		bind:value
 	/>
 {:else}
