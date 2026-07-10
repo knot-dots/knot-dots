@@ -8,9 +8,10 @@ import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	type ActualDataContainer,
+	anyInitialPayload,
 	containerOfType,
+	createNewContainerSchema,
 	editorialState,
-	emptyContainer,
 	type IndicatorTemplateContainer,
 	isActualDataContainer,
 	isOrganizationalUnitContainer,
@@ -232,7 +233,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				const audience = reverseTranslateList(fields.audience);
 
 				containers.push({
-					indicator: emptyContainer.parse({
+					indicator: createNewContainerSchema(anyInitialPayload).parse({
 						managed_by: currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
 						organizational_unit: currentOrganizationalUnitGuid ?? null,

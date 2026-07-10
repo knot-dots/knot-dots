@@ -8,8 +8,9 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	anyInitialPayload,
+	createNewContainerSchema,
 	editorialState,
-	emptyContainer,
 	isProgramContainer,
 	type NewContainer,
 	predicates
@@ -97,7 +98,7 @@ export const POST = (async ({ locals, request }) => {
 					for (const { id, project } of parsedPollResponse.data.completed_projects) {
 						if (!extracted.has(id)) {
 							try {
-								const newContainer = emptyContainer.parse({
+								const newContainer = createNewContainerSchema(anyInitialPayload).parse({
 									managed_by: container.managed_by,
 									organization: container.organization,
 									organizational_unit: container.organizational_unit,

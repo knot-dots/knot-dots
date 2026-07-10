@@ -2414,7 +2414,7 @@ export type NewContainer<P extends AnyPayload | AnyInitialPayload = AnyPayload> 
 	ReturnType<typeof createNewContainerSchema<z.ZodType<P>>>
 >;
 
-const anyInitialPayload = z.discriminatedUnion('type', [
+export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialActualDataPayload,
 	initialAdministrativeAreaBasicDataPayload,
 	initialBinaryIndicatorPayload,
@@ -2467,8 +2467,6 @@ const anyInitialPayload = z.discriminatedUnion('type', [
 ]);
 
 export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
-
-export const emptyContainer = createNewContainerSchema(anyInitialPayload);
 
 export type EmptyContainer = NewContainer<AnyInitialPayload>;
 
@@ -2652,14 +2650,14 @@ export function containerOfType(
 	managedBy: string,
 	realm: string
 ) {
-	return emptyContainer.parse({
+	return createNewContainerSchema(anyInitialPayload).parse({
 		managed_by: payloadType == payloadTypes.enum.organizational_unit ? organization : managedBy,
 		organization,
 		organizational_unit:
 			payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
 		payload: { type: payloadType },
 		realm
-	}) as EmptyContainer;
+	}) as NewContainer<AnyInitialPayload>;
 }
 
 export function mayDelete(container: AnyContainer | EmptyContainer, ability: MongoAbility) {

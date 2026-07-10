@@ -8,9 +8,10 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	anyInitialPayload,
 	containerOfType,
+	createNewContainerSchema,
 	editorialState,
-	emptyContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
@@ -167,7 +168,7 @@ export const actions = {
 						: [];
 
 					const program = programs.find(({ payload }) => payload.title == record.program);
-					const container = emptyContainer.parse({
+					const container = createNewContainerSchema(anyInitialPayload).parse({
 						managed_by: organizationalUnit?.guid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
 						organizational_unit: organizationalUnit?.guid ?? null,
