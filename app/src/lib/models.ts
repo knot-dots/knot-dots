@@ -2024,11 +2024,9 @@ export function isProgramContainer(
 	return container.payload.type === payloadTypes.enum.program;
 }
 
-export type ProgramCollectionContainer = Container<ProgramCollectionPayload>;
-
 export function isProgramCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ProgramCollectionContainer {
+): container is Container<ProgramCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.program_collection;
 }
 
