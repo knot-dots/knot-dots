@@ -7,12 +7,12 @@
 		type AnyPayload,
 		type Container,
 		type ContainerWithProgress,
-		type ProgressContainer
+		type ProgressPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ProgressContainer;
+		container: Container<ProgressPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: ContainerWithProgress;

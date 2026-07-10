@@ -1908,11 +1908,9 @@ export function isPageContainer(
 	return container.payload.type === payloadTypes.enum.page;
 }
 
-export type ProgressContainer = Container<ProgressPayload>;
-
 export function isProgressContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ProgressContainer {
+): container is Container<ProgressPayload> {
 	return container.payload.type === payloadTypes.enum.progress;
 }
 
