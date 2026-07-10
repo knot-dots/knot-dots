@@ -10,7 +10,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type EffectCollectionContainer,
+		type EffectCollectionPayload,
 		type GoalContainer,
 		isEffectContainer,
 		isPartOf,
@@ -20,7 +20,7 @@
 	import { addEffectState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
-		container: EffectCollectionContainer;
+		container: Container<EffectCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: GoalContainer | MeasureContainer;
