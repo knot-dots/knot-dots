@@ -15,7 +15,7 @@ import {
 	type CustomCollectionPayload,
 	filterMembers,
 	type GoalPayload,
-	type HelpContainer,
+	type HelpPayload,
 	type HelpSlug,
 	type IooiType,
 	isContainerWithCategory,
@@ -224,7 +224,7 @@ export type OverlayData =
 	| {
 			key: 'view-help';
 			container?: undefined;
-			containers: HelpContainer[];
+			containers: Container<HelpPayload>[];
 			slug: HelpSlug;
 	  }
 	| {

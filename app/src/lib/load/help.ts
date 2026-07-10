@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import { type HelpContainer, payloadTypes } from '$lib/models';
+import { type Container, type HelpPayload, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/help/$types';
 
@@ -16,7 +16,7 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 	}
 
 	const [data, { categoryContext }] = await Promise.all([
-		fetchContainerPage<HelpContainer>({
+		fetchContainerPage<Container<HelpPayload>>({
 			contextGuid: params.guid,
 			fetch,
 			limit: DEFAULT_PAGE_SIZE,

@@ -2,10 +2,10 @@
 	import { _ } from 'svelte-i18n';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import { payloadTypes, type HelpContainer, type HelpSlug } from '$lib/models';
+	import { type Container, type HelpPayload, type HelpSlug, payloadTypes } from '$lib/models';
 
 	interface Props {
-		containers: HelpContainer[];
+		containers: Container<HelpPayload>[];
 		slug: HelpSlug;
 	}
 

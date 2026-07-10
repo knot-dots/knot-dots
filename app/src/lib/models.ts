@@ -1828,11 +1828,9 @@ export function isGoalCollectionContainer(
 
 export const helpContainer = createContainerSchema(helpPayload);
 
-export type HelpContainer = Container<HelpPayload>;
-
 export function isHelpContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is HelpContainer {
+): container is Container<HelpPayload> {
 	return container.payload.type === payloadTypes.enum.help;
 }
 

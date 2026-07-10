@@ -7,7 +7,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import HelpPage from '$lib/components/HelpPage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { type HelpContainer, payloadTypes } from '$lib/models';
+	import { type Container, type HelpPayload, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -18,9 +18,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<HelpContainer>({
+	const list = createPaginatedList<Container<HelpPayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<HelpContainer>({
+			const result = await fetchContainerPage<Container<HelpPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
