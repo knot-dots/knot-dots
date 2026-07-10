@@ -12,7 +12,8 @@
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
 		computeFacetCount,
-		type CustomCollectionContainer,
+		type Container,
+		type CustomCollectionPayload,
 		indicatorCategories,
 		type PayloadType,
 		payloadTypes
@@ -20,7 +21,7 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
-		container: CustomCollectionContainer;
+		container: Container<CustomCollectionPayload>;
 		dialog?: HTMLDialogElement;
 	}
 

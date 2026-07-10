@@ -12,7 +12,7 @@ import {
 	type ApplicationState,
 	type Container,
 	containerOfType,
-	type CustomCollectionContainer,
+	type CustomCollectionPayload,
 	filterMembers,
 	type GoalContainer,
 	type HelpContainer,
@@ -147,7 +147,7 @@ type AddObjectiveState = {
 export const addObjectiveState = writable<AddObjectiveState>({});
 
 type AddItemState = {
-	target?: CustomCollectionContainer;
+	target?: Container<CustomCollectionPayload>;
 };
 
 export const addItemState = writable<AddItemState>({});

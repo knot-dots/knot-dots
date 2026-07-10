@@ -30,7 +30,7 @@
 		type AnyPayload,
 		type Container,
 		createCopyOf,
-		type CustomCollectionContainer,
+		type CustomCollectionPayload,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
@@ -47,7 +47,7 @@
 	} from '$lib/stores';
 
 	interface Props {
-		container: CustomCollectionContainer;
+		container: Container<CustomCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;

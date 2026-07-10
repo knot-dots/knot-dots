@@ -15,7 +15,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type CustomCollectionContainer,
+		type CustomCollectionPayload,
 		visibility
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -23,7 +23,7 @@
 	type SettingsSubview = 'main' | 'view' | 'visibility' | 'interactions';
 
 	interface Props {
-		container: CustomCollectionContainer;
+		container: Container<CustomCollectionPayload>;
 		onAddItems: () => void;
 		onAddTemplates: () => void;
 		parentContainer: Container<AnyPayload>;

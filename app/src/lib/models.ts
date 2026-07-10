@@ -1784,11 +1784,9 @@ export function isCategoryContainer(
 	return container.payload.type === payloadTypes.enum.category;
 }
 
-export type CustomCollectionContainer = Container<CustomCollectionPayload>;
-
 export function isCustomCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is CustomCollectionContainer {
+): container is Container<CustomCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.custom_collection;
 }
 

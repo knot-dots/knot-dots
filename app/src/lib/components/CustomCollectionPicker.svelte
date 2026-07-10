@@ -20,7 +20,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type CustomCollectionContainer,
+		type CustomCollectionPayload,
 		isOrganizationalUnitContainer,
 		type OrganizationalUnitContainer,
 		payloadTypes
@@ -30,7 +30,7 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
-		container: CustomCollectionContainer;
+		container: Container<CustomCollectionPayload>;
 		dialog?: HTMLDialogElement;
 	}
 
