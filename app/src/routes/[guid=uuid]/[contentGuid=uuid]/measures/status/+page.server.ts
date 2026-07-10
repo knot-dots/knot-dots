@@ -11,7 +11,7 @@ import {
 	type MeasurePayload,
 	payloadTypes,
 	predicates,
-	type SimpleMeasureContainer
+	type SimpleMeasurePayload
 } from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -54,7 +54,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 				},
 				url.searchParams.get('sort') ?? ''
 			)
-		)) as Array<Container<MeasurePayload> | SimpleMeasureContainer>;
+		)) as Array<Container<MeasurePayload | SimpleMeasurePayload>>;
 
 		return {
 			container,

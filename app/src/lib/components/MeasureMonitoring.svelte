@@ -16,13 +16,13 @@
 		overlayKey,
 		payloadTypes,
 		predicates,
-		type SimpleMeasureContainer,
+		type SimpleMeasurePayload,
 		titleForGoalCollection
 	} from '$lib/models';
 
 	interface Props {
-		measure?: Container<MeasurePayload> | SimpleMeasureContainer;
-		measures: Array<Container<MeasurePayload> | SimpleMeasureContainer>;
+		measure?: Container<MeasurePayload | SimpleMeasurePayload>;
+		measures: Array<Container<MeasurePayload | SimpleMeasurePayload>>;
 		containers: MeasureMonitoringContainer[];
 		indicators: Container<IndicatorTemplatePayload>[];
 		showMeasures?: boolean;

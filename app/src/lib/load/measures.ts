@@ -5,7 +5,7 @@ import {
 	type MeasurePayload,
 	payloadTypes,
 	predicates,
-	type SimpleMeasureContainer
+	type SimpleMeasurePayload
 } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/measures/$types';
@@ -32,7 +32,7 @@ export const loadPage = (limit: number) =>
 		}
 
 		const [data, { categoryContext, currentOrganization }] = await Promise.all([
-			fetchContainerPage<Container<MeasurePayload> | SimpleMeasureContainer>({
+			fetchContainerPage<Container<MeasurePayload | SimpleMeasurePayload>>({
 				contextGuid: params.guid,
 				fetch,
 				limit,

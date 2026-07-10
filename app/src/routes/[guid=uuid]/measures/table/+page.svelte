@@ -12,7 +12,7 @@
 		type Container,
 		type MeasurePayload,
 		payloadTypes,
-		type SimpleMeasureContainer
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -24,9 +24,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<Container<MeasurePayload> | SimpleMeasureContainer>({
+	const list = createPaginatedList<Container<MeasurePayload | SimpleMeasurePayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<Container<MeasurePayload> | SimpleMeasureContainer>({
+			const result = await fetchContainerPage<Container<MeasurePayload | SimpleMeasurePayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -46,7 +46,7 @@
 		},
 		getKey: ({ guid }) => guid,
 		initialHasMore: () => data.page.hasMore,
-		initialItems: () => data.containers as (Container<MeasurePayload> | SimpleMeasureContainer)[],
+		initialItems: () => data.containers as Container<MeasurePayload | SimpleMeasurePayload>[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

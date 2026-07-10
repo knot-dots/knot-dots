@@ -2006,11 +2006,9 @@ export function isResourceV2Container(
 	return container.payload.type === payloadTypes.enum.resource_v2;
 }
 
-export type SimpleMeasureContainer = Container<SimpleMeasurePayload>;
-
 export function isSimpleMeasureContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is SimpleMeasureContainer {
+): container is Container<SimpleMeasurePayload> {
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
 

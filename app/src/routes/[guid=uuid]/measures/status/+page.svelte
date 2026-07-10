@@ -12,7 +12,7 @@
 	import {
 		type Container,
 		type MeasurePayload,
-		type SimpleMeasureContainer,
+		type SimpleMeasurePayload,
 		type Status
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -24,7 +24,7 @@
 	let { data }: PageProps = $props();
 
 	const board = createColumnBoardPagination<
-		Container<MeasurePayload> | SimpleMeasureContainer,
+		Container<MeasurePayload | SimpleMeasurePayload>,
 		Status
 	>({
 		columnForItem: ({ payload }) => payload.status,
@@ -33,7 +33,7 @@
 		created: () => $lastCreatedContainer,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<Container<MeasurePayload> | SimpleMeasureContainer>({
+			const result = await fetchContainerPage<Container<MeasurePayload | SimpleMeasurePayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
