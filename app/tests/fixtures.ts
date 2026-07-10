@@ -2,7 +2,7 @@ import { type BrowserContext, test as base } from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
 	type AnyPayload,
-	type CategoryContainer,
+	type CategoryPayload,
 	type Container,
 	containerOfType,
 	type EffectContainer,
@@ -28,7 +28,7 @@ import {
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
-import { ProgramPage, LandingPage } from './pages';
+import { LandingPage, ProgramPage } from './pages';
 import { AllTable } from './tables';
 
 type MyFixtures = {
@@ -44,7 +44,7 @@ type MyFixtures = {
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
 	testCategoryWithTerms: {
-		category: CategoryContainer;
+		category: Container<CategoryPayload>;
 		terms: TermContainer[];
 		termNames: string[];
 	};
@@ -277,7 +277,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as CategoryContainer;
+		) as Container<CategoryPayload>;
 		const category = await createContainer(adminContext, {
 			...newCategory,
 			payload: { ...newCategory.payload, title: `E2E Category ${workerInfo.project.name}` }

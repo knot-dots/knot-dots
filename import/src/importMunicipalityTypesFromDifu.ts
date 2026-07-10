@@ -1,6 +1,7 @@
 import {
-	CategoryContainer,
+	type CategoryPayload,
 	categoryPayload,
+	type Container,
 	TermContainer,
 	termPayload
 } from '@knot-dots/app/src/lib/models.ts';
@@ -11,8 +12,8 @@ import {
 	createContainer,
 	createRelation,
 	getCategoryContainer,
-	getTermContainersForCategory,
 	getPool,
+	getTermContainersForCategory,
 	termContainer,
 	updateContainer
 } from './db.ts';
@@ -103,7 +104,7 @@ async function ensureCategory(
 		categoryCreated: boolean;
 		categoryUpdated: boolean;
 	}
-): Promise<CategoryContainer> {
+): Promise<Container<CategoryPayload>> {
 	const existing = await getCategoryContainer(tx, organization, categoryKey);
 
 	if (!existing) {
@@ -122,7 +123,7 @@ async function ensureCategory(
 				realm: env.PUBLIC_KC_REALM,
 				user: [{ predicate: creatorPredicate, subject: env.IMPORT_USER }]
 			})
-		)(tx)) as CategoryContainer;
+		)(tx)) as Container<CategoryPayload>;
 	}
 
 	const needsUpdate =
@@ -145,12 +146,12 @@ async function ensureCategory(
 			objectTypes: ['organizational_unit'],
 			title: categoryTitle
 		})
-	})(tx)) as CategoryContainer;
+	})(tx)) as Container<CategoryPayload>;
 }
 
 async function ensureTerm(
 	tx: DatabaseTransactionConnection,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	code: string,
 	position: number,
 	termsByCode: Map<string, TermContainer>,

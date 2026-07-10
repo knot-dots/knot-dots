@@ -1778,11 +1778,9 @@ export function isChapterContainer(
 
 export const categoryContainer = createContainerSchema(categoryPayload);
 
-export type CategoryContainer = Container<CategoryPayload>;
-
 export function isCategoryContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is CategoryContainer {
+): container is Container<CategoryPayload> {
 	return container.payload.type === payloadTypes.enum.category;
 }
 
@@ -2633,7 +2631,7 @@ export function mayDelete(
 }
 
 export function newCategoryTemplateFromCategory(
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	organization: OrganizationContainer
 ) {
 	const template = containerOfType(
@@ -2643,7 +2641,7 @@ export function newCategoryTemplateFromCategory(
 		organization.guid,
 		organization.realm
 	) as NewContainer;
-	const payload = template.payload as CategoryContainer['payload'];
+	const payload = template.payload as CategoryPayload;
 	Object.assign(payload, category.payload);
 	payload.visibility = visibility.enum.public;
 	return template;

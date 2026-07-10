@@ -3,20 +3,21 @@ import type { DatabasePool } from 'slonik';
 import de from '$lib/locales/de.json' with { type: 'json' };
 import {
 	audience,
+	type CategoryPayload,
+	type Container,
 	containerOfType,
 	isCategoryContainer,
 	isTermContainer,
+	type ModifiedContainer,
+	type NewContainer,
 	payloadTypes,
 	policyFieldBNK,
 	predicates,
-	sustainableDevelopmentGoals,
-	topics,
-	visibility,
-	type CategoryContainer,
-	type ModifiedContainer,
-	type NewContainer,
 	type Relation,
-	type TermContainer
+	sustainableDevelopmentGoals,
+	type TermContainer,
+	topics,
+	visibility
 } from '$lib/models';
 import {
 	createContainer,
@@ -170,7 +171,7 @@ async function seedForOrganization(
 				if (byTitle.payload.key !== seed.key) {
 					byTitle.payload = { ...byTitle.payload, key: seed.key };
 					const updated = await pool.connect(updateContainer(byTitle as ModifiedContainer));
-					category = { ...updated, relation: byTitle.relation } as CategoryContainer;
+					category = { ...updated, relation: byTitle.relation } as Container<CategoryPayload>;
 				} else {
 					category = byTitle;
 				}
@@ -205,7 +206,7 @@ async function createCategory(
 		realm
 	) as NewContainer;
 
-	const payload = newCategory.payload as CategoryContainer['payload'];
+	const payload = newCategory.payload as Container<CategoryPayload>['payload'];
 	payload.key = seed.key;
 	payload.title = seed.title;
 	if (seed.description) {
@@ -224,7 +225,7 @@ async function createCategory(
 
 async function ensureTermsForCategory(
 	pool: DatabasePool,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	seed: CategorySeed,
 	allTerms: TermContainer[]
 ) {
@@ -289,7 +290,7 @@ async function ensureRelation(
 	}
 }
 
-async function ensurePublicVisibility<T extends CategoryContainer | TermContainer>(
+async function ensurePublicVisibility<T extends Container<CategoryPayload> | TermContainer>(
 	pool: DatabasePool,
 	container: T
 ) {
@@ -306,7 +307,7 @@ async function ensurePublicVisibility<T extends CategoryContainer | TermContaine
 
 async function ensureCategoryMetadata(
 	pool: DatabasePool,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	seed: CategorySeed
 ) {
 	const needsKeyUpdate = category.payload.key !== seed.key;
@@ -327,7 +328,7 @@ async function ensureCategoryMetadata(
 
 	const updated = await pool.connect(updateContainer(category as ModifiedContainer));
 
-	return { ...updated, relation: category.relation } as CategoryContainer;
+	return { ...updated, relation: category.relation } as Container<CategoryPayload>;
 }
 
 async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed: TermSeed) {
@@ -352,7 +353,7 @@ async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed:
 
 async function createTerm(
 	pool: DatabasePool,
-	category: CategoryContainer,
+	category: Container<CategoryPayload>,
 	seed: TermSeed,
 	position: number
 ) {

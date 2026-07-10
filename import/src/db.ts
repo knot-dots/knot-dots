@@ -3,8 +3,8 @@ import {
 	administrativeAreaBasicDataPayload,
 	anyContainer,
 	AnyPayload,
-	CategoryContainer,
 	categoryContainer as persistedCategoryContainer,
+	type CategoryPayload,
 	categoryPayload,
 	Container,
 	createNewContainerSchema,
@@ -471,7 +471,7 @@ export async function getCategoryContainer(
 	tx: DatabaseTransactionConnection,
 	organizationGuid: string,
 	key: string
-): Promise<CategoryContainer | null> {
+): Promise<Container<CategoryPayload> | null> {
 	return tx.maybeOne(sql.type(persistedCategoryContainer)`
 		SELECT *
 		FROM container

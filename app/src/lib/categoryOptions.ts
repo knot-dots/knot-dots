@@ -1,4 +1,4 @@
-import { type CategoryContainer, predicates, type TermContainer } from '$lib/models';
+import { type CategoryPayload, type Container, predicates, type TermContainer } from '$lib/models';
 
 export type CategoryOption = {
 	label: string;
@@ -27,7 +27,7 @@ function sortOptions(options: CategoryOption[]) {
 	);
 }
 
-function findTermsForCategory(category: CategoryContainer, terms: TermContainer[]) {
+function findTermsForCategory(category: Container<CategoryPayload>, terms: TermContainer[]) {
 	return terms.filter(({ relation }) =>
 		relation?.some(
 			({ object, predicate }) =>
@@ -49,7 +49,7 @@ function toOption(term: TermContainer): CategoryOption {
 }
 
 export function buildCategoryOptionsFromContainers(
-	categories: Array<CategoryContainer>,
+	categories: Array<Container<CategoryPayload>>,
 	terms: Array<TermContainer>
 ): CategoryOptions {
 	const categoryLabels: Record<string, string> = {};

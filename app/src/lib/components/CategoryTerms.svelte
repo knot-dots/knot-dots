@@ -7,7 +7,7 @@
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
 		type AnyPayload,
-		type CategoryContainer,
+		type CategoryPayload,
 		type Container,
 		container as containerSchema,
 		containerOfType,
@@ -21,7 +21,7 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: CategoryContainer | TermContainer;
+		container: Container<CategoryPayload> | TermContainer;
 		relatedContainers: Container<AnyPayload>[];
 		predicate?: Predicate;
 	}

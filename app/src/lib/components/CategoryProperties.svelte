@@ -5,16 +5,16 @@
 	import EditableOrganization from '$lib/components/EditableOrganization.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
+		type AnyPayload,
 		categoryObjectTypes,
-		type CategoryContainer,
-		type Container,
-		type AnyPayload
+		type CategoryPayload,
+		type Container
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 
 	interface Props {
-		container: CategoryContainer;
+		container: Container<CategoryPayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: Container<AnyPayload>[];
