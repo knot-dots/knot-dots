@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import type { Snippet } from 'svelte';
+	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
@@ -18,7 +17,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer,
+		type OrganizationPayload,
 		type PageContainer,
 		visibility
 	} from '$lib/models';
@@ -27,7 +26,7 @@
 	interface Props {
 		actions?: Snippet;
 		children: Snippet;
-		container: OrganizationContainer | OrganizationalUnitContainer | PageContainer;
+		container: Container<OrganizationPayload> | OrganizationalUnitContainer | PageContainer;
 		relatedContainers: Container<AnyPayload>[];
 		dialog: HTMLDialogElement;
 		title: string;

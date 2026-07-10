@@ -21,8 +21,8 @@ import {
 	type NewContainer,
 	type OrganizationalUnitContainer,
 	organizationalUnitContainer,
-	type OrganizationContainer,
 	organizationContainer,
+	type OrganizationPayload,
 	type PayloadType,
 	payloadTypes,
 	type Predicate,
@@ -373,7 +373,7 @@ export function deleteContainerRecursively(container: Container<AnyPayload>) {
 	};
 }
 
-export function deleteOrganizationContainer(container: OrganizationContainer) {
+export function deleteOrganizationContainer(container: Container<OrganizationPayload>) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await deleteContainer(container)(txConnection);
@@ -804,7 +804,7 @@ export function getManyOrganizationContainers(
 	filters: { default?: boolean; organizationCategories?: string[] },
 	sort: string
 ) {
-	return async (connection: DatabaseConnection): Promise<OrganizationContainer[]> => {
+	return async (connection: DatabaseConnection): Promise<Container<OrganizationPayload>[]> => {
 		const conditions = [
 			sql.fragment`valid_currently`,
 			sql.fragment`NOT deleted`,
@@ -836,7 +836,7 @@ export function getManyOrganizationContainers(
 			ORDER BY ${orderBy};
     `);
 
-		return await withUserAndRelation<OrganizationContainer>(connection, containerResult);
+		return await withUserAndRelation<Container<OrganizationPayload>>(connection, containerResult);
 	};
 }
 

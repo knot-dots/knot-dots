@@ -5,12 +5,12 @@
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import type { OrganizationContainer } from '$lib/models';
+	import type { Container, OrganizationPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import { workspaceModules, workspaces } from '$lib/workspaces';
 
 	interface Props {
-		container: OrganizationContainer;
+		container: Container<OrganizationPayload>;
 		editable?: boolean;
 	}
 

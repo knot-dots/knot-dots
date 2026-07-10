@@ -25,9 +25,10 @@
 	import UserMenu from '$lib/components/UserMenu.svelte';
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
+		type Container,
 		getOrganizationURL,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer,
+		type OrganizationPayload,
 		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState, mayCreateContainer, user } from '$lib/stores';
@@ -39,7 +40,7 @@
 
 	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
-	function landingPageURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function landingPageURL(container: Container<OrganizationPayload> | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 
@@ -47,12 +48,12 @@
 		getContext('sidebar');
 
 	let defaultOrganization = $derived(
-		page.data.organizations.find((c: OrganizationContainer) => c.payload.default)
+		page.data.organizations.find((c: Container<OrganizationPayload>) => c.payload.default)
 	);
 
 	let organizations = $derived(
 		page.data.organizations.filter(
-			(c: OrganizationContainer) =>
+			(c: Container<OrganizationPayload>) =>
 				!c.payload.default && c.guid !== page.data.currentOrganization.guid
 		)
 	);
@@ -65,7 +66,7 @@
 	);
 
 	function updateFavorite(
-		container: OrganizationContainer | OrganizationalUnitContainer,
+		container: Container<OrganizationPayload> | OrganizationalUnitContainer,
 		favorite: Favorite[]
 	) {
 		return async () => {

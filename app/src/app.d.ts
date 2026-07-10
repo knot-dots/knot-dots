@@ -1,7 +1,12 @@
 import { type DefaultSession } from '@auth/sveltekit';
 import type { DatabasePool } from 'slonik';
 import type { CategoryContext } from '$lib/categoryOptions';
-import type { KeycloakUser, OrganizationalUnitContainer, OrganizationContainer } from '$lib/models';
+import type {
+	Container,
+	KeycloakUser,
+	OrganizationalUnitContainer,
+	OrganizationPayload
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
 // See https://kit.svelte.dev/docs/types#app
@@ -16,11 +21,11 @@ declare global {
 		}
 		interface PageData {
 			categoryContext: CategoryContext;
-			currentOrganization: OrganizationContainer;
+			currentOrganization: Container<OrganizationPayload>;
 			currentOrganizationalUnit?: OrganizationalUnitContainer;
 			defaultOrganizationGuid: string;
 			features: string[];
-			organizations: OrganizationContainer[];
+			organizations: Container<OrganizationPayload>[];
 			organizationalUnits: OrganizationalUnitContainer[];
 			session: Session | null;
 			user?: KeycloakUser;

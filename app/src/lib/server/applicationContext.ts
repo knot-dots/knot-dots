@@ -1,16 +1,16 @@
 import { error } from '@sveltejs/kit';
 import type { DatabaseConnection } from 'slonik';
-import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
-	isOrganizationalUnitContainer,
-	organizationalUnitType,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer,
-	payloadTypes,
+	type AnyPayload,
 	type Container,
-	type AnyPayload
+	isOrganizationalUnitContainer,
+	type OrganizationalUnitContainer,
+	organizationalUnitType,
+	type OrganizationPayload,
+	payloadTypes
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
@@ -44,7 +44,7 @@ export async function loadApplicationContext({
 		const [organizations, organizationalUnits] = await Promise.all([
 			filterVisibleAsync(
 				connect(getManyContainers([], { type: [payloadTypes.enum.organization] }, 'alpha'))
-			) as Promise<OrganizationContainer[]>,
+			) as Promise<Container<OrganizationPayload>[]>,
 			filterVisibleAsync(
 				connect(
 					getManyOrganizationalUnitContainers({
@@ -74,7 +74,7 @@ export async function loadApplicationContext({
 			}
 		}
 
-		let currentOrganization: OrganizationContainer | undefined;
+		let currentOrganization: Container<OrganizationPayload> | undefined;
 
 		if (env.PUBLIC_DONT_USE_SUBDOMAINS) {
 			if (currentOrganizationalUnit) {
@@ -88,7 +88,7 @@ export async function loadApplicationContext({
 				if (!currentOrganization) {
 					currentOrganization = (await connect(
 						setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-					)) as OrganizationContainer;
+					)) as Container<OrganizationPayload>;
 				}
 			}
 		} else {
@@ -97,7 +97,7 @@ export async function loadApplicationContext({
 				if (!currentOrganization) {
 					currentOrganization = (await connect(
 						setUp('knotdots.net', env.PUBLIC_KC_REALM ?? '')
-					)) as OrganizationContainer;
+					)) as Container<OrganizationPayload>;
 				}
 			} else {
 				currentOrganization = organizations.find(

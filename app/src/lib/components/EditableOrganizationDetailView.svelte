@@ -21,17 +21,17 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		helpSlug,
-		payloadTypes,
-		type OrganizationContainer,
+		type AnyPayload,
 		type Container,
-		type AnyPayload
+		helpSlug,
+		type OrganizationPayload,
+		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
-		container: OrganizationContainer;
+		container: Container<OrganizationPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		sections?: Container<AnyPayload>[];
 	}

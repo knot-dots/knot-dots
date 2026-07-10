@@ -13,7 +13,7 @@ import {
 	type NewContainer,
 	type ObjectivePayload,
 	type OrganizationalUnitContainer,
-	type OrganizationContainer,
+	type OrganizationPayload,
 	payloadTypes,
 	type Predicate,
 	predicates,
@@ -53,9 +53,9 @@ type MyFixtures = {
 type MyWorkerFixtures = {
 	suiteId: string;
 	adminContext: BrowserContext;
-	defaultOrganization: OrganizationContainer;
+	defaultOrganization: Container<OrganizationPayload>;
 	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
-	testOrganization: OrganizationContainer;
+	testOrganization: Container<OrganizationPayload>;
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testIndividualProfile: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
@@ -222,7 +222,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			const response = await adminContext.request.get('/', { maxRedirects: 0 });
 			const guid = response.headers()['location'].split('/')[1];
 			const organizationResponse = await adminContext.request.get(`/container/${guid}`);
-			const defaultOrganization: OrganizationContainer = await organizationResponse.json();
+			const defaultOrganization: Container<OrganizationPayload> = await organizationResponse.json();
 
 			await use(defaultOrganization);
 		},
@@ -326,7 +326,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				defaultOrganization.guid,
 				'knot-dots'
-			) as OrganizationContainer;
+			) as Container<OrganizationPayload>;
 			const testOrganization = await createContainer(adminContext, {
 				...newOrganization,
 				payload: {

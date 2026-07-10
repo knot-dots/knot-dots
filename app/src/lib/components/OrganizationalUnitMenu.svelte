@@ -18,13 +18,14 @@
 	import SearchInput from '$lib/components/SearchInput.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type Container,
 		containerOfType,
 		getOrganizationURL,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type NewContainer,
 		type OrganizationalUnitContainer,
-		type OrganizationContainer,
+		type OrganizationPayload,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -39,7 +40,7 @@
 	}
 
 	interface Props {
-		defaultOrganization?: OrganizationContainer;
+		defaultOrganization?: Container<OrganizationPayload>;
 		organizationalUnits: OrganizationalUnitContainer[];
 		currentOrganizationalUnit?: OrganizationalUnitContainer;
 	}
@@ -106,7 +107,9 @@
 		}
 	}
 
-	function linkPathForContainer(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function linkPathForContainer(
+		container: Container<OrganizationPayload> | OrganizationalUnitContainer
+	) {
 		const pathname = pathnameWithoutContextSegment();
 		const organization = isOrganizationContainer(container)
 			? container
@@ -124,7 +127,7 @@
 		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
 	}
 
-	function optionURL(container: OrganizationContainer | OrganizationalUnitContainer) {
+	function optionURL(container: Container<OrganizationPayload> | OrganizationalUnitContainer) {
 		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
 

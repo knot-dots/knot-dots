@@ -1888,11 +1888,9 @@ export function isObjectiveCollectionContainer(
 
 export const organizationContainer = createContainerSchema(organizationPayload);
 
-export type OrganizationContainer = Container<OrganizationPayload>;
-
 export function isOrganizationContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is OrganizationContainer {
+): container is Container<OrganizationPayload> {
 	return container.payload.type === payloadTypes.enum.organization;
 }
 
@@ -2603,7 +2601,7 @@ export function mayDelete(
 
 export function newCategoryTemplateFromCategory(
 	category: Container<CategoryPayload>,
-	organization: OrganizationContainer
+	organization: Container<OrganizationPayload>
 ) {
 	const template = containerOfType(
 		payloadTypes.enum.category,
@@ -2621,7 +2619,7 @@ export function newCategoryTemplateFromCategory(
 export function newTermForCategoryTemplate(
 	term: TermContainer,
 	categoryGuid: string,
-	organization: OrganizationContainer,
+	organization: Container<OrganizationPayload>,
 	position: number
 ) {
 	const template = containerOfType(
@@ -3031,7 +3029,7 @@ export function computeFacetCount(
 }
 
 export function getOrganizationURL(
-	container: OrganizationContainer | OrganizationalUnitContainer,
+	container: Container<OrganizationPayload> | OrganizationalUnitContainer,
 	linkPath = '/all/page',
 	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
 ): URL {

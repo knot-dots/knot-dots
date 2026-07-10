@@ -14,19 +14,20 @@
 	import { env } from '$env/dynamic/public';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type Container,
 		containerOfType,
 		getOrganizationURL,
 		type NewContainer,
-		type OrganizationContainer,
+		type OrganizationPayload,
 		payloadTypes
 	} from '$lib/models';
 	import { ability, mayCreateContainer, newContainer, user } from '$lib/stores';
 	import { getVisibleWorkspaces } from '$lib/workspaces';
 
 	interface Props {
-		defaultOrganization?: OrganizationContainer;
-		options: OrganizationContainer[];
-		selected: OrganizationContainer;
+		defaultOrganization?: Container<OrganizationPayload>;
+		options: Container<OrganizationPayload>[];
+		selected: Container<OrganizationPayload>;
 	}
 
 	let { defaultOrganization, options, selected }: Props = $props();
@@ -81,7 +82,7 @@
 		}
 	}
 
-	function linkPathForContainer(container: OrganizationContainer) {
+	function linkPathForContainer(container: Container<OrganizationPayload>) {
 		const pathname = pathnameWithoutContextSegment();
 		const workspacePaths = getVisibleWorkspaces({
 			organization: container,
@@ -94,7 +95,7 @@
 		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
 	}
 
-	function optionURL(container: OrganizationContainer) {
+	function optionURL(container: Container<OrganizationPayload>) {
 		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
 

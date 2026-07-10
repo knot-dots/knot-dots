@@ -21,11 +21,12 @@ import Tag from '~icons/knotdots/tag';
 import Users from '~icons/knotdots/users';
 import Template from '~icons/knotdots/template';
 import {
+	type Container,
 	containerOfType,
 	isOrganizationContainer,
-	payloadTypes,
-	type OrganizationContainer,
-	type OrganizationalUnitContainer
+	type OrganizationalUnitContainer,
+	type OrganizationPayload,
+	payloadTypes
 } from '$lib/models';
 import type { createFeatureDecisions } from '$lib/features';
 import type { MongoAbility } from '@casl/ability';
@@ -320,7 +321,7 @@ export const workspaceByKey: Record<string, WorkspaceDefinition> = Object.fromEn
 );
 
 interface VisibilityContext {
-	organization: OrganizationContainer;
+	organization: Container<OrganizationPayload>;
 	organizationalUnit?: OrganizationalUnitContainer | null;
 	features: WorkspaceFeatureDecisions;
 	ability?: MongoAbility;
