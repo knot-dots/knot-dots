@@ -3,14 +3,15 @@ import {
 	administrativeAreaBasicDataPayload,
 	AnyContainer,
 	anyContainer,
-	AnyPayload,
 	CategoryContainer,
 	categoryContainer as persistedCategoryContainer,
 	categoryPayload,
+	createNewContainerSchema,
 	customCollectionPayload,
 	demographicDataPayload,
 	indicatorTemplatePayload,
 	mapPayload,
+	NewContainer,
 	organizationalUnitPayload,
 	TermContainer,
 	termContainer as persistedTermContainer,
@@ -172,14 +173,6 @@ export const spatialFeature = z.object({
 	guid: z.uuid()
 });
 
-export const containerUser = z.array(
-	z.object({
-		object: z.number().int().positive().optional(),
-		predicate: z.literal('is-creator-of'),
-		subject: z.uuid()
-	})
-);
-
 export const containerRelation = z.array(
 	z.object({
 		object: z.uuid(),
@@ -191,41 +184,25 @@ export const containerRelation = z.array(
 
 type ContainerRelation = z.infer<typeof containerRelation>;
 
-function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
-	return z.object({
-		managed_by: z.string(),
-		organization: z.string(),
-		organizational_unit: z.uuid().nullable(),
-		payload: payloadSchema,
-		realm: z.string(),
-		user: containerUser.default([]),
-		relation: containerRelation.default([])
-	});
-}
+export const mapContainer = createNewContainerSchema(mapPayload);
 
-type NewContainerInput<P = AnyPayload> = z.infer<
-	ReturnType<typeof createContainerSchema<z.ZodType<P>>>
->;
-
-export const mapContainer = createContainerSchema(mapPayload);
-
-export const administrativeAreaBasicDataContainer = createContainerSchema(
+export const administrativeAreaBasicDataContainer = createNewContainerSchema(
 	administrativeAreaBasicDataPayload
 );
 
-export const demographicDataContainer = createContainerSchema(demographicDataPayload);
+export const demographicDataContainer = createNewContainerSchema(demographicDataPayload);
 
-export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
+export const organizationalUnitContainer = createNewContainerSchema(organizationalUnitPayload);
 
-export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
+export const indicatorTemplateContainer = createNewContainerSchema(indicatorTemplatePayload);
 
-export const actualDataContainer = createContainerSchema(actualDataPayload);
+export const actualDataContainer = createNewContainerSchema(actualDataPayload);
 
-export const categoryContainer = createContainerSchema(categoryPayload);
+export const categoryContainer = createNewContainerSchema(categoryPayload);
 
-export const termContainer = createContainerSchema(termPayload);
+export const termContainer = createNewContainerSchema(termPayload);
 
-export const customCollectionContainer = createContainerSchema(customCollectionPayload);
+export const customCollectionContainer = createNewContainerSchema(customCollectionPayload);
 
 export function insertIntoAdministrativeAreaBBSR(data: Json) {
 	return sql.type(administrativeAreaOpenStreetMap)`
@@ -355,7 +332,7 @@ export function insertIntoSpatialFeature(data: Json) {
 	`;
 }
 
-export function createContainer(container: NewContainerInput) {
+export function createContainer(container: NewContainer) {
 	return async (tx: DatabaseTransactionConnection) => {
 		const result = await tx.one(sql.type(anyContainer)`
 			INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
