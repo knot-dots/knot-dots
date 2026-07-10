@@ -1790,11 +1790,9 @@ export function isCustomCollectionContainer(
 	return container.payload.type === payloadTypes.enum.custom_collection;
 }
 
-export type DemographicDataContainer = Container<DemographicDataPayload>;
-
 export function isDemographicDataContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is DemographicDataContainer {
+): container is Container<DemographicDataPayload> {
 	return container.payload.type === payloadTypes.enum.demographic_data;
 }
 

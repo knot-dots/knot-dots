@@ -7,13 +7,13 @@
 		type ActualDataPayload,
 		type AnyPayload,
 		type Container,
-		type DemographicDataContainer,
+		type DemographicDataPayload,
 		payloadTypes
 	} from '$lib/models';
 	import { IsInViewport, resource } from 'runed';
 
 	interface Props {
-		container: DemographicDataContainer;
+		container: Container<DemographicDataPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
