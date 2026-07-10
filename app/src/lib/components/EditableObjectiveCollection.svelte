@@ -13,13 +13,13 @@
 		type GoalPayload,
 		isObjectiveContainer,
 		isPartOf,
-		type ObjectiveCollectionContainer,
+		type ObjectiveCollectionPayload,
 		payloadTypes
 	} from '$lib/models';
 	import { addObjectiveState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
-		container: ObjectiveCollectionContainer;
+		container: Container<ObjectiveCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<GoalPayload>;

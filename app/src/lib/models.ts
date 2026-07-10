@@ -1880,11 +1880,9 @@ export function isObjectiveContainer(
 	return container.payload.type === payloadTypes.enum.objective;
 }
 
-export type ObjectiveCollectionContainer = Container<ObjectiveCollectionPayload>;
-
 export function isObjectiveCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ObjectiveCollectionContainer {
+): container is Container<ObjectiveCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.objective_collection;
 }
 
