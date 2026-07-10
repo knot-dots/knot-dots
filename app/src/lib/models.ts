@@ -1808,11 +1808,9 @@ export function isEffectCollectionContainer(
 	return container.payload.type === payloadTypes.enum.effect_collection;
 }
 
-export type FileCollectionContainer = Container<FileCollectionPayload>;
-
 export function isFileCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is FileCollectionContainer {
+): container is Container<FileCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.file_collection;
 }
 
