@@ -23,7 +23,7 @@ import {
 	mayDelete,
 	type MeasurePayload,
 	type NewContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	overlayKey,
 	paramsFromFragment,
 	type PayloadType,
@@ -40,7 +40,7 @@ export const applicationState = writable<ApplicationState>({
 });
 
 export const compareState = writable<{
-	selectedMunicipalities: OrganizationalUnitContainer[];
+	selectedMunicipalities: Container<OrganizationalUnitPayload>[];
 	colorAssignments: Record<string, string>;
 }>({
 	selectedMunicipalities: [],

@@ -12,7 +12,7 @@ import {
 	type MeasurePayload,
 	type NewContainer,
 	type ObjectivePayload,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	type OrganizationPayload,
 	payloadTypes,
 	type Predicate,
@@ -56,8 +56,8 @@ type MyWorkerFixtures = {
 	defaultOrganization: Container<OrganizationPayload>;
 	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testOrganization: Container<OrganizationPayload>;
-	testOrganizationalUnit: OrganizationalUnitContainer;
-	testIndividualProfile: OrganizationalUnitContainer;
+	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
+	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testProgram: ProgramContainer;
 	testGoal: Container<GoalPayload>;
 	testSubordinateGoal: Container<GoalPayload>;
@@ -350,7 +350,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as OrganizationalUnitContainer;
+			) as Container<OrganizationalUnitPayload>;
 			const testOrganizationalUnit = await createContainer(adminContext, {
 				...newOrganizationalUnit,
 				payload: {
@@ -373,7 +373,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as OrganizationalUnitContainer;
+			) as Container<OrganizationalUnitPayload>;
 
 			const testIndividualProfile = await createContainer(adminContext, {
 				...newIndividualProfile,

@@ -33,7 +33,7 @@
 		isOrganizationalUnitContainer,
 		type NewContainer,
 		newContainer,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		organizationalUnitType,
 		payloadTypes,
 		predicates
@@ -42,7 +42,7 @@
 	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
-		container: OrganizationalUnitContainer;
+		container: Container<OrganizationalUnitPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		linkedProfiles?: Container<AnyPayload>[];
 		relatedOrganizationalUnitGuids?: string[];

@@ -1,10 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { filterVisible } from '$lib/authorization';
 import {
-	type OrganizationalUnitContainer,
-	computeFacetCount,
 	administrativeTypes,
+	computeFacetCount,
+	type Container,
 	fromCounts,
+	type OrganizationalUnitPayload,
 	payloadTypes
 } from '$lib/models';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
@@ -13,7 +14,7 @@ import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent, url }) => {
-	let containers: OrganizationalUnitContainer[];
+	let containers: Container<OrganizationalUnitPayload>[];
 	const {
 		currentOrganization,
 		currentOrganizationalUnit,

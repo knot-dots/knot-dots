@@ -27,7 +27,7 @@
 	import {
 		type Container,
 		getOrganizationURL,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		type OrganizationPayload,
 		payloadTypes
 	} from '$lib/models';
@@ -40,7 +40,7 @@
 
 	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
-	function landingPageURL(container: Container<OrganizationPayload> | OrganizationalUnitContainer) {
+	function landingPageURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return getOrganizationURL(container, '/all/page', env).toString();
 	}
 
@@ -60,13 +60,13 @@
 
 	let organizationalUnits = $derived(
 		page.data.organizationalUnits.filter(
-			(c: OrganizationalUnitContainer) =>
+			(c: Container<OrganizationalUnitPayload>) =>
 				c.organization === page.data.currentOrganization.organization
 		)
 	);
 
 	function updateFavorite(
-		container: Container<OrganizationPayload> | OrganizationalUnitContainer,
+		container: Container<OrganizationPayload | OrganizationalUnitPayload>,
 		favorite: Favorite[]
 	) {
 		return async () => {

@@ -4,7 +4,7 @@ import type { CategoryContext } from '$lib/categoryOptions';
 import type {
 	Container,
 	KeycloakUser,
-	OrganizationalUnitContainer,
+	OrganizationalUnitPayload,
 	OrganizationPayload
 } from '$lib/models';
 import type { User } from '$lib/stores';
@@ -22,11 +22,11 @@ declare global {
 		interface PageData {
 			categoryContext: CategoryContext;
 			currentOrganization: Container<OrganizationPayload>;
-			currentOrganizationalUnit?: OrganizationalUnitContainer;
+			currentOrganizationalUnit?: Container<OrganizationalUnitPayload>;
 			defaultOrganizationGuid: string;
 			features: string[];
 			organizations: Container<OrganizationPayload>[];
-			organizationalUnits: OrganizationalUnitContainer[];
+			organizationalUnits: Container<OrganizationalUnitPayload>[];
 			session: Session | null;
 			user?: KeycloakUser;
 		}

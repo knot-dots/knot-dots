@@ -7,7 +7,7 @@ import {
 	type AnyPayload,
 	type Container,
 	isOrganizationalUnitContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	organizationalUnitType,
 	type OrganizationPayload,
 	payloadTypes
@@ -58,7 +58,7 @@ export async function loadApplicationContext({
 			)
 		]);
 
-		let currentOrganizationalUnit: OrganizationalUnitContainer | undefined;
+		let currentOrganizationalUnit: Container<OrganizationalUnitPayload> | undefined;
 
 		if (params?.guid) {
 			try {

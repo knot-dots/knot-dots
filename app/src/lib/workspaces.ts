@@ -24,7 +24,7 @@ import {
 	type Container,
 	containerOfType,
 	isOrganizationContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	type OrganizationPayload,
 	payloadTypes
 } from '$lib/models';
@@ -322,7 +322,7 @@ export const workspaceByKey: Record<string, WorkspaceDefinition> = Object.fromEn
 
 interface VisibilityContext {
 	organization: Container<OrganizationPayload>;
-	organizationalUnit?: OrganizationalUnitContainer | null;
+	organizationalUnit?: Container<OrganizationalUnitPayload> | null;
 	features: WorkspaceFeatureDecisions;
 	ability?: MongoAbility;
 	user?: User;

@@ -6,7 +6,7 @@
 		type AnyPayload,
 		type Container,
 		type MapPayload,
-		type OrganizationalUnitContainer
+		type OrganizationalUnitPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
@@ -15,7 +15,7 @@
 		container: Container<MapPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: OrganizationalUnitContainer;
+		parentContainer: Container<OrganizationalUnitPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 

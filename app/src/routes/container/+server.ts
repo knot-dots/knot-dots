@@ -21,7 +21,7 @@ import {
 	type MeasurePayload,
 	type NewContainer,
 	newContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	type PartialRelation,
 	payloadTypes,
 	predicates,
@@ -389,7 +389,7 @@ async function copyProgram(
 }
 
 async function copyOrganizationalUnitContainer(
-	createdContainer: OrganizationalUnitContainer,
+	createdContainer: Container<OrganizationalUnitPayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: DatabaseTransactionConnection

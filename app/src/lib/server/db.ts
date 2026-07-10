@@ -19,8 +19,8 @@ import {
 	type IndicatorTemplatePayload,
 	type ModifiedContainer,
 	type NewContainer,
-	type OrganizationalUnitContainer,
 	organizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	organizationContainer,
 	type OrganizationPayload,
 	type PayloadType,
@@ -401,7 +401,7 @@ export function deleteOrganizationContainer(container: Container<OrganizationPay
 	};
 }
 
-export function deleteOrganizationalUnitContainer(container: OrganizationalUnitContainer) {
+export function deleteOrganizationalUnitContainer(container: Container<OrganizationalUnitPayload>) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			await deleteContainer(container)(txConnection);
@@ -858,7 +858,9 @@ export function getManyOrganizationalUnitContainers(filters: {
 	limit?: number;
 	offset?: number;
 }) {
-	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+	return async (
+		connection: DatabaseConnection
+	): Promise<Container<OrganizationalUnitPayload>[]> => {
 		const conditions = [
 			sql.fragment`c.valid_currently`,
 			sql.fragment`NOT c.deleted`,
@@ -947,12 +949,14 @@ export function getManyOrganizationalUnitContainers(filters: {
 			JOIN container_relation_result r ON c.guid = r.guid
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name';
-		`)) as OrganizationalUnitContainer[];
+		`)) as Container<OrganizationalUnitPayload>[];
 	};
 }
 
 export function getAllRelatedOrganizationalUnitContainers(guid: string) {
-	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+	return async (
+		connection: DatabaseConnection
+	): Promise<Container<OrganizationalUnitPayload>[]> => {
 		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
 				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
@@ -1003,7 +1007,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			JOIN container_relation_result r ON c.guid = r.guid
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name'
-		`)) as OrganizationalUnitContainer[];
+		`)) as Container<OrganizationalUnitPayload>[];
 	};
 }
 
@@ -1011,7 +1015,9 @@ export function getRelatedOrganizationalUnitContainersByPredicates(
 	guid: string,
 	relationTypes: Predicate[]
 ) {
-	return async (connection: DatabaseConnection): Promise<OrganizationalUnitContainer[]> => {
+	return async (
+		connection: DatabaseConnection
+	): Promise<Container<OrganizationalUnitPayload>[]> => {
 		if (relationTypes.length === 0) {
 			return [];
 		}
@@ -1037,7 +1043,10 @@ export function getRelatedOrganizationalUnitContainersByPredicates(
 				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 		`);
 
-		return await withUserAndRelation<OrganizationalUnitContainer>(connection, containerResult);
+		return await withUserAndRelation<Container<OrganizationalUnitPayload>>(
+			connection,
+			containerResult
+		);
 	};
 }
 

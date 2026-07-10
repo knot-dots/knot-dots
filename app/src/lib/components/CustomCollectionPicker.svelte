@@ -22,7 +22,7 @@
 		type Container,
 		type CustomCollectionPayload,
 		isOrganizationalUnitContainer,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -200,7 +200,7 @@
 			.filter((o) => visibleOrgGuids.has(o.guid))
 			.map((o) => {
 				const organizationalUnits = page.data.organizationalUnits.filter(
-					(organizationalUnit: OrganizationalUnitContainer) =>
+					(organizationalUnit: Container<OrganizationalUnitPayload>) =>
 						organizationalUnit.organization === o.guid
 				);
 				return {
@@ -280,8 +280,9 @@
 		}
 		if (key === 'organizationalUnit') {
 			return (
-				page.data.organizationalUnits.find((o: OrganizationalUnitContainer) => o.guid === value)
-					?.payload.name ?? value
+				page.data.organizationalUnits.find(
+					(o: Container<OrganizationalUnitPayload>) => o.guid === value
+				)?.payload.name ?? value
 			);
 		}
 		return page.data.categoryContext.labels.get(value) ?? $_(value);

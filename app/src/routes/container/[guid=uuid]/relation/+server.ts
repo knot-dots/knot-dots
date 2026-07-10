@@ -9,7 +9,7 @@ import {
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
 	isProgramContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	predicates,
 	programTypes,
@@ -113,7 +113,7 @@ export const GET = (async ({ locals, params, url }) => {
 						locals.pool.connect(
 							getAllRelatedOrganizationalUnitContainers(parseResult.data.organizationalUnit[0])
 						)
-					])) as [OrganizationalUnitContainer, OrganizationalUnitContainer[]];
+					])) as [Container<OrganizationalUnitPayload>, Container<OrganizationalUnitPayload>[]];
 					subordinateOrganizationalUnits = relatedOrganizationalUnits
 						.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
 						.map(({ guid }) => guid)

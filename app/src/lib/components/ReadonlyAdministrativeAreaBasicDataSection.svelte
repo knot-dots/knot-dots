@@ -5,14 +5,14 @@
 		type AdministrativeAreaBasicDataPayload,
 		type AnyPayload,
 		type Container,
-		type OrganizationalUnitContainer
+		type OrganizationalUnitPayload
 	} from '$lib/models';
 
 	interface Props {
 		container: Container<AdministrativeAreaBasicDataPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: OrganizationalUnitContainer;
+		parentContainer: Container<OrganizationalUnitPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 

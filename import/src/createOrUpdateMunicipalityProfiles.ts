@@ -1,7 +1,7 @@
 import {
 	type Container,
 	type IndicatorTemplatePayload,
-	OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	visibility
 } from '@knot-dots/app/src/lib/models.ts';
 import assert from 'node:assert';
@@ -282,12 +282,12 @@ async function createOrUpdateOrganizationalUnitContainer(
 		}
 	}
 
-	return result as OrganizationalUnitContainer;
+	return result as Container<OrganizationalUnitPayload>;
 }
 
 async function createOrUpdateAdministrativeAreaBasicDataContainer(
 	tx: DatabaseTransactionConnection,
-	ouContainer: OrganizationalUnitContainer
+	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	const newAdministrativeAreaBasicDataContainer = administrativeAreaBasicDataContainer.parse({
 		managed_by: ouContainer.guid,
@@ -338,7 +338,7 @@ async function createOrUpdateAdministrativeAreaBasicDataContainer(
 
 async function createOrUpdateMapContainer(
 	tx: DatabaseTransactionConnection,
-	ouContainer: OrganizationalUnitContainer
+	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	const newMapContainer = mapContainer.parse({
 		managed_by: ouContainer.guid,
@@ -380,7 +380,7 @@ async function createOrUpdateMapContainer(
 
 async function createOrUpdateDemographicDataContainer(
 	tx: DatabaseTransactionConnection,
-	ouContainer: OrganizationalUnitContainer
+	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	const newDemographicDataContainer = demographicDataContainer.parse({
 		managed_by: ouContainer.guid,
@@ -426,7 +426,7 @@ async function createOrUpdateDemographicDataContainer(
 
 async function createOrUpdateReportCollectionContainer(
 	tx: DatabaseTransactionConnection,
-	ouContainer: OrganizationalUnitContainer,
+	ouContainer: Container<OrganizationalUnitPayload>,
 	reports: string[]
 ) {
 	const reportCollectionTitle = 'Nachhaltigkeitsberichte';
@@ -476,7 +476,7 @@ async function createOrUpdateReportCollectionContainer(
 
 async function createOrUpdateActualDataContainers(
 	tx: DatabaseTransactionConnection,
-	ouContainer: OrganizationalUnitContainer
+	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	if (!ouContainer.payload.geometry) {
 		return;

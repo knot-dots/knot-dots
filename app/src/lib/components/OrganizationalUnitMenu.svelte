@@ -24,7 +24,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type NewContainer,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		type OrganizationPayload,
 		payloadTypes,
 		predicates
@@ -41,8 +41,8 @@
 
 	interface Props {
 		defaultOrganization?: Container<OrganizationPayload>;
-		organizationalUnits: OrganizationalUnitContainer[];
-		currentOrganizationalUnit?: OrganizationalUnitContainer;
+		organizationalUnits: Container<OrganizationalUnitPayload>[];
+		currentOrganizationalUnit?: Container<OrganizationalUnitPayload>;
 	}
 
 	let { defaultOrganization, organizationalUnits, currentOrganizationalUnit }: Props = $props();
@@ -62,7 +62,7 @@
 			null,
 			page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<OrganizationalUnitContainer, 'payload'>;
+		) as NewContainer<OrganizationalUnitPayload>;
 
 		container.payload.level = level;
 
@@ -108,7 +108,7 @@
 	}
 
 	function linkPathForContainer(
-		container: Container<OrganizationPayload> | OrganizationalUnitContainer
+		container: Container<OrganizationPayload | OrganizationalUnitPayload>
 	) {
 		const pathname = pathnameWithoutContextSegment();
 		const organization = isOrganizationContainer(container)
@@ -127,15 +127,17 @@
 		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
 	}
 
-	function optionURL(container: Container<OrganizationPayload> | OrganizationalUnitContainer) {
+	function optionURL(
+		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>
+	) {
 		return getOrganizationURL(container, linkPathForContainer(container), env).toString();
 	}
 
-	function buildTree(units: OrganizationalUnitContainer[]): OrgUnitTreeItem[] {
+	function buildTree(units: Container<OrganizationalUnitPayload>[]): OrgUnitTreeItem[] {
 		const roots = units.filter((u) => !isPartOf(u, units));
 
-		function buildNode(unit: OrganizationalUnitContainer): OrgUnitTreeItem {
-			const childUnits = hasPart(unit, units) as OrganizationalUnitContainer[];
+		function buildNode(unit: Container<OrganizationalUnitPayload>): OrgUnitTreeItem {
+			const childUnits = hasPart(unit, units) as Container<OrganizationalUnitPayload>[];
 			return {
 				id: unit.guid,
 				name: unit.payload.name,

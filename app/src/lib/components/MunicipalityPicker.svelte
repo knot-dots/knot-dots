@@ -15,14 +15,15 @@
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		administrativeTypes,
-		payloadTypes,
-		type OrganizationalUnitContainer,
-		organizationalUnitContainer
+		type Container,
+		organizationalUnitContainer,
+		type OrganizationalUnitPayload,
+		payloadTypes
 	} from '$lib/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;
-		selected: OrganizationalUnitContainer[];
+		selected: Container<OrganizationalUnitPayload>[];
 	}
 
 	let { dialog = $bindable(), selected = $bindable() }: Props = $props();
@@ -75,7 +76,7 @@
 
 	// Maintain a map of all encountered municipalities to preserve selections
 	// even if they are no longer in the current visible list (e.g. after search)
-	let knownMunicipalities = new SvelteMap<string, OrganizationalUnitContainer>();
+	let knownMunicipalities = new SvelteMap<string, Container<OrganizationalUnitPayload>>();
 
 	// Reset pagination when search terms or filters change
 	const filterKey = $derived(`${Object.values(filter).join(',')}|${terms}`);
@@ -83,7 +84,7 @@
 	const municipalities = createPaginatedResource({
 		pageSize: PAGE_SIZE,
 		resetKey: () => filterKey,
-		getKey: (municipality: OrganizationalUnitContainer) => municipality.guid,
+		getKey: (municipality: Container<OrganizationalUnitPayload>) => municipality.guid,
 		fetchPage: async ({ limit, offset, signal }) => {
 			const params = new URLSearchParams();
 			params.append('organization', page.data.currentOrganization.guid);
@@ -174,7 +175,7 @@
 	function confirm() {
 		selected = localSelected
 			.map((guid) => knownMunicipalities.get(guid))
-			.filter((m): m is OrganizationalUnitContainer => !!m);
+			.filter((m): m is Container<OrganizationalUnitPayload> => !!m);
 		dialog.close();
 	}
 

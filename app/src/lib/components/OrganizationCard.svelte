@@ -9,7 +9,7 @@
 	import {
 		type Container,
 		getOrganizationURL,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		type OrganizationPayload
 	} from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
@@ -17,7 +17,7 @@
 
 	interface Props {
 		button?: Snippet;
-		container: Container<OrganizationPayload> | OrganizationalUnitContainer;
+		container: Container<OrganizationPayload | OrganizationalUnitPayload>;
 		ignoreBulkActionContext?: boolean;
 		linkPath?: string;
 		showRelationFilter?: boolean;
@@ -48,9 +48,7 @@
 		};
 	}
 
-	function organizationURL(
-		container: Container<OrganizationPayload> | OrganizationalUnitContainer
-	) {
+	function organizationURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return () => {
 			return getOrganizationURL(container, linkPath, env).toString();
 		};

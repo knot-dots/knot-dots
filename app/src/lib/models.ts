@@ -1896,11 +1896,9 @@ export function isOrganizationContainer(
 
 export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
 
-export type OrganizationalUnitContainer = Container<OrganizationalUnitPayload>;
-
 export function isOrganizationalUnitContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is OrganizationalUnitContainer {
+): container is Container<OrganizationalUnitPayload> {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
 
@@ -2799,7 +2797,7 @@ export function filterOrganizationalUnits<T extends Container<AnyPayload>>(
 	containers: Array<T>,
 	url: URL,
 	subordinateOrganizationalUnits: string[],
-	currentOrganizationalUnit?: OrganizationalUnitContainer
+	currentOrganizationalUnit?: Container<OrganizationalUnitPayload>
 ): Array<T> {
 	return url.searchParams.has('related-to')
 		? containers
@@ -3029,7 +3027,7 @@ export function computeFacetCount(
 }
 
 export function getOrganizationURL(
-	container: Container<OrganizationPayload> | OrganizationalUnitContainer,
+	container: Container<OrganizationPayload | OrganizationalUnitPayload>,
 	linkPath = '/all/page',
 	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string }
 ): URL {

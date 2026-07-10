@@ -8,7 +8,7 @@ import {
 	type IndicatorTemplatePayload,
 	indicatorTypes,
 	isActualDataContainer,
-	type OrganizationalUnitContainer,
+	type OrganizationalUnitPayload,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -44,7 +44,7 @@ export interface IndicatorLoadResult {
  */
 export async function getIndicatorsData(params: {
 	organizationGuid: string;
-	currentOrganizationalUnit: OrganizationalUnitContainer | null;
+	currentOrganizationalUnit: Container<OrganizationalUnitPayload> | null;
 	filters: IndicatorFilters;
 	user: User;
 	customCategoryKeys: string[];

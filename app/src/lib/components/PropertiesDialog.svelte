@@ -16,7 +16,7 @@
 		type Container,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
-		type OrganizationalUnitContainer,
+		type OrganizationalUnitPayload,
 		type OrganizationPayload,
 		type PageContainer,
 		visibility
@@ -26,7 +26,7 @@
 	interface Props {
 		actions?: Snippet;
 		children: Snippet;
-		container: Container<OrganizationPayload> | OrganizationalUnitContainer | PageContainer;
+		container: Container<OrganizationPayload | OrganizationalUnitPayload> | PageContainer;
 		relatedContainers: Container<AnyPayload>[];
 		dialog: HTMLDialogElement;
 		title: string;
