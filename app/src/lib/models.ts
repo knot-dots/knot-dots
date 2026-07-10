@@ -2068,11 +2068,9 @@ export function isMeasureMonitoringContainer(
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
-export type ImageContainer = Container<ImagePayload>;
-
 export function isImageContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ImageContainer {
+): container is Container<ImagePayload> {
 	return container.payload.type === payloadTypes.enum.image;
 }
 
