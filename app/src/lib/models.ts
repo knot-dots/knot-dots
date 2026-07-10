@@ -1834,11 +1834,9 @@ export function isHelpContainer(
 	return container.payload.type === payloadTypes.enum.help;
 }
 
-export type IndicatorCollectionContainer = Container<IndicatorCollectionPayload>;
-
 export function isIndicatorCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is IndicatorCollectionContainer {
+): container is Container<IndicatorCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
 

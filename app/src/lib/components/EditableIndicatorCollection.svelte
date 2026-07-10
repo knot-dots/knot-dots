@@ -10,7 +10,7 @@
 		type AnyPayload,
 		type Container,
 		containerOfType,
-		type IndicatorCollectionContainer,
+		type IndicatorCollectionPayload,
 		isActualDataContainer,
 		isEffectContainer,
 		isGoalContainer,
@@ -24,7 +24,7 @@
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: IndicatorCollectionContainer;
+		container: Container<IndicatorCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
