@@ -9,9 +9,10 @@
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
-		type BinaryIndicatorContainer,
 		binaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		computeFacetCount,
+		type Container,
 		type GoalContainer,
 		indicatorCategories,
 		type IndicatorTemplateContainer,
@@ -23,9 +24,9 @@
 	} from '$lib/models';
 
 	interface Props {
-		onSelect: (container: BinaryIndicatorContainer | IndicatorTemplateContainer) => void;
+		onSelect: (container: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer) => void;
 		target: GoalContainer | MeasureContainer;
-		value?: BinaryIndicatorContainer | IndicatorTemplateContainer;
+		value?: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer;
 	}
 
 	let { onSelect, target, value }: Props = $props();

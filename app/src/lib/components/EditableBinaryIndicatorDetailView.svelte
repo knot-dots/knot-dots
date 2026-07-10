@@ -15,7 +15,7 @@
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		type Container,
 		containerOfType,
 		isActualDataContainer,
@@ -29,7 +29,7 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: BinaryIndicatorContainer;
+		container: Container<BinaryIndicatorPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

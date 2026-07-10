@@ -1764,11 +1764,9 @@ export function isAdministrativeAreaBasicDataContainer(
 
 export const binaryIndicatorContainer = createContainerSchema(binaryIndicatorPayload);
 
-export type BinaryIndicatorContainer = Container<BinaryIndicatorPayload>;
-
 export function isBinaryIndicatorContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is BinaryIndicatorContainer {
+): container is Container<BinaryIndicatorPayload> {
 	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
 
@@ -3086,7 +3084,7 @@ export function getOrganizationURL(
 }
 
 function computeRelevanceScore(
-	indicator: BinaryIndicatorContainer | IndicatorTemplateContainer,
+	indicator: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer,
 	containersRelatedToIndicator: Container[],
 	container: MeasureContainer | GoalContainer
 ): number {
@@ -3132,10 +3130,10 @@ function computeRelevanceScore(
 }
 
 export function sortIndicatorsByRelevanceForGoalOrMeasure(
-	indicators: Array<BinaryIndicatorContainer | IndicatorTemplateContainer>,
+	indicators: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>,
 	containersRelatedToIndicators: Container[],
 	container: GoalContainer | MeasureContainer
-): Array<BinaryIndicatorContainer | IndicatorTemplateContainer> {
+): Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer> {
 	return indicators
 		.map((i) => ({
 			indicator: i,

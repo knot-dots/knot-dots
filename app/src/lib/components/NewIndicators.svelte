@@ -16,7 +16,7 @@
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		type Container,
 		containerOfType,
 		findConnected,
@@ -117,7 +117,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<BinaryIndicatorContainer, 'payload'>;
+		) as NewContainer<BinaryIndicatorPayload>;
 
 		container.payload.title = '';
 		container.payload.indicatorCategory = [indicatorCategories.enum['indicator_category.custom']];
@@ -131,7 +131,10 @@
 
 	function handleDndConsider(
 		event: CustomEvent<
-			DndEvent<{ guid: string; container: IndicatorTemplateContainer | BinaryIndicatorContainer }>
+			DndEvent<{
+				guid: string;
+				container: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>;
+			}>
 		>
 	) {
 		const { trigger, id } = event.detail.info;
@@ -155,7 +158,10 @@
 
 	function handleDndFinalize(
 		event: CustomEvent<
-			DndEvent<{ guid: string; container: IndicatorTemplateContainer | BinaryIndicatorContainer }>
+			DndEvent<{
+				guid: string;
+				container: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>;
+			}>
 		>
 	) {
 		if (!shouldIgnoreDndEvents) {

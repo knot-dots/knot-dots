@@ -2,7 +2,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import saveContainer from '$lib/client/saveContainer';
 import {
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
 	type Container,
 	containerOfType,
 	type IndicatorTemplateContainer,
@@ -16,7 +16,7 @@ import {
 
 export default async function createObjective(
 	target: Container,
-	indicator: IndicatorTemplateContainer | BinaryIndicatorContainer,
+	indicator: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>,
 	iooiType?: IooiType
 ) {
 	const isOverallObjective = target.guid == indicator.guid;

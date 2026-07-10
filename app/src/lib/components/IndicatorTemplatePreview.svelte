@@ -8,7 +8,8 @@
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import {
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
+		type Container,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
 		isBinaryIndicatorContainer
@@ -16,7 +17,7 @@
 	import { fetchContainersRelatedToIndicators } from '$lib/remote/data.remote';
 
 	interface Props {
-		container: BinaryIndicatorContainer | IndicatorTemplateContainer;
+		container: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer;
 	}
 
 	let { container }: Props = $props();

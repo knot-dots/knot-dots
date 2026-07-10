@@ -11,7 +11,7 @@ import { z } from 'zod';
 import {
 	anyContainer,
 	type AnyPayload,
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
 	type Container,
 	container,
 	findDescendants,
@@ -1220,7 +1220,7 @@ export function getAllRelatedContainersByProgramType(
 }
 
 export function getAllContainersRelatedToIndicators(
-	containers: Array<BinaryIndicatorContainer | IndicatorTemplateContainer>,
+	containers: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
 	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
 ) {

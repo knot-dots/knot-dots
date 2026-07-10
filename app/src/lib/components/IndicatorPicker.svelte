@@ -12,9 +12,10 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
-		type BinaryIndicatorContainer,
 		binaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		computeFacetCount,
+		type Container,
 		indicatorCategories,
 		type IndicatorTemplateContainer,
 		indicatorTemplateContainer,
@@ -50,7 +51,7 @@
 	let selected = $state([]) as string[];
 	let knownIndicators = new SvelteMap<
 		string,
-		BinaryIndicatorContainer | IndicatorTemplateContainer
+		Container<BinaryIndicatorPayload> | IndicatorTemplateContainer
 	>();
 
 	let activeFilters = $derived(

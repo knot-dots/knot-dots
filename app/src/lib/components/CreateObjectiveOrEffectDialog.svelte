@@ -16,7 +16,8 @@
 	import IndicatorTemplatePreview from '$lib/components/IndicatorTemplatePreview.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import {
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
+		type Container,
 		type EffectContainer,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
@@ -36,7 +37,7 @@
 
 	let target = $derived($addEffectState.target ?? $addObjectiveState.target);
 
-	let selected = $state<BinaryIndicatorContainer | IndicatorTemplateContainer>();
+	let selected = $state<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>();
 
 	const actualDataResource = resource([() => selected?.guid], async ([guid], _, { signal }) => {
 		if (!guid) {
@@ -56,7 +57,7 @@
 		);
 	});
 
-	function handleSelect(value: BinaryIndicatorContainer | IndicatorTemplateContainer) {
+	function handleSelect(value: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer) {
 		selected = value;
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}

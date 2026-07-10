@@ -3,7 +3,8 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { filterVisible } from '$lib/authorization';
 import {
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
+	type Container,
 	indicatorCategories,
 	type IndicatorTemplateContainer,
 	indicatorTypes,
@@ -72,7 +73,9 @@ export const GET = (async ({ locals, params, url }) => {
 					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
-			)(connection) as Promise<Array<BinaryIndicatorContainer | IndicatorTemplateContainer>>
+			)(connection) as Promise<
+				Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>
+			>
 		]);
 
 		if (!isGoalContainer(container) && !isMeasureContainer(container)) {

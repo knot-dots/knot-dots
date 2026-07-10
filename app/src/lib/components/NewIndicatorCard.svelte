@@ -9,7 +9,7 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import {
 		type ActualDataPayload,
-		type BinaryIndicatorContainer,
+		type BinaryIndicatorPayload,
 		type Container,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
@@ -20,7 +20,7 @@
 
 	interface Props {
 		button?: Snippet;
-		container: IndicatorTemplateContainer | BinaryIndicatorContainer;
+		container: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>;
 		ignoreBulkActionContext?: boolean;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;

@@ -1,7 +1,7 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
-	type BinaryIndicatorContainer,
+	type BinaryIndicatorPayload,
 	type Container,
 	fromCounts,
 	indicatorCategories,
@@ -31,7 +31,7 @@ export interface IndicatorFilters {
 }
 
 export interface IndicatorLoadResult {
-	containers: Array<BinaryIndicatorContainer | IndicatorTemplateContainer>;
+	containers: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>;
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
@@ -84,7 +84,7 @@ export async function getIndicatorsData(params: {
 		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 	);
 	const indicators = esResult.containers as Array<
-		BinaryIndicatorContainer | IndicatorTemplateContainer
+		Container<BinaryIndicatorPayload> | IndicatorTemplateContainer
 	>;
 	const facetData = esResult.facets;
 
