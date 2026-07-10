@@ -14,7 +14,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: OrganizationalUnitContainer | EmptyOrganizationalUnitContainer;
+		container: OrganizationalUnitContainer | NewContainer<InitialOrganizationalUnitPayload>;
 		editable?: boolean;
 	}
 

@@ -2470,8 +2470,6 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 
 export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 
-export type EmptyOrganizationalUnitContainer = NewContainer<InitialOrganizationalUnitPayload>;
-
 export type EmptyRuleContainer = NewContainer<InitialRulePayload>;
 
 export function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
