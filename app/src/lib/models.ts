@@ -1770,11 +1770,9 @@ export function isBinaryIndicatorContainer(
 	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
 
-export type ChapterContainer = Container<ChapterPayload>;
-
 export function isChapterContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ChapterContainer {
+): container is Container<ChapterPayload> {
 	return container.payload.type === payloadTypes.enum.chapter;
 }
 
