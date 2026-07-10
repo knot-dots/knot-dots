@@ -5,14 +5,14 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type MapContainer,
+		type MapPayload,
 		type OrganizationalUnitContainer
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
 
 	interface Props {
-		container: MapContainer;
+		container: Container<MapPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: OrganizationalUnitContainer;

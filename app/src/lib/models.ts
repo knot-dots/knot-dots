@@ -1856,11 +1856,9 @@ export function isKnowledgeContainer(
 	return container.payload.type === payloadTypes.enum.knowledge;
 }
 
-export type MapContainer = Container<MapPayload>;
-
 export function isMapContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is MapContainer {
+): container is Container<MapPayload> {
 	return container.payload.type === payloadTypes.enum.map;
 }
 
