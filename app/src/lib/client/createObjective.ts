@@ -5,8 +5,8 @@ import {
 	type BinaryIndicatorContainer,
 	type Container,
 	containerOfType,
-	type EmptyObjectiveContainer,
 	type IndicatorTemplateContainer,
+	type InitialObjectivePayload,
 	type IooiType,
 	type NewContainer,
 	type ObjectiveContainer,
@@ -26,7 +26,7 @@ export default async function createObjective(
 		target.organizational_unit,
 		target.managed_by,
 		env.PUBLIC_KC_REALM
-	) as EmptyObjectiveContainer;
+	) as NewContainer<InitialObjectivePayload>;
 
 	const response = await saveContainer({
 		...newObjective,
