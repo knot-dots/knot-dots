@@ -7,7 +7,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { type ReportContainer, payloadTypes } from '$lib/models';
+	import { type Container, payloadTypes, type ReportPayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -20,9 +20,9 @@
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
 
-	const list = createPaginatedList<ReportContainer>({
+	const list = createPaginatedList<Container<ReportPayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<ReportContainer>({
+			const result = await fetchContainerPage<Container<ReportPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -41,7 +41,7 @@
 		},
 		getKey: ({ guid }) => guid,
 		initialHasMore: () => data.page.hasMore,
-		initialItems: () => data.containers as ReportContainer[],
+		initialItems: () => data.containers as Container<ReportPayload>[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

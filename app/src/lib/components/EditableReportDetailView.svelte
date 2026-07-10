@@ -13,11 +13,11 @@
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyPayload, type Container, predicates, type ReportContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type ReportPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ReportContainer;
+		container: Container<ReportPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

@@ -9,11 +9,11 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import TemplateToggle from '$lib/components/TemplateToggle.svelte';
-	import { type AnyPayload, type Container, type ReportContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type ReportPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ReportContainer;
+		container: Container<ReportPayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: Container<AnyPayload>[];

@@ -28,7 +28,7 @@ import {
 	type ProgramContainer,
 	programTypes,
 	type Relation,
-	type ReportContainer,
+	type ReportPayload,
 	taskCategories
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
@@ -415,7 +415,7 @@ async function copyOrganizationalUnitContainer(
 }
 
 async function copyReportContainer(
-	createdContainer: ReportContainer,
+	createdContainer: Container<ReportPayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: DatabaseTransactionConnection

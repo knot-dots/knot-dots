@@ -1,5 +1,5 @@
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import { payloadTypes, type ReportContainer } from '$lib/models';
+import { type Container, payloadTypes, type ReportPayload } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from './$types';
 
@@ -8,7 +8,7 @@ export const load = (async ({ depends, fetch, params, url }) => {
 
 	const query = new URLSearchParams([...url.searchParams, ['type', payloadTypes.enum.report]]);
 
-	return await fetchContainerPage<ReportContainer>({
+	return await fetchContainerPage<Container<ReportPayload>>({
 		contextGuid: params.guid,
 		fetch,
 		limit: DEFAULT_PAGE_SIZE,

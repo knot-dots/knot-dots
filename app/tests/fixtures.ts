@@ -18,7 +18,7 @@ import {
 	type Predicate,
 	predicates,
 	type ProgramContainer,
-	type ReportContainer,
+	type ReportPayload,
 	type ResourceDataContainer,
 	resourceDataTypes,
 	type ResourceV2Container,
@@ -40,7 +40,7 @@ type MyFixtures = {
 	landingPage: LandingPage;
 	landingPageWithCustomCollection: LandingPage;
 	programPage: ProgramPage;
-	reportTemplate: ReportContainer;
+	reportTemplate: Container<ReportPayload>;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
 	testCategoryWithTerms: {
@@ -77,8 +77,8 @@ type MyWorkerFixtures = {
 	testSubordinateMeasureResourceDataOtherResource: ResourceDataContainer;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
-	testReport: ReportContainer;
-	testPublicReport: ReportContainer;
+	testReport: Container<ReportPayload>;
+	testPublicReport: Container<ReportPayload>;
 };
 
 locale.set('en');
@@ -250,7 +250,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			null,
 			testOrganization.guid,
 			'knot-dots'
-		) as ReportContainer;
+		) as Container<ReportPayload>;
 		const reportTemplate = await createContainer(adminContext, {
 			...newReport,
 			payload: {
@@ -914,7 +914,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ReportContainer;
+			) as Container<ReportPayload>;
 			const testReport = await createContainer(adminContext, {
 				...newReport,
 				payload: {
@@ -937,7 +937,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ReportContainer;
+			) as Container<ReportPayload>;
 			const testPublicReport = await createContainer(adminContext, {
 				...newReport,
 				payload: {

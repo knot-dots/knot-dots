@@ -1914,11 +1914,9 @@ export function isProgressContainer(
 	return container.payload.type === payloadTypes.enum.progress;
 }
 
-export type ReportContainer = Container<ReportPayload>;
-
 export function isReportContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ReportContainer {
+): container is Container<ReportPayload> {
 	return container.payload.type === payloadTypes.enum.report;
 }
 
