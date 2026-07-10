@@ -6,24 +6,26 @@
 	import {
 		type Container,
 		containersByHierarchyLevel,
+		type EffectPayload,
+		type GoalPayload,
 		type IndicatorTemplatePayload,
 		isEffectContainer,
 		isGoalContainer,
 		isPartOf,
 		isTaskContainer,
-		type MeasureMonitoringContainer,
 		type MeasurePayload,
 		overlayKey,
 		payloadTypes,
 		predicates,
 		type SimpleMeasurePayload,
+		type TaskPayload,
 		titleForGoalCollection
 	} from '$lib/models';
 
 	interface Props {
 		measure?: Container<MeasurePayload | SimpleMeasurePayload>;
 		measures: Array<Container<MeasurePayload | SimpleMeasurePayload>>;
-		containers: MeasureMonitoringContainer[];
+		containers: Container<EffectPayload | GoalPayload | TaskPayload>[];
 		indicators: Container<IndicatorTemplatePayload>[];
 		showMeasures?: boolean;
 	}

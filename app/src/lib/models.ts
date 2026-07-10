@@ -2062,14 +2062,9 @@ export function isTaskCollectionContainer(
 	return container.payload.type === payloadTypes.enum.task_collection;
 }
 
-export type MeasureMonitoringContainer =
-	| Container<EffectPayload>
-	| Container<GoalPayload>
-	| Container<TaskPayload>;
-
 export function isMeasureMonitoringContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is MeasureMonitoringContainer {
+): container is Container<EffectPayload> | Container<GoalPayload> | Container<TaskPayload> {
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
 
