@@ -21,14 +21,14 @@
 		type AnyPayload,
 		type Container,
 		helpSlug,
-		type PageContainer,
+		type PagePayload,
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
-		container: PageContainer;
+		container: Container<PagePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

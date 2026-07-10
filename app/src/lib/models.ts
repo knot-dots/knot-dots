@@ -1902,11 +1902,9 @@ export function isOrganizationalUnitContainer(
 	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
 
-export type PageContainer = Container<PagePayload>;
-
 export function isPageContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is PageContainer {
+): container is Container<PagePayload> {
 	return container.payload.type === payloadTypes.enum.page;
 }
 

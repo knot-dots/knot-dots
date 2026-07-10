@@ -18,7 +18,7 @@
 		isOrganizationContainer,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
-		type PageContainer,
+		type PagePayload,
 		visibility
 	} from '$lib/models';
 	import { ability, applicationState, mayDeleteContainer } from '$lib/stores';
@@ -26,7 +26,7 @@
 	interface Props {
 		actions?: Snippet;
 		children: Snippet;
-		container: Container<OrganizationPayload | OrganizationalUnitPayload> | PageContainer;
+		container: Container<OrganizationPayload | OrganizationalUnitPayload | PagePayload>;
 		relatedContainers: Container<AnyPayload>[];
 		dialog: HTMLDialogElement;
 		title: string;
