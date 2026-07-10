@@ -22,7 +22,7 @@ import {
 	type ResourceDataPayload,
 	resourceDataTypes,
 	type ResourceV2Payload,
-	type TaskCollectionContainer,
+	type TaskCollectionPayload,
 	type TaskPayload,
 	type TermPayload
 } from '$lib/models';
@@ -76,7 +76,7 @@ type MyWorkerFixtures = {
 	testSubordinateGoalBudgetOtherResource: Container<ResourceDataPayload>;
 	testSubordinateMeasureResourceDataOtherResource: Container<ResourceDataPayload>;
 	testTask: Container<TaskPayload>;
-	testTaskCollection: TaskCollectionContainer;
+	testTaskCollection: Container<TaskCollectionPayload>;
 	testReport: Container<ReportPayload>;
 	testPublicReport: Container<ReportPayload>;
 };
@@ -869,7 +869,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testGoal.managed_by,
 				'knot-dots'
-			) as TaskCollectionContainer;
+			) as Container<TaskCollectionPayload>;
 			const testTaskCollection = await createContainer(adminContext, {
 				...newTaskCollection,
 				relation: [

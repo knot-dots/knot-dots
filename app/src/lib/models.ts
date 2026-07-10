@@ -2056,11 +2056,9 @@ export function isTermContainer(
 	return container.payload.type === payloadTypes.enum.term;
 }
 
-export type TaskCollectionContainer = Container<TaskCollectionPayload>;
-
 export function isTaskCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is TaskCollectionContainer {
+): container is Container<TaskCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.task_collection;
 }
 
