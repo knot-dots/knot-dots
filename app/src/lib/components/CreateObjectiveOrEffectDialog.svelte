@@ -25,7 +25,7 @@
 		isEffectContainer,
 		isIndicatorTemplateContainer,
 		isObjectiveContainer,
-		type ObjectiveContainer
+		type ObjectivePayload
 	} from '$lib/models';
 	import { addEffectState, addObjectiveState } from '$lib/stores';
 
@@ -64,7 +64,7 @@
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
 
-	let newObjectiveOrEffect = $state<Container<EffectPayload> | ObjectiveContainer>();
+	let newObjectiveOrEffect = $state<Container<EffectPayload | ObjectivePayload>>();
 
 	async function handleConfirm() {
 		if (selected) {

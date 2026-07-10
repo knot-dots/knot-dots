@@ -11,7 +11,7 @@ import {
 	type IndicatorTemplatePayload,
 	type MeasurePayload,
 	type NewContainer,
-	type ObjectiveContainer,
+	type ObjectivePayload,
 	type OrganizationalUnitContainer,
 	type OrganizationContainer,
 	payloadTypes,
@@ -61,7 +61,7 @@ type MyWorkerFixtures = {
 	testProgram: ProgramContainer;
 	testGoal: Container<GoalPayload>;
 	testSubordinateGoal: Container<GoalPayload>;
-	testObjective: ObjectiveContainer;
+	testObjective: Container<ObjectivePayload>;
 	testMeasure: Container<MeasurePayload>;
 	testSubordinateMeasure: Container<MeasurePayload>;
 	testEffect: Container<EffectPayload>;
@@ -513,7 +513,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ObjectiveContainer;
+			) as Container<ObjectivePayload>;
 			const testObjective = await createContainer(adminContext, {
 				...newObjective,
 				payload: {

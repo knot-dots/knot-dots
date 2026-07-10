@@ -1874,11 +1874,9 @@ export function isMeasureCollectionContainer(
 	return container.payload.type === payloadTypes.enum.measure_collection;
 }
 
-export type ObjectiveContainer = Container<ObjectivePayload>;
-
 export function isObjectiveContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ObjectiveContainer {
+): container is Container<ObjectivePayload> {
 	return container.payload.type === payloadTypes.enum.objective;
 }
 
@@ -2732,9 +2730,9 @@ export function findDescendants<T extends Container<AnyPayload>>(
 	return Array.from(descendants.values());
 }
 
-export function findParentObjectives(containers: Container[]): ObjectiveContainer[] {
+export function findParentObjectives(containers: Container[]): Container<ObjectivePayload>[] {
 	const roots = new Set<Container>();
-	const parentObjectives = [] as ObjectiveContainer[];
+	const parentObjectives = [] as Container<ObjectivePayload>[];
 
 	for (const container of containers) {
 		const ancestors = findAncestors(container, containers, [predicates.enum['is-part-of']]);
@@ -2758,7 +2756,9 @@ export function findParentObjectives(containers: Container[]): ObjectiveContaine
 	return Array.from(parentObjectives);
 }
 
-export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveContainer[] {
+export function findLeafObjectives(
+	containers: Container<ObjectivePayload>[]
+): Container<ObjectivePayload>[] {
 	return containers.filter(
 		({ relation, guid }) =>
 			relation.findIndex(

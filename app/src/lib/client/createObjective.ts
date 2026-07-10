@@ -9,7 +9,7 @@ import {
 	type InitialObjectivePayload,
 	type IooiType,
 	type NewContainer,
-	type ObjectiveContainer,
+	type ObjectivePayload,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -55,6 +55,6 @@ export default async function createObjective(
 						}
 					])
 		]
-	} as NewContainer & ObjectiveContainer['payload']);
+	} as NewContainer<ObjectivePayload>);
 	return await response.json();
 }

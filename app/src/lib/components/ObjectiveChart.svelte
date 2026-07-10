@@ -11,14 +11,14 @@
 		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isRelatedTo,
-		type ObjectiveContainer,
+		type ObjectivePayload,
 		overlayKey,
 		overlayURL,
 		predicates
 	} from '$lib/models';
 
 	interface Props {
-		container: ObjectiveContainer;
+		container: Container<ObjectivePayload>;
 		relatedContainers?: Container<AnyPayload>[];
 	}
 

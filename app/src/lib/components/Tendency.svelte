@@ -6,11 +6,11 @@
 		type Container,
 		type EffectPayload,
 		isEffectContainer,
-		type ObjectiveContainer
+		type ObjectivePayload
 	} from '$lib/models';
 
 	interface Props {
-		container: Container<EffectPayload> | ObjectiveContainer;
+		container: Container<EffectPayload | ObjectivePayload>;
 	}
 
 	let { container }: Props = $props();

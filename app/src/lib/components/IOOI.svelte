@@ -28,7 +28,7 @@
 		isResourceDataContainer,
 		type MeasurePayload,
 		type NewContainer,
-		type ObjectiveContainer,
+		type ObjectivePayload,
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
@@ -177,7 +177,7 @@
 		}
 	});
 
-	type IooiItem = ObjectiveContainer | Container<EffectPayload>;
+	type IooiItem = Container<EffectPayload | ObjectivePayload>;
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
 	let resourceData = $derived(

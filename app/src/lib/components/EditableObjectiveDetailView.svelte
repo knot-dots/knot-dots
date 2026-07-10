@@ -26,7 +26,7 @@
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isIndicatorTemplateContainer,
-		type ObjectiveContainer,
+		type ObjectivePayload,
 		predicates
 	} from '$lib/models';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -35,7 +35,7 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: ObjectiveContainer;
+		container: Container<ObjectivePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}
