@@ -23,7 +23,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type EffectContainer,
+		type EffectPayload,
 		isBinaryIndicatorContainer,
 		isIndicatorTemplateContainer,
 		predicates
@@ -34,7 +34,7 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: EffectContainer;
+		container: Container<EffectPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

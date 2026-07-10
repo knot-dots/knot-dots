@@ -4,10 +4,15 @@
 	import ArrowCircleDownSolid from '~icons/knotdots/arrow-circle-down-solid';
 	import ArrowCircleUpOutline from '~icons/knotdots/arrow-circle-up-outline';
 	import ArrowCircleUpSolid from '~icons/knotdots/arrow-circle-up-solid';
-	import { type EffectContainer, isEffectContainer, type ObjectiveContainer } from '$lib/models';
+	import {
+		type Container,
+		type EffectPayload,
+		isEffectContainer,
+		type ObjectiveContainer
+	} from '$lib/models';
 
 	interface Props {
-		container: EffectContainer | ObjectiveContainer;
+		container: Container<EffectPayload> | ObjectiveContainer;
 		editable?: boolean;
 	}
 

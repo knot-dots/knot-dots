@@ -15,7 +15,7 @@
 	import {
 		type Container,
 		containerOfType,
-		type EffectContainer,
+		type EffectPayload,
 		type GoalContainer,
 		type IooiType,
 		iooiTypes,
@@ -177,7 +177,7 @@
 		}
 	});
 
-	type IooiItem = ObjectiveContainer | EffectContainer;
+	type IooiItem = ObjectiveContainer | Container<EffectPayload>;
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
 	let resourceData = $derived(

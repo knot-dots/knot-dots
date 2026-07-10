@@ -5,7 +5,7 @@ import {
 	type CategoryPayload,
 	type Container,
 	containerOfType,
-	type EffectContainer,
+	type EffectPayload,
 	etag,
 	type GoalContainer,
 	type IndicatorTemplateContainer,
@@ -64,7 +64,7 @@ type MyWorkerFixtures = {
 	testObjective: ObjectiveContainer;
 	testMeasure: MeasureContainer;
 	testSubordinateMeasure: MeasureContainer;
-	testEffect: EffectContainer;
+	testEffect: Container<EffectPayload>;
 	testResourceV2: ResourceV2Container;
 	testResourceDataBudget: ResourceDataContainer;
 	testResourceDataPlanned: ResourceDataContainer;
@@ -622,7 +622,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as EffectContainer;
+			) as Container<EffectPayload>;
 			const testEffect = await createContainer(adminContext, {
 				...newEffect,
 				payload: {

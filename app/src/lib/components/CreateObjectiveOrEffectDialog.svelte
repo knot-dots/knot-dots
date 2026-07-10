@@ -18,7 +18,7 @@
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
-		type EffectContainer,
+		type EffectPayload,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
@@ -62,7 +62,7 @@
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
 
-	let newObjectiveOrEffect = $state<EffectContainer | ObjectiveContainer>();
+	let newObjectiveOrEffect = $state<Container<EffectPayload> | ObjectiveContainer>();
 
 	async function handleConfirm() {
 		if (selected) {

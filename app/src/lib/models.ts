@@ -1796,11 +1796,9 @@ export function isDemographicDataContainer(
 	return container.payload.type === payloadTypes.enum.demographic_data;
 }
 
-export type EffectContainer = Container<EffectPayload>;
-
 export function isEffectContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is EffectContainer {
+): container is Container<EffectPayload> {
 	return container.payload.type === payloadTypes.enum.effect;
 }
 
@@ -2128,7 +2126,7 @@ export function isTaskCollectionContainer(
 	return container.payload.type === payloadTypes.enum.task_collection;
 }
 
-export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
+export type MeasureMonitoringContainer = Container<EffectPayload> | GoalContainer | TaskContainer;
 
 export function isMeasureMonitoringContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>

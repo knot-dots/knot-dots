@@ -5,13 +5,13 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type EffectContainer,
+		type EffectPayload,
 		isIndicatorTemplateContainer,
 		isRelatedTo
 	} from '$lib/models';
 
 	interface Props {
-		container: EffectContainer;
+		container: Container<EffectPayload>;
 		relatedContainers?: Container<AnyPayload>[];
 		showLegend?: boolean;
 	}

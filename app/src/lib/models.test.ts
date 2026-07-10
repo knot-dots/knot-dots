@@ -1,8 +1,9 @@
 import { expect, test } from 'vitest';
 import { z } from 'zod';
 import {
+	type Container,
 	container,
-	type EffectContainer,
+	type EffectPayload,
 	type IndicatorTemplateContainer,
 	type MeasureContainer,
 	payloadTypes,
@@ -95,7 +96,7 @@ const effect = testContainer.parse({
 		title: indicatorTemplateOne.payload.title,
 		type: payloadTypes.enum.effect
 	}
-}) as EffectContainer;
+}) as Container<EffectPayload>;
 
 addRelation(effect, predicates.enum['is-part-of'], measure);
 addRelation(effect, predicates.enum['is-measured-by'], indicatorTemplateOne);
