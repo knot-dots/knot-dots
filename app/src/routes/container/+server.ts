@@ -120,12 +120,12 @@ async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 }
 
 async function copyGoalsFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdMeasure: Container<MeasurePayload>,
 	originalGoals: Container<GoalPayload>[],
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {
-	const isPartOfObjects: Array<MeasureContainer | Container<GoalPayload>> = [createdMeasure];
+	const isPartOfObjects: Array<Container<GoalPayload | MeasurePayload>> = [createdMeasure];
 
 	const originalGoalsSorted = originalGoals.toSorted(
 		(a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel
@@ -171,9 +171,9 @@ async function copyGoalsFromOriginal(
 }
 
 async function copyTasksFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdMeasure: Container<MeasurePayload>,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | Container<GoalPayload>>,
+	isPartOfObjects: Array<Container<GoalPayload | MeasurePayload>>,
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {
@@ -207,9 +207,9 @@ async function copyTasksFromOriginal(
 }
 
 async function copyEffectsFromOriginal(
-	createdMeasure: MeasureContainer,
+	createdMeasure: Container<MeasurePayload>,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | Container<GoalPayload>>,
+	isPartOfObjects: Array<Container<GoalPayload | MeasurePayload>>,
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {

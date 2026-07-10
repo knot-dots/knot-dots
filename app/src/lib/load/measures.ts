@@ -32,7 +32,7 @@ export const loadPage = (limit: number) =>
 		}
 
 		const [data, { categoryContext, currentOrganization }] = await Promise.all([
-			fetchContainerPage<MeasureContainer | SimpleMeasureContainer>({
+			fetchContainerPage<Container<MeasurePayload> | SimpleMeasureContainer>({
 				contextGuid: params.guid,
 				fetch,
 				limit,

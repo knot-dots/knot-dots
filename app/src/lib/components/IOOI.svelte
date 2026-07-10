@@ -43,7 +43,7 @@
 	} from '$lib/stores';
 
 	interface Props {
-		container: Container<GoalPayload> | MeasureContainer;
+		container: Container<GoalPayload | MeasurePayload>;
 		containers: Container[];
 	}
 

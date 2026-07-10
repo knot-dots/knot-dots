@@ -3,7 +3,6 @@ import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
-	type Container,
 	type MeasurePayload,
 	modifiedContainer,
 	type NewContainer,
@@ -161,8 +160,7 @@ test('relations are added or removed when updating a container', async ({
 
 	const anotherContainer = await createContainer(
 		initializeNewContainer(
-			{ title: 'Lorem ipsum', type: payloadTypes.enum.measure } as NewContainer &
-				MeasureContainer['payload'],
+			{ title: 'Lorem ipsum', type: payloadTypes.enum.measure } as MeasurePayload,
 			[]
 		)
 	)(connection);

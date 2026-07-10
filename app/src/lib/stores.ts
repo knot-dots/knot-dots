@@ -133,7 +133,7 @@ if (browser) {
 }
 
 type AddEffectState = {
-	target?: Container<GoalPayload> | MeasureContainer;
+	target?: Container<GoalPayload | MeasurePayload>;
 	iooiType?: IooiType;
 };
 

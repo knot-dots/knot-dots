@@ -58,7 +58,7 @@
 			container.organizational_unit,
 			container.managed_by,
 			container.realm
-		) as Omit<NewContainer, 'payload'> & Pick<MeasureContainer, 'payload'>;
+		) as NewContainer<MeasurePayload>;
 
 		if (isMeasureContainer(parentContainer)) {
 			item.payload.category = parentContainer.payload.category;

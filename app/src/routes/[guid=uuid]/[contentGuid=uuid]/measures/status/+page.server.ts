@@ -54,7 +54,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 				},
 				url.searchParams.get('sort') ?? ''
 			)
-		)) as Array<MeasureContainer | SimpleMeasureContainer>;
+		)) as Array<Container<MeasurePayload> | SimpleMeasureContainer>;
 
 		return {
 			container,

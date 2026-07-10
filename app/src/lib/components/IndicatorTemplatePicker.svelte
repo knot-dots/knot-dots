@@ -27,7 +27,7 @@
 		onSelect: (
 			container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>
 		) => void;
-		target: Container<GoalPayload> | MeasureContainer;
+		target: Container<GoalPayload | MeasurePayload>;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 	}
 

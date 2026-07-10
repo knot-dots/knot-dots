@@ -23,14 +23,17 @@
 
 	let { data }: PageProps = $props();
 
-	const board = createColumnBoardPagination<MeasureContainer | SimpleMeasureContainer, Status>({
+	const board = createColumnBoardPagination<
+		Container<MeasurePayload> | SimpleMeasureContainer,
+		Status
+	>({
 		columnForItem: ({ payload }) => payload.status,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<MeasureContainer | SimpleMeasureContainer>({
+			const result = await fetchContainerPage<Container<MeasurePayload> | SimpleMeasureContainer>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,

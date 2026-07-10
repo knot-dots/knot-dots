@@ -24,9 +24,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<MeasureContainer | SimpleMeasureContainer>({
+	const list = createPaginatedList<Container<MeasurePayload> | SimpleMeasureContainer>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<MeasureContainer | SimpleMeasureContainer>({
+			const result = await fetchContainerPage<Container<MeasurePayload> | SimpleMeasureContainer>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -46,7 +46,7 @@
 		},
 		getKey: ({ guid }) => guid,
 		initialHasMore: () => data.page.hasMore,
-		initialItems: () => data.containers as (MeasureContainer | SimpleMeasureContainer)[],
+		initialItems: () => data.containers as (Container<MeasurePayload> | SimpleMeasureContainer)[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

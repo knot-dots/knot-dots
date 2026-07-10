@@ -21,8 +21,8 @@
 	} from '$lib/models';
 
 	interface Props {
-		measure?: MeasureContainer | SimpleMeasureContainer;
-		measures: Array<MeasureContainer | SimpleMeasureContainer>;
+		measure?: Container<MeasurePayload> | SimpleMeasureContainer;
+		measures: Array<Container<MeasurePayload> | SimpleMeasureContainer>;
 		containers: MeasureMonitoringContainer[];
 		indicators: Container<IndicatorTemplatePayload>[];
 		showMeasures?: boolean;

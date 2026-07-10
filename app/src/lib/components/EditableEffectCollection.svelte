@@ -23,7 +23,7 @@
 		container: Container<EffectCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: Container<GoalPayload> | MeasureContainer;
+		parentContainer: Container<GoalPayload | MeasurePayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 
