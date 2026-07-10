@@ -12,32 +12,32 @@
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
 		EditableTableDataRow,
 		EditableTableSection,
 		EditableTableValue
 	} from '$lib/components/EditableTable.svelte';
+	import EditableTable from '$lib/components/EditableTable.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		isResourceDataBudgetContainer,
-		isResourceDataContainer,
+		type AnyPayload,
+		type Container,
+		findDescendants,
+		type GoalPayload,
 		isGoalContainer,
 		isMeasureContainer,
-		predicates,
+		isResourceDataBudgetContainer,
+		isResourceDataContainer,
+		type MeasureContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
-		findDescendants,
-		type GoalContainer,
-		type MeasureContainer,
+		predicates,
 		type ResourceDataContainer,
-		type ResourceV2Container,
-		type Container,
-		type AnyPayload
+		type ResourceV2Container
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -98,7 +98,7 @@
 
 	// --- Budget table data fetching ---
 
-	let goalContainers = $state<GoalContainer[]>([]);
+	let goalContainers = $state<Container<GoalPayload>[]>([]);
 	let measureContainers = $state<MeasureContainer[]>([]);
 
 	$effect(() => {
@@ -174,7 +174,7 @@
 			);
 	});
 
-	function getBudgetsForGoal(goal: GoalContainer): ResourceDataContainer[] {
+	function getBudgetsForGoal(goal: Container<GoalPayload>): ResourceDataContainer[] {
 		return allBudgetContainers.filter((budget) =>
 			budget.relation.some(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === goal.guid

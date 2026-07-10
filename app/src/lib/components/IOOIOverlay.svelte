@@ -4,10 +4,10 @@
 	import Help from '$lib/components/Help.svelte';
 	import IOOI from '$lib/components/IOOI.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type Container, type GoalContainer, type MeasureContainer } from '$lib/models';
+	import { type Container, type GoalPayload, type MeasureContainer } from '$lib/models';
 
 	interface Props {
-		container: MeasureContainer | GoalContainer;
+		container: MeasureContainer | Container<GoalPayload>;
 		containers: Container[];
 	}
 

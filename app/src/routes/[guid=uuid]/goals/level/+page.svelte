@@ -8,7 +8,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { type GoalContainer, titleForGoalCollection } from '$lib/models';
+	import { type Container, type GoalPayload, titleForGoalCollection } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { createGoalLevelQuery } from './query';
@@ -16,14 +16,14 @@
 
 	let { data }: PageProps = $props();
 
-	const board = createColumnBoardPagination<GoalContainer, string>({
+	const board = createColumnBoardPagination<Container<GoalPayload>, string>({
 		columnForItem: ({ payload }) => String(payload.hierarchyLevel),
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<GoalContainer>({
+			const result = await fetchContainerPage<Container<GoalPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,

@@ -5,7 +5,7 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyPayload,
 	type Container,
-	type GoalContainer,
+	type GoalPayload,
 	isMeasureContainer,
 	isSimpleMeasureContainer,
 	payloadTypes,
@@ -60,7 +60,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 						},
 						'priority'
 					)
-		)) as Array<GoalContainer | TaskContainer>;
+		)) as Array<Container<GoalPayload> | TaskContainer>;
 
 		return {
 			container,

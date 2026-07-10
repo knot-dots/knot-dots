@@ -1814,11 +1814,9 @@ export function isFileCollectionContainer(
 	return container.payload.type === payloadTypes.enum.file_collection;
 }
 
-export type GoalContainer = Container<GoalPayload>;
-
 export function isGoalContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is GoalContainer {
+): container is Container<GoalPayload> {
 	return container.payload.type === payloadTypes.enum.goal;
 }
 
@@ -2122,7 +2120,10 @@ export function isTaskCollectionContainer(
 	return container.payload.type === payloadTypes.enum.task_collection;
 }
 
-export type MeasureMonitoringContainer = Container<EffectPayload> | GoalContainer | TaskContainer;
+export type MeasureMonitoringContainer =
+	| Container<EffectPayload>
+	| Container<GoalPayload>
+	| TaskContainer;
 
 export function isMeasureMonitoringContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
@@ -2961,7 +2962,10 @@ export function titleForProgramCollection(containers: ProgramContainer[]) {
 	}
 }
 
-export function titleForGoalCollection(containers: GoalContainer[], hierarchyLevel: number) {
+export function titleForGoalCollection(
+	containers: Container<GoalPayload>[],
+	hierarchyLevel: number
+) {
 	const goalTypes = new Set(containers.map((c) => c.payload.goalType));
 
 	if (goalTypes.size == 1) {
@@ -3072,7 +3076,7 @@ export function getOrganizationURL(
 function computeRelevanceScore(
 	indicator: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer,
 	containersRelatedToIndicator: Container[],
-	container: MeasureContainer | GoalContainer
+	container: MeasureContainer | Container<GoalPayload>
 ): number {
 	const containerHasParentUsingIndicator = containersRelatedToIndicator.some(({ relation }) =>
 		relation.find(
@@ -3118,7 +3122,7 @@ function computeRelevanceScore(
 export function sortIndicatorsByRelevanceForGoalOrMeasure(
 	indicators: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>,
 	containersRelatedToIndicators: Container[],
-	container: GoalContainer | MeasureContainer
+	container: Container<GoalPayload> | MeasureContainer
 ): Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer> {
 	return indicators
 		.map((i) => ({

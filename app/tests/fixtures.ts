@@ -7,7 +7,7 @@ import {
 	containerOfType,
 	type EffectPayload,
 	etag,
-	type GoalContainer,
+	type GoalPayload,
 	type IndicatorTemplateContainer,
 	type MeasureContainer,
 	type NewContainer,
@@ -32,7 +32,7 @@ import { LandingPage, ProgramPage } from './pages';
 import { AllTable } from './tables';
 
 type MyFixtures = {
-	aiGoal: GoalContainer;
+	aiGoal: Container<GoalPayload>;
 	allTable: AllTable;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
@@ -59,8 +59,8 @@ type MyWorkerFixtures = {
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testIndividualProfile: OrganizationalUnitContainer;
 	testProgram: ProgramContainer;
-	testGoal: GoalContainer;
-	testSubordinateGoal: GoalContainer;
+	testGoal: Container<GoalPayload>;
+	testSubordinateGoal: Container<GoalPayload>;
 	testObjective: ObjectiveContainer;
 	testMeasure: MeasureContainer;
 	testSubordinateMeasure: MeasureContainer;
@@ -191,7 +191,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			null,
 			testProgram.organization,
 			'knot-dots'
-		) as GoalContainer;
+		) as Container<GoalPayload>;
 		const testGoal = await createContainer(adminContext, {
 			...newGoal,
 			payload: {
@@ -431,7 +431,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as GoalContainer;
+			) as Container<GoalPayload>;
 			const testGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {
@@ -454,7 +454,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as GoalContainer;
+			) as Container<GoalPayload>;
 			const testSubordinateGoal = await createContainer(adminContext, {
 				...newGoal,
 				payload: {

@@ -14,7 +14,7 @@ import {
 	containerOfType,
 	type CustomCollectionPayload,
 	filterMembers,
-	type GoalContainer,
+	type GoalPayload,
 	type HelpContainer,
 	type HelpSlug,
 	type IooiType,
@@ -133,14 +133,14 @@ if (browser) {
 }
 
 type AddEffectState = {
-	target?: GoalContainer | MeasureContainer;
+	target?: Container<GoalPayload> | MeasureContainer;
 	iooiType?: IooiType;
 };
 
 export const addEffectState = writable<AddEffectState>({});
 
 type AddObjectiveState = {
-	target?: GoalContainer;
+	target?: Container<GoalPayload>;
 	iooiType?: IooiType;
 };
 

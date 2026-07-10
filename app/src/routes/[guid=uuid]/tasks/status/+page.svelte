@@ -10,7 +10,8 @@
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import {
-		type GoalContainer,
+		type Container,
+		type GoalPayload,
 		isTaskContainer,
 		overlayKey,
 		paramsFromFragment,
@@ -33,7 +34,7 @@
 		)
 	);
 
-	function goalsColumnTitle(containers: GoalContainer[]) {
+	function goalsColumnTitle(containers: Container<GoalPayload>[]) {
 		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
 
 		if (goalTypes.size == 1) {

@@ -16,7 +16,7 @@
 		type Container,
 		containerOfType,
 		type EffectPayload,
-		type GoalContainer,
+		type GoalPayload,
 		type IooiType,
 		iooiTypes,
 		isEffectContainer,
@@ -43,7 +43,7 @@
 	} from '$lib/stores';
 
 	interface Props {
-		container: GoalContainer | MeasureContainer;
+		container: Container<GoalPayload> | MeasureContainer;
 		containers: Container[];
 	}
 

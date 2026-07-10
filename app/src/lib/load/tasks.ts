@@ -3,7 +3,8 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import {
-	type GoalContainer,
+	type Container,
+	type GoalPayload,
 	isPartOf,
 	payloadTypes,
 	predicates,
@@ -17,7 +18,10 @@ const DEFAULT_RELATION_TYPES = [
 	predicates.enum['is-prerequisite-for']
 ];
 
-function filterRelated(goals: GoalContainer[], tasks: TaskContainer[]): GoalContainer[] {
+function filterRelated(
+	goals: Container<GoalPayload>[],
+	tasks: TaskContainer[]
+): Container<GoalPayload>[] {
 	return goals.filter((goal) => tasks.some(isPartOf(goal)));
 }
 
@@ -45,7 +49,7 @@ export default function load(
 				offset: 0,
 				query
 			}),
-			fetchContainerPage<GoalContainer>({
+			fetchContainerPage<Container<GoalPayload>>({
 				contextGuid: params.guid,
 				fetch,
 				limit: MAX_PAGE_SIZE,

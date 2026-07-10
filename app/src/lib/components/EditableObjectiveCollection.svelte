@@ -10,7 +10,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type GoalContainer,
+		type GoalPayload,
 		isObjectiveContainer,
 		isPartOf,
 		type ObjectiveCollectionContainer,
@@ -22,7 +22,7 @@
 		container: ObjectiveCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: GoalContainer;
+		parentContainer: Container<GoalPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 

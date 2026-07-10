@@ -8,7 +8,7 @@ import {
 	type AnyPayload,
 	type Container,
 	createCopyOf,
-	type GoalContainer,
+	type GoalPayload,
 	indicatorCategories,
 	indicatorTypes,
 	isEffectContainer,
@@ -47,7 +47,7 @@ import type { RequestHandler } from './$types';
 
 function findCopiedTargetGuid<T extends Container<AnyPayload>>(
 	originalTargetGuid: string,
-	copied: Array<GoalContainer | T>
+	copied: Array<Container<GoalPayload> | T>
 ): string {
 	return copied.find(({ relation }) =>
 		relation.some(
@@ -121,11 +121,11 @@ async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 
 async function copyGoalsFromOriginal(
 	createdMeasure: MeasureContainer,
-	originalGoals: GoalContainer[],
+	originalGoals: Container<GoalPayload>[],
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {
-	const isPartOfObjects: Array<MeasureContainer | GoalContainer> = [createdMeasure];
+	const isPartOfObjects: Array<MeasureContainer | Container<GoalPayload>> = [createdMeasure];
 
 	const originalGoalsSorted = originalGoals.toSorted(
 		(a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel
@@ -163,7 +163,7 @@ async function copyGoalsFromOriginal(
 		});
 
 		isPartOfObjects.push(
-			(await createContainer(copy as NewContainer)(txConnection)) as GoalContainer
+			(await createContainer(copy as NewContainer)(txConnection)) as Container<GoalPayload>
 		);
 	}
 
@@ -173,7 +173,7 @@ async function copyGoalsFromOriginal(
 async function copyTasksFromOriginal(
 	createdMeasure: MeasureContainer,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	isPartOfObjects: Array<MeasureContainer | Container<GoalPayload>>,
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {
@@ -209,7 +209,7 @@ async function copyTasksFromOriginal(
 async function copyEffectsFromOriginal(
 	createdMeasure: MeasureContainer,
 	originals: Container[],
-	isPartOfObjects: Array<MeasureContainer | GoalContainer>,
+	isPartOfObjects: Array<MeasureContainer | Container<GoalPayload>>,
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {

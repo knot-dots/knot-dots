@@ -11,7 +11,7 @@
 		type AnyPayload,
 		type Container,
 		type EffectCollectionPayload,
-		type GoalContainer,
+		type GoalPayload,
 		isEffectContainer,
 		isPartOf,
 		type MeasureContainer,
@@ -23,7 +23,7 @@
 		container: Container<EffectCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: GoalContainer | MeasureContainer;
+		parentContainer: Container<GoalPayload> | MeasureContainer;
 		relatedContainers: Container<AnyPayload>[];
 	}
 

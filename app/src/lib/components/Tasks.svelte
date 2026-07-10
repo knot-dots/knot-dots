@@ -6,23 +6,23 @@
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
+		type AnyPayload,
 		type Container,
-		type GoalContainer,
+		type GoalPayload,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		overlayKey,
 		payloadTypes,
 		predicates,
-		type TaskContainer,
 		status,
-		type AnyPayload
+		type TaskContainer
 	} from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
 	interface Props {
 		container?: Container<AnyPayload>;
 		containers: TaskContainer[];
-		relatedContainers?: GoalContainer[];
+		relatedContainers?: Container<GoalPayload>[];
 	}
 
 	let { container, containers, relatedContainers = [] }: Props = $props();
@@ -39,7 +39,7 @@
 		return 0;
 	}
 
-	function goalsColumnTitle(containers: GoalContainer[]) {
+	function goalsColumnTitle(containers: Container<GoalPayload>[]) {
 		const goalTypes = new Set(containers.map((c) => c.payload.goalType).filter(Boolean));
 
 		if (goalTypes.size == 1) {

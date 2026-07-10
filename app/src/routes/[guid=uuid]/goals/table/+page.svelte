@@ -8,7 +8,7 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { type GoalContainer, payloadTypes, predicates } from '$lib/models';
+	import { type Container, type GoalPayload, payloadTypes, predicates } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -19,9 +19,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<GoalContainer>({
+	const list = createPaginatedList<Container<GoalPayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<GoalContainer>({
+			const result = await fetchContainerPage<Container<GoalPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -41,7 +41,7 @@
 		},
 		getKey: ({ guid }) => guid,
 		initialHasMore: () => data.page.hasMore,
-		initialItems: () => data.containers as GoalContainer[],
+		initialItems: () => data.containers as Container<GoalPayload>[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

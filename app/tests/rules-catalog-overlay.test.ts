@@ -1,5 +1,11 @@
-import { expect, test, createContainer, deleteContainer } from './fixtures';
-import { containerOfType, type GoalContainer, payloadTypes, type RuleContainer } from '$lib/models';
+import { createContainer, deleteContainer, expect, test } from './fixtures';
+import {
+	type Container,
+	containerOfType,
+	type GoalPayload,
+	payloadTypes,
+	type RuleContainer
+} from '$lib/models';
 
 test.use({ suiteId: 'rules-catalog-overlay' });
 test.use({ storageState: 'tests/.auth/admin.json' });
@@ -119,7 +125,7 @@ test.describe('Rules catalog overlay', () => {
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as GoalContainer;
+		) as Container<GoalPayload>;
 		const goalWithCategory = await createContainer(adminContext, {
 			...goalTemplate,
 			payload: {

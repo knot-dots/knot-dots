@@ -13,7 +13,7 @@
 		type BinaryIndicatorPayload,
 		computeFacetCount,
 		type Container,
-		type GoalContainer,
+		type GoalPayload,
 		indicatorCategories,
 		type IndicatorTemplateContainer,
 		indicatorTemplateContainer,
@@ -25,7 +25,7 @@
 
 	interface Props {
 		onSelect: (container: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer) => void;
-		target: GoalContainer | MeasureContainer;
+		target: Container<GoalPayload> | MeasureContainer;
 		value?: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer;
 	}
 

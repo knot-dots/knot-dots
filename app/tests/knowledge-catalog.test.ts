@@ -1,7 +1,8 @@
-import { expect, test, createContainer, deleteContainer } from './fixtures';
+import { createContainer, deleteContainer, expect, test } from './fixtures';
 import {
+	type Container,
 	containerOfType,
-	type GoalContainer,
+	type GoalPayload,
 	type KnowledgeContainer,
 	payloadTypes
 } from '$lib/models';
@@ -141,7 +142,7 @@ test.describe('Knowledge catalog overlay', () => {
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as GoalContainer;
+		) as Container<GoalPayload>;
 		const goalWithCategory = await createContainer(adminContext, {
 			...goalTemplate,
 			payload: {
