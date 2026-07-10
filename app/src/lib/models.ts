@@ -1928,11 +1928,9 @@ export function isRuleContainer(
 	return container.payload.type === payloadTypes.enum.rule;
 }
 
-export type ResourceContainer = Container<ResourcePayload>;
-
 export function isResourceContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceContainer {
+): container is Container<ResourcePayload> {
 	return container.payload.type === payloadTypes.enum.resource;
 }
 
