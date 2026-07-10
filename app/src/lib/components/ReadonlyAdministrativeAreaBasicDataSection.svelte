@@ -2,14 +2,14 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AdministrativeAreaBasicDataContainer,
-		type OrganizationalUnitContainer,
+		type AdministrativeAreaBasicDataPayload,
+		type AnyPayload,
 		type Container,
-		type AnyPayload
+		type OrganizationalUnitContainer
 	} from '$lib/models';
 
 	interface Props {
-		container: AdministrativeAreaBasicDataContainer;
+		container: Container<AdministrativeAreaBasicDataPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: OrganizationalUnitContainer;

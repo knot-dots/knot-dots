@@ -1756,11 +1756,9 @@ export function isActualDataContainer(
 	return container.payload.type === payloadTypes.enum.actual_data;
 }
 
-export type AdministrativeAreaBasicDataContainer = Container<AdministrativeAreaBasicDataPayload>;
-
 export function isAdministrativeAreaBasicDataContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is AdministrativeAreaBasicDataContainer {
+): container is Container<AdministrativeAreaBasicDataPayload> {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
 
