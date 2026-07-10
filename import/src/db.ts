@@ -81,7 +81,7 @@ export const administrativeAreaBBSR = z.object({
 export type AdministrativeAreaBBSR = z.infer<typeof administrativeAreaBBSR>;
 
 export const administrativeAreaOpenStreetMap = z.object({
-	boundary: z.string().uuid(),
+	boundary: z.uuid(),
 	name: z.string(),
 	official_municipality_key: z
 		.string()
@@ -100,7 +100,7 @@ export const administrativeAreaOpenStreetMap = z.object({
 export type AdministrativeAreaOpenStreetMap = z.infer<typeof administrativeAreaOpenStreetMap>;
 
 export const administrativeAreaWikidata = z.object({
-	coat_of_arms: z.string().url().optional().nullable(),
+	coat_of_arms: z.url().optional().nullable(),
 	country: z.string(),
 	id: z.string(),
 	name: z.string(),
@@ -162,30 +162,30 @@ export const indicatorDataWegweiserKommune = z.object({
 	actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
 	indicator_id: z.number().positive(),
 	official_regional_code: z.string().optional(),
-	spatial_reference: z.string().uuid().optional().nullable()
+	spatial_reference: z.uuid().optional().nullable()
 });
 
 export type IndicatorDataWegweiserKommune = z.infer<typeof indicatorDataWegweiserKommune>;
 
 export const spatialFeature = z.object({
 	geom: jsonSchema,
-	guid: z.string().uuid()
+	guid: z.uuid()
 });
 
 export const containerUser = z.array(
 	z.object({
 		object: z.number().int().positive().optional(),
 		predicate: z.literal('is-creator-of'),
-		subject: z.string().uuid()
+		subject: z.uuid()
 	})
 );
 
 export const containerRelation = z.array(
 	z.object({
-		object: z.string().uuid(),
+		object: z.uuid(),
 		position: z.number().int().nonnegative().default(0),
 		predicate: z.enum(['is-part-of', 'is-part-of-category', 'is-section-of']),
-		subject: z.string().uuid()
+		subject: z.uuid()
 	})
 );
 
@@ -195,7 +195,7 @@ function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
 		managed_by: z.string(),
 		organization: z.string(),
-		organizational_unit: z.string().uuid().nullable(),
+		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
 		realm: z.string(),
 		user: containerUser.default([]),

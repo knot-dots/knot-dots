@@ -664,10 +664,10 @@ export const editorialState = z.enum(editorialStateValues);
 export type EditorialState = z.infer<typeof editorialState>;
 
 export const relation = z.object({
-	object: z.string().uuid(),
+	object: z.uuid(),
 	position: z.number().int().nonnegative(),
 	predicate: z.string().max(128),
-	subject: z.string().uuid()
+	subject: z.uuid()
 });
 
 export type Relation = z.infer<typeof relation>;
@@ -681,12 +681,12 @@ export type PartialRelation = z.infer<typeof partialRelation>;
 
 export const userRelation = z.object({
 	predicate: predicates,
-	subject: z.string().uuid()
+	subject: z.uuid()
 });
 
 export const taskPriority = z.object({
 	priority: z.number().int(),
-	task: z.string().uuid()
+	task: z.uuid()
 });
 
 export type TaskPriority = z.infer<typeof taskPriority>;
@@ -792,7 +792,7 @@ const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: tr
 export const actualDataPayload = z.object({
 	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	booleanValue: z.boolean().default(false),
-	indicator: z.string().uuid(),
+	indicator: z.uuid(),
 	source: z.string().optional(),
 	title: z.string(),
 	type: z.literal(payloadTypes.enum.actual_data),
@@ -869,7 +869,7 @@ const fileCollectionPayload = z
 					name: z.string(),
 					size: z.number().int().nonnegative(),
 					type: z.string(),
-					url: z.string().url()
+					url: z.url()
 				})
 			)
 			.default([]),
@@ -914,6 +914,8 @@ const goalCollectionPayload = z
 	})
 	.strict();
 
+const initialGoalCollectionPayload = goalCollectionPayload;
+
 const helpPayload = z.object({
 	body: z.string().trim().default(''),
 	category: z
@@ -929,9 +931,7 @@ const helpPayload = z.object({
 	visibility: visibility.default(visibility.enum['public'])
 });
 
-const initialHelpPayload = helpPayload.partial({ body: true, slug: true, title: true });
-
-const initialGoalCollectionPayload = goalCollectionPayload;
+const initialHelpPayload = helpPayload.partial({ title: true });
 
 const indicatorCollectionPayload = z
 	.object({
@@ -948,7 +948,7 @@ const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 export const indicatorTemplatePayload = basePayload
 	.extend({
-		externalReference: z.string().url().optional(),
+		externalReference: z.url().optional(),
 		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
 		type: z.literal(payloadTypes.enum.indicator_template),
@@ -972,7 +972,7 @@ const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 export const mapPayload = z
 	.object({
-		geometry: z.string().uuid().optional(),
+		geometry: z.uuid().optional(),
 		title: z
 			.string()
 			.trim()
@@ -988,12 +988,12 @@ const measurePayload = basePayload
 	.extend({
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
-		endDate: z.string().date().optional(),
+		endDate: z.iso.date().optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().optional(),
 		result: z.string().trim().optional(),
-		startDate: z.string().date().optional(),
+		startDate: z.iso.date().optional(),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.measure)
 	})
@@ -1090,10 +1090,10 @@ const simpleMeasurePayload = basePayload
 			.string()
 			.refine((v) => z.coerce.date().safeParse(v))
 			.optional(),
-		file: z.array(z.tuple([z.string().url(), z.string()])).default([]),
+		file: z.array(z.tuple([z.url(), z.string()])).default([]),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
-		startDate: z.string().date().optional(),
+		startDate: z.iso.date().optional(),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.simple_measure)
 	})
@@ -1119,9 +1119,9 @@ const programPayload = basePayload
 	})
 	.extend({
 		chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		level: levels.default(levels.enum['level.local']),
-		pdf: z.array(z.tuple([z.string().url(), z.string()])).default([]),
+		pdf: z.array(z.tuple([z.url(), z.string()])).default([]),
 		status: status.default(status.enum['status.idea']),
 		programType: programTypes.default(programTypes.enum['program_type.misc']),
 		type: z.literal(payloadTypes.enum.program)
@@ -1190,7 +1190,7 @@ const resourcePayload = measureMonitoringBasePayload
 	.omit({ description: true, summary: true })
 	.extend({
 		amount: z.coerce.number().optional(),
-		fulfillmentDate: z.string().date().optional(),
+		fulfillmentDate: z.iso.date().optional(),
 		type: z.literal(payloadTypes.enum.resource),
 		unit: z.string().optional()
 	})
@@ -1275,13 +1275,13 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 const taskPayload = measureMonitoringBasePayload
 	.omit({ audience: true, summary: true })
 	.extend({
-		assignee: z.array(z.string().uuid()).transform(deduplicate).default([]),
+		assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
 		category: z
 			.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 			.default({}),
 		effort: z.string().optional(),
-		fulfillmentDate: z.string().date().optional(),
+		fulfillmentDate: z.iso.date().optional(),
 		taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.task)
@@ -1291,7 +1291,7 @@ const taskPayload = measureMonitoringBasePayload
 const imagePayload = z
 	.object({
 		body: z.string().trim().optional(),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		imageAltText: z.string().optional(),
 		imageSource: z.string().optional(),
 		title: z.string().trim(),
@@ -1329,12 +1329,12 @@ const teaserPayload = z
 		cardStyle: z.string().optional(),
 		colSize: teaserColSizes.default('33-66'),
 		description: z.string().optional(),
-		image: z.string().url().optional(),
+		image: z.url().optional(),
 		imageAltText: z.string().optional(),
 		imageAltTextRight: z.string().optional(),
 		imageEnable: z.boolean().default(true),
 		imageEnableRight: z.boolean().default(false),
-		imageRight: z.string().url().optional(),
+		imageRight: z.url().optional(),
 		link: z.string().optional(),
 		linkEnable: z.boolean().default(false),
 		linkEnableRight: z.boolean().default(false),
@@ -1460,12 +1460,12 @@ const initialTaskCollectionPayload = taskCollectionPayload;
 
 const organizationPayload = z.object({
 	color: backgroundColor.optional(),
-	cover: z.string().url().optional(),
+	cover: z.url().optional(),
 	coverSource: z.string().optional(),
 	customDomain: z.hostname().optional(),
 	customFavicon: z
 		.object({
-			url: z.string().url(),
+			url: z.url(),
 			type: z.string()
 		})
 		.optional(),
@@ -1480,7 +1480,7 @@ const organizationPayload = z.object({
 			})
 		)
 		.default([]),
-	image: z.string().url().optional(),
+	image: z.url().optional(),
 	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
 	organizationCategory: organizationCategories.optional(),
@@ -1498,7 +1498,7 @@ export const organizationalUnitPayload = z.object({
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
 	color: backgroundColor.optional(),
-	cover: z.string().url().optional(),
+	cover: z.url().optional(),
 	coverSource: z.string().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
@@ -1512,8 +1512,8 @@ export const organizationalUnitPayload = z.object({
 		)
 		.default([]),
 	federalState: z.string().optional(),
-	geometry: z.string().uuid().optional(),
-	image: z.string().url().optional(),
+	geometry: z.uuid().optional(),
+	image: z.url().optional(),
 	imageReplacesName: z.boolean().default(false),
 	level: z.number().int().positive().default(1),
 	name: z.string().trim(),
@@ -1611,10 +1611,10 @@ export const templatablePayloadTypes = payload.options
 	.map(({ shape }) => shape.type.value);
 
 export const container = z.object({
-	guid: z.string().uuid(),
-	managed_by: z.string().uuid(),
-	organization: z.string().uuid(),
-	organizational_unit: z.string().uuid().nullable(),
+	guid: z.uuid(),
+	managed_by: z.uuid(),
+	organization: z.uuid(),
+	organizational_unit: z.uuid().nullable(),
 	payload: payload,
 	realm: z.string().max(1024),
 	relation: z.array(relation).default([]),
@@ -2587,10 +2587,10 @@ export const modifiedContainer = anyContainer.omit({
 export type ModifiedContainer = z.infer<typeof modifiedContainer>;
 
 export const user = z.object({
-	email: z.string().email().optional(),
+	email: z.email().optional(),
 	family_name: z.string().max(32).default(''),
 	given_name: z.string().max(32).default(''),
-	guid: z.string().uuid(),
+	guid: z.uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
 		features: z.array(z.string()).transform(deduplicate).optional()
@@ -2608,18 +2608,18 @@ export function displayName(user: User) {
 }
 
 export const keycloakUser = z.object({
-	email: z.string().email(),
+	email: z.email(),
 	emailVerified: z.boolean(),
 	enabled: z.boolean(),
 	firstName: z.string().optional(),
-	id: z.string().uuid(),
+	id: z.uuid(),
 	lastName: z.string().optional()
 });
 
 export type KeycloakUser = z.infer<typeof keycloakUser>;
 
 export const newUser = z.object({
-	email: z.string().email(),
+	email: z.email(),
 	container: anyContainer
 });
 
