@@ -6,12 +6,13 @@
 	import {
 		type AnyInitialPayload,
 		type Container,
-		type ContainerWithEffect,
+		type MeasurePayload,
 		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
-		predicates
+		predicates,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 
 	interface Props {
@@ -33,7 +34,7 @@
 				payloadType: [payloadTypes.enum.measure]
 			},
 			'alpha'
-		) as Promise<ContainerWithEffect[]>
+		) as Promise<Container<MeasurePayload | SimpleMeasurePayload>[]>
 	);
 
 	let isPartOfMeasureObject = $derived(

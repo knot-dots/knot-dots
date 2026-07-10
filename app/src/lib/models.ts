@@ -1742,11 +1742,9 @@ export function isContainerWithObjective(
 	return isGoalContainer(container);
 }
 
-export type ContainerWithEffect = Container<MeasurePayload | SimpleMeasurePayload>;
-
 export function isContainerWithEffect(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ContainerWithEffect {
+): container is Container<MeasurePayload | SimpleMeasurePayload> {
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 

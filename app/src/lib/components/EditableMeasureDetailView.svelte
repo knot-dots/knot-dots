@@ -17,12 +17,13 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type ContainerWithEffect
+		type MeasurePayload,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ContainerWithEffect;
+		container: Container<MeasurePayload | SimpleMeasurePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

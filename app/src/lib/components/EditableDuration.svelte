@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
-	import type { ContainerWithEffect } from '$lib/models';
+	import type { Container, MeasurePayload, SimpleMeasurePayload } from '$lib/models';
 
 	interface Props {
-		container: ContainerWithEffect;
+		container: Container<MeasurePayload | SimpleMeasurePayload>;
 		editable?: boolean;
 	}
 

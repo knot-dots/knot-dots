@@ -3,16 +3,15 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import saveContainer from '$lib/client/saveContainer';
-	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
 		EditableTableDataRow,
 		EditableTableSection,
 		EditableTableValue
 	} from '$lib/components/EditableTable.svelte';
+	import EditableTable from '$lib/components/EditableTable.svelte';
 	import {
 		type ActualDataContainer,
 		type Container,
-		type ContainerWithEffect,
 		containerOfType,
 		findAncestors,
 		findLeafObjectives,
@@ -24,11 +23,13 @@
 		isEffectContainer,
 		isObjectiveContainer,
 		isPartOf,
+		type MeasurePayload,
 		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
 		predicates,
+		type SimpleMeasurePayload,
 		status
 	} from '$lib/models';
 	import { compareState, mayCreateContainer } from '$lib/stores';
@@ -210,7 +211,9 @@
 		return [...valuesByYear.entries()].map(([year, value]) => ({ year, value }));
 	}
 
-	function getMeasureValuesByYear(measure: ContainerWithEffect): EditableTableValue[] {
+	function getMeasureValuesByYear(
+		measure: Container<MeasurePayload | SimpleMeasurePayload>
+	): EditableTableValue[] {
 		const valuesByYear = new Map(
 			effectContainers
 				.filter((c) =>

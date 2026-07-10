@@ -8,7 +8,6 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type ContainerWithEffect,
 		isAssignedTo,
 		isContainerWithEffect,
 		isMemberOf,
@@ -16,9 +15,11 @@
 		isOrganizationContainer,
 		isProgramContainer,
 		isTaskContainer,
+		type MeasurePayload,
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		type ProgramContainer,
+		type SimpleMeasurePayload,
 		type Status as TaskStatus,
 		status,
 		type TaskContainer
@@ -109,7 +110,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isContainerWithEffect)
-				.filter((c: ContainerWithEffect) => isMemberOf($user, c)) as measure (measure.guid)}
+				.filter( (c: Container<MeasurePayload | SimpleMeasurePayload>) => isMemberOf($user, c) ) as measure (measure.guid)}
 				<li>
 					<Card container={measure} />
 				</li>

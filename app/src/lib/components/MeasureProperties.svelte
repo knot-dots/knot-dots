@@ -19,13 +19,14 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type ContainerWithEffect,
-		isMeasureContainer
+		isMeasureContainer,
+		type MeasurePayload,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: ContainerWithEffect;
+		container: Container<MeasurePayload | SimpleMeasurePayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: Container<AnyPayload>[];
