@@ -18,13 +18,13 @@
 		type NewContainer,
 		payloadTypes,
 		predicates,
-		type TeaserCollectionContainer,
+		type TeaserCollectionPayload,
 		type TeaserPayload
 	} from '$lib/models';
 	import { ability, mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: TeaserCollectionContainer;
+		container: Container<TeaserCollectionPayload>;
 		editable?: boolean;
 		fetchDisabled?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
