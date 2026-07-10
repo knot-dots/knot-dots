@@ -1736,11 +1736,9 @@ function hasProperty(
 
 export const anyContainer = createContainerSchema(anyPayload);
 
-export type ContainerWithObjective = Container<GoalPayload>;
-
 export function isContainerWithObjective(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ContainerWithObjective {
+): container is Container<GoalPayload> {
 	return isGoalContainer(container);
 }
 
