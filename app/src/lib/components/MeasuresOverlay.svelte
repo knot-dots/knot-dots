@@ -8,14 +8,15 @@
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		computeFacetCount,
+		type Container,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
-		type MeasureContainer,
+		type MeasurePayload,
 		predicates
 	} from '$lib/models';
 
 	interface Props {
-		containers: MeasureContainer[];
+		containers: Container<MeasurePayload>[];
 	}
 
 	let { containers }: Props = $props();

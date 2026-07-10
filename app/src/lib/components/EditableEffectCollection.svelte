@@ -14,7 +14,7 @@
 		type GoalPayload,
 		isEffectContainer,
 		isPartOf,
-		type MeasureContainer,
+		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
 	import { addEffectState, mayCreateContainer } from '$lib/stores';

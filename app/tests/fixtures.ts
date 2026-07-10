@@ -9,7 +9,7 @@ import {
 	etag,
 	type GoalPayload,
 	type IndicatorTemplatePayload,
-	type MeasureContainer,
+	type MeasurePayload,
 	type NewContainer,
 	type ObjectiveContainer,
 	type OrganizationalUnitContainer,
@@ -62,8 +62,8 @@ type MyWorkerFixtures = {
 	testGoal: Container<GoalPayload>;
 	testSubordinateGoal: Container<GoalPayload>;
 	testObjective: ObjectiveContainer;
-	testMeasure: MeasureContainer;
-	testSubordinateMeasure: MeasureContainer;
+	testMeasure: Container<MeasurePayload>;
+	testSubordinateMeasure: Container<MeasurePayload>;
 	testEffect: Container<EffectPayload>;
 	testResourceV2: ResourceV2Container;
 	testResourceDataBudget: ResourceDataContainer;
@@ -549,7 +549,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testProgram.guid,
 				'knot-dots'
-			) as MeasureContainer;
+			) as Container<MeasurePayload>;
 			const testMeasure = await createContainer(adminContext, {
 				...newMeasure,
 				payload: {
@@ -583,7 +583,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testProgram.guid,
 				'knot-dots'
-			) as MeasureContainer;
+			) as Container<MeasurePayload>;
 			const testSubordinateMeasure = await createContainer(adminContext, {
 				...newMeasure,
 				payload: {

@@ -7,17 +7,17 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		titleForMeasureCollection,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
 		type MeasureCollectionContainer,
-		type MeasureContainer,
+		type MeasurePayload,
 		type NewContainer,
 		payloadTypes,
 		predicates,
-		type Container,
-		type AnyPayload
+		titleForMeasureCollection
 	} from '$lib/models';
 	import { hasPart } from '$lib/relations';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
@@ -93,7 +93,7 @@
 	<svelte:element this={heading} class="details-heading">
 		{#if isMeasureContainer(parentContainer)}
 			{titleForMeasureCollection(
-				items as MeasureContainer[],
+				items as Container<MeasurePayload>[],
 				parentContainer.payload.hierarchyLevel + 1
 			)}
 		{:else}

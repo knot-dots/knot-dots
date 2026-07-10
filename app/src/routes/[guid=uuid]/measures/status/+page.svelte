@@ -9,7 +9,12 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import { type MeasureContainer, type SimpleMeasureContainer, type Status } from '$lib/models';
+	import {
+		type Container,
+		type MeasurePayload,
+		type SimpleMeasureContainer,
+		type Status
+	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';

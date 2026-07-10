@@ -31,7 +31,7 @@
 		isMeasureContainer,
 		isResourceDataBudgetContainer,
 		isResourceDataContainer,
-		type MeasureContainer,
+		type MeasurePayload,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
@@ -99,7 +99,7 @@
 	// --- Budget table data fetching ---
 
 	let goalContainers = $state<Container<GoalPayload>[]>([]);
-	let measureContainers = $state<MeasureContainer[]>([]);
+	let measureContainers = $state<Container<MeasurePayload>[]>([]);
 
 	$effect(() => {
 		if (!isBudgetContainer) return;
@@ -182,7 +182,7 @@
 		);
 	}
 
-	function getResourceDataForMeasure(measure: MeasureContainer): ResourceDataContainer[] {
+	function getResourceDataForMeasure(measure: Container<MeasurePayload>): ResourceDataContainer[] {
 		return allResourceDataContainers.filter((rd) =>
 			rd.relation.some(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === measure.guid

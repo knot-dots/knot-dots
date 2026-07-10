@@ -3,7 +3,8 @@ import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
-	type MeasureContainer,
+	type Container,
+	type MeasurePayload,
 	modifiedContainer,
 	type NewContainer,
 	newContainer,

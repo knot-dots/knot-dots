@@ -8,7 +8,7 @@ import {
 	type Container,
 	filterMembers,
 	isProgramContainer,
-	type MeasureContainer,
+	type MeasurePayload,
 	payloadTypes,
 	predicates,
 	type SimpleMeasureContainer

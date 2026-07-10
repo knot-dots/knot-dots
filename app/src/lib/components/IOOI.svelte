@@ -26,7 +26,7 @@
 		isObjectiveContainer,
 		isResourceDataCollectionContainer,
 		isResourceDataContainer,
-		type MeasureContainer,
+		type MeasurePayload,
 		type NewContainer,
 		type ObjectiveContainer,
 		paramsFromFragment,

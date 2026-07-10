@@ -19,7 +19,7 @@
 		type IndicatorTemplatePayload,
 		indicatorTypes,
 		isEffectContainer,
-		type MeasureContainer,
+		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
 

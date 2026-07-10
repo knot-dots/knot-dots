@@ -8,7 +8,12 @@
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { type MeasureContainer, type SimpleMeasureContainer, payloadTypes } from '$lib/models';
+	import {
+		type Container,
+		type MeasurePayload,
+		payloadTypes,
+		type SimpleMeasureContainer
+	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';

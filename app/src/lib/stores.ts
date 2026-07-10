@@ -21,7 +21,7 @@ import {
 	isContainerWithCategory,
 	isHelpSlug,
 	mayDelete,
-	type MeasureContainer,
+	type MeasurePayload,
 	type NewContainer,
 	type OrganizationalUnitContainer,
 	overlayKey,
@@ -179,7 +179,7 @@ export type OverlayData =
 	| {
 			key: 'measures';
 			container: Container<AnyPayload>;
-			containers: MeasureContainer[];
+			containers: Container<MeasurePayload>[];
 	  }
 	| {
 			key: 'members';
@@ -423,7 +423,7 @@ if (browser) {
 					terms: hashParams.get('terms') ?? ''
 				},
 				hashParams.get('sort') ?? 'alpha'
-			)) as MeasureContainer[];
+			)) as Container<MeasurePayload>[];
 			setOverlayIfLatest({
 				key: overlayKey.enum.measures,
 				container,

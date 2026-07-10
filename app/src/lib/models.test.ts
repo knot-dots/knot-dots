@@ -5,7 +5,7 @@ import {
 	container,
 	type EffectPayload,
 	type IndicatorTemplatePayload,
-	type MeasureContainer,
+	type MeasurePayload,
 	payloadTypes,
 	predicates,
 	type ProgramContainer,
@@ -85,7 +85,7 @@ const measure = testContainer.parse({
 		title: 'Reduce water consumption',
 		type: payloadTypes.enum.measure
 	}
-}) as MeasureContainer;
+}) as Container<MeasurePayload>;
 
 const effect = testContainer.parse({
 	guid: '304bd9e4-55d9-410f-93fb-38a152635b64',
@@ -115,7 +115,7 @@ test('indicator suggested for sub-measure', () => {
 			title: 'Reduce water consumption in public households',
 			type: payloadTypes.enum.measure
 		}
-	}) as MeasureContainer;
+	}) as Container<MeasurePayload>;
 
 	addRelation(subMeasure, predicates.enum['is-part-of'], measure);
 	addRelation(subMeasure, predicates.enum['is-part-of-program'], program);
@@ -150,7 +150,7 @@ test('indicator suggested for measure in program using indicator', () => {
 			title: 'Rewild the local river',
 			type: payloadTypes.enum.measure
 		}
-	}) as MeasureContainer;
+	}) as Container<MeasurePayload>;
 
 	addRelation(anotherMeasure, predicates.enum['is-part-of-program'], program);
 

@@ -1862,11 +1862,9 @@ export function isMapContainer(
 	return container.payload.type === payloadTypes.enum.map;
 }
 
-export type MeasureContainer = Container<MeasurePayload>;
-
 export function isMeasureContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is MeasureContainer {
+): container is Container<MeasurePayload> {
 	return container.payload.type === payloadTypes.enum.measure;
 }
 
@@ -2978,7 +2976,10 @@ export function titleForGoalCollection(
 	}
 }
 
-export function titleForMeasureCollection(containers: MeasureContainer[], hierarchyLevel: number) {
+export function titleForMeasureCollection(
+	containers: Container<MeasurePayload>[],
+	hierarchyLevel: number
+) {
 	const measureTypes = new Set(containers.map(({ payload }) => payload.measureType));
 
 	if (measureTypes.size == 1) {

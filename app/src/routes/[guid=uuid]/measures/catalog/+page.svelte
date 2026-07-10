@@ -7,7 +7,12 @@
 	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import { type MeasureContainer, type SimpleMeasureContainer, payloadTypes } from '$lib/models';
+	import {
+		type Container,
+		type MeasurePayload,
+		payloadTypes,
+		type SimpleMeasureContainer
+	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';

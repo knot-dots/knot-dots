@@ -18,7 +18,7 @@ import {
 	isProgramContainer,
 	isReportContainer,
 	isTaskContainer,
-	type MeasureContainer,
+	type MeasurePayload,
 	type NewContainer,
 	newContainer,
 	type OrganizationalUnitContainer,
@@ -84,7 +84,7 @@ function mapRelationsByPredicate<T extends { relation: Relation[]; guid: string 
 
 async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 	createdContainer: T,
-	originalMeasure: MeasureContainer,
+	originalMeasure: Container<MeasurePayload>,
 	user: User,
 	txConnection: DatabaseTransactionConnection
 ) {
@@ -108,7 +108,7 @@ async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 					)?.position ?? 0
 			}
 		]
-	} as NewContainer)(txConnection)) as MeasureContainer;
+	} as NewContainer)(txConnection)) as Container<MeasurePayload>;
 
 	const isCopyOfRelation = copiedMeasure.relation.find(
 		({ object, predicate }) => predicate === predicates.enum['is-copy-of'] && object !== undefined
@@ -280,7 +280,7 @@ async function copySectionsFromOriginal(
 }
 
 async function copyMeasure(
-	createdContainer: MeasureContainer,
+	createdContainer: Container<MeasurePayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: DatabaseTransactionConnection
