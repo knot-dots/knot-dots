@@ -1,10 +1,10 @@
 <script lang="ts">
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
-	import { type AnyPayload, type Container, type TeaserContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TeaserPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TeaserContainer;
+		container: Container<TeaserPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;

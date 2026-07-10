@@ -19,10 +19,9 @@
 		payloadTypes,
 		predicates,
 		type TeaserCollectionContainer,
-		type TeaserContainer
+		type TeaserPayload
 	} from '$lib/models';
-	import { mayCreateContainer, newContainer } from '$lib/stores';
-	import { ability } from '$lib/stores';
+	import { ability, mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: TeaserCollectionContainer;
@@ -60,7 +59,7 @@
 					},
 					'alpha',
 					{ signal }
-				)) as TeaserContainer[];
+				)) as Container<TeaserPayload>[];
 			}
 		},
 		{ lazy: true, once: true }
@@ -98,7 +97,7 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	async function handleSort(items: TeaserContainer[]) {
+	async function handleSort(items: Container<TeaserPayload>[]) {
 		container.relation = [
 			...items.map(({ guid }, index) => ({
 				object: container.guid,

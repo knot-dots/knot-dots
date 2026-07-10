@@ -2080,11 +2080,9 @@ export function isIgniteVideoContainer(
 	return container.payload.type === payloadTypes.enum.ignite_video;
 }
 
-export type TeaserContainer = Container<TeaserPayload>;
-
 export function isTeaserContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is TeaserContainer {
+): container is Container<TeaserPayload> {
 	return container.payload.type === payloadTypes.enum.teaser;
 }
 
@@ -2123,7 +2121,7 @@ export function isQuoteContainer(
 export type TeaserCollectionContainer = Container<TeaserCollectionPayload>;
 
 export type TeaserLikeContainer =
-	| TeaserContainer
+	| Container<TeaserPayload>
 	| InfoBoxContainer
 	| TeaserHighlightContainer
 	| QuoteContainer

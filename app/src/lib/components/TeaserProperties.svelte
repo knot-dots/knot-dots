@@ -7,11 +7,11 @@
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyPayload, type Container, type TeaserContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TeaserPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TeaserContainer;
+		container: Container<TeaserPayload>;
 		editable?: boolean;
 		relatedContainers: Container<AnyPayload>[];
 		revisions: Container<AnyPayload>[];

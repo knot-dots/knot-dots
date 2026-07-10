@@ -3,12 +3,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
-	import {
-		computeFacetCount,
-		type Container,
-		type TeaserContainer,
-		payloadTypes
-	} from '$lib/models';
+	import { computeFacetCount, type Container, payloadTypes, type TeaserPayload } from '$lib/models';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import { page } from '$app/state';
 
@@ -39,7 +34,7 @@
 </div>
 
 {#snippet teaserSnippet(item: Container)}
-	<TeaserCard container={item as TeaserContainer} editable={false} />
+	<TeaserCard container={item as Container<TeaserPayload>} editable={false} />
 {/snippet}
 
 <Help slug="teaser-view" />

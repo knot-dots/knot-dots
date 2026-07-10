@@ -1,17 +1,17 @@
 <script lang="ts">
 	import Card from '$lib/components/Card.svelte';
-	import { type TeaserContainer } from '$lib/models';
+	import { type Container, type TeaserPayload } from '$lib/models';
 	import ArrowRight from '~icons/knotdots/arrow-right';
 
 	interface Props {
-		container: TeaserContainer;
+		container: Container<TeaserPayload>;
 		editable: boolean;
 		maxSummaryLength?: number;
 	}
 
 	const { container, editable, maxSummaryLength }: Props = $props();
 
-	function teaserUrl(container: TeaserContainer) {
+	function teaserUrl(container: Container<TeaserPayload>) {
 		const link = container.payload.link;
 		if (!link) return undefined;
 		return () => link;
