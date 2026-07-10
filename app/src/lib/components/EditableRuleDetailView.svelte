@@ -14,11 +14,11 @@
 	import RuleProperties from '$lib/components/RuleProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyPayload, type Container, predicates, type RuleContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type RulePayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: RuleContainer;
+		container: Container<RulePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

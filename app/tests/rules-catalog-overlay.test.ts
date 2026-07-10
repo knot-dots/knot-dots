@@ -4,7 +4,7 @@ import {
 	containerOfType,
 	type GoalPayload,
 	payloadTypes,
-	type RuleContainer
+	type RulePayload
 } from '$lib/models';
 
 test.use({ suiteId: 'rules-catalog-overlay' });
@@ -20,11 +20,11 @@ test.describe('Rules catalog overlay', () => {
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as RuleContainer;
+			) as Container<RulePayload>;
 			return createContainer(adminContext, {
 				...template,
 				payload: { ...template.payload, title }
-			}) as Promise<RuleContainer>;
+			}) as Promise<Container<RulePayload>>;
 		};
 
 		const ruleA = await makeRule(`E2E Rule Alpha ${suffix}`);
@@ -64,7 +64,7 @@ test.describe('Rules catalog overlay', () => {
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as RuleContainer;
+			) as Container<RulePayload>;
 			return createContainer(adminContext, {
 				...template,
 				payload: {
@@ -72,7 +72,7 @@ test.describe('Rules catalog overlay', () => {
 					title,
 					category: termValues.length ? { [categoryKey]: termValues } : {}
 				}
-			}) as Promise<RuleContainer>;
+			}) as Promise<Container<RulePayload>>;
 		};
 
 		const ruleDoubleMatch = await makeRule(`E2E Rule Double Match ${suffix}`, [
@@ -141,7 +141,7 @@ test.describe('Rules catalog overlay', () => {
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as RuleContainer;
+		) as Container<RulePayload>;
 		const ruleMatch = (await createContainer(adminContext, {
 			...matchTemplate,
 			payload: {
@@ -149,7 +149,7 @@ test.describe('Rules catalog overlay', () => {
 				title: matchTitle,
 				category: { [categoryKey]: [termAValue] }
 			}
-		})) as RuleContainer;
+		})) as Container<RulePayload>;
 
 		const noMatchTemplate = containerOfType(
 			payloadTypes.enum.rule,
@@ -157,11 +157,11 @@ test.describe('Rules catalog overlay', () => {
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as RuleContainer;
+		) as Container<RulePayload>;
 		const ruleNoMatch = (await createContainer(adminContext, {
 			...noMatchTemplate,
 			payload: { ...noMatchTemplate.payload, title: noMatchTitle }
-		})) as RuleContainer;
+		})) as Container<RulePayload>;
 
 		try {
 			await dotsBoard.goto(`/${testGoal.organization}`);

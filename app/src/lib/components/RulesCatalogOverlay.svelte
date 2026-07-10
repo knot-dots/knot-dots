@@ -6,7 +6,7 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { payloadTypes, ruleContainer, type RuleContainer } from '$lib/models';
+	import { type Container, payloadTypes, ruleContainer, type RulePayload } from '$lib/models';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	const PAGE_SIZE = 20;
@@ -75,7 +75,10 @@
 		}
 	});
 
-	function countMatchingTerms(container: RuleContainer, cats: Record<string, string[]>): number {
+	function countMatchingTerms(
+		container: Container<RulePayload>,
+		cats: Record<string, string[]>
+	): number {
 		const containerCats = container.payload.category;
 		return Object.entries(cats).reduce((sum, [key, values]) => {
 			const containerValues = containerCats[key] ?? [];

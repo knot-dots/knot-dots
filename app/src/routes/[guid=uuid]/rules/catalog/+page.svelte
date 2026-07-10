@@ -6,7 +6,7 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
-	import { type RuleContainer, payloadTypes } from '$lib/models';
+	import { type Container, payloadTypes, type RulePayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -17,9 +17,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<RuleContainer>({
+	const list = createPaginatedList<Container<RulePayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<RuleContainer>({
+			const result = await fetchContainerPage<Container<RulePayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -38,7 +38,7 @@
 		},
 		getKey: ({ guid }) => guid,
 		initialHasMore: () => data.page.hasMore,
-		initialItems: () => data.containers as RuleContainer[],
+		initialItems: () => data.containers as Container<RulePayload>[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

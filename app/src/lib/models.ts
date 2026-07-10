@@ -1922,11 +1922,9 @@ export function isReportContainer(
 
 export const ruleContainer = createContainerSchema(rulePayload);
 
-export type RuleContainer = Container<RulePayload>;
-
 export function isRuleContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is RuleContainer {
+): container is Container<RulePayload> {
 	return container.payload.type === payloadTypes.enum.rule;
 }
 

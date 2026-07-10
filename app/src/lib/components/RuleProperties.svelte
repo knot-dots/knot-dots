@@ -10,11 +10,11 @@
 	import EditableCategories from '$lib/components/EditableCategories.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyPayload, type Container, type RuleContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type RulePayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: RuleContainer;
+		container: Container<RulePayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: Container<AnyPayload>[];
