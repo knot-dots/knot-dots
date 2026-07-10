@@ -2470,8 +2470,6 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 
 export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 
-export type EmptyEffectContainer = NewContainer<InitialEffectPayload>;
-
 export type EmptyObjectiveContainer = NewContainer<InitialObjectivePayload>;
 
 export type EmptyOrganizationalUnitContainer = NewContainer<InitialOrganizationalUnitPayload>;

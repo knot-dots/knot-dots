@@ -3,9 +3,10 @@ import {
 	type BinaryIndicatorContainer,
 	type Container,
 	containerOfType,
-	type EmptyEffectContainer,
 	type IndicatorTemplateContainer,
+	type InitialEffectPayload,
 	type IooiType,
+	type NewContainer,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -22,7 +23,7 @@ export default async function createEffect(
 		target.organizational_unit,
 		target.managed_by,
 		env.PUBLIC_KC_REALM
-	) as EmptyEffectContainer;
+	) as NewContainer<InitialEffectPayload>;
 	const response = await saveContainer({
 		...newEffect,
 		payload: {
