@@ -8,7 +8,8 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type EffectCollectionContainer,
 		type GoalContainer,
 		isEffectContainer,
@@ -23,7 +24,7 @@
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: GoalContainer | MeasureContainer;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

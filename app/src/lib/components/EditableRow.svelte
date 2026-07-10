@@ -26,7 +26,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type ActualDataContainer,
-		type AnyContainer,
 		type Status,
 		isActualDataContainer,
 		isContainerWithDescription,
@@ -42,14 +41,16 @@
 		isTaskContainer,
 		overlayKey,
 		overlayURL,
-		status
+		status,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		actualDataContainers?: ActualDataContainer[];
 		columns: string[];
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		dragEnabled?: boolean;
 		editable?: boolean;
 	}

@@ -14,13 +14,13 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyContainer, type GoalContainer, predicates } from '$lib/models';
+	import { type AnyPayload, type Container, type GoalContainer, predicates } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: GoalContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

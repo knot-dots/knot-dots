@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { type AnyContainer, payloadTypes, predicates } from '$lib/models';
+import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
 import { getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 	const searchTerms = url.searchParams.get('terms') ?? '';
 	const categorySort = url.searchParams.get('sort') ?? 'alpha';
 
-	const splitTerms = (terms: AnyContainer[]) =>
+	const splitTerms = (terms: Container<AnyPayload>[]) =>
 		terms.reduce(
 			(result, term) => {
 				const hasParentTerm = term.relation.some(
@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 
 				return result;
 			},
-			{ terms: [] as AnyContainer[], subterms: [] as AnyContainer[] }
+			{ terms: [] as Container<AnyPayload>[], subterms: [] as Container<AnyPayload>[] }
 		);
 
 	const [containers, terms] = await Promise.all([

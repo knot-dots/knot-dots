@@ -3,15 +3,15 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
 	import EditableImageSource from '$lib/components/EditableImageSource.svelte';
-	import { type AnyContainer, type ImageContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type ImageContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: ImageContainer;
 		editable?: boolean;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

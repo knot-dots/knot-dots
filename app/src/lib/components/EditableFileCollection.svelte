@@ -15,7 +15,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
-	import type { AnyContainer, FileCollectionContainer } from '$lib/models';
+	import type { AnyPayload, Container, FileCollectionContainer } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 	import { ability } from '$lib/stores';
 
@@ -23,8 +23,8 @@
 		container: FileCollectionContainer;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		editable?: boolean;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

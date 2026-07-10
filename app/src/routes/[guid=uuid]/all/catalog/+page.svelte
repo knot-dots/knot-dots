@@ -7,7 +7,7 @@
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { type AnyContainer, payloadTypes } from '$lib/models';
+	import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -18,7 +18,7 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<AnyContainer>({
+	const list = createPaginatedList<Container<AnyPayload>>({
 		fetchPage: async ({ offset, signal }) => {
 			const allTypeOptions = [
 				payloadTypes.enum.goal,
@@ -41,7 +41,7 @@
 			query.delete('type');
 			for (const t of typeFilter) query.append('type', t);
 
-			const result = await fetchContainerPage<AnyContainer>({
+			const result = await fetchContainerPage<Container<AnyPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,

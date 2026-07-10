@@ -1,7 +1,7 @@
 import saveContainer from '$lib/client/saveContainer';
-import type { AnyContainer } from '$lib/models';
+import type { AnyPayload, Container } from '$lib/models';
 
-export default function autoSave(container: AnyContainer, delay: number) {
+export default function autoSave(container: Container<AnyPayload>, delay: number) {
 	let timer: ReturnType<typeof setTimeout>;
 	let inFlight = false;
 	let pendingSave = false;

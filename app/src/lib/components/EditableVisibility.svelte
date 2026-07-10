@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
-	import { type AnyContainer } from '$lib/models';
+	import { type AnyPayload, type Container } from '$lib/models';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		editable?: boolean;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers = [] }: Props = $props();

@@ -19,11 +19,17 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { type AnyContainer, overlayKey, overlayURL, paramsFromFragment } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		overlayKey,
+		overlayURL,
+		paramsFromFragment
+	} from '$lib/models';
 	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 	}
 
 	let { container }: Props = $props();
@@ -224,7 +230,7 @@
 		selected: currentPath(page.url)
 	});
 
-	function handleChange(url: URL, container: AnyContainer) {
+	function handleChange(url: URL, container: Container<AnyPayload>) {
 		return (event: Event) => {
 			const detail = (event as CustomEvent).detail;
 

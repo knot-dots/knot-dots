@@ -1,12 +1,12 @@
-import type { AnyContainer } from '$lib/models';
+import type { AnyPayload, Container } from '$lib/models';
 
 const confirmed = new Set<string>();
 
-export default function withOptimistic<T extends AnyContainer>(
+export default function withOptimistic<T extends Container<AnyPayload>>(
 	containers: T[],
-	created: AnyContainer | undefined,
-	deleted: Map<string, AnyContainer>,
-	updated: Map<string, AnyContainer>
+	created: Container<AnyPayload> | undefined,
+	deleted: Map<string, Container<AnyPayload>>,
+	updated: Map<string, Container<AnyPayload>>
 ): T[] {
 	let result = containers;
 

@@ -1,11 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { type AnyContainer, predicates, visibility } from '$lib/models';
+import { type AnyPayload, type Container, predicates, visibility } from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
-function isPublic(container: AnyContainer): boolean {
+function isPublic(container: Container<AnyPayload>): boolean {
 	return container.payload.visibility === visibility.enum.public;
 }
 
@@ -18,7 +18,7 @@ export const load = (async ({ locals, params }) => {
 			)
 		]);
 
-		const container = revisions.at(-1) as AnyContainer;
+		const container = revisions.at(-1) as Container<AnyPayload>;
 
 		if (!isPublic(container)) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });

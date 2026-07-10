@@ -4,12 +4,13 @@ import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
-	type AnyContainer,
 	isOrganizationalUnitContainer,
 	organizationalUnitType,
 	type OrganizationContainer,
 	type OrganizationalUnitContainer,
-	payloadTypes
+	payloadTypes,
+	type Container,
+	type AnyPayload
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
@@ -35,7 +36,7 @@ export async function loadApplicationContext({
 	return await locals.pool.connect(async (connection) => {
 		const connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => fn(connection);
 
-		async function filterVisibleAsync<T extends AnyContainer>(promise: Promise<Array<T>>) {
+		async function filterVisibleAsync<T extends Container<AnyPayload>>(promise: Promise<Array<T>>) {
 			const containers = await promise;
 			return filterVisible(containers, locals.user);
 		}

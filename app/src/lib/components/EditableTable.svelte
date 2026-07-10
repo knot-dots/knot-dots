@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import { _, number } from 'svelte-i18n';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	export interface EditableTableValue {
@@ -12,7 +12,7 @@
 	export interface EditableTableDataRow {
 		type?: 'data';
 		id: string;
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		label: string;
 		href?: string;
 		subtitle?: string;
@@ -49,9 +49,9 @@
 		sections: EditableTableSection[];
 		fillYearGaps?: boolean;
 		variant?: 'yellow' | 'teal';
-		getEntries: (container: AnyContainer) => EditableTableValue[];
-		setEntry: (container: AnyContainer, year: number, value: number | null) => void;
-		onSave: (container: AnyContainer) => Promise<{ guid: string; revision: number }>;
+		getEntries: (container: Container<AnyPayload>) => EditableTableValue[];
+		setEntry: (container: Container<AnyPayload>, year: number, value: number | null) => void;
+		onSave: (container: Container<AnyPayload>) => Promise<{ guid: string; revision: number }>;
 	}
 
 	let {
@@ -242,7 +242,7 @@
 		debouncedSave(row.container, timerKey);
 	}
 
-	function debouncedSave(containerToSave: AnyContainer, timerKey: string) {
+	function debouncedSave(containerToSave: Container<AnyPayload>, timerKey: string) {
 		clearTimeout(saveTimers[timerKey]);
 		saveTimers[timerKey] = setTimeout(async () => {
 			try {

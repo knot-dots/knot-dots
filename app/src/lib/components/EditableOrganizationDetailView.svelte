@@ -23,8 +23,9 @@
 	import {
 		helpSlug,
 		payloadTypes,
-		type AnyContainer,
-		type OrganizationContainer
+		type OrganizationContainer,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
@@ -32,7 +33,7 @@
 	interface Props {
 		container: OrganizationContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		sections?: AnyContainer[];
+		sections?: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, sections = [] }: Props = $props();

@@ -3,14 +3,14 @@
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
-	import { type AnyContainer, type ChapterContainer } from '$lib/models';
+	import { type AnyPayload, type ChapterContainer, type Container } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: ChapterContainer;
 		editable?: boolean;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

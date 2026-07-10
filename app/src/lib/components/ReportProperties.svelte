@@ -9,14 +9,14 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import TemplateToggle from '$lib/components/TemplateToggle.svelte';
-	import { type AnyContainer, type Container, type ReportContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type ReportContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: ReportContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

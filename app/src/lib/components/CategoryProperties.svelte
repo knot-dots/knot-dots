@@ -6,9 +6,9 @@
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import {
 		categoryObjectTypes,
-		type AnyContainer,
 		type CategoryContainer,
-		type Container
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
@@ -17,7 +17,7 @@
 		container: CategoryContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

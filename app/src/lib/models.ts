@@ -1736,12 +1736,10 @@ function hasProperty(
 
 export const anyContainer = createContainerSchema(anyPayload);
 
-export type AnyContainer = Container<AnyPayload>;
-
 export type ContainerWithObjective = Container<GoalPayload>;
 
 export function isContainerWithObjective(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ContainerWithObjective {
 	return isGoalContainer(container);
 }
@@ -1749,7 +1747,7 @@ export function isContainerWithObjective(
 export type ContainerWithEffect = Container<MeasurePayload | SimpleMeasurePayload>;
 
 export function isContainerWithEffect(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ContainerWithEffect {
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
@@ -1759,7 +1757,7 @@ export const actualDataContainer = createContainerSchema(actualDataPayload);
 export type ActualDataContainer = Container<ActualDataPayload>;
 
 export function isActualDataContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ActualDataContainer {
 	return container.payload.type === payloadTypes.enum.actual_data;
 }
@@ -1767,7 +1765,7 @@ export function isActualDataContainer(
 export type AdministrativeAreaBasicDataContainer = Container<AdministrativeAreaBasicDataPayload>;
 
 export function isAdministrativeAreaBasicDataContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
@@ -1777,7 +1775,7 @@ export const binaryIndicatorContainer = createContainerSchema(binaryIndicatorPay
 export type BinaryIndicatorContainer = Container<BinaryIndicatorPayload>;
 
 export function isBinaryIndicatorContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is BinaryIndicatorContainer {
 	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
@@ -1785,7 +1783,7 @@ export function isBinaryIndicatorContainer(
 export type ChapterContainer = Container<ChapterPayload>;
 
 export function isChapterContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ChapterContainer {
 	return container.payload.type === payloadTypes.enum.chapter;
 }
@@ -1795,7 +1793,7 @@ export const categoryContainer = createContainerSchema(categoryPayload);
 export type CategoryContainer = Container<CategoryPayload>;
 
 export function isCategoryContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is CategoryContainer {
 	return container.payload.type === payloadTypes.enum.category;
 }
@@ -1803,7 +1801,7 @@ export function isCategoryContainer(
 export type CustomCollectionContainer = Container<CustomCollectionPayload>;
 
 export function isCustomCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is CustomCollectionContainer {
 	return container.payload.type === payloadTypes.enum.custom_collection;
 }
@@ -1811,7 +1809,7 @@ export function isCustomCollectionContainer(
 export type DemographicDataContainer = Container<DemographicDataPayload>;
 
 export function isDemographicDataContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is DemographicDataContainer {
 	return container.payload.type === payloadTypes.enum.demographic_data;
 }
@@ -1819,7 +1817,7 @@ export function isDemographicDataContainer(
 export type EffectContainer = Container<EffectPayload>;
 
 export function isEffectContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is EffectContainer {
 	return container.payload.type === payloadTypes.enum.effect;
 }
@@ -1827,7 +1825,7 @@ export function isEffectContainer(
 export type EffectCollectionContainer = Container<EffectCollectionPayload>;
 
 export function isEffectCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is EffectCollectionContainer {
 	return container.payload.type === payloadTypes.enum.effect_collection;
 }
@@ -1835,7 +1833,7 @@ export function isEffectCollectionContainer(
 export type FileCollectionContainer = Container<FileCollectionPayload>;
 
 export function isFileCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is FileCollectionContainer {
 	return container.payload.type === payloadTypes.enum.file_collection;
 }
@@ -1843,7 +1841,7 @@ export function isFileCollectionContainer(
 export type GoalContainer = Container<GoalPayload>;
 
 export function isGoalContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is GoalContainer {
 	return container.payload.type === payloadTypes.enum.goal;
 }
@@ -1851,7 +1849,7 @@ export function isGoalContainer(
 export type GoalCollectionContainer = Container<GoalCollectionPayload>;
 
 export function isGoalCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is GoalCollectionContainer {
 	return container.payload.type === payloadTypes.enum.goal_collection;
 }
@@ -1861,7 +1859,7 @@ export const helpContainer = createContainerSchema(helpPayload);
 export type HelpContainer = Container<HelpPayload>;
 
 export function isHelpContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is HelpContainer {
 	return container.payload.type === payloadTypes.enum.help;
 }
@@ -1869,7 +1867,7 @@ export function isHelpContainer(
 export type IndicatorCollectionContainer = Container<IndicatorCollectionPayload>;
 
 export function isIndicatorCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is IndicatorCollectionContainer {
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
@@ -1879,7 +1877,7 @@ export const indicatorTemplateContainer = createContainerSchema(indicatorTemplat
 export type IndicatorTemplateContainer = Container<IndicatorTemplatePayload>;
 
 export function isIndicatorTemplateContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is IndicatorTemplateContainer {
 	return container.payload.type === payloadTypes.enum.indicator_template;
 }
@@ -1889,7 +1887,7 @@ export const knowledgeContainer = createContainerSchema(knowledgePayload);
 export type KnowledgeContainer = Container<KnowledgePayload>;
 
 export function isKnowledgeContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is KnowledgeContainer {
 	return container.payload.type === payloadTypes.enum.knowledge;
 }
@@ -1897,7 +1895,7 @@ export function isKnowledgeContainer(
 export type MapContainer = Container<MapPayload>;
 
 export function isMapContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is MapContainer {
 	return container.payload.type === payloadTypes.enum.map;
 }
@@ -1905,7 +1903,7 @@ export function isMapContainer(
 export type MeasureContainer = Container<MeasurePayload>;
 
 export function isMeasureContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is MeasureContainer {
 	return container.payload.type === payloadTypes.enum.measure;
 }
@@ -1913,7 +1911,7 @@ export function isMeasureContainer(
 export type MeasureCollectionContainer = Container<MeasureCollectionPayload>;
 
 export function isMeasureCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is MeasureCollectionContainer {
 	return container.payload.type === payloadTypes.enum.measure_collection;
 }
@@ -1921,7 +1919,7 @@ export function isMeasureCollectionContainer(
 export type ObjectiveContainer = Container<ObjectivePayload>;
 
 export function isObjectiveContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ObjectiveContainer {
 	return container.payload.type === payloadTypes.enum.objective;
 }
@@ -1929,7 +1927,7 @@ export function isObjectiveContainer(
 export type ObjectiveCollectionContainer = Container<ObjectiveCollectionPayload>;
 
 export function isObjectiveCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ObjectiveCollectionContainer {
 	return container.payload.type === payloadTypes.enum.objective_collection;
 }
@@ -1939,7 +1937,7 @@ export const organizationContainer = createContainerSchema(organizationPayload);
 export type OrganizationContainer = Container<OrganizationPayload>;
 
 export function isOrganizationContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is OrganizationContainer {
 	return container.payload.type === payloadTypes.enum.organization;
 }
@@ -1949,7 +1947,7 @@ export const organizationalUnitContainer = createContainerSchema(organizationalU
 export type OrganizationalUnitContainer = Container<OrganizationalUnitPayload>;
 
 export function isOrganizationalUnitContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is OrganizationalUnitContainer {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
@@ -1957,7 +1955,7 @@ export function isOrganizationalUnitContainer(
 export type PageContainer = Container<PagePayload>;
 
 export function isPageContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is PageContainer {
 	return container.payload.type === payloadTypes.enum.page;
 }
@@ -1965,7 +1963,7 @@ export function isPageContainer(
 export type ProgressContainer = Container<ProgressPayload>;
 
 export function isProgressContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ProgressContainer {
 	return container.payload.type === payloadTypes.enum.progress;
 }
@@ -1973,7 +1971,7 @@ export function isProgressContainer(
 export type ReportContainer = Container<ReportPayload>;
 
 export function isReportContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ReportContainer {
 	return container.payload.type === payloadTypes.enum.report;
 }
@@ -1983,7 +1981,7 @@ export const ruleContainer = createContainerSchema(rulePayload);
 export type RuleContainer = Container<RulePayload>;
 
 export function isRuleContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is RuleContainer {
 	return container.payload.type === payloadTypes.enum.rule;
 }
@@ -1991,7 +1989,7 @@ export function isRuleContainer(
 export type ResourceContainer = Container<ResourcePayload>;
 
 export function isResourceContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceContainer {
 	return container.payload.type === payloadTypes.enum.resource;
 }
@@ -1999,7 +1997,7 @@ export function isResourceContainer(
 export type ResourceCollectionContainer = Container<ResourceCollectionPayload>;
 
 export function isResourceCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceCollectionContainer {
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
@@ -2007,13 +2005,13 @@ export function isResourceCollectionContainer(
 export type ResourceDataContainer = Container<ResourceDataPayload>;
 
 export function isResourceDataContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return container.payload.type === payloadTypes.enum.resource_data;
 }
 
 export function isResourceDataActualResourceAllocationContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2023,7 +2021,7 @@ export function isResourceDataActualResourceAllocationContainer(
 }
 
 export function isResourceDataPlannedResourceAllocationContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2033,7 +2031,7 @@ export function isResourceDataPlannedResourceAllocationContainer(
 }
 
 export function isResourceDataBudgetContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2042,7 +2040,7 @@ export function isResourceDataBudgetContainer(
 }
 
 export function isResourceDataTotalBudgetContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2051,7 +2049,7 @@ export function isResourceDataTotalBudgetContainer(
 }
 
 export function isResourceDataTotalBudgetForecastContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2063,7 +2061,7 @@ export function isResourceDataTotalBudgetForecastContainer(
 export type ResourceDataCollectionContainer = Container<ResourceDataCollectionPayload>;
 
 export function isResourceDataCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceDataCollectionContainer {
 	return container.payload.type === payloadTypes.enum.resource_data_collection;
 }
@@ -2071,7 +2069,7 @@ export function isResourceDataCollectionContainer(
 export type ResourceV2Container = Container<ResourceV2Payload>;
 
 export function isResourceV2Container(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ResourceV2Container {
 	return container.payload.type === payloadTypes.enum.resource_v2;
 }
@@ -2079,7 +2077,7 @@ export function isResourceV2Container(
 export type SimpleMeasureContainer = Container<SimpleMeasurePayload>;
 
 export function isSimpleMeasureContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is SimpleMeasureContainer {
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
@@ -2087,7 +2085,7 @@ export function isSimpleMeasureContainer(
 export type SummaryContainer = Container<SummaryPayload>;
 
 export function isSummaryContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is SummaryContainer {
 	return container.payload.type === payloadTypes.enum.summary;
 }
@@ -2095,7 +2093,7 @@ export function isSummaryContainer(
 export type ProgramContainer = Container<ProgramPayload>;
 
 export function isProgramContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ProgramContainer {
 	return container.payload.type === payloadTypes.enum.program;
 }
@@ -2103,7 +2101,7 @@ export function isProgramContainer(
 export type ProgramCollectionContainer = Container<ProgramCollectionPayload>;
 
 export function isProgramCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ProgramCollectionContainer {
 	return container.payload.type === payloadTypes.enum.program_collection;
 }
@@ -2111,13 +2109,13 @@ export function isProgramCollectionContainer(
 export type TextContainer = Container<TextPayload>;
 
 export function isTextContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TextContainer {
 	return container.payload.type === payloadTypes.enum.text;
 }
 
 export function isInlineHelpTextContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TextContainer {
 	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
 }
@@ -2125,7 +2123,7 @@ export function isInlineHelpTextContainer(
 export type TaskContainer = Container<TaskPayload>;
 
 export function isTaskContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TaskContainer {
 	return container.payload.type === payloadTypes.enum.task;
 }
@@ -2135,7 +2133,7 @@ export const termContainer = createContainerSchema(termPayload);
 export type TermContainer = Container<TermPayload>;
 
 export function isTermContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TermContainer {
 	return container.payload.type === payloadTypes.enum.term;
 }
@@ -2143,7 +2141,7 @@ export function isTermContainer(
 export type TaskCollectionContainer = Container<TaskCollectionPayload>;
 
 export function isTaskCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TaskCollectionContainer {
 	return container.payload.type === payloadTypes.enum.task_collection;
 }
@@ -2151,7 +2149,7 @@ export function isTaskCollectionContainer(
 export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
 
 export function isMeasureMonitoringContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is MeasureMonitoringContainer {
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
@@ -2159,7 +2157,7 @@ export function isMeasureMonitoringContainer(
 export type ImageContainer = Container<ImagePayload>;
 
 export function isImageContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ImageContainer {
 	return container.payload.type === payloadTypes.enum.image;
 }
@@ -2167,7 +2165,7 @@ export function isImageContainer(
 export type IgniteVideoContainer = Container<IgniteVideoPayload>;
 
 export function isIgniteVideoContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is IgniteVideoContainer {
 	return container.payload.type === payloadTypes.enum.ignite_video;
 }
@@ -2175,7 +2173,7 @@ export function isIgniteVideoContainer(
 export type TeaserContainer = Container<TeaserPayload>;
 
 export function isTeaserContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TeaserContainer {
 	return container.payload.type === payloadTypes.enum.teaser;
 }
@@ -2183,7 +2181,7 @@ export function isTeaserContainer(
 export type InfoBoxContainer = Container<InfoBoxPayload>;
 
 export function isInfoBoxContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is InfoBoxContainer {
 	return container.payload.type === payloadTypes.enum.info_box;
 }
@@ -2191,7 +2189,7 @@ export function isInfoBoxContainer(
 export type TeaserHighlightContainer = Container<TeaserHighlightPayload>;
 
 export function isTeaserHighlightContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TeaserHighlightContainer {
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
@@ -2199,7 +2197,7 @@ export function isTeaserHighlightContainer(
 export type ColContentContainer = Container<ColContentPayload>;
 
 export function isColContentContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is ColContentContainer {
 	return container.payload.type === payloadTypes.enum.col_content;
 }
@@ -2207,7 +2205,7 @@ export function isColContentContainer(
 export type QuoteContainer = Container<QuotePayload>;
 
 export function isQuoteContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is QuoteContainer {
 	return container.payload.type === payloadTypes.enum.quote;
 }
@@ -2221,7 +2219,9 @@ export type TeaserLikeContainer =
 	| QuoteContainer
 	| ColContentContainer;
 
-export function isTeaserLikeContainer(container: AnyContainer): container is TeaserLikeContainer {
+export function isTeaserLikeContainer(
+	container: Container<AnyPayload>
+): container is TeaserLikeContainer {
 	return (
 		[
 			payloadTypes.enum.teaser,
@@ -2234,13 +2234,13 @@ export function isTeaserLikeContainer(container: AnyContainer): container is Tea
 }
 
 export function isTeaserCollectionContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is TeaserCollectionContainer {
 	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
 export function isContainer(
-	container: AnyContainer | NewContainer<AnyInitialPayload>
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container {
 	return (
 		container.payload.type !== payloadTypes.enum.organization &&
@@ -2248,152 +2248,126 @@ export function isContainer(
 	);
 }
 
-export type ContainerWithAudience = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { audience: Audience[] };
-};
+export type ContainerWithAudience = Container<AnyPayload & { audience: Audience[] }>;
 
 export function isContainerWithAudience(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithAudience {
 	return hasProperty(container.payload, 'audience');
 }
 
-export type ContainerWithBody = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { body: string | undefined };
-};
+export type ContainerWithBody = Container<AnyPayload & { body: string | undefined }>;
 
 export function isContainerWithBody(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithBody {
 	return hasProperty(container.payload, 'body');
 }
 
-export type ContainerWithSdg = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { sdg: SustainableDevelopmentGoal[] };
-};
+export type ContainerWithSdg = Container<AnyPayload & { sdg: SustainableDevelopmentGoal[] }>;
 
 export function isContainerWithSdg(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithSdg {
 	return hasProperty(container.payload, 'sdg');
 }
 
-export type ContainerWithCategory = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { category: Record<string, string[]> };
-};
+export type ContainerWithCategory = Container<AnyPayload & { category: Record<string, string[]> }>;
 
 export function isContainerWithCategory(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithCategory {
 	return hasProperty(container.payload, 'category');
 }
 
-export type ContainerWithDescription = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { description: string | undefined };
-};
+export type ContainerWithDescription = Container<AnyPayload & { description: string | undefined }>;
 
 export function isContainerWithDescription(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithDescription {
 	return hasProperty(container.payload, 'description');
 }
 
-export type ContainerWithDuration = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { startDate: string; endDate: string };
-};
+export type ContainerWithDuration = Container<AnyPayload & { startDate: string; endDate: string }>;
 
 export function isContainerWithDuration(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithDuration {
 	return hasProperty(container.payload, 'startDate') && hasProperty(container.payload, 'endDate');
 }
 
-export type ContainerWithEditorialState = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { editorialState: EditorialState | undefined };
-};
+export type ContainerWithEditorialState = Container<
+	AnyPayload & { editorialState: EditorialState | undefined }
+>;
 
 export function isContainerWithEditorialState(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithEditorialState {
 	return hasProperty(container.payload, 'editorialState');
 }
 
-export type ContainerWithFulfillmentDate = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { fulfillmentDate: string | undefined };
-};
+export type ContainerWithFulfillmentDate = Container<
+	AnyPayload & { fulfillmentDate: string | undefined }
+>;
 
 export function isContainerWithFulfillmentDate(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithFulfillmentDate {
 	return hasProperty(container.payload, 'fulfillmentDate');
 }
 
-export type ContainerWithHierarchyLevel = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { hierarchyLevel: number };
-};
+export type ContainerWithHierarchyLevel = Container<AnyPayload & { hierarchyLevel: number }>;
 
 export function isContainerWithHierarchyLevel(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithHierarchyLevel {
 	return hasProperty(container.payload, 'hierarchyLevel');
 }
 
-export type ContainerWithName = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { name: string | undefined };
-};
+export type ContainerWithName = Container<AnyPayload & { name: string | undefined }>;
 
 export function isContainerWithName(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithName {
 	return hasProperty(container.payload, 'name');
 }
 
-export type ContainerWithProgress = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { progress: number | undefined };
-};
+export type ContainerWithProgress = Container<AnyPayload & { progress: number | undefined }>;
 
 export function isContainerWithProgress(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithProgress {
 	return hasProperty(container.payload, 'progress');
 }
 
-export type ContainerWithStatus = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { status: Status };
-};
+export type ContainerWithStatus = Container<AnyPayload & { status: Status }>;
 
 export function isContainerWithStatus(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithStatus {
 	return hasProperty(container.payload, 'status');
 }
 
-export type ContainerWithSummary = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { summary: string | undefined };
-};
+export type ContainerWithSummary = Container<AnyPayload & { summary: string | undefined }>;
 
 export function isContainerWithSummary(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithSummary {
 	return hasProperty(container.payload, 'summary');
 }
 
-export type ContainerWithTitle = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { title: string | undefined };
-};
+export type ContainerWithTitle = Container<AnyPayload & { title: string | undefined }>;
 
 export function isContainerWithTitle(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithTitle {
 	return hasProperty(container.payload, 'title');
 }
 
-export type ContainerWithTopic = Omit<AnyContainer, 'payload'> & {
-	payload: AnyPayload & { topic: Topic[] };
-};
+export type ContainerWithTopic = Container<AnyPayload & { topic: Topic[] }>;
 
 export function isContainerWithTopic(
-	container: AnyContainer | NewContainer
+	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithTopic {
 	return hasProperty(container.payload, 'topic');
 }
@@ -2531,7 +2505,7 @@ export const newUser = z.object({
 export type NewUser = z.infer<typeof newUser>;
 
 export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
+	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
 				(r) =>
@@ -2544,7 +2518,7 @@ export function isPartOf(container: { relation: PartialRelation[]; guid: string 
 }
 
 export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
+	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
 				(r) =>
@@ -2557,7 +2531,7 @@ export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: 
 }
 
 export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
-	return function (candidate: AnyContainer) {
+	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
 				({ object, subject }) =>
@@ -2573,18 +2547,18 @@ export function isSuggestedByAI(container: Container) {
 }
 
 export function hasMember(user: { guid: string }) {
-	return (container: AnyContainer) =>
+	return (container: Container<AnyPayload>) =>
 		container.user.find(
 			({ predicate, subject }) =>
 				subject === user.guid && predicate === predicates.enum['is-member-of']
 		);
 }
 
-export function etag(container: AnyContainer) {
+export function etag(container: Container<AnyPayload>) {
 	return `"${container.revision}"`;
 }
 
-export function isAdminOf(user: { guid: string }, container: AnyContainer) {
+export function isAdminOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2593,7 +2567,7 @@ export function isAdminOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
-export function isCollaboratorOf(user: { guid: string }, container: AnyContainer) {
+export function isCollaboratorOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2602,7 +2576,7 @@ export function isCollaboratorOf(user: { guid: string }, container: AnyContainer
 	);
 }
 
-export function isHeadOf(user: { guid: string }, container: AnyContainer) {
+export function isHeadOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) => user.guid == subject && predicate == predicates.enum['is-head-of']
@@ -2610,7 +2584,7 @@ export function isHeadOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
-export function isMemberOf(user: { guid: string }, container: AnyContainer) {
+export function isMemberOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2619,7 +2593,7 @@ export function isMemberOf(user: { guid: string }, container: AnyContainer) {
 	);
 }
 
-export function isObserverOf(user: { guid: string }, container: AnyContainer) {
+export function isObserverOf(user: { guid: string }, container: Container<AnyPayload>) {
 	return (
 		container.user.findIndex(
 			({ predicate, subject }) =>
@@ -2653,7 +2627,7 @@ export function containerOfType(
 }
 
 export function mayDelete(
-	container: AnyContainer | NewContainer<AnyInitialPayload>,
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>,
 	ability: MongoAbility
 ) {
 	return (
@@ -2713,7 +2687,7 @@ export function newTermForCategoryTemplate(
 	return template;
 }
 
-export function findConnected<T extends AnyContainer>(
+export function findConnected<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicates: Predicate[]
@@ -2740,7 +2714,7 @@ export function findConnected<T extends AnyContainer>(
 	return found;
 }
 
-export function findAncestors<T extends AnyContainer>(
+export function findAncestors<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicate: Predicate[]
@@ -2771,7 +2745,7 @@ export function findAncestors<T extends AnyContainer>(
 	return Array.from(ancestors.values());
 }
 
-export function findDescendants<T extends AnyContainer>(
+export function findDescendants<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicate: Predicate[]
@@ -2864,7 +2838,7 @@ export function overlayURL(url: URL, key: OverlayKey, guid: string, extraParams?
 	return `#${newParams.toString()}`;
 }
 
-export function filterOrganizationalUnits<T extends AnyContainer>(
+export function filterOrganizationalUnits<T extends Container<AnyPayload>>(
 	containers: Array<T>,
 	url: URL,
 	subordinateOrganizationalUnits: string[],
@@ -2897,24 +2871,27 @@ export function filterOrganizationalUnits<T extends AnyContainer>(
 			});
 }
 
-export function filterMembers<T extends AnyContainer>(containers: T[], members: string[]) {
+export function filterMembers<T extends Container<AnyPayload>>(containers: T[], members: string[]) {
 	return members.length == 0
 		? containers
 		: containers.filter((container) => members.some((guid) => hasMember({ guid })(container)));
 }
 
-export function getCreator(revision: AnyContainer) {
+export function getCreator(revision: Container<AnyPayload>) {
 	return revision.user
 		.filter(({ predicate }) => predicate == predicates.enum['is-creator-of'])
 		.map(({ subject }) => subject);
 }
 
-export function getManagedBy(container: AnyContainer, candidates: AnyContainer[]) {
+export function getManagedBy(
+	container: Container<AnyPayload>,
+	candidates: Container<AnyPayload>[]
+) {
 	return candidates.find(({ guid }) => guid === container.managed_by);
 }
 
 export function createCopyOf(
-	container: AnyContainer,
+	container: Container<AnyPayload>,
 	organization: string,
 	organizationalUnit: string | null
 ) {
@@ -3060,7 +3037,7 @@ export function titleForMeasureCollection(containers: MeasureContainer[], hierar
 
 export function computeFacetCount(
 	facets: Map<string, Map<string, number>>,
-	containers: AnyContainer[]
+	containers: Container<AnyPayload>[]
 ) {
 	for (const container of containers) {
 		for (const key of facets.keys()) {

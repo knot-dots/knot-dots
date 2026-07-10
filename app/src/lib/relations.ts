@@ -1,6 +1,12 @@
-import { type AnyContainer, type Predicate, predicates, type Relation } from '$lib/models';
+import {
+	type AnyPayload,
+	type Container,
+	type Predicate,
+	predicates,
+	type Relation
+} from '$lib/models';
 
-export type Node = Pick<AnyContainer, 'guid' | 'relation'>;
+export type Node = Pick<Container<AnyPayload>, 'guid' | 'relation'>;
 
 export function relatedSubjectNodesByPredicate<T extends Node>(
 	container: Node,
@@ -30,28 +36,28 @@ export function relatedObjectNodesByPredicate<T extends Node>(
 		);
 }
 
-export function hasSection<T extends AnyContainer>(
+export function hasSection<T extends Container<AnyPayload>>(
 	container: { guid: string; relation: Relation[] },
 	containers: T[]
 ): T[] {
 	return relatedSubjectNodesByPredicate(container, predicates.enum['is-section-of'], containers);
 }
 
-export function sectionOf<T extends AnyContainer>(
+export function sectionOf<T extends Container<AnyPayload>>(
 	container: { guid: string; relation: Relation[] },
 	containers: T[]
 ): T | undefined {
 	return relatedObjectNodesByPredicate(container, predicates.enum['is-section-of'], containers)[0];
 }
 
-export function hasPart<T extends AnyContainer>(
+export function hasPart<T extends Container<AnyPayload>>(
 	container: { guid: string; relation: Relation[] },
 	containers: T[]
 ): T[] {
 	return relatedSubjectNodesByPredicate(container, predicates.enum['is-part-of'], containers);
 }
 
-export function isPartOf<T extends AnyContainer>(
+export function isPartOf<T extends Container<AnyPayload>>(
 	container: { guid: string; relation: Relation[] },
 	containers: T[]
 ): T | undefined {

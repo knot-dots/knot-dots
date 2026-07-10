@@ -4,15 +4,15 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import IgniteVideoSettingsDropdown from '$lib/components/IgniteVideoSettingsDropdown.svelte';
-	import type { AnyContainer, IgniteVideoContainer } from '$lib/models';
+	import type { AnyPayload, Container, IgniteVideoContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: IgniteVideoContainer;
 		editable?: boolean;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

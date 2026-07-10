@@ -3,7 +3,8 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type EffectContainer,
 		isIndicatorTemplateContainer,
 		isRelatedTo
@@ -11,7 +12,7 @@
 
 	interface Props {
 		container: EffectContainer;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container<AnyPayload>[];
 		showLegend?: boolean;
 	}
 

@@ -4,13 +4,13 @@
 	import { goto } from '$app/navigation';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: AnyContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let { container, relatedContainers }: Props = $props();
@@ -18,7 +18,7 @@
 	// svelte-ignore non_reactive_update
 	let confirmDeleteDialog: HTMLDialogElement;
 
-	async function handleDelete(c: AnyContainer) {
+	async function handleDelete(c: Container<AnyPayload>) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
 			if ($overlayHistory.length > 1) {

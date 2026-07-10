@@ -17,14 +17,20 @@
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyContainer, helpSlug, type PageContainer, predicates } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		helpSlug,
+		type PageContainer,
+		predicates
+	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: PageContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

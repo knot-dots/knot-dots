@@ -13,7 +13,8 @@
 	import publishAll from '$lib/client/publishAll';
 	import { getToastContext } from '$lib/contexts/toast';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitContainer,
@@ -27,7 +28,7 @@
 		actions?: Snippet;
 		children: Snippet;
 		container: OrganizationContainer | OrganizationalUnitContainer | PageContainer;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 		dialog: HTMLDialogElement;
 		title: string;
 	}
@@ -57,7 +58,7 @@
 		dialog.close();
 	}
 
-	async function handleConfirmDelete(c: AnyContainer) {
+	async function handleConfirmDelete(c: Container<AnyPayload>) {
 		const response = await deleteContainer(c);
 		if (response.ok) {
 			if (container.guid == container.organization) {
@@ -71,7 +72,7 @@
 		}
 	}
 
-	async function handleConfirmPublishAll(c: AnyContainer) {
+	async function handleConfirmPublishAll(c: Container<AnyPayload>) {
 		const response = await publishAll(c);
 		if (response.ok) {
 			await invalidateAll();

@@ -12,7 +12,12 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
-	import { type AnyContainer, type CustomCollectionContainer, visibility } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		type CustomCollectionContainer,
+		visibility
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	type SettingsSubview = 'main' | 'view' | 'visibility' | 'interactions';
@@ -21,8 +26,8 @@
 		container: CustomCollectionContainer;
 		onAddItems: () => void;
 		onAddTemplates: () => void;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

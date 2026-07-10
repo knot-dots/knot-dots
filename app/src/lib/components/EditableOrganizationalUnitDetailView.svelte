@@ -24,7 +24,8 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		createCopyOf,
 		getOrganizationURL,
@@ -43,9 +44,9 @@
 	interface Props {
 		container: OrganizationalUnitContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		linkedProfiles?: AnyContainer[];
+		linkedProfiles?: Container<AnyPayload>[];
 		relatedOrganizationalUnitGuids?: string[];
-		sections?: AnyContainer[];
+		sections?: Container<AnyPayload>[];
 	}
 
 	let {

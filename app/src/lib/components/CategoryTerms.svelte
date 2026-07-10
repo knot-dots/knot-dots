@@ -6,8 +6,9 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import CategoryTermItem from '$lib/components/CategoryTermItem.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type CategoryContainer,
+		type Container,
 		container as containerSchema,
 		containerOfType,
 		isTermContainer,
@@ -21,7 +22,7 @@
 
 	interface Props {
 		container: CategoryContainer | TermContainer;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 		predicate?: Predicate;
 	}
 

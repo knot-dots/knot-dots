@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 
 	interface Props {
-		container: AnyContainer & { payload: { category: Record<string, string[]> } };
+		container: Container<AnyPayload> & { payload: { category: Record<string, string[]> } };
 		editable?: boolean;
 	}
 

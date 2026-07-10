@@ -1,6 +1,6 @@
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import { type AnyContainer, payloadTypes } from '$lib/models';
+import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import {
 	ALL_LEVEL_COLUMN_IDS,
@@ -11,7 +11,7 @@ import {
 import type { PageServerLoad } from './$types';
 
 type Column = {
-	containers: AnyContainer[];
+	containers: Container<AnyPayload>[];
 	page: {
 		hasMore: boolean;
 		limit: number;
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ depends, fetch, params, parent, url
 
 	const baseQuery = createAllLevelQuery(url);
 	const [facetData, columnEntries, { categoryContext, currentOrganization }] = await Promise.all([
-		fetchContainerPage<AnyContainer>({
+		fetchContainerPage<Container<AnyPayload>>({
 			contextGuid: params.guid,
 			fetch,
 			limit: 1,
@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ depends, fetch, params, parent, url
 		}),
 		Promise.all(
 			ALL_LEVEL_COLUMN_IDS.map(async (columnId) => {
-				const data = await fetchContainerPage<AnyContainer>({
+				const data = await fetchContainerPage<Container<AnyPayload>>({
 					contextGuid: params.guid,
 					fetch,
 					limit: DEFAULT_PAGE_SIZE,

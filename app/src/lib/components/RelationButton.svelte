@@ -2,12 +2,12 @@
 	import { getContext, hasContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Relation from '~icons/knotdots/relation';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 	}
 
 	let { container }: Props = $props();

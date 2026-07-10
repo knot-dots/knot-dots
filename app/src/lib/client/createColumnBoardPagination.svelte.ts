@@ -1,14 +1,14 @@
 import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 import withOptimistic from '$lib/client/withOptimistic';
-import type { AnyContainer } from '$lib/models';
+import type { AnyPayload, Container } from '$lib/models';
 
-type Column<T extends AnyContainer> = {
+type Column<T extends Container<AnyPayload>> = {
 	containers: T[];
 	page: { hasMore: boolean };
 };
 
 export default function createColumnBoardPagination<
-	T extends AnyContainer,
+	T extends Container<AnyPayload>,
 	ColumnId extends string
 >({
 	columnIds,
@@ -24,8 +24,8 @@ export default function createColumnBoardPagination<
 	columnForItem: (container: T) => ColumnId;
 	columnIds: () => readonly ColumnId[];
 	columns: () => Record<ColumnId, Column<T>>;
-	created: () => AnyContainer | undefined;
-	deleted: () => Map<string, AnyContainer>;
+	created: () => Container<AnyPayload> | undefined;
+	deleted: () => Map<string, Container<AnyPayload>>;
 	fetchPage: (params: { columnId: ColumnId; offset: number; signal: AbortSignal }) => Promise<{
 		hasMore: boolean;
 		items: T[];
@@ -33,7 +33,7 @@ export default function createColumnBoardPagination<
 	}>;
 	pageSize: number;
 	resetKey: () => string;
-	updated: () => Map<string, AnyContainer>;
+	updated: () => Map<string, Container<AnyPayload>>;
 }) {
 	const initialItemsKey = $derived(
 		columnIds()
@@ -79,7 +79,7 @@ export default function createColumnBoardPagination<
 	};
 }
 
-function dedupeByGuid<T extends AnyContainer>(containers: T[]) {
+function dedupeByGuid<T extends Container<AnyPayload>>(containers: T[]) {
 	const byGuid = new Map<string, T>();
 	for (const container of containers) {
 		byGuid.set(container.guid, container);

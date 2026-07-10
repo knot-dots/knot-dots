@@ -6,12 +6,13 @@
 	import ArrowRight from '~icons/knotdots/arrow-right';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
 	import {
-		type AnyContainer,
 		teaserColSizes,
 		type TeaserColSize,
 		teaserColSizeToNumber,
 		teaserNumberToColSize,
-		type TeaserLikeContainer
+		type TeaserLikeContainer,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
@@ -22,8 +23,8 @@
 		container: TeaserLikeContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

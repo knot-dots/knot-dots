@@ -8,7 +8,7 @@ import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
-	type AnyContainer,
+	type AnyPayload,
 	type ApplicationState,
 	type Container,
 	containerOfType,
@@ -101,7 +101,7 @@ export const user = derived(
 
 export const ability = derived(user, defineAbilityFor);
 
-export const dragged = writable<AnyContainer | undefined>();
+export const dragged = writable<Container<AnyPayload> | undefined>();
 
 export const mayCreateContainer = derived([page, ability], (values) => {
 	return (payloadType: PayloadType, managedBy: string): boolean => {
@@ -117,7 +117,7 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 });
 
 export const mayDeleteContainer = derived(ability, (values) => {
-	return (container: AnyContainer): boolean => {
+	return (container: Container<AnyPayload>): boolean => {
 		return mayDelete(container, values) || values.can('delete-recursively', container);
 	};
 });
@@ -156,34 +156,34 @@ export const newContainer = writable<NewContainer | undefined>();
 
 export const lastCreatedContainer = writable<Container | undefined>(undefined);
 
-export const lastUpdatedContainers = writable<Map<string, AnyContainer>>(new Map());
+export const lastUpdatedContainers = writable<Map<string, Container<AnyPayload>>>(new Map());
 
-export const lastDeletedContainers = writable<Map<string, AnyContainer>>(new Map());
+export const lastDeletedContainers = writable<Map<string, Container<AnyPayload>>>(new Map());
 
 export type OverlayData =
 	| {
 			key: 'chapters';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'indicators';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'measure-monitoring';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'measures';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: MeasureContainer[];
 	  }
 	| {
 			key: 'members';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			users: UserRecord[];
 	  }
 	| {
@@ -193,33 +193,33 @@ export type OverlayData =
 	  }
 	| {
 			key: 'tasks';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'goal-iooi';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'measure-iooi';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'teasers';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'resources';
-			container: AnyContainer;
+			container: Container<AnyPayload>;
 			containers: Container[];
 	  }
 	| {
 			key: 'view';
-			container: AnyContainer;
-			revisions: AnyContainer[];
+			container: Container<AnyPayload>;
+			revisions: Container<AnyPayload>[];
 	  }
 	| {
 			key: 'view-help';
@@ -308,7 +308,7 @@ if (browser) {
 			// Container from the #view= overlay, or — when using fullscreen routes — from page data
 			const container =
 				(currentOverlay?.key === overlayKey.enum.view ? currentOverlay.container : undefined) ??
-				(values.data.container as AnyContainer | undefined);
+				(values.data.container as Container<AnyPayload> | undefined);
 			const categories =
 				container && isContainerWithCategory(container)
 					? (container.payload.category as Record<string, string[]>)
@@ -324,7 +324,7 @@ if (browser) {
 			// Container from the #view= overlay, or — when using fullscreen routes — from page data
 			const container =
 				(currentOverlay?.key === overlayKey.enum.view ? currentOverlay.container : undefined) ??
-				(values.data.container as AnyContainer | undefined);
+				(values.data.container as Container<AnyPayload> | undefined);
 			const categories =
 				container && isContainerWithCategory(container)
 					? (container.payload.category as Record<string, string[]>)

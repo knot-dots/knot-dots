@@ -1,11 +1,12 @@
 import {
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
-	AnyContainer,
 	anyContainer,
+	AnyPayload,
 	CategoryContainer,
 	categoryContainer as persistedCategoryContainer,
 	categoryPayload,
+	Container,
 	createNewContainerSchema,
 	customCollectionPayload,
 	demographicDataPayload,
@@ -358,7 +359,7 @@ export function createContainer(container: NewContainer) {
 	};
 }
 
-export function updateContainer(container: AnyContainer) {
+export function updateContainer(container: Container<AnyPayload>) {
 	return async (tx: DatabaseTransactionConnection) => {
 		await tx.query(sql.type(anyContainer)`
 			UPDATE container

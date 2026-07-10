@@ -6,7 +6,6 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
-		type AnyContainer,
 		containerOfType,
 		isResourceDataContainer,
 		isPartOf,
@@ -15,7 +14,9 @@
 		payloadTypes,
 		predicates,
 		isResourceV2Container,
-		type ResourceV2Container
+		type ResourceV2Container,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
@@ -25,8 +26,8 @@
 		container: ResourceDataCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

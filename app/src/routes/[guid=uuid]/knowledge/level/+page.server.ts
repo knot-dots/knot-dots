@@ -1,7 +1,7 @@
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
-	type AnyContainer,
+	type AnyPayload,
 	type Container,
 	fromCounts,
 	payloadTypes,
@@ -14,7 +14,7 @@ import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { PageServerLoad } from './$types';
 
-function isRelatedToSome(containers: AnyContainer[]) {
+function isRelatedToSome(containers: Container<AnyPayload>[]) {
 	return ({ relation }: Container) =>
 		relation.some(
 			({ predicate, subject }) =>

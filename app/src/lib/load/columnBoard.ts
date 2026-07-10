@@ -1,8 +1,8 @@
 import { filterCategoryContext, type CategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import type { AnyContainer, PayloadType } from '$lib/models';
+import type { AnyPayload, Container, PayloadType } from '$lib/models';
 
-type Column<T extends AnyContainer> = {
+type Column<T extends Container<AnyPayload>> = {
 	containers: T[];
 	page: {
 		hasMore: boolean;
@@ -34,7 +34,7 @@ interface ColumnBoardLoadEvent {
 	url: URL;
 }
 
-export function loadColumnBoardPage<T extends AnyContainer, ColumnId extends string>(
+export function loadColumnBoardPage<T extends Container<AnyPayload>, ColumnId extends string>(
 	options: LoadColumnBoardOptions<ColumnId>
 ) {
 	return async ({ depends, fetch, params, parent, url }: ColumnBoardLoadEvent) => {

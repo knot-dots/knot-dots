@@ -6,7 +6,8 @@
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		container as containerSchema,
 		containerOfType,
 		isChapterContainer,
@@ -20,8 +21,8 @@
 	import { applicationState, ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), relatedContainers }: Props = $props();
@@ -48,7 +49,7 @@
 					)!.position
 			)
 			.map((c) => {
-				let _: AnyContainer = $state(c); // $state() can only be used in an assignment
+				let _: Container<AnyPayload> = $state(c); // $state() can only be used in an assignment
 				return _;
 			});
 	});
@@ -165,11 +166,11 @@
 		};
 	}
 
-	function handleDndConsider(event: CustomEvent<DndEvent<AnyContainer>>) {
+	function handleDndConsider(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
 		sections = event.detail.items;
 	}
 
-	async function handleDndFinalize(event: CustomEvent<DndEvent<AnyContainer>>) {
+	async function handleDndFinalize(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
 		sections = event.detail.items;
 		container.relation = [
 			...sections.map(({ guid }, index) => ({

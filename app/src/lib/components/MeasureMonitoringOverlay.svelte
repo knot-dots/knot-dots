@@ -5,7 +5,7 @@
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type Container,
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
@@ -14,7 +14,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		containers: Container[];
 	}
 

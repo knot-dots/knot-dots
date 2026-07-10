@@ -2,9 +2,10 @@
 	import { _ } from 'svelte-i18n';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
 		type AdministrativeAreaBasicDataContainer,
-		type OrganizationalUnitContainer
+		type OrganizationalUnitContainer,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 
 	interface Props {
@@ -12,7 +13,7 @@
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: OrganizationalUnitContainer;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

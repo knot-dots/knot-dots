@@ -5,7 +5,7 @@ import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
-	type AnyContainer,
+	type AnyPayload,
 	type Container,
 	createCopyOf,
 	type GoalContainer,
@@ -45,7 +45,7 @@ import type { User } from '$lib/stores';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
 
-function findCopiedTargetGuid<T extends AnyContainer>(
+function findCopiedTargetGuid<T extends Container<AnyPayload>>(
 	originalTargetGuid: string,
 	copied: Array<GoalContainer | T>
 ): string {
@@ -82,7 +82,7 @@ function mapRelationsByPredicate<T extends { relation: Relation[]; guid: string 
 		.filter(({ object }) => object !== undefined);
 }
 
-async function copyMeasureFromOriginal<T extends AnyContainer>(
+async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 	createdContainer: T,
 	originalMeasure: MeasureContainer,
 	user: User,
@@ -244,9 +244,9 @@ async function copyEffectsFromOriginal(
 }
 
 async function copySectionsFromOriginal(
-	createdContainer: AnyContainer,
+	createdContainer: Container<AnyPayload>,
 	originals: Container[],
-	isPartOfObjects: Array<AnyContainer>,
+	isPartOfObjects: Array<Container<AnyPayload>>,
 	userGuid: string,
 	txConnection: DatabaseTransactionConnection
 ) {
@@ -346,7 +346,7 @@ async function copyProgram(
 		)
 		.filter(({ guid }) => guid !== isCopyOfRelation.object);
 
-	const isPartOfObjects = [createdProgram] as AnyContainer[];
+	const isPartOfObjects = [createdProgram] as Container<AnyPayload>[];
 
 	for (const copyFrom of originalParts) {
 		if (isMeasureContainer(copyFrom)) {

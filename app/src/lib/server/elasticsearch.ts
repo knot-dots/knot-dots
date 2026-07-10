@@ -1,6 +1,6 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
-import { anyContainer, type AnyContainer, type PayloadType } from '$lib/models';
+import { anyContainer, type AnyPayload, type Container, type PayloadType } from '$lib/models';
 import type { ContainerQueryOptions } from '$lib/server/db';
 
 const es = new Client({
@@ -164,7 +164,7 @@ export async function getManyContainersWithES(
 	},
 	sort: string,
 	options?: ContainerElasticsearchOptions
-): Promise<{ containers: AnyContainer[]; facets: FacetCounts; total: number }> {
+): Promise<{ containers: Container<AnyPayload>[]; facets: FacetCounts; total: number }> {
 	const must: estypes.QueryDslQueryContainer[] = [];
 	const nonFacetFilters: estypes.QueryDslQueryContainer[] = [];
 	const facetFilters: FacetFilterMap = {};
@@ -343,7 +343,7 @@ export async function getManyContainersWithES(
 
 	const { hits, aggregations } = await es.search(searchParams);
 
-	const containers: AnyContainer[] = hits.hits.flatMap((h) => {
+	const containers: Container<AnyPayload>[] = hits.hits.flatMap((h) => {
 		const doc = h._source;
 		if (!doc) return [];
 		return [

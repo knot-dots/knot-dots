@@ -31,7 +31,8 @@
 	import ReadonlyAdministrativeAreaBasicDataSection from '$lib/components/ReadonlyAdministrativeAreaBasicDataSection.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		isAdministrativeAreaBasicDataContainer,
 		isChapterContainer,
 		isContainerWithProgress,
@@ -64,11 +65,11 @@
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
+		container: Container<AnyPayload> & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
 		handleAddSection: (event: Event) => void;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -94,7 +95,7 @@
 	function autoSave(delay: number) {
 		let timer: ReturnType<typeof setTimeout>;
 
-		return (container: AnyContainer) => (event: SubmitEvent) => {
+		return (container: Container<AnyPayload>) => (event: SubmitEvent) => {
 			event.preventDefault();
 			clearTimeout(timer);
 			timer = setTimeout(async () => {

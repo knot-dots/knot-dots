@@ -32,18 +32,19 @@
 		overlayURL,
 		payloadTypes,
 		findDescendants,
-		type AnyContainer,
 		type GoalContainer,
 		type MeasureContainer,
 		type ResourceDataContainer,
-		type ResourceV2Container
+		type ResourceV2Container,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ResourceDataContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

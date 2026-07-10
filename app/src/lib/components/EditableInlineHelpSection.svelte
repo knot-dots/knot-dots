@@ -3,14 +3,14 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Editor from '$lib/components/Editor.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
-	import type { AnyContainer, TextContainer } from '$lib/models';
+	import type { AnyPayload, Container, TextContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: TextContainer;
 		editable?: boolean;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

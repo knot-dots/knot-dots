@@ -8,7 +8,7 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
-	import type { AnyContainer, IgniteVideoContainer } from '$lib/models';
+	import type { AnyPayload, Container, IgniteVideoContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
@@ -16,8 +16,8 @@
 
 	interface Props {
 		container: IgniteVideoContainer;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

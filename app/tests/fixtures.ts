@@ -1,8 +1,9 @@
 import { type BrowserContext, test as base } from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
-	type AnyContainer,
+	type AnyPayload,
 	type CategoryContainer,
+	type Container,
 	containerOfType,
 	type EffectContainer,
 	etag,
@@ -97,7 +98,7 @@ export async function createContainer(context: BrowserContext, newContainer: New
 	return container;
 }
 
-export async function deleteContainer(context: BrowserContext, container: AnyContainer) {
+export async function deleteContainer(context: BrowserContext, container: Container<AnyPayload>) {
 	const response = await context.request.get(`/container/${container.guid}`);
 
 	if (!response.ok()) {
@@ -154,7 +155,7 @@ async function createResourceData(
 async function inviteUser(
 	context: BrowserContext,
 	email: string,
-	container: AnyContainer,
+	container: Container<AnyPayload>,
 	role: Predicate[] = []
 ) {
 	const inviteResponse = await context.request.post(`/user`, { data: { email, container } });

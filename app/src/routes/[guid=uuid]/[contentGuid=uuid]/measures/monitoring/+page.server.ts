@@ -2,7 +2,13 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { type AnyContainer, isProgramContainer, payloadTypes, predicates } from '$lib/models';
+import {
+	type AnyPayload,
+	type Container,
+	isProgramContainer,
+	payloadTypes,
+	predicates
+} from '$lib/models';
 import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -13,7 +19,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
-		const container = revisions.at(-1) as AnyContainer;
+		const container = revisions.at(-1) as Container<AnyPayload>;
 
 		if (!defineAbilityFor(locals.user).can('read', container)) {
 			error(404, { message: t('error.not_found') });

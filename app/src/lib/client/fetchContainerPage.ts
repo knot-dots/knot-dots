@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { anyContainer, type AnyContainer } from '$lib/models';
+import { anyContainer, type AnyPayload, type Container } from '$lib/models';
 
 interface FetchContainerPageOptions {
 	contextGuid?: string;
@@ -29,7 +29,7 @@ const responseSchema = z.object({
 	})
 });
 
-export default async function fetchContainerPage<T extends AnyContainer>({
+export default async function fetchContainerPage<T extends Container<AnyPayload>>({
 	contextGuid,
 	fetch,
 	limit,

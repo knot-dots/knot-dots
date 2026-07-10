@@ -8,8 +8,9 @@ import {
 } from '$lib/categoryOptions';
 import {
 	administrativeTypes,
-	type AnyContainer,
+	type AnyPayload,
 	computeFacetCount,
+	type Container,
 	findDescendants,
 	fromCounts,
 	indicatorCategories,
@@ -39,7 +40,7 @@ import type { DatabaseConnection } from 'slonik';
 type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 
 export type ContainerV2Response = {
-	containers: AnyContainer[];
+	containers: Container<AnyPayload>[];
 	page: {
 		limit: number;
 		offset: number;
@@ -252,7 +253,12 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 	);
 }
 
-function paginate(containers: AnyContainer[], limit: number, offset: number, total: number) {
+function paginate(
+	containers: Container<AnyPayload>[],
+	limit: number,
+	offset: number,
+	total: number
+) {
 	const hasMore = offset + limit < total;
 	return {
 		containers: containers.slice(offset, offset + limit),
@@ -344,7 +350,7 @@ export async function loadContainerV2(params: {
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
 	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
 
-	let rawContainers: AnyContainer[];
+	let rawContainers: Container<AnyPayload>[];
 	let esFacets: Record<string, Record<string, number>> | undefined;
 
 	if (useElasticsearch) {

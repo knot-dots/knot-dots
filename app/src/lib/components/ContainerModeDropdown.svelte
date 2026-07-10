@@ -3,11 +3,16 @@
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
 	import ListType from '~icons/knotdots/tasks';
-	import { type AnyContainer, listTypes, isTeaserCollectionContainer } from '$lib/models';
+	import {
+		listTypes,
+		isTeaserCollectionContainer,
+		type Container,
+		type AnyPayload
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 	}
 
 	let { container = $bindable() }: Props = $props();

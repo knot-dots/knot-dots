@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import EditableResourceV2 from '$lib/components/EditableResourceV2.svelte';
-	import { type AnyContainer, type Container, type ResourceDataContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type ResourceDataContainer } from '$lib/models';
 	import EditableOrganizationalUnit from './EditableOrganizationalUnit.svelte';
 	import EditableOrganization from './EditableOrganization.svelte';
 	import { ability } from '$lib/stores';
@@ -12,7 +12,7 @@
 		container: ResourceDataContainer;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

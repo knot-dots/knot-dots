@@ -1,10 +1,10 @@
 import { format, unwrapFunctionStore } from 'svelte-i18n';
 import { page } from '$app/state';
-import { type AnyContainer, getManagedBy, visibility } from '$lib/models';
+import { type AnyPayload, type Container, getManagedBy, visibility } from '$lib/models';
 
 export default function visibilityOptions(
-	container: AnyContainer,
-	relatedContainers: AnyContainer[]
+	container: Container<AnyPayload>,
+	relatedContainers: Container<AnyPayload>[]
 ) {
 	const team = $derived(
 		getManagedBy(container, [...page.data.organizationalUnits, ...relatedContainers])

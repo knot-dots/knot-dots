@@ -10,14 +10,19 @@
 	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyContainer, isTeaserLikeContainer, type TeaserLikeContainer } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		isTeaserLikeContainer,
+		type TeaserLikeContainer
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		ondelete?: () => Promise<void>;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 		payloadSuffix?: '' | 'Right';
 	}
 
@@ -43,7 +48,7 @@
 
 	let teaserContainer = $derived(isTeaserLikeContainer(container) ? container : null);
 
-	async function handleDelete(container: AnyContainer) {
+	async function handleDelete(container: Container<AnyPayload>) {
 		const response = await deleteContainer(container);
 
 		if (response.ok) {

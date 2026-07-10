@@ -6,7 +6,8 @@
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import TaskStatusFilterDropdown from '$lib/components/TaskStatusFilterDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type ContainerWithEffect,
 		isAssignedTo,
 		isContainerWithEffect,
@@ -18,14 +19,14 @@
 		type OrganizationalUnitContainer,
 		type OrganizationContainer,
 		type ProgramContainer,
-		type TaskContainer,
 		type Status as TaskStatus,
-		status
+		status,
+		type TaskContainer
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 
 	interface Props {
-		containers: AnyContainer[];
+		containers: Container<AnyPayload>[];
 	}
 
 	let { containers }: Props = $props();
@@ -120,7 +121,7 @@
 		<h2 class="details-heading">{$_('profile.my_organizations')}</h2>
 		<ul class="carousel">
 			{#each containers
-				.filter((c: AnyContainer) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
+				.filter((c: Container<AnyPayload>) => isOrganizationContainer(c) || isOrganizationalUnitContainer(c))
 				.filter( (c: OrganizationContainer | OrganizationalUnitContainer) => isMemberOf($user, c) ) as organization (organization.guid)}
 				<li>
 					<OrganizationCard container={organization} />

@@ -1,8 +1,7 @@
-import { etag } from '$lib/models';
-import type { AnyContainer } from '$lib/models';
+import { type AnyPayload, type Container, etag } from '$lib/models';
 import { lastDeletedContainers } from '$lib/stores';
 
-export default async function deleteContainer(container: AnyContainer) {
+export default async function deleteContainer(container: Container<AnyPayload>) {
 	const response = await fetch(`/container/${container.guid}`, {
 		method: 'DELETE',
 		credentials: 'include',

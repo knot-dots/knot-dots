@@ -18,7 +18,8 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type CustomCollectionContainer,
 		isOrganizationalUnitContainer,
 		type OrganizationalUnitContainer,
@@ -98,7 +99,7 @@
 	const inViewport = new IsInViewport(() => dialog);
 
 	// Accumulated items across loaded pages
-	let searchItems = $state<AnyContainer[]>([]);
+	let searchItems = $state<Container<AnyPayload>[]>([]);
 	let searchHasMore = $state(false);
 	let searchNextOffset = $state<number | null>(null);
 	let searchLoadingMore = $state(false);
@@ -126,7 +127,7 @@
 	}
 
 	interface SearchPage {
-		containers: AnyContainer[];
+		containers: Container<AnyPayload>[];
 		facets: Map<string, Map<string, number>>;
 		hasMore: boolean;
 		nextOffset: number | null;

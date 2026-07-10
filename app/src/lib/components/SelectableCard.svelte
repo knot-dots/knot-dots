@@ -7,6 +7,8 @@
 	import Progress from '$lib/components/Progress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
+		type AnyPayload,
+		type Container,
 		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
@@ -19,16 +21,16 @@
 		isTaskContainer,
 		predicates
 	} from '$lib/models';
-	import type { AnyContainer, Status } from '$lib/models';
+	import type { Status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		checked?: boolean;
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		inputType?: 'checkbox' | 'radio';
 		onchange: (event: Event & { currentTarget: HTMLInputElement }) => void;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container<AnyPayload>[];
 	}
 
 	let {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { type AnyContainer, anyContainer, type AnyPayload } from '$lib/models';
+import { anyContainer, type AnyPayload, type Container } from '$lib/models';
 import { lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 
 export async function updateManyContainers(data: {
@@ -24,12 +24,18 @@ export async function updateManyContainers(data: {
 	if (data.deleted) {
 		lastDeletedContainers.update(
 			(map) =>
-				new Map([...map, ...updatedContainers.map((c): [string, AnyContainer] => [c.guid, c])])
+				new Map([
+					...map,
+					...updatedContainers.map((c): [string, Container<AnyPayload>] => [c.guid, c])
+				])
 		);
 	} else {
 		lastUpdatedContainers.update(
 			(map) =>
-				new Map([...map, ...updatedContainers.map((c): [string, AnyContainer] => [c.guid, c])])
+				new Map([
+					...map,
+					...updatedContainers.map((c): [string, Container<AnyPayload>] => [c.guid, c])
+				])
 		);
 	}
 

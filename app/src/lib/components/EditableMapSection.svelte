@@ -3,7 +3,8 @@
 	import { createMapWithGeoJsonObject } from '$lib/attachments/map';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type MapContainer,
 		type OrganizationalUnitContainer
 	} from '$lib/models';
@@ -15,7 +16,7 @@
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: OrganizationalUnitContainer;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import transformFileURL from '$lib/transformFileURL';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 
 	interface Props {
 		editable?: boolean;
-		container: AnyContainer & { payload: { cover?: string; coverSource?: string } };
+		container: Container<AnyPayload> & { payload: { cover?: string; coverSource?: string } };
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();

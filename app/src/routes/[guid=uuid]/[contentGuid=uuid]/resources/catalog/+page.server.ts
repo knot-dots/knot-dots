@@ -4,8 +4,9 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 import {
-	type AnyContainer,
+	type AnyPayload,
 	computeFacetCount,
+	type Container,
 	fromCounts,
 	isProgramContainer,
 	resourceCategories,
@@ -25,7 +26,7 @@ export const load = (async ({ depends, locals, parent, params, url }) => {
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 	try {
 		const revisions = await locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid));
-		const container = revisions.at(-1) as AnyContainer;
+		const container = revisions.at(-1) as Container<AnyPayload>;
 
 		if (!defineAbilityFor(locals.user).can('read', container)) {
 			error(404, { message: t('error.not_found') });

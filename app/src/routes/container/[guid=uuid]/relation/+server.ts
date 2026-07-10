@@ -4,7 +4,8 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
-	type AnyContainer,
+	type AnyPayload,
+	type Container,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
 	isProgramContainer,
@@ -237,7 +238,9 @@ export const POST = (async ({ locals, params, request }) => {
 						subjectContainer &&
 						ability.can(
 							'relate',
-							[subjectContainer, objectContainer].find((c) => c.guid == params.guid) as AnyContainer
+							[subjectContainer, objectContainer].find(
+								(c) => c.guid == params.guid
+							) as Container<AnyPayload>
 						)
 					);
 				})

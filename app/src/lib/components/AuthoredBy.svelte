@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { _, date } from 'svelte-i18n';
 	import fetchMembers from '$lib/client/fetchMembers';
-	import { type AnyContainer, displayName, getCreator } from '$lib/models';
+	import { type AnyPayload, type Container, displayName, getCreator } from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
-		revisions: AnyContainer[];
+		container: Container<AnyPayload>;
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container, revisions }: Props = $props();

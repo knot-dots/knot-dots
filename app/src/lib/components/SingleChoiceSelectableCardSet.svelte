@@ -1,6 +1,9 @@
-<script lang="ts" generics="T extends AnyContainer">
+<script lang="ts" module>
+	import type { AnyPayload, Container } from '$lib/models';
+</script>
+
+<script lang="ts" generics="T extends Container<AnyPayload>">
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
-	import { type AnyContainer } from '$lib/models';
 
 	interface Props {
 		onSelect?: (value: T) => void;

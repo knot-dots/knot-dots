@@ -16,8 +16,9 @@
 		isObserverOf,
 		predicates,
 		type User,
-		type AnyContainer,
-		type Predicate
+		type Predicate,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import type { PageData } from './$types';
 	import BadgeDropdown, {
@@ -130,18 +131,18 @@
 		);
 	});
 
-	function roleFor(user: User, container: AnyContainer): Role | undefined {
+	function roleFor(user: User, container: Container<AnyPayload>): Role | undefined {
 		if (isAdminOf(user, container)) return 'administrator';
 		if (isHeadOf(user, container)) return 'head';
 		if (isCollaboratorOf(user, container)) return 'collaborator';
 		if (isObserverOf(user, container) || isMemberOf(user, container)) return 'observer';
 	}
 
-	function roleKey(user: User, container: AnyContainer) {
+	function roleKey(user: User, container: Container<AnyPayload>) {
 		return `${user.guid}:${container.guid}`;
 	}
 
-	function visibleRoleFor(user: User, container: AnyContainer) {
+	function visibleRoleFor(user: User, container: Container<AnyPayload>) {
 		const key = roleKey(user, container);
 		if (roleOverrides.has(key)) return roleOverrides.get(key) ?? undefined;
 		return roleFor(user, container);
@@ -151,7 +152,7 @@
 		return typeof value === 'string' && roles.includes(value as Role);
 	}
 
-	async function saveRole(user: User, container: AnyContainer, role: BadgeDropdownValue) {
+	async function saveRole(user: User, container: Container<AnyPayload>, role: BadgeDropdownValue) {
 		if (role != null && !isRole(role)) return;
 
 		const key = roleKey(user, container);
@@ -257,7 +258,7 @@
 		}
 	}
 
-	function handleInvite(container: AnyContainer) {
+	function handleInvite(container: Container<AnyPayload>) {
 		return async (event: Event) => {
 			event.preventDefault();
 

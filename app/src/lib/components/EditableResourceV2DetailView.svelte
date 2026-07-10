@@ -25,7 +25,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type Container,
 		containerOfType,
 		findAncestors,
@@ -51,7 +51,7 @@
 	interface Props {
 		container: ResourceV2Container;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

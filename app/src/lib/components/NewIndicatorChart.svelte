@@ -5,7 +5,8 @@
 	import {
 		type ActualDataContainer,
 		administrativeTypes,
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type IndicatorTemplateContainer,
 		isActualDataContainer
 	} from '$lib/models';
@@ -14,7 +15,7 @@
 
 	interface Props {
 		container: IndicatorTemplateContainer;
-		relatedContainers?: AnyContainer[];
+		relatedContainers?: Container<AnyPayload>[];
 		comparisonContainers?: ActualDataContainer[];
 	}
 

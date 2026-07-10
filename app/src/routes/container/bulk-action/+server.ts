@@ -2,7 +2,8 @@ import { error, json } from '@sveltejs/kit';
 import { z } from 'zod';
 import defineAbilityFor from '$lib/authorization';
 import {
-	type AnyContainer,
+	type AnyPayload,
+	type Container,
 	isActualDataContainer,
 	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
@@ -67,7 +68,7 @@ export const POST = (async ({ locals, request }) => {
 			}
 		)(txConnection);
 
-		const result = [] as AnyContainer[];
+		const result = [] as Container<AnyPayload>[];
 
 		// In the case of indicators, the intention of the delete action depends
 		// on the context: An indicator is always owned by an organization or
@@ -77,7 +78,7 @@ export const POST = (async ({ locals, request }) => {
 		// workspace, the associated indicator is effectively removed.
 		// Therefore, the indicators belonging to other organizational contexts
 		// need to be excluded from the bulk action targets.
-		const isNotForeignIndicator = (container: AnyContainer) =>
+		const isNotForeignIndicator = (container: Container<AnyPayload>) =>
 			!(isBinaryIndicatorContainer(container) || isIndicatorTemplateContainer(container)) ||
 			(container.organization == parseResult.data.organization &&
 				container.organizational_unit == parseResult.data.organizational_unit);
@@ -114,7 +115,7 @@ export const POST = (async ({ locals, request }) => {
 						user
 					})
 				)(txConnection);
-				result.push(updatedContainer as AnyContainer);
+				result.push(updatedContainer as Container<AnyPayload>);
 			}
 		}
 

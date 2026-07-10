@@ -7,14 +7,14 @@
 	import EditablePlainText from '$lib/components/EditablePlainText.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyContainer, type TeaserContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TeaserContainer } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: TeaserContainer;
 		editable?: boolean;
-		relatedContainers: AnyContainer[];
-		revisions: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

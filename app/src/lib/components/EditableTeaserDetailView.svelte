@@ -10,7 +10,7 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
-	import { type AnyContainer, predicates, type TeaserContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type TeaserContainer } from '$lib/models';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
@@ -18,7 +18,7 @@
 	interface Props {
 		container: TeaserContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

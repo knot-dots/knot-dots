@@ -4,13 +4,13 @@
 	import { _ } from 'svelte-i18n';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
-	import type { AnyContainer } from '$lib/models';
+	import type { AnyPayload, Container } from '$lib/models';
 	import { createFeatureDecisions } from '$lib/features';
 	import { page } from '$app/state';
 
 	type Props = {
 		actions?: Snippet;
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 	};
 
 	let { actions, container }: Props = $props();

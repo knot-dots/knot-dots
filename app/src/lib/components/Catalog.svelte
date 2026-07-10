@@ -1,4 +1,8 @@
-<script lang="ts" generics="T extends AnyContainer">
+<script lang="ts" module>
+	import type { AnyPayload, Container } from '$lib/models';
+</script>
+
+<script lang="ts" generics="T extends Container<AnyPayload>">
 	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -8,7 +12,6 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import {
-		type AnyContainer,
 		containerOfType,
 		isOrganizationalUnitContainer,
 		type NewContainer,

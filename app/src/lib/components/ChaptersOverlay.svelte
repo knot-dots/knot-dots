@@ -7,7 +7,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		computeFacetCount,
 		type Container,
 		isProgramContainer,
@@ -15,7 +15,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		containers: Container[];
 	}
 

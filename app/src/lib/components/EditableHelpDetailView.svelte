@@ -11,13 +11,13 @@
 	import HelpProperties from '$lib/components/HelpProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyContainer, type HelpContainer, predicates } from '$lib/models';
+	import { type AnyPayload, type Container, type HelpContainer, predicates } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: HelpContainer;
 		layout?: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

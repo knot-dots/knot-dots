@@ -17,7 +17,7 @@
 	import TemplateToggle from '$lib/components/TemplateToggle.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
+		type AnyPayload,
 		type Container,
 		type ContainerWithEffect,
 		isMeasureContainer
@@ -28,7 +28,7 @@
 		container: ContainerWithEffect;
 		editable?: boolean;
 		relatedContainers: Container[];
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();

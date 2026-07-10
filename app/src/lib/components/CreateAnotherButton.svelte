@@ -4,7 +4,8 @@
 	import CodeMerge from '~icons/flowbite/code-merge-outline';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		containerOfType,
 		isProgramContainer,
 		isTaskContainer,
@@ -15,8 +16,8 @@
 	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let { container, relatedContainers }: Props = $props();
@@ -59,7 +60,7 @@
 		'createContainerDialog'
 	);
 
-	function createHandler(container: AnyContainer) {
+	function createHandler(container: Container<AnyPayload>) {
 		return (event: Event) => {
 			if (!(event as CustomEvent).detail.selected) {
 				return;
@@ -128,7 +129,7 @@
 		};
 	}
 
-	function mayDeriveFrom(container: AnyContainer) {
+	function mayDeriveFrom(container: Container<AnyPayload>) {
 		return (
 			isProgramContainer(container) ||
 			container.relation

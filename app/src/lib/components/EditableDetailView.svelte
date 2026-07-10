@@ -23,7 +23,6 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import {
-		type AnyContainer,
 		isCategoryContainer,
 		isContainerWithEffect,
 		isEffectContainer,
@@ -45,13 +44,15 @@
 		isTeaserContainer,
 		isTextContainer,
 		isResourceDataContainer,
-		isBinaryIndicatorContainer
+		isBinaryIndicatorContainer,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
+		container: Container<AnyPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions?: AnyContainer[];
+		revisions?: Container<AnyPayload>[];
 	}
 
 	let { container: originalContainer, layout, revisions = [] }: Props = $props();

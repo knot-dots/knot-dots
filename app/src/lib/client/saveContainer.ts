@@ -1,11 +1,17 @@
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
-import { etag, modifiedContainer, type NewContainer, newContainer } from '$lib/models';
-import type { AnyContainer } from '$lib/models';
+import {
+	type AnyPayload,
+	type Container,
+	etag,
+	modifiedContainer,
+	type NewContainer,
+	newContainer
+} from '$lib/models';
 import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
 
 export default async function saveContainer(
-	container: AnyContainer | NewContainer,
+	container: Container<AnyPayload> | NewContainer,
 	optimisticUpdate: boolean = true
 ) {
 	let url = '/container';

@@ -20,7 +20,8 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type IndicatorTemplateContainer,
 		isActualDataContainer,
 		isContainerWithEffect,
@@ -36,7 +37,7 @@
 	interface Props {
 		container: IndicatorTemplateContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

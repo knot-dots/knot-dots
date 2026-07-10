@@ -21,7 +21,8 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isIndicatorTemplateContainer,
@@ -36,7 +37,7 @@
 	interface Props {
 		container: ObjectiveContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

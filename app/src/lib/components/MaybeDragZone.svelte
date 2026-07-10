@@ -9,13 +9,13 @@
 	} from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
 	import Card from '$lib/components/Card.svelte';
-	import { type AnyContainer, overlayKey } from '$lib/models';
+	import { type AnyPayload, type Container, overlayKey } from '$lib/models';
 	import { ability, dragged, overlay } from '$lib/stores';
 
 	interface Props {
-		containers: AnyContainer[];
+		containers: Container<AnyPayload>[];
 		footer?: Snippet;
-		itemSnippet?: Snippet<[AnyContainer]>;
+		itemSnippet?: Snippet<[Container<AnyPayload>]>;
 	}
 
 	let { containers, footer, itemSnippet }: Props = $props();
@@ -25,7 +25,7 @@
 	let shouldIgnoreDndEvents = false;
 
 	function handleDndConsider(
-		event: CustomEvent<DndEvent<{ guid: string; container: AnyContainer }>>
+		event: CustomEvent<DndEvent<{ guid: string; container: Container<AnyPayload> }>>
 	) {
 		const { trigger, id } = event.detail.info;
 		if (trigger === TRIGGERS.DRAG_STARTED) {
@@ -47,7 +47,7 @@
 	}
 
 	function handleDndFinalize(
-		event: CustomEvent<DndEvent<{ guid: string; container: AnyContainer }>>
+		event: CustomEvent<DndEvent<{ guid: string; container: Container<AnyPayload> }>>
 	) {
 		if (!shouldIgnoreDndEvents) {
 			items = event.detail.items;

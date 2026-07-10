@@ -6,19 +6,19 @@
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableRow from '$lib/components/EditableRow.svelte';
-	import type { ActualDataContainer, AnyContainer } from '$lib/models';
+	import type { ActualDataContainer, AnyPayload, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		columns: Array<{ heading: string; key: string }>;
 		footer?: Snippet;
-		rows: AnyContainer[];
+		rows: Container<AnyPayload>[];
 		actualDataContainers?: ActualDataContainer[];
 	}
 
 	let { columns, footer, rows: originalRows, actualDataContainers = [] }: Props = $props();
 
-	function ensureAllCategoriesArePresent(container: AnyContainer): AnyContainer {
+	function ensureAllCategoriesArePresent(container: Container<AnyPayload>): Container<AnyPayload> {
 		if ('category' in container.payload) {
 			const initialCategory = Object.fromEntries(
 				filterCategoryContext(page.data.categoryContext, [container.payload.type]).keys.map(

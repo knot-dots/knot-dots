@@ -5,7 +5,8 @@
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		isGoalCollectionContainer,
 		isGoalContainer,
 		isObjectiveCollectionContainer,
@@ -14,9 +15,9 @@
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
-		container: AnyContainer;
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<AnyPayload>;
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

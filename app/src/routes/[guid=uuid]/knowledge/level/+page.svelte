@@ -9,10 +9,11 @@
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
-		type AnyContainer,
 		titleForProgramCollection,
 		findAncestors,
-		predicates
+		predicates,
+		type Container,
+		type AnyPayload
 	} from '$lib/models';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -28,7 +29,7 @@
 		)
 	);
 	let knowledgeByLevel = $derived.by(() => {
-		let knowledgeByLevel = new Map<number, AnyContainer[]>();
+		let knowledgeByLevel = new Map<number, Container<AnyPayload>[]>();
 
 		for (const container of containers) {
 			const ancestors = findAncestors(container, containers, [predicates.enum['is-part-of']]);
@@ -36,7 +37,7 @@
 
 			if (knowledgeByLevel.has(level)) {
 				knowledgeByLevel.set(level, [
-					...(knowledgeByLevel.get(level) as AnyContainer[]),
+					...(knowledgeByLevel.get(level) as Container<AnyPayload>[]),
 					container
 				]);
 			} else {

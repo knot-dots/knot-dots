@@ -4,7 +4,8 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		type ContainerWithProgress,
 		type ProgressContainer
 	} from '$lib/models';
@@ -15,7 +16,7 @@
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: ContainerWithProgress;
-		relatedContainers: AnyContainer[];
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {

@@ -2,11 +2,18 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import fetchMembers from '$lib/client/fetchMembers';
-	import { type AnyContainer, displayName, getManagedBy, isAdminOf, isHeadOf } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		displayName,
+		getManagedBy,
+		isAdminOf,
+		isHeadOf
+	} from '$lib/models';
 
 	interface Props {
-		container: AnyContainer;
-		relatedContainers: AnyContainer[];
+		container: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let { container, relatedContainers }: Props = $props();

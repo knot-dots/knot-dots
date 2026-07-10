@@ -14,8 +14,9 @@
 	import Header from '$lib/components/Header.svelte';
 	import {
 		type ActualDataContainer,
-		type AnyContainer,
+		type AnyPayload,
 		type BinaryIndicatorContainer,
+		type Container,
 		containerOfType,
 		isActualDataContainer,
 		type NewContainer,
@@ -30,7 +31,7 @@
 	interface Props {
 		container: BinaryIndicatorContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

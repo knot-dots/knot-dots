@@ -9,7 +9,8 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		isGoalContainer,
 		isMeasureContainer,
 		isProgramContainer,
@@ -27,14 +28,14 @@
 
 	let { data }: PageProps = $props();
 
-	const board = createColumnBoardPagination<AnyContainer, AllLevelColumnId>({
+	const board = createColumnBoardPagination<Container<AnyPayload>, AllLevelColumnId>({
 		columnForItem,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<AnyContainer>({
+			const result = await fetchContainerPage<Container<AnyPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -71,7 +72,7 @@
 		visibleColumnIds.filter((columnId) => columnId.startsWith('implementation-')).length
 	);
 
-	function columnForItem(container: AnyContainer): AllLevelColumnId {
+	function columnForItem(container: Container<AnyPayload>): AllLevelColumnId {
 		if (isProgramContainer(container) || isReportContainer(container)) {
 			return 'programs';
 		}
@@ -102,7 +103,7 @@
 			: `#create=measure&hierarchyLevel=${hierarchyLevel}`;
 	}
 
-	function title(columnId: AllLevelColumnId, containers: AnyContainer[]) {
+	function title(columnId: AllLevelColumnId, containers: Container<AnyPayload>[]) {
 		if (columnId === 'programs') {
 			return titleForProgramCollection(containers.filter(isProgramContainer));
 		}

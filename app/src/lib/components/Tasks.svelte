@@ -6,7 +6,6 @@
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
-		type AnyContainer,
 		type Container,
 		type GoalContainer,
 		isMeasureContainer,
@@ -15,12 +14,13 @@
 		payloadTypes,
 		predicates,
 		type TaskContainer,
-		status
+		status,
+		type AnyPayload
 	} from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
 	interface Props {
-		container?: AnyContainer;
+		container?: Container<AnyPayload>;
 		containers: TaskContainer[];
 		relatedContainers?: GoalContainer[];
 	}

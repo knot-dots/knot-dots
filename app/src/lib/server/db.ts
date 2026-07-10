@@ -9,8 +9,8 @@ import {
 } from 'slonik';
 import { z } from 'zod';
 import {
-	type AnyContainer,
 	anyContainer,
+	type AnyPayload,
 	type BinaryIndicatorContainer,
 	type Container,
 	container,
@@ -139,7 +139,7 @@ const typeAliases = {
 export const sql = createSqlTag({ typeAliases });
 
 export function createContainer(container: NewContainer) {
-	return (connection: DatabaseConnection): Promise<AnyContainer> => {
+	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		return connection.transaction(async (txConnection) => {
 			let organizationGuid;
 
@@ -290,7 +290,7 @@ export function updateContainer(container: ModifiedContainer) {
 	};
 }
 
-export function deleteContainer(container: AnyContainer) {
+export function deleteContainer(container: Container<AnyPayload>) {
 	return (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			if (container.payload.type === payloadTypes.enum.organization) {
@@ -345,7 +345,7 @@ export function deleteContainer(container: AnyContainer) {
 	};
 }
 
-export function deleteContainerRecursively(container: AnyContainer) {
+export function deleteContainerRecursively(container: Container<AnyPayload>) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const parts = await getAllRelatedContainers(
@@ -422,7 +422,7 @@ export function deleteOrganizationalUnitContainer(container: OrganizationalUnitC
 }
 
 export function getContainerByGuid(guid: string) {
-	return async (connection: DatabaseConnection): Promise<AnyContainer> => {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		const containerResult = await connection.one(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
@@ -452,7 +452,7 @@ export function getContainerByGuid(guid: string) {
 }
 
 export function getAllContainerRevisionsByGuid(guid: string) {
-	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		const containerResult = await connection.many(sql.typeAlias('anyContainer')`
 			SELECT *
 			FROM container
@@ -688,7 +688,7 @@ function prepareOrderByExpression(sort: string) {
 	return order_by;
 }
 
-export async function withUserAndRelation<T extends AnyContainer>(
+export async function withUserAndRelation<T extends Container<AnyPayload>>(
 	connection: DatabaseConnection,
 	containerResult: Readonly<Array<Omit<T, 'user' | 'relation'>>>
 ) {
@@ -768,7 +768,7 @@ export function getManyContainers(
 	sort: string,
 	options?: ContainerQueryOptions
 ) {
-	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		return (await connection.any(sql.type(anyContainer)`
 			WITH container_result AS (
 				SELECT c.*
@@ -796,7 +796,7 @@ export function getManyContainers(
 			ORDER BY ${prepareOrderByExpression(sort)}
 			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
 			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``}
-		`)) as AnyContainer[];
+		`)) as Container<AnyPayload>[];
 	};
 }
 
@@ -1500,7 +1500,7 @@ export function getAllContainersRelatedToMeasure(
 }
 
 export function getAllContainersRelatedToUser(guid: string) {
-	return async (connection: DatabaseConnection): Promise<AnyContainer[]> => {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT c.* FROM container c
 			JOIN container m ON c.managed_by = m.guid
@@ -1710,7 +1710,7 @@ export function getAllMembershipRelationsOfUser(guid: string) {
 	};
 }
 
-export function bulkUpdateOrganization(container: AnyContainer, organization: string) {
+export function bulkUpdateOrganization(container: Container<AnyPayload>, organization: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const predicate = [
@@ -1744,7 +1744,7 @@ export function bulkUpdateOrganization(container: AnyContainer, organization: st
 }
 
 export function bulkUpdateOrganizationalUnit(
-	container: AnyContainer,
+	container: Container<AnyPayload>,
 	organizationalUnit: string | null
 ) {
 	return async (connection: DatabaseConnection) => {
@@ -1779,7 +1779,7 @@ export function bulkUpdateOrganizationalUnit(
 	};
 }
 
-export function bulkUpdateManagedBy(container: AnyContainer, managedBy: string) {
+export function bulkUpdateManagedBy(container: Container<AnyPayload>, managedBy: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
 			const containerResult =

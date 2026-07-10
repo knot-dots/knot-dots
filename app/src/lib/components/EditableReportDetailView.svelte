@@ -13,13 +13,13 @@
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyContainer, predicates, type ReportContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type ReportContainer } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: ReportContainer;
 		layout: Snippet<[Snippet, Snippet]>;
-		revisions: AnyContainer[];
+		revisions: Container<AnyPayload>[];
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();

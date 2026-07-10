@@ -27,7 +27,8 @@
 	import {
 		type ActualDataContainer,
 		actualDataContainer,
-		type AnyContainer,
+		type AnyPayload,
+		type Container,
 		createCopyOf,
 		type CustomCollectionContainer,
 		isActualDataContainer,
@@ -49,8 +50,8 @@
 		container: CustomCollectionContainer;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: AnyContainer;
-		relatedContainers: AnyContainer[];
+		parentContainer: Container<AnyPayload>;
+		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
@@ -108,7 +109,7 @@
 	});
 
 	// Accumulated items across all loaded pages
-	let savedItems = $state<AnyContainer[]>([]);
+	let savedItems = $state<Container<AnyPayload>[]>([]);
 	let savedTotal = $state<number | null>(null);
 	let savedHasMore = $state(false);
 	let savedNextOffset = $state<number | null>(null);
@@ -234,7 +235,7 @@
 			// Preserve the manually-defined order
 			return container.payload.item
 				.map((guid) => savedItems.find((item) => item.guid === guid))
-				.filter((item): item is AnyContainer => item !== undefined);
+				.filter((item): item is Container<AnyPayload> => item !== undefined);
 		}
 		return savedItems;
 	});
