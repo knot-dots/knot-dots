@@ -6,24 +6,24 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
+		type AnyPayload,
+		type Container,
 		containerOfType,
-		isResourceDataContainer,
 		isPartOf,
+		isResourceDataContainer,
+		isResourceV2Container,
 		type NewContainer,
-		type ResourceDataCollectionContainer,
 		payloadTypes,
 		predicates,
-		isResourceV2Container,
-		type ResourceV2Container,
-		type Container,
-		type AnyPayload
+		type ResourceDataCollectionPayload,
+		type ResourceV2Container
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
 	import fetchContainers from '$lib/client/fetchContainers';
 
 	interface Props {
-		container: ResourceDataCollectionContainer;
+		container: Container<ResourceDataCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;

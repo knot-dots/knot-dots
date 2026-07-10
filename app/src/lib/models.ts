@@ -1994,11 +1994,9 @@ export function isResourceDataTotalBudgetForecastContainer(
 	);
 }
 
-export type ResourceDataCollectionContainer = Container<ResourceDataCollectionPayload>;
-
 export function isResourceDataCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataCollectionContainer {
+): container is Container<ResourceDataCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.resource_data_collection;
 }
 
