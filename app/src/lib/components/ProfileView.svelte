@@ -18,7 +18,7 @@
 		type MeasurePayload,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
-		type ProgramContainer,
+		type ProgramPayload,
 		type SimpleMeasurePayload,
 		type Status as TaskStatus,
 		status,
@@ -136,7 +136,7 @@
 		<ul class="carousel">
 			{#each containers
 				.filter(isProgramContainer)
-				.filter((c: ProgramContainer) => isMemberOf($user, c)) as program (program.guid)}
+				.filter((c: Container<ProgramPayload>) => isMemberOf($user, c)) as program (program.guid)}
 				<li>
 					<Card container={program} />
 				</li>

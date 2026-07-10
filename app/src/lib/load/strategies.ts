@@ -1,6 +1,6 @@
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import { type ProgramContainer, payloadTypes, predicates } from '$lib/models';
+import { type Container, payloadTypes, predicates, type ProgramPayload } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import { strategyProgramTypes } from '$lib/workspaces';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/strategies/$types';
@@ -27,7 +27,7 @@ export const loadPage = (limit: number) =>
 		}
 
 		const [data, { categoryContext, currentOrganization }] = await Promise.all([
-			fetchContainerPage<ProgramContainer>({
+			fetchContainerPage<Container<ProgramPayload>>({
 				contextGuid: params.guid,
 				fetch,
 				limit,

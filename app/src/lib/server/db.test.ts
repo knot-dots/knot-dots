@@ -3,6 +3,7 @@ import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
+	type Container,
 	type MeasurePayload,
 	modifiedContainer,
 	type NewContainer,
@@ -11,7 +12,7 @@ import {
 	type PayloadType,
 	payloadTypes,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	type Relation
 } from '$lib/models';
 import {
@@ -52,7 +53,7 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as ProgramPayload,
 			[]
 		)
 	)(connection);
@@ -85,7 +86,7 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as ProgramPayload,
 			[]
 		)
 	)(connection);
@@ -134,7 +135,7 @@ test('relations are added or removed when updating a container', async ({
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as ProgramPayload,
 			[]
 		)
 	)(connection);
@@ -204,7 +205,7 @@ test('adding more relations does not interfere with existing relations', async (
 			{
 				title: 'Lorem ipsum',
 				type: payloadTypes.enum.program
-			} as NewContainer & ProgramContainer['payload'],
+			} as NewContainer & Container<ProgramPayload>['payload'],
 			[]
 		)
 	)(connection);

@@ -17,7 +17,7 @@ import {
 	payloadTypes,
 	type Predicate,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	type ReportPayload,
 	type ResourceDataPayload,
 	resourceDataTypes,
@@ -58,7 +58,7 @@ type MyWorkerFixtures = {
 	testOrganization: Container<OrganizationPayload>;
 	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
-	testProgram: ProgramContainer;
+	testProgram: Container<ProgramPayload>;
 	testGoal: Container<GoalPayload>;
 	testSubordinateGoal: Container<GoalPayload>;
 	testObjective: Container<ObjectivePayload>;
@@ -404,7 +404,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as ProgramContainer;
+			) as Container<ProgramPayload>;
 			const testProgram = await createContainer(adminContext, {
 				...newProgram,
 				payload: {

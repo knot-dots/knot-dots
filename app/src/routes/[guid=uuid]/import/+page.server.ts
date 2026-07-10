@@ -9,6 +9,7 @@ import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	anyInitialPayload,
+	type Container,
 	containerOfType,
 	createNewContainerSchema,
 	editorialState,
@@ -17,7 +18,7 @@ import {
 	type NewContainer,
 	payloadTypes,
 	predicates,
-	type ProgramContainer
+	type ProgramPayload
 } from '$lib/models';
 import { reverseTranslationMap } from '$lib/server/csv';
 import {
@@ -92,7 +93,7 @@ export const actions = {
 		);
 		const programs = (await locals.pool.connect(
 			getManyContainers([currentOrganizationGuid], { type: [payloadTypes.enum.program] }, '')
-		)) as ProgramContainer[];
+		)) as Container<ProgramPayload>[];
 
 		const data = await request.formData();
 		const csv = data.get('csv');

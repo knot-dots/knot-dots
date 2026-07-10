@@ -1,10 +1,10 @@
 import { loadColumnBoardPage } from '$lib/load/columnBoard';
-import { type Level, levels, payloadTypes, type ProgramContainer } from '$lib/models';
+import { type Container, type Level, levels, payloadTypes, type ProgramPayload } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import { createProgramLevelQuery, DEFAULT_RELATION_TYPES } from './query';
 import type { PageServerLoad } from './$types';
 
-export const load = loadColumnBoardPage<ProgramContainer, Level>({
+export const load = loadColumnBoardPage<Container<ProgramPayload>, Level>({
 	createQuery: createProgramLevelQuery,
 	defaultRelationTypes: DEFAULT_RELATION_TYPES,
 	facetKeys: ['programType'],

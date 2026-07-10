@@ -8,7 +8,7 @@ import {
 	type MeasurePayload,
 	payloadTypes,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	sortIndicatorsByRelevanceForGoalOrMeasure,
 	units
 } from '$lib/models';
@@ -74,7 +74,7 @@ const program = testContainer.parse({
 		title: 'Sustainability Strategy',
 		type: payloadTypes.enum.program
 	}
-}) as ProgramContainer;
+}) as Container<ProgramPayload>;
 
 const measure = testContainer.parse({
 	guid: '306617a4-32fe-4fb7-9fef-089518a585fa',

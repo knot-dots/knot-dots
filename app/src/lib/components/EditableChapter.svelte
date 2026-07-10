@@ -11,10 +11,10 @@
 	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
-		isContainerWithBody,
-		isContainerWithDescription,
 		type Container,
 		containerOfType,
+		isContainerWithBody,
+		isContainerWithDescription,
 		isGoalCollectionContainer,
 		isObjectiveCollectionContainer,
 		isResourceCollectionContainer,
@@ -25,7 +25,7 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type ProgramContainer
+		type ProgramPayload
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { ability, newContainer } from '$lib/stores';
@@ -33,7 +33,7 @@
 	interface Props {
 		container: Container;
 		editable?: boolean;
-		isPartOf: ProgramContainer;
+		isPartOf: Container<ProgramPayload>;
 		relatedContainers: Container[];
 	}
 

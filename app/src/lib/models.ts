@@ -2018,11 +2018,9 @@ export function isSummaryContainer(
 	return container.payload.type === payloadTypes.enum.summary;
 }
 
-export type ProgramContainer = Container<ProgramPayload>;
-
 export function isProgramContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ProgramContainer {
+): container is Container<ProgramPayload> {
 	return container.payload.type === payloadTypes.enum.program;
 }
 
@@ -2903,7 +2901,7 @@ export function containersByHierarchyLevel<T extends Container>(containers: T[])
 	return containersByHierarchyLevel;
 }
 
-export function titleForProgramCollection(containers: ProgramContainer[]) {
+export function titleForProgramCollection(containers: Container<ProgramPayload>[]) {
 	const programTypes = new Set(containers.map(({ payload }) => payload.programType));
 
 	if (programTypes.size == 1) {

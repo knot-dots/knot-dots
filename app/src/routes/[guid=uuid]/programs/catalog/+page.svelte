@@ -7,7 +7,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
-	import { type ProgramContainer, payloadTypes } from '$lib/models';
+	import { type Container, payloadTypes, type ProgramPayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -18,9 +18,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<ProgramContainer>({
+	const list = createPaginatedList<Container<ProgramPayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<ProgramContainer>({
+			const result = await fetchContainerPage<Container<ProgramPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
@@ -39,7 +39,7 @@
 		},
 		getKey: ({ guid }) => guid,
 		initialHasMore: () => data.page.hasMore,
-		initialItems: () => data.containers as ProgramContainer[],
+		initialItems: () => data.containers as Container<ProgramPayload>[],
 		pageSize: DEFAULT_PAGE_SIZE,
 		resetKey: () => resetKey
 	});

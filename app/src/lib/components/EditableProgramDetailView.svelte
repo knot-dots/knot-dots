@@ -32,7 +32,7 @@
 		type PayloadType,
 		payloadTypes,
 		predicates,
-		type ProgramContainer,
+		type ProgramPayload,
 		programTypes,
 		status
 	} from '$lib/models';
@@ -42,7 +42,7 @@
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
-		container: ProgramContainer;
+		container: Container<ProgramPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

@@ -11,7 +11,7 @@
 		overlayURL,
 		payloadTypes,
 		predicates,
-		type ProgramContainer
+		type ProgramPayload
 	} from '$lib/models';
 
 	interface Props {
@@ -33,7 +33,7 @@
 				payloadType: [payloadTypes.enum.program]
 			},
 			'alpha'
-		) as Promise<ProgramContainer[]>
+		) as Promise<Container<ProgramPayload>[]>
 	);
 
 	let isPartOfProgramObject = $derived(

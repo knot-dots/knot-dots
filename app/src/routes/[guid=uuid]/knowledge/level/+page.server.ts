@@ -6,7 +6,7 @@ import {
 	fromCounts,
 	payloadTypes,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	programTypes
 } from '$lib/models';
 import { getAllRelatedContainers, getAllRelatedContainersByProgramType } from '$lib/server/db';
@@ -75,7 +75,7 @@ export const load = (async ({ locals, url, parent }) => {
 		url.searchParams.get('sort') ?? '',
 		{ includeFacets: false }
 	);
-	const programs = esPrograms.containers as ProgramContainer[];
+	const programs = esPrograms.containers as Container<ProgramPayload>[];
 
 	const filtered = filterVisible(containers, locals.user);
 	const filteredPrograms = filterVisible(programs.filter(isRelatedToSome(containers)), locals.user);

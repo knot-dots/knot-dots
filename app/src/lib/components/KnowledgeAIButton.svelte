@@ -6,13 +6,18 @@
 	import Rotate from '~icons/flowbite/rotate-solid';
 	import { page } from '$app/state';
 	import { getToastContext } from '$lib/contexts/toast';
-	import { paramsFromFragment, payloadTypes, type ProgramContainer } from '$lib/models';
+	import {
+		type Container,
+		paramsFromFragment,
+		payloadTypes,
+		type ProgramPayload
+	} from '$lib/models';
 	import { fetchContainersRelatedToProgram } from '$lib/remote/data.remote';
 	import { ability, applicationState } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
-		container: ProgramContainer;
+		container: Container<ProgramPayload>;
 	}
 
 	let { container }: Props = $props();
@@ -28,7 +33,7 @@
 
 	let toast = getToastContext();
 
-	async function extractKnowledgeObjects(container: ProgramContainer) {
+	async function extractKnowledgeObjects(container: Container<ProgramPayload>) {
 		isThinking = true;
 
 		toast({
@@ -71,7 +76,7 @@
 		class="button-ai"
 		class:is-active={isThinking}
 		type="button"
-		onclick={() => extractKnowledgeObjects(container as ProgramContainer)}
+		onclick={() => extractKnowledgeObjects(container as Container<ProgramPayload>)}
 	>
 		<AskAI />
 		{$_('knowledge_ai.label')}

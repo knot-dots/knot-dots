@@ -25,7 +25,7 @@ import {
 	type PartialRelation,
 	payloadTypes,
 	predicates,
-	type ProgramContainer,
+	type ProgramPayload,
 	programTypes,
 	type Relation,
 	type ReportPayload,
@@ -330,7 +330,7 @@ async function copyMeasure(
 }
 
 async function copyProgram(
-	createdProgram: ProgramContainer,
+	createdProgram: Container<ProgramPayload>,
 	isCopyOfRelation: PartialRelation,
 	user: User,
 	txConnection: DatabaseTransactionConnection

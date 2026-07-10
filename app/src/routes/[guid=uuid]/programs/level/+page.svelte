@@ -11,7 +11,7 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { type Level, type ProgramContainer, predicates } from '$lib/models';
+	import { type Container, type Level, predicates, type ProgramPayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { createProgramLevelQuery } from './query';
@@ -28,14 +28,14 @@
 		]
 	});
 
-	const board = createColumnBoardPagination<ProgramContainer, Level>({
+	const board = createColumnBoardPagination<Container<ProgramPayload>, Level>({
 		columnForItem: ({ payload }) => payload.level,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainer,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
-			const result = await fetchContainerPage<ProgramContainer>({
+			const result = await fetchContainerPage<Container<ProgramPayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,
