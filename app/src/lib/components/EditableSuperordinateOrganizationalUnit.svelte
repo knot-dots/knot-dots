@@ -4,7 +4,8 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
-		type EmptyOrganizationalUnitContainer,
+		type InitialOrganizationalUnitPayload,
+		type NewContainer,
 		type OrganizationalUnitContainer,
 		overlayKey,
 		overlayURL,

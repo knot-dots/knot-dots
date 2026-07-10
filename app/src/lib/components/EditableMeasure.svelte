@@ -4,9 +4,10 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import EditableSingleChoice from '$lib/components/EditableSingleChoice.svelte';
 	import {
+		type AnyInitialPayload,
 		type Container,
 		type ContainerWithEffect,
-		type EmptyContainer,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
@@ -14,7 +15,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer<AnyInitialPayload>;
 		editable?: boolean;
 	}
 

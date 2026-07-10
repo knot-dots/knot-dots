@@ -1741,7 +1741,7 @@ export type AnyContainer = Container<AnyPayload>;
 export type ContainerWithObjective = Container<GoalPayload>;
 
 export function isContainerWithObjective(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ContainerWithObjective {
 	return isGoalContainer(container);
 }
@@ -1749,7 +1749,7 @@ export function isContainerWithObjective(
 export type ContainerWithEffect = Container<MeasurePayload | SimpleMeasurePayload>;
 
 export function isContainerWithEffect(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ContainerWithEffect {
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
@@ -1759,7 +1759,7 @@ export const actualDataContainer = createContainerSchema(actualDataPayload);
 export type ActualDataContainer = Container<ActualDataPayload>;
 
 export function isActualDataContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ActualDataContainer {
 	return container.payload.type === payloadTypes.enum.actual_data;
 }
@@ -1767,7 +1767,7 @@ export function isActualDataContainer(
 export type AdministrativeAreaBasicDataContainer = Container<AdministrativeAreaBasicDataPayload>;
 
 export function isAdministrativeAreaBasicDataContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is AdministrativeAreaBasicDataContainer {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
@@ -1777,7 +1777,7 @@ export const binaryIndicatorContainer = createContainerSchema(binaryIndicatorPay
 export type BinaryIndicatorContainer = Container<BinaryIndicatorPayload>;
 
 export function isBinaryIndicatorContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is BinaryIndicatorContainer {
 	return container.payload.type === payloadTypes.enum.binary_indicator;
 }
@@ -1785,7 +1785,7 @@ export function isBinaryIndicatorContainer(
 export type ChapterContainer = Container<ChapterPayload>;
 
 export function isChapterContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ChapterContainer {
 	return container.payload.type === payloadTypes.enum.chapter;
 }
@@ -1795,7 +1795,7 @@ export const categoryContainer = createContainerSchema(categoryPayload);
 export type CategoryContainer = Container<CategoryPayload>;
 
 export function isCategoryContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is CategoryContainer {
 	return container.payload.type === payloadTypes.enum.category;
 }
@@ -1803,7 +1803,7 @@ export function isCategoryContainer(
 export type CustomCollectionContainer = Container<CustomCollectionPayload>;
 
 export function isCustomCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is CustomCollectionContainer {
 	return container.payload.type === payloadTypes.enum.custom_collection;
 }
@@ -1811,7 +1811,7 @@ export function isCustomCollectionContainer(
 export type DemographicDataContainer = Container<DemographicDataPayload>;
 
 export function isDemographicDataContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is DemographicDataContainer {
 	return container.payload.type === payloadTypes.enum.demographic_data;
 }
@@ -1819,7 +1819,7 @@ export function isDemographicDataContainer(
 export type EffectContainer = Container<EffectPayload>;
 
 export function isEffectContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is EffectContainer {
 	return container.payload.type === payloadTypes.enum.effect;
 }
@@ -1827,7 +1827,7 @@ export function isEffectContainer(
 export type EffectCollectionContainer = Container<EffectCollectionPayload>;
 
 export function isEffectCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is EffectCollectionContainer {
 	return container.payload.type === payloadTypes.enum.effect_collection;
 }
@@ -1835,7 +1835,7 @@ export function isEffectCollectionContainer(
 export type FileCollectionContainer = Container<FileCollectionPayload>;
 
 export function isFileCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is FileCollectionContainer {
 	return container.payload.type === payloadTypes.enum.file_collection;
 }
@@ -1843,7 +1843,7 @@ export function isFileCollectionContainer(
 export type GoalContainer = Container<GoalPayload>;
 
 export function isGoalContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is GoalContainer {
 	return container.payload.type === payloadTypes.enum.goal;
 }
@@ -1851,7 +1851,7 @@ export function isGoalContainer(
 export type GoalCollectionContainer = Container<GoalCollectionPayload>;
 
 export function isGoalCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is GoalCollectionContainer {
 	return container.payload.type === payloadTypes.enum.goal_collection;
 }
@@ -1861,7 +1861,7 @@ export const helpContainer = createContainerSchema(helpPayload);
 export type HelpContainer = Container<HelpPayload>;
 
 export function isHelpContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is HelpContainer {
 	return container.payload.type === payloadTypes.enum.help;
 }
@@ -1869,7 +1869,7 @@ export function isHelpContainer(
 export type IndicatorCollectionContainer = Container<IndicatorCollectionPayload>;
 
 export function isIndicatorCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is IndicatorCollectionContainer {
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
@@ -1879,7 +1879,7 @@ export const indicatorTemplateContainer = createContainerSchema(indicatorTemplat
 export type IndicatorTemplateContainer = Container<IndicatorTemplatePayload>;
 
 export function isIndicatorTemplateContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is IndicatorTemplateContainer {
 	return container.payload.type === payloadTypes.enum.indicator_template;
 }
@@ -1889,7 +1889,7 @@ export const knowledgeContainer = createContainerSchema(knowledgePayload);
 export type KnowledgeContainer = Container<KnowledgePayload>;
 
 export function isKnowledgeContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is KnowledgeContainer {
 	return container.payload.type === payloadTypes.enum.knowledge;
 }
@@ -1897,7 +1897,7 @@ export function isKnowledgeContainer(
 export type MapContainer = Container<MapPayload>;
 
 export function isMapContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is MapContainer {
 	return container.payload.type === payloadTypes.enum.map;
 }
@@ -1905,7 +1905,7 @@ export function isMapContainer(
 export type MeasureContainer = Container<MeasurePayload>;
 
 export function isMeasureContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is MeasureContainer {
 	return container.payload.type === payloadTypes.enum.measure;
 }
@@ -1913,7 +1913,7 @@ export function isMeasureContainer(
 export type MeasureCollectionContainer = Container<MeasureCollectionPayload>;
 
 export function isMeasureCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is MeasureCollectionContainer {
 	return container.payload.type === payloadTypes.enum.measure_collection;
 }
@@ -1921,7 +1921,7 @@ export function isMeasureCollectionContainer(
 export type ObjectiveContainer = Container<ObjectivePayload>;
 
 export function isObjectiveContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ObjectiveContainer {
 	return container.payload.type === payloadTypes.enum.objective;
 }
@@ -1929,7 +1929,7 @@ export function isObjectiveContainer(
 export type ObjectiveCollectionContainer = Container<ObjectiveCollectionPayload>;
 
 export function isObjectiveCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ObjectiveCollectionContainer {
 	return container.payload.type === payloadTypes.enum.objective_collection;
 }
@@ -1939,7 +1939,7 @@ export const organizationContainer = createContainerSchema(organizationPayload);
 export type OrganizationContainer = Container<OrganizationPayload>;
 
 export function isOrganizationContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is OrganizationContainer {
 	return container.payload.type === payloadTypes.enum.organization;
 }
@@ -1949,7 +1949,7 @@ export const organizationalUnitContainer = createContainerSchema(organizationalU
 export type OrganizationalUnitContainer = Container<OrganizationalUnitPayload>;
 
 export function isOrganizationalUnitContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is OrganizationalUnitContainer {
 	return container.payload.type === payloadTypes.enum.organizational_unit;
 }
@@ -1957,7 +1957,7 @@ export function isOrganizationalUnitContainer(
 export type PageContainer = Container<PagePayload>;
 
 export function isPageContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is PageContainer {
 	return container.payload.type === payloadTypes.enum.page;
 }
@@ -1965,7 +1965,7 @@ export function isPageContainer(
 export type ProgressContainer = Container<ProgressPayload>;
 
 export function isProgressContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ProgressContainer {
 	return container.payload.type === payloadTypes.enum.progress;
 }
@@ -1973,7 +1973,7 @@ export function isProgressContainer(
 export type ReportContainer = Container<ReportPayload>;
 
 export function isReportContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ReportContainer {
 	return container.payload.type === payloadTypes.enum.report;
 }
@@ -1983,7 +1983,7 @@ export const ruleContainer = createContainerSchema(rulePayload);
 export type RuleContainer = Container<RulePayload>;
 
 export function isRuleContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is RuleContainer {
 	return container.payload.type === payloadTypes.enum.rule;
 }
@@ -1991,7 +1991,7 @@ export function isRuleContainer(
 export type ResourceContainer = Container<ResourcePayload>;
 
 export function isResourceContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceContainer {
 	return container.payload.type === payloadTypes.enum.resource;
 }
@@ -1999,7 +1999,7 @@ export function isResourceContainer(
 export type ResourceCollectionContainer = Container<ResourceCollectionPayload>;
 
 export function isResourceCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceCollectionContainer {
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
@@ -2007,13 +2007,13 @@ export function isResourceCollectionContainer(
 export type ResourceDataContainer = Container<ResourceDataPayload>;
 
 export function isResourceDataContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return container.payload.type === payloadTypes.enum.resource_data;
 }
 
 export function isResourceDataActualResourceAllocationContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2023,7 +2023,7 @@ export function isResourceDataActualResourceAllocationContainer(
 }
 
 export function isResourceDataPlannedResourceAllocationContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2033,7 +2033,7 @@ export function isResourceDataPlannedResourceAllocationContainer(
 }
 
 export function isResourceDataBudgetContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2042,7 +2042,7 @@ export function isResourceDataBudgetContainer(
 }
 
 export function isResourceDataTotalBudgetContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2051,7 +2051,7 @@ export function isResourceDataTotalBudgetContainer(
 }
 
 export function isResourceDataTotalBudgetForecastContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataContainer {
 	return (
 		isResourceDataContainer(container) &&
@@ -2063,7 +2063,7 @@ export function isResourceDataTotalBudgetForecastContainer(
 export type ResourceDataCollectionContainer = Container<ResourceDataCollectionPayload>;
 
 export function isResourceDataCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceDataCollectionContainer {
 	return container.payload.type === payloadTypes.enum.resource_data_collection;
 }
@@ -2071,7 +2071,7 @@ export function isResourceDataCollectionContainer(
 export type ResourceV2Container = Container<ResourceV2Payload>;
 
 export function isResourceV2Container(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ResourceV2Container {
 	return container.payload.type === payloadTypes.enum.resource_v2;
 }
@@ -2079,7 +2079,7 @@ export function isResourceV2Container(
 export type SimpleMeasureContainer = Container<SimpleMeasurePayload>;
 
 export function isSimpleMeasureContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is SimpleMeasureContainer {
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
@@ -2087,7 +2087,7 @@ export function isSimpleMeasureContainer(
 export type SummaryContainer = Container<SummaryPayload>;
 
 export function isSummaryContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is SummaryContainer {
 	return container.payload.type === payloadTypes.enum.summary;
 }
@@ -2095,7 +2095,7 @@ export function isSummaryContainer(
 export type ProgramContainer = Container<ProgramPayload>;
 
 export function isProgramContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ProgramContainer {
 	return container.payload.type === payloadTypes.enum.program;
 }
@@ -2103,7 +2103,7 @@ export function isProgramContainer(
 export type ProgramCollectionContainer = Container<ProgramCollectionPayload>;
 
 export function isProgramCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ProgramCollectionContainer {
 	return container.payload.type === payloadTypes.enum.program_collection;
 }
@@ -2111,13 +2111,13 @@ export function isProgramCollectionContainer(
 export type TextContainer = Container<TextPayload>;
 
 export function isTextContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TextContainer {
 	return container.payload.type === payloadTypes.enum.text;
 }
 
 export function isInlineHelpTextContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TextContainer {
 	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
 }
@@ -2125,7 +2125,7 @@ export function isInlineHelpTextContainer(
 export type TaskContainer = Container<TaskPayload>;
 
 export function isTaskContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TaskContainer {
 	return container.payload.type === payloadTypes.enum.task;
 }
@@ -2135,7 +2135,7 @@ export const termContainer = createContainerSchema(termPayload);
 export type TermContainer = Container<TermPayload>;
 
 export function isTermContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TermContainer {
 	return container.payload.type === payloadTypes.enum.term;
 }
@@ -2143,7 +2143,7 @@ export function isTermContainer(
 export type TaskCollectionContainer = Container<TaskCollectionPayload>;
 
 export function isTaskCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TaskCollectionContainer {
 	return container.payload.type === payloadTypes.enum.task_collection;
 }
@@ -2151,7 +2151,7 @@ export function isTaskCollectionContainer(
 export type MeasureMonitoringContainer = EffectContainer | GoalContainer | TaskContainer;
 
 export function isMeasureMonitoringContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is MeasureMonitoringContainer {
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
 }
@@ -2159,7 +2159,7 @@ export function isMeasureMonitoringContainer(
 export type ImageContainer = Container<ImagePayload>;
 
 export function isImageContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ImageContainer {
 	return container.payload.type === payloadTypes.enum.image;
 }
@@ -2167,7 +2167,7 @@ export function isImageContainer(
 export type IgniteVideoContainer = Container<IgniteVideoPayload>;
 
 export function isIgniteVideoContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is IgniteVideoContainer {
 	return container.payload.type === payloadTypes.enum.ignite_video;
 }
@@ -2175,7 +2175,7 @@ export function isIgniteVideoContainer(
 export type TeaserContainer = Container<TeaserPayload>;
 
 export function isTeaserContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TeaserContainer {
 	return container.payload.type === payloadTypes.enum.teaser;
 }
@@ -2183,7 +2183,7 @@ export function isTeaserContainer(
 export type InfoBoxContainer = Container<InfoBoxPayload>;
 
 export function isInfoBoxContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is InfoBoxContainer {
 	return container.payload.type === payloadTypes.enum.info_box;
 }
@@ -2191,7 +2191,7 @@ export function isInfoBoxContainer(
 export type TeaserHighlightContainer = Container<TeaserHighlightPayload>;
 
 export function isTeaserHighlightContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TeaserHighlightContainer {
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
@@ -2199,7 +2199,7 @@ export function isTeaserHighlightContainer(
 export type ColContentContainer = Container<ColContentPayload>;
 
 export function isColContentContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is ColContentContainer {
 	return container.payload.type === payloadTypes.enum.col_content;
 }
@@ -2207,7 +2207,7 @@ export function isColContentContainer(
 export type QuoteContainer = Container<QuotePayload>;
 
 export function isQuoteContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is QuoteContainer {
 	return container.payload.type === payloadTypes.enum.quote;
 }
@@ -2234,12 +2234,14 @@ export function isTeaserLikeContainer(container: AnyContainer): container is Tea
 }
 
 export function isTeaserCollectionContainer(
-	container: AnyContainer | EmptyContainer
+	container: AnyContainer | NewContainer<AnyInitialPayload>
 ): container is TeaserCollectionContainer {
 	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
-export function isContainer(container: AnyContainer | EmptyContainer): container is Container {
+export function isContainer(
+	container: AnyContainer | NewContainer<AnyInitialPayload>
+): container is Container {
 	return (
 		container.payload.type !== payloadTypes.enum.organization &&
 		container.payload.type !== payloadTypes.enum.organizational_unit
@@ -2468,8 +2470,6 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 
 export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 
-export type EmptyContainer = NewContainer<AnyInitialPayload>;
-
 export type EmptyEffectContainer = NewContainer<InitialEffectPayload>;
 
 export type EmptyObjectiveContainer = NewContainer<InitialObjectivePayload>;
@@ -2660,7 +2660,10 @@ export function containerOfType(
 	}) as NewContainer<AnyInitialPayload>;
 }
 
-export function mayDelete(container: AnyContainer | EmptyContainer, ability: MongoAbility) {
+export function mayDelete(
+	container: AnyContainer | NewContainer<AnyInitialPayload>,
+	ability: MongoAbility
+) {
 	return (
 		'guid' in container &&
 		container.relation.filter(

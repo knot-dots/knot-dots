@@ -8,11 +8,11 @@
 	import rehypeExtractExcerpt from 'rehype-extract-excerpt';
 	import type { VFile } from 'vfile';
 	import { page } from '$app/state';
-	import type { Container, EmptyContainer } from '$lib/models';
+	import type { AnyInitialPayload, Container, NewContainer } from '$lib/models';
 	import rehypeReplace from '$lib/unified/rehype-replace';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer<AnyInitialPayload>;
 		maxLength?: number;
 	}
 

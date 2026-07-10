@@ -4,9 +4,10 @@
 	import { createIsPartOfOptionsRequest } from '$lib/client/isPartOfOptions';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
+		type AnyInitialPayload,
 		type Container,
-		type EmptyContainer,
 		findDescendants,
+		type NewContainer,
 		overlayKey,
 		overlayURL,
 		payloadTypes,
@@ -14,7 +15,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: Container | EmptyContainer;
+		container: Container | NewContainer<AnyInitialPayload>;
 		editable?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];

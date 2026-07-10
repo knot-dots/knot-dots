@@ -1,7 +1,13 @@
-import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import type { MongoAbility } from '@casl/ability';
-import { payloadTypes, predicates, visibility } from '$lib/models';
-import type { AnyContainer, EmptyContainer, PayloadType } from '$lib/models';
+import { AbilityBuilder, createMongoAbility } from '@casl/ability';
+import type { AnyContainer, PayloadType } from '$lib/models';
+import {
+	type AnyInitialPayload,
+	type NewContainer,
+	payloadTypes,
+	predicates,
+	visibility
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
 type Actions =
@@ -14,7 +20,7 @@ type Actions =
 	| 'invite-members'
 	| 'relate'
 	| 'prioritize';
-type Subjects = AnyContainer | EmptyContainer | PayloadType;
+type Subjects = AnyContainer | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
 	payloadTypes.enum.binary_indicator,
