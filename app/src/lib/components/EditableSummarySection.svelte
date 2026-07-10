@@ -9,12 +9,12 @@
 		type AnyPayload,
 		type Container,
 		type ContainerWithSummary,
-		type SummaryContainer
+		type SummaryPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: SummaryContainer;
+		container: Container<SummaryPayload>;
 		editable?: boolean;
 		parentContainer: ContainerWithSummary;
 		relatedContainers: Container<AnyPayload>[];

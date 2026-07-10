@@ -2012,11 +2012,9 @@ export function isSimpleMeasureContainer(
 	return container.payload.type === payloadTypes.enum.simple_measure;
 }
 
-export type SummaryContainer = Container<SummaryPayload>;
-
 export function isSummaryContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is SummaryContainer {
+): container is Container<SummaryPayload> {
 	return container.payload.type === payloadTypes.enum.summary;
 }
 
