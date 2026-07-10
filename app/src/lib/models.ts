@@ -2098,11 +2098,9 @@ export function isTeaserHighlightContainer(
 	return container.payload.type === payloadTypes.enum.teaser_highlight;
 }
 
-export type ColContentContainer = Container<ColContentPayload>;
-
 export function isColContentContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ColContentContainer {
+): container is Container<ColContentPayload> {
 	return container.payload.type === payloadTypes.enum.col_content;
 }
 
@@ -2117,9 +2115,8 @@ export function isQuoteContainer(
 export type TeaserCollectionContainer = Container<TeaserCollectionPayload>;
 
 export type TeaserLikeContainer =
-	| Container<InfoBoxPayload | TeaserHighlightPayload | TeaserPayload>
-	| QuoteContainer
-	| ColContentContainer;
+	| Container<ColContentPayload | InfoBoxPayload | TeaserHighlightPayload | TeaserPayload>
+	| QuoteContainer;
 
 export function isTeaserLikeContainer(
 	container: Container<AnyPayload>
