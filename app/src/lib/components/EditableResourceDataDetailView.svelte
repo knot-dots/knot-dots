@@ -36,13 +36,13 @@
 		overlayURL,
 		payloadTypes,
 		predicates,
-		type ResourceDataContainer,
+		type ResourceDataPayload,
 		type ResourceV2Container
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ResourceDataContainer;
+		container: Container<ResourceDataPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}
@@ -142,7 +142,7 @@
 	// Fetch all ResourceData containers in the organization to find those related
 	// to subordinate goals and measures if the current container is a budget container.
 	// Only fetch ResourceData containers which have the same resource as the current container.
-	let allResourceDataContainers = $state<ResourceDataContainer[]>([]);
+	let allResourceDataContainers = $state<Container<ResourceDataPayload>[]>([]);
 
 	$effect(() => {
 		if (!isBudgetContainer || !parentGoal) {
@@ -174,7 +174,7 @@
 			);
 	});
 
-	function getBudgetsForGoal(goal: Container<GoalPayload>): ResourceDataContainer[] {
+	function getBudgetsForGoal(goal: Container<GoalPayload>): Container<ResourceDataPayload>[] {
 		return allBudgetContainers.filter((budget) =>
 			budget.relation.some(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === goal.guid
@@ -182,7 +182,9 @@
 		);
 	}
 
-	function getResourceDataForMeasure(measure: Container<MeasurePayload>): ResourceDataContainer[] {
+	function getResourceDataForMeasure(
+		measure: Container<MeasurePayload>
+	): Container<ResourceDataPayload>[] {
 		return allResourceDataContainers.filter((rd) =>
 			rd.relation.some(
 				(r) => r.predicate === predicates.enum['is-part-of'] && r.object === measure.guid
@@ -293,7 +295,7 @@
 
 	// onSave callback for EditableTable
 	async function handleSave(
-		containerToSave: ResourceDataContainer
+		containerToSave: Container<ResourceDataPayload>
 	): Promise<{ guid: string; revision: number }> {
 		const response = await saveContainer(containerToSave);
 		if (!response.ok) {
@@ -305,14 +307,18 @@
 		return { guid: updated.guid, revision: updated.revision };
 	}
 
-	function getEntries(containerToRead: ResourceDataContainer): EditableTableValue[] {
+	function getEntries(containerToRead: Container<ResourceDataPayload>): EditableTableValue[] {
 		return containerToRead.payload.entries.map((entry) => ({
 			year: entry.year,
 			value: entry.amount
 		}));
 	}
 
-	function setEntry(containerToUpdate: ResourceDataContainer, year: number, value: number | null) {
+	function setEntry(
+		containerToUpdate: Container<ResourceDataPayload>,
+		year: number,
+		value: number | null
+	) {
 		if (value === null) {
 			containerToUpdate.payload.entries = containerToUpdate.payload.entries.filter(
 				(entry) => entry.year !== year
@@ -366,10 +372,12 @@
 					columnLabel={isBudgetContainer ? $_('goal') : ''}
 					{sections}
 					fillYearGaps={isBudgetContainer}
-					getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
+					getEntries={(containerToRead) =>
+						getEntries(containerToRead as Container<ResourceDataPayload>)}
 					setEntry={(containerToUpdate, year, value) =>
-						setEntry(containerToUpdate as ResourceDataContainer, year, value)}
-					onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
+						setEntry(containerToUpdate as Container<ResourceDataPayload>, year, value)}
+					onSave={(containerToSave) =>
+						handleSave(containerToSave as Container<ResourceDataPayload>)}
 				/>
 			</div>
 

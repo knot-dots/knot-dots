@@ -12,12 +12,12 @@
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
-	import EditableTable from '$lib/components/EditableTable.svelte';
 	import type {
 		EditableTableDataRow,
 		EditableTableSection,
 		EditableTableValue
 	} from '$lib/components/EditableTable.svelte';
+	import EditableTable from '$lib/components/EditableTable.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -42,7 +42,7 @@
 		paramsFromFragment,
 		payloadTypes,
 		predicates,
-		type ResourceDataContainer,
+		type ResourceDataPayload,
 		resourceDataTypes,
 		type ResourceV2Container
 	} from '$lib/models';
@@ -165,14 +165,14 @@
 			| 'resource_data_type.total_budget_forecast',
 		title: string,
 		temporaryGuid: string
-	): ResourceDataContainer {
+	): Container<ResourceDataPayload> {
 		let c = containerOfType(
 			payloadTypes.enum.resource_data,
 			container.organization,
 			container.organizational_unit,
 			container.managed_by,
 			container.realm
-		) as ResourceDataContainer;
+		) as Container<ResourceDataPayload>;
 
 		c.guid = temporaryGuid;
 		c.payload.title = title;
@@ -311,7 +311,7 @@
 
 	// onSave callback – handles both creating new stub containers and updating existing ones
 	async function handleSave(
-		containerToSave: ResourceDataContainer
+		containerToSave: Container<ResourceDataPayload>
 	): Promise<{ guid: string; revision: number }> {
 		const isNewContainer = containerToSave.guid.startsWith('TEMPORARY_NEW');
 
@@ -350,14 +350,18 @@
 		return { guid: updated.guid, revision: updated.revision };
 	}
 
-	function getEntries(containerToRead: ResourceDataContainer): EditableTableValue[] {
+	function getEntries(containerToRead: Container<ResourceDataPayload>): EditableTableValue[] {
 		return containerToRead.payload.entries.map((entry) => ({
 			year: entry.year,
 			value: entry.amount
 		}));
 	}
 
-	function setEntry(containerToUpdate: ResourceDataContainer, year: number, value: number | null) {
+	function setEntry(
+		containerToUpdate: Container<ResourceDataPayload>,
+		year: number,
+		value: number | null
+	) {
 		if (value === null) {
 			containerToUpdate.payload.entries = containerToUpdate.payload.entries.filter(
 				(entry) => entry.year !== year
@@ -408,10 +412,12 @@
 					titleUnit={$_(container.payload.resourceUnit)}
 					columnLabel={$_('table.data_object')}
 					{sections}
-					getEntries={(containerToRead) => getEntries(containerToRead as ResourceDataContainer)}
+					getEntries={(containerToRead) =>
+						getEntries(containerToRead as Container<ResourceDataPayload>)}
 					setEntry={(containerToUpdate, year, value) =>
-						setEntry(containerToUpdate as ResourceDataContainer, year, value)}
-					onSave={(containerToSave) => handleSave(containerToSave as ResourceDataContainer)}
+						setEntry(containerToUpdate as Container<ResourceDataPayload>, year, value)}
+					onSave={(containerToSave) =>
+						handleSave(containerToSave as Container<ResourceDataPayload>)}
 				/>
 			</div>
 

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { _, number } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
-	import { type ResourceDataContainer, type ResourceV2Container } from '$lib/models';
+	import { type Container, type ResourceDataPayload, type ResourceV2Container } from '$lib/models';
 	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 
 	interface Props {
-		container: ResourceDataContainer;
+		container: Container<ResourceDataPayload>;
 		resourceContainer?: ResourceV2Container;
 		href?: () => string;
 	}

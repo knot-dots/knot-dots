@@ -1940,17 +1940,15 @@ export function isResourceCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
-export type ResourceDataContainer = Container<ResourceDataPayload>;
-
 export function isResourceDataContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataContainer {
+): container is Container<ResourceDataPayload> {
 	return container.payload.type === payloadTypes.enum.resource_data;
 }
 
 export function isResourceDataActualResourceAllocationContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataContainer {
+): container is Container<ResourceDataPayload> {
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType ===
@@ -1960,7 +1958,7 @@ export function isResourceDataActualResourceAllocationContainer(
 
 export function isResourceDataPlannedResourceAllocationContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataContainer {
+): container is Container<ResourceDataPayload> {
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType ===
@@ -1970,7 +1968,7 @@ export function isResourceDataPlannedResourceAllocationContainer(
 
 export function isResourceDataBudgetContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataContainer {
+): container is Container<ResourceDataPayload> {
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
@@ -1979,7 +1977,7 @@ export function isResourceDataBudgetContainer(
 
 export function isResourceDataTotalBudgetContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataContainer {
+): container is Container<ResourceDataPayload> {
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
@@ -1988,7 +1986,7 @@ export function isResourceDataTotalBudgetContainer(
 
 export function isResourceDataTotalBudgetForecastContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceDataContainer {
+): container is Container<ResourceDataPayload> {
 	return (
 		isResourceDataContainer(container) &&
 		container.payload.resourceDataType ===

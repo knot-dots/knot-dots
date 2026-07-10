@@ -19,7 +19,7 @@ import {
 	predicates,
 	type ProgramContainer,
 	type ReportPayload,
-	type ResourceDataContainer,
+	type ResourceDataPayload,
 	resourceDataTypes,
 	type ResourceV2Container,
 	type TaskCollectionContainer,
@@ -66,15 +66,15 @@ type MyWorkerFixtures = {
 	testSubordinateMeasure: Container<MeasurePayload>;
 	testEffect: Container<EffectPayload>;
 	testResourceV2: ResourceV2Container;
-	testResourceDataBudget: ResourceDataContainer;
-	testResourceDataPlanned: ResourceDataContainer;
-	testResourceDataActual: ResourceDataContainer;
-	testGoalBudget: ResourceDataContainer;
-	testSubordinateGoalBudget: ResourceDataContainer;
-	testSubordinateMeasureResourceData: ResourceDataContainer;
+	testResourceDataBudget: Container<ResourceDataPayload>;
+	testResourceDataPlanned: Container<ResourceDataPayload>;
+	testResourceDataActual: Container<ResourceDataPayload>;
+	testGoalBudget: Container<ResourceDataPayload>;
+	testSubordinateGoalBudget: Container<ResourceDataPayload>;
+	testSubordinateMeasureResourceData: Container<ResourceDataPayload>;
 	testResourceV2Other: ResourceV2Container;
-	testSubordinateGoalBudgetOtherResource: ResourceDataContainer;
-	testSubordinateMeasureResourceDataOtherResource: ResourceDataContainer;
+	testSubordinateGoalBudgetOtherResource: Container<ResourceDataPayload>;
+	testSubordinateMeasureResourceDataOtherResource: Container<ResourceDataPayload>;
 	testTask: TaskContainer;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: Container<ReportPayload>;
@@ -135,16 +135,16 @@ async function createResourceData(
 	context: BrowserContext,
 	organization: string,
 	title: string,
-	payload: Partial<Omit<ResourceDataContainer['payload'], 'type' | 'title'>>,
+	payload: Partial<ResourceDataPayload>,
 	partOf: string
-): Promise<ResourceDataContainer> {
+): Promise<Container<ResourceDataPayload>> {
 	const template = containerOfType(
 		payloadTypes.enum.resource_data,
 		organization,
 		null,
 		organization,
 		'knot-dots'
-	) as ResourceDataContainer;
+	) as Container<ResourceDataPayload>;
 	return createContainer(context, {
 		...template,
 		payload: { ...template.payload, title, ...payload },
