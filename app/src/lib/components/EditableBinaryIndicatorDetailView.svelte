@@ -13,7 +13,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		type AnyPayload,
 		type BinaryIndicatorContainer,
 		type Container,
@@ -47,7 +47,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM
-		) as Omit<NewContainer, 'payload'> & Pick<ActualDataContainer, 'payload'>;
+		) as NewContainer<ActualDataPayload>;
 		newActualDataContainer.payload.indicator = guid;
 		newActualDataContainer.payload.title = title;
 		return newActualDataContainer;
@@ -118,7 +118,7 @@
 		};
 	}
 
-	function updateActualData(container: ActualDataContainer) {
+	function updateActualData(container: Container<ActualDataPayload>) {
 		return async (value: boolean) => {
 			container.payload.booleanValue = value;
 

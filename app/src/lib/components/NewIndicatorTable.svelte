@@ -10,7 +10,7 @@
 	} from '$lib/components/EditableTable.svelte';
 	import EditableTable from '$lib/components/EditableTable.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		type Container,
 		containerOfType,
 		findAncestors,
@@ -40,7 +40,7 @@
 		container: IndicatorTemplateContainer;
 		editable?: boolean;
 		relatedContainers?: Container[];
-		comparisonContainers?: ActualDataContainer[];
+		comparisonContainers?: Container<ActualDataPayload>[];
 		onDataChanged?: () => void;
 	}
 
@@ -420,11 +420,15 @@
 		];
 	});
 
-	function getEntries(containerToRead: ActualDataContainer): EditableTableValue[] {
+	function getEntries(containerToRead: Container<ActualDataPayload>): EditableTableValue[] {
 		return containerToRead.payload.values.map(([year, value]) => ({ year, value }));
 	}
 
-	function setEntry(containerToUpdate: ActualDataContainer, year: number, value: number | null) {
+	function setEntry(
+		containerToUpdate: Container<ActualDataPayload>,
+		year: number,
+		value: number | null
+	) {
 		if (value === null) {
 			containerToUpdate.payload.values = containerToUpdate.payload.values.filter(
 				([entryYear]) => entryYear !== year
@@ -455,7 +459,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<ActualDataContainer, 'payload'>;
+		) as NewContainer<ActualDataPayload>;
 
 		newActualDataContainer.payload = {
 			...newActualDataContainer.payload,
@@ -481,7 +485,7 @@
 	}
 
 	async function handleSave(
-		containerToSave: ActualDataContainer
+		containerToSave: Container<ActualDataPayload>
 	): Promise<{ guid: string; revision: number }> {
 		const response = await saveContainer(containerToSave);
 		if (!response.ok) {
@@ -503,8 +507,8 @@
 	addYearLabel={$_('table.add_column_right')}
 	variant="teal"
 	{sections}
-	getEntries={(containerToRead) => getEntries(containerToRead as ActualDataContainer)}
+	getEntries={(containerToRead) => getEntries(containerToRead as Container<ActualDataPayload>)}
 	setEntry={(containerToUpdate, year, value) =>
-		setEntry(containerToUpdate as ActualDataContainer, year, value)}
-	onSave={(containerToSave) => handleSave(containerToSave as ActualDataContainer)}
+		setEntry(containerToUpdate as Container<ActualDataPayload>, year, value)}
+	onSave={(containerToSave) => handleSave(containerToSave as Container<ActualDataPayload>)}
 />

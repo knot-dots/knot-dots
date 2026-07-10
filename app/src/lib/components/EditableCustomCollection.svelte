@@ -25,8 +25,8 @@
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
-		type ActualDataContainer,
 		actualDataContainer,
+		type ActualDataPayload,
 		type AnyPayload,
 		type Container,
 		createCopyOf,
@@ -358,7 +358,7 @@
 
 	// Create a map for efficient lookup of comparison data by indicator GUID
 	let comparisonDataMap = $derived.by(() => {
-		const map = new SvelteMap<string, ActualDataContainer[]>();
+		const map = new SvelteMap<string, Container<ActualDataPayload>[]>();
 		for (const container of comparisonDataResource.current ?? []) {
 			if (isActualDataContainer(container) && container.payload.indicator) {
 				const indicatorGuid = container.payload.indicator;

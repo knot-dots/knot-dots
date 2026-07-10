@@ -4,7 +4,7 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		type AnyPayload,
 		type Container,
 		type DemographicDataContainer,
@@ -53,7 +53,7 @@
 				},
 				'alpha',
 				{ signal }
-			)) as ActualDataContainer[];
+			)) as Container<ActualDataPayload>[];
 		},
 		{ lazy: true }
 	);

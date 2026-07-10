@@ -12,7 +12,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		computeFacetCount,
 		containerOfType,
 		indicatorCategories,
@@ -64,7 +64,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<ActualDataContainer, 'payload'>;
+		) as NewContainer<ActualDataPayload>;
 
 		container.payload = {
 			...container.payload,

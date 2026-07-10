@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import {
-	type ActualDataContainer,
+	type ActualDataPayload,
 	containerOfType,
 	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
@@ -106,7 +106,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				currentOrganizationalUnitGuid ?? null,
 				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 				env.PUBLIC_KC_REALM
-			) as NewContainer & { payload: ActualDataContainer['payload'] };
+			) as NewContainer<ActualDataPayload>;
 
 			if (
 				statisticsForIndicator &&

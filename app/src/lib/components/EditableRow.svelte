@@ -25,8 +25,9 @@
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
-		type ActualDataContainer,
-		type Status,
+		type ActualDataPayload,
+		type AnyPayload,
+		type Container,
 		isActualDataContainer,
 		isContainerWithDescription,
 		isContainerWithDuration,
@@ -41,14 +42,13 @@
 		isTaskContainer,
 		overlayKey,
 		overlayURL,
-		status,
-		type Container,
-		type AnyPayload
+		type Status,
+		status
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		actualDataContainers?: ActualDataContainer[];
+		actualDataContainers?: Container<ActualDataPayload>[];
 		columns: string[];
 		container: Container<AnyPayload>;
 		dragEnabled?: boolean;
@@ -81,7 +81,7 @@
 		return $_(s);
 	}
 
-	function saveActualData(actualData: ActualDataContainer | undefined, year: number) {
+	function saveActualData(actualData: Container<ActualDataPayload> | undefined, year: number) {
 		return async (event: Event & { currentTarget: EventTarget & HTMLInputElement }) => {
 			const val = event.currentTarget.value;
 			if (!actualData) return;

@@ -7,7 +7,7 @@ import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
-	type ActualDataContainer,
+	type ActualDataPayload,
 	anyInitialPayload,
 	containerOfType,
 	createNewContainerSchema,
@@ -329,7 +329,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 						currentOrganizationalUnitGuid ?? null,
 						currentOrganizationalUnitGuid ?? currentOrganizationGuid,
 						env.PUBLIC_KC_REALM
-					) as Omit<NewContainer, 'payload'> & { payload: ActualDataContainer['payload'] };
+					) as NewContainer<ActualDataPayload>;
 
 					actualDataContainer.payload = {
 						...actualDataContainer.payload,

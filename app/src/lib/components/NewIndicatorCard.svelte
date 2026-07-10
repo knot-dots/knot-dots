@@ -8,7 +8,7 @@
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		type BinaryIndicatorContainer,
 		type Container,
 		type IndicatorTemplateContainer,
@@ -24,7 +24,7 @@
 		ignoreBulkActionContext?: boolean;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;
-		comparisonDataMap?: SvelteMap<string, ActualDataContainer[]>;
+		comparisonDataMap?: SvelteMap<string, Container<ActualDataPayload>[]>;
 	}
 
 	const {

@@ -1750,11 +1750,9 @@ export function isContainerWithEffect(
 
 export const actualDataContainer = createContainerSchema(actualDataPayload);
 
-export type ActualDataContainer = Container<ActualDataPayload>;
-
 export function isActualDataContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ActualDataContainer {
+): container is Container<ActualDataPayload> {
 	return container.payload.type === payloadTypes.enum.actual_data;
 }
 

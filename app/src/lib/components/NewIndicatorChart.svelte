@@ -3,7 +3,7 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import {
-		type ActualDataContainer,
+		type ActualDataPayload,
 		administrativeTypes,
 		type AnyPayload,
 		type Container,
@@ -16,7 +16,7 @@
 	interface Props {
 		container: IndicatorTemplateContainer;
 		relatedContainers?: Container<AnyPayload>[];
-		comparisonContainers?: ActualDataContainer[];
+		comparisonContainers?: Container<ActualDataPayload>[];
 	}
 
 	let { container, relatedContainers = [], comparisonContainers }: Props = $props();

@@ -6,14 +6,14 @@
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableRow from '$lib/components/EditableRow.svelte';
-	import type { ActualDataContainer, AnyPayload, Container } from '$lib/models';
+	import type { ActualDataPayload, AnyPayload, Container } from '$lib/models';
 	import { applicationState } from '$lib/stores';
 
 	interface Props {
 		columns: Array<{ heading: string; key: string }>;
 		footer?: Snippet;
 		rows: Container<AnyPayload>[];
-		actualDataContainers?: ActualDataContainer[];
+		actualDataContainers?: Container<ActualDataPayload>[];
 	}
 
 	let { columns, footer, rows: originalRows, actualDataContainers = [] }: Props = $props();
