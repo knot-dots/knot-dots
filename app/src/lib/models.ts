@@ -1934,11 +1934,9 @@ export function isResourceContainer(
 	return container.payload.type === payloadTypes.enum.resource;
 }
 
-export type ResourceCollectionContainer = Container<ResourceCollectionPayload>;
-
 export function isResourceCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceCollectionContainer {
+): container is Container<ResourceCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.resource_collection;
 }
 
