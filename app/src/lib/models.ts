@@ -2074,11 +2074,9 @@ export function isImageContainer(
 	return container.payload.type === payloadTypes.enum.image;
 }
 
-export type IgniteVideoContainer = Container<IgniteVideoPayload>;
-
 export function isIgniteVideoContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is IgniteVideoContainer {
+): container is Container<IgniteVideoPayload> {
 	return container.payload.type === payloadTypes.enum.ignite_video;
 }
 

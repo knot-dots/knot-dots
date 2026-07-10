@@ -4,11 +4,11 @@
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import IgniteVideoSettingsDropdown from '$lib/components/IgniteVideoSettingsDropdown.svelte';
-	import type { AnyPayload, Container, IgniteVideoContainer } from '$lib/models';
+	import type { AnyPayload, Container, IgniteVideoPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: IgniteVideoContainer;
+		container: Container<IgniteVideoPayload>;
 		editable?: boolean;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
