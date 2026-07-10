@@ -886,10 +886,7 @@ const initialFileCollectionPayload = fileCollectionPayload;
 
 const goalPayload = basePayload
 	.extend({
-		fulfillmentDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		fulfillmentDate: z.iso.date().optional(),
 		status: status.default(status.enum['status.idea']),
 		goalType: goalType.optional(),
 		hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
@@ -1069,14 +1066,8 @@ const rulePayload = basePayload
 	.extend({
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.rule),
-		validFrom: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
-		validUntil: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional()
+		validFrom: z.iso.date().optional(),
+		validUntil: z.iso.date().optional()
 	})
 	.strict();
 
@@ -1086,10 +1077,7 @@ const simpleMeasurePayload = basePayload
 	.omit({ summary: true })
 	.extend({
 		annotation: z.string().trim().optional(),
-		endDate: z
-			.string()
-			.refine((v) => z.coerce.date().safeParse(v))
-			.optional(),
+		endDate: z.iso.date().optional(),
 		file: z.array(z.tuple([z.url(), z.string()])).default([]),
 		measureType: measureTypes.optional(),
 		progress: z.number().nonnegative().default(0),
