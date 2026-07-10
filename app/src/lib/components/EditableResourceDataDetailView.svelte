@@ -37,7 +37,7 @@
 		payloadTypes,
 		predicates,
 		type ResourceDataPayload,
-		type ResourceV2Container
+		type ResourceV2Payload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
@@ -84,11 +84,12 @@
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
-	let currentResource = $state<ResourceV2Container | undefined>(undefined);
+	let currentResource = $state<Container<ResourceV2Payload> | undefined>(undefined);
 
 	$effect(() => {
 		fetchContainerRevisions(container.payload.resource).then((revisions) => {
-			currentResource = (revisions[revisions.length - 1] as ResourceV2Container) ?? undefined;
+			currentResource =
+				(revisions[revisions.length - 1] as Container<ResourceV2Payload>) ?? undefined;
 		});
 	});
 

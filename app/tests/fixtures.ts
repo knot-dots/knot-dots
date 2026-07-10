@@ -21,7 +21,7 @@ import {
 	type ReportPayload,
 	type ResourceDataPayload,
 	resourceDataTypes,
-	type ResourceV2Container,
+	type ResourceV2Payload,
 	type TaskCollectionContainer,
 	type TaskContainer,
 	type TermContainer
@@ -65,14 +65,14 @@ type MyWorkerFixtures = {
 	testMeasure: Container<MeasurePayload>;
 	testSubordinateMeasure: Container<MeasurePayload>;
 	testEffect: Container<EffectPayload>;
-	testResourceV2: ResourceV2Container;
+	testResourceV2: Container<ResourceV2Payload>;
 	testResourceDataBudget: Container<ResourceDataPayload>;
 	testResourceDataPlanned: Container<ResourceDataPayload>;
 	testResourceDataActual: Container<ResourceDataPayload>;
 	testGoalBudget: Container<ResourceDataPayload>;
 	testSubordinateGoalBudget: Container<ResourceDataPayload>;
 	testSubordinateMeasureResourceData: Container<ResourceDataPayload>;
-	testResourceV2Other: ResourceV2Container;
+	testResourceV2Other: Container<ResourceV2Payload>;
 	testSubordinateGoalBudgetOtherResource: Container<ResourceDataPayload>;
 	testSubordinateMeasureResourceDataOtherResource: Container<ResourceDataPayload>;
 	testTask: TaskContainer;
@@ -116,15 +116,15 @@ async function createResourceV2(
 	context: BrowserContext,
 	organization: string,
 	title: string,
-	payload: Partial<Omit<ResourceV2Container['payload'], 'type' | 'title'>>
-): Promise<ResourceV2Container> {
+	payload: Partial<ResourceV2Payload>
+): Promise<Container<ResourceV2Payload>> {
 	const template = containerOfType(
 		payloadTypes.enum.resource_v2,
 		organization,
 		null,
 		organization,
 		'knot-dots'
-	) as ResourceV2Container;
+	) as Container<ResourceV2Payload>;
 	return createContainer(context, {
 		...template,
 		payload: { ...template.payload, title, ...payload }

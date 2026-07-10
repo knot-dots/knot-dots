@@ -5,13 +5,14 @@ import {
 	filterCategoryContext
 } from '$lib/categoryOptions';
 import {
+	type Container,
 	filterOrganizationalUnits,
 	fromCounts,
 	isResourceDataContainer,
 	payloadTypes,
 	resourceCategories,
 	resourceUnits,
-	type ResourceV2Container
+	type ResourceV2Payload
 } from '$lib/models';
 import { getAllContainersRelatedToProgram } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
@@ -50,7 +51,7 @@ export async function fetchResources({
 		sort,
 		{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 	);
-	let resourceContainers = esResult.containers as ResourceV2Container[];
+	let resourceContainers = esResult.containers as Container<ResourceV2Payload>[];
 	const data = esResult.facets;
 
 	// Filter by program if specified

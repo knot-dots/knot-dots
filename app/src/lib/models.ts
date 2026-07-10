@@ -2000,11 +2000,9 @@ export function isResourceDataCollectionContainer(
 	return container.payload.type === payloadTypes.enum.resource_data_collection;
 }
 
-export type ResourceV2Container = Container<ResourceV2Payload>;
-
 export function isResourceV2Container(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is ResourceV2Container {
+): container is Container<ResourceV2Payload> {
 	return container.payload.type === payloadTypes.enum.resource_v2;
 }
 

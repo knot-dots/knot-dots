@@ -16,7 +16,7 @@
 		payloadTypes,
 		predicates,
 		type ResourceDataCollectionPayload,
-		type ResourceV2Container
+		type ResourceV2Payload
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
@@ -52,7 +52,7 @@
 			: []
 	);
 
-	let resourceContainers: ResourceV2Container[] = $state([]);
+	let resourceContainers: Container<ResourceV2Payload>[] = $state([]);
 
 	onMount(async () => {
 		const containers = await fetchContainers({ payloadType: ['resource_v2'] }, 'alpha');

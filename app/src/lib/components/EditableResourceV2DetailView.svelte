@@ -44,12 +44,12 @@
 		predicates,
 		type ResourceDataPayload,
 		resourceDataTypes,
-		type ResourceV2Container
+		type ResourceV2Payload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: ResourceV2Container;
+		container: Container<ResourceV2Payload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}
