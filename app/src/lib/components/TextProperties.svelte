@@ -5,11 +5,11 @@
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
-	import { type AnyPayload, type Container, type TextContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type TextPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: TextContainer;
+		container: Container<TextPayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: Container<AnyPayload>[];

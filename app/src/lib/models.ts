@@ -2030,17 +2030,15 @@ export function isProgramCollectionContainer(
 	return container.payload.type === payloadTypes.enum.program_collection;
 }
 
-export type TextContainer = Container<TextPayload>;
-
 export function isTextContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is TextContainer {
+): container is Container<TextPayload> {
 	return container.payload.type === payloadTypes.enum.text;
 }
 
 export function isInlineHelpTextContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is TextContainer {
+): container is Container<TextPayload> {
 	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
 }
 

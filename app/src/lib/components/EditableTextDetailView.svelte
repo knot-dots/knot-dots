@@ -8,13 +8,13 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
-	import { type AnyPayload, type Container, predicates, type TextContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type TextPayload } from '$lib/models';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: TextContainer;
+		container: Container<TextPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}
