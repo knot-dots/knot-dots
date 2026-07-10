@@ -2104,19 +2104,17 @@ export function isColContentContainer(
 	return container.payload.type === payloadTypes.enum.col_content;
 }
 
-export type QuoteContainer = Container<QuotePayload>;
-
 export function isQuoteContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is QuoteContainer {
+): container is Container<QuotePayload> {
 	return container.payload.type === payloadTypes.enum.quote;
 }
 
 export type TeaserCollectionContainer = Container<TeaserCollectionPayload>;
 
-export type TeaserLikeContainer =
-	| Container<ColContentPayload | InfoBoxPayload | TeaserHighlightPayload | TeaserPayload>
-	| QuoteContainer;
+export type TeaserLikeContainer = Container<
+	ColContentPayload | InfoBoxPayload | QuotePayload | TeaserHighlightPayload | TeaserPayload
+>;
 
 export function isTeaserLikeContainer(
 	container: Container<AnyPayload>
