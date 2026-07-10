@@ -12,16 +12,11 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import {
-		type AnyPayload,
-		type Container,
-		type KnowledgeContainer,
-		predicates
-	} from '$lib/models';
+	import { type AnyPayload, type Container, type KnowledgePayload, predicates } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: KnowledgeContainer;
+		container: Container<KnowledgePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

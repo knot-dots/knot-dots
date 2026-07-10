@@ -6,7 +6,12 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { knowledgeContainer, payloadTypes, type KnowledgeContainer } from '$lib/models';
+	import {
+		type Container,
+		knowledgeContainer,
+		type KnowledgePayload,
+		payloadTypes
+	} from '$lib/models';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	const PAGE_SIZE = 20;
@@ -73,7 +78,7 @@
 	});
 
 	function countMatchingTerms(
-		container: KnowledgeContainer,
+		container: Container<KnowledgePayload>,
 		cats: Record<string, string[]>
 	): number {
 		const containerCats = container.payload.category;

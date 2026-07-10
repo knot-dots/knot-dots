@@ -7,7 +7,7 @@
 	import Help from '$lib/components/Help.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { type KnowledgeContainer, payloadTypes } from '$lib/models';
+	import { type Container, type KnowledgePayload, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -18,9 +18,9 @@
 	const resetKey = $derived(
 		`${page.url.pathname}?${page.url.searchParams.toString()}|${initialItemsKey}`
 	);
-	const list = createPaginatedList<KnowledgeContainer>({
+	const list = createPaginatedList<Container<KnowledgePayload>>({
 		fetchPage: async ({ offset, signal }) => {
-			const result = await fetchContainerPage<KnowledgeContainer>({
+			const result = await fetchContainerPage<Container<KnowledgePayload>>({
 				contextGuid: page.params.guid,
 				fetch,
 				limit: DEFAULT_PAGE_SIZE,

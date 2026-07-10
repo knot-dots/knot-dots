@@ -3,7 +3,7 @@ import {
 	type Container,
 	containerOfType,
 	type GoalPayload,
-	type KnowledgeContainer,
+	type KnowledgePayload,
 	payloadTypes
 } from '$lib/models';
 
@@ -20,11 +20,11 @@ test.describe('Knowledge catalog overlay', () => {
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as KnowledgeContainer;
+			) as Container<KnowledgePayload>;
 			return createContainer(adminContext, {
 				...template,
 				payload: { ...template.payload, title }
-			}) as Promise<KnowledgeContainer>;
+			}) as Promise<Container<KnowledgePayload>>;
 		};
 
 		const knowledgeA = await makeKnowledge(`E2E Knowledge Alpha ${suffix}`);
@@ -64,7 +64,7 @@ test.describe('Knowledge catalog overlay', () => {
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as KnowledgeContainer;
+			) as Container<KnowledgePayload>;
 			return createContainer(adminContext, {
 				...template,
 				payload: {
@@ -72,7 +72,7 @@ test.describe('Knowledge catalog overlay', () => {
 					title,
 					category: termValues.length ? { [categoryKey]: termValues } : {}
 				}
-			}) as Promise<KnowledgeContainer>;
+			}) as Promise<Container<KnowledgePayload>>;
 		};
 
 		const knowledgeDoubleMatch = await makeKnowledge(`E2E Knowledge Double Match ${suffix}`, [
@@ -159,7 +159,7 @@ test.describe('Knowledge catalog overlay', () => {
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as KnowledgeContainer;
+		) as Container<KnowledgePayload>;
 		const knowledgeMatch = (await createContainer(adminContext, {
 			...matchTemplate,
 			payload: {
@@ -167,7 +167,7 @@ test.describe('Knowledge catalog overlay', () => {
 				title: matchTitle,
 				category: { [categoryKey]: [termAValue] }
 			}
-		})) as KnowledgeContainer;
+		})) as Container<KnowledgePayload>;
 
 		// Knowledge container with no categories — alphabetically first
 		const noMatchTemplate = containerOfType(
@@ -176,11 +176,11 @@ test.describe('Knowledge catalog overlay', () => {
 			null,
 			testGoal.organization,
 			'knot-dots'
-		) as KnowledgeContainer;
+		) as Container<KnowledgePayload>;
 		const knowledgeNoMatch = (await createContainer(adminContext, {
 			...noMatchTemplate,
 			payload: { ...noMatchTemplate.payload, title: noMatchTitle }
-		})) as KnowledgeContainer;
+		})) as Container<KnowledgePayload>;
 
 		try {
 			// Open the goal in the view overlay so the store's view-knowledge handler

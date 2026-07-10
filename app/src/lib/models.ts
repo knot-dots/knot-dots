@@ -1850,11 +1850,9 @@ export function isIndicatorTemplateContainer(
 
 export const knowledgeContainer = createContainerSchema(knowledgePayload);
 
-export type KnowledgeContainer = Container<KnowledgePayload>;
-
 export function isKnowledgeContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is KnowledgeContainer {
+): container is Container<KnowledgePayload> {
 	return container.payload.type === payloadTypes.enum.knowledge;
 }
 

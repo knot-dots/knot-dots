@@ -1,6 +1,6 @@
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
-import { type KnowledgeContainer, payloadTypes } from '$lib/models';
+import { type Container, type KnowledgePayload, payloadTypes } from '$lib/models';
 import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/knowledge/$types';
 
@@ -8,7 +8,7 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 	depends('containers');
 
 	const [data, { categoryContext, currentOrganization }] = await Promise.all([
-		fetchContainerPage<KnowledgeContainer>({
+		fetchContainerPage<Container<KnowledgePayload>>({
 			contextGuid: params.guid,
 			fetch,
 			limit: DEFAULT_PAGE_SIZE,

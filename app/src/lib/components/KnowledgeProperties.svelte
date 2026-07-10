@@ -10,11 +10,11 @@
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { _ } from 'svelte-i18n';
-	import { type AnyPayload, type Container, type KnowledgeContainer } from '$lib/models';
+	import { type AnyPayload, type Container, type KnowledgePayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 
 	interface Props {
-		container: KnowledgeContainer;
+		container: Container<KnowledgePayload>;
 		editable?: boolean;
 		relatedContainers: Container[];
 		revisions: Container<AnyPayload>[];
