@@ -1868,11 +1868,9 @@ export function isMeasureContainer(
 	return container.payload.type === payloadTypes.enum.measure;
 }
 
-export type MeasureCollectionContainer = Container<MeasureCollectionPayload>;
-
 export function isMeasureCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is MeasureCollectionContainer {
+): container is Container<MeasureCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.measure_collection;
 }
 

@@ -12,7 +12,7 @@
 		containerOfType,
 		isMeasureContainer,
 		isSimpleMeasureContainer,
-		type MeasureCollectionContainer,
+		type MeasureCollectionPayload,
 		type MeasurePayload,
 		type NewContainer,
 		payloadTypes,
@@ -23,7 +23,7 @@
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
-		container: MeasureCollectionContainer;
+		container: Container<MeasureCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
