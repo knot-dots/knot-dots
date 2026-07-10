@@ -9,7 +9,7 @@
 		type AnyPayload,
 		type Container,
 		containerOfType,
-		type GoalCollectionContainer,
+		type GoalCollectionPayload,
 		isPartOf,
 		isPartOfMeasure,
 		type NewContainer,
@@ -20,7 +20,7 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: GoalCollectionContainer;
+		container: Container<GoalCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;

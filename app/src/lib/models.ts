@@ -1820,11 +1820,9 @@ export function isGoalContainer(
 	return container.payload.type === payloadTypes.enum.goal;
 }
 
-export type GoalCollectionContainer = Container<GoalCollectionPayload>;
-
 export function isGoalCollectionContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is GoalCollectionContainer {
+): container is Container<GoalCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.goal_collection;
 }
 
