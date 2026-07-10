@@ -10,7 +10,7 @@ import {
 	isSimpleMeasureContainer,
 	payloadTypes,
 	predicates,
-	type TaskContainer
+	type TaskPayload
 } from '$lib/models';
 import {
 	getAllContainerRevisionsByGuid,
@@ -60,7 +60,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 						},
 						'priority'
 					)
-		)) as Array<Container<GoalPayload> | TaskContainer>;
+		)) as Array<Container<GoalPayload | TaskPayload>>;
 
 		return {
 			container,

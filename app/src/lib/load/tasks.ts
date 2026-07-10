@@ -8,7 +8,7 @@ import {
 	isPartOf,
 	payloadTypes,
 	predicates,
-	type TaskContainer
+	type TaskPayload
 } from '$lib/models';
 import { MAX_PAGE_SIZE } from '$lib/pagination';
 import type { PageServerLoad } from '../../routes/[guid=uuid]/tasks/$types';
@@ -20,7 +20,7 @@ const DEFAULT_RELATION_TYPES = [
 
 function filterRelated(
 	goals: Container<GoalPayload>[],
-	tasks: TaskContainer[]
+	tasks: Container<TaskPayload>[]
 ): Container<GoalPayload>[] {
 	return goals.filter((goal) => tasks.some(isPartOf(goal)));
 }
@@ -42,7 +42,7 @@ export default function load(
 		const goalQuery = new URLSearchParams([['type', payloadTypes.enum.goal]]);
 
 		const [data, goalData, { categoryContext, currentOrganization }] = await Promise.all([
-			fetchContainerPage<TaskContainer>({
+			fetchContainerPage<Container<TaskPayload>>({
 				contextGuid: params.guid,
 				fetch,
 				limit: MAX_PAGE_SIZE,

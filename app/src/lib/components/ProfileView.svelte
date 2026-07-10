@@ -22,7 +22,7 @@
 		type SimpleMeasurePayload,
 		type Status as TaskStatus,
 		status,
-		type TaskContainer
+		type TaskPayload
 	} from '$lib/models';
 	import { user } from '$lib/stores';
 
@@ -38,7 +38,7 @@
 	]);
 
 	function byTaskStatus(value: TaskStatus[]) {
-		return (container: TaskContainer) =>
+		return (container: Container<TaskPayload>) =>
 			value.length == 0 || value.includes(container.payload.status);
 	}
 
@@ -53,7 +53,7 @@
 	function bySortOption(value: string) {
 		switch (value) {
 			case 'fulfillment_date':
-				return (a: TaskContainer, b: TaskContainer) => {
+				return (a: Container<TaskPayload>, b: Container<TaskPayload>) => {
 					if (a.payload.fulfillmentDate && b.payload.fulfillmentDate) {
 						return (
 							new Date(a.payload.fulfillmentDate).getTime() -
@@ -69,10 +69,10 @@
 				};
 
 			case 'modified':
-				return (a: TaskContainer, b: TaskContainer) =>
+				return (a: Container<TaskPayload>, b: Container<TaskPayload>) =>
 					b.valid_from.getTime() - a.valid_from.getTime();
 			case 'alpha':
-				return (a: TaskContainer, b: TaskContainer) =>
+				return (a: Container<TaskPayload>, b: Container<TaskPayload>) =>
 					a.payload.title.localeCompare(b.payload.title);
 		}
 	}

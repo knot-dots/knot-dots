@@ -23,7 +23,7 @@ import {
 	resourceDataTypes,
 	type ResourceV2Payload,
 	type TaskCollectionContainer,
-	type TaskContainer,
+	type TaskPayload,
 	type TermContainer
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
@@ -75,7 +75,7 @@ type MyWorkerFixtures = {
 	testResourceV2Other: Container<ResourceV2Payload>;
 	testSubordinateGoalBudgetOtherResource: Container<ResourceDataPayload>;
 	testSubordinateMeasureResourceDataOtherResource: Container<ResourceDataPayload>;
-	testTask: TaskContainer;
+	testTask: Container<TaskPayload>;
 	testTaskCollection: TaskCollectionContainer;
 	testReport: Container<ReportPayload>;
 	testPublicReport: Container<ReportPayload>;
@@ -889,7 +889,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testTaskCollection.managed_by,
 				'knot-dots'
-			) as TaskContainer;
+			) as Container<TaskPayload>;
 			const testTask = await createContainer(adminContext, {
 				...newTask,
 				payload: {

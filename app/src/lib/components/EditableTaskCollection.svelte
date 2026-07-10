@@ -15,7 +15,7 @@
 		payloadTypes,
 		predicates,
 		type TaskCollectionContainer,
-		type TaskContainer
+		type TaskPayload
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
@@ -43,7 +43,7 @@
 					relationType: [predicates.enum['is-part-of']]
 				})
 			: new Promise(() => [])
-	) as Promise<TaskContainer[]>;
+	) as Promise<Container<TaskPayload>[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

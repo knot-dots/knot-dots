@@ -14,11 +14,11 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyPayload, type Container, predicates, type TaskContainer } from '$lib/models';
+	import { type AnyPayload, type Container, predicates, type TaskPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
-		container: TaskContainer;
+		container: Container<TaskPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

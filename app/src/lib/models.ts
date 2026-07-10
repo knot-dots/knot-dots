@@ -2042,11 +2042,9 @@ export function isInlineHelpTextContainer(
 	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
 }
 
-export type TaskContainer = Container<TaskPayload>;
-
 export function isTaskContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is TaskContainer {
+): container is Container<TaskPayload> {
 	return container.payload.type === payloadTypes.enum.task;
 }
 
@@ -2071,7 +2069,7 @@ export function isTaskCollectionContainer(
 export type MeasureMonitoringContainer =
 	| Container<EffectPayload>
 	| Container<GoalPayload>
-	| TaskContainer;
+	| Container<TaskPayload>;
 
 export function isMeasureMonitoringContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
@@ -2531,7 +2529,7 @@ export function isObserverOf(user: { guid: string }, container: Container<AnyPay
 }
 
 export function isAssignedTo(user: { guid: string }) {
-	return (container: TaskContainer) => container.payload.assignee.includes(user.guid);
+	return (container: Container<TaskPayload>) => container.payload.assignee.includes(user.guid);
 }
 
 export function containerOfType(

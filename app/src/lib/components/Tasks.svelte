@@ -15,13 +15,13 @@
 		payloadTypes,
 		predicates,
 		status,
-		type TaskContainer
+		type TaskPayload
 	} from '$lib/models';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 
 	interface Props {
 		container?: Container<AnyPayload>;
-		containers: TaskContainer[];
+		containers: Container<TaskPayload>[];
 		relatedContainers?: Container<GoalPayload>[];
 	}
 
