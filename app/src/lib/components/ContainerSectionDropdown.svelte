@@ -12,9 +12,13 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import {
 		type AnyPayload,
+		type ColContentPayload,
 		type Container,
+		type InfoBoxPayload,
 		isTeaserLikeContainer,
-		type TeaserLikeContainer
+		type QuotePayload,
+		type TeaserHighlightPayload,
+		type TeaserPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -70,9 +74,13 @@
 	 */
 	function getBooleanField(key: 'titleEnable' | 'textEnable' | 'imageEnable' | 'linkEnable') {
 		if (!teaserContainer) return null;
-		const pKey = (
-			payloadSuffix === 'Right' ? `${key}Right` : key
-		) as keyof TeaserLikeContainer['payload'];
+		const pKey = (payloadSuffix === 'Right' ? `${key}Right` : key) as keyof (
+			| ColContentPayload
+			| InfoBoxPayload
+			| QuotePayload
+			| TeaserHighlightPayload
+			| TeaserPayload
+		);
 		// We return the actual object and the specific key to allow binding
 		return { payload: teaserContainer.payload, key: pKey };
 	}
