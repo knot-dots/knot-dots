@@ -1748,8 +1748,6 @@ export function isContainerWithEffect(
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
-export const actualDataContainer = createContainerSchema(actualDataPayload);
-
 export function isActualDataContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<ActualDataPayload> {

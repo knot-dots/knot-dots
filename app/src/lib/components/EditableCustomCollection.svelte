@@ -25,10 +25,11 @@
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
-		actualDataContainer,
+		actualDataPayload,
 		type ActualDataPayload,
 		type AnyPayload,
 		type Container,
+		createContainerSchema,
 		createCopyOf,
 		type CustomCollectionPayload,
 		isActualDataContainer,
@@ -271,7 +272,7 @@
 			'alpha',
 			{ signal }
 		);
-		return z.array(actualDataContainer).parse(response);
+		return z.array(createContainerSchema(actualDataPayload)).parse(response);
 	});
 
 	let isRuleBasedCollection = $derived(
@@ -346,7 +347,7 @@
 
 				const response = await fetch(`/container?${params.toString()}`, { signal });
 				if (!response.ok) return [];
-				return z.array(actualDataContainer).parse(await response.json());
+				return z.array(createContainerSchema(actualDataPayload)).parse(await response.json());
 			});
 
 			// Combine results from all chunks
