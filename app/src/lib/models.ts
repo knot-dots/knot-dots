@@ -739,7 +739,7 @@ const basePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-const binaryIndicatorPayload = basePayload
+export const binaryIndicatorPayload = basePayload
 	.extend({
 		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
@@ -1759,8 +1759,6 @@ export function isAdministrativeAreaBasicDataContainer(
 ): container is Container<AdministrativeAreaBasicDataPayload> {
 	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
 }
-
-export const binaryIndicatorContainer = createContainerSchema(binaryIndicatorPayload);
 
 export function isBinaryIndicatorContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>

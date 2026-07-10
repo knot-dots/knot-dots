@@ -9,10 +9,11 @@
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
-		binaryIndicatorContainer,
+		binaryIndicatorPayload,
 		type BinaryIndicatorPayload,
 		computeFacetCount,
 		type Container,
+		createContainerSchema,
 		type GoalPayload,
 		indicatorCategories,
 		indicatorTemplateContainer,
@@ -50,7 +51,9 @@
 		async ([filter, terms], _, { signal }) => {
 			if (target) {
 				return z
-					.array(z.union([indicatorTemplateContainer, binaryIndicatorContainer]))
+					.array(
+						z.union([indicatorTemplateContainer, createContainerSchema(binaryIndicatorPayload)])
+					)
 					.parse(
 						await fetchSuggestedContainers(
 							target.guid,

@@ -12,10 +12,11 @@
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
-		binaryIndicatorContainer,
+		binaryIndicatorPayload,
 		type BinaryIndicatorPayload,
 		computeFacetCount,
 		type Container,
+		createContainerSchema,
 		indicatorCategories,
 		indicatorTemplateContainer,
 		type IndicatorTemplatePayload,
@@ -75,7 +76,7 @@
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
 			return z
-				.array(z.union([binaryIndicatorContainer, indicatorTemplateContainer]))
+				.array(z.union([createContainerSchema(binaryIndicatorPayload), indicatorTemplateContainer]))
 				.parse(await response.json());
 		},
 		{
