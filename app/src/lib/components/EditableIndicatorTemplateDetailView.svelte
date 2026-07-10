@@ -22,7 +22,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isActualDataContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
@@ -35,7 +35,7 @@
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
-		container: IndicatorTemplateContainer;
+		container: Container<IndicatorTemplatePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 	}

@@ -1,9 +1,5 @@
-import { unwrapFunctionStore, _ } from 'svelte-i18n';
-import {
-	isActualDataContainer,
-	type Container,
-	type IndicatorTemplateContainer
-} from '$lib/models';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { type Container, type IndicatorTemplatePayload, isActualDataContainer } from '$lib/models';
 
 const $_ = unwrapFunctionStore(_);
 
@@ -58,7 +54,7 @@ export function generateIndicatorCsv(
 	const csvRows = [headers.map(escapeCsvField).join(';')];
 
 	for (const row of rows) {
-		const p = row.payload as IndicatorTemplateContainer['payload'];
+		const p = row.payload as IndicatorTemplatePayload;
 
 		const actualData = actualDataContainers
 			.filter(isActualDataContainer)

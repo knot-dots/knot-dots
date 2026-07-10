@@ -15,8 +15,8 @@
 		type Container,
 		type GoalPayload,
 		indicatorCategories,
-		type IndicatorTemplateContainer,
 		indicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		indicatorTypes,
 		isEffectContainer,
 		type MeasureContainer,
@@ -24,9 +24,11 @@
 	} from '$lib/models';
 
 	interface Props {
-		onSelect: (container: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer) => void;
+		onSelect: (
+			container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>
+		) => void;
 		target: Container<GoalPayload> | MeasureContainer;
-		value?: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer;
+		value?: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 	}
 
 	let { onSelect, target, value }: Props = $props();

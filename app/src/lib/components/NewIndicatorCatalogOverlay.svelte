@@ -14,9 +14,10 @@
 	import {
 		type ActualDataPayload,
 		computeFacetCount,
+		type Container,
 		containerOfType,
 		indicatorCategories,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		indicatorTypes,
 		type NewContainer,
 		overlayKey,
@@ -28,7 +29,7 @@
 	import { newContainer } from '$lib/stores';
 
 	interface Props {
-		containers: IndicatorTemplateContainer[];
+		containers: Container<IndicatorTemplatePayload>[];
 	}
 
 	let { containers }: Props = $props();
@@ -46,7 +47,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as NewContainer & Pick<IndicatorTemplateContainer, 'payload'>;
+		) as NewContainer<IndicatorTemplatePayload>;
 
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
@@ -57,7 +58,7 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	async function useIndicatorTemplate(template: IndicatorTemplateContainer) {
+	async function useIndicatorTemplate(template: Container<IndicatorTemplatePayload>) {
 		const container = containerOfType(
 			payloadTypes.enum.actual_data,
 			page.data.currentOrganization.guid,
@@ -109,7 +110,7 @@
 		}
 	}
 
-	async function select(container: IndicatorTemplateContainer) {
+	async function select(container: Container<IndicatorTemplatePayload>) {
 		await useIndicatorTemplate(container);
 	}
 

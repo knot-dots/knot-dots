@@ -11,7 +11,7 @@
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
 		type Container,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isEffectContainer,
@@ -20,7 +20,7 @@
 
 	interface Props {
 		button?: Snippet;
-		container: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>;
+		container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 		ignoreBulkActionContext?: boolean;
 		relatedContainers?: Container[];
 		showRelationFilter?: boolean;

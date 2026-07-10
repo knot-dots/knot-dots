@@ -10,14 +10,14 @@
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer
 	} from '$lib/models';
 	import { fetchContainersRelatedToIndicators } from '$lib/remote/data.remote';
 
 	interface Props {
-		container: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer;
+		container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 	}
 
 	let { container }: Props = $props();

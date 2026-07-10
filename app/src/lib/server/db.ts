@@ -16,7 +16,7 @@ import {
 	container,
 	findDescendants,
 	type HelpSlug,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	type ModifiedContainer,
 	type NewContainer,
 	type OrganizationalUnitContainer,
@@ -1220,7 +1220,7 @@ export function getAllRelatedContainersByProgramType(
 }
 
 export function getAllContainersRelatedToIndicators(
-	containers: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>,
+	containers: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
 	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
 ) {

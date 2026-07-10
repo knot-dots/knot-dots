@@ -3,7 +3,7 @@ import {
 	type BinaryIndicatorPayload,
 	type Container,
 	containerOfType,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	type InitialEffectPayload,
 	type IooiType,
 	type NewContainer,
@@ -14,7 +14,7 @@ import saveContainer from '$lib/client/saveContainer';
 
 export default async function createEffect(
 	target: Container,
-	indicator: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>,
+	indicator: Container<BinaryIndicatorPayload | IndicatorTemplatePayload>,
 	iooiType?: IooiType
 ) {
 	const newEffect = containerOfType(

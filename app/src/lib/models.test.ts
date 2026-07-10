@@ -4,7 +4,7 @@ import {
 	type Container,
 	container,
 	type EffectPayload,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	type MeasureContainer,
 	payloadTypes,
 	predicates,
@@ -36,7 +36,7 @@ const indicatorTemplateOne = testContainer.parse({
 		type: payloadTypes.enum.indicator_template,
 		unit: units.enum['unit.cubic_meter']
 	}
-}) as IndicatorTemplateContainer;
+}) as Container<IndicatorTemplatePayload>;
 
 const indicatorTemplateTwo = testContainer.parse({
 	guid: '69e732e4-fb80-44e8-a465-00b593843764',
@@ -48,7 +48,7 @@ const indicatorTemplateTwo = testContainer.parse({
 		type: payloadTypes.enum.indicator_template,
 		unit: units.enum['unit.kilogram_per_capita']
 	}
-}) as IndicatorTemplateContainer;
+}) as Container<IndicatorTemplatePayload>;
 
 const indicatorTemplateThree = testContainer.parse({
 	guid: '108e39e2-a139-4744-8f37-3203eb9ef3c6',
@@ -63,7 +63,7 @@ const indicatorTemplateThree = testContainer.parse({
 		type: payloadTypes.enum.indicator_template,
 		unit: units.enum['unit.percent']
 	}
-}) as IndicatorTemplateContainer;
+}) as Container<IndicatorTemplatePayload>;
 
 const program = testContainer.parse({
 	guid: 'f27b7194-1669-444a-ac0d-6380ed80e619',

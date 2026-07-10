@@ -1842,11 +1842,9 @@ export function isIndicatorCollectionContainer(
 
 export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
 
-export type IndicatorTemplateContainer = Container<IndicatorTemplatePayload>;
-
 export function isIndicatorTemplateContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is IndicatorTemplateContainer {
+): container is Container<IndicatorTemplatePayload> {
 	return container.payload.type === payloadTypes.enum.indicator_template;
 }
 
@@ -2779,7 +2777,7 @@ export function findLeafObjectives(containers: ObjectiveContainer[]): ObjectiveC
 }
 
 export function findOverallObjective(
-	container: IndicatorTemplateContainer,
+	container: Container<IndicatorTemplatePayload>,
 	containers: Container[]
 ) {
 	return containers
@@ -3068,7 +3066,7 @@ export function getOrganizationURL(
 }
 
 function computeRelevanceScore(
-	indicator: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer,
+	indicator: Container<BinaryIndicatorPayload | IndicatorTemplatePayload>,
 	containersRelatedToIndicator: Container[],
 	container: MeasureContainer | Container<GoalPayload>
 ): number {
@@ -3114,10 +3112,10 @@ function computeRelevanceScore(
 }
 
 export function sortIndicatorsByRelevanceForGoalOrMeasure(
-	indicators: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>,
+	indicators: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>,
 	containersRelatedToIndicators: Container[],
 	container: Container<GoalPayload> | MeasureContainer
-): Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer> {
+): Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>> {
 	return indicators
 		.map((i) => ({
 			indicator: i,

@@ -5,7 +5,7 @@ import {
 	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	indicatorTypes,
 	isActualDataContainer,
 	type OrganizationalUnitContainer,
@@ -31,7 +31,7 @@ export interface IndicatorFilters {
 }
 
 export interface IndicatorLoadResult {
-	containers: Array<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>;
+	containers: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>;
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
@@ -84,7 +84,7 @@ export async function getIndicatorsData(params: {
 		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 	);
 	const indicators = esResult.containers as Array<
-		Container<BinaryIndicatorPayload> | IndicatorTemplateContainer
+		Container<BinaryIndicatorPayload | IndicatorTemplatePayload>
 	>;
 	const facetData = esResult.facets;
 

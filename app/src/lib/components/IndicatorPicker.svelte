@@ -17,8 +17,8 @@
 		computeFacetCount,
 		type Container,
 		indicatorCategories,
-		type IndicatorTemplateContainer,
 		indicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		indicatorTypes,
 		payloadTypes
 	} from '$lib/models';
@@ -51,7 +51,7 @@
 	let selected = $state([]) as string[];
 	let knownIndicators = new SvelteMap<
 		string,
-		Container<BinaryIndicatorPayload> | IndicatorTemplateContainer
+		Container<BinaryIndicatorPayload | IndicatorTemplatePayload>
 	>();
 
 	let activeFilters = $derived(

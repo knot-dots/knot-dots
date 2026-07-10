@@ -19,7 +19,7 @@
 		type BinaryIndicatorPayload,
 		type Container,
 		type EffectPayload,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isEffectContainer,
@@ -37,7 +37,7 @@
 
 	let target = $derived($addEffectState.target ?? $addObjectiveState.target);
 
-	let selected = $state<Container<BinaryIndicatorPayload> | IndicatorTemplateContainer>();
+	let selected = $state<Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>>();
 
 	const actualDataResource = resource([() => selected?.guid], async ([guid], _, { signal }) => {
 		if (!guid) {
@@ -57,7 +57,9 @@
 		);
 	});
 
-	function handleSelect(value: Container<BinaryIndicatorPayload> | IndicatorTemplateContainer) {
+	function handleSelect(
+		value: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>
+	) {
 		selected = value;
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}

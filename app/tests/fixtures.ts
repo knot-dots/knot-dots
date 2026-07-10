@@ -8,7 +8,7 @@ import {
 	type EffectPayload,
 	etag,
 	type GoalPayload,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	type MeasureContainer,
 	type NewContainer,
 	type ObjectiveContainer,
@@ -54,7 +54,7 @@ type MyWorkerFixtures = {
 	suiteId: string;
 	adminContext: BrowserContext;
 	defaultOrganization: OrganizationContainer;
-	testIndicatorTemplate: IndicatorTemplateContainer;
+	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testOrganization: OrganizationContainer;
 	testOrganizationalUnit: OrganizationalUnitContainer;
 	testIndividualProfile: OrganizationalUnitContainer;
@@ -484,7 +484,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testOrganization.guid,
 				'knot-dots'
-			) as IndicatorTemplateContainer;
+			) as Container<IndicatorTemplatePayload>;
 			const testIndicatorTemplate = await createContainer(adminContext, {
 				...newIndicatorTemplate,
 				payload: {

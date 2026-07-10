@@ -9,10 +9,11 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	type ActualDataPayload,
 	anyInitialPayload,
+	type Container,
 	containerOfType,
 	createNewContainerSchema,
 	editorialState,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	isActualDataContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
@@ -109,7 +110,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			},
 			'alpha'
 		)
-	)) as Array<IndicatorTemplateContainer>;
+	)) as Array<Container<IndicatorTemplatePayload>>;
 
 	const existingByTitle = new Map(existingIndicators.map((c) => [c.payload.title, c]));
 
@@ -167,7 +168,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	);
 
 	const containers: {
-		indicator: Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
+		indicator: NewContainer<IndicatorTemplatePayload>;
 		yearValues: [number, number][];
 	}[] = [];
 	const errors: string[] = [];
@@ -260,7 +261,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>,
+					}) as NewContainer<IndicatorTemplatePayload>,
 					yearValues
 				});
 			} catch (e) {
@@ -279,7 +280,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		return json({ errors }, { status: 422 });
 	}
 
-	const createdIndicators: IndicatorTemplateContainer[] = [];
+	const createdIndicators: Container<IndicatorTemplatePayload>[] = [];
 
 	await locals.pool.transaction(async (connection) => {
 		for (const { indicator, yearValues } of containers) {
@@ -300,7 +301,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);
 				indicatorGuid = created.guid;
-				createdIndicators.push(created as IndicatorTemplateContainer);
+				createdIndicators.push(created as Container<IndicatorTemplatePayload>);
 			} else {
 				indicatorGuid = '';
 			}

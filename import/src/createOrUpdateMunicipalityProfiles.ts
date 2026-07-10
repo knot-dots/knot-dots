@@ -1,5 +1,6 @@
 import {
-	IndicatorTemplateContainer,
+	type Container,
+	type IndicatorTemplatePayload,
 	OrganizationalUnitContainer,
 	visibility
 } from '@knot-dots/app/src/lib/models.ts';
@@ -495,7 +496,7 @@ async function createOrUpdateActualDataContainers(
 				organization: ouContainer.organization,
 				organizationalUnit: null,
 				payload: { externalReference, type: 'indicator_template' }
-			})(tx)) as IndicatorTemplateContainer;
+			})(tx)) as Container<IndicatorTemplatePayload>;
 
 			if (!indicatorTemplate) {
 				continue;

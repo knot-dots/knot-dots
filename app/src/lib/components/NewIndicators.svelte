@@ -21,7 +21,7 @@
 		containerOfType,
 		findConnected,
 		indicatorCategories,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isContainerWithEffect,
@@ -99,7 +99,7 @@
 			page.data.currentOrganizationalUnit?.guid ?? null,
 			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
 			env.PUBLIC_KC_REALM as string
-		) as Omit<NewContainer, 'payload'> & Pick<IndicatorTemplateContainer, 'payload'>;
+		) as NewContainer<IndicatorTemplatePayload>;
 
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
@@ -133,7 +133,7 @@
 		event: CustomEvent<
 			DndEvent<{
 				guid: string;
-				container: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 			}>
 		>
 	) {
@@ -160,7 +160,7 @@
 		event: CustomEvent<
 			DndEvent<{
 				guid: string;
-				container: IndicatorTemplateContainer | Container<BinaryIndicatorPayload>;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 			}>
 		>
 	) {

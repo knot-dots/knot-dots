@@ -2,9 +2,10 @@ import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
 	computeFacetCount,
+	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorTemplateContainer,
+	type IndicatorTemplatePayload,
 	indicatorTypes,
 	payloadTypes
 } from '$lib/models';
@@ -39,7 +40,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		'',
 		{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 	);
-	const containers = esResult.containers as IndicatorTemplateContainer[];
+	const containers = esResult.containers as Container<IndicatorTemplatePayload>[];
 	const data = esResult.facets;
 
 	const relatedContainers = await locals.pool.connect(

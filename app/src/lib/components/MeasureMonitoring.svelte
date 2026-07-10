@@ -4,8 +4,9 @@
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		titleForGoalCollection,
+		type Container,
 		containersByHierarchyLevel,
+		type IndicatorTemplatePayload,
 		isEffectContainer,
 		isGoalContainer,
 		isPartOf,
@@ -16,14 +17,14 @@
 		payloadTypes,
 		predicates,
 		type SimpleMeasureContainer,
-		type IndicatorTemplateContainer
+		titleForGoalCollection
 	} from '$lib/models';
 
 	interface Props {
 		measure?: MeasureContainer | SimpleMeasureContainer;
 		measures: Array<MeasureContainer | SimpleMeasureContainer>;
 		containers: MeasureMonitoringContainer[];
-		indicators: IndicatorTemplateContainer[];
+		indicators: Container<IndicatorTemplatePayload>[];
 		showMeasures?: boolean;
 	}
 

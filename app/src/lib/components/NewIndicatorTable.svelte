@@ -16,7 +16,7 @@
 		findAncestors,
 		findLeafObjectives,
 		findOverallObjective,
-		type IndicatorTemplateContainer,
+		type IndicatorTemplatePayload,
 		isActualDataContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
@@ -37,7 +37,7 @@
 	import { _ } from 'svelte-i18n';
 
 	interface Props {
-		container: IndicatorTemplateContainer;
+		container: Container<IndicatorTemplatePayload>;
 		editable?: boolean;
 		relatedContainers?: Container[];
 		comparisonContainers?: Container<ActualDataPayload>[];
