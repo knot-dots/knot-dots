@@ -15,7 +15,7 @@ import {
 	predicates,
 	type Relation,
 	sustainableDevelopmentGoals,
-	type TermContainer,
+	type TermPayload,
 	topics,
 	visibility
 } from '$lib/models';
@@ -227,7 +227,7 @@ async function ensureTermsForCategory(
 	pool: DatabasePool,
 	category: Container<CategoryPayload>,
 	seed: CategorySeed,
-	allTerms: TermContainer[]
+	allTerms: Container<TermPayload>[]
 ) {
 	const relationsToUpdate: Relation[] = [];
 
@@ -259,7 +259,7 @@ async function ensureTermsForCategory(
 async function ensureRelation(
 	pool: DatabasePool,
 	categoryGuid: string,
-	term: TermContainer,
+	term: Container<TermPayload>,
 	position: number
 ) {
 	const hasRelation = term.relation.some(
@@ -290,7 +290,7 @@ async function ensureRelation(
 	}
 }
 
-async function ensurePublicVisibility<T extends Container<CategoryPayload> | TermContainer>(
+async function ensurePublicVisibility<T extends Container<CategoryPayload | TermPayload>>(
 	pool: DatabasePool,
 	container: T
 ) {
@@ -331,7 +331,11 @@ async function ensureCategoryMetadata(
 	return { ...updated, relation: category.relation } as Container<CategoryPayload>;
 }
 
-async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed: TermSeed) {
+async function ensureTermMetadata(
+	pool: DatabasePool,
+	term: Container<TermPayload>,
+	seed: TermSeed
+) {
 	const needsTitleUpdate = term.payload.title !== seed.title;
 	const needsDescriptionUpdate =
 		seed.description !== undefined && term.payload.description !== seed.description;
@@ -348,7 +352,7 @@ async function ensureTermMetadata(pool: DatabasePool, term: TermContainer, seed:
 
 	const updated = await pool.connect(updateContainer(term as ModifiedContainer));
 
-	return { ...updated, relation: term.relation } as TermContainer;
+	return { ...updated, relation: term.relation } as Container<TermPayload>;
 }
 
 async function createTerm(
@@ -365,7 +369,7 @@ async function createTerm(
 		category.realm
 	) as NewContainer;
 
-	const payload = newTerm.payload as TermContainer['payload'];
+	const payload = newTerm.payload as TermPayload;
 	payload.title = seed.title;
 	payload.value = seed.value;
 	if (seed.description) {

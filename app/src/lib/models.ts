@@ -2050,11 +2050,9 @@ export function isTaskContainer(
 
 export const termContainer = createContainerSchema(termPayload);
 
-export type TermContainer = Container<TermPayload>;
-
 export function isTermContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is TermContainer {
+): container is Container<TermPayload> {
 	return container.payload.type === payloadTypes.enum.term;
 }
 
@@ -2585,7 +2583,7 @@ export function newCategoryTemplateFromCategory(
 }
 
 export function newTermForCategoryTemplate(
-	term: TermContainer,
+	term: Container<TermPayload>,
 	categoryGuid: string,
 	organization: Container<OrganizationPayload>,
 	position: number
@@ -2597,7 +2595,7 @@ export function newTermForCategoryTemplate(
 		organization.guid,
 		organization.realm
 	) as NewContainer;
-	const payload = template.payload as TermContainer['payload'];
+	const payload = template.payload as TermPayload;
 	Object.assign(payload, term.payload);
 	payload.visibility = visibility.enum.public;
 	template.relation = [

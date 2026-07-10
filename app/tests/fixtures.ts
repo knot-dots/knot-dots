@@ -24,7 +24,7 @@ import {
 	type ResourceV2Payload,
 	type TaskCollectionContainer,
 	type TaskPayload,
-	type TermContainer
+	type TermPayload
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
@@ -45,7 +45,7 @@ type MyFixtures = {
 	taskStatusBoard: TaskStatusBoard;
 	testCategoryWithTerms: {
 		category: Container<CategoryPayload>;
-		terms: TermContainer[];
+		terms: Container<TermPayload>[];
 		termNames: string[];
 	};
 };
@@ -283,7 +283,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			payload: { ...newCategory.payload, title: `E2E Category ${workerInfo.project.name}` }
 		});
 
-		const terms: TermContainer[] = [];
+		const terms: Container<TermPayload>[] = [];
 		const termNames = [
 			`E2E Term A ${workerInfo.project.name}`,
 			`E2E Term B ${workerInfo.project.name}`
@@ -295,7 +295,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				null,
 				testGoal.organization,
 				'knot-dots'
-			) as TermContainer;
+			) as Container<TermPayload>;
 			const term = await createContainer(adminContext, {
 				...newTerm,
 				payload: {

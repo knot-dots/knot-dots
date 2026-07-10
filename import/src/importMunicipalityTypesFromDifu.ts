@@ -2,7 +2,7 @@ import {
 	type CategoryPayload,
 	categoryPayload,
 	type Container,
-	TermContainer,
+	type TermPayload,
 	termPayload
 } from '@knot-dots/app/src/lib/models.ts';
 import { type DatabaseTransactionConnection } from 'slonik';
@@ -77,8 +77,8 @@ const envSchema = z.object({
 	process.exitCode = 1;
 });
 
-function buildTermMap(terms: Readonly<Array<TermContainer>>) {
-	const byCode = new Map<string, TermContainer>();
+function buildTermMap(terms: Readonly<Array<Container<TermPayload>>>) {
+	const byCode = new Map<string, Container<TermPayload>>();
 
 	for (const term of terms) {
 		const code = String(term.payload.value ?? '').trim();
@@ -154,7 +154,7 @@ async function ensureTerm(
 	category: Container<CategoryPayload>,
 	code: string,
 	position: number,
-	termsByCode: Map<string, TermContainer>,
+	termsByCode: Map<string, Container<TermPayload>>,
 	env: z.infer<typeof envSchema>,
 	stats: { termsCreated: number; termsUpdated: number }
 ) {
@@ -170,7 +170,7 @@ async function ensureTerm(
 				realm: env.PUBLIC_KC_REALM,
 				user: [{ predicate: creatorPredicate, subject: env.IMPORT_USER }]
 			})
-		)(tx)) as TermContainer;
+		)(tx)) as Container<TermPayload>;
 
 		await createRelation([
 			{
@@ -197,7 +197,7 @@ async function ensureTerm(
 	const updated = (await updateContainer({
 		...existing,
 		payload: termPayload.parse({ ...existing.payload, title: code, value: code })
-	})(tx)) as TermContainer;
+	})(tx)) as Container<TermPayload>;
 	termsByCode.set(code, updated);
 	stats.termsUpdated++;
 	return updated;
