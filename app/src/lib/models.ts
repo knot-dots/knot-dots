@@ -712,15 +712,17 @@ const teaserBasePayload = z.object({
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
-export const actualDataPayload = z.object({
-	booleanValue: z.boolean().default(false),
-	indicator: z.uuid(),
-	source: z.string().optional(),
-	title: z.string(),
-	type: z.literal(payloadTypes.enum.actual_data),
-	values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+export const actualDataPayload = z
+	.object({
+		booleanValue: z.boolean().default(false),
+		indicator: z.uuid(),
+		source: z.string().optional(),
+		title: z.string(),
+		type: z.literal(payloadTypes.enum.actual_data),
+		values: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type ActualDataPayload = z.infer<typeof actualDataPayload>;
 
@@ -732,14 +734,16 @@ export function isActualDataContainer(
 
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
 
-export const administrativeAreaBasicDataPayload = z.object({
-	title: z
-		.string()
-		.readonly()
-		.default(() => unwrapFunctionStore(_)('administrative_area.basic_data')),
-	type: z.literal(payloadTypes.enum.administrative_area_basic_data),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+export const administrativeAreaBasicDataPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('administrative_area.basic_data')),
+		type: z.literal(payloadTypes.enum.administrative_area_basic_data),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type AdministrativeAreaBasicDataPayload = z.infer<typeof administrativeAreaBasicDataPayload>;
 
@@ -769,17 +773,19 @@ export function isBinaryIndicatorContainer(
 
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
-const unrefinedCategoryPayload = z.object({
-	description: z.string().trim().optional(),
-	key: z.string().trim().optional(),
-	objectTypes: z
-		.array(categoryObjectTypes)
-		.transform(deduplicate)
-		.default(categoryObjectTypes.options),
-	title: z.string().trim().min(1),
-	type: z.literal(payloadTypes.enum.category),
-	visibility: visibility.default(visibility.enum['public'])
-});
+const unrefinedCategoryPayload = z
+	.object({
+		description: z.string().trim().optional(),
+		key: z.string().trim().optional(),
+		objectTypes: z
+			.array(categoryObjectTypes)
+			.transform(deduplicate)
+			.default(categoryObjectTypes.options),
+		title: z.string().trim().min(1),
+		type: z.literal(payloadTypes.enum.category),
+		visibility: visibility.default(visibility.enum['public'])
+	})
+	.strict();
 
 export const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
 	if (payload.title && !payload.key) {
@@ -806,7 +812,8 @@ const chapterPayload = basePayload
 	.omit({
 		description: true,
 		summary: true
-	});
+	})
+	.strict();
 
 export type ChapterPayload = z.infer<typeof chapterPayload>;
 
@@ -894,14 +901,17 @@ const initialDemographicDataPayload = demographicDataPayload.partial({
 	title: true
 });
 
-const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).extend({
-	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	booleanValue: z.boolean().optional(),
-	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
-	type: z.literal(payloadTypes.enum.effect)
-});
+const effectPayload = measureMonitoringBasePayload
+	.omit({ summary: true })
+	.extend({
+		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		booleanValue: z.boolean().optional(),
+		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
+		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
+		type: z.literal(payloadTypes.enum.effect)
+	})
+	.strict();
 
 export type EffectPayload = z.infer<typeof effectPayload>;
 
@@ -1282,37 +1292,39 @@ export function isObjectiveCollectionContainer(
 
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
-export const organizationPayload = z.object({
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
-	customDomain: z.hostname().optional(),
-	customFavicon: z
-		.object({
-			url: z.url(),
-			type: z.string()
-		})
-		.optional(),
-	default: z.boolean().default(false),
-	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
+export const organizationPayload = z
+	.object({
+		color: backgroundColor.optional(),
+		cover: z.url().optional(),
+		coverSource: z.string().optional(),
+		customDomain: z.hostname().optional(),
+		customFavicon: z
+			.object({
+				url: z.url(),
+				type: z.string()
 			})
-		)
-		.default([]),
-	image: z.url().optional(),
-	imageReplacesName: z.boolean().default(false),
-	name: z.string().trim(),
-	organizationCategory: organizationCategories.optional(),
-	type: z.literal(payloadTypes.enum.organization),
-	useAnalytics: z.boolean().default(true),
-	visibility: visibility.default(visibility.enum['organization']),
-	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
-});
+			.optional(),
+		default: z.boolean().default(false),
+		description: z.string().trim().optional(),
+		favorite: z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([]),
+		image: z.url().optional(),
+		imageReplacesName: z.boolean().default(false),
+		name: z.string().trim(),
+		organizationCategory: organizationCategories.optional(),
+		type: z.literal(payloadTypes.enum.organization),
+		useAnalytics: z.boolean().default(true),
+		visibility: visibility.default(visibility.enum['organization']),
+		visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
+	})
+	.strict();
 
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
 
@@ -1324,40 +1336,42 @@ export function isOrganizationContainer(
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
-export const organizationalUnitPayload = z.object({
-	administrativeType: z.array(administrativeTypes).default([]),
-	category: z
-		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
-		.default({}),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
-	cityAndMunicipalityTypeBBSR: z.string().optional(),
-	description: z.string().trim().optional(),
-	favorite: z
-		.array(
-			z.object({
-				href: z.string(),
-				icon: z.url().optional(),
-				title: z.string().trim()
-			})
-		)
-		.default([]),
-	federalState: z.string().optional(),
-	geometry: z.uuid().optional(),
-	image: z.url().optional(),
-	imageReplacesName: z.boolean().default(false),
-	level: z.number().int().positive().default(1),
-	name: z.string().trim(),
-	nameBBSR: z.string().optional(),
-	nameOSM: z.string().optional(),
-	officialMunicipalityKey: z.string().length(8).optional(),
-	officialRegionalCode: z.string().length(12).optional(),
-	organizationalUnitType: organizationalUnitType.optional(),
-	type: z.literal(payloadTypes.enum.organizational_unit),
-	visibility: visibility.default(visibility.enum['organization']),
-	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
-});
+export const organizationalUnitPayload = z
+	.object({
+		administrativeType: z.array(administrativeTypes).default([]),
+		category: z
+			.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+			.default({}),
+		color: backgroundColor.optional(),
+		cover: z.url().optional(),
+		coverSource: z.string().optional(),
+		cityAndMunicipalityTypeBBSR: z.string().optional(),
+		description: z.string().trim().optional(),
+		favorite: z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([]),
+		federalState: z.string().optional(),
+		geometry: z.uuid().optional(),
+		image: z.url().optional(),
+		imageReplacesName: z.boolean().default(false),
+		level: z.number().int().positive().default(1),
+		name: z.string().trim(),
+		nameBBSR: z.string().optional(),
+		nameOSM: z.string().optional(),
+		officialMunicipalityKey: z.string().length(8).optional(),
+		officialRegionalCode: z.string().length(12).optional(),
+		organizationalUnitType: organizationalUnitType.optional(),
+		type: z.literal(payloadTypes.enum.organizational_unit),
+		visibility: visibility.default(visibility.enum['organization']),
+		visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
+	})
+	.strict();
 
 export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
 
@@ -1371,15 +1385,17 @@ const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ nam
 
 export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
 
-const pagePayload = z.object({
-	body: z.string().trim(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const pagePayload = z
+	.object({
+		body: z.string().trim(),
+		color: backgroundColor.optional(),
+		cover: z.url().optional(),
+		coverSource: z.string().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.page),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type PagePayload = z.infer<typeof pagePayload>;
 
@@ -1440,14 +1456,16 @@ export function isProgramCollectionContainer(
 
 const initialProgramCollectionPayload = programCollectionPayload;
 
-const progressPayload = z.object({
-	title: z
-		.string()
-		.readonly()
-		.default(() => unwrapFunctionStore(_)('progress')),
-	type: z.literal(payloadTypes.enum.progress),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const progressPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('progress')),
+		type: z.literal(payloadTypes.enum.progress),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type ProgressPayload = z.infer<typeof progressPayload>;
 
@@ -1719,14 +1737,16 @@ export function isSimpleMeasureContainer(
 
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
-const summaryPayload = z.object({
-	title: z
-		.string()
-		.readonly()
-		.default(() => unwrapFunctionStore(_)('summary')),
-	type: z.literal(payloadTypes.enum.summary),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const summaryPayload = z
+	.object({
+		title: z
+			.string()
+			.readonly()
+			.default(() => unwrapFunctionStore(_)('summary')),
+		type: z.literal(payloadTypes.enum.summary),
+		visibility: visibility.default(visibility.enum['organization'])
+	})
+	.strict();
 
 export type SummaryPayload = z.infer<typeof summaryPayload>;
 
