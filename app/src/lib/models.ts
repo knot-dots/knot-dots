@@ -935,7 +935,7 @@ export type GoalCollectionPayload = z.infer<typeof goalCollectionPayload>;
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
-const helpPayload = z.object({
+export const helpPayload = z.object({
 	body: z.string().trim().default(''),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
@@ -1819,8 +1819,6 @@ export function isGoalCollectionContainer(
 ): container is Container<GoalCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.goal_collection;
 }
-
-export const helpContainer = createContainerSchema(helpPayload);
 
 export function isHelpContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
