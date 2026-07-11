@@ -2030,8 +2030,6 @@ export function isTaskContainer(
 	return container.payload.type === payloadTypes.enum.task;
 }
 
-export const termContainer = createContainerSchema(termPayload);
-
 export function isTermContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<TermPayload> {

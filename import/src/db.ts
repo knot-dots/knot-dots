@@ -14,7 +14,6 @@ import {
 	mapPayload,
 	NewContainer,
 	organizationalUnitPayload,
-	termContainer as persistedTermContainer,
 	type TermPayload,
 	termPayload
 } from '@knot-dots/app/src/lib/models.ts';
@@ -490,7 +489,7 @@ export async function getTermContainersForCategory(
 	categoryGuid: string,
 	predicate = 'is-part-of-category'
 ): Promise<Readonly<Array<Container<TermPayload>>>> {
-	return await tx.any(sql.type(persistedTermContainer)`
+	return await tx.any(sql.type(createContainerSchema(termPayload))`
 		SELECT c.*
 		FROM container c
 		JOIN container_relation cr
