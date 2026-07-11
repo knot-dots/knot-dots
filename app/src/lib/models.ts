@@ -749,6 +749,12 @@ export const binaryIndicatorPayload = basePayload
 
 export type BinaryIndicatorPayload = z.infer<typeof binaryIndicatorPayload>;
 
+export function isBinaryIndicatorContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<BinaryIndicatorPayload> {
+	return container.payload.type === payloadTypes.enum.binary_indicator;
+}
+
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
 const unrefinedCategoryPayload = z.object({
@@ -770,6 +776,12 @@ export const categoryPayload = unrefinedCategoryPayload.superRefine((payload) =>
 });
 
 export type CategoryPayload = z.infer<typeof categoryPayload>;
+
+export function isCategoryContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<CategoryPayload> {
+	return container.payload.type === payloadTypes.enum.category;
+}
 
 const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
 
@@ -793,6 +805,12 @@ export const termPayload = unrefinedTermPayload.superRefine((payload) => {
 
 export type TermPayload = z.infer<typeof termPayload>;
 
+export function isTermContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TermPayload> {
+	return container.payload.type === payloadTypes.enum.term;
+}
+
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 export const actualDataPayload = z.object({
@@ -808,6 +826,12 @@ export const actualDataPayload = z.object({
 
 export type ActualDataPayload = z.infer<typeof actualDataPayload>;
 
+export function isActualDataContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ActualDataPayload> {
+	return container.payload.type === payloadTypes.enum.actual_data;
+}
+
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
 
 export const administrativeAreaBasicDataPayload = z.object({
@@ -820,6 +844,12 @@ export const administrativeAreaBasicDataPayload = z.object({
 });
 
 export type AdministrativeAreaBasicDataPayload = z.infer<typeof administrativeAreaBasicDataPayload>;
+
+export function isAdministrativeAreaBasicDataContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<AdministrativeAreaBasicDataPayload> {
+	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
+}
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
@@ -835,6 +865,12 @@ const chapterPayload = basePayload
 	});
 
 export type ChapterPayload = z.infer<typeof chapterPayload>;
+
+export function isChapterContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ChapterPayload> {
+	return container.payload.type === payloadTypes.enum.chapter;
+}
 
 const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
 
@@ -858,6 +894,12 @@ export const customCollectionPayload = z
 
 export type CustomCollectionPayload = z.infer<typeof customCollectionPayload>;
 
+export function isCustomCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<CustomCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.custom_collection;
+}
+
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
 export const demographicDataPayload = z
@@ -872,6 +914,12 @@ export const demographicDataPayload = z
 	.strict();
 
 export type DemographicDataPayload = z.infer<typeof demographicDataPayload>;
+
+export function isDemographicDataContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<DemographicDataPayload> {
+	return container.payload.type === payloadTypes.enum.demographic_data;
+}
 
 const initialDemographicDataPayload = demographicDataPayload.partial({
 	title: true
@@ -900,6 +948,12 @@ const fileCollectionPayload = z
 
 export type FileCollectionPayload = z.infer<typeof fileCollectionPayload>;
 
+export function isFileCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<FileCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.file_collection;
+}
+
 const initialFileCollectionPayload = fileCollectionPayload;
 
 const goalPayload = basePayload
@@ -914,6 +968,12 @@ const goalPayload = basePayload
 	.strict();
 
 export type GoalPayload = z.infer<typeof goalPayload>;
+
+export function isGoalContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<GoalPayload> {
+	return container.payload.type === payloadTypes.enum.goal;
+}
 
 const initialGoalPayload = goalPayload.partial({
 	goalType: true,
@@ -932,6 +992,12 @@ const goalCollectionPayload = z
 	.strict();
 
 export type GoalCollectionPayload = z.infer<typeof goalCollectionPayload>;
+
+export function isGoalCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<GoalCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.goal_collection;
+}
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
@@ -952,6 +1018,12 @@ export const helpPayload = z.object({
 
 export type HelpPayload = z.infer<typeof helpPayload>;
 
+export function isHelpContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<HelpPayload> {
+	return container.payload.type === payloadTypes.enum.help;
+}
+
 const initialHelpPayload = helpPayload.partial({ title: true });
 
 const indicatorCollectionPayload = z
@@ -967,6 +1039,12 @@ const indicatorCollectionPayload = z
 
 export type IndicatorCollectionPayload = z.infer<typeof indicatorCollectionPayload>;
 
+export function isIndicatorCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<IndicatorCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.indicator_collection;
+}
+
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 export const indicatorTemplatePayload = basePayload
@@ -981,6 +1059,12 @@ export const indicatorTemplatePayload = basePayload
 
 export type IndicatorTemplatePayload = z.infer<typeof indicatorTemplatePayload>;
 
+export function isIndicatorTemplateContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<IndicatorTemplatePayload> {
+	return container.payload.type === payloadTypes.enum.indicator_template;
+}
+
 const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	title: true,
 	unit: true
@@ -994,6 +1078,12 @@ export const knowledgePayload = basePayload
 	.strict();
 
 export type KnowledgePayload = z.infer<typeof knowledgePayload>;
+
+export function isKnowledgeContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<KnowledgePayload> {
+	return container.payload.type === payloadTypes.enum.knowledge;
+}
 
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
@@ -1010,6 +1100,12 @@ export const mapPayload = z
 	.strict();
 
 export type MapPayload = z.infer<typeof mapPayload>;
+
+export function isMapContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<MapPayload> {
+	return container.payload.type === payloadTypes.enum.map;
+}
 
 const initialMapPayload = mapPayload;
 
@@ -1030,6 +1126,12 @@ const measurePayload = basePayload
 
 export type MeasurePayload = z.infer<typeof measurePayload>;
 
+export function isMeasureContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<MeasurePayload> {
+	return container.payload.type === payloadTypes.enum.measure;
+}
+
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
 const measureCollectionPayload = z
@@ -1044,6 +1146,12 @@ const measureCollectionPayload = z
 	.strict();
 
 export type MeasureCollectionPayload = z.infer<typeof measureCollectionPayload>;
+
+export function isMeasureCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<MeasureCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.measure_collection;
+}
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
@@ -1062,6 +1170,12 @@ const objectivePayload = basePayload
 
 export type ObjectivePayload = z.infer<typeof objectivePayload>;
 
+export function isObjectiveContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ObjectivePayload> {
+	return container.payload.type === payloadTypes.enum.objective;
+}
+
 const initialObjectivePayload = objectivePayload.partial({ title: true });
 
 export type InitialObjectivePayload = z.infer<typeof initialObjectivePayload>;
@@ -1079,6 +1193,12 @@ const objectiveCollectionPayload = z
 
 export type ObjectiveCollectionPayload = z.infer<typeof objectiveCollectionPayload>;
 
+export function isObjectiveCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ObjectiveCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.objective_collection;
+}
+
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 const pagePayload = z.object({
@@ -1093,6 +1213,12 @@ const pagePayload = z.object({
 
 export type PagePayload = z.infer<typeof pagePayload>;
 
+export function isPageContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<PagePayload> {
+	return container.payload.type === payloadTypes.enum.page;
+}
+
 const initialPagePayload = pagePayload.partial({ body: true, title: true });
 
 const progressPayload = z.object({
@@ -1106,6 +1232,12 @@ const progressPayload = z.object({
 
 export type ProgressPayload = z.infer<typeof progressPayload>;
 
+export function isProgressContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ProgressPayload> {
+	return container.payload.type === payloadTypes.enum.progress;
+}
+
 const initialProgressPayload = progressPayload;
 
 export const rulePayload = basePayload
@@ -1118,6 +1250,12 @@ export const rulePayload = basePayload
 	.strict();
 
 export type RulePayload = z.infer<typeof rulePayload>;
+
+export function isRuleContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<RulePayload> {
+	return container.payload.type === payloadTypes.enum.rule;
+}
 
 const initialRulePayload = rulePayload.partial({ title: true });
 
@@ -1139,6 +1277,12 @@ const simpleMeasurePayload = basePayload
 
 export type SimpleMeasurePayload = z.infer<typeof simpleMeasurePayload>;
 
+export function isSimpleMeasureContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<SimpleMeasurePayload> {
+	return container.payload.type === payloadTypes.enum.simple_measure;
+}
+
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
 const summaryPayload = z.object({
@@ -1151,6 +1295,12 @@ const summaryPayload = z.object({
 });
 
 export type SummaryPayload = z.infer<typeof summaryPayload>;
+
+export function isSummaryContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<SummaryPayload> {
+	return container.payload.type === payloadTypes.enum.summary;
+}
 
 const initialSummaryPayload = summaryPayload;
 
@@ -1172,6 +1322,12 @@ const programPayload = basePayload
 
 export type ProgramPayload = z.infer<typeof programPayload>;
 
+export function isProgramContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ProgramPayload> {
+	return container.payload.type === payloadTypes.enum.program;
+}
+
 const initialProgramPayload = programPayload.partial({
 	title: true
 });
@@ -1188,6 +1344,12 @@ const programCollectionPayload = z
 	.strict();
 
 export type ProgramCollectionPayload = z.infer<typeof programCollectionPayload>;
+
+export function isProgramCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ProgramCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.program_collection;
+}
 
 const initialProgramCollectionPayload = programCollectionPayload;
 
@@ -1210,6 +1372,12 @@ const effectPayload = measureMonitoringBasePayload.omit({ summary: true }).exten
 
 export type EffectPayload = z.infer<typeof effectPayload>;
 
+export function isEffectContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<EffectPayload> {
+	return container.payload.type === payloadTypes.enum.effect;
+}
+
 const initialEffectPayload = effectPayload.partial({ title: true });
 
 export type InitialEffectPayload = z.infer<typeof initialEffectPayload>;
@@ -1227,6 +1395,12 @@ const effectCollectionPayload = z
 
 export type EffectCollectionPayload = z.infer<typeof effectCollectionPayload>;
 
+export function isEffectCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<EffectCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.effect_collection;
+}
+
 const initialEffectCollectionPayload = effectCollectionPayload;
 
 const reportPayload = basePayload
@@ -1237,6 +1411,12 @@ const reportPayload = basePayload
 	.strict();
 
 export type ReportPayload = z.infer<typeof reportPayload>;
+
+export function isReportContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ReportPayload> {
+	return container.payload.type === payloadTypes.enum.report;
+}
 
 const initialReportPayload = reportPayload.partial({ title: true });
 
@@ -1251,6 +1431,12 @@ const resourcePayload = measureMonitoringBasePayload
 	.strict();
 
 export type ResourcePayload = z.infer<typeof resourcePayload>;
+
+export function isResourceContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourcePayload> {
+	return container.payload.type === payloadTypes.enum.resource;
+}
 
 const initialResourcePayload = resourcePayload.partial({
 	amount: true,
@@ -1272,6 +1458,12 @@ const resourceCollectionPayload = z
 
 export type ResourceCollectionPayload = z.infer<typeof resourceCollectionPayload>;
 
+export function isResourceCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.resource_collection;
+}
+
 const initialResourceCollectionPayload = resourceCollectionPayload;
 
 const resourceV2Payload = basePayload
@@ -1287,6 +1479,12 @@ const resourceV2Payload = basePayload
 	.strict();
 
 export type ResourceV2Payload = z.infer<typeof resourceV2Payload>;
+
+export function isResourceV2Container(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceV2Payload> {
+	return container.payload.type === payloadTypes.enum.resource_v2;
+}
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
@@ -1311,6 +1509,60 @@ const resourceDataPayload = z
 
 export type ResourceDataPayload = z.infer<typeof resourceDataPayload>;
 
+export function isResourceDataContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataPayload> {
+	return container.payload.type === payloadTypes.enum.resource_data;
+}
+
+export function isResourceDataActualResourceAllocationContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataPayload> {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType ===
+			resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
+	);
+}
+
+export function isResourceDataPlannedResourceAllocationContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataPayload> {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType ===
+			resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
+	);
+}
+
+export function isResourceDataBudgetContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataPayload> {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
+	);
+}
+
+export function isResourceDataTotalBudgetContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataPayload> {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
+	);
+}
+
+export function isResourceDataTotalBudgetForecastContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataPayload> {
+	return (
+		isResourceDataContainer(container) &&
+		container.payload.resourceDataType ===
+			resourceDataTypes.enum['resource_data_type.total_budget_forecast']
+	);
+}
+
 const initialResourceDataPayload = resourceDataPayload.partial({
 	resource: true,
 	resourceDataType: true,
@@ -1330,6 +1582,12 @@ const resourceDataCollectionPayload = z
 	.strict();
 
 export type ResourceDataCollectionPayload = z.infer<typeof resourceDataCollectionPayload>;
+
+export function isResourceDataCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ResourceDataCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.resource_data_collection;
+}
 
 const initialResourceDataCollectionPayload = resourceDataCollectionPayload.partial({
 	resourceDataType: true
@@ -1353,6 +1611,12 @@ const taskPayload = measureMonitoringBasePayload
 
 export type TaskPayload = z.infer<typeof taskPayload>;
 
+export function isTaskContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TaskPayload> {
+	return container.payload.type === payloadTypes.enum.task;
+}
+
 const initialTaskPayload = taskPayload.partial({ title: true });
 
 const imagePayload = z
@@ -1368,6 +1632,12 @@ const imagePayload = z
 	.strict();
 
 export type ImagePayload = z.infer<typeof imagePayload>;
+
+export function isImageContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ImagePayload> {
+	return container.payload.type === payloadTypes.enum.image;
+}
 
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
@@ -1385,6 +1655,12 @@ const igniteVideoPayload = z
 	.strict();
 
 export type IgniteVideoPayload = z.infer<typeof igniteVideoPayload>;
+
+export function isIgniteVideoContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<IgniteVideoPayload> {
+	return container.payload.type === payloadTypes.enum.ignite_video;
+}
 
 const initialIgniteVideoPayload = igniteVideoPayload.partial({ title: true });
 
@@ -1425,6 +1701,12 @@ const teaserPayload = z
 
 export type TeaserPayload = z.infer<typeof teaserPayload>;
 
+export function isTeaserContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TeaserPayload> {
+	return container.payload.type === payloadTypes.enum.teaser;
+}
+
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
 const infoBoxPayload = teaserPayload
@@ -1443,6 +1725,12 @@ const infoBoxPayload = teaserPayload
 	.strict();
 
 export type InfoBoxPayload = z.infer<typeof infoBoxPayload>;
+
+export function isInfoBoxContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<InfoBoxPayload> {
+	return container.payload.type === payloadTypes.enum.info_box;
+}
 
 const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
 
@@ -1463,6 +1751,12 @@ const teaserHighlightPayload = teaserPayload
 
 export type TeaserHighlightPayload = z.infer<typeof teaserHighlightPayload>;
 
+export function isTeaserHighlightContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TeaserHighlightPayload> {
+	return container.payload.type === payloadTypes.enum.teaser_highlight;
+}
+
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
 const quotePayload = teaserPayload
@@ -1481,6 +1775,12 @@ const quotePayload = teaserPayload
 	.strict();
 
 export type QuotePayload = z.infer<typeof quotePayload>;
+
+export function isQuoteContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<QuotePayload> {
+	return container.payload.type === payloadTypes.enum.quote;
+}
 
 const initialQuotePayload = quotePayload.partial({ title: true });
 
@@ -1501,6 +1801,12 @@ const colContentPayload = teaserPayload
 
 export type ColContentPayload = z.infer<typeof colContentPayload>;
 
+export function isColContentContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ColContentPayload> {
+	return container.payload.type === payloadTypes.enum.col_content;
+}
+
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
 const teaserCollectionPayload = z
@@ -1517,6 +1823,12 @@ const teaserCollectionPayload = z
 
 export type TeaserCollectionPayload = z.infer<typeof teaserCollectionPayload>;
 
+export function isTeaserCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TeaserCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.teaser_collection;
+}
+
 const initialTeaserCollectionPayload = teaserCollectionPayload;
 
 const taskCollectionPayload = z
@@ -1531,6 +1843,12 @@ const taskCollectionPayload = z
 	.strict();
 
 export type TaskCollectionPayload = z.infer<typeof taskCollectionPayload>;
+
+export function isTaskCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TaskCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.task_collection;
+}
 
 const initialTaskCollectionPayload = taskCollectionPayload;
 
@@ -1567,6 +1885,12 @@ export const organizationPayload = z.object({
 });
 
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
+
+export function isOrganizationContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<OrganizationPayload> {
+	return container.payload.type === payloadTypes.enum.organization;
+}
 
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
@@ -1607,6 +1931,12 @@ export const organizationalUnitPayload = z.object({
 
 export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
 
+export function isOrganizationalUnitContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<OrganizationalUnitPayload> {
+	return container.payload.type === payloadTypes.enum.organizational_unit;
+}
+
 const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ name: true });
 
 export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
@@ -1626,6 +1956,18 @@ const textPayload = z
 	.strict();
 
 export type TextPayload = z.infer<typeof textPayload>;
+
+export function isTextContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TextPayload> {
+	return container.payload.type === payloadTypes.enum.text;
+}
+
+export function isInlineHelpTextContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<TextPayload> {
+	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
+}
 
 const initialTextPayload = textPayload.partial({ body: true, title: true });
 
@@ -1748,346 +2090,10 @@ export function isContainerWithEffect(
 	return isMeasureContainer(container) || isSimpleMeasureContainer(container);
 }
 
-export function isActualDataContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ActualDataPayload> {
-	return container.payload.type === payloadTypes.enum.actual_data;
-}
-
-export function isAdministrativeAreaBasicDataContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<AdministrativeAreaBasicDataPayload> {
-	return container.payload.type === payloadTypes.enum.administrative_area_basic_data;
-}
-
-export function isBinaryIndicatorContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<BinaryIndicatorPayload> {
-	return container.payload.type === payloadTypes.enum.binary_indicator;
-}
-
-export function isChapterContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ChapterPayload> {
-	return container.payload.type === payloadTypes.enum.chapter;
-}
-
-export function isCategoryContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<CategoryPayload> {
-	return container.payload.type === payloadTypes.enum.category;
-}
-
-export function isCustomCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<CustomCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.custom_collection;
-}
-
-export function isDemographicDataContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<DemographicDataPayload> {
-	return container.payload.type === payloadTypes.enum.demographic_data;
-}
-
-export function isEffectContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<EffectPayload> {
-	return container.payload.type === payloadTypes.enum.effect;
-}
-
-export function isEffectCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<EffectCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.effect_collection;
-}
-
-export function isFileCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<FileCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.file_collection;
-}
-
-export function isGoalContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<GoalPayload> {
-	return container.payload.type === payloadTypes.enum.goal;
-}
-
-export function isGoalCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<GoalCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.goal_collection;
-}
-
-export function isHelpContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<HelpPayload> {
-	return container.payload.type === payloadTypes.enum.help;
-}
-
-export function isIndicatorCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<IndicatorCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.indicator_collection;
-}
-
-export function isIndicatorTemplateContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<IndicatorTemplatePayload> {
-	return container.payload.type === payloadTypes.enum.indicator_template;
-}
-
-export function isKnowledgeContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<KnowledgePayload> {
-	return container.payload.type === payloadTypes.enum.knowledge;
-}
-
-export function isMapContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<MapPayload> {
-	return container.payload.type === payloadTypes.enum.map;
-}
-
-export function isMeasureContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<MeasurePayload> {
-	return container.payload.type === payloadTypes.enum.measure;
-}
-
-export function isMeasureCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<MeasureCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.measure_collection;
-}
-
-export function isObjectiveContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ObjectivePayload> {
-	return container.payload.type === payloadTypes.enum.objective;
-}
-
-export function isObjectiveCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ObjectiveCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.objective_collection;
-}
-
-export function isOrganizationContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<OrganizationPayload> {
-	return container.payload.type === payloadTypes.enum.organization;
-}
-
-export function isOrganizationalUnitContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<OrganizationalUnitPayload> {
-	return container.payload.type === payloadTypes.enum.organizational_unit;
-}
-
-export function isPageContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<PagePayload> {
-	return container.payload.type === payloadTypes.enum.page;
-}
-
-export function isProgressContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ProgressPayload> {
-	return container.payload.type === payloadTypes.enum.progress;
-}
-
-export function isReportContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ReportPayload> {
-	return container.payload.type === payloadTypes.enum.report;
-}
-
-export function isRuleContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<RulePayload> {
-	return container.payload.type === payloadTypes.enum.rule;
-}
-
-export function isResourceContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourcePayload> {
-	return container.payload.type === payloadTypes.enum.resource;
-}
-
-export function isResourceCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.resource_collection;
-}
-
-export function isResourceDataContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataPayload> {
-	return container.payload.type === payloadTypes.enum.resource_data;
-}
-
-export function isResourceDataActualResourceAllocationContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataPayload> {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.actual_resource_allocation']
-	);
-}
-
-export function isResourceDataPlannedResourceAllocationContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataPayload> {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.planned_resource_allocation']
-	);
-}
-
-export function isResourceDataBudgetContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataPayload> {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.budget']
-	);
-}
-
-export function isResourceDataTotalBudgetContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataPayload> {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType === resourceDataTypes.enum['resource_data_type.total_budget']
-	);
-}
-
-export function isResourceDataTotalBudgetForecastContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataPayload> {
-	return (
-		isResourceDataContainer(container) &&
-		container.payload.resourceDataType ===
-			resourceDataTypes.enum['resource_data_type.total_budget_forecast']
-	);
-}
-
-export function isResourceDataCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceDataCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.resource_data_collection;
-}
-
-export function isResourceV2Container(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ResourceV2Payload> {
-	return container.payload.type === payloadTypes.enum.resource_v2;
-}
-
-export function isSimpleMeasureContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<SimpleMeasurePayload> {
-	return container.payload.type === payloadTypes.enum.simple_measure;
-}
-
-export function isSummaryContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<SummaryPayload> {
-	return container.payload.type === payloadTypes.enum.summary;
-}
-
-export function isProgramContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ProgramPayload> {
-	return container.payload.type === payloadTypes.enum.program;
-}
-
-export function isProgramCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ProgramCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.program_collection;
-}
-
-export function isTextContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TextPayload> {
-	return container.payload.type === payloadTypes.enum.text;
-}
-
-export function isInlineHelpTextContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TextPayload> {
-	return isTextContainer(container) && container.payload.textType === textType.enum.inline_help;
-}
-
-export function isTaskContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TaskPayload> {
-	return container.payload.type === payloadTypes.enum.task;
-}
-
-export function isTermContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TermPayload> {
-	return container.payload.type === payloadTypes.enum.term;
-}
-
-export function isTaskCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TaskCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.task_collection;
-}
-
 export function isMeasureMonitoringContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<EffectPayload> | Container<GoalPayload> | Container<TaskPayload> {
 	return isEffectContainer(container) || isGoalContainer(container) || isTaskContainer(container);
-}
-
-export function isImageContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ImagePayload> {
-	return container.payload.type === payloadTypes.enum.image;
-}
-
-export function isIgniteVideoContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<IgniteVideoPayload> {
-	return container.payload.type === payloadTypes.enum.ignite_video;
-}
-
-export function isTeaserContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TeaserPayload> {
-	return container.payload.type === payloadTypes.enum.teaser;
-}
-
-export function isInfoBoxContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<InfoBoxPayload> {
-	return container.payload.type === payloadTypes.enum.info_box;
-}
-
-export function isTeaserHighlightContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TeaserHighlightPayload> {
-	return container.payload.type === payloadTypes.enum.teaser_highlight;
-}
-
-export function isColContentContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ColContentPayload> {
-	return container.payload.type === payloadTypes.enum.col_content;
-}
-
-export function isQuoteContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<QuotePayload> {
-	return container.payload.type === payloadTypes.enum.quote;
 }
 
 export function isTeaserLikeContainer(
@@ -2104,12 +2110,6 @@ export function isTeaserLikeContainer(
 			payloadTypes.enum.col_content
 		] as PayloadType[]
 	).includes(container.payload.type);
-}
-
-export function isTeaserCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<TeaserCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.teaser_collection;
 }
 
 export function isContainer(
