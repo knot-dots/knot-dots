@@ -666,23 +666,18 @@ function deduplicate<T>(v: T[]) {
 const basePayload = z.object({
 	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
-	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
-	sdg: z.array(sustainableDevelopmentGoals).transform(deduplicate).default([]),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
 	description: z.string().trim().optional(),
 	editorialState: editorialState.optional(),
-	policyFieldBNK: z.array(policyFieldBNK).transform(deduplicate).default([]),
 	summary: z.string().trim().max(200).optional(),
 	template: z.boolean().default(false),
 	title: z.string().trim(),
-	topic: z.array(topics).transform(deduplicate).default([]),
 	visibility: visibility.default(visibility.enum['organization'])
 });
 
 const measureMonitoringBasePayload = z.object({
-	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	description: z.string().trim().optional(),
 	summary: z.string().trim().max(200).optional(),
 	title: z.string(),
@@ -690,7 +685,6 @@ const measureMonitoringBasePayload = z.object({
 });
 
 const teaserBasePayload = z.object({
-	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	body: z.string().trim().optional(),
 	bodyRight: z.string().trim().optional(),
 	cardStyle: z.string().optional(),
@@ -719,7 +713,6 @@ const teaserBasePayload = z.object({
 });
 
 export const actualDataPayload = z.object({
-	audience: z.array(audience).transform(deduplicate).default([audience.enum['audience.citizens']]),
 	booleanValue: z.boolean().default(false),
 	indicator: z.uuid(),
 	source: z.string().optional(),
@@ -1244,7 +1237,7 @@ export function isMeasureCollectionContainer(
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
 const objectivePayload = basePayload
-	.omit({ category: true, summary: true, topic: true })
+	.omit({ category: true, summary: true })
 	.extend({
 		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 		trendValue: z
@@ -1660,7 +1653,7 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 });
 
 const resourceV2Payload = basePayload
-	.omit({ audience: true, category: true, summary: true, topic: true })
+	.omit({ category: true, summary: true })
 	.extend({
 		type: z.literal(payloadTypes.enum.resource_v2),
 		resourceCategory: resourceCategories.default(
@@ -1746,7 +1739,7 @@ export function isSummaryContainer(
 const initialSummaryPayload = summaryPayload;
 
 const taskPayload = measureMonitoringBasePayload
-	.omit({ audience: true, summary: true })
+	.omit({ summary: true })
 	.extend({
 		assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
@@ -1885,10 +1878,6 @@ const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: tr
 
 const textPayload = z
 	.object({
-		audience: z
-			.array(audience)
-			.transform(deduplicate)
-			.default([audience.enum['audience.citizens']]),
 		body: z.string().trim().optional(),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.text),
