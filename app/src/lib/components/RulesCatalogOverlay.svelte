@@ -6,7 +6,13 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { type Container, payloadTypes, ruleContainer, type RulePayload } from '$lib/models';
+	import {
+		type Container,
+		createContainerSchema,
+		payloadTypes,
+		rulePayload,
+		type RulePayload
+	} from '$lib/models';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	const PAGE_SIZE = 20;
@@ -62,7 +68,7 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch rule containers: ${response.status}`);
 			}
-			return z.array(ruleContainer).parse(await response.json());
+			return z.array(createContainerSchema(rulePayload)).parse(await response.json());
 		},
 		{ debounce: 300 }
 	);

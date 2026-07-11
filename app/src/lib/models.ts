@@ -1108,7 +1108,7 @@ export type ProgressPayload = z.infer<typeof progressPayload>;
 
 const initialProgressPayload = progressPayload;
 
-const rulePayload = basePayload
+export const rulePayload = basePayload
 	.extend({
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.rule),
@@ -1903,8 +1903,6 @@ export function isReportContainer(
 ): container is Container<ReportPayload> {
 	return container.payload.type === payloadTypes.enum.report;
 }
-
-export const ruleContainer = createContainerSchema(rulePayload);
 
 export function isRuleContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
