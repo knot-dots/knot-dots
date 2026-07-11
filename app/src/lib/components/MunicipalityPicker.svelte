@@ -16,7 +16,8 @@
 	import {
 		administrativeTypes,
 		type Container,
-		organizationalUnitContainer,
+		createContainerSchema,
+		organizationalUnitPayload,
 		type OrganizationalUnitPayload,
 		payloadTypes
 	} from '$lib/models';
@@ -106,7 +107,7 @@
 			params.append('sort', 'alpha');
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z.array(organizationalUnitContainer).parse(await response.json());
+			return z.array(createContainerSchema(organizationalUnitPayload)).parse(await response.json());
 		},
 		debounce: 300
 	});

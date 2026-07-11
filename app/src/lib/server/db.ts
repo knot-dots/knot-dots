@@ -20,7 +20,7 @@ import {
 	type IndicatorTemplatePayload,
 	type ModifiedContainer,
 	type NewContainer,
-	organizationalUnitContainer,
+	organizationalUnitPayload,
 	type OrganizationalUnitPayload,
 	organizationPayload,
 	type OrganizationPayload,
@@ -124,7 +124,7 @@ const typeAliases = {
 		relation: true,
 		user: true
 	}),
-	organizationalUnitContainer,
+	organizationalUnitContainer: createContainerSchema(organizationalUnitPayload),
 	relation,
 	relationPath: z.object({}).catchall(z.string().uuid()),
 	revision: z.object({ revision: z.number().int().positive() }),

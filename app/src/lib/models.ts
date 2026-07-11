@@ -1880,8 +1880,6 @@ export function isOrganizationContainer(
 	return container.payload.type === payloadTypes.enum.organization;
 }
 
-export const organizationalUnitContainer = createContainerSchema(organizationalUnitPayload);
-
 export function isOrganizationalUnitContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<OrganizationalUnitPayload> {
