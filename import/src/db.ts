@@ -3,10 +3,10 @@ import {
 	administrativeAreaBasicDataPayload,
 	anyContainer,
 	AnyPayload,
-	categoryContainer as persistedCategoryContainer,
 	type CategoryPayload,
 	categoryPayload,
 	Container,
+	createContainerSchema,
 	createNewContainerSchema,
 	customCollectionPayload,
 	demographicDataPayload,
@@ -472,7 +472,7 @@ export async function getCategoryContainer(
 	organizationGuid: string,
 	key: string
 ): Promise<Container<CategoryPayload> | null> {
-	return tx.maybeOne(sql.type(persistedCategoryContainer)`
+	return tx.maybeOne(sql.type(createContainerSchema(categoryPayload))`
 		SELECT *
 		FROM container
 		WHERE organization = ${organizationGuid}

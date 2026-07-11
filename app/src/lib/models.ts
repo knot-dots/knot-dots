@@ -1772,8 +1772,6 @@ export function isChapterContainer(
 	return container.payload.type === payloadTypes.enum.chapter;
 }
 
-export const categoryContainer = createContainerSchema(categoryPayload);
-
 export function isCategoryContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<CategoryPayload> {
