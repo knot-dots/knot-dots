@@ -14,6 +14,7 @@ import {
 	type BinaryIndicatorPayload,
 	type Container,
 	container,
+	createContainerSchema,
 	findDescendants,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
@@ -21,7 +22,7 @@ import {
 	type NewContainer,
 	organizationalUnitContainer,
 	type OrganizationalUnitPayload,
-	organizationContainer,
+	organizationPayload,
 	type OrganizationPayload,
 	type PayloadType,
 	payloadTypes,
@@ -119,7 +120,10 @@ const typeAliases = {
 		spatial_reference: z.string().uuid().optional().nullable(),
 		source: z.string()
 	}),
-	organizationContainer: organizationContainer.omit({ relation: true, user: true }),
+	organizationContainer: createContainerSchema(organizationPayload).omit({
+		relation: true,
+		user: true
+	}),
 	organizationalUnitContainer,
 	relation,
 	relationPath: z.object({}).catchall(z.string().uuid()),

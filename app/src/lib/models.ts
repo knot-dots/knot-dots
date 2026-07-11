@@ -1534,7 +1534,7 @@ export type TaskCollectionPayload = z.infer<typeof taskCollectionPayload>;
 
 const initialTaskCollectionPayload = taskCollectionPayload;
 
-const organizationPayload = z.object({
+export const organizationPayload = z.object({
 	color: backgroundColor.optional(),
 	cover: z.url().optional(),
 	coverSource: z.string().optional(),
@@ -1873,8 +1873,6 @@ export function isObjectiveCollectionContainer(
 ): container is Container<ObjectiveCollectionPayload> {
 	return container.payload.type === payloadTypes.enum.objective_collection;
 }
-
-export const organizationContainer = createContainerSchema(organizationPayload);
 
 export function isOrganizationContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
