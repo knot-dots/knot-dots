@@ -58,8 +58,6 @@ const sdgValues = [
 
 export const sustainableDevelopmentGoals = z.enum(sdgValues);
 
-export type SustainableDevelopmentGoal = z.infer<typeof sustainableDevelopmentGoals>;
-
 const payloadTypeValues = [
 	'actual_data',
 	'administrative_area_basic_data',
@@ -275,10 +273,6 @@ export const levels = z.enum(levelValues);
 
 export type Level = z.infer<typeof levels>;
 
-export function isLevel(value: unknown): value is Level {
-	return levelValues.includes(value as Level);
-}
-
 const listTypeValues = ['carousel', 'wall', 'list', 'accordion'] as const;
 
 export const listTypes = z.enum(listTypeValues);
@@ -316,8 +310,6 @@ export const cardStyles = z.enum(cardStyleValues);
 const textTypeValues = ['default', 'inline_help'] as const;
 
 export const textType = z.enum(textTypeValues);
-
-export type TextType = z.infer<typeof textType>;
 
 const predicateValues = [
 	'contributes-to',
@@ -418,8 +410,6 @@ const indicatorTypeValues = [
 
 export const indicatorTypes = z.enum(indicatorTypeValues);
 
-export type IndicatorType = z.infer<typeof indicatorTypes>;
-
 const goalTypeValues = [
 	'goal_type.vision',
 	'goal_type.model',
@@ -448,8 +438,6 @@ export type GoalType = z.infer<typeof goalType>;
 const organizationalUnitTypeValues = ['organizational_unit_type.administrative_area'] as const;
 
 export const organizationalUnitType = z.enum(organizationalUnitTypeValues);
-
-export type OrganizationalUnitType = z.infer<typeof organizationalUnitType>;
 
 const topicValues = [
 	'topic.citizen_participation',
@@ -499,8 +487,6 @@ const policyFieldBNKValues = [
 
 export const policyFieldBNK = z.enum(policyFieldBNKValues);
 
-export type PolicyFieldBNK = z.infer<typeof policyFieldBNK>;
-
 const taskCategoryValues = [
 	'task_category.default',
 	'task_category.program_management',
@@ -514,8 +500,6 @@ const taskCategoryValues = [
 
 export const taskCategories = z.enum(taskCategoryValues);
 
-export type TaskCategory = z.infer<typeof taskCategories>;
-
 const organizationCategoryValues = [
 	'organization_category.business',
 	'organization_category.government',
@@ -524,8 +508,6 @@ const organizationCategoryValues = [
 ] as const;
 
 export const organizationCategories = z.enum(organizationCategoryValues);
-
-export type OrganizationCategory = z.infer<typeof organizationCategories>;
 
 const indicatorCategoryValues = [
 	'indicator_category.fgk',
@@ -540,8 +522,6 @@ const indicatorCategoryValues = [
 
 export const indicatorCategories = z.enum(indicatorCategoryValues);
 
-export type IndicatorCategory = z.infer<typeof indicatorCategories>;
-
 const resourceCategoryValues = [
 	'resource_category.money',
 	'resource_category.personnel',
@@ -549,37 +529,6 @@ const resourceCategoryValues = [
 ] as const;
 
 export const resourceCategories = z.enum(resourceCategoryValues);
-
-export type ResourceCategory = z.infer<typeof resourceCategories>;
-
-const quantityValues = [
-	'quantity.custom',
-	'quantity.broadband_coverage',
-	'quantity.charging_stations',
-	'quantity.co2',
-	'quantity.co2_emissions_households',
-	'quantity.co2_emissions_industry',
-	'quantity.co2_emissions_transport',
-	'quantity.cycle_path',
-	'quantity.organic_farming',
-	'quantity.parking_space',
-	'quantity.doctor_ratio',
-	'quantity.funding_culture_and_education',
-	'quantity.women_in_elective_office',
-	'quantity.women_in_leadership',
-	'quantity.renewable_energy',
-	'quantity.solar_energy',
-	'quantity.waste_generation',
-	'quantity.water_consumption'
-] as const;
-
-export const quantities = z.enum(quantityValues);
-
-export type Quantity = z.infer<typeof quantities>;
-
-export function isQuantity(value: unknown): value is Quantity {
-	return quantityValues.includes(value as Quantity);
-}
 
 export function fromCounts(options: string[], counts: Record<string, number> = {}) {
 	const m = new Map<string, number>(options.map((opt) => [opt, 0]));
@@ -625,8 +574,6 @@ const resourceUnitValues = ['unit.euro', 'unit.piece', 'unit.personnel_hour'] as
 
 export const resourceUnits = z.enum(resourceUnitValues);
 
-export type ResourceUnit = z.infer<typeof resourceUnits>;
-
 export const resourceDataTypes = z.enum([
 	'resource_data_type.actual_resource_allocation',
 	'resource_data_type.planned_resource_allocation',
@@ -634,8 +581,6 @@ export const resourceDataTypes = z.enum([
 	'resource_data_type.total_budget',
 	'resource_data_type.total_budget_forecast'
 ] as const);
-
-export type ResourceDataType = z.infer<typeof resourceDataTypes>;
 
 const audienceValues = [
 	'audience.administration',
@@ -702,8 +647,6 @@ export const administrativeTypes = z.enum([
 ]);
 
 export const benefit = z.enum(['benefit.low', 'benefit.medium', 'benefit.high']);
-
-export type Benefit = z.infer<typeof benefit>;
 
 export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'iooi.impact']);
 
@@ -2121,28 +2064,12 @@ export function isContainer(
 	);
 }
 
-export type ContainerWithAudience = Container<AnyPayload & { audience: Audience[] }>;
-
-export function isContainerWithAudience(
-	container: Container<AnyPayload> | NewContainer
-): container is ContainerWithAudience {
-	return hasProperty(container.payload, 'audience');
-}
-
 export type ContainerWithBody = Container<AnyPayload & { body: string | undefined }>;
 
 export function isContainerWithBody(
 	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithBody {
 	return hasProperty(container.payload, 'body');
-}
-
-export type ContainerWithSdg = Container<AnyPayload & { sdg: SustainableDevelopmentGoal[] }>;
-
-export function isContainerWithSdg(
-	container: Container<AnyPayload> | NewContainer
-): container is ContainerWithSdg {
-	return hasProperty(container.payload, 'sdg');
 }
 
 export type ContainerWithCategory = Container<AnyPayload & { category: Record<string, string[]> }>;
@@ -2235,14 +2162,6 @@ export function isContainerWithTitle(
 	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithTitle {
 	return hasProperty(container.payload, 'title');
-}
-
-export type ContainerWithTopic = Container<AnyPayload & { topic: Topic[] }>;
-
-export function isContainerWithTopic(
-	container: Container<AnyPayload> | NewContainer
-): container is ContainerWithTopic {
-	return hasProperty(container.payload, 'topic');
 }
 
 export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
