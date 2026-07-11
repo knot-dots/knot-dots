@@ -108,8 +108,7 @@ const payloadTypeValues = [
 	'teaser',
 	'teaser_collection',
 	'teaser_highlight',
-	'text',
-	'undefined'
+	'text'
 ] as const;
 
 export const payloadTypes = z.enum(payloadTypeValues);
@@ -660,7 +659,7 @@ export function slugify(source: string) {
 		.substring(0, 128);
 }
 
-function deduplicate(v: string[]) {
+function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
 
@@ -1914,22 +1913,12 @@ export function isInlineHelpTextContainer(
 
 const initialTextPayload = textPayload.partial({ body: true, title: true });
 
-const undefinedPayload = z
-	.object({
-		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.undefined),
-		visibility: visibility.default(visibility.enum['organization'])
-	})
-	.strict();
-
-const initialUndefinedPayload = undefinedPayload.partial({ title: true });
-
 const payload = z.discriminatedUnion('type', [
 	actualDataPayload,
 	administrativeAreaBasicDataPayload,
 	binaryIndicatorPayload,
-	chapterPayload,
 	categoryPayload,
+	chapterPayload,
 	colContentPayload,
 	customCollectionPayload,
 	demographicDataPayload,
@@ -1939,8 +1928,8 @@ const payload = z.discriminatedUnion('type', [
 	goalCollectionPayload,
 	goalPayload,
 	helpPayload,
-	imagePayload,
 	igniteVideoPayload,
+	imagePayload,
 	indicatorCollectionPayload,
 	indicatorTemplatePayload,
 	infoBoxPayload,
@@ -1956,20 +1945,20 @@ const payload = z.discriminatedUnion('type', [
 	progressPayload,
 	quotePayload,
 	reportPayload,
-	rulePayload,
 	resourceCollectionPayload,
+	resourceDataCollectionPayload,
+	resourceDataPayload,
 	resourcePayload,
 	resourceV2Payload,
-	resourceDataPayload,
-	resourceDataCollectionPayload,
+	rulePayload,
 	simpleMeasurePayload,
 	summaryPayload,
 	taskCollectionPayload,
 	taskPayload,
-	termPayload,
-	teaserPayload,
 	teaserCollectionPayload,
 	teaserHighlightPayload,
+	teaserPayload,
+	termPayload,
 	textPayload
 ]);
 
@@ -1982,8 +1971,7 @@ export const templatablePayloadTypes = payload.options
 const anyPayload = z.discriminatedUnion('type', [
 	...payload.options,
 	organizationPayload,
-	organizationalUnitPayload,
-	undefinedPayload
+	organizationalUnitPayload
 ]);
 
 export type AnyPayload = z.infer<typeof anyPayload>;
@@ -1992,19 +1980,19 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialActualDataPayload,
 	initialAdministrativeAreaBasicDataPayload,
 	initialBinaryIndicatorPayload,
-	initialChapterPayload,
 	initialCategoryPayload,
+	initialChapterPayload,
 	initialColContentPayload,
 	initialCustomCollectionPayload,
+	initialDemographicDataPayload,
 	initialEffectCollectionPayload,
 	initialEffectPayload,
-	initialDemographicDataPayload,
 	initialFileCollectionPayload,
 	initialGoalCollectionPayload,
 	initialGoalPayload,
 	initialHelpPayload,
-	initialImagePayload,
 	initialIgniteVideoPayload,
+	initialImagePayload,
 	initialIndicatorCollectionPayload,
 	initialIndicatorTemplatePayload,
 	initialInfoBoxPayload,
@@ -2021,23 +2009,22 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialProgramPayload,
 	initialProgressPayload,
 	initialQuotePayload,
-	initialRulePayload,
 	initialReportPayload,
 	initialResourceCollectionPayload,
+	initialResourceDataCollectionPayload,
+	initialResourceDataPayload,
 	initialResourcePayload,
 	initialResourceV2Payload,
-	initialResourceDataPayload,
-	initialResourceDataCollectionPayload,
+	initialRulePayload,
 	initialSimpleMeasurePayload,
 	initialSummaryPayload,
-	initialTextPayload,
 	initialTaskCollectionPayload,
 	initialTaskPayload,
-	initialTermPayload,
-	initialTeaserPayload,
 	initialTeaserCollectionPayload,
 	initialTeaserHighlightPayload,
-	initialUndefinedPayload
+	initialTeaserPayload,
+	initialTermPayload,
+	initialTextPayload
 ]);
 
 export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
