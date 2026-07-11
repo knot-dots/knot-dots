@@ -8,7 +8,8 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import {
 		type Container,
-		knowledgeContainer,
+		createContainerSchema,
+		knowledgePayload,
 		type KnowledgePayload,
 		payloadTypes
 	} from '$lib/models';
@@ -64,7 +65,7 @@
 			if (!response.ok) {
 				throw new Error(`Failed to fetch knowledge containers: ${response.status}`);
 			}
-			return z.array(knowledgeContainer).parse(await response.json());
+			return z.array(createContainerSchema(knowledgePayload)).parse(await response.json());
 		},
 		{ debounce: 300 }
 	);
