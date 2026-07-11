@@ -2334,10 +2334,6 @@ export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
 	};
 }
 
-export function isSuggestedByAI(container: Container) {
-	return 'aiSuggestion' in container.payload && container.payload.aiSuggestion;
-}
-
 export function hasMember(user: { guid: string }) {
 	return (container: Container<AnyPayload>) =>
 		container.user.find(
@@ -2436,49 +2432,6 @@ export function mayDelete(
 	);
 }
 
-export function newCategoryTemplateFromCategory(
-	category: Container<CategoryPayload>,
-	organization: Container<OrganizationPayload>
-) {
-	const template = containerOfType(
-		payloadTypes.enum.category,
-		organization.guid,
-		null,
-		organization.guid,
-		organization.realm
-	) as NewContainer;
-	const payload = template.payload as CategoryPayload;
-	Object.assign(payload, category.payload);
-	payload.visibility = visibility.enum.public;
-	return template;
-}
-
-export function newTermForCategoryTemplate(
-	term: Container<TermPayload>,
-	categoryGuid: string,
-	organization: Container<OrganizationPayload>,
-	position: number
-) {
-	const template = containerOfType(
-		payloadTypes.enum.term,
-		organization.guid,
-		null,
-		organization.guid,
-		organization.realm
-	) as NewContainer;
-	const payload = template.payload as TermPayload;
-	Object.assign(payload, term.payload);
-	payload.visibility = visibility.enum.public;
-	template.relation = [
-		{
-			object: categoryGuid,
-			position,
-			predicate: predicates.enum['is-part-of-category']
-		}
-	];
-	return template;
-}
-
 export function findConnected<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
@@ -2561,32 +2514,6 @@ export function findDescendants<T extends Container<AnyPayload>>(
 
 	traverse(container);
 	return Array.from(descendants.values());
-}
-
-export function findParentObjectives(containers: Container[]): Container<ObjectivePayload>[] {
-	const roots = new Set<Container>();
-	const parentObjectives = [] as Container<ObjectivePayload>[];
-
-	for (const container of containers) {
-		const ancestors = findAncestors(container, containers, [predicates.enum['is-part-of']]);
-
-		if (ancestors.length > 0) {
-			roots.add(ancestors[ancestors.length - 1]);
-		}
-	}
-
-	for (const container of roots) {
-		const descendants = findDescendants(container, containers, [predicates.enum['is-part-of']]);
-		const objectives = descendants.filter(isPartOf(container)).filter(isObjectiveContainer);
-
-		if (objectives.length > 0) {
-			parentObjectives.push(...objectives);
-		} else {
-			parentObjectives.push(...findParentObjectives(descendants));
-		}
-	}
-
-	return Array.from(parentObjectives);
 }
 
 export function findLeafObjectives(
