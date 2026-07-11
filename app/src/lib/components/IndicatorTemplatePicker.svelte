@@ -16,7 +16,7 @@
 		createContainerSchema,
 		type GoalPayload,
 		indicatorCategories,
-		indicatorTemplateContainer,
+		indicatorTemplatePayload,
 		type IndicatorTemplatePayload,
 		indicatorTypes,
 		isEffectContainer,
@@ -52,7 +52,10 @@
 			if (target) {
 				return z
 					.array(
-						z.union([indicatorTemplateContainer, createContainerSchema(binaryIndicatorPayload)])
+						z.union([
+							createContainerSchema(indicatorTemplatePayload),
+							createContainerSchema(binaryIndicatorPayload)
+						])
 					)
 					.parse(
 						await fetchSuggestedContainers(

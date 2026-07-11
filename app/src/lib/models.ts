@@ -1832,8 +1832,6 @@ export function isIndicatorCollectionContainer(
 	return container.payload.type === payloadTypes.enum.indicator_collection;
 }
 
-export const indicatorTemplateContainer = createContainerSchema(indicatorTemplatePayload);
-
 export function isIndicatorTemplateContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<IndicatorTemplatePayload> {

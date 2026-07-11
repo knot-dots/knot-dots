@@ -18,7 +18,7 @@
 		type Container,
 		createContainerSchema,
 		indicatorCategories,
-		indicatorTemplateContainer,
+		indicatorTemplatePayload,
 		type IndicatorTemplatePayload,
 		indicatorTypes,
 		payloadTypes
@@ -76,7 +76,11 @@
 
 			const response = await fetch(`/container?${params.toString()}`, { signal });
 			return z
-				.array(z.union([createContainerSchema(binaryIndicatorPayload), indicatorTemplateContainer]))
+				.array(
+					createContainerSchema(
+						z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorTemplatePayload])
+					)
+				)
 				.parse(await response.json());
 		},
 		{
