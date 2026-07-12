@@ -755,8 +755,9 @@ export function isAdministrativeAreaBasicDataContainer(
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
-export const binaryIndicatorPayload = basePayload
-	.extend({
+export const binaryIndicatorPayload = z
+	.object({
+		...basePayload.shape,
 		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
 		type: z.literal(payloadTypes.enum.binary_indicator)
@@ -803,15 +804,12 @@ export function isCategoryContainer(
 
 const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
 
-const chapterPayload = basePayload
-	.extend({
+const chapterPayload = z
+	.object({
+		...basePayload.omit({ description: true, summary: true }).shape,
 		image: z.url().optional(),
 		number: z.string(),
 		type: z.literal(payloadTypes.enum.chapter)
-	})
-	.omit({
-		description: true,
-		summary: true
 	})
 	.strict();
 
@@ -825,8 +823,9 @@ export function isChapterContainer(
 
 const initialChapterPayload = chapterPayload.partial({ number: true, title: true });
 
-const colContentPayload = teaserBasePayload
-	.extend({
+const colContentPayload = z
+	.object({
+		...teaserBasePayload.shape,
 		colSize: teaserColSizes.default('50-50'),
 		imageEnable: z.boolean().default(true),
 		imageEnableRight: z.boolean().default(true),
@@ -901,9 +900,9 @@ const initialDemographicDataPayload = demographicDataPayload.partial({
 	title: true
 });
 
-const effectPayload = measureMonitoringBasePayload
-	.omit({ summary: true })
-	.extend({
+const effectPayload = z
+	.object({
+		...measureMonitoringBasePayload.omit({ summary: true }).shape,
 		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		booleanValue: z.boolean().optional(),
 		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
@@ -977,8 +976,9 @@ export function isFileCollectionContainer(
 
 const initialFileCollectionPayload = fileCollectionPayload;
 
-const goalPayload = basePayload
-	.extend({
+const goalPayload = z
+	.object({
+		...basePayload.shape,
 		fulfillmentDate: z.iso.date().optional(),
 		status: status.default(status.enum['status.idea']),
 		goalType: goalType.optional(),
@@ -1113,8 +1113,9 @@ export function isIndicatorCollectionContainer(
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
-export const indicatorTemplatePayload = basePayload
-	.extend({
+export const indicatorTemplatePayload = z
+	.object({
+		...basePayload.shape,
 		externalReference: z.url().optional(),
 		indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 		indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
@@ -1136,8 +1137,9 @@ const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
 	unit: true
 });
 
-const infoBoxPayload = teaserBasePayload
-	.extend({
+const infoBoxPayload = z
+	.object({
+		...teaserBasePayload.shape,
 		colSize: teaserColSizes.default('100-0'),
 		imageEnable: z.boolean().default(false),
 		imageEnableRight: z.boolean().default(false),
@@ -1161,8 +1163,9 @@ export function isInfoBoxContainer(
 
 const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
 
-export const knowledgePayload = basePayload
-	.extend({
+export const knowledgePayload = z
+	.object({
+		...basePayload.shape,
 		type: z.literal(payloadTypes.enum.knowledge),
 		aiSuggestionPageReference: z.number().int().positive().optional()
 	})
@@ -1200,8 +1203,9 @@ export function isMapContainer(
 
 const initialMapPayload = mapPayload;
 
-const measurePayload = basePayload
-	.extend({
+const measurePayload = z
+	.object({
+		...basePayload.shape,
 		annotation: z.string().trim().optional(),
 		comment: z.string().trim().optional(),
 		endDate: z.iso.date().optional(),
@@ -1246,9 +1250,9 @@ export function isMeasureCollectionContainer(
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
-const objectivePayload = basePayload
-	.omit({ category: true, summary: true })
-	.extend({
+const objectivePayload = z
+	.object({
+		...basePayload.omit({ category: true, summary: true }).shape,
 		iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
 		trendValue: z
 			.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
@@ -1407,12 +1411,12 @@ export function isPageContainer(
 
 const initialPagePayload = pagePayload.partial({ body: true, title: true });
 
-const programPayload = basePayload
-	.omit({
-		description: true,
-		summary: true
-	})
-	.extend({
+const programPayload = z
+	.object({
+		...basePayload.omit({
+			description: true,
+			summary: true
+		}).shape,
 		chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 		image: z.url().optional(),
 		level: levels.default(levels.enum['level.local']),
@@ -1477,8 +1481,9 @@ export function isProgressContainer(
 
 const initialProgressPayload = progressPayload;
 
-const quotePayload = teaserBasePayload
-	.extend({
+const quotePayload = z
+	.object({
+		...teaserBasePayload.shape,
 		colSize: teaserColSizes.default('100-0'),
 		imageEnable: z.boolean().default(false),
 		imageEnableRight: z.boolean().default(false),
@@ -1502,8 +1507,9 @@ export function isQuoteContainer(
 
 const initialQuotePayload = quotePayload.partial({ title: true });
 
-const reportPayload = basePayload
-	.extend({
+const reportPayload = z
+	.object({
+		...basePayload.shape,
 		image: z.url().optional(),
 		type: z.literal(payloadTypes.enum.report)
 	})
@@ -1519,9 +1525,9 @@ export function isReportContainer(
 
 const initialReportPayload = reportPayload.partial({ title: true });
 
-const resourcePayload = measureMonitoringBasePayload
-	.omit({ description: true, summary: true })
-	.extend({
+const resourcePayload = z
+	.object({
+		...measureMonitoringBasePayload.omit({ description: true, summary: true }).shape,
 		amount: z.coerce.number().optional(),
 		fulfillmentDate: z.iso.date().optional(),
 		type: z.literal(payloadTypes.enum.resource),
@@ -1670,9 +1676,9 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 	resourceDataType: true
 });
 
-const resourceV2Payload = basePayload
-	.omit({ category: true, summary: true })
-	.extend({
+const resourceV2Payload = z
+	.object({
+		...basePayload.omit({ category: true, summary: true }).shape,
 		type: z.literal(payloadTypes.enum.resource_v2),
 		resourceCategory: resourceCategories.default(
 			resourceCategories.enum['resource_category.money']
@@ -1692,8 +1698,9 @@ export function isResourceV2Container(
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
-export const rulePayload = basePayload
-	.extend({
+export const rulePayload = z
+	.object({
+		...basePayload.shape,
 		status: status.default(status.enum['status.idea']),
 		type: z.literal(payloadTypes.enum.rule),
 		validFrom: z.iso.date().optional(),
@@ -1713,9 +1720,9 @@ const initialRulePayload = rulePayload.partial({ title: true });
 
 export type InitialRulePayload = z.infer<typeof initialRulePayload>;
 
-const simpleMeasurePayload = basePayload
-	.omit({ summary: true })
-	.extend({
+const simpleMeasurePayload = z
+	.object({
+		...basePayload.omit({ summary: true }).shape,
 		annotation: z.string().trim().optional(),
 		endDate: z.iso.date().optional(),
 		file: z.array(z.tuple([z.url(), z.string()])).default([]),
@@ -1758,9 +1765,9 @@ export function isSummaryContainer(
 
 const initialSummaryPayload = summaryPayload;
 
-const taskPayload = measureMonitoringBasePayload
-	.omit({ summary: true })
-	.extend({
+const taskPayload = z
+	.object({
+		...measureMonitoringBasePayload.omit({ summary: true }).shape,
 		assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 		benefit: benefit.optional(),
 		category: z
@@ -1805,8 +1812,9 @@ export function isTaskCollectionContainer(
 
 const initialTaskCollectionPayload = taskCollectionPayload;
 
-const teaserPayload = teaserBasePayload
-	.extend({
+const teaserPayload = z
+	.object({
+		...teaserBasePayload.shape,
 		type: z.literal(payloadTypes.enum.teaser)
 	})
 	.strict();
@@ -1843,8 +1851,9 @@ export function isTeaserCollectionContainer(
 
 const initialTeaserCollectionPayload = teaserCollectionPayload;
 
-const teaserHighlightPayload = teaserBasePayload
-	.extend({
+const teaserHighlightPayload = z
+	.object({
+		...teaserBasePayload.shape,
 		colSize: teaserColSizes.default('100-0'),
 		imageEnable: z.boolean().default(false),
 		imageEnableRight: z.boolean().default(false),
