@@ -679,7 +679,6 @@ const basePayload = z.object({
 
 const measureMonitoringBasePayload = z.object({
 	description: z.string().trim().optional(),
-	summary: z.string().trim().max(200).optional(),
 	title: z.string(),
 	visibility: visibility.default(visibility.enum['organization'])
 });
@@ -885,7 +884,7 @@ const initialDemographicDataPayload = demographicDataPayload.partial({
 });
 
 const effectPayload = z.strictObject({
-	...measureMonitoringBasePayload.omit({ summary: true }).shape,
+	...measureMonitoringBasePayload.shape,
 	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 	booleanValue: z.boolean().optional(),
 	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
@@ -1462,7 +1461,7 @@ export function isReportContainer(
 const initialReportPayload = reportPayload.partial({ title: true });
 
 const resourcePayload = z.strictObject({
-	...measureMonitoringBasePayload.omit({ description: true, summary: true }).shape,
+	...measureMonitoringBasePayload.omit({ description: true }).shape,
 	amount: z.coerce.number().optional(),
 	fulfillmentDate: z.iso.date().optional(),
 	type: z.literal(payloadTypes.enum.resource),
@@ -1684,7 +1683,7 @@ export function isSummaryContainer(
 const initialSummaryPayload = summaryPayload;
 
 const taskPayload = z.strictObject({
-	...measureMonitoringBasePayload.omit({ summary: true }).shape,
+	...measureMonitoringBasePayload.shape,
 	assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 	benefit: benefit.optional(),
 	category: z
