@@ -3,6 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
 	import Cash from '~icons/flowbite/cash-outline';
+	import Code from '~icons/flowbite/file-code-solid';
 	import File from '~icons/flowbite/file-solid';
 	import Quote from '~icons/flowbite/quote-solid';
 	import BasicData from '~icons/knotdots/basic-data';
@@ -238,6 +239,7 @@
 				textType: textType.enum.inline_help,
 				value: payloadTypes.enum.text
 			},
+			{ icon: Code, label: $_('html'), value: payloadTypes.enum.html },
 			...(mayAddSummary
 				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
 				: []),
