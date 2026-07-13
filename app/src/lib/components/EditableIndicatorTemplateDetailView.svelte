@@ -113,6 +113,7 @@
 						{$_('indicator.view_mode.chart')}
 						<input
 							name="mode"
+							oninput={(e) => e.stopPropagation()}
 							type="radio"
 							value="chart"
 							bind:group={viewMode}
@@ -124,6 +125,7 @@
 						{$_('indicator.view_mode.table')}
 						<input
 							name="mode"
+							oninput={(e) => e.stopPropagation()}
 							type="radio"
 							value="table"
 							bind:group={viewMode}
