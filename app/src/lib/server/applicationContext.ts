@@ -2,7 +2,6 @@ import { error } from '@sveltejs/kit';
 import type { DatabaseConnection } from 'slonik';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
-import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type AnyContainer,
@@ -17,8 +16,7 @@ import {
 	getContainerByGuid,
 	getManyContainers,
 	getManyOrganizationalUnitContainers,
-	getSubscribedProgramGuids,
-	sql,
+	getSubscribedPrograms,
 	setUp
 } from '$lib/server/db';
 
@@ -130,37 +128,20 @@ export async function loadApplicationContext({
 						.filter((ou) => ou.organization === currentOrganization.guid)
 						.map((ou) => ou.guid)
 				];
-		const subscriptionRelations = await connect(getSubscribedProgramGuids(subscriptionScope));
-		const subscribedPrograms = subscriptionRelations.map((r) => r.object);
+		const subscribedProgramRows = await connect(getSubscribedPrograms(subscriptionScope));
+		const subscribedPrograms = subscribedProgramRows.map((r) => r.guid);
 
-		const subscribedProgramSubscribers: Record<string, string> = {};
-		for (const rel of subscriptionRelations) {
-			const ou = organizationalUnits.find((u) => u.guid === rel.subject);
-			if (ou) {
-				subscribedProgramSubscribers[rel.object] = ou.payload.name;
-			}
-		}
-
-		let subscribedOrganizations: OrganizationContainer[] = [];
 		const subscribedProgramsByOrg = new Map<string, string[]>();
-		if (subscribedPrograms.length > 0) {
-			const rows = await connect(async (connection) =>
-				connection.any(sql.type(z.object({ guid: z.string(), organization: z.string() }))`
-					SELECT guid, organization FROM container
-					WHERE guid IN (${sql.join(subscribedPrograms, sql.fragment`, `)})
-						AND valid_currently AND NOT deleted
-				`)
-			);
-			const orgGuids = new Set(rows.map((r) => r.organization));
-			subscribedOrganizations = organizations.filter(
-				(o) => orgGuids.has(o.guid) && o.guid !== currentOrganization.guid
-			);
-			for (const row of rows) {
-				const list = subscribedProgramsByOrg.get(row.organization) ?? [];
-				list.push(row.guid);
-				subscribedProgramsByOrg.set(row.organization, list);
-			}
+		for (const row of subscribedProgramRows) {
+			const list = subscribedProgramsByOrg.get(row.organization) ?? [];
+			list.push(row.guid);
+			subscribedProgramsByOrg.set(row.organization, list);
 		}
+
+		const subscribedOrgGuids = new Set(subscribedProgramRows.map((r) => r.organization));
+		const subscribedOrganizations = organizations.filter(
+			(o) => subscribedOrgGuids.has(o.guid) && o.guid !== currentOrganization.guid
+		);
 
 		return {
 			categoryContext,
@@ -172,8 +153,7 @@ export async function loadApplicationContext({
 			organizationalUnits,
 			subscribedOrganizations,
 			subscribedPrograms,
-			subscribedProgramsByOrg,
-			subscribedProgramSubscribers
+			subscribedProgramsByOrg
 		};
 	});
 }

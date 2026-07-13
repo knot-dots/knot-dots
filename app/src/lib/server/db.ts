@@ -1624,17 +1624,22 @@ export function getAllDirectContainerRelations(guid: string) {
 	};
 }
 
-export function getSubscribedProgramGuids(orgGuids: readonly string[]) {
+export function getSubscribedPrograms(orgGuids: readonly string[]) {
 	return async (connection: DatabaseConnection) => {
 		if (orgGuids.length === 0) return [];
-		return await connection.any(sql.typeAlias('relation')`
-			SELECT object, position, predicate, subject
-			FROM container_relation
-			WHERE subject IN (${sql.join(orgGuids, sql.fragment`, `)})
-				AND predicate = ${predicates.enum['is-subscribed-to']}
-				AND valid_currently
-				AND NOT deleted
-		`);
+		return await connection.any(
+			sql.type(z.object({ guid: z.string(), organization: z.string() }))`
+				SELECT DISTINCT c.guid, c.organization
+				FROM container_relation cr
+				JOIN container c ON c.guid = cr.object
+				WHERE cr.subject IN (${sql.join(orgGuids, sql.fragment`, `)})
+					AND cr.predicate = ${predicates.enum['is-subscribed-to']}
+					AND cr.valid_currently
+					AND NOT cr.deleted
+					AND c.valid_currently
+					AND NOT c.deleted
+			`
+		);
 	};
 }
 
