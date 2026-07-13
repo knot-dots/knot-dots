@@ -10,6 +10,7 @@
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import AdoptButton from '$lib/components/AdoptButton.svelte';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
@@ -22,7 +23,6 @@
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
-	import SubscribeButton from '$lib/components/SubscribeButton.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -348,7 +348,7 @@
 	<footer class="content-footer bottom-actions-bar">
 		<div class="content-actions">
 			<RelationButton {container} />
-			<SubscribeButton {container} />
+			<AdoptButton {container} />
 			<CreateAnotherButton {container} {relatedContainers} />
 			<CreateCopyButton {container} />
 			{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}

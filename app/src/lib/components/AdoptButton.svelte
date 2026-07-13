@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
-	import SubscribeDialog from '$lib/components/SubscribeDialog.svelte';
+	import AdoptDialog from '$lib/components/AdoptDialog.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { AnyContainer, OrganizationalUnitContainer, Relation } from '$lib/models';
 	import { user } from '$lib/stores';
@@ -126,7 +126,7 @@
 				<ChevronDown />
 			</button>
 		{/if}
-		<SubscribeDialog
+		<AdoptDialog
 			{container}
 			bind:open={popoverOpen}
 			anchor={buttonEl}
