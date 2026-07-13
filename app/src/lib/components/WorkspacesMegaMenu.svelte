@@ -234,11 +234,11 @@
 
 	.menu-segment-item > button:hover,
 	.menu-segment-item > button:focus-visible {
-		background-color: rgb(from var(--color-background-accent-state-hover) r g b / 0.1);
+		background-color: rgb(from var(--color-background-accent-hover) r g b / 0.1);
 	}
 
 	.menu-segment-item--current > button {
-		background-color: var(--color-background-accent-state-selected);
+		background-color: var(--color-background-accent-expanded);
 	}
 
 	.menu-segment-item-icon {
