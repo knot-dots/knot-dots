@@ -148,6 +148,7 @@
 		color: var(--color-gray-500);
 		container-type: inline-size;
 		height: calc(100vh - 1rem);
+		overflow: hidden;
 		padding: 0.75rem;
 		width: calc(100vw - 1rem);
 	}
