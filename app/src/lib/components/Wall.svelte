@@ -56,12 +56,6 @@
 				{@render itemSnippet(item)}
 			</li>
 		{/each}
-
-		<li>
-			<button aria-label={$_('add_item')} class="card" onclick={addItem} type="button">
-				<CirclePlus />
-			</button>
-		</li>
 	</ul>
 {/if}
 
