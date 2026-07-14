@@ -1,10 +1,22 @@
 import { test as setup, expect } from '@playwright/test';
 import * as path from 'path';
+import { createUser } from './fixtures';
 
 // Define the directory where the authentication state will be saved
 const authDir = path.join('./tests/.auth');
 
-const persons = [
+interface Person {
+	name: string;
+	mail: string;
+	passw: string;
+	file_name: string;
+	firstName?: string;
+	lastName?: string;
+	provision?: boolean;
+	realmRoles?: string[];
+}
+
+const persons: Person[] = [
 	{
 		name: 'Ada Adagio',
 		mail: 'admin@knotdots.net',
@@ -13,14 +25,29 @@ const persons = [
 	},
 	{
 		name: 'Bob Builder',
+		firstName: 'Bob',
+		lastName: 'Builder',
 		mail: 'builderbob@bobby.com',
 		passw: 'schnabeltasse',
-		file_name: 'bob'
+		file_name: 'bob',
+		provision: true,
+		realmRoles: ['alpha-testing']
 	}
 ];
 
 persons.forEach((person) => {
-	setup(`authenticate as ${person.name}`, async ({ page }) => {
+	setup(`authenticate as ${person.name}`, async ({ page, playwright }) => {
+		// Provision users that are not part of the imported realm directly in Keycloak
+		if (person.provision) {
+			await createUser(playwright.request, {
+				email: person.mail,
+				firstName: person.firstName as string,
+				lastName: person.lastName as string,
+				password: person.passw,
+				realmRoles: person.realmRoles
+			});
+		}
+
 		// Navigate to the login page
 		await page.goto('/');
 		await page.getByRole('button', { name: 'Log in' }).click();

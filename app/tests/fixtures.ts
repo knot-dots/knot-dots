@@ -1,4 +1,9 @@
-import { type BrowserContext, test as base } from '@playwright/test';
+import {
+	type APIRequest,
+	type APIRequestContext,
+	type BrowserContext,
+	test as base
+} from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
 	type AnyPayload,
@@ -53,6 +58,7 @@ type MyFixtures = {
 type MyWorkerFixtures = {
 	suiteId: string;
 	adminContext: BrowserContext;
+	bobContext: BrowserContext;
 	defaultOrganization: Container<OrganizationPayload>;
 	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testOrganization: Container<OrganizationPayload>;
@@ -82,6 +88,140 @@ type MyWorkerFixtures = {
 };
 
 locale.set('en');
+
+const KC_URL = process.env.TEST_KC_URL ?? 'http://localhost:8080';
+const KC_REALM = process.env.TEST_KC_REALM ?? 'knot-dots';
+const KC_ADMIN_USER = process.env.TEST_KC_ADMIN_USER ?? 'admin';
+const KC_ADMIN_PASSWORD = process.env.TEST_KC_ADMIN_PASSWORD ?? 'admin';
+
+export interface KeycloakUser {
+	email: string;
+	firstName: string;
+	lastName: string;
+	password: string;
+	realmRoles?: string[];
+}
+
+/**
+ * Creates a confirmed Keycloak user via the admin API so it can be used to
+ * authenticate in tests. Obtains an admin token, provisions the user and
+ * assigns realm roles. Idempotent: an existing user with the same email is
+ * updated to match the requested profile and password.
+ */
+export async function createUser(apiRequest: APIRequest, newUser: KeycloakUser) {
+	// Obtain an admin token and build a pre-authenticated request context.
+	const tokenContext = await apiRequest.newContext({ baseURL: KC_URL });
+	let keycloakContext: APIRequestContext;
+	try {
+		const tokenResponse = await tokenContext.post('/realms/master/protocol/openid-connect/token', {
+			form: {
+				grant_type: 'password',
+				client_id: 'admin-cli',
+				username: KC_ADMIN_USER,
+				password: KC_ADMIN_PASSWORD
+			}
+		});
+		if (!tokenResponse.ok()) {
+			throw new Error(
+				`Failed to obtain Keycloak admin token. Keycloak responded with ${tokenResponse.status()}.`
+			);
+		}
+		const { access_token } = (await tokenResponse.json()) as { access_token: string };
+		keycloakContext = await apiRequest.newContext({
+			baseURL: KC_URL,
+			extraHTTPHeaders: { Authorization: `Bearer ${access_token}` }
+		});
+	} finally {
+		await tokenContext.dispose();
+	}
+
+	try {
+		const representation = {
+			username: newUser.email,
+			email: newUser.email,
+			firstName: newUser.firstName,
+			lastName: newUser.lastName,
+			emailVerified: true,
+			enabled: true,
+			requiredActions: [],
+			credentials: [{ type: 'password', value: newUser.password, temporary: false }]
+		};
+
+		const findUser = async () => {
+			const response = await keycloakContext.get(`/admin/realms/${KC_REALM}/users`, {
+				params: { email: newUser.email, exact: 'true' }
+			});
+			if (!response.ok()) {
+				throw new Error(
+					`Failed to look up Keycloak user ${newUser.email}. Keycloak responded with ${response.status()}.`
+				);
+			}
+			return ((await response.json()) as Array<{ id: string }>)[0];
+		};
+
+		const createResponse = await keycloakContext.post(`/admin/realms/${KC_REALM}/users`, {
+			data: representation
+		});
+		if (createResponse.status() !== 201 && createResponse.status() !== 409) {
+			throw new Error(
+				`Failed to create Keycloak user ${newUser.email}. Keycloak responded with ${createResponse.status()}: ${await createResponse.text()}`
+			);
+		}
+
+		if (createResponse.status() === 409) {
+			// User already exists: update it to match the requested profile and password.
+			const existingUser = await findUser();
+			if (!existingUser) {
+				throw new Error(
+					`Keycloak reported ${newUser.email} as existing but it could not be found.`
+				);
+			}
+			const updateResponse = await keycloakContext.put(
+				`/admin/realms/${KC_REALM}/users/${existingUser.id}`,
+				{ data: representation }
+			);
+			if (!updateResponse.ok()) {
+				throw new Error(
+					`Failed to update Keycloak user ${newUser.email}. Keycloak responded with ${updateResponse.status()}: ${await updateResponse.text()}`
+				);
+			}
+		}
+
+		if (newUser.realmRoles && newUser.realmRoles.length > 0) {
+			const user = await findUser();
+			if (!user) {
+				throw new Error(`Keycloak user ${newUser.email} could not be found after provisioning.`);
+			}
+			const roles = await Promise.all(
+				newUser.realmRoles.map(async (name) => {
+					const response = await keycloakContext.get(
+						`/admin/realms/${KC_REALM}/roles/${encodeURIComponent(name)}`
+					);
+					if (!response.ok()) {
+						throw new Error(
+							`Failed to look up Keycloak realm role ${name}. Keycloak responded with ${response.status()}.`
+						);
+					}
+					return (await response.json()) as { id: string; name: string };
+				})
+			);
+			// Assigning an already-assigned role is a no-op, so this stays idempotent.
+			const response = await keycloakContext.post(
+				`/admin/realms/${KC_REALM}/users/${user.id}/role-mappings/realm`,
+				{ data: roles }
+			);
+			if (!response.ok()) {
+				throw new Error(
+					`Failed to assign realm roles to Keycloak user ${user.id}. Keycloak responded with ${response.status()}: ${await response.text()}`
+				);
+			}
+		}
+
+		return newUser;
+	} finally {
+		await keycloakContext.dispose();
+	}
+}
 
 export async function createContainer(context: BrowserContext, newContainer: NewContainer) {
 	const response = await context.request.post('/container', { data: newContainer });
@@ -181,6 +321,18 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			});
 
 			await use(adminContext);
+		},
+		{ scope: 'worker' }
+	],
+	bobContext: [
+		async ({ browser, suiteId }, use, workerInfo) => {
+			void suiteId; // declares dependency to force a new worker per test file
+			const bobContext = await browser.newContext({
+				baseURL: workerInfo.project.use.baseURL,
+				storageState: 'tests/.auth/bob.json'
+			});
+
+			await use(bobContext);
 		},
 		{ scope: 'worker' }
 	],
