@@ -230,7 +230,7 @@
 		<header>
 			<h3>
 				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !ignoreBulkActionContext}
-					<label class="is-visible-on-hover">
+					<label class="is-visible-on-hover" onclick={(e) => e.stopPropagation()}>
 						<input
 							bind:checked={
 								() => bulkActionContext.selected.has(container.guid),
@@ -240,7 +240,6 @@
 										: bulkActionContext.selected.add(container.guid)
 							}
 							name={bulkActionContext.name}
-							onclick={(e) => e.stopPropagation()}
 							oninput={(e) => e.stopPropagation()}
 							type="checkbox"
 						/>
