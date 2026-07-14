@@ -181,7 +181,6 @@
 	.commands {
 		align-items: center;
 		display: flex;
-		flex-wrap: wrap;
 		flex-shrink: 0;
 		gap: 0.75rem;
 		justify-content: space-between;
@@ -190,8 +189,8 @@
 	.commands-leading {
 		align-items: center;
 		display: flex;
+		flex-shrink: 0;
 		gap: 0.75rem;
-		margin-right: auto;
 		min-width: 0;
 	}
 
@@ -199,7 +198,6 @@
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
-		margin-left: auto;
 		min-width: 0;
 	}
 
