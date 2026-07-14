@@ -164,6 +164,7 @@
 							<EditableEffectDetailView
 								bind:container={newObjectiveOrEffect}
 								revisions={[newObjectiveOrEffect]}
+								sections={[]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 								{#snippet layout(header: Snippet, main: Snippet)}
@@ -174,6 +175,7 @@
 							<EditableObjectiveDetailView
 								bind:container={newObjectiveOrEffect}
 								revisions={[newObjectiveOrEffect]}
+								sections={[]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 								{#snippet layout(header: Snippet, main: Snippet)}

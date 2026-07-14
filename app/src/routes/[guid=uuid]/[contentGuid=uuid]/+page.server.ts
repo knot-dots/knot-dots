@@ -8,10 +8,10 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 
 export const load = (async ({ locals, params }) => {
 	try {
-		const [revisions, relatedContainers] = await Promise.all([
+		const [revisions, sections] = await Promise.all([
 			locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid)),
 			locals.pool.connect(
-				getAllRelatedContainers([], params.guid, [predicates.enum['is-section-of']], {}, '')
+				getAllRelatedContainers([], params.contentGuid, [predicates.enum['is-section-of']], {}, '')
 			)
 		]);
 
@@ -23,8 +23,8 @@ export const load = (async ({ locals, params }) => {
 
 		return {
 			container,
-			relatedContainers: filterVisible(relatedContainers, locals.user),
 			revisions: filterVisible(revisions, locals.user),
+			sections: filterVisible(sections, locals.user),
 			title: 'title' in container.payload ? container.payload.title : container.payload.name
 		};
 	} catch (e: unknown) {

@@ -53,9 +53,10 @@
 		container: Container<AnyPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions?: Container<AnyPayload>[];
+		sections: Container[];
 	}
 
-	let { container: originalContainer, layout, revisions = [] }: Props = $props();
+	let { container: originalContainer, layout, revisions = [], sections }: Props = $props();
 
 	let container = $derived.by(() => {
 		let _ = $state(originalContainer);
@@ -64,45 +65,45 @@
 </script>
 
 {#if isBinaryIndicatorContainer(container)}
-	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} />
+	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} {sections} />
 {:else if isEffectContainer(container)}
-	<EditableEffectDetailView bind:container {layout} {revisions} />
+	<EditableEffectDetailView bind:container {layout} {revisions} {sections} />
 {:else if isGoalContainer(container)}
-	<EditableGoalDetailView bind:container {layout} {revisions} />
+	<EditableGoalDetailView bind:container {layout} {revisions} {sections} />
 {:else if isHelpContainer(container)}
-	<EditableHelpDetailView bind:container {layout} {revisions} />
+	<EditableHelpDetailView bind:container {layout} {revisions} {sections} />
 {:else if isCategoryContainer(container)}
 	<EditableCategoryDetailView bind:container {layout} {revisions} />
 {:else if isIndicatorTemplateContainer(container)}
-	<EditableIndicatorTemplateDetailView bind:container {layout} {revisions} />
+	<EditableIndicatorTemplateDetailView bind:container {layout} {revisions} {sections} />
 {:else if isKnowledgeContainer(container)}
-	<EditableKnowledgeDetailView bind:container {layout} {revisions} />
+	<EditableKnowledgeDetailView bind:container {layout} {revisions} {sections} />
 {:else if isContainerWithEffect(container)}
-	<EditableMeasureDetailView bind:container {layout} {revisions} />
+	<EditableMeasureDetailView bind:container {layout} {revisions} {sections} />
 {:else if isObjectiveContainer(container)}
-	<EditableObjectiveDetailView bind:container {layout} {revisions} />
+	<EditableObjectiveDetailView bind:container {layout} {revisions} {sections} />
 {:else if isOrganizationalUnitContainer(container)}
-	<EditableOrganizationalUnitDetailView bind:container {layout} />
+	<EditableOrganizationalUnitDetailView bind:container {layout} {sections} />
 {:else if isOrganizationContainer(container)}
-	<EditableOrganizationDetailView bind:container {layout} />
+	<EditableOrganizationDetailView bind:container {layout} {sections} />
 {:else if isPageContainer(container)}
-	<EditablePageDetailView bind:container {layout} {revisions} />
+	<EditablePageDetailView bind:container {layout} {revisions} {sections} />
 {:else if isProgramContainer(container)}
 	<EditableProgramDetailView bind:container {layout} {revisions} />
 {:else if isReportContainer(container)}
-	<EditableReportDetailView bind:container {layout} {revisions} />
+	<EditableReportDetailView bind:container {layout} {revisions} {sections} />
 {:else if isResourceContainer(container)}
 	<EditableResourceDetailView bind:container {layout} {revisions} />
 {:else if isResourceV2Container(container)}
-	<EditableResourceV2DetailView bind:container {layout} {revisions} />
+	<EditableResourceV2DetailView bind:container {layout} {revisions} {sections} />
 {:else if isResourceDataContainer(container)}
-	<EditableResourceDataDetailView bind:container {layout} {revisions} />
+	<EditableResourceDataDetailView bind:container {layout} {revisions} {sections} />
 {:else if isRuleContainer(container)}
-	<EditableRuleDetailView bind:container {layout} {revisions} />
+	<EditableRuleDetailView bind:container {layout} {revisions} {sections} />
 {:else if isTermContainer(container)}
 	<EditableTermDetailView bind:container {layout} {revisions} />
 {:else if isTaskContainer(container)}
-	<EditableTaskDetailView bind:container {layout} {revisions} />
+	<EditableTaskDetailView bind:container {layout} {revisions} {sections} />
 {:else if isTeaserContainer(container)}
 	<EditableTeaserDetailView bind:container {layout} {revisions} />
 {:else if isTextContainer(container)}

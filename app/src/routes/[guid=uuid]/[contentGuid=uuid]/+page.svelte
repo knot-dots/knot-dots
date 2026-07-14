@@ -6,7 +6,7 @@
 	let { data }: PageProps = $props();
 </script>
 
-<EditableDetailView container={data.container} revisions={data.revisions}>
+<EditableDetailView container={data.container} revisions={data.revisions} sections={data.sections}>
 	{#snippet layout(header, main)}
 		<Layout {header} {main} />
 	{/snippet}

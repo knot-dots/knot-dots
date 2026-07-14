@@ -52,9 +52,10 @@
 		container: Container<ResourceV2Payload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
+		sections: Container[];
 	}
 
-	let { container = $bindable(), layout, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions, sections }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -116,7 +117,7 @@
 		}
 	);
 
-	const allRelatedContainers = $derived(relatedContainersQuery.current ?? []);
+	const allRelatedContainers = $derived(relatedContainersQuery.current ?? sections);
 	const programContainers = $derived(programContainersQuery.current ?? []);
 
 	// Filter related containers by program if program parameter is present
@@ -224,7 +225,7 @@
 	}
 
 	// Build sections for EditableTable
-	const sections = $derived.by((): EditableTableSection[] => {
+	const tableSections = $derived.by((): EditableTableSection[] => {
 		const result: EditableTableSection[] = [];
 
 		// Section 1: Total Budget
@@ -411,7 +412,7 @@
 					title={$_('resource_table.resource_requirements')}
 					titleUnit={$_(container.payload.resourceUnit)}
 					columnLabel={$_('table.data_object')}
-					{sections}
+					sections={tableSections}
 					getEntries={(containerToRead) =>
 						getEntries(containerToRead as Container<ResourceDataPayload>)}
 					setEntry={(containerToUpdate, year, value) =>

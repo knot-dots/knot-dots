@@ -33,7 +33,11 @@
 	data-payload-type={data.container.payload.type}
 	onclickcapture={disableNavigation}
 >
-	<EditableDetailView container={data.container} revisions={data.revisions}>
+	<EditableDetailView
+		container={data.container}
+		revisions={data.revisions}
+		sections={data.sections}
+	>
 		{#snippet layout(header, main)}
 			{#if false}
 				{@render header()}

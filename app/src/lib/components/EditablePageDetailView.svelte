@@ -31,9 +31,10 @@
 		container: Container<PagePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
+		sections: Container[];
 	}
 
-	let { container = $bindable(), layout, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions, sections }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -68,7 +69,7 @@
 		selected: new SvelteSet<string>()
 	});
 
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
+	let relatedContainers = $derived(relatedContainersQuery.current ?? sections);
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;

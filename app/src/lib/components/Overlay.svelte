@@ -97,7 +97,12 @@
 	{:else if data.key === overlayKey.enum['resources']}
 		<ResourcesOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['view']}
-		<EditableDetailView container={data.container} {layout} revisions={data.revisions} />
+		<EditableDetailView
+			container={data.container}
+			{layout}
+			revisions={data.revisions}
+			sections={data.sections}
+		/>
 	{/if}
 </section>
 

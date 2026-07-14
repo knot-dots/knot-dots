@@ -11,10 +11,10 @@ function isPublic(container: Container<AnyPayload>): boolean {
 
 export const load = (async ({ locals, params }) => {
 	try {
-		const [revisions, relatedContainers] = await Promise.all([
+		const [revisions, sections] = await Promise.all([
 			locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid)),
 			locals.pool.connect(
-				getAllRelatedContainers([], params.guid, [predicates.enum['is-section-of']], {}, '')
+				getAllRelatedContainers([], params.contentGuid, [predicates.enum['is-section-of']], {}, '')
 			)
 		]);
 
@@ -26,8 +26,8 @@ export const load = (async ({ locals, params }) => {
 
 		return {
 			container,
-			relatedContainers: relatedContainers.filter(isPublic),
 			revisions: revisions.filter(isPublic),
+			sections: sections.filter(isPublic),
 			title: 'title' in container.payload ? container.payload.title : container.payload.name
 		};
 	} catch (e: unknown) {

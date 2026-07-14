@@ -38,9 +38,10 @@
 		container: Container<IndicatorTemplatePayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
+		sections: Container[];
 	}
 
-	let { container = $bindable(), layout, revisions }: Props = $props();
+	let { container = $bindable(), layout, revisions, sections }: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -76,7 +77,7 @@
 		relatedContainersQuery.current?.filter(
 			({ organizational_unit }) =>
 				!organizational_unit || !selectedMunicipalityGuids.includes(organizational_unit)
-		) ?? []
+		) ?? sections
 	);
 
 	let comparisonContainers = $derived(
