@@ -363,12 +363,7 @@
 	}
 
 	.selection-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin: 0;
-		overflow: auto;
-		padding: 0;
+		display: none;
 	}
 
 	.selection-item {
@@ -391,5 +386,16 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	@container (min-width: 48rem) {
+		.selection-list {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin: 0;
+			overflow: auto;
+			padding: 0;
+		}
 	}
 </style>

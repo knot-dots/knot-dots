@@ -664,12 +664,7 @@
 	}
 
 	.selection-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin: 0;
-		overflow: auto;
-		padding: 0;
+		display: none;
 	}
 
 	.selection-item {
@@ -698,5 +693,16 @@
 	.selection-item > :global(svg) {
 		flex-shrink: 0;
 		max-width: none;
+	}
+
+	@container (min-width: 48rem) {
+		.selection-list {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+			margin: 0;
+			overflow: auto;
+			padding: 0;
+		}
 	}
 </style>

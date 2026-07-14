@@ -4,6 +4,7 @@ test.use({ suiteId: 'dots-board' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test('Selected objects can be displayed in a section', async ({
+	isMobile,
 	landingPage,
 	testGoal,
 	testIndicatorTemplate,
@@ -64,12 +65,22 @@ test('Selected objects can be displayed in a section', async ({
 	const preview = dialog.locator('.selection-panel .selection-list');
 
 	await expect(confirmButton).toBeVisible();
-	await expect(
-		preview.getByRole('listitem').filter({ hasText: testGoal.payload.title })
-	).toBeVisible();
-	await expect(
-		preview.getByRole('listitem').filter({ hasText: testMeasure.payload.title })
-	).toBeVisible();
+
+	if (isMobile) {
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: testGoal.payload.title })
+		).toBeHidden();
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: testMeasure.payload.title })
+		).toBeHidden();
+	} else {
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: testGoal.payload.title })
+		).toBeVisible();
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: testMeasure.payload.title })
+		).toBeVisible();
+	}
 
 	// Assert dialog closes and selected objects are displayed in the section
 	await confirmButton.click();
@@ -87,6 +98,7 @@ test('Selected objects can be displayed in a section', async ({
 });
 
 test('Rule-based collections can be displayed in a section', async ({
+	isMobile,
 	landingPage,
 	testGoal,
 	testIndicatorTemplate,
@@ -129,8 +141,14 @@ test('Rule-based collections can be displayed in a section', async ({
 	const confirmButton = dialog.getByRole('button', { name: 'Apply rule' });
 	const preview = dialog.locator('.selection-panel .selection-list');
 	await expect(confirmButton).toBeVisible();
-	await expect(preview.getByText('Program')).toBeVisible();
-	await expect(preview.getByText('Report')).toBeVisible();
+
+	if (isMobile) {
+		await expect(preview.getByText('Program')).toBeHidden();
+		await expect(preview.getByText('Report')).toBeHidden();
+	} else {
+		await expect(preview.getByText('Program')).toBeVisible();
+		await expect(preview.getByText('Report')).toBeVisible();
+	}
 
 	// Assert dialog closes and objects matching the rule are displayed in the section
 	await confirmButton.click();
@@ -145,6 +163,7 @@ test('Rule-based collections can be displayed in a section', async ({
 });
 
 test('New item can be added to custom collection', async ({
+	isMobile,
 	landingPage,
 	reportTemplate,
 	testOrganization
@@ -184,9 +203,16 @@ test('New item can be added to custom collection', async ({
 	const preview = dialog.locator('.selection-panel .selection-list');
 
 	await expect(confirmButton).toBeVisible();
-	await expect(
-		preview.getByRole('listitem').filter({ hasText: reportTemplate.payload.title })
-	).toBeVisible();
+
+	if (isMobile) {
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: reportTemplate.payload.title })
+		).toBeHidden();
+	} else {
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: reportTemplate.payload.title })
+		).toBeVisible();
+	}
 
 	// Assert dialog closes and selected objects are displayed in the section
 	await confirmButton.click();

@@ -244,40 +244,33 @@
 		--picker-sidebar-width: 13rem;
 		--picker-selection-width: 20rem;
 		--picker-layout-gap: 1.5rem;
-		--picker-mobile-selection-max-height: 16rem;
 
 		display: grid;
 		flex: 1 1 auto;
 		gap: var(--picker-layout-gap);
-		grid-template-areas: 'main';
+		grid-template-areas: 'main' 'selection';
 		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
 		min-height: 0;
 	}
 
-	.picker-layout.has-selection {
-		grid-template-areas:
-			'main'
-			'selection';
-		grid-template-rows: minmax(0, 1fr) minmax(0, var(--picker-mobile-selection-max-height));
-	}
-
 	.picker-sidebar {
-		grid-area: sidebar;
 		display: none;
+		grid-area: sidebar;
 	}
 
 	.picker-main {
+		display: flex;
 		grid-area: main;
 	}
 
 	.picker-selection {
+		display: flex;
 		grid-area: selection;
 	}
 
 	.picker-main,
 	.picker-selection {
-		display: flex;
 		flex-direction: column;
 		min-height: 0;
 		min-width: 0;
