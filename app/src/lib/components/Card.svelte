@@ -232,6 +232,7 @@
 				{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext && !ignoreBulkActionContext}
 					<label class="is-visible-on-hover" onclick={(e) => e.stopPropagation()}>
 						<input
+							{@attach bulkActionContext.registerTarget}
 							bind:checked={
 								() => bulkActionContext.selected.has(container.guid),
 								() =>
