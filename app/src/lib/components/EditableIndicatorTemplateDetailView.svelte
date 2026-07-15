@@ -164,7 +164,7 @@
 					<ul class="carousel">
 						{#each relatedContainers.filter(isContainerWithEffect) as measure (measure.guid)}
 							<li>
-								<Card container={measure} />
+								<Card container={measure} ignoreBulkActionContext />
 							</li>
 						{/each}
 					</ul>
@@ -181,7 +181,7 @@
 								.find(isRelatedTo(objective))}
 							{#if goal}
 								<li>
-									<Card container={goal} />
+									<Card container={goal} ignoreBulkActionContext />
 								</li>
 							{/if}
 						{/each}
@@ -197,7 +197,7 @@
 					<ul class="carousel">
 						{#each relatedContainers.filter(isProgramContainer) as program (program.guid)}
 							<li>
-								<Card container={program} />
+								<Card container={program} ignoreBulkActionContext />
 							</li>
 						{/each}
 					</ul>
