@@ -220,6 +220,7 @@ export type OverlayData =
 			key: 'view';
 			container: Container<AnyPayload>;
 			revisions: Container<AnyPayload>[];
+			sections: Container[];
 	  }
 	| {
 			key: 'view-help';
@@ -292,7 +293,8 @@ if (browser) {
 				setOverlayIfLatest({
 					key: overlayKey.enum.view,
 					container: containers[0],
-					revisions: [containers[0]]
+					revisions: [containers[0]],
+					sections: []
 				});
 				return;
 			}
@@ -345,11 +347,12 @@ if (browser) {
 			if (result.type !== 'loaded' || result.status !== 200) {
 				return;
 			}
-			const { container, revisions } = result.data;
+			const { container, revisions, sections } = result.data;
 			setOverlayIfLatest({
 				key: overlayKey.enum.view,
 				container,
-				revisions
+				revisions,
+				sections
 			});
 		} else if (hashParams.has(overlayKey.enum.members)) {
 			const result = await preloadData(

@@ -75,6 +75,7 @@ const payloadTypeValues = [
 	'goal',
 	'goal_collection',
 	'help',
+	'html',
 	'ignite_video',
 	'image',
 	'indicator_collection',
@@ -1020,6 +1021,23 @@ export function isHelpContainer(
 
 const initialHelpPayload = helpPayload.partial({ title: true });
 
+const htmlPayload = z.strictObject({
+	body: z.string().trim().default(''),
+	title: z.string().trim().default(''),
+	type: z.literal(payloadTypes.enum.html),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type HtmlPayload = z.infer<typeof htmlPayload>;
+
+export function isHtmlContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<HtmlPayload> {
+	return container.payload.type === payloadTypes.enum.html;
+}
+
+const initialHtmlPayload = htmlPayload;
+
 const igniteVideoPayload = z.strictObject({
 	iframeUrl: z
 		.string()
@@ -1849,6 +1867,7 @@ const payload = z.discriminatedUnion('type', [
 	goalCollectionPayload,
 	goalPayload,
 	helpPayload,
+	htmlPayload,
 	igniteVideoPayload,
 	imagePayload,
 	indicatorCollectionPayload,
@@ -1912,6 +1931,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialGoalCollectionPayload,
 	initialGoalPayload,
 	initialHelpPayload,
+	initialHtmlPayload,
 	initialIgniteVideoPayload,
 	initialImagePayload,
 	initialIndicatorCollectionPayload,

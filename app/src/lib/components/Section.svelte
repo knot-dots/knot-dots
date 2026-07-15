@@ -12,6 +12,7 @@
 	import EditableEffectCollection from '$lib/components/EditableEffectCollection.svelte';
 	import EditableFileCollection from '$lib/components/EditableFileCollection.svelte';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
+	import EditableHtmlSection from '$lib/components/EditableHtmlSection.svelte';
 	import EditableImageSection from '$lib/components/EditableImageSection.svelte';
 	import EditableIndicatorCollection from '$lib/components/EditableIndicatorCollection.svelte';
 	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
@@ -43,6 +44,7 @@
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
+		isHtmlContainer,
 		isIgniteVideoContainer,
 		isImageContainer,
 		isIndicatorCollectionContainer,
@@ -181,6 +183,13 @@
 				bind:relatedContainers
 				editable={$applicationState.containerDetailView.editable}
 				{heading}
+			/>
+		{:else if isHtmlContainer(container)}
+			<EditableHtmlSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={$applicationState.containerDetailView.editable}
 			/>
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
