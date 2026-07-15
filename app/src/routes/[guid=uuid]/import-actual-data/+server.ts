@@ -172,7 +172,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					payload: {
 						...newActualDataContainer.payload,
 						visibility: foundActualDataContainer.payload.visibility
-					}
+					},
+					user: newActualDataContainer.user
 				})(tx);
 			} else if (!foundActualDataContainer) {
 				await createContainer(newActualDataContainer)(tx);
