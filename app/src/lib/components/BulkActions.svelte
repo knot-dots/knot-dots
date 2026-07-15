@@ -28,6 +28,9 @@
 
 	let isLoading = $state(false);
 
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let targetsAvailable = $state(false);
+
 	let selectAllResultCount = $state(0);
 
 	let selectAllChecked = $state(false);
@@ -82,9 +85,14 @@
 	let selectAllIndeterminate = $derived(
 		bulkActionContext.selected.size > 0 && bulkActionContext.selected.size !== selectAllResultCount
 	);
+
+	$effect(() => {
+		targetsAvailable =
+			document.querySelectorAll(`input[name="${bulkActionContext.name}"]`).length > 0;
+	});
 </script>
 
-{#if bulkActionContext}
+{#if bulkActionContext && targetsAvailable}
 	<fieldset class={{ 'has-selection': bulkActionContext.selected.size > 0 }}>
 		<legend class="is-visually-hidden">{$_('bulk_actions')}</legend>
 
