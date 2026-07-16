@@ -660,20 +660,18 @@ export function slugify(source: string) {
 		.substring(0, 128);
 }
 
-export const reservedContextSlugs = new Set([
-	'ask-ai',
-	'container',
-	'help',
-	'knowledge-ai',
-	'me',
-	'rewrite-map',
-	'task-priority',
-	'upload',
-	'user'
-]);
-
 export function isReservedContextSlug(slug: string) {
-	return reservedContextSlugs.has(slug.toLowerCase());
+	return new Set([
+		'ask-ai',
+		'container',
+		'help',
+		'knowledge-ai',
+		'me',
+		'rewrite-map',
+		'task-priority',
+		'upload',
+		'user'
+	]).has(slug.toLowerCase());
 }
 
 function deduplicate<T>(v: T[]) {
