@@ -67,7 +67,7 @@
 			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
 		{/if}
 
-		{#if features.useContextSlug() && $ability.can('update', container, 'payload.slug')}
+		{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
 			<EditableSlug {editable} bind:value={container.payload.slug} />
 		{/if}
 

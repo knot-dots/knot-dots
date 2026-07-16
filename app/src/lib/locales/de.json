@@ -697,7 +697,6 @@
 	"report_section": "Abschnitt",
 	"resource": "Ressource",
 	"resource_v2": "Ressource",
-	"ContextSlug": "Lesbare URLs",
 	"ResourceV2": "Ressourcenplanung",
 	"resource_data": "Ressourcendaten",
 	"resource_data_collection": "Ressourcendatensammlung",
@@ -914,6 +913,7 @@
 	"upload.pdf.help": "PDF-Dateien, maximal 100 MB",
 	"upload.pdf.remove": "PDF löschen",
 	"upload.uploading": "Wird hochgeladen …",
+	"UrlSlug": "URL-Slug",
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",

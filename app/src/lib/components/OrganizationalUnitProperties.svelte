@@ -140,7 +140,7 @@
 			bind:value={container.payload.visibleWorkspaces}
 		/>
 
-		{#if features.useContextSlug() && $ability.can('update', container, 'payload.slug')}
+		{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
 			<EditableSlug {editable} bind:value={container.payload.slug} />
 		{/if}
 

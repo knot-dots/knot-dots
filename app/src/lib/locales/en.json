@@ -698,7 +698,6 @@
 	"report_section": "Section",
 	"resource": "Resource",
 	"resource_v2": "Resource",
-	"ContextSlug": "Readable URLs",
 	"ResourceV2": "ResourceV2",
 	"resource_data": "Resource data",
 	"resource_data_collection": "Resource data collection",
@@ -915,6 +914,7 @@
 	"upload.pdf.help": "PDF, max 100 MB",
 	"upload.pdf.remove": "Remove PDF",
 	"upload.uploading": "Uploading…",
+	"UrlSlug": "URL slug",
 	"user": {
 		"display_name": "Name",
 		"email": "Email",
