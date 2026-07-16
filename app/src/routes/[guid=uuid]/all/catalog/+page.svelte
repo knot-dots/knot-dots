@@ -21,6 +21,7 @@
 	const list = createPaginatedList<Container<AnyPayload>>({
 		fetchPage: async ({ offset, signal }) => {
 			const allTypeOptions = [
+				payloadTypes.enum.event,
 				payloadTypes.enum.goal,
 				payloadTypes.enum.help,
 				payloadTypes.enum.knowledge,
@@ -75,6 +76,7 @@
 	<Catalog
 		{containers}
 		payloadType={[
+			payloadTypes.enum.event,
 			payloadTypes.enum.goal,
 			payloadTypes.enum.measure,
 			payloadTypes.enum.page,

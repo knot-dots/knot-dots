@@ -71,6 +71,7 @@ const payloadTypeValues = [
 	'demographic_data',
 	'effect',
 	'effect_collection',
+	'event',
 	'file_collection',
 	'goal',
 	'goal_collection',
@@ -234,19 +235,20 @@ export function helpSlugForDetailView(payloadType: PayloadType): HelpSlug | unde
 }
 
 const categoryObjectTypeValues = [
-	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.event,
 	payloadTypes.enum.goal,
 	payloadTypes.enum.help,
-	payloadTypes.enum.program,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
-	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.program,
 	payloadTypes.enum.report,
 	payloadTypes.enum.rule,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.task,
-	payloadTypes.enum.indicator_template,
-	payloadTypes.enum.effect,
-	payloadTypes.enum.objective
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.task
 ] as const;
 
 export const categoryObjectTypes = z.enum(categoryObjectTypeValues);
@@ -938,6 +940,23 @@ export function isEffectCollectionContainer(
 }
 
 const initialEffectCollectionPayload = effectCollectionPayload;
+
+const eventPayload = z.strictObject({
+	...basePayload.shape,
+	endDate: z.iso.datetime().optional(),
+	startDate: z.iso.datetime().optional(),
+	type: z.literal(payloadTypes.enum.event)
+});
+
+export type EventPayload = z.infer<typeof eventPayload>;
+
+export function isEventContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<EventPayload> {
+	return container.payload.type === payloadTypes.enum.event;
+}
+
+const initialEventPayload = eventPayload.partial({ title: true });
 
 const fileCollectionPayload = z.strictObject({
 	file: z
@@ -1887,6 +1906,7 @@ const payload = z.discriminatedUnion('type', [
 	demographicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
+	eventPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
@@ -1951,6 +1971,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialDemographicDataPayload,
 	initialEffectCollectionPayload,
 	initialEffectPayload,
+	initialEventPayload,
 	initialFileCollectionPayload,
 	initialGoalCollectionPayload,
 	initialGoalPayload,

@@ -8,6 +8,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import EventProperties from '$lib/components/EventProperties.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
@@ -30,6 +31,7 @@
 		isContainerWithDescription,
 		isContainerWithName,
 		isContainerWithTitle,
+		isEventContainer,
 		isGoalContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
@@ -39,8 +41,8 @@
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
-		isResourceV2Container,
 		isResourceDataContainer,
+		isResourceV2Container,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -185,15 +187,22 @@
 					{/if}
 				</header>
 
-				{#if isGoalContainer($newContainer)}
-					<GoalProperties
+				{#if isCategoryContainer($newContainer)}
+					<CategoryProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isCategoryContainer($newContainer)}
-					<CategoryProperties
+				{:else if isEventContainer($newContainer)}
+					<EventProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isGoalContainer($newContainer)}
+					<GoalProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}
@@ -224,6 +233,13 @@
 					<OrganizationProperties bind:container={$newContainer} editable />
 				{:else if isOrganizationalUnitContainer($newContainer)}
 					<OrganizationalUnitProperties bind:container={$newContainer} editable />
+				{:else if isProgramContainer($newContainer)}
+					<ProgramProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isReportContainer($newContainer)}
 					<ReportProperties
 						bind:container={$newContainer}
@@ -261,13 +277,6 @@
 					/>
 				{:else if isSimpleMeasureContainer($newContainer)}
 					<MeasureProperties
-						bind:container={$newContainer}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isProgramContainer($newContainer)}
-					<ProgramProperties
 						bind:container={$newContainer}
 						editable
 						relatedContainers={[]}

@@ -54,6 +54,7 @@
 	let sortBar = createDisclosure({ label: $_('sort') });
 
 	const defaultPayloadType = $derived([
+		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
 		payloadTypes.enum.indicator_template,

@@ -16,6 +16,7 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 	depends('containers');
 
 	const allTypeOptions = [
+		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
 		payloadTypes.enum.knowledge,

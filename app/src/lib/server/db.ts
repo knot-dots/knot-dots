@@ -43,6 +43,7 @@ import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keyc
 const INDEXABLE_TYPES = new Set<string>([
 	'binary_indicator',
 	'effect',
+	'event',
 	'goal',
 	'help',
 	'indicator_template',

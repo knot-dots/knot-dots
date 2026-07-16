@@ -3,6 +3,7 @@
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
+	import EditableEventDetailView from '$lib/components/EditableEventDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
 	import EditableIndicatorTemplateDetailView from '$lib/components/EditableIndicatorTemplateDetailView.svelte';
@@ -23,9 +24,13 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import {
+		type AnyPayload,
+		type Container,
+		isBinaryIndicatorContainer,
 		isCategoryContainer,
 		isContainerWithEffect,
 		isEffectContainer,
+		isEventContainer,
 		isGoalContainer,
 		isHelpContainer,
 		isIndicatorTemplateContainer,
@@ -37,16 +42,13 @@
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
+		isResourceDataContainer,
 		isResourceV2Container,
 		isRuleContainer,
-		isTermContainer,
 		isTaskContainer,
 		isTeaserContainer,
-		isTextContainer,
-		isResourceDataContainer,
-		isBinaryIndicatorContainer,
-		type Container,
-		type AnyPayload
+		isTermContainer,
+		isTextContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -68,6 +70,8 @@
 	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} {sections} />
 {:else if isEffectContainer(container)}
 	<EditableEffectDetailView bind:container {layout} {revisions} {sections} />
+{:else if isEventContainer(container)}
+	<EditableEventDetailView bind:container {layout} {revisions} {sections} />
 {:else if isGoalContainer(container)}
 	<EditableGoalDetailView bind:container {layout} {revisions} {sections} />
 {:else if isHelpContainer(container)}
