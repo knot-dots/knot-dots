@@ -9,14 +9,21 @@
 
 	let { editable = false, label, value = $bindable() }: Props = $props();
 
-	const id = crypto.randomUUID();
+	function oninput(event: Event & { currentTarget: HTMLInputElement }) {
+		if (event.currentTarget.value == '') {
+			value = undefined;
+		} else if (event.currentTarget.validity.valid) {
+			value = event.currentTarget.value;
+		} else {
+			event.stopPropagation();
+		}
+	}
 </script>
 
 {#if editable}
-	<label class="label" for={id}>
-		{label}
-	</label>
-	<input class="value" {id} type="date" bind:value />
+	{const id = crypto.randomUUID()}
+	<label class="label" for={id}>{label}</label>
+	<input class="value" {id} {oninput} type="date" {value} />
 {:else}
 	<span class="label">{label}</span>
 	<time class="value" datetime={value}>
