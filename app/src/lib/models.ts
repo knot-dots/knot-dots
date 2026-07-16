@@ -660,8 +660,6 @@ export function slugify(source: string) {
 		.substring(0, 128);
 }
 
-export const contextSlugPattern = /^[a-z0-9-]+$/;
-
 export const reservedContextSlugs = new Set([
 	'ask-ai',
 	'container',
@@ -676,24 +674,6 @@ export const reservedContextSlugs = new Set([
 
 export function isReservedContextSlug(slug: string) {
 	return reservedContextSlugs.has(slug.toLowerCase());
-}
-
-function parseContextSlug(value?: string) {
-	if (!value) {
-		return undefined;
-	}
-
-	const normalized = value.trim().toLowerCase();
-
-	if (normalized.length === 0) {
-		return undefined;
-	}
-
-	if (!contextSlugPattern.test(normalized) || isReservedContextSlug(normalized)) {
-		return undefined;
-	}
-
-	return normalized;
 }
 
 function deduplicate<T>(v: T[]) {
@@ -2769,9 +2749,7 @@ export function computeFacetCount(
 export function getContextIdentifier(
 	container: Container<OrganizationPayload | OrganizationalUnitPayload>
 ): string {
-	const contextSlug =
-		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
-	return contextSlug ?? container.guid;
+	return container.payload.slug ?? container.guid;
 }
 
 export function pathnameWithoutContextSegment(
@@ -2795,12 +2773,10 @@ export function getOrganizationURL(
 	options?: { organizationSlug?: string }
 ): URL {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
-	const contextSlug =
-		'slug' in container.payload ? parseContextSlug(container.payload.slug) : undefined;
 	const organizationSubdomainSlug =
 		container.payload.type === payloadTypes.enum.organization
-			? contextSlug
-			: parseContextSlug(options?.organizationSlug);
+			? container.payload.slug
+			: options?.organizationSlug;
 
 	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
@@ -2815,7 +2791,7 @@ export function getOrganizationURL(
 		}
 	}
 
-	url.pathname = `/${contextSlug ?? container.guid}${linkPath}`
+	url.pathname = `/${container.payload.slug ?? container.guid}${linkPath}`
 		.replace('/me/measures', '/measures/status')
 		.replace('/me/tasks', '/tasks/status')
 		.replace(/\/me$/, '/all/page');
