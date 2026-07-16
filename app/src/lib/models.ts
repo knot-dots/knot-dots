@@ -1329,9 +1329,7 @@ export const organizationPayload = z.strictObject({
 	organizationCategory: organizationCategories.optional(),
 	slug: z
 		.string()
-		.trim()
-		.toLowerCase()
-		.regex(contextSlugPattern)
+		.slugify()
 		.refine((value) => !isReservedContextSlug(value))
 		.optional(),
 	type: z.literal(payloadTypes.enum.organization),
@@ -1382,9 +1380,7 @@ export const organizationalUnitPayload = z.strictObject({
 	organizationalUnitType: organizationalUnitType.optional(),
 	slug: z
 		.string()
-		.trim()
-		.toLowerCase()
-		.regex(contextSlugPattern)
+		.slugify()
 		.refine((value) => !isReservedContextSlug(value))
 		.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
