@@ -68,7 +68,7 @@
 		{/if}
 
 		{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
-			<EditableSlug {editable} bind:value={container.payload.slug} />
+			<EditableSlug {editable} bind:container />
 		{/if}
 
 		{#if $ability.can('update', container, 'payload.customFavicon')}
