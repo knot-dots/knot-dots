@@ -595,6 +595,7 @@
 	"policy_field_bnk.health": "Gesundheit",
 	"policy_field_bnk.decent_work": "Gute Arbeit und nachhaltiges Wirtschaften",
 	"policy_field_bnk.global_cooperation": "Globale Zusammenarbeit und Eine Welt",
+	"post": "Beitrag",
 	"privacy_policy": "Datenschutz",
 	"profile": {
 		"my_measures": "Meine Maßnahmen",
@@ -651,6 +652,7 @@
 	"properties.subheading.visible_workspaces.description": "Wählen Sie aus, welche Arbeitsbereiche im Hauptmenü sichtbar sind. Ist nichts ausgewählt, sind alle Arbeitsbereiche sichtbar.",
 	"properties.hide": "Eigenschaften verbergen",
 	"properties.show_all": "Alle Eigenschaften zeigen",
+	"publication_date": "Veröffentlichungsdatum",
 	"publish_all": "Alle Inhalte veröffentlichen",
 	"publish_all_success": "Alle Inhalte wurden veröffentlicht",
 	"publish_all_failure": "Fehler beim Veröffentlichen aller Inhalte",

@@ -28,6 +28,7 @@
 				payloadTypes.enum.measure,
 				payloadTypes.enum.organizational_unit,
 				payloadTypes.enum.page,
+				payloadTypes.enum.post,
 				payloadTypes.enum.program,
 				payloadTypes.enum.report,
 				payloadTypes.enum.rule,
@@ -81,6 +82,7 @@
 			payloadTypes.enum.measure,
 			payloadTypes.enum.page,
 			payloadTypes.enum.program,
+			payloadTypes.enum.post,
 			payloadTypes.enum.report,
 			payloadTypes.enum.rule,
 			payloadTypes.enum.simple_measure

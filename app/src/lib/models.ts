@@ -91,6 +91,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'post',
 	'program',
 	'program_collection',
 	'progress',
@@ -244,6 +245,7 @@ const categoryObjectTypeValues = [
 	payloadTypes.enum.measure,
 	payloadTypes.enum.objective,
 	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.post,
 	payloadTypes.enum.program,
 	payloadTypes.enum.report,
 	payloadTypes.enum.rule,
@@ -1417,6 +1419,23 @@ export function isPageContainer(
 
 const initialPagePayload = pagePayload.partial({ body: true, title: true });
 
+const postPayload = z.strictObject({
+	...basePayload.omit({ description: true, summary: true }).shape,
+	body: z.string().trim().optional(),
+	publicationDate: z.iso.datetime().optional(),
+	type: z.literal(payloadTypes.enum.post)
+});
+
+export type PostPayload = z.infer<typeof postPayload>;
+
+export function isPostContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<PostPayload> {
+	return container.payload.type === payloadTypes.enum.post;
+}
+
+const initialPostPayload = postPayload.partial({ title: true });
+
 const programPayload = z.strictObject({
 	...basePayload.omit({
 		description: true,
@@ -1924,6 +1943,7 @@ const payload = z.discriminatedUnion('type', [
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
+	postPayload,
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
@@ -1991,6 +2011,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialOrganizationPayload,
 	initialOrganizationalUnitPayload,
 	initialPagePayload,
+	initialPostPayload,
 	initialProgramCollectionPayload,
 	initialProgramPayload,
 	initialProgressPayload,

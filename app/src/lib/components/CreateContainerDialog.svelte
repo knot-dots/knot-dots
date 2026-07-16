@@ -15,6 +15,7 @@
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
+	import PostProperties from '$lib/components/PostProperties.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
@@ -38,6 +39,7 @@
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		isPostContainer,
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
@@ -233,6 +235,13 @@
 					<OrganizationProperties bind:container={$newContainer} editable />
 				{:else if isOrganizationalUnitContainer($newContainer)}
 					<OrganizationalUnitProperties bind:container={$newContainer} editable />
+				{:else if isPostContainer($newContainer)}
+					<PostProperties
+						bind:container={$newContainer}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
 				{:else if isProgramContainer($newContainer)}
 					<ProgramProperties
 						bind:container={$newContainer}

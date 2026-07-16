@@ -23,6 +23,7 @@ export default (async function load({ depends, fetch, params, parent, url }) {
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
 		payloadTypes.enum.page,
+		payloadTypes.enum.post,
 		payloadTypes.enum.program,
 		payloadTypes.enum.report,
 		payloadTypes.enum.rule,

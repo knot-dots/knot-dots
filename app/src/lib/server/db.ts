@@ -53,6 +53,7 @@ const INDEXABLE_TYPES = new Set<string>([
 	'organization',
 	'organizational_unit',
 	'page',
+	'post',
 	'program',
 	'report',
 	'resource',
