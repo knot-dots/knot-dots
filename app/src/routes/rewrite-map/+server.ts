@@ -1,42 +1,40 @@
-import { env } from '$env/dynamic/public';
 import { json } from '@sveltejs/kit';
+import { env } from '$env/dynamic/public';
 import { getManyOrganizationContainers, getManyOrganizationalUnitContainers } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ url, locals }) => {
+type RewriteMap = Record<string, Record<string, string>>;
+
+const baseURL = new URL(env.PUBLIC_BASE_URL);
+
+export const GET: RequestHandler = async ({ locals }) => {
 	const [organizations, organizationalUnits] = await Promise.all([
 		locals.pool.connect(getManyOrganizationContainers({}, 'alpha')),
 		locals.pool.connect(getManyOrganizationalUnitContainers({}))
 	]);
 
-	const baseHostname = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173').hostname;
+	const rewriteMap: RewriteMap = {};
 
-	let currentOrganization =
-		organizations.find(({ payload }) => payload.default) ?? organizations[0];
+	for (const organization of organizations) {
+		const hostname = `${organization.guid}.${baseURL.hostname}`;
 
-	if (!env.PUBLIC_DONT_USE_SUBDOMAINS && url.hostname !== baseHostname) {
-		currentOrganization =
-			organizations.find(({ guid, payload }) => {
-				const slug = payload.slug?.toLowerCase();
+		rewriteMap[hostname] = Object.fromEntries(
+			organizationalUnits
+				.filter((ou) => ou.organization == organization.guid && ou.payload.slug)
+				.map(({ guid, payload }) => [payload.slug as string, guid])
+		);
 
-				return (
-					url.hostname.startsWith(`${guid}.`) ||
-					(slug ? url.hostname.startsWith(`${slug}.`) : false) ||
-					url.hostname === payload.customDomain
-				);
-			}) ?? currentOrganization;
+		if (organization.payload.slug) {
+			rewriteMap[`${organization.payload.slug}.${baseURL.hostname}`] = {
+				...rewriteMap[hostname],
+				[organization.payload.slug]: organization.guid
+			};
+		}
+
+		if (organization.payload.customDomain) {
+			rewriteMap[organization.payload.customDomain] = rewriteMap[hostname];
+		}
 	}
 
-	return json({
-		currentOrganizationGuid: currentOrganization?.guid ?? null,
-		organizations: organizations.map((organization) => ({
-			guid: organization.guid,
-			slug: organization.payload.slug
-		})),
-		organizationalUnits: organizationalUnits.map((organizationalUnit) => ({
-			guid: organizationalUnit.guid,
-			organization: organizationalUnit.organization,
-			slug: organizationalUnit.payload.slug
-		}))
-	});
+	return json(rewriteMap);
 };

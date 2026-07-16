@@ -668,6 +668,7 @@ export const reservedContextSlugs = new Set([
 	'help',
 	'knowledge-ai',
 	'me',
+	'rewrite-map',
 	'task-priority',
 	'upload',
 	'user'
