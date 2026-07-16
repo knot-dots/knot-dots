@@ -28,7 +28,7 @@
 	<span class="label">{label}</span>
 	<time class="value" datetime={value}>
 		{#if value}
-			{$date(new Date(value), { format: 'long' })}
+			{$date(new Date(value), { dateStyle: 'medium' })}
 		{:else}
 			{$_('empty')}
 		{/if}

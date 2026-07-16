@@ -51,12 +51,12 @@
 	<div class="label">{$_('planned_duration')}</div>
 	<div class="value">
 		{#if container.payload.startDate && container.payload.endDate}
-			{$date(new Date(container.payload.startDate), { format: 'long' })}–{$date(
+			{$date(new Date(container.payload.startDate), { dateStyle: 'medium' })}–{$date(
 				new Date(container.payload.endDate),
 				{ format: 'long' }
 			)}
 		{:else if container.payload.startDate}
-			{$date(new Date(container.payload.startDate), { format: 'long' })}–
+			{$date(new Date(container.payload.startDate), { dateStyle: 'medium' })}–
 		{:else}
 			{$_('empty')}
 		{/if}
