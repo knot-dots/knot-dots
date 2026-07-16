@@ -68,7 +68,7 @@
 				payloadType,
 				container.organization,
 				isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
-				isOrganizationalUnitContainer(container) ? container.guid : container.managed_by,
+				isOrganizationalUnitContainer(container) ? [container.guid] : container.managed_by,
 				container.realm
 			) as NewContainer;
 

@@ -33,7 +33,7 @@
 			payloadTypes.enum.task,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			[page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid],
 			env.PUBLIC_KC_REALM
 		);
 	}

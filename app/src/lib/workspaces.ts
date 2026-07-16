@@ -372,7 +372,7 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 					payloadTypes.enum.category,
 					organization.guid,
 					organizationalUnit?.guid ?? null,
-					selectedContext.guid,
+					[selectedContext.guid],
 					''
 				);
 				if (!ability.can('create', container)) {
@@ -384,7 +384,7 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 					payloadTypes.enum.help,
 					organization.guid,
 					organizationalUnit?.guid ?? null,
-					selectedContext.guid,
+					[selectedContext.guid],
 					''
 				);
 				if (!ability.can('create', container)) {

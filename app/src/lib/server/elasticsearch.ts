@@ -349,6 +349,7 @@ export async function getManyContainersWithES(
 		return [
 			anyContainer.parse({
 				...doc,
+				managed_by: [],
 				organizational_unit: (doc as Record<string, unknown>).organizational_unit ?? null,
 				valid_currently: true,
 				relation: (doc as Record<string, unknown>).relation ?? [],

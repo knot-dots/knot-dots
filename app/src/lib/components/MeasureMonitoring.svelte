@@ -52,7 +52,7 @@
 							['hierarchyLevel', String(hierarchyLevel)],
 
 							[predicates.enum['is-part-of-measure'], measure.guid],
-							['managedBy', measure.managed_by]
+							['managedBy', measure.managed_by.join(',')]
 						])
 					: undefined,
 				containers: containers,
@@ -66,7 +66,7 @@
 						...(measure
 							? [
 									[predicates.enum['is-part-of-measure'], measure.guid],
-									['managedBy', measure.managed_by]
+									['managedBy', measure.managed_by.join(',')]
 								]
 							: [])
 					])

@@ -202,7 +202,7 @@ async function createCategory(
 		payloadTypes.enum.category,
 		organizationGuid,
 		null,
-		organizationGuid,
+		[organizationGuid],
 		realm
 	) as NewContainer;
 

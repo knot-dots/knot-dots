@@ -86,7 +86,6 @@ export const POST = (async ({ locals, request }) => {
 	await locals.pool.transaction(
 		updateContainer({
 			...container,
-			managed_by: container.guid,
 			user: [
 				...parseResult.data.container.user,
 				{ subject: user.guid, predicate: predicates.enum['is-member-of'] }

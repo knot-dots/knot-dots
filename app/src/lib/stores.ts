@@ -104,7 +104,7 @@ export const ability = derived(user, defineAbilityFor);
 export const dragged = writable<Container<AnyPayload> | undefined>();
 
 export const mayCreateContainer = derived([page, ability], (values) => {
-	return (payloadType: PayloadType, managedBy: string): boolean => {
+	return (payloadType: PayloadType, managedBy: string | string[]): boolean => {
 		const container = containerOfType(
 			payloadType,
 			values[0].data.currentOrganization.guid,

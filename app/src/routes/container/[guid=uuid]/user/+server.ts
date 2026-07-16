@@ -70,10 +70,6 @@ export const POST = (async ({ locals, params, request }) => {
 	await locals.pool.connect(
 		updateContainer({
 			...container,
-			managed_by:
-				container.managed_by == container.guid && updatedUserRelation.length == 0
-					? (container.organizational_unit ?? container.organization)
-					: container.managed_by,
 			user: [
 				{
 					predicate: predicates.enum['is-creator-of'],

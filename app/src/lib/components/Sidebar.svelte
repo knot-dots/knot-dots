@@ -253,7 +253,7 @@
 	</div>
 </div>
 
-{#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)}
+{#if organizationalUnits.length > 0 || $mayCreateContainer( payloadTypes.enum.organizational_unit, [page.data.currentOrganization.guid] )}
 	<div
 		class={[
 			'sidebar-panel',

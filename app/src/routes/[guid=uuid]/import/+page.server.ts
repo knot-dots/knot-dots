@@ -76,7 +76,7 @@ export const actions = {
 					payloadTypes.enum.program,
 					currentOrganizationGuid,
 					currentOrganizationalUnitGuid ?? null,
-					currentOrganizationalUnitGuid ?? currentOrganizationGuid,
+					[currentOrganizationalUnitGuid ?? currentOrganizationGuid],
 					env.PUBLIC_KC_REALM
 				)
 			)
@@ -170,7 +170,7 @@ export const actions = {
 
 					const program = programs.find(({ payload }) => payload.title == record.program);
 					const container = createNewContainerSchema(anyInitialPayload).parse({
-						managed_by: organizationalUnit?.guid ?? currentOrganizationGuid,
+						managed_by: [organizationalUnit?.guid ?? currentOrganizationGuid],
 						organization: currentOrganizationGuid,
 						organizational_unit: organizationalUnit?.guid ?? null,
 						payload: {
@@ -252,7 +252,7 @@ export const load = (async ({ locals, parent }) => {
 				payloadTypes.enum.program,
 				currentOrganization.guid,
 				currentOrganizationalUnit?.guid ?? null,
-				currentOrganizationalUnit?.guid ?? currentOrganization.guid,
+				[currentOrganizationalUnit?.guid ?? currentOrganization.guid],
 				env.PUBLIC_KC_REALM
 			)
 		)

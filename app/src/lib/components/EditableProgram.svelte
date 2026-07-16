@@ -48,12 +48,6 @@
 				('guid' in container ? subject == container.guid : true)
 		);
 
-		const isPartOfProgramOptions = await programCandidatesRequest;
-
-		container.managed_by =
-			isPartOfProgramOptions.find(({ guid }) => guid == value)?.managed_by ??
-			container.organizational_unit ??
-			container.organization;
 		container.relation = [
 			...container.relation.slice(0, isPartOfProgramIndex),
 			...(value

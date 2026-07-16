@@ -8,7 +8,7 @@
 	import type { PayloadType } from '$lib/models';
 
 	interface Props {
-		managedBy: string;
+		managedBy: string[];
 		onchange: (event: Event) => void;
 		options: {
 			label: string;

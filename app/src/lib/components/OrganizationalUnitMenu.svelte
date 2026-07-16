@@ -60,7 +60,7 @@
 			payloadTypes.enum.organizational_unit,
 			page.data.currentOrganization.guid,
 			null,
-			page.data.currentOrganization.guid,
+			[page.data.currentOrganization.guid],
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer<OrganizationalUnitPayload>;
 
@@ -150,7 +150,7 @@
 	}
 
 	let canCreateOrgUnit = $derived(
-		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)
+		$mayCreateContainer(payloadTypes.enum.organizational_unit, [page.data.currentOrganization.guid])
 	);
 
 	function filterTree(items: OrgUnitTreeItem[], query: string): OrgUnitTreeItem[] {

@@ -81,7 +81,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		payloadTypes.enum.actual_data,
 		currentOrganizationGuid,
 		currentOrganizationalUnitGuid ?? null,
-		currentOrganizationalUnitGuid ?? currentOrganizationGuid,
+		[currentOrganizationalUnitGuid ?? currentOrganizationGuid],
 		env.PUBLIC_KC_REALM
 	);
 
@@ -104,7 +104,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				payloadTypes.enum.actual_data,
 				currentOrganizationGuid,
 				currentOrganizationalUnitGuid ?? null,
-				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
+				[currentOrganizationalUnitGuid ?? currentOrganizationGuid],
 				env.PUBLIC_KC_REALM
 			) as NewContainer<ActualDataPayload>;
 

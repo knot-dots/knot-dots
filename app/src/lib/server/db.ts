@@ -154,10 +154,10 @@ export function createContainer(container: NewContainer) {
 
 			const containerResult = organizationGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (guid, managed_by, organization, payload, realm)
+					INSERT INTO container (guid, managed_by_legacy, organization, payload, realm)
 					VALUES (
 						${organizationGuid},
-            ${container.managed_by},
+            ${organizationGuid},
 						${organizationGuid},
 						${sql.jsonb(container.payload)},
 						${container.realm}
@@ -165,9 +165,9 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
+					INSERT INTO container (managed_by_legacy, organization, organizational_unit, payload, realm)
 					VALUES (
-						${container.managed_by},
+						${container.organizational_unit ?? container.organization},
 						${container.organization},
 						${container.organizational_unit},
 						${sql.jsonb(container.payload)},
@@ -233,10 +233,10 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
+				INSERT INTO container (guid, managed_by_legacy, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
-					${container.managed_by},
+					${container.organizational_unit ?? container.organization},
 					${container.organization},
 					${container.organizational_unit},
 					${sql.jsonb(container.payload)},
@@ -276,9 +276,6 @@ export function updateContainer(container: ModifiedContainer) {
 			}
 			if (previousRevision.organization != container.organization) {
 				await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
-			}
-			if (previousRevision.managed_by != container.managed_by) {
-				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
 			}
 
 			if (shouldIndexType(containerResult.payload.type)) {
@@ -322,8 +319,8 @@ export function deleteContainer(container: Container<AnyPayload>) {
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
-				INSERT INTO container (deleted, guid, managed_by, organization, organizational_unit, payload, realm)
-				SELECT true, guid, managed_by, organization, organizational_unit, payload, realm FROM container
+				INSERT INTO container (deleted, guid, managed_by_legacy, organization, organizational_unit, payload, realm)
+				SELECT true, guid, managed_by_legacy, organization, organizational_unit, payload, realm FROM container
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
@@ -447,8 +444,10 @@ export function getContainerByGuid(guid: string) {
 				AND NOT cr.deleted
 			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
+		const managedBy = await computeManagedBy(connection, [containerResult.guid]);
 		return {
 			...containerResult,
+			managed_by: managedBy.get(containerResult.guid) ?? [],
 			relation: relationResult.map((r) => r),
 			user: userResult.map(({ predicate, subject }) => ({ predicate, subject }))
 		};
@@ -485,8 +484,11 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 
+		const managedBy = await computeManagedBy(connection, [guid]);
+
 		return containerResult.map((c) => ({
 			...c,
+			managed_by: managedBy.get(c.guid) ?? [],
 			relation: relationResult.filter(
 				({ object, subject }) => object === c.guid || subject === c.guid
 			),
@@ -692,6 +694,78 @@ function prepareOrderByExpression(sort: string) {
 	return order_by;
 }
 
+/**
+ * Computes the multi-valued, virtual `managed_by` for the given containers.
+ *
+ * `managed_by` is no longer stored. For each container it is the set of guids of
+ * that container and its ancestors along the `is-part-of-program` /
+ * `is-part-of-measure` chain that are programs/measures with their own team
+ * (i.e. have at least one direct role assignment). Organizations and
+ * organizational units are never included; their access is handled by the
+ * organization / organizational_unit authorization rules.
+ */
+export async function computeManagedBy(
+	connection: DatabaseConnection,
+	guids: string[]
+): Promise<Map<string, string[]>> {
+	if (guids.length === 0) {
+		return new Map();
+	}
+
+	const rolePredicates = [
+		predicates.enum['is-admin-of'],
+		predicates.enum['is-collaborator-of'],
+		predicates.enum['is-head-of'],
+		predicates.enum['is-member-of']
+	];
+
+	const rows = await connection.any(sql.type(
+		z.object({ guid: z.string().uuid(), managed_by: z.array(z.string().uuid()) })
+	)`
+		WITH RECURSIVE ancestor(root, guid) AS (
+			SELECT g::uuid, g::uuid
+			FROM unnest(${sql.array(guids, 'uuid')}) AS g
+			UNION
+			SELECT a.root, cr.object
+			FROM ancestor a
+			JOIN container_relation cr ON cr.subject = a.guid
+				AND cr.predicate IN (${sql.join(
+					[
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-measure'],
+						predicates.enum['is-part-of-program'],
+						predicates.enum['is-section-of']
+					],
+					sql.fragment`, `
+				)})
+				AND cr.valid_currently
+				AND NOT cr.deleted
+		)
+		SELECT a.root AS guid,
+			coalesce(
+				array_agg(DISTINCT p.guid) FILTER (
+					WHERE p.payload->>'type' IN (
+						${payloadTypes.enum.program},
+						${payloadTypes.enum.measure},
+						${payloadTypes.enum.simple_measure}
+					)
+					AND EXISTS (
+						SELECT 1
+						FROM container_user cu
+						WHERE cu.object = p.revision
+							AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
+					)
+				),
+				'{}'
+			) AS managed_by
+		FROM ancestor a
+		JOIN container p ON p.guid = a.guid AND p.valid_currently AND NOT p.deleted
+		GROUP BY a.root
+	`);
+
+	return new Map(rows.map((r) => [r.guid, [...r.managed_by]]));
+}
+
 export async function withUserAndRelation<T extends Container<AnyPayload>>(
 	connection: DatabaseConnection,
 	containerResult: Readonly<Array<Omit<T, 'user' | 'relation'>>>
@@ -727,8 +801,14 @@ export async function withUserAndRelation<T extends Container<AnyPayload>>(
 			`)
 			: [];
 
+	const managedBy = await computeManagedBy(
+		connection,
+		containerResult.map(({ guid }) => guid)
+	);
+
 	return containerResult.map((c) => ({
 		...c,
+		managed_by: managedBy.get(c.guid) ?? [],
 		relation: relationResult.filter(
 			({ object, subject }) => object === c.guid || subject === c.guid
 		),
@@ -774,13 +854,60 @@ export function getManyContainers(
 ) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		return (await connection.any(sql.type(anyContainer)`
-			WITH container_result AS (
+			WITH RECURSIVE container_result AS (
 				SELECT c.*
 				FROM container c
 				WHERE ${prepareWhereCondition({
 					...filters,
 					organizations
 				})}
+			), managed_by_ancestor(root, guid) AS (
+				SELECT c.guid, c.guid
+				FROM container_result c
+				UNION
+				SELECT a.root, cr.object
+				FROM managed_by_ancestor a
+				JOIN container_relation cr ON cr.subject = a.guid
+					AND cr.predicate IN (${sql.join(
+						[
+							predicates.enum['is-part-of'],
+							predicates.enum['is-part-of-measure'],
+							predicates.enum['is-part-of-program'],
+							predicates.enum['is-section-of']
+						],
+						sql.fragment`, `
+					)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+			), managed_by_result AS (
+				SELECT a.root AS guid,
+					coalesce(
+						array_agg(DISTINCT p.guid) FILTER (
+							WHERE p.payload->>'type' IN (
+								${payloadTypes.enum.program},
+								${payloadTypes.enum.measure},
+								${payloadTypes.enum.simple_measure}
+							)
+							AND EXISTS (
+								SELECT 1
+								FROM container_user cu
+								WHERE cu.object = p.revision
+									AND cu.predicate = ANY(${sql.array(
+										[
+											predicates.enum['is-admin-of'],
+											predicates.enum['is-collaborator-of'],
+											predicates.enum['is-head-of'],
+											predicates.enum['is-member-of']
+										],
+										'text'
+									)})
+							)
+						),
+						'{}'
+					) AS managed_by
+				FROM managed_by_ancestor a
+				JOIN container p ON p.guid = a.guid AND p.valid_currently AND NOT p.deleted
+				GROUP BY a.root
 			), container_user_result AS (
 				SELECT c.guid, coalesce(json_agg(json_build_object('predicate', cu.predicate, 'subject', cu.subject)) FILTER (WHERE cu.object IS NOT NULL), '[]') AS "user"
 				FROM container_result c
@@ -792,8 +919,9 @@ export function getManyContainers(
 				LEFT JOIN container_relation cr ON c.guid IN (cr.subject, cr.object) AND cr.valid_currently AND NOT cr.deleted
 				GROUP BY c.guid
 			)
-			SELECT c.*, r.relation, u.user
+			SELECT c.*, m.managed_by, r.relation, u.user
 			FROM container_result c
+			JOIN managed_by_result m ON c.guid = m.guid
 			JOIN container_relation_result r ON c.guid = r.guid
 			JOIN container_user_result u ON c.guid = u.guid
 			${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON c.guid = task` : sql.fragment``}
@@ -1516,12 +1644,9 @@ export function getAllContainersRelatedToUser(guid: string) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
 		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
 			SELECT c.* FROM container c
-			JOIN container m ON c.managed_by = m.guid
 			JOIN container_user cu ON cu.subject = ${guid}
 				AND cu.predicate = ${predicates.enum['is-member-of']}
-				AND cu.object = m.revision
-				AND m.valid_currently
-				AND NOT m.deleted
+				AND cu.object = c.revision
 			WHERE c.payload->>'type' IN ('measure', 'program', 'simple_measure')
 			  AND c.valid_currently
 				AND NOT c.deleted
@@ -1792,46 +1917,6 @@ export function bulkUpdateOrganizationalUnit(
 	};
 }
 
-export function bulkUpdateManagedBy(container: Container<AnyPayload>, managedBy: string) {
-	return async (connection: DatabaseConnection) => {
-		return connection.transaction(async (txConnection) => {
-			const containerResult =
-				container.payload.type == payloadTypes.enum.program
-					? await getAllContainersRelatedToProgram(container.guid, {
-							type: [
-								payloadTypes.enum.goal,
-								payloadTypes.enum.measure,
-								payloadTypes.enum.objective,
-								payloadTypes.enum.rule,
-								payloadTypes.enum.simple_measure,
-								payloadTypes.enum.text
-							]
-						})(txConnection)
-					: await getAllContainersRelatedToMeasure(
-							container.guid,
-							{
-								type: [payloadTypes.enum.effect, payloadTypes.enum.goal, payloadTypes.enum.task]
-							},
-							''
-						)(txConnection);
-
-			if (containerResult.length) {
-				await txConnection.query(sql.typeAlias('void')`
-					UPDATE container
-					SET managed_by = ${managedBy}
-					WHERE guid IN (${sql.join(
-						containerResult.map(({ guid }) => guid),
-						sql.fragment`, `
-					)})
-					  AND managed_by = ${container.managed_by}
-						AND valid_currently
-						AND NOT deleted
-				`);
-			}
-		});
-	};
-}
-
 export function createOrUpdateTaskPriority(taskPriority: TaskPriority[]) {
 	return async (connection: DatabaseConnection) => {
 		const taskPriorityValues = taskPriority.map(({ priority, task }) => [priority, task]);
@@ -1930,7 +2015,7 @@ export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
 export function setUp(name: string, realm: string) {
 	return async (connection: DatabaseConnection) => {
 		return await createContainer({
-			managed_by: '00000000-0000-0000-0000-000000000000',
+			managed_by: [],
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
 			payload: {

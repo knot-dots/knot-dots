@@ -45,9 +45,9 @@
 			.filter((t) =>
 				$mayCreateContainer(
 					t as PayloadType,
-					addItemParams.has('managedBy')
-						? (addItemParams.get('managedBy') as string)
-						: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid)
+					addItemParams.get('managedBy')
+						? (addItemParams.get('managedBy') as string).split(',').filter(Boolean)
+						: [page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid]
 				)
 			) as PayloadType[]
 	);
@@ -66,9 +66,9 @@
 			payloadType,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
-			params.has('managedBy')
-				? (params.get('managedBy') as string)
-				: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid),
+			params.get('managedBy')
+				? (params.get('managedBy') as string).split(',').filter(Boolean)
+				: [page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid],
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 

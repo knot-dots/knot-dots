@@ -38,7 +38,7 @@
 			payloadType,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			[page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid],
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
@@ -47,7 +47,7 @@
 </script>
 
 <div>
-	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
+	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer( t, [page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid] ) )}
 		{#if payloadType.length === 1}
 			<p>
 				<button
@@ -67,10 +67,9 @@
 				options={[
 					...payloadType
 						.filter((t) =>
-							$mayCreateContainer(
-								t,
+							$mayCreateContainer(t, [
 								page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
-							)
+							])
 						)
 						.map((t) => ({ label: $_(t), value: t }))
 				]}

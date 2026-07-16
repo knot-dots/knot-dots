@@ -7,7 +7,7 @@ export default function visibilityOptions(
 	relatedContainers: Container<AnyPayload>[]
 ) {
 	const team = $derived(
-		getManagedBy(container, [...page.data.organizationalUnits, ...relatedContainers])
+		getManagedBy(container, [...page.data.organizationalUnits, ...relatedContainers])[0]
 	);
 
 	const organization = $derived(

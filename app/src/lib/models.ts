@@ -1973,7 +1973,7 @@ export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid(),
-		managed_by: z.uuid(),
+		managed_by: z.array(z.uuid()).default([]),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
@@ -1997,7 +1997,7 @@ export const anyContainer = createContainerSchema(anyPayload);
 export function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid(),
-		managed_by: z.uuid(),
+		managed_by: z.array(z.uuid()).default([]),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
@@ -2017,7 +2017,7 @@ export const modifiedContainer = createModifiedContainerSchema(anyPayload);
 
 export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
-		managed_by: z.uuid(),
+		managed_by: z.array(z.uuid()).default([]),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
@@ -2329,11 +2329,16 @@ export function containerOfType(
 	payloadType: PayloadType,
 	organization: string,
 	organizationalUnit: string | null,
-	managedBy: string,
+	managedBy: string | string[],
 	realm: string
 ) {
 	return createNewContainerSchema(anyInitialPayload).parse({
-		managed_by: payloadType == payloadTypes.enum.organizational_unit ? organization : managedBy,
+		managed_by:
+			payloadType == payloadTypes.enum.organizational_unit
+				? []
+				: Array.isArray(managedBy)
+					? managedBy
+					: [managedBy],
 		organization,
 		organizational_unit:
 			payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
@@ -2536,7 +2541,7 @@ export function getManagedBy(
 	container: Container<AnyPayload>,
 	candidates: Container<AnyPayload>[]
 ) {
-	return candidates.find(({ guid }) => guid === container.managed_by);
+	return candidates.filter(({ guid }) => container.managed_by.includes(guid));
 }
 
 export function createCopyOf(
@@ -2548,7 +2553,7 @@ export function createCopyOf(
 		container.payload.type,
 		organization,
 		organizationalUnit,
-		organizationalUnit ?? organization,
+		organizationalUnit ? [organizationalUnit] : [organization],
 		container.realm
 	);
 

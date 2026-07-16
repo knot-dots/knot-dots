@@ -79,7 +79,7 @@
 				...(container && (isMeasureContainer(container) || isSimpleMeasureContainer(container))
 					? [
 							[predicates.enum['is-part-of-measure'], container.guid],
-							['managedBy', container.managed_by]
+							['managedBy', container.managed_by.join(',')]
 						]
 					: [])
 			])}

@@ -142,7 +142,7 @@
 					payloadTypes.enum.organizational_unit,
 					container.organization,
 					null,
-					container.organization,
+					[container.organization],
 					container.realm
 				)
 			)

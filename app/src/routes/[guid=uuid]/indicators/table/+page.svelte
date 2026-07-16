@@ -60,7 +60,7 @@
 				payloadTypes.enum.indicator_template,
 				page.data.currentOrganization.guid,
 				page.data.currentOrganizationalUnit?.guid ?? null,
-				page.data.currentOrganization.guid,
+				[page.data.currentOrganization.guid],
 				''
 			)
 		)
@@ -73,7 +73,7 @@
 				payloadTypes.enum.indicator_template,
 				page.data.currentOrganization.guid,
 				page.data.currentOrganizationalUnit?.guid ?? null,
-				page.data.currentOrganization.guid,
+				[page.data.currentOrganization.guid],
 				''
 			)
 		)

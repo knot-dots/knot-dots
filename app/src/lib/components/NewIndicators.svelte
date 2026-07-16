@@ -76,9 +76,9 @@
 		}
 	});
 
-	let managedBy = $derived(
+	let managedBy = $derived([
 		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
-	);
+	]);
 
 	let mayCreateBinaryIndicator = $derived(
 		createFeatureDecisions(page.data.features).useBinaryIndicators() &&
@@ -97,7 +97,7 @@
 			payloadTypes.enum.indicator_template,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			managedBy,
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer<IndicatorTemplatePayload>;
 
@@ -115,7 +115,7 @@
 			payloadTypes.enum.binary_indicator,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			managedBy,
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer<BinaryIndicatorPayload>;
 

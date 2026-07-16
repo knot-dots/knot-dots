@@ -56,7 +56,7 @@
 	);
 
 	let canCreateOrganization = $derived(
-		$mayCreateContainer(payloadTypes.enum.organization, page.data.currentOrganization.guid)
+		$mayCreateContainer(payloadTypes.enum.organization, [page.data.currentOrganization.guid])
 	);
 
 	function handleCreateOrganization() {
@@ -64,7 +64,7 @@
 			payloadTypes.enum.organization,
 			page.data.currentOrganization.guid,
 			null,
-			page.data.currentOrganization.guid,
+			[page.data.currentOrganization.guid],
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
