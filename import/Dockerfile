@@ -6,6 +6,7 @@ COPY import/package.json ./import/
 COPY shared/package.json ./shared/
 RUN npm clean-install --silent --workspace app --workspace import --workspace shared
 COPY app/src/lib/models.ts ./app/src/lib/models.ts
+COPY app/src/lib/server/managedBy.ts ./app/src/lib/server/managedBy.ts
 COPY import/src ./import/src
 COPY shared/src ./shared/src
 COPY app/src/lib/locales/de.json /opt/labels/de.json

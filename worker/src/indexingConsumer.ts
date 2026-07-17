@@ -15,6 +15,7 @@ import { Client as ESClient } from '@elastic/elasticsearch';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { toDoc } from '@knot-dots/shared/src/indexing.ts';
+import { computeManagedBy } from '@knot-dots/app/src/lib/server/managedBy.ts';
 import { container, relation, userRelation } from '@knot-dots/app/src/lib/models.ts';
 
 const containerRow = container
@@ -118,6 +119,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
       }
       const relation = await fetchContainerRelations(evt.guid);
       const user = await fetchContainerUsers(row.revision);
+      const managedBy = await computeManagedBy(await getPool(), [row.guid]);
       const doc = toDoc({
         guid: row.guid,
         revision: row.revision,
@@ -126,7 +128,7 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         realm: row.realm,
         organization: String(row.organization),
         organizational_unit: row.organizational_unit ?? null,
-        managed_by: String(row.managed_by),
+        managed_by: managedBy.get(row.guid) ?? [],
         payload: row.payload || {},
         relation: [...relation],
         user: [...user]

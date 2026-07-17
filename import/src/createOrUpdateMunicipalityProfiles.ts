@@ -228,7 +228,6 @@ async function createOrUpdateOrganizationalUnitContainer(
 	const { category, organization, organizationalUnitLevel, realm, user } = env;
 
 	const newOrganizationalUnitContainer = organizationalUnitContainer.parse({
-		managed_by: organization,
 		organization: organization,
 		organizational_unit: null,
 		payload: {
@@ -290,7 +289,6 @@ async function createOrUpdateAdministrativeAreaBasicDataContainer(
 	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	const newAdministrativeAreaBasicDataContainer = administrativeAreaBasicDataContainer.parse({
-		managed_by: ouContainer.guid,
 		organization: ouContainer.organization,
 		organizational_unit: ouContainer.guid,
 		payload: {
@@ -341,7 +339,6 @@ async function createOrUpdateMapContainer(
 	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	const newMapContainer = mapContainer.parse({
-		managed_by: ouContainer.guid,
 		organization: ouContainer.organization,
 		organizational_unit: ouContainer.guid,
 		payload: { type: 'map', title: 'Gebietsgrenze', visibility: visibility.enum.public },
@@ -383,7 +380,6 @@ async function createOrUpdateDemographicDataContainer(
 	ouContainer: Container<OrganizationalUnitPayload>
 ) {
 	const newDemographicDataContainer = demographicDataContainer.parse({
-		managed_by: ouContainer.guid,
 		organization: ouContainer.organization,
 		organizational_unit: ouContainer.guid,
 		payload: {
@@ -432,7 +428,6 @@ async function createOrUpdateReportCollectionContainer(
 	const reportCollectionTitle = 'Nachhaltigkeitsberichte';
 
 	const newReportCollectionContainer = customCollectionContainer.parse({
-		managed_by: ouContainer.guid,
 		organization: ouContainer.organization,
 		organizational_unit: ouContainer.guid,
 		payload: {
@@ -507,7 +502,6 @@ async function createOrUpdateActualDataContainers(
 			}
 
 			const newActualDataContainer = actualDataContainer.parse({
-				managed_by: ouContainer.guid,
 				organization: ouContainer.organization,
 				organizational_unit: ouContainer.guid,
 				payload: {

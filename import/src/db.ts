@@ -335,9 +335,8 @@ export function insertIntoSpatialFeature(data: Json) {
 export function createContainer(container: NewContainer) {
 	return async (tx: DatabaseTransactionConnection) => {
 		const result = await tx.one(sql.type(anyContainer)`
-			INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
+			INSERT INTO container (organization, organizational_unit, payload, realm)
 			VALUES (
-				${container.managed_by},
 				${container.organization},
 				${container.organizational_unit},
 				${sql.jsonb(container.payload)},
@@ -367,10 +366,9 @@ export function updateContainer(container: Container<AnyPayload>) {
 		`);
 
 		const result = await tx.one(sql.type(anyContainer)`
-			INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
+			INSERT INTO container (guid, organization, organizational_unit, payload, realm)
 			VALUES (
 				${container.guid},
-				${container.managed_by},
 				${container.organization},
 				${container.organizational_unit},
 				${sql.jsonb(container.payload)},

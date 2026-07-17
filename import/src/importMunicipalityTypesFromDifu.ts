@@ -111,7 +111,6 @@ async function ensureCategory(
 		stats.categoryCreated = true;
 		return (await createContainer(
 			categoryContainer.parse({
-				managed_by: organization,
 				organization: organization,
 				organizational_unit: null,
 				payload: {
@@ -163,7 +162,6 @@ async function ensureTerm(
 	if (!existing) {
 		const created = (await createContainer(
 			termContainer.parse({
-				managed_by: category.managed_by,
 				organization: category.organization,
 				organizational_unit: category.organizational_unit,
 				payload: { type: 'term', title: code, value: code },

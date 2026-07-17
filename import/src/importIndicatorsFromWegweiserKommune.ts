@@ -135,7 +135,6 @@ function isSame<T>(a: T, b: T) {
 					try {
 						const externalReference = `https://www.wegweiser-kommune.de/data-api/rest/indicator/get/${indicator.friendly_url}`;
 						const newIndicatorTemplateContainer = indicatorTemplateContainer.parse({
-							managed_by: organization,
 							organization: organization,
 							organizational_unit: null,
 							payload: {

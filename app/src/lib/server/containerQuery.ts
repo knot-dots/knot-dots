@@ -28,7 +28,6 @@ import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '$lib/pagination';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
-	computeManagedBy,
 	getAllRelatedContainers,
 	getManyContainers,
 	getManyOrganizationContainers
@@ -362,19 +361,6 @@ export async function loadContainerV2(params: {
 		});
 		rawContainers = result.containers;
 		esFacets = result.facets;
-
-		// managed_by is not stored; Elasticsearch documents cannot carry it. Compute
-		// it from the current hierarchy so authorization and display are correct.
-		const managedBy = await params.locals.pool.connect((connection) =>
-			computeManagedBy(
-				connection,
-				rawContainers.map(({ guid }) => guid)
-			)
-		);
-		rawContainers = rawContainers.map((container) => ({
-			...container,
-			managed_by: managedBy.get(container.guid) ?? []
-		}));
 	} else {
 		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
 		rawContainers =

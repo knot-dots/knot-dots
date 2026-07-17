@@ -5,6 +5,7 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 import { getPool } from './db.ts';
 import { createIndexWithMappings, toDoc } from '@knot-dots/shared/src/indexing.ts';
+import { computeManagedBy } from '@knot-dots/app/src/lib/server/managedBy.ts';
 import type { Relation } from '@knot-dots/app/src/lib/models.ts';
 
 interface Row {
@@ -15,7 +16,6 @@ interface Row {
 	realm: string;
 	organization: string;
 	organizational_unit: string | null;
-	managed_by: string;
 	payload: any;
 }
 
@@ -42,7 +42,7 @@ async function* fetchContainers(batchSize = 500) {
 	// We paginate by guid; it is indexed in migrations (container_guid_idx)
 	for (;;) {
 		const rows = (await pool.any(sql.unsafe`
-			SELECT c.guid, c.revision, c.valid_from, tp.priority, c.realm, c.organization::text, c.organizational_unit::text, c.managed_by::text, c.payload
+			SELECT c.guid, c.revision, c.valid_from, tp.priority, c.realm, c.organization::text, c.organizational_unit::text, c.payload
 			FROM container c
 			LEFT JOIN task_priority tp ON tp.task = c.guid
 			WHERE deleted = false
@@ -173,9 +173,14 @@ async function run() {
 		if (batchRows.length >= 500) {
 			const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
 			const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
+			const managedByMap = await computeManagedBy(
+				await getPool(),
+				batchRows.map((r) => r.guid)
+			);
 			for (const r of batchRows) {
 				const doc = toDoc({
 					...r,
+					managed_by: managedByMap.get(r.guid) ?? [],
 					relation: relationsMap.get(r.guid) ?? [],
 					user: usersMap.get(r.revision) ?? []
 				});
@@ -214,9 +219,14 @@ async function run() {
 	if (batchRows.length > 0) {
 		const relationsMap = await fetchRelationsForGuids(batchRows.map((r) => r.guid));
 		const usersMap = await fetchUsersForRevisions(batchRows.map((r) => r.revision));
+		const managedByMap = await computeManagedBy(
+			await getPool(),
+			batchRows.map((r) => r.guid)
+		);
 		for (const r of batchRows) {
 			const doc = toDoc({
 				...r,
+				managed_by: managedByMap.get(r.guid) ?? [],
 				relation: relationsMap.get(r.guid) ?? [],
 				user: usersMap.get(r.revision) ?? []
 			});

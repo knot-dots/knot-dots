@@ -36,8 +36,11 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
+import { computeManagedBy, getManagedByDescendants } from '$lib/server/managedBy';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
+
+export { computeManagedBy };
 
 // Types that are indexed to Elasticsearch (must match indexContainersToElasticsearch.ts)
 const INDEXABLE_TYPES = new Set<string>([
@@ -64,6 +67,58 @@ const INDEXABLE_TYPES = new Set<string>([
 
 function shouldIndexType(type: PayloadType): boolean {
 	return INDEXABLE_TYPES.has(type);
+}
+
+// Payload types that can carry a team of their own.
+const TEAM_PAYLOAD_TYPES = new Set<string>([
+	payloadTypes.enum.program,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.simple_measure
+]);
+
+// Predicates that determine a role assignment (i.e. team membership).
+const ROLE_PREDICATES = new Set<string>([
+	predicates.enum['is-admin-of'],
+	predicates.enum['is-collaborator-of'],
+	predicates.enum['is-head-of'],
+	predicates.enum['is-member-of']
+]);
+
+// Predicates along which managed_by is inherited towards descendants. A change to
+// such a relation shifts the managed_by of the whole subtree below the subject.
+const MANAGED_BY_PREDICATES = new Set<string>([
+	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-part-of-program'],
+	predicates.enum['is-section-of']
+]);
+
+/**
+ * Enqueues re-indexing for every indexable descendant of the given roots along
+ * the managed_by hierarchy. Used when a container's team or hierarchy position
+ * changes: its own managed_by and that of everything below it must be recomputed
+ * and re-indexed. Duplicate events are harmless — indexing is idempotent.
+ */
+async function enqueueManagedByCascade(connection: DatabaseConnection, rootGuids: string[]) {
+	const descendants = await getManagedByDescendants(connection, rootGuids);
+	if (descendants.length === 0) {
+		return;
+	}
+	const indexable = await connection.any(sql.type(z.object({ guid: z.string().uuid() }))`
+		SELECT guid
+		FROM container
+		WHERE guid = ANY(${sql.array(descendants, 'uuid')})
+			AND valid_currently
+			AND NOT deleted
+			AND payload->>'type' = ANY(${sql.array([...INDEXABLE_TYPES], 'text')})
+	`);
+	for (const { guid } of indexable) {
+		await enqueueIndexingEvent({
+			action: 'upsert',
+			guid,
+			timestamp: new Date().toISOString()
+		});
+	}
 }
 
 const createResultParserInterceptor = (): Interceptor => {
@@ -154,10 +209,9 @@ export function createContainer(container: NewContainer) {
 
 			const containerResult = organizationGuid
 				? await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (guid, managed_by_legacy, organization, payload, realm)
+					INSERT INTO container (guid, organization, payload, realm)
 					VALUES (
 						${organizationGuid},
-            ${organizationGuid},
 						${organizationGuid},
 						${sql.jsonb(container.payload)},
 						${container.realm}
@@ -165,9 +219,8 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (managed_by_legacy, organization, organizational_unit, payload, realm)
+					INSERT INTO container (organization, organizational_unit, payload, realm)
 					VALUES (
-						${container.organizational_unit ?? container.organization},
 						${container.organization},
 						${container.organizational_unit},
 						${sql.jsonb(container.payload)},
@@ -233,10 +286,9 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, managed_by_legacy, organization, organizational_unit, payload, realm)
+				INSERT INTO container (guid, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
-					${container.organizational_unit ?? container.organization},
 					${container.organization},
 					${container.organizational_unit},
 					${sql.jsonb(container.payload)},
@@ -286,6 +338,15 @@ export function updateContainer(container: ModifiedContainer) {
 				});
 			}
 
+			// If this program/measure gained or lost its team, the managed_by of its
+			// descendants changes. Re-index the subtree.
+			const managedByType = TEAM_PAYLOAD_TYPES.has(containerResult.payload.type);
+			const hadTeam = previousRevision.user.some((u) => ROLE_PREDICATES.has(u.predicate));
+			const hasTeam = container.user.some((u) => ROLE_PREDICATES.has(u.predicate));
+			if (managedByType && hadTeam !== hasTeam) {
+				await enqueueManagedByCascade(txConnection, [container.guid]);
+			}
+
 			return { ...containerResult, relation: container.relation, user: userResult };
 		});
 	};
@@ -319,8 +380,8 @@ export function deleteContainer(container: Container<AnyPayload>) {
 			`);
 
 			const deletedRevision = await txConnection.oneFirst(sql.typeAlias('revision')`
-				INSERT INTO container (deleted, guid, managed_by_legacy, organization, organizational_unit, payload, realm)
-				SELECT true, guid, managed_by_legacy, organization, organizational_unit, payload, realm FROM container
+				INSERT INTO container (deleted, guid, organization, organizational_unit, payload, realm)
+				SELECT true, guid, organization, organizational_unit, payload, realm FROM container
 				WHERE revision = ${container.revision}
 				RETURNING revision
 			`);
@@ -692,78 +753,6 @@ function prepareOrderByExpression(sort: string) {
 		order_by = sql.fragment`priority, c.guid`;
 	}
 	return order_by;
-}
-
-/**
- * Computes the multi-valued, virtual `managed_by` for the given containers.
- *
- * `managed_by` is no longer stored. For each container it is the set of guids of
- * that container and its ancestors along the `is-part-of-program` /
- * `is-part-of-measure` chain that are programs/measures with their own team
- * (i.e. have at least one direct role assignment). Organizations and
- * organizational units are never included; their access is handled by the
- * organization / organizational_unit authorization rules.
- */
-export async function computeManagedBy(
-	connection: DatabaseConnection,
-	guids: string[]
-): Promise<Map<string, string[]>> {
-	if (guids.length === 0) {
-		return new Map();
-	}
-
-	const rolePredicates = [
-		predicates.enum['is-admin-of'],
-		predicates.enum['is-collaborator-of'],
-		predicates.enum['is-head-of'],
-		predicates.enum['is-member-of']
-	];
-
-	const rows = await connection.any(sql.type(
-		z.object({ guid: z.string().uuid(), managed_by: z.array(z.string().uuid()) })
-	)`
-		WITH RECURSIVE ancestor(root, guid) AS (
-			SELECT g::uuid, g::uuid
-			FROM unnest(${sql.array(guids, 'uuid')}) AS g
-			UNION
-			SELECT a.root, cr.object
-			FROM ancestor a
-			JOIN container_relation cr ON cr.subject = a.guid
-				AND cr.predicate IN (${sql.join(
-					[
-						predicates.enum['is-part-of'],
-						predicates.enum['is-part-of-measure'],
-						predicates.enum['is-part-of-program'],
-						predicates.enum['is-section-of']
-					],
-					sql.fragment`, `
-				)})
-				AND cr.valid_currently
-				AND NOT cr.deleted
-		)
-		SELECT a.root AS guid,
-			coalesce(
-				array_agg(DISTINCT p.guid) FILTER (
-					WHERE p.payload->>'type' IN (
-						${payloadTypes.enum.program},
-						${payloadTypes.enum.measure},
-						${payloadTypes.enum.simple_measure}
-					)
-					AND EXISTS (
-						SELECT 1
-						FROM container_user cu
-						WHERE cu.object = p.revision
-							AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
-					)
-				),
-				'{}'
-			) AS managed_by
-		FROM ancestor a
-		JOIN container p ON p.guid = a.guid AND p.valid_currently AND NOT p.deleted
-		GROUP BY a.root
-	`);
-
-	return new Map(rows.map((r) => [r.guid, [...r.managed_by]]));
 }
 
 export async function withUserAndRelation<T extends Container<AnyPayload>>(
@@ -1694,6 +1683,12 @@ export function createManyContainerRelations(relations: ReadonlyArray<Relation>)
 					timestamp: new Date().toISOString()
 				});
 			}
+
+			// A new hierarchy edge changes the managed_by of the subject's subtree.
+			const movedSubtreeRoots = result
+				.filter((r) => MANAGED_BY_PREDICATES.has(r.predicate))
+				.map((r) => r.subject);
+			await enqueueManagedByCascade(connection, movedSubtreeRoots);
 		}
 
 		return result;
@@ -1747,6 +1742,12 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 						timestamp: new Date().toISOString()
 					});
 				}
+
+				// A removed hierarchy edge changes the managed_by of the subject's subtree.
+				const detachedSubtreeRoots = relations
+					.filter((r) => MANAGED_BY_PREDICATES.has(r.predicate))
+					.map((r) => r.subject);
+				await enqueueManagedByCascade(txConnection, detachedSubtreeRoots);
 			}
 		});
 	};
