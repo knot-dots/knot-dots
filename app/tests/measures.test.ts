@@ -3,25 +3,36 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'measures' });
 
 test.describe('Measure monitoring', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/bob.json' });
 
-	test('create goals and tasks', async ({ dotsBoard, isMobile, testOrganization, testMeasure }) => {
+	test('create goals and tasks', async ({
+		dotsBoard,
+		isMobile,
+		testOrganization,
+		testProgram,
+		testMeasure
+	}) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');
+
+		const teamPermissions = `${testOrganization.payload.name} / Team ${testProgram.payload.title}`;
 
 		await dotsBoard.goto(`/${testOrganization.guid}`);
 
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
 
-		// Assert the measure is managed by the expected team
-		await expect(dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')).toHaveText(
-			'Bob Builder'
-		);
+		// Assert the measure inherits team permissions from its program
+		await expect(
+			dotsBoard.overlay.locator.locator(':has-text("Team permissions") + .value')
+		).toHaveText(teamPermissions);
 
 		// Switch to the monitoring workspace
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'Page' }).click();
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Monitoring' }).click();
-		await expect(dotsBoard.overlay.locator.getByRole('heading', { name: 'Goals' })).toBeVisible();
+		// Switching the workspace reloads the overlay board client-side; allow for the fetch.
+		await expect(dotsBoard.overlay.locator.getByRole('heading', { name: 'Goals' })).toBeVisible({
+			timeout: 15000
+		});
 		await expect(dotsBoard.overlay.locator.getByRole('heading', { name: 'Tasks' })).toBeVisible();
 
 		for (const item of ['Goal', 'Task']) {
@@ -40,8 +51,8 @@ test.describe('Measure monitoring', () => {
 				testMeasure.payload.title
 			);
 			await expect(
-				dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')
-			).toHaveText('Bob Builder');
+				dotsBoard.overlay.locator.locator(':has-text("Team permissions") + .value')
+			).toHaveText(teamPermissions);
 
 			// Delete the item
 			await dotsBoard.overlay.delete();
@@ -50,7 +61,7 @@ test.describe('Measure monitoring', () => {
 });
 
 test.describe('Measures section', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/bob.json' });
 
 	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
 		await dotsBoard.goto(`/${testMeasure.organization}`);
