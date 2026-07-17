@@ -206,6 +206,7 @@
 		"not_found": "Sorry, there is nothing to show here.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
+		"slug_not_available": "This URL slug is already in use.",
 		"unexpected": "We are working on it."
 	},
 	"establish_relations": "Establish relations",
@@ -772,7 +773,7 @@
 	"signup_dialog.submit": "Activate account",
 	"signup_dialog.unexpected_error": "Something went wrong. Please try again later.",
 	"simple_measure": "Simple measure",
-	"slug": "Slug",
+	"slug": "URL slug",
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
 	"sort_fulfillment_date": "Fulfillment date",
@@ -913,6 +914,7 @@
 	"upload.pdf.help": "PDF, max 100 MB",
 	"upload.pdf.remove": "Remove PDF",
 	"upload.uploading": "Uploading…",
+	"UrlSlug": "URL slug",
 	"user": {
 		"display_name": "Name",
 		"email": "Email",

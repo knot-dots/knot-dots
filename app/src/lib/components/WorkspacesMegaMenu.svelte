@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
+	import { getContextIdentifier, pathnameWithoutContextSegment } from '$lib/models';
 	import { ability, user } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
@@ -33,20 +34,16 @@
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
 
-	let pathnameWithoutContextSegment = $derived.by(() => {
-		const segments = page.url.pathname.split('/');
-		if (segments.length > 1 && segments[1] === selectedContext.guid) {
-			return [segments.slice(0, 1), ...segments.slice(2)].join('/');
-		}
-		return page.url.pathname;
-	});
+	let pathnameWithoutContext = $derived(
+		pathnameWithoutContextSegment(page.url.pathname, selectedContext)
+	);
 
-	let currentWorkspace = $derived(workspaceFromPathname(pathnameWithoutContextSegment));
+	let currentWorkspace = $derived(workspaceFromPathname(pathnameWithoutContext));
 
 	const isOnPage = $derived(
-		pathnameWithoutContextSegment === '/all/page' ||
-			pathnameWithoutContextSegment === '' ||
-			pathnameWithoutContextSegment === '/'
+		pathnameWithoutContext === '/all/page' ||
+			pathnameWithoutContext === '' ||
+			pathnameWithoutContext === '/'
 	);
 
 	const visible = $derived(
@@ -72,7 +69,7 @@
 	const menu = createMenu({});
 
 	function pathFor(workspace: WorkspaceDefinition): string {
-		return `/${selectedContext.guid}${workspace.views.default}`;
+		return `/${getContextIdentifier(selectedContext)}${workspace.views.default}`;
 	}
 
 	function handleChange(event: Event) {

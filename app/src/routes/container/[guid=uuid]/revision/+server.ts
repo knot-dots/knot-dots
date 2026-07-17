@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { NotFoundError } from 'slonik';
+import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
@@ -118,21 +118,33 @@ export const POST = (async ({ locals, params, request }) => {
 			aiContribution = deepEqual(originalPayload, currentPayload) ? 1 : 0.5;
 		}
 
-		const result = await locals.pool.connect(
-			updateContainer({
-				...parseResult.data,
-				payload: {
-					...parseResult.data.payload,
-					...(aiContribution !== undefined ? { aiContribution } : undefined)
-				},
-				user: [
-					...parseResult.data.user.filter(
-						({ predicate }) => predicate != predicates.enum['is-creator-of']
-					),
-					{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
-				]
-			})
-		);
-		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+		try {
+			const result = await locals.pool.connect(
+				updateContainer({
+					...parseResult.data,
+					payload: {
+						...parseResult.data.payload,
+						...(aiContribution !== undefined ? { aiContribution } : undefined)
+					},
+					user: [
+						...parseResult.data.user.filter(
+							({ predicate }) => predicate != predicates.enum['is-creator-of']
+						),
+						{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
+					]
+				})
+			);
+			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+		} catch (e: unknown) {
+			if (
+				e instanceof UniqueIntegrityConstraintViolationError &&
+				(e.constraint == 'container_payload_organization_slug_key' ||
+					e.constraint == 'container_payload_organizational_unit_slug_key')
+			) {
+				error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
+			} else {
+				throw e;
+			}
+		}
 	}
 }) satisfies RequestHandler;

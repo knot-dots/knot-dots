@@ -5,6 +5,7 @@
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -127,7 +128,11 @@
 	);
 
 	let linkedProfileURL = $derived(
-		linkedProfile ? getOrganizationURL(linkedProfile, '/all/page', env).toString() : undefined
+		linkedProfile
+			? getOrganizationURL(linkedProfile, '/all/page', env, {
+					organizationSlug: page.data.currentOrganization.payload.slug
+				}).toString()
+			: undefined
 	);
 
 	let hasGeometry = $derived(Boolean(container.payload.geometry));
@@ -172,7 +177,11 @@
 			if (response.ok) {
 				const created = await response.json();
 				dialog.close();
-				goto(getOrganizationURL(created, '/all/page', env).toString());
+				goto(
+					getOrganizationURL(created, '/all/page', env, {
+						organizationSlug: page.data.currentOrganization.payload.slug
+					}).toString()
+				);
 			} else {
 				const err = await response.json();
 				alert(err.message);
