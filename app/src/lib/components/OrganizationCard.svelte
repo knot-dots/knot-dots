@@ -51,7 +51,8 @@
 	function organizationURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return () => {
 			return getOrganizationURL(container, linkPath, env, {
-				organizationSlug: page.data.currentOrganization.payload.slug
+				organizationSlug: page.data.currentOrganization.payload.slug,
+				organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 			}).toString();
 		};
 	}

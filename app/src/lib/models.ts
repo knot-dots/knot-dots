@@ -2768,24 +2768,26 @@ export function getOrganizationURL(
 	container: Container<OrganizationPayload | OrganizationalUnitPayload>,
 	linkPath = '/all/page',
 	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string },
-	options?: { organizationSlug?: string }
+	options?: { organizationSlug?: string; organizationCustomDomain?: string }
 ): URL {
 	const url = new URL(env.PUBLIC_BASE_URL ?? '');
 	const organizationSubdomainSlug =
 		container.payload.type === payloadTypes.enum.organization
 			? container.payload.slug
 			: options?.organizationSlug;
+	const organizationCustomDomain =
+		container.payload.type == payloadTypes.enum.organization
+			? container.payload.customDomain
+			: options?.organizationCustomDomain;
 
-	// Only use subdomains if the environment variable is not set
 	if (!env.PUBLIC_DONT_USE_SUBDOMAINS) {
 		const isDefaultOrganization = 'default' in container.payload && container.payload.default;
 
 		// Default organization uses the base domain without subdomain
 		if (!isDefaultOrganization) {
 			url.hostname =
-				'customDomain' in container.payload && container.payload.customDomain
-					? container.payload.customDomain
-					: `${organizationSubdomainSlug ?? container.organization}.${url.hostname}`;
+				organizationCustomDomain ??
+				`${organizationSubdomainSlug ?? container.organization}.${url.hostname}`;
 		}
 	}
 

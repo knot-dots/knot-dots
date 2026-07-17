@@ -125,7 +125,8 @@
 		container: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>
 	) {
 		return getOrganizationURL(container, linkPathForContainer(container), env, {
-			organizationSlug: page.data.currentOrganization.payload.slug
+			organizationSlug: page.data.currentOrganization.payload.slug,
+			organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 		}).toString();
 	}
 

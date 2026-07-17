@@ -43,7 +43,8 @@
 
 	function landingPageURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return getOrganizationURL(container, '/all/page', env, {
-			organizationSlug: page.data.currentOrganization.payload.slug
+			organizationSlug: page.data.currentOrganization.payload.slug,
+			organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 		}).toString();
 	}
 

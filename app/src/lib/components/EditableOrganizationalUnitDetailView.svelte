@@ -130,7 +130,8 @@
 	let linkedProfileURL = $derived(
 		linkedProfile
 			? getOrganizationURL(linkedProfile, '/all/page', env, {
-					organizationSlug: page.data.currentOrganization.payload.slug
+					organizationSlug: page.data.currentOrganization.payload.slug,
+					organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 				}).toString()
 			: undefined
 	);
@@ -179,7 +180,8 @@
 				dialog.close();
 				goto(
 					getOrganizationURL(created, '/all/page', env, {
-						organizationSlug: page.data.currentOrganization.payload.slug
+						organizationSlug: page.data.currentOrganization.payload.slug,
+						organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 					}).toString()
 				);
 			} else {
