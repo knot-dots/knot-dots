@@ -1,5 +1,5 @@
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'BulkActions'] as const],
+	['alpha', ['OpenAI', 'BulkActions', 'UrlSlug'] as const],
 	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'SubMeasures'] as const]
 ]);
 
@@ -28,6 +28,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useTendentialObjectivesAndEffects() {
 			return features.includes('IOOI');
+		},
+		useUrlSlug() {
+			return features.includes('UrlSlug');
 		},
 		useSubMeasures() {
 			return features.includes('SubMeasures');

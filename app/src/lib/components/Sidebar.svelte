@@ -26,6 +26,7 @@
 	import { type Favorite, getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		type Container,
+		getContextIdentifier,
 		getOrganizationURL,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
@@ -41,7 +42,9 @@
 	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
 	function landingPageURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
-		return getOrganizationURL(container, '/all/page', env).toString();
+		return getOrganizationURL(container, '/all/page', env, {
+			organizationSlug: page.data.currentOrganization.payload.slug
+		}).toString();
 	}
 
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
@@ -87,17 +90,59 @@
 		};
 	}
 
+	function visibleFavoriteHref(href: string) {
+		let parsedUrl: URL;
+
+		try {
+			parsedUrl = new URL(href, page.url);
+		} catch {
+			return href;
+		}
+
+		if (parsedUrl.origin !== page.url.origin) {
+			return href;
+		}
+
+		const segments = parsedUrl.pathname.split('/').filter(Boolean);
+		if (segments.length === 0) {
+			return href;
+		}
+
+		const [contextSegment, ...restSegments] = segments;
+
+		const organization = page.data.organizations.find(({ guid }) => guid === contextSegment);
+		if (organization) {
+			const identifier = getContextIdentifier(organization);
+			const pathname = `/${[identifier, ...restSegments].join('/')}`;
+			return `${pathname}${parsedUrl.search}${parsedUrl.hash}`;
+		}
+
+		const organizationalUnit = page.data.organizationalUnits.find(
+			({ guid, organization }) =>
+				guid === contextSegment && organization === page.data.currentOrganization.guid
+		);
+		if (organizationalUnit) {
+			const identifier = getContextIdentifier(organizationalUnit);
+			const pathname = `/${[identifier, ...restSegments].join('/')}`;
+			return `${pathname}${parsedUrl.search}${parsedUrl.hash}`;
+		}
+
+		return href;
+	}
+
 	let favoriteItemsOrganization = $derived(
 		favoriteList.organization.map((favorite) => ({
 			...favorite,
-			guid: favorite.href
+			guid: favorite.href,
+			href: visibleFavoriteHref(favorite.href)
 		}))
 	);
 
 	let favoriteItemsOrganizationalUnit = $derived(
 		favoriteList.organizationalUnit.map((favorite) => ({
 			...favorite,
-			guid: favorite.href
+			guid: favorite.href,
+			href: visibleFavoriteHref(favorite.href)
 		}))
 	);
 

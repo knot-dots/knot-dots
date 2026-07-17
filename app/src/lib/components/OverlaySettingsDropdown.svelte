@@ -5,10 +5,11 @@
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Link from '~icons/knotdots/link';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
-	import type { AnyPayload, Container } from '$lib/models';
+	import { type AnyPayload, type Container, getContextIdentifier } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
 	type SettingsSubview = 'main' | 'embed';
@@ -28,9 +29,21 @@
 
 	let showCode = $derived(codeVisible);
 
-	let embedPath = $derived(
-		`/${container.organizational_unit ?? container.organization}/${container.guid}/embed`
-	);
+	let embedOrganizationIdentifier = $derived.by(() => {
+		const context = container.organizational_unit
+			? page.data.organizationalUnits?.find(
+					({ guid }: { guid: string }) => guid === container.organizational_unit
+				)
+			: page.data.organizations?.find(
+					({ guid }: { guid: string }) => guid === container.organization
+				);
+		return context
+			? getContextIdentifier(context)
+			: (container.organizational_unit ?? container.organization);
+	});
+
+	let embedPath = $derived(`/${embedOrganizationIdentifier}/${container.guid}/embed`);
+
 	let containerTitle = $derived(
 		'title' in container.payload ? container.payload.title : container.payload.name
 	);

@@ -206,6 +206,7 @@
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
+		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
 		"unexpected": "Wir arbeiten daran."
 	},
 	"establish_relations": "Beziehungen festlegen",
@@ -775,7 +776,7 @@
 	"sort_fulfillment_date": "Erfüllungsdatum",
 	"sort_modified": "Zuletzt bearbeitet",
 	"sort_relevance": "Relevanz",
-	"slug": "Slug",
+	"slug": "URL-Slug",
 	"start_date": "Beginn",
 	"status": "Status",
 	"status.adopted": "Beschlossen",
@@ -911,6 +912,7 @@
 	"upload.pdf.help": "PDF-Dateien, maximal 100 MB",
 	"upload.pdf.remove": "PDF löschen",
 	"upload.uploading": "Wird hochgeladen …",
+	"UrlSlug": "URL-Slug",
 	"user": {
 		"display_name": "Name",
 		"email": "E-Mail-Adresse",
