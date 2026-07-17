@@ -2791,10 +2791,7 @@ export function getOrganizationURL(
 		}
 	}
 
-	url.pathname = `/${container.payload.slug ?? container.guid}${linkPath}`
-		.replace('/me/measures', '/measures/status')
-		.replace('/me/tasks', '/tasks/status')
-		.replace(/\/me$/, '/all/page');
+	url.pathname = `/${container.payload.slug ?? container.guid}${linkPath}`;
 
 	return url;
 }
