@@ -128,6 +128,7 @@ export function createIndexWithMappings(client: Client, index: string) {
 				},
 				visibility: { type: 'keyword' },
 				text: { type: 'text' },
+				date: { type: 'date' },
 				program_type_labels: { type: 'text' },
 				measure_type_labels: { type: 'text' },
 				indicator_category_labels: { type: 'text' },
@@ -298,6 +299,11 @@ export function toDoc(row: {
 			...categoryValues
 		]
 			.filter(Boolean)
-			.join(' ')
+			.join(' '),
+		date: [
+			originalPayload.publicationDate,
+			originalPayload.startDate,
+			originalPayload.fulfillmentDate
+		]
 	} as const;
 }

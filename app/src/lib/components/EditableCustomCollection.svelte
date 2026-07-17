@@ -94,7 +94,8 @@
 	let sortOptions = $derived([
 		...(localTerms.length > 0 ? [{ value: 'relevance', label: $_('sort_relevance') }] : []),
 		{ value: 'modified', label: $_('sort_modified') },
-		{ value: 'alpha', label: $_('sort_alphabetically') }
+		{ value: 'alpha', label: $_('sort_alphabetically') },
+		{ value: 'date', label: $_('sort_date') }
 	]);
 
 	const idForTitle = crypto.randomUUID();

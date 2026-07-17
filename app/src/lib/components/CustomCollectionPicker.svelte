@@ -379,6 +379,7 @@
 	{#snippet sortContent()}
 		{@const sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
+			[$_('sort_date'), 'date'],
 			[$_('sort_modified'), 'modified']
 		]}
 		<legend class="is-visually-hidden">{$_('sort')}</legend>

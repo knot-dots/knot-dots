@@ -690,6 +690,8 @@ function prepareOrderByExpression(sort: string) {
 		order_by = sql.fragment`c.valid_from DESC, c.guid`;
 	} else if (sort == 'priority') {
 		order_by = sql.fragment`priority, c.guid`;
+	} else if (sort == 'date') {
+		order_by = sql.fragment`coalesce(c.payload->'fulfillmentDate', c.payload->'publicationDate',  c.payload->'startDate') DESC NULLS LAST, c.guid`;
 	}
 	return order_by;
 }
