@@ -1288,6 +1288,7 @@ label > input[type='checkbox'].toggle {
 	color: var(--color-gray-500);
 	container-type: inline-size;
 	font-size: 0.875rem;
+	hyphens: auto;
 	padding: var(--details-padding-y) 0;
 	position: relative;
 }

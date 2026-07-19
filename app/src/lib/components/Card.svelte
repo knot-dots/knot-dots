@@ -50,10 +50,11 @@
 		footer?: Snippet;
 		href?: () => string;
 		ignoreBulkActionContext?: boolean;
+		maxSummaryLength?: number;
+		onclick?: (event: Event) => void;
 		relatedContainers?: Container<AnyPayload>[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
-		maxSummaryLength?: number;
 	}
 
 	let {
@@ -63,10 +64,11 @@
 		footer,
 		href,
 		ignoreBulkActionContext = false,
+		onclick,
+		maxSummaryLength,
 		relatedContainers = [],
 		showRelationFilter = false,
-		titleOverride = false,
-		maxSummaryLength
+		titleOverride = false
 	}: Props = $props();
 
 	const overlayContext = getContext('overlay');
@@ -247,7 +249,13 @@
 				<a
 					href={href ? href() : computeHref(page.url)}
 					bind:this={previewLink}
-					onclick={updateOverlayHistory}
+					onclick={(e) => {
+						if (onclick) {
+							onclick(e);
+						} else {
+							updateOverlayHistory(e);
+						}
+					}}
 				>
 					{#if titleOverride && isObjectiveContainer(container)}
 						{@const goal = relatedContainers
