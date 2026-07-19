@@ -101,6 +101,17 @@
 </section>
 
 <style>
+	.overlay {
+		background-color: white;
+		box-shadow: var(--shadow-lg);
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		position: relative;
+		width: 100%;
+		z-index: 3;
+	}
+
 	.overlay.overlay-fullscreen {
 		left: 0;
 		position: absolute;
