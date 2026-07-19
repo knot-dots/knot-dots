@@ -17,6 +17,7 @@
 		--margin-y: 0.75rem;
 
 		display: flex;
+		flex: 1;
 		gap: var(--margin-y);
 		height: 100%;
 		margin-right: var(--overlay-compensation-margin, 0);

@@ -104,6 +104,7 @@
 
 	.main-with-header-wrapper {
 		background-color: white;
+		container: main / inline-size;
 		display: flex;
 		flex-direction: column;
 		flex: 1 1;
@@ -146,6 +147,12 @@
 		overflow-x: hidden;
 		overflow-y: auto;
 		position: relative;
+	}
+
+	@container (min-width: 48rem) {
+		main {
+			flex-direction: row;
+		}
 	}
 
 	@media (min-width: 60rem) {

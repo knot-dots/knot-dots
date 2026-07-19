@@ -101,6 +101,7 @@
 
 <style>
 	div {
+		flex: 1;
 		height: 100%;
 		overflow-y: auto;
 		padding: 3.5rem 5rem;

@@ -95,6 +95,7 @@
 	.overlay {
 		background-color: white;
 		box-shadow: var(--shadow-lg);
+		container: overlay / inline-size;
 		display: flex;
 		flex-direction: column;
 		height: 100%;

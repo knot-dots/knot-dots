@@ -1196,6 +1196,16 @@ label > input[type='checkbox'].toggle {
 	position: relative;
 }
 
+@container (min-width: 48rem) {
+	.content {
+		flex-direction: row;
+	}
+
+	.content > :first-child {
+		flex-grow: 1;
+	}
+}
+
 .content-details {
 	container: details / inline-size;
 	display: flex;
@@ -1203,6 +1213,16 @@ label > input[type='checkbox'].toggle {
 	flex-grow: 1;
 	min-height: 0;
 	position: relative;
+}
+
+@container (min-width: 48rem) {
+	.content-details {
+		flex-direction: row;
+	}
+
+	.content-details > :first-child {
+		flex-grow: 1;
+	}
 }
 
 .content-footer {
