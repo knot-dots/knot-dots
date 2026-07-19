@@ -22,6 +22,8 @@
 
 <Header />
 
-<IOOI {container} {containers}></IOOI>
+<div class="content">
+	<IOOI {container} {containers}></IOOI>
 
-<Help slug="iooi" />
+	<Help slug="iooi" />
+</div>

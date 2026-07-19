@@ -83,20 +83,19 @@
 
 {#snippet main()}
 	<div class="content-details">
-		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-			<EditableCoverSection
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-			/>
-		</form>
-		<article>
-			<div
-				class="details stage stage--{container.payload.color
-					? backgroundColors.get(container.payload.color)
-					: 'white'}"
-			>
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+		<article class="details">
+			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+				<EditableCoverSection
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
+
+				<div
+					class="stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
 					<div class="stage--buttons details-section">
 						<CoverUpload
 							editable={$applicationState.containerDetailView.editable &&
@@ -112,6 +111,7 @@
 								$ability.can('update', container)}
 						/>
 					</div>
+
 					<header class="details-section">
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 							<h1
@@ -155,21 +155,23 @@
 							bind:value={container.payload.body}
 						/>
 					{/key}
-				</form>
-			</div>
+				</div>
+			</form>
 
-			<div class="details">
-				<Sections bind:container {relatedContainers} />
-			</div>
+			<Sections bind:container {relatedContainers} />
 		</article>
-	</div>
 
-	<Help slug={helpSlug.enum['page-view']} />
+		<Help slug={helpSlug.enum['page-view']} />
+	</div>
 {/snippet}
 
 {@render layout(header, main)}
 
 <style>
+	.details {
+		padding-top: 0;
+	}
+
 	header {
 		align-items: center;
 		display: flex;
@@ -195,14 +197,11 @@
 	}
 
 	.stage {
+		margin-bottom: 4rem;
 		padding-bottom: 0;
 	}
 
 	.stage:not(.stage--white) {
 		padding-bottom: 2rem;
-	}
-
-	.stage + .details {
-		padding-top: 4rem;
 	}
 </style>

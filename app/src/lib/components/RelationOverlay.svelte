@@ -463,6 +463,7 @@
 </script>
 
 <Header workspaceOptions={[]} />
+
 <div class="content-details">
 	<div class="details">
 		<p class="details-section">
@@ -523,6 +524,8 @@
 			</div>
 		{/each}
 	</div>
+
+	<Help slug="relations" />
 </div>
 
 <footer class="content-footer bottom-actions-bar">
@@ -533,8 +536,6 @@
 		</a>
 	</div>
 </footer>
-
-<Help slug="relations" />
 
 <style>
 	.drop-zone-wrapper {

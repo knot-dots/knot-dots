@@ -13,6 +13,8 @@
 
 <Header search />
 
-<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
+<div class="content">
+	<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
 
-<Help slug="resources-catalog" />
+	<Help slug="resources-catalog" />
+</div>

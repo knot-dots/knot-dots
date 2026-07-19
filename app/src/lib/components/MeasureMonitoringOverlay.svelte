@@ -35,14 +35,16 @@
 
 <Header search />
 
-<MeasureMonitoring
-	measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
-		? container
-		: undefined}
-	{measures}
-	containers={containers.filter(isMeasureMonitoringContainer)}
-	indicators={containers.filter(isIndicatorTemplateContainer)}
-	showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
-/>
+<div class="content">
+	<MeasureMonitoring
+		measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
+			? container
+			: undefined}
+		{measures}
+		containers={containers.filter(isMeasureMonitoringContainer)}
+		indicators={containers.filter(isIndicatorTemplateContainer)}
+		showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
+	/>
 
-<Help slug="measures-monitoring" />
+	<Help slug="measures-monitoring" />
+</div>

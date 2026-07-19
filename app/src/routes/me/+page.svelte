@@ -32,7 +32,7 @@
 	{/snippet}
 
 	{#snippet main()}
-		<div>
+		<div class="content-details">
 			<ProfileView {containers} />
 			<Help slug="profile" />
 		</div>

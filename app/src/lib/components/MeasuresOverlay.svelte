@@ -57,6 +57,8 @@
 
 <Header {facets} search />
 
-<Measures {containers} />
+<div class="content">
+	<Measures {containers} />
 
-<Help slug="measures-status" />
+	<Help slug="measures-status" />
+</div>

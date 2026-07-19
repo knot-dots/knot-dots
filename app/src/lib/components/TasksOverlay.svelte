@@ -45,12 +45,14 @@
 
 <Header {facets} search />
 
-<Tasks
-	{container}
-	containers={containers.filter(isTaskContainer)}
-	relatedContainers={containers
-		.filter(isGoalContainer)
-		.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
-/>
+<div class="content">
+	<Tasks
+		{container}
+		containers={containers.filter(isTaskContainer)}
+		relatedContainers={containers
+			.filter(isGoalContainer)
+			.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
+	/>
 
-<Help slug="tasks-status" />
+	<Help slug="tasks-status" />
+</div>

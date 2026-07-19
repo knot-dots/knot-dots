@@ -42,6 +42,8 @@
 
 <Header {facets} search />
 
-<Chapters program={isProgramContainer(container) ? container : undefined} {containers} />
+<div class="content">
+	<Chapters program={isProgramContainer(container) ? container : undefined} {containers} />
 
-<Help slug="all-level" />
+	<Help slug="all-level" />
+</div>

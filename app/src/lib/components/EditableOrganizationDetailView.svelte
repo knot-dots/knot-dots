@@ -98,97 +98,104 @@
 {/snippet}
 
 {#snippet main()}
-	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-		<EditableCoverSection
-			bind:container
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-		/>
-	</form>
-	<article>
-		<div
-			class="details stage stage--{container.payload.color
-				? backgroundColors.get(container.payload.color)
-				: 'white'}"
-		>
+	<div class="content-details">
+		<article class="details">
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<div class="stage--buttons details-section">
-					<CoverUpload
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						label={$_('add_cover')}
-						bind:value={container.payload.cover}
-					/>
-					<ColorDropdown
-						buttonStyle="button"
-						bind:value={container.payload.color}
-						label={$_('highlight')}
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
-					{/if}
-				</div>
-				<header class="details-section">
-					<EditableLogo
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.image}
-					/>
+				<EditableCoverSection
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
 
-					{#if !container.payload.imageReplacesName}
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class="details-title"
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.name}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-						{:else}
-							<h1 class="details-title" contenteditable="false">
-								{container.payload.name}
-							</h1>
-						{/if}
-					{/if}
-
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-						<button class="action-button" onclick={() => dialog.showModal()} type="button">
-							<Ellipsis />
-							<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-						</button>
-					{/if}
-				</header>
-
-				<PropertiesDialog
-					bind:dialog
-					{container}
-					{relatedContainers}
-					title={$_('organization.properties.title')}
+				<div
+					class="stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
 				>
-					<OrganizationProperties bind:container editable={$ability.can('update', container)} />
-				</PropertiesDialog>
+					<div class="stage--buttons details-section">
+						<CoverUpload
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							label={$_('add_cover')}
+							bind:value={container.payload.cover}
+						/>
+						<ColorDropdown
+							buttonStyle="button"
+							bind:value={container.payload.color}
+							label={$_('highlight')}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+						{/if}
+					</div>
 
-				{#key container.guid}
-					<EditableFormattedText
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						bind:value={container.payload.description}
-					/>
-				{/key}
+					<header class="details-section">
+						<EditableLogo
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.image}
+						/>
+
+						{#if !container.payload.imageReplacesName}
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+								<h1
+									class="details-title"
+									contenteditable="plaintext-only"
+									bind:textContent={container.payload.name}
+									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+								></h1>
+							{:else}
+								<h1 class="details-title" contenteditable="false">
+									{container.payload.name}
+								</h1>
+							{/if}
+						{/if}
+
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<button class="action-button" onclick={() => dialog.showModal()} type="button">
+								<Ellipsis />
+								<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+							</button>
+						{/if}
+					</header>
+
+					<PropertiesDialog
+						bind:dialog
+						{container}
+						{relatedContainers}
+						title={$_('organization.properties.title')}
+					>
+						<OrganizationProperties bind:container editable={$ability.can('update', container)} />
+					</PropertiesDialog>
+
+					{#key container.guid}
+						<EditableFormattedText
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.description}
+						/>
+					{/key}
+				</div>
 			</form>
-		</div>
 
-		<div class="details">
-			<Sections bind:container {relatedContainers} />
-		</div>
-	</article>
+			<div class="details">
+				<Sections bind:container {relatedContainers} />
+			</div>
+		</article>
 
-	<Help slug={helpSlug.enum['organization-view']} />
+		<Help slug={helpSlug.enum['organization-view']} />
+	</div>
 {/snippet}
 
 {@render layout(header, main)}
 
 <style>
+	.details {
+		padding-top: 0;
+	}
+
 	header {
 		align-items: center;
 		display: flex;
@@ -214,14 +221,11 @@
 	}
 
 	.stage {
+		margin-bottom: 4rem;
 		padding-bottom: 0;
 	}
 
 	.stage:not(.stage--white) {
 		padding-bottom: 2rem;
-	}
-
-	.stage + .details {
-		padding-top: 4rem;
 	}
 </style>

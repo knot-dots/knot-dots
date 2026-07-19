@@ -27,21 +27,14 @@
 
 <Header {facets} search />
 
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details">
 		<Wall items={containers} addItem={() => {}} itemSnippet={teaserSnippet} />
 	</div>
+
+	<Help slug="teaser-view" />
 </div>
 
 {#snippet teaserSnippet(item: Container)}
 	<TeaserCard container={item as Container<TeaserPayload>} editable={false} />
 {/snippet}
-
-<Help slug="teaser-view" />
-
-<style>
-	.content-details {
-		flex: 1;
-		padding: 1rem;
-	}
-</style>

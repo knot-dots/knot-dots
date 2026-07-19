@@ -43,6 +43,8 @@
 
 <Header {facets} search />
 
-<NewIndicators {containers} />
+<div class="content">
+	<NewIndicators {containers} />
 
-<Help slug="indicators" />
+	<Help slug="indicators" />
+</div>

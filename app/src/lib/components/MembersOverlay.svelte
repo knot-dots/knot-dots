@@ -13,11 +13,13 @@
 </script>
 
 <Header workspaceOptions={[]} />
-<div class="content-details">
+
+<div class="content">
 	<div class="details">
 		<div class="details-section">
 			<Members {container} {users} />
 		</div>
 	</div>
+
+	<Help slug="members" />
 </div>
-<Help slug="members" />

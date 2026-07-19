@@ -79,11 +79,11 @@
 
 		{@render data?.()}
 	</article>
-</form>
 
-{#if detailViewHelpSlug}
-	<Help slug={detailViewHelpSlug} />
-{/if}
+	{#if detailViewHelpSlug}
+		<Help slug={detailViewHelpSlug} />
+	{/if}
+</form>
 
 <style>
 	.details-header {
