@@ -145,6 +145,7 @@
 		min-width: 100vw;
 		overflow-x: hidden;
 		overflow-y: auto;
+		position: relative;
 	}
 
 	@media (min-width: 60rem) {

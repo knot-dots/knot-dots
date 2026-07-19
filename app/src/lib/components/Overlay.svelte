@@ -2,17 +2,14 @@
 	import { setContext, type Snippet } from 'svelte';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
-	import HelpCatalogOverlay from '$lib/components/HelpCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
 	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
-	import KnowledgeCatalogOverlay from '$lib/components/KnowledgeCatalogOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
-	import RulesCatalogOverlay from '$lib/components/RulesCatalogOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
@@ -62,13 +59,7 @@
 <section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
 	<!--svelte-ignore a11y_no_static_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand}></div>
-	{#if data.key === overlayKey.enum['view-help']}
-		<HelpCatalogOverlay containers={data.containers} slug={data.slug} />
-	{:else if data.key === overlayKey.enum['view-knowledge']}
-		<KnowledgeCatalogOverlay categories={data.categories} />
-	{:else if data.key === overlayKey.enum['view-rules']}
-		<RulesCatalogOverlay categories={data.categories} />
-	{:else if data.key === overlayKey.enum['members']}
+	{#if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters']}
 		<ChaptersOverlay container={data.container} containers={data.containers} />

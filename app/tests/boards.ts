@@ -1,5 +1,6 @@
 import { type Page, expect } from '@playwright/test';
 import Column from './column';
+import ContextTabs from './context-tabs';
 import Header from './header';
 import Overlay from './overlay';
 import Sidebar from './sidebar';
@@ -8,11 +9,13 @@ export class Board {
 	readonly header: Header;
 	readonly overlay: Overlay;
 	readonly sidebar: Sidebar;
+	readonly contextTabs: ContextTabs;
 
 	constructor(readonly page: Page) {
 		this.header = new Header(page);
 		this.overlay = new Overlay(page);
 		this.sidebar = new Sidebar(page);
+		this.contextTabs = new ContextTabs(page.getByRole('main'));
 	}
 
 	get columns() {

@@ -11,7 +11,7 @@ test.use({ suiteId: 'rules-catalog-overlay' });
 test.use({ storageState: 'tests/.auth/admin.json' });
 
 test.describe('Rules catalog overlay', () => {
-	test('opens and lists rules', async ({ adminContext, dotsBoard, testGoal }) => {
+	test('opens and lists rules', async ({ adminContext, dotsBoard, isMobile, testGoal }) => {
 		const suffix = test.info().project.name;
 		const makeRule = (title: string) => {
 			const template = containerOfType(
@@ -31,13 +31,14 @@ test.describe('Rules catalog overlay', () => {
 		const ruleB = await makeRule(`E2E Rule Beta ${suffix}`);
 
 		try {
-			await dotsBoard.page.goto(`/${testGoal.organization}/all/level#view-rules=`);
+			await dotsBoard.page.goto(`/${testGoal.organization}/all/level`);
+			await dotsBoard.contextTabs.open('Rules', isMobile);
 
-			await expect(dotsBoard.overlay.locator.getByTitle(ruleA.payload.title)).toBeVisible();
-			await expect(dotsBoard.overlay.locator.getByTitle(ruleB.payload.title)).toBeVisible();
+			await expect(dotsBoard.contextTabs.current.getByTitle(ruleA.payload.title)).toBeVisible();
+			await expect(dotsBoard.contextTabs.current.getByTitle(ruleB.payload.title)).toBeVisible();
 
-			await dotsBoard.overlay.closeButton.click();
-			await expect(dotsBoard.overlay.locator).not.toBeVisible();
+			await dotsBoard.contextTabs.close();
+			await expect(dotsBoard.contextTabs.current).not.toBeVisible();
 		} finally {
 			await deleteContainer(adminContext, ruleA);
 			await deleteContainer(adminContext, ruleB);
@@ -47,6 +48,7 @@ test.describe('Rules catalog overlay', () => {
 	test('sorts rules by number of matching category terms', async ({
 		adminContext,
 		dotsBoard,
+		isMobile,
 		testGoal,
 		testCategoryWithTerms
 	}) => {
@@ -86,14 +88,18 @@ test.describe('Rules catalog overlay', () => {
 				[categoryKey, termAValue],
 				[categoryKey, termBValue]
 			]);
-			await dotsBoard.page.goto(`/${testGoal.organization}/all/level?${params}#view-rules=`);
 
-			const doubleMatchCard = dotsBoard.overlay.locator.getByTitle(ruleDoubleMatch.payload.title);
-			const singleMatchCard = dotsBoard.overlay.locator.getByTitle(ruleSingleMatch.payload.title);
-			await expect(doubleMatchCard).toBeVisible();
-			await expect(singleMatchCard).toBeVisible();
+			await dotsBoard.page.goto(`/${testGoal.organization}/all/level?${params}`);
+			await dotsBoard.contextTabs.open('Rules', isMobile);
 
-			const articles = await dotsBoard.overlay.locator.getByRole('article').all();
+			await expect(
+				dotsBoard.contextTabs.current.getByTitle(ruleDoubleMatch.payload.title)
+			).toBeVisible();
+			await expect(
+				dotsBoard.contextTabs.current.getByTitle(ruleSingleMatch.payload.title)
+			).toBeVisible();
+
+			const articles = await dotsBoard.contextTabs.current.getByRole('article').all();
 			const cardTitles = await Promise.all(articles.map((a) => a.getAttribute('title')));
 			expect(cardTitles.indexOf(ruleDoubleMatch.payload.title)).toBeLessThan(
 				cardTitles.indexOf(ruleSingleMatch.payload.title)
@@ -107,6 +113,7 @@ test.describe('Rules catalog overlay', () => {
 	test('uses categories of a container opened in view overlay', async ({
 		adminContext,
 		dotsBoard,
+		isMobile,
 		testGoal,
 		testCategoryWithTerms
 	}) => {
@@ -167,16 +174,12 @@ test.describe('Rules catalog overlay', () => {
 			await dotsBoard.goto(`/${testGoal.organization}`);
 			await dotsBoard.card(goalWithCategory.payload.title).click();
 			await expect(dotsBoard.overlay.title).toHaveText(goalWithCategory.payload.title);
+			await dotsBoard.overlay.contextTabs.open('Rules', isMobile);
 
-			const urlWithoutHash = dotsBoard.page.url().split('#')[0];
-			await dotsBoard.page.goto(`${urlWithoutHash}#view-rules=`);
+			await expect(dotsBoard.overlay.contextTabs.current.getByTitle(matchTitle)).toBeVisible();
+			await expect(dotsBoard.overlay.contextTabs.current.getByTitle(noMatchTitle)).toBeVisible();
 
-			const matchCard = dotsBoard.overlay.locator.getByTitle(matchTitle);
-			const noMatchCard = dotsBoard.overlay.locator.getByTitle(noMatchTitle);
-			await expect(matchCard).toBeVisible();
-			await expect(noMatchCard).toBeVisible();
-
-			const articles = await dotsBoard.overlay.locator.getByRole('article').all();
+			const articles = await dotsBoard.overlay.contextTabs.current.getByRole('article').all();
 			const cardTitles = await Promise.all(articles.map((a) => a.getAttribute('title')));
 			expect(cardTitles.indexOf(matchTitle)).toBeLessThan(cardTitles.indexOf(noMatchTitle));
 		} finally {

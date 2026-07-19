@@ -1,10 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
+import ContextTabs from './context-tabs';
 
 export default class Overlay {
 	readonly locator: Locator;
+	readonly contextTabs: ContextTabs;
 
 	constructor(readonly page: Page) {
 		this.locator = page.locator('.overlay');
+		this.contextTabs = new ContextTabs(this.locator);
 	}
 
 	get backButton() {

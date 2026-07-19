@@ -1,13 +1,17 @@
 <script lang="ts">
+	import { Tabs } from 'melt/builders';
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
-	import QuestionCircle from '~icons/flowbite/question-circle-outline';
 	import BookOutline from '~icons/flowbite/book-outline';
+	import QuestionCircle from '~icons/flowbite/question-circle-outline';
 	import Gavel from '~icons/knotdots/gavel';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import { type HelpSlug, overlayKey, paramsFromFragment } from '$lib/models';
-	import { overlayHistory } from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
+	import ContextHelp from '$lib/components/ContextHelp.svelte';
+	import ContextKnowledge from '$lib/components/ContextKnowledge.svelte';
+	import ContextRules from '$lib/components/ContextRules.svelte';
+	import ContextTab from '$lib/components/ContextTab.svelte';
+	import { type HelpSlug } from '$lib/models';
+	import { overlay as overlayStore } from '$lib/stores';
 
 	interface Props {
 		slug: HelpSlug;
@@ -15,123 +19,142 @@
 
 	let { slug }: Props = $props();
 
-	const helpOverlayKeys = [
-		overlayKey.enum['view-help'],
-		overlayKey.enum['view-knowledge'],
-		overlayKey.enum['view-rules']
-	];
+	const tabs = new Tabs<'' | 'help' | 'knowledge' | 'rules'>({
+		orientation: 'vertical',
+		value: ''
+	});
 
-	function clearOverlay(params: URLSearchParams) {
-		for (const key of helpOverlayKeys) {
-			params.delete(key);
-		}
-	}
-
-	async function toggleHelp(url: URL) {
-		let newParams = paramsFromFragment(url);
-		if (newParams.get(overlayKey.enum['view-help']) === slug) {
-			if ($overlayHistory.length > 1) {
-				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-				newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-			} else {
-				newParams = new URLSearchParams();
-			}
-		} else {
-			clearOverlay(newParams);
-			newParams.set(overlayKey.enum['view-help'], slug);
-		}
-		await goto(`#${newParams.toString()}`);
-	}
-
-	async function toggleKnowledge(url: URL) {
-		let newParams = paramsFromFragment(url);
-		if (newParams.has(overlayKey.enum['view-knowledge'])) {
-			if ($overlayHistory.length > 1) {
-				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-				newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-			} else {
-				newParams = new URLSearchParams();
-			}
-		} else {
-			clearOverlay(newParams);
-			newParams.set(overlayKey.enum['view-knowledge'], '');
-		}
-		await goto(`#${newParams.toString()}`);
-	}
-
-	async function toggleRules(url: URL) {
-		let newParams = paramsFromFragment(url);
-		if (newParams.has(overlayKey.enum['view-rules'])) {
-			if ($overlayHistory.length > 1) {
-				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-				newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-			} else {
-				newParams = new URLSearchParams();
-			}
-		} else {
-			clearOverlay(newParams);
-			newParams.set(overlayKey.enum['view-rules'], '');
-		}
-		await goto(`#${newParams.toString()}`);
-	}
+	const overlay = getContext('overlay');
 </script>
 
-<aside>
-	<button onclick={() => toggleHelp(page.url)} type="button" {@attach tooltip($_('help'))}>
-		<QuestionCircle />
-	</button>
-	<button
-		onclick={() => toggleKnowledge(page.url)}
-		type="button"
-		{@attach tooltip($_('knowledge'))}
-	>
-		<BookOutline />
-	</button>
-	<button
-		onclick={() => toggleRules(page.url)}
-		type="button"
-		{@attach tooltip($_('workspace.rules'))}
-	>
-		<Gavel />
-	</button>
-</aside>
+{#if overlay || !$overlayStore}
+	<aside class="module-context">
+		<div {...tabs.triggerList}>
+			<button {@attach tooltip($_('help'))} {...tabs.getTrigger('help')} type="button">
+				<QuestionCircle />
+				<span class="is-visually-hidden">{$_('help')}</span>
+			</button>
+
+			<button {@attach tooltip($_('knowledge'))} {...tabs.getTrigger('knowledge')} type="button">
+				<BookOutline />
+				<span class="is-visually-hidden">{$_('knowledge')}</span>
+			</button>
+
+			<button {@attach tooltip($_('workspace.rules'))} {...tabs.getTrigger('rules')} type="button">
+				<Gavel />
+				<span class="is-visually-hidden">{$_('rules')}</span>
+			</button>
+		</div>
+
+		{#if tabs.value}
+			<section {...tabs.getContent(tabs.value)}>
+				{#if tabs.value == 'help'}
+					<ContextHelp {slug}>
+						{#snippet children(containers)}
+							<ContextTab {containers} empty={$_('help.empty')} {tabs} title={$_('help')} />
+						{/snippet}
+					</ContextHelp>
+				{:else if tabs.value == 'knowledge'}
+					<ContextKnowledge>
+						{#snippet children(containers)}
+							<ContextTab
+								{containers}
+								empty={$_('knowledge.empty')}
+								{tabs}
+								title={$_('knowledge')}
+							/>
+						{/snippet}
+					</ContextKnowledge>
+				{:else if tabs.value == 'rules'}
+					<ContextRules>
+						{#snippet children(containers)}
+							<ContextTab {containers} empty={$_('rules.empty')} {tabs} title={$_('rules')} />
+						{/snippet}
+					</ContextRules>
+				{/if}
+			</section>
+		{/if}
+	</aside>
+{/if}
 
 <style>
 	aside {
-		align-items: flex-end;
-		background-color: var(--color-orange-050);
-		border-bottom: solid 1px var(--color-orange-200);
-		border-left: solid 1px var(--color-orange-200);
-		border-top: solid 1px var(--color-orange-200);
-		border-bottom-left-radius: 12px;
-		border-top-left-radius: 12px;
-		bottom: 0;
-		box-shadow: var(--shadow-sm);
-		color: var(--color-orange-600);
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		height: fit-content;
-		justify-content: center;
-		margin: auto 0;
-		padding: 0.5rem;
-		position: absolute;
-		right: 0;
-		top: 0;
-		z-index: 2;
+		--tablist-height: 3rem;
+		--tablist-margin: 0.25rem;
+		--tablist-padding: 0.25rem;
 	}
 
-	button {
+	[role='tablist'] {
+		border: 1px solid var(--color-border-accent-subtle);
+		border-radius: 12px 12px;
+		background:
+			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
+			var(--color-background-accent-muted);
+		color: var(--color-text-accent-default);
+		display: flex;
+		flex-direction: row;
+		gap: 0.5rem;
+		justify-content: center;
+		margin: var(--tablist-margin);
+		padding: var(--tablist-padding);
+		z-index: 1;
+	}
+
+	[role='tab'] {
 		--button-active-background: transparent;
 		--button-background: transparent;
 		--button-hover-background: transparent;
-		--padding-x: 0;
+		--padding-x: 0.5rem;
 		--padding-y: 0;
 
+		align-items: center;
 		border: none;
+		color: var(--color-text-accent-default);
 		cursor: pointer;
-		display: block;
-		height: 2rem;
-		padding: 0 0.5rem;
+		display: flex;
+		font-size: 0.875rem;
+		height: calc(var(--tablist-height) - 2 * var(--tablist-padding));
+		white-space: nowrap;
+	}
+
+	[role='tab']:hover {
+		background: var(--color-background-accent-hover);
+		color: var(--color-accent-on-default);
+	}
+
+	[role='tab'] > :global(svg) {
+		color: var(--color-icon-accent-subtle);
+		height: 1rem;
+		width: 1rem;
+	}
+
+	[role='tab'][aria-selected='true'] {
+		background: var(--color-background-accent-expanded);
+		color: var(--color-text-accent-strong);
+	}
+
+	[role='tab'][aria-selected='true'] > :global(svg) {
+		color: var(--color-icon-accent-default);
+	}
+
+	[role='tabpanel'] {
+		background: var(--color-surface-accent-container);
+		border-radius: var(--rounded-xl, 12px);
+		border: 1px solid var(--color-border-accent-subtle);
+		bottom: calc(var(--tablist-height) + var(--tablist-margin) + 2px);
+		display: flex;
+		flex-direction: column;
+		height: calc(100% - var(--tablist-height) - 3 * var(--tablist-margin) - 2px);
+		margin: var(--tablist-margin);
+		position: absolute;
+		width: calc(100% - 2 * var(--tablist-margin));
+	}
+
+	@layer visually-hidden {
+		@media (max-width: 48rem) {
+			.is-visually-hidden {
+				all: revert-layer;
+			}
+		}
 	}
 </style>

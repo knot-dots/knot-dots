@@ -1188,9 +1188,21 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Main and overlay content */
-.content-details {
+.content {
+	display: flex;
+	flex-direction: column;
 	flex-grow: 1;
-	overflow-y: auto;
+	min-height: 0;
+	position: relative;
+}
+
+.content-details {
+	container: details / inline-size;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	min-height: 0;
+	position: relative;
 }
 
 .content-footer {
@@ -1287,8 +1299,10 @@ label > input[type='checkbox'].toggle {
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
+	flex: 1;
 	font-size: 0.875rem;
 	hyphens: auto;
+	overflow-y: auto;
 	padding: var(--details-padding-y) 0;
 	position: relative;
 }
