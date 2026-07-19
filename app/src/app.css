@@ -340,7 +340,7 @@
 	--button-hover-border-color: var(--button-border-color);
 	--form-control-background: var(--color-background-system-subtle);
 
-	--header-height: 63px;
+	--header-height: 2.875rem;
 	--sidebar-max-width: 14.25rem;
 }
 
