@@ -42,7 +42,6 @@
 <style>
 	div {
 		height: 100%;
-		min-width: calc(100vw - var(--sidebar-max-width));
 		overflow: auto;
 	}
 </style>

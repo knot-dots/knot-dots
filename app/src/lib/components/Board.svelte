@@ -19,7 +19,8 @@
 		display: flex;
 		gap: var(--margin-y);
 		height: 100%;
-		overflow: auto;
+		margin-right: var(--overlay-compensation-margin, 0);
+		overflow-x: auto;
 		padding: var(--margin-y) 0.375rem;
 	}
 </style>

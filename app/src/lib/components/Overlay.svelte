@@ -59,11 +59,7 @@
 
 <svelte:window onmouseup={stopExpand} />
 
-<section
-	class="overlay"
-	class:overlay-fullscreen={fullScreen.enabled}
-	style="--width-factor: {$overlayWidth}"
->
+<section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
 	<!--svelte-ignore a11y_no_static_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand}></div>
 	{#if data.key === overlayKey.enum['view-help']}
@@ -114,7 +110,7 @@
 
 	@media (min-width: 768px) {
 		.overlay {
-			flex: 0 0 calc(100vw * var(--width-factor));
+			flex: 0 0 calc(100vw * var(--overlay-width-factor));
 		}
 	}
 
