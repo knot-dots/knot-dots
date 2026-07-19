@@ -106,7 +106,7 @@
 		background-color: white;
 		display: flex;
 		flex-direction: column;
-		flex: 1;
+		flex: 1 1;
 		min-width: 0;
 		padding: 0;
 	}

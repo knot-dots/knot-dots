@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
-	import { slide } from 'svelte/transition';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import HelpCatalogOverlay from '$lib/components/HelpCatalogOverlay.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
+	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
 	import KnowledgeCatalogOverlay from '$lib/components/KnowledgeCatalogOverlay.svelte';
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
@@ -17,7 +17,6 @@
 	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
-	import IOOIOverlay from '$lib/components/IOOIOverlay.svelte';
 
 	interface Props {
 		data: OverlayData;
@@ -63,7 +62,6 @@
 <section
 	class="overlay"
 	class:overlay-fullscreen={fullScreen.enabled}
-	transition:slide={{ axis: 'x' }}
 	style="--width-factor: {$overlayWidth}"
 >
 	<!--svelte-ignore a11y_no_static_element_interactions -->
@@ -116,17 +114,7 @@
 
 	@media (min-width: 768px) {
 		.overlay {
-			--width-factor: 0.65;
-
-			width: calc(100vw * var(--width-factor));
-		}
-
-		.overlay > :global(*) {
-			min-width: calc(100vw * var(--width-factor));
-		}
-
-		.overlay > :global(:is(aside, dialog)) {
-			min-width: revert;
+			flex: 0 0 calc(100vw * var(--width-factor));
 		}
 	}
 
