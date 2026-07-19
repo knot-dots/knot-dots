@@ -192,4 +192,18 @@
 			width: 23.75rem;
 		}
 	}
+
+	@container details (min-width: 48rem) {
+		aside {
+			flex: 0 1;
+			flex-direction: row-reverse;
+		}
+
+		[role='tabpanel'] {
+			flex-direction: column;
+			height: 100%;
+			margin: 0;
+			position: static;
+		}
+	}
 </style>
