@@ -148,6 +148,7 @@
 		color: var(--color-gray-500);
 		container-type: inline-size;
 		height: calc(100vh - 1rem);
+		overflow: hidden;
 		padding: 0.75rem;
 		width: calc(100vw - 1rem);
 	}
@@ -180,7 +181,6 @@
 	.commands {
 		align-items: center;
 		display: flex;
-		flex-wrap: wrap;
 		flex-shrink: 0;
 		gap: 0.75rem;
 		justify-content: space-between;
@@ -189,8 +189,8 @@
 	.commands-leading {
 		align-items: center;
 		display: flex;
+		flex-shrink: 0;
 		gap: 0.75rem;
-		margin-right: auto;
 		min-width: 0;
 	}
 
@@ -198,7 +198,6 @@
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
-		margin-left: auto;
 		min-width: 0;
 	}
 
@@ -244,40 +243,33 @@
 		--picker-sidebar-width: 13rem;
 		--picker-selection-width: 20rem;
 		--picker-layout-gap: 1.5rem;
-		--picker-mobile-selection-max-height: 16rem;
 
 		display: grid;
 		flex: 1 1 auto;
 		gap: var(--picker-layout-gap);
-		grid-template-areas: 'main';
+		grid-template-areas: 'main' 'selection';
 		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
 		min-height: 0;
 	}
 
-	.picker-layout.has-selection {
-		grid-template-areas:
-			'main'
-			'selection';
-		grid-template-rows: minmax(0, 1fr) minmax(0, var(--picker-mobile-selection-max-height));
-	}
-
 	.picker-sidebar {
-		grid-area: sidebar;
 		display: none;
+		grid-area: sidebar;
 	}
 
 	.picker-main {
+		display: flex;
 		grid-area: main;
 	}
 
 	.picker-selection {
+		display: flex;
 		grid-area: selection;
 	}
 
 	.picker-main,
 	.picker-selection {
-		display: flex;
 		flex-direction: column;
 		min-height: 0;
 		min-width: 0;
