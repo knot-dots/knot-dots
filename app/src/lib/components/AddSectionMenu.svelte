@@ -38,6 +38,7 @@
 		isContainerWithSummary,
 		isDemographicDataContainer,
 		isEffectCollectionContainer,
+		isEventContainer,
 		isFileCollectionContainer,
 		isGoalCollectionContainer,
 		isGoalContainer,
@@ -50,6 +51,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPageContainer,
+		isPostContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isReportContainer,
@@ -217,13 +219,19 @@
 
 	let mayAddCustomCollection = $derived(
 		isHelpContainer(parentContainer) ||
+			isEventContainer(parentContainer) ||
 			isOrganizationContainer(parentContainer) ||
 			isOrganizationalUnitContainer(parentContainer) ||
 			isPageContainer(parentContainer) ||
+			isPostContainer(parentContainer) ||
 			isReportContainer(parentContainer)
 	);
 
-	let mayAddIgniteVideo = $derived(isHelpContainer(parentContainer));
+	let mayAddIgniteVideo = $derived(
+		isHelpContainer(parentContainer) ||
+			isEventContainer(parentContainer) ||
+			isPostContainer(parentContainer)
+	);
 
 	let mayAddSummary = $derived(
 		isContainerWithSummary(parentContainer) &&
