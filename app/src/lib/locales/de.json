@@ -210,6 +210,7 @@
 		"unexpected": "Wir arbeiten daran."
 	},
 	"establish_relations": "Beziehungen festlegen",
+	"event": "Ereignis",
 	"expand_sidebar": "Seitenleiste aufklappen",
 	"family_name": "Name",
 	"favorite.change_icon": "Icon ändern (SVG)",
@@ -594,6 +595,7 @@
 	"policy_field_bnk.health": "Gesundheit",
 	"policy_field_bnk.decent_work": "Gute Arbeit und nachhaltiges Wirtschaften",
 	"policy_field_bnk.global_cooperation": "Globale Zusammenarbeit und Eine Welt",
+	"post": "Beitrag",
 	"privacy_policy": "Datenschutz",
 	"profile": {
 		"my_measures": "Meine Maßnahmen",
@@ -650,6 +652,7 @@
 	"properties.subheading.visible_workspaces.description": "Wählen Sie aus, welche Arbeitsbereiche im Hauptmenü sichtbar sind. Ist nichts ausgewählt, sind alle Arbeitsbereiche sichtbar.",
 	"properties.hide": "Eigenschaften verbergen",
 	"properties.show_all": "Alle Eigenschaften zeigen",
+	"publication_date": "Veröffentlichungsdatum",
 	"publish_all": "Alle Inhalte veröffentlichen",
 	"publish_all_success": "Alle Inhalte wurden veröffentlicht",
 	"publish_all_failure": "Fehler beim Veröffentlichen aller Inhalte",
@@ -773,7 +776,7 @@
 	"simple_measure": "Einfache Maßnahme",
 	"sort": "Sortieren",
 	"sort_alphabetically": "Alphabetisch",
-	"sort_fulfillment_date": "Erfüllungsdatum",
+	"sort_date": "Datum",
 	"sort_modified": "Zuletzt bearbeitet",
 	"sort_relevance": "Relevanz",
 	"slug": "URL-Slug",

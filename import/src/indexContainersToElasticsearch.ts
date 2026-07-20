@@ -50,6 +50,7 @@ async function* fetchContainers(batchSize = 500) {
 				AND (c.payload ->> 'type') IN (
 					'binary_indicator',
 					'effect',
+					'event',
 					'goal',
 					'help',
 					'indicator_template',
@@ -59,6 +60,7 @@ async function* fetchContainers(batchSize = 500) {
 					'organization',
 					'organizational_unit',
 					'page',
+					'post',
 					'program',
 					'report',
 					'resource',

@@ -3,6 +3,7 @@
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
+	import EditableEventDetailView from '$lib/components/EditableEventDetailView.svelte';
 	import EditableGoalDetailView from '$lib/components/EditableGoalDetailView.svelte';
 	import EditableHelpDetailView from '$lib/components/EditableHelpDetailView.svelte';
 	import EditableIndicatorTemplateDetailView from '$lib/components/EditableIndicatorTemplateDetailView.svelte';
@@ -12,6 +13,7 @@
 	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
 	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
 	import EditablePageDetailView from '$lib/components/EditablePageDetailView.svelte';
+	import EditablePostDetailView from '$lib/components/EditablePostDetailView.svelte';
 	import EditableProgramDetailView from '$lib/components/EditableProgramDetailView.svelte';
 	import EditableReportDetailView from '$lib/components/EditableReportDetailView.svelte';
 	import EditableResourceDetailView from '$lib/components/EditableResourceDetailView.svelte';
@@ -23,9 +25,13 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import {
+		type AnyPayload,
+		type Container,
+		isBinaryIndicatorContainer,
 		isCategoryContainer,
 		isContainerWithEffect,
 		isEffectContainer,
+		isEventContainer,
 		isGoalContainer,
 		isHelpContainer,
 		isIndicatorTemplateContainer,
@@ -34,19 +40,17 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPageContainer,
+		isPostContainer,
 		isProgramContainer,
 		isReportContainer,
 		isResourceContainer,
+		isResourceDataContainer,
 		isResourceV2Container,
 		isRuleContainer,
-		isTermContainer,
 		isTaskContainer,
 		isTeaserContainer,
-		isTextContainer,
-		isResourceDataContainer,
-		isBinaryIndicatorContainer,
-		type Container,
-		type AnyPayload
+		isTermContainer,
+		isTextContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -68,6 +72,8 @@
 	<EditableBinaryIndicatorDetailView bind:container {layout} {revisions} {sections} />
 {:else if isEffectContainer(container)}
 	<EditableEffectDetailView bind:container {layout} {revisions} {sections} />
+{:else if isEventContainer(container)}
+	<EditableEventDetailView bind:container {layout} {revisions} {sections} />
 {:else if isGoalContainer(container)}
 	<EditableGoalDetailView bind:container {layout} {revisions} {sections} />
 {:else if isHelpContainer(container)}
@@ -88,6 +94,8 @@
 	<EditableOrganizationDetailView bind:container {layout} {sections} />
 {:else if isPageContainer(container)}
 	<EditablePageDetailView bind:container {layout} {revisions} {sections} />
+{:else if isPostContainer(container)}
+	<EditablePostDetailView bind:container {layout} {revisions} {sections} />
 {:else if isProgramContainer(container)}
 	<EditableProgramDetailView bind:container {layout} {revisions} />
 {:else if isReportContainer(container)}

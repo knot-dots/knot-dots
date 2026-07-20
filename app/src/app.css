@@ -988,6 +988,7 @@ progress {
 }
 
 input[type='date'],
+input[type='datetime-local'],
 input[type='email'],
 input[type='number'],
 input[type='password'],
@@ -1006,7 +1007,8 @@ textarea {
 	width: 100%;
 }
 
-input[type='date'] {
+input[type='date'],
+input[type='datetime-local'] {
 	max-height: calc(2 * 0.75rem + 1.2rem + 2px);
 }
 
@@ -1052,6 +1054,7 @@ textarea {
 }
 
 input[type='date']:active,
+input[type='datetime-local']:active,
 input[type='email']:active,
 input[type='number']:active,
 input[type='password']:active,
@@ -1064,6 +1067,7 @@ textarea:active {
 }
 
 input[type='date']:user-invalid,
+input[type='datetime-local']:user-invalid,
 input[type='email']:user-invalid,
 input[type='number']:user-invalid,
 input[type='password']:user-invalid,

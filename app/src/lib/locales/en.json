@@ -210,6 +210,7 @@
 		"unexpected": "We are working on it."
 	},
 	"establish_relations": "Establish relations",
+	"event": "Event",
 	"expand_sidebar": "Expand sidebar",
 	"family_name": "Family name",
 	"favorite.change_icon": "Change icon (SVG)",
@@ -594,6 +595,7 @@
 	"policy_field_bnk.health": "Health",
 	"policy_field_bnk.decent_work": "Decent work and sustainable economy",
 	"policy_field_bnk.global_cooperation": "Global cooperation and One World",
+	"post": "Post",
 	"privacy_policy": "Privacy policy",
 	"profile": {
 		"my_measures": "My measures",
@@ -650,6 +652,7 @@
 	"properties.subheading.visible_workspaces.description": "Choose which workspaces are visible in the main menu. If nothing is selected, all workspaces are visible.",
 	"properties.hide": "Hide properties",
 	"properties.show_all": "Show all properties",
+	"publication_date": "Publication date",
 	"publish_all": "Publish all content",
 	"publish_all_success": "Successfully published all content",
 	"publish_all_failure": "Failed to publish all content",
@@ -775,7 +778,7 @@
 	"slug": "URL slug",
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
-	"sort_fulfillment_date": "Fulfillment date",
+	"sort_date": "Date",
 	"sort_modified": "Last modified",
 	"sort_relevance": "Relevance",
 	"start_date": "start",

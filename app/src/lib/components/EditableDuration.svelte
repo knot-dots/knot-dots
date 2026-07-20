@@ -8,6 +8,18 @@
 	}
 
 	let { container = $bindable(), editable = false }: Props = $props();
+
+	function oninput(key: 'startDate' | 'endDate') {
+		return (event: Event & { currentTarget: HTMLInputElement }) => {
+			if (event.currentTarget.value == '') {
+				container.payload[key] = undefined;
+			} else if (event.currentTarget.validity.valid) {
+				container.payload[key] = event.currentTarget.value;
+			} else {
+				event.stopPropagation();
+			}
+		};
+	}
 </script>
 
 {#if editable}
@@ -16,23 +28,35 @@
 		<label class="is-visually-hidden" for="startDate">
 			{$_('start_date')}
 		</label>
-		<input class="value" id="startDate" type="date" bind:value={container.payload.startDate} />
+		<input
+			class="value"
+			id="startDate"
+			oninput={oninput('startDate')}
+			type="date"
+			value={container.payload.startDate}
+		/>
 		–
 		<label class="is-visually-hidden" for="endDate">
 			{$_('end_date')}
 		</label>
-		<input class="value" id="endDate" type="date" bind:value={container.payload.endDate} />
+		<input
+			class="value"
+			id="endDate"
+			oninput={oninput('endDate')}
+			type="date"
+			value={container.payload.endDate}
+		/>
 	</fieldset>
 {:else}
 	<div class="label">{$_('planned_duration')}</div>
 	<div class="value">
 		{#if container.payload.startDate && container.payload.endDate}
-			{$date(new Date(container.payload.startDate), { format: 'long' })}–{$date(
+			{$date(new Date(container.payload.startDate), { dateStyle: 'medium' })}–{$date(
 				new Date(container.payload.endDate),
 				{ format: 'long' }
 			)}
 		{:else if container.payload.startDate}
-			{$date(new Date(container.payload.startDate), { format: 'long' })}–
+			{$date(new Date(container.payload.startDate), { dateStyle: 'medium' })}–
 		{:else}
 			{$_('empty')}
 		{/if}

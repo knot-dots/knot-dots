@@ -72,6 +72,7 @@
 	);
 
 	const defaultPayloadType = $derived([
+		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
 		payloadTypes.enum.indicator_template,
@@ -79,6 +80,7 @@
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
 		payloadTypes.enum.page,
+		payloadTypes.enum.post,
 		payloadTypes.enum.program,
 		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
@@ -92,7 +94,8 @@
 	let sortOptions = $derived([
 		...(localTerms.length > 0 ? [{ value: 'relevance', label: $_('sort_relevance') }] : []),
 		{ value: 'modified', label: $_('sort_modified') },
-		{ value: 'alpha', label: $_('sort_alphabetically') }
+		{ value: 'alpha', label: $_('sort_alphabetically') },
+		{ value: 'date', label: $_('sort_date') }
 	]);
 
 	const idForTitle = crypto.randomUUID();

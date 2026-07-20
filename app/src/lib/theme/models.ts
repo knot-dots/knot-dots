@@ -1,6 +1,7 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements, SVGAttributes } from 'svelte/elements';
 import ArrowSortLetters from '~icons/flowbite/arrow-sort-letters-outline';
+import Calendar from '~icons/flowbite/calendar-month-outline';
 import BadgeCheck from '~icons/flowbite/badge-check-solid';
 import Clock from '~icons/flowbite/clock-outline';
 import Flag from '~icons/flowbite/flag-outline';
@@ -40,6 +41,7 @@ export const predicateIcons = new Map<string, Component<SVGAttributes<SVGSVGElem
 
 export const sortIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
 	['alpha', ArrowSortLetters],
+	['date', Calendar],
 	['modified', Clock]
 ]);
 

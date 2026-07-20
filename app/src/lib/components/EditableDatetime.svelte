@@ -13,22 +13,33 @@
 		if (event.currentTarget.value == '') {
 			value = undefined;
 		} else if (event.currentTarget.validity.valid) {
-			value = event.currentTarget.value;
+			value = new Date(event.currentTarget.value).toISOString();
 		} else {
 			event.stopPropagation();
 		}
+	}
+
+	function datetimeLocalFromDate(dt: Date) {
+		dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+		return dt.toISOString().slice(0, 16);
 	}
 </script>
 
 {#if editable}
 	{const id = crypto.randomUUID()}
 	<label class="label" for={id}>{label}</label>
-	<input class="value" {id} {oninput} type="date" {value} />
+	<input
+		class="value"
+		{id}
+		{oninput}
+		type="datetime-local"
+		value={value ? datetimeLocalFromDate(new Date(value)) : undefined}
+	/>
 {:else}
 	<span class="label">{label}</span>
 	<time class="value" datetime={value}>
 		{#if value}
-			{$date(new Date(value), { dateStyle: 'medium' })}
+			{$date(new Date(value), { dateStyle: 'medium', timeStyle: 'short' })}
 		{:else}
 			{$_('empty')}
 		{/if}
@@ -36,7 +47,7 @@
 {/if}
 
 <style>
-	input[type='date'] {
+	input[type='datetime-local'] {
 		border: none;
 		display: inline-flex;
 		line-height: 1.5;

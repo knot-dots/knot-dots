@@ -54,6 +54,7 @@
 	let sortBar = createDisclosure({ label: $_('sort') });
 
 	const defaultPayloadType = $derived([
+		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
 		payloadTypes.enum.indicator_template,
@@ -61,6 +62,7 @@
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
 		payloadTypes.enum.page,
+		payloadTypes.enum.post,
 		payloadTypes.enum.program,
 		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
@@ -377,6 +379,7 @@
 	{#snippet sortContent()}
 		{@const sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
+			[$_('sort_date'), 'date'],
 			[$_('sort_modified'), 'modified']
 		]}
 		<legend class="is-visually-hidden">{$_('sort')}</legend>

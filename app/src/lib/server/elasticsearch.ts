@@ -119,6 +119,12 @@ function buildFacetAggregations(params: {
 }
 
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
+	if (sort === 'date') {
+		return [
+			{ date: { order: 'desc', missing: '_last', mode: 'max', unmapped_type: 'date' } },
+			{ guid: { order: 'desc' } }
+		];
+	}
 	if (sort === 'modified') {
 		return [
 			{ valid_from: { order: 'desc', missing: '_first', unmapped_type: 'date' } },

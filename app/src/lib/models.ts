@@ -71,6 +71,7 @@ const payloadTypeValues = [
 	'demographic_data',
 	'effect',
 	'effect_collection',
+	'event',
 	'file_collection',
 	'goal',
 	'goal_collection',
@@ -90,6 +91,7 @@ const payloadTypeValues = [
 	'organization',
 	'organizational_unit',
 	'page',
+	'post',
 	'program',
 	'program_collection',
 	'progress',
@@ -234,19 +236,21 @@ export function helpSlugForDetailView(payloadType: PayloadType): HelpSlug | unde
 }
 
 const categoryObjectTypeValues = [
-	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.event,
 	payloadTypes.enum.goal,
 	payloadTypes.enum.help,
-	payloadTypes.enum.program,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
-	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.post,
+	payloadTypes.enum.program,
 	payloadTypes.enum.report,
 	payloadTypes.enum.rule,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.task,
-	payloadTypes.enum.indicator_template,
-	payloadTypes.enum.effect,
-	payloadTypes.enum.objective
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.task
 ] as const;
 
 export const categoryObjectTypes = z.enum(categoryObjectTypeValues);
@@ -860,7 +864,7 @@ export const customCollectionPayload = z.strictObject({
 	listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
 	newItemTemplate: z.array(z.uuid()).default([]),
 	showDescription: z.boolean().default(false),
-	sort: z.enum(['alpha', 'modified', 'relevance']).default('alpha'),
+	sort: z.enum(['alpha', 'date', 'modified', 'relevance']).default('alpha'),
 	terms: z.string().default(''),
 	title: z.string(),
 	type: z.literal(payloadTypes.enum.custom_collection),
@@ -938,6 +942,23 @@ export function isEffectCollectionContainer(
 }
 
 const initialEffectCollectionPayload = effectCollectionPayload;
+
+const eventPayload = z.strictObject({
+	...basePayload.shape,
+	endDate: z.iso.datetime().optional(),
+	startDate: z.iso.datetime().optional(),
+	type: z.literal(payloadTypes.enum.event)
+});
+
+export type EventPayload = z.infer<typeof eventPayload>;
+
+export function isEventContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<EventPayload> {
+	return container.payload.type === payloadTypes.enum.event;
+}
+
+const initialEventPayload = eventPayload.partial({ title: true });
 
 const fileCollectionPayload = z.strictObject({
 	file: z
@@ -1397,6 +1418,23 @@ export function isPageContainer(
 }
 
 const initialPagePayload = pagePayload.partial({ body: true, title: true });
+
+const postPayload = z.strictObject({
+	...basePayload.omit({ description: true, summary: true }).shape,
+	body: z.string().trim().optional(),
+	publicationDate: z.iso.datetime().optional(),
+	type: z.literal(payloadTypes.enum.post)
+});
+
+export type PostPayload = z.infer<typeof postPayload>;
+
+export function isPostContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<PostPayload> {
+	return container.payload.type === payloadTypes.enum.post;
+}
+
+const initialPostPayload = postPayload.partial({ title: true });
 
 const programPayload = z.strictObject({
 	...basePayload.omit({
@@ -1887,6 +1925,7 @@ const payload = z.discriminatedUnion('type', [
 	demographicDataPayload,
 	effectCollectionPayload,
 	effectPayload,
+	eventPayload,
 	fileCollectionPayload,
 	goalCollectionPayload,
 	goalPayload,
@@ -1904,6 +1943,7 @@ const payload = z.discriminatedUnion('type', [
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
+	postPayload,
 	programCollectionPayload,
 	programPayload,
 	progressPayload,
@@ -1951,6 +1991,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialDemographicDataPayload,
 	initialEffectCollectionPayload,
 	initialEffectPayload,
+	initialEventPayload,
 	initialFileCollectionPayload,
 	initialGoalCollectionPayload,
 	initialGoalPayload,
@@ -1970,6 +2011,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialOrganizationPayload,
 	initialOrganizationalUnitPayload,
 	initialPagePayload,
+	initialPostPayload,
 	initialProgramCollectionPayload,
 	initialProgramPayload,
 	initialProgressPayload,
