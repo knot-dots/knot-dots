@@ -5,7 +5,13 @@ test.use({ suiteId: 'measures' });
 test.describe('Measure monitoring', () => {
 	test.use({ storageState: 'tests/.auth/admin.json' });
 
-	test('create goals and tasks', async ({ dotsBoard, isMobile, testOrganization, testMeasure }) => {
+	test('create goals and tasks', async ({
+		dotsBoard,
+		isMobile,
+		testOrganization,
+		testProgram,
+		testMeasure
+	}) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
 		await dotsBoard.goto(`/${testOrganization.guid}`);
@@ -15,7 +21,7 @@ test.describe('Measure monitoring', () => {
 
 		// Assert the measure is managed by the expected team
 		await expect(dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')).toHaveText(
-			'Bob Builder'
+			`Team ${testProgram.payload.title}`
 		);
 
 		// Switch to the monitoring workspace
@@ -41,7 +47,7 @@ test.describe('Measure monitoring', () => {
 			);
 			await expect(
 				dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')
-			).toHaveText('Bob Builder');
+			).toHaveText(`Team ${testProgram.payload.title}`);
 
 			// Delete the item
 			await dotsBoard.overlay.delete();

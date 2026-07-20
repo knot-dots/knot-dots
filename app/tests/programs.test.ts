@@ -16,7 +16,7 @@ test.describe('Level board', () => {
 		// Assert the program is managed by the expected team
 		await dotsBoard.overlay.disclosePropertiesButton.click();
 		await expect(dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')).toHaveText(
-			'Bob Builder'
+			`Team ${testProgram.payload.title}`
 		);
 
 		// Switch to the levels board
@@ -41,7 +41,7 @@ test.describe('Level board', () => {
 			);
 			await expect(
 				dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')
-			).toHaveText('Bob Builder');
+			).toHaveText(`Team ${testProgram.payload.title}`);
 
 			// Delete the item
 			await dotsBoard.overlay.delete();
