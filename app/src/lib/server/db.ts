@@ -36,6 +36,7 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
+import { attachComputedManagedBy } from '$lib/server/computeManagedBy';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -449,11 +450,13 @@ export function getContainerByGuid(guid: string) {
 				AND NOT cr.deleted
 			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
-		return {
+		const container = {
 			...containerResult,
 			relation: relationResult.map((r) => r),
 			user: userResult.map(({ predicate, subject }) => ({ predicate, subject }))
 		};
+		const [withComputed] = await attachComputedManagedBy(connection, [container]);
+		return withComputed;
 	};
 }
 
@@ -777,7 +780,7 @@ export function getManyContainers(
 	options?: ContainerQueryOptions
 ) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>[]> => {
-		return (await connection.any(sql.type(anyContainer)`
+		const containers = (await connection.any(sql.type(anyContainer)`
 			WITH container_result AS (
 				SELECT c.*
 				FROM container c
@@ -805,6 +808,7 @@ export function getManyContainers(
 			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
 			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``}
 		`)) as Container<AnyPayload>[];
+		return attachComputedManagedBy(connection, containers);
 	};
 }
 
