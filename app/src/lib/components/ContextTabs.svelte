@@ -105,21 +105,28 @@
 
 <style>
 	aside {
-		--tablist-height: 3rem;
-		--tablist-margin: 0.25rem;
-		--tablist-padding: 0.25rem;
+		--margin: 0.25rem;
 
+		bottom: 0;
 		display: flex;
+		flex-direction: column-reverse;
+		gap: var(--margin);
+		margin: var(--margin);
+		max-height: calc(100% - 2 * var(--margin));
+		position: absolute;
+		width: calc(100% - 2 * var(--margin));
 	}
 
 	[role='tablist'] {
+		--tablist-height: 3rem;
+		--tablist-padding: 0.25rem;
+
 		color: var(--color-text-accent-default);
 		display: flex;
-		flex: 1;
+		flex: 0;
 		flex-direction: row;
 		gap: 0.5rem;
-		justify-content: flex-end;
-		margin: var(--tablist-margin);
+		justify-content: center;
 		padding: var(--tablist-padding);
 		z-index: 1;
 	}
@@ -130,7 +137,6 @@
 		background:
 			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
 			var(--color-background-accent-muted);
-		justify-content: center;
 	}
 
 	[role='tab'] {
@@ -174,15 +180,12 @@
 		background: var(--color-surface-accent-container);
 		border-radius: var(--rounded-xl, 12px);
 		border: 1px solid var(--color-border-accent-subtle);
-		bottom: calc(var(--tablist-height) + var(--tablist-margin) + 2px);
 		display: flex;
+		flex: 1;
 		flex-direction: column;
-		height: calc(100% - var(--tablist-height) - 3 * var(--tablist-margin) - 2px);
-		margin: var(--tablist-margin);
-		max-width: calc(100% - 2 * var(--tablist-margin));
-		min-width: calc(100% - 2 * var(--tablist-margin));
-		position: absolute;
-		width: calc(100% - 2 * var(--tablist-margin));
+		max-width: 100%;
+		min-height: 0;
+		min-width: 100%;
 	}
 
 	@container (max-width: 48rem) {
@@ -201,13 +204,11 @@
 			background-color: var(--color-white);
 			border: solid 1px var(--color-border-subtle);
 			border-radius: calc(infinity * 1px);
-			bottom: 0.75rem;
 			box-shadow: var(--shadow-xl);
 			color: var(--color-icon-accent-subtle);
 			display: flex;
+			margin-left: auto;
 			place-content: center;
-			position: absolute;
-			right: 0.75rem;
 		}
 
 		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab']:first-child > :global(svg) {
@@ -218,7 +219,12 @@
 
 	@container (min-width: 48rem) {
 		aside {
-			margin: var(--tablist-margin);
+			flex: 0 1;
+			flex-direction: row-reverse;
+			gap: 0;
+			height: auto;
+			position: relative;
+			width: auto;
 		}
 
 		[role='tablist'] {
@@ -227,7 +233,6 @@
 				var(--color-background-accent-muted);
 			border: 1px solid var(--color-border-accent-subtle);
 			border-radius: 12px;
-			flex: 0 0 auto;
 			flex-direction: column;
 			margin: auto 0;
 		}
@@ -246,28 +251,20 @@
 
 		[role='tabpanel'] {
 			bottom: 0;
-			right: 2.75rem;
-			height: calc(100% - 2 * var(--tablist-margin));
-			margin: var(--tablist-margin) 0;
-			max-width: 80%;
+			max-width: 80cqw;
 			min-width: 23.75rem;
+			position: absolute;
+			right: 2.5rem;
+			top: 0;
 			width: 23.75rem;
 		}
 	}
 
 	@container details (min-width: 48rem) {
-		aside {
-			flex: 0 1;
-			flex-direction: row-reverse;
-			max-width: 80%;
-			position: relative;
-		}
-
 		[role='tabpanel'] {
 			flex-direction: column;
 			height: 100%;
 			margin: 0;
-			max-width: none;
 			position: static;
 		}
 	}
