@@ -1,6 +1,6 @@
 <script lang="ts">
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
 	import { computeFacetCount, type Container, payloadTypes, type TeaserPayload } from '$lib/models';
@@ -32,7 +32,7 @@
 		<Wall items={containers} addItem={() => {}} itemSnippet={teaserSnippet} />
 	</div>
 
-	<Help slug="teaser-view" />
+	<ContextTabs slug="teaser-view" />
 </div>
 
 {#snippet teaserSnippet(item: Container)}

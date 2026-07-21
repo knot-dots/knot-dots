@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -35,6 +35,6 @@
 
 	{#snippet main()}
 		<Tasks {containers} />
-		<Help slug="tasks-status" />
+		<ContextTabs slug="tasks-status" />
 	{/snippet}
 </Layout>

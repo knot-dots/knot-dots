@@ -4,7 +4,7 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
 	import {
@@ -69,5 +69,5 @@
 			/>
 		{/snippet}
 	</Catalog>
-	<Help slug="measures-catalog" />
+	<ContextTabs slug="measures-catalog" />
 </MeasuresPage>

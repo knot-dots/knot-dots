@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -20,5 +20,5 @@
 
 <IndicatorsPage data={{ ...data, containers }} filterBarInitiallyOpen>
 	<NewIndicators {containers} />
-	<Help slug="indicators" />
+	<ContextTabs slug="indicators" />
 </IndicatorsPage>

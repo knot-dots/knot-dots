@@ -2,8 +2,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import NewIndicators from '$lib/components/NewIndicators.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
@@ -46,5 +46,5 @@
 <div class="content">
 	<NewIndicators {containers} />
 
-	<Help slug="indicators" />
+	<ContextTabs slug="indicators" />
 </div>

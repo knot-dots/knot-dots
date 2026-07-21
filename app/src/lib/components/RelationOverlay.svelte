@@ -7,8 +7,8 @@
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -525,7 +525,7 @@
 		{/each}
 	</div>
 
-	<Help slug="relations" />
+	<ContextTabs slug="relations" />
 </div>
 
 <footer class="content-footer bottom-actions-bar">

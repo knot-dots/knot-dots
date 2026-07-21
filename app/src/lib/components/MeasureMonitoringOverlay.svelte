@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
@@ -46,5 +46,5 @@
 		showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 	/>
 
-	<Help slug="measures-monitoring" />
+	<ContextTabs slug="measures-monitoring" />
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -84,5 +84,5 @@
 			/>
 		{/snippet}
 	</Table>
-	<Help slug="knowledge-table" />
+	<ContextTabs slug="knowledge-table" />
 </KnowledgePage>

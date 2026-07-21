@@ -1,7 +1,7 @@
 <script lang="ts">
 	import withOptimistic from '$lib/client/withOptimistic';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
@@ -49,6 +49,6 @@
 			showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 		/>
 
-		<Help slug="measures-monitoring" />
+		<ContextTabs slug="measures-monitoring" />
 	{/snippet}
 </Layout>

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import Card from '$lib/components/Card.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { predicates } from '$lib/models';
@@ -48,7 +48,7 @@
 			</ul>
 		</div>
 
-		<Help slug="measures-templates" />
+		<ContextTabs slug="measures-templates" />
 	{/snippet}
 </Layout>
 

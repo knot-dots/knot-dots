@@ -2,8 +2,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
@@ -54,5 +54,5 @@
 			.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
 	/>
 
-	<Help slug="tasks-status" />
+	<ContextTabs slug="tasks-status" />
 </div>

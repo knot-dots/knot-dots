@@ -13,11 +13,11 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
@@ -329,7 +329,7 @@
 			<Sections bind:container {relatedContainers} />
 		</article>
 
-		<Help slug={helpSlug.enum['organizational-unit-view']} />
+		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
 {/snippet}
 

@@ -8,11 +8,11 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -161,7 +161,7 @@
 			<Sections bind:container {relatedContainers} />
 		</article>
 
-		<Help slug={helpSlug.enum['page-view']} />
+		<ContextTabs slug={helpSlug.enum['page-view']} />
 	</div>
 {/snippet}
 

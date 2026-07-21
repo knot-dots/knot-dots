@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import type { PageProps } from './$types';
@@ -31,5 +31,5 @@
 
 <ProgramsPage facets={data.facets}>
 	<Table {columns} rows={data.containers} />
-	<Help slug="set-of-rules-table" />
+	<ContextTabs slug="set-of-rules-table" />
 </ProgramsPage>

@@ -5,7 +5,7 @@
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import {
@@ -142,5 +142,5 @@
 			</BoardColumn>
 		{/each}
 	</Board>
-	<Help slug="all-level" />
+	<ContextTabs slug="all-level" />
 </AllPage>

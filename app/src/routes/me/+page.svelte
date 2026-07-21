@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -34,7 +34,7 @@
 	{#snippet main()}
 		<div class="content-details">
 			<ProfileView {containers} />
-			<Help slug="profile" />
+			<ContextTabs slug="profile" />
 		</div>
 	{/snippet}
 </Layout>

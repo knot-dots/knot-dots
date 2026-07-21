@@ -3,8 +3,8 @@
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import Chapters from '$lib/components/Chapters.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type AnyPayload,
@@ -45,5 +45,5 @@
 <div class="content">
 	<Chapters program={isProgramContainer(container) ? container : undefined} {containers} />
 
-	<Help slug="all-level" />
+	<ContextTabs slug="all-level" />
 </div>

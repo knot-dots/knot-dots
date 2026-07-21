@@ -9,12 +9,12 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
@@ -185,7 +185,7 @@
 			</div>
 		</article>
 
-		<Help slug={helpSlug.enum['organization-view']} />
+		<ContextTabs slug={helpSlug.enum['organization-view']} />
 	</div>
 {/snippet}
 
