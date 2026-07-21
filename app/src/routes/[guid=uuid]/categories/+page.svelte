@@ -10,8 +10,15 @@
 	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import { predicates, type Predicate } from '$lib/models';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import {
+		type AnyPayload,
+		type Container,
+		isCategoryContainer,
+		isTermContainer,
+		predicates,
+		type Predicate
+	} from '$lib/models';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -19,11 +26,32 @@
 	let allContainers = $derived(
 		withOptimistic(
 			data.containers,
-			$lastCreatedContainer,
+			$lastCreatedContainers,
 			$lastDeletedContainers,
-			$lastUpdatedContainers
+			$lastUpdatedContainers,
+			isCategoryContainer
 		)
 	);
+
+	const hasParentTerm = (term: Container<AnyPayload>) =>
+		term.relation.some(
+			({ predicate, subject, object }) =>
+				predicate === predicates.enum['is-part-of'] && subject === term.guid && object !== term.guid
+		);
+
+	let allTerms = $derived(
+		withOptimistic(
+			[...data.terms, ...data.subterms],
+			$lastCreatedContainers,
+			$lastDeletedContainers,
+			$lastUpdatedContainers,
+			isTermContainer
+		)
+	);
+
+	let terms = $derived(allTerms.filter((term) => !hasParentTerm(term)));
+
+	let subterms = $derived(allTerms.filter(hasParentTerm));
 
 	const defaultRelationPredicates: Predicate[] = [
 		predicates.enum['is-equivalent-to'],
@@ -47,7 +75,7 @@
 			: defaultRelationPredicates
 	);
 
-	let combinedContainers = $derived([...allContainers, ...data.terms, ...data.subterms]);
+	let combinedContainers = $derived([...allContainers, ...allTerms]);
 
 	let relatedGuids = $derived.by(() => {
 		const target = page.url.searchParams.get('related-to');
@@ -115,11 +143,11 @@
 	);
 
 	let filteredTerms = $derived.by(() =>
-		relatedGuids ? data.terms.filter(({ guid }) => relatedGuids.has(guid)) : data.terms
+		relatedGuids ? terms.filter(({ guid }) => relatedGuids.has(guid)) : terms
 	);
 
 	let filteredSubterms = $derived.by(() =>
-		relatedGuids ? data.subterms.filter(({ guid }) => relatedGuids.has(guid)) : data.subterms
+		relatedGuids ? subterms.filter(({ guid }) => relatedGuids.has(guid)) : subterms
 	);
 </script>
 

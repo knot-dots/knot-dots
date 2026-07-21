@@ -27,7 +27,7 @@
 		isRelatedTo,
 		predicates
 	} from '$lib/models';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -35,7 +35,7 @@
 	let allContainers = $derived(
 		withOptimistic(
 			data.containers,
-			$lastCreatedContainer,
+			$lastCreatedContainers,
 			$lastDeletedContainers,
 			$lastUpdatedContainers
 		)

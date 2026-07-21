@@ -8,7 +8,7 @@ import {
 	type NewContainer,
 	newContainer
 } from '$lib/models';
-import { lastCreatedContainer, lastUpdatedContainers } from '$lib/stores';
+import { lastCreatedContainers, lastUpdatedContainers } from '$lib/stores';
 
 export default async function saveContainer(
 	container: Container<AnyPayload> | NewContainer,
@@ -46,7 +46,9 @@ export default async function saveContainer(
 					(map) => new Map([...map, [savedContainer.guid, savedContainer]])
 				);
 			} else {
-				lastCreatedContainer.set(savedContainer);
+				lastCreatedContainers.update(
+					(map) => new Map([...map, [savedContainer.guid, savedContainer]])
+				);
 			}
 		});
 	}
