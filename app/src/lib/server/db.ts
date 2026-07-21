@@ -100,7 +100,8 @@ export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
 			interceptors: [createResultParserInterceptor()],
-			maximumPoolSize: 50
+			maxPoolSize: 50,
+			tracing: true
 		});
 	}
 	return pool;
