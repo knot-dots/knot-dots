@@ -260,7 +260,9 @@ type Test = {
 	sort: string;
 };
 
-test.for([
+// These tests compare against Elasticsearch and rely on the sample data seeded by
+// the import; skip them where only a migrated database is available (e.g. in CI).
+test.skipIf(!process.env.ELASTICSEARCH_INDEX_ALIAS).for([
 	{
 		name: 'goal',
 		filters: { type: [payloadTypes.enum.goal] },

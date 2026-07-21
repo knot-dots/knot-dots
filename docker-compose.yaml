@@ -1,5 +1,7 @@
 services:
   app:
+    # Use the variable TEST_APP_IMAGE if provided, otherwise build locally
+    image: ${TEST_APP_IMAGE:-app-local}
     build:
       context: .
       dockerfile: app/Dockerfile
