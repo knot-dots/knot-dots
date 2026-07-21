@@ -298,14 +298,29 @@ async function inviteUser(
 	container: Container<AnyPayload>,
 	role: Predicate[] = []
 ) {
-	const inviteResponse = await context.request.post(`/user`, { data: { email, container } });
+	const containerResponse = await context.request.get(`/container/${container.guid}`);
+
+	const { user }: Container<AnyPayload> = await containerResponse.json();
+
+	const inviteResponse = await context.request.post(`/user`, {
+		data: { email, container: { ...container, user } }
+	});
+
+	const subject = inviteResponse.headers()['location'].split('/').at(-1);
+
 	if (role.length > 0) {
 		await context.request.post(`/container/${container.guid}/user`, {
-			data: role.map((r) => ({
-				object: container.guid,
-				predicate: r,
-				subject: inviteResponse.headers()['location'].split('/').at(-1)
-			}))
+			data: [
+				...user.filter(
+					(u) =>
+						u.predicate != predicates.enum['is-creator-of'] &&
+						!(u.subject == subject && role.includes(u.predicate))
+				),
+				...role.concat(predicates.enum['is-member-of']).map((r) => ({
+					predicate: r,
+					subject: inviteResponse.headers()['location'].split('/').at(-1)
+				}))
+			]
 		});
 	}
 }
@@ -487,6 +502,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
+			await inviteUser(adminContext, 'orla@example.org', testOrganization, [
+				predicates.enum['is-admin-of']
+			]);
 
 			await use(testOrganization);
 

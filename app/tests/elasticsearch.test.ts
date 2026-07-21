@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'elasticsearch' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test.describe('Optimistic frontend updates with Elasticsearch', () => {
 	test('created goal appears immediately on the board', async ({ dotsBoard, testOrganization }) => {

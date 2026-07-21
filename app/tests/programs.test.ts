@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'programs' });
 
 test.describe('Level board', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('create goals', async ({ dotsBoard, isMobile, testProgram }) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');

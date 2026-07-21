@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'measures' });
 
 test.describe('Measure monitoring', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('create goals and tasks', async ({
 		dotsBoard,
@@ -56,7 +56,7 @@ test.describe('Measure monitoring', () => {
 });
 
 test.describe('Measures section', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
 		await dotsBoard.goto(`/${testMeasure.organization}`);

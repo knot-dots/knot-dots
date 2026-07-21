@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'resource-table' });
 
 test.describe('Resource V2 Table', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('displays resource table on resource detail view', async ({ dotsBoard, testResourceV2 }) => {
 		// Navigate to resources catalog and open the resource

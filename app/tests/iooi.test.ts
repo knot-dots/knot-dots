@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'iooi' });
 
 test.describe('Goal IOOI Board', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('can navigate to goal IOOI board from overlay', async ({
 		dotsBoard,
@@ -255,7 +255,7 @@ test.describe('Goal IOOI Board', () => {
 });
 
 test.describe('Measure IOOI Board', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('can navigate to measure IOOI board from overlay', async ({
 		dotsBoard,
