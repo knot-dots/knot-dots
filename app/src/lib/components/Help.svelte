@@ -113,20 +113,24 @@
 	}
 
 	[role='tablist'] {
-		border: 1px solid var(--color-border-accent-subtle);
-		border-radius: 12px 12px;
-		background:
-			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
-			var(--color-background-accent-muted);
 		color: var(--color-text-accent-default);
 		display: flex;
 		flex: 1;
 		flex-direction: row;
 		gap: 0.5rem;
-		justify-content: center;
+		justify-content: flex-end;
 		margin: var(--tablist-margin);
 		padding: var(--tablist-padding);
 		z-index: 1;
+	}
+
+	[role='tablist']:has(+ [role='tabpanel']) {
+		border: 1px solid var(--color-border-accent-subtle);
+		border-radius: 12px;
+		background:
+			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
+			var(--color-background-accent-muted);
+		justify-content: center;
 	}
 
 	[role='tab'] {
@@ -181,11 +185,34 @@
 		width: calc(100% - 2 * var(--tablist-margin));
 	}
 
-	@layer visually-hidden {
-		@container (max-width: 48rem) {
-			.is-visually-hidden {
+	@container (max-width: 48rem) {
+		@layer visually-hidden {
+			[role='tablist']:has(+ [role='tabpanel']) [role='tab'] .is-visually-hidden {
 				all: revert-layer;
 			}
+		}
+
+		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab'] {
+			display: none;
+		}
+
+		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab']:first-child {
+			aspect-ratio: 1;
+			background-color: var(--color-white);
+			border: solid 1px var(--color-border-subtle);
+			border-radius: calc(infinity * 1px);
+			bottom: 0.75rem;
+			box-shadow: var(--shadow-xl);
+			color: var(--color-icon-accent-subtle);
+			display: flex;
+			place-content: center;
+			position: absolute;
+			right: 0.75rem;
+		}
+
+		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab']:first-child > :global(svg) {
+			height: 1.25rem;
+			width: 1.25rem;
 		}
 	}
 
@@ -195,6 +222,11 @@
 		}
 
 		[role='tablist'] {
+			background:
+				linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
+				var(--color-background-accent-muted);
+			border: 1px solid var(--color-border-accent-subtle);
+			border-radius: 12px;
 			flex: 0 0 auto;
 			flex-direction: column;
 			margin: auto 0;
