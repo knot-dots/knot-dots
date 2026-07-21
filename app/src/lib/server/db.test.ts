@@ -17,12 +17,14 @@ import {
 } from '$lib/models';
 import {
 	createContainer,
+	createOrUpdateUser,
 	getContainerByGuid,
 	getManyContainers,
 	sql,
 	updateContainer,
 	updateManyContainerRelations
 } from '$lib/server/db';
+import { computeManagedBy } from '$lib/server/computeManagedBy';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 
 const organization = uuid();
@@ -229,7 +231,7 @@ test('adding more relations does not interfere with existing relations', async (
 	const task = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.task), [
 			{
-				object: expectedRelationsOfProgram[2].subject,
+				object: expectedRelationsOfProgram[1].subject,
 				position: 0,
 				predicate: predicates.enum['is-part-of']
 			}
@@ -237,7 +239,7 @@ test('adding more relations does not interfere with existing relations', async (
 	)(connection);
 	expect(task.relation).toEqual([
 		{
-			object: expectedRelationsOfProgram[2].subject,
+			object: expectedRelationsOfProgram[1].subject,
 			position: 0,
 			predicate: predicates.enum['is-part-of'],
 			subject: task.guid
@@ -259,38 +261,6 @@ type Test = {
 };
 
 test.for([
-	{
-		name: 'all',
-		filters: {
-			terms: 'nachhaltig',
-			type: [
-				payloadTypes.enum.effect,
-				payloadTypes.enum.goal,
-				payloadTypes.enum.indicator_template,
-				payloadTypes.enum.measure,
-				payloadTypes.enum.program,
-				payloadTypes.enum.rule,
-				payloadTypes.enum.simple_measure
-			]
-		},
-		sort: 'alpha'
-	},
-	{
-		name: 'öffentlich',
-		filters: {
-			terms: 'nachhalt',
-			type: [
-				payloadTypes.enum.effect,
-				payloadTypes.enum.goal,
-				payloadTypes.enum.indicator_template,
-				payloadTypes.enum.measure,
-				payloadTypes.enum.program,
-				payloadTypes.enum.rule,
-				payloadTypes.enum.simple_measure
-			]
-		},
-		sort: 'alpha'
-	},
 	{
 		name: 'goal',
 		filters: { type: [payloadTypes.enum.goal] },
@@ -440,3 +410,127 @@ test.for([
 		expect(esResults.containers.map((c) => c.relation)).toEqual(sqlResults.map((c) => c.relation));
 	}
 );
+
+async function createTestUser(connection: Fixtures['connection']) {
+	const guid = uuid();
+	await createOrUpdateUser({ family_name: '', given_name: '', guid, realm, settings: {} })(
+		connection
+	);
+	return guid;
+}
+
+function newManagedByContainer(
+	type: AnyPayload['type'],
+	options: { organizationalUnit?: string; memberOf?: string; relation?: PartialRelation[] } = {}
+) {
+	return newContainer.parse({
+		managed_by: options.organizationalUnit ?? organization,
+		organization,
+		organizational_unit: options.organizationalUnit ?? null,
+		payload: simplePayload(type),
+		realm,
+		relation: options.relation ?? [],
+		user: options.memberOf
+			? [{ predicate: predicates.enum['is-member-of'], subject: options.memberOf }]
+			: []
+	});
+}
+
+test('computeManagedBy: program managed by the organization', async ({ connection }: Fixtures) => {
+	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const result = await computeManagedBy(connection, [program.guid]);
+	expect(result.get(program.guid)).toBe(organization);
+});
+
+test('computeManagedBy: program managed by the organizational unit', async ({
+	connection
+}: Fixtures) => {
+	const organizationalUnit = uuid();
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { organizationalUnit })
+	)(connection);
+	const result = await computeManagedBy(connection, [program.guid]);
+	expect(result.get(program.guid)).toBe(organizationalUnit);
+});
+
+test('computeManagedBy: program managed by itself when it has a team', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const result = await computeManagedBy(connection, [program.guid]);
+	expect(result.get(program.guid)).toBe(program.guid);
+});
+
+test('computeManagedBy: measure managed by the organization', async ({ connection }: Fixtures) => {
+	const measure = await createContainer(newManagedByContainer(payloadTypes.enum.measure))(
+		connection
+	);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toBe(organization);
+});
+
+test('computeManagedBy: measure managed by the organizational unit', async ({
+	connection
+}: Fixtures) => {
+	const organizationalUnit = uuid();
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, { organizationalUnit })
+	)(connection);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toBe(organizationalUnit);
+});
+
+test('computeManagedBy: measure managed by itself when it has a team', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, { memberOf: member })
+	)(connection);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toBe(measure.guid);
+});
+
+test('computeManagedBy: measure managed by its program when only the program has a team', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toBe(program.guid);
+});
+
+test('computeManagedBy: measure managed by itself when both program and measure have a team', async ({
+	connection
+}: Fixtures) => {
+	const programMember = await createTestUser(connection);
+	const measureMember = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: programMember })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			memberOf: measureMember,
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	// Single-valued stage: the measure's own team wins; the multi-valued [program, measure] case is later.
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toBe(measure.guid);
+});

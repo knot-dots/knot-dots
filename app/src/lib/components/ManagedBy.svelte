@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import fetchMembers from '$lib/client/fetchMembers';
 	import {
 		type AnyPayload,
 		type Container,
-		displayName,
 		getManagedBy,
-		isAdminOf,
-		isHeadOf
+		isMeasureContainer,
+		isProgramContainer
 	} from '$lib/models';
 
 	interface Props {
@@ -26,30 +24,21 @@
 		])
 	);
 
-	let managedByGuid = $derived(managedBy?.guid);
-
-	let teamPromise = $derived.by(() => {
-		if (managedByGuid) {
-			return fetchMembers(managedByGuid);
-		} else {
-			return Promise.resolve([]);
+	// The managed_by container is the team itself. Programs and measures are shown
+	// prefixed as "Team <title>"; organizations and organizational units by their
+	// plain name.
+	let teamName = $derived.by(() => {
+		if (!managedBy) {
+			return '';
 		}
+		if (isProgramContainer(managedBy) || isMeasureContainer(managedBy)) {
+			return $_('visibility.team', { values: { title: managedBy.payload.title } });
+		}
+		return 'name' in managedBy.payload ? managedBy.payload.name : '';
 	});
 </script>
 
 <div class="label">{$_('managed_by')}</div>
 <div class="value value--read-only">
-	{#await teamPromise}
-		&nbsp;
-	{:then members}
-		{@const headsOf = members
-			.filter((m) => managedBy && isHeadOf(m, managedBy))
-			.map((m) => displayName(m))
-			.join(', ')}
-		{@const adminsOf = members
-			.filter((m) => managedBy && isAdminOf(m, managedBy))
-			.map((m) => displayName(m))
-			.join(', ')}
-		{#if headsOf}{headsOf}{:else if adminsOf}{adminsOf}{:else}&nbsp;{/if}
-	{/await}
+	{#if teamName}{teamName}{:else}&nbsp;{/if}
 </div>

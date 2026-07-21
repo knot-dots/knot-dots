@@ -2040,6 +2040,9 @@ export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) 
 	return z.object({
 		guid: z.uuid(),
 		managed_by: z.uuid(),
+		// Observational, read-time computed counterpart of managed_by; only present
+		// when the ComputedManagedBy feature flag is enabled. See computeManagedBy.ts.
+		computed_managed_by: z.uuid().optional(),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
