@@ -779,6 +779,7 @@
 	"sort": "Sort",
 	"sort_alphabetically": "Alphabetically",
 	"sort_date": "Date",
+	"sort_fulfillment_date": "Fulfillment date",
 	"sort_modified": "Last modified",
 	"sort_relevance": "Relevance",
 	"start_date": "start",
