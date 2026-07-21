@@ -10,7 +10,7 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { type Container, payloadTypes, type RulePayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -47,7 +47,7 @@
 	let containers = $derived(
 		withOptimistic(
 			list.items,
-			$lastCreatedContainer,
+			$lastCreatedContainers,
 			$lastDeletedContainers,
 			$lastUpdatedContainers
 		)

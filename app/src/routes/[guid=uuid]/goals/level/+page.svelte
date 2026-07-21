@@ -10,7 +10,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { type Container, type GoalPayload, titleForGoalCollection } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { createGoalLevelQuery } from './query';
 	import type { PageProps } from './$types';
 
@@ -20,7 +20,7 @@
 		columnForItem: ({ payload }) => String(payload.hierarchyLevel),
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
-		created: () => $lastCreatedContainer,
+		created: () => $lastCreatedContainers,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
 			const result = await fetchContainerPage<Container<GoalPayload>>({
