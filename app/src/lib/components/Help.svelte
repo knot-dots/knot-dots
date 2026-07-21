@@ -1,3 +1,7 @@
+<script lang="ts" module>
+	let width = $state();
+</script>
+
 <script lang="ts">
 	import { Tabs } from 'melt/builders';
 	import { getContext } from 'svelte';
@@ -25,7 +29,28 @@
 	});
 
 	const overlay = getContext('overlay');
+
+	let initialWidth = $state(0);
+
+	let offset = $state(0);
+
+	function startResize(event: MouseEvent & { currentTarget: HTMLElement }) {
+		event.preventDefault();
+		offset = event.pageX;
+		initialWidth = event.currentTarget.parentElement?.offsetWidth ?? 0;
+		window.addEventListener('mousemove', resize);
+	}
+
+	function stopResize() {
+		window.removeEventListener('mousemove', resize);
+	}
+
+	function resize(event: MouseEvent) {
+		width = offset - event.pageX + initialWidth;
+	}
 </script>
+
+<svelte:window onmouseup={stopResize} />
 
 {#if overlay || !$overlayStore}
 	<aside class="module-context">
@@ -47,7 +72,8 @@
 		</div>
 
 		{#if tabs.value}
-			<section {...tabs.getContent(tabs.value)}>
+			<section {...tabs.getContent(tabs.value)} bind:offsetWidth={width} style:width="{width}px">
+				<div class="resize-handle" onmousedown={startResize} role="separator"></div>
 				{#if tabs.value == 'help'}
 					<ContextHelp {slug}>
 						{#snippet children(containers)}
@@ -149,6 +175,8 @@
 		flex-direction: column;
 		height: calc(100% - var(--tablist-height) - 3 * var(--tablist-margin) - 2px);
 		margin: var(--tablist-margin);
+		max-width: calc(100% - 2 * var(--tablist-margin));
+		min-width: calc(100% - 2 * var(--tablist-margin));
 		position: absolute;
 		width: calc(100% - 2 * var(--tablist-margin));
 	}
@@ -189,6 +217,8 @@
 			right: 2.75rem;
 			height: calc(100% - 2 * var(--tablist-margin));
 			margin: var(--tablist-margin) 0;
+			max-width: 80%;
+			min-width: 23.75rem;
 			width: 23.75rem;
 		}
 	}
@@ -197,13 +227,38 @@
 		aside {
 			flex: 0 1;
 			flex-direction: row-reverse;
+			max-width: 80%;
+			position: relative;
 		}
 
 		[role='tabpanel'] {
 			flex-direction: column;
 			height: 100%;
 			margin: 0;
+			max-width: none;
 			position: static;
+		}
+	}
+
+	.resize-handle {
+		background-image: url(/src/lib/assets/resize-handle.svg);
+		background-position: 2px center;
+		background-repeat: no-repeat;
+		background-clip: border-box;
+		border-right: solid 2px transparent;
+		cursor: ew-resize;
+		display: none;
+		height: 100%;
+		left: -0.75rem;
+		min-width: 0;
+		position: absolute;
+		width: 0.75rem;
+		z-index: 1;
+	}
+
+	@container (min-width: 48rem) {
+		.resize-handle {
+			display: block;
 		}
 	}
 </style>
