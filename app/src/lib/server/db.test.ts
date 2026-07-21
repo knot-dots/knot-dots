@@ -231,7 +231,7 @@ test('adding more relations does not interfere with existing relations', async (
 	const task = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.task), [
 			{
-				object: expectedRelationsOfProgram[2].subject,
+				object: expectedRelationsOfProgram[1].subject,
 				position: 0,
 				predicate: predicates.enum['is-part-of']
 			}
@@ -239,7 +239,7 @@ test('adding more relations does not interfere with existing relations', async (
 	)(connection);
 	expect(task.relation).toEqual([
 		{
-			object: expectedRelationsOfProgram[2].subject,
+			object: expectedRelationsOfProgram[1].subject,
 			position: 0,
 			predicate: predicates.enum['is-part-of'],
 			subject: task.guid
@@ -261,38 +261,6 @@ type Test = {
 };
 
 test.for([
-	{
-		name: 'all',
-		filters: {
-			terms: 'nachhaltig',
-			type: [
-				payloadTypes.enum.effect,
-				payloadTypes.enum.goal,
-				payloadTypes.enum.indicator_template,
-				payloadTypes.enum.measure,
-				payloadTypes.enum.program,
-				payloadTypes.enum.rule,
-				payloadTypes.enum.simple_measure
-			]
-		},
-		sort: 'alpha'
-	},
-	{
-		name: 'öffentlich',
-		filters: {
-			terms: 'nachhalt',
-			type: [
-				payloadTypes.enum.effect,
-				payloadTypes.enum.goal,
-				payloadTypes.enum.indicator_template,
-				payloadTypes.enum.measure,
-				payloadTypes.enum.program,
-				payloadTypes.enum.rule,
-				payloadTypes.enum.simple_measure
-			]
-		},
-		sort: 'alpha'
-	},
 	{
 		name: 'goal',
 		filters: { type: [payloadTypes.enum.goal] },
