@@ -108,10 +108,9 @@ export interface KeycloakUser {
  * assigns realm roles. Idempotent: an existing user with the same email is
  * updated to match the requested profile and password.
  */
-export async function createUser(apiRequest: APIRequest, newUser: KeycloakUser) {
-	// Obtain an admin token and build a pre-authenticated request context.
+// Obtain an admin token and build a pre-authenticated request context.
+async function newKeycloakAdminContext(apiRequest: APIRequest): Promise<APIRequestContext> {
 	const tokenContext = await apiRequest.newContext({ baseURL: KC_URL });
-	let keycloakContext: APIRequestContext;
 	try {
 		const tokenResponse = await tokenContext.post('/realms/master/protocol/openid-connect/token', {
 			form: {
@@ -127,13 +126,34 @@ export async function createUser(apiRequest: APIRequest, newUser: KeycloakUser) 
 			);
 		}
 		const { access_token } = (await tokenResponse.json()) as { access_token: string };
-		keycloakContext = await apiRequest.newContext({
+		return apiRequest.newContext({
 			baseURL: KC_URL,
 			extraHTTPHeaders: { Authorization: `Bearer ${access_token}` }
 		});
 	} finally {
 		await tokenContext.dispose();
 	}
+}
+
+export async function findKeycloakUserId(apiRequest: APIRequest, email: string) {
+	const keycloakContext = await newKeycloakAdminContext(apiRequest);
+	try {
+		const response = await keycloakContext.get(`/admin/realms/${KC_REALM}/users`, {
+			params: { email, exact: 'true' }
+		});
+		if (!response.ok()) {
+			throw new Error(
+				`Failed to look up Keycloak user ${email}. Keycloak responded with ${response.status()}.`
+			);
+		}
+		return ((await response.json()) as Array<{ id: string }>)[0]?.id;
+	} finally {
+		await keycloakContext.dispose();
+	}
+}
+
+export async function createUser(apiRequest: APIRequest, newUser: KeycloakUser) {
+	const keycloakContext = await newKeycloakAdminContext(apiRequest);
 
 	try {
 		const representation = {
@@ -310,6 +330,65 @@ async function inviteUser(
 	}
 }
 
+export const orgAdminEmail = 'orgadmin@knotdots.net';
+
+// Unlike inviteUser, this preserves the container's existing role relations:
+// POST /container/{guid}/user replaces the entire user relation list, so the
+// new roles are merged with the current relations before posting. It is also
+// idempotent, i.e. safe to call on persistent containers such as the default
+// organization, and tolerates parallel workers granting the same roles.
+async function grantRoles(
+	context: BrowserContext,
+	apiRequest: APIRequest,
+	email: string,
+	container: Container<AnyPayload>,
+	roles: Predicate[]
+) {
+	const subject = await findKeycloakUserId(apiRequest, email);
+	if (!subject) {
+		throw new Error(`No Keycloak user with email ${email}`);
+	}
+
+	const fetchContainer = async () => {
+		const response = await context.request.get(`/container/${container.guid}`);
+		return (await response.json()) as Container<AnyPayload>;
+	};
+
+	const current = await fetchContainer();
+	let relations = current.user;
+
+	// Inviting a user who is already a member fails, so only invite if they lack
+	// any relation to the container. A parallel worker may have invited them in
+	// the meantime, in which case the invite fails but the membership exists.
+	// The invite endpoint takes the user relations from the posted container, so
+	// pass the freshly fetched one to preserve relations added since the caller
+	// obtained its copy (e.g. Bob's membership on the test organization).
+	if (!relations.some((u) => u.subject == subject)) {
+		const inviteResponse = await context.request.post(`/user`, {
+			data: { email, container: current }
+		});
+		relations = (await fetchContainer()).user;
+		if (!inviteResponse.ok() && !relations.some((u) => u.subject == subject)) {
+			throw new Error(`Failed to invite ${email} to container ${container.guid}`);
+		}
+	}
+
+	if (roles.every((role) => relations.some((u) => u.subject == subject && u.predicate == role))) {
+		return;
+	}
+
+	await context.request.post(`/container/${container.guid}/user`, {
+		data: [
+			...relations.filter(
+				(u) =>
+					u.predicate != predicates.enum['is-creator-of'] &&
+					!(u.subject == subject && roles.includes(u.predicate))
+			),
+			...roles.map((predicate) => ({ object: container.guid, predicate, subject }))
+		]
+	});
+}
+
 export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	suiteId: ['not-specified', { scope: 'worker', option: true }],
 	adminContext: [
@@ -370,11 +449,17 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(new AllTable(page));
 	},
 	defaultOrganization: [
-		async ({ adminContext }, use) => {
+		async ({ adminContext, playwright }, use) => {
 			const response = await adminContext.request.get('/', { maxRedirects: 0 });
 			const guid = response.headers()['location'].split('/')[1];
 			const organizationResponse = await adminContext.request.get(`/container/${guid}`);
 			const defaultOrganization: Container<OrganizationPayload> = await organizationResponse.json();
+
+			// Make the regular org admin an admin of the default organization so tests
+			// operating there can run without sysadmin privileges.
+			await grantRoles(adminContext, playwright.request, orgAdminEmail, defaultOrganization, [
+				predicates.enum['is-admin-of']
+			]);
 
 			await use(defaultOrganization);
 		},
@@ -471,7 +556,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await deleteContainer(adminContext, category);
 	},
 	testOrganization: [
-		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
+		async ({ adminContext, defaultOrganization, playwright }, use, workerInfo) => {
 			const newOrganization = containerOfType(
 				payloadTypes.enum.organization,
 				defaultOrganization.guid,
@@ -487,6 +572,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				}
 			});
 			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
+			await grantRoles(adminContext, playwright.request, orgAdminEmail, testOrganization, [
+				predicates.enum['is-admin-of']
+			]);
 
 			await use(testOrganization);
 
