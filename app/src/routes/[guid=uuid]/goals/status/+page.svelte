@@ -5,8 +5,8 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { type Container, type GoalPayload, type Status } from '$lib/models';
@@ -69,5 +69,5 @@
 			</BoardColumn>
 		{/each}
 	</Board>
-	<Help slug="goals-status" />
+	<ContextTabs slug="goals-status" />
 </GoalsPage>

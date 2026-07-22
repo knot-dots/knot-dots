@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Catalog from '$lib/components/Catalog.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -21,5 +21,5 @@
 
 <TasksPage data={{ ...data, containers }} filterBarInitiallyOpen>
 	<Catalog {containers} payloadType={[payloadTypes.enum.task]} />
-	<Help slug="tasks-catalog" />
+	<ContextTabs slug="tasks-catalog" />
 </TasksPage>

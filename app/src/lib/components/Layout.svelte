@@ -9,7 +9,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { overlay } from '$lib/stores';
+	import { overlay, overlayWidth } from '$lib/stores';
 
 	interface Props {
 		bulkActions?: string[];
@@ -50,7 +50,7 @@
 	});
 </script>
 
-<div class="app-wrapper">
+<div class="app-wrapper" style="--overlay-width-factor: {$overlayWidth}">
 	<nav class={{ collapsed: sidebarExpanded === false, expanded: sidebarExpanded === true }}>
 		{#if sidebar}
 			{@render sidebar()}
@@ -104,11 +104,16 @@
 
 	.main-with-header-wrapper {
 		background-color: white;
+		container: main / inline-size;
 		display: flex;
 		flex-direction: column;
-		flex: 1;
+		flex: 1 1;
 		min-width: 0;
 		padding: 0;
+	}
+
+	.main-with-header-wrapper:has(+ :global(.overlay)) main {
+		--overlay-compensation-margin: calc(100vw * var(--overlay-width-factor));
 	}
 
 	nav {
@@ -138,11 +143,16 @@
 		flex: 1;
 		flex-direction: column;
 		min-height: 0;
+		min-width: 100vw;
+		overflow-x: hidden;
 		overflow-y: auto;
+		position: relative;
 	}
 
-	main > :global(:is(:not(aside))) {
-		min-width: calc(100vw - var(--sidebar-max-width));
+	@container (min-width: 48rem) {
+		main {
+			flex-direction: row;
+		}
 	}
 
 	@media (min-width: 60rem) {
@@ -152,6 +162,10 @@
 
 		nav:not(.collapsed) {
 			display: flex;
+		}
+
+		nav:not(.collapsed) + .main-with-header-wrapper main {
+			min-width: calc(100vw - var(--sidebar-max-width));
 		}
 	}
 </style>

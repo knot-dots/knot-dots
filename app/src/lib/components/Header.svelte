@@ -466,11 +466,11 @@
 		--dropdown-button-padding: 0.25rem 0.5rem;
 
 		color: var(--color-text-default);
-		container-type: inline-size;
 		display: flex;
 		flex-shrink: 0;
 		font-size: 0.875rem;
 		gap: 0.5rem;
+		height: var(--header-height);
 		padding: 0.375rem 0.75rem;
 		position: relative;
 		z-index: 3;

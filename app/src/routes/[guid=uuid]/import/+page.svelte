@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { displayName } from '$lib/models';
 	import type { PageProps } from './$types';
@@ -46,6 +46,6 @@
 			</form>
 		</div>
 
-		<Help slug="import" />
+		<ContextTabs slug="import" />
 	{/snippet}
 </Layout>

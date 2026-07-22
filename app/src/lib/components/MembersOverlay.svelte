@@ -1,6 +1,6 @@
 <script lang="ts">
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import type { AnyPayload, Container, User } from '$lib/models';
 
@@ -13,11 +13,13 @@
 </script>
 
 <Header workspaceOptions={[]} />
-<div class="content-details">
+
+<div class="content">
 	<div class="details">
 		<div class="details-section">
 			<Members {container} {users} />
 		</div>
 	</div>
+
+	<ContextTabs slug="members" />
 </div>
-<Help slug="members" />

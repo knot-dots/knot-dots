@@ -6,8 +6,8 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
@@ -82,6 +82,6 @@
 			{/each}
 		</Board>
 
-		<Help slug="programs-level" />
+		<ContextTabs slug="programs-level" />
 	{/snippet}
 </Layout>

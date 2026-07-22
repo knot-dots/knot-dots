@@ -4,7 +4,7 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import HelpPage from '$lib/components/HelpPage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import { type Container, type HelpPayload, payloadTypes } from '$lib/models';
@@ -64,5 +64,5 @@
 			/>
 		{/snippet}
 	</Catalog>
-	<Help slug="help-catalog" />
+	<ContextTabs slug="help-catalog" />
 </HelpPage>

@@ -3,8 +3,8 @@
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import {
@@ -67,6 +67,6 @@
 				.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
 		/>
 
-		<Help slug="tasks-status" />
+		<ContextTabs slug="tasks-status" />
 	{/snippet}
 </Layout>

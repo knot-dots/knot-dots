@@ -1,6 +1,6 @@
 <script lang="ts">
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import {
@@ -38,6 +38,6 @@
 			showMeasures
 		/>
 
-		<Help slug="measures-monitoring" />
+		<ContextTabs slug="measures-monitoring" />
 	{/snippet}
 </Layout>

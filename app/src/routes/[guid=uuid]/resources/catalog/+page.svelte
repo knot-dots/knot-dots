@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Catalog from '$lib/components/Catalog.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import ResourcesPage from '$lib/components/ResourcesPage.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -21,5 +21,5 @@
 
 <ResourcesPage data={{ ...data, containers }}>
 	<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} />
-	<Help slug="resources-catalog" />
+	<ContextTabs slug="resources-catalog" />
 </ResourcesPage>

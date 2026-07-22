@@ -8,8 +8,8 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import saveContainer from '$lib/client/saveContainer';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import IndicatorTemplateCard from '$lib/components/IndicatorTemplateCard.svelte';
 	import {
 		type ActualDataPayload,
@@ -169,7 +169,7 @@
 	</div>
 </div>
 
-<Help slug="indicator-catalog" />
+<ContextTabs slug="indicator-catalog" />
 
 <style>
 	ul {

@@ -13,8 +13,8 @@
 	import { page } from '$app/state';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import { getToastContext } from '$lib/contexts/toast';
@@ -235,7 +235,7 @@
 		{/if}
 	{/snippet}
 	<Table {actualDataContainers} {columns} {rows} />
-	<Help slug="indicators-table" />
+	<ContextTabs slug="indicators-table" />
 </IndicatorsPage>
 
 {#if createFeatureDecisions(page.data.features).useImportFromCsv()}

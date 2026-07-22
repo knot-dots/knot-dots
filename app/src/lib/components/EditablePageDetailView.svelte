@@ -8,11 +8,11 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
@@ -83,20 +83,19 @@
 
 {#snippet main()}
 	<div class="content-details">
-		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-			<EditableCoverSection
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-			/>
-		</form>
-		<article>
-			<div
-				class="details stage stage--{container.payload.color
-					? backgroundColors.get(container.payload.color)
-					: 'white'}"
-			>
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+		<article class="details">
+			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+				<EditableCoverSection
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
+
+				<div
+					class="stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
 					<div class="stage--buttons details-section">
 						<CoverUpload
 							editable={$applicationState.containerDetailView.editable &&
@@ -112,6 +111,7 @@
 								$ability.can('update', container)}
 						/>
 					</div>
+
 					<header class="details-section">
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 							<h1
@@ -155,21 +155,23 @@
 							bind:value={container.payload.body}
 						/>
 					{/key}
-				</form>
-			</div>
+				</div>
+			</form>
 
-			<div class="details">
-				<Sections bind:container {relatedContainers} />
-			</div>
+			<Sections bind:container {relatedContainers} />
 		</article>
-	</div>
 
-	<Help slug={helpSlug.enum['page-view']} />
+		<ContextTabs slug={helpSlug.enum['page-view']} />
+	</div>
 {/snippet}
 
 {@render layout(header, main)}
 
 <style>
+	.details {
+		padding-top: 0;
+	}
+
 	header {
 		align-items: center;
 		display: flex;
@@ -195,14 +197,11 @@
 	}
 
 	.stage {
+		margin-bottom: 4rem;
 		padding-bottom: 0;
 	}
 
 	.stage:not(.stage--white) {
 		padding-bottom: 2rem;
-	}
-
-	.stage + .details {
-		padding-top: 4rem;
 	}
 </style>

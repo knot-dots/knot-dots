@@ -7,8 +7,8 @@
 	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -463,6 +463,7 @@
 </script>
 
 <Header workspaceOptions={[]} />
+
 <div class="content-details">
 	<div class="details">
 		<p class="details-section">
@@ -523,6 +524,8 @@
 			</div>
 		{/each}
 	</div>
+
+	<ContextTabs slug="relations" />
 </div>
 
 <footer class="content-footer bottom-actions-bar">
@@ -533,8 +536,6 @@
 		</a>
 	</div>
 </footer>
-
-<Help slug="relations" />
 
 <style>
 	.drop-zone-wrapper {

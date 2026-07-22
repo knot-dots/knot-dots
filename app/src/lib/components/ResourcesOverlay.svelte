@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Catalog from '$lib/components/Catalog.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import { payloadTypes, type Container } from '$lib/models';
 
 	interface Props {
@@ -13,6 +13,8 @@
 
 <Header search />
 
-<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
+<div class="content">
+	<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
 
-<Help slug="resources-catalog" />
+	<ContextTabs slug="resources-catalog" />
+</div>

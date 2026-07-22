@@ -1,6 +1,6 @@
 <script lang="ts">
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
 	import { computeFacetCount, type Container, payloadTypes, type TeaserPayload } from '$lib/models';
@@ -27,21 +27,14 @@
 
 <Header {facets} search />
 
-<div class="content-details masked-overflow">
+<div class="content-details">
 	<div class="details">
 		<Wall items={containers} addItem={() => {}} itemSnippet={teaserSnippet} />
 	</div>
+
+	<ContextTabs slug="teaser-view" />
 </div>
 
 {#snippet teaserSnippet(item: Container)}
 	<TeaserCard container={item as Container<TeaserPayload>} editable={false} />
 {/snippet}
-
-<Help slug="teaser-view" />
-
-<style>
-	.content-details {
-		flex: 1;
-		padding: 1rem;
-	}
-</style>
