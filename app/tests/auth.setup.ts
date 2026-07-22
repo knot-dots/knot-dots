@@ -24,10 +24,10 @@ const persons: Person[] = [
 		file_name: 'admin'
 	},
 	{
-		name: 'Bob Builder',
+		name: 'Bob Bow',
 		firstName: 'Bob',
-		lastName: 'Builder',
-		mail: 'builderbob@bobby.com',
+		lastName: 'Bow',
+		mail: 'bob@example.org',
 		passw: 'schnabeltasse',
 		file_name: 'bob',
 		provision: true,
