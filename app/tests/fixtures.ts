@@ -390,12 +390,6 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			const organizationResponse = await adminContext.request.get(`/container/${guid}`);
 			const defaultOrganization: Container<OrganizationPayload> = await organizationResponse.json();
 
-			// Make the regular org admin an admin of the default organization so tests
-			// operating there can run without sysadmin privileges.
-			await inviteUser(adminContext, orgAdminEmail, defaultOrganization, [
-				predicates.enum['is-admin-of']
-			]);
-
 			await use(defaultOrganization);
 		},
 		{ auto: true, scope: 'worker' }
