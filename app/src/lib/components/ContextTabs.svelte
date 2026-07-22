@@ -115,6 +115,7 @@
 		max-height: calc(100% - 2 * var(--margin));
 		position: absolute;
 		width: calc(100% - 2 * var(--margin));
+		z-index: 1;
 	}
 
 	[role='tablist'] {
