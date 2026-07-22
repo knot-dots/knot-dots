@@ -74,16 +74,14 @@
 					bind:value={container.payload.body}
 				/>
 			{/key}
+
+			<footer class="footer-action-bar">
+				<CreateAnotherButton {container} {relatedContainers} />
+				<CreateCopyButton {container} />
+				<DeleteButton {container} {relatedContainers} />
+			</footer>
 		{/snippet}
 	</EditableContainerDetailView>
-
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			<CreateAnotherButton {container} {relatedContainers} />
-			<CreateCopyButton {container} />
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
 {/snippet}
 
 {@render layout(header, main)}

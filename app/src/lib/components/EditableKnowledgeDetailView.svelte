@@ -84,16 +84,14 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
+
+			<footer class="footer-action-bar">
+				<RelationButton {container} />
+				<CreateCopyButton {container} />
+				<DeleteButton {container} {relatedContainers} />
+			</footer>
 		{/snippet}
 	</EditableContainerDetailView>
-
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			<RelationButton {container} />
-			<CreateCopyButton {container} />
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
 {/snippet}
 
 {@render layout(header, main)}

@@ -91,15 +91,13 @@
 				<PrinterIcon />
 				<span>{$_('print')}</span>
 			</button>
+
+			<footer class="footer-action-bar">
+				<CreateCopyButton {container} />
+				<DeleteButton {container} {relatedContainers} />
+			</footer>
 		{/snippet}
 	</EditableContainerDetailView>
-
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			<CreateCopyButton {container} />
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
 {/snippet}
 
 {@render layout(header, main)}

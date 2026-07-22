@@ -75,14 +75,12 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
+
+			<footer class="footer-action-bar">
+				<DeleteButton {container} {relatedContainers} />
+			</footer>
 		{/snippet}
 	</EditableContainerDetailView>
-
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
 {/snippet}
 
 {#if layout}

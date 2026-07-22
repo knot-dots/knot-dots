@@ -53,7 +53,7 @@
 		min-height: 100vh;
 	}
 
-	.embed-main :global(.bottom-actions-bar),
+	.embed-main :global(.footer-action-bar),
 	.embed-main :global(.stage--buttons),
 	.embed-main :global(.action-button),
 	.embed-main :global(.print-button),

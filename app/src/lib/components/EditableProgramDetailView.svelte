@@ -285,6 +285,18 @@
 						{/if}
 					{/each}
 				</div>
+
+				<footer class="footer-action-bar">
+					<RelationButton {container} />
+					<CreateAnotherButton {container} {relatedContainers} />
+					<CreateCopyButton {container} />
+					{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
+						<KnowledgeAIButton {container} />
+					{:else if createFeatureDecisions(page.data.features).useOpenAI()}
+						<AskAIButton {container} />
+					{/if}
+					<DeleteButton {container} {relatedContainers} />
+				</footer>
 			{/snippet}
 		</EditableContainerDetailView>
 	{:else if viewMode === 'view_mode.table'}
@@ -337,20 +349,6 @@
 			</div>
 		</div>
 	{/if}
-
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			<RelationButton {container} />
-			<CreateAnotherButton {container} {relatedContainers} />
-			<CreateCopyButton {container} />
-			{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
-				<KnowledgeAIButton {container} />
-			{:else if createFeatureDecisions(page.data.features).useOpenAI()}
-				<AskAIButton {container} />
-			{/if}
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
 {/snippet}
 
 {@render layout(header, main)}
