@@ -24,10 +24,10 @@ const persons: Person[] = [
 		file_name: 'admin'
 	},
 	{
-		name: 'Bob Builder',
+		name: 'Bob Bow',
 		firstName: 'Bob',
 		lastName: 'Builder',
-		mail: 'builderbob@bobby.com',
+		mail: 'bob@example.org',
 		passw: 'schnabeltasse',
 		file_name: 'bob',
 		provision: true,
@@ -37,10 +37,10 @@ const persons: Person[] = [
 		// A regular organization admin without the sysadmin realm role. Tests should
 		// prefer this identity over Ada Adagio so that they exercise the scoped
 		// permission checks instead of the unconditional sysadmin branch.
-		name: 'Orla Orgadmin',
+		name: 'Orla Orchestra',
 		firstName: 'Orla',
-		lastName: 'Orgadmin',
-		mail: 'orgadmin@knotdots.net',
+		lastName: 'Orchestra',
+		mail: 'orla@example.org',
 		passw: 'milchkaennchen',
 		file_name: 'orgadmin',
 		provision: true,
