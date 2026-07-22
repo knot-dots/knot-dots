@@ -58,7 +58,6 @@ type MyFixtures = {
 type MyWorkerFixtures = {
 	suiteId: string;
 	adminContext: BrowserContext;
-	bobContext: BrowserContext;
 	defaultOrganization: Container<OrganizationPayload>;
 	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testOrganization: Container<OrganizationPayload>;
@@ -336,18 +335,6 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			});
 
 			await use(adminContext);
-		},
-		{ scope: 'worker' }
-	],
-	bobContext: [
-		async ({ browser, suiteId }, use, workerInfo) => {
-			void suiteId; // declares dependency to force a new worker per test file
-			const bobContext = await browser.newContext({
-				baseURL: workerInfo.project.use.baseURL,
-				storageState: 'tests/.auth/bob.json'
-			});
-
-			await use(bobContext);
 		},
 		{ scope: 'worker' }
 	],
