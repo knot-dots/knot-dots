@@ -56,10 +56,7 @@ test.describe('Measure monitoring', () => {
 });
 
 test.describe('Measures section', () => {
-	// These tests are not about managed_by and are timing-sensitive (the overlay
-	// does not always reflect a freshly created container under parallel load,
-	// regardless of identity), so they keep running as sysadmin for now.
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
 		await dotsBoard.goto(`/${testMeasure.organization}`);

@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'tasks' });
 
 test.describe('Task status board', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('task status can be changed via drag-and-drop', async ({
 		isMobile,
@@ -40,7 +40,7 @@ test.describe('Task status board', () => {
 });
 
 test.describe('Subtask creation', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('subtask can be created and persists', async ({ taskStatusBoard, testTask }) => {
 		await taskStatusBoard.goto(`/${testTask.organization}`);

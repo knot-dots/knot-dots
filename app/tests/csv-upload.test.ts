@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'csv-upload' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test('upload CSV creates indicators', async ({ page, testOrganization }) => {
 	// Navigate to the indicators table page

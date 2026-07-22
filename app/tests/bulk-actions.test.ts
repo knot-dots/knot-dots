@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'bulk-actions' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test('selecting objects for bulk actions in workspace', async ({
 	dotsBoard,

@@ -8,7 +8,7 @@ import {
 } from '$lib/models';
 
 test.use({ suiteId: 'rules-catalog-overlay' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test.describe('Rules catalog overlay', () => {
 	test('opens and lists rules', async ({ adminContext, dotsBoard, testGoal }) => {

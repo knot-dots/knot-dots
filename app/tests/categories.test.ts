@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'categories' });
 
 test.describe('Categories', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('shows four default categories', async ({ defaultOrganization, page }) => {
 		await page.goto(`/${defaultOrganization.guid}/categories`);

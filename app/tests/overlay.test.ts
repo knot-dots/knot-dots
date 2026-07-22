@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'overlay' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test('objects can be edited sequentially', async ({ dotsBoard, testOrganization }) => {
 	await dotsBoard.goto(`/${testOrganization.guid}`);
@@ -60,7 +60,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 });
 
 test.describe('Full-screen', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('switch between full-screen and overlay', async ({ dotsBoard, testProgram }) => {
 		await dotsBoard.goto(`/${testProgram.organization}`);

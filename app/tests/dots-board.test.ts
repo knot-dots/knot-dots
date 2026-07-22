@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'dots-board' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test('goal columns are based on hierarchy', async ({ dotsBoard, testOrganization }) => {
 	test.skip(
