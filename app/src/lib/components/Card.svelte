@@ -20,9 +20,12 @@
 		findAncestors,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
+		isContainerWithBody,
+		isContainerWithDescription,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isContainerWithProgress,
+		isContainerWithSummary,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorTemplateContainer,
@@ -358,7 +361,7 @@
 			</p>
 		{:else if 'image' in container.payload && container.payload.image}
 			<img alt={$_('cover_image')} src={transformFileURL(container.payload.image)} />
-		{:else if 'summary' in container.payload || ('description' in container.payload && !isTaskContainer(container))}
+		{:else if isContainerWithSummary(container) || ((isContainerWithDescription(container) || isContainerWithBody(container)) && !isTaskContainer(container))}
 			<Summary {container} />
 		{/if}
 	</div>
