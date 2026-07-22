@@ -22,7 +22,7 @@ const rolePredicates = [
 ];
 
 /**
- * Computes the single-valued `computed_managed_by` for the given containers.
+ * Computes the `computed_managed_by` values for the given containers.
  *
  * This is the observational counterpart to the stored `managed_by` column: it
  * reproduces the value `managed_by` is supposed to have, derived at read time from
@@ -31,12 +31,13 @@ const rolePredicates = [
  *   2. the guid of the nearest ancestor (along the is-part-of chain) that has a team, else
  *   3. its `organizational_unit ?? organization`.
  *
- * It is single-valued for now; multi-valued managed_by is a later step.
+ * The result is an array by type, but currently carries exactly one value;
+ * collecting multiple teams along the hierarchy is a later step.
  */
 export async function computeManagedBy(
 	connection: DatabaseConnection,
 	guids: string[]
-): Promise<Map<string, string>> {
+): Promise<Map<string, string[]>> {
 	if (guids.length === 0) {
 		return new Map();
 	}
@@ -83,7 +84,7 @@ export async function computeManagedBy(
 		LEFT JOIN nearest n ON n.root = roots.root
 	`);
 
-	return new Map(rows.map((r) => [r.guid, r.computed_managed_by]));
+	return new Map(rows.map((r) => [r.guid, [r.computed_managed_by]]));
 }
 
 type ManagedByComparable = {
@@ -92,14 +93,14 @@ type ManagedByComparable = {
 	organization: string;
 	organizational_unit: string | null;
 	payload: { type: string };
-	computed_managed_by?: string;
+	computed_managed_by?: string[];
 };
 
 /**
  * Behind the `ComputedManagedBy` feature flag, computes `computed_managed_by` for the
  * given containers, attaches it to each container (surfaced in the JSON representation)
- * and logs a discrepancy whenever it differs from the stored `managed_by`. When the flag
- * is off it is a no-op, so there is no added cost on the read path.
+ * and logs a discrepancy whenever it does not contain the stored `managed_by`. When the
+ * flag is off it is a no-op, so there is no added cost on the read path.
  *
  * The stored `managed_by` continues to drive all behaviour; this is observation only.
  */
@@ -122,7 +123,7 @@ export async function attachComputedManagedBy<T extends ManagedByComparable>(
 			continue;
 		}
 		container.computed_managed_by = value;
-		if (value !== container.managed_by) {
+		if (!value.includes(container.managed_by)) {
 			log.warn(
 				{
 					guid: container.guid,

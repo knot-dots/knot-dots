@@ -443,7 +443,7 @@ test('computeManagedBy: program managed by the organization', async ({ connectio
 		connection
 	);
 	const result = await computeManagedBy(connection, [program.guid]);
-	expect(result.get(program.guid)).toBe(organization);
+	expect(result.get(program.guid)).toEqual([organization]);
 });
 
 test('computeManagedBy: program managed by the organizational unit', async ({
@@ -454,7 +454,7 @@ test('computeManagedBy: program managed by the organizational unit', async ({
 		newManagedByContainer(payloadTypes.enum.program, { organizationalUnit })
 	)(connection);
 	const result = await computeManagedBy(connection, [program.guid]);
-	expect(result.get(program.guid)).toBe(organizationalUnit);
+	expect(result.get(program.guid)).toEqual([organizationalUnit]);
 });
 
 test('computeManagedBy: program managed by itself when it has a team', async ({
@@ -465,7 +465,7 @@ test('computeManagedBy: program managed by itself when it has a team', async ({
 		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
 	)(connection);
 	const result = await computeManagedBy(connection, [program.guid]);
-	expect(result.get(program.guid)).toBe(program.guid);
+	expect(result.get(program.guid)).toEqual([program.guid]);
 });
 
 test('computeManagedBy: measure managed by the organization', async ({ connection }: Fixtures) => {
@@ -473,7 +473,7 @@ test('computeManagedBy: measure managed by the organization', async ({ connectio
 		connection
 	);
 	const result = await computeManagedBy(connection, [measure.guid]);
-	expect(result.get(measure.guid)).toBe(organization);
+	expect(result.get(measure.guid)).toEqual([organization]);
 });
 
 test('computeManagedBy: measure managed by the organizational unit', async ({
@@ -484,7 +484,7 @@ test('computeManagedBy: measure managed by the organizational unit', async ({
 		newManagedByContainer(payloadTypes.enum.measure, { organizationalUnit })
 	)(connection);
 	const result = await computeManagedBy(connection, [measure.guid]);
-	expect(result.get(measure.guid)).toBe(organizationalUnit);
+	expect(result.get(measure.guid)).toEqual([organizationalUnit]);
 });
 
 test('computeManagedBy: measure managed by itself when it has a team', async ({
@@ -495,7 +495,7 @@ test('computeManagedBy: measure managed by itself when it has a team', async ({
 		newManagedByContainer(payloadTypes.enum.measure, { memberOf: member })
 	)(connection);
 	const result = await computeManagedBy(connection, [measure.guid]);
-	expect(result.get(measure.guid)).toBe(measure.guid);
+	expect(result.get(measure.guid)).toEqual([measure.guid]);
 });
 
 test('computeManagedBy: measure managed by its program when only the program has a team', async ({
@@ -513,7 +513,7 @@ test('computeManagedBy: measure managed by its program when only the program has
 		})
 	)(connection);
 	const result = await computeManagedBy(connection, [measure.guid]);
-	expect(result.get(measure.guid)).toBe(program.guid);
+	expect(result.get(measure.guid)).toEqual([program.guid]);
 });
 
 test('computeManagedBy: measure managed by itself when both program and measure have a team', async ({
@@ -534,5 +534,5 @@ test('computeManagedBy: measure managed by itself when both program and measure 
 	)(connection);
 	// Single-valued stage: the measure's own team wins; the multi-valued [program, measure] case is later.
 	const result = await computeManagedBy(connection, [measure.guid]);
-	expect(result.get(measure.guid)).toBe(measure.guid);
+	expect(result.get(measure.guid)).toEqual([measure.guid]);
 });
