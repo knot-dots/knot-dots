@@ -49,7 +49,7 @@
 
 	const containers = resource(
 		[() => query],
-		async (query, _, { signal }) => {
+		async ([query], _, { signal }) => {
 			const response = await fetch(`/container?${query}`, { signal });
 			if (!response.ok) {
 				throw new Error(`Failed to fetch knowledge containers: ${response.status}`);
