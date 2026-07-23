@@ -272,7 +272,7 @@
 							/>
 						</form>
 					{:else}
-						{#if container.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM)) )}
+						{#if $applicationState.containerDetailView.editable && container.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM)) )}
 							<DropDownMenu
 								handleChange={createContainer}
 								label={$_('chapter')}
