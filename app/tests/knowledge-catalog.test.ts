@@ -8,7 +8,7 @@ import {
 } from '$lib/models';
 
 test.use({ suiteId: 'knowledge-catalog' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test.describe('Knowledge catalog overlay', () => {
 	test('opens and lists knowledge objects', async ({

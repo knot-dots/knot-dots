@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'budget-table' });
 
 test.describe('Budget Table in Goal Detail View', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('displays budget table with three sections on budget resource data detail view', async ({
 		dotsBoard,

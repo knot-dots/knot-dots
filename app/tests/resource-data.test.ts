@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'resource-data' });
 
 test.describe('Resource Data Collections', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('add Actual resource allocation section to measure', async ({
 		dotsBoard,
@@ -150,7 +150,7 @@ test.describe('Resource Data Collections', () => {
 });
 
 test.describe('Resource Data Collections in Goals', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('add Budget section to goal', async ({ dotsBoard, isMobile, testGoal }) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
