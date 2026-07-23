@@ -11,7 +11,6 @@
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
-	import TeasersOverlay from '$lib/components/TeasersOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
@@ -67,8 +66,6 @@
 		<IOOIOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['measure-iooi'] && isMeasureContainer(data.container)}
 		<IOOIOverlay container={data.container} containers={data.containers} />
-	{:else if data.key === overlayKey.enum['teasers']}
-		<TeasersOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['relations']}
 		<RelationOverlay object={data.container} relatedContainers={data.relatedContainers} />
 	{:else if data.key === overlayKey.enum['measures']}
