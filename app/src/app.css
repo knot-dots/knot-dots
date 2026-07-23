@@ -1225,7 +1225,7 @@ label > input[type='checkbox'].toggle {
 	}
 }
 
-.footer-action-bar {
+.footer-action-bar:has(*) {
 	align-items: center;
 	bottom: 0;
 	background: var(--color-surface-accent-container);
