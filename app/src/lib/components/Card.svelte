@@ -180,7 +180,7 @@
 		const anchorHashParams = new URLSearchParams(
 			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
 		);
-		if (!overlayContext && !$overlayHistory[$overlayHistory.length - 1]?.has('relate')) {
+		if (!overlayContext) {
 			$overlayHistory = [anchorHashParams];
 		}
 	}
@@ -220,8 +220,7 @@
 	{title}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid ||
-		paramsFromFragment(page.url).get(overlayKey.enum.relate) === container.guid}
+	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	onclick={handleClick}

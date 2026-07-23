@@ -19,7 +19,6 @@ export const overlayKey = z.enum([
 	'measures',
 	'members',
 	'program',
-	'relate',
 	'relations',
 	'resources',
 	'tasks',
