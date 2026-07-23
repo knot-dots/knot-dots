@@ -42,6 +42,9 @@ export async function computeManagedBy(
 		return new Map();
 	}
 
+	// The correlated ARRAY subselects cannot be flattened by the planner, which
+	// forces cheap per-row index probes (container_relation_subject_predicate_idx,
+	// container_user_object_idx) instead of hashing or sorting entire tables.
 	const rows = await connection.any(sql.type(
 		z.object({ guid: z.string().uuid(), computed_managed_by: z.string().uuid() })
 	)`
@@ -49,24 +52,33 @@ export async function computeManagedBy(
 			SELECT g::uuid, g::uuid, 0, ARRAY[g::uuid], false
 			FROM unnest(${sql.array(guids, 'uuid')}) AS g
 			UNION ALL
-			SELECT a.root, cr.object, a.depth + 1, array_append(a.path, cr.object), cr.object = ANY(a.path)
+			SELECT a.root, parent.object, a.depth + 1, array_append(a.path, parent.object), parent.object = ANY(a.path)
 			FROM ancestry a
-			JOIN container_relation cr ON cr.subject = a.guid
-				AND cr.predicate = ANY(${sql.array(hierarchyPredicates, 'text')})
-				AND cr.valid_currently
-				AND NOT cr.deleted
+			CROSS JOIN LATERAL unnest(ARRAY(
+				SELECT cr.object
+				FROM container_relation cr
+				WHERE cr.subject = a.guid
+					AND cr.predicate = ANY(${sql.array(hierarchyPredicates, 'text')})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+			)) AS parent(object)
 			WHERE NOT a.is_cycle
 		),
 		teamed AS (
 			SELECT a.root, a.guid, a.depth
 			FROM ancestry a
-			JOIN container c ON c.guid = a.guid AND c.valid_currently AND NOT c.deleted
-			WHERE EXISTS (
+			JOIN LATERAL (
 				SELECT 1
-				FROM container_user cu
-				WHERE cu.object = c.revision
-					AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
-			)
+				FROM container c
+				WHERE c.guid = a.guid AND c.valid_currently AND NOT c.deleted
+					AND EXISTS (
+						SELECT 1
+						FROM container_user cu
+						WHERE cu.object = c.revision
+							AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
+					)
+				LIMIT 1
+			) t ON true
 		),
 		nearest AS (
 			SELECT DISTINCT ON (root) root, guid AS managed_by
@@ -74,7 +86,7 @@ export async function computeManagedBy(
 			ORDER BY root, depth ASC
 		),
 		roots AS (
-			SELECT DISTINCT root FROM ancestry
+			SELECT DISTINCT g::uuid AS root FROM unnest(${sql.array(guids, 'uuid')}) AS g
 		)
 		SELECT
 			roots.root AS guid,
