@@ -13,7 +13,8 @@ import {
 	editorialState,
 	isProgramContainer,
 	type NewContainer,
-	predicates
+	predicates,
+	visibility
 } from '$lib/models';
 import { pollJobStatus, startGoalsJob, startJob } from '$lib/server/ai';
 import { createContainer, getContainerByGuid } from '$lib/server/db';
@@ -114,7 +115,11 @@ export const POST = (async ({ locals, request }) => {
 										...('goalType' in project ? { goalType: project.goalType } : undefined),
 										...('status' in project ? { status: project.status } : undefined),
 										title: project.title,
-										type: project.type
+										type: project.type,
+										visibility:
+											container.payload.visibility != visibility.enum.public
+												? container.payload.visibility
+												: undefined
 									},
 									realm: env.PUBLIC_KC_REALM,
 									relation: [
