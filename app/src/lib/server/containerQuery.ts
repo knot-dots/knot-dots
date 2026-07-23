@@ -58,16 +58,15 @@ const querySchema = z.object({
 	contextGuid: z.array(z.string().uuid()).default([]),
 	excludeRelation: z.array(predicates).default([]),
 	federalState: z.array(z.string()).default([]),
-	goalStatus: z.array(status).default([]),
 	guid: z.array(z.string().uuid()).default([]),
 	hierarchyLevel: z.array(z.coerce.number().int().gte(1).lte(6)).default([]),
 	indicator: z.array(z.string().uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
 	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
+	level: z.array(levels).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
 	member: z.array(z.string().uuid()).default([]),
-	level: z.array(levels).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
 	organization: z
 		.array(z.string().uuid())
@@ -87,17 +86,14 @@ const querySchema = z.object({
 				.transform(() => null)
 		)
 		.default([]),
-	programStatus: z.array(status).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 	resource: z.array(z.string()).default([]),
 	resourceCategory: z.array(resourceCategories).default([]),
-	ruleStatus: z.array(status).default([]),
 	sort: z.array(z.enum(['alpha', 'date', 'modified', 'priority', 'relevance'])).default(['alpha']),
 	status: z.array(status).default([]),
 	taskCategory: z.array(taskCategories).default([]),
-	taskStatus: z.array(status).default([]),
 	template: z.array(z.stringbool()).default([]),
 	terms: z.array(z.string()).default([]),
 	type: z.array(payloadTypes).default([])
@@ -229,13 +225,7 @@ function buildFilters(
 		programTypes: params.programType,
 		resource: params.resource,
 		resourceCategories: params.resourceCategory,
-		statuses: [
-			...params.status,
-			...params.goalStatus,
-			...params.programStatus,
-			...params.ruleStatus,
-			...params.taskStatus
-		],
+		statuses: params.status,
 		taskCategories: params.taskCategory,
 		template: params.template,
 		terms: params.terms,
