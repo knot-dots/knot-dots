@@ -273,13 +273,15 @@
 						</form>
 					{:else}
 						{#if $applicationState.containerDetailView.editable && container.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM)) )}
-							<DropDownMenu
-								handleChange={createContainer}
-								label={$_('chapter')}
-								options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
-							>
-								{#snippet icon()}<Plus />{/snippet}
-							</DropDownMenu>
+							<div class="details-section">
+								<DropDownMenu
+									handleChange={createContainer}
+									label={$_('chapter')}
+									options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+								>
+									{#snippet icon()}<Plus />{/snippet}
+								</DropDownMenu>
+							</div>
 						{/if}
 					{/each}
 				</div>
