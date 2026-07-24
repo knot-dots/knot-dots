@@ -94,12 +94,27 @@ const createResultParserInterceptor = (): Interceptor => {
 	};
 };
 
+const createDisableJitInterceptor = (): Interceptor => {
+	return {
+		// JIT compilation costs several hundred milliseconds whenever the planner
+		// overestimates a query's cost (e.g. for the recursive computeManagedBy query)
+		// while none of our OLTP-style queries run long enough to gain from it. A plain
+		// SET (rather than SET LOCAL in a transaction) keeps concurrent queries on a
+		// shared connection possible.
+		afterPoolConnection: async (_connectionContext, connection) => {
+			await connection.query(sql.typeAlias('void')`SET jit = off`);
+			return null;
+		},
+		name: 'disable-jit-interceptor'
+	};
+};
+
 let pool: DatabasePool;
 
 export async function getPool() {
 	if (!pool) {
 		pool = await createPool('postgres://', {
-			interceptors: [createResultParserInterceptor()],
+			interceptors: [createResultParserInterceptor(), createDisableJitInterceptor()],
 			maxPoolSize: 50,
 			tracing: true
 		});
