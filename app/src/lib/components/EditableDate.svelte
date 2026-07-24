@@ -37,7 +37,6 @@
 
 <style>
 	input[type='date'] {
-		border: none;
 		display: inline-flex;
 		line-height: 1.5;
 		max-height: 2.25rem;

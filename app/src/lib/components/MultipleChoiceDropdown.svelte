@@ -73,6 +73,10 @@
 		--dropdown-button-align-items: start;
 	}
 
+	.dropdown-button.dropdown-button--select > :global(svg:last-child) {
+		margin: 0.125rem 0 0;
+	}
+
 	.selected {
 		display: block;
 	}

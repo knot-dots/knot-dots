@@ -5,8 +5,8 @@
 	import ImageEditor from '@uppy/image-editor';
 	import German from '@uppy/locales/lib/de_DE';
 	import XHRUpload from '@uppy/xhr-upload';
-	import UploadIcon from '~icons/flowbite/upload-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import UploadIcon from '~icons/flowbite/arrow-up-from-bracket-outline';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import requestSubmitElement from '$lib/client/requestSubmitElement';
@@ -186,7 +186,7 @@
 {:else if mode === 'input'}
 	<label class="button button-upload" for={id}>
 		<UploadIcon />
-		{$_('upload.image.choose')}
+		<span class="is-visually-hidden">{$_('upload.image.choose')}</span>
 	</label>
 {/if}
 
@@ -197,14 +197,15 @@
 		--padding-x: 0.75rem;
 		--padding-y: 0.5rem;
 
-		border-radius: 4px;
+		border: none;
+		border-radius: 8px;
 		color: var(--color-primary-700);
 		font-size: 0.75rem;
 	}
 
 	.button-upload > :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
+		height: 1.25rem;
+		width: 1.25rem;
 	}
 
 	.button-upload:hover {

@@ -168,10 +168,10 @@
 	}
 
 	.combobox-input > input {
-		border: none;
-		border-radius: 4px;
-		min-height: var(--dropdown-button-min-height);
-		padding: 0.375rem;
+		border-radius: var(--form-control-border-radius);
+		font-weight: 500;
+		min-height: var(--form-control-min-height);
+		padding: var(--form-control-padding-y) var(--form-control-padding-x);
 	}
 
 	.combobox-input > input + :global(svg) {

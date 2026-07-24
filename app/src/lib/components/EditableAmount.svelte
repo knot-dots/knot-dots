@@ -20,9 +20,3 @@
 		{value ? $number(value) : $_('empty')}
 	</span>
 {/if}
-
-<style>
-	input {
-		border: none;
-	}
-</style>

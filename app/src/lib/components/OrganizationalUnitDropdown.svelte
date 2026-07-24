@@ -31,3 +31,9 @@
 		{page.data.organizationalUnits.find(({ guid }) => guid === value)?.payload.name ?? $_('empty')}
 	</span>
 {/if}
+
+<style>
+	.value {
+		display: block;
+	}
+</style>

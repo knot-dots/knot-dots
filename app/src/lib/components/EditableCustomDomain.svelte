@@ -38,9 +38,3 @@
 	<span class="label">{$_('custom_domain')}</span>
 	<span class="value">{value}</span>
 {/if}
-
-<style>
-	input {
-		border: none;
-	}
-</style>

@@ -148,6 +148,15 @@
 		--dropdown-button-align-items: start;
 	}
 
+	.dropdown-button:has(.badge),
+	.value:has(.badge) {
+		padding-left: var(--dropdown-button-padding-y);
+	}
+
+	.dropdown-button.dropdown-button--select > :global(svg:last-child) {
+		margin: 0.125rem 0 0;
+	}
+
 	li {
 		display: flex;
 		padding: 0.5rem 0.75rem;
@@ -161,7 +170,8 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-		line-height: 1.75rem;
+		min-height: 1.5rem;
+		line-height: 1.5rem;
 		min-width: 0;
 	}
 

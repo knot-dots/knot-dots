@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Upload from '~icons/flowbite/upload-outline';
+	import Upload from '~icons/flowbite/arrow-up-from-bracket-outline';
 	import Close from '~icons/knotdots/close';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
@@ -57,7 +57,7 @@
 			{:else if value}
 				{#each value as pdf, i (pdf[0])}
 					<span class="badge badge--gray">
-						<span class="badge-text">{pdf[1]}</span>
+						<span class="truncated">{pdf[1]}</span>
 						<button
 							class="button button-remove"
 							onclick={remove(i)}
@@ -77,7 +77,7 @@
 
 		<label class="button button-upload" for={id}>
 			<Upload />
-			{$_('upload.pdf.choose')}
+			<span class="is-visually-hidden">{$_('upload.pdf.choose')}</span>
 		</label>
 		<input
 			accept="application/pdf"
@@ -102,7 +102,7 @@
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						<span class="badge-text">{pdf[1]}</span>
+						<span class="truncated">{pdf[1]}</span>
 					</a>
 				</li>
 			{:else}
@@ -118,6 +118,7 @@
 
 <style>
 	div {
+		align-items: flex-start;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
@@ -127,30 +128,25 @@
 		flex-shrink: 0;
 	}
 
-	.badge .badge-text {
-		display: block;
-		max-width: 10rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.badge .button {
-		flex-shrink: 0;
+	.badge {
+		justify-content: flex-start;
+		max-width: 100%;
 	}
 
 	.button-remove {
 		--button-active-background: transparent;
 		--button-hover-background: transparent;
 		--padding-x: 0;
-		--padding-y: 0.375rem;
+		--padding-y: 0.125rem;
 
 		border: none;
+		flex-shrink: 0;
 	}
 
 	.button-remove > :global(svg) {
 		color: var(--color-gray-500);
-		height: 0.5rem;
-		width: 0.5rem;
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.button-upload {
@@ -159,14 +155,15 @@
 		--padding-x: 0.75rem;
 		--padding-y: 0.5rem;
 
-		border-radius: 4px;
+		border: none;
+		border-radius: 8px;
 		color: var(--color-primary-700);
 		font-size: 0.75rem;
 	}
 
 	.button-upload > :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
+		height: 1.25rem;
+		width: 1.25rem;
 	}
 
 	.button-upload:hover {
@@ -178,19 +175,25 @@
 		font-size: 0.75rem;
 		font-weight: 400;
 		margin-top: 0;
+		padding-left: var(--form-control-padding-x);
 	}
 
 	.value {
-		align-items: center;
 		background-color: var(--form-control-background);
-		border-radius: 4px;
+		border: var(--form-control-border);
+		border-radius: var(--form-control-border-radius);
 		display: flex;
-		flex-grow: 1;
+		flex: 1 1;
+		flex-direction: column;
 		gap: 0.5rem;
 		justify-content: space-between;
-		min-height: 2.25rem;
+		min-height: var(--form-control-min-height);
 		min-width: 0;
-		padding: 0.375rem 0.5rem;
+		padding: var(--form-control-padding-y) var(--form-control-padding-x);
+	}
+
+	.value:has(.badge) {
+		padding: var(--form-control-padding-y);
 	}
 
 	.value.value--is-editable:hover {
