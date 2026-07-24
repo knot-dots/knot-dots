@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
 	import Table from '$lib/components/Table.svelte';
@@ -91,5 +91,5 @@
 			/>
 		{/snippet}
 	</Table>
-	<Help slug="measures-table" />
+	<ContextTabs slug="measures-table" />
 </MeasuresPage>

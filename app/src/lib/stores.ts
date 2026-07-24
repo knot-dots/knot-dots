@@ -1,11 +1,10 @@
-import { derived, get, writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { preloadData } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/stores';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
-import fetchHelpBySlug from '$lib/client/fetchHelpBySlug';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
 	type AnyPayload,
@@ -15,11 +14,7 @@ import {
 	type CustomCollectionPayload,
 	filterMembers,
 	type GoalPayload,
-	type HelpPayload,
-	type HelpSlug,
 	type IooiType,
-	isContainerWithCategory,
-	isHelpSlug,
 	mayDelete,
 	type MeasurePayload,
 	type NewContainer,
@@ -207,11 +202,6 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
-			key: 'teasers';
-			container: Container<AnyPayload>;
-			containers: Container[];
-	  }
-	| {
 			key: 'resources';
 			container: Container<AnyPayload>;
 			containers: Container[];
@@ -221,22 +211,6 @@ export type OverlayData =
 			container: Container<AnyPayload>;
 			revisions: Container<AnyPayload>[];
 			sections: Container[];
-	  }
-	| {
-			key: 'view-help';
-			container?: undefined;
-			containers: Container<HelpPayload>[];
-			slug: HelpSlug;
-	  }
-	| {
-			key: 'view-knowledge';
-			container?: undefined;
-			categories: Record<string, string[]> | undefined;
-	  }
-	| {
-			key: 'view-rules';
-			container?: undefined;
-			categories: Record<string, string[]> | undefined;
 	  };
 
 export const overlay = writable<OverlayData | undefined>();
@@ -279,65 +253,7 @@ if (browser) {
 			}
 		};
 
-		if (hashParams.has(overlayKey.enum['view-help'])) {
-			const helpSlug = hashParams.get(overlayKey.enum['view-help']);
-			if (!isHelpSlug(helpSlug)) {
-				setOverlayIfLatest(undefined);
-				return;
-			}
-			const containers = await fetchHelpBySlug(helpSlug);
-
-			// If there's only one help container for the slug, we can directly open the view
-			// overlay for that container instead of showing the list of help containers
-			if (containers.length === 1) {
-				setOverlayIfLatest({
-					key: overlayKey.enum.view,
-					container: containers[0],
-					revisions: [containers[0]],
-					sections: []
-				});
-				return;
-			}
-
-			setOverlayIfLatest({
-				key: overlayKey.enum['view-help'],
-				container: undefined,
-				containers,
-				slug: helpSlug
-			});
-		} else if (hashParams.has(overlayKey.enum['view-knowledge'])) {
-			const currentOverlay = get(overlay);
-			// Container from the #view= overlay, or — when using fullscreen routes — from page data
-			const container =
-				(currentOverlay?.key === overlayKey.enum.view ? currentOverlay.container : undefined) ??
-				(values.data.container as Container<AnyPayload> | undefined);
-			const categories =
-				container && isContainerWithCategory(container)
-					? (container.payload.category as Record<string, string[]>)
-					: undefined;
-
-			setOverlayIfLatest({
-				key: overlayKey.enum['view-knowledge'],
-				container: undefined,
-				categories
-			});
-		} else if (hashParams.has(overlayKey.enum['view-rules'])) {
-			const currentOverlay = get(overlay);
-			// Container from the #view= overlay, or — when using fullscreen routes — from page data
-			const container =
-				(currentOverlay?.key === overlayKey.enum.view ? currentOverlay.container : undefined) ??
-				(values.data.container as Container<AnyPayload> | undefined);
-			const categories =
-				container && isContainerWithCategory(container)
-					? (container.payload.category as Record<string, string[]>)
-					: undefined;
-
-			setOverlayIfLatest({
-				key: overlayKey.enum['view-rules'],
-				container: undefined,
-				categories
-			});
-		} else if (hashParams.has(overlayKey.enum.view)) {
+		if (hashParams.has(overlayKey.enum.view)) {
 			const result = await preloadData(
 				resolve('/[guid=uuid]/[contentGuid=uuid]', {
 					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
@@ -557,24 +473,6 @@ if (browser) {
 				container: result.data.container,
 				containers: result.data.containers
 			});
-		} else if (hashParams.has(overlayKey.enum.teasers)) {
-			const revisions = await fetchContainerRevisions(
-				hashParams.get(overlayKey.enum.teasers) as string
-			);
-			const container = revisions[revisions.length - 1];
-			const containers = (await fetchRelatedContainers(
-				hashParams.has('related-to') ? (hashParams.get('related-to') as string) : container.guid,
-				{
-					...extractCustomCategoryFiltersFromParams(hashParams, values.data.categoryContext.keys),
-					organization: [container.organization],
-					...(hashParams.has('related-to')
-						? { relationType: [predicates.enum['is-part-of']] }
-						: {}),
-					terms: hashParams.get('terms') ?? ''
-				},
-				hashParams.get('sort') ?? 'alpha'
-			)) as Container[];
-			setOverlayIfLatest({ key: overlayKey.enum.teasers, container, containers });
 		} else {
 			setOverlayIfLatest(undefined);
 		}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Catalog from '$lib/components/Catalog.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import type { PageProps } from './$types';
 	import { payloadTypes } from '$lib/models';
@@ -10,5 +10,5 @@
 
 <ProgramsPage facets={data.facets} filterBarInitiallyOpen>
 	<Catalog containers={data.containers} payloadType={[payloadTypes.enum.program]} />
-	<Help slug="guides-catalog" />
+	<ContextTabs slug="guides-catalog" />
 </ProgramsPage>

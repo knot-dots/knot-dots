@@ -2,8 +2,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
@@ -57,6 +57,8 @@
 
 <Header {facets} search />
 
-<Measures {containers} />
+<div class="content">
+	<Measures {containers} />
 
-<Help slug="measures-status" />
+	<ContextTabs slug="measures-status" />
+</div>

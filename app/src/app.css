@@ -151,15 +151,15 @@
 	--color-background-system-default: var(--color-gray-100);
 	--color-background-system-muted: var(--color-gray-050);
 	--color-background-system-subtle: var(--color-gray-025);
-	--color-background-system-state-active: rgb(from var(--color-gray-500) r g b / 0.15);
-	--color-background-system-state-hover: rgb(from var(--color-gray-500) r g b / 0.1);
-	--color-background-system-state-selected: rgb(from var(--color-primary-500) r g b / 0.15);
+	--color-background-system-active: rgb(from var(--color-gray-500) r g b / 0.15);
+	--color-background-system-hover: rgb(from var(--color-gray-500) r g b / 0.1);
+	--color-background-system-expanded: rgb(from var(--color-primary-500) r g b / 0.15);
 
 	--color-border-system-strong: var(--color-primary-400);
 	--color-border-system-default: var(--color-gray-200);
 	--color-border-system-subtle: var(--color-gray-100);
 	--color-border-system-muted: var(--color-gray-050);
-	--color-border-system-state-selected: var(--color-primary-200);
+	--color-border-system-expanded: var(--color-primary-200);
 
 	--color-surface-system-default: var(--color-white);
 	--color-surface-system-container: var(--color-gray-025);
@@ -182,15 +182,15 @@
 	--color-background-accent-default: var(--color-background-system-default);
 	--color-background-accent-subtle: var(--color-background-system-subtle);
 	--color-background-accent-muted: var(--color-background-system-muted);
-	--color-background-accent-state-active: var(--color-background-system-state-active);
-	--color-background-accent-state-hover: var(--color-background-system-state-hover);
-	--color-background-accent-state-selected: var(--color-background-system-state-selected);
+	--color-background-accent-active: var(--color-background-system-active);
+	--color-background-accent-hover: var(--color-background-system-hover);
+	--color-background-accent-expanded: var(--color-background-system-expanded);
 
 	--color-border-accent-strong: var(--color-border-system-strong);
 	--color-border-accent-default: var(--color-border-system-default);
 	--color-border-accent-subtle: var(--color-border-system-subtle);
 	--color-border-accent-muted: var(--color-border-system-muted);
-	--color-border-accent-state-selected: var(--color-border-system-state-selected);
+	--color-border-accent-expanded: var(--color-border-system-expanded);
 
 	--color-surface-accent-default: var(--color-surface-system-default);
 	--color-surface-accent-container: var(--color-surface-system-container);
@@ -340,7 +340,7 @@
 	--button-hover-border-color: var(--button-border-color);
 	--form-control-background: var(--color-background-system-subtle);
 
-	--header-height: 63px;
+	--header-height: 2.875rem;
 	--sidebar-max-width: 14.25rem;
 }
 
@@ -525,7 +525,7 @@ tr:hover,
 
 tr:has(input[type='checkbox']:checked),
 .row:has(input[type='checkbox']:checked) {
-	background-color: var(--color-background-accent-state-selected);
+	background-color: var(--color-background-accent-expanded);
 }
 
 td,
@@ -816,12 +816,12 @@ button.button-square,
 }
 
 .action-button:active {
-	background-color: var(--color-background-accent-state-active);
+	background-color: var(--color-background-accent-active);
 }
 
 .action-button:focus,
 .action-button:hover {
-	background-color: var(--color-background-accent-state-hover);
+	background-color: var(--color-background-accent-hover);
 }
 
 .action-button[disabled],
@@ -1188,9 +1188,41 @@ label > input[type='checkbox'].toggle {
 }
 
 /* Main and overlay content */
-.content-details {
+.content {
+	display: flex;
+	flex-direction: column;
 	flex-grow: 1;
-	overflow-y: auto;
+	min-height: 0;
+	position: relative;
+}
+
+@container (min-width: 48rem) {
+	.content {
+		flex-direction: row;
+	}
+
+	.content > :first-child {
+		flex-grow: 1;
+	}
+}
+
+.content-details {
+	container: details / inline-size;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	min-height: 0;
+	position: relative;
+}
+
+@container (min-width: 48rem) {
+	.content-details {
+		flex-direction: row;
+	}
+
+	.content-details > :first-child {
+		flex-grow: 1;
+	}
 }
 
 .content-footer {
@@ -1287,7 +1319,10 @@ label > input[type='checkbox'].toggle {
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
+	flex: 1;
 	font-size: 0.875rem;
+	hyphens: auto;
+	overflow-y: auto;
 	padding: var(--details-padding-y) 0;
 	position: relative;
 }
@@ -1636,18 +1671,6 @@ img.cover {
 	justify-content: flex-start;
 }
 
-/* Overlay */
-.overlay {
-	background-color: white;
-	box-shadow: var(--shadow-lg);
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	position: relative;
-	width: 100%;
-	z-index: 3;
-}
-
 /* Carousel */
 .carousel {
 	display: grid;
@@ -1772,21 +1795,18 @@ img.cover {
 }
 
 .dropdown-button:active {
-	background: var(--dropdown-button-active-background, var(--color-background-accent-state-active));
+	background: var(--dropdown-button-active-background, var(--color-background-accent-active));
 }
 
 .dropdown-button:hover {
-	background: var(--dropdown-button-hover-background, var(--color-background-accent-state-hover));
+	background: var(--dropdown-button-hover-background, var(--color-background-accent-hover));
 }
 
 .dropdown-button[aria-expanded='true'] {
-	background: var(
-		--dropdown-button-expanded-background,
-		var(--color-background-accent-state-selected)
-	);
+	background: var(--dropdown-button-expanded-background, var(--color-background-accent-expanded));
 	border-color: var(
 		--dropdown-button-expanded-border-color,
-		var(--dropdown-button-default-border-color, var(--color-border-accent-state-selected))
+		var(--dropdown-button-default-border-color, var(--color-border-accent-expanded))
 	);
 	color: var(--color-accent-on-default);
 }
@@ -2173,6 +2193,37 @@ img.cover {
 }
 
 /* Modules */
+.module-context {
+	--color-accent-on-default: var(--color-yellow-700);
+
+	--color-text-accent-strong: var(--color-yellow-900);
+	--color-text-accent-default: var(--color-yellow-700);
+	--color-text-accent-subtle: var(--color-yellow-500);
+	--color-text-accent-muted: var(--color-yellow-400);
+
+	--color-icon-accent-strong: var(--color-yellow-900);
+	--color-icon-accent-default: var(--color-yellow-700);
+	--color-icon-accent-subtle: var(--color-yellow-500);
+	--color-icon-accent-muted: var(--color-yellow-400);
+
+	--color-background-accent-strong: var(--color-yellow-300);
+	--color-background-accent-default: var(--color-yellow-100);
+	--color-background-accent-subtle: var(--color-yellow-050);
+	--color-background-accent-muted: var(--color-yellow-025);
+	--color-background-accent-active: rgb(from var(--color-yellow-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-yellow-500) r g b / 0.1);
+	--color-background-accent-expanded: var(--color-yellow-200);
+
+	--color-border-accent-strong: var(--color-yellow-900);
+	--color-border-accent-default: var(--color-yellow-700);
+	--color-border-accent-subtle: var(--color-yellow-500);
+	--color-border-accent-muted: var(--color-yellow-400);
+	--color-border-accent-expanded: var(--color-yellow-300);
+
+	--color-surface-accent-container: var(--color-yellow-025);
+	--color-surface-accent-container-raised: var(--color-yellow-050);
+}
+
 .module-goal-setting {
 	--color-accent-on-default: var(--color-indigo-700);
 
@@ -2190,15 +2241,15 @@ img.cover {
 	--color-background-accent-default: var(--color-indigo-100);
 	--color-background-accent-subtle: var(--color-indigo-050);
 	--color-background-accent-muted: var(--color-indigo-025);
-	--color-background-accent-state-active: rgb(from var(--color-indigo-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-indigo-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-indigo-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-indigo-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-indigo-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-indigo-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-indigo-400);
 	--color-border-accent-default: var(--color-indigo-200);
 	--color-border-accent-subtle: var(--color-indigo-100);
 	--color-border-accent-muted: var(--color-indigo-050);
-	--color-border-accent-state-selected: var(--color-indigo-200);
+	--color-border-accent-expanded: var(--color-indigo-200);
 
 	--color-surface-accent-container: var(--color-indigo-025);
 	--color-surface-accent-container-raised: var(--color-indigo-050);
@@ -2221,15 +2272,15 @@ img.cover {
 	--color-background-accent-default: var(--color-orange-100);
 	--color-background-accent-subtle: var(--color-orange-050);
 	--color-background-accent-muted: var(--color-orange-025);
-	--color-background-accent-state-active: rgb(from var(--color-orange-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-orange-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-orange-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-orange-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-orange-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-orange-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-orange-400);
 	--color-border-accent-default: var(--color-orange-200);
 	--color-border-accent-subtle: var(--color-orange-100);
 	--color-border-accent-muted: var(--color-orange-050);
-	--color-border-accent-state-selected: var(--color-orange-200);
+	--color-border-accent-expanded: var(--color-orange-200);
 
 	--color-surface-accent-container: var(--color-orange-025);
 	--color-surface-accent-container-raised: var(--color-orange-050);
@@ -2252,15 +2303,15 @@ img.cover {
 	--color-background-accent-default: var(--color-teal-100);
 	--color-background-accent-subtle: var(--color-teal-050);
 	--color-background-accent-muted: var(--color-teal-025);
-	--color-background-accent-state-active: rgb(from var(--color-teal-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-teal-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-teal-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-teal-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-teal-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-teal-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-teal-400);
 	--color-border-accent-default: var(--color-teal-200);
 	--color-border-accent-subtle: var(--color-teal-100);
 	--color-border-accent-muted: var(--color-teal-050);
-	--color-border-accent-state-selected: var(--color-teal-200);
+	--color-border-accent-expanded: var(--color-teal-200);
 
 	--color-surface-accent-container: var(--color-teal-025);
 	--color-surface-accent-container-raised: var(--color-teal-050);
@@ -2283,15 +2334,15 @@ img.cover {
 	--color-background-accent-default: var(--color-green-100);
 	--color-background-accent-subtle: var(--color-green-050);
 	--color-background-accent-muted: var(--color-green-025);
-	--color-background-accent-state-active: rgb(from var(--color-green-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-green-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-green-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-green-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-green-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-green-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-green-400);
 	--color-border-accent-default: var(--color-green-200);
 	--color-border-accent-subtle: var(--color-green-100);
 	--color-border-accent-muted: var(--color-green-050);
-	--color-border-accent-state-selected: var(--color-green-200);
+	--color-border-accent-expanded: var(--color-green-200);
 
 	--color-surface-accent-container: var(--color-green-025);
 	--color-surface-accent-container-raised: var(--color-green-050);
@@ -2314,15 +2365,15 @@ img.cover {
 	--color-background-accent-default: var(--color-amber-100);
 	--color-background-accent-subtle: var(--color-amber-050);
 	--color-background-accent-muted: var(--color-amber-025);
-	--color-background-accent-state-active: rgb(from var(--color-amber-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-amber-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-amber-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-amber-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-amber-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-amber-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-amber-400);
 	--color-border-accent-default: var(--color-amber-200);
 	--color-border-accent-subtle: var(--color-amber-100);
 	--color-border-accent-muted: var(--color-amber-050);
-	--color-border-accent-state-selected: var(--color-amber-200);
+	--color-border-accent-expanded: var(--color-amber-200);
 
 	--color-surface-accent-container: var(--color-amber-025);
 	--color-surface-accent-container-raised: var(--color-amber-050);
@@ -2345,15 +2396,15 @@ img.cover {
 	--color-background-accent-default: var(--color-pink-100);
 	--color-background-accent-subtle: var(--color-pink-050);
 	--color-background-accent-muted: var(--color-pink-025);
-	--color-background-accent-state-active: rgb(from var(--color-pink-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-pink-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-pink-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-pink-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-pink-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-pink-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-pink-400);
 	--color-border-accent-default: var(--color-pink-200);
 	--color-border-accent-subtle: var(--color-pink-100);
 	--color-border-accent-muted: var(--color-pink-050);
-	--color-border-accent-state-selected: var(--color-pink-200);
+	--color-border-accent-expanded: var(--color-pink-200);
 
 	--color-surface-accent-container: var(--color-pink-025);
 	--color-surface-accent-container-raised: var(--color-pink-050);
@@ -2376,15 +2427,15 @@ img.cover {
 	--color-background-accent-default: var(--color-purple-100);
 	--color-background-accent-subtle: var(--color-purple-050);
 	--color-background-accent-muted: var(--color-purple-025);
-	--color-background-accent-state-active: rgb(from var(--color-purple-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-purple-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-purple-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-purple-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-purple-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-purple-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-purple-400);
 	--color-border-accent-default: var(--color-purple-200);
 	--color-border-accent-subtle: var(--color-purple-100);
 	--color-border-accent-muted: var(--color-purple-050);
-	--color-border-accent-state-selected: var(--color-purple-200);
+	--color-border-accent-expanded: var(--color-purple-200);
 
 	--color-surface-accent-container: var(--color-purple-025);
 	--color-surface-accent-container-raised: var(--color-purple-050);
@@ -2407,15 +2458,15 @@ img.cover {
 	--color-background-accent-default: var(--color-red-100);
 	--color-background-accent-subtle: var(--color-red-050);
 	--color-background-accent-muted: var(--color-white);
-	--color-background-accent-state-active: rgb(from var(--color-red-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-red-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-red-500) r g b / 0.15);
+	--color-background-accent-active: rgb(from var(--color-red-500) r g b / 0.25);
+	--color-background-accent-hover: rgb(from var(--color-red-500) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-red-500) r g b / 0.15);
 
 	--color-border-accent-strong: var(--color-red-400);
 	--color-border-accent-default: var(--color-red-200);
 	--color-border-accent-subtle: var(--color-red-100);
 	--color-border-accent-muted: var(--color-red-050);
-	--color-border-accent-state-selected: var(--color-red-200);
+	--color-border-accent-expanded: var(--color-red-200);
 
 	--color-surface-accent-container: var(--color-red-025);
 	--color-surface-accent-container-raised: var(--color-red-050);

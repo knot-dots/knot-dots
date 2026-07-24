@@ -3,8 +3,8 @@
 	import { page } from '$app/state';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -87,5 +87,5 @@
 			/>
 		{/snippet}
 	</Table>
-	<Help slug="goals-table" />
+	<ContextTabs slug="goals-table" />
 </GoalsPage>

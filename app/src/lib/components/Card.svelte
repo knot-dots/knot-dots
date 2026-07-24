@@ -53,10 +53,11 @@
 		footer?: Snippet;
 		href?: () => string;
 		ignoreBulkActionContext?: boolean;
+		maxSummaryLength?: number;
+		onclick?: (event: Event) => void;
 		relatedContainers?: Container<AnyPayload>[];
 		showRelationFilter?: boolean;
 		titleOverride?: boolean;
-		maxSummaryLength?: number;
 	}
 
 	let {
@@ -66,10 +67,11 @@
 		footer,
 		href,
 		ignoreBulkActionContext = false,
+		onclick,
+		maxSummaryLength,
 		relatedContainers = [],
 		showRelationFilter = false,
-		titleOverride = false,
-		maxSummaryLength
+		titleOverride = false
 	}: Props = $props();
 
 	const overlayContext = getContext('overlay');
@@ -178,7 +180,7 @@
 		const anchorHashParams = new URLSearchParams(
 			(event.currentTarget as HTMLAnchorElement).hash.substring(1)
 		);
-		if (!overlayContext && !$overlayHistory[$overlayHistory.length - 1]?.has('relate')) {
+		if (!overlayContext) {
 			$overlayHistory = [anchorHashParams];
 		}
 	}
@@ -218,8 +220,7 @@
 	{title}
 	data-sveltekit-keepfocus
 	class="card"
-	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid ||
-		paramsFromFragment(page.url).get(overlayKey.enum.relate) === container.guid}
+	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
 	onclick={handleClick}
@@ -250,7 +251,13 @@
 				<a
 					href={href ? href() : computeHref(page.url)}
 					bind:this={previewLink}
-					onclick={updateOverlayHistory}
+					onclick={(e) => {
+						if (onclick) {
+							onclick(e);
+						} else {
+							updateOverlayHistory(e);
+						}
+					}}
 				>
 					{#if titleOverride && isObjectiveContainer(container)}
 						{@const goal = relatedContainers

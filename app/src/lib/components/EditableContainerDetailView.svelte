@@ -4,9 +4,9 @@
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import {
 		type Container,
 		helpSlugForDetailView,
@@ -79,11 +79,11 @@
 
 		{@render data?.()}
 	</article>
-</form>
 
-{#if detailViewHelpSlug}
-	<Help slug={detailViewHelpSlug} />
-{/if}
+	{#if detailViewHelpSlug}
+		<ContextTabs slug={detailViewHelpSlug} />
+	{/if}
+</form>
 
 <style>
 	.details-header {

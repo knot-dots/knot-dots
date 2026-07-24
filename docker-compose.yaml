@@ -30,6 +30,10 @@ services:
       context: db
     env_file:
       - ./db/.env
+    # Postgres parallel workers exchange data via /dev/shm; the Docker default
+    # of 64MB makes heavier queries fail with "could not resize shared memory
+    # segment ... No space left on device" (SQLSTATE 53100).
+    shm_size: 1gb
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_USER}" ]
       interval: 3s

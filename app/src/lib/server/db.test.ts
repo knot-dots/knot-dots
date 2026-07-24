@@ -18,6 +18,7 @@ import {
 import {
 	createContainer,
 	createOrUpdateUser,
+	deleteContainer,
 	getContainerByGuid,
 	getManyContainers,
 	sql,
@@ -535,4 +536,184 @@ test('computeManagedBy: measure managed by itself when both program and measure 
 	// Single-valued stage: the measure's own team wins; the multi-valued [program, measure] case is later.
 	const result = await computeManagedBy(connection, [measure.guid]);
 	expect(result.get(measure.guid)).toEqual([measure.guid]);
+});
+
+// The following scenarios reproduce the ways the stored managed_by column went stale
+// in production. The computed value must be immune to them by construction.
+
+test('computeManagedBy: measure managed by the organization when its program has no team', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toEqual([organization]);
+});
+
+test('computeManagedBy: measure falls back to the organization when the program team loses its members', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		program.guid
+	]);
+
+	const persistedProgram = await getContainerByGuid(program.guid)(connection);
+	await updateContainer(modifiedContainer.parse({ ...persistedProgram, user: [] }))(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		organization
+	]);
+});
+
+test('computeManagedBy: measure falls back to the organization when it is detached from its program', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		program.guid
+	]);
+
+	const persistedMeasure = await getContainerByGuid(measure.guid)(connection);
+	await updateContainer(modifiedContainer.parse({ ...persistedMeasure, relation: [] }))(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		organization
+	]);
+});
+
+test('computeManagedBy: measure falls back to the organization when its program is deleted', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		program.guid
+	]);
+
+	const persistedProgram = await getContainerByGuid(program.guid)(connection);
+	await deleteContainer(persistedProgram)(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		organization
+	]);
+});
+
+test('computeManagedBy: computed value follows the container into another organizational unit', async ({
+	connection
+}: Fixtures) => {
+	const formerUnit = uuid();
+	const currentUnit = uuid();
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, { organizationalUnit: formerUnit })
+	)(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		formerUnit
+	]);
+
+	// Keep managed_by at its old value: this is the most common stale-column case in
+	// production, where a move never updated managed_by.
+	const persistedMeasure = await getContainerByGuid(measure.guid)(connection);
+	await updateContainer(
+		modifiedContainer.parse({ ...persistedMeasure, organizational_unit: currentUnit })
+	)(connection);
+
+	expect((await computeManagedBy(connection, [measure.guid])).get(measure.guid)).toEqual([
+		currentUnit
+	]);
+});
+
+test('computeManagedBy: goal managed by the program team two levels up', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const goal = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	const subgoal = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			relation: [{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [subgoal.guid]);
+	expect(result.get(subgoal.guid)).toEqual([program.guid]);
+});
+
+test('computeManagedBy: cyclic relations do not prevent computation', async ({
+	connection
+}: Fixtures) => {
+	const goal = await createContainer(newManagedByContainer(payloadTypes.enum.goal))(connection);
+	const otherGoal = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			relation: [{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+
+	const persistedGoal = await getContainerByGuid(goal.guid)(connection);
+	await updateContainer(
+		modifiedContainer.parse({
+			...persistedGoal,
+			relation: [
+				...persistedGoal.relation,
+				{
+					object: otherGoal.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of'],
+					subject: goal.guid
+				}
+			]
+		})
+	)(connection);
+
+	const result = await computeManagedBy(connection, [goal.guid, otherGoal.guid]);
+	expect(result.get(goal.guid)).toEqual([organization]);
+	expect(result.get(otherGoal.guid)).toEqual([organization]);
 });

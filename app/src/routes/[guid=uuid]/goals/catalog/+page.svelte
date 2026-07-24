@@ -4,8 +4,8 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import { type Container, type GoalPayload, payloadTypes, predicates } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -64,5 +64,5 @@
 			/>
 		{/snippet}
 	</Catalog>
-	<Help slug="goals-catalog" />
+	<ContextTabs slug="goals-catalog" />
 </GoalsPage>

@@ -3,8 +3,8 @@
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import Chapters from '$lib/components/Chapters.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -47,6 +47,6 @@
 	{#snippet main()}
 		<Chapters program={container} {containers} />
 
-		<Help slug="all-level" />
+		<ContextTabs slug="all-level" />
 	{/snippet}
 </Layout>

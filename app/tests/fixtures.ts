@@ -58,7 +58,6 @@ type MyFixtures = {
 type MyWorkerFixtures = {
 	suiteId: string;
 	adminContext: BrowserContext;
-	bobContext: BrowserContext;
 	defaultOrganization: Container<OrganizationPayload>;
 	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testOrganization: Container<OrganizationPayload>;
@@ -298,14 +297,29 @@ async function inviteUser(
 	container: Container<AnyPayload>,
 	role: Predicate[] = []
 ) {
-	const inviteResponse = await context.request.post(`/user`, { data: { email, container } });
+	const containerResponse = await context.request.get(`/container/${container.guid}`);
+
+	const { user }: Container<AnyPayload> = await containerResponse.json();
+
+	const inviteResponse = await context.request.post(`/user`, {
+		data: { email, container: { ...container, user } }
+	});
+
+	const subject = inviteResponse.headers()['location'].split('/').at(-1);
+
 	if (role.length > 0) {
 		await context.request.post(`/container/${container.guid}/user`, {
-			data: role.map((r) => ({
-				object: container.guid,
-				predicate: r,
-				subject: inviteResponse.headers()['location'].split('/').at(-1)
-			}))
+			data: [
+				...user.filter(
+					(u) =>
+						u.predicate != predicates.enum['is-creator-of'] &&
+						!(u.subject == subject && role.includes(u.predicate))
+				),
+				...role.concat(predicates.enum['is-member-of']).map((r) => ({
+					predicate: r,
+					subject: inviteResponse.headers()['location'].split('/').at(-1)
+				}))
+			]
 		});
 	}
 }
@@ -321,18 +335,6 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			});
 
 			await use(adminContext);
-		},
-		{ scope: 'worker' }
-	],
-	bobContext: [
-		async ({ browser, suiteId }, use, workerInfo) => {
-			void suiteId; // declares dependency to force a new worker per test file
-			const bobContext = await browser.newContext({
-				baseURL: workerInfo.project.use.baseURL,
-				storageState: 'tests/.auth/bob.json'
-			});
-
-			await use(bobContext);
 		},
 		{ scope: 'worker' }
 	],
@@ -486,7 +488,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 					name: `Test Organization ${workerInfo.workerIndex}`
 				}
 			});
-			await inviteUser(adminContext, 'builderbob@bobby.com', testOrganization);
+			await inviteUser(adminContext, 'bob@example.org', testOrganization);
+			await inviteUser(adminContext, 'orla@example.org', testOrganization, [
+				predicates.enum['is-admin-of']
+			]);
 
 			await use(testOrganization);
 

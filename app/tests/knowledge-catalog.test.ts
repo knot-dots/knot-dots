@@ -8,10 +8,15 @@ import {
 } from '$lib/models';
 
 test.use({ suiteId: 'knowledge-catalog' });
-test.use({ storageState: 'tests/.auth/admin.json' });
+test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test.describe('Knowledge catalog overlay', () => {
-	test('opens and lists knowledge objects', async ({ adminContext, dotsBoard, testGoal }) => {
+	test('opens and lists knowledge objects', async ({
+		adminContext,
+		dotsBoard,
+		isMobile,
+		testGoal
+	}) => {
 		const suffix = test.info().project.name;
 		const makeKnowledge = (title: string) => {
 			const template = containerOfType(
@@ -31,13 +36,18 @@ test.describe('Knowledge catalog overlay', () => {
 		const knowledgeB = await makeKnowledge(`E2E Knowledge Beta ${suffix}`);
 
 		try {
-			await dotsBoard.page.goto(`/${testGoal.organization}/all/level#view-knowledge=`);
+			await dotsBoard.page.goto(`/${testGoal.organization}/all/level`);
+			await dotsBoard.contextTabs.open('Knowledge', isMobile);
 
-			await expect(dotsBoard.overlay.locator.getByTitle(knowledgeA.payload.title)).toBeVisible();
-			await expect(dotsBoard.overlay.locator.getByTitle(knowledgeB.payload.title)).toBeVisible();
+			await expect(
+				dotsBoard.contextTabs.current.getByTitle(knowledgeA.payload.title)
+			).toBeVisible();
+			await expect(
+				dotsBoard.contextTabs.current.getByTitle(knowledgeB.payload.title)
+			).toBeVisible();
 
-			await dotsBoard.overlay.closeButton.click();
-			await expect(dotsBoard.overlay.locator).not.toBeVisible();
+			await dotsBoard.contextTabs.close();
+			await expect(dotsBoard.contextTabs.current).not.toBeVisible();
 		} finally {
 			await deleteContainer(adminContext, knowledgeA);
 			await deleteContainer(adminContext, knowledgeB);
@@ -47,6 +57,7 @@ test.describe('Knowledge catalog overlay', () => {
 	test('sorts knowledge objects by number of matching category terms', async ({
 		adminContext,
 		dotsBoard,
+		isMobile,
 		testGoal,
 		testCategoryWithTerms
 	}) => {
@@ -90,20 +101,19 @@ test.describe('Knowledge catalog overlay', () => {
 				[categoryKey, termAValue],
 				[categoryKey, termBValue]
 			]);
-			await dotsBoard.page.goto(`/${testGoal.organization}/all/level?${params}#view-knowledge=`);
+			await dotsBoard.page.goto(`/${testGoal.organization}/all/level?${params}`);
+			await dotsBoard.contextTabs.open('Knowledge', isMobile);
 
-			const doubleMatchCard = dotsBoard.overlay.locator.getByTitle(
-				knowledgeDoubleMatch.payload.title
-			);
-			const singleMatchCard = dotsBoard.overlay.locator.getByTitle(
-				knowledgeSingleMatch.payload.title
-			);
-			await expect(doubleMatchCard).toBeVisible();
-			await expect(singleMatchCard).toBeVisible();
+			await expect(
+				dotsBoard.contextTabs.current.getByTitle(knowledgeDoubleMatch.payload.title)
+			).toBeVisible();
+			await expect(
+				dotsBoard.contextTabs.current.getByTitle(knowledgeSingleMatch.payload.title)
+			).toBeVisible();
 
 			// The container with two matching terms must appear before the one with one
 			// in DOM order (visual layout may be multi-column, making y-comparison unreliable).
-			const articles = await dotsBoard.overlay.locator.getByRole('article').all();
+			const articles = await dotsBoard.contextTabs.current.getByRole('article').all();
 			const cardTitles = await Promise.all(articles.map((a) => a.getAttribute('title')));
 			expect(cardTitles.indexOf(knowledgeDoubleMatch.payload.title)).toBeLessThan(
 				cardTitles.indexOf(knowledgeSingleMatch.payload.title)
@@ -117,6 +127,7 @@ test.describe('Knowledge catalog overlay', () => {
 	test('uses categories of a container opened in view overlay', async ({
 		adminContext,
 		dotsBoard,
+		isMobile,
 		testGoal,
 		testCategoryWithTerms
 	}) => {
@@ -188,21 +199,14 @@ test.describe('Knowledge catalog overlay', () => {
 			await dotsBoard.goto(`/${testGoal.organization}`);
 			await dotsBoard.card(goalWithCategory.payload.title).click();
 			await expect(dotsBoard.overlay.title).toHaveText(goalWithCategory.payload.title);
+			await dotsBoard.overlay.contextTabs.open('Knowledge', isMobile);
 
-			// Navigate to the knowledge overlay via hash (same as clicking the Knowledge
-			// button), keeping the view overlay state in the store so the handler picks
-			// up the goal's categories.
-			const urlWithoutHash = dotsBoard.page.url().split('#')[0];
-			await dotsBoard.page.goto(`${urlWithoutHash}#view-knowledge=`);
-
-			const matchCard = dotsBoard.overlay.locator.getByTitle(matchTitle);
-			const noMatchCard = dotsBoard.overlay.locator.getByTitle(noMatchTitle);
-			await expect(matchCard).toBeVisible();
-			await expect(noMatchCard).toBeVisible();
+			await expect(dotsBoard.overlay.contextTabs.current.getByTitle(matchTitle)).toBeVisible();
+			await expect(dotsBoard.overlay.contextTabs.current.getByTitle(noMatchTitle)).toBeVisible();
 
 			// The matching container (score 1) must appear before the non-matching one
 			// (score 0) in DOM order, even though alphabetically it would come second.
-			const articles = await dotsBoard.overlay.locator.getByRole('article').all();
+			const articles = await dotsBoard.overlay.contextTabs.current.getByRole('article').all();
 			const cardTitles = await Promise.all(articles.map((a) => a.getAttribute('title')));
 			expect(cardTitles.indexOf(matchTitle)).toBeLessThan(cardTitles.indexOf(noMatchTitle));
 		} finally {

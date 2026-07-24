@@ -15,7 +15,8 @@ import {
 	isProgramContainer,
 	type NewContainer,
 	payloadTypes,
-	predicates
+	predicates,
+	visibility
 } from '$lib/models';
 import { pollJobStatus, startJob } from '$lib/server/knowledge-ai';
 import { createContainer, getContainerByGuid } from '$lib/server/db';
@@ -119,7 +120,11 @@ export const POST = (async ({ locals, request }) => {
 									}),
 									summary: object.summary,
 									title: object.title,
-									type: payloadTypes.enum.knowledge
+									type: payloadTypes.enum.knowledge,
+									visibility:
+										container.payload.visibility != visibility.enum.public
+											? container.payload.visibility
+											: undefined
 								},
 								realm: env.PUBLIC_KC_REALM,
 								relation: [

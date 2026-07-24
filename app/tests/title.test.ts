@@ -6,7 +6,7 @@ test.use({ suiteId: 'title' });
 // based on the organization and workspace context.
 
 test.describe('Document titles', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test('home page title includes organization and workspace (All)', async ({ page }) => {
 		await page.goto('/');

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
@@ -30,6 +30,6 @@
 	{#snippet main()}
 		<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
 
-		<Help slug="measures-templates" />
+		<ContextTabs slug="measures-templates" />
 	{/snippet}
 </Layout>

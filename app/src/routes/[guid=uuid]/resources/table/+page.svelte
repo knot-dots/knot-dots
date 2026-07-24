@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import ResourcesPage from '$lib/components/ResourcesPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -29,5 +29,5 @@
 		]}
 		rows={containers}
 	/>
-	<Help slug="resources-table" />
+	<ContextTabs slug="resources-table" />
 </ResourcesPage>

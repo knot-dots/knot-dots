@@ -4,7 +4,7 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
@@ -99,5 +99,5 @@
 			{/if}
 		{/each}
 	</Board>
-	<Help slug="tasks-status" />
+	<ContextTabs slug="tasks-status" />
 </TasksPage>

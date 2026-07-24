@@ -7,8 +7,8 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
@@ -201,6 +201,6 @@
 			</Board>
 		{/key}
 
-		<Help slug="objectives-and-effects" />
+		<ContextTabs slug="objectives-and-effects" />
 	{/snippet}
 </Layout>

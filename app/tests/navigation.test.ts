@@ -1,7 +1,7 @@
 import Header from './header';
 import { expect, test } from './fixtures';
 
-test.use({ suiteId: 'navigation', storageState: 'tests/.auth/admin.json' });
+test.use({ suiteId: 'navigation', storageState: 'tests/.auth/orgadmin.json' });
 
 test('workspaces mega-menu opens and navigates to selected workspace', async ({
 	page,

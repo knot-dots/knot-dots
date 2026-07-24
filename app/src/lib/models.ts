@@ -19,15 +19,10 @@ export const overlayKey = z.enum([
 	'measures',
 	'members',
 	'program',
-	'relate',
 	'relations',
 	'resources',
 	'tasks',
-	'teasers',
-	'view',
-	'view-help',
-	'view-knowledge',
-	'view-rules'
+	'view'
 ]);
 
 export type OverlayKey = z.infer<typeof overlayKey>;

@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 test.use({ suiteId: 'resources-overlay' });
 
 test.describe('Resources overlay', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test.skip(({ isMobile }) => isMobile, 'Workspace menu is not visible on mobile');
 
@@ -125,7 +125,7 @@ test.describe('Resources overlay', () => {
 });
 
 test.describe('Resources fullscreen', () => {
-	test.use({ storageState: 'tests/.auth/admin.json' });
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 	test.skip(({ isMobile }) => isMobile, 'Workspace menu is not visible on mobile');
 

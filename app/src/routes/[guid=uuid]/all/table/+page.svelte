@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import AllPage from '$lib/components/AllPage.svelte';
-	import Help from '$lib/components/Help.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
@@ -106,5 +106,5 @@
 			/>
 		{/snippet}
 	</Table>
-	<Help slug="all-table" />
+	<ContextTabs slug="all-table" />
 </AllPage>

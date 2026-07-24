@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ChevronLeft from '~icons/heroicons/chevron-left';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Help from '$lib/components/Help.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import type { PageData } from './$types';
@@ -36,7 +36,7 @@
 			</div>
 		</section>
 
-		<Help slug="members" />
+		<ContextTabs slug="members" />
 	{/snippet}
 </Layout>
 
