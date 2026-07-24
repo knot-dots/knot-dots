@@ -24,7 +24,7 @@ export default function createColumnBoardPagination<
 	columnForItem: (container: T) => ColumnId;
 	columnIds: () => readonly ColumnId[];
 	columns: () => Record<ColumnId, Column<T>>;
-	created: () => Container<AnyPayload> | undefined;
+	created: () => Map<string, Container<AnyPayload>>;
 	deleted: () => Map<string, Container<AnyPayload>>;
 	fetchPage: (params: { columnId: ColumnId; offset: number; signal: AbortSignal }) => Promise<{
 		hasMore: boolean;

@@ -11,7 +11,7 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import { type Container, type GoalPayload, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { statusBackgrounds, statusHoverColors } from '$lib/theme/models';
 	import { createGoalStatusQuery } from './query';
 	import type { PageProps } from './$types';
@@ -22,7 +22,7 @@
 		columnForItem: ({ payload }) => payload.status,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
-		created: () => $lastCreatedContainer,
+		created: () => $lastCreatedContainers,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
 			const result = await fetchContainerPage<Container<GoalPayload>>({

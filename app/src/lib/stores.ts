@@ -149,7 +149,7 @@ export const addItemState = writable<AddItemState>({});
 
 export const newContainer = writable<NewContainer | undefined>();
 
-export const lastCreatedContainer = writable<Container | undefined>(undefined);
+export const lastCreatedContainers = writable<Map<string, Container<AnyPayload>>>(new Map());
 
 export const lastUpdatedContainers = writable<Map<string, Container<AnyPayload>>>(new Map());
 

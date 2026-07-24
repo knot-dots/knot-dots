@@ -107,34 +107,19 @@
 	}
 
 	async function syncParentRelations(nextTerms: Container<TermPayload>[]) {
-		const currentRelations = container.relation;
-		container.relation = [
+		const nextContainerRelation = [
 			...nextTerms.map(({ guid }, index) => ({
 				object: container.guid,
 				position: index,
 				predicate,
 				subject: guid
 			})),
-			...currentRelations.filter(({ predicate: p }) => p !== predicate)
+			...container.relation.filter(({ predicate: p }) => p !== predicate)
 		];
-
-		nextTerms.forEach((term, index) => {
-			term.relation = [
-				...term.relation.filter(
-					({ object, predicate: p }) => !(object === container.guid && p === predicate)
-				),
-				{
-					object: container.guid,
-					position: index,
-					predicate,
-					subject: term.guid
-				}
-			];
-		});
 
 		const response = await fetch(`/container/${container.guid}/relation`, {
 			method: 'POST',
-			body: JSON.stringify(container.relation),
+			body: JSON.stringify(nextContainerRelation),
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'
@@ -145,6 +130,34 @@
 			const body = await response.json().catch(() => ({}));
 			throw new Error(body.message ?? 'Failed to update category');
 		}
+
+		container.relation = nextContainerRelation;
+
+		// Commit updated memberships as fresh objects instead of mutating term.relation
+		// in place: mutations via the $state proxies created in the terms derived do not
+		// write through to the underlying objects in relatedContainers.
+		const updatedTermsByGuid = new Map(
+			nextTerms.map((term, index) => [
+				term.guid,
+				{
+					...term,
+					relation: [
+						...term.relation.filter(
+							({ object, predicate: p }) => !(object === container.guid && p === predicate)
+						),
+						{
+							object: container.guid,
+							position: index,
+							predicate,
+							subject: term.guid
+						}
+					]
+				}
+			])
+		);
+		relatedContainers = relatedContainers.map(
+			(candidate) => updatedTermsByGuid.get(candidate.guid) ?? candidate
+		);
 	}
 
 	function hasSameOrder(nextTerms: Container<TermPayload>[]) {
@@ -190,7 +203,7 @@
 			return;
 		}
 
-		const previousTerms = terms;
+		const previousRelatedContainers = relatedContainers;
 		const newTerm = containerOfType(
 			payloadTypes.enum.term,
 			container.organization,
@@ -222,13 +235,18 @@
 				throw new Error('Unexpected response while creating term');
 			}
 
-			terms = [...terms.slice(0, showCreateFormAt), parsed.data, ...terms.slice(showCreateFormAt)];
+			const nextTerms = [
+				...terms.slice(0, showCreateFormAt),
+				parsed.data,
+				...terms.slice(showCreateFormAt)
+			];
+			relatedContainers = [...relatedContainers, parsed.data];
 
-			await syncParentRelations(terms);
+			await syncParentRelations(nextTerms);
 			await invalidate('containers');
 			resetForm();
 		} catch (error) {
-			terms = previousTerms;
+			relatedContainers = previousRelatedContainers;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			formState.creating = false;
@@ -240,7 +258,7 @@
 			return;
 		}
 
-		const previousTerms = terms;
+		const previousRelatedContainers = relatedContainers;
 		removingGuid = term.guid;
 
 		try {
@@ -257,10 +275,11 @@
 				throw new Error(body.message ?? 'Failed to remove term');
 			}
 
-			terms = terms.filter(({ guid }) => guid !== term.guid);
-			await syncParentRelations(terms);
+			const nextTerms = terms.filter(({ guid }) => guid !== term.guid);
+			relatedContainers = relatedContainers.map((c) => (c.guid === term.guid ? updatedTerm : c));
+			await syncParentRelations(nextTerms);
 		} catch (error) {
-			terms = previousTerms;
+			relatedContainers = previousRelatedContainers;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			removingGuid = null;

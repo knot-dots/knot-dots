@@ -22,7 +22,7 @@
 		titleForProgramCollection
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import { type AllLevelColumnId, createAllLevelQuery } from './query';
 	import type { PageProps } from './$types';
 
@@ -32,7 +32,7 @@
 		columnForItem,
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
-		created: () => $lastCreatedContainer,
+		created: () => $lastCreatedContainers,
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
 			const result = await fetchContainerPage<Container<AnyPayload>>({
