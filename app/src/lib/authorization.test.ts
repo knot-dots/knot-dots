@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
+import { z } from 'zod';
 import defineAbilityFor from '$lib/authorization';
-import { type AnyPayload, type Container, payloadTypes, predicates, visibility } from '$lib/models';
+import { type AnyPayload, newContainer, payloadTypes, predicates, visibility } from '$lib/models';
 import type { User } from '$lib/stores';
 
 // These tests pin down the current behaviour of the CASL policies with
@@ -9,48 +10,55 @@ import type { User } from '$lib/stores';
 // computed_managed_by eventually replaces the stored managed_by column, so
 // they must keep passing unchanged across that switch.
 
-const organization = 'organization-1';
-const organizationalUnit = 'organizational-unit-1';
-const team = 'team-1';
-const otherTeam = 'team-2';
+const organization = crypto.randomUUID();
+const organizationalUnit = crypto.randomUUID();
+const team = crypto.randomUUID();
+const otherTeam = crypto.randomUUID();
+const userGuid = crypto.randomUUID();
+const anotherUserGuid = crypto.randomUUID();
 
-function makeUser(overrides: Partial<User> = {}): User {
-	return {
-		adminOf: [],
-		collaboratorOf: [],
-		familyName: 'Muster',
-		givenName: 'Erika',
-		guid: 'user-1',
-		headOf: [],
-		isAuthenticated: true,
-		memberOf: [],
-		roles: [],
-		settings: {},
-		...overrides
-	};
+// The session user (User in stores.ts) has no zod schema of its own, so the
+// tests define one to derive complete users from partial input via parse.
+const testUser = z.object({
+	adminOf: z.array(z.string()).default([]),
+	collaboratorOf: z.array(z.string()).default([]),
+	familyName: z.string().default('Muster'),
+	givenName: z.string().default('Erika'),
+	guid: z.string().default(userGuid),
+	headOf: z.array(z.string()).default([]),
+	isAuthenticated: z.boolean().default(true),
+	memberOf: z.array(z.string()).default([]),
+	roles: z.array(z.string()).default([]),
+	settings: z.object({ features: z.array(z.string()).optional() }).default({})
+});
+
+// The policies work with NewContainer<AnyInitialPayload>, so newContainer
+// (which needs neither guid nor revision) serves as the base for test objects.
+const testContainer = newContainer.extend({
+	managed_by: z.uuid().default(team),
+	organization: z.uuid().default(organization),
+	organizational_unit: z.uuid().nullable().default(null),
+	realm: z.string().max(1024).default('test')
+});
+
+function makeUser(overrides: z.input<typeof testUser> = {}): User {
+	return testUser.parse(overrides);
 }
 
 function makeContainer(
 	type: AnyPayload['type'],
-	overrides: Record<string, unknown> = {},
+	overrides: Omit<z.input<typeof testContainer>, 'payload'> = {},
 	payloadOverrides: Record<string, unknown> = {}
 ) {
-	return {
-		guid: 'container-1',
-		managed_by: team,
-		organization,
-		organizational_unit: null,
-		realm: 'test',
-		relation: [],
-		user: [],
+	return testContainer.parse({
+		...overrides,
 		payload: {
 			title: 'Lorem ipsum',
 			type,
 			visibility: visibility.enum.members,
 			...payloadOverrides
-		},
-		...overrides
-	} as unknown as Container<AnyPayload>;
+		}
+	});
 }
 
 describe('anonymous users', () => {
@@ -241,7 +249,7 @@ describe('read visibility via managed_by', () => {
 	});
 
 	test('creator-visibility containers are readable by their creator and org admins only', () => {
-		const creatorRelation = [{ predicate: predicates.enum['is-creator-of'], subject: 'user-1' }];
+		const creatorRelation = [{ predicate: predicates.enum['is-creator-of'], subject: userGuid }];
 		const container = makeContainer(
 			payloadTypes.enum.measure,
 			{ user: creatorRelation },
@@ -249,10 +257,13 @@ describe('read visibility via managed_by', () => {
 		);
 		expect(defineAbilityFor(makeUser()).can('read', container)).toBe(true);
 		expect(
-			defineAbilityFor(makeUser({ guid: 'user-2', adminOf: [organization] })).can('read', container)
+			defineAbilityFor(makeUser({ guid: anotherUserGuid, adminOf: [organization] })).can(
+				'read',
+				container
+			)
 		).toBe(true);
 		expect(
-			defineAbilityFor(makeUser({ guid: 'user-2', memberOf: [team, organization] })).can(
+			defineAbilityFor(makeUser({ guid: anotherUserGuid, memberOf: [team, organization] })).can(
 				'read',
 				container
 			)
@@ -292,7 +303,7 @@ describe('field-level rules', () => {
 
 	test('the indicator category of indicator templates is immutable', () => {
 		const ability = defineAbilityFor(makeUser({ adminOf: [organization] }));
-		const template = makeContainer(payloadTypes.enum.indicator_template);
+		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
 		expect(ability.can('update', template)).toBe(true);
 		expect(ability.can('update', template, 'indicatorCategory')).toBe(false);
 	});
