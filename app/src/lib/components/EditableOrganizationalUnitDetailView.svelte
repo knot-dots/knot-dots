@@ -230,27 +230,33 @@
 							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
 							{/if}
-						</div>
 
-						{#if linkedProfile}
-							<div class="details-section profile-switch">
-								{#if isIndividualProfile}
-									<a class="profile-switch-item" href={linkedProfileURL}>
-										{$_('standard_profile.title')}
-									</a>
-									<span aria-current="page" class="profile-switch-item profile-switch-item--active">
-										{$_('individual_profile.title')}
-									</span>
-								{:else}
-									<span aria-current="page" class="profile-switch-item profile-switch-item--active">
-										{$_('standard_profile.title')}
-									</span>
-									<a class="profile-switch-item" href={linkedProfileURL}>
-										{$_('individual_profile.title')}
-									</a>
-								{/if}
-							</div>
-						{/if}
+							{#if linkedProfile}
+								<div class="profile-switch">
+									{#if isIndividualProfile}
+										<a class="profile-switch-item" href={linkedProfileURL}>
+											{$_('standard_profile.title')}
+										</a>
+										<span
+											aria-current="page"
+											class="profile-switch-item profile-switch-item--active"
+										>
+											{$_('individual_profile.title')}
+										</span>
+									{:else}
+										<span
+											aria-current="page"
+											class="profile-switch-item profile-switch-item--active"
+										>
+											{$_('standard_profile.title')}
+										</span>
+										<a class="profile-switch-item" href={linkedProfileURL}>
+											{$_('individual_profile.title')}
+										</a>
+									{/if}
+								</div>
+							{/if}
+						</div>
 
 						<header class="details-section">
 							<EditableLogo
@@ -367,7 +373,6 @@
 		padding: 0;
 		position: absolute;
 		right: var(--details-section-padding-x, 1.5rem);
-		top: calc(var(--details-section-padding-y, 1rem));
 	}
 
 	.profile-switch-item {
