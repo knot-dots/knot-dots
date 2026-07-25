@@ -1277,26 +1277,34 @@ label > input[type='checkbox'].toggle {
 
 :root {
 	--details-max-width: 41.5rem;
-	--details-padding-x: 5rem;
 	--details-padding-y: 5rem;
 	--details-section-padding-y: 1rem;
 	--details-section-padding-x: 1.5rem;
 }
 
 .details {
-	--carousel-margin-left: calc((var(--details-padding-x) + var(--details-section-padding-x)) * -1);
-	--carousel-margin-right: calc((var(--details-padding-x) + var(--details-section-padding-x)) * -1);
+	--details-padding-left: var(--details-padding-x, 5rem);
+	--details-padding-right: var(--details-padding-x, 2.5rem);
+
+	--carousel-margin-left: calc(
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
+	);
+	--carousel-margin-right: calc(
+		(var(--details-padding-right) + var(--details-section-padding-x)) * -1
+	);
 	--carousel-max-width: calc(
-		100% + var(--details-padding-x) * 2 + var(--details-section-padding-x) * 2
+		100% + var(--details-padding-left) + var(--details-padding-right) +
+			var(--details-section-padding-x) * 2
 	);
 	--editable-table-margin-left: calc(
-		(var(--details-padding-x) + var(--details-section-padding-x)) * -1
+		(var(--details-padding-left) + var(--details-section-padding-x)) * -1
 	);
 	--editable-table-margin-right: calc(
-		var(--details-padding-x) * -1 - var(--details-section-padding-x)
+		(var(--details-padding-right) + var(--details-section-padding-x)) * -1
 	);
 	--editable-table-max-width: calc(
-		100% + var(--details-padding-x) * 2 + var(--details-section-padding-x) * 2
+		100% + var(--details-padding-left) + var(--details-padding-right) +
+			var(--details-section-padding-x) * 2
 	);
 
 	color: var(--color-gray-500);
@@ -1317,7 +1325,7 @@ label > input[type='checkbox'].toggle {
 
 .details-section {
 	border-radius: 24px;
-	margin: 0 var(--details-padding-x);
+	margin: 0 var(--details-padding-right) 0 var(--details-padding-left);
 	padding: var(--details-section-padding-y) var(--details-section-padding-x);
 }
 
@@ -2110,14 +2118,15 @@ img.cover {
 	cursor: none;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
 	:root {
 		--details-padding-y: 1.5rem;
 		--details-section-padding-x: 0.75rem;
 	}
 
 	.details {
-		--details-padding-x: 0.75rem;
+		--details-padding-left: 0.75rem;
+		--details-padding-right: 0.75rem;
 	}
 }
 
