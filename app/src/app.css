@@ -1305,7 +1305,6 @@ label > input[type='checkbox'].toggle {
 	flex: 1;
 	flex-direction: column;
 	font-size: 0.875rem;
-	hyphens: auto;
 	overflow-y: auto;
 	padding: var(--details-padding-y) 0 0;
 	position: relative;
@@ -1336,6 +1335,7 @@ header.details-section + dialog + div.details-section {
 	color: var(--color-gray-900);
 	font-size: 2.25rem;
 	font-weight: 700;
+	hyphens: auto;
 	line-height: 1.25;
 	margin-bottom: 0.75rem;
 }
@@ -1343,6 +1343,7 @@ header.details-section + dialog + div.details-section {
 .details-heading {
 	color: var(--color-gray-800);
 	flex-grow: 1;
+	hyphens: auto;
 	line-height: 1.25;
 	min-height: 2rem;
 }
@@ -1454,6 +1455,7 @@ h4.details-heading {
 .markdown-body,
 .milkdown .editor {
 	font-size: 1rem;
+	hyphens: auto;
 	line-height: 1.5;
 	min-height: 1.5em;
 	overflow-wrap: break-word;
