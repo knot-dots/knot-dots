@@ -99,14 +99,6 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
-			<IndicatorProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
-
 			<div class="details-section">
 				<div class="segmented-button">
 					<label class="button">
@@ -215,6 +207,16 @@
 				<CreateCopyButton {container} />
 				<DeleteButton {container} {relatedContainers} />
 			</footer>
+		{/snippet}
+
+		{#snippet properties()}
+			<IndicatorProperties
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+				{relatedContainers}
+				{revisions}
+			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

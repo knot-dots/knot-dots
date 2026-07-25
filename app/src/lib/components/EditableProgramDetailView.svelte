@@ -266,14 +266,6 @@
 	{#if viewMode === 'view_mode.preview'}
 		<EditableContainerDetailView bind:container {footer}>
 			{#snippet data()}
-				<ProgramProperties
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					{relatedContainers}
-					{revisions}
-				/>
-
 				<div class="chapters">
 					{#each filteredParts as part, i (part.guid)}
 						<form
@@ -306,6 +298,16 @@
 						{/if}
 					{/each}
 				</div>
+			{/snippet}
+
+			{#snippet properties()}
+				<ProgramProperties
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
+				/>
 			{/snippet}
 		</EditableContainerDetailView>
 	{:else if viewMode === 'view_mode.table'}

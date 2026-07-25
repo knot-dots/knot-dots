@@ -58,14 +58,6 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
-			<TextProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
-
 			{#key container.guid}
 				<EditableFormattedText
 					editable={$applicationState.containerDetailView.editable &&
@@ -82,6 +74,16 @@
 				<CreateCopyButton {container} />
 				<DeleteButton {container} {relatedContainers} />
 			</footer>
+		{/snippet}
+
+		{#snippet properties()}
+			<TextProperties
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+				{relatedContainers}
+				{revisions}
+			/>
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

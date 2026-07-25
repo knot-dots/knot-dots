@@ -9,6 +9,7 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, OrganizationPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -105,8 +106,8 @@
 	}
 </script>
 
-<div class="details-section">
-	<div class="data-grid">
+<PropertyGrid>
+	{#snippet general()}
 		{#if editable}
 			<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
 			<AdministrativeAreaCombobox
@@ -148,5 +149,5 @@
 		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />
 		{/if}
-	</div>
-</div>
+	{/snippet}
+</PropertyGrid>

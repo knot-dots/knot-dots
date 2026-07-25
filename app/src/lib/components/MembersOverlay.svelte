@@ -15,7 +15,7 @@
 <Header workspaceOptions={[]} />
 
 <div class="content">
-	<div class="details">
+	<div class="details details-scroll-wrapper">
 		<div class="details-section">
 			<Members {container} {users} />
 		</div>

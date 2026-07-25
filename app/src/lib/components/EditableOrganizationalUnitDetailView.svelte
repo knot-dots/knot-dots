@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { Collapsible } from 'melt/builders';
 	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
-	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -15,15 +15,16 @@
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
-	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
+	import { setDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		type AnyPayload,
 		type Container,
@@ -111,9 +112,6 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
-
 	const handleSubmit = $derived(autoSave(container, 2000));
 
 	let isIndividualProfile = $derived(
@@ -177,7 +175,6 @@
 
 			if (response.ok) {
 				const created = await response.json();
-				dialog.close();
 				goto(
 					getOrganizationURL(created, '/all/page', env, {
 						organizationSlug: page.data.currentOrganization.payload.slug,
@@ -192,6 +189,8 @@
 			creatingProfile = false;
 		}
 	}
+
+	setDetailViewContext({ properties: new Collapsible() });
 </script>
 
 {#snippet header()}
@@ -201,132 +200,124 @@
 {#snippet main()}
 	<div class="content-details">
 		<article class="details">
+			<div class="details-scroll-wrapper">
+				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+					<EditableCoverSection
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
+
+					<div
+						class="stage stage--{container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}"
+					>
+						<div class="stage--buttons details-section">
+							<CoverUpload
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								label={$_('add_cover')}
+								bind:value={container.payload.cover}
+							/>
+							<ColorDropdown
+								buttonStyle="button"
+								bind:value={container.payload.color}
+								label={$_('highlight')}
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+							/>
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
+							{/if}
+						</div>
+
+						{#if linkedProfile}
+							<div class="details-section profile-switch">
+								{#if isIndividualProfile}
+									<a class="profile-switch-item" href={linkedProfileURL}>
+										{$_('standard_profile.title')}
+									</a>
+									<span aria-current="page" class="profile-switch-item profile-switch-item--active">
+										{$_('individual_profile.title')}
+									</span>
+								{:else}
+									<span aria-current="page" class="profile-switch-item profile-switch-item--active">
+										{$_('standard_profile.title')}
+									</span>
+									<a class="profile-switch-item" href={linkedProfileURL}>
+										{$_('individual_profile.title')}
+									</a>
+								{/if}
+							</div>
+						{/if}
+
+						<header class="details-section">
+							<EditableLogo
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								bind:value={container.payload.image}
+							/>
+
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+								<h1
+									class={{
+										'details-title': true,
+										'is-visually-hidden': container.payload.imageReplacesName
+									}}
+									contenteditable="plaintext-only"
+									bind:textContent={container.payload.name}
+									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+								></h1>
+							{:else}
+								<h1
+									class={{
+										'details-title': true,
+										'is-visually-hidden': container.payload.imageReplacesName
+									}}
+									contenteditable="false"
+								>
+									{container.payload.name}
+								</h1>
+							{/if}
+						</header>
+
+						{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+							{#key container.guid}
+								<EditableFormattedText
+									editable={$applicationState.containerDetailView.editable &&
+										$ability.can('update', container)}
+									bind:value={container.payload.description}
+								/>
+							{/key}
+						{/if}
+					</div>
+				</form>
+
+				<Sections bind:container {relatedContainers} />
+
+				<footer class="footer-action-bar">
+					{#if mayCreateIndividualProfile}
+						<button
+							class="button button-xs button-alternative"
+							disabled={creatingProfile}
+							onclick={createIndividualProfile}
+							type="button"
+						>
+							{$_('individual_profile.create')}
+						</button>
+					{/if}
+					<DeleteButton {container} {relatedContainers} />
+				</footer>
+			</div>
+
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<EditableCoverSection
+				<OrganizationalUnitProperties
 					bind:container
 					editable={$applicationState.containerDetailView.editable &&
 						$ability.can('update', container)}
 				/>
-
-				<div
-					class="stage stage--{container.payload.color
-						? backgroundColors.get(container.payload.color)
-						: 'white'}"
-				>
-					<div class="stage--buttons details-section">
-						<CoverUpload
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							label={$_('add_cover')}
-							bind:value={container.payload.cover}
-						/>
-						<ColorDropdown
-							buttonStyle="button"
-							bind:value={container.payload.color}
-							label={$_('highlight')}
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
-						{/if}
-					</div>
-
-					{#if linkedProfile}
-						<div class="details-section profile-switch">
-							{#if isIndividualProfile}
-								<a class="profile-switch-item" href={linkedProfileURL}>
-									{$_('standard_profile.title')}
-								</a>
-								<span aria-current="page" class="profile-switch-item profile-switch-item--active">
-									{$_('individual_profile.title')}
-								</span>
-							{:else}
-								<span aria-current="page" class="profile-switch-item profile-switch-item--active">
-									{$_('standard_profile.title')}
-								</span>
-								<a class="profile-switch-item" href={linkedProfileURL}>
-									{$_('individual_profile.title')}
-								</a>
-							{/if}
-						</div>
-					{/if}
-
-					<header class="details-section">
-						<EditableLogo
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							bind:value={container.payload.image}
-						/>
-
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class={{
-									'details-title': true,
-									'is-visually-hidden': container.payload.imageReplacesName
-								}}
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.name}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-						{:else}
-							<h1
-								class={{
-									'details-title': true,
-									'is-visually-hidden': container.payload.imageReplacesName
-								}}
-								contenteditable="false"
-							>
-								{container.payload.name}
-							</h1>
-						{/if}
-
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<button class="action-button" onclick={() => dialog.showModal()} type="button">
-								<Ellipsis />
-								<span class="is-visually-hidden">{$_('organizational_unit.properties.title')}</span>
-							</button>
-						{/if}
-					</header>
-
-					<PropertiesDialog
-						bind:dialog
-						{container}
-						{relatedContainers}
-						title={$_('organizational_unit.properties.title')}
-					>
-						{#snippet actions()}
-							{#if mayCreateIndividualProfile}
-								<button
-									class="button button-xs button-alternative"
-									disabled={creatingProfile}
-									onclick={createIndividualProfile}
-									type="button"
-								>
-									{$_('individual_profile.create')}
-								</button>
-							{/if}
-						{/snippet}
-
-						<OrganizationalUnitProperties
-							bind:container
-							editable={$ability.can('update', container)}
-						/>
-					</PropertiesDialog>
-
-					{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
-						{#key container.guid}
-							<EditableFormattedText
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								bind:value={container.payload.description}
-							/>
-						{/key}
-					{/if}
-				</div>
 			</form>
-
-			<Sections bind:container {relatedContainers} />
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
@@ -336,7 +327,11 @@
 {@render layout(header, main)}
 
 <style>
-	.details {
+	form {
+		display: contents;
+	}
+
+	.details-scroll-wrapper {
 		padding-top: 0;
 	}
 
@@ -352,10 +347,6 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding-bottom: 0;
-	}
-
-	form {
-		position: relative;
 	}
 
 	header button {

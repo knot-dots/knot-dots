@@ -1301,13 +1301,18 @@ label > input[type='checkbox'].toggle {
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
-	display: flex;
 	flex: 1;
-	flex-direction: column;
 	font-size: 0.875rem;
+	min-height: 0;
+	position: relative;
+}
+
+.details-scroll-wrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 	overflow-y: auto;
 	padding: var(--details-padding-y) 0 0;
-	position: relative;
 }
 
 .details-section {
@@ -1370,6 +1375,30 @@ h4.details-heading {
 #dnd-action-dragged-el .details-section {
 	background: var(--color-primary-050);
 	outline: solid 1px var(--color-primary-700);
+}
+
+.details-properties > .label {
+	display: block;
+	font-size: 0.75rem;
+	font-weight: 400;
+	margin-bottom: 0.5rem;
+	margin-top: 1.5rem;
+	min-height: 1.5rem;
+}
+
+.details-properties > .value {
+	align-items: center;
+	background-color: var(--form-control-background);
+	border: var(--form-control-border);
+	border-radius: var(--form-control-border-radius);
+	font-weight: 500;
+	min-height: var(--form-control-min-height);
+	padding: var(--form-control-padding-y) var(--form-control-padding-x);
+}
+
+.details-properties > .value.value--read-only {
+	background-color: var(--form-control-background);
+	color: var(--color-gray-400);
 }
 
 .data-grid {

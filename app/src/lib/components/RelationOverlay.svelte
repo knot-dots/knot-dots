@@ -465,7 +465,7 @@
 <Header workspaceOptions={[]} />
 
 <div class="content-details">
-	<div class="details">
+	<div class="details details-scroll-wrapper">
 		<p class="details-section">
 			{$_('relation_overlay.help', {
 				values: {

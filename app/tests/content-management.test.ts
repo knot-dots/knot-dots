@@ -75,21 +75,18 @@ test('create and delete', async ({ dotsBoard, testOrganization }) => {
 test('custom favicon support', async ({ page, testOrganization }) => {
 	await page.goto(`/${testOrganization.guid}/all/page`);
 	await page.getByRole('checkbox', { name: 'Edit mode' }).check();
-	await page.getByRole('button', { name: 'Settings' }).click();
+	await page.getByRole('button', { name: 'Show all properties' }).click();
 
 	const fileChooserPromise = page.waitForEvent('filechooser');
-	await page.getByRole('dialog').getByText('Custom favicon').click();
+	await page.getByText('Custom favicon').click();
 	const fileChooser = await fileChooserPromise;
 	const saveResponse = page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);
 	await fileChooser.setFiles(path.resolve(import.meta.dirname, 'pnk-favicon-32.png'));
 	await saveResponse;
-	await expect(page.getByRole('dialog').getByRole('img', { name: 'Custom favicon' })).toBeVisible();
-	const url = await page
-		.getByRole('dialog')
-		.getByRole('img', { name: 'Custom favicon' })
-		.getAttribute('src');
+	await expect(page.getByRole('img', { name: 'Custom favicon' })).toBeVisible();
+	const url = await page.getByRole('img', { name: 'Custom favicon' }).getAttribute('src');
 
 	await page.reload();
 	expect(await page.locator('head link[rel="icon"]').getAttribute('href')).toBe(url);

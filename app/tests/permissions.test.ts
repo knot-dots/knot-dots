@@ -165,6 +165,7 @@ test.describe('Permissions', () => {
 			await expect(
 				dotsBoard.overlay.locator.getByRole('heading', { name: testMeasure.payload.title })
 			).toBeVisible();
+			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.overlay.locator.getByLabel('Organizational unit').click();
 			const saveResponse = dotsBoard.page.waitForResponse(
 				(r) => r.url().includes('/revision') && r.request().method() === 'POST'
@@ -172,7 +173,7 @@ test.describe('Permissions', () => {
 			await dotsBoard.overlay.locator.getByLabel(testOrganizationalUnit.payload.name).click();
 			await saveResponse;
 
-			// Assert descendant goal' organizational unit is updated, too
+			// Assert descendant goal's organizational unit is updated, too
 			await section.getByRole('link', { name: titleOfFirstGoal }).click();
 			await expect(
 				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })
@@ -185,11 +186,13 @@ test.describe('Permissions', () => {
 			await dotsBoard.overlay.closeButton.click();
 			await dotsBoard.card(testProgram.payload.title).click();
 			await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await expect(
 				dotsBoard.overlay.locator.getByRole('button', { name: 'Organizational unit' })
 			).toHaveText('Empty');
 
 			// Assert newly added goals inherit the organizational unit of the measure
+			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.card(testMeasure.payload.title).click();
 			await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
 			await section.getByRole('button', { name: 'Add item' }).click();

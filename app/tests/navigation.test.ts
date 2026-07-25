@@ -50,7 +50,7 @@ test('Organization menu links to workspace or landing page', async ({
 
 	const nav = page.getByRole('navigation');
 
-	// Open the sidebar organization select and verify the test organization
+	// Open the sidebar organization, select and verify the test organization
 	// link points to the dots board.
 	await nav.getByRole('button', { name: 'Organizations' }).click();
 	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
@@ -62,20 +62,20 @@ test('Organization menu links to workspace or landing page', async ({
 	// Ensure the measures workspace is disabled for the test organization.
 	await landingPage.goto(`/${testOrganization.guid}`);
 	await landingPage.header.editModeToggle.check();
-	await landingPage.settingsButton.click();
-	await landingPage.settingsDialog.getByRole('button', { name: 'Visible workspaces' }).click();
+	await landingPage.header.disclosePropertiesButton.click();
+	await landingPage.properties.getByRole('button', { name: 'Visible workspaces' }).click();
 	const saveResponse = page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);
-	await landingPage.settingsDialog.getByRole('checkbox', { name: 'All objects' }).check();
-	await landingPage.settingsDialog.getByRole('checkbox', { name: 'Measures' }).uncheck();
+	await landingPage.properties.getByRole('checkbox', { name: 'All objects' }).check();
+	await landingPage.properties.getByRole('checkbox', { name: 'Measures' }).uncheck();
 	await saveResponse;
-	await landingPage.settingsDialog.getByRole('button', { name: 'Close' }).click();
+	await landingPage.properties.getByRole('button', { name: 'Close' }).click();
 
 	await page.goto(`/${defaultOrganization.guid}/measures/status`);
 	await expect(page).toHaveURL(new RegExp(`/${defaultOrganization.guid}/measures/status`));
 
-	// Open the sidebar organization select and verify the test organization
+	// Open the sidebar organization, select and verify the test organization
 	// link points to the landing page, since it does not support the measures
 	// workspace.
 	await nav.getByRole('button', { name: 'Organizations' }).click();
