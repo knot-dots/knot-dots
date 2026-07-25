@@ -42,7 +42,7 @@
 	>
 		<span class="selected" class:truncated={compact}>
 			{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
-				<span class="value" class:value--compact={compact}>{selectedOption.label}</span>
+				<span class="value truncated" class:value--compact={compact}>{selectedOption.label}</span>
 			{:else}
 				{$_('empty')}
 			{/each}
@@ -60,7 +60,7 @@
 				{#each options as option (option.value)}
 					<label>
 						<input type="checkbox" value={option.value} bind:group={value} />
-						{option.label}
+						<span class="truncated">{option.label}</span>
 					</label>
 				{/each}
 			</div>
@@ -79,6 +79,7 @@
 
 	.selected {
 		display: block;
+		min-width: 0;
 	}
 
 	.value {

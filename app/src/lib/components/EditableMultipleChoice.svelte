@@ -20,7 +20,7 @@
 {:else}
 	<ul class="value">
 		{#each options.filter((o) => value.includes(o.value)) as selectedOption (selectedOption.value)}
-			<li>{selectedOption.label}</li>
+			<li class="truncated">{selectedOption.label}</li>
 		{:else}
 			<li>{$_('empty')}</li>
 		{/each}
