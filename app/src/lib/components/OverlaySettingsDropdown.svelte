@@ -104,7 +104,6 @@
 	handleBack={backToMain}
 	handleClose={resetSettingsState}
 	handleOpen={resetSettingsState}
-	panelMinWidth="17.5rem"
 	title={settingsSubview === 'main'
 		? $_('container_settings_dropdown.title')
 		: $_('embed.menu_item_title')}

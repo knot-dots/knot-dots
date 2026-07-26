@@ -1889,9 +1889,9 @@ img.cover {
 }
 
 .dropdown-panel {
-	background-color: white;
-	border-radius: 8px;
-	border: solid 1px var(--color-gray-200);
+	background: var(--dropdown-panel-background, var(--color-white));
+	border-radius: var(--dropdown-panel-border-radius, 8px);
+	border: solid 1px var(--dropdown-panel-border-color, var(--color-gray-200));
 	box-shadow: var(--shadow-lg);
 	display: flex;
 	flex-direction: column;
@@ -1903,6 +1903,7 @@ img.cover {
 	overflow-y: auto;
 	padding: var(--dropdown-panel-padding, 0.5rem);
 	position: absolute;
+	width: var(--dropdown-panel-width, auto);
 	z-index: 2;
 }
 

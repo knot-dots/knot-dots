@@ -83,7 +83,6 @@
 		handleBack={backToMain}
 		handleClose={resetSettingsState}
 		handleOpen={resetSettingsState}
-		panelMinWidth="15rem"
 		title={settingsSubview === 'main'
 			? $_('container_settings_dropdown.title')
 			: settingsSubview === 'visibility'
