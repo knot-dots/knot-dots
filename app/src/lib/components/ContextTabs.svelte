@@ -112,13 +112,13 @@
 		flex-direction: column-reverse;
 		gap: var(--margin);
 		margin: var(--margin);
-		max-height: calc(100% - 2 * var(--margin));
 		position: absolute;
 		right: 0;
 		z-index: 1;
 	}
 
 	aside:has([role='tabpanel']) {
+		height: calc(100% - 2 * var(--margin));
 		width: calc(100% - 2 * var(--margin));
 	}
 
@@ -227,7 +227,6 @@
 			flex: 0 1;
 			flex-direction: row-reverse;
 			gap: 0;
-			height: auto;
 			position: relative;
 			width: auto;
 		}
