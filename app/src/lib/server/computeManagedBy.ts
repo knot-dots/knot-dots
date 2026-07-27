@@ -107,7 +107,7 @@ export async function computeManagedBy(
 
 type ManagedByComparable = {
 	guid: string;
-	managed_by: string;
+	managed_by: string[];
 	organization: string;
 	organizational_unit: string | null;
 	payload: { type: string };
@@ -141,7 +141,7 @@ export async function attachComputedManagedBy<T extends ManagedByComparable>(
 			continue;
 		}
 		container.computed_managed_by = value;
-		if (!value.includes(container.managed_by)) {
+		if (!value.includes(container.managed_by[0])) {
 			log.warn(
 				{
 					guid: container.guid,

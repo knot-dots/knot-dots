@@ -176,7 +176,7 @@ export function createContainer(container: NewContainer) {
 					INSERT INTO container (guid, managed_by, organization, payload, realm)
 					VALUES (
 						${organizationGuid},
-            ${container.managed_by},
+            ${container.managed_by[0]},
 						${organizationGuid},
 						${sql.jsonb(container.payload)},
 						${container.realm}
@@ -186,7 +186,7 @@ export function createContainer(container: NewContainer) {
 				: await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
 					VALUES (
-						${container.managed_by},
+						${container.managed_by[0]},
 						${container.organization},
 						${container.organizational_unit},
 						${sql.jsonb(container.payload)},
@@ -255,7 +255,7 @@ export function updateContainer(container: ModifiedContainer) {
 				INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
-					${container.managed_by},
+					${container.managed_by[0]},
 					${container.organization},
 					${container.organizational_unit},
 					${sql.jsonb(container.payload)},
@@ -296,8 +296,8 @@ export function updateContainer(container: ModifiedContainer) {
 			if (previousRevision.organization != container.organization) {
 				await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
 			}
-			if (previousRevision.managed_by != container.managed_by) {
-				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+			if (previousRevision.managed_by[0] != container.managed_by[0]) {
+				await bulkUpdateManagedBy(previousRevision, container.managed_by[0])(txConnection);
 			}
 
 			if (shouldIndexType(containerResult.payload.type)) {
@@ -1847,7 +1847,7 @@ export function bulkUpdateManagedBy(container: Container<AnyPayload>, managedBy:
 						containerResult.map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
-					  AND managed_by = ${container.managed_by}
+					  AND managed_by = ${container.managed_by[0]}
 						AND valid_currently
 						AND NOT deleted
 				`);
@@ -1986,7 +1986,7 @@ export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
 export function setUp(name: string, realm: string) {
 	return async (connection: DatabaseConnection) => {
 		return await createContainer({
-			managed_by: '00000000-0000-0000-0000-000000000000',
+			managed_by: ['00000000-0000-0000-0000-000000000000'],
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
 			payload: {

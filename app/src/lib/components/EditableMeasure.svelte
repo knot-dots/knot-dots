@@ -51,10 +51,9 @@
 
 		const isPartOfMeasureOptions = await measureCandidatesRequest;
 
-		container.managed_by =
-			isPartOfMeasureOptions.find(({ guid }) => guid == value)?.managed_by ??
-			container.organizational_unit ??
-			container.organization;
+		container.managed_by = isPartOfMeasureOptions.find(({ guid }) => guid == value)?.managed_by ?? [
+			container.organizational_unit ?? container.organization
+		];
 		container.relation = [
 			...container.relation.slice(0, isPartOfMeasureIndex),
 			...(value

@@ -2034,10 +2034,16 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 
 export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 
+// Multi-valued by type, but currently carrying exactly one value: the stored
+// managed_by column remains a single uuid until computed_managed_by takes its
+// place. The union wraps single values so that database rows and requests from
+// older clients stay valid during the transition.
+const managedBy = z.union([z.uuid().transform((value) => [value]), z.array(z.uuid()).nonempty()]);
+
 export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid(),
-		managed_by: z.uuid(),
+		managed_by: managedBy,
 		// Observational, read-time computed counterpart of managed_by; only present
 		// when the ComputedManagedBy feature flag is enabled. Multi-valued by type,
 		// but currently carries exactly one value. See computeManagedBy.ts.
@@ -2065,7 +2071,7 @@ export const anyContainer = createContainerSchema(anyPayload);
 export function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid(),
-		managed_by: z.uuid(),
+		managed_by: managedBy,
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
@@ -2085,7 +2091,7 @@ export const modifiedContainer = createModifiedContainerSchema(anyPayload);
 
 export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
-		managed_by: z.uuid(),
+		managed_by: managedBy,
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
@@ -2397,7 +2403,7 @@ export function containerOfType(
 	payloadType: PayloadType,
 	organization: string,
 	organizationalUnit: string | null,
-	managedBy: string,
+	managedBy: string | string[],
 	realm: string
 ) {
 	return createNewContainerSchema(anyInitialPayload).parse({
@@ -2604,7 +2610,7 @@ export function getManagedBy(
 	container: Container<AnyPayload>,
 	candidates: Container<AnyPayload>[]
 ) {
-	return candidates.find(({ guid }) => guid === container.managed_by);
+	return candidates.find(({ guid }) => container.managed_by.includes(guid));
 }
 
 export function createCopyOf(

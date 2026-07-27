@@ -35,7 +35,9 @@ const testUser = z.object({
 // The policies work with NewContainer<AnyInitialPayload>, so newContainer
 // (which needs neither guid nor revision) serves as the base for test objects.
 const testContainer = newContainer.extend({
-	managed_by: z.uuid().default(team),
+	managed_by: z
+		.union([z.uuid().transform((value) => [value]), z.array(z.uuid()).nonempty()])
+		.default([team]),
 	organization: z.uuid().default(organization),
 	organizational_unit: z.uuid().nullable().default(null),
 	realm: z.string().max(1024).default('test')

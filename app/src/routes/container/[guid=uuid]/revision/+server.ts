@@ -122,18 +122,18 @@ export const POST = (async ({ locals, params, request }) => {
 			if (newOrganizationalUnit) {
 				// Case 1: assigning a organizational unit
 				const shouldAdopt =
-					(prevOrganizationalUnit && previousContainer.managed_by === prevOrganizationalUnit) ||
+					(prevOrganizationalUnit && previousContainer.managed_by[0] === prevOrganizationalUnit) ||
 					(!prevOrganizationalUnit &&
-						previousContainer.managed_by === previousContainer.organization);
+						previousContainer.managed_by[0] === previousContainer.organization);
 				if (shouldAdopt) {
-					managed_by = newOrganizationalUnit;
+					managed_by = [newOrganizationalUnit];
 				}
 			} else if (
 				prevOrganizationalUnit &&
-				previousContainer.managed_by === prevOrganizationalUnit
+				previousContainer.managed_by[0] === prevOrganizationalUnit
 			) {
 				// Case 2: removing organizational unit
-				managed_by = previousContainer.organization;
+				managed_by = [previousContainer.organization];
 			}
 		}
 
