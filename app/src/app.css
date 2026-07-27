@@ -1308,7 +1308,7 @@ label > input[type='checkbox'].toggle {
 	);
 
 	color: var(--color-gray-500);
-	container-type: inline-size;
+	container: details / inline-size;
 	flex: 1;
 	font-size: 0.875rem;
 	min-height: 0;
@@ -2014,6 +2014,12 @@ img.cover {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+@container details {
+	.wide {
+		max-width: 100%;
+	}
 }
 
 /** Splitter */
