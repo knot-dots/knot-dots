@@ -155,6 +155,7 @@ const helpSlugValues = [
 	'objectives-and-effects',
 	'organization-view',
 	'organizational-unit-view',
+	'pages-catalog',
 	'page-view',
 	'profile',
 	'program-view',
@@ -164,6 +165,7 @@ const helpSlugValues = [
 	'programs-table',
 	'relations',
 	'report-view',
+	'reports-catalog',
 	'resource-data-view',
 	'resource-v2-view',
 	'resource-view',
@@ -171,11 +173,11 @@ const helpSlugValues = [
 	'resources-table',
 	'rule-view',
 	'rules-catalog',
+	'rules-status',
+	'rules-table',
 	'set-of-rules-catalog',
 	'set-of-rules-status',
 	'set-of-rules-table',
-	'rules-status',
-	'rules-table',
 	'simple-measure-view',
 	'strategies-catalog',
 	'strategies-level',
@@ -187,7 +189,8 @@ const helpSlugValues = [
 	'tasks-table',
 	'teaser-view',
 	'term-view',
-	'text-view'
+	'text-view',
+	'user-management'
 ] as const;
 
 export const helpSlug = z.enum(helpSlugValues);

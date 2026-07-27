@@ -4,6 +4,7 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
@@ -71,5 +72,6 @@
 				/>
 			{/snippet}
 		</Catalog>
+		<ContextTabs slug="reports-catalog" />
 	{/snippet}
 </Layout>
