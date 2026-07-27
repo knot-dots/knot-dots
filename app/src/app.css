@@ -2027,7 +2027,7 @@ img.cover {
 	overflow: visible !important;
 }
 
-@media (max-width: 768px) {
+@container (max-width: 768px) {
 	.splitpanes.splitpanes--vertical {
 		flex-direction: column;
 	}
