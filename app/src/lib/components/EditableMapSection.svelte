@@ -6,16 +6,19 @@
 		type AnyPayload,
 		type Container,
 		type MapPayload,
+		type OrganizationPayload,
 		type OrganizationalUnitPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import 'leaflet/dist/leaflet.css';
+	import { _ } from 'svelte-i18n';
+	import Info from '~icons/knotdots/exclamation-circle';
 
 	interface Props {
 		container: Container<MapPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-		parentContainer: Container<OrganizationalUnitPayload>;
+		parentContainer: Container<OrganizationPayload> | Container<OrganizationalUnitPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 
@@ -61,7 +64,19 @@
 </header>
 
 <div class="map">
-	<div {@attach createMapWithGeoJsonObject(feature)}></div>
+	{#if feature}
+		<div class="map-canvas" {@attach createMapWithGeoJsonObject(feature)}></div>
+	{:else}
+		<div class="map-placeholder">
+			<span class="map-placeholder-title">{$_('administrative_area.boundary.empty')}</span>
+			{#if editable && $ability.can('update', parentContainer)}
+				<div class="system-info map-placeholder-hint">
+					<Info />
+					<span>{$_('administrative_area.boundary.empty_hint')}</span>
+				</div>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -70,8 +85,40 @@
 		z-index: 0;
 	}
 
-	.map > div {
+	.map-canvas,
+	.map-placeholder {
 		border-radius: 8px;
 		height: 388px;
+	}
+
+	.map-placeholder {
+		align-items: center;
+		background-color: var(--color-background-accent-subtle);
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		justify-content: center;
+	}
+
+	.map-placeholder-title {
+		color: var(--color-text-default);
+		font-size: 1rem;
+		font-weight: 500;
+		line-height: 1.5rem;
+	}
+
+	.map-placeholder-hint {
+		align-items: center;
+		background-color: var(--color-background-accent-subtle);
+		border: 1px solid var(--color-border-accent-subtle);
+		border-radius: 24px;
+		color: var(--color-text-accent-default);
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+	}
+
+	.map-placeholder-hint :global(svg) {
+		color: var(--color-icon-accent-subtle);
 	}
 </style>

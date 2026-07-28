@@ -1,35 +1,121 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import { createCombobox } from 'svelte-headlessui';
+	import { z } from 'zod';
 	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Map from '$lib/components/Map.svelte';
-	import { fetchAdministrativeAreas } from '$lib/remote/administrativeArea.remote';
+
+	const STRIP_ADMINISTRATIVE_PREFIX = /^(\s*Landkreis|Kreis)\s+/;
+
+	const administrativeArea = z.object({
+		boundary: z.object({
+			geometry: z.looseObject({}),
+			id: z.string().uuid(),
+			type: z.literal('Feature')
+		}),
+		cityAndMunicipalityTypeBBSR: z.string().nullable(),
+		nameOSM: z.string(),
+		officialMunicipalityKey: z.string().nullable(),
+		officialRegionalCode: z.string()
+	});
+
+	type AdministrativeArea = z.infer<typeof administrativeArea>;
+
+	type AdministrativeAreaComboboxValue = Partial<
+		Pick<
+			AdministrativeArea,
+			'boundary' | 'cityAndMunicipalityTypeBBSR' | 'nameOSM' | 'officialMunicipalityKey'
+		>
+	> & {
+		geometry?: string;
+		officialRegionalCode: string;
+	};
 
 	interface Props {
 		labelledBy?: string;
 		onchange: (e: Event) => void;
-		value?: {
-			nameOSM: string;
-			officialRegionalCode: string;
-		};
+		value?: AdministrativeAreaComboboxValue;
 	}
 
 	let { labelledBy, onchange, value }: Props = $props();
 
 	const combobox = createCombobox({ selected: value });
 
+	async function fetchAdministrativeArea(geometry: string, signal: AbortSignal) {
+		const params = new URLSearchParams({ geometry });
+		const response = await fetch(`/spatial-feature?${params.toString()}`, { signal });
+		if (!response.ok) {
+			throw new Error(`Failed to fetch spatial feature: ${response.status}`);
+		}
+
+		return administrativeArea.nullable().parse(await response.json());
+	}
+
+	const selectedAreaResource = resource(
+		[() => value?.geometry],
+		async ([geometry], _, { signal }) => {
+			if (!geometry) {
+				return null;
+			}
+
+			return fetchAdministrativeArea(geometry, signal);
+		}
+	);
+
 	let filterCache =
-		$combobox.filter.replace(/^(\s*Landkreis|Kreis)\s+/, '').substring(0, 2) ||
-		value?.nameOSM.substring(0, 2) ||
+		$combobox.filter.replace(STRIP_ADMINISTRATIVE_PREFIX, '').substring(0, 2) ||
+		selectedAreaResource.current?.nameOSM.substring(0, 2) ||
 		'';
 
 	let name = $derived.by(() => {
-		if ($combobox.filter.replace(/^(\s*Landkreis|Kreis)\s+/, '').length > 1) {
-			filterCache = $combobox.filter.replace(/^(\s*Landkreis|Kreis)\s+/, '').substring(0, 2);
+		const strippedFilter = $combobox.filter.replace(STRIP_ADMINISTRATIVE_PREFIX, '');
+		if (strippedFilter.length > 1) {
+			filterCache = strippedFilter.substring(0, 2);
 		}
 		return filterCache;
 	});
 
-	let administrativeAreasPromise = $derived(fetchAdministrativeAreas(name));
+	const administrativeAreasResource = resource(
+		[() => name],
+		async ([name], _, { signal }) => {
+			if (!name) {
+				return [];
+			}
+
+			const params = new URLSearchParams({ name });
+			const response = await fetch(`/spatial-feature?${params.toString()}`, { signal });
+			if (!response.ok) {
+				throw new Error(`Failed to fetch spatial features: ${response.status}`);
+			}
+
+			return z.array(administrativeArea).parse(await response.json());
+		},
+		{ debounce: 300 }
+	);
+
+	let previewArea = $derived($combobox.active ?? $combobox.selected);
+
+	$effect(() => {
+		if (!value?.geometry || !selectedAreaResource.current) {
+			return;
+		}
+
+		if (selectedAreaResource.current.officialRegionalCode !== value.officialRegionalCode) {
+			return;
+		}
+
+		if (
+			$combobox.selected?.nameOSM &&
+			$combobox.selected.officialRegionalCode === value.officialRegionalCode
+		) {
+			return;
+		}
+
+		combobox.set({ selected: selectedAreaResource.current });
+		if (!filterCache) {
+			filterCache = selectedAreaResource.current.nameOSM.substring(0, 2);
+		}
+	});
 </script>
 
 <div class="dropdown">
@@ -37,6 +123,7 @@
 		<input
 			use:combobox.input
 			aria-labelledby={labelledBy}
+			autocomplete="off"
 			{onchange}
 			oninput={(e) => e.stopPropagation()}
 			value={$combobox.selected?.nameOSM ?? ''}
@@ -47,7 +134,7 @@
 	{#if $combobox.expanded}
 		<div class="dropdown-panel">
 			<ul use:combobox.items>
-				{#each administrativeAreasPromise.current?.filter((area) => area.nameOSM
+				{#each administrativeAreasResource.current?.filter((area) => area.nameOSM
 						.toLowerCase()
 						.includes($combobox.filter.toLowerCase())) ?? [] as value (value.officialRegionalCode)}
 					{@const active = $combobox.active?.officialRegionalCode === value.officialRegionalCode}
@@ -62,9 +149,9 @@
 				{/each}
 			</ul>
 
-			{#if $combobox.active || $combobox.selected}
-				{#key $combobox.active}
-					<Map feature={$combobox.active?.boundary ?? $combobox.selected?.boundary} />
+			{#if previewArea?.boundary?.geometry}
+				{#key previewArea.boundary.id}
+					<Map feature={previewArea.boundary} />
 				{/key}
 			{/if}
 		</div>
