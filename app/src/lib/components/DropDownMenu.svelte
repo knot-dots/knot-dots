@@ -42,7 +42,7 @@
 			<ul class="menu">
 				{#each options as option (option.value)}
 					<li class="menu-item">
-						<button use:menu.item={{ value: option.value }}>
+						<button type="button" use:menu.item={{ value: option.value }}>
 							{option.label}
 						</button>
 					</li>
