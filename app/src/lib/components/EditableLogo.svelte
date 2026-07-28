@@ -17,7 +17,7 @@
 
 	let {
 		editable = false,
-		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml'],
+		allowedFileTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp', 'image/avif'],
 		value = $bindable()
 	}: Props = $props();
 
