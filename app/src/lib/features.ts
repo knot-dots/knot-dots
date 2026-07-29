@@ -1,5 +1,8 @@
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'BulkActions', 'UrlSlug', 'ComputedManagedBy'] as const],
+	[
+		'alpha',
+		['OpenAI', 'BulkActions', 'UrlSlug', 'ComputedManagedBy', 'MultipleProgramAssignment'] as const
+	],
 	['beta', ['ImportFromCsv', 'IOOI', 'Mistral', 'ResourceV2', 'SubMeasures'] as const]
 ]);
 
@@ -40,6 +43,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useComputedManagedBy() {
 			return features.includes('ComputedManagedBy');
+		},
+		useMultipleProgramAssignment() {
+			return features.includes('MultipleProgramAssignment');
 		}
 	} satisfies Record<string, () => boolean>;
 }
