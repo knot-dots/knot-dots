@@ -36,7 +36,7 @@ import {
 	userRelation,
 	visibility
 } from '$lib/models';
-import { attachComputedManagedBy } from '$lib/server/computeManagedBy';
+import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -176,7 +176,7 @@ export function createContainer(container: NewContainer) {
 					INSERT INTO container (guid, managed_by, organization, payload, realm)
 					VALUES (
 						${organizationGuid},
-            ${container.managed_by},
+            ${container.managed_by[0]},
 						${organizationGuid},
 						${sql.jsonb(container.payload)},
 						${container.realm}
@@ -186,7 +186,7 @@ export function createContainer(container: NewContainer) {
 				: await txConnection.one(sql.typeAlias('anyContainer')`
 					INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
 					VALUES (
-						${container.managed_by},
+						${container.managed_by[0]},
 						${container.organization},
 						${container.organizational_unit},
 						${sql.jsonb(container.payload)},
@@ -255,7 +255,7 @@ export function updateContainer(container: ModifiedContainer) {
 				INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
-					${container.managed_by},
+					${container.managed_by[0]},
 					${container.organization},
 					${container.organizational_unit},
 					${sql.jsonb(container.payload)},
@@ -296,8 +296,8 @@ export function updateContainer(container: ModifiedContainer) {
 			if (previousRevision.organization != container.organization) {
 				await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
 			}
-			if (previousRevision.managed_by != container.managed_by) {
-				await bulkUpdateManagedBy(previousRevision, container.managed_by)(txConnection);
+			if (previousRevision.managed_by[0] != container.managed_by[0]) {
+				await bulkUpdateManagedBy(previousRevision, container.managed_by[0])(txConnection);
 			}
 
 			if (shouldIndexType(containerResult.payload.type)) {
@@ -471,7 +471,7 @@ export function getContainerByGuid(guid: string) {
 			relation: relationResult.map((r) => r),
 			user: userResult.map(({ predicate, subject }) => ({ predicate, subject }))
 		};
-		const [withComputed] = await attachComputedManagedBy(connection, [container]);
+		const [withComputed] = await applyComputedManagedBy(connection, [container]);
 		return withComputed;
 	};
 }
@@ -506,15 +506,20 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 			ORDER BY cr.predicate, cr.position, cr.subject, cr.object
 		`);
 
-		return containerResult.map((c) => ({
-			...c,
-			relation: relationResult.filter(
-				({ object, subject }) => object === c.guid || subject === c.guid
-			),
-			user: userResult
-				.filter((u) => u.object === c.revision)
-				.map(({ predicate, subject }) => ({ predicate, subject }))
-		}));
+		// All revisions share the guid, so they uniformly receive the value computed
+		// from the current state.
+		return applyComputedManagedBy(
+			connection,
+			containerResult.map((c) => ({
+				...c,
+				relation: relationResult.filter(
+					({ object, subject }) => object === c.guid || subject === c.guid
+				),
+				user: userResult
+					.filter((u) => u.object === c.revision)
+					.map(({ predicate, subject }) => ({ predicate, subject }))
+			}))
+		);
 	};
 }
 
@@ -824,7 +829,7 @@ export function getManyContainers(
 			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
 			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``}
 		`)) as Container<AnyPayload>[];
-		return attachComputedManagedBy(connection, containers);
+		return applyComputedManagedBy(connection, containers);
 	};
 }
 
@@ -864,7 +869,10 @@ export function getManyOrganizationContainers(
 			ORDER BY ${orderBy};
     `);
 
-		return await withUserAndRelation<Container<OrganizationPayload>>(connection, containerResult);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container<OrganizationPayload>>(connection, containerResult)
+		);
 	};
 }
 
@@ -949,7 +957,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			);
 		}
 
-		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
+		const containerResult = (await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			WITH container_result AS (
 				SELECT c.*
 				FROM container c
@@ -978,6 +986,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name';
 		`)) as Container<OrganizationalUnitPayload>[];
+		return applyComputedManagedBy(connection, containerResult);
 	};
 }
 
@@ -985,7 +994,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	return async (
 		connection: DatabaseConnection
 	): Promise<Container<OrganizationalUnitPayload>[]> => {
-		return (await connection.any(sql.typeAlias('organizationalUnitContainer')`
+		const containerResult = (await connection.any(sql.typeAlias('organizationalUnitContainer')`
 			WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
 				SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
 				UNION ALL
@@ -1036,6 +1045,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as Container<OrganizationalUnitPayload>[];
+		return applyComputedManagedBy(connection, containerResult);
 	};
 }
 
@@ -1071,9 +1081,9 @@ export function getRelatedOrganizationalUnitContainersByPredicates(
 				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
 		`);
 
-		return await withUserAndRelation<Container<OrganizationalUnitPayload>>(
+		return applyComputedManagedBy(
 			connection,
-			containerResult
+			await withUserAndRelation<Container<OrganizationalUnitPayload>>(connection, containerResult)
 		);
 	};
 }
@@ -1201,11 +1211,14 @@ export function getAllRelatedContainers(
 		`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, [
-			...containerResult,
-			...indicatorResult,
-			...actualDataResult
-		]);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container>(connection, [
+				...containerResult,
+				...indicatorResult,
+				...actualDataResult
+			])
+		);
 	};
 }
 
@@ -1252,7 +1265,10 @@ export function getAllRelatedContainersByProgramType(
 				`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, containerResult);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container>(connection, containerResult)
+		);
 	};
 }
 
@@ -1339,7 +1355,10 @@ export function getAllContainersRelatedToIndicators(
 				)})
 		`);
 
-		return withUserAndRelation<Container>(connection, containerResult);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container>(connection, containerResult)
+		);
 	};
 }
 
@@ -1422,7 +1441,10 @@ export function getAllContainersRelatedToProgram(
 			`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult])
+		);
 	};
 }
 
@@ -1532,7 +1554,10 @@ export function getAllContainersRelatedToMeasure(
 			`)
 				: [];
 
-		return withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult]);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult])
+		);
 	};
 }
 
@@ -1564,7 +1589,10 @@ export function getAllContainersRelatedToUser(guid: string) {
 				AND c.payload->'assignee' ? ${guid}
 			ORDER BY valid_from DESC
 		`);
-		return withUserAndRelation(connection, containerResult);
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation(connection, containerResult)
+		);
 	};
 }
 
@@ -1847,7 +1875,7 @@ export function bulkUpdateManagedBy(container: Container<AnyPayload>, managedBy:
 						containerResult.map(({ guid }) => guid),
 						sql.fragment`, `
 					)})
-					  AND managed_by = ${container.managed_by}
+					  AND managed_by = ${container.managed_by[0]}
 						AND valid_currently
 						AND NOT deleted
 				`);
@@ -1986,7 +2014,7 @@ export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
 export function setUp(name: string, realm: string) {
 	return async (connection: DatabaseConnection) => {
 		return await createContainer({
-			managed_by: '00000000-0000-0000-0000-000000000000',
+			managed_by: ['00000000-0000-0000-0000-000000000000'],
 			organization: '00000000-0000-0000-0000-000000000000',
 			organizational_unit: null,
 			payload: {

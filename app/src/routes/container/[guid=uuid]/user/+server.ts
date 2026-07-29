@@ -71,8 +71,8 @@ export const POST = (async ({ locals, params, request }) => {
 		updateContainer({
 			...container,
 			managed_by:
-				container.managed_by == container.guid && updatedUserRelation.length == 0
-					? (container.organizational_unit ?? container.organization)
+				container.managed_by[0] == container.guid && updatedUserRelation.length == 0
+					? [container.organizational_unit ?? container.organization]
 					: container.managed_by,
 			user: [
 				{

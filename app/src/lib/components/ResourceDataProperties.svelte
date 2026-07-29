@@ -24,7 +24,7 @@
 
 		<EditableOrganization
 			editable={editable && $ability.can('update', container.payload.type, 'organization')}
-			bind:value={container.managed_by}
+			bind:value={() => container.managed_by[0], (value) => (container.managed_by = [value])}
 		/>
 
 		<EditableOrganizationalUnit

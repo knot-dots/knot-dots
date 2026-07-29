@@ -28,7 +28,7 @@
 
 	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
 
-	let managedBy = $derived(container.managed_by);
+	let managedBy = $derived(container.managed_by[0]);
 
 	let assigneeCandidatesPromise = $derived(fetchMembers(managedBy));
 </script>

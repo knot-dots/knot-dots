@@ -107,7 +107,7 @@ export async function computeManagedBy(
 
 type ManagedByComparable = {
 	guid: string;
-	managed_by: string;
+	managed_by: string[];
 	organization: string;
 	organizational_unit: string | null;
 	payload: { type: string };
@@ -115,14 +115,18 @@ type ManagedByComparable = {
 };
 
 /**
- * Behind the `ComputedManagedBy` feature flag, computes `computed_managed_by` for the
- * given containers, attaches it to each container (surfaced in the JSON representation)
- * and logs a discrepancy whenever it does not contain the stored `managed_by`. When the
- * flag is off it is a no-op, so there is no added cost on the read path.
+ * Behind the `ComputedManagedBy` feature flag, computes the managed_by value for the
+ * given containers at read time, surfaces it as `computed_managed_by` and replaces
+ * `managed_by` with it, so that authorization and clients work with the derived value
+ * instead of the stored column. A discrepancy with the stored column is logged before
+ * the replacement. When the flag is off it is a no-op, so there is no added cost on
+ * the read path.
  *
- * The stored `managed_by` continues to drive all behaviour; this is observation only.
+ * The replacement deliberately reaches write flows: a container loaded and written
+ * back materializes the computed value into the stored column, incrementally
+ * repairing stale values while the flag is being trialled.
  */
-export async function attachComputedManagedBy<T extends ManagedByComparable>(
+export async function applyComputedManagedBy<T extends ManagedByComparable>(
 	connection: DatabaseConnection,
 	containers: T[]
 ): Promise<T[]> {
@@ -140,8 +144,7 @@ export async function attachComputedManagedBy<T extends ManagedByComparable>(
 		if (value === undefined) {
 			continue;
 		}
-		container.computed_managed_by = value;
-		if (!value.includes(container.managed_by)) {
+		if (!value.includes(container.managed_by[0])) {
 			log.warn(
 				{
 					guid: container.guid,
@@ -154,6 +157,8 @@ export async function attachComputedManagedBy<T extends ManagedByComparable>(
 				'[managed_by] stored/computed discrepancy'
 			);
 		}
+		container.computed_managed_by = value;
+		container.managed_by = value;
 	}
 
 	return containers;

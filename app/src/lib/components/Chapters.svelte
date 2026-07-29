@@ -52,7 +52,7 @@
 					...(program
 						? [
 								[predicates.enum['is-part-of-program'], program.guid],
-								['managedBy', program.managed_by]
+								['managedBy', program.managed_by[0]]
 							]
 						: [])
 				]),
@@ -73,7 +73,7 @@
 							...(program
 								? [
 										[predicates.enum['is-part-of-program'], program.guid],
-										['managedBy', program.managed_by]
+										['managedBy', program.managed_by[0]]
 									]
 								: [])
 						]),
@@ -92,7 +92,7 @@
 							...(program
 								? [
 										[predicates.enum['is-part-of-program'], program.guid],
-										['managedBy', program.managed_by]
+										['managedBy', program.managed_by[0]]
 									]
 								: [])
 						]),
