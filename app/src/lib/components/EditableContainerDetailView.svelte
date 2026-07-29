@@ -20,9 +20,10 @@
 	interface Props {
 		container: Container;
 		data?: Snippet;
+		footer?: Snippet;
 	}
 
-	let { container = $bindable(), data }: Props = $props();
+	let { container = $bindable(), data, footer }: Props = $props();
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
@@ -31,59 +32,63 @@
 		createFeatureDecisions(page.data.features).useBulkActions() && getBulkActionContext();
 </script>
 
-<form class="content-details" oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+<div class="content-details">
 	<article style:--details-padding-x={useBulkActions ? '6rem' : undefined} class="details">
-		<header class="details-section">
-			<div class="details-header">
-				{#if container.payload.type === payloadTypes.enum.term}
-					{#if $applicationState.containerDetailView.editable || container.payload.icon}
-						<EditableLogo
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							allowedFileTypes={['image/svg+xml']}
-							bind:value={container.payload.icon}
-						/>
+		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+			<header class="details-section">
+				<div class="details-header">
+					{#if container.payload.type === payloadTypes.enum.term}
+						{#if $applicationState.containerDetailView.editable || container.payload.icon}
+							<EditableLogo
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								allowedFileTypes={['image/svg+xml']}
+								bind:value={container.payload.icon}
+							/>
+						{/if}
 					{/if}
-				{/if}
-				{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-					<h1
-						class="details-title"
-						contenteditable="plaintext-only"
-						bind:textContent={container.payload.title}
-						onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					></h1>
-				{:else}
-					<h1 class="details-title" contenteditable="false">
-						{container.payload.title.replace(
-							/@current_organizational_unit_name/g,
-							page.data.currentOrganizationalUnit?.payload.name ?? ''
-						)}
-					</h1>
-				{/if}
-			</div>
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<h1
+							class="details-title"
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.title}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+					{:else}
+						<h1 class="details-title" contenteditable="false">
+							{container.payload.title.replace(
+								/@current_organizational_unit_name/g,
+								page.data.currentOrganizationalUnit?.payload.name ?? ''
+							)}
+						</h1>
+					{/if}
+				</div>
 
-			<Badges
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-			/>
-
-			{#if isSimpleMeasureContainer(container)}
-				<EditableProgress
+				<Badges
+					bind:container
 					editable={$applicationState.containerDetailView.editable &&
 						$ability.can('update', container)}
-					bind:value={container.payload.progress}
 				/>
-			{/if}
-		</header>
 
-		{@render data?.()}
+				{#if isSimpleMeasureContainer(container)}
+					<EditableProgress
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						bind:value={container.payload.progress}
+					/>
+				{/if}
+			</header>
+
+			{@render data?.()}
+		</form>
+
+		{@render footer?.()}
 	</article>
 
 	{#if detailViewHelpSlug}
 		<ContextTabs slug={detailViewHelpSlug} />
 	{/if}
-</form>
+</div>
 
 <style>
 	.details-header {

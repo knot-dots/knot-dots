@@ -1227,47 +1227,20 @@ label > input[type='checkbox'].toggle {
 	}
 }
 
-.content-footer {
-	padding: 0 1.5rem 1.5rem;
-}
-
-.content-footer.bottom-actions-bar {
-	background: var(--color-gray-050);
-	border-top: 1px solid var(--color-gray-200);
-	box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, 0.08);
-	padding: 0.75rem 5rem;
-}
-
-.content-actions {
+.footer-action-bar:has(*) {
+	align-items: center;
+	bottom: 0.5rem;
+	background: var(--color-surface-accent-container);
+	border: 1px solid var(--color-border-accent-default);
+	border-radius: 16px;
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
-	margin-top: 1.5rem;
-}
-
-.content-footer.bottom-actions-bar .content-actions {
-	display: flex;
-	gap: 0.5rem;
 	justify-content: center;
-	margin-top: 0;
-}
-
-.content-actions .delete {
-	color: var(--color-red-500);
-	margin-left: auto;
-}
-
-.bottom-actions-bar {
-	--dropdown-button-default-color: var(--color-primary-700);
-	--dropdown-button-chevron-default-color: var(--color-primary-700);
-}
-
-.bottom-actions-bar button,
-.bottom-actions-bar .button {
-	--padding-x: 1rem;
-	--padding-y: 0.5rem;
-
-	font-size: 0.875rem;
+	margin: auto auto 0;
+	padding: 0.5rem;
+	position: sticky;
+	width: fit-content;
 }
 
 .inline-actions {
@@ -1321,11 +1294,13 @@ label > input[type='checkbox'].toggle {
 
 	color: var(--color-gray-500);
 	container-type: inline-size;
+	display: flex;
 	flex: 1;
+	flex-direction: column;
 	font-size: 0.875rem;
 	hyphens: auto;
 	overflow-y: auto;
-	padding: var(--details-padding-y) 0;
+	padding: var(--details-padding-y) 0 0;
 	position: relative;
 }
 
@@ -2090,21 +2065,13 @@ img.cover {
 	.details {
 		--details-padding-x: 0.75rem;
 	}
-
-	.content-footer {
-		padding: 0 0.75rem 0.75rem;
-	}
-
-	.content-footer.bottom-actions-bar {
-		padding: 0.75rem;
-	}
 }
 
 @media print {
 	nav,
 	header[role='banner'],
 	.commands,
-	.bottom-actions-bar,
+	.footer-action-bar,
 	.is-visible-on-hover,
 	.print-button,
 	aside:has(> button),

@@ -385,13 +385,13 @@
 
 			<Sections bind:container {relatedContainers} />
 		{/snippet}
-	</EditableContainerDetailView>
 
-	<footer class="content-footer bottom-actions-bar">
-		<div class="content-actions">
-			<DeleteButton {container} {relatedContainers} />
-		</div>
-	</footer>
+		{#snippet footer()}
+			<footer class="footer-action-bar">
+				<DeleteButton {container} {relatedContainers} />
+			</footer>
+		{/snippet}
+	</EditableContainerDetailView>
 {/snippet}
 
 {@render layout(header, main)}

@@ -523,19 +523,17 @@
 				</ul>
 			</div>
 		{/each}
+
+		<footer class="footer-action-bar">
+			<a class="button" href={page.url.pathname}>{$_('relation_overlay.close')}</a>
+			<a class="button" href={`?related-to=${object.guid}`}>
+				{$_('relation_overlay.close_and_show_relations')}
+			</a>
+		</footer>
 	</div>
 
 	<ContextTabs slug="relations" />
 </div>
-
-<footer class="content-footer bottom-actions-bar">
-	<div class="content-actions">
-		<a class="button" href={page.url.pathname}>{$_('relation_overlay.close')}</a>
-		<a class="button" href={`?related-to=${object.guid}`}>
-			{$_('relation_overlay.close_and_show_relations')}
-		</a>
-	</div>
-</footer>
 
 <style>
 	.drop-zone-wrapper {

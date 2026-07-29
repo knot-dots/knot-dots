@@ -114,6 +114,11 @@
 		margin: var(--margin);
 		max-height: calc(100% - 2 * var(--margin));
 		position: absolute;
+		right: 0;
+		z-index: 1;
+	}
+
+	aside:has([role='tabpanel']) {
 		width: calc(100% - 2 * var(--margin));
 	}
 
