@@ -180,9 +180,7 @@
 				</div>
 			</form>
 
-			<div class="details">
-				<Sections bind:container {relatedContainers} />
-			</div>
+			<Sections bind:container {relatedContainers} />
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organization-view']} />
