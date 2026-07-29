@@ -13,7 +13,8 @@ import {
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
-	payloadTypes
+	payloadTypes,
+	visibility
 } from '$lib/models';
 import {
 	createContainer,
@@ -120,7 +121,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					values: statisticsForIndicator.actual_values.filter(([, v]) => v !== null) as [
 						number,
 						number
-					][]
+					][],
+					visibility: visibility.enum.public
 				};
 			} else {
 				try {
@@ -132,7 +134,8 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					newActualDataContainer.payload = {
 						...newActualDataContainer.payload,
 						indicator: currentIndicator,
-						title: indicator.payload.title
+						title: indicator.payload.title,
+						visibility: indicator.payload.visibility
 					};
 				} catch {
 					continue;
