@@ -80,8 +80,10 @@
 	let relatedParts = $derived(
 		relatedContainersQuery.current?.filter(({ guid, relation }) =>
 			relation.some(
-				({ predicate }) =>
-					predicate === predicates.enum['is-part-of-program'] && guid !== container.guid
+				({ object, predicate }) =>
+					predicate === predicates.enum['is-part-of-program'] &&
+					object === container.guid &&
+					guid !== container.guid
 			)
 		) ?? []
 	);
@@ -110,8 +112,10 @@
 		if (containers) {
 			const filtered = containers.filter(({ guid, relation }) =>
 				relation.some(
-					({ predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] && guid != container.guid
+					({ object, predicate }) =>
+						predicate === predicates.enum['is-part-of-program'] &&
+						object === container.guid &&
+						guid != container.guid
 				)
 			);
 
@@ -147,8 +151,11 @@
 				predicate: predicates.enum['is-part-of-program'],
 				subject: guid
 			})),
+			// Keep is-part-of-program edges pointing at other programs, e.g. the
+			// members' memberships in their further programs.
 			...container.relation.filter(
-				({ predicate }) => predicate !== predicates.enum['is-part-of-program']
+				({ object, predicate }) =>
+					predicate !== predicates.enum['is-part-of-program'] || object !== container.guid
 			)
 		];
 

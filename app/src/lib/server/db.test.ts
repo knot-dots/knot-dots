@@ -19,6 +19,7 @@ import {
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
+	getAllContainersRelatedToProgram,
 	getContainerByGuid,
 	getManyContainers,
 	sql,
@@ -438,6 +439,41 @@ function newManagedByContainer(
 			: []
 	});
 }
+
+test('a container in several programs appears among the members of each', async ({
+	connection
+}: Fixtures) => {
+	const firstProgram = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const secondProgram = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{
+					object: firstProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				},
+				{
+					object: secondProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				}
+			]
+		})
+	)(connection);
+
+	const relatedToFirst = await getAllContainersRelatedToProgram(firstProgram.guid, {})(connection);
+	const relatedToSecond = await getAllContainersRelatedToProgram(
+		secondProgram.guid,
+		{}
+	)(connection);
+	expect(relatedToFirst.map(({ guid }) => guid)).toContain(measure.guid);
+	expect(relatedToSecond.map(({ guid }) => guid)).toContain(measure.guid);
+});
 
 test('computeManagedBy: program managed by the organization', async ({ connection }: Fixtures) => {
 	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(

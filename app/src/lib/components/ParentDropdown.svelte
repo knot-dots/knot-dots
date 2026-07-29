@@ -23,9 +23,11 @@
 
 	let { container = $bindable(), editable = false, labelledBy, offset }: Props = $props();
 
-	let programGuid = $derived(
-		container.relation.find(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
-			?.object
+	let programGuids = $derived(
+		container.relation
+			.filter(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+			.map(({ object }) => object)
+			.filter((object): object is string => object != undefined)
 	);
 	let measureGuid = $derived(
 		container.relation.find(
@@ -37,7 +39,7 @@
 	let payloadType = $derived(container.payload.type);
 
 	let isPartOfOptionsRequest = $derived(
-		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuid)
+		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuids[0])
 	);
 
 	let isPartOfObject = $derived(
@@ -98,10 +100,12 @@
 					!container.organizational_unit || organizational_unit === container.organizational_unit
 			)
 			.filter(({ payload, relation }) =>
-				programGuid
+				programGuids.length > 0
 					? relation.some(
 							({ object, predicate }) =>
-								predicate === predicates.enum['is-part-of-program'] && object === programGuid
+								predicate === predicates.enum['is-part-of-program'] &&
+								object != undefined &&
+								programGuids.includes(object)
 						)
 					: measureGuid
 						? relation.some(

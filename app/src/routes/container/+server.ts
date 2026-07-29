@@ -98,6 +98,11 @@ async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 		createdContainer.organizational_unit
 	);
 
+	const originalProgramGuid = createdContainer.relation.find(
+		({ predicate, subject }) =>
+			predicate === predicates.enum['is-copy-of'] && subject === createdContainer.guid
+	)?.object;
+
 	const copiedMeasure = (await createContainer({
 		...copy,
 		user: [{ predicate: predicates.enum['is-creator-of'], subject: user.guid }],
@@ -108,7 +113,9 @@ async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
 				predicate: predicates.enum['is-part-of-program'],
 				position:
 					originalMeasure.relation.find(
-						({ predicate }) => predicate === predicates.enum['is-part-of-program']
+						({ object, predicate }) =>
+							predicate === predicates.enum['is-part-of-program'] &&
+							(originalProgramGuid === undefined || object === originalProgramGuid)
 					)?.position ?? 0
 			}
 		]
@@ -346,7 +353,10 @@ async function copyProgram(
 
 	const originalParts = containersRelatedToOriginal
 		.filter(({ relation }) =>
-			relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+			relation.some(
+				({ object, predicate }) =>
+					predicate === predicates.enum['is-part-of-program'] && object === isCopyOfRelation.object
+			)
 		)
 		.filter(({ guid }) => guid !== isCopyOfRelation.object);
 
@@ -369,7 +379,9 @@ async function copyProgram(
 				predicate: predicates.enum['is-part-of-program'],
 				position:
 					copyFrom.relation.find(
-						({ predicate }) => predicate === predicates.enum['is-part-of-program']
+						({ object, predicate }) =>
+							predicate === predicates.enum['is-part-of-program'] &&
+							object === isCopyOfRelation.object
 					)?.position ?? 0
 			});
 

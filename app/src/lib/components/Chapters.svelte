@@ -29,7 +29,11 @@
 			containers
 				.filter(isGoalContainer)
 				.filter(({ relation }) =>
-					relation.some(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+					relation.some(
+						({ object, predicate }) =>
+							predicate === predicates.enum['is-part-of-program'] &&
+							(!program || object === program.guid)
+					)
 				)
 		)
 	);
