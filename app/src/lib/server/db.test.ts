@@ -517,7 +517,7 @@ test('computeManagedBy: measure managed by its program when only the program has
 	expect(result.get(measure.guid)).toEqual([program.guid]);
 });
 
-test('computeManagedBy: measure managed by itself when both program and measure have a team', async ({
+test('computeManagedBy: measure managed by both teams when program and measure have one', async ({
 	connection
 }: Fixtures) => {
 	const programMember = await createTestUser(connection);
@@ -533,9 +533,135 @@ test('computeManagedBy: measure managed by itself when both program and measure 
 			]
 		})
 	)(connection);
-	// Single-valued stage: the measure's own team wins; the multi-valued [program, measure] case is later.
+	// Nearest first: the measure's own team precedes the program's team.
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toEqual([measure.guid, program.guid]);
+});
+
+test('computeManagedBy: teams accumulate across all levels, nearest first', async ({
+	connection
+}: Fixtures) => {
+	const programMember = await createTestUser(connection);
+	const goalMember = await createTestUser(connection);
+	const subgoalMember = await createTestUser(connection);
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: programMember })
+	)(connection);
+	const goal = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			memberOf: goalMember,
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	const subgoal = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			memberOf: subgoalMember,
+			relation: [{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [subgoal.guid]);
+	expect(result.get(subgoal.guid)).toEqual([subgoal.guid, goal.guid, program.guid]);
+});
+
+test('computeManagedBy: teamed ancestors reachable via several paths appear once', async ({
+	connection
+}: Fixtures) => {
+	const firstMember = await createTestUser(connection);
+	const secondMember = await createTestUser(connection);
+	const firstProgram = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: firstMember })
+	)(connection);
+	const secondProgram = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: secondMember })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{
+					object: firstProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				},
+				{
+					object: secondProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				}
+			]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toEqual([firstProgram.guid, secondProgram.guid].toSorted());
+});
+
+test('computeManagedBy: a teamed ancestor shared by two paths appears once', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const teamedRoot = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, { memberOf: member })
+	)(connection);
+	const firstBranch = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			relation: [{ object: teamedRoot.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+	const secondBranch = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			relation: [{ object: teamedRoot.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+	const leaf = await createContainer(
+		newManagedByContainer(payloadTypes.enum.goal, {
+			relation: [
+				{ object: firstBranch.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+				{ object: secondBranch.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+			]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [leaf.guid]);
+	expect(result.get(leaf.guid)).toEqual([teamedRoot.guid]);
+});
+
+test('computeManagedBy: measure keeps only its own team under a teamless program', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			memberOf: member,
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
 	const result = await computeManagedBy(connection, [measure.guid]);
 	expect(result.get(measure.guid)).toEqual([measure.guid]);
+});
+
+test('computeManagedBy: the organizational unit never accompanies a team', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const organizationalUnit = uuid();
+	const program = await createContainer(
+		newManagedByContainer(payloadTypes.enum.program, { memberOf: member })
+	)(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			organizationalUnit,
+			relation: [
+				{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [measure.guid]);
+	expect(result.get(measure.guid)).toEqual([program.guid]);
 });
 
 // The following scenarios reproduce the ways the stored managed_by column went stale

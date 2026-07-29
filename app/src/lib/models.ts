@@ -2044,9 +2044,9 @@ export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) 
 	return z.object({
 		guid: z.uuid(),
 		managed_by: managedBy,
-		// Observational, read-time computed counterpart of managed_by; only present
-		// when the ComputedManagedBy feature flag is enabled. Multi-valued by type,
-		// but currently carries exactly one value. See computeManagedBy.ts.
+		// Read-time computed counterpart of managed_by; only present when the
+		// ComputedManagedBy feature flag is enabled. Carries all teams along the
+		// hierarchy, nearest first. See computeManagedBy.ts.
 		computed_managed_by: z.array(z.uuid()).optional(),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
