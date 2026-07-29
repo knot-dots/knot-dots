@@ -2613,6 +2613,16 @@ export function getManagedBy(
 	return candidates.find(({ guid }) => container.managed_by.includes(guid));
 }
 
+// Resolves every entry of managed_by, preserving its order (nearest team first).
+export function getManagedByAll(
+	container: Container<AnyPayload>,
+	candidates: Container<AnyPayload>[]
+) {
+	return container.managed_by
+		.map((managedBy) => candidates.find(({ guid }) => guid === managedBy))
+		.filter((candidate) => candidate !== undefined);
+}
+
 export function createCopyOf(
 	container: Container<AnyPayload>,
 	organization: string,

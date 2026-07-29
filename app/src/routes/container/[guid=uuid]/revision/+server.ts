@@ -16,6 +16,7 @@ import {
 	getContainerByGuid,
 	updateContainer
 } from '$lib/server/db';
+import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -137,7 +138,7 @@ export const POST = (async ({ locals, params, request }) => {
 			}
 		}
 
-		let aiContribution;
+		let aiContribution: number | undefined;
 
 		if (
 			'aiContribution' in container.payload &&
@@ -150,8 +151,8 @@ export const POST = (async ({ locals, params, request }) => {
 		}
 
 		try {
-			const result = await locals.pool.connect(
-				updateContainer({
+			const result = await locals.pool.connect(async (connection) => {
+				const updated = await updateContainer({
 					...parseResult.data,
 					payload: {
 						...parseResult.data.payload,
@@ -164,8 +165,12 @@ export const POST = (async ({ locals, params, request }) => {
 						),
 						{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }
 					]
-				})
-			);
+				})(connection);
+				// Give the client the same view a fresh read would produce, so it can
+				// update its state without a reload.
+				const [withComputed] = await applyComputedManagedBy(connection, [updated]);
+				return withComputed;
+			});
 			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 		} catch (e: unknown) {
 			if (
