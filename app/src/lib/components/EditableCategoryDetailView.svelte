@@ -77,7 +77,9 @@
 			{/key}
 
 			<CategoryTerms bind:container bind:relatedContainers />
+		{/snippet}
 
+		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />

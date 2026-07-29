@@ -75,7 +75,9 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
+		{/snippet}
 
+		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<DeleteButton {container} {relatedContainers} />
 			</footer>

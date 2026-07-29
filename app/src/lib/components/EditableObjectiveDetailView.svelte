@@ -276,7 +276,9 @@
 					</div>
 				{/if}
 			{/if}
+		{/snippet}
 
+		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<RelationButton {container} />
 				<DeleteButton {container} {relatedContainers} />

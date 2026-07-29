@@ -74,7 +74,9 @@
 					bind:value={container.payload.body}
 				/>
 			{/key}
+		{/snippet}
 
+		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />

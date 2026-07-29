@@ -185,7 +185,9 @@
 					/>
 				{/if}
 			</div>
+		{/snippet}
 
+		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<CreateCopyButton {container} />
 				<DeleteButton {container} {relatedContainers} />

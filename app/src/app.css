@@ -1227,7 +1227,7 @@ label > input[type='checkbox'].toggle {
 
 .footer-action-bar:has(*) {
 	align-items: center;
-	bottom: 0;
+	bottom: 0.5rem;
 	background: var(--color-surface-accent-container);
 	border: 1px solid var(--color-border-accent-default);
 	border-radius: 16px;
@@ -1298,7 +1298,7 @@ label > input[type='checkbox'].toggle {
 	font-size: 0.875rem;
 	hyphens: auto;
 	overflow-y: auto;
-	padding: var(--details-padding-y) 0 0.5rem;
+	padding: var(--details-padding-y) 0 0;
 	position: relative;
 }
 

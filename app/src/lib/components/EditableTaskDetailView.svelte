@@ -87,7 +87,9 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
+		{/snippet}
 
+		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<RelationButton {container} />
 				<CreateAnotherButton {container} {relatedContainers} />
