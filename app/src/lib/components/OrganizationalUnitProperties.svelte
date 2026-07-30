@@ -106,22 +106,18 @@
 
 <PropertyGrid>
 	{#snippet general()}
-		{#if editable}
-			<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
-			<AdministrativeAreaCombobox
-				labelledBy={administrativeAreaLabelId}
-				{onchange}
-				value={container.payload.officialRegionalCode
-					? {
-							geometry: container.payload.geometry,
-							officialRegionalCode: container.payload.officialRegionalCode
-						}
-					: undefined}
-			/>
-		{:else}
-			<span class="label">{$_('administrative_area')}</span>
-			<span class="value"></span>
-		{/if}
+		<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
+		<AdministrativeAreaCombobox
+			{editable}
+			labelledBy={administrativeAreaLabelId}
+			{onchange}
+			value={container.payload.officialRegionalCode
+				? {
+						geometry: container.payload.geometry,
+						officialRegionalCode: container.payload.officialRegionalCode
+					}
+				: undefined}
+		/>
 
 		<EditableNumber
 			{editable}

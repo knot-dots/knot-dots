@@ -32,12 +32,13 @@
 	};
 
 	interface Props {
+		editable?: boolean;
 		labelledBy?: string;
 		onchange: (e: Event) => void;
 		value?: AdministrativeAreaComboboxValue;
 	}
 
-	let { labelledBy, onchange, value }: Props = $props();
+	let { editable = false, labelledBy, onchange, value }: Props = $props();
 
 	const combobox = createCombobox({ selected: value });
 
@@ -118,45 +119,49 @@
 	});
 </script>
 
-<div class="dropdown">
-	<div class="combobox-input">
-		<input
-			use:combobox.input
-			aria-labelledby={labelledBy}
-			autocomplete="off"
-			{onchange}
-			oninput={(e) => e.stopPropagation()}
-			value={$combobox.selected?.nameOSM ?? ''}
-		/>
-		<ChevronSort />
-	</div>
-
-	{#if $combobox.expanded}
-		<div class="dropdown-panel">
-			<ul use:combobox.items>
-				{#each administrativeAreasResource.current?.filter((area) => area.nameOSM
-						.toLowerCase()
-						.includes($combobox.filter.toLowerCase())) ?? [] as value (value.officialRegionalCode)}
-					{@const active = $combobox.active?.officialRegionalCode === value.officialRegionalCode}
-					{@const selected =
-						$combobox.selected?.officialRegionalCode === value.officialRegionalCode}
-					<li class:active use:combobox.item={{ value }}>
-						<label>
-							<input type="radio" value={value.officialRegionalCode} checked={selected} />
-							<span class="truncated">{value.nameOSM}</span>
-						</label>
-					</li>
-				{/each}
-			</ul>
-
-			{#if previewArea?.boundary?.geometry}
-				{#key previewArea.boundary.id}
-					<Map feature={previewArea.boundary} />
-				{/key}
-			{/if}
+{#if editable}
+	<div class="dropdown">
+		<div class="combobox-input">
+			<input
+				use:combobox.input
+				aria-labelledby={labelledBy}
+				autocomplete="off"
+				{onchange}
+				oninput={(e) => e.stopPropagation()}
+				value={$combobox.selected?.nameOSM ?? ''}
+			/>
+			<ChevronSort />
 		</div>
-	{/if}
-</div>
+
+		{#if $combobox.expanded}
+			<div class="dropdown-panel">
+				<ul use:combobox.items>
+					{#each administrativeAreasResource.current?.filter((area) => area.nameOSM
+							.toLowerCase()
+							.includes($combobox.filter.toLowerCase())) ?? [] as value (value.officialRegionalCode)}
+						{@const active = $combobox.active?.officialRegionalCode === value.officialRegionalCode}
+						{@const selected =
+							$combobox.selected?.officialRegionalCode === value.officialRegionalCode}
+						<li class:active use:combobox.item={{ value }}>
+							<label>
+								<input type="radio" value={value.officialRegionalCode} checked={selected} />
+								<span class="truncated">{value.nameOSM}</span>
+							</label>
+						</li>
+					{/each}
+				</ul>
+
+				{#if previewArea?.boundary?.geometry}
+					{#key previewArea.boundary.id}
+						<Map feature={previewArea.boundary} />
+					{/key}
+				{/if}
+			</div>
+		{/if}
+	</div>
+{:else}
+	<div class="value">{$combobox.selected?.nameOSM}</div>
+{/if}
 
 <style>
 	.active > label {
