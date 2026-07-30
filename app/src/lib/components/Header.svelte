@@ -321,7 +321,7 @@
 			{/if}
 		{/if}
 
-		{#if container && detailView}
+		{#if container && detailView && !paramsFromFragment(page.url).has('table')}
 			<button
 				{@attach tooltip($_('properties.show_all'))}
 				{...detailView.properties.trigger}
