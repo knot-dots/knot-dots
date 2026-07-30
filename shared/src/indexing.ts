@@ -219,7 +219,9 @@ export function toDoc(row: {
 	realm: string;
 	organization: string;
 	organizational_unit?: string | null;
-	managed_by: string;
+	// Mirrors the JSON representation: multi-valued by type, the stored column's
+	// single value is wrapped by the writers.
+	managed_by: string[];
 	payload: any;
 	valid_from?: string | Date | null;
 	priority?: number | null;
