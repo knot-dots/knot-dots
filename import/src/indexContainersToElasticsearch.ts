@@ -178,6 +178,7 @@ async function run() {
 			for (const r of batchRows) {
 				const doc = toDoc({
 					...r,
+					managed_by: [r.managed_by],
 					relation: relationsMap.get(r.guid) ?? [],
 					user: usersMap.get(r.revision) ?? []
 				});
@@ -219,6 +220,7 @@ async function run() {
 		for (const r of batchRows) {
 			const doc = toDoc({
 				...r,
+				managed_by: [r.managed_by],
 				relation: relationsMap.get(r.guid) ?? [],
 				user: usersMap.get(r.revision) ?? []
 			});

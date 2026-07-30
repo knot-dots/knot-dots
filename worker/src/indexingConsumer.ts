@@ -126,7 +126,11 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
         realm: row.realm,
         organization: String(row.organization),
         organizational_unit: row.organizational_unit ?? null,
-        managed_by: String(row.managed_by),
+        // The worker pool runs no result-parser interceptor, so the row carries
+        // the raw scalar column value.
+        managed_by: Array.isArray(row.managed_by)
+          ? row.managed_by.map(String)
+          : [String(row.managed_by)],
         payload: row.payload || {},
         relation: [...relation],
         user: [...user]
