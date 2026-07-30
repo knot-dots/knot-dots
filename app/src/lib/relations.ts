@@ -66,7 +66,8 @@ export function isPartOf<T extends Container<AnyPayload>>(
 
 export function addRelation(subject: Node, predicate: Predicate, object: Node) {
 	const position =
-		(subject.relation.findLast((r) => r.predicate === predicate)?.position ?? -1) + 1;
+		(subject.relation.findLast((r) => r.predicate === predicate && r.object === object.guid)
+			?.position ?? -1) + 1;
 	subject.relation = [
 		...subject.relation,
 		{ subject: subject.guid, predicate, object: object.guid, position }

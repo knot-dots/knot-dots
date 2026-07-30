@@ -273,6 +273,49 @@ describe('read visibility via managed_by', () => {
 	});
 });
 
+describe('multi-valued managed_by', () => {
+	// managed_by carries exactly one value for now, but its type allows several.
+	// These cases pin down that one matching element suffices once multiple teams
+	// are filled in, and that non-matching elements grant nothing.
+	const container = makeContainer(payloadTypes.enum.measure, {
+		managed_by: [otherTeam, team]
+	});
+
+	test('a role on one of the managing teams suffices to modify', () => {
+		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
+		expect(ability.can('create', container)).toBe(true);
+		expect(ability.can('update', container)).toBe(true);
+		expect(ability.can('delete', container)).toBe(true);
+		expect(ability.can('relate', container)).toBe(true);
+		expect(ability.can('delete-recursively', container)).toBe(true);
+	});
+
+	test('admins and heads of one of the managing teams may invite members', () => {
+		expect(defineAbilityFor(makeUser({ adminOf: [team] })).can('invite-members', container)).toBe(
+			true
+		);
+		expect(
+			defineAbilityFor(makeUser({ headOf: [otherTeam] })).can('invite-members', container)
+		).toBe(true);
+	});
+
+	test('roles on none of the managing teams grant nothing', () => {
+		const ability = defineAbilityFor(makeUser({ adminOf: [organizationalUnit] }));
+		expect(ability.can('create', container)).toBe(false);
+		expect(ability.can('update', container)).toBe(false);
+		expect(ability.can('delete', container)).toBe(false);
+		expect(ability.can('read', container)).toBe(false);
+	});
+
+	test('membership in one of the managing teams suffices to read', () => {
+		expect(defineAbilityFor(makeUser({ memberOf: [team] })).can('read', container)).toBe(true);
+		expect(defineAbilityFor(makeUser({ memberOf: [otherTeam] })).can('read', container)).toBe(true);
+		expect(
+			defineAbilityFor(makeUser({ memberOf: [organizationalUnit] })).can('read', container)
+		).toBe(false);
+	});
+});
+
 describe('field-level rules', () => {
 	test('roles on the managing team may update chapterType and editorialState', () => {
 		// The general update rule conditioned on managed_by carries no field

@@ -214,10 +214,11 @@ export function createContainer(container: NewContainer) {
 			}));
 			const relationResult = await createManyContainerRelations(relations)(txConnection);
 
-			const isPartOfProgramRelation = relationResult.find(
+			// Shift the sibling positions within every program the new container
+			// became part of; each program keeps its own ordering.
+			for (const isPartOfProgramRelation of relationResult.filter(
 				({ predicate }) => predicate == predicates.enum['is-part-of-program']
-			);
-			if (isPartOfProgramRelation) {
+			)) {
 				await txConnection.any(sql.typeAlias(`void`)`
 					UPDATE container_relation SET position = position + 1
 					WHERE predicate = ${predicates.enum['is-part-of-program']}

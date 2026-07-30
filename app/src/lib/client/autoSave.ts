@@ -14,6 +14,10 @@ export default function autoSave(container: Container<AnyPayload>, delay: number
 			if (response.ok) {
 				const updatedContainer = await response.json();
 				container.revision = updatedContainer.revision;
+				// The response carries the (feature-flagged) computed managed_by, which
+				// may differ from what the client sent, e.g. after changing programs.
+				container.managed_by = updatedContainer.managed_by;
+				container.computed_managed_by = updatedContainer.computed_managed_by;
 			} else {
 				const error = await response.json();
 				alert(error.message);

@@ -22,17 +22,17 @@ const rolePredicates = [
 ];
 
 /**
- * Computes the `computed_managed_by` values for the given containers.
- *
- * This is the observational counterpart to the stored `managed_by` column: it
- * reproduces the value `managed_by` is supposed to have, derived at read time from
- * the hierarchy and team memberships. For each container it is
- *   1. the container's own guid, if it has a team (a direct role membership), else
- *   2. the guid of the nearest ancestor (along the is-part-of chain) that has a team, else
- *   3. its `organizational_unit ?? organization`.
- *
- * The result is an array by type, but currently carries exactly one value;
- * collecting multiple teams along the hierarchy is a later step.
+ * Computes the `computed_managed_by` values for the given containers: all teams
+ * along the hierarchy, derived at read time from the is-part-of chains and team
+ * memberships. For each container the result contains
+ *   - the container's own guid, if it has a team (a direct role membership), and
+ *   - the guid of every ancestor that has a team,
+ * ordered nearest-first (the container's own team before its program's team). A
+ * measure within a teamed program is thus editable by both teams; under a
+ * teamless program (or none at all) only by its own team. Only when no team
+ * exists anywhere in the chain does the result fall back to the single value
+ * `organizational_unit ?? organization` — an organization or organizational
+ * unit is never assigned in addition to a team.
  */
 export async function computeManagedBy(
 	connection: DatabaseConnection,
@@ -49,7 +49,7 @@ export async function computeManagedBy(
 	// resulting phantom cost would trigger JIT compilation worth several hundred
 	// milliseconds, which is why the pool disables JIT (see getPool in db.ts).
 	const rows = await connection.any(sql.type(
-		z.object({ guid: z.string().uuid(), computed_managed_by: z.string().uuid() })
+		z.object({ guid: z.string().uuid(), computed_managed_by: z.array(z.string().uuid()) })
 	)`
 		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle) AS (
 			SELECT g::uuid, g::uuid, 0, ARRAY[g::uuid], false
@@ -83,26 +83,28 @@ export async function computeManagedBy(
 				LIMIT 1
 			) t ON true
 		),
-		nearest AS (
-			-- The guid is a deterministic tie-break for containers with several
-			-- teamed ancestors at the same depth, e.g. a goal within both a goal
-			-- and a program.
-			SELECT DISTINCT ON (root) root, guid AS managed_by
-			FROM teamed
-			ORDER BY root, depth ASC, guid ASC
+		teams AS (
+			-- min(depth) deduplicates DAG multi-paths (e.g. two programs sharing an
+			-- ancestor); depth ASC orders nearest-first, so that [0] remains the
+			-- effective manager in today's single-value sense — the write sites
+			-- materialize managed_by[0] back into the stored column. The guid is a
+			-- deterministic tie-break for teamed ancestors at the same depth.
+			SELECT root, array_agg(guid ORDER BY depth ASC, guid ASC) AS managed_by
+			FROM (SELECT root, guid, min(depth) AS depth FROM teamed GROUP BY root, guid) t
+			GROUP BY root
 		),
 		roots AS (
 			SELECT DISTINCT g::uuid AS root FROM unnest(${sql.array(guids, 'uuid')}) AS g
 		)
 		SELECT
 			roots.root AS guid,
-			coalesce(n.managed_by, c.organizational_unit, c.organization) AS computed_managed_by
+			coalesce(t.managed_by, ARRAY[coalesce(c.organizational_unit, c.organization)]) AS computed_managed_by
 		FROM roots
 		JOIN container c ON c.guid = roots.root AND c.valid_currently AND NOT c.deleted
-		LEFT JOIN nearest n ON n.root = roots.root
+		LEFT JOIN teams t ON t.root = roots.root
 	`);
 
-	return new Map(rows.map((r) => [r.guid, [r.computed_managed_by]]));
+	return new Map(rows.map((r) => [r.guid, r.computed_managed_by]));
 }
 
 type ManagedByComparable = {
@@ -144,7 +146,9 @@ export async function applyComputedManagedBy<T extends ManagedByComparable>(
 		if (value === undefined) {
 			continue;
 		}
-		if (!value.includes(container.managed_by[0])) {
+		// The stored column is expected to carry the effective (nearest) manager,
+		// which the accumulated array orders first.
+		if (container.managed_by[0] !== value[0]) {
 			log.warn(
 				{
 					guid: container.guid,

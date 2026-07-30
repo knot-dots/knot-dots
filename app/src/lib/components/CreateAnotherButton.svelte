@@ -93,8 +93,9 @@
 					: undefined)
 			};
 
-			const isPartOfProgramRelation = container.relation.find(
-				({ predicate }) => predicate === predicates.enum['is-part-of-program']
+			const isPartOfProgramRelations = container.relation.filter(
+				({ predicate, subject }) =>
+					predicate === predicates.enum['is-part-of-program'] && subject === container.guid
 			);
 
 			const isPartOfMeasureRelation = container.relation.find(
@@ -105,14 +106,14 @@
 				derived.relation = [
 					{ object: container.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
 				];
-			} else if (isPartOfProgramRelation) {
-				derived.relation = [
-					{
-						object: isPartOfProgramRelation.object,
-						position: isPartOfProgramRelation.position + 1,
-						predicate: predicates.enum['is-part-of-program']
-					}
-				];
+			} else if (isPartOfProgramRelations.length > 0) {
+				// The derived container joins every program of the original, right
+				// after it in each program's ordering.
+				derived.relation = isPartOfProgramRelations.map(({ object, position }) => ({
+					object,
+					position: position + 1,
+					predicate: predicates.enum['is-part-of-program']
+				}));
 			} else if (isPartOfMeasureRelation) {
 				derived.relation = [
 					{
