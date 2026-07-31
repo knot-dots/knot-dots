@@ -92,7 +92,6 @@ const effect = testContainer.parse({
 	managed_by: organizationOne,
 	organization: organizationOne,
 	payload: {
-		category: {},
 		title: indicatorTemplateOne.payload.title,
 		type: payloadTypes.enum.effect
 	}
