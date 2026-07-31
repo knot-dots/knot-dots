@@ -30,6 +30,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	await dotsBoard.card(titleOfFirstGoal).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfFirstGoal);
 	await dotsBoard.overlay.editModeToggle.check();
+	await dotsBoard.overlay.disclosePropertiesButton.click();
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
 	const firstSaveResponse = dotsBoard.page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'

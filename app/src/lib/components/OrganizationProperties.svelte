@@ -9,6 +9,7 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
+	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, OrganizationPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -105,24 +106,20 @@
 	}
 </script>
 
-<div class="details-section">
-	<div class="data-grid">
-		{#if editable}
-			<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
-			<AdministrativeAreaCombobox
-				labelledBy={administrativeAreaLabelId}
-				{onchange}
-				value={container.payload.officialRegionalCode
-					? {
-							geometry: container.payload.geometry,
-							officialRegionalCode: container.payload.officialRegionalCode
-						}
-					: undefined}
-			/>
-		{:else}
-			<span class="label">{$_('administrative_area')}</span>
-			<span class="value"></span>
-		{/if}
+<PropertyGrid>
+	{#snippet general()}
+		<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
+		<AdministrativeAreaCombobox
+			{editable}
+			labelledBy={administrativeAreaLabelId}
+			{onchange}
+			value={container.payload.officialRegionalCode
+				? {
+						geometry: container.payload.geometry,
+						officialRegionalCode: container.payload.officialRegionalCode
+					}
+				: undefined}
+		/>
 
 		<EditableOrganizationCategory {editable} bind:value={container.payload.organizationCategory} />
 
@@ -148,5 +145,5 @@
 		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container />
 		{/if}
-	</div>
-</div>
+	{/snippet}
+</PropertyGrid>

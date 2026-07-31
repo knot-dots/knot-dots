@@ -64,8 +64,6 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
-			<TermProperties bind:container {editable} {relatedContainers} {revisions} />
-
 			{#key container.guid}
 				<EditableFormattedText
 					{editable}
@@ -88,6 +86,10 @@
 				<CreateCopyButton {container} />
 				<DeleteButton {container} {relatedContainers} />
 			</footer>
+		{/snippet}
+
+		{#snippet properties()}
+			<TermProperties bind:container {editable} {relatedContainers} {revisions} />
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

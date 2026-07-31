@@ -7,12 +7,16 @@ export default class Header {
 		this.locator = page.getByRole('banner');
 	}
 
-	get editModeToggle() {
-		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
-	}
-
 	get bulkActionControls() {
 		return this.locator.locator('+ .commands').getByRole('group', { name: 'Bulk actions' });
+	}
+
+	get disclosePropertiesButton() {
+		return this.locator.getByRole('button', { name: 'Show all properties' });
+	}
+
+	get editModeToggle() {
+		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 
 	async openWorkspaceMenu(currentWorkspace: string) {

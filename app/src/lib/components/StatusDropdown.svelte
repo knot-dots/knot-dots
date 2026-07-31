@@ -94,6 +94,11 @@
 {/if}
 
 <style>
+	.dropdown-button.dropdown-button--select,
+	.value {
+		padding-left: var(--dropdown-button-padding-y);
+	}
+
 	.badge {
 		float: left;
 		font-weight: 400;

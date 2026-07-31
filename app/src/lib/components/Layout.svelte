@@ -144,8 +144,7 @@
 		flex-direction: column;
 		min-height: 0;
 		min-width: 100vw;
-		overflow-x: hidden;
-		overflow-y: auto;
+		overflow: hidden;
 		position: relative;
 	}
 

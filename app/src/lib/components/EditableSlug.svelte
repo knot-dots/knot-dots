@@ -38,9 +38,3 @@
 	<span class="label">{$_('slug')}</span>
 	<span class="value">{container.payload.slug}</span>
 {/if}
-
-<style>
-	input {
-		border: none;
-	}
-</style>

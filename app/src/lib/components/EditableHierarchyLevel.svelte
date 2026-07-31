@@ -24,11 +24,8 @@
 
 <style>
 	input[type='number'] {
-		border: none;
 		display: inline-flex;
-		line-height: 1.5;
 		max-height: 2.25rem;
-		padding: 0.375rem;
 		width: auto;
 	}
 </style>

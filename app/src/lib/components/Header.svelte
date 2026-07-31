@@ -7,6 +7,7 @@
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Bars from '~icons/flowbite/bars-outline';
+	import Label from '~icons/flowbite/label-outline';
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
@@ -39,6 +40,7 @@
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
+	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -90,6 +92,8 @@
 
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
+
+	const detailView = getDetailViewContext();
 
 	let container = $derived.by(() => {
 		const base = overlay ? $overlayStore?.container : page.data.container;
@@ -315,6 +319,17 @@
 					{$_('login')}
 				</button>
 			{/if}
+		{/if}
+
+		{#if container && detailView && !paramsFromFragment(page.url).has('table')}
+			<button
+				{@attach tooltip($_('properties.show_all'))}
+				{...detailView.properties.trigger}
+				class="action-button action-button--size-l"
+				type="button"
+			>
+				<Label />
+			</button>
 		{/if}
 
 		{#if overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}

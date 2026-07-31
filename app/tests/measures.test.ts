@@ -18,6 +18,7 @@ test.describe('Measure monitoring', () => {
 
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.disclosePropertiesButton.click();
 
 		// Assert the measure is managed by the expected team
 		await expect(dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')).toHaveText(
@@ -50,6 +51,7 @@ test.describe('Measure monitoring', () => {
 			).toHaveText(`Team ${testProgram.payload.title}`);
 
 			// Delete the item
+			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.overlay.delete();
 		}
 	});

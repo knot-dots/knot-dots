@@ -52,6 +52,7 @@
 		font-size: inherit;
 		font-weight: inherit;
 		padding: 0.125rem 0.25rem;
+		min-height: revert;
 		min-width: 4rem;
 		width: fit-content;
 	}

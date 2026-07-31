@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import Upload from '~icons/flowbite/upload-outline';
+	import Upload from '~icons/flowbite/arrow-up-from-bracket-outline';
 	import tooltip from '$lib/attachments/tooltip';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
@@ -66,7 +66,7 @@
 
 		<label class="button button-upload" for={id}>
 			<Upload />
-			{$_('upload.image.choose')}
+			<span class="is-visually-hidden">{$_('upload.image.choose')}</span>
 		</label>
 		<input
 			accept="image/png,image/svg+xml"
@@ -128,14 +128,15 @@
 		--padding-x: 0.75rem;
 		--padding-y: 0.5rem;
 
-		border-radius: 4px;
+		border: none;
+		border-radius: 8px;
 		color: var(--color-primary-700);
 		font-size: 0.75rem;
 	}
 
 	.button-upload > :global(svg) {
-		height: 0.75rem;
-		width: 0.75rem;
+		height: 1.25rem;
+		width: 1.25rem;
 	}
 
 	.button-upload:hover {
@@ -147,18 +148,24 @@
 		font-size: 0.75rem;
 		font-weight: 400;
 		margin-top: 0;
+		padding-left: var(--form-control-padding-x);
 	}
 
 	.value {
 		align-items: center;
 		background-color: var(--form-control-background);
-		border-radius: 4px;
+		border: var(--form-control-border);
+		border-radius: var(--form-control-border-radius);
 		display: flex;
 		flex-grow: 1;
 		gap: 0.5rem;
 		justify-content: space-between;
-		min-height: 2.25rem;
-		padding: 0.375rem 0.5rem;
+		min-height: var(--form-control-min-height);
+		padding: var(--form-control-padding-y) var(--form-control-padding-x);
+	}
+
+	.value:has(img) {
+		padding: var(--form-control-padding-y);
 	}
 
 	.value.value--is-editable:hover {

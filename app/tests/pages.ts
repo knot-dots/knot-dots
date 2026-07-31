@@ -17,20 +17,18 @@ class BasePage {
 }
 
 class DetailPage extends BasePage {
+	get properties() {
+		return this.page.getByRole('article').locator('div', {
+			has: this.page.getByRole('heading', { name: 'Properties' })
+		});
+	}
+
 	get sections() {
 		return this.page.locator('ul section');
 	}
 
 	get title() {
 		return this.page.getByRole('heading', { level: 1 });
-	}
-
-	get settingsButton() {
-		return this.page.getByRole('button', { name: 'Settings' });
-	}
-
-	get settingsDialog() {
-		return this.page.getByRole('dialog').filter({ hasText: 'Settings' });
 	}
 
 	async addSection(type: string) {

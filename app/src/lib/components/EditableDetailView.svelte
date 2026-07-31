@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Collapsible } from 'melt/builders';
 	import type { Snippet } from 'svelte';
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
@@ -24,6 +25,7 @@
 	import EditableTeaserDetailView from '$lib/components/EditableTeaserDetailView.svelte';
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
+	import { setDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		type AnyPayload,
 		type Container,
@@ -66,6 +68,8 @@
 		let _ = $state(originalContainer);
 		return _;
 	});
+
+	setDetailViewContext({ properties: new Collapsible() });
 </script>
 
 {#if isBinaryIndicatorContainer(container)}
