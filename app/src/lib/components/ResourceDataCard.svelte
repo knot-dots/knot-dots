@@ -55,7 +55,7 @@
 
 	{#snippet footer()}
 		{#if currentResource?.payload.title}
-			<span class="badge">{currentResource.payload.title}</span>
+			<span class="badge badge--indigo">{currentResource.payload.title}</span>
 		{/if}
 	{/snippet}
 </Card>

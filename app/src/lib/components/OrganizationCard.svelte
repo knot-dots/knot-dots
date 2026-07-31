@@ -66,7 +66,7 @@
 
 {#snippet footer()}
 	{#if 'organizationCategory' in container.payload && container.payload.organizationCategory}
-		<span class="badge">
+		<span class="badge badge--indigo">
 			{$_(container.payload.organizationCategory)}
 		</span>
 	{/if}
