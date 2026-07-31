@@ -6,22 +6,15 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { env } from '$env/dynamic/public';
-	import Check from '~icons/flowbite/check-outline';
-	import ExclamationCircle from '~icons/flowbite/exclamation-circle-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import publishAll from '$lib/client/publishAll';
-	import { getToastContext } from '$lib/contexts/toast';
 	import {
 		type AnyPayload,
 		type Container,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
-		type PagePayload,
-		visibility
+		type PagePayload
 	} from '$lib/models';
-	import { ability, applicationState, mayDeleteContainer } from '$lib/stores';
+	import { applicationState, mayDeleteContainer } from '$lib/stores';
 
 	interface Props {
 		actions?: Snippet;
@@ -41,19 +34,10 @@
 		title
 	}: Props = $props();
 
-	let unpublishedRelatedContainers = $derived(
-		relatedContainers.filter(({ payload }) => payload.visibility != visibility.enum.public)
-	);
-
 	let confirmDelete = $state(false);
-
-	let confirmPublishAll = $state(false);
-
-	let toast = getToastContext();
 
 	function closeDialog() {
 		confirmDelete = false;
-		confirmPublishAll = false;
 		dialog.close();
 	}
 
@@ -69,26 +53,6 @@
 			confirmDelete = false;
 			closeDialog();
 		}
-	}
-
-	async function handleConfirmPublishAll(c: Container<AnyPayload>) {
-		const response = await publishAll(c);
-		if (response.ok) {
-			await invalidateAll();
-			toast({
-				icon: Check,
-				heading: $_('publish_all_success'),
-				status: 'success'
-			});
-		} else {
-			toast({
-				icon: ExclamationCircle,
-				heading: $_('publish_all_failure'),
-				status: 'error'
-			});
-		}
-		confirmPublishAll = false;
-		closeDialog();
 	}
 
 	onMount(() => {
@@ -141,35 +105,6 @@
 					})}
 				</button>
 			</form>
-		{:else if confirmPublishAll}
-			<form class="details" method="dialog" onsubmit={() => handleConfirmPublishAll(container)}>
-				<button
-					class="action-button action-button--size-s"
-					onclick={() => closeDialog()}
-					type="button"
-				>
-					<Close />
-					<span class="is-visually-hidden">{$_('cancel')}</span>
-				</button>
-
-				<h2>
-					{$_('confirm_publish_all_dialog.heading')}
-				</h2>
-
-				<p>
-					{$_('confirm_publish_all_dialog.message', {
-						values: { count: unpublishedRelatedContainers.length }
-					})}
-				</p>
-
-				<button class="button-primary button-xs" type="submit">
-					{$_('confirm_publish_all_dialog.button', {
-						values: {
-							title: 'title' in container.payload ? container.payload.title : container.payload.name
-						}
-					})}
-				</button>
-			</form>
 		{:else}
 			<p class="dialog-actions">
 				<span>{title}</span>
@@ -203,20 +138,6 @@
 						</button>
 					{/if}
 
-					{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-						{#if unpublishedRelatedContainers.length > 0 && $ability.can('update', container)}
-							<button
-								class="button button-xs"
-								onclick={(e) => {
-									e.preventDefault();
-									confirmPublishAll = true;
-								}}
-								type="button"
-							>
-								{$_('publish_all')}
-							</button>
-						{/if}
-					{/if}
 					{@render actions?.()}
 				</footer>
 			</div>
