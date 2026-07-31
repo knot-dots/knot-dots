@@ -36,5 +36,5 @@
 	/>
 {:else}
 	<span class="label">{$_('slug')}</span>
-	<span class="value">{container.payload.slug}</span>
+	<div class="value">{container.payload.slug}</div>
 {/if}
