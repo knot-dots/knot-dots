@@ -98,8 +98,4 @@
 	.value {
 		padding-left: var(--dropdown-button-padding-y);
 	}
-
-	.badge {
-		float: left;
-	}
 </style>
