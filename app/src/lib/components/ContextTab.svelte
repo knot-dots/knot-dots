@@ -135,8 +135,6 @@
 	.selected {
 		--details-padding-x: 1.5rem;
 		--details-padding-y: 1.5rem;
-		--details-section-padding-x: 0;
-		--details-section-padding-y: 0;
 
 		background-color: var(--color-white);
 		border: solid 1px var(--color-border-accent-muted);

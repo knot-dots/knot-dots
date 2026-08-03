@@ -37,73 +37,77 @@
 </script>
 
 <article class="details">
-	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-		<header class="details-section">
-			<div class="details-header">
-				{#if container.payload.type === payloadTypes.enum.term}
-					{#if $applicationState.containerDetailView.editable || container.payload.icon}
-						<EditableLogo
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							allowedFileTypes={['image/svg+xml']}
-							bind:value={container.payload.icon}
-						/>
+	<div class="details-scroll-wrapper">
+		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+			<header class="details-section">
+				<div class="details-header">
+					{#if container.payload.type === payloadTypes.enum.term}
+						{#if $applicationState.containerDetailView.editable || container.payload.icon}
+							<EditableLogo
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								allowedFileTypes={['image/svg+xml']}
+								bind:value={container.payload.icon}
+							/>
+						{/if}
 					{/if}
+					<h1 class="details-title">
+						{#if isContainerWithName(container)}
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+								<AutoresizingTextarea bind:value={container.payload.name} />
+							{:else}
+								{container.payload.name?.replace(
+									/@current_organizational_unit_name/g,
+									page.data.currentOrganizationalUnit?.payload.name ?? ''
+								)}
+							{/if}
+						{:else if isContainerWithTitle(container)}
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+								<AutoresizingTextarea bind:value={container.payload.title} />
+							{:else}
+								{container.payload.title?.replace(
+									/@current_organizational_unit_name/g,
+									page.data.currentOrganizationalUnit?.payload.name ?? ''
+								)}
+							{/if}
+						{/if}
+					</h1>
+				</div>
+
+				{#if isContainer(container)}
+					<Badges
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
 				{/if}
-				<h1 class="details-title">
-					{#if isContainerWithName(container)}
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<AutoresizingTextarea bind:value={container.payload.name} />
-						{:else}
-							{container.payload.name?.replace(
-								/@current_organizational_unit_name/g,
-								page.data.currentOrganizationalUnit?.payload.name ?? ''
-							)}
-						{/if}
-					{:else if isContainerWithTitle(container)}
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<AutoresizingTextarea bind:value={container.payload.title} />
-						{:else}
-							{container.payload.title?.replace(
-								/@current_organizational_unit_name/g,
-								page.data.currentOrganizationalUnit?.payload.name ?? ''
-							)}
-						{/if}
-					{/if}
-				</h1>
-			</div>
 
-			{#if isContainer(container)}
-				<Badges
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-				/>
-			{/if}
+				{#if isSimpleMeasureContainer(container)}
+					<EditableProgress
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						bind:value={container.payload.progress}
+					/>
+				{/if}
+			</header>
+		</form>
 
-			{#if isSimpleMeasureContainer(container)}
-				<EditableProgress
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					bind:value={container.payload.progress}
-				/>
-			{/if}
-		</header>
-	</form>
+		{#if isContainerWithBody(container)}
+			<EditableFormattedText
+				bind:value={container.payload.body}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+			/>
+		{:else if isContainerWithDescription(container)}
+			<EditableFormattedText
+				bind:value={container.payload.description}
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+			/>
+		{/if}
 
-	{#if isContainerWithBody(container)}
-		<EditableFormattedText
-			bind:value={container.payload.body}
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-		/>
-	{:else if isContainerWithDescription(container)}
-		<EditableFormattedText
-			bind:value={container.payload.description}
-			editable={$applicationState.containerDetailView.editable && $ability.can('update', container)}
-		/>
-	{/if}
-
-	<Sections {container} relatedContainers={relatedContainersQuery.current ?? []} />
+		<Sections {container} relatedContainers={relatedContainersQuery.current ?? []} />
+	</div>
 </article>
 
 <style>
