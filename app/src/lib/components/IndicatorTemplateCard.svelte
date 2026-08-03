@@ -19,11 +19,11 @@
 
 		<p class="badges">
 			{#each container.payload.indicatorType as indicatorType (indicatorType)}
-				<span class="badge">{$_(indicatorType)}</span>
+				<span class="badge badge--indigo">{$_(indicatorType)}</span>
 			{/each}
 
 			{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
-				<span class="badge">{$_(indicatorCategory)}</span>
+				<span class="badge badge--indigo">{$_(indicatorCategory)}</span>
 			{/each}
 		</p>
 	{/snippet}

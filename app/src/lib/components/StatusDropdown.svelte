@@ -101,6 +101,5 @@
 
 	.badge {
 		float: left;
-		font-weight: 400;
 	}
 </style>

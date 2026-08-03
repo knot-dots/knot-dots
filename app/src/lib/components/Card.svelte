@@ -387,7 +387,7 @@
 			</span>
 		{:else if 'programType' in container.payload}}
 			{@const programType = container.payload.programType as string}
-			<span class="badge">{$_(programType)}</span>
+			<span class="badge badge--indigo">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
 			<span></span>
 		{/if}
