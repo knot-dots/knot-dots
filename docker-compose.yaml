@@ -24,6 +24,10 @@ services:
       - "5173:5173"
     volumes:
       - ./app/src:/srv/knot-dots/app/src
+      # Stand-in for the downward API volume that provides pod-level feature
+      # flags in the cluster; mounted as a directory so that atomic writes
+      # (git checkout, editor saves) keep propagating into the container
+      - ./podinfo:/etc/podinfo:ro
 
   db:
     build:
