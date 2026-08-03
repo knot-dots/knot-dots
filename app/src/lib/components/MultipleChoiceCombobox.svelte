@@ -27,14 +27,6 @@
 	const combobox = new Combobox<string, true>({
 		multiple: true,
 		sameWidth: true,
-		// bottom-start keeps the panel flush with the field's left edge (the
-		// centered default drifts because melt applies sameWidth only after
-		// computing the position); the fixed strategy positions relative to the
-		// viewport, matching the top layer the popover is rendered in.
-		floatingConfig: {
-			computePosition: { placement: 'bottom-start', strategy: 'fixed' },
-			offset: { mainAxis: 4 }
-		},
 		// melt only treats its input and content as "inside"; the badges and the
 		// chevron/clear-all button of this field must not dismiss the popover.
 		// Detached targets are kept open too: opening swaps the chevron icon,
@@ -110,55 +102,49 @@
 			class="input-select"
 			class:input-select--expanded={combobox.open}
 			onclick={handleFieldClick}
-			{@attach (node) => {
-				// Anchor the floating panel to the whole field so sameWidth matches
-				// its width; melt would otherwise anchor to the hidden search input.
-				combobox.triggerEl = node;
-				return () => {
-					if (combobox.triggerEl === node) {
-						combobox.triggerEl = null;
-					}
-				};
-			}}
 		>
-			<span class="badge-wrapper">
-				{#each selectedOptions as selectedOption (selectedOption.value)}
-					<span class="badge">
-						<span class="truncated">{selectedOption.label}</span>
-						<button
-							aria-label={$_('remove')}
-							onclick={() => remove(selectedOption.value)}
-							type="button"
-						>
-							<Close />
-						</button>
-					</span>
-				{/each}
-				<input
-					{...combobox.input}
-					aria-labelledby={labelledBy}
-					autocomplete="off"
-					bind:this={searchInput}
-					class:hidden={!combobox.open}
-				/>
-				{#if !combobox.open && selectedOptions.length === 0}
-					<span class="empty">{$_('empty')}</span>
-				{/if}
-			</span>
-			<span class="icon-wrapper">
-				<!-- One persistent trigger: unmounting it on open would break melt's
-				     focus tracking and close the popover again. While open, the design
-				     turns it into the clear-all button, overriding melt's toggle. -->
-				<button
-					{...combobox.trigger}
-					aria-label={combobox.open ? $_('remove_all') : undefined}
-					aria-labelledby={combobox.open ? undefined : labelledBy}
-					onclick={combobox.open ? removeAll : openAndFocus}
-					type="button"
-				>
-					{#if combobox.open}<CloseCircle />{:else}<ChevronSort />{/if}
-				</button>
-			</span>
+			<!-- Without a selection the open field stays a single line holding
+			     just the search input. -->
+			{#if selectedOptions.length > 0 || !combobox.open}
+				<span class="badge-wrapper">
+					{#each selectedOptions as selectedOption (selectedOption.value)}
+						<span class="badge">
+							<span class="truncated">{selectedOption.label}</span>
+							<button
+								aria-label={$_('remove')}
+								onclick={() => remove(selectedOption.value)}
+								type="button"
+							>
+								<Close />
+							</button>
+						</span>
+					{/each}
+					{#if !combobox.open && selectedOptions.length === 0}
+						<span class="empty">{$_('empty')}</span>
+					{/if}
+				</span>
+			{/if}
+			<!-- The input spans the whole field so the panel matches its width
+			     via sameWidth. -->
+			<input
+				{...combobox.input}
+				aria-labelledby={labelledBy}
+				autocomplete="off"
+				bind:this={searchInput}
+				class:hidden={!combobox.open}
+			/>
+			<!-- One persistent trigger: unmounting it on open would break melt's
+			     focus tracking and close the popover again. While open, the design
+			     turns it into the clear-all button, overriding melt's toggle. -->
+			<button
+				{...combobox.trigger}
+				aria-label={combobox.open ? $_('remove_all') : undefined}
+				aria-labelledby={combobox.open ? undefined : labelledBy}
+				onclick={combobox.open ? removeAll : openAndFocus}
+				type="button"
+			>
+				{#if combobox.open}<CloseCircle />{:else}<ChevronSort />{/if}
+			</button>
 		</div>
 		<div {...combobox.content} class="combobox-panel">
 			<ul>
@@ -204,8 +190,10 @@
 		border-radius: 8px;
 		cursor: pointer;
 		display: flex;
-		gap: 0.5rem;
+		flex-direction: column;
+		gap: 0.25rem;
 		padding: 0.375rem;
+		position: relative;
 	}
 
 	.input-select--expanded {
@@ -219,10 +207,15 @@
 	.badge-wrapper {
 		align-items: center;
 		display: flex;
-		flex: 1 0 0;
 		flex-wrap: wrap;
 		gap: 0.25rem;
+		min-height: 24px;
 		min-width: 0;
+	}
+
+	/* keep badges clear of the icon button */
+	.input-select > .badge-wrapper {
+		padding-right: 1.75rem;
 	}
 
 	.badge {
@@ -249,21 +242,20 @@
 		color: inherit;
 	}
 
-	.badge-wrapper > input.hidden {
+	.input-select > input.hidden {
 		display: none;
 	}
 
-	.badge-wrapper > input {
+	.input-select > input {
 		background: transparent;
 		border: none;
 		color: var(--color-gray-900);
-		flex: 1 0 0;
 		font-size: 0.875rem;
 		font-weight: 500;
 		min-height: 24px;
-		min-width: 120px;
 		outline: none;
-		padding: 0 0 0 0.375rem;
+		padding: 0 1.75rem 0 0.375rem;
+		width: 100%;
 	}
 
 	.empty {
@@ -271,13 +263,7 @@
 		padding-left: 0.375rem;
 	}
 
-	.icon-wrapper {
-		display: flex;
-		flex-shrink: 0;
-		padding: 0.25rem 0;
-	}
-
-	.icon-wrapper > button,
+	.input-select > button,
 	.badge > button {
 		--button-active-background: transparent;
 		--button-hover-background: transparent;
@@ -294,8 +280,12 @@
 		font-size: 0.75rem;
 	}
 
-	.icon-wrapper > button {
+	.input-select > button {
 		color: var(--color-gray-500);
+		position: absolute;
+		right: 0.375rem;
+		/* centers the 20px icon on the 24px first line */
+		top: 0.5rem;
 	}
 
 	.combobox-panel {
