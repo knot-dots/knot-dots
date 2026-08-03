@@ -53,12 +53,12 @@ describe('getPodFeatures', () => {
 		}
 	});
 
-	it('returns an empty map when the annotations file is missing', () => {
+	it('returns an empty map when the annotations file is missing', async () => {
 		process.env.PODINFO_ANNOTATIONS_PATH = path.join(os.tmpdir(), 'does-not-exist');
-		expect(getPodFeatures()).toEqual(new Map());
+		expect(await getPodFeatures()).toEqual(new Map());
 	});
 
-	it('reads the annotations file and picks up modifications', () => {
+	it('reads the annotations file and picks up modifications', async () => {
 		const annotationsPath = path.join(
 			fs.mkdtempSync(path.join(os.tmpdir(), 'podinfo-')),
 			'annotations'
@@ -66,12 +66,9 @@ describe('getPodFeatures', () => {
 		process.env.PODINFO_ANNOTATIONS_PATH = annotationsPath;
 
 		fs.writeFileSync(annotationsPath, 'knotdots.net/ComputedManagedBy="true"\n');
-		expect(getPodFeatures()).toEqual(new Map([['ComputedManagedBy', true]]));
+		expect(await getPodFeatures()).toEqual(new Map([['ComputedManagedBy', true]]));
 
 		fs.writeFileSync(annotationsPath, 'knotdots.net/ComputedManagedBy="false"\n');
-		// A rewritten file carries a new modification time, like the kubelet's
-		// atomic symlink swap.
-		fs.utimesSync(annotationsPath, new Date(), new Date(Date.now() + 1000));
-		expect(getPodFeatures()).toEqual(new Map([['ComputedManagedBy', false]]));
+		expect(await getPodFeatures()).toEqual(new Map([['ComputedManagedBy', false]]));
 	});
 });

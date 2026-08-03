@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 
@@ -21,25 +21,15 @@ export function parseAnnotations(contents: string): Map<string, boolean> {
 	return flags;
 }
 
-let cachedFlags = new Map<string, boolean>();
-let cachedMtime = -1;
 let warned = false;
 
-export function getPodFeatures(): ReadonlyMap<string, boolean> {
+// Read on every call; the file system cache makes this cheap and the kernel
+// takes care of invalidation.
+export async function getPodFeatures(): Promise<Map<string, boolean>> {
 	const annotationsPath = process.env.PODINFO_ANNOTATIONS_PATH ?? '/etc/podinfo/annotations';
 
 	try {
-		// The kubelet syncs annotation changes into the volume by swapping a
-		// symlink, so a changed modification time is the reload signal.
-		const { mtimeMs } = fs.statSync(annotationsPath);
-		if (mtimeMs != cachedMtime) {
-			cachedFlags = parseAnnotations(fs.readFileSync(annotationsPath, 'utf-8'));
-			cachedMtime = mtimeMs;
-			log.info(
-				{ annotationsPath, flags: Object.fromEntries(cachedFlags) },
-				'Loaded pod-level feature flags'
-			);
-		}
+		return parseAnnotations(await fs.readFile(annotationsPath, 'utf-8'));
 	} catch (error) {
 		if (!warned) {
 			warned = true;
@@ -48,9 +38,6 @@ export function getPodFeatures(): ReadonlyMap<string, boolean> {
 				'Failed to read pod annotations, pod-level feature flags are disabled'
 			);
 		}
-		cachedFlags = new Map();
-		cachedMtime = -1;
+		return new Map();
 	}
-
-	return cachedFlags;
 }
