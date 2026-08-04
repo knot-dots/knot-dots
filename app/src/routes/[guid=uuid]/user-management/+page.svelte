@@ -3,37 +3,38 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { _ } from 'svelte-i18n';
+	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
+	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
+	import UserAddIcon from '~icons/flowbite/user-add-outline';
+	import UserIcon from '~icons/flowbite/user-outline';
+	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
+	import tooltip from '$lib/attachments/tooltip';
+	import saveUser from '$lib/client/saveUser';
 	import saveContainerUser from '$lib/client/saveContainerUser';
-	import Dialog from '$lib/components/Dialog.svelte';
-	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
-	import {
-		displayName,
-		isAdminOf,
-		isCollaboratorOf,
-		isHeadOf,
-		isMemberOf,
-		isObserverOf,
-		predicates,
-		type User,
-		type Predicate,
-		type Container,
-		type AnyPayload
-	} from '$lib/models';
-	import type { PageData } from './$types';
 	import BadgeDropdown, {
 		type BadgeDropdownOption,
 		type BadgeDropdownValue
 	} from '$lib/components/BadgeDropdown.svelte';
-	import tooltip from '$lib/attachments/tooltip';
-	import { ability, applicationState } from '$lib/stores';
-	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
-	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
-	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
-	import UserIcon from '~icons/flowbite/user-outline';
-	import UserAddIcon from '~icons/flowbite/user-add-outline';
-	import saveUser from '$lib/client/saveUser';
 	import ConfirmRemoveUserDialog from '$lib/components/ConfirmRemoveUserDialog.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import Dialog from '$lib/components/Dialog.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import Layout from '$lib/components/Layout.svelte';
+	import {
+		predicates,
+		type Predicate,
+		type User,
+		type AnyPayload,
+		isAdminOf,
+		isHeadOf,
+		isCollaboratorOf,
+		isObserverOf,
+		isMemberOf,
+		displayName,
+		type Container
+	} from '$lib/models';
+	import { ability, applicationState } from '$lib/stores';
+	import type { PageData } from './$types';
 
 	interface Props {
 		data: PageData;
@@ -396,6 +397,7 @@
 				</tbody>
 			</table>
 		</div>
+		<ContextTabs slug="user-management" />
 	{/snippet}
 </Layout>
 

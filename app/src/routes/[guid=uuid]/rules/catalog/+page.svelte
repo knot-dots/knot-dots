@@ -4,6 +4,7 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
 	import { type Container, payloadTypes, type RulePayload } from '$lib/models';
@@ -62,4 +63,5 @@
 			/>
 		{/snippet}
 	</Catalog>
+	<ContextTabs slug="rules-catalog" />
 </RulesPage>

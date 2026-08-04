@@ -3,8 +3,10 @@
 </script>
 
 <script lang="ts" generics="P extends AnyPayload">
-	import type { Tabs } from 'melt/builders';
+	import { type AccordionItem } from 'melt/builders';
 	import type { ResourceReturn } from 'runed';
+	import type { Component } from 'svelte';
+	import type { SVGAttributes } from 'svelte/elements';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/flowbite/close-outline';
 	import tooltip from '$lib/attachments/tooltip';
@@ -15,11 +17,14 @@
 	interface Props {
 		containers: ResourceReturn<Array<Container<P>>>;
 		empty: string;
-		tabs: Tabs<'' | 'help' | 'knowledge' | 'rules'>;
-		title: string;
+		tabItem: AccordionItem<{
+			id: string;
+			icon: Component<SVGAttributes<SVGSVGElement>>;
+			title: string;
+		}>;
 	}
 
-	let { containers, empty, tabs, title }: Props = $props();
+	let { containers, empty, tabItem }: Props = $props();
 
 	let selected = $state<Container<P>>();
 </script>
@@ -28,9 +33,9 @@
 	<ol class="truncated">
 		<li>
 			{#if selected}
-				<button onclick={() => (selected = undefined)} type="button">{title}</button>
+				<button onclick={() => (selected = undefined)} type="button">{tabItem.item.title}</button>
 			{:else}
-				{title}
+				{tabItem.item.title}
 			{/if}
 		</li>
 
@@ -48,7 +53,7 @@
 	<button
 		{@attach tooltip($_('close'))}
 		class="action-button"
-		onclick={() => (tabs.value = '')}
+		onclick={() => tabItem.collapse()}
 		type="button"
 	>
 		<Close />
@@ -130,8 +135,6 @@
 	.selected {
 		--details-padding-x: 1.5rem;
 		--details-padding-y: 1.5rem;
-		--details-section-padding-x: 0;
-		--details-section-padding-y: 0;
 
 		background-color: var(--color-white);
 		border: solid 1px var(--color-border-accent-muted);

@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { Tabs } from 'melt/builders';
+	import { Accordion } from 'melt/builders';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import BookOutline from '~icons/flowbite/book-outline';
@@ -23,10 +23,13 @@
 
 	let { slug }: Props = $props();
 
-	const tabs = new Tabs<'' | 'help' | 'knowledge' | 'rules'>({
-		orientation: 'vertical',
-		value: ''
-	});
+	const tabs = new Accordion();
+
+	const tabItems = [
+		{ id: 'help', icon: QuestionCircle, title: $_('help') },
+		{ id: 'knowledge', icon: BookOutline, title: $_('knowledge') },
+		{ id: 'rules', icon: Gavel, title: $_('rules') }
+	];
 
 	const overlay = getContext('overlay');
 
@@ -54,52 +57,48 @@
 
 {#if overlay || !$overlayStore}
 	<aside class="module-context">
-		<div {...tabs.triggerList}>
-			<button {@attach tooltip($_('help'))} {...tabs.getTrigger('help')} type="button">
-				<QuestionCircle />
-				<span class="is-visually-hidden">{$_('help')}</span>
-			</button>
-
-			<button {@attach tooltip($_('knowledge'))} {...tabs.getTrigger('knowledge')} type="button">
-				<BookOutline />
-				<span class="is-visually-hidden">{$_('knowledge')}</span>
-			</button>
-
-			<button {@attach tooltip($_('workspace.rules'))} {...tabs.getTrigger('rules')} type="button">
-				<Gavel />
-				<span class="is-visually-hidden">{$_('rules')}</span>
-			</button>
+		<div {...tabs.root} class="tablist">
+			{#each tabItems as item (item.id)}
+				{const tabItem = tabs.getItem(item)}
+				<button
+					{@attach tooltip(tabItem.item.title)}
+					{...tabItem.trigger}
+					class="tab"
+					type="button"
+				>
+					<tabItem.item.icon />
+					<span class="is-visually-hidden">{tabItem.item.title}</span>
+				</button>
+			{/each}
 		</div>
 
-		{#if tabs.value}
-			<section {...tabs.getContent(tabs.value)} bind:offsetWidth={width} style:width="{width}px">
-				<div class="resize-handle" onmousedown={startResize} role="separator"></div>
-				{#if tabs.value == 'help'}
-					<ContextHelp {slug}>
-						{#snippet children(containers)}
-							<ContextTab {containers} empty={$_('help.empty')} {tabs} title={$_('help')} />
-						{/snippet}
-					</ContextHelp>
-				{:else if tabs.value == 'knowledge'}
-					<ContextKnowledge>
-						{#snippet children(containers)}
-							<ContextTab
-								{containers}
-								empty={$_('knowledge.empty')}
-								{tabs}
-								title={$_('knowledge')}
-							/>
-						{/snippet}
-					</ContextKnowledge>
-				{:else if tabs.value == 'rules'}
-					<ContextRules>
-						{#snippet children(containers)}
-							<ContextTab {containers} empty={$_('rules.empty')} {tabs} title={$_('rules')} />
-						{/snippet}
-					</ContextRules>
-				{/if}
-			</section>
-		{/if}
+		{#each tabItems as item (item.id)}
+			{const tabItem = tabs.getItem(item)}
+			{#if tabItem.isExpanded}
+				<section bind:offsetWidth={width} style:width="{width}px" class="tabpanel">
+					<div class="resize-handle" onmousedown={startResize} role="separator"></div>
+					{#if item.id == 'help'}
+						<ContextHelp {slug}>
+							{#snippet children(containers)}
+								<ContextTab {containers} empty={$_('help.empty')} {tabItem} />
+							{/snippet}
+						</ContextHelp>
+					{:else if item.id == 'knowledge'}
+						<ContextKnowledge>
+							{#snippet children(containers)}
+								<ContextTab {containers} empty={$_('knowledge.empty')} {tabItem} />
+							{/snippet}
+						</ContextKnowledge>
+					{:else if item.id == 'rules'}
+						<ContextRules>
+							{#snippet children(containers)}
+								<ContextTab {containers} empty={$_('rules.empty')} {tabItem} />
+							{/snippet}
+						</ContextRules>
+					{/if}
+				</section>
+			{/if}
+		{/each}
 	</aside>
 {/if}
 
@@ -112,17 +111,17 @@
 		flex-direction: column-reverse;
 		gap: var(--margin);
 		margin: var(--margin);
-		max-height: calc(100% - 2 * var(--margin));
 		position: absolute;
 		right: 0;
 		z-index: 1;
 	}
 
-	aside:has([role='tabpanel']) {
+	aside:has(.tabpanel) {
+		height: calc(100% - 2 * var(--margin));
 		width: calc(100% - 2 * var(--margin));
 	}
 
-	[role='tablist'] {
+	.tablist {
 		--tablist-height: 3rem;
 		--tablist-padding: 0.25rem;
 
@@ -136,7 +135,7 @@
 		z-index: 1;
 	}
 
-	[role='tablist']:has(+ [role='tabpanel']) {
+	.tablist:has(+ .tabpanel) {
 		border: 1px solid var(--color-border-accent-subtle);
 		border-radius: 12px;
 		background:
@@ -144,7 +143,7 @@
 			var(--color-background-accent-muted);
 	}
 
-	[role='tab'] {
+	.tab {
 		--button-active-background: transparent;
 		--button-background: transparent;
 		--button-hover-background: transparent;
@@ -161,27 +160,27 @@
 		white-space: nowrap;
 	}
 
-	[role='tab']:hover {
+	.tab:hover {
 		background: var(--color-background-accent-hover);
 		color: var(--color-accent-on-default);
 	}
 
-	[role='tab'] > :global(svg) {
+	.tab > :global(svg) {
 		color: var(--color-icon-accent-subtle);
 		height: 1rem;
 		width: 1rem;
 	}
 
-	[role='tab'][aria-selected='true'] {
+	.tab[aria-expanded='true'] {
 		background: var(--color-background-accent-expanded);
 		color: var(--color-text-accent-strong);
 	}
 
-	[role='tab'][aria-selected='true'] > :global(svg) {
+	.tab[aria-expanded='true'] > :global(svg) {
 		color: var(--color-icon-accent-default);
 	}
 
-	[role='tabpanel'] {
+	.tabpanel {
 		background: var(--color-surface-accent-container);
 		border-radius: var(--rounded-xl, 12px);
 		border: 1px solid var(--color-border-accent-subtle);
@@ -195,16 +194,16 @@
 
 	@container (max-width: 48rem) {
 		@layer visually-hidden {
-			[role='tablist']:has(+ [role='tabpanel']) [role='tab'] .is-visually-hidden {
+			.tablist:has(+ .tabpanel) .tab .is-visually-hidden {
 				all: revert-layer;
 			}
 		}
 
-		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab'] {
+		.tablist:not(:has(+ .tabpanel)) .tab {
 			display: none;
 		}
 
-		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab']:first-child {
+		.tablist:not(:has(+ .tabpanel)) .tab:first-child {
 			aspect-ratio: 1;
 			background-color: var(--color-white);
 			border: solid 1px var(--color-border-subtle);
@@ -216,7 +215,7 @@
 			place-content: center;
 		}
 
-		[role='tablist']:not(:has(+ [role='tabpanel'])) [role='tab']:first-child > :global(svg) {
+		.tablist:not(:has(+ .tabpanel)) .tab:first-child > :global(svg) {
 			height: 1.25rem;
 			width: 1.25rem;
 		}
@@ -227,12 +226,11 @@
 			flex: 0 1;
 			flex-direction: row-reverse;
 			gap: 0;
-			height: auto;
 			position: relative;
 			width: auto;
 		}
 
-		[role='tablist'] {
+		.tablist {
 			background:
 				linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
 				var(--color-background-accent-muted);
@@ -242,7 +240,7 @@
 			margin: auto 0;
 		}
 
-		[role='tablist']:has(+ [role='tabpanel']) {
+		.tablist:has(+ .tabpanel) {
 			border-left: none;
 			border-bottom-left-radius: 0;
 			border-top-left-radius: 0;
@@ -250,11 +248,11 @@
 			padding-left: 0.25rem;
 		}
 
-		[role='tab'] {
+		.tab {
 			height: 2rem;
 		}
 
-		[role='tabpanel'] {
+		.tabpanel {
 			bottom: 0;
 			max-width: 80cqw;
 			min-width: 23.75rem;
@@ -266,7 +264,7 @@
 	}
 
 	@container details (min-width: 48rem) {
-		[role='tabpanel'] {
+		.tabpanel {
 			flex-direction: column;
 			height: 100%;
 			margin: 0;

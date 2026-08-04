@@ -8,14 +8,14 @@ export default class ContextTabs {
 	}
 
 	get current() {
-		return this.locator.getByRole('tabpanel');
+		return this.locator.locator('.tabpanel');
 	}
 
 	async open(name: string, isMobile: boolean = false): Promise<void> {
 		if (isMobile) {
-			await this.locator.getByRole('tab', { name: 'Help' }).click();
+			await this.locator.getByRole('button', { name: 'Help' }).click();
 		}
-		await this.locator.getByRole('tab', { name }).click();
+		await this.locator.getByRole('button', { name }).click();
 	}
 
 	async close() {
