@@ -19,7 +19,7 @@
 
 	interface Props {
 		containers: Container[];
-		program?: Container<ProgramPayload>;
+		program: Container<ProgramPayload>;
 	}
 
 	let { containers, program }: Props = $props();
@@ -31,8 +31,7 @@
 				.filter(({ relation }) =>
 					relation.some(
 						({ object, predicate }) =>
-							predicate === predicates.enum['is-part-of-program'] &&
-							(!program || object === program.guid)
+							predicate === predicates.enum['is-part-of-program'] && object === program.guid
 					)
 				)
 		)
@@ -53,12 +52,8 @@
 				addItemUrl: addItemUrl([
 					[overlayKey.enum.create, payloadTypes.enum.goal],
 					['hierarchyLevel', String(hierarchyLevel)],
-					...(program
-						? [
-								[predicates.enum['is-part-of-program'], program.guid],
-								['managedBy', program.managed_by[0]]
-							]
-						: [])
+					[predicates.enum['is-part-of-program'], program.guid],
+					['managedBy', program.managed_by[0]]
 				]),
 				containers,
 				key: `goals-${hierarchyLevel}`,
@@ -74,12 +69,8 @@
 							[overlayKey.enum.create, payloadTypes.enum.simple_measure],
 							[overlayKey.enum.create, payloadTypes.enum.rule],
 							['hierarchyLevel', String(hierarchyLevel)],
-							...(program
-								? [
-										[predicates.enum['is-part-of-program'], program.guid],
-										['managedBy', program.managed_by[0]]
-									]
-								: [])
+							[predicates.enum['is-part-of-program'], program.guid],
+							['managedBy', program.managed_by[0]]
 						]),
 						containers,
 						key: `implementation-${hierarchyLevel}`,
@@ -93,12 +84,8 @@
 						addItemUrl: addItemUrl([
 							[overlayKey.enum.create, payloadTypes.enum.measure],
 							['hierarchyLevel', String(hierarchyLevel)],
-							...(program
-								? [
-										[predicates.enum['is-part-of-program'], program.guid],
-										['managedBy', program.managed_by[0]]
-									]
-								: [])
+							[predicates.enum['is-part-of-program'], program.guid],
+							['managedBy', program.managed_by[0]]
 						]),
 						containers,
 						key: `implementation-${hierarchyLevel}`,

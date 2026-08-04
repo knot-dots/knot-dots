@@ -11,7 +11,7 @@
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
-	import { isGoalContainer, isMeasureContainer, overlayKey } from '$lib/models';
+	import { isGoalContainer, isMeasureContainer, isProgramContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
 	interface Props {
@@ -60,7 +60,7 @@
 	<div class="resize-handle" onmousedown={startExpand}></div>
 	{#if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
-	{:else if data.key === overlayKey.enum['chapters']}
+	{:else if data.key === overlayKey.enum['chapters'] && isProgramContainer(data.container)}
 		<ChaptersOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['goal-iooi'] && isGoalContainer(data.container)}
 		<IOOIOverlay container={data.container} containers={data.containers} />

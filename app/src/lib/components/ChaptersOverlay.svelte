@@ -6,16 +6,10 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import {
-		type AnyPayload,
-		computeFacetCount,
-		type Container,
-		isProgramContainer,
-		status
-	} from '$lib/models';
+	import { computeFacetCount, type Container, type ProgramPayload, status } from '$lib/models';
 
 	interface Props {
-		container: Container<AnyPayload>;
+		container: Container<ProgramPayload>;
 		containers: Container[];
 	}
 
@@ -43,7 +37,7 @@
 <Header {facets} search />
 
 <div class="content">
-	<Chapters program={isProgramContainer(container) ? container : undefined} {containers} />
+	<Chapters program={container} {containers} />
 
 	<ContextTabs slug="all-level" />
 </div>
