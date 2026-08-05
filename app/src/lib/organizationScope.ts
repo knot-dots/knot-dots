@@ -109,9 +109,18 @@ export function resolveOrganizationScope(
 		}
 	}
 
+	// Filters written before the scope selector existed carry organization
+	// values without an organizationalUnit key. They meant "whole organization",
+	// so no organizational unit constraint is emitted for them. The picker
+	// always writes the key, marking organization values as organization-level
+	// selections (empty string sentinel).
+	const organizationLevelOnly = Array.isArray(filter.organizationalUnit);
+
 	return [
 		...[...organizations].map((guid): [string, string] => ['organization', guid]),
-		...(scope.organizations.length > 0 ? [['organizationalUnit', ''] as [string, string]] : []),
+		...(scope.organizations.length > 0 && organizationLevelOnly
+			? [['organizationalUnit', ''] as [string, string]]
+			: []),
 		...scope.organizationalUnits.map((guid): [string, string] => ['organizationalUnit', guid])
 	];
 }

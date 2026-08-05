@@ -165,6 +165,18 @@ describe('resolveOrganizationScope', () => {
 		]);
 	});
 
+	it('resolves legacy organization filters without unit key to the whole organization', () => {
+		expect(resolveOrganizationScope({ organization: [org] }, atOrganization)).toEqual([
+			['organization', org]
+		]);
+	});
+
+	it('resolves legacy organization filters with null unit value to the whole organization', () => {
+		expect(
+			resolveOrganizationScope({ organization: [org], organizationalUnit: null }, atOrganization)
+		).toEqual([['organization', org]]);
+	});
+
 	it('resolves explicit organizational units and derives their parent organizations', () => {
 		expect(
 			resolveOrganizationScope(
