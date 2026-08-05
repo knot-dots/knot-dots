@@ -94,3 +94,149 @@ test('inline help is edit-only', async ({ dotsBoard, testReport }) => {
 	await dotsBoard.overlay.editModeToggle.uncheck();
 	await expect(dotsBoard.overlay.locator.getByText('Inline help')).toHaveCount(0);
 });
+
+test('sections can be re-ordered', async ({ dotsBoard, isMobile, testGoal }) => {
+	test.skip(isMobile, 'Re-ordering via drag-and-drop does not work on mobile');
+
+	await dotsBoard.goto(`/${testGoal.organization}`);
+	await dotsBoard.card(testGoal.payload.title).click();
+	await dotsBoard.overlay.editModeToggle.check();
+
+	// Add two text sections with distinguishable headings
+	const first = await dotsBoard.overlay.addSection('Supplementary text');
+	const firstHeading = first.getByRole('heading').first();
+	const saveFirstTitle = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await firstHeading.click();
+	await firstHeading.fill('First section');
+	await saveFirstTitle;
+
+	const second = await dotsBoard.overlay.addSection('Supplementary text');
+	const secondHeading = second.getByRole('heading').first();
+	const saveSecondTitle = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await secondHeading.click();
+	await secondHeading.fill('Second section');
+	await saveSecondTitle;
+
+	// Sanity: initial order
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText(
+		'First section'
+	);
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText(
+		'Second section'
+	);
+
+	// Re-order: drag the second section above the first
+	const reorderResponse = dotsBoard.page.waitForResponse(
+		(r) =>
+			r.url().includes(`/container/${testGoal.guid}/relation`) && r.request().method() === 'POST'
+	);
+	await dotsBoard.overlay.moveSection(
+		dotsBoard.overlay.sections.nth(1),
+		dotsBoard.overlay.sections.nth(0)
+	);
+	await reorderResponse;
+
+	// Verify new order
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText(
+		'Second section'
+	);
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText(
+		'First section'
+	);
+
+	// Reload to confirm the order was persisted
+	await dotsBoard.page.reload();
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText(
+		'Second section'
+	);
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText(
+		'First section'
+	);
+});
+
+test('editing and adding sections preserves the order after re-ordering', async ({
+	dotsBoard,
+	isMobile,
+	testMeasure
+}) => {
+	test.skip(isMobile, 'Re-ordering via drag-and-drop does not work on mobile');
+
+	await dotsBoard.goto(`/${testMeasure.organization}`);
+	await dotsBoard.card(testMeasure.payload.title).click();
+	await dotsBoard.overlay.editModeToggle.check();
+
+	// Add two text sections
+	const alpha = await dotsBoard.overlay.addSection('Supplementary text');
+	const alphaHeading = alpha.getByRole('heading').first();
+	let saveResponse = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await alphaHeading.click();
+	await alphaHeading.fill('Alpha');
+	await saveResponse;
+
+	const beta = await dotsBoard.overlay.addSection('Supplementary text');
+	const betaHeading = beta.getByRole('heading').first();
+	saveResponse = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await betaHeading.click();
+	await betaHeading.fill('Beta');
+	await saveResponse;
+
+	// Re-order: move Beta above Alpha -> [Beta, Alpha]
+	const reorderResponse = dotsBoard.page.waitForResponse(
+		(r) =>
+			r.url().includes(`/container/${testMeasure.guid}/relation`) && r.request().method() === 'POST'
+	);
+	await dotsBoard.overlay.moveSection(
+		dotsBoard.overlay.sections.nth(1),
+		dotsBoard.overlay.sections.nth(0)
+	);
+	await reorderResponse;
+
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText('Beta');
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText('Alpha');
+
+	// Edit the (now) first section - the order must not revert
+	const editedFirst = dotsBoard.overlay.sections.nth(0).getByRole('heading').first();
+	saveResponse = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await editedFirst.click();
+	await editedFirst.fill('Beta edited');
+	await saveResponse;
+
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText(
+		'Beta edited'
+	);
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText('Alpha');
+
+	// Add another section - it should be appended at the end, not disturb existing order
+	const gamma = await dotsBoard.overlay.addSection('Supplementary text');
+	const gammaHeading = gamma.getByRole('heading').first();
+	saveResponse = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await gammaHeading.click();
+	await gammaHeading.fill('Gamma');
+	await saveResponse;
+
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText(
+		'Beta edited'
+	);
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText('Alpha');
+	await expect(dotsBoard.overlay.sections.nth(2).getByRole('heading').first()).toHaveText('Gamma');
+
+	// Reload to confirm persistence
+	await dotsBoard.page.reload();
+	await expect(dotsBoard.overlay.sections.nth(0).getByRole('heading').first()).toHaveText(
+		'Beta edited'
+	);
+	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText('Alpha');
+	await expect(dotsBoard.overlay.sections.nth(2).getByRole('heading').first()).toHaveText('Gamma');
+});
