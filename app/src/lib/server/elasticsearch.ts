@@ -299,9 +299,21 @@ export async function getManyContainersWithES(
 	if (filters.organizationalUnits === null) {
 		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
 	} else if (filters.organizationalUnits?.length) {
-		addFacetFilter(facetFilters, 'organizationalUnit', {
-			terms: { organizational_unit: filters.organizationalUnits }
-		});
+		// The empty string is a sentinel for containers without an organizational
+		// unit, i.e. organization-level content.
+		const includeNull = filters.organizationalUnits.includes('');
+		const organizationalUnits = filters.organizationalUnits.filter((value) => value !== '');
+		const clauses: estypes.QueryDslQueryContainer[] = [
+			...(organizationalUnits.length
+				? [{ terms: { organizational_unit: organizationalUnits } }]
+				: []),
+			...(includeNull ? [{ bool: { must_not: { exists: { field: 'organizational_unit' } } } }] : [])
+		];
+		addFacetFilter(
+			facetFilters,
+			'organizationalUnit',
+			clauses.length === 1 ? clauses[0] : { bool: { should: clauses, minimum_should_match: 1 } }
+		);
 	}
 	if (organizations.length) {
 		addFacetFilter(facetFilters, 'organization', { terms: { organization: organizations } });

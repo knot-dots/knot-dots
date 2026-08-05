@@ -633,12 +633,24 @@ function prepareWhereCondition(filters: {
 	if (filters.organizationalUnits === null) {
 		conditions.push(sql.fragment`c.organizational_unit IS NULL`);
 	} else if (filters.organizationalUnits?.length) {
-		conditions.push(
-			sql.fragment`c.organizational_unit IN (${sql.join(
-				filters.organizationalUnits,
-				sql.fragment`, `
-			)})`
-		);
+		// The empty string is a sentinel for containers without an organizational
+		// unit, i.e. organization-level content.
+		const includeNull = filters.organizationalUnits.includes('');
+		const organizationalUnits = filters.organizationalUnits.filter((value) => value !== '');
+		if (includeNull && organizationalUnits.length) {
+			conditions.push(
+				sql.fragment`(c.organizational_unit IS NULL OR c.organizational_unit IN (${sql.join(
+					organizationalUnits,
+					sql.fragment`, `
+				)}))`
+			);
+		} else if (includeNull) {
+			conditions.push(sql.fragment`c.organizational_unit IS NULL`);
+		} else {
+			conditions.push(
+				sql.fragment`c.organizational_unit IN (${sql.join(organizationalUnits, sql.fragment`, `)})`
+			);
+		}
 	}
 	if (filters.programTypes?.length) {
 		conditions.push(

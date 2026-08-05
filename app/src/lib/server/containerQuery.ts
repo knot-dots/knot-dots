@@ -77,15 +77,7 @@ const querySchema = z.object({
 				.length(1)
 				.transform(() => undefined)
 		),
-	organizationalUnit: z
-		.array(z.string().uuid())
-		.or(
-			z
-				.array(z.literal(''))
-				.length(1)
-				.transform(() => null)
-		)
-		.default([]),
+	organizationalUnit: z.array(z.string().uuid().or(z.literal(''))).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),

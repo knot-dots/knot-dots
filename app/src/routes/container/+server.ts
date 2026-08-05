@@ -469,15 +469,7 @@ export const GET = (async ({ locals, url }) => {
 		limit: z.coerce.number().int().positive().optional(),
 		offset: z.coerce.number().int().nonnegative().default(0),
 		organization: z.array(z.string().uuid()).default([]),
-		organizationalUnit: z
-			.array(z.string().uuid())
-			.or(
-				z
-					.array(z.literal(''))
-					.length(1)
-					.transform(() => null)
-			)
-			.default([]),
+		organizationalUnit: z.array(z.string().uuid().or(z.literal(''))).default([]),
 		payloadType: z.array(payloadTypes).default([]),
 		programType: z.array(programTypes).default([]),
 		relatedTo: z.array(z.string().uuid()).default([]),
