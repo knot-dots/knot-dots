@@ -1,0 +1,3 @@
+-- Irreversible data migration: user-set organization and organizational unit
+-- values cannot be distinguished from values added by the up migration.
+-- The previous code reads the migrated shape correctly, so no action is taken.
