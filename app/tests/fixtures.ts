@@ -65,6 +65,7 @@ type MyWorkerFixtures = {
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testProgram: Container<ProgramPayload>;
 	testGoal: Container<GoalPayload>;
+	testOrganizationalUnitGoal: Container<GoalPayload>;
 	testSubordinateGoal: Container<GoalPayload>;
 	testObjective: Container<ObjectivePayload>;
 	testMeasure: Container<MeasurePayload>;
@@ -600,6 +601,29 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testGoal);
 
 			await deleteContainer(adminContext, testGoal);
+		},
+		{ scope: 'worker' }
+	],
+	testOrganizationalUnitGoal: [
+		async ({ adminContext, testOrganization, testOrganizationalUnit }, use, workerInfo) => {
+			const newGoal = containerOfType(
+				payloadTypes.enum.goal,
+				testOrganization.guid,
+				testOrganizationalUnit.guid,
+				testOrganizationalUnit.guid,
+				'knot-dots'
+			) as Container<GoalPayload>;
+			const testOrganizationalUnitGoal = await createContainer(adminContext, {
+				...newGoal,
+				payload: {
+					...newGoal.payload,
+					title: `Organizational Unit Goal ${workerInfo.workerIndex}`
+				}
+			});
+
+			await use(testOrganizationalUnitGoal);
+
+			await deleteContainer(adminContext, testOrganizationalUnitGoal);
 		},
 		{ scope: 'worker' }
 	],

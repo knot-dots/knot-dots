@@ -162,6 +162,97 @@ test('Rule-based collections can be displayed in a section', async ({
 	await expect(section.getByRole('link', { name: 'Show all' })).toBeVisible();
 });
 
+test('Organization scope can be configured for rule-based collections', async ({
+	isMobile,
+	landingPage,
+	testGoal,
+	testOrganization,
+	testOrganizationalUnit,
+	testOrganizationalUnitGoal
+}) => {
+	await landingPage.goto(`/${testOrganization.guid}`);
+	await landingPage.header.editModeToggle.check();
+
+	// Add "Embed objects" section
+	const section = await landingPage.addSection('Embed objects');
+	await section.getByPlaceholder('Enter title').fill('My scoped collection');
+	await section.hover();
+
+	// Open dialog to select objects
+	await section.getByRole('button', { name: 'Add items', exact: true }).click();
+	const dialog = landingPage.page.getByRole('dialog');
+	await expect(dialog.getByText('Choose objects')).toBeVisible();
+
+	// Default scope is the current area including subordinate organizational units
+	const goalCard = dialog.getByRole('article').filter({ hasText: testGoal.payload.title });
+	const organizationalUnitGoalCard = dialog
+		.getByRole('article')
+		.filter({ hasText: testOrganizationalUnitGoal.payload.title });
+	await expect(goalCard).toBeVisible();
+	await expect(organizationalUnitGoalCard).toBeVisible();
+
+	// Open the organization filter dropdown
+	await dialog.getByRole('button', { name: 'Organization' }).click();
+	await expect(dialog.getByRole('radio', { name: 'Current area' })).toBeChecked();
+	const organizationCheckbox = dialog.getByRole('checkbox', {
+		name: new RegExp(`^${testOrganization.payload.name} \\(`)
+	});
+	await expect(organizationCheckbox).toBeDisabled();
+
+	// Excluding sub-areas hides content of organizational units
+	await dialog.getByRole('checkbox', { name: 'Without sub-areas' }).check();
+	await expect(organizationalUnitGoalCard).not.toBeVisible();
+	await expect(goalCard).toBeVisible();
+
+	// Switching to explicit selection pre-checks the current area
+	await dialog.getByRole('radio', { name: 'Explicit selection' }).check();
+	await expect(organizationCheckbox).toBeEnabled();
+	await expect(organizationCheckbox).toBeChecked();
+
+	// Expand the organization and check the organizational unit via "All"
+	const organizationOption = dialog
+		.locator('.option')
+		.filter({ hasText: testOrganization.payload.name });
+	await organizationOption.locator('.suboption-button').click();
+	const organizationalUnitCheckbox = dialog.getByRole('checkbox', {
+		name: new RegExp(`^${testOrganizationalUnit.payload.name} \\(`)
+	});
+	await expect(organizationalUnitCheckbox).not.toBeChecked();
+	await dialog.getByRole('button', { name: 'All', exact: true }).click();
+	await expect(organizationalUnitCheckbox).toBeChecked();
+
+	// Reset clears all checkboxes
+	await dialog.getByRole('button', { name: 'Reset', exact: true }).click();
+	await expect(organizationCheckbox).not.toBeChecked();
+	await expect(organizationalUnitCheckbox).not.toBeChecked();
+
+	// Select only the organizational unit
+	await organizationalUnitCheckbox.check();
+	await expect(organizationalUnitGoalCard).toBeVisible();
+	await expect(goalCard).not.toBeVisible();
+
+	// Apply as rule
+	await dialog.getByText('Apply rule').check();
+	const preview = dialog.locator('.selection-panel .selection-list');
+	if (!isMobile) {
+		await expect(
+			preview.getByRole('listitem').filter({ hasText: testOrganizationalUnit.payload.name })
+		).toBeVisible();
+	}
+	await dialog.getByRole('button', { name: 'Apply rule' }).click();
+	await expect(dialog).not.toBeVisible();
+
+	// Assert only content of the organizational unit is displayed in the section
+	await expect(
+		section.getByRole('link', { name: testOrganizationalUnitGoal.payload.title })
+	).toBeVisible();
+	await expect(section.getByRole('link', { name: testGoal.payload.title })).not.toBeVisible();
+
+	// Assert show-all link is displayed
+	await section.hover();
+	await expect(section.getByRole('link', { name: 'Show all' })).toBeVisible();
+});
+
 test('New item can be added to custom collection', async ({
 	isMobile,
 	landingPage,
