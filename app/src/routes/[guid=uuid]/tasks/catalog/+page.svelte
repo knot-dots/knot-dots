@@ -3,7 +3,7 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainer, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 	import { payloadTypes } from '$lib/models';
 
@@ -12,7 +12,7 @@
 	let containers = $derived(
 		withOptimistic(
 			data.containers,
-			$lastCreatedContainer,
+			$lastCreatedContainers,
 			$lastDeletedContainers,
 			$lastUpdatedContainers
 		)

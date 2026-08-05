@@ -69,6 +69,34 @@ export default class Overlay {
 		await this.page.getByRole('button', { name: /I want to delete/i }).click();
 	}
 
+	async moveSection(source: Locator, target: Locator) {
+		await source.hover();
+		const handle = source.locator('.drag-handle').first();
+		const sourceBox = await handle.boundingBox();
+		const targetBox = await target.boundingBox();
+
+		if (!sourceBox || !targetBox) {
+			throw new Error('Could not determine bounding boxes for section drag-and-drop');
+		}
+
+		const startX = sourceBox.x + sourceBox.width / 2;
+		const startY = sourceBox.y + sourceBox.height / 2;
+		const endX = targetBox.x + targetBox.width / 2;
+		const endY = targetBox.y + targetBox.height / 2;
+
+		await this.page.mouse.move(startX, startY);
+		await this.page.mouse.down();
+		// Move in multiple steps to trigger svelte-dnd-action
+		const steps = 10;
+		for (let i = 1; i <= steps; i++) {
+			await this.page.mouse.move(
+				startX + ((endX - startX) * i) / steps,
+				startY + ((endY - startY) * i) / steps
+			);
+		}
+		await this.page.mouse.up();
+	}
+
 	async delete() {
 		await this.deleteButton.click();
 		await this.page.getByRole('button', { name: `I want to delete` }).click();

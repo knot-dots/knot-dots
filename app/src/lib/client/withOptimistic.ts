@@ -4,9 +4,10 @@ const confirmed = new Set<string>();
 
 export default function withOptimistic<T extends Container<AnyPayload>>(
 	containers: T[],
-	created: Container<AnyPayload> | undefined,
+	created: Map<string, Container<AnyPayload>>,
 	deleted: Map<string, Container<AnyPayload>>,
-	updated: Map<string, Container<AnyPayload>>
+	updated: Map<string, Container<AnyPayload>>,
+	createdFilter?: (container: Container<AnyPayload>) => boolean
 ): T[] {
 	let result = containers;
 
@@ -20,18 +21,22 @@ export default function withOptimistic<T extends Container<AnyPayload>>(
 		});
 	}
 
-	if (!created) {
-		return result.filter((c) => !deleted.has(c.guid));
+	const present = new Set(result.map(({ guid }) => guid));
+
+	const pending: T[] = [];
+	for (const container of created.values()) {
+		if (present.has(container.guid)) {
+			confirmed.add(container.guid);
+			continue;
+		}
+		if (confirmed.has(container.guid)) {
+			continue;
+		}
+		if (createdFilter && !createdFilter(container)) {
+			continue;
+		}
+		pending.push(container as T);
 	}
 
-	if (result.some((c) => c.guid === created.guid)) {
-		confirmed.add(created.guid);
-		return result.filter((c) => !deleted.has(c.guid));
-	}
-
-	if (confirmed.has(created.guid)) {
-		return result.filter((c) => !deleted.has(c.guid));
-	}
-
-	return [...result, created as T].filter((c) => !deleted.has(c.guid));
+	return [...result, ...pending].filter((c) => !deleted.has(c.guid));
 }

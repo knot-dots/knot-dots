@@ -38,7 +38,7 @@
 		ability,
 		addEffectState,
 		addObjectiveState,
-		lastCreatedContainer,
+		lastCreatedContainers,
 		newContainer
 	} from '$lib/stores';
 
@@ -54,17 +54,23 @@
 	);
 
 	// Watch for successfully created resourceData containers and create collection if needed
+	const handledCreatedGuids = new Set<string>();
 	$effect(() => {
-		const created = $lastCreatedContainer;
+		for (const created of $lastCreatedContainers.values()) {
+			if (handledCreatedGuids.has(created.guid)) {
+				continue;
+			}
+			handledCreatedGuids.add(created.guid);
 
-		if (created && isResourceDataContainer(created) && container) {
-			// Check if this resourceData belongs to our container
-			const belongsToThisContainer = created.relation.some(
-				(r) => r.object === container.guid && r.predicate === predicates.enum['is-part-of']
-			);
+			if (isResourceDataContainer(created) && container) {
+				// Check if this resourceData belongs to our container
+				const belongsToThisContainer = created.relation.some(
+					(r) => r.object === container.guid && r.predicate === predicates.enum['is-part-of']
+				);
 
-			if (belongsToThisContainer) {
-				createResourceDataCollectionIfNeeded(created.payload.resourceDataType);
+				if (belongsToThisContainer) {
+					createResourceDataCollectionIfNeeded(created.payload.resourceDataType);
+				}
 			}
 		}
 	});

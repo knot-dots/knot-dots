@@ -18,7 +18,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import { applicationState, ability } from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -171,7 +171,18 @@
 	}
 
 	async function handleDndFinalize(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
-		sections = event.detail.items;
+		const orderedSections = event.detail.items.map((s, i) => ({
+			...s,
+			relation: [
+				{
+					object: container.guid,
+					position: i,
+					predicate: predicates.enum['is-section-of'],
+					subject: s.guid
+				},
+				...s.relation.filter(({ predicate }) => predicate !== predicates.enum['is-section-of'])
+			]
+		}));
 		container.relation = [
 			...sections.map(({ guid }, index) => ({
 				object: container.guid,
@@ -183,9 +194,12 @@
 				({ predicate }) => predicate !== predicates.enum['is-section-of']
 			)
 		];
+		relatedContainers = [
+			...relatedContainers.filter(({ guid }) => !sections.map(({ guid }) => guid).includes(guid)),
+			...orderedSections
+		];
 
-		const url = `/container/${container.guid}/relation`;
-		await fetch(url, {
+		await fetch(`/container/${container.guid}/relation`, {
 			method: 'POST',
 			body: JSON.stringify(container.relation),
 			credentials: 'include',

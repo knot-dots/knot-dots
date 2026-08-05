@@ -107,30 +107,35 @@
 	}
 
 	async function syncParentRelations(nextTerms: Container<TermPayload>[]) {
-		const currentRelations = container.relation;
-		container.relation = [
-			...nextTerms.map(({ guid }, index) => ({
-				object: container.guid,
-				position: index,
-				predicate,
-				subject: guid
-			})),
-			...currentRelations.filter(({ predicate: p }) => p !== predicate)
-		];
-
-		nextTerms.forEach((term, index) => {
-			term.relation = [
-				...term.relation.filter(
-					({ object, predicate: p }) => !(object === container.guid && p === predicate)
-				),
+		const updatedTerms = nextTerms.map((term, index) => ({
+			...term,
+			relation: [
 				{
 					object: container.guid,
 					position: index,
 					predicate,
 					subject: term.guid
-				}
-			];
-		});
+				},
+				...term.relation.filter(
+					({ object, predicate: p }) => !(object === container.guid && p === predicate)
+				)
+			]
+		}));
+		container.relation = [
+			...updatedTerms.map(({ guid }, index) => ({
+				object: container.guid,
+				position: index,
+				predicate,
+				subject: guid
+			})),
+			...container.relation.filter(({ predicate: p }) => p !== predicate)
+		];
+		relatedContainers = [
+			...relatedContainers.filter(
+				({ guid }) => !updatedTerms.map(({ guid }) => guid).includes(guid)
+			),
+			...updatedTerms
+		];
 
 		const response = await fetch(`/container/${container.guid}/relation`, {
 			method: 'POST',
@@ -168,7 +173,6 @@
 		}
 
 		const previousTerms = terms;
-		terms = orderedTerms;
 		reordering = true;
 		try {
 			await syncParentRelations(orderedTerms);
@@ -190,7 +194,7 @@
 			return;
 		}
 
-		const previousTerms = terms;
+		const previousRelatedContainers = relatedContainers;
 		const newTerm = containerOfType(
 			payloadTypes.enum.term,
 			container.organization,
@@ -222,13 +226,17 @@
 				throw new Error('Unexpected response while creating term');
 			}
 
-			terms = [...terms.slice(0, showCreateFormAt), parsed.data, ...terms.slice(showCreateFormAt)];
+			const nextTerms = [
+				...terms.slice(0, showCreateFormAt),
+				parsed.data,
+				...terms.slice(showCreateFormAt)
+			];
 
-			await syncParentRelations(terms);
+			await syncParentRelations(nextTerms);
 			await invalidate('containers');
 			resetForm();
 		} catch (error) {
-			terms = previousTerms;
+			relatedContainers = previousRelatedContainers;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			formState.creating = false;
@@ -240,7 +248,7 @@
 			return;
 		}
 
-		const previousTerms = terms;
+		const previousRelatedContainers = relatedContainers;
 		removingGuid = term.guid;
 
 		try {
@@ -257,10 +265,11 @@
 				throw new Error(body.message ?? 'Failed to remove term');
 			}
 
-			terms = terms.filter(({ guid }) => guid !== term.guid);
-			await syncParentRelations(terms);
+			const nextTerms = terms.filter(({ guid }) => guid !== term.guid);
+			relatedContainers = relatedContainers.map((c) => (c.guid === term.guid ? updatedTerm : c));
+			await syncParentRelations(nextTerms);
 		} catch (error) {
-			terms = previousTerms;
+			relatedContainers = previousRelatedContainers;
 			alert(error instanceof Error ? error.message : String(error));
 		} finally {
 			removingGuid = null;

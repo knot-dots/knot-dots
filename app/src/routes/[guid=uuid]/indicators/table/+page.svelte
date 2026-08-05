@@ -29,7 +29,7 @@
 	} from '$lib/models';
 	import {
 		ability,
-		lastCreatedContainer,
+		lastCreatedContainers,
 		lastDeletedContainers,
 		lastUpdatedContainers
 	} from '$lib/stores';
@@ -45,7 +45,7 @@
 				...data.containers,
 				...uploadedContainers.filter((c) => !data.containers.some((d) => d.guid === c.guid))
 			],
-			$lastCreatedContainer,
+			$lastCreatedContainers,
 			$lastDeletedContainers,
 			$lastUpdatedContainers
 		)
