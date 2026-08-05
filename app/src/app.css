@@ -1308,7 +1308,7 @@ label > input[type='checkbox'].toggle {
 	);
 
 	color: var(--color-gray-500);
-	container-type: inline-size;
+	container: details / inline-size;
 	flex: 1;
 	font-size: 0.875rem;
 	min-height: 0;
@@ -2016,6 +2016,12 @@ img.cover {
 	white-space: nowrap;
 }
 
+@container details {
+	.wide {
+		max-width: 100%;
+	}
+}
+
 /** Splitter */
 
 .splitpanes {
@@ -2027,7 +2033,7 @@ img.cover {
 	overflow: visible !important;
 }
 
-@media (max-width: 768px) {
+@container (max-width: 768px) {
 	.splitpanes.splitpanes--vertical {
 		flex-direction: column;
 	}

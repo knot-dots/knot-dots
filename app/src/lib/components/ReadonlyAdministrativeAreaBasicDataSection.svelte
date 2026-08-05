@@ -42,7 +42,7 @@
 </header>
 
 {#if parentContainer}
-	<dl>
+	<dl class="wide">
 		{#if parentContainer.payload.federalState}
 			<div>
 				<dt>{$_('administrative_area.basic_data.federal_state')}</dt>
@@ -79,7 +79,6 @@
 		font-size: 0.875rem;
 		display: flex;
 		gap: 0.625rem;
-		justify-content: space-between;
 		margin: 0 -0.375rem;
 	}
 

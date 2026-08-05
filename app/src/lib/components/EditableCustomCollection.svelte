@@ -529,7 +529,7 @@
 			{/snippet}
 		</Carousel>
 	{:else}
-		<ul class="catalog">
+		<ul class="catalog wide">
 			{#each items as item (item.guid)}
 				<li>
 					{#if isIndicatorTemplateContainer(item)}
