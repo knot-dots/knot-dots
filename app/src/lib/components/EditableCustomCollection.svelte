@@ -38,6 +38,12 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
+	import {
+		hasExplicitOrganizationScope,
+		hasNonScopeFilter,
+		organizationScopeFilterKeys,
+		resolveOrganizationScope
+	} from '$lib/organizationScope';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import {
 		ability,
@@ -127,11 +133,15 @@
 		searchTerms: string,
 		sort: string
 	) {
-		const type = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
+		const type =
+			Array.isArray(filter.type) && filter.type.length > 0 ? filter.type : defaultPayloadType;
 		const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
-		const hasAnyFilter = Object.values(filter).some((v) => v.length > 0);
+		const isRule =
+			container.payload.ruleApplied ||
+			hasNonScopeFilter(filter) ||
+			hasExplicitOrganizationScope(filter);
 
-		if (item.length === 0 && !hasAnyFilter) return null;
+		if (item.length === 0 && !isRule) return null;
 
 		const query = new URLSearchParams();
 		if (item.length > 0) {
@@ -139,12 +149,22 @@
 		} else {
 			for (const t of type) query.append('payloadType', t);
 			for (const key in filter) {
-				for (const value of filter[key]) {
-					query.append(key, value);
+				const values = filter[key];
+				if (
+					!(organizationScopeFilterKeys as readonly string[]).includes(key) &&
+					Array.isArray(values)
+				) {
+					for (const value of values) {
+						query.append(key, value);
+					}
 				}
 			}
-			if (!filter.organization?.length) {
-				query.append('organization', page.data.currentOrganization.guid);
+			for (const [key, value] of resolveOrganizationScope(filter, {
+				currentOrganization: page.data.currentOrganization,
+				currentOrganizationalUnit: page.data.currentOrganizationalUnit,
+				organizationalUnits: page.data.organizationalUnits
+			})) {
+				query.append(key, value);
 			}
 		}
 		if (combinedTerms) query.set('terms', combinedTerms);
@@ -159,7 +179,8 @@
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
-			() => inViewportOnce
+			() => inViewportOnce,
+			() => container.payload.ruleApplied
 		],
 		async ([item, filter, terms, searchTerms, sort, inViewportOnce], _, { signal }) => {
 			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
@@ -280,7 +301,9 @@
 
 	let isRuleBasedCollection = $derived(
 		container.payload.item.length == 0 &&
-			Object.values(container.payload.filter).some((v) => v.length > 0)
+			(container.payload.ruleApplied ||
+				hasNonScopeFilter(container.payload.filter) ||
+				hasExplicitOrganizationScope(container.payload.filter))
 	);
 
 	let hasConfiguredContent = $derived(
@@ -297,7 +320,23 @@
 		}
 
 		for (const key in container.payload.filter) {
-			for (const value of container.payload.filter[key]) {
+			const values = container.payload.filter[key];
+			if (
+				!(organizationScopeFilterKeys as readonly string[]).includes(key) &&
+				Array.isArray(values)
+			) {
+				for (const value of values) {
+					params.append(key, value);
+				}
+			}
+		}
+
+		if (container.payload.item.length === 0 && isRuleBasedCollection) {
+			for (const [key, value] of resolveOrganizationScope(container.payload.filter, {
+				currentOrganization: page.data.currentOrganization,
+				currentOrganizationalUnit: page.data.currentOrganizationalUnit,
+				organizationalUnits: page.data.organizationalUnits
+			})) {
 				params.append(key, value);
 			}
 		}
