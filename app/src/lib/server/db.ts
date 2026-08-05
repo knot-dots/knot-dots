@@ -1062,6 +1062,41 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	};
 }
 
+export function getDescendantOrganizationalUnitGuids(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		if (guids.length === 0) {
+			return [];
+		}
+
+		// Deliberately no filtering by organizational unit type: unlike
+		// loadApplicationContext, this expansion must include administrative
+		// area organizational units.
+		const result = await connection.any(sql.typeAlias('guid')`
+			WITH RECURSIVE organizational_unit_tree(guid, path) AS (
+				SELECT c.guid, ARRAY[c.guid]
+				FROM container c
+				WHERE c.guid = ANY(${sql.array(guids, 'uuid')})
+					AND c.valid_currently
+					AND NOT c.deleted
+					AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+				UNION ALL
+				SELECT c.guid, array_append(t.path, c.guid)
+				FROM container c
+				JOIN container_relation cr ON cr.subject = c.guid
+					AND cr.predicate = ${predicates.enum['is-part-of']}
+					AND cr.valid_currently
+					AND NOT cr.deleted
+				JOIN organizational_unit_tree t ON cr.object = t.guid AND NOT c.guid = ANY(t.path)
+				WHERE c.valid_currently
+					AND NOT c.deleted
+					AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+			)
+			SELECT DISTINCT guid FROM organizational_unit_tree
+		`);
+		return result.map(({ guid }) => guid);
+	};
+}
+
 export function getRelatedOrganizationalUnitContainersByPredicates(
 	guid: string,
 	relationTypes: Predicate[]

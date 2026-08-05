@@ -29,6 +29,7 @@ import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
 	getAllRelatedContainers,
+	getDescendantOrganizationalUnitGuids,
 	getManyContainers,
 	getManyOrganizationContainers
 } from '$lib/server/db';
@@ -78,6 +79,7 @@ const querySchema = z.object({
 				.transform(() => undefined)
 		),
 	organizationalUnit: z.array(z.string().uuid().or(z.literal(''))).default([]),
+	organizationalUnitWithChildren: z.array(z.string().uuid()).default([]),
 	programType: z.array(programTypes).default([]),
 	relatedTo: z.array(z.string().uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
@@ -303,6 +305,13 @@ export async function loadContainerV2(params: {
 		scopedQuery.type.length > 0
 			? filterCategoryContext(categoryContext, scopedQuery.type)
 			: categoryContext;
+
+	if (query.organizationalUnitWithChildren.length > 0) {
+		const expanded = await params.locals.pool.connect(
+			getDescendantOrganizationalUnitGuids(query.organizationalUnitWithChildren)
+		);
+		scopedQuery.organizationalUnit = [...new Set([...scopedQuery.organizationalUnit, ...expanded])];
+	}
 
 	const ouOverrides: { organizationalUnits?: string[] | null } = {};
 
