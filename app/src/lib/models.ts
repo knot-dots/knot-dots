@@ -857,7 +857,15 @@ export const customCollectionPayload = z.strictObject({
 	allowSearch: z.boolean().default(false),
 	allowSort: z.boolean().default(false),
 	description: z.string().trim().optional(),
-	filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
+	// The scope keys organization, organizationalUnit and organizationalUnitWithChildren
+	// additionally allow the sentinel 'current' (resolved against the place where the
+	// collection is rendered) and null; all other keys hold plain string arrays.
+	filter: z
+		.record(
+			z.string(),
+			z.union([z.array(z.string()).transform(deduplicate), z.literal('current'), z.null()])
+		)
+		.default({}),
 	item: z.array(z.uuid()).default([]),
 	listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
 	newItemTemplate: z.array(z.uuid()).default([]),
