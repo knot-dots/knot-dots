@@ -313,9 +313,16 @@ export async function loadContainerV2(params: {
 		scopedQuery.organizationalUnit = [...new Set([...scopedQuery.organizationalUnit, ...expanded])];
 	}
 
+	// Explicit organizational unit params take precedence over the context
+	// derived from contextGuid; otherwise saved collection filters would be
+	// silently overridden.
+	const hasExplicitOrganizationalUnitParams =
+		params.url.searchParams.has('organizationalUnit') ||
+		params.url.searchParams.has('organizationalUnitWithChildren');
+
 	const ouOverrides: { organizationalUnits?: string[] | null } = {};
 
-	if (applicationContext) {
+	if (applicationContext && !hasExplicitOrganizationalUnitParams) {
 		if (applicationContext.currentOrganizationalUnit) {
 			if (scopedQuery.included.includes('subordinate_organizational_units')) {
 				ouOverrides.organizationalUnits = [
