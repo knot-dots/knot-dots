@@ -869,6 +869,7 @@ export const customCollectionPayload = z.strictObject({
 	item: z.array(z.uuid()).default([]),
 	listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
 	newItemTemplate: z.array(z.uuid()).default([]),
+	ruleApplied: z.boolean().default(false),
 	showDescription: z.boolean().default(false),
 	sort: z.enum(['alpha', 'date', 'modified', 'relevance']).default('alpha'),
 	terms: z.string().default(''),
