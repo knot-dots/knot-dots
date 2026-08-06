@@ -91,7 +91,8 @@
 <style>
 	.overlay {
 		background-color: white;
-		box-shadow: var(--shadow-lg);
+		border-radius: 24px 0 0 24px;
+		box-shadow: 0px 12px 50px -12px rgba(0, 0, 0, 0.25);
 		container: overlay / inline-size;
 		display: flex;
 		flex-direction: column;
