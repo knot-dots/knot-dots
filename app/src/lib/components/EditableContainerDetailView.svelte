@@ -83,8 +83,6 @@
 
 				{@render data?.()}
 			</form>
-
-			{@render footer?.()}
 		</div>
 
 		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -96,6 +94,8 @@
 		<ContextTabs slug={detailViewHelpSlug} />
 	{/if}
 </div>
+
+{@render footer?.()}
 
 <style>
 	form {

@@ -301,20 +301,6 @@
 				</form>
 
 				<Sections bind:container {relatedContainers} />
-
-				<footer class="footer-action-bar">
-					{#if mayCreateIndividualProfile}
-						<button
-							class="button button-xs button-alternative"
-							disabled={creatingProfile}
-							onclick={createIndividualProfile}
-							type="button"
-						>
-							{$_('individual_profile.create')}
-						</button>
-					{/if}
-					<DeleteButton {container} {relatedContainers} />
-				</footer>
 			</div>
 
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -328,6 +314,20 @@
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
+
+	<footer class="footer-action-bar">
+		{#if mayCreateIndividualProfile}
+			<button
+				class="button button-xs button-alternative"
+				disabled={creatingProfile}
+				onclick={createIndividualProfile}
+				type="button"
+			>
+				{$_('individual_profile.create')}
+			</button>
+		{/if}
+		<DeleteButton {container} {relatedContainers} />
+	</footer>
 {/snippet}
 
 {@render layout(header, main)}

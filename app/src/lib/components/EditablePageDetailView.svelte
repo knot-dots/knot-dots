@@ -135,10 +135,6 @@
 				</form>
 
 				<Sections bind:container {relatedContainers} />
-
-				<footer class="footer-action-bar">
-					<DeleteButton {container} {relatedContainers} />
-				</footer>
 			</div>
 
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -154,6 +150,10 @@
 
 		<ContextTabs slug={helpSlug.enum['page-view']} />
 	</div>
+
+	<footer class="footer-action-bar">
+		<DeleteButton {container} {relatedContainers} />
+	</footer>
 {/snippet}
 
 {@render layout(header, main)}

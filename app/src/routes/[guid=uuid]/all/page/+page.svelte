@@ -20,8 +20,12 @@
 	let sections = $derived(data.sections ?? []);
 </script>
 
-{#snippet layout(header: Snippet, main: Snippet)}
-	<Layout {header} {main} />
+{#snippet layout(header: Snippet, content: Snippet)}
+	<Layout {header}>
+		{#snippet main()}
+			<div>{@render content()}</div>
+		{/snippet}
+	</Layout>
 {/snippet}
 
 {#if isOrganizationContainer(container)}
@@ -35,3 +39,12 @@
 		{sections}
 	/>
 {/if}
+
+<style>
+	div {
+		display: flex;
+		flex: 1 0 100%;
+		flex-direction: column;
+		max-height: 100%;
+	}
+</style>

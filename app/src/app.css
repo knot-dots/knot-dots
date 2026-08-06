@@ -1236,18 +1236,13 @@ label > input[type='checkbox'].toggle {
 
 .footer-action-bar:has(*) {
 	align-items: center;
-	bottom: 0.5rem;
-	background: var(--color-surface-accent-container);
-	border: 1px solid var(--color-border-accent-default);
-	border-radius: 16px;
+	background: var(--color-surface-accent-default);
+	border-top: 1px solid var(--color-border-accent-muted);
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.5rem;
 	justify-content: center;
-	margin: auto auto 0;
 	padding: 0.5rem;
-	position: sticky;
-	width: fit-content;
 }
 
 .inline-actions {
@@ -1316,8 +1311,6 @@ label > input[type='checkbox'].toggle {
 }
 
 .details-scroll-wrapper {
-	display: flex;
-	flex-direction: column;
 	height: 100%;
 	overflow-y: auto;
 	padding: var(--details-padding-y) 0 0;
