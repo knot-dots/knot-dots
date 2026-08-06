@@ -125,7 +125,7 @@
 		padding: 0.5rem 1rem;
 		position: absolute;
 		right: 0;
-		top: 0;
+		top: 0.25rem;
 		z-index: 1;
 	}
 
