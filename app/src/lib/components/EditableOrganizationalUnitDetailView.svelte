@@ -370,9 +370,8 @@
 		border-radius: 9999px;
 		display: inline-flex;
 		gap: 0;
+		margin-left: auto;
 		padding: 0;
-		position: absolute;
-		right: var(--details-section-padding-x, 1.5rem);
 	}
 
 	.profile-switch-item {
