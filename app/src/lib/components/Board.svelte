@@ -24,4 +24,11 @@
 		overflow-x: auto;
 		padding: var(--margin-y) 0.375rem;
 	}
+
+	@container overlay (width > 0) {
+		div {
+			padding: var(--margin-y) 0.75rem;
+			mask-image: linear-gradient(to right, transparent 0.125rem, black 0.75rem);
+		}
+	}
 </style>
