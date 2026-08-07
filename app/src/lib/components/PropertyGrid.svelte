@@ -25,7 +25,7 @@
 	<div {...detailView.properties.content} class="details-properties">
 		<h2>
 			{$_('properties')}
-			<button {...detailView.properties.trigger} class="action-button" type="button">
+			<button class="action-button" onclick={detailView.properties.trigger.onclick} type="button">
 				<Close />
 				<span class="is-visually-hidden">{$_('close')}</span>
 			</button>
