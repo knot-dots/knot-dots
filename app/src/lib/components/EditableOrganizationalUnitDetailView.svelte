@@ -4,6 +4,7 @@
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -284,6 +285,14 @@
 									bind:textContent={container.payload.name}
 									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 								></h1>
+								<button
+									class="action-button"
+									onclick={detailView.properties.trigger.onclick}
+									type="button"
+								>
+									<Ellipsis />
+									<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+								</button>
 							{:else}
 								<h1
 									class={{
