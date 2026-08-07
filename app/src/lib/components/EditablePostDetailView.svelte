@@ -10,12 +10,13 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import PostProperties from '$lib/components/PostProperties.svelte';
+	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyPayload, type Container, type PostPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import PostProperties from '$lib/components/PostProperties.svelte';
 
 	interface Props {
 		container: Container<PostPayload>;
@@ -48,6 +49,8 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
+			<PropertiesRelocationNotice />
+
 			{#key container.guid}
 				<EditableFormattedText
 					editable={$applicationState.containerDetailView.editable &&

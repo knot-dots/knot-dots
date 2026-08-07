@@ -190,7 +190,16 @@
 		}
 	}
 
-	setDetailViewContext({ properties: new Collapsible() });
+	let detailView = $state({
+		properties: new Collapsible({
+			onOpenChange: () => {
+				detailView.relocationNoticeSeen = true;
+			}
+		}),
+		relocationNoticeSeen: false
+	});
+
+	setDetailViewContext(detailView);
 </script>
 
 {#snippet header()}

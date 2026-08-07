@@ -17,6 +17,7 @@
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
+	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
@@ -99,6 +100,8 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
+			<PropertiesRelocationNotice />
+
 			<div class="details-section">
 				<div class="segmented-button">
 					<label class="button">

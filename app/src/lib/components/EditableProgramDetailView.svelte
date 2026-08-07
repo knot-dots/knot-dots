@@ -20,6 +20,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -266,6 +267,8 @@
 	{#if viewMode === 'view_mode.preview'}
 		<EditableContainerDetailView bind:container {footer}>
 			{#snippet data()}
+				<PropertiesRelocationNotice />
+
 				<div class="chapters">
 					{#each filteredParts as part, i (part.guid)}
 						<form

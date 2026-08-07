@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
 	import BinaryIndicatorProperties from '$lib/components/BinaryIndicatorProperties.svelte';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
@@ -12,6 +15,7 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -23,9 +27,6 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
-	import fetchContainers from '$lib/client/fetchContainers';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -147,6 +148,8 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
+			<PropertiesRelocationNotice />
+
 			{#key container.guid}
 				<EditableFormattedText
 					editable={$applicationState.containerDetailView.editable &&
