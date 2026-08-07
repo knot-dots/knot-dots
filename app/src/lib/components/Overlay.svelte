@@ -56,8 +56,8 @@
 <svelte:window onmouseup={stopExpand} />
 
 <section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
-	<!--svelte-ignore a11y_no_static_element_interactions -->
-	<div class="resize-handle" onmousedown={startExpand}></div>
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
 	{#if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters'] && isProgramContainer(data.container)}
