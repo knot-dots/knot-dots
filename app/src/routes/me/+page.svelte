@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ProfileView from '$lib/components/ProfileView.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -26,18 +27,20 @@
 	];
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header sortOptions={[]} {workspaceOptions} />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header sortOptions={[]} {workspaceOptions} />
+		{/snippet}
 
-	{#snippet main()}
-		<div class="content-details">
-			<ProfileView {containers} />
-			<ContextTabs slug="profile" />
-		</div>
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			<div class="content-details">
+				<ProfileView {containers} />
+				<ContextTabs slug="profile" />
+			</div>
+		{/snippet}
+	</Layout>
+</PageLayout>
 
 <style>
 	div {

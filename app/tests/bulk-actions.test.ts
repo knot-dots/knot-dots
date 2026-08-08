@@ -136,3 +136,24 @@ test('bulk actions are hidden when there are no targets', async ({ dotsBoard, te
 	await expect(dotsBoard.overlay.sections).toHaveCount(0);
 	await expect(dotsBoard.overlay.bulkActionControls).not.toBeVisible();
 });
+
+test('bulk action context does not leak from background to overlay', async ({
+	landingPage,
+	testProgram
+}) => {
+	await landingPage.goto(`/${testProgram.organization}`);
+	await landingPage.header.editModeToggle.check();
+	await landingPage.addSection('Programs');
+
+	await landingPage.page.reload();
+	await landingPage.header.editModeToggle.check();
+	await expect(landingPage.header.bulkActionControls).toBeVisible();
+
+	await landingPage.sections
+		.getByRole('link', {
+			name: testProgram.payload.title
+		})
+		.click();
+	await expect(landingPage.overlay.title).toHaveText(testProgram.payload.title);
+	await expect(landingPage.overlay.bulkActionControls).not.toBeVisible();
+});

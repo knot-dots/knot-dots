@@ -4,6 +4,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		isIndicatorTemplateContainer,
 		isMeasureContainer,
@@ -33,22 +34,24 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header search />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header search />
+		{/snippet}
 
-	{#snippet main()}
-		<MeasureMonitoring
-			measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
-				? container
-				: undefined}
-			{measures}
-			containers={containers.filter(isMeasureMonitoringContainer)}
-			indicators={containers.filter(isIndicatorTemplateContainer)}
-			showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
-		/>
+		{#snippet main()}
+			<MeasureMonitoring
+				measure={isMeasureContainer(container) || isSimpleMeasureContainer(container)
+					? container
+					: undefined}
+				{measures}
+				containers={containers.filter(isMeasureMonitoringContainer)}
+				indicators={containers.filter(isIndicatorTemplateContainer)}
+				showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
+			/>
 
-		<ContextTabs slug="measures-monitoring" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="measures-monitoring" />
+		{/snippet}
+	</Layout>
+</PageLayout>
