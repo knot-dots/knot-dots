@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
 	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import { predicates } from '$lib/models';
 
 	interface Props {
@@ -20,7 +20,7 @@
 </script>
 
 <BulkActionContextProvider actions={['status', 'visibility', 'delete']}>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header {filterBarInitiallyOpen} {facets} search />
 		{/snippet}
@@ -28,5 +28,5 @@
 		{#snippet main()}
 			{@render children()}
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </BulkActionContextProvider>

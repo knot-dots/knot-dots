@@ -4,8 +4,8 @@
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import Measures from '$lib/components/Measures.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
@@ -73,7 +73,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header {facets} search />
 		{/snippet}
@@ -83,5 +83,5 @@
 
 			<ContextTabs slug="measures-status" />
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>

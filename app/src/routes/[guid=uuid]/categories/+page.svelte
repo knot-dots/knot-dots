@@ -8,8 +8,8 @@
 	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
@@ -155,7 +155,7 @@
 
 <PageLayout>
 	<BulkActionContextProvider actions={['visibility', 'delete']}>
-		<Layout>
+		<FullscreenLayout>
 			{#snippet header()}
 				<Header search />
 			{/snippet}
@@ -181,6 +181,6 @@
 
 				<ContextTabs slug="categories" />
 			{/snippet}
-		</Layout>
+		</FullscreenLayout>
 	</BulkActionContextProvider>
 </PageLayout>

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import Members from '$lib/components/Members.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import type { PageData } from './$types';
@@ -15,7 +15,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header workspaceOptions={[]} />
 		{/snippet}
@@ -40,7 +40,7 @@
 
 			<ContextTabs slug="members" />
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>
 
 <style>

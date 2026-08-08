@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import { type PageData } from '../../routes/[guid=uuid]/help/catalog/$types';
 	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 
@@ -14,7 +14,7 @@
 </script>
 
 <BulkActionContextProvider actions={['visibility', 'delete']}>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header facets={data.facets} search />
 		{/snippet}
@@ -22,5 +22,5 @@
 		{#snippet main()}
 			{@render children()}
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </BulkActionContextProvider>

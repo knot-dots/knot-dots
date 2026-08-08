@@ -1,6 +1,6 @@
 <script lang="ts">
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
-	import Layout from '$lib/components/Layout.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import type { PageProps } from './$types';
 
@@ -14,11 +14,11 @@
 		sections={data.sections}
 	>
 		{#snippet layout(header, content)}
-			<Layout {header}>
+			<FullscreenLayout {header}>
 				{#snippet main()}
 					<div>{@render content()}</div>
 				{/snippet}
-			</Layout>
+			</FullscreenLayout>
 		{/snippet}
 	</EditableDetailView>
 </PageLayout>

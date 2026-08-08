@@ -2,8 +2,8 @@
 	import { setContext } from 'svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
@@ -26,7 +26,7 @@
 
 <PageLayout>
 	<BulkActionContextProvider actions={['visibility', 'delete']}>
-		<Layout>
+		<FullscreenLayout>
 			{#snippet header()}
 				<Header {facets} search />
 			{/snippet}
@@ -36,6 +36,6 @@
 
 				<ContextTabs slug="measures-templates" />
 			{/snippet}
-		</Layout>
+		</FullscreenLayout>
 	</BulkActionContextProvider>
 </PageLayout>
