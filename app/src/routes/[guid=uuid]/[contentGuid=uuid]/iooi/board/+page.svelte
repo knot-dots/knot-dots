@@ -2,9 +2,9 @@
 	import { setContext } from 'svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import IOOI from '$lib/components/IOOI.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { isGoalContainer, isMeasureContainer, predicates } from '$lib/models';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -28,7 +28,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header />
 		{/snippet}
@@ -42,5 +42,5 @@
 				<ContextTabs slug="iooi" />
 			{/if}
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>

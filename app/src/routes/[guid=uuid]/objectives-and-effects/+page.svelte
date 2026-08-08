@@ -9,8 +9,8 @@
 	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
@@ -132,7 +132,7 @@
 
 <PageLayout>
 	<BulkActionContextProvider actions={['visibility', 'delete']}>
-		<Layout>
+		<FullscreenLayout>
 			{#snippet header()}
 				<Header {facets} search />
 			{/snippet}
@@ -209,6 +209,6 @@
 
 				<ContextTabs slug="objectives-and-effects" />
 			{/snippet}
-		</Layout>
+		</FullscreenLayout>
 	</BulkActionContextProvider>
 </PageLayout>

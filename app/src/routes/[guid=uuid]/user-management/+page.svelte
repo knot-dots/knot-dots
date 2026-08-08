@@ -18,8 +18,8 @@
 	import ConfirmRemoveUserDialog from '$lib/components/ConfirmRemoveUserDialog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		predicates,
@@ -302,7 +302,7 @@
 />
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			{#snippet commands()}
 				{#if $ability.can('invite-members', data.container)}
@@ -401,7 +401,7 @@
 			</div>
 			<ContextTabs slug="user-management" />
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>
 
 <style>

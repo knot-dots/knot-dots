@@ -5,8 +5,8 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type Container, type PagePayload, payloadTypes } from '$lib/models';
@@ -59,7 +59,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header />
 		{/snippet}
@@ -76,5 +76,5 @@
 			</Catalog>
 			<ContextTabs slug="pages-catalog" />
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>

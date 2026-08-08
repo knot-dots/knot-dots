@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import tooltip from '$lib/attachments/tooltip';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import Layout from '$lib/components/Layout.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { displayName } from '$lib/models';
 	import type { PageProps } from './$types';
@@ -11,7 +11,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet main()}
 			<div class="content-details">
 				{#if form?.errors}
@@ -50,5 +50,5 @@
 
 			<ContextTabs slug="import" />
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>

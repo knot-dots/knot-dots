@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ArrowLongRight from '~icons/heroicons/arrow-long-right';
 	import { page } from '$app/state';
-	import Layout from '$lib/components/Layout.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 
 	const title = $derived.by(() => {
@@ -24,7 +24,7 @@
 </svelte:head>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet main()}
 			<div>
 				<h2>{page.status}</h2>
@@ -32,7 +32,7 @@
 				<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
 			</div>
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>
 
 <style>

@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
 	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
-	import Layout from '$lib/components/Layout.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
 	import type { PageProps } from './$types';
@@ -22,11 +22,11 @@
 </script>
 
 {#snippet layout(header: Snippet, content: Snippet)}
-	<Layout {header}>
+	<FullscreenLayout {header}>
 		{#snippet main()}
 			<div>{@render content()}</div>
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 {/snippet}
 
 <PageLayout>

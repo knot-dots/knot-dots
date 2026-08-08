@@ -3,8 +3,8 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import AdministrativeAreaCard from '$lib/components/AdministrativeAreaCard.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -22,7 +22,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header workspaceOptions={[]} facets={data.facets} filterBarInitiallyOpen search />
 		{/snippet}
@@ -34,5 +34,5 @@
 				{/snippet}
 			</Catalog>
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>

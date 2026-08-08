@@ -1,8 +1,8 @@
 <script lang="ts">
 	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
@@ -35,7 +35,7 @@
 </script>
 
 <PageLayout>
-	<Layout>
+	<FullscreenLayout>
 		{#snippet header()}
 			<Header search />
 		{/snippet}
@@ -53,5 +53,5 @@
 
 			<ContextTabs slug="measures-monitoring" />
 		{/snippet}
-	</Layout>
+	</FullscreenLayout>
 </PageLayout>
