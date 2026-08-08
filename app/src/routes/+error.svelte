@@ -3,6 +3,7 @@
 	import ArrowLongRight from '~icons/heroicons/arrow-long-right';
 	import { page } from '$app/state';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 
 	const title = $derived.by(() => {
 		let title = page.data?.currentOrganization?.payload?.name ?? $_('page_title');
@@ -22,15 +23,17 @@
 	<title>{title}</title>
 </svelte:head>
 
-<Layout>
-	{#snippet main()}
-		<div>
-			<h2>{page.status}</h2>
-			<p>{page.status === 404 ? $_('error.not_found') : page.error?.message}</p>
-			<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
-		</div>
-	{/snippet}
-</Layout>
+<PageLayout>
+	<Layout>
+		{#snippet main()}
+			<div>
+				<h2>{page.status}</h2>
+				<p>{page.status === 404 ? $_('error.not_found') : page.error?.message}</p>
+				<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
+			</div>
+		{/snippet}
+	</Layout>
+</PageLayout>
 
 <style>
 	div {

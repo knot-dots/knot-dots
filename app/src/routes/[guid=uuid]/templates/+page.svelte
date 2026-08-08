@@ -4,6 +4,7 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -22,14 +23,16 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout bulkActions={['visibility', 'delete']}>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<Layout bulkActions={['visibility', 'delete']}>
+		{#snippet header()}
+			<Header {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
+		{#snippet main()}
+			<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
 
-		<ContextTabs slug="measures-templates" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="measures-templates" />
+		{/snippet}
+	</Layout>
+</PageLayout>

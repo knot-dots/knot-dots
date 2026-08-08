@@ -20,6 +20,7 @@
 	import Dialog from '$lib/components/Dialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		predicates,
 		type Predicate,
@@ -300,106 +301,108 @@
 	user={maybeSelectedUser}
 />
 
-<Layout>
-	{#snippet header()}
-		{#snippet commands()}
-			{#if $ability.can('invite-members', data.container)}
-				<button
-					class="button button-xs button-primary"
-					type="button"
-					onclick={() => inviteDialog.showModal()}
-				>
-					<UserAddIcon />
-					<span>{$_('invite.heading')}</span>
-				</button>
-			{/if}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			{#snippet commands()}
+				{#if $ability.can('invite-members', data.container)}
+					<button
+						class="button button-xs button-primary"
+						type="button"
+						onclick={() => inviteDialog.showModal()}
+					>
+						<UserAddIcon />
+						<span>{$_('invite.heading')}</span>
+					</button>
+				{/if}
+			{/snippet}
+
+			<Header search {facets} sortOptions={[]} {commands} />
 		{/snippet}
 
-		<Header search {facets} sortOptions={[]} {commands} />
-	{/snippet}
-
-	{#snippet main()}
-		<div class="table-wrapper table-wrapper--with-end-padding">
-			<table>
-				<thead>
-					<tr>
-						<th class="col-name">
-							<span class="header-content">
-								<UserIcon />
-								<span class="header-label">{$_('user.display_name')}</span>
-							</span>
-						</th>
-						<th class="col-email">
-							<span class="header-content">
-								<EnvelopeIcon />
-								<span class="header-label">{$_('user.email')}</span>
-							</span>
-						</th>
-						{#each organizationColumns as org (org.container.guid)}
-							<th class="col-role">
-								<span class="header-content" {@attach tooltip(org.container.payload.name)}>
-									<ArrowDownIcon />
-									<span class="header-label">{org.container.payload.name}</span>
+		{#snippet main()}
+			<div class="table-wrapper table-wrapper--with-end-padding">
+				<table>
+					<thead>
+						<tr>
+							<th class="col-name">
+								<span class="header-content">
+									<UserIcon />
+									<span class="header-label">{$_('user.display_name')}</span>
 								</span>
 							</th>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each users as user (user.guid)}
-						{@const signedUp = user.family_name || user.given_name}
-						<tr>
-							<td class={['col-name', !signedUp && 'not-signed-up']}>
-								<div>
-									{signedUp ? displayName(user) : $_('user.invitation_sent')}
-									{#if canRemoveUser(user)}
-										<button
-											{@attach tooltip($_('user.remove'))}
-											class="action-button action-button--padding-tight is-visible-on-hover"
-											disabled={pendingRemovals.has(user.guid)}
-											onclick={() => {
-												maybeSelectedUser = user;
-												confirmDeleteDialog.showModal();
-											}}
-											type="button"
-										>
-											<TrashBinIcon />
-										</button>
-									{/if}
-								</div>
-							</td>
-							<td class="col-email">{user.email}</td>
+							<th class="col-email">
+								<span class="header-content">
+									<EnvelopeIcon />
+									<span class="header-label">{$_('user.email')}</span>
+								</span>
+							</th>
 							{#each organizationColumns as org (org.container.guid)}
-								{@const canEdit = isEditMode && $ability.can('update', org.container)}
-								{@const role = visibleRoleFor(user, org.container)}
-								<td class="col-role">
-									{#if role}
-										<BadgeDropdown
-											value={role}
-											options={roleOptions}
-											editable={canEdit}
-											emptyLabel={$_('role.none')}
-											onchange={(role) => saveRole(user, org.container, role)}
-										/>
-									{:else if canEdit}
-										<BadgeDropdown
-											value={role}
-											options={roleOptions}
-											editable={canEdit}
-											emptyLabel={$_('role.none')}
-											onchange={(role) => saveRole(user, org.container, role)}
-										/>
-									{/if}
-								</td>
+								<th class="col-role">
+									<span class="header-content" {@attach tooltip(org.container.payload.name)}>
+										<ArrowDownIcon />
+										<span class="header-label">{org.container.payload.name}</span>
+									</span>
+								</th>
 							{/each}
 						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-		<ContextTabs slug="user-management" />
-	{/snippet}
-</Layout>
+					</thead>
+					<tbody>
+						{#each users as user (user.guid)}
+							{@const signedUp = user.family_name || user.given_name}
+							<tr>
+								<td class={['col-name', !signedUp && 'not-signed-up']}>
+									<div>
+										{signedUp ? displayName(user) : $_('user.invitation_sent')}
+										{#if canRemoveUser(user)}
+											<button
+												{@attach tooltip($_('user.remove'))}
+												class="action-button action-button--padding-tight is-visible-on-hover"
+												disabled={pendingRemovals.has(user.guid)}
+												onclick={() => {
+													maybeSelectedUser = user;
+													confirmDeleteDialog.showModal();
+												}}
+												type="button"
+											>
+												<TrashBinIcon />
+											</button>
+										{/if}
+									</div>
+								</td>
+								<td class="col-email">{user.email}</td>
+								{#each organizationColumns as org (org.container.guid)}
+									{@const canEdit = isEditMode && $ability.can('update', org.container)}
+									{@const role = visibleRoleFor(user, org.container)}
+									<td class="col-role">
+										{#if role}
+											<BadgeDropdown
+												value={role}
+												options={roleOptions}
+												editable={canEdit}
+												emptyLabel={$_('role.none')}
+												onchange={(role) => saveRole(user, org.container, role)}
+											/>
+										{:else if canEdit}
+											<BadgeDropdown
+												value={role}
+												options={roleOptions}
+												editable={canEdit}
+												emptyLabel={$_('role.none')}
+												onchange={(role) => saveRole(user, org.container, role)}
+											/>
+										{/if}
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+			<ContextTabs slug="user-management" />
+		{/snippet}
+	</Layout>
+</PageLayout>
 
 <style>
 	.table-wrapper {

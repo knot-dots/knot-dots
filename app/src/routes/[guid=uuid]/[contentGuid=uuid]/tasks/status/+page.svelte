@@ -6,6 +6,7 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import Tasks from '$lib/components/Tasks.svelte';
 	import {
 		computeFacetCount,
@@ -53,20 +54,22 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Tasks
-			{container}
-			containers={containers.filter(isTaskContainer)}
-			relatedContainers={containers
-				.filter(isGoalContainer)
-				.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
-		/>
+		{#snippet main()}
+			<Tasks
+				{container}
+				containers={containers.filter(isTaskContainer)}
+				relatedContainers={containers
+					.filter(isGoalContainer)
+					.filter((c) => containers.filter(isTaskContainer).some(isPartOf(c)))}
+			/>
 
-		<ContextTabs slug="tasks-status" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="tasks-status" />
+		{/snippet}
+	</Layout>
+</PageLayout>

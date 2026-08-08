@@ -3,11 +3,12 @@
 	import { page } from '$app/state';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import Table from '$lib/components/Table.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { type Container, type GoalPayload, payloadTypes, predicates } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -77,15 +78,17 @@
 	]);
 </script>
 
-<GoalsPage facets={data.facets}>
-	<Table {columns} rows={containers}>
-		{#snippet footer()}
-			<LazyLoadSentinel
-				hasMore={list.hasMore}
-				loading={list.loadingMore}
-				onLoadMore={list.loadMore}
-			/>
-		{/snippet}
-	</Table>
-	<ContextTabs slug="goals-table" />
-</GoalsPage>
+<PageLayout>
+	<GoalsPage facets={data.facets}>
+		<Table {columns} rows={containers}>
+			{#snippet footer()}
+				<LazyLoadSentinel
+					hasMore={list.hasMore}
+					loading={list.loadingMore}
+					onLoadMore={list.loadMore}
+				/>
+			{/snippet}
+		</Table>
+		<ContextTabs slug="goals-table" />
+	</GoalsPage>
+</PageLayout>

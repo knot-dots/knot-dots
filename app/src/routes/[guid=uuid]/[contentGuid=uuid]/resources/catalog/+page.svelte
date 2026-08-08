@@ -1,10 +1,11 @@
 <script lang="ts">
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { payloadTypes } from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -20,13 +21,15 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header facets={data.facets} search />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header facets={data.facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
-		<ContextTabs slug="resources-catalog" />
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			<Catalog {containers} payloadType={[payloadTypes.enum.resource_v2]} hideCreateButton={true} />
+			<ContextTabs slug="resources-catalog" />
+		{/snippet}
+	</Layout>
+</PageLayout>

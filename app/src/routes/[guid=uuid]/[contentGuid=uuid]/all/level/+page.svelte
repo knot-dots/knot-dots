@@ -2,13 +2,14 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Chapters from '$lib/components/Chapters.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { computeFacetCount, predicates } from '$lib/models';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -39,14 +40,16 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Chapters program={container} {containers} />
+		{#snippet main()}
+			<Chapters program={container} {containers} />
 
-		<ContextTabs slug="all-level" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="all-level" />
+		{/snippet}
+	</Layout>
+</PageLayout>

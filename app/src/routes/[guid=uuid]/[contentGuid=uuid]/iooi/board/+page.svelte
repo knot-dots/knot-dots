@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import IOOI from '$lib/components/IOOI.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { isGoalContainer, isMeasureContainer, predicates } from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -26,18 +27,20 @@
 	});
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header />
+		{/snippet}
 
-	{#snippet main()}
-		{#if isGoalContainer(data.container)}
-			<IOOI container={data.container} {containers} />
-			<ContextTabs slug="iooi" />
-		{:else if isMeasureContainer(data.container)}
-			<IOOI container={data.container} {containers} />
-			<ContextTabs slug="iooi" />
-		{/if}
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			{#if isGoalContainer(data.container)}
+				<IOOI container={data.container} {containers} />
+				<ContextTabs slug="iooi" />
+			{:else if isMeasureContainer(data.container)}
+				<IOOI container={data.container} {containers} />
+				<ContextTabs slug="iooi" />
+			{/if}
+		{/snippet}
+	</Layout>
+</PageLayout>

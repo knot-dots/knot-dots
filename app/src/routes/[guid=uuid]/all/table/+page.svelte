@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import AllPage from '$lib/components/AllPage.svelte';
-	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import Table from '$lib/components/Table.svelte';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import AllPage from '$lib/components/AllPage.svelte';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
+	import Table from '$lib/components/Table.svelte';
 	import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -96,15 +97,17 @@
 	]);
 </script>
 
-<AllPage {data}>
-	<Table {columns} rows={containers}>
-		{#snippet footer()}
-			<LazyLoadSentinel
-				hasMore={list.hasMore}
-				loading={list.loadingMore}
-				onLoadMore={list.loadMore}
-			/>
-		{/snippet}
-	</Table>
-	<ContextTabs slug="all-table" />
-</AllPage>
+<PageLayout>
+	<AllPage {data}>
+		<Table {columns} rows={containers}>
+			{#snippet footer()}
+				<LazyLoadSentinel
+					hasMore={list.hasMore}
+					loading={list.loadingMore}
+					onLoadMore={list.loadMore}
+				/>
+			{/snippet}
+		</Table>
+		<ContextTabs slug="all-table" />
+	</AllPage>
+</PageLayout>

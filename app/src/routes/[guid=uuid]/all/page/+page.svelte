@@ -3,6 +3,7 @@
 	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
 	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
 	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
 	import type { PageProps } from './$types';
 
@@ -28,17 +29,19 @@
 	</Layout>
 {/snippet}
 
-{#if isOrganizationContainer(container)}
-	<EditableOrganizationDetailView bind:container {layout} {sections} />
-{:else if isOrganizationalUnitContainer(container)}
-	<EditableOrganizationalUnitDetailView
-		bind:container
-		{layout}
-		{linkedProfiles}
-		{relatedOrganizationalUnitGuids}
-		{sections}
-	/>
-{/if}
+<PageLayout>
+	{#if isOrganizationContainer(container)}
+		<EditableOrganizationDetailView bind:container {layout} {sections} />
+	{:else if isOrganizationalUnitContainer(container)}
+		<EditableOrganizationalUnitDetailView
+			bind:container
+			{layout}
+			{linkedProfiles}
+			{relatedOrganizationalUnitGuids}
+			{sections}
+		/>
+	{/if}
+</PageLayout>
 
 <style>
 	div {

@@ -8,6 +8,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type Container, type PagePayload, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -57,21 +58,23 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header />
-	{/snippet}
+<PageLayout>
+	<Layout>
+		{#snippet header()}
+			<Header />
+		{/snippet}
 
-	{#snippet main()}
-		<Catalog {containers} payloadType={[payloadTypes.enum.page]}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Catalog>
-		<ContextTabs slug="pages-catalog" />
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			<Catalog {containers} payloadType={[payloadTypes.enum.page]}>
+				{#snippet footer()}
+					<LazyLoadSentinel
+						hasMore={list.hasMore}
+						loading={list.loadingMore}
+						onLoadMore={list.loadMore}
+					/>
+				{/snippet}
+			</Catalog>
+			<ContextTabs slug="pages-catalog" />
+		{/snippet}
+	</Layout>
+</PageLayout>
