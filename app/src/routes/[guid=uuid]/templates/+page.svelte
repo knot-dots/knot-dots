@@ -7,6 +7,7 @@
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -24,15 +25,17 @@
 </script>
 
 <PageLayout>
-	<Layout bulkActions={['visibility', 'delete']}>
-		{#snippet header()}
-			<Header {facets} search />
-		{/snippet}
+	<BulkActionContextProvider actions={['visibility', 'delete']}>
+		<Layout>
+			{#snippet header()}
+				<Header {facets} search />
+			{/snippet}
 
-		{#snippet main()}
-			<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
+			{#snippet main()}
+				<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
 
-			<ContextTabs slug="measures-templates" />
-		{/snippet}
-	</Layout>
+				<ContextTabs slug="measures-templates" />
+			{/snippet}
+		</Layout>
+	</BulkActionContextProvider>
 </PageLayout>

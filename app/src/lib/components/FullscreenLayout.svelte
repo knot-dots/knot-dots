@@ -3,16 +3,14 @@
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/state';
-	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Header from '$lib/components/Header.svelte';
 
 	interface Props {
-		bulkActions?: string[];
 		header?: Snippet;
 		main: Snippet;
 	}
 
-	let { bulkActions = [], header, main }: Props = $props();
+	let { header, main }: Props = $props();
 
 	const duration = 300;
 	const delay = duration + 100;
@@ -23,29 +21,15 @@
 </script>
 
 <div class="main-with-header-wrapper">
-	{#if bulkActions.length > 0}
-		<BulkActionContextProvider actions={bulkActions}>
-			{#if header}
-				{@render header()}
-			{:else}
-				<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
-			{/if}
-
-			<main in:fly={transitionIn} out:fly={transitionOut}>
-				{@render main()}
-			</main>
-		</BulkActionContextProvider>
+	{#if header}
+		{@render header()}
 	{:else}
-		{#if header}
-			{@render header()}
-		{:else}
-			<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
-		{/if}
-
-		<main in:fly={transitionIn} out:fly={transitionOut}>
-			{@render main()}
-		</main>
+		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
 	{/if}
+
+	<main in:fly={transitionIn} out:fly={transitionOut}>
+		{@render main()}
+	</main>
 </div>
 
 <style>

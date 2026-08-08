@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import Layout from '$lib/components/Layout.svelte';
 	import { predicates } from '$lib/models';
@@ -23,12 +24,14 @@
 	});
 </script>
 
-<Layout bulkActions={['status', 'visibility', 'delete']}>
-	{#snippet header()}
-		<Header {filterBarInitiallyOpen} {facets} search />
-	{/snippet}
+<BulkActionContextProvider actions={['status', 'visibility', 'delete']}>
+	<Layout>
+		{#snippet header()}
+			<Header {filterBarInitiallyOpen} {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		{@render children()}
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			{@render children()}
+		{/snippet}
+	</Layout>
+</BulkActionContextProvider>

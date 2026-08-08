@@ -6,6 +6,7 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -130,80 +131,84 @@
 </script>
 
 <PageLayout>
-	<Layout bulkActions={['visibility', 'delete']}>
-		{#snippet header()}
-			<Header {facets} search />
-		{/snippet}
+	<BulkActionContextProvider actions={['visibility', 'delete']}>
+		<Layout>
+			{#snippet header()}
+				<Header {facets} search />
+			{/snippet}
 
-		{#snippet main()}
-			{#key page.url.searchParams}
-				<Board>
-					<BoardColumn title={$_('indicators')}>
-						<div class="vertical-scroll-wrapper">
-							{#each allContainers
-								.filter(isIndicatorTemplateContainer)
-								.filter((c) => containers.has(c)) as container (container.guid)}
-								{@const dataContainers = [
-									...allContainers
-										.filter(isActualDataContainer)
-										.filter(({ payload }) => payload.indicator === container.guid),
-									...allContainers
-										.filter(({ relation }) =>
-											relation.some(
-												({ object, predicate }) =>
-													object === container.guid &&
-													(predicate === predicates.enum['is-measured-by'] ||
-														predicate === predicates.enum['is-objective-for'])
+			{#snippet main()}
+				{#key page.url.searchParams}
+					<Board>
+						<BoardColumn title={$_('indicators')}>
+							<div class="vertical-scroll-wrapper">
+								{#each allContainers
+									.filter(isIndicatorTemplateContainer)
+									.filter((c) => containers.has(c)) as container (container.guid)}
+									{@const dataContainers = [
+										...allContainers
+											.filter(isActualDataContainer)
+											.filter(({ payload }) => payload.indicator === container.guid),
+										...allContainers
+											.filter(({ relation }) =>
+												relation.some(
+													({ object, predicate }) =>
+														object === container.guid &&
+														(predicate === predicates.enum['is-measured-by'] ||
+															predicate === predicates.enum['is-objective-for'])
+												)
 											)
-										)
-										.filter((c) => c.guid !== container.guid)
-								]}
-								{@const relatedContainers = [
-									...dataContainers,
-									...allContainers.filter(isContainerWithEffect),
-									...allContainers.filter(isContainerWithObjective)
-								]}
-								{#if dataContainers.length > 0}
-									<NewIndicatorCard {container} {relatedContainers} showRelationFilter />
-								{/if}
-							{/each}
-						</div>
-					</BoardColumn>
-					{#each [...objectivesByLevel.entries()].toSorted() as [key, value] (key)}
-						<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
-							<MaybeDragZone containers={value.filter((c) => containers.has(c))}>
+											.filter((c) => c.guid !== container.guid)
+									]}
+									{@const relatedContainers = [
+										...dataContainers,
+										...allContainers.filter(isContainerWithEffect),
+										...allContainers.filter(isContainerWithObjective)
+									]}
+									{#if dataContainers.length > 0}
+										<NewIndicatorCard {container} {relatedContainers} showRelationFilter />
+									{/if}
+								{/each}
+							</div>
+						</BoardColumn>
+						{#each [...objectivesByLevel.entries()].toSorted() as [key, value] (key)}
+							<BoardColumn title={`${$_('objectives')} ${key + 1}`}>
+								<MaybeDragZone containers={value.filter((c) => containers.has(c))}>
+									{#snippet itemSnippet(container)}
+										<Card
+											{container}
+											relatedContainers={allContainers}
+											showRelationFilter
+											titleOverride
+										/>
+									{/snippet}
+								</MaybeDragZone>
+							</BoardColumn>
+						{/each}
+						<BoardColumn title={$_('effects')}>
+							<MaybeDragZone
+								containers={allContainers
+									.filter(isEffectContainer)
+									.filter((c) => containers.has(c))}
+							>
 								{#snippet itemSnippet(container)}
 									<Card
 										{container}
-										relatedContainers={allContainers}
+										relatedContainers={[
+											...allContainers.filter(isRelatedTo(container)),
+											...allContainers.filter(isContainerWithEffect)
+										]}
 										showRelationFilter
 										titleOverride
 									/>
 								{/snippet}
 							</MaybeDragZone>
 						</BoardColumn>
-					{/each}
-					<BoardColumn title={$_('effects')}>
-						<MaybeDragZone
-							containers={allContainers.filter(isEffectContainer).filter((c) => containers.has(c))}
-						>
-							{#snippet itemSnippet(container)}
-								<Card
-									{container}
-									relatedContainers={[
-										...allContainers.filter(isRelatedTo(container)),
-										...allContainers.filter(isContainerWithEffect)
-									]}
-									showRelationFilter
-									titleOverride
-								/>
-							{/snippet}
-						</MaybeDragZone>
-					</BoardColumn>
-				</Board>
-			{/key}
+					</Board>
+				{/key}
 
-			<ContextTabs slug="objectives-and-effects" />
-		{/snippet}
-	</Layout>
+				<ContextTabs slug="objectives-and-effects" />
+			{/snippet}
+		</Layout>
+	</BulkActionContextProvider>
 </PageLayout>

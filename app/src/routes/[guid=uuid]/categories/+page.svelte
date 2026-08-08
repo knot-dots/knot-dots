@@ -5,6 +5,7 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -153,31 +154,33 @@
 </script>
 
 <PageLayout>
-	<Layout bulkActions={['visibility', 'delete']}>
-		{#snippet header()}
-			<Header search />
-		{/snippet}
+	<BulkActionContextProvider actions={['visibility', 'delete']}>
+		<Layout>
+			{#snippet header()}
+				<Header search />
+			{/snippet}
 
-		{#snippet main()}
-			{#key page.url.searchParams}
-				<Board>
-					<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
-						<div class="vertical-scroll-wrapper">
-							{#each filteredContainers as container (container.guid)}
-								<Card {container} showRelationFilter />
-							{/each}
-						</div>
-					</BoardColumn>
-					<BoardColumn title={$_('category.terms.heading')}>
-						<MaybeDragZone containers={filteredTerms} />
-					</BoardColumn>
-					<BoardColumn title={$_('category.subterms.heading')}>
-						<MaybeDragZone containers={filteredSubterms} />
-					</BoardColumn>
-				</Board>
-			{/key}
+			{#snippet main()}
+				{#key page.url.searchParams}
+					<Board>
+						<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
+							<div class="vertical-scroll-wrapper">
+								{#each filteredContainers as container (container.guid)}
+									<Card {container} showRelationFilter />
+								{/each}
+							</div>
+						</BoardColumn>
+						<BoardColumn title={$_('category.terms.heading')}>
+							<MaybeDragZone containers={filteredTerms} />
+						</BoardColumn>
+						<BoardColumn title={$_('category.subterms.heading')}>
+							<MaybeDragZone containers={filteredSubterms} />
+						</BoardColumn>
+					</Board>
+				{/key}
 
-			<ContextTabs slug="categories" />
-		{/snippet}
-	</Layout>
+				<ContextTabs slug="categories" />
+			{/snippet}
+		</Layout>
+	</BulkActionContextProvider>
 </PageLayout>
