@@ -31,6 +31,7 @@
 		type Container,
 		createContainerSchema,
 		createCopyOf,
+		customCollectionModes,
 		type CustomCollectionPayload,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
@@ -137,7 +138,7 @@
 			Array.isArray(filter.type) && filter.type.length > 0 ? filter.type : defaultPayloadType;
 		const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
 		const isRule =
-			container.payload.ruleApplied ||
+			container.payload.mode === customCollectionModes.enum.apply_rule ||
 			hasNonScopeFilter(filter) ||
 			hasExplicitOrganizationScope(filter);
 
@@ -180,7 +181,7 @@
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
 			() => (container.payload.allowSort ? localSort : container.payload.sort),
 			() => inViewportOnce,
-			() => container.payload.ruleApplied
+			() => container.payload.mode
 		],
 		async ([item, filter, terms, searchTerms, sort, inViewportOnce], _, { signal }) => {
 			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
@@ -301,7 +302,7 @@
 
 	let isRuleBasedCollection = $derived(
 		container.payload.item.length == 0 &&
-			(container.payload.ruleApplied ||
+			(container.payload.mode === customCollectionModes.enum.apply_rule ||
 				hasNonScopeFilter(container.payload.filter) ||
 				hasExplicitOrganizationScope(container.payload.filter))
 	);

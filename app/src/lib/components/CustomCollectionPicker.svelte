@@ -20,6 +20,8 @@
 	import {
 		type AnyPayload,
 		type Container,
+		type CustomCollectionMode,
+		customCollectionModes,
 		type CustomCollectionPayload,
 		isOrganizationalUnitContainer,
 		type OrganizationalUnitPayload,
@@ -134,16 +136,15 @@
 		Object.entries(filter).reduce((acc, [, v]) => acc + (v.length > 0 ? 1 : 0), 0)
 	);
 
+	// Collections saved before the mode was persisted are recognized by their
+	// selected items or configured rule filters.
 	// svelte-ignore state_referenced_locally
-	let mode: 'select' | 'apply_rule' = $state(
-		selected.length > 0 ||
-			!(
-				container.payload.ruleApplied ||
-				activeFilters > 0 ||
-				hasExplicitOrganizationScope(container.payload.filter)
-			)
-			? 'select'
-			: 'apply_rule'
+	let mode: CustomCollectionMode = $state(
+		container.payload.mode === customCollectionModes.enum.apply_rule ||
+			(selected.length === 0 &&
+				(activeFilters > 0 || hasExplicitOrganizationScope(container.payload.filter)))
+			? customCollectionModes.enum.apply_rule
+			: customCollectionModes.enum.select
 	);
 
 	let organizationsUserIsMemberOf = $derived(
@@ -355,7 +356,7 @@
 				...container.payload,
 				filter: { ...filter, ...organizationScopeAsFilter(scope) },
 				item: mode == 'select' ? selected : [],
-				ruleApplied: mode == 'apply_rule',
+				mode,
 				sort,
 				terms
 			}

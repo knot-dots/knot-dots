@@ -279,6 +279,12 @@ const listTypeValues = ['carousel', 'wall', 'list', 'accordion'] as const;
 
 export const listTypes = z.enum(listTypeValues);
 
+const customCollectionModeValues = ['select', 'apply_rule'] as const;
+
+export const customCollectionModes = z.enum(customCollectionModeValues);
+
+export type CustomCollectionMode = z.infer<typeof customCollectionModes>;
+
 const teaserColSizeValues = ['0-100', '33-66', '50-50', '66-33', '100-0'] as const;
 
 export const teaserColSizes = z.enum(teaserColSizeValues);
@@ -868,8 +874,8 @@ export const customCollectionPayload = z.strictObject({
 		.default({}),
 	item: z.array(z.uuid()).default([]),
 	listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
+	mode: customCollectionModes.default(customCollectionModes.enum.select),
 	newItemTemplate: z.array(z.uuid()).default([]),
-	ruleApplied: z.boolean().default(false),
 	showDescription: z.boolean().default(false),
 	sort: z.enum(['alpha', 'date', 'modified', 'relevance']).default('alpha'),
 	terms: z.string().default(''),
