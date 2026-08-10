@@ -44,9 +44,9 @@ test.describe('Adopt programs', () => {
 			exact: true
 		});
 		const adoptedButton = dotsBoard.overlay.locator.getByRole('button', { name: 'Adopted' });
-		const dialog = dotsBoard.page.getByRole('dialog');
-		const unitCheckbox = dialog.getByLabel(testOrganizationalUnit.payload.name);
-		const confirmButton = dialog.getByRole('button', { name: 'Confirm selection' });
+		const popover = dotsBoard.page.getByRole('form', { name: 'Adopt program for' });
+		const unitCheckbox = popover.getByLabel(testOrganizationalUnit.payload.name);
+		const confirmButton = popover.getByRole('button', { name: 'Confirm selection' });
 
 		async function openProgramOverlay() {
 			await dotsBoard.page.goto(programOverlayURL);
@@ -57,11 +57,19 @@ test.describe('Adopt programs', () => {
 		// Adopt the program for the organizational unit.
 		await openProgramOverlay();
 		await adoptButton.click();
-		await expect(dialog.getByRole('heading', { name: 'Adopt program for' })).toBeVisible();
+		await expect(popover).toBeVisible();
 		await unitCheckbox.check();
 		await confirmButton.click();
-		await expect(dialog).not.toBeVisible();
 
+		// The button reflects the change without a page reload …
+		await expect(popover).not.toBeVisible();
+		await expect(adoptedButton).toBeVisible();
+
+		// … and reopening the popover shows the adopting unit checked.
+		await adoptedButton.click();
+		await expect(unitCheckbox).toBeChecked();
+
+		// The adoption also survives a fresh page load.
 		await openProgramOverlay();
 		await expect(adoptedButton).toBeVisible();
 
@@ -70,7 +78,8 @@ test.describe('Adopt programs', () => {
 		await expect(unitCheckbox).toBeChecked();
 		await unitCheckbox.uncheck();
 		await confirmButton.click();
-		await expect(dialog).not.toBeVisible();
+		await expect(popover).not.toBeVisible();
+		await expect(adoptButton).toBeVisible();
 
 		await openProgramOverlay();
 		await expect(adoptButton).toBeVisible();
@@ -79,7 +88,7 @@ test.describe('Adopt programs', () => {
 		await adoptButton.click();
 		await unitCheckbox.check();
 		await confirmButton.click();
-		await expect(dialog).not.toBeVisible();
+		await expect(adoptedButton).toBeVisible();
 
 		await openProgramOverlay();
 		await expect(adoptedButton).toBeVisible();
