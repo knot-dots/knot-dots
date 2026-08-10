@@ -4,6 +4,7 @@
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -190,7 +191,16 @@
 		}
 	}
 
-	setDetailViewContext({ properties: new Collapsible() });
+	let detailView = $state({
+		properties: new Collapsible({
+			onOpenChange: () => {
+				detailView.relocationNoticeSeen = true;
+			}
+		}),
+		relocationNoticeSeen: false
+	});
+
+	setDetailViewContext(detailView);
 </script>
 
 {#snippet header()}
@@ -275,6 +285,14 @@
 									bind:textContent={container.payload.name}
 									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 								></h1>
+								<button
+									class="action-button"
+									onclick={detailView.properties.trigger.onclick}
+									type="button"
+								>
+									<Ellipsis />
+									<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+								</button>
 							{:else}
 								<h1
 									class={{
@@ -301,20 +319,6 @@
 				</form>
 
 				<Sections bind:container {relatedContainers} />
-
-				<footer class="footer-action-bar">
-					{#if mayCreateIndividualProfile}
-						<button
-							class="button button-xs button-alternative"
-							disabled={creatingProfile}
-							onclick={createIndividualProfile}
-							type="button"
-						>
-							{$_('individual_profile.create')}
-						</button>
-					{/if}
-					<DeleteButton {container} {relatedContainers} />
-				</footer>
 			</div>
 
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -328,6 +332,20 @@
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
+
+	<footer class="footer-action-bar">
+		{#if mayCreateIndividualProfile}
+			<button
+				class="button button-xs button-alternative"
+				disabled={creatingProfile}
+				onclick={createIndividualProfile}
+				type="button"
+			>
+				{$_('individual_profile.create')}
+			</button>
+		{/if}
+		<DeleteButton {container} {relatedContainers} />
+	</footer>
 {/snippet}
 
 {@render layout(header, main)}
@@ -370,9 +388,8 @@
 		border-radius: 9999px;
 		display: inline-flex;
 		gap: 0;
+		margin-left: auto;
 		padding: 0;
-		position: absolute;
-		right: var(--details-section-padding-x, 1.5rem);
 	}
 
 	.profile-switch-item {

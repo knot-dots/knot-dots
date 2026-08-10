@@ -41,4 +41,8 @@
 		line-height: 1.5;
 		max-height: 2.25rem;
 	}
+
+	time {
+		display: block;
+	}
 </style>

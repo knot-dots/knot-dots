@@ -322,14 +322,24 @@
 		{/if}
 
 		{#if container && detailView && !paramsFromFragment(page.url).has('table')}
-			<button
-				{@attach tooltip($_('properties.show_all'))}
-				{...detailView.properties.trigger}
-				class="action-button action-button--size-l"
-				type="button"
-			>
-				<Label />
-			</button>
+			{#if !(isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || isPageContainer(container)) || $ability.can('update', container)}
+				<button
+					{@attach tooltip($_('properties.show_all'))}
+					{...detailView.properties.trigger}
+					class="action-button action-button--size-l"
+					onclick={detailView.properties.trigger.onclick}
+					style:position="relative"
+					type="button"
+				>
+					<Label />
+					{#if !detailView.relocationNoticeSeen}
+						<span
+							class="indicator system-info"
+							style:--indicator-background-color="var(--color-background-accent-strong)"
+						></span>
+					{/if}
+				</button>
+			{/if}
 		{/if}
 
 		{#if overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || (isGoalContainer(container) && createFeatureDecisions(page.data.features).useIOOI()) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}

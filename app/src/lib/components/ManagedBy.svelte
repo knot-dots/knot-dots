@@ -64,5 +64,6 @@
 	.value {
 		flex-wrap: wrap;
 		gap: 0.25rem;
+		padding-left: var(--dropdown-button-padding-y);
 	}
 </style>

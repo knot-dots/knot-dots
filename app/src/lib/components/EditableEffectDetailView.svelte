@@ -35,12 +35,19 @@
 
 	interface Props {
 		container: Container<EffectPayload>;
+		hideProperties?: boolean;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 		sections: Container[];
 	}
 
-	let { container = $bindable(), layout, revisions, sections }: Props = $props();
+	let {
+		container = $bindable(),
+		hideProperties = false,
+		layout,
+		revisions,
+		sections
+	}: Props = $props();
 
 	let guid = $derived(container.guid);
 
@@ -298,13 +305,15 @@
 		{/snippet}
 
 		{#snippet properties()}
-			<EffectProperties
-				bind:container
-				editable={$applicationState.containerDetailView.editable &&
-					$ability.can('update', container)}
-				{relatedContainers}
-				{revisions}
-			/>
+			{#if !hideProperties}
+				<EffectProperties
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
+				/>
+			{/if}
 		{/snippet}
 	</EditableContainerDetailView>
 {/snippet}

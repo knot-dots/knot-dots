@@ -163,6 +163,7 @@
 						{#if isEffectContainer(newObjectiveOrEffect)}
 							<EditableEffectDetailView
 								bind:container={newObjectiveOrEffect}
+								hideProperties
 								revisions={[newObjectiveOrEffect]}
 								sections={[]}
 							>
@@ -174,6 +175,7 @@
 						{:else if isObjectiveContainer(newObjectiveOrEffect)}
 							<EditableObjectiveDetailView
 								bind:container={newObjectiveOrEffect}
+								hideProperties
 								revisions={[newObjectiveOrEffect]}
 								sections={[]}
 							>

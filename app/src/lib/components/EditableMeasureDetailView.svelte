@@ -11,6 +11,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
+	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
@@ -53,6 +54,8 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
+			<PropertiesRelocationNotice />
+
 			{#key container.guid}
 				<EditableFormattedText
 					editable={$applicationState.containerDetailView.editable &&

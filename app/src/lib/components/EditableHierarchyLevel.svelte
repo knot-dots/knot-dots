@@ -19,7 +19,7 @@
 	{#if label}
 		<span class="label">{label}</span>
 	{/if}
-	<span class="value">{value ? $number(value) : $_('empty')}</span>
+	<div class="value">{value ? $number(value) : $_('empty')}</div>
 {/if}
 
 <style>

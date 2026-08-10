@@ -7,7 +7,20 @@
 </script>
 
 <EditableDetailView container={data.container} revisions={data.revisions} sections={data.sections}>
-	{#snippet layout(header, main)}
-		<Layout {header} {main} />
+	{#snippet layout(header, content)}
+		<Layout {header}>
+			{#snippet main()}
+				<div>{@render content()}</div>
+			{/snippet}
+		</Layout>
 	{/snippet}
 </EditableDetailView>
+
+<style>
+	div {
+		display: flex;
+		flex: 1 0 100%;
+		flex-direction: column;
+		max-height: 100%;
+	}
+</style>

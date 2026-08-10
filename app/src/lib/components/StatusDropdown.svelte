@@ -94,12 +94,12 @@
 {/if}
 
 <style>
+	.dropdown-button {
+		--dropdown-button-border-radius: 8px;
+	}
+
 	.dropdown-button.dropdown-button--select,
 	.value {
 		padding-left: var(--dropdown-button-padding-y);
-	}
-
-	.badge {
-		float: left;
 	}
 </style>

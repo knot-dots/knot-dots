@@ -4,6 +4,7 @@
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -90,7 +91,16 @@
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 
-	setDetailViewContext({ properties: new Collapsible() });
+	let detailView = $state({
+		properties: new Collapsible({
+			onOpenChange: () => {
+				detailView.relocationNoticeSeen = true;
+			}
+		}),
+		relocationNoticeSeen: false
+	});
+
+	setDetailViewContext(detailView);
 </script>
 
 {#snippet header()}
@@ -147,6 +157,14 @@
 										bind:textContent={container.payload.name}
 										onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 									></h1>
+									<button
+										class="action-button"
+										onclick={detailView.properties.trigger.onclick}
+										type="button"
+									>
+										<Ellipsis />
+										<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
+									</button>
 								{:else}
 									<h1 class="details-title" contenteditable="false">
 										{container.payload.name}
@@ -166,10 +184,6 @@
 				</form>
 
 				<Sections bind:container {relatedContainers} />
-
-				<footer class="footer-action-bar">
-					<DeleteButton {container} {relatedContainers} />
-				</footer>
 			</div>
 
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -183,6 +197,10 @@
 
 		<ContextTabs slug={helpSlug.enum['organization-view']} />
 	</div>
+
+	<footer class="footer-action-bar">
+		<DeleteButton {container} {relatedContainers} />
+	</footer>
 {/snippet}
 
 {@render layout(header, main)}

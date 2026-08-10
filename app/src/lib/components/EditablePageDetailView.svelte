@@ -3,6 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
+	import Ellipsis from '~icons/knotdots/ellipsis';
 	import autoSave from '$lib/client/autoSave';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
@@ -16,6 +17,7 @@
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
+	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		type AnyPayload,
 		type Container,
@@ -71,6 +73,8 @@
 	let relatedContainers = $derived(relatedContainersQuery.current ?? sections);
 
 	const handleSubmit = $derived(autoSave(container, 2000));
+
+	const detailView = getDetailViewContext();
 </script>
 
 {#snippet header()}
@@ -117,6 +121,14 @@
 									bind:textContent={container.payload.title}
 									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 								></h1>
+								<button
+									class="action-button"
+									onclick={detailView.properties.trigger.onclick}
+									type="button"
+								>
+									<Ellipsis />
+									<span class="is-visually-hidden">{$_('properties.show_all')}</span>
+								</button>
 							{:else}
 								<h1 class="details-title" contenteditable="false">
 									{container.payload.title}
@@ -135,10 +147,6 @@
 				</form>
 
 				<Sections bind:container {relatedContainers} />
-
-				<footer class="footer-action-bar">
-					<DeleteButton {container} {relatedContainers} />
-				</footer>
 			</div>
 
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -154,6 +162,10 @@
 
 		<ContextTabs slug={helpSlug.enum['page-view']} />
 	</div>
+
+	<footer class="footer-action-bar">
+		<DeleteButton {container} {relatedContainers} />
+	</footer>
 {/snippet}
 
 {@render layout(header, main)}
