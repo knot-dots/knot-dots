@@ -202,18 +202,20 @@
 		align-items: center;
 		background-color: var(--color-gray-050);
 		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
+		border-radius: 6px;
 		color: var(--color-gray-400);
 		display: flex;
-		gap: 0.5rem;
+		font-size: 0.875rem;
+		gap: 0.375rem;
 		margin-bottom: 0.75rem;
-		padding: 0.375rem 0.75rem;
+		padding: 0.25rem 0.625rem;
 	}
 
 	.search input {
 		background: none;
 		border: none;
 		flex: 1;
+		font-size: inherit;
 		min-width: 0;
 		outline: none;
 		padding: 0;
