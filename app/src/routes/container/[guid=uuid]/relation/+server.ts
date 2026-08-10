@@ -2,12 +2,16 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { isAdoptableProgram } from '$lib/adoptions';
+import defineAbilityFor, { canAdoptForOrganization, filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyPayload,
 	type Container,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	isProgramContainer,
 	type OrganizationalUnitPayload,
 	payloadTypes,
@@ -18,6 +22,7 @@ import {
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
+	deleteManyContainerRelations,
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
@@ -226,22 +231,108 @@ export const POST = (async ({ locals, params, request }) => {
 		await updateManyContainerRelations(
 			parseResult.data
 				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-				.filter(({ object, subject }) => {
+				.filter(({ object, predicate, subject }) => {
 					const objectContainer = containers.find(
 						(c) => ability.can('read', c) && c.guid === object
 					);
 					const subjectContainer = containers.find(
 						(c) => ability.can('read', c) && c.guid === subject
 					);
-					return (
-						objectContainer &&
-						subjectContainer &&
-						ability.can(
-							'relate',
-							[subjectContainer, objectContainer].find(
-								(c) => c.guid == params.guid
-							) as Container<AnyPayload>
-						)
+					if (!objectContainer || !subjectContainer) {
+						return false;
+					}
+					// Adopting a public rule-set program does not require 'relate'
+					// permission on the (foreign) program. Instead the user must be
+					// allowed to act for the adopting organization or organizational
+					// unit, and the owning organizational unit may not adopt its own
+					// program.
+					if (predicate == predicates.enum['is-adopted-by']) {
+						return (
+							createFeatureDecisions(locals.features).useAdoptions() &&
+							subject == params.guid &&
+							isAdoptableProgram(subjectContainer) &&
+							(isOrganizationContainer(objectContainer) ||
+								isOrganizationalUnitContainer(objectContainer)) &&
+							objectContainer.guid != subjectContainer.organizational_unit &&
+							canAdoptForOrganization(locals.user, objectContainer)
+						);
+					}
+					return ability.can(
+						'relate',
+						[subjectContainer, objectContainer].find(
+							(c) => c.guid == params.guid
+						) as Container<AnyPayload>
+					);
+				})
+		)(tx);
+	});
+
+	return new Response(null, { status: 204 });
+}) satisfies RequestHandler;
+
+export const DELETE = (async ({ locals, params, request }) => {
+	if (!locals.user.isAuthenticated) {
+		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
+	}
+
+	if (request.headers.get('Content-Type') != 'application/json') {
+		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
+	}
+
+	const data = await request.json().catch((reason: SyntaxError) => {
+		error(400, { message: reason.message });
+	});
+	const parseResult = z.array(relation).safeParse(data);
+
+	if (!parseResult.success) {
+		error(422, parseResult.error);
+	}
+
+	const ability = defineAbilityFor(locals.user);
+
+	await locals.pool.transaction(async (tx) => {
+		// Deleting relations follows the same rules as creating them via POST:
+		// the container represented by the guid parameter of the route must be
+		// either the subject or the object, and the permission checks are
+		// applied per relation.
+		const containers = await getManyContainers(
+			[],
+			{
+				guid: parseResult.data
+					.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+					.flatMap(({ object, subject }) => [object, subject])
+			},
+			'alpha'
+		)(tx);
+		await deleteManyContainerRelations(
+			parseResult.data
+				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+				.filter(({ object, predicate, subject }) => {
+					const objectContainer = containers.find(
+						(c) => ability.can('read', c) && c.guid === object
+					);
+					const subjectContainer = containers.find(
+						(c) => ability.can('read', c) && c.guid === subject
+					);
+					if (!objectContainer || !subjectContainer) {
+						return false;
+					}
+					// Unlike POST, the owning organizational unit is not rejected
+					// here: removing a relation that should not exist must always be
+					// possible for those responsible for the adopting unit.
+					if (predicate == predicates.enum['is-adopted-by']) {
+						return (
+							createFeatureDecisions(locals.features).useAdoptions() &&
+							subject == params.guid &&
+							isAdoptableProgram(subjectContainer) &&
+							canAdoptForOrganization(locals.user, objectContainer)
+						);
+					}
+					return ability.can(
+						'relate',
+						[subjectContainer, objectContainer].find(
+							(c) => c.guid == params.guid
+						) as Container<AnyPayload>
 					);
 				})
 		)(tx);
