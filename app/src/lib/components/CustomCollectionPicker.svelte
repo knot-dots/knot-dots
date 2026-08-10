@@ -221,6 +221,33 @@
 		}
 	);
 
+	// The previously selected objects may lie outside the current catalog
+	// filters (e.g. in another part of the organization), so they are fetched
+	// separately to keep them visible in the selection panel.
+	const persistedItemsResource = resource(
+		[() => container.payload.item, () => inViewport.current],
+		async ([item, inViewport], _, { signal }): Promise<Container<AnyPayload>[]> => {
+			if (!inViewport || item.length === 0) return [];
+
+			const result = await fetchContainerPage({
+				fetch,
+				limit: item.length,
+				offset: 0,
+				query: new URLSearchParams(item.map((guid) => ['guid', guid])),
+				signal
+			});
+			return result.containers;
+		},
+		{ lazy: true }
+	);
+
+	function findSelectedItem(guid: string): Container<AnyPayload> | undefined {
+		return (
+			searchItems.find((item) => item.guid === guid) ??
+			(persistedItemsResource.current ?? []).find((item) => item.guid === guid)
+		);
+	}
+
 	let facets = $derived(
 		searchResource.current
 			? new Map([
@@ -534,7 +561,7 @@
 			{#if mode === 'select' && selected.length > 0}
 				<ul class="selection-list">
 					{#each selected as guid (guid)}
-						{@const item = searchItems.find((item) => item.guid === guid)}
+						{@const item = findSelectedItem(guid)}
 						{#if item}
 							{@const selectionId = `selected-${guid}`}
 							<li class="selection-item">
