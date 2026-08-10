@@ -164,12 +164,22 @@
 
 	function buildSearchQuery() {
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
+		// The scope narrows the rule and its preview. When selecting objects it
+		// merely filters the catalog, so the default scope offers the whole
+		// organization for browsing; otherwise pages of organizational units
+		// with little own content would show an empty catalog.
+		const scopeEntries: Array<[string, string]> =
+			mode === customCollectionModes.enum.select &&
+			scopeType === 'current' &&
+			includeSubordinateOrganizationalUnits
+				? [['organization', page.data.currentOrganization.guid]]
+				: resolveOrganizationScope(organizationScopeAsFilter(scope), {
+						currentOrganization: page.data.currentOrganization,
+						currentOrganizationalUnit: page.data.currentOrganizationalUnit,
+						organizationalUnits: page.data.organizationalUnits
+					});
 		return new URLSearchParams([
-			...resolveOrganizationScope(organizationScopeAsFilter(scope), {
-				currentOrganization: page.data.currentOrganization,
-				currentOrganizationalUnit: page.data.currentOrganizationalUnit,
-				organizationalUnits: page.data.organizationalUnits
-			}),
+			...scopeEntries,
 			...payloadType.map((t) => ['payloadType', t]),
 			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
 			...(filter.programType ?? []).map((v) => ['programType', v]),
