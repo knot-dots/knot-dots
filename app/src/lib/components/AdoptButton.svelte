@@ -144,7 +144,9 @@
 				</label>
 
 				<p class="selection-summary">
-					<span>{$_('selection_counter', { values: { count: selected.length } })}</span>
+					<button class="quiet" onclick={() => (selected = [])} type="button">
+						{$_('selection_counter', { values: { count: selected.length } })}
+					</button>
 					<button class="quiet" onclick={selectAll} type="button">{$_('select_all')}</button>
 				</p>
 
@@ -180,35 +182,44 @@
 	}
 
 	.adopt-panel {
-		background-color: white;
-		border: 1px solid var(--color-gray-200);
-		border-radius: 12px;
+		background-color: var(--color-gray-050);
+		border: 1px solid white;
+		border-radius: 16px;
 		box-shadow:
-			0 4px 6px -2px rgba(16, 24, 40, 0.03),
-			0 12px 16px -4px rgba(16, 24, 40, 0.08);
-		padding: 1rem;
-		width: 20rem;
+			0 4px 6px rgba(0, 0, 0, 0.05),
+			0 10px 15px -3px rgba(0, 0, 0, 0.1);
+		padding: 0.5rem;
+		width: 18rem;
 		z-index: 1;
 	}
 
 	h3 {
-		color: var(--color-gray-700);
-		font-size: 0.875rem;
+		color: var(--color-gray-900);
+		font-size: 0.75rem;
 		font-weight: 600;
-		margin: 0 0 0.75rem;
+		line-height: 1.5;
+		margin: 0;
+		padding: 0.25rem 0.5rem;
 	}
 
 	.search {
 		align-items: center;
-		background-color: var(--color-gray-050);
+		background-color: var(--color-gray-100);
 		border: 1px solid var(--color-gray-200);
-		border-radius: 6px;
+		border-radius: 8px;
 		color: var(--color-gray-400);
 		display: flex;
-		font-size: 0.875rem;
-		gap: 0.375rem;
-		margin-bottom: 0.75rem;
-		padding: 0.25rem 0.625rem;
+		font-size: 0.75rem;
+		gap: 0.5rem;
+		height: 1.75rem;
+		margin: 0.25rem;
+		padding: 0 0.5rem;
+	}
+
+	.search > :global(svg) {
+		flex-shrink: 0;
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.search input {
@@ -223,29 +234,31 @@
 
 	.selection-summary {
 		align-items: center;
-		color: var(--color-gray-500);
 		display: flex;
-		font-size: 0.875rem;
 		justify-content: space-between;
-		margin: 0 0 0.25rem;
+		margin: 0;
 	}
 
 	.selection-summary button {
 		border: none;
-		padding: 0;
+		color: var(--color-gray-600);
+		font-size: 0.75rem;
+		font-weight: 500;
+		height: 1.75rem;
+		padding: 0 0.75rem;
 	}
 
 	.groups {
-		margin-bottom: 1rem;
 		max-height: 16rem;
 		overflow-y: auto;
 	}
 
 	.groups h4 {
 		color: var(--color-gray-500);
-		font-size: 0.875rem;
+		font-size: 0.75rem;
 		font-weight: 600;
-		margin: 0.5rem 0 0.25rem;
+		margin: 0.25rem 0 0;
+		padding: 0.25rem 0.5rem;
 	}
 
 	.groups ul {
@@ -256,13 +269,19 @@
 
 	.groups label {
 		align-items: center;
+		color: var(--color-gray-600);
 		display: flex;
+		font-size: 0.875rem;
+		font-weight: 500;
 		gap: 0.5rem;
-		padding: 0.375rem 0;
+		padding: 0.5rem;
 	}
 
 	.button-primary[type='submit'] {
 		display: block;
+		font-size: 0.75rem;
+		margin-top: 0.5rem;
+		min-height: 1.75rem;
 		width: 100%;
 	}
 </style>
