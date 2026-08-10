@@ -22,13 +22,13 @@ const organizationalUnits = [
 	{ guid: unitOfOtherOrg, organization: otherOrg }
 ];
 
-const atOrganization = {
+const contextAtOrganizationRoot = {
 	currentOrganization: { guid: org },
 	currentOrganizationalUnit: null,
 	organizationalUnits
 };
 
-const atOrganizationalUnit = {
+const contextAtOrganizationalUnit = {
 	currentOrganization: { guid: org },
 	currentOrganizationalUnit: { guid: unit },
 	organizationalUnits
@@ -107,7 +107,7 @@ describe('resolveOrganizationScope', () => {
 		expect(
 			resolveOrganizationScope(
 				organizationScopeAsFilter(defaultOrganizationScope()),
-				atOrganization
+				contextAtOrganizationRoot
 			)
 		).toEqual([['organization', org]]);
 	});
@@ -116,7 +116,7 @@ describe('resolveOrganizationScope', () => {
 		expect(
 			resolveOrganizationScope(
 				organizationScopeAsFilter(defaultOrganizationScope()),
-				atOrganizationalUnit
+				contextAtOrganizationalUnit
 			)
 		).toEqual([
 			['organization', org],
@@ -132,7 +132,7 @@ describe('resolveOrganizationScope', () => {
 					organizationalUnit: 'current',
 					organizationalUnitWithChildren: []
 				},
-				atOrganization
+				contextAtOrganizationRoot
 			)
 		).toEqual([
 			['organization', org],
@@ -148,7 +148,7 @@ describe('resolveOrganizationScope', () => {
 					organizationalUnit: 'current',
 					organizationalUnitWithChildren: []
 				},
-				atOrganizationalUnit
+				contextAtOrganizationalUnit
 			)
 		).toEqual([
 			['organization', org],
@@ -158,7 +158,10 @@ describe('resolveOrganizationScope', () => {
 
 	it('resolves explicit organizations to org-level scope', () => {
 		expect(
-			resolveOrganizationScope({ organization: [org], organizationalUnit: [] }, atOrganization)
+			resolveOrganizationScope(
+				{ organization: [org], organizationalUnit: [] },
+				contextAtOrganizationRoot
+			)
 		).toEqual([
 			['organization', org],
 			['organizationalUnit', '']
@@ -166,14 +169,17 @@ describe('resolveOrganizationScope', () => {
 	});
 
 	it('resolves legacy organization filters without unit key to the whole organization', () => {
-		expect(resolveOrganizationScope({ organization: [org] }, atOrganization)).toEqual([
+		expect(resolveOrganizationScope({ organization: [org] }, contextAtOrganizationRoot)).toEqual([
 			['organization', org]
 		]);
 	});
 
 	it('resolves legacy organization filters with null unit value to the whole organization', () => {
 		expect(
-			resolveOrganizationScope({ organization: [org], organizationalUnit: null }, atOrganization)
+			resolveOrganizationScope(
+				{ organization: [org], organizationalUnit: null },
+				contextAtOrganizationRoot
+			)
 		).toEqual([['organization', org]]);
 	});
 
@@ -181,7 +187,7 @@ describe('resolveOrganizationScope', () => {
 		expect(
 			resolveOrganizationScope(
 				{ organization: [], organizationalUnit: [unit, unitOfOtherOrg] },
-				atOrganization
+				contextAtOrganizationRoot
 			)
 		).toEqual([
 			['organization', org],
@@ -195,7 +201,7 @@ describe('resolveOrganizationScope', () => {
 		expect(
 			resolveOrganizationScope(
 				{ organization: [otherOrg], organizationalUnit: [unit] },
-				atOrganization
+				contextAtOrganizationRoot
 			)
 		).toEqual([
 			['organization', otherOrg],
@@ -209,7 +215,7 @@ describe('resolveOrganizationScope', () => {
 		expect(
 			resolveOrganizationScope(
 				{ organization: [org], organizationalUnit: [unknownUnit] },
-				atOrganization
+				contextAtOrganizationRoot
 			)
 		).toEqual([
 			['organization', org],
