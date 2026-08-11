@@ -60,22 +60,6 @@ export function parseOrganizationScope(filter: CollectionFilter): OrganizationSc
 	const organizationalUnits = asArray(filter.organizationalUnit);
 	const organizationsWithSubordinates = asArray(filter.organizationalUnitWithChildren);
 
-	// Filters written before the scope selector existed carry organization
-	// values without an organizationalUnit key. They meant "whole organization"
-	// including all organizational units.
-	if (
-		organizations.length > 0 &&
-		!Array.isArray(filter.organizationalUnit) &&
-		organizationsWithSubordinates.length === 0
-	) {
-		return {
-			type: 'explicit',
-			organizations: [],
-			organizationalUnits: [],
-			organizationsWithSubordinates: organizations
-		};
-	}
-
 	if (
 		organizations.length === 0 &&
 		organizationalUnits.length === 0 &&
@@ -163,6 +147,13 @@ export function resolveOrganizationScope(
 	// unit guids, so only map known organizational units to their parent.
 	for (const guid of scope.organizationsWithSubordinates) {
 		organizations.add(organizationalUnitsByGuid.get(guid)?.organization ?? guid);
+	}
+
+	// Whole organizations need no organizational unit constraint of their own;
+	// it is only required to separate them from organization-level or exact
+	// organizational unit selections in mixed selections.
+	if (scope.organizations.length === 0 && scope.organizationalUnits.length === 0) {
+		return [...organizations].map((guid): [string, string] => ['organization', guid]);
 	}
 
 	return [

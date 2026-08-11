@@ -92,15 +92,6 @@ describe('parseOrganizationScope', () => {
 		});
 	});
 
-	it('parses legacy filters without unit key as whole-organization selections', () => {
-		expect(parseOrganizationScope({ organization: [org] })).toEqual({
-			type: 'explicit',
-			organizations: [],
-			organizationalUnits: [],
-			organizationsWithSubordinates: [org]
-		});
-	});
-
 	it('collapses explicit scope without any selection to the default', () => {
 		expect(parseOrganizationScope({ organization: [], organizationalUnit: [] })).toEqual(
 			defaultOrganizationScope()
@@ -219,21 +210,27 @@ describe('resolveOrganizationScope', () => {
 		]);
 	});
 
-	it('resolves whole-organization selections to organization-level and all units', () => {
+	it('resolves whole-organization selections to a plain organization constraint', () => {
 		expect(
 			resolveOrganizationScope(
 				{ organization: [], organizationalUnit: [], organizationalUnitWithChildren: [org] },
 				contextAtOrganizationRoot
 			)
-		).toEqual([
-			['organization', org],
-			['organizationalUnit', ''],
-			['organizationalUnitWithChildren', org]
-		]);
+		).toEqual([['organization', org]]);
 	});
 
-	it('resolves legacy organization filters without unit key to the whole organization', () => {
-		expect(resolveOrganizationScope({ organization: [org] }, contextAtOrganizationRoot)).toEqual([
+	it('resolves whole organizations in mixed selections with the unit constraint', () => {
+		expect(
+			resolveOrganizationScope(
+				{
+					organization: [otherOrg],
+					organizationalUnit: [],
+					organizationalUnitWithChildren: [org]
+				},
+				contextAtOrganizationRoot
+			)
+		).toEqual([
+			['organization', otherOrg],
 			['organization', org],
 			['organizationalUnit', ''],
 			['organizationalUnitWithChildren', org]
