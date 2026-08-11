@@ -33,12 +33,10 @@
 		type AnyPayload,
 		type Container,
 		containerOfType,
-		createCopyOf,
+		createIndividualProfileCopyOf,
 		getOrganizationURL,
 		helpSlug,
 		isOrganizationalUnitContainer,
-		type NewContainer,
-		newContainer,
 		type OrganizationalUnitPayload,
 		organizationalUnitType,
 		payloadTypes,
@@ -165,18 +163,7 @@
 		creatingProfile = true;
 
 		try {
-			const copy = createCopyOf(container, container.organization, null);
-
-			copy.relation = [
-				...copy.relation,
-				{
-					object: container.guid,
-					position: 0,
-					predicate: predicates.enum['is-individual-profile-of']
-				}
-			];
-
-			const profile: NewContainer = newContainer.parse(copy);
+			const profile = createIndividualProfileCopyOf(container);
 
 			const response = await saveContainer(profile);
 

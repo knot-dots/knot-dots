@@ -30,12 +30,11 @@
 		type AnyPayload,
 		type Container,
 		createContainerSchema,
-		createCopyOf,
+		createTemplateInstanceOf,
 		type CustomCollectionPayload,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
-		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
 	import {
@@ -409,11 +408,11 @@
 		);
 
 		if (template) {
-			$newContainer = createCopyOf(
+			$newContainer = createTemplateInstanceOf(
 				template,
 				container.organization,
 				container.organizational_unit ?? null
-			) as NewContainer;
+			);
 
 			$addItemState = { target: container };
 			createContainerDialog.getElement().showModal();

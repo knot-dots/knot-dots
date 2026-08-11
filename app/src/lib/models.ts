@@ -640,6 +640,8 @@ export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'organization', 'public']);
 
+export type Visibility = z.infer<typeof visibility>;
+
 export const administrativeTypes = z.enum([
 	'administrative_type.country',
 	'administrative_type.federal_state',
@@ -2626,6 +2628,17 @@ export function getManagedByAll(
 		.filter((candidate) => candidate !== undefined);
 }
 
+const visibilityRestrictiveness = {
+	[visibility.enum.creator]: 0,
+	[visibility.enum.members]: 1,
+	[visibility.enum.organization]: 2,
+	[visibility.enum.public]: 3
+} satisfies Record<Visibility, number>;
+
+function moreRestrictiveVisibility(a: Visibility, b: Visibility) {
+	return visibilityRestrictiveness[a] <= visibilityRestrictiveness[b] ? a : b;
+}
+
 export function createCopyOf(
 	container: Container<AnyPayload>,
 	organization: string,
@@ -2648,6 +2661,98 @@ export function createCopyOf(
 	});
 
 	return copy;
+}
+
+export function createRootCopyOf(
+	container: Container<AnyPayload>,
+	organization: string,
+	organizationalUnit: string | null,
+	rootVisibility: Visibility
+): NewContainer<AnyPayload> {
+	const copy = createCopyOf(container, organization, organizationalUnit);
+
+	if (copy.payload.type === payloadTypes.enum.category) {
+		const { key, ...payload } = copy.payload;
+		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
+	} else if (copy.payload.type === payloadTypes.enum.term) {
+		const { value, ...payload } = copy.payload;
+		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
+	}
+
+	return { ...copy, payload: { ...copy.payload, visibility: rootVisibility } };
+}
+
+export function createDescendantCopyOf(
+	container: Container<AnyPayload>,
+	organization: string,
+	organizationalUnit: string | null,
+	rootVisibility: Visibility
+): NewContainer<AnyPayload> {
+	const copy = createCopyOf(container, organization, organizationalUnit);
+
+	return {
+		...copy,
+		payload: {
+			...copy.payload,
+			visibility: moreRestrictiveVisibility(container.payload.visibility, rootVisibility)
+		}
+	};
+}
+
+export function createTemplateInstanceOf(
+	template: Container<AnyPayload>,
+	organization: string,
+	organizationalUnit: string | null
+): NewContainer<AnyPayload> {
+	if (!('template' in template.payload) || template.payload.template !== true) {
+		throw new Error('Expected a template container');
+	}
+
+	const copy = createRootCopyOf(
+		template,
+		organization,
+		organizationalUnit,
+		template.payload.visibility
+	);
+
+	if (!('template' in copy.payload)) {
+		throw new Error('Expected a templatable payload');
+	}
+
+	return newContainer.parse({
+		...copy,
+		payload: { ...copy.payload, template: false }
+	});
+}
+
+export function createIndividualProfileCopyOf(
+	container: Container<OrganizationalUnitPayload>
+): NewContainer<OrganizationalUnitPayload> {
+	const copy = createRootCopyOf(
+		container,
+		container.organization,
+		null,
+		container.payload.visibility
+	);
+
+	if (copy.payload.type !== payloadTypes.enum.organizational_unit) {
+		throw new Error('Expected an organizational unit payload');
+	}
+
+	const { organizationalUnitType, slug, ...payload } = copy.payload;
+
+	return createNewContainerSchema(organizationalUnitPayload).parse({
+		...copy,
+		payload,
+		relation: [
+			...copy.relation,
+			{
+				object: container.guid,
+				position: 0,
+				predicate: predicates.enum['is-individual-profile-of']
+			}
+		]
+	});
 }
 
 /**
