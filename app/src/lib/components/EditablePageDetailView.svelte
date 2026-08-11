@@ -175,7 +175,7 @@
 		display: contents;
 	}
 
-	.details {
+	.details-scroll-wrapper {
 		padding-top: 0;
 	}
 
