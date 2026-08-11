@@ -8,7 +8,12 @@ export type CollectionFilter = Record<string, string[] | 'current' | null>;
 
 export type OrganizationScope =
 	| { type: 'current'; includeSubordinateOrganizationalUnits: boolean }
-	| { type: 'explicit'; organizations: string[]; organizationalUnits: string[] };
+	| {
+			type: 'explicit';
+			organizations: string[];
+			organizationalUnits: string[];
+			organizationsWithSubordinates: string[];
+	  };
 
 export interface OrganizationScopeContext {
 	currentOrganization: { guid: string };
@@ -34,12 +39,33 @@ export function parseOrganizationScope(filter: CollectionFilter): OrganizationSc
 
 	const organizations = asArray(filter.organization);
 	const organizationalUnits = asArray(filter.organizationalUnit);
+	const organizationsWithSubordinates = asArray(filter.organizationalUnitWithChildren);
 
-	if (organizations.length === 0 && organizationalUnits.length === 0) {
+	// Filters written before the scope selector existed carry organization
+	// values without an organizationalUnit key. They meant "whole organization"
+	// including all organizational units.
+	if (
+		organizations.length > 0 &&
+		!Array.isArray(filter.organizationalUnit) &&
+		organizationsWithSubordinates.length === 0
+	) {
+		return {
+			type: 'explicit',
+			organizations: [],
+			organizationalUnits: [],
+			organizationsWithSubordinates: organizations
+		};
+	}
+
+	if (
+		organizations.length === 0 &&
+		organizationalUnits.length === 0 &&
+		organizationsWithSubordinates.length === 0
+	) {
 		return defaultOrganizationScope();
 	}
 
-	return { type: 'explicit', organizations, organizationalUnits };
+	return { type: 'explicit', organizations, organizationalUnits, organizationsWithSubordinates };
 }
 
 export function organizationScopeAsFilter(scope: OrganizationScope): CollectionFilter {
@@ -60,12 +86,16 @@ export function organizationScopeAsFilter(scope: OrganizationScope): CollectionF
 	return {
 		organization: [...scope.organizations],
 		organizationalUnit: [...scope.organizationalUnits],
-		organizationalUnitWithChildren: []
+		organizationalUnitWithChildren: [...scope.organizationsWithSubordinates]
 	};
 }
 
 export function hasExplicitOrganizationScope(filter: CollectionFilter): boolean {
-	return asArray(filter.organization).length > 0 || asArray(filter.organizationalUnit).length > 0;
+	return (
+		asArray(filter.organization).length > 0 ||
+		asArray(filter.organizationalUnit).length > 0 ||
+		asArray(filter.organizationalUnitWithChildren).length > 0
+	);
 }
 
 export function hasNonScopeFilter(filter: CollectionFilter): boolean {
@@ -108,19 +138,22 @@ export function resolveOrganizationScope(
 			organizations.add(parent);
 		}
 	}
-
-	// Filters written before the scope selector existed carry organization
-	// values without an organizationalUnit key. They meant "whole organization",
-	// so no organizational unit constraint is emitted for them. The picker
-	// always writes the key, marking organization values as organization-level
-	// selections (empty string sentinel).
-	const organizationLevelOnly = Array.isArray(filter.organizationalUnit);
+	// Entries of organizationsWithSubordinates are organization guids when
+	// written by the picker, but the query param equally accepts organizational
+	// unit guids, so only map known organizational units to their parent.
+	for (const guid of scope.organizationsWithSubordinates) {
+		organizations.add(organizationalUnitsByGuid.get(guid)?.organization ?? guid);
+	}
 
 	return [
 		...[...organizations].map((guid): [string, string] => ['organization', guid]),
-		...(scope.organizations.length > 0 && organizationLevelOnly
+		...(scope.organizations.length > 0 || scope.organizationsWithSubordinates.length > 0
 			? [['organizationalUnit', ''] as [string, string]]
 			: []),
-		...scope.organizationalUnits.map((guid): [string, string] => ['organizationalUnit', guid])
+		...scope.organizationalUnits.map((guid): [string, string] => ['organizationalUnit', guid]),
+		...scope.organizationsWithSubordinates.map((guid): [string, string] => [
+			'organizationalUnitWithChildren',
+			guid
+		])
 	];
 }

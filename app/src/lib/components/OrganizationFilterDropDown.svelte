@@ -22,6 +22,7 @@
 		includeSubordinateOrganizationalUnits: boolean;
 		organizationValue: string[];
 		organizationalUnitValue: string[];
+		organizationWithSubordinatesValue: string[];
 	}
 
 	let {
@@ -30,10 +31,15 @@
 		scope = $bindable(),
 		includeSubordinateOrganizationalUnits = $bindable(),
 		organizationValue = $bindable(),
-		organizationalUnitValue = $bindable()
+		organizationalUnitValue = $bindable(),
+		organizationWithSubordinatesValue = $bindable()
 	}: Props = $props();
 
-	let totalSelected = $derived(organizationValue.length + organizationalUnitValue.length);
+	let totalSelected = $derived(
+		organizationValue.length +
+			organizationalUnitValue.length +
+			organizationWithSubordinatesValue.length
+	);
 
 	const popover = createPopover({ label: $_('organization') });
 
@@ -53,6 +59,19 @@
 
 	let expandedOrgs = $state<Set<string>>(new Set());
 
+	function isOrgChecked(orgGuid: string): boolean {
+		return (
+			organizationValue.includes(orgGuid) || organizationWithSubordinatesValue.includes(orgGuid)
+		);
+	}
+
+	function isOrganizationalUnitChecked(org: Option, organizationalUnitGuid: string): boolean {
+		return (
+			organizationalUnitValue.includes(organizationalUnitGuid) ||
+			organizationWithSubordinatesValue.includes(org.value)
+		);
+	}
+
 	function toggleOrg(orgGuid: string, checked: boolean) {
 		if (checked) {
 			organizationValue = organizationValue.includes(orgGuid)
@@ -60,14 +79,34 @@
 				: [...organizationValue, orgGuid];
 		} else {
 			organizationValue = organizationValue.filter((v) => v !== orgGuid);
+			organizationWithSubordinatesValue = organizationWithSubordinatesValue.filter(
+				(v) => v !== orgGuid
+			);
 		}
 	}
 
-	function toggleOrganizationalUnit(organizationalUnitGuid: string, checked: boolean) {
+	function toggleOrganizationalUnit(org: Option, organizationalUnitGuid: string, checked: boolean) {
 		if (checked) {
 			organizationalUnitValue = organizationalUnitValue.includes(organizationalUnitGuid)
 				? organizationalUnitValue
 				: [...organizationalUnitValue, organizationalUnitGuid];
+		} else if (organizationWithSubordinatesValue.includes(org.value)) {
+			// The whole organization was selected; convert to the equivalent
+			// enumerated state without the unchecked organizational unit.
+			organizationWithSubordinatesValue = organizationWithSubordinatesValue.filter(
+				(v) => v !== org.value
+			);
+			organizationValue = organizationValue.includes(org.value)
+				? organizationValue
+				: [...organizationValue, org.value];
+			organizationalUnitValue = [
+				...new Set([
+					...organizationalUnitValue,
+					...org.subOptions
+						.map(({ value }) => value)
+						.filter((value) => value !== organizationalUnitGuid)
+				])
+			];
 		} else {
 			organizationalUnitValue = organizationalUnitValue.filter((v) => v !== organizationalUnitGuid);
 		}
@@ -84,12 +123,17 @@
 
 	function selectAllSubOptions(org: Option) {
 		const guids = org.subOptions.map(({ value }) => value);
-		organizationalUnitValue = [...new Set([...organizationalUnitValue, ...guids])];
+		organizationWithSubordinatesValue = organizationWithSubordinatesValue.includes(org.value)
+			? organizationWithSubordinatesValue
+			: [...organizationWithSubordinatesValue, org.value];
+		organizationValue = organizationValue.filter((v) => v !== org.value);
+		organizationalUnitValue = organizationalUnitValue.filter((v) => !guids.includes(v));
 	}
 
 	function resetAll() {
 		organizationValue = [];
 		organizationalUnitValue = [];
+		organizationWithSubordinatesValue = [];
 	}
 
 	const disabled = $derived(scope === 'current');
@@ -146,7 +190,7 @@
 								type="checkbox"
 								value={org.value}
 								{disabled}
-								checked={organizationValue.includes(org.value)}
+								checked={isOrgChecked(org.value)}
 								onchange={(event) =>
 									toggleOrg(org.value, (event.currentTarget as HTMLInputElement).checked)}
 							/>
@@ -173,9 +217,12 @@
 							>
 								<span
 									class="suboption-dot"
-									class:suboption-dot--active={org.subOptions.some((organizationalUnit) =>
-										organizationalUnitValue.includes(organizationalUnit.value)
-									)}
+									class:suboption-dot--active={organizationWithSubordinatesValue.includes(
+										org.value
+									) ||
+										org.subOptions.some((organizationalUnit) =>
+											organizationalUnitValue.includes(organizationalUnit.value)
+										)}
 									aria-hidden="true"
 								></span>
 								{#if expandedOrgs.has(org.value)}
@@ -195,9 +242,10 @@
 											type="checkbox"
 											value={organizationalUnit.value}
 											{disabled}
-											checked={organizationalUnitValue.includes(organizationalUnit.value)}
+											checked={isOrganizationalUnitChecked(org, organizationalUnit.value)}
 											onchange={(event) =>
 												toggleOrganizationalUnit(
+													org,
 													organizationalUnit.value,
 													(event.currentTarget as HTMLInputElement).checked
 												)}

@@ -63,23 +63,41 @@ describe('parseOrganizationScope', () => {
 		expect(parseOrganizationScope({ organization: [org], organizationalUnit: [unit] })).toEqual({
 			type: 'explicit',
 			organizations: [org],
-			organizationalUnits: [unit]
+			organizationalUnits: [unit],
+			organizationsWithSubordinates: []
 		});
 	});
 
-	it('parses legacy pre-migration filters as explicit scope', () => {
+	it('parses whole-organization selections', () => {
+		expect(
+			parseOrganizationScope({
+				organization: [],
+				organizationalUnit: [],
+				organizationalUnitWithChildren: [org]
+			})
+		).toEqual({
+			type: 'explicit',
+			organizations: [],
+			organizationalUnits: [],
+			organizationsWithSubordinates: [org]
+		});
+	});
+
+	it('parses legacy filters without unit key as whole-organization selections', () => {
 		expect(parseOrganizationScope({ organization: [org] })).toEqual({
 			type: 'explicit',
-			organizations: [org],
-			organizationalUnits: []
+			organizations: [],
+			organizationalUnits: [],
+			organizationsWithSubordinates: [org]
 		});
 	});
 
-	it('treats null like an empty array', () => {
+	it('treats a null unit value like a missing key', () => {
 		expect(parseOrganizationScope({ organization: [org], organizationalUnit: null })).toEqual({
 			type: 'explicit',
-			organizations: [org],
-			organizationalUnits: []
+			organizations: [],
+			organizationalUnits: [],
+			organizationsWithSubordinates: [org]
 		});
 	});
 
@@ -94,7 +112,18 @@ describe('organizationScopeAsFilter', () => {
 	const scopes: OrganizationScope[] = [
 		defaultOrganizationScope(),
 		{ type: 'current', includeSubordinateOrganizationalUnits: false },
-		{ type: 'explicit', organizations: [org], organizationalUnits: [unit, childUnit] }
+		{
+			type: 'explicit',
+			organizations: [org],
+			organizationalUnits: [unit, childUnit],
+			organizationsWithSubordinates: []
+		},
+		{
+			type: 'explicit',
+			organizations: [],
+			organizationalUnits: [],
+			organizationsWithSubordinates: [org]
+		}
 	];
 
 	it.each(scopes)('roundtrips through parseOrganizationScope (%j)', (scope) => {
@@ -168,9 +197,24 @@ describe('resolveOrganizationScope', () => {
 		]);
 	});
 
+	it('resolves whole-organization selections to organization-level and all units', () => {
+		expect(
+			resolveOrganizationScope(
+				{ organization: [], organizationalUnit: [], organizationalUnitWithChildren: [org] },
+				contextAtOrganizationRoot
+			)
+		).toEqual([
+			['organization', org],
+			['organizationalUnit', ''],
+			['organizationalUnitWithChildren', org]
+		]);
+	});
+
 	it('resolves legacy organization filters without unit key to the whole organization', () => {
 		expect(resolveOrganizationScope({ organization: [org] }, contextAtOrganizationRoot)).toEqual([
-			['organization', org]
+			['organization', org],
+			['organizationalUnit', ''],
+			['organizationalUnitWithChildren', org]
 		]);
 	});
 
@@ -180,7 +224,11 @@ describe('resolveOrganizationScope', () => {
 				{ organization: [org], organizationalUnit: null },
 				contextAtOrganizationRoot
 			)
-		).toEqual([['organization', org]]);
+		).toEqual([
+			['organization', org],
+			['organizationalUnit', ''],
+			['organizationalUnitWithChildren', org]
+		]);
 	});
 
 	it('resolves explicit organizational units and derives their parent organizations', () => {
@@ -229,6 +277,7 @@ describe('scope predicates', () => {
 	it('detects explicit scope only for non-empty arrays', () => {
 		expect(hasExplicitOrganizationScope({ organization: [org] })).toBe(true);
 		expect(hasExplicitOrganizationScope({ organizationalUnit: [unit] })).toBe(true);
+		expect(hasExplicitOrganizationScope({ organizationalUnitWithChildren: [org] })).toBe(true);
 		expect(hasExplicitOrganizationScope({ organization: 'current' })).toBe(false);
 		expect(hasExplicitOrganizationScope({ organizationalUnit: null })).toBe(false);
 		expect(hasExplicitOrganizationScope({})).toBe(false);

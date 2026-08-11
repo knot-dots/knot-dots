@@ -71,13 +71,18 @@
 		initialScope.type === 'explicit' ? initialScope.organizationalUnits : []
 	);
 
+	let checkedOrganizationsWithSubordinates = $state(
+		initialScope.type === 'explicit' ? initialScope.organizationsWithSubordinates : []
+	);
+
 	let scope: OrganizationScope = $derived(
 		scopeType === 'current'
 			? { type: 'current', includeSubordinateOrganizationalUnits }
 			: {
 					type: 'explicit',
 					organizations: checkedOrganizations,
-					organizationalUnits: checkedOrganizationalUnits
+					organizationalUnits: checkedOrganizationalUnits,
+					organizationsWithSubordinates: checkedOrganizationsWithSubordinates
 				}
 	);
 
@@ -86,7 +91,8 @@
 		if (
 			value === 'explicit' &&
 			checkedOrganizations.length === 0 &&
-			checkedOrganizationalUnits.length === 0
+			checkedOrganizationalUnits.length === 0 &&
+			checkedOrganizationsWithSubordinates.length === 0
 		) {
 			if (page.data.currentOrganizationalUnit) {
 				checkedOrganizationalUnits = [page.data.currentOrganizationalUnit.guid];
@@ -364,6 +370,7 @@
 		includeSubordinateOrganizationalUnits = true;
 		checkedOrganizations = [];
 		checkedOrganizationalUnits = [];
+		checkedOrganizationsWithSubordinates = [];
 	}
 
 	function handleRemoveFilterValue(key: string, value: string) {
@@ -432,6 +439,7 @@
 				bind:includeSubordinateOrganizationalUnits
 				bind:organizationValue={checkedOrganizations}
 				bind:organizationalUnitValue={checkedOrganizationalUnits}
+				bind:organizationWithSubordinatesValue={checkedOrganizationsWithSubordinates}
 				{mode}
 				options={organizationOptions}
 			/>
@@ -609,6 +617,22 @@
 							</li>
 						{/if}
 					{:else}
+						{#each checkedOrganizationsWithSubordinates as value (value)}
+							<li class="selection-item">
+								<LightningBolt />
+								<span>{filterValueLabel('organization', value)}</span>
+								<button
+									class="button button-remove"
+									type="button"
+									onclick={() =>
+										(checkedOrganizationsWithSubordinates =
+											checkedOrganizationsWithSubordinates.filter((v) => v !== value))}
+								>
+									<CloseCircle />
+									<span class="is-visually-hidden">{$_('remove')}</span>
+								</button>
+							</li>
+						{/each}
 						{#each checkedOrganizations as value (value)}
 							<li class="selection-item">
 								<LightningBolt />

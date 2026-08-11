@@ -1068,14 +1068,15 @@ export function getDescendantOrganizationalUnitGuids(guids: string[]) {
 			return [];
 		}
 
-		// Deliberately no filtering by organizational unit type: unlike
-		// loadApplicationContext, this expansion must include administrative
-		// area organizational units.
+		// Roots may be organizational units or organizations; an organization
+		// guid expands to all of its organizational units. Deliberately no
+		// filtering by organizational unit type: unlike loadApplicationContext,
+		// this expansion must include administrative area organizational units.
 		const result = await connection.any(sql.typeAlias('guid')`
 			WITH RECURSIVE organizational_unit_tree(guid, path) AS (
 				SELECT c.guid, ARRAY[c.guid]
 				FROM container c
-				WHERE c.guid = ANY(${sql.array(guids, 'uuid')})
+				WHERE (c.guid = ANY(${sql.array(guids, 'uuid')}) OR c.organization = ANY(${sql.array(guids, 'uuid')}))
 					AND c.valid_currently
 					AND NOT c.deleted
 					AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
