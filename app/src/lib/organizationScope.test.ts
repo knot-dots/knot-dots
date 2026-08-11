@@ -101,15 +101,6 @@ describe('parseOrganizationScope', () => {
 		});
 	});
 
-	it('treats a null unit value like a missing key', () => {
-		expect(parseOrganizationScope({ organization: [org], organizationalUnit: null })).toEqual({
-			type: 'explicit',
-			organizations: [],
-			organizationalUnits: [],
-			organizationsWithSubordinates: [org]
-		});
-	});
-
 	it('collapses explicit scope without any selection to the default', () => {
 		expect(parseOrganizationScope({ organization: [], organizationalUnit: [] })).toEqual(
 			defaultOrganizationScope()
@@ -249,19 +240,6 @@ describe('resolveOrganizationScope', () => {
 		]);
 	});
 
-	it('resolves legacy organization filters with null unit value to the whole organization', () => {
-		expect(
-			resolveOrganizationScope(
-				{ organization: [org], organizationalUnit: null },
-				contextAtOrganizationRoot
-			)
-		).toEqual([
-			['organization', org],
-			['organizationalUnit', ''],
-			['organizationalUnitWithChildren', org]
-		]);
-	});
-
 	it('resolves explicit organizational units and derives their parent organizations', () => {
 		expect(
 			resolveOrganizationScope(
@@ -310,7 +288,6 @@ describe('scope predicates', () => {
 		expect(hasExplicitOrganizationScope({ organizationalUnit: [unit] })).toBe(true);
 		expect(hasExplicitOrganizationScope({ organizationalUnitWithChildren: [org] })).toBe(true);
 		expect(hasExplicitOrganizationScope({ organization: 'current' })).toBe(false);
-		expect(hasExplicitOrganizationScope({ organizationalUnit: null })).toBe(false);
 		expect(hasExplicitOrganizationScope({})).toBe(false);
 	});
 

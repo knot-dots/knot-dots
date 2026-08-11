@@ -4,7 +4,7 @@ export const organizationScopeFilterKeys = [
 	'organizationalUnitWithChildren'
 ] as const;
 
-export type CollectionFilter = Record<string, string[] | 'current' | null>;
+export type CollectionFilter = Record<string, string[] | 'current'>;
 
 export type OrganizationScope =
 	| { type: 'current'; includeSubordinateOrganizationalUnits: boolean }
@@ -44,7 +44,7 @@ export function defaultOrganizationScope(): OrganizationScope {
 	return { type: 'current', includeSubordinateOrganizationalUnits: true };
 }
 
-function asArray(value: string[] | 'current' | null | undefined): string[] {
+function asArray(value: string[] | 'current' | undefined): string[] {
 	return Array.isArray(value) ? value : [];
 }
 
