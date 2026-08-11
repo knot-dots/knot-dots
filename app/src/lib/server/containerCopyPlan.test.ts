@@ -1,0 +1,623 @@
+import { expect, test } from 'vitest';
+import {
+	anyContainer,
+	type AnyPayload,
+	type Container,
+	newContainer,
+	payloadTypes,
+	predicates,
+	resourceDataTypes,
+	type Relation,
+	visibility
+} from '$lib/models';
+import {
+	CopyPlanError,
+	createContainerCopyPlan,
+	type CopyReadPolicy,
+	type CopyTarget
+} from '$lib/server/containerCopyPlan';
+
+const organization = '10000000-0000-4000-8000-000000000000';
+const organizationalUnit = '20000000-0000-4000-8000-000000000000';
+const creator = '30000000-0000-4000-8000-000000000000';
+const geometry = '40000000-0000-4000-8000-000000000000';
+
+const guids = {
+	root: '00000000-0000-4000-8000-000000000001',
+	hidden: '00000000-0000-4000-8000-000000000002',
+	pruned: '00000000-0000-4000-8000-000000000003',
+	parent: '00000000-0000-4000-8000-000000000004',
+	child: '00000000-0000-4000-8000-000000000005',
+	dependency: '00000000-0000-4000-8000-000000000006',
+	dependencyChild: '00000000-0000-4000-8000-000000000007',
+	publicDependency: '00000000-0000-4000-8000-000000000008',
+	actualData: '00000000-0000-4000-8000-000000000009',
+	publicItem: '00000000-0000-4000-8000-000000000010',
+	privateItem: '00000000-0000-4000-8000-000000000011',
+	inaccessibleItem: '00000000-0000-4000-8000-000000000012',
+	usableTemplate: '00000000-0000-4000-8000-000000000013',
+	unusableTemplate: '00000000-0000-4000-8000-000000000014',
+	map: '00000000-0000-4000-8000-000000000015',
+	resource: '00000000-0000-4000-8000-000000000016',
+	resourceData: '00000000-0000-4000-8000-000000000017',
+	publicResource: '00000000-0000-4000-8000-000000000018',
+	publicResourceData: '00000000-0000-4000-8000-000000000019',
+	missing: '00000000-0000-4000-8000-000000000099',
+	external: '00000000-0000-4000-8000-000000000100'
+} as const;
+
+const copiedGuids = Array.from(
+	{ length: 30 },
+	(_, index) => `90000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`
+);
+
+function makeContainer(guid: string, payload: Record<string, unknown>): Container<AnyPayload> {
+	return anyContainer.parse({
+		guid,
+		managed_by: organization,
+		organization,
+		organizational_unit: null,
+		payload,
+		realm: 'test',
+		revision: 1,
+		valid_currently: true,
+		valid_from: new Date('2026-01-01T00:00:00.000Z')
+	});
+}
+
+function relation(
+	subject: string,
+	predicate: Relation['predicate'],
+	object: string,
+	position = 0
+): Relation {
+	return { object, position, predicate, subject };
+}
+
+function graph(rootGuid: string, containers: Container<AnyPayload>[], relations: Relation[]) {
+	return {
+		rootGuid,
+		containers: containers.map((container) => ({
+			...container,
+			relation: relations.filter(
+				({ object, subject }) => object === container.guid || subject === container.guid
+			)
+		}))
+	};
+}
+
+function allocator() {
+	let index = 0;
+	return () => copiedGuids[index++];
+}
+
+function policy(
+	options: {
+		hidden?: string[];
+		retainedItems?: string[];
+		usableTemplates?: string[];
+	} = {}
+): CopyReadPolicy {
+	return {
+		canReadSource: ({ guid }) => !(options.hidden ?? []).includes(guid),
+		canRetainCollectionItem: ({ guid }) => (options.retainedItems ?? []).includes(guid),
+		canUseNewItemTemplate: ({ guid }) => (options.usableTemplates ?? []).includes(guid)
+	};
+}
+
+const target: CopyTarget = {
+	organization,
+	organizationalUnit,
+	rootVisibility: visibility.enum.members,
+	creatorGuid: creator
+};
+
+function copyFor(plan: ReturnType<typeof createContainerCopyPlan>, originalGuid: string) {
+	return plan.get(originalGuid);
+}
+
+test('prunes hidden paths, accepts an alternate parent, and preserves a structural cycle', () => {
+	const containers = [
+		makeContainer(guids.root, {
+			title: 'Root',
+			type: payloadTypes.enum.program,
+			visibility: visibility.enum.organization
+		}),
+		makeContainer(guids.hidden, {
+			body: 'Hidden',
+			title: 'Hidden',
+			type: payloadTypes.enum.page,
+			visibility: visibility.enum.organization
+		}),
+		makeContainer(guids.pruned, {
+			title: 'Pruned',
+			type: payloadTypes.enum.text,
+			visibility: visibility.enum.public
+		}),
+		makeContainer(guids.parent, {
+			body: 'Parent',
+			title: 'Parent',
+			type: payloadTypes.enum.page,
+			visibility: visibility.enum.public
+		}),
+		makeContainer(guids.child, {
+			title: 'Child',
+			type: payloadTypes.enum.text,
+			visibility: visibility.enum.creator
+		})
+	];
+	const relations = [
+		relation(guids.hidden, predicates.enum['is-section-of'], guids.root, 1),
+		relation(guids.pruned, predicates.enum['is-part-of-category'], guids.hidden, 2),
+		relation(guids.parent, predicates.enum['is-part-of-program'], guids.root, 7),
+		relation(guids.child, predicates.enum['is-part-of'], guids.hidden, 3),
+		relation(guids.child, predicates.enum['is-part-of-measure'], guids.parent, 4),
+		relation(guids.parent, predicates.enum['is-part-of-category'], guids.child, 6)
+	];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, containers, relations),
+		target,
+		readPolicy: policy({ hidden: [guids.hidden] }),
+		allocateGuid: allocator()
+	});
+
+	expect([...plan.keys()]).toEqual([guids.root, guids.parent, guids.child]);
+	expect(plan.has(guids.hidden)).toBe(false);
+	expect(plan.has(guids.pruned)).toBe(false);
+	expect(copyFor(plan, guids.child)?.container.payload.visibility).toBe(visibility.enum.creator);
+	expect(copyFor(plan, guids.parent)?.container.payload.visibility).toBe(visibility.enum.members);
+	expect(copyFor(plan, guids.child)?.container.relation).toContainEqual({
+		object: plan.get(guids.parent)?.copiedGuid,
+		position: 4,
+		predicate: predicates.enum['is-part-of-measure'],
+		subject: plan.get(guids.child)?.copiedGuid
+	});
+	expect(copyFor(plan, guids.parent)?.container.relation).toContainEqual({
+		object: plan.get(guids.child)?.copiedGuid,
+		position: 6,
+		predicate: predicates.enum['is-part-of-category'],
+		subject: plan.get(guids.parent)?.copiedGuid
+	});
+	expect(
+		[...plan.values()]
+			.flatMap(({ container }) => container.relation)
+			.some(({ object }) => object === guids.hidden)
+	).toBe(false);
+});
+
+test('copies a shared private dependency once and reuses public dependency targets', () => {
+	const containers = [
+		makeContainer(guids.root, {
+			achievedValues: [[2026, 4]],
+			title: 'Effect',
+			type: payloadTypes.enum.effect
+		}),
+		makeContainer(guids.child, {
+			title: 'Objective',
+			type: payloadTypes.enum.objective
+		}),
+		makeContainer(guids.actualData, {
+			indicator: guids.dependency,
+			title: 'Data',
+			type: payloadTypes.enum.actual_data
+		}),
+		makeContainer(guids.dependency, {
+			title: 'Private indicator',
+			type: payloadTypes.enum.indicator_template,
+			unit: 'unit.percent',
+			visibility: visibility.enum.organization
+		}),
+		makeContainer(guids.dependencyChild, {
+			title: 'Indicator section',
+			type: payloadTypes.enum.text
+		}),
+		makeContainer(guids.publicDependency, {
+			title: 'Public indicator',
+			type: payloadTypes.enum.indicator_template,
+			unit: 'unit.percent',
+			visibility: visibility.enum.public
+		}),
+		makeContainer(guids.external, {
+			title: 'External',
+			type: payloadTypes.enum.text
+		})
+	];
+	const relations = [
+		relation(guids.child, predicates.enum['is-part-of'], guids.root),
+		relation(guids.actualData, predicates.enum['is-section-of'], guids.root),
+		relation(guids.root, predicates.enum['is-measured-by'], guids.dependency, 9),
+		relation(guids.child, predicates.enum['is-objective-for'], guids.dependency, 10),
+		relation(guids.child, predicates.enum['is-measured-by'], guids.publicDependency, 11),
+		relation(guids.dependencyChild, predicates.enum['is-section-of'], guids.dependency, 12),
+		relation(guids.external, predicates.enum['is-objective-for'], guids.dependency, 13),
+		relation(guids.root, predicates.enum['is-copy-of'], guids.external)
+	];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, containers, relations),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(plan.has(guids.dependency)).toBe(true);
+	expect(plan.has(guids.dependencyChild)).toBe(true);
+	expect(plan.has(guids.publicDependency)).toBe(false);
+	expect(copyFor(plan, guids.actualData)?.container.payload).toMatchObject({
+		indicator: plan.get(guids.dependency)?.copiedGuid,
+		values: []
+	});
+	expect(copyFor(plan, guids.child)?.container.relation).toContainEqual({
+		object: guids.publicDependency,
+		position: 11,
+		predicate: predicates.enum['is-measured-by'],
+		subject: plan.get(guids.child)?.copiedGuid
+	});
+	expect(
+		[...plan.values()]
+			.flatMap(({ container }) => container.relation)
+			.filter(({ predicate }) => predicate === predicates.enum['is-copy-of'])
+	).toHaveLength(plan.size);
+	expect(
+		[...plan.values()]
+			.flatMap(({ container }) => container.relation)
+			.some(({ subject }) => subject === guids.external)
+	).toBe(false);
+});
+
+test('remaps private resource payload targets and retains public targets', () => {
+	const containers = [
+		makeContainer(guids.root, {
+			title: 'Program',
+			type: payloadTypes.enum.program
+		}),
+		makeContainer(guids.resourceData, {
+			entries: [{ amount: 12, year: 2026 }],
+			resource: guids.resource,
+			resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+			title: 'Private resource data',
+			type: payloadTypes.enum.resource_data
+		}),
+		makeContainer(guids.publicResourceData, {
+			entries: [{ amount: 24, year: 2026 }],
+			resource: guids.publicResource,
+			resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+			title: 'Public resource data',
+			type: payloadTypes.enum.resource_data
+		}),
+		makeContainer(guids.resource, {
+			title: 'Private resource',
+			type: payloadTypes.enum.resource_v2,
+			visibility: visibility.enum.organization
+		}),
+		makeContainer(guids.publicResource, {
+			title: 'Public resource',
+			type: payloadTypes.enum.resource_v2,
+			visibility: visibility.enum.public
+		})
+	];
+	const relations = [
+		relation(guids.resourceData, predicates.enum['is-section-of'], guids.root),
+		relation(guids.publicResourceData, predicates.enum['is-section-of'], guids.root)
+	];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, containers, relations),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.resourceData)?.container.payload).toMatchObject({
+		entries: [{ amount: 12, year: 2026 }],
+		resource: plan.get(guids.resource)?.copiedGuid
+	});
+	expect(copyFor(plan, guids.publicResourceData)?.container.payload).toMatchObject({
+		entries: [{ amount: 24, year: 2026 }],
+		resource: guids.publicResource
+	});
+	expect(plan.has(guids.publicResource)).toBe(false);
+});
+
+test('remaps collection members without instantiating template references', () => {
+	const containers = [
+		makeContainer(guids.root, {
+			item: [
+				guids.child,
+				guids.publicItem,
+				guids.privateItem,
+				guids.inaccessibleItem,
+				guids.missing
+			],
+			newItemTemplate: [guids.child, guids.usableTemplate, guids.unusableTemplate],
+			title: 'Collection',
+			type: payloadTypes.enum.custom_collection
+		}),
+		makeContainer(guids.child, {
+			template: true,
+			title: 'Copied template',
+			type: payloadTypes.enum.measure
+		}),
+		makeContainer(guids.publicItem, {
+			title: 'Public item',
+			type: payloadTypes.enum.text,
+			visibility: visibility.enum.public
+		}),
+		makeContainer(guids.privateItem, {
+			title: 'Private item',
+			type: payloadTypes.enum.text
+		}),
+		makeContainer(guids.inaccessibleItem, {
+			title: 'Inaccessible item',
+			type: payloadTypes.enum.text
+		}),
+		makeContainer(guids.usableTemplate, {
+			template: true,
+			title: 'Usable template',
+			type: payloadTypes.enum.report
+		}),
+		makeContainer(guids.unusableTemplate, {
+			template: true,
+			title: 'Unusable template',
+			type: payloadTypes.enum.report
+		}),
+		makeContainer(guids.map, {
+			geometry,
+			title: 'Map',
+			type: payloadTypes.enum.map
+		})
+	];
+	const relations = [
+		relation(guids.child, predicates.enum['is-part-of'], guids.root),
+		relation(guids.map, predicates.enum['is-section-of'], guids.root)
+	];
+	const snapshot = graph(guids.root, containers, relations);
+	const originalSnapshot = structuredClone(snapshot);
+
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		readPolicy: policy({
+			hidden: [guids.inaccessibleItem],
+			retainedItems: [guids.privateItem, guids.inaccessibleItem],
+			usableTemplates: [guids.child, guids.usableTemplate]
+		}),
+		allocateGuid: allocator()
+	});
+	const collection = copyFor(plan, guids.root)?.container;
+
+	expect(collection?.payload).toMatchObject({
+		item: [plan.get(guids.child)?.copiedGuid, guids.publicItem, guids.privateItem],
+		newItemTemplate: [guids.child, guids.usableTemplate]
+	});
+	expect(plan.has(guids.privateItem)).toBe(false);
+	expect(plan.has(guids.usableTemplate)).toBe(false);
+	expect(copyFor(plan, guids.map)?.container.payload).toMatchObject({ geometry });
+	expect(
+		[...plan.values()].every(({ container }) => newContainer.safeParse(container).success)
+	).toBe(true);
+	expect([...plan.values()].every(({ container }) => container.user[0]?.subject === creator)).toBe(
+		true
+	);
+	expect(snapshot).toEqual(originalSnapshot);
+	if (collection?.payload.type !== payloadTypes.enum.custom_collection) {
+		throw new Error('Expected a custom collection copy');
+	}
+	collection.payload.item.push(guids.external);
+	expect(snapshot).toEqual(originalSnapshot);
+});
+
+test('uses the copied organizational unit as the ownership target for descendants', () => {
+	const root = makeContainer(guids.root, {
+		name: 'Copied unit',
+		type: payloadTypes.enum.organizational_unit
+	});
+	const child = makeContainer(guids.child, {
+		title: 'Child',
+		type: payloadTypes.enum.text
+	});
+
+	const plan = createContainerCopyPlan({
+		graph: graph(
+			guids.root,
+			[root, child],
+			[relation(guids.child, predicates.enum['is-section-of'], guids.root)]
+		),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+	const copiedRootGuid = plan.get(guids.root)?.copiedGuid;
+
+	expect(copyFor(plan, guids.root)?.container).toMatchObject({
+		managed_by: [organization],
+		organizational_unit: null
+	});
+	expect(copyFor(plan, guids.child)?.container).toMatchObject({
+		managed_by: [copiedRootGuid],
+		organizational_unit: copiedRootGuid
+	});
+});
+
+test('remaps ordinary internal relations and drops ordinary external relations', () => {
+	const root = makeContainer(guids.root, {
+		title: 'Root',
+		type: payloadTypes.enum.program
+	});
+	const child = makeContainer(guids.child, {
+		title: 'Child',
+		type: payloadTypes.enum.text
+	});
+	const external = makeContainer(guids.external, {
+		title: 'External',
+		type: payloadTypes.enum.text
+	});
+
+	const plan = createContainerCopyPlan({
+		graph: graph(
+			guids.root,
+			[root, child, external],
+			[
+				relation(guids.child, predicates.enum['is-part-of'], guids.root),
+				relation(guids.child, predicates.enum['is-consistent-with'], guids.root, 5),
+				relation(guids.child, predicates.enum['is-consistent-with'], guids.external, 6)
+			]
+		),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+	const childRelations = copyFor(plan, guids.child)?.container.relation ?? [];
+
+	expect(childRelations).toContainEqual({
+		object: plan.get(guids.root)?.copiedGuid,
+		position: 5,
+		predicate: predicates.enum['is-consistent-with'],
+		subject: plan.get(guids.child)?.copiedGuid
+	});
+	expect(childRelations.some(({ object }) => object === guids.external)).toBe(false);
+});
+
+test('rejects missing and malformed required payload dependencies opaquely', () => {
+	const missingDependency = makeContainer(guids.actualData, {
+		indicator: guids.missing,
+		title: 'Missing dependency',
+		type: payloadTypes.enum.actual_data
+	});
+	const malformedDependency = makeContainer(guids.actualData, {
+		indicator: guids.dependency,
+		title: 'Malformed dependency',
+		type: payloadTypes.enum.actual_data
+	});
+	if (malformedDependency.payload.type !== payloadTypes.enum.actual_data) {
+		throw new Error('Expected actual data');
+	}
+	malformedDependency.payload.indicator = 'not-a-uuid';
+
+	for (const root of [missingDependency, malformedDependency]) {
+		expect(() =>
+			createContainerCopyPlan({
+				graph: graph(root.guid, [root], []),
+				target,
+				readPolicy: policy(),
+				allocateGuid: allocator()
+			})
+		).toThrow(new CopyPlanError('required_dependency_unavailable'));
+	}
+});
+
+test('rejects conflicting positions for the same relation', () => {
+	const root = makeContainer(guids.root, {
+		title: 'Root',
+		type: payloadTypes.enum.program
+	});
+	const child = makeContainer(guids.child, {
+		title: 'Child',
+		type: payloadTypes.enum.text
+	});
+
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(
+				guids.root,
+				[root, child],
+				[
+					relation(guids.child, predicates.enum['is-part-of'], guids.root, 1),
+					relation(guids.child, predicates.enum['is-part-of'], guids.root, 2)
+				]
+			),
+			target,
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('invalid_copy_graph'));
+});
+
+test.each([
+	{ name: 'an invalid UUID', allocateGuid: () => 'not-a-uuid' },
+	{ name: 'a duplicate UUID', allocateGuid: () => copiedGuids[0] },
+	{ name: 'a source UUID', allocateGuid: () => guids.root }
+])('rejects $name from the allocator', ({ allocateGuid }) => {
+	const root = makeContainer(guids.root, {
+		title: 'Root',
+		type: payloadTypes.enum.program
+	});
+	const child = makeContainer(guids.child, {
+		title: 'Child',
+		type: payloadTypes.enum.text
+	});
+
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(
+				guids.root,
+				[root, child],
+				[relation(guids.child, predicates.enum['is-part-of'], guids.root)]
+			),
+			target,
+			readPolicy: policy(),
+			allocateGuid
+		})
+	).toThrow(new CopyPlanError('invalid_copy_graph'));
+});
+
+test('rejects a final copy that does not satisfy the NewContainer schema', () => {
+	const root = makeContainer(guids.root, {
+		title: 'Root',
+		type: payloadTypes.enum.program
+	});
+
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(guids.root, [root], []),
+			target: { ...target, creatorGuid: 'not-a-uuid' },
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('invalid_copy_graph'));
+});
+
+test('uses opaque failures for unreadable roots and required private dependencies', () => {
+	const root = makeContainer(guids.root, {
+		achievedValues: [],
+		title: 'Secret root',
+		type: payloadTypes.enum.effect
+	});
+	const dependency = makeContainer(guids.dependency, {
+		title: 'Secret dependency',
+		type: payloadTypes.enum.indicator_template,
+		unit: 'unit.percent'
+	});
+	const snapshot = graph(
+		guids.root,
+		[root, dependency],
+		[relation(guids.root, predicates.enum['is-measured-by'], guids.dependency)]
+	);
+	const missingRootSnapshot = graph(guids.missing, [root], []);
+
+	expect(() =>
+		createContainerCopyPlan({
+			graph: missingRootSnapshot,
+			target,
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('source_unavailable'));
+	expect(() =>
+		createContainerCopyPlan({
+			graph: snapshot,
+			target,
+			readPolicy: policy({ hidden: [guids.root] }),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('source_unavailable'));
+	expect(() =>
+		createContainerCopyPlan({
+			graph: snapshot,
+			target,
+			readPolicy: policy({ hidden: [guids.dependency] }),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('required_dependency_unavailable'));
+});
