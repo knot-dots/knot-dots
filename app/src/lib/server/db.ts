@@ -37,6 +37,11 @@ import {
 	visibility
 } from '$lib/models';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
+import {
+	type CopyGraphSnapshot,
+	requiredCopyDependencyPredicates,
+	structuralCopyPredicates
+} from '$lib/server/containerCopyPlan';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
 
@@ -474,6 +479,118 @@ export function getContainerByGuid(guid: string) {
 		};
 		const [withComputed] = await applyComputedManagedBy(connection, [container]);
 		return withComputed;
+	};
+}
+
+/**
+ * Discovers the internal source snapshot needed to plan a container copy. Starting at a current,
+ * non-deleted root, the recursive walk follows structural relations downward from parent object to
+ * child subject. It also follows non-public required dependencies from source subject to target
+ * object, including the equivalent indicator/resource payload references. Recursive UNION
+ * deduplicates containers reached through multiple parents and terminates cycles.
+ *
+ * Public required dependencies and custom-collection item/template references are fetched as
+ * reference-only containers without traversing their descendants. The result is enriched with
+ * current relations, user relations, and computed management data. It intentionally remains an
+ * overinclusive server-side snapshot: visibility pruning and reference policy belong to
+ * createContainerCopyPlan(), and this result must not be exposed directly to clients.
+ */
+export function getContainerCopyGraph(rootGuid: string) {
+	return async (connection: DatabaseConnection): Promise<CopyGraphSnapshot> => {
+		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
+			WITH RECURSIVE current_container AS NOT MATERIALIZED (
+				SELECT c.*
+				FROM container c
+				WHERE c.valid_currently
+					AND NOT c.deleted
+			), current_relation AS NOT MATERIALIZED (
+				SELECT cr.object, cr.position, cr.predicate, cr.subject
+				FROM container_relation cr
+				WHERE cr.valid_currently
+					AND NOT cr.deleted
+			), walk(guid) AS (
+				SELECT root.guid
+				FROM current_container root
+				WHERE root.guid = ${rootGuid}
+				UNION
+				SELECT edge.target
+				FROM walk
+				CROSS JOIN LATERAL (
+					SELECT cr.subject AS target
+					FROM current_relation cr
+					JOIN current_container child ON child.guid = cr.subject
+					WHERE cr.object = walk.guid
+						AND cr.predicate = ANY (${sql.array(structuralCopyPredicates, 'text')})
+					UNION
+					SELECT cr.object AS target
+					FROM current_relation cr
+					JOIN current_container target ON target.guid = cr.object
+					WHERE cr.subject = walk.guid
+						AND cr.predicate = ANY (${sql.array(requiredCopyDependencyPredicates, 'text')})
+						AND coalesce(target.payload->>'visibility', ${visibility.enum.organization}) != ${visibility.enum.public}
+					UNION
+					SELECT target.guid
+					FROM current_container source
+					JOIN current_container target ON target.guid = CASE
+						WHEN source.payload->>'type' = ${payloadTypes.enum.actual_data}
+							THEN (source.payload->>'indicator')::uuid
+						WHEN source.payload->>'type' = ${payloadTypes.enum.resource_data}
+							THEN (source.payload->>'resource')::uuid
+					END
+					WHERE source.guid = walk.guid
+						AND coalesce(target.payload->>'visibility', ${visibility.enum.organization}) != ${visibility.enum.public}
+				) edge
+			), copy_candidate AS (
+				SELECT guid
+				FROM walk
+			), reference_guid AS (
+				SELECT cr.object AS guid
+				FROM current_relation cr
+				JOIN copy_candidate candidate ON candidate.guid = cr.subject
+				WHERE cr.predicate = ANY (${sql.array(requiredCopyDependencyPredicates, 'text')})
+				UNION
+				SELECT CASE
+					WHEN source.payload->>'type' = ${payloadTypes.enum.actual_data}
+						THEN (source.payload->>'indicator')::uuid
+					WHEN source.payload->>'type' = ${payloadTypes.enum.resource_data}
+						THEN (source.payload->>'resource')::uuid
+				END AS guid
+				FROM current_container source
+				JOIN copy_candidate candidate ON candidate.guid = source.guid
+				WHERE source.payload->>'type' IN (
+					${payloadTypes.enum.actual_data},
+					${payloadTypes.enum.resource_data}
+				)
+				UNION
+				SELECT item.value::uuid
+				FROM current_container source
+				JOIN copy_candidate candidate ON candidate.guid = source.guid
+				CROSS JOIN LATERAL jsonb_array_elements_text(source.payload->'item') item(value)
+				WHERE source.payload->>'type' = ${payloadTypes.enum.custom_collection}
+				UNION
+				SELECT template.value::uuid
+				FROM current_container source
+				JOIN copy_candidate candidate ON candidate.guid = source.guid
+				CROSS JOIN LATERAL jsonb_array_elements_text(source.payload->'newItemTemplate') template(value)
+				WHERE source.payload->>'type' = ${payloadTypes.enum.custom_collection}
+			), all_guid AS (
+				SELECT guid FROM copy_candidate
+				UNION
+				SELECT guid FROM reference_guid WHERE guid IS NOT NULL
+			)
+			SELECT c.*
+			FROM current_container c
+			JOIN all_guid included ON included.guid = c.guid
+			ORDER BY c.guid
+		`);
+
+		return {
+			rootGuid,
+			containers: await applyComputedManagedBy(
+				connection,
+				await withUserAndRelation<Container<AnyPayload>>(connection, containerResult)
+			)
+		};
 	};
 }
 
