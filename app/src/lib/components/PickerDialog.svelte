@@ -220,6 +220,7 @@
 		border: solid 1px var(--color-primary-200);
 		border-radius: calc(infinity * 1px);
 		display: flex;
+		font-size: 0.875rem;
 		gap: 0.5rem;
 		margin-left: auto;
 		max-width: 100%;
