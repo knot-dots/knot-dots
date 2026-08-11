@@ -54,14 +54,21 @@
 <div class="label">{$_('managed_by')}</div>
 <div class="value value--read-only">
 	{#each teamNames as teamName (teamName)}
-		<span class="badge badge--gray">{teamName}</span>
+		<span class="badge badge--gray">
+			<span class="truncated">{teamName}</span>
+		</span>
 	{:else}
 		&nbsp;
 	{/each}
 </div>
 
 <style>
+	.badge {
+		min-width: 0;
+	}
+
 	.value {
+		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25rem;
 		padding-left: var(--dropdown-button-padding-y);
