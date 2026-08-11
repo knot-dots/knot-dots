@@ -2626,55 +2626,147 @@ export function getManagedByAll(
 		.filter((candidate) => candidate !== undefined);
 }
 
+function resetCommonCopiedPayload(payload: AnyPayload): unknown {
+	const resetFields = {
+		...('template' in payload ? { template: false } : {}),
+		...('status' in payload ? { status: status.enum['status.idea'] } : {}),
+		...('aiSuggestion' in payload ? { aiSuggestion: false } : {})
+	};
+
+	if ('editorialState' in payload) {
+		const { editorialState, ...copy } = payload;
+		return { ...copy, ...resetFields };
+	}
+
+	return { ...payload, ...resetFields };
+}
+
+function resetCopiedPayload(payload: AnyPayload): unknown {
+	switch (payload.type) {
+		case payloadTypes.enum.actual_data:
+			return resetCommonCopiedPayload({ ...payload, booleanValue: false, values: [] });
+		case payloadTypes.enum.effect:
+			return resetCommonCopiedPayload({
+				...payload,
+				achievedValues: payload.achievedValues.map(([year]): [number, number] => [year, 0])
+			});
+		case payloadTypes.enum.event: {
+			const { endDate, startDate, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.goal: {
+			const { fulfillmentDate, progress, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.help:
+			return resetCommonCopiedPayload({ ...payload, slug: [] });
+		case payloadTypes.enum.knowledge: {
+			const { aiSuggestionPageReference, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.measure: {
+			const { endDate, progress, startDate, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.organization: {
+			const { customDomain, officialMunicipalityKey, officialRegionalCode, slug, ...copy } =
+				payload;
+			return resetCommonCopiedPayload({ ...copy, default: false });
+		}
+		case payloadTypes.enum.organizational_unit: {
+			const {
+				officialMunicipalityKey,
+				officialRegionalCode,
+				organizationalUnitType,
+				slug,
+				...copy
+			} = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.post: {
+			const { publicationDate, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.resource: {
+			const { fulfillmentDate, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.resource_data:
+			return resetCommonCopiedPayload({ ...payload, entries: [] });
+		case payloadTypes.enum.rule: {
+			const { validFrom, validUntil, ...copy } = payload;
+			return resetCommonCopiedPayload(copy);
+		}
+		case payloadTypes.enum.simple_measure: {
+			const { endDate, startDate, ...copy } = payload;
+			return resetCommonCopiedPayload({ ...copy, progress: 0 });
+		}
+		case payloadTypes.enum.task: {
+			const { fulfillmentDate, ...copy } = payload;
+			return resetCommonCopiedPayload({ ...copy, assignee: [] });
+		}
+		case payloadTypes.enum.administrative_area_basic_data:
+		case payloadTypes.enum.binary_indicator:
+		case payloadTypes.enum.category:
+		case payloadTypes.enum.chapter:
+		case payloadTypes.enum.col_content:
+		case payloadTypes.enum.custom_collection:
+		case payloadTypes.enum.demographic_data:
+		case payloadTypes.enum.effect_collection:
+		case payloadTypes.enum.file_collection:
+		case payloadTypes.enum.goal_collection:
+		case payloadTypes.enum.html:
+		case payloadTypes.enum.ignite_video:
+		case payloadTypes.enum.image:
+		case payloadTypes.enum.indicator_collection:
+		case payloadTypes.enum.indicator_template:
+		case payloadTypes.enum.info_box:
+		case payloadTypes.enum.map:
+		case payloadTypes.enum.measure_collection:
+		case payloadTypes.enum.objective:
+		case payloadTypes.enum.objective_collection:
+		case payloadTypes.enum.page:
+		case payloadTypes.enum.program:
+		case payloadTypes.enum.program_collection:
+		case payloadTypes.enum.progress:
+		case payloadTypes.enum.quote:
+		case payloadTypes.enum.report:
+		case payloadTypes.enum.resource_collection:
+		case payloadTypes.enum.resource_data_collection:
+		case payloadTypes.enum.resource_v2:
+		case payloadTypes.enum.summary:
+		case payloadTypes.enum.task_collection:
+		case payloadTypes.enum.teaser:
+		case payloadTypes.enum.teaser_collection:
+		case payloadTypes.enum.teaser_highlight:
+		case payloadTypes.enum.term:
+		case payloadTypes.enum.text:
+			return resetCommonCopiedPayload(payload);
+		default:
+			payload satisfies never;
+			return payload;
+	}
+}
+
 export function createCopyOf(
 	container: Container<AnyPayload>,
 	organization: string,
 	organizationalUnit: string | null
-) {
-	const copy = containerOfType(
-		container.payload.type,
+): NewContainer<AnyPayload> {
+	const isOrganizationalUnit = isOrganizationalUnitContainer(container);
+	const copy = newContainer.parse({
+		managed_by: isOrganizationalUnit ? organization : (organizationalUnit ?? organization),
 		organization,
-		organizationalUnit,
-		organizationalUnit ?? organization,
-		container.realm
-	);
-
-	if (isMeasureContainer(container)) {
-		copy.payload = {
-			...container.payload
-		} as typeof copy.payload;
-	} else if (isTaskContainer(container)) {
-		copy.payload = {
-			...container.payload,
-			assignee: [],
-			status: status.enum['status.idea']
-		} as typeof copy.payload;
-	} else if (isEffectContainer(container)) {
-		copy.payload = {
-			...container.payload,
-			achievedValues: container.payload.achievedValues.map(
-				([year]) => [year, 0] as [number, number]
-			)
-		} as typeof copy.payload;
-	} else if (isOrganizationalUnitContainer(container)) {
-		const { organizationalUnitType, ...rest } = container.payload;
-		// The organizationalUnitType is used to identify externally managed
-		// organizational units.
-		copy.payload = rest;
-	} else {
-		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
-	}
-
-	copy.payload = {
-		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
-		...('template' in container.payload ? { template: false } : undefined)
-	} as typeof copy.payload;
-
-	copy.relation.push({
-		object: container.guid,
-		predicate: predicates.enum['is-copy-of'],
-		position: 0
+		organizational_unit: isOrganizationalUnit ? null : organizationalUnit,
+		payload: resetCopiedPayload(container.payload),
+		realm: container.realm,
+		relation: [
+			{
+				object: container.guid,
+				predicate: predicates.enum['is-copy-of'],
+				position: 0
+			}
+		]
 	});
 
 	return copy;
