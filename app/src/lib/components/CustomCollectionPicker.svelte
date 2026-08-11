@@ -28,6 +28,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import {
+		currentScopeOrganizationalUnit,
 		hasExplicitOrganizationScope,
 		type OrganizationScope,
 		organizationScopeAsFilter,
@@ -94,8 +95,13 @@
 			checkedOrganizationalUnits.length === 0 &&
 			checkedOrganizationsWithSubordinates.length === 0
 		) {
-			if (page.data.currentOrganizationalUnit) {
-				checkedOrganizationalUnits = [page.data.currentOrganizationalUnit.guid];
+			const currentOrganizationalUnit = currentScopeOrganizationalUnit({
+				currentOrganization: page.data.currentOrganization,
+				currentOrganizationalUnit: page.data.currentOrganizationalUnit,
+				organizationalUnits: page.data.organizationalUnits
+			});
+			if (currentOrganizationalUnit) {
+				checkedOrganizationalUnits = [currentOrganizationalUnit.guid];
 			} else {
 				checkedOrganizations = [page.data.currentOrganization.guid];
 			}

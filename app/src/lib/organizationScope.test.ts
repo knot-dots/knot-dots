@@ -34,6 +34,15 @@ const contextAtOrganizationalUnit = {
 	organizationalUnits
 };
 
+const contextAtAdministrativeArea = {
+	currentOrganization: { guid: org },
+	currentOrganizationalUnit: {
+		guid: unit,
+		payload: { organizationalUnitType: 'organizational_unit_type.administrative_area' }
+	},
+	organizationalUnits
+};
+
 describe('parseOrganizationScope', () => {
 	it('parses the default for a filter without scope keys', () => {
 		expect(parseOrganizationScope({})).toEqual(defaultOrganizationScope());
@@ -162,6 +171,28 @@ describe('resolveOrganizationScope', () => {
 					organizationalUnitWithChildren: []
 				},
 				contextAtOrganizationRoot
+			)
+		).toEqual([
+			['organization', org],
+			['organizationalUnit', '']
+		]);
+	});
+
+	it('resolves current scope on administrative area pages like the organization level', () => {
+		expect(
+			resolveOrganizationScope(
+				organizationScopeAsFilter(defaultOrganizationScope()),
+				contextAtAdministrativeArea
+			)
+		).toEqual([['organization', org]]);
+		expect(
+			resolveOrganizationScope(
+				{
+					organization: 'current',
+					organizationalUnit: 'current',
+					organizationalUnitWithChildren: []
+				},
+				contextAtAdministrativeArea
 			)
 		).toEqual([
 			['organization', org],

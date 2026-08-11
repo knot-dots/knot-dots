@@ -17,8 +17,27 @@ export type OrganizationScope =
 
 export interface OrganizationScopeContext {
 	currentOrganization: { guid: string };
-	currentOrganizationalUnit?: { guid: string } | null;
+	currentOrganizationalUnit?: {
+		guid: string;
+		payload?: { organizationalUnitType?: string };
+	} | null;
 	organizationalUnits: Array<{ guid: string; organization: string }>;
+}
+
+// Administrative areas (e.g. municipality profiles) are not part of an
+// organization's unit structure (cf. loadApplicationContext), so pages of
+// such units count as organization level for the current scope.
+export function currentScopeOrganizationalUnit(
+	context: OrganizationScopeContext
+): { guid: string } | null {
+	if (
+		!context.currentOrganizationalUnit ||
+		context.currentOrganizationalUnit.payload?.organizationalUnitType ===
+			'organizational_unit_type.administrative_area'
+	) {
+		return null;
+	}
+	return context.currentOrganizationalUnit;
 }
 
 export function defaultOrganizationScope(): OrganizationScope {
@@ -114,13 +133,14 @@ export function resolveOrganizationScope(
 	const scope = parseOrganizationScope(filter);
 
 	if (scope.type === 'current') {
+		const currentOrganizationalUnit = currentScopeOrganizationalUnit(context);
 		const entries: Array<[string, string]> = [['organization', context.currentOrganization.guid]];
 		if (scope.includeSubordinateOrganizationalUnits) {
-			if (context.currentOrganizationalUnit) {
-				entries.push(['organizationalUnitWithChildren', context.currentOrganizationalUnit.guid]);
+			if (currentOrganizationalUnit) {
+				entries.push(['organizationalUnitWithChildren', currentOrganizationalUnit.guid]);
 			}
 		} else {
-			entries.push(['organizationalUnit', context.currentOrganizationalUnit?.guid ?? '']);
+			entries.push(['organizationalUnit', currentOrganizationalUnit?.guid ?? '']);
 		}
 		return entries;
 	}
