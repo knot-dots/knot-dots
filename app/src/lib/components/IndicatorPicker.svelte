@@ -68,6 +68,7 @@
 			const query = new URLSearchParams([
 				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
 				...filter.indicatorType.map((v) => ['indicatorType', v]),
+				['organization', page.data.currentOrganization.guid],
 				['payloadType', payloadTypes.enum.binary_indicator],
 				['payloadType', payloadTypes.enum.indicator_template],
 				['sort', sort],
