@@ -26,6 +26,7 @@
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
+	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import {
 		type AnyPayload,
 		type Container,
@@ -191,13 +192,14 @@
 		}
 	}
 
+	const propertiesRelocationNotice = getPropertiesRelocationContext();
+
 	let detailView = $state({
 		properties: new Collapsible({
 			onOpenChange: () => {
-				detailView.relocationNoticeSeen = true;
+				propertiesRelocationNotice.seen = true;
 			}
-		}),
-		relocationNoticeSeen: false
+		})
 	});
 
 	setDetailViewContext(detailView);

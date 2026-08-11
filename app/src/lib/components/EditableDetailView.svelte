@@ -26,6 +26,7 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
+	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import {
 		type AnyPayload,
 		type Container,
@@ -69,13 +70,14 @@
 		return _;
 	});
 
+	const propertiesRelocationNotice = getPropertiesRelocationContext();
+
 	let detailView = $state({
 		properties: new Collapsible({
 			onOpenChange: () => {
-				detailView.relocationNoticeSeen = true;
+				propertiesRelocationNotice.seen = true;
 			}
-		}),
-		relocationNoticeSeen: false
+		})
 	});
 
 	setDetailViewContext(detailView);

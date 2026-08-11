@@ -2,11 +2,14 @@
 	import { _ } from 'svelte-i18n';
 	import Label from '~icons/flowbite/label-outline';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
+	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 
 	const detailView = getDetailViewContext();
+
+	const propertiesRelocationNotice = getPropertiesRelocationContext();
 </script>
 
-{#if detailView && !detailView.relocationNoticeSeen}
+{#if detailView && propertiesRelocationNotice && !propertiesRelocationNotice.seen}
 	<div class="details-section">
 		<div class="box system-info">
 			<div class="box-icon">

@@ -8,9 +8,10 @@
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
-	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
-	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { setPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
+	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
 	import '../app.css';
@@ -58,6 +59,12 @@
 	});
 
 	setFavoriteListContext(favoriteList);
+
+	const propertiesRelocationNotice = $state({
+		seen: false
+	});
+
+	setPropertiesRelocationContext(propertiesRelocationNotice);
 
 	const workspaceTranslated = $derived.by(() => {
 		const segments = page.url.pathname.split('/');
