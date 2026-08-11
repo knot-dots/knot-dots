@@ -106,44 +106,52 @@
 	}
 </script>
 
-<PropertyGrid>
-	{#snippet general()}
-		<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
-		<AdministrativeAreaCombobox
-			{editable}
-			labelledBy={administrativeAreaLabelId}
-			{onchange}
-			value={container.payload.officialRegionalCode
-				? {
-						geometry: container.payload.geometry,
-						officialRegionalCode: container.payload.officialRegionalCode
-					}
-				: undefined}
-		/>
+{#snippet general()}
+	<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
+	<AdministrativeAreaCombobox
+		{editable}
+		labelledBy={administrativeAreaLabelId}
+		{onchange}
+		value={container.payload.officialRegionalCode
+			? {
+					geometry: container.payload.geometry,
+					officialRegionalCode: container.payload.officialRegionalCode
+				}
+			: undefined}
+	/>
 
-		<EditableOrganizationCategory {editable} bind:value={container.payload.organizationCategory} />
+	<EditableOrganizationCategory {editable} bind:value={container.payload.organizationCategory} />
 
-		<EditableMultipleChoice
-			{editable}
-			label={$_('properties.subheading.visible_workspaces')}
-			options={workspaceOptions}
-			bind:value={container.payload.visibleWorkspaces}
-		/>
+	<EditableMultipleChoice
+		{editable}
+		label={$_('properties.subheading.visible_workspaces')}
+		options={workspaceOptions}
+		bind:value={container.payload.visibleWorkspaces}
+	/>
 
-		{#if $ability.can('update', container, 'payload.customDomain')}
-			<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
-		{/if}
+	{#if $ability.can('update', container, 'payload.customDomain')}
+		<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
+	{/if}
 
-		{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
-			<EditableSlug {editable} bind:container />
-		{/if}
+	{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
+		<EditableSlug {editable} bind:container />
+	{/if}
 
-		{#if $ability.can('update', container, 'payload.customFavicon')}
-			<EditableCustomFavicon {editable} bind:value={container.payload.customFavicon} />
-		{/if}
+	{#if $ability.can('update', container, 'payload.customFavicon')}
+		<EditableCustomFavicon {editable} bind:value={container.payload.customFavicon} />
+	{/if}
 
-		{#if $ability.can('update', container, 'payload.visibility')}
-			<EditableVisibility {editable} bind:container />
-		{/if}
-	{/snippet}
-</PropertyGrid>
+	{#if $ability.can('update', container, 'payload.visibility')}
+		<EditableVisibility {editable} bind:container />
+	{/if}
+{/snippet}
+
+{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+	<PropertyGrid {general} />
+{:else}
+	<div class="details-section">
+		<div class="data-grid">
+			{@render general()}
+		</div>
+	</div>
+{/if}
