@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
 	defaultOrganizationScope,
-	hasExplicitOrganizationScope,
-	hasNonScopeFilter,
 	type OrganizationScope,
 	organizationScopeAsFilter,
 	parseOrganizationScope,
@@ -276,23 +274,5 @@ describe('resolveOrganizationScope', () => {
 			['organizationalUnit', ''],
 			['organizationalUnit', unknownUnit]
 		]);
-	});
-});
-
-describe('scope predicates', () => {
-	it('detects explicit scope only for non-empty arrays', () => {
-		expect(hasExplicitOrganizationScope({ organization: [org] })).toBe(true);
-		expect(hasExplicitOrganizationScope({ organizationalUnit: [unit] })).toBe(true);
-		expect(hasExplicitOrganizationScope({ organizationalUnitWithChildren: [org] })).toBe(true);
-		expect(hasExplicitOrganizationScope({ organization: 'current' })).toBe(false);
-		expect(hasExplicitOrganizationScope({})).toBe(false);
-	});
-
-	it('detects non-scope filters ignoring scope keys and sentinels', () => {
-		expect(hasNonScopeFilter({ status: ['status.in_implementation'] })).toBe(true);
-		expect(hasNonScopeFilter({ organization: [org], organizationalUnitWithChildren: [unit] })).toBe(
-			false
-		);
-		expect(hasNonScopeFilter({ topic: [] })).toBe(false);
 	});
 });

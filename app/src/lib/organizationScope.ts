@@ -93,23 +93,6 @@ export function organizationScopeAsFilter(scope: OrganizationScope): CollectionF
 	};
 }
 
-export function hasExplicitOrganizationScope(filter: CollectionFilter): boolean {
-	return (
-		asArray(filter.organization).length > 0 ||
-		asArray(filter.organizationalUnit).length > 0 ||
-		asArray(filter.organizationalUnitWithChildren).length > 0
-	);
-}
-
-export function hasNonScopeFilter(filter: CollectionFilter): boolean {
-	return Object.entries(filter).some(
-		([key, value]) =>
-			!(organizationScopeFilterKeys as readonly string[]).includes(key) &&
-			Array.isArray(value) &&
-			value.length > 0
-	);
-}
-
 export function resolveOrganizationScope(
 	filter: CollectionFilter,
 	context: OrganizationScopeContext

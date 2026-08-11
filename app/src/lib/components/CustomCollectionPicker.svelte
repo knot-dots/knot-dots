@@ -29,7 +29,6 @@
 	} from '$lib/models';
 	import {
 		currentScopeOrganizationalUnit,
-		hasExplicitOrganizationScope,
 		type OrganizationScope,
 		organizationScopeAsFilter,
 		parseOrganizationScope,
@@ -148,16 +147,7 @@
 		Object.entries(filter).reduce((acc, [, v]) => acc + (v.length > 0 ? 1 : 0), 0)
 	);
 
-	// Collections saved before the mode was persisted are recognized by their
-	// selected items or configured rule filters.
-	// svelte-ignore state_referenced_locally
-	let mode: CustomCollectionMode = $state(
-		container.payload.mode === customCollectionModes.enum.apply_rule ||
-			(selected.length === 0 &&
-				(activeFilters > 0 || hasExplicitOrganizationScope(container.payload.filter)))
-			? customCollectionModes.enum.apply_rule
-			: customCollectionModes.enum.select
-	);
+	let mode: CustomCollectionMode = $state(container.payload.mode);
 
 	let organizationsUserIsMemberOf = $derived(
 		[...$user.adminOf, ...$user.headOf, ...$user.collaboratorOf, ...$user.memberOf].filter(

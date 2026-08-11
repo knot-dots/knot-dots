@@ -39,12 +39,7 @@
 		type NewContainer,
 		payloadTypes
 	} from '$lib/models';
-	import {
-		hasExplicitOrganizationScope,
-		hasNonScopeFilter,
-		organizationScopeFilterKeys,
-		resolveOrganizationScope
-	} from '$lib/organizationScope';
+	import { organizationScopeFilterKeys, resolveOrganizationScope } from '$lib/organizationScope';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import {
 		ability,
@@ -137,12 +132,8 @@
 		const type =
 			Array.isArray(filter.type) && filter.type.length > 0 ? filter.type : defaultPayloadType;
 		const combinedTerms = [terms.trim(), searchTerms].filter(Boolean).join(' ');
-		const isRule =
-			container.payload.mode === customCollectionModes.enum.apply_rule ||
-			hasNonScopeFilter(filter) ||
-			hasExplicitOrganizationScope(filter);
-
-		if (item.length === 0 && !isRule) return null;
+		if (item.length === 0 && container.payload.mode !== customCollectionModes.enum.apply_rule)
+			return null;
 
 		const query = new URLSearchParams();
 		if (item.length > 0) {
@@ -301,10 +292,7 @@
 	});
 
 	let isRuleBasedCollection = $derived(
-		container.payload.item.length == 0 &&
-			(container.payload.mode === customCollectionModes.enum.apply_rule ||
-				hasNonScopeFilter(container.payload.filter) ||
-				hasExplicitOrganizationScope(container.payload.filter))
+		container.payload.mode === customCollectionModes.enum.apply_rule
 	);
 
 	let hasConfiguredContent = $derived(
@@ -332,7 +320,7 @@
 			}
 		}
 
-		if (container.payload.item.length === 0 && isRuleBasedCollection) {
+		if (isRuleBasedCollection) {
 			for (const [key, value] of resolveOrganizationScope(container.payload.filter, {
 				currentOrganization: page.data.currentOrganization,
 				currentOrganizationalUnit: page.data.currentOrganizationalUnit,

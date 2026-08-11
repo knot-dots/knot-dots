@@ -77,4 +77,18 @@ WHERE c.payload->>'type' = 'custom_collection'
 			AND jsonb_array_length(f.value) > 0
 	);
 
+-- 4. Collections without selected items but with filter values were rendered
+--    as rules; persist that as the collection mode so the payload alone
+--    determines how a section loads its content.
+UPDATE container c
+SET payload = jsonb_set(c.payload, '{mode}', '"apply_rule"'::jsonb)
+WHERE c.payload->>'type' = 'custom_collection'
+	AND jsonb_array_length(COALESCE(c.payload->'item', '[]'::jsonb)) = 0
+	AND c.payload->>'mode' IS DISTINCT FROM 'apply_rule'
+	AND EXISTS (
+		SELECT 1
+		FROM jsonb_each(COALESCE(c.payload->'filter', '{}'::jsonb)) f(key, value)
+		WHERE jsonb_typeof(f.value) = 'array' AND jsonb_array_length(f.value) > 0
+	);
+
 COMMIT;
