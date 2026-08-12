@@ -1483,7 +1483,19 @@ export function isProgramCollectionContainer(
 
 const initialProgramCollectionPayload = programCollectionPayload;
 
+export const progressMeasurement = z.enum(['manual', 'subordinateObjects']);
+
+export type ProgressMeasurement = z.infer<typeof progressMeasurement>;
+
+export const progressObjectType = z.enum([
+	payloadTypes.enum.task,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.goal
+]);
+
 const progressPayload = z.strictObject({
+	measurement: progressMeasurement.default(progressMeasurement.enum.manual),
+	objectType: progressObjectType.default(payloadTypes.enum.task),
 	title: z
 		.string()
 		.readonly()
