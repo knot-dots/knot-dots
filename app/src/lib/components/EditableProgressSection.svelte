@@ -1,15 +1,30 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
+	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import { createFeatureDecisions } from '$lib/features';
 	import saveContainer from '$lib/client/saveContainer';
-	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import ProgressSettingsDropdown from '$lib/components/ProgressSettingsDropdown.svelte';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		type AnyPayload,
 		type Container,
 		type ContainerWithProgress,
-		type ProgressPayload
+		findAncestors,
+		isContainerWithStatus,
+		overlayKey,
+		overlayURL,
+		payloadTypes,
+		predicates,
+		progressMeasurement,
+		progressObjectType,
+		type ProgressPayload,
+		status
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { statusColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<ProgressPayload>;
@@ -28,6 +43,29 @@
 	}: Props = $props();
 
 	const id = crypto.randomUUID();
+
+	let showComputedProgress = $derived(
+		createFeatureDecisions(page.data.features).useComputedProgress() &&
+			container.payload.measurement === progressMeasurement.enum.subordinateObjects
+	);
+
+	let objectTypeOptions = $derived([
+		{ label: $_('tasks'), value: payloadTypes.enum.task },
+		{ label: $_('measures'), value: payloadTypes.enum.measure },
+		{ label: $_('goals'), value: payloadTypes.enum.goal }
+	]);
+
+	let childrenRequest = $derived(
+		showComputedProgress
+			? fetchRelatedContainers(parentContainer.guid, {
+					payloadType:
+						container.payload.objectType === payloadTypes.enum.measure
+							? [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
+							: [container.payload.objectType],
+					relationType: [predicates.enum['is-part-of']]
+				})
+			: Promise.resolve([] as Container<AnyPayload>[])
+	);
 
 	async function handleChange() {
 		const response = await saveContainer(parentContainer);
@@ -54,6 +92,15 @@
 			alert(error.message);
 		}
 	}
+
+	async function handleMeasurementChange() {
+		if (
+			container.payload.measurement === progressMeasurement.enum.subordinateObjects &&
+			parentContainer.payload.progress !== undefined
+		) {
+			await handleDelete();
+		}
+	}
 </script>
 
 <header>
@@ -62,60 +109,139 @@
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
 			<li>
-				<ContainerSettingsDropdown
+				<ProgressSettingsDropdown
 					bind:container
 					bind:parentContainer
 					bind:relatedContainers
 					ondelete={handleDelete}
+					onmeasurementchange={handleMeasurementChange}
 				/>
 			</li>
 		</ul>
 	{/if}
 </header>
 
-<div class="progress">
-	{#if editable && $ability.can('update', parentContainer)}
-		<label class="is-visually-hidden" for={id}>{$_('progress')}</label>
-		<input
-			bind:value={parentContainer.payload.progress}
-			defaultValue="0"
-			{id}
-			list="steps"
-			max="1"
-			min="0"
-			onchange={handleChange}
-			oninput={(e) => e.stopPropagation()}
-			step="0.1"
-			type="range"
-		/>
-		<datalist id="steps">
-			<option value="0"></option>
-			<option value="0.1"></option>
-			<option value="0.2"></option>
-			<option value="0.3"></option>
-			<option value="0.4"></option>
-			<option value="0.5"></option>
-			<option value="0.6"></option>
-			<option value="0.7"></option>
-			<option value="0.8"></option>
-			<option value="0.9"></option>
-			<option value="1"></option>
-		</datalist>
-	{:else}
-		<progress
-			style:--color={parentContainer.payload.progress && parentContainer.payload.progress > 0.7
-				? 'var(--color-green-500)'
-				: parentContainer.payload.progress && parentContainer.payload.progress > 0.3
-					? 'var(--color-yellow-300)'
-					: 'var(--color-red-600)'}
-			value={parentContainer.payload.progress ?? 0}
-		></progress>
+{#if showComputedProgress}
+	{#if editable && $ability.can('update', container)}
+		<div class="object-type">
+			<SingleChoiceDropdown
+				options={objectTypeOptions}
+				bind:value={
+					() => container.payload.objectType,
+					(value) => (container.payload.objectType = progressObjectType.parse(value))
+				}
+			/>
+		</div>
 	{/if}
-</div>
+
+	<div class="progress">
+		{#await childrenRequest}
+			<div class="stacked-progress" role="img" aria-label={$_('progress')}></div>
+		{:then children}
+			{@const ancestors = findAncestors(parentContainer, children, [predicates.enum['is-part-of']])}
+			{@const segments = children
+				.filter(
+					(child) =>
+						child.guid !== parentContainer.guid &&
+						!ancestors.some(({ guid }) => guid === child.guid) &&
+						child.relation.some(
+							(r) =>
+								r.predicate === predicates.enum['is-part-of'] && r.object === parentContainer.guid
+						)
+				)
+				.filter(isContainerWithStatus)
+				.sort(
+					(a, b) =>
+						status.options.indexOf(a.payload.status) - status.options.indexOf(b.payload.status)
+				)}
+			<div class="stacked-progress" role="img" aria-label={$_('progress')}>
+				{#each segments as segment (segment.guid)}
+					{@const label = `${'title' in segment.payload ? segment.payload.title : ''}: ${$_(segment.payload.status)}`}
+					<a
+						aria-label={label}
+						class="segment"
+						href={overlayURL(page.url, overlayKey.enum.view, segment.guid)}
+						style:background={`var(--color-${statusColors.get(segment.payload.status)}-300)`}
+						{@attach tooltip(label)}
+					></a>
+				{/each}
+			</div>
+		{/await}
+	</div>
+{:else}
+	<div class="progress">
+		{#if editable && $ability.can('update', parentContainer)}
+			<label class="is-visually-hidden" for={id}>{$_('progress')}</label>
+			<input
+				bind:value={parentContainer.payload.progress}
+				defaultValue="0"
+				{id}
+				list="steps"
+				max="1"
+				min="0"
+				onchange={handleChange}
+				oninput={(e) => e.stopPropagation()}
+				step="0.1"
+				type="range"
+			/>
+			<datalist id="steps">
+				<option value="0"></option>
+				<option value="0.1"></option>
+				<option value="0.2"></option>
+				<option value="0.3"></option>
+				<option value="0.4"></option>
+				<option value="0.5"></option>
+				<option value="0.6"></option>
+				<option value="0.7"></option>
+				<option value="0.8"></option>
+				<option value="0.9"></option>
+				<option value="1"></option>
+			</datalist>
+		{:else}
+			<progress
+				style:--color={parentContainer.payload.progress && parentContainer.payload.progress > 0.7
+					? 'var(--color-green-500)'
+					: parentContainer.payload.progress && parentContainer.payload.progress > 0.3
+						? 'var(--color-yellow-300)'
+						: 'var(--color-red-600)'}
+				value={parentContainer.payload.progress ?? 0}
+			></progress>
+		{/if}
+	</div>
+{/if}
 
 <style>
-	div {
+	.progress {
 		padding-bottom: 0.5rem;
+	}
+
+	.object-type {
+		--color-accent-on-default: var(--color-primary-700);
+		--dropdown-button-border-radius: 9999px;
+		--dropdown-button-chevron-default-color: var(--color-primary-700);
+		--dropdown-button-chevron-expanded-color: var(--color-primary-700);
+		--dropdown-button-default-background: var(--color-primary-100);
+		--dropdown-button-default-color: var(--color-primary-700);
+		--dropdown-button-expanded-background: var(--color-primary-100);
+		--dropdown-button-hover-background: var(--color-primary-100);
+		--dropdown-button-padding-x: 0.5rem;
+
+		display: flex;
+		padding-bottom: 0.75rem;
+	}
+
+	.stacked-progress {
+		background: var(--color-gray-200);
+		border-radius: 9999px;
+		display: flex;
+		gap: 2px;
+		height: 0.5rem;
+		overflow: hidden;
+		width: 100%;
+	}
+
+	.segment {
+		flex: 1 1 0;
 	}
 
 	input[type='range'] {

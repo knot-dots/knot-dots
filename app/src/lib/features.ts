@@ -7,6 +7,7 @@ export const featureFlags = new Map([
 		'beta',
 		[
 			'BulkActions',
+			'ComputedProgress',
 			'ImportFromCsv',
 			'IOOI',
 			'Mistral',
@@ -58,6 +59,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useComputedManagedBy() {
 			return features.includes('ComputedManagedBy');
+		},
+		useComputedProgress() {
+			return features.includes('ComputedProgress');
 		},
 		useMultipleProgramAssignment() {
 			return features.includes('MultipleProgramAssignment');
