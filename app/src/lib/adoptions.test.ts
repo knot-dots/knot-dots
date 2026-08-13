@@ -126,8 +126,18 @@ describe('adoptableOrganizationalUnits', () => {
 
 	test('organization-level programs are adoptable by every unit', () => {
 		expect(
-			adoptableOrganizationalUnits(makeUser({ roles: ['sysadmin'] }), makeProgram(), units)
+			adoptableOrganizationalUnits(
+				makeUser({ adminOf: [organization, otherOrganization] }),
+				makeProgram(),
+				units
+			)
 		).toEqual(units);
+	});
+
+	test('the sysadmin role alone yields no adoptable units', () => {
+		expect(
+			adoptableOrganizationalUnits(makeUser({ roles: ['sysadmin'] }), makeProgram(), units)
+		).toEqual([]);
 	});
 });
 

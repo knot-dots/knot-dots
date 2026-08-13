@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import defineAbilityFor, { canAdoptForOrganization } from '$lib/authorization';
+import defineAbilityFor from '$lib/authorization';
 import { type AnyPayload, newContainer, payloadTypes, predicates, visibility } from '$lib/models';
 import type { User } from '$lib/stores';
 
@@ -351,37 +351,5 @@ describe('field-level rules', () => {
 		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
 		expect(ability.can('update', template)).toBe(true);
 		expect(ability.can('update', template, 'indicatorCategory')).toBe(false);
-	});
-});
-
-describe('canAdoptForOrganization', () => {
-	const unit = { guid: organizationalUnit, organization };
-
-	test('sysadmins may adopt for any organizational unit', () => {
-		expect(canAdoptForOrganization(makeUser({ roles: ['sysadmin'] }), unit)).toBe(true);
-	});
-
-	test('admins and heads of the organizational unit may adopt for it', () => {
-		expect(canAdoptForOrganization(makeUser({ adminOf: [organizationalUnit] }), unit)).toBe(true);
-		expect(canAdoptForOrganization(makeUser({ headOf: [organizationalUnit] }), unit)).toBe(true);
-	});
-
-	test('admins and heads of the parent organization may adopt for its units', () => {
-		expect(canAdoptForOrganization(makeUser({ adminOf: [organization] }), unit)).toBe(true);
-		expect(canAdoptForOrganization(makeUser({ headOf: [organization] }), unit)).toBe(true);
-	});
-
-	test('unrelated users may not adopt', () => {
-		expect(canAdoptForOrganization(makeUser({ adminOf: [crypto.randomUUID()] }), unit)).toBe(false);
-		expect(canAdoptForOrganization(makeUser({ collaboratorOf: [organizationalUnit] }), unit)).toBe(
-			false
-		);
-		expect(canAdoptForOrganization(makeUser({ memberOf: [organizationalUnit] }), unit)).toBe(false);
-	});
-
-	test('anonymous users may not adopt', () => {
-		expect(
-			canAdoptForOrganization(makeUser({ isAuthenticated: false, roles: ['sysadmin'] }), unit)
-		).toBe(false);
 	});
 });

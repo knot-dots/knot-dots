@@ -1,4 +1,3 @@
-import { canAdoptForOrganization } from '$lib/authorization';
 import { payloadTypes, predicates, programTypes, visibility, type Relation } from '$lib/models';
 import type { User } from '$lib/stores';
 
@@ -24,8 +23,14 @@ export function adoptableOrganizationalUnits<T extends { guid: string; organizat
 		return [];
 	}
 
+	// Deliberately ignores the sysadmin role: adoptable are only the
+	// organizational units that follow from the regular admin and head roles.
 	return organizationalUnits.filter(
-		(unit) => unit.guid !== program.organizational_unit && canAdoptForOrganization(user, unit)
+		(unit) =>
+			unit.guid !== program.organizational_unit &&
+			[...user.adminOf, ...user.headOf].some(
+				(guid) => guid === unit.guid || guid === unit.organization
+			)
 	);
 }
 

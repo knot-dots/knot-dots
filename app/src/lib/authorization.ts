@@ -248,20 +248,3 @@ export function filterVisible<T extends Container<AnyPayload>>(
 export function mayImportFromCSV(user: User) {
 	return defineAbilityFor(user).can('create', payloadTypes.enum.program);
 }
-
-export function canAdoptForOrganization(
-	user: User,
-	target: { guid: string; organization: string }
-): boolean {
-	if (!user.isAuthenticated) {
-		return false;
-	}
-
-	if (user.roles.includes('sysadmin')) {
-		return true;
-	}
-
-	return [...user.adminOf, ...user.headOf].some(
-		(guid) => guid === target.guid || guid === target.organization
-	);
-}

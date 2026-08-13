@@ -3,7 +3,7 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { isAdoptableProgram } from '$lib/adoptions';
-import defineAbilityFor, { canAdoptForOrganization, filterVisible } from '$lib/authorization';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyPayload,
@@ -243,7 +243,7 @@ export const POST = (async ({ locals, params, request }) => {
 					}
 					// Adopting a public rule-set program does not require 'relate'
 					// permission on the (foreign) program. Instead the user must be
-					// allowed to act for the adopting organization or organizational
+					// allowed to update the adopting organization or organizational
 					// unit, and the owning organizational unit may not adopt its own
 					// program.
 					if (predicate == predicates.enum['is-adopted-by']) {
@@ -254,7 +254,7 @@ export const POST = (async ({ locals, params, request }) => {
 							(isOrganizationContainer(objectContainer) ||
 								isOrganizationalUnitContainer(objectContainer)) &&
 							objectContainer.guid != subjectContainer.organizational_unit &&
-							canAdoptForOrganization(locals.user, objectContainer)
+							ability.can('update', objectContainer)
 						);
 					}
 					return ability.can(
@@ -324,8 +324,7 @@ export const DELETE = (async ({ locals, params, request }) => {
 						return (
 							createFeatureDecisions(locals.features).useAdoptions() &&
 							subject == params.guid &&
-							isAdoptableProgram(subjectContainer) &&
-							canAdoptForOrganization(locals.user, objectContainer)
+							ability.can('update', objectContainer)
 						);
 					}
 					return ability.can(
