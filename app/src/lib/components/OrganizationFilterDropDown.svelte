@@ -18,6 +18,8 @@
 	interface Props {
 		mode: 'select' | 'apply_rule';
 		options: Option[];
+		scope: 'current' | 'explicit';
+		includeSubordinateOrganizationalUnits: boolean;
 		organizationValue: string[];
 		organizationalUnitValue: string[];
 	}
@@ -25,6 +27,8 @@
 	let {
 		mode,
 		options,
+		scope = $bindable(),
+		includeSubordinateOrganizationalUnits = $bindable(),
 		organizationValue = $bindable(),
 		organizationalUnitValue = $bindable()
 	}: Props = $props();
@@ -87,15 +91,22 @@
 		}
 		expandedOrgs = new Set(expandedOrgs);
 	}
+
+	function resetAll() {
+		organizationValue = [];
+		organizationalUnitValue = [];
+	}
+
+	const disabled = $derived(scope === 'current');
 </script>
 
 <div class="dropdown" use:popperRef>
 	<button class="dropdown-button" type="button" use:popover.button>
-		{#if totalSelected > 0 && mode == 'apply_rule'}
+		{#if scope === 'explicit' && totalSelected > 0 && mode == 'apply_rule'}
 			<LightningBolt />
 		{/if}
 		<span>{$_('organization')}</span>
-		{#if totalSelected > 0}
+		{#if scope === 'explicit' && totalSelected > 0}
 			<span class="indicator">{totalSelected}</span>
 		{/if}
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
@@ -103,13 +114,43 @@
 
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			<div>
+			<div class="scope-options" role="radiogroup">
+				<label class="scope-option">
+					<input type="radio" value="current" bind:group={scope} />
+					<span>{$_('organization_filter.current_area')}</span>
+				</label>
+				<label class="toggle-option" class:toggle-option--disabled={scope !== 'current'}>
+					<span>{$_('organization_filter.exclude_subordinate')}</span>
+					<input
+						type="checkbox"
+						class="toggle"
+						disabled={scope !== 'current'}
+						bind:checked={
+							() => !includeSubordinateOrganizationalUnits,
+							(v) => (includeSubordinateOrganizationalUnits = !v)
+						}
+					/>
+				</label>
+				<label class="scope-option">
+					<input type="radio" value="explicit" bind:group={scope} />
+					<span>{$_('organization_filter.explicit')}</span>
+				</label>
+			</div>
+
+			<div class="option-list" class:option-list--disabled={disabled}>
+				<div class="list-section-title">
+					<span class="section-label">{$_('organization_filter.select')}</span>
+					<button type="button" class="text-button text-button--reset" onclick={resetAll}>
+						{$_('organization_filter.reset')}
+					</button>
+				</div>
 				{#each options as org (org.value)}
 					<div class="option" role="presentation">
 						<label>
 							<input
 								type="checkbox"
 								value={org.value}
+								{disabled}
 								checked={organizationValue.includes(org.value)}
 								onchange={(event) =>
 									toggleOrg(org.value, (event.currentTarget as HTMLInputElement).checked)}
@@ -149,6 +190,7 @@
 									<input
 										type="checkbox"
 										value={organizationalUnit.value}
+										{disabled}
 										checked={organizationalUnitValue.includes(organizationalUnit.value)}
 										onchange={(event) =>
 											toggleOrganizationalUnit(
@@ -188,6 +230,82 @@
 	.dropdown-panel {
 		max-width: min(24rem, calc(100cqw - 3rem));
 		z-index: 2;
+	}
+
+	.scope-options {
+		border-bottom: solid 1px var(--color-gray-200);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+
+	.scope-option {
+		align-items: center;
+		cursor: pointer;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.scope-options label.toggle-option {
+		align-items: center;
+		cursor: pointer;
+		display: flex;
+		gap: 0.5rem;
+		justify-content: space-between;
+		padding: 0.5rem 0.5rem 0.5rem 2rem;
+	}
+
+	.scope-options label.toggle-option--disabled {
+		cursor: default;
+		opacity: 0.5;
+	}
+
+	.toggle-option > .toggle {
+		--height: 1rem;
+
+		flex-shrink: 0;
+	}
+
+	.option-list--disabled {
+		opacity: 0.5;
+		pointer-events: none;
+	}
+
+	.list-section-title {
+		align-items: center;
+		display: flex;
+		justify-content: space-between;
+		padding: 0.5rem 0.5rem 0.25rem;
+	}
+
+	.section-label {
+		color: var(--color-gray-400);
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.text-button {
+		align-items: center;
+		background: none;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		display: inline-flex;
+		font-weight: 500;
+		justify-content: center;
+	}
+
+	.text-button--reset {
+		color: var(--color-red-700);
+		font-size: 0.75rem;
+		height: 28px;
+		padding: 0 0.625rem;
+	}
+
+	.text-button--reset:hover {
+		background-color: var(--color-red-050);
 	}
 
 	.counter {

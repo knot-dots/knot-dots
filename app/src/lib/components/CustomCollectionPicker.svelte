@@ -25,6 +25,14 @@
 		type OrganizationalUnitPayload,
 		payloadTypes
 	} from '$lib/models';
+	import {
+		hasConfiguredFilter,
+		type OrganizationScope,
+		organizationScopeAsFilter,
+		organizationScopeFilterKeys,
+		parseOrganizationScope,
+		resolveOrganizationScope
+	} from '$lib/organizationScope';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { user } from '$lib/stores';
 	import { sortIcons } from '$lib/theme/models';
@@ -36,12 +44,51 @@
 
 	let { container = $bindable(), dialog = $bindable() }: Props = $props();
 
-	let filter: Record<string, string[]> = $state({
-		...container.payload.filter,
-		organization: container.payload.filter.organization?.length
-			? container.payload.filter.organization
-			: [page.data.currentOrganization.guid]
-	});
+	let filter: Record<string, string[]> = $state(
+		Object.fromEntries(
+			Object.entries(container.payload.filter).filter(
+				([key, value]) =>
+					!(organizationScopeFilterKeys as readonly string[]).includes(key) && Array.isArray(value)
+			)
+		) as Record<string, string[]>
+	);
+
+	const initialScope = parseOrganizationScope(container.payload.filter);
+
+	let scopeType = $state(initialScope.type);
+
+	let includeSubordinateOrganizationalUnits = $state(
+		initialScope.type === 'current' ? initialScope.includeSubordinateOrganizationalUnits : true
+	);
+
+	let checkedOrganizations = $state(
+		initialScope.type === 'explicit' ? initialScope.organizations : []
+	);
+
+	let checkedOrganizationalUnits = $state(
+		initialScope.type === 'explicit' ? initialScope.organizationalUnits : []
+	);
+
+	let scope: OrganizationScope = $derived(
+		scopeType === 'current'
+			? { type: 'current', includeSubordinateOrganizationalUnits }
+			: {
+					type: 'explicit',
+					organizations: checkedOrganizations,
+					organizationalUnits: checkedOrganizationalUnits
+				}
+	);
+
+	function handleScopeTypeChange(value: 'current' | 'explicit') {
+		scopeType = value;
+		if (
+			value === 'explicit' &&
+			checkedOrganizations.length === 0 &&
+			checkedOrganizationalUnits.length === 0
+		) {
+			checkedOrganizations = [page.data.currentOrganization.guid];
+		}
+	}
 
 	let selected = $state(container.payload.item);
 
@@ -79,17 +126,14 @@
 		)
 	);
 
-	const scopeFilterKeys = ['organization', 'organizationalUnit'];
-
 	let activeFilters = $derived(
-		Object.entries(filter)
-			.filter(([key]) => !scopeFilterKeys.includes(key))
-			.reduce((acc, [, v]) => acc + (v.length > 0 ? 1 : 0), 0)
+		Object.entries(filter).reduce((acc, [, v]) => acc + (v.length > 0 ? 1 : 0), 0)
 	);
 
-	// svelte-ignore state_referenced_locally
 	let mode: 'select' | 'apply_rule' = $state(
-		selected.length > 0 || activeFilters == 0 ? 'select' : 'apply_rule'
+		container.payload.item.length > 0 || !hasConfiguredFilter(container.payload.filter)
+			? 'select'
+			: 'apply_rule'
 	);
 
 	let organizationsUserIsMemberOf = $derived(
@@ -109,17 +153,12 @@
 
 	function buildSearchQuery() {
 		const payloadType = filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType;
-		const organization =
-			filter.organization && filter.organization.length > 0
-				? filter.organization
-				: organizationsUserIsMemberOf.length > 0
-					? organizationsUserIsMemberOf
-					: [page.data.currentOrganization.guid];
 		return new URLSearchParams([
-			...organization.map((org) => ['organization', org]),
+			...resolveOrganizationScope(organizationScopeAsFilter(scope), {
+				currentOrganization: page.data.currentOrganization
+			}),
 			...payloadType.map((t) => ['payloadType', t]),
 			...(filter.indicatorCategory ?? []).map((v) => ['indicatorCategory', v]),
-			...(filter.organizationalUnit ?? []).map((v) => ['organizationalUnit', v]),
 			...(filter.programType ?? []).map((v) => ['programType', v]),
 			...(filter.status ?? []).map((v) => ['status', v]),
 			...categoryContext.keys.flatMap((k) => (filter[k] ?? []).map((v) => [k, v])),
@@ -136,8 +175,15 @@
 	}
 
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current, () => mode],
-		async ([, , , inViewport], _, { signal }): Promise<SearchPage> => {
+		[
+			() => $state.snapshot(filter),
+			() => $state.snapshot(scope),
+			() => sort,
+			() => terms,
+			() => inViewport.current,
+			() => mode
+		],
+		async ([, , , , inViewport], _, { signal }): Promise<SearchPage> => {
 			if (!inViewport)
 				return { containers: [], facets: new Map(), hasMore: false, nextOffset: null };
 
@@ -262,12 +308,12 @@
 
 	function resetFilters() {
 		for (const key in filter) {
-			if (key === 'organization') {
-				filter[key] = [page.data.currentOrganization.guid];
-			} else {
-				filter[key] = [];
-			}
+			filter[key] = [];
 		}
+		scopeType = 'current';
+		includeSubordinateOrganizationalUnits = true;
+		checkedOrganizations = [];
+		checkedOrganizationalUnits = [];
 	}
 
 	function handleRemoveFilterValue(key: string, value: string) {
@@ -295,7 +341,7 @@
 			...container,
 			payload: {
 				...container.payload,
-				filter,
+				filter: { ...filter, ...organizationScopeAsFilter(scope) },
 				item: mode == 'select' ? selected : [],
 				sort,
 				terms
@@ -331,10 +377,10 @@
 	{#snippet filterContent()}
 		{#if organizationOptions.length > 0}
 			<OrganizationFilterDropDown
-				bind:organizationValue={() => filter.organization ?? [], (v) => (filter.organization = v)}
-				bind:organizationalUnitValue={
-					() => filter.organizationalUnit ?? [], (v) => (filter.organizationalUnit = v)
-				}
+				bind:scope={() => scopeType, handleScopeTypeChange}
+				bind:includeSubordinateOrganizationalUnits
+				bind:organizationValue={checkedOrganizations}
+				bind:organizationalUnitValue={checkedOrganizationalUnits}
 				{mode}
 				options={organizationOptions}
 			/>
@@ -492,6 +538,59 @@
 				</ul>
 			{:else if mode === 'apply_rule'}
 				<ul class="selection-list">
+					{#if scopeType === 'current'}
+						<li class="selection-item">
+							<LightningBolt />
+							<span>{$_('organization_filter.current_area')}</span>
+						</li>
+						{#if !includeSubordinateOrganizationalUnits}
+							<li class="selection-item">
+								<LightningBolt />
+								<span>{$_('organization_filter.exclude_subordinate')}</span>
+								<button
+									class="button button-remove"
+									type="button"
+									onclick={() => (includeSubordinateOrganizationalUnits = true)}
+								>
+									<CloseCircle />
+									<span class="is-visually-hidden">{$_('remove')}</span>
+								</button>
+							</li>
+						{/if}
+					{:else}
+						{#each checkedOrganizations as value (value)}
+							<li class="selection-item">
+								<LightningBolt />
+								<span>{filterValueLabel('organization', value)}</span>
+								<button
+									class="button button-remove"
+									type="button"
+									onclick={() =>
+										(checkedOrganizations = checkedOrganizations.filter((v) => v !== value))}
+								>
+									<CloseCircle />
+									<span class="is-visually-hidden">{$_('remove')}</span>
+								</button>
+							</li>
+						{/each}
+						{#each checkedOrganizationalUnits as value (value)}
+							<li class="selection-item">
+								<LightningBolt />
+								<span>{filterValueLabel('organizationalUnit', value)}</span>
+								<button
+									class="button button-remove"
+									type="button"
+									onclick={() =>
+										(checkedOrganizationalUnits = checkedOrganizationalUnits.filter(
+											(v) => v !== value
+										))}
+								>
+									<CloseCircle />
+									<span class="is-visually-hidden">{$_('remove')}</span>
+								</button>
+							</li>
+						{/each}
+					{/if}
 					{#each Object.entries(filter) as [key, valueList] (key)}
 						{#if valueList.length > 0}
 							{#each valueList as value (value)}
