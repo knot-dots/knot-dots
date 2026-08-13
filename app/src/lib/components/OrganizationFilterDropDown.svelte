@@ -240,12 +240,6 @@
 		opacity: 0.85;
 	}
 
-	.truncated {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	.suboptions-list {
 		display: flex;
 		flex-direction: column;

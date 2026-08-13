@@ -7,6 +7,8 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type Container,
 		helpSlugForDetailView,
@@ -14,8 +16,6 @@
 		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import { getBulkActionContext } from '$lib/contexts/bulkAction';
-	import { createFeatureDecisions } from '$lib/features';
 
 	interface Props {
 		container: Container;
@@ -81,13 +81,19 @@
 					{/if}
 				</header>
 
+				{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+					{@render properties?.()}
+				{/if}
+
 				{@render data?.()}
 			</form>
 		</div>
 
-		<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-			{@render properties?.()}
-		</form>
+		{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+				{@render properties?.()}
+			</form>
+		{/if}
 	</article>
 
 	{#if detailViewHelpSlug}

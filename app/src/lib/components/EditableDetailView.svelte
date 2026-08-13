@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Collapsible } from 'melt/builders';
 	import type { Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
@@ -27,6 +28,7 @@
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
 	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -72,15 +74,17 @@
 
 	const propertiesRelocationNotice = getPropertiesRelocationContext();
 
-	let detailView = $state({
-		properties: new Collapsible({
-			onOpenChange: () => {
-				propertiesRelocationNotice.seen = true;
-			}
-		})
-	});
+	if (createFeatureDecisions(page.data.features).useNewPropertyPanel()) {
+		let detailView = $state({
+			properties: new Collapsible({
+				onOpenChange: () => {
+					propertiesRelocationNotice.seen = true;
+				}
+			})
+		});
 
-	setDetailViewContext(detailView);
+		setDetailViewContext(detailView);
+	}
 </script>
 
 {#if isBinaryIndicatorContainer(container)}

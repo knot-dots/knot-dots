@@ -5,6 +5,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
+	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -19,10 +20,12 @@
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
+	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
 	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -90,6 +93,9 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
 	const handleSubmit = $derived(autoSave(container, 2000));
 
 	const propertiesRelocationNotice = getPropertiesRelocationContext();
@@ -102,7 +108,13 @@
 		})
 	});
 
-	setDetailViewContext(detailView);
+	const useNewPropertyPanel = $derived(
+		createFeatureDecisions(page.data.features).useNewPropertyPanel()
+	);
+
+	if (useNewPropertyPanel) {
+		setDetailViewContext(detailView);
+	}
 </script>
 
 {#snippet header()}
@@ -161,7 +173,9 @@
 									></h1>
 									<button
 										class="action-button"
-										onclick={detailView.properties.trigger.onclick}
+										onclick={useNewPropertyPanel
+											? detailView.properties.trigger.onclick
+											: () => dialog.showModal()}
 										type="button"
 									>
 										<Ellipsis />
@@ -174,6 +188,20 @@
 								{/if}
 							{/if}
 						</header>
+
+						{#if !useNewPropertyPanel}
+							<PropertiesDialog
+								bind:dialog
+								{container}
+								{relatedContainers}
+								title={$_('organization.properties.title')}
+							>
+								<OrganizationProperties
+									bind:container
+									editable={$ability.can('update', container)}
+								/>
+							</PropertiesDialog>
+						{/if}
 
 						{#key container.guid}
 							<EditableFormattedText
@@ -188,21 +216,25 @@
 				<Sections bind:container {relatedContainers} />
 			</div>
 
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<OrganizationProperties
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-				/>
-			</form>
+			{#if useNewPropertyPanel}
+				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+					<OrganizationProperties
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
+				</form>
+			{/if}
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organization-view']} />
 	</div>
 
-	<footer class="footer-action-bar">
-		<DeleteButton {container} {relatedContainers} />
-	</footer>
+	{#if useNewPropertyPanel}
+		<footer class="footer-action-bar">
+			<DeleteButton {container} {relatedContainers} />
+		</footer>
+	{/if}
 {/snippet}
 
 {@render layout(header, main)}

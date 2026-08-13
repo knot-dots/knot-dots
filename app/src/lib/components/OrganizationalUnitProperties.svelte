@@ -104,46 +104,55 @@
 	}
 </script>
 
-<PropertyGrid>
-	{#snippet general()}
-		<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
-		<AdministrativeAreaCombobox
-			{editable}
-			labelledBy={administrativeAreaLabelId}
-			{onchange}
-			value={container.payload.officialRegionalCode
-				? {
-						geometry: container.payload.geometry,
-						officialRegionalCode: container.payload.officialRegionalCode
-					}
-				: undefined}
-		/>
+{#snippet general()}
+	<div class="label" id={administrativeAreaLabelId}>{$_('administrative_area')}</div>
+	<AdministrativeAreaCombobox
+		{editable}
+		labelledBy={administrativeAreaLabelId}
+		{onchange}
+		value={container.payload.officialRegionalCode
+			? {
+					geometry: container.payload.geometry,
+					officialRegionalCode: container.payload.officialRegionalCode
+				}
+			: undefined}
+	/>
 
-		<EditableNumber
-			{editable}
-			label={$_('organizational_unit.level')}
-			bind:value={container.payload.level}
-		/>
+	<EditableNumber
+		{editable}
+		label={$_('organizational_unit.level')}
+		bind:value={container.payload.level}
+	/>
 
-		<EditableSuperordinateOrganizationalUnit {editable} bind:container />
+	<EditableSuperordinateOrganizationalUnit {editable} bind:container />
 
-		<EditableMultipleChoice
-			{editable}
-			label={$_('properties.subheading.visible_workspaces')}
-			options={workspaceOptions}
-			bind:value={container.payload.visibleWorkspaces}
-		/>
+	<EditableMultipleChoice
+		{editable}
+		label={$_('properties.subheading.visible_workspaces')}
+		options={workspaceOptions}
+		bind:value={container.payload.visibleWorkspaces}
+	/>
 
-		{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
-			<EditableSlug {editable} bind:container />
-		{/if}
+	{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
+		<EditableSlug {editable} bind:container />
+	{/if}
 
-		{#if $ability.can('update', container, 'payload.visibility')}
-			<EditableVisibility {editable} bind:container />
-		{/if}
-	{/snippet}
+	{#if $ability.can('update', container, 'payload.visibility')}
+		<EditableVisibility {editable} bind:container />
+	{/if}
+{/snippet}
 
-	{#snippet categories()}
-		<EditableCategories bind:container {editable} />
-	{/snippet}
-</PropertyGrid>
+{#snippet categories()}
+	<EditableCategories bind:container {editable} />
+{/snippet}
+
+{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+	<PropertyGrid {general} {categories} />
+{:else}
+	<div class="details-section">
+		<div class="data-grid">
+			{@render general()}
+			{@render categories()}
+		</div>
+	</div>
+{/if}

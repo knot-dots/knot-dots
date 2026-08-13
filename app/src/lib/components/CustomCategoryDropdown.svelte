@@ -91,11 +91,11 @@
 			<span class="value" class:value--compact={compact}>
 				{#each selectedEntries.slice(0, value.length > 1 && compact ? 1 : value.length) as entry (entry.option.value)}
 					<span
-						class="badge badge--gray truncated"
+						class="badge badge--gray"
 						class:value--compact={compact}
 						class:value--child={entry.isChild}
 					>
-						{entry.option.label}
+						<span class="truncated">{entry.option.label}</span>
 					</span>
 				{:else}
 					{$_('empty')}
@@ -125,7 +125,9 @@
 					<ul>
 						{#each selectedEntries as entry (entry.option.value)}
 							<li>
-								<span class="badge badge--gray">{entry.option.label}</span>
+								<span class="badge badge--gray">
+									<span class="truncated">{entry.option.label}</span>
+								</span>
 							</li>
 						{/each}
 					</ul>
@@ -136,7 +138,9 @@
 {:else}
 	<div class="value" class:value--compact={compact}>
 		{#each selectedEntries.slice(0, compact ? 1 : value.length) as entry (entry.option.value)}
-			<span class="badge badge--gray truncated">{entry.option.label}</span>
+			<span class="badge badge--gray">
+				<span class="truncated">{entry.option.label}</span>
+			</span>
 		{:else}
 			{$_('empty')}
 		{/each}
@@ -167,7 +171,7 @@
 	}
 
 	.badge {
-		display: inline;
+		min-width: 0;
 	}
 
 	.value {

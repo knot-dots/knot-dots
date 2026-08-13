@@ -23,10 +23,12 @@
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
+	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
 	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -114,6 +116,9 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
 	const handleSubmit = $derived(autoSave(container, 2000));
 
 	let isIndividualProfile = $derived(
@@ -177,6 +182,7 @@
 
 			if (response.ok) {
 				const created = await response.json();
+				dialog?.close();
 				goto(
 					getOrganizationURL(created, '/all/page', env, {
 						organizationSlug: page.data.currentOrganization.payload.slug,
@@ -202,7 +208,11 @@
 		})
 	});
 
-	setDetailViewContext(detailView);
+	const useNewPropertyPanel = createFeatureDecisions(page.data.features).useNewPropertyPanel();
+
+	if (useNewPropertyPanel) {
+		setDetailViewContext(detailView);
+	}
 </script>
 
 {#snippet header()}
@@ -289,7 +299,9 @@
 								></h1>
 								<button
 									class="action-button"
-									onclick={detailView.properties.trigger.onclick}
+									onclick={useNewPropertyPanel
+										? detailView.properties.trigger.onclick
+										: () => dialog.showModal()}
 									type="button"
 								>
 									<Ellipsis />
@@ -308,6 +320,33 @@
 							{/if}
 						</header>
 
+						{#if !useNewPropertyPanel}
+							<PropertiesDialog
+								bind:dialog
+								{container}
+								{relatedContainers}
+								title={$_('organizational_unit.properties.title')}
+							>
+								{#snippet actions()}
+									{#if mayCreateIndividualProfile}
+										<button
+											class="button button-xs button-alternative"
+											disabled={creatingProfile}
+											onclick={createIndividualProfile}
+											type="button"
+										>
+											{$_('individual_profile.create')}
+										</button>
+									{/if}
+								{/snippet}
+
+								<OrganizationalUnitProperties
+									bind:container
+									editable={$ability.can('update', container)}
+								/>
+							</PropertiesDialog>
+						{/if}
+
 						{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
 							{#key container.guid}
 								<EditableFormattedText
@@ -323,31 +362,35 @@
 				<Sections bind:container {relatedContainers} />
 			</div>
 
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<OrganizationalUnitProperties
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-				/>
-			</form>
+			{#if useNewPropertyPanel}
+				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
+					<OrganizationalUnitProperties
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
+				</form>
+			{/if}
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
 
-	<footer class="footer-action-bar">
-		{#if mayCreateIndividualProfile}
-			<button
-				class="button button-xs button-alternative"
-				disabled={creatingProfile}
-				onclick={createIndividualProfile}
-				type="button"
-			>
-				{$_('individual_profile.create')}
-			</button>
-		{/if}
-		<DeleteButton {container} {relatedContainers} />
-	</footer>
+	{#if useNewPropertyPanel}
+		<footer class="footer-action-bar">
+			{#if mayCreateIndividualProfile}
+				<button
+					class="button button-xs button-alternative"
+					disabled={creatingProfile}
+					onclick={createIndividualProfile}
+					type="button"
+				>
+					{$_('individual_profile.create')}
+				</button>
+			{/if}
+			<DeleteButton {container} {relatedContainers} />
+		</footer>
+	{/if}
 {/snippet}
 
 {@render layout(header, main)}
