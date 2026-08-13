@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import AllPage from '$lib/components/AllPage.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
-	import fetchContainerPage from '$lib/client/fetchContainerPage';
-	import withOptimistic from '$lib/client/withOptimistic';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -73,28 +74,30 @@
 	);
 </script>
 
-<AllPage {data} filterBarInitiallyOpen>
-	<Catalog
-		{containers}
-		payloadType={[
-			payloadTypes.enum.event,
-			payloadTypes.enum.goal,
-			payloadTypes.enum.measure,
-			payloadTypes.enum.page,
-			payloadTypes.enum.program,
-			payloadTypes.enum.post,
-			payloadTypes.enum.report,
-			payloadTypes.enum.rule,
-			payloadTypes.enum.simple_measure
-		]}
-	>
-		{#snippet footer()}
-			<LazyLoadSentinel
-				hasMore={list.hasMore}
-				loading={list.loadingMore}
-				onLoadMore={list.loadMore}
-			/>
-		{/snippet}
-	</Catalog>
-	<ContextTabs slug="all-catalog" />
-</AllPage>
+<PageLayout>
+	<AllPage {data} filterBarInitiallyOpen>
+		<Catalog
+			{containers}
+			payloadType={[
+				payloadTypes.enum.event,
+				payloadTypes.enum.goal,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.page,
+				payloadTypes.enum.program,
+				payloadTypes.enum.post,
+				payloadTypes.enum.report,
+				payloadTypes.enum.rule,
+				payloadTypes.enum.simple_measure
+			]}
+		>
+			{#snippet footer()}
+				<LazyLoadSentinel
+					hasMore={list.hasMore}
+					loading={list.loadingMore}
+					onLoadMore={list.loadMore}
+				/>
+			{/snippet}
+		</Catalog>
+		<ContextTabs slug="all-catalog" />
+	</AllPage>
+</PageLayout>

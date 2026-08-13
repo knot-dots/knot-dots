@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import { type PageData } from '../../routes/[guid=uuid]/help/catalog/$types';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -12,12 +13,14 @@
 	let { children, data }: Props = $props();
 </script>
 
-<Layout bulkActions={['visibility', 'delete']}>
-	{#snippet header()}
-		<Header facets={data.facets} search />
-	{/snippet}
+<BulkActionContextProvider actions={['visibility', 'delete']}>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header facets={data.facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		{@render children()}
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			{@render children()}
+		{/snippet}
+	</FullscreenLayout>
+</BulkActionContextProvider>

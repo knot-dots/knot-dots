@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
-	import Tasks from '$lib/components/Tasks.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
+	import Tasks from '$lib/components/Tasks.svelte';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -28,13 +29,15 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} search sortOptions={[]} {workspaceOptions} />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header {facets} search sortOptions={[]} {workspaceOptions} />
+		{/snippet}
 
-	{#snippet main()}
-		<Tasks {containers} />
-		<ContextTabs slug="tasks-status" />
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			<Tasks {containers} />
+			<ContextTabs slug="tasks-status" />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>

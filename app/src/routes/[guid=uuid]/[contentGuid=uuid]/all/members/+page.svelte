@@ -1,9 +1,10 @@
 <script lang="ts">
 	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import Members from '$lib/components/Members.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -13,28 +14,30 @@
 	let { data }: Props = $props();
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header />
+		{/snippet}
 
-	{#snippet main()}
-		<div class="details">
-			<h1 class="details-title">
-				{data.container.payload.title}
-				<button class="action-button" type="button" onclick={() => window.history.back()}>
-					<ChevronLeft />
-				</button>
-			</h1>
+		{#snippet main()}
+			<div class="details">
+				<h1 class="details-title">
+					{data.container.payload.title}
+					<button class="action-button" type="button" onclick={() => window.history.back()}>
+						<ChevronLeft />
+					</button>
+				</h1>
 
-			<div class="details-section">
-				<Members container={data.container} users={data.users} />
+				<div class="details-section">
+					<Members container={data.container} users={data.users} />
+				</div>
 			</div>
-		</div>
 
-		<ContextTabs slug="members" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="members" />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>
 
 <style>
 	.details {

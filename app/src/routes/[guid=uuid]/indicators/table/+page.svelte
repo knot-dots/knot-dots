@@ -16,6 +16,7 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import FileUpload from '$lib/components/FileUpload.svelte';
 	import IndicatorsPage from '$lib/components/IndicatorsPage.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
@@ -219,24 +220,26 @@
 	});
 </script>
 
-<IndicatorsPage data={{ ...data, containers }}>
-	{#snippet actions()}
-		{#if canUploadCsv}
-			<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>
-				<UploadIcon />
-				{$_('indicator_csv.upload')}
-			</button>
-		{/if}
-		{#if canDownloadCsv}
-			<button class="button-xs" type="button" onclick={handleDownload}>
-				<DownloadIcon />
-				{$_('indicator_csv.download')}
-			</button>
-		{/if}
-	{/snippet}
-	<Table {actualDataContainers} {columns} {rows} />
-	<ContextTabs slug="indicators-table" />
-</IndicatorsPage>
+<PageLayout>
+	<IndicatorsPage data={{ ...data, containers }}>
+		{#snippet actions()}
+			{#if canUploadCsv}
+				<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>
+					<UploadIcon />
+					{$_('indicator_csv.upload')}
+				</button>
+			{/if}
+			{#if canDownloadCsv}
+				<button class="button-xs" type="button" onclick={handleDownload}>
+					<DownloadIcon />
+					{$_('indicator_csv.download')}
+				</button>
+			{/if}
+		{/snippet}
+		<Table {actualDataContainers} {columns} {rows} />
+		<ContextTabs slug="indicators-table" />
+	</IndicatorsPage>
+</PageLayout>
 
 {#if createFeatureDecisions(page.data.features).useImportFromCsv()}
 	<dialog bind:this={uploadDialog} class="csv-upload">

@@ -5,7 +5,6 @@ const key = {};
 
 interface DetailView {
 	properties: Collapsible;
-	relocationNoticeSeen: boolean;
 }
 
 export function setDetailViewContext(context: DetailView) {

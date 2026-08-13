@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import type { PageData } from '../../routes/[guid=uuid]/resources/catalog/$types';
 	import { predicates } from '$lib/models';
 
@@ -22,7 +22,7 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
+<FullscreenLayout>
 	{#snippet header()}
 		<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
 	{/snippet}
@@ -30,4 +30,4 @@
 	{#snippet main()}
 		{@render children()}
 	{/snippet}
-</Layout>
+</FullscreenLayout>

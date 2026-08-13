@@ -2,11 +2,12 @@
 	import { setContext } from 'svelte';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
-	import Measures from '$lib/components/Measures.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import Measures from '$lib/components/Measures.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		computeFacetCount,
 		isMeasureContainer,
@@ -71,14 +72,16 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Measures {containers} />
+		{#snippet main()}
+			<Measures {containers} />
 
-		<ContextTabs slug="measures-status" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="measures-status" />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>

@@ -42,6 +42,7 @@
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -94,6 +95,8 @@
 		getContext('sidebar');
 
 	const detailView = getDetailViewContext();
+
+	const propertiesRelocationNotice = getPropertiesRelocationContext();
 
 	let container = $derived.by(() => {
 		const base = overlay ? $overlayStore?.container : page.data.container;
@@ -332,7 +335,7 @@
 					type="button"
 				>
 					<Label />
-					{#if !detailView.relocationNoticeSeen}
+					{#if propertiesRelocationNotice && !propertiesRelocationNotice.seen}
 						<span
 							class="indicator system-info"
 							style:--indicator-background-color="var(--color-background-accent-strong)"

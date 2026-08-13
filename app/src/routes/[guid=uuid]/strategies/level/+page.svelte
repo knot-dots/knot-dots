@@ -7,10 +7,11 @@
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type Container, type Level, predicates, type ProgramPayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -57,31 +58,33 @@
 	});
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Board>
-			{#each data.columnIds as levelOption (levelOption)}
-				<BoardColumn addItemUrl={`#create=program&level=${levelOption}`} title={$_(levelOption)}>
-					<MaybeDragZone containers={board.itemsByColumn(levelOption)}>
-						{#snippet footer()}
-							{@const list = board.listByColumn(levelOption)}
-							{#if list}
-								<LazyLoadSentinel
-									hasMore={list.hasMore}
-									loading={list.loadingMore}
-									onLoadMore={list.loadMore}
-								/>
-							{/if}
-						{/snippet}
-					</MaybeDragZone>
-				</BoardColumn>
-			{/each}
-		</Board>
+		{#snippet main()}
+			<Board>
+				{#each data.columnIds as levelOption (levelOption)}
+					<BoardColumn addItemUrl={`#create=program&level=${levelOption}`} title={$_(levelOption)}>
+						<MaybeDragZone containers={board.itemsByColumn(levelOption)}>
+							{#snippet footer()}
+								{@const list = board.listByColumn(levelOption)}
+								{#if list}
+									<LazyLoadSentinel
+										hasMore={list.hasMore}
+										loading={list.loadingMore}
+										onLoadMore={list.loadMore}
+									/>
+								{/if}
+							{/snippet}
+						</MaybeDragZone>
+					</BoardColumn>
+				{/each}
+			</Board>
 
-		<ContextTabs slug="strategies-level" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="strategies-level" />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>

@@ -3,11 +3,13 @@
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type Container, payloadTypes, type ReportPayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -57,21 +59,25 @@
 	);
 </script>
 
-<Layout bulkActions={['visibility', 'delete']}>
-	{#snippet header()}
-		<Header />
-	{/snippet}
-
-	{#snippet main()}
-		<Catalog {containers} payloadType={[payloadTypes.enum.report]}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
+<PageLayout>
+	<BulkActionContextProvider actions={['visibility', 'delete']}>
+		<FullscreenLayout>
+			{#snippet header()}
+				<Header />
 			{/snippet}
-		</Catalog>
-		<ContextTabs slug="reports-catalog" />
-	{/snippet}
-</Layout>
+
+			{#snippet main()}
+				<Catalog {containers} payloadType={[payloadTypes.enum.report]}>
+					{#snippet footer()}
+						<LazyLoadSentinel
+							hasMore={list.hasMore}
+							loading={list.loadingMore}
+							onLoadMore={list.loadMore}
+						/>
+					{/snippet}
+				</Catalog>
+				<ContextTabs slug="reports-catalog" />
+			{/snippet}
+		</FullscreenLayout>
+	</BulkActionContextProvider>
+</PageLayout>

@@ -5,11 +5,13 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -151,30 +153,34 @@
 	);
 </script>
 
-<Layout bulkActions={['visibility', 'delete']}>
-	{#snippet header()}
-		<Header search />
-	{/snippet}
+<PageLayout>
+	<BulkActionContextProvider actions={['visibility', 'delete']}>
+		<FullscreenLayout>
+			{#snippet header()}
+				<Header search />
+			{/snippet}
 
-	{#snippet main()}
-		{#key page.url.searchParams}
-			<Board>
-				<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
-					<div class="vertical-scroll-wrapper">
-						{#each filteredContainers as container (container.guid)}
-							<Card {container} showRelationFilter />
-						{/each}
-					</div>
-				</BoardColumn>
-				<BoardColumn title={$_('category.terms.heading')}>
-					<MaybeDragZone containers={filteredTerms} />
-				</BoardColumn>
-				<BoardColumn title={$_('category.subterms.heading')}>
-					<MaybeDragZone containers={filteredSubterms} />
-				</BoardColumn>
-			</Board>
-		{/key}
+			{#snippet main()}
+				{#key page.url.searchParams}
+					<Board>
+						<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
+							<div class="vertical-scroll-wrapper">
+								{#each filteredContainers as container (container.guid)}
+									<Card {container} showRelationFilter />
+								{/each}
+							</div>
+						</BoardColumn>
+						<BoardColumn title={$_('category.terms.heading')}>
+							<MaybeDragZone containers={filteredTerms} />
+						</BoardColumn>
+						<BoardColumn title={$_('category.subterms.heading')}>
+							<MaybeDragZone containers={filteredSubterms} />
+						</BoardColumn>
+					</Board>
+				{/key}
 
-		<ContextTabs slug="categories" />
-	{/snippet}
-</Layout>
+				<ContextTabs slug="categories" />
+			{/snippet}
+		</FullscreenLayout>
+	</BulkActionContextProvider>
+</PageLayout>

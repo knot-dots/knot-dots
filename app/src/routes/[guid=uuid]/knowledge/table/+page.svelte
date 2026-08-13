@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
-	import Table from '$lib/components/Table.svelte';
-	import withOptimistic from '$lib/client/withOptimistic';
-	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
-	import type { PageProps } from './$types';
-	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import { type Container, type KnowledgePayload, payloadTypes } from '$lib/models';
 	import createPaginatedList from '$lib/client/createPaginatedList.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
+	import withOptimistic from '$lib/client/withOptimistic';
+	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
+	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
+	import Table from '$lib/components/Table.svelte';
+	import { type Container, type KnowledgePayload, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
+	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
+	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
@@ -74,15 +75,17 @@
 	]);
 </script>
 
-<KnowledgePage data={{ ...data, containers }}>
-	<Table {columns} rows={containers}>
-		{#snippet footer()}
-			<LazyLoadSentinel
-				hasMore={list.hasMore}
-				loading={list.loadingMore}
-				onLoadMore={list.loadMore}
-			/>
-		{/snippet}
-	</Table>
-	<ContextTabs slug="knowledge-table" />
-</KnowledgePage>
+<PageLayout>
+	<KnowledgePage data={{ ...data, containers }}>
+		<Table {columns} rows={containers}>
+			{#snippet footer()}
+				<LazyLoadSentinel
+					hasMore={list.hasMore}
+					loading={list.loadingMore}
+					onLoadMore={list.loadMore}
+				/>
+			{/snippet}
+		</Table>
+		<ContextTabs slug="knowledge-table" />
+	</KnowledgePage>
+</PageLayout>

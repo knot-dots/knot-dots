@@ -28,6 +28,7 @@
 	{#if useBulkActions}
 		<label class="bulk-action">
 			<input
+				{@attach bulkActionContext.registerTarget}
 				bind:checked={
 					() => bulkActionContext.selected.has(container.guid),
 					() =>

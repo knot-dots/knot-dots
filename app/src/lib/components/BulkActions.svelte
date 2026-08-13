@@ -84,7 +84,7 @@
 	);
 </script>
 
-{#if bulkActionContext}
+{#if bulkActionContext && bulkActionContext.targets.size > 0}
 	<fieldset class={{ 'has-selection': bulkActionContext.selected.size > 0 }}>
 		<legend class="is-visually-hidden">{$_('bulk_actions')}</legend>
 

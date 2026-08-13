@@ -126,3 +126,34 @@ test('perform bulk action in detail view', async ({
 	await section.getByRole('button', { name: 'Settings' }).click();
 	await expect(section.getByLabel('public')).toBeChecked();
 });
+
+test('bulk actions are hidden when there are no targets', async ({ dotsBoard, testMeasure }) => {
+	await dotsBoard.goto(`/${testMeasure.organization}`);
+	await dotsBoard.card(testMeasure.payload.title).click();
+	await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
+	await dotsBoard.overlay.editModeToggle.check();
+
+	await expect(dotsBoard.overlay.sections).toHaveCount(0);
+	await expect(dotsBoard.overlay.bulkActionControls).not.toBeVisible();
+});
+
+test('bulk action context does not leak from background to overlay', async ({
+	landingPage,
+	testProgram
+}) => {
+	await landingPage.goto(`/${testProgram.organization}`);
+	await landingPage.header.editModeToggle.check();
+	await landingPage.addSection('Programs');
+
+	await landingPage.page.reload();
+	await landingPage.header.editModeToggle.check();
+	await expect(landingPage.header.bulkActionControls).toBeVisible();
+
+	await landingPage.sections
+		.getByRole('link', {
+			name: testProgram.payload.title
+		})
+		.click();
+	await expect(landingPage.overlay.title).toHaveText(testProgram.payload.title);
+	await expect(landingPage.overlay.bulkActionControls).not.toBeVisible();
+});

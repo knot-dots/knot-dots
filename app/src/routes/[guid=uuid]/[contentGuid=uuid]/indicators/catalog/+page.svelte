@@ -2,9 +2,10 @@
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import NewIndicators from '$lib/components/NewIndicators.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		computeFacetCount,
 		indicatorCategories,
@@ -42,12 +43,14 @@
 	);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header {facets} />
+		{/snippet}
 
-	{#snippet main()}
-		<NewIndicators {containers} />
-	{/snippet}
-</Layout>
+		{#snippet main()}
+			<NewIndicators {containers} />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>

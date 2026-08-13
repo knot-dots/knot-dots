@@ -131,6 +131,7 @@
 	{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable && bulkActionContext}
 		<label>
 			<input
+				{@attach bulkActionContext.registerTarget}
 				bind:checked={
 					() => bulkActionContext.selected.has(container.guid),
 					() =>

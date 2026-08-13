@@ -1,21 +1,21 @@
 <script lang="ts">
-	// Snippet import removed; not used
 	import { _ } from 'svelte-i18n';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
-		titleForProgramCollection,
+		type AnyPayload,
+		type Container,
 		findAncestors,
 		predicates,
-		type Container,
-		type AnyPayload
+		titleForProgramCollection
 	} from '$lib/models';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
@@ -51,35 +51,37 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header {facets} search />
+		{/snippet}
 
-	{#snippet main()}
-		<Board>
-			<BoardColumn title={titleForProgramCollection(data.programs)}>
-				<div class="vertical-scroll-wrapper">
-					{#each data.programs as container (container.guid)}
-						<Card {container} showRelationFilter />
-					{/each}
-				</div>
-			</BoardColumn>
-
-			{#each [...knowledgeByLevel.entries()].toSorted() as [key, value] (key)}
-				<BoardColumn
-					addItemUrl="#create=knowledge"
-					title={$_('knowledge.level', { values: { level: key + 1 } })}
-				>
-					<MaybeDragZone containers={value}>
-						{#snippet itemSnippet(container)}
+		{#snippet main()}
+			<Board>
+				<BoardColumn title={titleForProgramCollection(data.programs)}>
+					<div class="vertical-scroll-wrapper">
+						{#each data.programs as container (container.guid)}
 							<Card {container} showRelationFilter />
-						{/snippet}
-					</MaybeDragZone>
+						{/each}
+					</div>
 				</BoardColumn>
-			{/each}
-		</Board>
 
-		<ContextTabs slug="knowledge-level" />
-	{/snippet}
-</Layout>
+				{#each [...knowledgeByLevel.entries()].toSorted() as [key, value] (key)}
+					<BoardColumn
+						addItemUrl="#create=knowledge"
+						title={$_('knowledge.level', { values: { level: key + 1 } })}
+					>
+						<MaybeDragZone containers={value}>
+							{#snippet itemSnippet(container)}
+								<Card {container} showRelationFilter />
+							{/snippet}
+						</MaybeDragZone>
+					</BoardColumn>
+				{/each}
+			</Board>
+
+			<ContextTabs slug="knowledge-level" />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>

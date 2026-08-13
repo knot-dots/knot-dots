@@ -2,10 +2,12 @@
 	import { setContext } from 'svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -22,14 +24,18 @@
 	let facets = $derived(data.facets);
 </script>
 
-<Layout bulkActions={['visibility', 'delete']}>
-	{#snippet header()}
-		<Header {facets} search />
-	{/snippet}
+<PageLayout>
+	<BulkActionContextProvider actions={['visibility', 'delete']}>
+		<FullscreenLayout>
+			{#snippet header()}
+				<Header {facets} search />
+			{/snippet}
 
-	{#snippet main()}
-		<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
+			{#snippet main()}
+				<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
 
-		<ContextTabs slug="measures-templates" />
-	{/snippet}
-</Layout>
+				<ContextTabs slug="measures-templates" />
+			{/snippet}
+		</FullscreenLayout>
+	</BulkActionContextProvider>
+</PageLayout>

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import ChevronLeft from '~icons/heroicons/chevron-left';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import Layout from '$lib/components/Layout.svelte';
 	import Members from '$lib/components/Members.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import type { PageData } from './$types';
 
 	interface Props {
@@ -13,32 +14,34 @@
 	let { data }: Props = $props();
 </script>
 
-<Layout>
-	{#snippet header()}
-		<Header workspaceOptions={[]} />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header workspaceOptions={[]} />
+		{/snippet}
 
-	{#snippet main()}
-		<section class="details">
-			<header class="details-section">
-				<h1 class="details-title">
-					{'title' in data.container.payload
-						? data.container.payload.title
-						: data.container.payload.name}
-					<button class="action-button" type="button" onclick={() => window.history.back()}>
-						<ChevronLeft />
-					</button>
-				</h1>
-			</header>
+		{#snippet main()}
+			<section class="details">
+				<header class="details-section">
+					<h1 class="details-title">
+						{'title' in data.container.payload
+							? data.container.payload.title
+							: data.container.payload.name}
+						<button class="action-button" type="button" onclick={() => window.history.back()}>
+							<ChevronLeft />
+						</button>
+					</h1>
+				</header>
 
-			<div class="details-section">
-				<Members container={data.container} users={data.users} />
-			</div>
-		</section>
+				<div class="details-section">
+					<Members container={data.container} users={data.users} />
+				</div>
+			</section>
 
-		<ContextTabs slug="members" />
-	{/snippet}
-</Layout>
+			<ContextTabs slug="members" />
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>
 
 <style>
 	.details {
