@@ -625,7 +625,7 @@
 									<LightningBolt />
 									<span>{filterValueLabel(key, value)}</span>
 									<button
-										class="button button-remove"
+										class="action-button"
 										type="button"
 										onclick={() => handleRemoveFilterValue(key, value)}
 									>
@@ -723,22 +723,6 @@
 		color: var(--color-white);
 	}
 
-	.button-remove {
-		--button-active-background: transparent;
-		--button-hover-background: transparent;
-		--padding-x: 0;
-		--padding-y: 0.375rem;
-
-		border: none;
-		flex-shrink: 0;
-		margin-left: auto;
-	}
-
-	.button-remove > :global(svg) {
-		color: var(--color-gray-500);
-		max-width: none;
-	}
-
 	.catalog {
 		margin-top: 1rem;
 	}
@@ -800,13 +784,20 @@
 		align-items: center;
 		background: var(--color-gray-050);
 		border-radius: 8px;
+		color: var(--color-text-accent-default);
 		display: flex;
 		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
+		padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+		height: 2.5rem;
 	}
 
-	.selection-item input {
-		accent-color: var(--color-primary-700);
+	.selection-item .action-button {
+		color: var(--color-text-accent-subtle);
+		margin-left: auto;
+	}
+
+	.selection-item label {
+		padding-right: 0.375rem;
 	}
 
 	.selection-item label,
@@ -821,7 +812,9 @@
 
 	.selection-item > :global(svg) {
 		flex-shrink: 0;
+		height: 1rem;
 		max-width: none;
+		width: 1rem;
 	}
 
 	@container (min-width: 48rem) {
