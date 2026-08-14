@@ -20,17 +20,19 @@ describe('parseOrganizationScope', () => {
 	});
 
 	it('parses current scope including subordinate organizational units', () => {
-		expect(parseOrganizationScope({ organization: 'current', organizationalUnit: [] })).toEqual({
+		expect(parseOrganizationScope({ organization: ['current'], organizationalUnit: [] })).toEqual({
 			type: 'current',
 			includeSubordinateOrganizationalUnits: true
 		});
 	});
 
 	it('parses current scope excluding subordinate organizational units', () => {
-		expect(parseOrganizationScope({ organization: 'current', organizationalUnit: [''] })).toEqual({
-			type: 'current',
-			includeSubordinateOrganizationalUnits: false
-		});
+		expect(parseOrganizationScope({ organization: ['current'], organizationalUnit: [''] })).toEqual(
+			{
+				type: 'current',
+				includeSubordinateOrganizationalUnits: false
+			}
+		);
 	});
 
 	it('parses explicit scope from arrays', () => {
@@ -77,7 +79,7 @@ describe('resolveOrganizationScope', () => {
 
 	it('resolves current scope without subordinate units to organization-level content', () => {
 		expect(
-			resolveOrganizationScope({ organization: 'current', organizationalUnit: [''] }, context)
+			resolveOrganizationScope({ organization: ['current'], organizationalUnit: [''] }, context)
 		).toEqual([
 			['organization', org],
 			['organizationalUnit', '']
@@ -100,7 +102,7 @@ describe('resolveOrganizationScope', () => {
 
 describe('hasConfiguredFilter', () => {
 	it('counts the current sentinel and non-empty arrays', () => {
-		expect(hasConfiguredFilter({ organization: 'current', organizationalUnit: [] })).toBe(true);
+		expect(hasConfiguredFilter({ organization: ['current'], organizationalUnit: [] })).toBe(true);
 		expect(hasConfiguredFilter({ organization: [org] })).toBe(true);
 		expect(hasConfiguredFilter({ status: ['status.in_implementation'] })).toBe(true);
 		expect(hasConfiguredFilter({ topic: [] })).toBe(false);
