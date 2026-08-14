@@ -640,6 +640,7 @@ function prepareWhereCondition(filters: {
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	hierarchyLevels?: number[];
+	includeGuids?: string[];
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
@@ -731,19 +732,31 @@ function prepareWhereCondition(filters: {
 	if (filters.levels?.length) {
 		conditions.push(sql.fragment`c.payload->>'level' = ANY (${sql.array(filters.levels, 'text')})`);
 	}
+	// The organization and organizational unit conditions confine the query to
+	// the current context; containers brought in by adoption live outside of it,
+	// so they widen the combined scope condition instead of adding to it.
+	const scopeConditions = [];
 	if (filters.organizations?.length) {
-		conditions.push(
+		scopeConditions.push(
 			sql.fragment`c.organization IN (${sql.join(filters.organizations, sql.fragment`, `)})`
 		);
 	}
 	if (filters.organizationalUnits === null) {
-		conditions.push(sql.fragment`c.organizational_unit IS NULL`);
+		scopeConditions.push(sql.fragment`c.organizational_unit IS NULL`);
 	} else if (filters.organizationalUnits?.length) {
-		conditions.push(
+		scopeConditions.push(
 			sql.fragment`c.organizational_unit IN (${sql.join(
 				filters.organizationalUnits,
 				sql.fragment`, `
 			)})`
+		);
+	}
+	if (scopeConditions.length > 0) {
+		const scopeCondition = sql.join(scopeConditions, sql.fragment` AND `);
+		conditions.push(
+			filters.includeGuids?.length
+				? sql.fragment`((${scopeCondition}) OR c.guid = ANY (${sql.array(filters.includeGuids, 'uuid')}))`
+				: sql.fragment`(${scopeCondition})`
 		);
 	}
 	if (filters.programTypes?.length) {
@@ -890,6 +903,7 @@ export function getManyContainers(
 		guid?: string[];
 		helpSlugs?: HelpSlug[];
 		hierarchyLevels?: number[];
+		includeGuids?: string[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
@@ -1202,6 +1216,7 @@ export function getAllRelatedContainers(
 	filters: {
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
+		includeGuids?: string[];
 		indicatorCategories?: string[];
 		organizationalUnits?: string[];
 		programTypes?: string[];
@@ -1467,6 +1482,51 @@ export function getAllContainersRelatedToIndicators(
 			connection,
 			await withUserAndRelation<Container>(connection, containerResult)
 		);
+	};
+}
+
+// Containers brought into the given adopters' scope by adoption: the adopted
+// programs themselves plus everything recursively contained in them. Neither
+// adoptability nor visibility are checked here; the former is enforced when
+// the relation is created, the latter by filterVisible on the read path.
+export function getAdoptedContainerGuids(adopterGuids: string[]) {
+	return async (connection: DatabaseConnection): Promise<string[]> => {
+		if (adopterGuids.length === 0) {
+			return [];
+		}
+
+		const predicate = [
+			predicates.enum['is-part-of'],
+			predicates.enum['is-part-of-measure'],
+			predicates.enum['is-part-of-program'],
+			predicates.enum['is-section-of']
+		];
+
+		const result = await connection.any(sql.typeAlias('guid')`
+			WITH RECURSIVE adopted(guid) AS (
+				SELECT DISTINCT cr.subject AS guid
+				FROM container_relation cr
+				JOIN container c ON c.guid = cr.subject AND c.valid_currently AND NOT c.deleted
+				WHERE cr.predicate = ${predicates.enum['is-adopted-by']}
+					AND cr.object = ANY (${sql.array(adopterGuids, 'uuid')})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+			), relation(path, is_cycle, object) AS (
+				SELECT ARRAY[a.guid], false, a.guid FROM adopted a
+				UNION ALL
+				SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
+				FROM container c
+				JOIN container_relation cr ON c.guid = cr.subject
+					AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+					AND cr.valid_currently
+					AND NOT cr.deleted
+				JOIN relation r ON cr.object = r.object AND NOT r.is_cycle
+				WHERE c.valid_currently
+			)
+			SELECT DISTINCT unnest(path) AS guid FROM relation
+		`);
+
+		return result.map(({ guid }) => guid);
 	};
 }
 
