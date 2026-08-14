@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
 	organizationalUnitsManagedByUser,
 	adopters,
+	adopterScope,
 	adoptionDiff,
 	adoptionRelations,
 	groupedByOrganization,
@@ -179,6 +180,40 @@ describe('adoptableOrganizationalUnits', () => {
 		expect(
 			organizationalUnitsManagedByUser(makeUser({ roles: ['sysadmin'] }), makeProgram(), units)
 		).toEqual([]);
+	});
+});
+
+describe('adopterScope', () => {
+	const currentOrganization = makeOrganization(organization, { name: 'City A' });
+
+	test('an organizational unit context covers only that unit', () => {
+		expect(
+			adopterScope({
+				currentOrganization,
+				currentOrganizationalUnit: makeOrganizationalUnit(siblingUnit, organization),
+				organizationalUnits: units
+			})
+		).toEqual([siblingUnit]);
+	});
+
+	test('an organization context covers the organization and its units', () => {
+		expect(
+			adopterScope({
+				currentOrganization,
+				currentOrganizationalUnit: undefined,
+				organizationalUnits: units
+			})
+		).toEqual([organization, owningUnit, siblingUnit]);
+	});
+
+	test('an organization without units covers only itself', () => {
+		expect(
+			adopterScope({
+				currentOrganization: makeOrganization(otherOrganization, { name: 'City B' }),
+				currentOrganizationalUnit: undefined,
+				organizationalUnits: [makeOrganizationalUnit(siblingUnit, organization)]
+			})
+		).toEqual([otherOrganization]);
 	});
 });
 
