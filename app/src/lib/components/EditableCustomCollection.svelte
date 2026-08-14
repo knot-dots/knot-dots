@@ -145,10 +145,7 @@
 			for (const t of type) query.append('payloadType', t);
 			for (const key in filter) {
 				const values = filter[key];
-				if (
-					!(organizationScopeFilterKeys as readonly string[]).includes(key) &&
-					Array.isArray(values)
-				) {
+				if (!(organizationScopeFilterKeys as readonly string[]).includes(key)) {
 					for (const value of values) {
 						query.append(key, value);
 					}
@@ -310,10 +307,7 @@
 
 		for (const key in container.payload.filter) {
 			const values = container.payload.filter[key];
-			if (
-				!(organizationScopeFilterKeys as readonly string[]).includes(key) &&
-				Array.isArray(values)
-			) {
+			if (!(organizationScopeFilterKeys as readonly string[]).includes(key)) {
 				for (const value of values) {
 					params.append(key, value);
 				}
