@@ -7,20 +7,18 @@
 	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import { invalidate } from '$app/navigation';
-	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
+	import { filterCategoryContext } from '$lib/categoryOptions';
+	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import {
 		binaryIndicatorPayload,
 		type BinaryIndicatorPayload,
-		computeFacetCount,
 		type Container,
 		createContainerSchema,
-		indicatorCategories,
 		indicatorTemplatePayload,
 		type IndicatorTemplatePayload,
-		indicatorTypes,
 		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
@@ -36,7 +34,10 @@
 	let sortBar = createDisclosure({ label: $_('sort') });
 
 	const categoryContext = $derived(
-		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+		filterCategoryContext(page.data.categoryContext, [
+			payloadTypes.enum.binary_indicator,
+			payloadTypes.enum.indicator_template
+		])
 	);
 
 	let filter = $state<Record<string, string[]>>({
@@ -64,9 +65,10 @@
 	const searchResource = resource(
 		[() => $state.snapshot(filter), () => sort, () => terms],
 		async ([filter, sort, terms], _, { signal }) => {
-			const params = new URLSearchParams([
+			const query = new URLSearchParams([
 				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
 				...filter.indicatorType.map((v) => ['indicatorType', v]),
+				['organization', page.data.currentOrganization.guid],
 				['payloadType', payloadTypes.enum.binary_indicator],
 				['payloadType', payloadTypes.enum.indicator_template],
 				['sort', sort],
@@ -74,14 +76,25 @@
 				...categoryContext.keys.flatMap((k) => (k in filter ? filter[k].map((v) => [k, v]) : []))
 			]);
 
-			const response = await fetch(`/container?${params.toString()}`, { signal });
-			return z
-				.array(
-					createContainerSchema(
-						z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorTemplatePayload])
+			const result = await fetchContainerPage({
+				fetch,
+				limit: 10_000,
+				offset: 0,
+				query,
+				signal
+			});
+			return {
+				containers: z
+					.array(
+						createContainerSchema(
+							z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorTemplatePayload])
+						)
 					)
-				)
-				.parse(await response.json());
+					.parse(result.containers),
+				facets: result.facets,
+				hasMore: result.page.hasMore,
+				nextOffset: result.page.nextOffset
+			};
 		},
 		{
 			debounce: 300
@@ -89,20 +102,26 @@
 	);
 
 	$effect(() => {
-		for (const indicator of searchResource.current ?? []) {
+		for (const indicator of searchResource.current?.containers ?? []) {
 			knownIndicators.set(indicator.guid, indicator);
 		}
 	});
 
-	let facets = $derived.by(() => {
-		const facets = new Map([
-			...buildCategoryFacetsWithCounts(categoryContext.options),
-			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['indicatorTypes', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
-		]);
-
-		return computeFacetCount(facets, searchResource.current ?? []);
-	});
+	let facets = $derived(
+		searchResource.current
+			? new Map([
+					...[...searchResource.current.facets].filter(([k]) => categoryContext.keys.includes(k)),
+					[
+						'indicatorCategory',
+						searchResource.current.facets.get('indicatorCategory') ?? new Map<string, number>()
+					],
+					[
+						'indicatorType',
+						searchResource.current.facets.get('indicatorType') ?? new Map<string, number>()
+					]
+				])
+			: new Map<string, Map<string, number>>()
+	);
 
 	function resetFilters() {
 		for (const key in filter) {
@@ -111,7 +130,7 @@
 	}
 
 	function selectAll() {
-		selected = (searchResource.current ?? []).map(({ guid }) => guid);
+		selected = (searchResource.current?.containers ?? []).map(({ guid }) => guid);
 	}
 
 	function unselectAll() {
@@ -164,14 +183,19 @@
 					}))
 				})) ??
 				[...foci.entries()]
-					.map(([k, v]) => ({ count: v, label: $_(k), value: k }))
+					.map(([k, v]) => ({
+						count: v,
+						label: $_(k),
+						value: k,
+						subOptions: undefined
+					}))
 					.toSorted((a, b) =>
 						a.label.localeCompare(b.label, undefined, {
 							numeric: true,
 							sensitivity: 'base'
 						})
 					)}
-			{#if options.some(({ count }) => count > 0)}
+			{#if options.some(({ count, subOptions }) => count > 0 || subOptions?.some(({ count }) => count > 0))}
 				<InlineFilterDropDown
 					bind:value={() => filter[key] ?? [], (v) => (filter[key] = v)}
 					{key}
@@ -214,7 +238,7 @@
 		<div class="result">
 			{#if searchResource.current}
 				<ul class="catalog">
-					{#each searchResource.current as item (item.guid)}
+					{#each searchResource.current.containers as item (item.guid)}
 						<li>
 							<SelectableCard
 								--height="100%"
