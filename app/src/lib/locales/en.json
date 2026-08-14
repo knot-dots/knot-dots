@@ -556,8 +556,8 @@
 		"non_profit": "Non-profit",
 		"political": "Political"
 	},
-	"organization_filter.current_area": "Current area",
-	"organization_filter.exclude_subordinate": "Without sub-areas",
+	"organization_filter.current": "Current organization",
+	"organization_filter.exclude_subordinate": "Without organizational units",
 	"organization_filter.explicit": "Explicit selection",
 	"organization_filter.reset": "Reset",
 	"organization_filter.select": "Select",

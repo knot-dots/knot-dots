@@ -568,7 +568,7 @@
 					{#if scopeType === 'current'}
 						<li class="selection-item">
 							<LightningBolt />
-							<span>{$_('organization_filter.current_area')}</span>
+							<span>{$_('organization_filter.current')}</span>
 						</li>
 						{#if !includeSubordinateOrganizationalUnits}
 							<li class="selection-item">

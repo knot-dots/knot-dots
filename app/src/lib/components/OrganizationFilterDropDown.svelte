@@ -117,7 +117,7 @@
 			<div class="scope-options" role="radiogroup">
 				<label class="scope-option">
 					<input type="radio" value="current" bind:group={scope} />
-					<span>{$_('organization_filter.current_area')}</span>
+					<span>{$_('organization_filter.current')}</span>
 				</label>
 				<label class="toggle-option" class:toggle-option--disabled={scope !== 'current'}>
 					<span>{$_('organization_filter.exclude_subordinate')}</span>

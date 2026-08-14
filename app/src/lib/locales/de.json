@@ -556,7 +556,7 @@
 		"non_profit": "Zivilgesellschaft",
 		"political": "Politisch"
 	},
-	"organization_filter.current_area": "Aktueller Bereich",
+	"organization_filter.current": "Aktuelle Organisation",
 	"organization_filter.exclude_subordinate": "Ohne Unterbereiche",
 	"organization_filter.explicit": "Explizite Auswahl",
 	"organization_filter.reset": "Zurücksetzen",
