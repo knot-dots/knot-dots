@@ -60,8 +60,6 @@ const payloadTypeValues = [
 	'category',
 	'chapter',
 	'col_content',
-	'content_partner',
-	'content_partner_collection',
 	'custom_collection',
 	'demographic_data',
 	'effect',
@@ -639,6 +637,8 @@ export const taskPriority = z.object({
 export type TaskPriority = z.infer<typeof taskPriority>;
 
 export const visibility = z.enum(['creator', 'members', 'organization', 'public']);
+
+export type Visibility = z.infer<typeof visibility>;
 
 export const administrativeTypes = z.enum([
 	'administrative_type.country',
@@ -1981,6 +1981,10 @@ const anyPayload = z.discriminatedUnion('type', [
 
 export type AnyPayload = z.infer<typeof anyPayload>;
 
+export type TemplatablePayload = Extract<AnyPayload, { template: boolean }>;
+
+export type TemplatePayload = TemplatablePayload & { template: true };
+
 export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialActualDataPayload,
 	initialAdministrativeAreaBasicDataPayload,
@@ -2151,6 +2155,12 @@ export function isContainer(
 		container.payload.type !== payloadTypes.enum.organization &&
 		container.payload.type !== payloadTypes.enum.organizational_unit
 	);
+}
+
+export function isTemplateContainer(
+	container: Container<AnyPayload>
+): container is Container<TemplatePayload> {
+	return 'template' in container.payload && container.payload.template === true;
 }
 
 function hasProperty(
@@ -2626,58 +2636,127 @@ export function getManagedByAll(
 		.filter((candidate) => candidate !== undefined);
 }
 
+const visibilityRestrictiveness = {
+	[visibility.enum.creator]: 0,
+	[visibility.enum.members]: 1,
+	[visibility.enum.organization]: 2,
+	[visibility.enum.public]: 3
+} satisfies Record<Visibility, number>;
+
+function moreRestrictiveVisibility(a: Visibility, b: Visibility) {
+	return visibilityRestrictiveness[a] <= visibilityRestrictiveness[b] ? a : b;
+}
+
 export function createCopyOf(
 	container: Container<AnyPayload>,
 	organization: string,
 	organizationalUnit: string | null
-) {
-	const copy = containerOfType(
-		container.payload.type,
+): NewContainer<AnyPayload> {
+	const isOrganizationalUnit = isOrganizationalUnitContainer(container);
+	const copy = newContainer.parse({
+		managed_by: isOrganizationalUnit ? organization : (organizationalUnit ?? organization),
 		organization,
-		organizationalUnit,
-		organizationalUnit ?? organization,
-		container.realm
-	);
-
-	if (isMeasureContainer(container)) {
-		copy.payload = {
-			...container.payload
-		} as typeof copy.payload;
-	} else if (isTaskContainer(container)) {
-		copy.payload = {
-			...container.payload,
-			assignee: [],
-			status: status.enum['status.idea']
-		} as typeof copy.payload;
-	} else if (isEffectContainer(container)) {
-		copy.payload = {
-			...container.payload,
-			achievedValues: container.payload.achievedValues.map(
-				([year]) => [year, 0] as [number, number]
-			)
-		} as typeof copy.payload;
-	} else if (isOrganizationalUnitContainer(container)) {
-		const { organizationalUnitType, ...rest } = container.payload;
-		// The organizationalUnitType is used to identify externally managed
-		// organizational units.
-		copy.payload = rest;
-	} else {
-		copy.payload = { ...(container.payload as typeof copy.payload) } as typeof copy.payload;
-	}
-
-	copy.payload = {
-		...copy.payload,
-		...('fulfillmentDate' in container.payload ? { fulfillmentDate: undefined } : undefined),
-		...('template' in container.payload ? { template: false } : undefined)
-	} as typeof copy.payload;
-
-	copy.relation.push({
-		object: container.guid,
-		predicate: predicates.enum['is-copy-of'],
-		position: 0
+		organizational_unit: isOrganizationalUnit ? null : organizationalUnit,
+		payload: container.payload,
+		realm: container.realm,
+		relation: [
+			{
+				object: container.guid,
+				predicate: predicates.enum['is-copy-of'],
+				position: 0
+			}
+		]
 	});
 
 	return copy;
+}
+
+export function createRootCopyOf(
+	container: Container<AnyPayload>,
+	organization: string,
+	organizationalUnit: string | null,
+	rootVisibility: Visibility
+): NewContainer<AnyPayload> {
+	const copy = createCopyOf(container, organization, organizationalUnit);
+
+	if (copy.payload.type === payloadTypes.enum.category) {
+		const { key, ...payload } = copy.payload;
+		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
+	} else if (copy.payload.type === payloadTypes.enum.term) {
+		const { value, ...payload } = copy.payload;
+		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
+	}
+
+	return { ...copy, payload: { ...copy.payload, visibility: rootVisibility } };
+}
+
+export function createDescendantCopyOf(
+	container: Container<AnyPayload>,
+	organization: string,
+	organizationalUnit: string | null,
+	rootVisibility: Visibility
+): NewContainer<AnyPayload> {
+	const copy = createCopyOf(container, organization, organizationalUnit);
+
+	return {
+		...copy,
+		payload: {
+			...copy.payload,
+			visibility: moreRestrictiveVisibility(container.payload.visibility, rootVisibility)
+		}
+	};
+}
+
+export function createTemplateInstanceOf(
+	template: Container<TemplatePayload>,
+	organization: string,
+	organizationalUnit: string | null
+): NewContainer<AnyPayload> {
+	const copy = createRootCopyOf(
+		template,
+		organization,
+		organizationalUnit,
+		template.payload.visibility
+	);
+
+	if (!('template' in copy.payload)) {
+		throw new Error('Expected a templatable payload');
+	}
+
+	return newContainer.parse({
+		...copy,
+		payload: { ...copy.payload, template: false }
+	});
+}
+
+export function createIndividualProfileCopyOf(
+	container: Container<OrganizationalUnitPayload>
+): NewContainer<OrganizationalUnitPayload> {
+	const copy = createRootCopyOf(
+		container,
+		container.organization,
+		null,
+		container.payload.visibility
+	);
+
+	if (copy.payload.type !== payloadTypes.enum.organizational_unit) {
+		throw new Error('Expected an organizational unit payload');
+	}
+
+	const { organizationalUnitType, slug, ...payload } = copy.payload;
+
+	return createNewContainerSchema(organizationalUnitPayload).parse({
+		...copy,
+		payload,
+		relation: [
+			...copy.relation,
+			{
+				object: container.guid,
+				position: 0,
+				predicate: predicates.enum['is-individual-profile-of']
+			}
+		]
+	});
 }
 
 /**

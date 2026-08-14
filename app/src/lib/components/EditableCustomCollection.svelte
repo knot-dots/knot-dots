@@ -30,12 +30,12 @@
 		type AnyPayload,
 		type Container,
 		createContainerSchema,
-		createCopyOf,
+		createTemplateInstanceOf,
 		type CustomCollectionPayload,
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
-		type NewContainer,
+		isTemplateContainer,
 		payloadTypes
 	} from '$lib/models';
 	import {
@@ -408,16 +408,22 @@
 			({ guid }) => guid === (event as CustomEvent).detail.selected
 		);
 
-		if (template) {
-			$newContainer = createCopyOf(
-				template,
-				container.organization,
-				container.organizational_unit ?? null
-			) as NewContainer;
-
-			$addItemState = { target: container };
-			createContainerDialog.getElement().showModal();
+		if (!template) {
+			return;
 		}
+
+		if (!isTemplateContainer(template)) {
+			throw new Error('Expected a template container');
+		}
+
+		$newContainer = createTemplateInstanceOf(
+			template,
+			container.organization,
+			container.organizational_unit ?? null
+		);
+
+		$addItemState = { target: container };
+		createContainerDialog.getElement().showModal();
 	}
 
 	$effect(() => {
