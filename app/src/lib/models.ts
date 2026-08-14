@@ -60,8 +60,6 @@ const payloadTypeValues = [
 	'category',
 	'chapter',
 	'col_content',
-	'content_partner',
-	'content_partner_collection',
 	'custom_collection',
 	'demographic_data',
 	'effect',
