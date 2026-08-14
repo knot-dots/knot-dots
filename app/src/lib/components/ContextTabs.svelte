@@ -274,7 +274,7 @@
 
 	.resize-handle {
 		background-image: url(/src/lib/assets/resize-handle.svg);
-		background-position: 2px center;
+		background-position: 0 center;
 		background-repeat: no-repeat;
 		background-clip: border-box;
 		border-right: solid 2px transparent;

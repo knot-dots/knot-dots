@@ -56,8 +56,8 @@
 <svelte:window onmouseup={stopExpand} />
 
 <section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
-	<!--svelte-ignore a11y_no_static_element_interactions -->
-	<div class="resize-handle" onmousedown={startExpand}></div>
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
 	{#if data.key === overlayKey.enum['members']}
 		<MembersOverlay container={data.container} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters'] && isProgramContainer(data.container)}
@@ -91,7 +91,8 @@
 <style>
 	.overlay {
 		background-color: white;
-		box-shadow: var(--shadow-lg);
+		border-radius: 24px 0 0 24px;
+		box-shadow: 0px 12px 50px -12px rgba(0, 0, 0, 0.25);
 		container: overlay / inline-size;
 		display: flex;
 		flex-direction: column;
@@ -116,7 +117,7 @@
 
 	.resize-handle {
 		background-image: url(/src/lib/assets/resize-handle.svg);
-		background-position: 2px center;
+		background-position: 0 center;
 		background-repeat: no-repeat;
 		background-clip: border-box;
 		border-right: solid 2px transparent;

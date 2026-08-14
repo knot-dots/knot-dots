@@ -1242,6 +1242,7 @@ label > input[type='checkbox'].toggle {
 .footer-action-bar:has(*) {
 	align-items: center;
 	background: var(--color-surface-accent-default);
+	border-radius: 0 0 0 24px;
 	border-top: 1px solid var(--color-border-accent-muted);
 	display: flex;
 	flex-wrap: wrap;
