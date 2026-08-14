@@ -193,14 +193,14 @@ test('Organization scope can be configured for rule-based collections', async ({
 
 	// Open the organization filter dropdown
 	await dialog.getByRole('button', { name: 'Organization' }).click();
-	await expect(dialog.getByRole('radio', { name: 'Current area' })).toBeChecked();
+	await expect(dialog.getByRole('radio', { name: 'Current organization' })).toBeChecked();
 	const organizationCheckbox = dialog.getByRole('checkbox', {
 		name: new RegExp(`^${testOrganization.payload.name} \\(`)
 	});
 	await expect(organizationCheckbox).toBeDisabled();
 
-	// Excluding sub-areas hides content of organizational units
-	await dialog.getByRole('checkbox', { name: 'Without sub-areas' }).check();
+	// Exclude organizational units
+	await dialog.getByRole('checkbox', { name: 'Without organizational units' }).check();
 	await expect(organizationalUnitGoalCard).not.toBeVisible();
 	await expect(goalCard).toBeVisible();
 
