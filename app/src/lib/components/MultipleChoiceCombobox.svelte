@@ -97,19 +97,19 @@
 
 {#if editable}
 	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div bind:this={root} class="dropdown">
+	<div bind:this={root} class="combobox">
 		<div
-			class="input-select"
-			class:input-select--expanded={combobox.open}
+			class="combobox-field"
+			class:combobox-field--expanded={combobox.open}
 			onclick={handleFieldClick}
 		>
 			<!-- Without a selection the open field stays a single line holding
 			     just the search input. -->
 			{#if selectedOptions.length > 0 || !combobox.open}
-				<span class="badge-wrapper">
+				<span class="combobox-badges">
 					{#each selectedOptions as selectedOption (selectedOption.value)}
-						<span class="badge">
-							<span class="truncated">{selectedOption.label}</span>
+						<span class="combobox-badge">
+							<span class="combobox-badge-label">{selectedOption.label}</span>
 							<button
 								aria-label={$_('remove')}
 								onclick={() => remove(selectedOption.value)}
@@ -120,7 +120,7 @@
 						</span>
 					{/each}
 					{#if !combobox.open && selectedOptions.length === 0}
-						<span class="empty">{$_('empty')}</span>
+						<span class="combobox-empty">{$_('empty')}</span>
 					{/if}
 				</span>
 			{/if}
@@ -131,7 +131,8 @@
 				aria-labelledby={labelledBy}
 				autocomplete="off"
 				bind:this={searchInput}
-				class:hidden={!combobox.open}
+				class="combobox-input"
+				class:combobox-input--hidden={!combobox.open}
 			/>
 			<!-- One persistent trigger: unmounting it on open would break melt's
 			     focus tracking and close the popover again. While open, the design
@@ -140,6 +141,7 @@
 				{...combobox.trigger}
 				aria-label={combobox.open ? $_('remove_all') : undefined}
 				aria-labelledby={combobox.open ? undefined : labelledBy}
+				class="combobox-toggle"
 				onclick={combobox.open ? removeAll : openAndFocus}
 				type="button"
 			>
@@ -150,17 +152,17 @@
 			<ul>
 				{#each groupedOptions as { group, options: groupOptions } (group ?? '')}
 					{#if group != undefined}
-						<li aria-hidden="true" class="group">{group}</li>
+						<li aria-hidden="true" class="combobox-group">{group}</li>
 					{/if}
 					{#each groupOptions as option (option.value)}
-						<li {...combobox.getOption(option.value, option.label)}>
+						<li {...combobox.getOption(option.value, option.label)} class="combobox-option">
 							<input
 								aria-hidden="true"
 								checked={combobox.isSelected(option.value)}
 								tabindex="-1"
 								type="checkbox"
 							/>
-							<span class="truncated">{option.label}</span>
+							<span class="combobox-option-label">{option.label}</span>
 						</li>
 					{/each}
 				{/each}
@@ -168,25 +170,37 @@
 		</div>
 	</div>
 {:else}
-	<div class="badge-wrapper value value--read-only">
+	<div class="combobox-badges value value--read-only">
 		{#each selectedOptions as selectedOption (selectedOption.value)}
-			<span class="badge">
+			<span class="combobox-badge">
 				{#if selectedOption.href}
-					<a class="truncated" href={selectedOption.href}>{selectedOption.label}</a>
+					<a class="combobox-badge-label" href={selectedOption.href}>{selectedOption.label}</a>
 				{:else}
-					<span class="truncated">{selectedOption.label}</span>
+					<span class="combobox-badge-label">{selectedOption.label}</span>
 				{/if}
 			</span>
 		{:else}
-			<span class="empty">{$_('empty')}</span>
+			<span class="combobox-empty">{$_('empty')}</span>
 		{/each}
 	</div>
 {/if}
 
 <style>
-	.input-select {
-		background-color: white;
-		border: solid 1px var(--color-gray-050);
+	.combobox {
+		position: relative;
+	}
+
+	/* :global because the svgs come from the icon components and do not carry
+	   this component's scoping class */
+	.combobox :global(svg) {
+		flex-shrink: 0;
+		height: 16px;
+		width: 16px;
+	}
+
+	.combobox-field {
+		background-color: var(--color-surface-accent-default);
+		border: solid 1px var(--color-border-accent-muted);
 		border-radius: 8px;
 		cursor: pointer;
 		display: flex;
@@ -196,15 +210,18 @@
 		position: relative;
 	}
 
-	.input-select--expanded {
+	.combobox-field--expanded {
 		background:
-			linear-gradient(rgba(63, 131, 248, 0.15), rgba(63, 131, 248, 0.15)),
-			linear-gradient(white, white);
-		border: solid 2px var(--color-primary-400);
+			linear-gradient(
+				var(--color-background-accent-expanded),
+				var(--color-background-accent-expanded)
+			),
+			linear-gradient(var(--color-surface-accent-default), var(--color-surface-accent-default));
+		border: solid 2px var(--color-border-accent-strong);
 		padding: calc(0.375rem - 1px);
 	}
 
-	.badge-wrapper {
+	.combobox-badges {
 		align-items: center;
 		display: flex;
 		flex-wrap: wrap;
@@ -214,14 +231,14 @@
 	}
 
 	/* keep badges clear of the icon button */
-	.input-select > .badge-wrapper {
+	.combobox-field > .combobox-badges {
 		padding-right: 1.75rem;
 	}
 
-	.badge {
+	.combobox-badge {
 		align-items: center;
 		background-color: var(--color-indigo-100);
-		border: solid 1px white;
+		border: solid 1px var(--color-white);
 		border-radius: 6px;
 		color: var(--color-indigo-700);
 		display: inline-flex;
@@ -234,116 +251,145 @@
 		padding: 2px 0.375rem;
 	}
 
-	.badge > .truncated {
+	.combobox-badge-label {
 		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.badge a {
+	.combobox-badge a {
 		color: inherit;
 	}
 
-	.input-select > input.hidden {
-		display: none;
-	}
-
-	.input-select > input {
+	.combobox-badge > button {
 		background: transparent;
 		border: none;
-		color: var(--color-gray-900);
-		font-size: 0.875rem;
-		font-weight: 500;
-		min-height: 24px;
-		outline: none;
-		padding: 0 1.75rem 0 0.375rem;
-		width: 100%;
-	}
-
-	.empty {
-		color: var(--color-gray-400);
-		padding-left: 0.375rem;
-	}
-
-	.input-select > button,
-	.badge > button {
-		--button-active-background: transparent;
-		--button-hover-background: transparent;
-
-		align-items: center;
-		border: none;
+		color: inherit;
+		cursor: pointer;
 		display: inline-flex;
 		flex-shrink: 0;
 		padding: 0;
 	}
 
-	.badge > button {
-		color: var(--color-indigo-700);
-		font-size: 0.75rem;
+	.combobox-badge > button:active,
+	.combobox-badge > button:hover {
+		background: transparent;
 	}
 
-	.input-select > button {
-		color: var(--color-gray-500);
+	/* The negative margins cancel the field's padding and border so the input
+	   spans the field's full outer width; the panel inherits that width via
+	   sameWidth and lines up flush with the field. The paddings put the text
+	   back where the badges are. */
+	.combobox-input {
+		background: transparent;
+		border: none;
+		color: var(--color-text-accent-strong);
+		font-size: 0.875rem;
+		font-weight: 500;
+		margin: 0 calc(-0.375rem - 1px);
+		min-height: 24px;
+		outline: none;
+		padding: 0 calc(2.125rem + 1px) 0 calc(0.75rem + 1px);
+		width: calc(100% + 0.75rem + 2px);
+	}
+
+	.combobox-input--hidden {
+		display: none;
+	}
+
+	.combobox-empty {
+		color: var(--color-text-accent-muted);
+		padding-left: 0.375rem;
+	}
+
+	.combobox-toggle {
+		background: transparent;
+		border: none;
+		color: var(--color-icon-accent-subtle);
+		cursor: pointer;
+		display: inline-flex;
+		padding: 0;
 		position: absolute;
 		right: 0.375rem;
-		/* centers the 20px icon on the 24px first line */
-		top: 0.5rem;
+		/* centers the 16px icon on the 24px first line */
+		top: 0.625rem;
+	}
+
+	.combobox-toggle:active,
+	.combobox-toggle:hover {
+		background: transparent;
+	}
+
+	/* the 2px border eats into the padding; compensate to keep the icon
+	   centered on the first line */
+	.combobox-field--expanded > .combobox-toggle {
+		top: calc(0.625rem - 1px);
 	}
 
 	.combobox-panel {
-		background-color: white;
-		border: solid 1px var(--color-gray-100);
-		/* the user agent centers [popover] elements via margin: auto */
-		margin: 0;
+		background-color: var(--color-surface-accent-default);
+		border: solid 1px var(--color-border-accent-subtle);
 		border-radius: 12px;
 		box-shadow:
 			0 10px 15px -3px rgba(0, 0, 0, 0.1),
 			0 4px 6px 0 rgba(0, 0, 0, 0.05);
+		/* the user agent centers [popover] elements via margin: auto */
+		margin: 0;
 		padding: 0.25rem;
 	}
 
 	.combobox-panel > ul {
-		display: flex;
-		flex-direction: column;
+		list-style: none;
+		margin: 0;
 		max-height: 20rem;
 		overflow-y: auto;
+		padding: 0;
 	}
 
-	.combobox-panel li.group {
-		color: var(--color-gray-500);
+	.combobox-group {
+		color: var(--color-text-accent-subtle);
 		font-size: 0.75rem;
 		font-weight: 500;
 		padding: 0.5rem 0.5rem 0.25rem;
 	}
 
-	.combobox-panel li[role='option'] {
-		align-items: center;
+	.combobox-option {
 		border-radius: 8px;
 		cursor: pointer;
-		display: flex;
-		gap: 0.5rem;
-		min-height: 40px;
-		padding: 0.5rem;
+		padding: 0.5rem 0.5rem 0.5rem 2rem;
+		position: relative;
 	}
 
-	.combobox-panel li[role='option']:hover,
-	.combobox-panel li[data-highlighted] {
-		background-color: var(--color-gray-050);
+	.combobox-option:hover,
+	.combobox-option[data-highlighted] {
+		background-color: var(--color-background-accent-hover);
 	}
 
-	.combobox-panel li[role='option'] > input[type='checkbox'] {
-		accent-color: var(--color-primary-700);
-		background-color: var(--color-gray-025);
-		border: solid 0.5px var(--color-gray-200);
+	.combobox-option > input[type='checkbox'] {
+		accent-color: var(--color-accent-on-default);
+		background-color: var(--color-background-accent-subtle);
+		border: solid 0.5px var(--color-border-accent-default);
 		border-radius: 4px;
-		flex-shrink: 0;
 		height: 16px;
+		left: 0.5rem;
+		/* the user agent gives checkboxes a default margin, which would shift
+		   the absolute position */
+		margin: 0;
 		pointer-events: none;
+		position: absolute;
+		top: calc(50% - 8px);
 		width: 16px;
 	}
 
-	.combobox-panel li[role='option'] > .truncated {
-		color: var(--color-gray-700);
+	.combobox-option-label {
+		color: var(--color-text-accent-default);
+		display: block;
 		font-size: 0.875rem;
 		font-weight: 500;
-		line-height: 0.875rem;
+		line-height: 1.5rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
