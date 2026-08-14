@@ -1,6 +1,6 @@
 export const organizationScopeFilterKeys = ['organization', 'organizationalUnit'] as const;
 
-export type CollectionFilter = Record<string, string[] | 'current'>;
+export type CollectionFilter = Record<string, string[]>;
 
 export type OrganizationScope =
 	| { type: 'current'; includeSubordinateOrganizationalUnits: boolean }
@@ -10,23 +10,19 @@ export function defaultOrganizationScope(): OrganizationScope {
 	return { type: 'current', includeSubordinateOrganizationalUnits: true };
 }
 
-function asArray(value: string[] | 'current' | undefined): string[] {
-	return Array.isArray(value) ? value : [];
-}
-
 // The empty string is the sentinel for content without an organizational
 // unit, i.e. organization-level content. It shares the encoding with the
 // organizationalUnit query param.
 export function parseOrganizationScope(filter: CollectionFilter): OrganizationScope {
-	if (filter.organization === 'current') {
+	if (filter.organization?.includes('current')) {
 		return {
 			type: 'current',
-			includeSubordinateOrganizationalUnits: !asArray(filter.organizationalUnit).includes('')
+			includeSubordinateOrganizationalUnits: !filter.organizationalUnit.includes('')
 		};
 	}
 
-	const organizations = asArray(filter.organization);
-	const organizationalUnits = asArray(filter.organizationalUnit).filter((value) => value !== '');
+	const organizations = filter.organization ?? [];
+	const organizationalUnits = filter.organizationalUnit?.filter((value) => value !== '') ?? [];
 
 	if (organizations.length === 0 && organizationalUnits.length === 0) {
 		return defaultOrganizationScope();
@@ -38,7 +34,7 @@ export function parseOrganizationScope(filter: CollectionFilter): OrganizationSc
 export function organizationScopeAsFilter(scope: OrganizationScope): CollectionFilter {
 	if (scope.type === 'current') {
 		return {
-			organization: 'current',
+			organization: ['current'],
 			organizationalUnit: scope.includeSubordinateOrganizationalUnits ? [] : ['']
 		};
 	}
@@ -50,7 +46,7 @@ export function organizationScopeAsFilter(scope: OrganizationScope): CollectionF
 }
 
 export function hasConfiguredFilter(filter: CollectionFilter): boolean {
-	return Object.values(filter).some((value) => value === 'current' || value.length > 0);
+	return Object.values(filter).some((value) => value.length > 0);
 }
 
 export function resolveOrganizationScope(
