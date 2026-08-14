@@ -156,6 +156,7 @@ export async function getManyContainersWithES(
 		federalStates?: string[];
 		guid?: string[];
 		hierarchyLevels?: number[];
+		includeGuids?: string[];
 		indicatorCategories?: string[];
 		indicators?: string[];
 		indicatorTypes?: string[];
@@ -296,15 +297,37 @@ export async function getManyContainersWithES(
 			terms: { 'payload.assignee': filters.assignees }
 		});
 	}
+	// Containers brought in by adoption live outside the current organization
+	// and organizational unit, so each scope clause is widened to also match
+	// them. Keeping the widened clauses under their facet keys preserves the
+	// facet counting, including the coupled organization/organizationalUnit
+	// exclusions.
+	const orIncluded = (clause: estypes.QueryDslQueryContainer): estypes.QueryDslQueryContainer =>
+		filters.includeGuids?.length
+			? {
+					bool: {
+						should: [clause, { terms: { guid: filters.includeGuids } }],
+						minimum_should_match: 1
+					}
+				}
+			: clause;
 	if (filters.organizationalUnits === null) {
-		nonFacetFilters.push({ bool: { must_not: { exists: { field: 'organizational_unit' } } } });
+		nonFacetFilters.push(
+			orIncluded({ bool: { must_not: { exists: { field: 'organizational_unit' } } } })
+		);
 	} else if (filters.organizationalUnits?.length) {
-		addFacetFilter(facetFilters, 'organizationalUnit', {
-			terms: { organizational_unit: filters.organizationalUnits }
-		});
+		addFacetFilter(
+			facetFilters,
+			'organizationalUnit',
+			orIncluded({ terms: { organizational_unit: filters.organizationalUnits } })
+		);
 	}
 	if (organizations.length) {
-		addFacetFilter(facetFilters, 'organization', { terms: { organization: organizations } });
+		addFacetFilter(
+			facetFilters,
+			'organization',
+			orIncluded({ terms: { organization: organizations } })
+		);
 	}
 	if (filters.template !== undefined) {
 		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
