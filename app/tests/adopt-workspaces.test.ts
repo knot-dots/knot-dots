@@ -119,9 +119,12 @@ test.describe('Adopted content in workspaces', () => {
 
 			await page.goto(`/${testOrganizationalUnit.guid}/set-of-rules/catalog`);
 			await expect(programCard).toBeVisible();
+			// The card shows the responsible organization of the adopted program.
+			await expect(programCard.getByTitle(defaultOrganization.payload.name)).toBeVisible();
 
 			await page.goto(`/${testOrganizationalUnit.guid}/rules/catalog`);
 			await expect(publicRuleCard).toBeVisible();
+			await expect(publicRuleCard.getByTitle(defaultOrganization.payload.name)).toBeVisible();
 			await expect(internalRuleCard).toHaveCount(0);
 
 			// Un-adopting removes the content from the workspaces again.

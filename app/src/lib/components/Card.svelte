@@ -2,6 +2,7 @@
 	import { getContext, type Snippet } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
+	import Adopt from '~icons/knotdots/adopt';
 	import Relation from '~icons/knotdots/relation';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
@@ -88,6 +89,22 @@
 				? container.payload.name
 				: undefined
 	);
+
+	// The organization responsible for a container that entered the current
+	// context from elsewhere, e.g. by adoption. On the default organization
+	// foreign containers are the norm, so no badge is shown there.
+	let foreignOrganizationName = $derived.by(() => {
+		if (
+			!createFeatureDecisions(page.data.features).useAdoptions() ||
+			page.data.currentOrganization === undefined ||
+			page.data.currentOrganization.payload.default ||
+			container.organization === page.data.currentOrganization.guid
+		) {
+			return undefined;
+		}
+		return page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+			.name;
+	});
 
 	let relatedTo = $derived(
 		overlayContext
@@ -374,6 +391,15 @@
 	</div>
 
 	<footer>
+		{#if foreignOrganizationName}
+			<div class="badge-organization-row">
+				<span class="badge badge--organization" title={foreignOrganizationName}>
+					<Adopt />
+					<span class="truncated">{foreignOrganizationName}</span>
+				</span>
+			</div>
+		{/if}
+
 		{#if footer}
 			{@render footer()}
 		{:else if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
@@ -385,7 +411,7 @@
 				<StatusIcon />
 				{$_(status)}
 			</span>
-		{:else if 'programType' in container.payload}}
+		{:else if 'programType' in container.payload}
 			{@const programType = container.payload.programType as string}
 			<span class="badge badge--indigo">{$_(programType)}</span>
 		{:else if 'indicatorType' in container.payload}
@@ -514,8 +540,18 @@
 		display: flex;
 		flex-direction: row;
 		flex-shrink: 1;
+		flex-wrap: wrap;
 		gap: 12px;
 		justify-content: space-between;
+	}
+
+	.badge-organization-row {
+		flex-basis: 100%;
+		min-width: 0;
+	}
+
+	.badge--organization {
+		max-width: 100%;
 	}
 
 	footer :global(.progress) {
