@@ -35,6 +35,7 @@
 		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
+		isTemplateContainer,
 		payloadTypes
 	} from '$lib/models';
 	import {
@@ -407,16 +408,22 @@
 			({ guid }) => guid === (event as CustomEvent).detail.selected
 		);
 
-		if (template) {
-			$newContainer = createTemplateInstanceOf(
-				template,
-				container.organization,
-				container.organizational_unit ?? null
-			);
-
-			$addItemState = { target: container };
-			createContainerDialog.getElement().showModal();
+		if (!template) {
+			return;
 		}
+
+		if (!isTemplateContainer(template)) {
+			throw new Error('Expected a template container');
+		}
+
+		$newContainer = createTemplateInstanceOf(
+			template,
+			container.organization,
+			container.organizational_unit ?? null
+		);
+
+		$addItemState = { target: container };
+		createContainerDialog.getElement().showModal();
 	}
 
 	$effect(() => {

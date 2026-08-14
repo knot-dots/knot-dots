@@ -1983,6 +1983,10 @@ const anyPayload = z.discriminatedUnion('type', [
 
 export type AnyPayload = z.infer<typeof anyPayload>;
 
+export type TemplatablePayload = Extract<AnyPayload, { template: boolean }>;
+
+export type TemplatePayload = TemplatablePayload & { template: true };
+
 export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialActualDataPayload,
 	initialAdministrativeAreaBasicDataPayload,
@@ -2153,6 +2157,12 @@ export function isContainer(
 		container.payload.type !== payloadTypes.enum.organization &&
 		container.payload.type !== payloadTypes.enum.organizational_unit
 	);
+}
+
+export function isTemplateContainer(
+	container: Container<AnyPayload>
+): container is Container<TemplatePayload> {
+	return 'template' in container.payload && container.payload.template === true;
 }
 
 function hasProperty(
@@ -2700,14 +2710,10 @@ export function createDescendantCopyOf(
 }
 
 export function createTemplateInstanceOf(
-	template: Container<AnyPayload>,
+	template: Container<TemplatePayload>,
 	organization: string,
 	organizationalUnit: string | null
 ): NewContainer<AnyPayload> {
-	if (!('template' in template.payload) || template.payload.template !== true) {
-		throw new Error('Expected a template container');
-	}
-
 	const copy = createRootCopyOf(
 		template,
 		organization,

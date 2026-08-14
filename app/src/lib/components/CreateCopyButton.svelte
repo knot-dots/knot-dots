@@ -3,12 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import CopyCat from '~icons/knotdots/copycat';
 	import { page } from '$app/state';
-	import {
-		type AnyPayload,
-		type Container,
-		createRootCopyOf,
-		createTemplateInstanceOf
-	} from '$lib/models';
+	import { type AnyPayload, type Container, createRootCopyOf } from '$lib/models';
 	import { ability, applicationState, newContainer, user } from '$lib/stores';
 
 	interface Props {
@@ -33,15 +28,12 @@
 				?.guid as string;
 		}
 
-		const copy =
-			'template' in container.payload && container.payload.template
-				? createTemplateInstanceOf(container, organization, organizationalUnit?.guid ?? null)
-				: createRootCopyOf(
-						container,
-						organization,
-						organizationalUnit?.guid ?? null,
-						container.payload.visibility
-					);
+		const copy = createRootCopyOf(
+			container,
+			organization,
+			organizationalUnit?.guid ?? null,
+			container.payload.visibility
+		);
 
 		if ('title' in container.payload && 'title' in copy.payload) {
 			copy.payload.title = $_('copy_of', {
