@@ -497,9 +497,9 @@
 									{onchange}
 								/>
 							{:else if isOrganizationalUnitContainer(item)}
-								<OrganizationCard --height="100%" container={item} />
+								<OrganizationCard --height="100%" container={item} ignoreBulkActionContext />
 							{:else}
-								<Card --height="100%" container={item} />
+								<Card --height="100%" container={item} ignoreBulkActionContext />
 							{/if}
 						</li>
 					{/each}
