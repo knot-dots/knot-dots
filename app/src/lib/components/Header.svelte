@@ -338,7 +338,7 @@
 					{#if propertiesRelocationNotice && !propertiesRelocationNotice.seen}
 						<span
 							class="indicator system-info"
-							style:--indicator-background-color="var(--color-background-accent-strong)"
+							style:--indicator-background-color="var(--color-background-accent-default)"
 						></span>
 					{/if}
 				</button>
