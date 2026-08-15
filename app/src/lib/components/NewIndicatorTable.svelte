@@ -303,7 +303,10 @@
 		if (
 			editable &&
 			!customActualDataContainer &&
-			$mayCreateContainer(payloadTypes.enum.actual_data, container.managed_by)
+			$mayCreateContainer(
+				payloadTypes.enum.actual_data,
+				(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
+			)
 		) {
 			actualDataRows.push({
 				type: 'action',
