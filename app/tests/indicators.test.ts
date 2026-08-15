@@ -55,6 +55,46 @@ test('create custom indicator with actual data', async ({ indicatorCatalog, test
 	await expect(table.getByRole('cell', { name: secondValue })).toBeVisible();
 });
 
+test.describe(() => {
+	test.use({ storageState: 'tests/.auth/bob.json' });
+
+	test('collaborator may add custom actual data', async ({
+		indicatorCatalog,
+		organizationalUnitWithActualData,
+		testIndicatorTemplate
+	}) => {
+		await indicatorCatalog.goto(`/${organizationalUnitWithActualData.guid}`);
+		await expect(indicatorCatalog.card(testIndicatorTemplate.payload.title)).toBeVisible();
+
+		await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();
+		await expect(indicatorCatalog.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
+		await indicatorCatalog.overlay.locator.getByText('Table').click();
+		await expect(indicatorCatalog.overlay.locator.getByRole('table')).toBeVisible();
+		await expect(
+			indicatorCatalog.overlay.locator.getByRole('rowheader', { name: 'Wegweiser Kommune' })
+		).toBeVisible();
+
+		await indicatorCatalog.overlay.editModeToggle.check();
+		await indicatorCatalog.overlay.locator
+			.getByRole('table')
+			.getByRole('button', { name: 'Add custom actual data' })
+			.click();
+		await expect(
+			indicatorCatalog.overlay.locator.getByRole('rowheader', { name: 'Custom actual data' })
+		).toBeVisible();
+		await expect(
+			indicatorCatalog.overlay.locator
+				.getByRole('row')
+				.filter({
+					has: indicatorCatalog.page.getByRole('rowheader', {
+						name: 'Custom actual data'
+					})
+				})
+				.getByRole('textbox')
+		).toBeEditable();
+	});
+});
+
 test('add section to indicator', async ({ indicatorCatalog, testOrganization }) => {
 	await indicatorCatalog.goto(`/${testOrganization.guid}`);
 	await indicatorCatalog.header.editModeToggle.check();

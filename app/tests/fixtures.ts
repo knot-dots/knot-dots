@@ -6,6 +6,7 @@ import {
 } from '@playwright/test';
 import { locale } from 'svelte-i18n';
 import {
+	type ActualDataPayload,
 	type AnyPayload,
 	type CategoryPayload,
 	type Container,
@@ -43,7 +44,7 @@ type MyFixtures = {
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
 	landingPage: LandingPage;
-	landingPageWithCustomCollection: LandingPage;
+	organizationalUnitWithActualData: Container<OrganizationalUnitPayload>;
 	programPage: ProgramPage;
 	reportTemplate: Container<ReportPayload>;
 	resourceCatalog: ResourceCatalog;
@@ -372,6 +373,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	allTable: async ({ page }, use) => {
 		await use(new AllTable(page));
 	},
+	categoriesBoard: async ({ page }, use) => {
+		await use(new CategoriesBoard(page));
+	},
 	defaultOrganization: [
 		async ({ adminContext }, use) => {
 			const response = await adminContext.request.get('/', { maxRedirects: 0 });
@@ -383,9 +387,6 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ auto: true, scope: 'worker' }
 	],
-	categoriesBoard: async ({ page }, use) => {
-		await use(new CategoriesBoard(page));
-	},
 	dotsBoard: async ({ page }, use) => {
 		await use(new DotsBoard(page));
 	},
@@ -394,6 +395,48 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	landingPage: async ({ page }, use) => {
 		await use(new LandingPage(page));
+	},
+	organizationalUnitWithActualData: async (
+		{ adminContext, testIndicatorTemplate, testOrganization },
+		use
+	) => {
+		const newOrganizationalUnit = containerOfType(
+			payloadTypes.enum.organizational_unit,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as Container<OrganizationalUnitPayload>;
+		const organizationalUnitWithActualData = await createContainer(adminContext, {
+			...newOrganizationalUnit,
+			payload: {
+				...newOrganizationalUnit.payload,
+				name: `Organizational unit with actual data`
+			}
+		});
+
+		const newActualData = containerOfType(
+			payloadTypes.enum.actual_data,
+			testOrganization.guid,
+			organizationalUnitWithActualData.guid,
+			organizationalUnitWithActualData.guid,
+			'knot-dots'
+		) as Container<ActualDataPayload>;
+		await createContainer(adminContext, {
+			...newActualData,
+			payload: {
+				...newActualData.payload,
+				indicator: testIndicatorTemplate.guid,
+				source: 'Wegweiser Kommune',
+				title: testIndicatorTemplate.payload.title
+			}
+		});
+
+		await inviteUser(adminContext, 'bob@example.org', organizationalUnitWithActualData, [
+			'is-collaborator-of'
+		]);
+
+		await use(organizationalUnitWithActualData);
 	},
 	programPage: async ({ page }, use) => {
 		await use(new ProgramPage(page));
