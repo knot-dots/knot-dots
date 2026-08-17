@@ -148,10 +148,10 @@
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
-				<button class="button-xs button-primary" type="submit">
+				<button class="button-xs button-primary system-primary" type="submit">
 					{$_('save')}
 				</button>
-				<button class="button-xs button-alternative" formnovalidate type="submit">
+				<button class="button-xs button-alternative system-primary" formnovalidate type="submit">
 					{$_('cancel')}
 				</button>
 			</p>
@@ -362,9 +362,6 @@
 	}
 
 	.button-primary {
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
 		margin-left: auto;
 	}
 

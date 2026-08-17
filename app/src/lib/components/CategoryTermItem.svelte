@@ -91,7 +91,7 @@
 
 			<Editor label={$_('description')} bind:value={formState.description} />
 
-			<button class="button-primary" disabled={formState.creating} type="submit">
+			<button class="button-primary system-primary" disabled={formState.creating} type="submit">
 				{$_('category.terms.create_button')}
 			</button>
 		</form>

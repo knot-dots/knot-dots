@@ -126,11 +126,19 @@
 				</button>
 
 				{#if page.state.createObjectiveOrEffect.step === 2}
-					<button class="button-primary button-xs" onclick={() => handleConfirm()} type="button">
+					<button
+						class="button-primary button-xs system-primary"
+						onclick={() => handleConfirm()}
+						type="button"
+					>
 						{$_('create_effect_dialog.button.confirm')}
 					</button>
 				{:else if page.state.createObjectiveOrEffect.step === 3}
-					<button class="button-primary button-xs" onclick={() => dialog.close()} type="button">
+					<button
+						class="button-primary button-xs system-primary"
+						onclick={() => dialog.close()}
+						type="button"
+					>
 						{$_('create_effect_dialog.button.confirm')}
 					</button>
 				{/if}

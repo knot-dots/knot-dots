@@ -291,7 +291,7 @@
 			<!-- svelte-ignore a11y_autofocus -->
 			<input type="email" bind:value={email} autofocus required />
 		</label>
-		<button class="button-primary" type="submit">{$_('invite.submit')}</button>
+		<button class="button-primary system-primary" type="submit">{$_('invite.submit')}</button>
 	</form>
 </Dialog>
 
@@ -307,7 +307,7 @@
 			{#snippet commands()}
 				{#if $ability.can('invite-members', data.container)}
 					<button
-						class="button button-xs button-primary"
+						class="button button-xs button-primary system-primary"
 						type="button"
 						onclick={() => inviteDialog.showModal()}
 					>

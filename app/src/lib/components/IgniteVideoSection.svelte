@@ -117,7 +117,12 @@
 					type="url"
 					value={container.payload.iframeUrl}
 				/>
-				<button class="button-primary" disabled={!iframeUrl} type="button" onclick={handleEmbed}>
+				<button
+					class="button-primary system-primary"
+					disabled={!iframeUrl}
+					type="button"
+					onclick={handleEmbed}
+				>
 					{$_('ignite_video.embed')}
 				</button>
 				<p class="hint">{$_('ignite_video.url_help')}</p>
@@ -174,10 +179,6 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		width: 100%;
-	}
-
-	.button-primary {
-		justify-content: center;
 	}
 
 	.hint {

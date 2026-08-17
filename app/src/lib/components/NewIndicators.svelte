@@ -178,7 +178,7 @@
 		<p>
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
 				<button
-					class="button button-xs button-primary"
+					class="button button-xs button-primary system-primary"
 					onclick={() => dialog.showModal()}
 					type="button"
 				>

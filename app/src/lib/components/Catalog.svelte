@@ -51,7 +51,7 @@
 		{#if payloadType.length === 1}
 			<p>
 				<button
-					class="button button-primary button-xs"
+					class="button button-primary button-xs system-primary"
 					onclick={() => createContainer(payloadType[0])}
 					type="button"
 				>

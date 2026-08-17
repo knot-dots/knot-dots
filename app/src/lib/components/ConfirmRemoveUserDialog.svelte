@@ -38,7 +38,7 @@
 			{$_('confirm_remove_user_dialog.message')}
 		</p>
 
-		<button class="button-primary button-xs" type="submit">
+		<button class="button-primary button-xs system-primary" type="submit">
 			{$_('confirm_remove_user_dialog.button', { values: { name } })}
 		</button>
 	</form>
