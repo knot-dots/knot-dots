@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import type { PageProps } from './$types';
@@ -30,9 +29,7 @@
 	]);
 </script>
 
-<PageLayout>
-	<ProgramsPage facets={data.facets}>
-		<Table {columns} rows={data.containers} />
-		<ContextTabs slug="guides-table" />
-	</ProgramsPage>
-</PageLayout>
+<ProgramsPage facets={data.facets}>
+	<Table {columns} rows={data.containers} />
+	<ContextTabs slug="guides-table" />
+</ProgramsPage>

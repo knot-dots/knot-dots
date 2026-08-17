@@ -9,7 +9,6 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type Container, type GoalPayload, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -46,31 +45,29 @@
 	});
 </script>
 
-<PageLayout>
-	<GoalsPage facets={data.facets}>
-		<Board>
-			{#each data.columnIds as statusOption (statusOption)}
-				<BoardColumn
-					--background={statusBackgrounds.get(statusOption)}
-					--hover-border-color={statusHoverColors.get(statusOption)}
-					addItemUrl={`#create=goal&status=${statusOption}`}
-					title={$_(statusOption)}
-				>
-					<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
-						{#snippet footer()}
-							{@const list = board.listByColumn(statusOption)}
-							{#if list}
-								<LazyLoadSentinel
-									hasMore={list.hasMore}
-									loading={list.loadingMore}
-									onLoadMore={list.loadMore}
-								/>
-							{/if}
-						{/snippet}
-					</MaybeDragZone>
-				</BoardColumn>
-			{/each}
-		</Board>
-		<ContextTabs slug="goals-status" />
-	</GoalsPage>
-</PageLayout>
+<GoalsPage facets={data.facets}>
+	<Board>
+		{#each data.columnIds as statusOption (statusOption)}
+			<BoardColumn
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=goal&status=${statusOption}`}
+				title={$_(statusOption)}
+			>
+				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(statusOption)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
+			</BoardColumn>
+		{/each}
+	</Board>
+	<ContextTabs slug="goals-status" />
+</GoalsPage>

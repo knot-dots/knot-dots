@@ -2,7 +2,6 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -20,9 +19,7 @@
 	);
 </script>
 
-<PageLayout>
-	<TasksPage data={{ ...data, containers }} filterBarInitiallyOpen>
-		<Catalog {containers} payloadType={[payloadTypes.enum.task]} />
-		<ContextTabs slug="tasks-catalog" />
-	</TasksPage>
-</PageLayout>
+<TasksPage data={{ ...data, containers }} filterBarInitiallyOpen>
+	<Catalog {containers} payloadType={[payloadTypes.enum.task]} />
+	<ContextTabs slug="tasks-catalog" />
+</TasksPage>

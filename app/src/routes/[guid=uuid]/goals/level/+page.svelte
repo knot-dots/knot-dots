@@ -8,7 +8,6 @@
 	import GoalsPage from '$lib/components/GoalsPage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { type Container, type GoalPayload, titleForGoalCollection } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -53,30 +52,28 @@
 	);
 </script>
 
-<PageLayout>
-	<GoalsPage facets={data.facets}>
-		<Board>
-			{#each columnIds as columnId (columnId)}
-				{@const containers = board.itemsByColumn(columnId)}
-				<BoardColumn
-					addItemUrl={`#create=goal&hierarchyLevel=${columnId}`}
-					title={titleForGoalCollection(containers, columnIds.length > 1 ? Number(columnId) : 0)}
-				>
-					<MaybeDragZone {containers}>
-						{#snippet footer()}
-							{@const list = board.listByColumn(columnId)}
-							{#if list}
-								<LazyLoadSentinel
-									hasMore={list.hasMore}
-									loading={list.loadingMore}
-									onLoadMore={list.loadMore}
-								/>
-							{/if}
-						{/snippet}
-					</MaybeDragZone>
-				</BoardColumn>
-			{/each}
-		</Board>
-		<ContextTabs slug="goals-level" />
-	</GoalsPage>
-</PageLayout>
+<GoalsPage facets={data.facets}>
+	<Board>
+		{#each columnIds as columnId (columnId)}
+			{@const containers = board.itemsByColumn(columnId)}
+			<BoardColumn
+				addItemUrl={`#create=goal&hierarchyLevel=${columnId}`}
+				title={titleForGoalCollection(containers, columnIds.length > 1 ? Number(columnId) : 0)}
+			>
+				<MaybeDragZone {containers}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(columnId)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
+			</BoardColumn>
+		{/each}
+	</Board>
+	<ContextTabs slug="goals-level" />
+</GoalsPage>

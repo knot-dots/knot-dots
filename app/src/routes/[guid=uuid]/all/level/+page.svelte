@@ -8,7 +8,6 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -123,27 +122,25 @@
 	}
 </script>
 
-<PageLayout>
-	<AllPage {data}>
-		<Board>
-			{#each visibleColumnIds as columnId (columnId)}
-				{@const containers = board.itemsByColumn(columnId)}
-				<BoardColumn addItemUrl={addItemUrl(columnId)} title={title(columnId, containers)}>
-					<MaybeDragZone {containers}>
-						{#snippet footer()}
-							{@const list = board.listByColumn(columnId)}
-							{#if list}
-								<LazyLoadSentinel
-									hasMore={list.hasMore}
-									loading={list.loadingMore}
-									onLoadMore={list.loadMore}
-								/>
-							{/if}
-						{/snippet}
-					</MaybeDragZone>
-				</BoardColumn>
-			{/each}
-		</Board>
-		<ContextTabs slug="all-level" />
-	</AllPage>
-</PageLayout>
+<AllPage {data}>
+	<Board>
+		{#each visibleColumnIds as columnId (columnId)}
+			{@const containers = board.itemsByColumn(columnId)}
+			<BoardColumn addItemUrl={addItemUrl(columnId)} title={title(columnId, containers)}>
+				<MaybeDragZone {containers}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(columnId)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
+			</BoardColumn>
+		{/each}
+	</Board>
+	<ContextTabs slug="all-level" />
+</AllPage>

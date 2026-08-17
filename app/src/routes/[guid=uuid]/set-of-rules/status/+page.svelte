@@ -8,7 +8,6 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import { type Container, type ProgramPayload, type Status } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -46,33 +45,31 @@
 	});
 </script>
 
-<PageLayout>
-	<ProgramsPage facets={data.facets}>
-		<Board>
-			{#each data.columnIds as statusOption (statusOption)}
-				<BoardColumn
-					--background={statusBackgrounds.get(statusOption)}
-					--hover-border-color={statusHoverColors.get(statusOption)}
-					addItemUrl={`#create=program&status=${statusOption}`}
-					title={statusOption === 'status.in_operation'
-						? $_('status.in_application')
-						: $_(statusOption)}
-				>
-					<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
-						{#snippet footer()}
-							{@const list = board.listByColumn(statusOption)}
-							{#if list}
-								<LazyLoadSentinel
-									hasMore={list.hasMore}
-									loading={list.loadingMore}
-									onLoadMore={list.loadMore}
-								/>
-							{/if}
-						{/snippet}
-					</MaybeDragZone>
-				</BoardColumn>
-			{/each}
-		</Board>
-		<ContextTabs slug="set-of-rules-status" />
-	</ProgramsPage>
-</PageLayout>
+<ProgramsPage facets={data.facets}>
+	<Board>
+		{#each data.columnIds as statusOption (statusOption)}
+			<BoardColumn
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=program&status=${statusOption}`}
+				title={statusOption === 'status.in_operation'
+					? $_('status.in_application')
+					: $_(statusOption)}
+			>
+				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(statusOption)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
+			</BoardColumn>
+		{/each}
+	</Board>
+	<ContextTabs slug="set-of-rules-status" />
+</ProgramsPage>

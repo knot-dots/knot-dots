@@ -3,6 +3,7 @@
 	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates } from '$lib/models';
 
 	interface Props {
@@ -19,14 +20,16 @@
 	});
 </script>
 
-<BulkActionContextProvider actions={['status', 'visibility', 'delete']}>
-	<FullscreenLayout>
-		{#snippet header()}
-			<Header {filterBarInitiallyOpen} {facets} search />
-		{/snippet}
+<PageLayout>
+	<BulkActionContextProvider actions={['status', 'visibility', 'delete']}>
+		<FullscreenLayout>
+			{#snippet header()}
+				<Header {filterBarInitiallyOpen} {facets} search />
+			{/snippet}
 
-		{#snippet main()}
-			{@render children()}
-		{/snippet}
-	</FullscreenLayout>
-</BulkActionContextProvider>
+			{#snippet main()}
+				{@render children()}
+			{/snippet}
+		</FullscreenLayout>
+	</BulkActionContextProvider>
+</PageLayout>

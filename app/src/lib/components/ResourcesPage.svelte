@@ -2,8 +2,9 @@
 	import { setContext, type Snippet } from 'svelte';
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import type { PageData } from '../../routes/[guid=uuid]/resources/catalog/$types';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates } from '$lib/models';
+	import type { PageData } from '../../routes/[guid=uuid]/resources/catalog/$types';
 
 	interface Props {
 		children: Snippet;
@@ -22,12 +23,14 @@
 	let facets = $derived(data.facets);
 </script>
 
-<FullscreenLayout>
-	{#snippet header()}
-		<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
-	{/snippet}
+<PageLayout>
+	<FullscreenLayout>
+		{#snippet header()}
+			<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
+		{/snippet}
 
-	{#snippet main()}
-		{@render children()}
-	{/snippet}
-</FullscreenLayout>
+		{#snippet main()}
+			{@render children()}
+		{/snippet}
+	</FullscreenLayout>
+</PageLayout>

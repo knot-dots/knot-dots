@@ -6,7 +6,6 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import { type Container, payloadTypes, type ProgramPayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -54,17 +53,15 @@
 	);
 </script>
 
-<PageLayout>
-	<ProgramsPage facets={data.facets} filterBarInitiallyOpen>
-		<Catalog {containers} payloadType={[payloadTypes.enum.program]}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Catalog>
-		<ContextTabs slug="programs-catalog" />
-	</ProgramsPage>
-</PageLayout>
+<ProgramsPage facets={data.facets} filterBarInitiallyOpen>
+	<Catalog {containers} payloadType={[payloadTypes.enum.program]}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Catalog>
+	<ContextTabs slug="programs-catalog" />
+</ProgramsPage>

@@ -7,7 +7,6 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import {
 		type Container,
@@ -82,17 +81,15 @@
 	]);
 </script>
 
-<PageLayout>
-	<MeasuresPage facets={data.facets}>
-		<Table {columns} rows={containers}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Table>
-		<ContextTabs slug="measures-table" />
-	</MeasuresPage>
-</PageLayout>
+<MeasuresPage facets={data.facets}>
+	<Table {columns} rows={containers}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Table>
+	<ContextTabs slug="measures-table" />
+</MeasuresPage>

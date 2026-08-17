@@ -7,7 +7,6 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		type Container,
 		type MeasurePayload,
@@ -60,20 +59,15 @@
 	);
 </script>
 
-<PageLayout>
-	<MeasuresPage facets={data.facets} filterBarInitiallyOpen>
-		<Catalog
-			{containers}
-			payloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}
-		>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Catalog>
-		<ContextTabs slug="measures-catalog" />
-	</MeasuresPage>
-</PageLayout>
+<MeasuresPage facets={data.facets} filterBarInitiallyOpen>
+	<Catalog {containers} payloadType={[payloadTypes.enum.measure, payloadTypes.enum.simple_measure]}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Catalog>
+	<ContextTabs slug="measures-catalog" />
+</MeasuresPage>

@@ -5,6 +5,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import { predicates } from '$lib/models';
 	import type { PageData } from '../../routes/[guid=uuid]/tasks/catalog/$types';
+	import PageLayout from '$lib/components/PageLayout.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -23,14 +24,16 @@
 	});
 </script>
 
-<BulkActionContextProvider actions={['status', 'visibility', 'delete']}>
-	<FullscreenLayout>
-		{#snippet header()}
-			<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
-		{/snippet}
+<PageLayout>
+	<BulkActionContextProvider actions={['status', 'visibility', 'delete']}>
+		<FullscreenLayout>
+			{#snippet header()}
+				<Header {filterBarInitiallyOpen} {facets} search {sortOptions} />
+			{/snippet}
 
-		{#snippet main()}
-			{@render children()}
-		{/snippet}
-	</FullscreenLayout>
-</BulkActionContextProvider>
+			{#snippet main()}
+				{@render children()}
+			{/snippet}
+		</FullscreenLayout>
+	</BulkActionContextProvider>
+</PageLayout>

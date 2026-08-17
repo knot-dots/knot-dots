@@ -5,7 +5,6 @@
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ProgramsPage from '$lib/components/ProgramsPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import withOptimistic from '$lib/client/withOptimistic';
@@ -75,17 +74,15 @@
 	]);
 </script>
 
-<PageLayout>
-	<ProgramsPage facets={data.facets}>
-		<Table {columns} rows={containers}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Table>
-		<ContextTabs slug="programs-table" />
-	</ProgramsPage>
-</PageLayout>
+<ProgramsPage facets={data.facets}>
+	<Table {columns} rows={containers}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Table>
+	<ContextTabs slug="programs-table" />
+</ProgramsPage>

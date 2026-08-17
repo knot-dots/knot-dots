@@ -7,7 +7,6 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import KnowledgePage from '$lib/components/KnowledgePage.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import { type Container, type KnowledgePayload, payloadTypes } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -75,17 +74,15 @@
 	]);
 </script>
 
-<PageLayout>
-	<KnowledgePage data={{ ...data, containers }}>
-		<Table {columns} rows={containers}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Table>
-		<ContextTabs slug="knowledge-table" />
-	</KnowledgePage>
-</PageLayout>
+<KnowledgePage data={{ ...data, containers }}>
+	<Table {columns} rows={containers}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Table>
+	<ContextTabs slug="knowledge-table" />
+</KnowledgePage>

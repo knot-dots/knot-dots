@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -20,20 +19,18 @@
 	);
 </script>
 
-<PageLayout>
-	<TasksPage data={{ ...data, containers }}>
-		<Table
-			columns={[
-				{ heading: $_('title'), key: 'title' },
-				{ heading: $_('description'), key: 'description' },
-				{ heading: $_('visibility.label'), key: 'visibility' },
-				{ heading: $_('task_status.label'), key: 'status' },
-				{ heading: $_('task_category.label'), key: 'taskCategory' },
-				{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
-				{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
-			]}
-			rows={containers}
-		/>
-		<ContextTabs slug="tasks-table" />
-	</TasksPage>
-</PageLayout>
+<TasksPage data={{ ...data, containers }}>
+	<Table
+		columns={[
+			{ heading: $_('title'), key: 'title' },
+			{ heading: $_('description'), key: 'description' },
+			{ heading: $_('visibility.label'), key: 'visibility' },
+			{ heading: $_('task_status.label'), key: 'status' },
+			{ heading: $_('task_category.label'), key: 'taskCategory' },
+			{ heading: $_('fulfillment_date'), key: 'fulfillmentDate' },
+			{ heading: $_('organizational_unit'), key: 'organizationalUnit' }
+		]}
+		rows={containers}
+	/>
+	<ContextTabs slug="tasks-table" />
+</TasksPage>

@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ResourcesPage from '$lib/components/ResourcesPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -20,17 +19,15 @@
 	);
 </script>
 
-<PageLayout>
-	<ResourcesPage data={{ ...data, containers }}>
-		<Table
-			columns={[
-				{ heading: $_('title'), key: 'title' },
-				{ heading: $_('description'), key: 'description' },
-				{ heading: $_('resource_category'), key: 'resourceCategory' },
-				{ heading: $_('label.unit'), key: 'resourceUnit' }
-			]}
-			rows={containers}
-		/>
-		<ContextTabs slug="resources-table" />
-	</ResourcesPage>
-</PageLayout>
+<ResourcesPage data={{ ...data, containers }}>
+	<Table
+		columns={[
+			{ heading: $_('title'), key: 'title' },
+			{ heading: $_('description'), key: 'description' },
+			{ heading: $_('resource_category'), key: 'resourceCategory' },
+			{ heading: $_('label.unit'), key: 'resourceUnit' }
+		]}
+		rows={containers}
+	/>
+	<ContextTabs slug="resources-table" />
+</ResourcesPage>

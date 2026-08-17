@@ -6,7 +6,6 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
 	import Table from '$lib/components/Table.svelte';
 	import { type Container, payloadTypes, type RulePayload } from '$lib/models';
@@ -74,17 +73,15 @@
 	]);
 </script>
 
-<PageLayout>
-	<RulesPage facets={data.facets}>
-		<Table {columns} rows={containers}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Table>
-		<ContextTabs slug="rules-table" />
-	</RulesPage>
-</PageLayout>
+<RulesPage facets={data.facets}>
+	<Table {columns} rows={containers}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Table>
+	<ContextTabs slug="rules-table" />
+</RulesPage>

@@ -6,7 +6,6 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import RulesPage from '$lib/components/RulesPage.svelte';
 	import { type Container, payloadTypes, type RulePayload } from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
@@ -54,17 +53,15 @@
 	);
 </script>
 
-<PageLayout>
-	<RulesPage facets={data.facets} filterBarInitiallyOpen>
-		<Catalog {containers} payloadType={[payloadTypes.enum.rule]}>
-			{#snippet footer()}
-				<LazyLoadSentinel
-					hasMore={list.hasMore}
-					loading={list.loadingMore}
-					onLoadMore={list.loadMore}
-				/>
-			{/snippet}
-		</Catalog>
-		<ContextTabs slug="rules-catalog" />
-	</RulesPage>
-</PageLayout>
+<RulesPage facets={data.facets} filterBarInitiallyOpen>
+	<Catalog {containers} payloadType={[payloadTypes.enum.rule]}>
+		{#snippet footer()}
+			<LazyLoadSentinel
+				hasMore={list.hasMore}
+				loading={list.loadingMore}
+				onLoadMore={list.loadMore}
+			/>
+		{/snippet}
+	</Catalog>
+	<ContextTabs slug="rules-catalog" />
+</RulesPage>

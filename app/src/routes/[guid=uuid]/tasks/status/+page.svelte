@@ -7,7 +7,6 @@
 	import Card from '$lib/components/Card.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import TaskBoardColumn from '$lib/components/TaskBoardColumn.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import TasksPage from '$lib/components/TasksPage.svelte';
@@ -46,61 +45,59 @@
 	}
 </script>
 
-<PageLayout>
-	<TasksPage data={{ ...data, containers }} sortOptions={[]}>
-		<Board>
-			{#if data.relatedContainers.length > 0}
+<TasksPage data={{ ...data, containers }} sortOptions={[]}>
+	<Board>
+		{#if data.relatedContainers.length > 0}
+			<BoardColumn
+				--background="white"
+				--border="solid 1px var(--color-gray-900)"
+				title={goalsColumnTitle(data.relatedContainers)}
+			>
+				<div class="vertical-scroll-wrapper">
+					{#each data.relatedContainers as container (container.guid)}
+						<Card {container} showRelationFilter />
+					{/each}
+				</div>
+			</BoardColumn>
+		{/if}
+		{#each status.options.filter((s) => s !== 'status.in_operation') as taskStatusOption (taskStatusOption)}
+			{#if paramsFromFragment(page.url).has(overlayKey.enum['relations'])}
 				<BoardColumn
-					--background="white"
-					--border="solid 1px var(--color-gray-900)"
-					title={goalsColumnTitle(data.relatedContainers)}
+					--background={statusBackgrounds.get(taskStatusOption)}
+					--hover-border-color={statusHoverColors.get(taskStatusOption)}
+					addItemUrl={`#create=${payloadTypes.enum.task}&status=${taskStatusOption}`}
+					title={$_(taskStatusOption)}
 				>
-					<div class="vertical-scroll-wrapper">
-						{#each data.relatedContainers as container (container.guid)}
-							<Card {container} showRelationFilter />
-						{/each}
-					</div>
-				</BoardColumn>
-			{/if}
-			{#each status.options.filter((s) => s !== 'status.in_operation') as taskStatusOption (taskStatusOption)}
-				{#if paramsFromFragment(page.url).has(overlayKey.enum['relations'])}
-					<BoardColumn
-						--background={statusBackgrounds.get(taskStatusOption)}
-						--hover-border-color={statusHoverColors.get(taskStatusOption)}
-						addItemUrl={`#create=${payloadTypes.enum.task}&status=${taskStatusOption}`}
-						title={$_(taskStatusOption)}
-					>
-						<MaybeDragZone
-							containers={containers
-								.filter(isTaskContainer)
-								.filter(({ payload }) => payload.status === taskStatusOption)}
-						/>
-					</BoardColumn>
-				{:else}
-					<TaskBoardColumn
-						--background={statusBackgrounds.get(taskStatusOption)}
-						--hover-border-color={statusHoverColors.get(taskStatusOption)}
-						addItemUrl={`#create=${payloadTypes.enum.task}&status=${taskStatusOption}`}
-						items={containers
+					<MaybeDragZone
+						containers={containers
 							.filter(isTaskContainer)
 							.filter(({ payload }) => payload.status === taskStatusOption)}
-						onSort={(items) => {
-							data.containers = [
-								...data.containers.filter(
-									({ guid }) => !items.some(({ guid: itemGuid }) => guid === itemGuid)
-								),
-								...items
-							];
-						}}
-						status={taskStatusOption}
-					>
-						{#snippet itemSnippet(container)}
-							<TaskCard {container} showRelationFilter />
-						{/snippet}
-					</TaskBoardColumn>
-				{/if}
-			{/each}
-		</Board>
-		<ContextTabs slug="tasks-status" />
-	</TasksPage>
-</PageLayout>
+					/>
+				</BoardColumn>
+			{:else}
+				<TaskBoardColumn
+					--background={statusBackgrounds.get(taskStatusOption)}
+					--hover-border-color={statusHoverColors.get(taskStatusOption)}
+					addItemUrl={`#create=${payloadTypes.enum.task}&status=${taskStatusOption}`}
+					items={containers
+						.filter(isTaskContainer)
+						.filter(({ payload }) => payload.status === taskStatusOption)}
+					onSort={(items) => {
+						data.containers = [
+							...data.containers.filter(
+								({ guid }) => !items.some(({ guid: itemGuid }) => guid === itemGuid)
+							),
+							...items
+						];
+					}}
+					status={taskStatusOption}
+				>
+					{#snippet itemSnippet(container)}
+						<TaskCard {container} showRelationFilter />
+					{/snippet}
+				</TaskBoardColumn>
+			{/if}
+		{/each}
+	</Board>
+	<ContextTabs slug="tasks-status" />
+</TasksPage>

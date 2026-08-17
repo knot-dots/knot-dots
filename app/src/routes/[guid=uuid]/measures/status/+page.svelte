@@ -9,7 +9,6 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import MeasuresPage from '$lib/components/MeasuresPage.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
 		type Container,
 		type MeasurePayload,
@@ -54,33 +53,31 @@
 	});
 </script>
 
-<PageLayout>
-	<MeasuresPage facets={data.facets}>
-		<Board>
-			{#each data.columnIds as statusOption (statusOption)}
-				<BoardColumn
-					--background={statusBackgrounds.get(statusOption)}
-					--hover-border-color={statusHoverColors.get(statusOption)}
-					addItemUrl={`#create=measure&status=${statusOption}`}
-					title={statusOption === 'status.in_operation'
-						? $_('status.in_operation.short')
-						: $_(statusOption)}
-				>
-					<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
-						{#snippet footer()}
-							{@const list = board.listByColumn(statusOption)}
-							{#if list}
-								<LazyLoadSentinel
-									hasMore={list.hasMore}
-									loading={list.loadingMore}
-									onLoadMore={list.loadMore}
-								/>
-							{/if}
-						{/snippet}
-					</MaybeDragZone>
-				</BoardColumn>
-			{/each}
-		</Board>
-		<ContextTabs slug="measures-status" />
-	</MeasuresPage>
-</PageLayout>
+<MeasuresPage facets={data.facets}>
+	<Board>
+		{#each data.columnIds as statusOption (statusOption)}
+			<BoardColumn
+				--background={statusBackgrounds.get(statusOption)}
+				--hover-border-color={statusHoverColors.get(statusOption)}
+				addItemUrl={`#create=measure&status=${statusOption}`}
+				title={statusOption === 'status.in_operation'
+					? $_('status.in_operation.short')
+					: $_(statusOption)}
+			>
+				<MaybeDragZone containers={board.itemsByColumn(statusOption)}>
+					{#snippet footer()}
+						{@const list = board.listByColumn(statusOption)}
+						{#if list}
+							<LazyLoadSentinel
+								hasMore={list.hasMore}
+								loading={list.loadingMore}
+								onLoadMore={list.loadMore}
+							/>
+						{/if}
+					{/snippet}
+				</MaybeDragZone>
+			</BoardColumn>
+		{/each}
+	</Board>
+	<ContextTabs slug="measures-status" />
+</MeasuresPage>
