@@ -1863,7 +1863,29 @@ export function bulkUpdateManagedBy(container: Container<AnyPayload>, managedBy:
 					: await getAllContainersRelatedToMeasure(
 							container.guid,
 							{
-								type: [payloadTypes.enum.effect, payloadTypes.enum.goal, payloadTypes.enum.task]
+								type: [
+									payloadTypes.enum.col_content,
+									payloadTypes.enum.effect,
+									payloadTypes.enum.effect_collection,
+									payloadTypes.enum.file_collection,
+									payloadTypes.enum.goal,
+									payloadTypes.enum.goal_collection,
+									payloadTypes.enum.html,
+									payloadTypes.enum.image,
+									payloadTypes.enum.info_box,
+									payloadTypes.enum.measure_collection,
+									payloadTypes.enum.objective_collection,
+									payloadTypes.enum.progress,
+									payloadTypes.enum.quote,
+									payloadTypes.enum.resource_collection,
+									payloadTypes.enum.resource_data_collection,
+									payloadTypes.enum.summary,
+									payloadTypes.enum.task,
+									payloadTypes.enum.task_collection,
+									payloadTypes.enum.teaser,
+									payloadTypes.enum.teaser_highlight,
+									payloadTypes.enum.text
+								]
 							},
 							''
 						)(txConnection);

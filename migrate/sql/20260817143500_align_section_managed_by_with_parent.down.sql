@@ -1,0 +1,3 @@
+-- Down migration for the section managed_by alignment.
+-- This operation is not reversible because the prior stale managed_by values are unknown.
+-- No action performed.
