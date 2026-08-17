@@ -34,9 +34,10 @@ const envSchema = z
     ELASTICSEARCH_PASSWORD: z.string().optional(),
     ELASTICSEARCH_INDEX_ALIAS: z.string().default('containers'),
     INDEXING_WORKER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
-    INDEXING_MAX_RECEIVE_COUNT: z.coerce.number().int().positive().default(5),
+    INDEXING_MAX_RECEIVE_COUNT: z.coerce.number().int().positive().default(10),
     INDEXING_BULK_MAX_RETRIES: z.coerce.number().int().positive().default(3),
-    INDEXING_BULK_RETRY_BASE_MS: z.coerce.number().int().positive().default(500)
+    INDEXING_BULK_RETRY_BASE_MS: z.coerce.number().int().positive().default(500),
+    INDEXING_MISSING_RETRY_DELAY_S: z.coerce.number().int().positive().default(30)
   })
   .transform((value) => ({
     queueUrl: value.INDEXING_QUEUE_URL,
@@ -52,12 +53,13 @@ const envSchema = z
     pollIntervalMs: value.INDEXING_WORKER_POLL_INTERVAL_MS,
     maxReceiveCount: value.INDEXING_MAX_RECEIVE_COUNT,
     bulkMaxRetries: value.INDEXING_BULK_MAX_RETRIES,
-    bulkRetryBaseMs: value.INDEXING_BULK_RETRY_BASE_MS
+    bulkRetryBaseMs: value.INDEXING_BULK_RETRY_BASE_MS,
+    missingRetryDelayS: value.INDEXING_MISSING_RETRY_DELAY_S
   }));
 
 const env = envSchema.parse(process.env);
 
-const { queueUrl, dlqUrl, region, endpoint, accessKeyId, secretAccessKey, esUrl, esUsername, esPassword, esIndex, pollIntervalMs, maxReceiveCount, bulkMaxRetries, bulkRetryBaseMs } = env;
+const { queueUrl, dlqUrl, region, endpoint, accessKeyId, secretAccessKey, esUrl, esUsername, esPassword, esIndex, pollIntervalMs, maxReceiveCount, bulkMaxRetries, bulkRetryBaseMs, missingRetryDelayS } = env;
 
 let running = true;
 
@@ -101,19 +103,27 @@ async function fetchContainerUsers(revision: number) {
   `);
 }
 
-async function processBatch(events: IndexingEvent[], client: ESClient) {
-  if (!events.length) return;
-  log.info({ eventCount: events.length }, '[indexing-consumer] Processing batch of events');
+type BatchEntry = { message: QueueMessage; event: IndexingEvent };
+
+async function processBatch(entries: BatchEntry[], client: ESClient) {
+  const processed: QueueMessage[] = [];
+  const missing: BatchEntry[] = [];
+  if (!entries.length) return { processed, missing };
+  log.info({ eventCount: entries.length }, '[indexing-consumer] Processing batch of events');
   const operations: any[] = [];
-  for (const evt of events) {
+  for (const { message, event: evt } of entries) {
     if (evt.action === 'delete') {
       operations.push({ delete: { _index: esIndex, _id: evt.guid } });
+      processed.push(message);
       continue;
     }
     if (evt.action === 'upsert') {
       const row = await fetchContainerRow(evt.guid);
       if (!row) {
-        log.warn({ guid: evt.guid }, '[indexing-consumer] Upsert skipped; container missing');
+        // The row may belong to a transaction that has not committed yet
+        // (e.g. a long-running copy of a whole program); keep the message
+        // in the queue so the upsert is retried after the commit.
+        missing.push({ message, event: evt });
         continue;
       }
       const relation = await fetchContainerRelations(evt.guid);
@@ -133,9 +143,13 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
       });
       operations.push({ index: { _index: esIndex, _id: evt.guid } });
       operations.push(doc);
+      processed.push(message);
+      continue;
     }
+    log.warn({ action: evt.action, guid: evt.guid }, '[indexing-consumer] Dropping event with unknown action');
+    processed.push(message);
   }
-  if (!operations.length) return;
+  if (!operations.length) return { processed, missing };
   // Retry bulk on transient errors with exponential backoff
   let attempt = 0;
   // eslint-disable-next-line no-constant-condition
@@ -163,9 +177,10 @@ async function processBatch(events: IndexingEvent[], client: ESClient) {
     }
   }
   log.info(
-    { operationCount: operations.length, eventCount: events.length },
+    { operationCount: operations.length, eventCount: entries.length },
     '[indexing-consumer] Bulk processed'
   );
+  return { processed, missing };
 }
 
 export async function startIndexingConsumer() {
@@ -239,13 +254,13 @@ export async function startIndexingConsumer() {
           '[indexing-consumer] Failed to extend visibility timeout'
         );
       }
-      const events: IndexingEvent[] = [];
+      const batchEntries: BatchEntry[] = [];
       const poison: QueueMessage[] = [];
       for (const m of messages) {
         try {
           if (!m.Body) continue;
           const evt = JSON.parse(m.Body) as IndexingEvent;
-          events.push(evt);
+          batchEntries.push({ message: m, event: evt });
         } catch (e) {
           log.warn(
             { error: isErrorLike(e) ? serializeError(e) : String(e) },
@@ -255,12 +270,74 @@ export async function startIndexingConsumer() {
         }
       }
       // Process valid events; if it fails, decide what to do with messages
-      await processBatch(events, es);
-      log.info({ eventCount: events.length }, '[indexing-consumer] Successfully processed batch');
+      const { processed, missing } = await processBatch(batchEntries, es);
+      log.info(
+        { eventCount: batchEntries.length, missingCount: missing.length },
+        '[indexing-consumer] Successfully processed batch'
+      );
 
-      // Delete processed messages; forward poison to DLQ or drop
-      if (messages.length) {
-        const entries = messages
+      // Upserts whose container row is not committed yet stay in the queue:
+      // shorten their visibility timeout so the retry happens quickly. Once a
+      // message exceeds maxReceiveCount the container is assumed to never
+      // materialize (rolled-back transaction) and it is given up on.
+      const retry: QueueMessage[] = [];
+      const exhausted: QueueMessage[] = [];
+      for (const { message, event } of missing) {
+        const receiveCountRaw = message.Attributes?.ApproximateReceiveCount;
+        const receiveCount = receiveCountRaw ? Number(receiveCountRaw) : 1;
+        if (receiveCount >= maxReceiveCount) {
+          log.error(
+            { guid: event.guid, receiveCount },
+            '[indexing-consumer] Upsert dropped; container still missing after max retries'
+          );
+          exhausted.push(message);
+        } else {
+          log.warn(
+            { guid: event.guid, receiveCount, retryDelayS: missingRetryDelayS },
+            '[indexing-consumer] Upsert deferred; container missing (transaction may not be committed yet)'
+          );
+          retry.push(message);
+        }
+      }
+      if (retry.length) {
+        try {
+          const retryEntries = retry
+            .filter((m) => m.ReceiptHandle && m.MessageId)
+            .map((m) => ({
+              Id: m.MessageId!,
+              ReceiptHandle: m.ReceiptHandle!,
+              VisibilityTimeout: missingRetryDelayS
+            }));
+          if (retryEntries.length) {
+            await sqs.send(
+              new ChangeMessageVisibilityBatchCommand({ QueueUrl: queueUrl, Entries: retryEntries })
+            );
+          }
+        } catch (e) {
+          log.warn(
+            { error: isErrorLike(e) ? serializeError(e) : String(e) },
+            '[indexing-consumer] Failed to shorten visibility timeout for deferred upserts'
+          );
+        }
+      }
+      if (dlqUrl && exhausted.length) {
+        for (const m of exhausted) {
+          try {
+            await sqs.send(new SendMessageCommand({ QueueUrl: dlqUrl, MessageBody: m.Body || '' }));
+            log.warn('[indexing-consumer] Forwarded exhausted upsert to DLQ');
+          } catch (e) {
+            log.warn(
+              { error: isErrorLike(e) ? serializeError(e) : String(e) },
+              '[indexing-consumer] Failed to forward exhausted upsert to DLQ'
+            );
+          }
+        }
+      }
+
+      // Delete processed and given-up messages; forward poison to DLQ or drop
+      const toDelete = [...processed, ...exhausted, ...poison];
+      if (toDelete.length) {
+        const entries = toDelete
           .filter((m) => m.ReceiptHandle && m.MessageId)
           .map((m) => ({ Id: m.MessageId!, ReceiptHandle: m.ReceiptHandle! }));
         if (entries.length) {
