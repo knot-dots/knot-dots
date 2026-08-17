@@ -86,28 +86,18 @@
 
 		const { added, removed } = adoptionDiff(before, selected);
 
-		const responses = await Promise.all([
-			...(added.length > 0
-				? [
-						fetch(`/container/${container.guid}/relation`, {
-							body: JSON.stringify(adoptionRelations(container.guid, added)),
-							headers: { 'Content-Type': 'application/json' },
-							method: 'POST'
-						})
-					]
-				: []),
-			...(removed.length > 0
-				? [
-						fetch(`/container/${container.guid}/relation`, {
-							body: JSON.stringify(adoptionRelations(container.guid, removed)),
-							headers: { 'Content-Type': 'application/json' },
-							method: 'DELETE'
-						})
-					]
-				: [])
-		]);
+		const relations = [
+			...adoptionRelations(container.guid, added),
+			...adoptionRelations(container.guid, removed, true)
+		];
 
-		if (responses.every(({ ok }) => ok)) {
+		const response = await fetch(`/container/${container.guid}/relation`, {
+			body: JSON.stringify(relations),
+			headers: { 'Content-Type': 'application/json' },
+			method: 'POST'
+		});
+
+		if (response.ok) {
 			currentAdopters = [...currentAdopters.filter((guid) => !removed.includes(guid)), ...added];
 			popover.close();
 			await invalidateAll();

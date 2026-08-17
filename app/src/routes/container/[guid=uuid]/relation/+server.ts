@@ -205,7 +205,10 @@ export const POST = (async ({ locals, params, request }) => {
 	const data = await request.json().catch((reason: SyntaxError) => {
 		error(400, { message: reason.message });
 	});
-	const parseResult = z.array(relation).safeParse(data);
+	// DELETE must not carry a request body, so relations are removed through
+	// this handler as well: entries flagged with deleted are taken away,
+	// everything else is upserted, all within a single transaction.
+	const parseResult = z.array(relation.extend({ deleted: z.boolean().optional() })).safeParse(data);
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
@@ -228,113 +231,52 @@ export const POST = (async ({ locals, params, request }) => {
 			},
 			'alpha'
 		)(tx);
-		await updateManyContainerRelations(
-			parseResult.data
-				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-				.filter(({ object, predicate, subject }) => {
-					const objectContainer = containers.find(
-						(c) => ability.can('read', c) && c.guid === object
+		const authorized = parseResult.data
+			.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+			.filter(({ deleted, object, predicate, subject }) => {
+				const objectContainer = containers.find((c) => ability.can('read', c) && c.guid === object);
+				const subjectContainer = containers.find(
+					(c) => ability.can('read', c) && c.guid === subject
+				);
+				if (!objectContainer || !subjectContainer) {
+					return false;
+				}
+				// Adopting a public rule-set program does not require 'relate'
+				// permission on the (foreign) program. Instead the user must be
+				// allowed to update the adopting organization or organizational
+				// unit, and the owning organizational unit may not adopt its own
+				// program. Removal is exempt from the latter rules: taking away a
+				// relation that should not exist must always be possible for those
+				// responsible for the adopting unit.
+				if (predicate == predicates.enum['is-adopted-by']) {
+					return (
+						createFeatureDecisions(locals.features).useAdoptions() &&
+						subject == params.guid &&
+						ability.can('update', objectContainer) &&
+						(deleted ||
+							(isAdoptableProgram(subjectContainer) &&
+								(isOrganizationContainer(objectContainer) ||
+									isOrganizationalUnitContainer(objectContainer)) &&
+								objectContainer.guid != subjectContainer.organizational_unit))
 					);
-					const subjectContainer = containers.find(
-						(c) => ability.can('read', c) && c.guid === subject
-					);
-					if (!objectContainer || !subjectContainer) {
-						return false;
-					}
-					// Adopting a public rule-set program does not require 'relate'
-					// permission on the (foreign) program. Instead the user must be
-					// allowed to update the adopting organization or organizational
-					// unit, and the owning organizational unit may not adopt its own
-					// program.
-					if (predicate == predicates.enum['is-adopted-by']) {
-						return (
-							createFeatureDecisions(locals.features).useAdoptions() &&
-							subject == params.guid &&
-							isAdoptableProgram(subjectContainer) &&
-							(isOrganizationContainer(objectContainer) ||
-								isOrganizationalUnitContainer(objectContainer)) &&
-							objectContainer.guid != subjectContainer.organizational_unit &&
-							ability.can('update', objectContainer)
-						);
-					}
-					return ability.can(
-						'relate',
-						[subjectContainer, objectContainer].find(
-							(c) => c.guid == params.guid
-						) as Container<AnyPayload>
-					);
-				})
-		)(tx);
-	});
+				}
+				return ability.can(
+					'relate',
+					[subjectContainer, objectContainer].find(
+						(c) => c.guid == params.guid
+					) as Container<AnyPayload>
+				);
+			});
 
-	return new Response(null, { status: 204 });
-}) satisfies RequestHandler;
+		const removed = authorized.filter(({ deleted }) => deleted);
+		if (removed.length > 0) {
+			await deleteManyContainerRelations(removed)(tx);
+		}
 
-export const DELETE = (async ({ locals, params, request }) => {
-	if (!locals.user.isAuthenticated) {
-		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
-	}
-
-	if (request.headers.get('Content-Type') != 'application/json') {
-		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
-	}
-
-	const data = await request.json().catch((reason: SyntaxError) => {
-		error(400, { message: reason.message });
-	});
-	const parseResult = z.array(relation).safeParse(data);
-
-	if (!parseResult.success) {
-		error(422, parseResult.error);
-	}
-
-	const ability = defineAbilityFor(locals.user);
-
-	await locals.pool.transaction(async (tx) => {
-		// Deleting relations follows the same rules as creating them via POST:
-		// the container represented by the guid parameter of the route must be
-		// either the subject or the object, and the permission checks are
-		// applied per relation.
-		const containers = await getManyContainers(
-			[],
-			{
-				guid: parseResult.data
-					.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-					.flatMap(({ object, subject }) => [object, subject])
-			},
-			'alpha'
-		)(tx);
-		await deleteManyContainerRelations(
-			parseResult.data
-				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-				.filter(({ object, predicate, subject }) => {
-					const objectContainer = containers.find(
-						(c) => ability.can('read', c) && c.guid === object
-					);
-					const subjectContainer = containers.find(
-						(c) => ability.can('read', c) && c.guid === subject
-					);
-					if (!objectContainer || !subjectContainer) {
-						return false;
-					}
-					// Unlike POST, the owning organizational unit is not rejected
-					// here: removing a relation that should not exist must always be
-					// possible for those responsible for the adopting unit.
-					if (predicate == predicates.enum['is-adopted-by']) {
-						return (
-							createFeatureDecisions(locals.features).useAdoptions() &&
-							subject == params.guid &&
-							ability.can('update', objectContainer)
-						);
-					}
-					return ability.can(
-						'relate',
-						[subjectContainer, objectContainer].find(
-							(c) => c.guid == params.guid
-						) as Container<AnyPayload>
-					);
-				})
-		)(tx);
+		const upserted = authorized.filter(({ deleted }) => !deleted);
+		if (upserted.length > 0) {
+			await updateManyContainerRelations(upserted)(tx);
+		}
 	});
 
 	return new Response(null, { status: 204 });

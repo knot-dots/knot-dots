@@ -190,6 +190,18 @@ describe('adoptionRelations', () => {
 			}
 		]);
 	});
+
+	test('flags relations for deletion on request', () => {
+		expect(adoptionRelations(program, [siblingUnit], true)).toEqual([
+			{
+				deleted: true,
+				object: siblingUnit,
+				position: 0,
+				predicate: predicates.enum['is-adopted-by'],
+				subject: program
+			}
+		]);
+	});
 });
 
 describe('groupedByOrganization', () => {
