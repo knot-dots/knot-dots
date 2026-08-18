@@ -1226,6 +1226,12 @@ label > input[type='checkbox'].toggle {
 }
 
 .footer-action-bar:has(*) {
+	--dropdown-button-border-radius: 8px;
+	--dropdown-button-border-width: 1px;
+	--dropdown-button-default-background: transparent;
+	--dropdown-button-default-border-color: var(--color-border-subtle);
+	--dropdown-button-padding: 0.5rem 1rem;
+
 	align-items: center;
 	background: var(--color-surface-accent-default);
 	border-radius: 0 0 0 24px;
