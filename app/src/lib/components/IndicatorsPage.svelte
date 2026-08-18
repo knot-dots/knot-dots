@@ -4,7 +4,6 @@
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
-	import { createFeatureDecisions } from '$lib/features';
 	import type { PageData } from '../../routes/[guid=uuid]/indicators/catalog/$types';
 
 	interface Props {
@@ -17,8 +16,6 @@
 	let { actions, children, data, filterBarInitiallyOpen = false }: Props = $props();
 
 	let facets = $derived(data.facets);
-
-	const featureDecisions = createFeatureDecisions(data.features ?? []);
 </script>
 
 <PageLayout>
@@ -26,7 +23,7 @@
 		<FullscreenLayout>
 			{#snippet header()}
 				<Header {facets} {filterBarInitiallyOpen} search />
-				{#if actions && featureDecisions.useImportFromCsv()}
+				{#if actions}
 					<div class="indicator-actions">
 						{@render actions()}
 					</div>

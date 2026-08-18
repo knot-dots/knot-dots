@@ -16,7 +16,6 @@ type Actions =
 	| 'update'
 	| 'delete'
 	| 'delete-recursively'
-	| 'download-csv'
 	| 'invite-members'
 	| 'relate'
 	| 'prioritize';
@@ -45,7 +44,6 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('download-csv', [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template]);
 		can('relate', payloadTypes.options);
 		can('delete-recursively', [
 			payloadTypes.enum.measure,
@@ -97,20 +95,6 @@ export default function defineAbilityFor(user: User) {
 		);
 		can(
 			['create', 'update', 'delete'],
-			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
-			{
-				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
-		can(
-			'download-csv',
-			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
-			{
-				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
-		can(
-			'download-csv',
 			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
 			{
 				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }

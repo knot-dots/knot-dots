@@ -21,11 +21,11 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type Container,
-		isActualDataContainer,
-		isIndicatorTemplateContainer,
 		containerOfType,
-		payloadTypes,
-		isBinaryIndicatorContainer
+		isActualDataContainer,
+		isBinaryIndicatorContainer,
+		isIndicatorTemplateContainer,
+		payloadTypes
 	} from '$lib/models';
 	import {
 		ability,
@@ -54,29 +54,17 @@
 	let toast = getToastContext();
 
 	let canUploadCsv = $derived(
-		$ability.can(
-			'create',
-			containerOfType(
-				payloadTypes.enum.indicator_template,
-				page.data.currentOrganization.guid,
-				page.data.currentOrganizationalUnit?.guid ?? null,
-				page.data.currentOrganization.guid,
-				''
+		createFeatureDecisions(data.features).useImportFromCsv() &&
+			$ability.can(
+				'create',
+				containerOfType(
+					payloadTypes.enum.indicator_template,
+					page.data.currentOrganization.guid,
+					page.data.currentOrganizationalUnit?.guid ?? null,
+					page.data.currentOrganization.guid,
+					''
+				)
 			)
-		)
-	);
-
-	let canDownloadCsv = $derived(
-		$ability.can(
-			'download-csv',
-			containerOfType(
-				payloadTypes.enum.indicator_template,
-				page.data.currentOrganization.guid,
-				page.data.currentOrganizationalUnit?.guid ?? null,
-				page.data.currentOrganization.guid,
-				''
-			)
-		)
 	);
 
 	// svelte-ignore non_reactive_update
@@ -227,12 +215,10 @@
 				{$_('indicator_csv.upload')}
 			</button>
 		{/if}
-		{#if canDownloadCsv}
-			<button class="button-xs" type="button" onclick={handleDownload}>
-				<DownloadIcon />
-				{$_('indicator_csv.download')}
-			</button>
-		{/if}
+		<button class="button-xs" type="button" onclick={handleDownload}>
+			<DownloadIcon />
+			{$_('indicator_csv.download')}
+		</button>
 	{/snippet}
 	<Table {actualDataContainers} {columns} {rows} />
 	<ContextTabs slug="indicators-table" />
