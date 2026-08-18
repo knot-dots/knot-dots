@@ -320,11 +320,15 @@ export async function startIndexingConsumer() {
           );
         }
       }
-      if (dlqUrl && exhausted.length) {
+      // Only messages that made it into the DLQ may be deleted; a failed
+      // forward stays in the queue and is attempted again on redelivery.
+      const gaveUp: QueueMessage[] = [];
+      if (dlqUrl) {
         for (const m of exhausted) {
           try {
             await sqs.send(new SendMessageCommand({ QueueUrl: dlqUrl, MessageBody: m.Body || '' }));
             log.warn('[indexing-consumer] Forwarded exhausted upsert to DLQ');
+            gaveUp.push(m);
           } catch (e) {
             log.warn(
               { error: isErrorLike(e) ? serializeError(e) : String(e) },
@@ -332,10 +336,12 @@ export async function startIndexingConsumer() {
             );
           }
         }
+      } else {
+        gaveUp.push(...exhausted);
       }
 
       // Delete processed and given-up messages; forward poison to DLQ or drop
-      const toDelete = [...processed, ...exhausted, ...poison];
+      const toDelete = [...processed, ...gaveUp, ...poison];
       if (toDelete.length) {
         const entries = toDelete
           .filter((m) => m.ReceiptHandle && m.MessageId)
