@@ -4,6 +4,7 @@
 	import { resource } from 'runed';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { page } from '$app/state';
+	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import ChartLineIcon from '~icons/flowbite/chart-outline';
 	import TableIcon from '~icons/flowbite/table-row-outline';
@@ -24,7 +25,6 @@
 		type AnyPayload,
 		type Container,
 		type IndicatorTemplatePayload,
-		isActualDataContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
@@ -46,27 +46,26 @@
 
 	let guid = $derived(container.guid);
 
-	// Fetch comparison data for selected municipalities
 	let selectedMunicipalityGuids = $derived(
 		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
 	);
 
-	let relatedContainersQuery = resource(
-		[() => guid, () => selectedMunicipalityGuids],
-		async ([guid, selectedMunicipalityGuids], __, { signal }) => {
-			return fetchRelatedContainers(
-				guid,
-				{
-					organization: [page.data.currentOrganization.guid],
-					organizationalUnit: page.data.currentOrganizationalUnit
-						? [page.data.currentOrganizationalUnit.guid, ...selectedMunicipalityGuids]
-						: []
-				},
-				'alpha',
-				{ signal }
-			);
-		}
-	);
+	let relatedContainersQuery = resource([() => guid], async ([guid], __, { signal }) => {
+		return fetchRelatedContainers(
+			guid,
+			{
+				organization: [page.data.currentOrganization.guid],
+				organizationalUnit: page.data.currentOrganizationalUnit
+					? [page.data.currentOrganizationalUnit.guid]
+					: []
+			},
+			'alpha',
+			{ signal }
+		);
+	});
+
+	// Fetch comparison data for selected municipalities
+	const comparisonData = createComparisonData({ indicatorGuids: () => [guid] });
 
 	setBulkActionContext({
 		actions: ['visibility', 'delete'],
@@ -81,20 +80,13 @@
 		) ?? sections
 	);
 
-	let comparisonContainers = $derived(
-		relatedContainersQuery.current
-			?.filter(isActualDataContainer)
-			.filter(
-				({ organizational_unit }) =>
-					organizational_unit && selectedMunicipalityGuids.includes(organizational_unit)
-			)
-	);
+	let comparisonContainers = $derived(comparisonData.comparisonDataMap.get(guid));
 
 	let viewMode = $state('chart');
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header compare sortOptions={[]} workspaceOptions={[]} />
 {/snippet}
 
 {#snippet main()}
