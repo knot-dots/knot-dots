@@ -96,8 +96,13 @@ test('progress can be computed from subordinate objects', async ({
 	await dotsBoard.card(testGoal.payload.title).click();
 	await dotsBoard.overlay.editModeToggle.check();
 
-	// Add a Progress section; manual measurement with a slider is the default
-	const section = await dotsBoard.overlay.addSection('Progress');
+	// Add a Progress section; manual measurement with a slider is the default.
+	// Locate the section by its heading because sibling sections may render
+	// with a delay and shift the index-based locator returned by addSection.
+	await dotsBoard.overlay.addSection('Progress');
+	const section = dotsBoard.overlay.sections.filter({
+		has: dotsBoard.page.getByRole('heading', { name: 'Progress', exact: true })
+	});
 	await expect(section.getByRole('slider')).toBeVisible({ timeout: 15000 });
 
 	// Switch measurement to subordinate objects; retry in case a pending
@@ -112,7 +117,7 @@ test('progress can be computed from subordinate objects', async ({
 	}).toPass({ timeout: 20000 });
 
 	// The slider is replaced by a stacked bar with one segment per subordinate task
-	const stackedBar = section.getByRole('img', { name: 'Progress' });
+	const stackedBar = section.locator('.stacked-progress');
 	await expect(stackedBar).toBeVisible({ timeout: 15000 });
 	await expect(stackedBar.locator('.segment')).toHaveCount(1, { timeout: 15000 });
 	await stackedBar.locator('.segment').hover();

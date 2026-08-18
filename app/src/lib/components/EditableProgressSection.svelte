@@ -3,7 +3,6 @@
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import { createFeatureDecisions } from '$lib/features';
 	import saveContainer from '$lib/client/saveContainer';
 	import ProgressSettingsDropdown from '$lib/components/ProgressSettingsDropdown.svelte';
@@ -12,7 +11,7 @@
 		type AnyPayload,
 		type Container,
 		type ContainerWithProgress,
-		findAncestors,
+		findDescendants,
 		isContainerWithStatus,
 		overlayKey,
 		overlayURL,
@@ -49,22 +48,25 @@
 			container.payload.measurement === progressMeasurement.enum.subordinateObjects
 	);
 
-	let objectTypeOptions = $derived([
-		{ label: $_('tasks'), value: payloadTypes.enum.task },
-		{ label: $_('measures'), value: payloadTypes.enum.measure },
-		{ label: $_('goals'), value: payloadTypes.enum.goal }
-	]);
+	let objectTypeOptions = $derived(
+		progressObjectType.options.map((o) => ({ label: $_(o), value: o }))
+	);
 
-	let childrenRequest = $derived(
-		showComputedProgress
-			? fetchRelatedContainers(parentContainer.guid, {
-					payloadType:
-						container.payload.objectType === payloadTypes.enum.measure
-							? [payloadTypes.enum.measure, payloadTypes.enum.simple_measure]
-							: [container.payload.objectType],
-					relationType: [predicates.enum['is-part-of']]
-				})
-			: Promise.resolve([] as Container<AnyPayload>[])
+	let segments = $derived(
+		findDescendants(parentContainer as Container<AnyPayload>, relatedContainers, [
+			predicates.enum['is-part-of']
+		])
+			.filter(({ payload }) =>
+				container.payload.objectType === payloadTypes.enum.measure
+					? payload.type === payloadTypes.enum.measure ||
+						payload.type === payloadTypes.enum.simple_measure
+					: payload.type === container.payload.objectType
+			)
+			.filter(isContainerWithStatus)
+			.sort(
+				(a, b) =>
+					status.options.indexOf(a.payload.status) - status.options.indexOf(b.payload.status)
+			)
 	);
 
 	async function handleChange() {
@@ -135,38 +137,18 @@
 	{/if}
 
 	<div class="progress">
-		{#await childrenRequest}
-			<div class="stacked-progress" role="img" aria-label={$_('progress')}></div>
-		{:then children}
-			{@const ancestors = findAncestors(parentContainer, children, [predicates.enum['is-part-of']])}
-			{@const segments = children
-				.filter(
-					(child) =>
-						child.guid !== parentContainer.guid &&
-						!ancestors.some(({ guid }) => guid === child.guid) &&
-						child.relation.some(
-							(r) =>
-								r.predicate === predicates.enum['is-part-of'] && r.object === parentContainer.guid
-						)
-				)
-				.filter(isContainerWithStatus)
-				.sort(
-					(a, b) =>
-						status.options.indexOf(a.payload.status) - status.options.indexOf(b.payload.status)
-				)}
-			<div class="stacked-progress" role="img" aria-label={$_('progress')}>
-				{#each segments as segment (segment.guid)}
-					{@const label = `${'title' in segment.payload ? segment.payload.title : ''}: ${$_(segment.payload.status)}`}
-					<a
-						aria-label={label}
-						class="segment"
-						href={overlayURL(page.url, overlayKey.enum.view, segment.guid)}
-						style:background={`var(--color-${statusColors.get(segment.payload.status)}-300)`}
-						{@attach tooltip(label)}
-					></a>
-				{/each}
-			</div>
-		{/await}
+		<div class="stacked-progress">
+			{#each segments as segment (segment.guid)}
+				{@const label = `${'title' in segment.payload ? segment.payload.title : ''}: ${$_(segment.payload.status)}`}
+				<!-- svelte-ignore a11y_consider_explicit_label (the tooltip attachment provides aria-labelledby) -->
+				<a
+					class="segment"
+					href={overlayURL(page.url, overlayKey.enum.view, segment.guid)}
+					style:background={`var(--color-${statusColors.get(segment.payload.status)}-300)`}
+					{@attach tooltip(label)}
+				></a>
+			{/each}
+		</div>
 	</div>
 {:else}
 	<div class="progress">
