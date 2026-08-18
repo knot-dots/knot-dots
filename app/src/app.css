@@ -622,17 +622,6 @@ button > svg,
 	max-width: none;
 }
 
-button.quiet,
-.button.quiet {
-	--button-background: transparent;
-	--button-border-color: transparent;
-}
-
-button.quiet:hover,
-.button.quiet:hover {
-	--button-hover-border-color: transparent;
-}
-
 button.button-primary,
 .button.button-primary {
 	--button-background: var(--color-background-accent-strong);
@@ -703,16 +692,6 @@ button.button-alternative,
 	color: var(--button-start-icon-color, inherit);
 	height: var(--button-start-icon-size, 1.25rem);
 	width: var(--button-start-icon-size, 1.25rem);
-}
-
-button.button-red,
-.button.button-red {
-	--button-active-background: var(--color-red-900);
-	--button-background: var(--color-red-700);
-	--button-hover-background: var(--color-red-800);
-
-	border: none;
-	color: var(--color-white);
 }
 
 button.button-ai {
@@ -813,12 +792,6 @@ button.button-xs svg,
 .button.button-xs svg {
 	height: 1rem;
 	width: 1rem;
-}
-
-button.button-square,
-.button.button-square {
-	--padding-x: 9px;
-	--padding-y: 9px;
 }
 
 .action-button {

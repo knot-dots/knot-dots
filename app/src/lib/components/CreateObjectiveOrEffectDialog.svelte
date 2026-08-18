@@ -121,7 +121,11 @@
 					</li>
 				</ol>
 
-				<button class="button-xs button-red" onclick={() => dialog.close()} type="button">
+				<button
+					class="button-primary button-xs system-danger"
+					onclick={() => dialog.close()}
+					type="button"
+				>
 					{$_('cancel')}
 				</button>
 
@@ -281,18 +285,6 @@
 
 	.step-3-layout-right {
 		--details-padding-x: 0;
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
 	}
 
 	.step-3-layout {

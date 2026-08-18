@@ -125,7 +125,7 @@
 				<footer class="dialog-footer-actions">
 					{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 						<button
-							class="button button-xs button-red"
+							class="button-alternative button-xs system-danger"
 							onclick={(e) => {
 								e.preventDefault();
 								confirmDelete = true;

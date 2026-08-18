@@ -47,7 +47,7 @@
 
 {#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 	<button
-		class="delete quiet"
+		class="button-alternative system-danger"
 		type="button"
 		onclick={() => confirmDeleteDialog.showModal()}
 		{@attach tooltip($_('delete'))}
