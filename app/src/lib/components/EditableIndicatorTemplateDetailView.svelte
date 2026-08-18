@@ -57,9 +57,10 @@
 			return fetchRelatedContainers(
 				guid,
 				{
+					compareOrganizationalUnit: selectedMunicipalityGuids,
 					organization: [page.data.currentOrganization.guid],
 					organizationalUnit: page.data.currentOrganizationalUnit
-						? [page.data.currentOrganizationalUnit.guid, ...selectedMunicipalityGuids]
+						? [page.data.currentOrganizationalUnit.guid]
 						: []
 				},
 				'alpha',
@@ -94,7 +95,7 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header compare sortOptions={[]} workspaceOptions={[]} />
 {/snippet}
 
 {#snippet main()}

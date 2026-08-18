@@ -7,6 +7,7 @@ export default async function fetchRelatedContainers(
 	filters: {
 		[key: string]: string | string[] | undefined;
 		assignee?: string[];
+		compareOrganizationalUnit?: string[];
 		organization?: string[];
 		organizationalUnit?: string[];
 		payloadType?: string[];
@@ -27,6 +28,9 @@ export default async function fetchRelatedContainers(
 	}
 	for (const value of filters.assignee ?? []) {
 		params.append('assignee', value);
+	}
+	for (const value of filters.compareOrganizationalUnit ?? []) {
+		params.append('compareOrganizationalUnit', value);
 	}
 	for (const value of filters.organization ?? []) {
 		params.append('organization', value);

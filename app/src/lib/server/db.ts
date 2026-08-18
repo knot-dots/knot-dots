@@ -534,6 +534,7 @@ function prepareWhereCondition(filters: {
 	guid?: string[];
 	helpSlugs?: HelpSlug[];
 	hierarchyLevels?: number[];
+	includeOrganizationLevel?: boolean;
 	indicatorCategories?: string[];
 	indicators?: string[];
 	indicatorTypes?: string[];
@@ -633,11 +634,14 @@ function prepareWhereCondition(filters: {
 	if (filters.organizationalUnits === null) {
 		conditions.push(sql.fragment`c.organizational_unit IS NULL`);
 	} else if (filters.organizationalUnits?.length) {
+		const inCondition = sql.fragment`c.organizational_unit IN (${sql.join(
+			filters.organizationalUnits,
+			sql.fragment`, `
+		)})`;
 		conditions.push(
-			sql.fragment`c.organizational_unit IN (${sql.join(
-				filters.organizationalUnits,
-				sql.fragment`, `
-			)})`
+			filters.includeOrganizationLevel
+				? sql.fragment`(c.organizational_unit IS NULL OR ${inCondition})`
+				: inCondition
 		);
 	}
 	if (filters.programTypes?.length) {
@@ -1277,7 +1281,11 @@ export function getAllRelatedContainersByProgramType(
 export function getAllContainersRelatedToIndicators(
 	containers: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
-	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
+	actualDataFilters: {
+		includeOrganizationLevel?: boolean;
+		organizations?: string[];
+		organizationalUnits?: string[] | null;
+	}
 ) {
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		if (containers.length == 0) {
