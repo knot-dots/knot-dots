@@ -2,10 +2,19 @@
 // via pod annotations (see $lib/server/podFeatures) and deliberately absent
 // from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'BulkActions', 'UrlSlug'] as const],
+	['alpha', ['OpenAI'] as const],
 	[
 		'beta',
-		['ImportFromCsv', 'IOOI', 'Mistral', 'NewPropertyPanel', 'ResourceV2', 'SubMeasures'] as const
+		[
+			'BulkActions',
+			'ImportFromCsv',
+			'IOOI',
+			'Mistral',
+			'NewPropertyPanel',
+			'ResourceV2',
+			'SubMeasures',
+			'UrlSlug'
+		] as const
 	]
 ]);
 
