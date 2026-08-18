@@ -157,7 +157,7 @@
 						value={container.payload.iframeUrl}
 					/>
 					<button
-						class="button-primary"
+						class="button-primary system-primary"
 						disabled={!iframeUrl || iframeUrl === container.payload.iframeUrl}
 						type="button"
 						onclick={(event) => handleEmbed(event, closeDropdown)}
@@ -248,10 +248,6 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		width: 100%;
-	}
-
-	.button-primary {
-		justify-content: center;
 	}
 
 	.hint {

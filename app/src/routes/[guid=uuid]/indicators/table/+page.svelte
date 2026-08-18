@@ -210,7 +210,11 @@
 <IndicatorsPage data={{ ...data, containers }}>
 	{#snippet actions()}
 		{#if canUploadCsv}
-			<button class="button-primary button-xs" type="button" onclick={openUploadDialog}>
+			<button
+				class="button-primary button-xs system-primary"
+				type="button"
+				onclick={openUploadDialog}
+			>
 				<UploadIcon />
 				{$_('indicator_csv.upload')}
 			</button>
@@ -229,7 +233,7 @@
 		<form method="dialog">
 			<p class="dialog-actions">
 				<span>{$_('indicator_csv.upload')}</span>
-				<button class="button-xs button-alternative" type="submit">
+				<button class="button-xs button-alternative system-primary" type="submit">
 					{$_('cancel')}
 				</button>
 			</p>

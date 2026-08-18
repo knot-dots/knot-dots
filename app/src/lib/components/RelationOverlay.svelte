@@ -501,7 +501,7 @@
 								{#snippet button()}
 									{#if object.relation.find((r) => zone.predicate === r.predicate && item.container.guid === r.object && object.guid === r.subject)}
 										<button
-											class="button-square"
+											class="action-button"
 											type="button"
 											onclick={removeRelation(object, zone.predicate, item.container)}
 										>
@@ -509,7 +509,7 @@
 										</button>
 									{:else}
 										<button
-											class="button-square"
+											class="action-button"
 											type="button"
 											onclick={removeRelation(item.container, zone.predicate, object)}
 										>
@@ -536,6 +536,10 @@
 </footer>
 
 <style>
+	.action-button {
+		border: solid 1px var(--color-gray-200);
+	}
+
 	.drop-zone-wrapper {
 		--carousel-margin-left: 0;
 

@@ -317,7 +317,7 @@
 								{#snippet actions()}
 									{#if mayCreateIndividualProfile}
 										<button
-											class="button button-xs button-alternative"
+											class="button button-xs button-alternative system-primary"
 											disabled={creatingProfile}
 											onclick={createIndividualProfile}
 											type="button"
@@ -367,7 +367,7 @@
 		<footer class="footer-action-bar">
 			{#if mayCreateIndividualProfile}
 				<button
-					class="button button-xs button-alternative"
+					class="button button-xs button-alternative system-primary"
 					disabled={creatingProfile}
 					onclick={createIndividualProfile}
 					type="button"

@@ -322,7 +322,7 @@
 					<span>{$_('picker_dialog.clear')}</span>
 				</button>
 				<button
-					class="button-primary selection-apply"
+					class="button-primary system-primary selection-apply"
 					disabled={localSelected.length === 0}
 					onclick={confirm}
 					type="button"

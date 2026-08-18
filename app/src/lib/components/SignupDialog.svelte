@@ -152,7 +152,7 @@
 			</fieldset>
 
 			<button
-				class="button-xs button-primary"
+				class="button-xs button-primary system-primary"
 				type="submit"
 				{@attach tooltip($_('signup_dialog.submit'))}>{$_('signup_dialog.submit')}</button
 			>

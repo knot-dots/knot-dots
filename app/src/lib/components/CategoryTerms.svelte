@@ -293,7 +293,11 @@
 		{#if terms.length === 0 && showCreateFormAt < 0}
 			{#if canEdit}
 				<div class="details-section">
-					<button type="button" class="button button-sm button-primary" onclick={() => showForm(0)}>
+					<button
+						type="button"
+						class="button button-sm button-primary system-primary"
+						onclick={() => showForm(0)}
+					>
 						<Plus />
 						<span>{$_('category.terms.create_button')}</span>
 					</button>

@@ -529,7 +529,7 @@
 					</button>
 				{/if}
 				<button
-					class="button-primary selection-apply"
+					class="button-primary system-primary selection-apply"
 					disabled={mode === 'select' && selected.length === 0}
 					onclick={confirm}
 					type="button"

@@ -266,7 +266,7 @@
 					<span>{$_('picker_dialog.clear')}</span>
 				</button>
 				<button
-					class="button-primary selection-apply"
+					class="button-primary system-primary selection-apply"
 					disabled={selected.length === 0}
 					onclick={performImport}
 					type="button"

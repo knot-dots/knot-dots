@@ -30,7 +30,7 @@
 				: $_('confirm_bulk_delete_dialog.message')}
 		</p>
 
-		<button class="button-primary button-xs button-red" type="submit">
+		<button class="button-primary button-xs system-danger" type="submit">
 			{$_('confirm_bulk_delete_dialog.button')}
 		</button>
 	</form>

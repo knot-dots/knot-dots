@@ -318,7 +318,11 @@
 			{#if $user.isAuthenticated}
 				<EditModeToggle />
 			{:else}
-				<button class="button-primary button-xs" onclick={() => signIn('keycloak')} type="button">
+				<button
+					class="button-primary button-xs system-primary"
+					onclick={() => signIn('keycloak')}
+					type="button"
+				>
 					{$_('login')}
 				</button>
 			{/if}
@@ -338,7 +342,7 @@
 					{#if propertiesRelocationNotice && !propertiesRelocationNotice.seen}
 						<span
 							class="indicator system-info"
-							style:--indicator-background-color="var(--color-background-accent-strong)"
+							style:--indicator-background-color="var(--color-background-accent-default)"
 						></span>
 					{/if}
 				</button>
@@ -401,7 +405,7 @@
 
 	{#if container && isReportContainer(container)}
 		<button
-			class="button button-xs button-primary"
+			class="button button-xs button-primary system-primary"
 			type="button"
 			use:compareBar.button
 			onclick={() => {

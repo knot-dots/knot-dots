@@ -61,10 +61,10 @@
 	<form method="dialog" onsubmit={handleSubmit}>
 		<p class="dialog-actions">
 			<span>{$_('profile_settings.title')}</span>
-			<button class="button-xs button-primary" type="submit">
+			<button class="button-xs button-primary system-primary" type="submit">
 				{$_('save')}
 			</button>
-			<button class="button-xs button-alternative" formnovalidate type="submit">
+			<button class="button-xs button-alternative system-primary" formnovalidate type="submit">
 				{$_('cancel')}
 			</button>
 		</p>
@@ -131,7 +131,10 @@
 			</fieldset>
 
 			<footer>
-				<a class="button button-xs button-alternative" href={changePasswordURL(page.url.href)}>
+				<a
+					class="button button-xs button-alternative system-primary"
+					href={changePasswordURL(page.url.href)}
+				>
 					{$_('profile_settings.change_password')}
 				</a>
 			</footer>
@@ -191,9 +194,6 @@
 	}
 
 	.button-primary {
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
 		margin-left: auto;
 	}
 

@@ -121,16 +121,28 @@
 					</li>
 				</ol>
 
-				<button class="button-xs button-red" onclick={() => dialog.close()} type="button">
+				<button
+					class="button-primary button-xs system-danger"
+					onclick={() => dialog.close()}
+					type="button"
+				>
 					{$_('cancel')}
 				</button>
 
 				{#if page.state.createObjectiveOrEffect.step === 2}
-					<button class="button-primary button-xs" onclick={() => handleConfirm()} type="button">
+					<button
+						class="button-primary button-xs system-primary"
+						onclick={() => handleConfirm()}
+						type="button"
+					>
 						{$_('create_effect_dialog.button.confirm')}
 					</button>
 				{:else if page.state.createObjectiveOrEffect.step === 3}
-					<button class="button-primary button-xs" onclick={() => dialog.close()} type="button">
+					<button
+						class="button-primary button-xs system-primary"
+						onclick={() => dialog.close()}
+						type="button"
+					>
 						{$_('create_effect_dialog.button.confirm')}
 					</button>
 				{/if}
@@ -273,18 +285,6 @@
 
 	.step-3-layout-right {
 		--details-padding-x: 0;
-	}
-
-	.button-red {
-		--button-background: transparent;
-
-		border: solid 1px var(--color-red-700);
-		color: var(--color-red-700);
-	}
-
-	.button-red:active,
-	.button-red:hover {
-		color: var(--color-white);
 	}
 
 	.step-3-layout {

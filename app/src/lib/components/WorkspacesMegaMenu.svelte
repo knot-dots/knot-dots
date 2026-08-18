@@ -243,7 +243,7 @@
 
 	.menu-segment-item-icon {
 		align-items: center;
-		background-color: var(--color-background-accent-strong);
+		background-color: var(--color-background-accent-default);
 		border-radius: 8px;
 		color: var(--color-icon-accent-default);
 		display: inline-flex;

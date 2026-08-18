@@ -40,7 +40,11 @@
 							{/if}
 						{/await}
 						<footer>
-							<button class="button-primary" type="submit" {@attach tooltip($_('import.submit'))}>
+							<button
+								class="button-primary system-primary"
+								type="submit"
+								{@attach tooltip($_('import.submit'))}
+							>
 								{$_('import.submit')}
 							</button>
 						</footer>

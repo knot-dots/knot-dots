@@ -661,6 +661,7 @@
 		display: inline-block;
 		flex-grow: 0;
 		height: 2rem;
+		min-height: 0;
 		padding: 0 0.5rem;
 	}
 

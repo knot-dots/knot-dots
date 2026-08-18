@@ -97,7 +97,7 @@
 					})}
 				</p>
 
-				<button class="button-primary button-xs" type="submit">
+				<button class="button-primary button-xs system-primary" type="submit">
 					{$_('confirm_delete_dialog.button', {
 						values: {
 							title: 'title' in container.payload ? container.payload.title : container.payload.name
@@ -109,7 +109,11 @@
 			<p class="dialog-actions">
 				<span>{title}</span>
 
-				<button class="button-xs button-alternative" onclick={() => closeDialog()} type="button">
+				<button
+					class="button-xs button-alternative system-primary"
+					onclick={() => closeDialog()}
+					type="button"
+				>
 					<Close />
 					<span class="is-visually-hidden">{$_('close')}</span>
 				</button>
@@ -121,7 +125,7 @@
 				<footer class="dialog-footer-actions">
 					{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
 						<button
-							class="button button-xs button-red"
+							class="button-alternative button-xs system-danger"
 							onclick={(e) => {
 								e.preventDefault();
 								confirmDelete = true;

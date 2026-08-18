@@ -185,6 +185,7 @@
 	--color-background-accent-subtle: var(--color-background-system-subtle);
 	--color-background-accent-muted: var(--color-background-system-muted);
 	--color-background-accent-active: var(--color-background-system-active);
+	--color-background-accent-disabled: var(--color-gray-100);
 	--color-background-accent-hover: var(--color-background-system-hover);
 	--color-background-accent-expanded: var(--color-background-system-expanded);
 
@@ -212,14 +213,15 @@
 	--color-icon-disabled: var(--color-gray-300);
 
 	--color-border-default: var(--color-gray-200);
-	--color-border-subtle: var(--color-gray-300);
-	--color-border-raised: var(--color-black);
+	--color-border-subtle: var(--color-gray-100);
+	--color-border-raised: var(--color-white);
+	--color-border-disabled: var(--color-gray-050);
 
 	--color-surface-default: var(--color-white);
 	--color-surface-container: var(--color-gray-025);
 	--color-surface-container-raised: var(--color-gray-050);
 	--color-surface-overlay-backdrop: rgba(17, 25, 40, 0.5);
-	--color-surface-selected-background: var(--color-background-accent-subtle);
+	--color-surface-selected: var(--color-background-accent-muted);
 
 	--color-contributes-to: #7ad0ff;
 	--color-is-affected-by: #7ad0ff;
@@ -239,11 +241,6 @@
 	--color-background-in-operation: #edfbf1;
 	--color-background-in-planning: #fef1e7;
 	--color-background-rejected: #def0fd;
-
-	--color-border-subtle: var(--color-gray-100);
-
-	--color-text-accent-default: var(--color-gray-700);
-	--color-text-disabled: var(--color-gray-300);
 
 	--gradient-primary: linear-gradient(45deg, rgba(77, 195, 197, 1) 0%, rgba(33, 165, 237, 1) 100%);
 	--gradient-first-column: linear-gradient(
@@ -332,14 +329,6 @@
 	--shadow-2xl: 0px 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 	--focus-color: var(--color-primary-600);
-	--active-color: var(--color-primary-200);
-	--button-background: transparent;
-	--button-border-color: var(--color-gray-200);
-	--button-active-background: var(--color-gray-300);
-	--button-disabled-background: var(--color-gray-100);
-	--button-disabled-border-color: var(--color-gray-100);
-	--button-hover-background: var(--color-gray-100);
-	--button-hover-border-color: var(--button-border-color);
 
 	--header-height: 2.875rem;
 	--sidebar-max-width: 14.25rem;
@@ -596,18 +585,36 @@ thead th,
 /* Button styles */
 button,
 .button {
-	--padding-x: 19px;
-	--padding-y: 9px;
-
 	align-items: center;
-	background: var(--button-background);
-	border: solid 1px var(--button-border-color);
+	background: var(--button-background, transparent);
+	border: solid 1px var(--button-border-color, var(--color-gray-200));
 	border-radius: 8px;
 	display: inline-flex;
+	font-size: 0.875rem;
 	font-weight: 500;
-	gap: 0.5rem;
+	gap: 0.375rem;
 	margin: 0;
-	padding: var(--padding-y) var(--padding-x);
+	padding: var(--padding-y, 0.5rem) var(--padding-x, 1rem);
+}
+
+button:hover,
+.button:hover {
+	background: var(--button-hover-background, var(--color-gray-100));
+	border-color: var(--button-hover-border-color, var(--color-gray-200));
+}
+
+button:active,
+.button:active,
+button.is-active,
+.button.is-active {
+	background: var(--button-active-background, var(--color-gray-300));
+}
+
+button:disabled,
+.button:disabled {
+	background: var(--button-disabled-background, var(--color-gray-100));
+	border-color: var(--button-disabled-border-color, var(--color-gray-100));
+	cursor: not-allowed;
 }
 
 button > svg,
@@ -615,21 +622,24 @@ button > svg,
 	max-width: none;
 }
 
-button.quiet,
-.button.quiet {
-	--button-background: transparent;
-	--button-border-color: transparent;
-}
-
 button.button-primary,
 .button.button-primary {
-	--button-active-background: var(--color-primary-900);
-	--button-background: var(--color-primary-700);
-	--button-disabled-background: var(--color-gray-300);
-	--button-hover-background: var(--color-primary-800);
+	--button-background: var(--color-background-accent-strong);
+	--button-active-background:
+		linear-gradient(var(--color-background-accent-active), var(--color-background-accent-active)),
+		linear-gradient(var(--button-background), var(--button-background));
+	--button-disabled-background: var(--color-background-accent-disabled);
+	--button-hover-background:
+		linear-gradient(var(--color-background-accent-hover), var(--color-background-accent-hover)),
+		linear-gradient(var(--button-background), var(--button-background));
 
-	border: none;
-	color: white;
+	--button-end-icon-color: var(--color-accent-on-cta);
+	--button-start-icon-color: var(--color-accent-on-cta);
+
+	background-blend-mode: multiply;
+	border-width: 0;
+	color: var(--color-accent-on-cta);
+	justify-content: center;
 }
 
 button.button-outline,
@@ -650,28 +660,38 @@ button.button-outline:hover,
 
 button.button-alternative,
 .button.button-alternative {
-	--button-active-background: var(--color-gray-200);
-	--button-background: white;
-	--button-border-color: var(--color-gray-200);
-	--button-hover-background: var(--color-gray-100);
-	--button-hover-border-color: var(--color-gray-200);
+	--button-active-background:
+		linear-gradient(var(--color-background-accent-active), var(--color-background-accent-active)),
+		linear-gradient(var(--button-background), var(--button-background));
+	--button-disabled-background: var(--color-background-accent-disabled);
+	--button-hover-background:
+		linear-gradient(var(--color-background-accent-hover), var(--color-background-accent-hover)),
+		linear-gradient(var(--button-background), var(--button-background));
 
-	color: var(--color-gray-900);
+	--button-border-color: var(--color-border-subtle);
+	--button-hover-border-color: var(--color-border-subtle);
+	--button-disabled-border-color: var(--color-border-disabled);
+
+	--button-end-icon-color: var(--color-icon-muted);
+	--button-start-icon-color: var(--color-icon-accent-subtle);
+
+	background-blend-mode: multiply;
+	color: var(--color-text-accent-strong);
+	justify-content: center;
 }
 
-button.button-alternative:hover,
-.button.button-alternative:hover {
-	color: var(--color-primary-700);
+.button-primary > svg:last-child,
+.button-alternative > svg:last-child {
+	color: var(--button-end-icon-color, inherit);
+	height: var(--button-end-icon-size, 1rem);
+	width: var(--button-end-icon-size, 1rem);
 }
 
-button.button-red,
-.button.button-red {
-	--button-active-background: var(--color-red-900);
-	--button-background: var(--color-red-700);
-	--button-hover-background: var(--color-red-800);
-
-	border: none;
-	color: var(--color-white);
+.button-primary > svg:first-child,
+.button-alternative > svg:first-child {
+	color: var(--button-start-icon-color, inherit);
+	height: var(--button-start-icon-size, 1.25rem);
+	width: var(--button-start-icon-size, 1.25rem);
 }
 
 button.button-ai {
@@ -684,7 +704,6 @@ button.button-ai {
 		),
 		white;
 	--button-background: transparent;
-	--button-border-color: var(--color-gray-200);
 	--button-hover-background:
 		linear-gradient(
 			62deg,
@@ -693,10 +712,11 @@ button.button-ai {
 			rgba(22, 189, 202, 0.2) 74.26%
 		),
 		white;
+
+	--button-border-color: var(--color-border-subtle);
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-gray-900);
-	padding: 0.5rem 1rem;
 }
 
 button.button-ai > svg {
@@ -708,18 +728,13 @@ button.button-copycat {
 	--button-active-background:
 		linear-gradient(85deg, rgba(252, 221, 9, 0.4) 3.48%, rgba(22, 189, 202, 0.4) 96.01%), white;
 	--button-background: transparent;
-	--button-border-color: var(--color-gray-200);
 	--button-hover-background:
 		linear-gradient(85deg, rgba(252, 221, 9, 0.2) 3.48%, rgba(22, 189, 202, 0.2) 96.01%), white;
+
+	--button-border-color: var(--color-border-subtle);
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-gray-900);
-	padding: 0.5rem 1rem;
-}
-
-button.button-copycat > svg {
-	height: 1.5rem;
-	width: 1.5rem;
 }
 
 button.button-relation,
@@ -727,21 +742,23 @@ button.button-relation,
 	--button-active-background:
 		linear-gradient(62deg, rgba(28, 100, 242, 0.4) 17.85%, rgba(22, 189, 202, 0.4) 74.26%), white;
 	--button-background: transparent;
-	--button-border-color: var(--color-primary-700);
 	--button-hover-background:
 		linear-gradient(62deg, rgba(28, 100, 242, 0.2) 17.85%, rgba(22, 189, 202, 0.2) 74.26%), white;
+
+	--button-border-color: var(--color-border-subtle);
 	--button-hover-border-color: var(--button-border-color);
 
 	color: var(--color-primary-700);
-	padding: 0.5rem 1rem;
 }
 
 .button-relation.button-relation--square {
+	--button-border-color: var(--color-primary-700);
+
 	padding: 0.25rem;
 }
 
-button.button-relation > svg,
-.button.button-relation > svg {
+button-relation.button-relation--square > svg,
+.button-relation.button-relation--square > svg {
 	height: 1.5rem;
 	width: 1.5rem;
 }
@@ -765,47 +782,16 @@ button.button-relation > svg,
 
 button.button-xs,
 .button.button-xs {
-	--padding-x: 0.75rem;
-	--padding-y: 0.5rem;
+	--padding-x: 0.5rem;
+	--padding-y: 0.375rem;
 
 	font-size: 0.75rem;
 }
 
 button.button-xs svg,
 .button.button-xs svg {
-	height: 0.875rem;
-	width: 0.875rem;
-}
-
-button:hover,
-.button:hover {
-	background: var(--button-hover-background);
-	border-color: var(--button-hover-border-color);
-}
-
-button.quiet:hover,
-.button.quiet:hover {
-	--button-hover-border-color: transparent;
-}
-
-button:active,
-.button:active,
-button.is-active,
-.button.is-active {
-	background: var(--button-active-background);
-}
-
-button:disabled,
-.button:disabled {
-	background: var(--button-disabled-background);
-	border-color: var(--button-disabled-border-color);
-	cursor: not-allowed;
-}
-
-button.button-square,
-.button.button-square {
-	--padding-x: 9px;
-	--padding-y: 9px;
+	height: 1rem;
+	width: 1rem;
 }
 
 .action-button {
@@ -1240,6 +1226,12 @@ label > input[type='checkbox'].toggle {
 }
 
 .footer-action-bar:has(*) {
+	--dropdown-button-border-radius: 8px;
+	--dropdown-button-border-width: 1px;
+	--dropdown-button-default-background: transparent;
+	--dropdown-button-default-border-color: var(--color-border-subtle);
+	--dropdown-button-padding: 0.5rem 1rem;
+
 	align-items: center;
 	background: var(--color-surface-accent-default);
 	border-radius: 0 0 0 24px;
@@ -2230,6 +2222,68 @@ img.cover {
 }
 
 /* System */
+.system-primary {
+	--color-accent-on-default: var(--color-primary-700);
+
+	--color-text-accent-strong: var(--color-primary-900);
+	--color-text-accent-default: var(--color-primary-700);
+	--color-text-accent-subtle: var(--color-primary-500);
+	--color-text-accent-muted: var(--color-primary-400);
+
+	--color-icon-accent-strong: var(--color-primary-900);
+	--color-icon-accent-default: var(--color-primary-700);
+	--color-icon-accent-subtle: var(--color-primary-500);
+	--color-icon-accent-muted: var(--color-primary-400);
+
+	--color-background-accent-strong: var(--color-primary-600);
+	--color-background-accent-default: var(--color-primary-300);
+	--color-background-accent-subtle: var(--color-primary-100);
+	--color-background-accent-muted: var(--color-primary-050);
+	--color-background-accent-active: rgb(from var(--color-primary-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-primary-800) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-primary-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-primary-700);
+	--color-border-accent-default: var(--color-primary-200);
+	--color-border-accent-subtle: var(--color-primary-100);
+	--color-border-accent-muted: var(--color-primary-050);
+	--color-border-accent-expanded: var(--color-primary-200);
+
+	--color-surface-accent-container: var(--color-primary-025);
+	--color-surface-accent-container-raised: var(--color-primary-050);
+}
+
+.system-danger {
+	--color-accent-on-default: var(--color-red-700);
+
+	--color-text-accent-strong: var(--color-red-900);
+	--color-text-accent-default: var(--color-red-700);
+	--color-text-accent-subtle: var(--color-red-500);
+	--color-text-accent-muted: var(--color-red-400);
+
+	--color-icon-accent-strong: var(--color-red-900);
+	--color-icon-accent-default: var(--color-red-700);
+	--color-icon-accent-subtle: var(--color-red-500);
+	--color-icon-accent-muted: var(--color-red-400);
+
+	--color-background-accent-strong: var(--color-red-600);
+	--color-background-accent-default: var(--color-red-300);
+	--color-background-accent-subtle: var(--color-red-100);
+	--color-background-accent-muted: var(--color-red-050);
+	--color-background-accent-active: rgb(from var(--color-red-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-red-800) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-red-500) r g b / 0.15);
+
+	--color-border-accent-strong: var(--color-red-700);
+	--color-border-accent-default: var(--color-red-200);
+	--color-border-accent-subtle: var(--color-red-100);
+	--color-border-accent-muted: var(--color-red-050);
+	--color-border-accent-expanded: var(--color-red-200);
+
+	--color-surface-accent-container: var(--color-red-025);
+	--color-surface-accent-container-raised: var(--color-red-050);
+}
+
 .system-info {
 	--color-accent-on-default: var(--color-yellow-700);
 
@@ -2243,19 +2297,19 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-yellow-500);
 	--color-icon-accent-muted: var(--color-yellow-400);
 
-	--color-background-accent-strong: var(--color-yellow-300);
-	--color-background-accent-default: var(--color-yellow-100);
-	--color-background-accent-subtle: var(--color-yellow-050);
-	--color-background-accent-muted: var(--color-yellow-025);
-	--color-background-accent-state-active: rgb(from var(--color-yellow-500) r g b / 0.25);
-	--color-background-accent-state-hover: rgb(from var(--color-yellow-500) r g b / 0.1);
-	--color-background-accent-state-selected: rgb(from var(--color-yellow-500) r g b / 0.15);
+	--color-background-accent-strong: var(--color-yellow-600);
+	--color-background-accent-default: var(--color-yellow-300);
+	--color-background-accent-subtle: var(--color-yellow-100);
+	--color-background-accent-muted: var(--color-yellow-050);
+	--color-background-accent-active: rgb(from var(--color-yellow-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-yellow-800) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-yellow-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-yellow-400);
+	--color-border-accent-strong: var(--color-yellow-700);
 	--color-border-accent-default: var(--color-yellow-200);
 	--color-border-accent-subtle: var(--color-yellow-100);
 	--color-border-accent-muted: var(--color-yellow-050);
-	--color-border-accent-state-selected: var(--color-yellow-200);
+	--color-border-accent-expanded: var(--color-yellow-200);
 
 	--color-surface-accent-container: var(--color-yellow-025);
 	--color-surface-accent-container-raised: var(--color-yellow-050);
@@ -2275,19 +2329,19 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-yellow-500);
 	--color-icon-accent-muted: var(--color-yellow-400);
 
-	--color-background-accent-strong: var(--color-yellow-300);
-	--color-background-accent-default: var(--color-yellow-100);
-	--color-background-accent-subtle: var(--color-yellow-050);
-	--color-background-accent-muted: var(--color-yellow-025);
-	--color-background-accent-active: rgb(from var(--color-yellow-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-yellow-500) r g b / 0.1);
-	--color-background-accent-expanded: var(--color-yellow-200);
+	--color-background-accent-strong: var(--color-yellow-600);
+	--color-background-accent-default: var(--color-yellow-300);
+	--color-background-accent-subtle: var(--color-yellow-100);
+	--color-background-accent-muted: var(--color-yellow-050);
+	--color-background-accent-active: rgb(from var(--color-yellow-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-yellow-800) r g b / 0.1);
+	--color-background-accent-expanded: rgb(from var(--color-yellow-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-yellow-900);
-	--color-border-accent-default: var(--color-yellow-700);
-	--color-border-accent-subtle: var(--color-yellow-500);
-	--color-border-accent-muted: var(--color-yellow-400);
-	--color-border-accent-expanded: var(--color-yellow-300);
+	--color-border-accent-strong: var(--color-yellow-700);
+	--color-border-accent-default: var(--color-yellow-200);
+	--color-border-accent-subtle: var(--color-yellow-100);
+	--color-border-accent-muted: var(--color-yellow-050);
+	--color-border-accent-expanded: var(--color-yellow-200);
 
 	--color-surface-accent-container: var(--color-yellow-025);
 	--color-surface-accent-container-raised: var(--color-yellow-050);
@@ -2306,15 +2360,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-indigo-500);
 	--color-icon-accent-muted: var(--color-indigo-400);
 
-	--color-background-accent-strong: var(--color-indigo-300);
-	--color-background-accent-default: var(--color-indigo-100);
-	--color-background-accent-subtle: var(--color-indigo-050);
-	--color-background-accent-muted: var(--color-indigo-025);
-	--color-background-accent-active: rgb(from var(--color-indigo-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-indigo-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-indigo-600);
+	--color-background-accent-default: var(--color-indigo-300);
+	--color-background-accent-subtle: var(--color-indigo-100);
+	--color-background-accent-muted: var(--color-indigo-050);
+	--color-background-accent-active: rgb(from var(--color-indigo-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-indigo-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-indigo-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-indigo-400);
+	--color-border-accent-strong: var(--color-indigo-700);
 	--color-border-accent-default: var(--color-indigo-200);
 	--color-border-accent-subtle: var(--color-indigo-100);
 	--color-border-accent-muted: var(--color-indigo-050);
@@ -2337,15 +2391,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-orange-500);
 	--color-icon-accent-muted: var(--color-orange-400);
 
-	--color-background-accent-strong: var(--color-orange-300);
-	--color-background-accent-default: var(--color-orange-100);
-	--color-background-accent-subtle: var(--color-orange-050);
-	--color-background-accent-muted: var(--color-orange-025);
-	--color-background-accent-active: rgb(from var(--color-orange-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-orange-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-orange-600);
+	--color-background-accent-default: var(--color-orange-300);
+	--color-background-accent-subtle: var(--color-orange-100);
+	--color-background-accent-muted: var(--color-orange-050);
+	--color-background-accent-active: rgb(from var(--color-orange-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-orange-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-orange-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-orange-400);
+	--color-border-accent-strong: var(--color-orange-700);
 	--color-border-accent-default: var(--color-orange-200);
 	--color-border-accent-subtle: var(--color-orange-100);
 	--color-border-accent-muted: var(--color-orange-050);
@@ -2368,15 +2422,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-teal-500);
 	--color-icon-accent-muted: var(--color-teal-400);
 
-	--color-background-accent-strong: var(--color-teal-300);
-	--color-background-accent-default: var(--color-teal-100);
-	--color-background-accent-subtle: var(--color-teal-050);
-	--color-background-accent-muted: var(--color-teal-025);
-	--color-background-accent-active: rgb(from var(--color-teal-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-teal-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-teal-600);
+	--color-background-accent-default: var(--color-teal-300);
+	--color-background-accent-subtle: var(--color-teal-100);
+	--color-background-accent-muted: var(--color-teal-050);
+	--color-background-accent-active: rgb(from var(--color-teal-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-teal-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-teal-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-teal-400);
+	--color-border-accent-strong: var(--color-teal-700);
 	--color-border-accent-default: var(--color-teal-200);
 	--color-border-accent-subtle: var(--color-teal-100);
 	--color-border-accent-muted: var(--color-teal-050);
@@ -2399,15 +2453,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-green-500);
 	--color-icon-accent-muted: var(--color-green-400);
 
-	--color-background-accent-strong: var(--color-green-300);
-	--color-background-accent-default: var(--color-green-100);
-	--color-background-accent-subtle: var(--color-green-050);
-	--color-background-accent-muted: var(--color-green-025);
-	--color-background-accent-active: rgb(from var(--color-green-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-green-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-green-600);
+	--color-background-accent-default: var(--color-green-300);
+	--color-background-accent-subtle: var(--color-green-100);
+	--color-background-accent-muted: var(--color-green-050);
+	--color-background-accent-active: rgb(from var(--color-green-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-green-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-green-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-green-400);
+	--color-border-accent-strong: var(--color-green-700);
 	--color-border-accent-default: var(--color-green-200);
 	--color-border-accent-subtle: var(--color-green-100);
 	--color-border-accent-muted: var(--color-green-050);
@@ -2430,15 +2484,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-amber-500);
 	--color-icon-accent-muted: var(--color-amber-400);
 
-	--color-background-accent-strong: var(--color-amber-300);
-	--color-background-accent-default: var(--color-amber-100);
-	--color-background-accent-subtle: var(--color-amber-050);
-	--color-background-accent-muted: var(--color-amber-025);
-	--color-background-accent-active: rgb(from var(--color-amber-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-amber-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-amber-600);
+	--color-background-accent-default: var(--color-amber-300);
+	--color-background-accent-subtle: var(--color-amber-100);
+	--color-background-accent-muted: var(--color-amber-050);
+	--color-background-accent-active: rgb(from var(--color-amber-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-amber-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-amber-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-amber-400);
+	--color-border-accent-strong: var(--color-amber-700);
 	--color-border-accent-default: var(--color-amber-200);
 	--color-border-accent-subtle: var(--color-amber-100);
 	--color-border-accent-muted: var(--color-amber-050);
@@ -2461,15 +2515,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-pink-500);
 	--color-icon-accent-muted: var(--color-pink-400);
 
-	--color-background-accent-strong: var(--color-pink-300);
-	--color-background-accent-default: var(--color-pink-100);
-	--color-background-accent-subtle: var(--color-pink-050);
-	--color-background-accent-muted: var(--color-pink-025);
-	--color-background-accent-active: rgb(from var(--color-pink-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-pink-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-pink-600);
+	--color-background-accent-default: var(--color-pink-300);
+	--color-background-accent-subtle: var(--color-pink-100);
+	--color-background-accent-muted: var(--color-pink-050);
+	--color-background-accent-active: rgb(from var(--color-pink-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-pink-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-pink-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-pink-400);
+	--color-border-accent-strong: var(--color-pink-700);
 	--color-border-accent-default: var(--color-pink-200);
 	--color-border-accent-subtle: var(--color-pink-100);
 	--color-border-accent-muted: var(--color-pink-050);
@@ -2492,15 +2546,15 @@ img.cover {
 	--color-icon-accent-subtle: var(--color-purple-500);
 	--color-icon-accent-muted: var(--color-purple-400);
 
-	--color-background-accent-strong: var(--color-purple-300);
-	--color-background-accent-default: var(--color-purple-100);
-	--color-background-accent-subtle: var(--color-purple-050);
-	--color-background-accent-muted: var(--color-purple-025);
-	--color-background-accent-active: rgb(from var(--color-purple-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-purple-500) r g b / 0.1);
+	--color-background-accent-strong: var(--color-purple-600);
+	--color-background-accent-default: var(--color-purple-300);
+	--color-background-accent-subtle: var(--color-purple-100);
+	--color-background-accent-muted: var(--color-purple-050);
+	--color-background-accent-active: rgb(from var(--color-purple-800) r g b / 0.2);
+	--color-background-accent-hover: rgb(from var(--color-purple-800) r g b / 0.1);
 	--color-background-accent-expanded: rgb(from var(--color-purple-500) r g b / 0.15);
 
-	--color-border-accent-strong: var(--color-purple-400);
+	--color-border-accent-strong: var(--color-purple-700);
 	--color-border-accent-default: var(--color-purple-200);
 	--color-border-accent-subtle: var(--color-purple-100);
 	--color-border-accent-muted: var(--color-purple-050);
@@ -2508,35 +2562,4 @@ img.cover {
 
 	--color-surface-accent-container: var(--color-purple-025);
 	--color-surface-accent-container-raised: var(--color-purple-050);
-}
-
-.system-danger {
-	--color-accent-on-default: var(--color-red-700);
-
-	--color-text-accent-strong: var(--color-red-900);
-	--color-text-accent-default: var(--color-red-700);
-	--color-text-accent-subtle: var(--color-red-500);
-	--color-text-accent-muted: var(--color-red-300);
-
-	--color-icon-accent-strong: var(--color-red-900);
-	--color-icon-accent-default: var(--color-red-700);
-	--color-icon-accent-subtle: var(--color-red-500);
-	--color-icon-accent-muted: var(--color-red-300);
-
-	--color-background-accent-strong: var(--color-red-300);
-	--color-background-accent-default: var(--color-red-100);
-	--color-background-accent-subtle: var(--color-red-050);
-	--color-background-accent-muted: var(--color-white);
-	--color-background-accent-active: rgb(from var(--color-red-500) r g b / 0.25);
-	--color-background-accent-hover: rgb(from var(--color-red-500) r g b / 0.1);
-	--color-background-accent-expanded: rgb(from var(--color-red-500) r g b / 0.15);
-
-	--color-border-accent-strong: var(--color-red-400);
-	--color-border-accent-default: var(--color-red-200);
-	--color-border-accent-subtle: var(--color-red-100);
-	--color-border-accent-muted: var(--color-red-050);
-	--color-border-accent-expanded: var(--color-red-200);
-
-	--color-surface-accent-container: var(--color-red-025);
-	--color-surface-accent-container-raised: var(--color-red-050);
 }
