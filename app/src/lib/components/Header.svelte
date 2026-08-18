@@ -46,7 +46,6 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
-		isIndicatorTemplateContainer,
 		isMeasureContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -69,6 +68,7 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
+		compare?: boolean;
 		facets?: Map<string, Map<string, number>>;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
@@ -78,6 +78,7 @@
 	}
 
 	let {
+		compare = false,
 		facets = new Map(),
 		filterBarInitiallyOpen = false,
 		search = false,
@@ -115,7 +116,7 @@
 			label: $_('compare_data'),
 			expanded:
 				untrack(() => $compareState.selectedMunicipalities.length > 0) &&
-				(isReportContainer(container) || isIndicatorTemplateContainer(container))
+				(compare || isReportContainer(container))
 		})
 	);
 
@@ -399,7 +400,7 @@
 		</button>
 	{/if}
 
-	{#if container && isReportContainer(container)}
+	{#if compare || (container && isReportContainer(container))}
 		<button
 			class="button button-xs button-primary"
 			type="button"

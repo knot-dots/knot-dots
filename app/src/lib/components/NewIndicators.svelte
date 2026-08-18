@@ -12,6 +12,7 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -75,6 +76,17 @@
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
+
+	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
+	const comparisonData = createComparisonData({
+		indicatorGuids: () =>
+			items
+				.map(({ container }) => container)
+				.filter(isIndicatorTemplateContainer)
+				.map(({ guid }) => guid)
+	});
+
+	let comparisonDataMap = $derived(comparisonData.comparisonDataMap);
 
 	let managedBy = $derived(
 		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
@@ -227,7 +239,7 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} />
+					<NewIndicatorCard --height="100%" {comparisonDataMap} {container} {relatedContainers} />
 				</li>
 			{/each}
 		</ul>
@@ -252,7 +264,7 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} />
+					<NewIndicatorCard --height="100%" {comparisonDataMap} {container} {relatedContainers} />
 				</li>
 			{/each}
 		</ul>
