@@ -81,14 +81,9 @@ function compareRelations(a: Relation, b: Relation) {
 }
 
 function requiredPayloadDependency(container: Container<AnyPayload>) {
-	switch (container.payload.type) {
-		case payloadTypes.enum.actual_data:
-			return container.payload.indicator;
-		case payloadTypes.enum.resource_data:
-			return container.payload.resource;
-		default:
-			return undefined;
-	}
+	return container.payload.type === payloadTypes.enum.resource_data
+		? container.payload.resource
+		: undefined;
 }
 
 function normalizeRelations(containers: readonly Container<AnyPayload>[]) {

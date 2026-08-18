@@ -480,20 +480,22 @@ test('remaps ordinary internal relations and drops ordinary external relations',
 });
 
 test('rejects missing and malformed required payload dependencies opaquely', () => {
-	const missingDependency = makeContainer(guids.actualData, {
-		indicator: guids.missing,
+	const missingDependency = makeContainer(guids.resourceData, {
+		resource: guids.missing,
+		resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
 		title: 'Missing dependency',
-		type: payloadTypes.enum.actual_data
+		type: payloadTypes.enum.resource_data
 	});
-	const malformedDependency = makeContainer(guids.actualData, {
-		indicator: guids.dependency,
+	const malformedDependency = makeContainer(guids.resourceData, {
+		resource: guids.resource,
+		resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
 		title: 'Malformed dependency',
-		type: payloadTypes.enum.actual_data
+		type: payloadTypes.enum.resource_data
 	});
-	if (malformedDependency.payload.type !== payloadTypes.enum.actual_data) {
-		throw new Error('Expected actual data');
+	if (malformedDependency.payload.type !== payloadTypes.enum.resource_data) {
+		throw new Error('Expected resource data');
 	}
-	malformedDependency.payload.indicator = 'not-a-uuid';
+	malformedDependency.payload.resource = 'not-a-uuid';
 
 	for (const root of [missingDependency, malformedDependency]) {
 		expect(() =>

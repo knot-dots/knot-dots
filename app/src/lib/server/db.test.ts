@@ -13,6 +13,7 @@ import {
 	payloadTypes,
 	predicates,
 	type ProgramPayload,
+	resourceDataTypes,
 	type Relation,
 	visibility
 } from '$lib/models';
@@ -552,6 +553,17 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 			[]
 		)
 	)(connection);
+	const payloadOnlyIndicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Payload-only indicator',
+				type: payloadTypes.enum.indicator_template,
+				unit: 'unit.percent',
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
 	const privateIndicatorSection = await createContainer(
 		newManagedByContainer(payloadTypes.enum.text, {
 			relation: [
@@ -566,7 +578,7 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 	const actualData = await createContainer(
 		initializeNewContainer(
 			{
-				indicator: privateIndicator.guid,
+				indicator: payloadOnlyIndicator.guid,
 				title: 'Actual data',
 				type: payloadTypes.enum.actual_data
 			},
@@ -633,6 +645,7 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 	);
 	expect(resultGuids).not.toContain(deletedIntermediate.guid);
 	expect(resultGuids).not.toContain(belowDeleted.guid);
+	expect(resultGuids).not.toContain(payloadOnlyIndicator.guid);
 	expect(resultGuids).not.toContain(publicIndicatorSection.guid);
 	expect(
 		result.containers
@@ -642,6 +655,63 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 					predicate === predicates.enum['is-section-of'] && subject === child.guid
 			)?.position
 	).toBe(7);
+});
+
+test('getContainerCopyGraph ignores actual data references and follows resource data references forward only', async ({
+	connection
+}: Fixtures) => {
+	const indicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Indicator',
+				type: payloadTypes.enum.indicator_template,
+				unit: 'unit.percent',
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const actualData = await createContainer(
+		initializeNewContainer(
+			{
+				indicator: indicator.guid,
+				title: 'Actual data',
+				type: payloadTypes.enum.actual_data
+			},
+			[]
+		)
+	)(connection);
+	const resource = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Resource',
+				type: payloadTypes.enum.resource_v2,
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const resourceData = await createContainer(
+		initializeNewContainer(
+			{
+				resource: resource.guid,
+				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+				title: 'Resource data',
+				type: payloadTypes.enum.resource_data
+			},
+			[]
+		)
+	)(connection);
+
+	const guidsFor = async (rootGuid: string) =>
+		(await getContainerCopyGraph(rootGuid)(connection)).containers.map(({ guid }) => guid);
+
+	expect(await guidsFor(actualData.guid)).toEqual([actualData.guid]);
+	expect(await guidsFor(indicator.guid)).toEqual([indicator.guid]);
+	expect(await guidsFor(resourceData.guid)).toEqual(
+		expect.arrayContaining([resourceData.guid, resource.guid])
+	);
+	expect(await guidsFor(resource.guid)).toEqual([resource.guid]);
 });
 
 test('getContainerCopyGraph fetches collection references without traversing their descendants', async ({

@@ -486,7 +486,7 @@ export function getContainerByGuid(guid: string) {
  * Discovers the internal source snapshot needed to plan a container copy. Starting at a current,
  * non-deleted root, the recursive walk follows structural relations downward from parent object to
  * child subject. It also follows non-public required dependencies from source subject to target
- * object, including the equivalent indicator/resource payload references. Recursive UNION
+ * object, including resource payload references. Recursive UNION
  * deduplicates containers reached through multiple parents and terminates cycles.
  *
  * Public required dependencies and custom-collection item/template references are fetched as
@@ -531,13 +531,10 @@ export function getContainerCopyGraph(rootGuid: string) {
 					UNION
 					SELECT target.guid
 					FROM current_container source
-					JOIN current_container target ON target.guid = CASE
-						WHEN source.payload->>'type' = ${payloadTypes.enum.actual_data}
-							THEN (source.payload->>'indicator')::uuid
-						WHEN source.payload->>'type' = ${payloadTypes.enum.resource_data}
-							THEN (source.payload->>'resource')::uuid
-					END
+					JOIN current_container target
+						ON target.guid = (source.payload->>'resource')::uuid
 					WHERE source.guid = walk.guid
+						AND source.payload->>'type' = ${payloadTypes.enum.resource_data}
 						AND coalesce(target.payload->>'visibility', ${visibility.enum.organization}) != ${visibility.enum.public}
 				) edge
 			), copy_candidate AS (
@@ -549,18 +546,10 @@ export function getContainerCopyGraph(rootGuid: string) {
 				JOIN copy_candidate candidate ON candidate.guid = cr.subject
 				WHERE cr.predicate = ANY (${sql.array(requiredCopyDependencyPredicates, 'text')})
 				UNION
-				SELECT CASE
-					WHEN source.payload->>'type' = ${payloadTypes.enum.actual_data}
-						THEN (source.payload->>'indicator')::uuid
-					WHEN source.payload->>'type' = ${payloadTypes.enum.resource_data}
-						THEN (source.payload->>'resource')::uuid
-				END AS guid
+				SELECT (source.payload->>'resource')::uuid AS guid
 				FROM current_container source
 				JOIN copy_candidate candidate ON candidate.guid = source.guid
-				WHERE source.payload->>'type' IN (
-					${payloadTypes.enum.actual_data},
-					${payloadTypes.enum.resource_data}
-				)
+				WHERE source.payload->>'type' = ${payloadTypes.enum.resource_data}
 				UNION
 				SELECT item.value::uuid
 				FROM current_container source
