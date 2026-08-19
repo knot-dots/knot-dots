@@ -125,7 +125,7 @@
 
 {#if showComputedProgress}
 	{#if editable && $ability.can('update', container)}
-		<div class="object-type">
+		<div class="object-type system-primary">
 			<SingleChoiceDropdown
 				options={objectTypeOptions}
 				bind:value={
@@ -198,15 +198,13 @@
 	}
 
 	.object-type {
-		--color-accent-on-default: var(--color-primary-700);
-		--dropdown-button-border-radius: 9999px;
-		--dropdown-button-chevron-default-color: var(--color-primary-700);
-		--dropdown-button-chevron-expanded-color: var(--color-primary-700);
-		--dropdown-button-default-background: var(--color-primary-100);
-		--dropdown-button-default-color: var(--color-primary-700);
-		--dropdown-button-expanded-background: var(--color-primary-100);
-		--dropdown-button-hover-background: var(--color-primary-100);
+		--dropdown-button-border-radius: calc(infinity * 1px);
 		--dropdown-button-padding-x: 0.5rem;
+		--dropdown-button-border-color: var(--color-border-accent-subtle);
+		--dropdown-button-default-background: var(--color-background-accent-muted);
+		--dropdown-button-hover-background: var(--color-background-accent-hover);
+		--dropdown-button-default-color: var(--color-text-accent-default);
+		--dropdown-button-chevron-default-color: var(--color-icon-accent-muted);
 
 		display: flex;
 		padding-bottom: 0.75rem;
@@ -214,7 +212,7 @@
 
 	.stacked-progress {
 		background: var(--color-gray-200);
-		border-radius: 9999px;
+		border-radius: calc(infinity * 1px);
 		display: flex;
 		gap: 2px;
 		height: 0.5rem;
