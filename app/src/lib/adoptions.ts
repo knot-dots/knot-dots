@@ -20,7 +20,7 @@ export function isAdoptableProgram(container: Container<AnyPayload>): boolean {
 	);
 }
 
-export function adoptableOrganizationalUnits(
+export function organizationalUnitsManagedByUser(
 	user: User,
 	program: { organizational_unit: string | null },
 	organizationalUnits: Array<Container<OrganizationalUnitPayload>>

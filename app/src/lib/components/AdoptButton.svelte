@@ -8,7 +8,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
-		adoptableOrganizationalUnits,
+		organizationalUnitsManagedByUser,
 		adopters,
 		adoptionDiff,
 		adoptionRelations,
@@ -36,14 +36,14 @@
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
 
-	const adoptableUnits = $derived(
-		adoptableOrganizationalUnits($user, container, page.data.organizationalUnits)
+	const potentialAdopters = $derived(
+		organizationalUnitsManagedByUser($user, container, page.data.organizationalUnits)
 	);
 
 	const mayAdopt = $derived(
 		createFeatureDecisions(page.data.features).useAdoptions() &&
 			isAdoptableProgram(container) &&
-			adoptableUnits.length > 0
+			potentialAdopters.length > 0
 	);
 
 	// Overrides the value derived from the container after a confirmed change,
@@ -51,7 +51,7 @@
 	let currentAdopters = $derived(adopters(container));
 
 	const before = $derived(
-		adoptableUnits.filter(({ guid }) => currentAdopters.includes(guid)).map(({ guid }) => guid)
+		potentialAdopters.filter(({ guid }) => currentAdopters.includes(guid)).map(({ guid }) => guid)
 	);
 
 	const isAdopted = $derived(before.length > 0);
@@ -69,7 +69,7 @@
 
 	const groups = $derived(
 		groupedByOrganization(
-			adoptableUnits.filter(({ payload }) =>
+			potentialAdopters.filter(({ payload }) =>
 				payload.name.toLowerCase().includes(search.toLowerCase().trim())
 			),
 			page.data.organizations
@@ -77,7 +77,7 @@
 	);
 
 	function selectAll() {
-		selected = adoptableUnits.map(({ guid }) => guid);
+		selected = potentialAdopters.map(({ guid }) => guid);
 	}
 
 	async function handleSubmit(event: SubmitEvent) {

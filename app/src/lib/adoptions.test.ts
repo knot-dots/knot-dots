@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
 import {
-	adoptableOrganizationalUnits,
+	organizationalUnitsManagedByUser,
 	adopters,
 	adoptionDiff,
 	adoptionRelations,
@@ -122,28 +122,32 @@ describe('isAdoptableProgram', () => {
 describe('adoptableOrganizationalUnits', () => {
 	test('anonymous users have no adoptable units', () => {
 		expect(
-			adoptableOrganizationalUnits(makeUser({ isAuthenticated: false }), makeProgram(), units)
+			organizationalUnitsManagedByUser(makeUser({ isAuthenticated: false }), makeProgram(), units)
 		).toEqual([]);
 	});
 
 	test('admins and heads see the units they are responsible for', () => {
 		expect(
-			adoptableOrganizationalUnits(makeUser({ adminOf: [foreignUnit] }), makeProgram(), units)
+			organizationalUnitsManagedByUser(makeUser({ adminOf: [foreignUnit] }), makeProgram(), units)
 		).toEqual([units[2]]);
 		expect(
-			adoptableOrganizationalUnits(makeUser({ headOf: [foreignUnit] }), makeProgram(), units)
+			organizationalUnitsManagedByUser(makeUser({ headOf: [foreignUnit] }), makeProgram(), units)
 		).toEqual([units[2]]);
 	});
 
 	test('organization-level admins see all units of their organization', () => {
 		expect(
-			adoptableOrganizationalUnits(makeUser({ adminOf: [otherOrganization] }), makeProgram(), units)
+			organizationalUnitsManagedByUser(
+				makeUser({ adminOf: [otherOrganization] }),
+				makeProgram(),
+				units
+			)
 		).toEqual([units[2]]);
 	});
 
 	test('sibling units of the owning organization are adoptable', () => {
 		expect(
-			adoptableOrganizationalUnits(
+			organizationalUnitsManagedByUser(
 				makeUser({ adminOf: [organization] }),
 				makeProgram({}, owningUnit),
 				units
@@ -153,7 +157,7 @@ describe('adoptableOrganizationalUnits', () => {
 
 	test('the owning organizational unit is excluded', () => {
 		expect(
-			adoptableOrganizationalUnits(
+			organizationalUnitsManagedByUser(
 				makeUser({ adminOf: [owningUnit] }),
 				makeProgram({}, owningUnit),
 				units
@@ -163,7 +167,7 @@ describe('adoptableOrganizationalUnits', () => {
 
 	test('organization-level programs are adoptable by every unit', () => {
 		expect(
-			adoptableOrganizationalUnits(
+			organizationalUnitsManagedByUser(
 				makeUser({ adminOf: [organization, otherOrganization] }),
 				makeProgram(),
 				units
@@ -173,7 +177,7 @@ describe('adoptableOrganizationalUnits', () => {
 
 	test('the sysadmin role alone yields no adoptable units', () => {
 		expect(
-			adoptableOrganizationalUnits(makeUser({ roles: ['sysadmin'] }), makeProgram(), units)
+			organizationalUnitsManagedByUser(makeUser({ roles: ['sysadmin'] }), makeProgram(), units)
 		).toEqual([]);
 	});
 });
