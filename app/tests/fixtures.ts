@@ -24,6 +24,7 @@ import {
 	type Predicate,
 	predicates,
 	type ProgramPayload,
+	programTypes,
 	type ReportPayload,
 	type ResourceDataPayload,
 	resourceDataTypes,
@@ -86,6 +87,7 @@ type MyWorkerFixtures = {
 	testTaskCollection: Container<TaskCollectionPayload>;
 	testReport: Container<ReportPayload>;
 	testPublicReport: Container<ReportPayload>;
+	testPublicProgram: Container<ProgramPayload>;
 };
 
 locale.set('en');
@@ -1174,6 +1176,31 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			await use(testPublicReport);
 
 			await deleteContainer(adminContext, testPublicReport);
+		},
+		{ scope: 'worker' }
+	],
+	testPublicProgram: [
+		async ({ adminContext, defaultOrganization }, use, workerInfo) => {
+			const newProgram = containerOfType(
+				payloadTypes.enum.program,
+				defaultOrganization.guid,
+				null,
+				defaultOrganization.guid,
+				'knot-dots'
+			) as Container<ProgramPayload>;
+			const testPublicProgram = await createContainer(adminContext, {
+				...newProgram,
+				payload: {
+					...newProgram.payload,
+					programType: programTypes.enum['program_type.set_of_rules'],
+					title: `Test Public Program ${workerInfo.workerIndex}`,
+					visibility: 'public'
+				}
+			});
+
+			await use(testPublicProgram);
+
+			await deleteContainer(adminContext, testPublicProgram);
 		},
 		{ scope: 'worker' }
 	]

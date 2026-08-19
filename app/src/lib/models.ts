@@ -314,6 +314,7 @@ export const textType = z.enum(textTypeValues);
 const predicateValues = [
 	'contributes-to',
 	'is-admin-of',
+	'is-adopted-by',
 	'is-affected-by',
 	'is-collaborator-of',
 	'is-concrete-target-of',

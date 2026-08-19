@@ -2,7 +2,7 @@
 // via pod annotations (see $lib/server/podFeatures) and deliberately absent
 // from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI'] as const],
+	['alpha', ['OpenAI', 'Adoptions'] as const],
 	[
 		'beta',
 		[
@@ -52,6 +52,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useBulkActions() {
 			return features.includes('BulkActions');
+		},
+		useAdoptions() {
+			return features.includes('Adoptions');
 		},
 		useComputedManagedBy() {
 			return features.includes('ComputedManagedBy');

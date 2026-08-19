@@ -2,12 +2,16 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { isAdoptableProgram } from '$lib/adoptions';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyPayload,
 	type Container,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	isProgramContainer,
 	type OrganizationalUnitPayload,
 	payloadTypes,
@@ -18,6 +22,7 @@ import {
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
+	deleteManyContainerRelations,
 	getAllContainersRelatedToIndicators,
 	getAllContainersRelatedToMeasure,
 	getAllContainersRelatedToProgram,
@@ -200,7 +205,12 @@ export const POST = (async ({ locals, params, request }) => {
 	const data = await request.json().catch((reason: SyntaxError) => {
 		error(400, { message: reason.message });
 	});
-	const parseResult = z.array(relation).safeParse(data);
+	// DELETE must not carry a request body, so relations are removed through
+	// this handler as well: entries flagged with deleted are taken away,
+	// everything else is upserted, all within a single transaction.
+	const parseResult = z
+		.array(relation.extend({ deleted: z.boolean().default(false) }))
+		.safeParse(data);
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
@@ -223,28 +233,52 @@ export const POST = (async ({ locals, params, request }) => {
 			},
 			'alpha'
 		)(tx);
-		await updateManyContainerRelations(
-			parseResult.data
-				.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-				.filter(({ object, subject }) => {
-					const objectContainer = containers.find(
-						(c) => ability.can('read', c) && c.guid === object
-					);
-					const subjectContainer = containers.find(
-						(c) => ability.can('read', c) && c.guid === subject
-					);
+		const authorized = parseResult.data
+			.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+			.filter(({ deleted, object, predicate, subject }) => {
+				const objectContainer = containers.find((c) => ability.can('read', c) && c.guid === object);
+				const subjectContainer = containers.find(
+					(c) => ability.can('read', c) && c.guid === subject
+				);
+				if (!objectContainer || !subjectContainer) {
+					return false;
+				}
+				// Adopting a public rule-set program does not require 'relate'
+				// permission on the (foreign) program. Instead the user must be
+				// allowed to update the adopting organization or organizational
+				// unit, and the owning organizational unit may not adopt its own
+				// program. Removal is exempt from the latter rules: taking away a
+				// relation that should not exist must always be possible for those
+				// responsible for the adopting unit.
+				if (predicate == predicates.enum['is-adopted-by']) {
 					return (
-						objectContainer &&
-						subjectContainer &&
-						ability.can(
-							'relate',
-							[subjectContainer, objectContainer].find(
-								(c) => c.guid == params.guid
-							) as Container<AnyPayload>
-						)
+						createFeatureDecisions(locals.features).useAdoptions() &&
+						subject == params.guid &&
+						ability.can('update', objectContainer) &&
+						(deleted ||
+							(isAdoptableProgram(subjectContainer) &&
+								(isOrganizationContainer(objectContainer) ||
+									isOrganizationalUnitContainer(objectContainer)) &&
+								objectContainer.guid != subjectContainer.organizational_unit))
 					);
-				})
-		)(tx);
+				}
+				return ability.can(
+					'relate',
+					[subjectContainer, objectContainer].find(
+						(c) => c.guid == params.guid
+					) as Container<AnyPayload>
+				);
+			});
+
+		const removed = authorized.filter(({ deleted }) => deleted);
+		if (removed.length > 0) {
+			await deleteManyContainerRelations(removed)(tx);
+		}
+
+		const upserted = authorized.filter(({ deleted }) => !deleted);
+		if (upserted.length > 0) {
+			await updateManyContainerRelations(upserted)(tx);
+		}
 	});
 
 	return new Response(null, { status: 204 });

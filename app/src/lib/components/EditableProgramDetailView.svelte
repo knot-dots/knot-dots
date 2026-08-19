@@ -9,6 +9,7 @@
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import AdoptButton from '$lib/components/AdoptButton.svelte';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
@@ -248,6 +249,7 @@
 {#snippet footer()}
 	<footer class="footer-action-bar">
 		<RelationButton {container} />
+		<AdoptButton {container} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
 		{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
