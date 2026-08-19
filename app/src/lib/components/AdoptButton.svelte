@@ -87,7 +87,7 @@
 		const { added, removed } = adoptionDiff(before, selected);
 
 		const relations = [
-			...adoptionRelations(container.guid, added),
+			...adoptionRelations(container.guid, added, false),
 			...adoptionRelations(container.guid, removed, true)
 		];
 

@@ -75,13 +75,13 @@ export function adoptionDiff(
 export function adoptionRelations(
 	programGuid: string,
 	targets: string[],
-	deleted?: boolean
-): Array<Relation & { deleted?: boolean }> {
+	deleted: boolean
+): Array<Relation & { deleted: boolean }> {
 	return targets.map((target) => ({
 		object: target,
 		position: 0,
 		predicate: predicates.enum['is-adopted-by'],
 		subject: programGuid,
-		...(deleted ? { deleted } : {})
+		deleted
 	}));
 }

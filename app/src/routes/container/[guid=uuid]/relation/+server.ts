@@ -208,7 +208,9 @@ export const POST = (async ({ locals, params, request }) => {
 	// DELETE must not carry a request body, so relations are removed through
 	// this handler as well: entries flagged with deleted are taken away,
 	// everything else is upserted, all within a single transaction.
-	const parseResult = z.array(relation.extend({ deleted: z.boolean().optional() })).safeParse(data);
+	const parseResult = z
+		.array(relation.extend({ deleted: z.boolean().default(false) }))
+		.safeParse(data);
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
