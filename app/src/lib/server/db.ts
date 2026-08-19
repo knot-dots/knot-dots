@@ -1309,7 +1309,7 @@ export function getAllRelatedContainers(
 			SELECT *
 			FROM container c
 			WHERE payload->>'type' = ${payloadTypes.enum.actual_data}
-			  AND ${prepareWhereCondition({ ...organizations, organizationalUnits: filters.organizationalUnits ?? null })}
+			  AND ${prepareWhereCondition({ organizations, organizationalUnits: filters.organizationalUnits ?? null })}
 			  AND payload->>'indicator' IN (${sql.join(
 					indicatorResult.map(({ guid }) => guid),
 					sql.fragment`, `
