@@ -240,7 +240,13 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {comparisonDataMap} {container} {relatedContainers} />
+					<NewIndicatorCard
+						--height="100%"
+						{compare}
+						{comparisonDataMap}
+						{container}
+						{relatedContainers}
+					/>
 				</li>
 			{/each}
 		</ul>
@@ -265,7 +271,13 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {comparisonDataMap} {container} {relatedContainers} />
+					<NewIndicatorCard
+						--height="100%"
+						{compare}
+						{comparisonDataMap}
+						{container}
+						{relatedContainers}
+					/>
 				</li>
 			{/each}
 		</ul>
