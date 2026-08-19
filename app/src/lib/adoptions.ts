@@ -1,12 +1,18 @@
-import { payloadTypes, predicates, programTypes, visibility, type Relation } from '$lib/models';
+import {
+	type AnyPayload,
+	type Container,
+	type OrganizationalUnitPayload,
+	type OrganizationPayload,
+	payloadTypes,
+	predicates,
+	type ProgramPayload,
+	programTypes,
+	type Relation,
+	visibility
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
-// The types in this module are deliberately structural so that both full
-// containers and the plain objects assembled in tests or route handlers fit.
-
-export function isAdoptableProgram(container: {
-	payload: { type: string; programType?: string; visibility?: string };
-}): boolean {
+export function isAdoptableProgram(container: Container<AnyPayload>): boolean {
 	return (
 		container.payload.type === payloadTypes.enum.program &&
 		container.payload.programType === programTypes.enum['program_type.set_of_rules'] &&
@@ -14,17 +20,15 @@ export function isAdoptableProgram(container: {
 	);
 }
 
-export function adoptableOrganizationalUnits<T extends { guid: string; organization: string }>(
+export function adoptableOrganizationalUnits(
 	user: User,
 	program: { organizational_unit: string | null },
-	organizationalUnits: T[]
-): T[] {
+	organizationalUnits: Array<Container<OrganizationalUnitPayload>>
+): Array<Container<OrganizationalUnitPayload>> {
 	if (!user.isAuthenticated) {
 		return [];
 	}
 
-	// Deliberately ignores the sysadmin role: adoptable are only the
-	// organizational units that follow from the regular admin and head roles.
 	return organizationalUnits.filter(
 		(unit) =>
 			unit.guid !== program.organizational_unit &&
@@ -34,10 +38,13 @@ export function adoptableOrganizationalUnits<T extends { guid: string; organizat
 	);
 }
 
-export function groupedByOrganization<
-	T extends { organization: string },
-	O extends { guid: string }
->(units: T[], organizations: O[]): Array<{ organization: O; units: T[] }> {
+export function groupedByOrganization(
+	units: Array<Container<OrganizationalUnitPayload>>,
+	organizations: Array<Container<OrganizationPayload>>
+): Array<{
+	organization: Container<OrganizationPayload>;
+	units: Array<Container<OrganizationalUnitPayload>>;
+}> {
 	return organizations
 		.map((organization) => ({
 			organization,
@@ -46,7 +53,7 @@ export function groupedByOrganization<
 		.filter(({ units }) => units.length > 0);
 }
 
-export function adopters(container: { guid: string; relation: Relation[] }): string[] {
+export function adopters(container: Container<ProgramPayload>): string[] {
 	return container.relation
 		.filter(
 			({ predicate, subject }) =>

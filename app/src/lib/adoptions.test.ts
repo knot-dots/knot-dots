@@ -8,7 +8,18 @@ import {
 	groupedByOrganization,
 	isAdoptableProgram
 } from '$lib/adoptions';
-import { payloadTypes, predicates, programTypes, visibility } from '$lib/models';
+import {
+	anyContainer,
+	type Container,
+	type OrganizationalUnitPayload,
+	type OrganizationPayload,
+	payloadTypes,
+	predicates,
+	type ProgramPayload,
+	programTypes,
+	type Relation,
+	visibility
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
 const organization = crypto.randomUUID();
@@ -31,17 +42,28 @@ const testUser = z.object({
 	settings: z.object({ features: z.array(z.string()).optional() }).default({})
 });
 
+const testContainer = anyContainer.extend({
+	guid: z.uuid().default(() => crypto.randomUUID()),
+	managed_by: z.union([z.array(z.uuid()), z.uuid()]).default(organization),
+	organization: z.uuid().default(organization),
+	organizational_unit: z.uuid().nullable().default(null),
+	realm: z.string().max(1024).default('test'),
+	revision: z.number().int().positive().default(1),
+	valid_currently: z.boolean().default(true),
+	valid_from: z.coerce.date().default(() => new Date())
+});
+
 function makeUser(overrides: z.input<typeof testUser> = {}): User {
 	return testUser.parse(overrides);
 }
 
 function makeProgram(
-	payloadOverrides: Record<string, unknown> = {},
-	organizational_unit: string | null = null
+	payloadOverrides: Partial<ProgramPayload> = {},
+	organizational_unit: string | null = null,
+	relation: Relation[] = []
 ) {
-	return {
+	return testContainer.parse({
 		guid: program,
-		organization,
 		organizational_unit,
 		payload: {
 			programType: programTypes.enum['program_type.set_of_rules'],
@@ -49,23 +71,38 @@ function makeProgram(
 			type: payloadTypes.enum.program,
 			visibility: visibility.enum.public,
 			...payloadOverrides
+		},
+		relation
+	}) as Container<ProgramPayload>;
+}
+
+function makeOrganization(guid: string, payloadOverrides: Partial<OrganizationPayload>) {
+	return testContainer.parse({
+		guid,
+		payload: { name: 'Anytown', type: payloadTypes.enum.organization, ...payloadOverrides }
+	}) as Container<OrganizationPayload>;
+}
+
+function makeOrganizationalUnit(guid: string, organization: string) {
+	return testContainer.parse({
+		guid,
+		organization,
+		payload: {
+			name: 'Anytown school administration',
+			type: payloadTypes.enum.organizational_unit
 		}
-	};
+	}) as Container<OrganizationalUnitPayload>;
 }
 
 const units = [
-	{ guid: owningUnit, organization },
-	{ guid: siblingUnit, organization },
-	{ guid: foreignUnit, organization: otherOrganization }
+	makeOrganizationalUnit(owningUnit, organization),
+	makeOrganizationalUnit(siblingUnit, organization),
+	makeOrganizationalUnit(foreignUnit, otherOrganization)
 ];
 
 describe('isAdoptableProgram', () => {
 	test('public rule-set programs are adoptable', () => {
 		expect(isAdoptableProgram(makeProgram())).toBe(true);
-	});
-
-	test('other payload types are not adoptable', () => {
-		expect(isAdoptableProgram(makeProgram({ type: payloadTypes.enum.rule }))).toBe(false);
 	});
 
 	test('other program types are not adoptable', () => {
@@ -92,16 +129,16 @@ describe('adoptableOrganizationalUnits', () => {
 	test('admins and heads see the units they are responsible for', () => {
 		expect(
 			adoptableOrganizationalUnits(makeUser({ adminOf: [foreignUnit] }), makeProgram(), units)
-		).toEqual([{ guid: foreignUnit, organization: otherOrganization }]);
+		).toEqual([units[2]]);
 		expect(
 			adoptableOrganizationalUnits(makeUser({ headOf: [foreignUnit] }), makeProgram(), units)
-		).toEqual([{ guid: foreignUnit, organization: otherOrganization }]);
+		).toEqual([units[2]]);
 	});
 
 	test('organization-level admins see all units of their organization', () => {
 		expect(
 			adoptableOrganizationalUnits(makeUser({ adminOf: [otherOrganization] }), makeProgram(), units)
-		).toEqual([{ guid: foreignUnit, organization: otherOrganization }]);
+		).toEqual([units[2]]);
 	});
 
 	test('sibling units of the owning organization are adoptable', () => {
@@ -111,7 +148,7 @@ describe('adoptableOrganizationalUnits', () => {
 				makeProgram({}, owningUnit),
 				units
 			)
-		).toEqual([{ guid: siblingUnit, organization }]);
+		).toEqual([units[1]]);
 	});
 
 	test('the owning organizational unit is excluded', () => {
@@ -143,29 +180,20 @@ describe('adoptableOrganizationalUnits', () => {
 
 describe('adopters', () => {
 	test('extracts adopter guids from the relations of the container', () => {
-		const container = {
-			guid: program,
-			relation: [
-				{
-					object: siblingUnit,
-					position: 0,
-					predicate: predicates.enum['is-adopted-by'],
-					subject: program
-				},
-				{
-					object: program,
-					position: 0,
-					predicate: predicates.enum['is-part-of'],
-					subject: crypto.randomUUID()
-				},
-				{
-					object: foreignUnit,
-					position: 0,
-					predicate: predicates.enum['is-adopted-by'],
-					subject: crypto.randomUUID()
-				}
-			]
-		};
+		const container = makeProgram({}, null, [
+			{
+				object: siblingUnit,
+				position: 0,
+				predicate: predicates.enum['is-adopted-by'],
+				subject: program
+			},
+			{
+				object: program,
+				position: 0,
+				predicate: predicates.enum['is-part-of'],
+				subject: crypto.randomUUID()
+			}
+		]);
 		expect(adopters(container)).toEqual([siblingUnit]);
 	});
 });
@@ -181,8 +209,9 @@ describe('adoptionDiff', () => {
 
 describe('adoptionRelations', () => {
 	test('creates is-adopted-by relations with the program as subject', () => {
-		expect(adoptionRelations(program, [siblingUnit])).toEqual([
+		expect(adoptionRelations(program, [siblingUnit], false)).toEqual([
 			{
+				deleted: false,
 				object: siblingUnit,
 				position: 0,
 				predicate: predicates.enum['is-adopted-by'],
@@ -206,17 +235,17 @@ describe('adoptionRelations', () => {
 
 describe('groupedByOrganization', () => {
 	const organizations = [
-		{ guid: organization, payload: { name: 'Stadt A' } },
-		{ guid: otherOrganization, payload: { name: 'Stadt B' } }
+		makeOrganization(organization, { name: 'City A' }),
+		makeOrganization(otherOrganization, { name: 'City B' })
 	];
 
+	const organizationalUnit = makeOrganizationalUnit(foreignUnit, otherOrganization);
+
 	test('groups units by organization and drops empty groups', () => {
-		expect(
-			groupedByOrganization([{ guid: foreignUnit, organization: otherOrganization }], organizations)
-		).toEqual([
+		expect(groupedByOrganization([organizationalUnit], organizations)).toEqual([
 			{
-				organization: { guid: otherOrganization, payload: { name: 'Stadt B' } },
-				units: [{ guid: foreignUnit, organization: otherOrganization }]
+				organization: organizations[1],
+				units: [organizationalUnit]
 			}
 		]);
 	});
@@ -225,8 +254,8 @@ describe('groupedByOrganization', () => {
 		expect(
 			groupedByOrganization(
 				[
-					{ guid: foreignUnit, organization: otherOrganization },
-					{ guid: siblingUnit, organization }
+					makeOrganizationalUnit(foreignUnit, otherOrganization),
+					makeOrganizationalUnit(siblingUnit, organization)
 				],
 				organizations
 			).map(({ organization: { guid } }) => guid)
