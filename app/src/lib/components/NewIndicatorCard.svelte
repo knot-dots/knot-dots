@@ -48,7 +48,7 @@
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
-		{:else if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))}
+		{:else if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !comparisonContainers?.length}
 			<ImpactMonitoringChart {container} {relatedContainers} />
 		{:else}
 			<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />

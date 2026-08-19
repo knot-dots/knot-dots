@@ -123,7 +123,7 @@
 				</div>
 
 				{#if viewMode === 'chart'}
-					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))}
+					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !comparisonContainers?.length}
 						<ImpactMonitoringChart {container} {relatedContainers} showLegend />
 					{:else}
 						<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
