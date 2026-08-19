@@ -16,8 +16,7 @@
 
 	interface Props {
 		container:
-			| Container<OrganizationalUnitPayload>
-			| NewContainer<InitialOrganizationalUnitPayload>;
+			Container<OrganizationalUnitPayload> | NewContainer<InitialOrganizationalUnitPayload>;
 		editable?: boolean;
 	}
 
