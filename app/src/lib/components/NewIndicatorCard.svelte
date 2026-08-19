@@ -20,6 +20,7 @@
 
 	interface Props {
 		button?: Snippet;
+		compare?: boolean;
 		container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
 		ignoreBulkActionContext?: boolean;
 		relatedContainers?: Container[];
@@ -29,6 +30,7 @@
 
 	const {
 		button,
+		compare = false,
 		container,
 		ignoreBulkActionContext = false,
 		relatedContainers = [],
@@ -52,7 +54,7 @@
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
-		{:else if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !hasComparisonData}
+		{:else if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !(compare && hasComparisonData)}
 			<ImpactMonitoringChart {container} {relatedContainers} />
 		{:else}
 			<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
