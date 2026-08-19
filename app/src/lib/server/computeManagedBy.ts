@@ -10,7 +10,8 @@ import { getFeatures } from '$lib/server/features';
 const hierarchyPredicates = [
 	predicates.enum['is-part-of'],
 	predicates.enum['is-part-of-program'],
-	predicates.enum['is-part-of-measure']
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-section-of']
 ];
 
 // Membership relations that make a container a team of its own.

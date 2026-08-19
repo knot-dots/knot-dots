@@ -879,3 +879,94 @@ test('computeManagedBy: cyclic relations do not prevent computation', async ({
 	expect(result.get(goal.guid)).toEqual([organization]);
 	expect(result.get(otherGoal.guid)).toEqual([organization]);
 });
+
+test('computeManagedBy: section managed by the team of its measure', async ({
+	connection
+}: Fixtures) => {
+	const member = await createTestUser(connection);
+	const measure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, { memberOf: member })
+	)(connection);
+	const section = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [{ object: measure.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
+		})
+	)(connection);
+	const result = await computeManagedBy(connection, [section.guid]);
+	expect(result.get(section.guid)).toEqual([measure.guid]);
+});
+
+test('updating the managed_by of a measure propagates to its sections', async ({
+	connection
+}: Fixtures) => {
+	const measure = await createContainer(newManagedByContainer(payloadTypes.enum.measure))(
+		connection
+	);
+	const section = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [{ object: measure.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
+		})
+	)(connection);
+
+	const persistedMeasure = await getContainerByGuid(measure.guid)(connection);
+	await updateContainer(
+		modifiedContainer.parse({ ...persistedMeasure, managed_by: [measure.guid] })
+	)(connection);
+
+	const persistedSection = await getContainerByGuid(section.guid)(connection);
+	expect(persistedSection.managed_by).toEqual([measure.guid]);
+});
+
+test('updating the managed_by of a measure propagates to resources and sub-measures', async ({
+	connection
+}: Fixtures) => {
+	const measure = await createContainer(newManagedByContainer(payloadTypes.enum.measure))(
+		connection
+	);
+	const resource = await createContainer(
+		newManagedByContainer(payloadTypes.enum.resource, {
+			relation: [
+				{ object: measure.guid, position: 0, predicate: predicates.enum['is-part-of-measure'] }
+			]
+		})
+	)(connection);
+	const subMeasure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: measure.guid, position: 0, predicate: predicates.enum['is-part-of-measure'] }
+			]
+		})
+	)(connection);
+
+	const persistedMeasure = await getContainerByGuid(measure.guid)(connection);
+	await updateContainer(
+		modifiedContainer.parse({ ...persistedMeasure, managed_by: [measure.guid] })
+	)(connection);
+
+	expect((await getContainerByGuid(resource.guid)(connection)).managed_by).toEqual([measure.guid]);
+	expect((await getContainerByGuid(subMeasure.guid)(connection)).managed_by).toEqual([
+		measure.guid
+	]);
+});
+
+test('updating the managed_by of a sub-measure leaves its parent measure untouched', async ({
+	connection
+}: Fixtures) => {
+	const measure = await createContainer(newManagedByContainer(payloadTypes.enum.measure))(
+		connection
+	);
+	const subMeasure = await createContainer(
+		newManagedByContainer(payloadTypes.enum.measure, {
+			relation: [
+				{ object: measure.guid, position: 0, predicate: predicates.enum['is-part-of-measure'] }
+			]
+		})
+	)(connection);
+
+	const persistedSubMeasure = await getContainerByGuid(subMeasure.guid)(connection);
+	await updateContainer(
+		modifiedContainer.parse({ ...persistedSubMeasure, managed_by: [subMeasure.guid] })
+	)(connection);
+
+	expect((await getContainerByGuid(measure.guid)(connection)).managed_by).toEqual([organization]);
+});

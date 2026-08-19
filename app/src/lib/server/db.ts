@@ -1849,39 +1849,34 @@ export function bulkUpdateOrganizationalUnit(
 export function bulkUpdateManagedBy(container: Container<AnyPayload>, managedBy: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {
-			const containerResult =
-				container.payload.type == payloadTypes.enum.program
-					? await getAllContainersRelatedToProgram(container.guid, {
-							type: [
-								payloadTypes.enum.goal,
-								payloadTypes.enum.measure,
-								payloadTypes.enum.objective,
-								payloadTypes.enum.rule,
-								payloadTypes.enum.simple_measure,
-								payloadTypes.enum.text
-							]
-						})(txConnection)
-					: await getAllContainersRelatedToMeasure(
-							container.guid,
-							{
-								type: [payloadTypes.enum.effect, payloadTypes.enum.goal, payloadTypes.enum.task]
-							},
-							''
-						)(txConnection);
-
-			if (containerResult.length) {
-				await txConnection.query(sql.typeAlias('void')`
-					UPDATE container
-					SET managed_by = ${managedBy}
-					WHERE guid IN (${sql.join(
-						containerResult.map(({ guid }) => guid),
-						sql.fragment`, `
-					)})
-					  AND managed_by = ${container.managed_by[0]}
-						AND valid_currently
-						AND NOT deleted
-				`);
-			}
+			// Descendants only: ancestors (e.g. the parent measure of a sub-measure)
+			// must not follow a team assigned further down the hierarchy.
+			const predicate = [
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-measure'],
+				predicates.enum['is-part-of-program'],
+				predicates.enum['is-section-of']
+			];
+			await txConnection.query(sql.typeAlias('void')`
+				WITH RECURSIVE descendant(path, is_cycle) AS (
+					SELECT ${sql.array([container.guid], 'uuid')} AS path, false, ${sql.uuid(container.guid)} AS object
+					UNION ALL
+					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
+					FROM container c
+					JOIN container_relation cr ON c.guid = cr.subject
+						AND cr.predicate IN (${sql.join(predicate, sql.fragment`, `)})
+						AND cr.valid_currently
+						AND NOT cr.deleted
+					JOIN descendant r ON cr.object = r.object AND NOT r.is_cycle
+					WHERE c.valid_currently
+				)
+				UPDATE container
+				SET managed_by = ${managedBy}
+				WHERE guid IN (SELECT DISTINCT unnest(path) AS guid FROM descendant)
+					AND managed_by = ${container.managed_by[0]}
+					AND valid_currently
+					AND NOT deleted
+			`);
 		});
 	};
 }
