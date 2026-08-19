@@ -21,7 +21,7 @@
 		"@opentelemetry/exporter-trace-otlp-proto": "^0.221.0",
 		"@opentelemetry/sdk-node": "^0.221.0",
 		"@opentelemetry/sdk-trace-node": "^2.10.0",
-		"import-in-the-middle": "^2.0.6",
+		"import-in-the-middle": "^3.3.3",
 		"roarr": "^7.21.7"
 	},
 	"devDependencies": {
