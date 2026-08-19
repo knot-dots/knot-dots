@@ -327,9 +327,8 @@
 		return `${path}${queryString ? `?${queryString}` : ''}`;
 	});
 
-	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
 	const comparisonData = createComparisonData({
-		enabled: () => inViewport.current,
+		enabled: () => inViewportOnce,
 		indicatorGuids: () => items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
 	});
 

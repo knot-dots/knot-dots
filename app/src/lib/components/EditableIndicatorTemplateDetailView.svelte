@@ -91,6 +91,10 @@
 			)
 	);
 
+	let hasComparisonData = $derived(
+		comparisonContainers?.some(({ payload }) => payload.values.length > 0) ?? false
+	);
+
 	let viewMode = $state('chart');
 </script>
 
@@ -132,7 +136,7 @@
 				</div>
 
 				{#if viewMode === 'chart'}
-					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !comparisonContainers?.length}
+					{#if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !hasComparisonData}
 						<ImpactMonitoringChart {container} {relatedContainers} showLegend />
 					{:else}
 						<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />

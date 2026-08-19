@@ -19,6 +19,6 @@
 </script>
 
 <IndicatorsPage data={{ ...data, containers }} filterBarInitiallyOpen>
-	<NewIndicators {containers} />
+	<NewIndicators compare {containers} />
 	<ContextTabs slug="indicators" />
 </IndicatorsPage>

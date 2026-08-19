@@ -1,6 +1,6 @@
 import { resource } from 'runed';
-import { fromStore } from 'svelte/store';
 import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
+import { fromStore } from 'svelte/store';
 import { z } from 'zod';
 import {
 	type ActualDataPayload,
@@ -31,8 +31,8 @@ export default function createComparisonData({
 
 	const comparisonDataResource = resource(
 		() => [selectedMunicipalityGuids, indicatorGuids(), enabled()] as const,
-		async ([municipalityGuids, indicators, enabled], _, { signal }) => {
-			if (!enabled || municipalityGuids.length === 0 || indicators.length === 0) return [];
+		async ([municipalityGuids, indicators, isEnabled], _, { signal }) => {
+			if (!isEnabled || municipalityGuids.length === 0 || indicators.length === 0) return [];
 
 			// Split indicators into chunks to avoid 431 error (Request URI Too Large)
 			const CHUNK_SIZE = 50; // Conservative limit to keep URL under ~8KB
@@ -58,8 +58,7 @@ export default function createComparisonData({
 
 			const results = await Promise.all(fetchPromises);
 			return results.flat();
-		},
-		{ lazy: true }
+		}
 	);
 
 	const comparisonDataMap = $derived.by(() => {

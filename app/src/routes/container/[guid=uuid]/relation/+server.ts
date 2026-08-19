@@ -79,20 +79,15 @@ export const GET = (async ({ locals, params, url }) => {
 		let containers;
 
 		if (isIndicatorTemplateContainer(container)) {
+			const { compareOrganizationalUnit, organizationalUnit } = parseResult.data;
 			const actualDataFilters = {
+				includeOrganizationLevel:
+					organizationalUnit.length == 0 && compareOrganizationalUnit.length > 0,
 				organizations: parseResult.data.organization,
 				organizationalUnits:
-					parseResult.data.organizationalUnit.length > 0
-						? [
-								...parseResult.data.organizationalUnit,
-								...parseResult.data.compareOrganizationalUnit
-							]
-						: parseResult.data.compareOrganizationalUnit.length > 0
-							? parseResult.data.compareOrganizationalUnit
-							: null,
-				includeOrganizationLevel:
-					parseResult.data.organizationalUnit.length == 0 &&
-					parseResult.data.compareOrganizationalUnit.length > 0
+					organizationalUnit.length + compareOrganizationalUnit.length > 0
+						? [...organizationalUnit, ...compareOrganizationalUnit]
+						: null
 			};
 
 			if (parseResult.data.program.length > 0) {
