@@ -13,13 +13,16 @@ import {
 	payloadTypes,
 	predicates,
 	type ProgramPayload,
-	type Relation
+	resourceDataTypes,
+	type Relation,
+	visibility
 } from '$lib/models';
 import {
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
 	getAllContainersRelatedToProgram,
+	getContainerCopyGraph,
 	getContainerByGuid,
 	getManyContainers,
 	sql,
@@ -473,6 +476,286 @@ test('a container in several programs appears among the members of each', async 
 	)(connection);
 	expect(relatedToFirst.map(({ guid }) => guid)).toContain(measure.guid);
 	expect(relatedToSecond.map(({ guid }) => guid)).toContain(measure.guid);
+});
+
+test('getContainerCopyGraph follows current downward copy edges once and stops at cycles', async ({
+	connection
+}: Fixtures) => {
+	const root = await createContainer(newManagedByContainer(payloadTypes.enum.program))(connection);
+	const child = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: root.guid,
+					position: 7,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	const grandchild = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: child.guid,
+					position: 8,
+					predicate: predicates.enum['is-part-of-category']
+				}
+			]
+		})
+	)(connection);
+	await updateManyContainerRelations([
+		{
+			object: grandchild.guid,
+			position: 9,
+			predicate: predicates.enum['is-part-of'],
+			subject: root.guid
+		}
+	])(connection);
+
+	const deletedIntermediate = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: root.guid,
+					position: 10,
+					predicate: predicates.enum['is-part-of-measure']
+				}
+			]
+		})
+	)(connection);
+	const belowDeleted = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: deletedIntermediate.guid,
+					position: 11,
+					predicate: predicates.enum['is-part-of-program']
+				}
+			]
+		})
+	)(connection);
+	await connection.query(sql.typeAlias('void')`
+		UPDATE container
+		SET deleted = true
+		WHERE guid = ${deletedIntermediate.guid}
+			AND valid_currently
+	`);
+
+	const privateIndicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Private indicator',
+				type: payloadTypes.enum.indicator_template,
+				unit: 'unit.percent',
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const payloadOnlyIndicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Payload-only indicator',
+				type: payloadTypes.enum.indicator_template,
+				unit: 'unit.percent',
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const privateIndicatorSection = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: privateIndicator.guid,
+					position: 12,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	const actualData = await createContainer(
+		initializeNewContainer(
+			{
+				indicator: payloadOnlyIndicator.guid,
+				title: 'Actual data',
+				type: payloadTypes.enum.actual_data
+			},
+			[
+				{
+					object: root.guid,
+					position: 13,
+					predicate: predicates.enum['is-part-of']
+				}
+			]
+		)
+	)(connection);
+	const publicIndicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Public indicator',
+				type: payloadTypes.enum.indicator_template,
+				unit: 'unit.percent',
+				visibility: visibility.enum.public
+			},
+			[]
+		)
+	)(connection);
+	const publicIndicatorSection = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: publicIndicator.guid,
+					position: 14,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	await updateManyContainerRelations([
+		{
+			object: privateIndicator.guid,
+			position: 15,
+			predicate: predicates.enum['is-measured-by'],
+			subject: root.guid
+		},
+		{
+			object: publicIndicator.guid,
+			position: 16,
+			predicate: predicates.enum['is-objective-for'],
+			subject: root.guid
+		}
+	])(connection);
+
+	const result = await getContainerCopyGraph(root.guid)(connection);
+	const resultGuids = result.containers.map(({ guid }) => guid);
+
+	expect(resultGuids).toEqual([...new Set(resultGuids)]);
+	expect(resultGuids).toEqual(
+		expect.arrayContaining([
+			root.guid,
+			child.guid,
+			grandchild.guid,
+			actualData.guid,
+			privateIndicator.guid,
+			privateIndicatorSection.guid,
+			publicIndicator.guid
+		])
+	);
+	expect(resultGuids).not.toContain(deletedIntermediate.guid);
+	expect(resultGuids).not.toContain(belowDeleted.guid);
+	expect(resultGuids).not.toContain(payloadOnlyIndicator.guid);
+	expect(resultGuids).not.toContain(publicIndicatorSection.guid);
+	expect(
+		result.containers
+			.flatMap(({ relation }) => relation)
+			.find(
+				({ predicate, subject }) =>
+					predicate === predicates.enum['is-section-of'] && subject === child.guid
+			)?.position
+	).toBe(7);
+});
+
+test('getContainerCopyGraph ignores actual data references and follows resource data references forward only', async ({
+	connection
+}: Fixtures) => {
+	const indicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Indicator',
+				type: payloadTypes.enum.indicator_template,
+				unit: 'unit.percent',
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const actualData = await createContainer(
+		initializeNewContainer(
+			{
+				indicator: indicator.guid,
+				title: 'Actual data',
+				type: payloadTypes.enum.actual_data
+			},
+			[]
+		)
+	)(connection);
+	const resource = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Resource',
+				type: payloadTypes.enum.resource_v2,
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const resourceData = await createContainer(
+		initializeNewContainer(
+			{
+				resource: resource.guid,
+				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+				title: 'Resource data',
+				type: payloadTypes.enum.resource_data
+			},
+			[]
+		)
+	)(connection);
+
+	const guidsFor = async (rootGuid: string) =>
+		(await getContainerCopyGraph(rootGuid)(connection)).containers.map(({ guid }) => guid);
+
+	expect(await guidsFor(actualData.guid)).toEqual([actualData.guid]);
+	expect(await guidsFor(indicator.guid)).toEqual([indicator.guid]);
+	expect(await guidsFor(resourceData.guid)).toEqual(
+		expect.arrayContaining([resourceData.guid, resource.guid])
+	);
+	expect(await guidsFor(resource.guid)).toEqual([resource.guid]);
+});
+
+test('getContainerCopyGraph fetches collection references without traversing their descendants', async ({
+	connection
+}: Fixtures) => {
+	const item = await createContainer(newManagedByContainer(payloadTypes.enum.text))(connection);
+	const itemChild = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: item.guid,
+					position: 1,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	const template = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Template',
+				type: payloadTypes.enum.report
+			},
+			[]
+		)
+	)(connection);
+	const collection = await createContainer(
+		initializeNewContainer(
+			{
+				item: [item.guid],
+				newItemTemplate: [template.guid],
+				title: 'Collection',
+				type: payloadTypes.enum.custom_collection
+			},
+			[]
+		)
+	)(connection);
+
+	const result = await getContainerCopyGraph(collection.guid)(connection);
+	const resultGuids = result.containers.map(({ guid }) => guid);
+
+	expect(resultGuids).toEqual(expect.arrayContaining([collection.guid, item.guid, template.guid]));
+	expect(resultGuids).not.toContain(itemChild.guid);
 });
 
 test('computeManagedBy: program managed by the organization', async ({ connection }: Fixtures) => {
