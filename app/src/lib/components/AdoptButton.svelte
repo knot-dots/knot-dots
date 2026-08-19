@@ -42,7 +42,6 @@
 
 	const mayAdopt = $derived(
 		createFeatureDecisions(page.data.features).useAdoptions() &&
-			$user.isAuthenticated &&
 			isAdoptableProgram(container) &&
 			adoptableUnits.length > 0
 	);

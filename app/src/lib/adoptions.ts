@@ -25,10 +25,6 @@ export function adoptableOrganizationalUnits(
 	program: { organizational_unit: string | null },
 	organizationalUnits: Array<Container<OrganizationalUnitPayload>>
 ): Array<Container<OrganizationalUnitPayload>> {
-	if (!user.isAuthenticated) {
-		return [];
-	}
-
 	return organizationalUnits.filter(
 		(unit) =>
 			unit.guid !== program.organizational_unit &&
