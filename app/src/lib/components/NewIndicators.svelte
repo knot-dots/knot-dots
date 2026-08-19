@@ -44,10 +44,11 @@
 	} from '$lib/stores';
 
 	interface Props {
+		compare?: boolean;
 		containers: Container[];
 	}
 
-	let { containers }: Props = $props();
+	let { compare = false, containers }: Props = $props();
 
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
@@ -77,8 +78,8 @@
 		}
 	});
 
-	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
 	const comparisonData = createComparisonData({
+		enabled: () => compare,
 		indicatorGuids: () =>
 			items
 				.map(({ container }) => container)
