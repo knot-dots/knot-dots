@@ -71,7 +71,7 @@ test('adding and removing a progress section updates the card', async ({ dotsBoa
 	await dotsBoard.card(testGoal.payload.title).click();
 	await section.hover();
 	await section.getByRole('button', { name: 'Settings' }).click();
-	await section.getByRole('button', { name: 'Delete' }).click();
+	await section.getByRole('button', { name: 'Remove section' }).click();
 	const saveResponseForDelete = dotsBoard.page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);
@@ -81,6 +81,57 @@ test('adding and removing a progress section updates the card', async ({ dotsBoa
 	// Verify the goal card no longer shows a progress bar in the footer
 	await dotsBoard.overlay.closeButton.click();
 	await expect(dotsBoard.card(testGoal.payload.title).getByRole('progressbar')).not.toBeVisible();
+});
+
+test('progress can be computed from subordinate objects', async ({
+	dotsBoard,
+	testGoal,
+	testTask
+}) => {
+	// All browser projects run this save-heavy test concurrently against a
+	// single preview stack, so allow for the extra latency
+	test.slow();
+
+	await dotsBoard.goto(`/${testGoal.organization}`);
+	await dotsBoard.card(testGoal.payload.title).click();
+	await dotsBoard.overlay.editModeToggle.check();
+
+	// Add a Progress section; manual measurement with a slider is the default.
+	// Locate the section by its heading because sibling sections may render
+	// with a delay and shift the index-based locator returned by addSection.
+	await dotsBoard.overlay.addSection('Progress');
+	const section = dotsBoard.overlay.sections.filter({
+		has: dotsBoard.page.getByRole('heading', { name: 'Progress', exact: true })
+	});
+	await expect(section.getByRole('slider')).toBeVisible({ timeout: 15000 });
+
+	// Switch measurement to subordinate objects; retry in case a pending
+	// invalidation reverts the not-yet-saved payload change
+	await expect(async () => {
+		await section.hover();
+		await section.getByRole('button', { name: 'Settings' }).click();
+		await section.getByRole('button', { name: 'Progress measurement' }).click();
+		await section.getByRole('radio', { name: 'Subordinate objects' }).check();
+		await section.getByRole('button', { name: 'close' }).click();
+		await expect(section.getByRole('slider')).not.toBeVisible({ timeout: 3000 });
+	}).toPass({ timeout: 20000 });
+
+	// The slider is replaced by a stacked bar with one segment per subordinate task
+	const stackedBar = section.locator('.stacked-progress');
+	await expect(stackedBar).toBeVisible({ timeout: 15000 });
+	await expect(stackedBar.locator('.segment')).toHaveCount(1, { timeout: 15000 });
+	await stackedBar.locator('.segment').hover();
+	await expect(dotsBoard.page.getByRole('tooltip')).toContainText(testTask.payload.title);
+
+	// Remove the Progress section so subsequent tests start from a pristine goal
+	await section.hover();
+	await section.getByRole('button', { name: 'Settings' }).click();
+	await section.getByRole('button', { name: 'Remove section' }).click();
+	const saveResponseForDelete = dotsBoard.page.waitForResponse(
+		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+	);
+	await dotsBoard.page.getByRole('button', { name: /I want to delete/i }).click();
+	await saveResponseForDelete;
 });
 
 test('inline help is edit-only', async ({ dotsBoard, testReport }) => {
