@@ -21,6 +21,7 @@ import {
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
+	getAdoptedContainerGuids,
 	getAllContainersRelatedToProgram,
 	getContainerCopyGraph,
 	getContainerByGuid,
@@ -1252,4 +1253,146 @@ test('updating the managed_by of a sub-measure leaves its parent measure untouch
 	)(connection);
 
 	expect((await getContainerByGuid(measure.guid)(connection)).managed_by).toEqual([organization]);
+});
+
+test('getAdoptedContainerGuids: adopted programs and their contents', async ({
+	connection
+}: Fixtures) => {
+	const adopter = await createContainer(
+		initializeNewContainer(
+			{ name: 'Lorem ipsum', type: payloadTypes.enum.organizational_unit } as Partial<AnyPayload> &
+				Pick<AnyPayload, 'type'>,
+			[]
+		)
+	)(connection);
+	const program = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.program), [
+			{ object: adopter.guid, position: 0, predicate: predicates.enum['is-adopted-by'] }
+		])
+	)(connection);
+	const rule = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const section = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [
+			{ object: program.guid, position: 0, predicate: predicates.enum['is-section-of'] }
+		])
+	)(connection);
+	const nested = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [
+			{ object: section.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+		])
+	)(connection);
+	await createContainer(initializeNewContainer(simplePayload(payloadTypes.enum.rule), []))(
+		connection
+	);
+
+	const adopted = await getAdoptedContainerGuids([adopter.guid])(connection);
+	expect(adopted.toSorted()).toEqual(
+		[program.guid, rule.guid, section.guid, nested.guid].toSorted()
+	);
+
+	expect(await getAdoptedContainerGuids([uuid()])(connection)).toEqual([]);
+	expect(await getAdoptedContainerGuids([])(connection)).toEqual([]);
+});
+
+test('getAdoptedContainerGuids: several adopters of one program are deduplicated', async ({
+	connection
+}: Fixtures) => {
+	const adopter = await createContainer(
+		initializeNewContainer(
+			{ name: 'Lorem ipsum', type: payloadTypes.enum.organizational_unit } as Partial<AnyPayload> &
+				Pick<AnyPayload, 'type'>,
+			[]
+		)
+	)(connection);
+	const anotherAdopter = await createContainer(
+		initializeNewContainer(
+			{
+				name: 'Dolor sit amet',
+				type: payloadTypes.enum.organizational_unit
+			} as Partial<AnyPayload> & Pick<AnyPayload, 'type'>,
+			[]
+		)
+	)(connection);
+	const program = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.program), [
+			{ object: adopter.guid, position: 0, predicate: predicates.enum['is-adopted-by'] },
+			{ object: anotherAdopter.guid, position: 0, predicate: predicates.enum['is-adopted-by'] }
+		])
+	)(connection);
+
+	const adopted = await getAdoptedContainerGuids([adopter.guid, anotherAdopter.guid])(connection);
+	expect(adopted).toEqual([program.guid]);
+});
+
+test('getManyContainers: includeGuids widens the organization scope', async ({
+	connection
+}: Fixtures) => {
+	const foreignOrganization = uuid();
+	const foreignRule = await createContainer(
+		newContainer.parse({
+			managed_by: foreignOrganization,
+			organization: foreignOrganization,
+			organizational_unit: null,
+			payload: simplePayload(payloadTypes.enum.rule),
+			realm,
+			relation: []
+		})
+	)(connection);
+	const ownRule = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.rule), [])
+	)(connection);
+
+	const withoutIncludeGuids = await getManyContainers(
+		[organization],
+		{ type: [payloadTypes.enum.rule] },
+		'alpha'
+	)(connection);
+	expect(withoutIncludeGuids.map(({ guid }) => guid)).toContain(ownRule.guid);
+	expect(withoutIncludeGuids.map(({ guid }) => guid)).not.toContain(foreignRule.guid);
+
+	const withIncludeGuids = await getManyContainers(
+		[organization],
+		{ includeGuids: [foreignRule.guid], type: [payloadTypes.enum.rule] },
+		'alpha'
+	)(connection);
+	expect(withIncludeGuids.map(({ guid }) => guid)).toContain(ownRule.guid);
+	expect(withIncludeGuids.map(({ guid }) => guid)).toContain(foreignRule.guid);
+});
+
+test('getManyContainers: includeGuids widens the organizational unit scope', async ({
+	connection
+}: Fixtures) => {
+	const foreignOrganization = uuid();
+	const foreignUnitRule = await createContainer(
+		newContainer.parse({
+			managed_by: foreignOrganization,
+			organization: foreignOrganization,
+			organizational_unit: uuid(),
+			payload: simplePayload(payloadTypes.enum.rule),
+			realm,
+			relation: []
+		})
+	)(connection);
+
+	const withoutIncludeGuids = await getManyContainers(
+		[organization],
+		{ organizationalUnits: null, type: [payloadTypes.enum.rule] },
+		'alpha'
+	)(connection);
+	expect(withoutIncludeGuids.map(({ guid }) => guid)).not.toContain(foreignUnitRule.guid);
+
+	const withIncludeGuids = await getManyContainers(
+		[organization],
+		{
+			includeGuids: [foreignUnitRule.guid],
+			organizationalUnits: null,
+			type: [payloadTypes.enum.rule]
+		},
+		'alpha'
+	)(connection);
+	expect(withIncludeGuids.map(({ guid }) => guid)).toContain(foreignUnitRule.guid);
 });

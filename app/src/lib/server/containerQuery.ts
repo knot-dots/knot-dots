@@ -1,5 +1,7 @@
 import { error } from '@sveltejs/kit';
+import { Roarr as log } from 'roarr';
 import { z } from 'zod';
+import { adopterScope } from '$lib/adoptions';
 import { filterVisible } from '$lib/authorization';
 import {
 	buildCategoryFacetsWithCounts,
@@ -24,10 +26,12 @@ import {
 	status,
 	taskCategories
 } from '$lib/models';
+import { createFeatureDecisions } from '$lib/features';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '$lib/pagination';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import { loadApplicationContext } from '$lib/server/applicationContext';
 import {
+	getAdoptedContainerGuids,
 	getAllRelatedContainers,
 	getManyContainers,
 	getManyOrganizationContainers
@@ -202,7 +206,7 @@ function baseFacetMap(
 function buildFilters(
 	params: ContainerQueryParams,
 	customCategories: Record<string, string[]>,
-	overrides: { organizationalUnits?: string[] | null } = {}
+	overrides: { includeGuids?: string[]; organizationalUnits?: string[] | null } = {}
 ) {
 	return {
 		administrativeTypes: params.administrativeType,
@@ -213,6 +217,7 @@ function buildFilters(
 		federalStates: params.federalState,
 		guid: params.guid,
 		hierarchyLevels: params.hierarchyLevel,
+		includeGuids: overrides.includeGuids,
 		indicators: params.indicator,
 		indicatorCategories: params.indicatorCategory,
 		indicatorTypes: params.indicatorType,
@@ -337,6 +342,17 @@ export async function loadContainerV2(params: {
 		}
 	}
 
+	// Containers adopted into the current context are computed on demand and
+	// widen the organization/organizational unit scope of the query.
+	const includeGuids =
+		applicationContext && createFeatureDecisions(params.locals.features).useAdoptions()
+			? await params.locals.pool.connect(getAdoptedContainerGuids(adopterScope(applicationContext)))
+			: [];
+
+	if (includeGuids.length > 10000) {
+		log.warn(`the adoption scope of ${query.contextGuid} spans ${includeGuids.length} containers`);
+	}
+
 	const useElasticsearch = canUseElasticsearch(scopedQuery);
 	const customCategories = extractCustomCategoryFilters(params.url, queriedCategoryContext.keys);
 
@@ -344,7 +360,7 @@ export async function loadContainerV2(params: {
 	let esFacets: Record<string, Record<string, number>> | undefined;
 
 	if (useElasticsearch) {
-		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
+		const filters = buildFilters(scopedQuery, customCategories, { ...ouOverrides, includeGuids });
 		const result = await getManyContainersWithES(scopedQuery.organization, filters, query.sort, {
 			customCategoryKeys: queriedCategoryContext.keys,
 			includeFacets: true
@@ -352,7 +368,7 @@ export async function loadContainerV2(params: {
 		rawContainers = result.containers;
 		esFacets = result.facets;
 	} else {
-		const filters = buildFilters(scopedQuery, customCategories, ouOverrides);
+		const filters = buildFilters(scopedQuery, customCategories, { ...ouOverrides, includeGuids });
 		rawContainers =
 			query.relatedTo.length > 0
 				? await params.locals.pool.connect(

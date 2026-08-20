@@ -49,6 +49,26 @@ export function groupedByOrganization(
 		.filter(({ units }) => units.length > 0);
 }
 
+// The scope whose adoptions are visible in a given context: an organizational
+// unit sees only its own adoptions, an organization sees the adoptions of all
+// of its units and its own.
+export function adopterScope(context: {
+	currentOrganization: Container<OrganizationPayload>;
+	currentOrganizationalUnit: Container<OrganizationalUnitPayload> | undefined;
+	organizationalUnits: Container<OrganizationalUnitPayload>[];
+}): string[] {
+	if (context.currentOrganizationalUnit) {
+		return [context.currentOrganizationalUnit.guid];
+	}
+
+	return [
+		context.currentOrganization.guid,
+		...context.organizationalUnits
+			.filter(({ organization }) => organization === context.currentOrganization.guid)
+			.map(({ guid }) => guid)
+	];
+}
+
 export function adopters(container: Container<ProgramPayload>): string[] {
 	return container.relation
 		.filter(
