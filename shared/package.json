@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@elastic/elasticsearch": "^9.4.2",
-    "roarr": "^7.21.6",
+    "@elastic/elasticsearch": "^9.5.0",
+    "roarr": "^7.21.7",
     "serialize-error": "^13.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@tsconfig/node24": "^24.0.4"
+    "@tsconfig/node24": "^24.0.5"
   }
 }

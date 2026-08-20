@@ -94,27 +94,21 @@
 		}
 
 		container.relation = [
-			...params.getAll(predicates.enum['is-part-of']).map(
-				(o): PartialRelation => ({
-					object: o,
-					position: 0,
-					predicate: predicates.enum['is-part-of']
-				})
-			),
-			...params.getAll(predicates.enum['is-part-of-measure']).map(
-				(o): PartialRelation => ({
-					object: o,
-					position: 0,
-					predicate: predicates.enum['is-part-of-measure']
-				})
-			),
-			...params.getAll(predicates.enum['is-part-of-program']).map(
-				(o): PartialRelation => ({
-					object: o,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				})
-			)
+			...params.getAll(predicates.enum['is-part-of']).map((o): PartialRelation => ({
+				object: o,
+				position: 0,
+				predicate: predicates.enum['is-part-of']
+			})),
+			...params.getAll(predicates.enum['is-part-of-measure']).map((o): PartialRelation => ({
+				object: o,
+				position: 0,
+				predicate: predicates.enum['is-part-of-measure']
+			})),
+			...params.getAll(predicates.enum['is-part-of-program']).map((o): PartialRelation => ({
+				object: o,
+				position: 0,
+				predicate: predicates.enum['is-part-of-program']
+			}))
 		];
 
 		$newContainer = container;

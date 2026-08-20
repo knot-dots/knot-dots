@@ -75,11 +75,7 @@
 	function getBooleanField(key: 'titleEnable' | 'textEnable' | 'imageEnable' | 'linkEnable') {
 		if (!teaserContainer) return null;
 		const pKey = (payloadSuffix === 'Right' ? `${key}Right` : key) as keyof (
-			| ColContentPayload
-			| InfoBoxPayload
-			| QuotePayload
-			| TeaserHighlightPayload
-			| TeaserPayload
+			ColContentPayload | InfoBoxPayload | QuotePayload | TeaserHighlightPayload | TeaserPayload
 		);
 		// We return the actual object and the specific key to allow binding
 		return { payload: teaserContainer.payload, key: pKey };

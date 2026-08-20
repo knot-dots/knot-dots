@@ -80,9 +80,11 @@ export const workspaceModules: WorkspaceModule[] = [
 export type WorkspaceFeatureDecisions = ReturnType<typeof createFeatureDecisions>;
 
 export type WorkspaceFeatureFlag = keyof {
-	[K in keyof WorkspaceFeatureDecisions as WorkspaceFeatureDecisions[K] extends () => boolean
-		? K
-		: never]: true;
+	[
+		K in keyof WorkspaceFeatureDecisions as WorkspaceFeatureDecisions[K] extends () => boolean
+			? K
+			: never
+	]: true;
 };
 
 export type WorkspaceViewKey = 'catalog' | 'level' | 'status' | 'table' | 'monitoring';

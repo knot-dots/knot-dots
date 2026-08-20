@@ -171,8 +171,7 @@
 
 		instance.on('upload-success', (file, response) => {
 			const body = response?.body as
-				| { success?: boolean; errors?: string[]; containers?: Container[] }
-				| undefined;
+				{ success?: boolean; errors?: string[]; containers?: Container[] } | undefined;
 			if (body?.success) {
 				uploadErrors = [];
 				uploadDialog.close();

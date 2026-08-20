@@ -162,8 +162,7 @@
 	// Helper to create a stub container for optimistic UI
 	function createStub(
 		resourceDataType:
-			| 'resource_data_type.total_budget'
-			| 'resource_data_type.total_budget_forecast',
+			'resource_data_type.total_budget' | 'resource_data_type.total_budget_forecast',
 		title: string,
 		temporaryGuid: string
 	): Container<ResourceDataPayload> {
