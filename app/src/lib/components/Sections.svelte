@@ -5,12 +5,14 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import TableOfContents from '$lib/components/TableOfContents.svelte';
 	import {
 		type AnyPayload,
 		type Container,
 		container as containerSchema,
 		containerOfType,
 		isChapterContainer,
+		isContainer,
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
 		isTextContainer,
@@ -31,6 +33,7 @@
 
 	let sections = $derived.by(() => {
 		return relatedContainers
+			.filter(isContainer)
 			.filter((c) => c.guid != guid)
 			.filter(({ relation }) =>
 				relation.some(
@@ -49,7 +52,7 @@
 					)!.position
 			)
 			.map((c) => {
-				let _: Container<AnyPayload> = $state(c); // $state() can only be used in an assignment
+				let _: Container = $state(c); // $state() can only be used in an assignment
 				return _;
 			});
 	});
@@ -166,11 +169,11 @@
 		};
 	}
 
-	function handleDndConsider(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
+	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
 		sections = event.detail.items;
 	}
 
-	async function handleDndFinalize(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
+	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
 		const orderedSections = event.detail.items.map((s, i) => ({
 			...s,
 			relation: [
@@ -225,6 +228,8 @@
 		/>
 	</div>
 {/if}
+
+<TableOfContents {sections} />
 
 <ul
 	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
