@@ -1,13 +1,18 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import { page } from '$app/state';
+	import fetchComputedProgress from '$lib/client/fetchComputedProgress';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
+	import StackedProgress from '$lib/components/StackedProgress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
+		computeProgressSegments,
 		type Container,
 		isContainerWithProgress,
 		isEffectContainer,
@@ -16,10 +21,12 @@
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isPartOf,
+		isProgressContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
-		predicates
+		predicates,
+		progressMeasurement
 	} from '$lib/models';
 	import type { Status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
@@ -44,6 +51,53 @@
 	let label: HTMLLabelElement;
 
 	const id = crypto.randomUUID();
+
+	function computedProgressSectionFor(parentGuid: string) {
+		return (candidate: Container<AnyPayload>) =>
+			isProgressContainer(candidate) &&
+			candidate.payload.measurement === progressMeasurement.enum.subordinateObjects &&
+			candidate.relation.some(
+				({ object, predicate }) =>
+					predicate === predicates.enum['is-section-of'] && object === parentGuid
+			);
+	}
+
+	// The card only knows that sections exist, not of which kind; the server
+	// filters this over-selection down to computed progress sections.
+	let isComputedProgressCandidate = $derived(
+		createFeatureDecisions(page.data.features).useComputedProgress() &&
+			isContainerWithProgress(container) &&
+			container.payload.progress == null &&
+			container.relation.some(
+				({ object, predicate }) =>
+					predicate === predicates.enum['is-section-of'] && object === container.guid
+			)
+	);
+
+	let progressPoolQuery = resource(
+		[
+			() =>
+				isComputedProgressCandidate &&
+				!relatedContainers.some(computedProgressSectionFor(container.guid))
+					? container
+					: undefined
+		],
+		async ([container]) => (container ? fetchComputedProgress(container.guid) : undefined)
+	);
+
+	let progressPool = $derived(
+		relatedContainers.some(computedProgressSectionFor(container.guid))
+			? relatedContainers
+			: progressPoolQuery.current
+	);
+
+	let progressSection = $derived(progressPool?.find(computedProgressSectionFor(container.guid)));
+
+	let computedProgressSegments = $derived(
+		progressSection && isProgressContainer(progressSection) && progressPool
+			? computeProgressSegments(container, progressPool, progressSection.payload.objectType)
+			: undefined
+	);
 
 	function handleClick(event: MouseEvent) {
 		if (label == event.target || label.control == event.target) {
@@ -159,7 +213,9 @@
 	</div>
 
 	<footer>
-		{#if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
+		{#if computedProgressSegments}
+			<StackedProgress segments={computedProgressSegments} />
+		{:else if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />
 		{:else if 'status' in container.payload}
 			{@const status = container.payload.status as Status}
