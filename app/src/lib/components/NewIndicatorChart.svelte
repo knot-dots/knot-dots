@@ -68,10 +68,15 @@
 
 	let allYears = $derived([...new Set(allData.map((d) => d.date.getFullYear()))].toSorted());
 
-	// Build color scale domain and range
-	let colorDomain = $derived(['current', ...comparisonValues.map((c) => c.municipalityGuid)]);
+	let hasComparisonData = $derived(comparisonValues.some(({ values }) => values.length > 0));
+
+	// Build color scale domain and range; omit the current context when it has no data of its own
+	let colorDomain = $derived([
+		...(actualValues.length > 0 ? ['current'] : []),
+		...comparisonValues.map((c) => c.municipalityGuid)
+	]);
 	let colorRange = $derived([
-		'var(--indicator-color-own-base)',
+		...(actualValues.length > 0 ? ['var(--indicator-color-own-base)'] : []),
 		...comparisonValues.map((c) => `var(${c.color})`)
 	]);
 
@@ -186,7 +191,7 @@
 	};
 </script>
 
-{#if actualDataContainer[0]}
+{#if actualDataContainer[0] || hasComparisonData}
 	<figure>
 		<div role="img" {@attach chart}></div>
 		<ul class="chart-legend">
@@ -215,7 +220,7 @@
 			{/each}
 		</ul>
 
-		{#if actualDataContainer[0].payload.source}
+		{#if actualDataContainer[0]?.payload.source}
 			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
 		{/if}
 	</figure>

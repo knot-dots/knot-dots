@@ -39,6 +39,7 @@ import type { RequestHandler } from './$types';
 export const GET = (async ({ locals, params, url }) => {
 	const expectedParams = z.object({
 		assignee: z.array(z.string().uuid()).default([]),
+		compareOrganizationalUnit: z.array(z.string().uuid()).default([]),
 		organization: z.array(z.string().uuid()).default([]),
 		organizationalUnit: z.array(z.string().uuid()).default([]),
 		payloadType: z.array(payloadTypes).default([]),
@@ -83,6 +84,17 @@ export const GET = (async ({ locals, params, url }) => {
 		let containers;
 
 		if (isIndicatorTemplateContainer(container)) {
+			const { compareOrganizationalUnit, organizationalUnit } = parseResult.data;
+			const actualDataFilters = {
+				includeOrganizationLevel:
+					organizationalUnit.length == 0 && compareOrganizationalUnit.length > 0,
+				organizations: parseResult.data.organization,
+				organizationalUnits:
+					organizationalUnit.length + compareOrganizationalUnit.length > 0
+						? [...organizationalUnit, ...compareOrganizationalUnit]
+						: null
+			};
+
 			if (parseResult.data.program.length > 0) {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),
@@ -93,13 +105,7 @@ export const GET = (async ({ locals, params, url }) => {
 								organizations: parseResult.data.organization,
 								organizationalUnits: parseResult.data.organizationalUnit
 							},
-							{
-								organizations: parseResult.data.organization,
-								organizationalUnits:
-									parseResult.data.organizationalUnit.length > 0
-										? parseResult.data?.organizationalUnit
-										: null
-							}
+							actualDataFilters
 						)
 					)
 				]);
@@ -132,13 +138,7 @@ export const GET = (async ({ locals, params, url }) => {
 							organizations: parseResult.data.organization,
 							organizationalUnits: subordinateOrganizationalUnits
 						},
-						{
-							organizations: parseResult.data.organization,
-							organizationalUnits:
-								parseResult.data.organizationalUnit.length > 0
-									? parseResult.data.organizationalUnit
-									: null
-						}
+						actualDataFilters
 					)
 				);
 			}

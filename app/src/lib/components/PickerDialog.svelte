@@ -148,7 +148,9 @@
 		color: var(--color-gray-500);
 		container-type: inline-size;
 		height: calc(100vh - 1rem);
-		overflow: hidden;
+		/* clip instead of hidden: focusing the visually hidden checkbox of a card near
+		   the bottom edge must not scroll the dialog box itself */
+		overflow: clip;
 		padding: 0.75rem;
 		width: calc(100vw - 1rem);
 	}

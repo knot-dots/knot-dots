@@ -12,6 +12,7 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -43,10 +44,11 @@
 	} from '$lib/stores';
 
 	interface Props {
+		compare?: boolean;
 		containers: Container[];
 	}
 
-	let { containers }: Props = $props();
+	let { compare = false, containers }: Props = $props();
 
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
@@ -75,6 +77,17 @@
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
+
+	const comparisonData = createComparisonData({
+		enabled: () => compare,
+		indicatorGuids: () =>
+			items
+				.map(({ container }) => container)
+				.filter(isIndicatorTemplateContainer)
+				.map(({ guid }) => guid)
+	});
+
+	let comparisonDataMap = $derived(comparisonData.comparisonDataMap);
 
 	let managedBy = $derived(
 		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
@@ -227,7 +240,13 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} />
+					<NewIndicatorCard
+						--height="100%"
+						{compare}
+						{comparisonDataMap}
+						{container}
+						{relatedContainers}
+					/>
 				</li>
 			{/each}
 		</ul>
@@ -252,7 +271,13 @@
 					...containers.filter(isContainerWithObjective)
 				]}
 				<li>
-					<NewIndicatorCard --height="100%" {container} {relatedContainers} />
+					<NewIndicatorCard
+						--height="100%"
+						{compare}
+						{comparisonDataMap}
+						{container}
+						{relatedContainers}
+					/>
 				</li>
 			{/each}
 		</ul>
