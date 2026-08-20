@@ -28,6 +28,7 @@ import {
 	payloadTypes,
 	type Predicate,
 	predicates,
+	progressMeasurement,
 	type Relation,
 	relation,
 	type TaskPriority,
@@ -1527,6 +1528,84 @@ export function getAdoptedContainerGuids(adopterGuids: string[]) {
 		`);
 
 		return result.map(({ guid }) => guid);
+	};
+}
+
+export function getAllContainersRelatedToProgress(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<Container[]> => {
+		if (guids.length == 0) {
+			return [];
+		}
+
+		const sectionResult = await connection.any(sql.typeAlias('container')`
+			SELECT DISTINCT c.*
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject AND cr.object = ANY (${sql.array(guids, 'uuid')})
+				AND cr.predicate = ${predicates.enum['is-section-of']}
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE c.valid_currently AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.progress}
+				AND c.payload->>'measurement' = ${progressMeasurement.enum.subordinateObjects}
+		`);
+
+		const parentResult = await connection.any(sql.typeAlias('guid')`
+			SELECT DISTINCT cr.object AS guid
+			FROM container c
+			JOIN container_relation cr ON c.guid = cr.subject AND cr.object = ANY (${sql.array(guids, 'uuid')})
+				AND cr.predicate = ${predicates.enum['is-section-of']}
+				AND cr.valid_currently
+				AND NOT cr.deleted
+			WHERE c.valid_currently AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.progress}
+				AND c.payload->>'measurement' = ${progressMeasurement.enum.subordinateObjects}
+		`);
+
+		const descendantResult =
+			parentResult.length > 0
+				? await connection.any(sql.typeAlias('guid')`
+					WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
+						--Top level items (roots)
+						SELECT array[c.guid] AS path, false, c.guid AS object
+						FROM unnest(${sql.array(
+							parentResult.map(({ guid }) => guid),
+							'uuid'
+						)}) AS c(guid)
+						UNION ALL
+						SELECT array_append(r.path, c.guid), c.guid = ANY (r.path), c.guid
+						FROM container c
+						JOIN container_relation cr ON c.guid = cr.subject
+							AND cr.predicate = ${predicates.enum['is-part-of']}
+							AND cr.valid_currently
+							AND NOT cr.deleted
+						JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
+						WHERE c.valid_currently
+							AND NOT c.deleted
+					)
+					SELECT DISTINCT unnest(path) AS guid FROM is_part_of_relation_down
+				`)
+				: [];
+
+		const parents = new Set(parentResult.map(({ guid }) => guid));
+		const descendants = descendantResult.filter(({ guid }) => !parents.has(guid));
+
+		const containerResult =
+			descendants.length > 0
+				? await connection.any(sql.typeAlias('container')`
+					SELECT c.*
+					FROM container c
+					WHERE ${prepareWhereCondition({})}
+						AND c.guid = ANY (${sql.array(
+							descendants.map(({ guid }) => guid),
+							'uuid'
+						)})
+				`)
+				: [];
+
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation<Container>(connection, [...sectionResult, ...containerResult])
+		);
 	};
 }
 
