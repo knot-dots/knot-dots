@@ -5,11 +5,11 @@ import {
 	createDescendantCopyOf,
 	createRootCopyOf,
 	isOrganizationalUnitContainer,
-	type NewContainer,
 	newContainer,
 	type Predicate,
 	payloadTypes,
 	predicates,
+	relation,
 	type Relation,
 	type Visibility,
 	visibility
@@ -31,6 +31,9 @@ export const requiredCopyDependencyPredicates = [
 const structuralPredicateSet = new Set<string>(structuralCopyPredicates);
 const requiredDependencyPredicateSet = new Set<string>(requiredCopyDependencyPredicates);
 const uuid = z.uuid();
+const newContainerWithGuid = newContainer.extend({ guid: z.uuid(), relation: z.array(relation) });
+
+export type NewContainerWithGuid = z.infer<typeof newContainerWithGuid>;
 
 export type CopyGraphSnapshot = {
 	rootGuid: string;
@@ -50,13 +53,7 @@ export type CopyReadPolicy = {
 	canUseNewItemTemplate(container: Container<AnyPayload>, target: CopyTarget): boolean;
 };
 
-export type ContainerCopyPlan = ReadonlyMap<
-	string,
-	{
-		copiedGuid: string;
-		container: NewContainer<AnyPayload>;
-	}
->;
+export type ContainerCopyPlan = ReadonlyMap<string, NewContainerWithGuid>;
 
 export class CopyPlanError extends Error {
 	constructor(
@@ -374,16 +371,15 @@ export function createContainerCopyPlan({
 		}
 
 		// Validate the fully transformed object so the eventual writer receives complete NewContainers.
+		copy.guid = copiedGuid;
 		copy.relation = copiedRelations.sort(compareRelations);
-		const parseResult = newContainer.safeParse(copy);
+		const parseResult = newContainerWithGuid.safeParse(copy);
 		if (!parseResult.success) {
 			throw new CopyPlanError('invalid_copy_graph');
 		}
 
-		return { originalGuid, copiedGuid, container: parseResult.data };
+		return { originalGuid, container: parseResult.data };
 	});
 
-	return new Map(
-		copies.map(({ originalGuid, ...plannedCopy }) => [originalGuid, plannedCopy] as const)
-	);
+	return new Map(copies.map(({ originalGuid, container }) => [originalGuid, container] as const));
 }

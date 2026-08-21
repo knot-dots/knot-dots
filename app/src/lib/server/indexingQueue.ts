@@ -1,4 +1,4 @@
-import { SendMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { SendMessageBatchCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { env as privateEnv } from '$env/dynamic/private';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
@@ -49,25 +49,64 @@ function getClient() {
 	return sqs;
 }
 
-export async function enqueueIndexingEvent(event: IndexingEvent) {
-	const { queueUrl } = getEnv();
+function indexingEventKey(event: IndexingEvent) {
+	return `${event.action}\u0000${event.guid}`;
+}
 
-	try {
-		await getClient().send(
-			new SendMessageCommand({
-				QueueUrl: queueUrl,
-				MessageBody: JSON.stringify(event)
-			})
-		);
-		log.info(
-			{
-				action: event.action,
-				guid: event.guid,
-				timestamp: event.timestamp
-			},
-			'[indexingQueue] Enqueued indexing event'
-		);
-	} catch (error) {
-		log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+export async function enqueueIndexingEvents(
+	events: readonly IndexingEvent[]
+): Promise<{ failed: number; successful: number }> {
+	const uniqueEvents = [
+		...new Map(events.map((event) => [indexingEventKey(event), event])).values()
+	];
+	let failed = 0;
+	let successful = 0;
+
+	for (let offset = 0; offset < uniqueEvents.length; offset += 10) {
+		const batch = uniqueEvents.slice(offset, offset + 10);
+
+		try {
+			const { queueUrl } = getEnv();
+			const result = await getClient().send(
+				new SendMessageBatchCommand({
+					Entries: batch.map((event, index) => ({
+						Id: String(index),
+						MessageBody: JSON.stringify(event)
+					})),
+					QueueUrl: queueUrl
+				})
+			);
+
+			const failedEntries = result.Failed ?? [];
+			failed += failedEntries.length;
+			successful += result.Successful?.length ?? batch.length - failedEntries.length;
+
+			if (failedEntries.length > 0) {
+				log.error(
+					{
+						failedEntries: failedEntries.map(({ Code, Id, Message, SenderFault }) => ({
+							code: Code,
+							id: Id,
+							message: Message,
+							senderFault: SenderFault
+						}))
+					},
+					'[indexingQueue] Some indexing events could not be enqueued'
+				);
+			}
+		} catch (error) {
+			failed += batch.length;
+			log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+		}
 	}
+
+	if (successful > 0) {
+		log.info({ failed, successful }, '[indexingQueue] Enqueued indexing events');
+	}
+
+	return { failed, successful };
+}
+
+export async function enqueueIndexingEvent(event: IndexingEvent) {
+	return enqueueIndexingEvents([event]);
 }

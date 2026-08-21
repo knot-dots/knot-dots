@@ -165,23 +165,23 @@ test('prunes hidden paths, accepts an alternate parent, and preserves a structur
 	expect([...plan.keys()]).toEqual([guids.root, guids.parent, guids.child]);
 	expect(plan.has(guids.hidden)).toBe(false);
 	expect(plan.has(guids.pruned)).toBe(false);
-	expect(copyFor(plan, guids.child)?.container.payload.visibility).toBe(visibility.enum.creator);
-	expect(copyFor(plan, guids.parent)?.container.payload.visibility).toBe(visibility.enum.members);
-	expect(copyFor(plan, guids.child)?.container.relation).toContainEqual({
-		object: plan.get(guids.parent)?.copiedGuid,
+	expect(copyFor(plan, guids.child)?.payload.visibility).toBe(visibility.enum.creator);
+	expect(copyFor(plan, guids.parent)?.payload.visibility).toBe(visibility.enum.members);
+	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
+		object: plan.get(guids.parent)?.guid,
 		position: 4,
 		predicate: predicates.enum['is-part-of-measure'],
-		subject: plan.get(guids.child)?.copiedGuid
+		subject: plan.get(guids.child)?.guid
 	});
-	expect(copyFor(plan, guids.parent)?.container.relation).toContainEqual({
-		object: plan.get(guids.child)?.copiedGuid,
+	expect(copyFor(plan, guids.parent)?.relation).toContainEqual({
+		object: plan.get(guids.child)?.guid,
 		position: 6,
 		predicate: predicates.enum['is-part-of-category'],
-		subject: plan.get(guids.parent)?.copiedGuid
+		subject: plan.get(guids.parent)?.guid
 	});
 	expect(
 		[...plan.values()]
-			.flatMap(({ container }) => container.relation)
+			.flatMap(({ relation }) => relation)
 			.some(({ object }) => object === guids.hidden)
 	).toBe(false);
 });
@@ -244,24 +244,24 @@ test('copies a shared private dependency once and reuses public dependency targe
 	expect(plan.has(guids.dependency)).toBe(true);
 	expect(plan.has(guids.dependencyChild)).toBe(true);
 	expect(plan.has(guids.publicDependency)).toBe(false);
-	expect(copyFor(plan, guids.actualData)?.container.payload).toMatchObject({
-		indicator: plan.get(guids.dependency)?.copiedGuid,
+	expect(copyFor(plan, guids.actualData)?.payload).toMatchObject({
+		indicator: plan.get(guids.dependency)?.guid,
 		values: []
 	});
-	expect(copyFor(plan, guids.child)?.container.relation).toContainEqual({
+	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
 		object: guids.publicDependency,
 		position: 11,
 		predicate: predicates.enum['is-measured-by'],
-		subject: plan.get(guids.child)?.copiedGuid
+		subject: plan.get(guids.child)?.guid
 	});
 	expect(
 		[...plan.values()]
-			.flatMap(({ container }) => container.relation)
+			.flatMap(({ relation }) => relation)
 			.filter(({ predicate }) => predicate === predicates.enum['is-copy-of'])
 	).toHaveLength(plan.size);
 	expect(
 		[...plan.values()]
-			.flatMap(({ container }) => container.relation)
+			.flatMap(({ relation }) => relation)
 			.some(({ subject }) => subject === guids.external)
 	).toBe(false);
 });
@@ -309,11 +309,11 @@ test('remaps private resource payload targets and retains public targets', () =>
 		allocateGuid: allocator()
 	});
 
-	expect(copyFor(plan, guids.resourceData)?.container.payload).toMatchObject({
+	expect(copyFor(plan, guids.resourceData)?.payload).toMatchObject({
 		entries: [{ amount: 12, year: 2026 }],
-		resource: plan.get(guids.resource)?.copiedGuid
+		resource: plan.get(guids.resource)?.guid
 	});
-	expect(copyFor(plan, guids.publicResourceData)?.container.payload).toMatchObject({
+	expect(copyFor(plan, guids.publicResourceData)?.payload).toMatchObject({
 		entries: [{ amount: 24, year: 2026 }],
 		resource: guids.publicResource
 	});
@@ -385,19 +385,19 @@ test('remaps collection members without instantiating template references', () =
 		}),
 		allocateGuid: allocator()
 	});
-	const collection = copyFor(plan, guids.root)?.container;
+	const collection = copyFor(plan, guids.root);
 
 	expect(collection?.payload).toMatchObject({
-		item: [plan.get(guids.child)?.copiedGuid, guids.publicItem, guids.privateItem],
+		item: [plan.get(guids.child)?.guid, guids.publicItem, guids.privateItem],
 		newItemTemplate: [guids.child, guids.usableTemplate]
 	});
 	expect(plan.has(guids.privateItem)).toBe(false);
 	expect(plan.has(guids.usableTemplate)).toBe(false);
-	expect(copyFor(plan, guids.map)?.container.payload).toMatchObject({ geometry });
-	expect(
-		[...plan.values()].every(({ container }) => newContainer.safeParse(container).success)
-	).toBe(true);
-	expect([...plan.values()].every(({ container }) => container.user[0]?.subject === creator)).toBe(
+	expect(copyFor(plan, guids.map)?.payload).toMatchObject({ geometry });
+	expect([...plan.values()].every((container) => newContainer.safeParse(container).success)).toBe(
+		true
+	);
+	expect([...plan.values()].every((container) => container.user[0]?.subject === creator)).toBe(
 		true
 	);
 	expect(snapshot).toEqual(originalSnapshot);
@@ -428,13 +428,13 @@ test('uses the copied organizational unit as the ownership target for descendant
 		readPolicy: policy(),
 		allocateGuid: allocator()
 	});
-	const copiedRootGuid = plan.get(guids.root)?.copiedGuid;
+	const copiedRootGuid = plan.get(guids.root)?.guid;
 
-	expect(copyFor(plan, guids.root)?.container).toMatchObject({
+	expect(copyFor(plan, guids.root)).toMatchObject({
 		managed_by: [organization],
 		organizational_unit: null
 	});
-	expect(copyFor(plan, guids.child)?.container).toMatchObject({
+	expect(copyFor(plan, guids.child)).toMatchObject({
 		managed_by: [copiedRootGuid],
 		organizational_unit: copiedRootGuid
 	});
@@ -468,13 +468,13 @@ test('remaps ordinary internal relations and drops ordinary external relations',
 		readPolicy: policy(),
 		allocateGuid: allocator()
 	});
-	const childRelations = copyFor(plan, guids.child)?.container.relation ?? [];
+	const childRelations = copyFor(plan, guids.child)?.relation ?? [];
 
 	expect(childRelations).toContainEqual({
-		object: plan.get(guids.root)?.copiedGuid,
+		object: plan.get(guids.root)?.guid,
 		position: 5,
 		predicate: predicates.enum['is-consistent-with'],
-		subject: plan.get(guids.child)?.copiedGuid
+		subject: plan.get(guids.child)?.guid
 	});
 	expect(childRelations.some(({ object }) => object === guids.external)).toBe(false);
 });

@@ -3,6 +3,7 @@ import {
 	createSqlTag,
 	type DatabaseConnection,
 	type DatabasePool,
+	type DatabaseTransactionConnection,
 	type Interceptor,
 	type QueryResultRow,
 	SchemaValidationError
@@ -39,6 +40,7 @@ import {
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import {
 	type CopyGraphSnapshot,
+	type NewContainerWithGuid,
 	requiredCopyDependencyPredicates,
 	structuralCopyPredicates
 } from '$lib/server/containerCopyPlan';
@@ -114,6 +116,11 @@ const createDisableJitInterceptor = (): Interceptor => {
 	};
 };
 
+export type DatabaseNonTransactionConnection = DatabaseConnection & {
+	readonly transactionDepth?: never;
+	readonly transactionId?: never;
+};
+
 let pool: DatabasePool;
 
 export async function getPool() {
@@ -165,6 +172,111 @@ const typeAliases = {
 };
 
 export const sql = createSqlTag({ typeAliases });
+
+/**
+ * Persists ordinary containers already validated by createContainerCopyPlan() on an existing
+ * transaction. Explicit GUIDs remain internal to server code; organization creation stays on
+ * createContainer() because it provisions external Keycloak state.
+ */
+export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
+	if (inserts.some((c) => c.payload.type === payloadTypes.enum.organization)) {
+		throw new Error('organization_not_supported');
+	}
+
+	const relations = inserts.flatMap((c) => c.relation);
+
+	return async (connection: DatabaseTransactionConnection) => {
+		if (inserts.length === 0) {
+			return { affectedIndexingGuids: [], containers: [] };
+		}
+
+		const containerValues = inserts.map((container) => [
+			container.guid,
+			container.managed_by[0],
+			container.organization,
+			container.organizational_unit,
+			JSON.stringify(container.payload),
+			container.realm
+		]);
+		const containerResult = await connection.any(sql.typeAlias('anyContainer')`
+			INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
+			SELECT
+				input.guid,
+				input.managed_by,
+				input.organization,
+				input.organizational_unit,
+				input.payload::jsonb,
+				input.realm
+			FROM ${sql.unnest(containerValues, ['uuid', 'uuid', 'uuid', 'uuid', 'text', 'text'])}
+				AS input(guid, managed_by, organization, organizational_unit, payload, realm)
+			RETURNING *
+		`);
+
+		const containerByGuid = new Map(
+			containerResult.map((container) => [container.guid, container])
+		);
+		const userValues = inserts.flatMap((container) => {
+			const persisted = containerByGuid.get(container.guid);
+			if (!persisted) {
+				throw new Error('invalid_input');
+			}
+			return container.user.map(({ predicate, subject }) => [
+				persisted.revision,
+				predicate,
+				subject
+			]);
+		});
+		const userResult =
+			userValues.length === 0
+				? []
+				: await connection.any(sql.typeAlias('userRelationWithObject')`
+					INSERT INTO container_user (object, predicate, subject)
+					SELECT *
+					FROM ${sql.unnest(userValues, ['int4', 'text', 'uuid'])}
+					RETURNING object, predicate, subject
+				`);
+
+		const relationResult = await insertManyContainerRelations(relations, connection);
+		if (relationResult.length !== relations.length) {
+			throw new Error('relation_conflict');
+		}
+
+		const usersByRevision = new Map<number, Array<z.infer<typeof userRelation>>>();
+		for (const { object, predicate, subject } of userResult) {
+			const users = usersByRevision.get(object) ?? [];
+			users.push({ predicate, subject });
+			usersByRevision.set(object, users);
+		}
+
+		const persistedContainers = inserts.map(({ guid }) => {
+			const persisted = containerByGuid.get(guid);
+			if (!persisted) {
+				throw new Error('invalid_input');
+			}
+			return anyContainer.parse({
+				...persisted,
+				relation: relations.filter(({ object, subject }) => object === guid || subject === guid),
+				user: usersByRevision.get(persisted.revision) ?? []
+			});
+		});
+
+		const affectedIndexingGuids = new Set<string>();
+		for (const persisted of persistedContainers) {
+			if (shouldIndexType(persisted.payload.type)) {
+				affectedIndexingGuids.add(persisted.guid);
+			}
+		}
+		for (const { object, subject } of relationResult) {
+			affectedIndexingGuids.add(object);
+			affectedIndexingGuids.add(subject);
+		}
+
+		return {
+			affectedIndexingGuids: [...affectedIndexingGuids],
+			containers: persistedContainers
+		};
+	};
+}
 
 export function createContainer(container: NewContainer) {
 	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
@@ -1764,16 +1876,27 @@ export function getAllContainersRelatedToUser(guid: string) {
 	};
 }
 
+async function insertManyContainerRelations(
+	relations: ReadonlyArray<Relation>,
+	connection: DatabaseConnection | DatabaseTransactionConnection
+) {
+	if (relations.length === 0) {
+		return [];
+	}
+
+	const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
+	return connection.any(sql.typeAlias('relation')`
+		INSERT INTO container_relation (object, position, predicate, subject)
+		SELECT *
+		FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
+		ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
+		RETURNING *
+	`);
+}
+
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
 	return async (connection: DatabaseConnection) => {
-		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
-		const result = await connection.any(sql.typeAlias('relation')`
-			INSERT INTO container_relation (object, position, predicate, subject)
-			SELECT *
-			FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
-			ON CONFLICT (object, predicate, subject) WHERE valid_currently DO NOTHING
-			RETURNING *
-		`);
+		const result = await insertManyContainerRelations(relations, connection);
 
 		if (result.length > 0) {
 			const affectedGuids = new Set<string>();
