@@ -374,7 +374,7 @@ export async function loadContainerV2(params: {
 				? await params.locals.pool.connect(
 						getAllRelatedContainers(
 							scopedQuery.organization,
-							query.relatedTo[0],
+							query.relatedTo,
 							query.relationType,
 							{
 								...filters,

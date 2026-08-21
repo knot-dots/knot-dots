@@ -5,9 +5,11 @@
 	import { asset } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import createComputedProgressLoader from '$lib/client/createComputedProgressLoader';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
+	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
@@ -65,6 +67,8 @@
 	});
 
 	setPropertiesRelocationContext(propertiesRelocationNotice);
+
+	setComputedProgressContext(createComputedProgressLoader());
 
 	const workspaceTranslated = $derived.by(() => {
 		const segments = page.url.pathname.split('/');

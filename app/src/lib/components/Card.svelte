@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import { getContext, type Snippet } from 'svelte';
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
@@ -11,12 +12,15 @@
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
+	import StackedProgress from '$lib/components/StackedProgress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { getComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
+		computeProgressSegments,
 		type Container,
 		findAncestors,
 		isActualDataContainer,
@@ -32,6 +36,7 @@
 		isIndicatorTemplateContainer,
 		isObjectiveContainer,
 		isPartOf,
+		isProgressContainer,
 		isQuoteContainer,
 		isResourceContainer,
 		isSimpleMeasureContainer,
@@ -41,6 +46,7 @@
 		overlayURL,
 		paramsFromFragment,
 		predicates,
+		progressMeasurement,
 		type Status
 	} from '$lib/models';
 	import { applicationState, overlay, overlayHistory } from '$lib/stores';
@@ -78,6 +84,56 @@
 	const overlayContext = getContext('overlay');
 
 	const bulkActionContext = getBulkActionContext();
+
+	const computedProgressLoader = getComputedProgressContext();
+
+	function computedProgressSectionFor(parentGuid: string) {
+		return (candidate: Container<AnyPayload>) =>
+			isProgressContainer(candidate) &&
+			candidate.payload.measurement === progressMeasurement.enum.subordinateObjects &&
+			candidate.relation.some(
+				({ object, predicate }) =>
+					predicate === predicates.enum['is-section-of'] && object === parentGuid
+			);
+	}
+
+	// The card only knows that sections exist, not of which kind; the server
+	// filters this over-selection down to computed progress sections.
+	let isComputedProgressCandidate = $derived(
+		createFeatureDecisions(page.data.features).useComputedProgress() &&
+			isContainerWithProgress(container) &&
+			container.payload.progress == null &&
+			container.relation.some(
+				({ object, predicate }) =>
+					predicate === predicates.enum['is-section-of'] && object === container.guid
+			)
+	);
+
+	let progressPoolQuery = resource(
+		[
+			() =>
+				isComputedProgressCandidate &&
+				!relatedContainers.some(computedProgressSectionFor(container.guid))
+					? container
+					: undefined
+		],
+		async ([container]) =>
+			container && computedProgressLoader ? computedProgressLoader.load(container.guid) : undefined
+	);
+
+	let progressPool = $derived(
+		relatedContainers.some(computedProgressSectionFor(container.guid))
+			? relatedContainers
+			: progressPoolQuery.current
+	);
+
+	let progressSection = $derived(progressPool?.find(computedProgressSectionFor(container.guid)));
+
+	let computedProgressSegments = $derived(
+		progressSection && isProgressContainer(progressSection) && progressPool
+			? computeProgressSegments(container, progressPool, progressSection.payload.objectType)
+			: undefined
+	);
 
 	let title = $derived(
 		'title' in container.payload
@@ -392,16 +448,16 @@
 
 	<footer>
 		{#if foreignOrganizationName}
-			<div class="badge-organization-row">
-				<span class="badge badge--organization" title={foreignOrganizationName}>
-					<Adopt />
-					<span class="truncated">{foreignOrganizationName}</span>
-				</span>
-			</div>
+			<span class="badge" title={foreignOrganizationName}>
+				<Adopt />
+				<span class="truncated">{foreignOrganizationName}</span>
+			</span>
 		{/if}
 
 		{#if footer}
 			{@render footer()}
+		{:else if computedProgressSegments}
+			<StackedProgress segments={computedProgressSegments} />
 		{:else if isContainerWithProgress(container) && container.payload.progress != null && !isSimpleMeasureContainer(container)}
 			<Progress value={container.payload.progress} />
 		{:else if 'status' in container.payload}
@@ -542,15 +598,9 @@
 		flex-shrink: 1;
 		flex-wrap: wrap;
 		gap: 12px;
-		justify-content: space-between;
 	}
 
-	.badge-organization-row {
-		flex-basis: 100%;
-		min-width: 0;
-	}
-
-	.badge--organization {
+	.badge {
 		max-width: 100%;
 	}
 

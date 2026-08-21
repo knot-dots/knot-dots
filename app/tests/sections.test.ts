@@ -1,4 +1,11 @@
-import { expect, test } from './fixtures';
+import {
+	type Container,
+	containerOfType,
+	payloadTypes,
+	predicates,
+	type ProgressPayload
+} from '$lib/models';
+import { createContainer, deleteContainer, expect, test } from './fixtures';
 
 test.use({ suiteId: 'sections' });
 test.use({ storageState: 'tests/.auth/orgadmin.json' });
@@ -290,4 +297,73 @@ test('editing and adding sections preserves the order after re-ordering', async 
 	);
 	await expect(dotsBoard.overlay.sections.nth(1).getByRole('heading').first()).toHaveText('Alpha');
 	await expect(dotsBoard.overlay.sections.nth(2).getByRole('heading').first()).toHaveText('Gamma');
+});
+
+test('computed progress appears on cards with a single request', async ({
+	adminContext,
+	dotsBoard,
+	testGoal,
+	testSubordinateGoal,
+	testTask
+}) => {
+	// All browser projects run this test concurrently against a single preview
+	// stack, so allow for the extra latency
+	test.slow();
+
+	// Requesting the fixture provides the subordinate task that yields the
+	// single segment on the goal card
+	void testTask;
+
+	// Give both goals a computed progress section via the API
+	const sections = [];
+	for (const parent of [testGoal, testSubordinateGoal]) {
+		const newSection = containerOfType(
+			payloadTypes.enum.progress,
+			parent.organization,
+			null,
+			parent.managed_by,
+			'knot-dots'
+		) as Container<ProgressPayload>;
+		sections.push(
+			await createContainer(adminContext, {
+				...newSection,
+				payload: {
+					...newSection.payload,
+					measurement: 'subordinateObjects',
+					objectType: payloadTypes.enum.task
+				},
+				relation: [
+					{ position: 0, predicate: predicates.enum['is-section-of'], object: parent.guid }
+				]
+			})
+		);
+	}
+
+	let requestCount = 0;
+	dotsBoard.page.on('request', (request) => {
+		const url = new URL(request.url());
+		if (url.pathname === '/container/v2' && url.searchParams.has('relatedTo')) {
+			requestCount++;
+		}
+	});
+
+	await dotsBoard.goto(`/${testGoal.organization}`);
+
+	// The goal with a subordinate task shows a stacked bar with one segment
+	const goalCard = dotsBoard.card(testGoal.payload.title);
+	await expect(goalCard.locator('.stacked-progress')).toBeVisible({ timeout: 15000 });
+	await expect(goalCard.locator('.segment')).toHaveCount(1, { timeout: 15000 });
+
+	// The goal without subordinate tasks shows an empty stacked bar
+	const subordinateGoalCard = dotsBoard.card(testSubordinateGoal.payload.title);
+	await expect(subordinateGoalCard.locator('.stacked-progress')).toBeVisible({ timeout: 15000 });
+	await expect(subordinateGoalCard.locator('.segment')).toHaveCount(0);
+
+	// Both cards were served by a single batched request
+	expect(requestCount).toBe(1);
+
+	// Remove the sections so subsequent tests start from pristine goals
+	for (const section of sections) {
+		await deleteContainer(adminContext, section);
+	}
 });

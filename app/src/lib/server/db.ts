@@ -1323,7 +1323,7 @@ export function getRelatedOrganizationalUnitContainersByPredicates(
 
 export function getAllRelatedContainers(
 	organizations: string[],
-	guid: string,
+	guid: string | string[],
 	relations: string[],
 	filters: {
 		assignees?: string[];
@@ -1341,11 +1341,14 @@ export function getAllRelatedContainers(
 	limit?: number,
 	offset?: number
 ) {
+	const guids = Array.isArray(guid) ? guid : [guid];
+
 	return async (connection: DatabaseConnection): Promise<Container[]> => {
 		const isPartOfResult = relations.includes(predicates.enum['is-part-of'])
 			? await connection.any(sql.typeAlias('relationPath')`
 				WITH RECURSIVE is_part_of_relation_down(path, is_cycle) AS (
-					SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS object
+					SELECT array[c.guid] AS path, false, c.guid AS object
+					FROM unnest(${sql.array(guids, 'uuid')}) AS c(guid)
 					UNION ALL
 					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 					FROM container c
@@ -1356,7 +1359,8 @@ export function getAllRelatedContainers(
 					JOIN is_part_of_relation_down r ON cr.object = r.object AND NOT r.is_cycle
 					WHERE c.valid_currently
 				), is_part_of_relation_up(path, is_cycle) AS (
-					SELECT ${sql.array([guid], 'uuid')} AS path, false, ${sql.uuid(guid)} AS subject
+					SELECT array[c.guid] AS path, false, c.guid AS subject
+					FROM unnest(${sql.array(guids, 'uuid')}) AS c(guid)
 					UNION ALL
 					SELECT array_append(r.path, c.guid), c.guid = ANY(r.path), c.guid
 					FROM container c
@@ -1383,7 +1387,7 @@ export function getAllRelatedContainers(
 				? await connection.any(sql.typeAlias('relationPath')`
 				SELECT cr.subject, cr.object
 				FROM container_relation cr
-				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
+				WHERE (cr.subject = ANY (${sql.array(guids, 'uuid')}) OR cr.object = ANY (${sql.array(guids, 'uuid')}))
           AND cr.predicate IN (${sql.join(otherPredicates, sql.fragment`, `)})
 					AND cr.valid_currently
 					AND NOT cr.deleted
@@ -1394,7 +1398,7 @@ export function getAllRelatedContainers(
 			SELECT c.*
 			FROM container c ${sort == 'priority' ? sql.fragment`LEFT JOIN task_priority ON guid = task` : sql.fragment``}
 			WHERE c.guid IN (${sql.join(
-				[...isPartOfResult, ...otherRelationResult, [guid]].flatMap((r) => Object.values(r)),
+				[...isPartOfResult, ...otherRelationResult, guids].flatMap((r) => Object.values(r)),
 				sql.fragment`, `
 			)})
 				AND ${prepareWhereCondition({ ...filters, organizations })}

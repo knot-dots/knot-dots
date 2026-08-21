@@ -1493,6 +1493,8 @@ export const progressObjectType = z.enum([
 	payloadTypes.enum.goal
 ]);
 
+export type ProgressObjectType = z.infer<typeof progressObjectType>;
+
 const progressPayload = z.strictObject({
 	measurement: progressMeasurement.default(progressMeasurement.enum.manual),
 	objectType: progressObjectType.default(payloadTypes.enum.task),
@@ -2543,6 +2545,24 @@ export function findDescendants<T extends Container<AnyPayload>>(
 
 	traverse(container);
 	return Array.from(descendants.values());
+}
+
+export function computeProgressSegments(
+	parentContainer: Container<AnyPayload>,
+	containers: Container<AnyPayload>[],
+	objectType: ProgressObjectType
+): ContainerWithStatus[] {
+	return findDescendants(parentContainer, containers, [predicates.enum['is-part-of']])
+		.filter(({ payload }) =>
+			objectType === payloadTypes.enum.measure
+				? payload.type === payloadTypes.enum.measure ||
+					payload.type === payloadTypes.enum.simple_measure
+				: payload.type === objectType
+		)
+		.filter(isContainerWithStatus)
+		.sort(
+			(a, b) => status.options.indexOf(a.payload.status) - status.options.indexOf(b.payload.status)
+		);
 }
 
 export function findLeafObjectives(

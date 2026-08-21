@@ -2,28 +2,21 @@
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
-	import tooltip from '$lib/attachments/tooltip';
 	import { createFeatureDecisions } from '$lib/features';
 	import saveContainer from '$lib/client/saveContainer';
 	import ProgressSettingsDropdown from '$lib/components/ProgressSettingsDropdown.svelte';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
+	import StackedProgress from '$lib/components/StackedProgress.svelte';
 	import {
 		type AnyPayload,
+		computeProgressSegments,
 		type Container,
 		type ContainerWithProgress,
-		findDescendants,
-		isContainerWithStatus,
-		overlayKey,
-		overlayURL,
-		payloadTypes,
-		predicates,
 		progressMeasurement,
 		progressObjectType,
-		type ProgressPayload,
-		status
+		type ProgressPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
-	import { statusColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<ProgressPayload>;
@@ -53,20 +46,11 @@
 	);
 
 	let segments = $derived(
-		findDescendants(parentContainer as Container<AnyPayload>, relatedContainers, [
-			predicates.enum['is-part-of']
-		])
-			.filter(({ payload }) =>
-				container.payload.objectType === payloadTypes.enum.measure
-					? payload.type === payloadTypes.enum.measure ||
-						payload.type === payloadTypes.enum.simple_measure
-					: payload.type === container.payload.objectType
-			)
-			.filter(isContainerWithStatus)
-			.sort(
-				(a, b) =>
-					status.options.indexOf(a.payload.status) - status.options.indexOf(b.payload.status)
-			)
+		computeProgressSegments(
+			parentContainer as Container<AnyPayload>,
+			relatedContainers,
+			container.payload.objectType
+		)
 	);
 
 	async function handleChange() {
@@ -137,18 +121,7 @@
 	{/if}
 
 	<div class="progress">
-		<div class="stacked-progress">
-			{#each segments as segment (segment.guid)}
-				{@const label = `${'title' in segment.payload ? segment.payload.title : ''}: ${$_(segment.payload.status)}`}
-				<!-- svelte-ignore a11y_consider_explicit_label (the tooltip attachment provides aria-labelledby) -->
-				<a
-					class="segment"
-					href={overlayURL(page.url, overlayKey.enum.view, segment.guid)}
-					style:background={`var(--color-${statusColors.get(segment.payload.status)}-300)`}
-					{@attach tooltip(label)}
-				></a>
-			{/each}
-		</div>
+		<StackedProgress interactive {segments} />
 	</div>
 {:else}
 	<div class="progress">
@@ -208,20 +181,6 @@
 
 		display: flex;
 		padding-bottom: 0.75rem;
-	}
-
-	.stacked-progress {
-		background: var(--color-gray-200);
-		border-radius: calc(infinity * 1px);
-		display: flex;
-		gap: 2px;
-		height: 0.5rem;
-		overflow: hidden;
-		width: 100%;
-	}
-
-	.segment {
-		flex: 1 1 0;
 	}
 
 	input[type='range'] {
