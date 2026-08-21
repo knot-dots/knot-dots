@@ -2,7 +2,7 @@
 // via pod annotations (see $lib/server/podFeatures) and deliberately absent
 // from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'Adoptions'] as const],
+	['alpha', ['OpenAI', 'Adoptions', 'PermissionMatrix'] as const],
 	[
 		'beta',
 		[
@@ -68,6 +68,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useNewPropertyPanel() {
 			return features.includes('NewPropertyPanel');
+		},
+		usePermissionMatrix() {
+			return features.includes('PermissionMatrix');
 		}
 	} satisfies Record<string, () => boolean>;
 }

@@ -6,6 +6,8 @@ import {
 	type EffectPayload,
 	type IndicatorTemplatePayload,
 	type MeasurePayload,
+	memberRoleOf,
+	memberRoles,
 	payloadTypes,
 	predicates,
 	type ProgramPayload,
@@ -168,4 +170,31 @@ test('indicator suggested for measure in program using indicator', () => {
 	expect(actualSuggestions.map(({ guid }) => guid)).toEqual(
 		expectedSuggestions.map(({ guid }) => guid)
 	);
+});
+
+test('memberRoleOf picks the highest role from the user relations', () => {
+	const observer = '7db24631-935d-4e35-a6d5-5db07f0f4d75';
+	const collaborator = '0a4b09c1-92a9-4fa3-8912-1e37c8f38fd5';
+	const admin = 'c2b0f442-e0d7-4826-9b17-6ba1e60d8cf9';
+	const outsider = 'e9a1bfe4-0000-4000-8000-000000000000';
+
+	const scope = testContainer.parse({
+		guid: '52b28d20-2a11-4c1c-9b45-ffae9ac9f2a8',
+		managed_by: organizationOne,
+		organization: organizationOne,
+		payload: { title: 'Scope', type: payloadTypes.enum.measure },
+		user: [
+			{ predicate: predicates.enum['is-member-of'], subject: observer },
+			{ predicate: predicates.enum['is-member-of'], subject: collaborator },
+			{ predicate: predicates.enum['is-collaborator-of'], subject: collaborator },
+			{ predicate: predicates.enum['is-member-of'], subject: admin },
+			{ predicate: predicates.enum['is-head-of'], subject: admin },
+			{ predicate: predicates.enum['is-admin-of'], subject: admin }
+		]
+	}) as Container<MeasurePayload>;
+
+	expect(memberRoleOf({ guid: observer }, scope)).toBe(memberRoles.enum.observer);
+	expect(memberRoleOf({ guid: collaborator }, scope)).toBe(memberRoles.enum.collaborator);
+	expect(memberRoleOf({ guid: admin }, scope)).toBe(memberRoles.enum.administrator);
+	expect(memberRoleOf({ guid: outsider }, scope)).toBeNull();
 });

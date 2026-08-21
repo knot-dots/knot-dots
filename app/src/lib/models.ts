@@ -630,6 +630,14 @@ export const userRelation = z.object({
 	subject: z.uuid()
 });
 
+export const grantKinds = z.enum(['read', 'update', 'create', 'delete', 'manage-members']);
+
+export type GrantKind = z.infer<typeof grantKinds>;
+
+export const memberRoles = z.enum(['observer', 'collaborator', 'head', 'administrator']);
+
+export type MemberRole = z.infer<typeof memberRoles>;
+
 export const taskPriority = z.object({
 	priority: z.number().int(),
 	task: z.uuid()
@@ -2419,6 +2427,25 @@ export function isObserverOf(user: { guid: string }, container: Container<AnyPay
 		!isCollaboratorOf(user, container) &&
 		!isHeadOf(user, container)
 	);
+}
+
+export function memberRoleOf(
+	user: { guid: string },
+	container: Container<AnyPayload>
+): MemberRole | null {
+	if (isAdminOf(user, container)) {
+		return memberRoles.enum.administrator;
+	}
+	if (isHeadOf(user, container)) {
+		return memberRoles.enum.head;
+	}
+	if (isCollaboratorOf(user, container)) {
+		return memberRoles.enum.collaborator;
+	}
+	if (isMemberOf(user, container)) {
+		return memberRoles.enum.observer;
+	}
+	return null;
 }
 
 export function isAssignedTo(user: { guid: string }) {

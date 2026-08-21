@@ -3,9 +3,12 @@
 	import TrashBin from '~icons/flowbite/trash-bin-solid';
 	import UserAdd from '~icons/flowbite/user-add-outline';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import saveUser from '$lib/client/saveUser';
 	import Dialog from '$lib/components/Dialog.svelte';
+	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -32,6 +35,10 @@
 	let dialog: HTMLDialogElement;
 
 	let email: string = $state('');
+
+	const showViewSwitch = $derived(createFeatureDecisions(page.data.features).usePermissionMatrix());
+
+	let view: 'list' | 'matrix' = $state('list');
 
 	function handleChangeRole(user: User, container: Container<AnyPayload>) {
 		return async (event: { currentTarget: HTMLSelectElement }) => {
@@ -127,52 +134,69 @@
 	}
 </script>
 
-<table>
-	<thead>
-		<tr>
-			<th scope="col">{$_('user.email')}</th>
-			<th scope="col">{$_('user.role')}</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each users as u (u.guid)}
+{#if showViewSwitch}
+	<nav class="segmented-button view-switch">
+		<label class="button">
+			<input type="radio" bind:group={view} value="list" />
+			{$_('members_view.list')}
+		</label>
+		<label class="button">
+			<input type="radio" bind:group={view} value="matrix" />
+			{$_('members_view.matrix')}
+		</label>
+	</nav>
+{/if}
+
+{#if view === 'matrix'}
+	<UserPermissionMatrix {container} {users} />
+{:else}
+	<table>
+		<thead>
 			<tr>
-				<td>{displayName(u)}</td>
-				<td>
-					{#key container.user}
-						<select name="role" onchange={handleChangeRole(u, container)}>
-							<option value="role.observer" selected={isObserverOf(u, container)}>
-								{$_('role.observer')}
-							</option>
-							<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
-								{$_('role.collaborator')}
-							</option>
-							<option value="role.head" selected={isHeadOf(u, container)}>
-								{$_('role.head')}
-							</option>
-							{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-								<option value="role.administrator" selected={isAdminOf(u, container)}>
-									{$_('role.administrator')}
-								</option>
-							{/if}
-						</select>
-					{/key}
-				</td>
-				<td>
-					<button
-						class="action-button"
-						type="button"
-						{@attach tooltip($_('user.remove_relations'))}
-						onclick={() => handleRemoveRelations(u, container)}
-					>
-						<TrashBin />
-					</button>
-				</td>
+				<th scope="col">{$_('user.email')}</th>
+				<th scope="col">{$_('user.role')}</th>
+				<th></th>
 			</tr>
-		{/each}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{#each users as u (u.guid)}
+				<tr>
+					<td>{displayName(u)}</td>
+					<td>
+						{#key container.user}
+							<select name="role" onchange={handleChangeRole(u, container)}>
+								<option value="role.observer" selected={isObserverOf(u, container)}>
+									{$_('role.observer')}
+								</option>
+								<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
+									{$_('role.collaborator')}
+								</option>
+								<option value="role.head" selected={isHeadOf(u, container)}>
+									{$_('role.head')}
+								</option>
+								{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+									<option value="role.administrator" selected={isAdminOf(u, container)}>
+										{$_('role.administrator')}
+									</option>
+								{/if}
+							</select>
+						{/key}
+					</td>
+					<td>
+						<button
+							class="action-button"
+							type="button"
+							{@attach tooltip($_('user.remove_relations'))}
+							onclick={() => handleRemoveRelations(u, container)}
+						>
+							<TrashBin />
+						</button>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+{/if}
 <div class="content-actions">
 	<button class="button-primary system-primary" type="button" onclick={() => dialog.showModal()}>
 		<UserAdd />
@@ -192,6 +216,11 @@
 </Dialog>
 
 <style>
+	.view-switch {
+		margin-bottom: 1rem;
+		width: fit-content;
+	}
+
 	td:last-child {
 		text-align: right;
 	}

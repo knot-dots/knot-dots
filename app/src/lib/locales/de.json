@@ -534,6 +534,10 @@
 	"measures": "Maßnahmen",
 	"member_filter.label": "Zuständig",
 	"members": "Mitglieder",
+	"members_view": {
+		"list": "Liste",
+		"matrix": "Matrix"
+	},
 	"milestone": "Meilenstein",
 	"milestones": "Meilensteine",
 	"model": "Leitbild",
@@ -593,6 +597,13 @@
 	},
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
+	"permission": {
+		"create": "Anlegen",
+		"delete": "Löschen",
+		"manage-members": "Nutzer verwalten",
+		"read": "Lesen",
+		"update": "Bearbeiten"
+	},
 	"planned_duration": "Geplante Laufzeit",
 	"policy_field_bnk": "Handlungsfeld (BNK 2.0)",
 	"policy_field_bnk.climate": "Klimaschutz- und Klimaanpassung",
@@ -740,6 +751,7 @@
 	"resource_table.subordinate_measures": "Nachgeordnete Maßnahmen",
 	"resource_table.no_subordinate_measures": "Keine nachgeordneten Maßnahmen",
 	"role": {
+		"admin": "Admin",
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",
 		"head": "Leitung",
@@ -941,6 +953,12 @@
 		"remove": "Entfernen",
 		"remove_failure": "Die Person konnte leider nicht entfernt werden.",
 		"role": "Rolle"
+	},
+	"user_management": {
+		"views": {
+			"permissions": "Berechtigung",
+			"users": "Nutzer"
+		}
 	},
 	"user_menu": "Benutzermenü",
 	"visible_for": "Sichtbar für",
