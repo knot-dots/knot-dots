@@ -38,6 +38,7 @@
 		background: var(--color-gray-200);
 		border-radius: calc(infinity * 1px);
 		display: flex;
+		flex: 1 1;
 		gap: 2px;
 		height: 0.5rem;
 		overflow: hidden;

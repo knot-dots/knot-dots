@@ -448,12 +448,10 @@
 
 	<footer>
 		{#if foreignOrganizationName}
-			<div class="badge-organization-row">
-				<span class="badge badge--organization" title={foreignOrganizationName}>
-					<Adopt />
-					<span class="truncated">{foreignOrganizationName}</span>
-				</span>
-			</div>
+			<span class="badge" title={foreignOrganizationName}>
+				<Adopt />
+				<span class="truncated">{foreignOrganizationName}</span>
+			</span>
 		{/if}
 
 		{#if footer}
@@ -600,15 +598,9 @@
 		flex-shrink: 1;
 		flex-wrap: wrap;
 		gap: 12px;
-		justify-content: space-between;
 	}
 
-	.badge-organization-row {
-		flex-basis: 100%;
-		min-width: 0;
-	}
-
-	.badge--organization {
+	.badge {
 		max-width: 100%;
 	}
 
