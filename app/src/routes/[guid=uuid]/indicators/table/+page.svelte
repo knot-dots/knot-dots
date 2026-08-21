@@ -304,6 +304,10 @@
 		color: var(--color-gray-500);
 	}
 
+	.details {
+		padding: 1.5rem 5rem 5rem;
+	}
+
 	.error-list {
 		color: var(--color-red-600);
 		margin-bottom: 1rem;

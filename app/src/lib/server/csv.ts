@@ -15,17 +15,28 @@ export const reverseTranslationMap = new Map<string, string>(
  * Used by CSV upload parsers to accept slight naming variations.
  */
 export const indicatorColumnAliases = new Map<string, string>([
+	// Headers as written by the CSV export (generateIndicatorCsv), derived from
+	// the same locale entries so import and export cannot drift apart.
+	[de.title, 'title'],
+	[de.description, 'description'],
+	[de.visibility.label, 'visibility'],
+	[de.indicator_category, 'indicatorCategory'],
+	[de.indicator_type, 'indicatorType'],
+	[de.topic, 'topic'],
+	[de.category, 'sdg'],
+	[de.policy_field_bnk, 'policyFieldBNK'],
+	[de.audience, 'audience'],
+	[de.editorial_state, 'editorialState'],
+	[de.organizational_unit, 'organizationalUnit'],
+	[de.label.unit, 'unit'],
+	// Alternative spellings
 	['Bezeichnung', 'title'],
 	['Bezeichnung des Indikators', 'title'],
-	['Titel', 'title'],
 	['Title', 'title'],
 	['Name', 'title'],
-	['Beschreibung', 'description'],
 	['Berechnung', 'description'],
 	['Description', 'description'],
-	['Sichtbarkeit', 'visibility'],
 	['Visibility', 'visibility'],
-	['Einheit', 'unit'],
 	['Unit', 'unit'],
 	['Indikator-Kategorie', 'indicatorCategory'],
 	['Indicator Category', 'indicatorCategory'],
@@ -33,9 +44,7 @@ export const indicatorColumnAliases = new Map<string, string>([
 	['Indikator-Typ', 'indicatorType'],
 	['Indikatortyp', 'indicatorType'],
 	['Indicator Type', 'indicatorType'],
-	['Themenfeld', 'topic'],
 	['Topic', 'topic'],
-	['SDG', 'sdg'],
 	['Nr. des SDGs', 'sdg'],
 	['Handlungsfeld BNK', 'policyFieldBNK'],
 	['Policy Field BNK', 'policyFieldBNK'],
