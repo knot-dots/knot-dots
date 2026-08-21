@@ -341,7 +341,8 @@ test('computed progress appears on cards with a single request', async ({
 
 	let requestCount = 0;
 	dotsBoard.page.on('request', (request) => {
-		if (new URL(request.url()).pathname === '/container/progress') {
+		const url = new URL(request.url());
+		if (url.pathname === '/container' && url.searchParams.has('relatedTo')) {
 			requestCount++;
 		}
 	});

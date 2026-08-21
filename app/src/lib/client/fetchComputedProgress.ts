@@ -1,6 +1,5 @@
-import { z } from 'zod';
-import withRequestCoalescing from '$lib/client/withRequestCoalescing';
-import { type AnyPayload, type Container, container } from '$lib/models';
+import fetchContainers from '$lib/client/fetchContainers';
+import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
 
 type Waiter = {
 	resolve: (containers: Container<AnyPayload>[]) => void;
@@ -22,21 +21,18 @@ async function flush() {
 	const batch = queue;
 	queue = new Map();
 
-	const params = new URLSearchParams();
-	for (const guid of [...batch.keys()].sort()) {
-		params.append('relatedTo', guid);
-	}
-
 	try {
-		const response = await withRequestCoalescing(fetch)(`/container/progress?${params}`, {
-			credentials: 'include'
+		const containers = await fetchContainers({
+			payloadType: [
+				payloadTypes.enum.progress,
+				payloadTypes.enum.goal,
+				payloadTypes.enum.measure,
+				payloadTypes.enum.simple_measure,
+				payloadTypes.enum.task
+			],
+			relatedTo: [...batch.keys()].sort(),
+			relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']]
 		});
-		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch computed progress: ${response.status} ${await response.clone().text()}`
-			);
-		}
-		const containers = z.array(container).parse(await response.clone().json());
 		for (const waiters of batch.values()) {
 			for (const { resolve } of waiters) {
 				resolve(containers);
