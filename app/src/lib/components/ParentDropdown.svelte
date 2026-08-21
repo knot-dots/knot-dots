@@ -90,7 +90,7 @@
 			.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
 			.filter(
 				({ guid }) =>
-					!('guid' in container) ||
+					!('revision' in container) ||
 					!findDescendants(container, isPartOfOptions, [predicates.enum['is-part-of']])
 						.map((c) => c.guid)
 						.includes(guid)

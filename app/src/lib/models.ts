@@ -2099,6 +2099,7 @@ export const modifiedContainer = createModifiedContainerSchema(anyPayload);
 
 export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
 	return z.object({
+		guid: z.uuid().optional(),
 		managed_by: managedBy,
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),

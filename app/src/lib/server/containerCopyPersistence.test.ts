@@ -9,7 +9,7 @@ const { enqueueIndexingEvent, enqueueIndexingEvents } = vi.hoisted(() => ({
 
 vi.mock('$lib/server/indexingQueue', () => ({ enqueueIndexingEvent, enqueueIndexingEvents }));
 
-import { type Fixtures, test } from '$lib/fixtures';
+import { test } from '$lib/fixtures';
 import {
 	type AnyPayload,
 	newContainer,
@@ -54,17 +54,21 @@ function copyContainer(
 				? { name: 'Copied organization', type }
 				: { title: 'Copied container', type };
 
+	const guid = options.guid ?? uuid();
+	const relations = options.relation ?? [];
 	return {
-		container: newContainer.parse({
+		...newContainer.parse({
+			guid,
 			managed_by: options.managedBy ?? organization,
 			organization: options.organization ?? organization,
 			organizational_unit: options.organizationalUnit ?? null,
 			payload,
 			realm,
-			relation: options.relation ?? [],
+			relation: relations,
 			user: options.user ?? []
 		}),
-		guid: options.guid ?? uuid()
+		guid,
+		relation: relations
 	};
 }
 
@@ -78,7 +82,7 @@ async function createTestUser(connection: DatabaseTransactionConnection) {
 
 test('bulk-inserts payloads, creators, GUID relations, and reconstructs containers', async ({
 	connection
-}: Fixtures) => {
+}) => {
 	const creator = await createTestUser(connection);
 	const originalProgram = uuid();
 	const originalMeasure = uuid();
@@ -141,55 +145,15 @@ test('bulk-inserts payloads, creators, GUID relations, and reconstructs containe
 	expect(stored.every(({ managed_by }) => managed_by[0] === organization)).toBe(true);
 });
 
-test('collapses exact duplicate relations and rejects conflicting positions', async ({
-	connection
-}: Fixtures) => {
-	const firstGuid = uuid();
-	const secondGuid = uuid();
-	const relation: Relation = {
-		object: firstGuid,
-		position: 3,
-		predicate: predicates.enum['is-part-of'],
-		subject: secondGuid
-	};
-
-	const result = await createManyContainers([
-		copyContainer(payloadTypes.enum.program, { guid: firstGuid, relation: [relation] }),
-		copyContainer(payloadTypes.enum.measure, { guid: secondGuid, relation: [relation] })
-	])(connection);
-	expect(result.containers.every(({ relation: values }) => values.length === 1)).toBe(true);
-	expect(
-		await connection.oneFirst(sql.typeAlias('revision')`
-			SELECT count(*)::int AS revision
-			FROM container_relation
-			WHERE object = ${firstGuid}
-				AND predicate = ${relation.predicate}
-				AND subject = ${secondGuid}
-				AND valid_currently
-		`)
-	).toBe(1);
-
-	expect(() =>
-		createManyContainers([
-			copyContainer(payloadTypes.enum.program, { relation: [relation] }),
-			copyContainer(payloadTypes.enum.measure, {
-				relation: [{ ...relation, position: relation.position + 1 }]
-			})
-		])
-	).toThrow('relation_conflict');
-});
-
 test('preserves inserted and existing program positions without shifting siblings', async ({
 	connection
-}: Fixtures) => {
-	const program = await createContainer(copyContainer(payloadTypes.enum.program).container)(
-		connection
-	);
+}) => {
+	const program = await createContainer(copyContainer(payloadTypes.enum.program))(connection);
 	const existingGuids: string[] = [];
 	for (const position of [0, 1, 2]) {
 		const existing = await createContainer(
 			newContainer.parse({
-				...copyContainer(payloadTypes.enum.measure).container,
+				...copyContainer(payloadTypes.enum.measure),
 				relation: [
 					{
 						object: program.guid,
@@ -245,7 +209,7 @@ test('preserves inserted and existing program positions without shifting sibling
 
 test('rolls back rows and users when a creator or relation insert fails', async ({
 	connection
-}: Fixtures) => {
+}) => {
 	const copiedGuid = uuid();
 	const missingCreator = uuid();
 	await expect(
@@ -264,10 +228,10 @@ test('rolls back rows and users when a creator or relation insert fails', async 
 		`)
 	).toBeNull();
 
-	const existingObject = await createContainer(copyContainer(payloadTypes.enum.program).container)(
+	const existingObject = await createContainer(copyContainer(payloadTypes.enum.program))(
 		connection
 	);
-	const existingSubject = await createContainer(copyContainer(payloadTypes.enum.measure).container)(
+	const existingSubject = await createContainer(copyContainer(payloadTypes.enum.measure))(
 		connection
 	);
 	const existingRelation: Relation = {
@@ -306,7 +270,7 @@ test('rolls back rows and users when a creator or relation insert fails', async 
 
 test('handles empty input and keeps organizations outside the generic writer', async ({
 	connection
-}: Fixtures) => {
+}) => {
 	await expect(createManyContainers([])(connection)).resolves.toEqual({
 		affectedIndexingGuids: [],
 		containers: []
@@ -321,38 +285,9 @@ test('handles empty input and keeps organizations outside the generic writer', a
 	});
 });
 
-test('rejects duplicate GUIDs and incomplete relations during preflight', () => {
-	const duplicatedGuid = uuid();
-	expect(() =>
-		createManyContainers([
-			copyContainer(payloadTypes.enum.program, { guid: duplicatedGuid }),
-			copyContainer(payloadTypes.enum.measure, { guid: duplicatedGuid })
-		])
-	).toThrow('invalid_input');
-
-	const incompleteRelation = copyContainer(payloadTypes.enum.program);
-	expect(() =>
-		createManyContainers([
-			{
-				...incompleteRelation,
-				container: newContainer.parse({
-					...incompleteRelation.container,
-					relation: [
-						{
-							object: uuid(),
-							position: 0,
-							predicate: predicates.enum['is-copy-of']
-						}
-					]
-				})
-			}
-		])
-	).toThrow('invalid_input');
-});
-
 test('persists the plan mapping and queues deduplicated events after the transaction resolves', async ({
 	connection
-}: Fixtures) => {
+}) => {
 	const creator = await createTestUser(connection);
 	const originalGuid = uuid();
 	const copiedGuid = uuid();
@@ -367,9 +302,7 @@ test('persists the plan mapping and queues deduplicated events after the transac
 		relation: [relation],
 		user: [{ predicate: predicates.enum['is-creator-of'], subject: creator }]
 	});
-	const plan: ContainerCopyPlan = new Map([
-		[originalGuid, { container: planned.container, copiedGuid }]
-	]);
+	const plan: ContainerCopyPlan = new Map([[originalGuid, planned]]);
 	let transactionResolved = false;
 	const nonTransactionConnection = {
 		transaction: async <T>(
@@ -406,9 +339,7 @@ test('returns an empty map without opening a transaction or enqueueing', async (
 	expect(enqueueIndexingEvents).not.toHaveBeenCalled();
 });
 
-test('does not enqueue when the persistence transaction rolls back', async ({
-	connection
-}: Fixtures) => {
+test('does not enqueue when the persistence transaction rolls back', async ({ connection }) => {
 	const originalGuid = uuid();
 	const copiedGuid = uuid();
 	const missingCreator = uuid();
@@ -424,13 +355,9 @@ test('does not enqueue when the persistence transaction rolls back', async ({
 		],
 		user: [{ predicate: predicates.enum['is-creator-of'], subject: missingCreator }]
 	});
-	const plan: ContainerCopyPlan = new Map([
-		[originalGuid, { container: planned.container, copiedGuid }]
-	]);
+	const plan: ContainerCopyPlan = new Map([[originalGuid, planned]]);
 	const nonTransactionConnection = {
-		transaction: <T>(
-			handler: Parameters<DatabaseNonTransactionConnection['transaction']>[0]
-		) =>
+		transaction: <T>(handler: Parameters<DatabaseNonTransactionConnection['transaction']>[0]) =>
 			connection.transaction(handler) as Promise<T>
 	} as unknown as DatabaseNonTransactionConnection;
 

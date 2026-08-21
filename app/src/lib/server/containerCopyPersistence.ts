@@ -9,9 +9,7 @@ import { enqueueIndexingEvents } from '$lib/server/indexingQueue';
  * index stale; enqueueIndexingEvents logs and reports those failures without undoing committed rows.
  */
 export function persistContainerCopyPlan(plan: ContainerCopyPlan) {
-	const createContainers = createManyContainers(
-		[...plan.values()].map(({ container, copiedGuid }) => ({ guid: copiedGuid, container }))
-	);
+	const createContainers = createManyContainers([...plan.values()]);
 
 	return async (
 		connection: DatabaseNonTransactionConnection
@@ -27,10 +25,10 @@ export function persistContainerCopyPlan(plan: ContainerCopyPlan) {
 					result.containers.map((container) => [container.guid, container])
 				);
 				const copies = new Map<string, Container<AnyPayload>>();
-				for (const [originalGuid, { copiedGuid }] of plan) {
-					const container = containerByGuid.get(copiedGuid);
+				for (const [originalGuid, plannedContainer] of plan) {
+					const container = containerByGuid.get(plannedContainer.guid);
 					if (!container) {
-						throw new Error(`Missing persisted copy for ${copiedGuid}`);
+						throw new Error(`Missing persisted copy for ${plannedContainer.guid}`);
 					}
 					copies.set(originalGuid, container);
 				}

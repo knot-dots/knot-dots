@@ -40,6 +40,7 @@ import {
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import {
 	type CopyGraphSnapshot,
+	type NewContainerWithGuid,
 	requiredCopyDependencyPredicates,
 	structuralCopyPredicates
 } from '$lib/server/containerCopyPlan';
@@ -172,61 +173,25 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
-function relationKey({ object, predicate, subject }: Relation) {
-	return `${object}\u0000${predicate}\u0000${subject}`;
-}
-
-function collectAndValidateContainerRelations(
-	inserts: readonly { guid: string; container: NewContainer<AnyPayload> }[]
-) {
-	const copiedGuids = new Set<string>();
-	const relationsByKey = new Map<string, Relation>();
-
-	for (const { container, guid } of inserts) {
-		if (!z.uuid().safeParse(guid).success || copiedGuids.has(guid)) {
-			throw new Error('invalid_input');
-		}
-		copiedGuids.add(guid);
-
-		if (container.payload.type === payloadTypes.enum.organization) {
-			throw new Error('organization_not_supported');
-		}
-
-		for (const candidate of container.relation) {
-			const parsedRelation = relation.safeParse(candidate);
-			if (!parsedRelation.success) {
-				throw new Error('invalid_input');
-			}
-
-			const key = relationKey(parsedRelation.data);
-			const existing = relationsByKey.get(key);
-			if (existing && existing.position !== parsedRelation.data.position) {
-				throw new Error('relation_conflict');
-			}
-			relationsByKey.set(key, parsedRelation.data);
-		}
-	}
-
-	return [...relationsByKey.values()];
-}
-
 /**
  * Persists ordinary containers already validated by createContainerCopyPlan() on an existing
  * transaction. Explicit GUIDs remain internal to server code; organization creation stays on
  * createContainer() because it provisions external Keycloak state.
  */
-export function createManyContainers(
-	inserts: readonly { guid: string; container: NewContainer<AnyPayload> }[]
-) {
-	const relations = collectAndValidateContainerRelations(inserts);
+export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
+	if (inserts.some((c) => c.payload.type === payloadTypes.enum.organization)) {
+		throw new Error('organization_not_supported');
+	}
+
+	const relations = inserts.flatMap((c) => c.relation);
 
 	return async (connection: DatabaseTransactionConnection) => {
 		if (inserts.length === 0) {
 			return { affectedIndexingGuids: [], containers: [] };
 		}
 
-		const containerValues = inserts.map(({ container, guid }) => [
-			guid,
+		const containerValues = inserts.map((container) => [
+			container.guid,
 			container.managed_by[0],
 			container.organization,
 			container.organizational_unit,
@@ -247,15 +212,11 @@ export function createManyContainers(
 			RETURNING *
 		`);
 
-		if (containerResult.length !== inserts.length) {
-			throw new Error('invalid_input');
-		}
-
 		const containerByGuid = new Map(
 			containerResult.map((container) => [container.guid, container])
 		);
-		const userValues = inserts.flatMap(({ container, guid }) => {
-			const persisted = containerByGuid.get(guid);
+		const userValues = inserts.flatMap((container) => {
+			const persisted = containerByGuid.get(container.guid);
 			if (!persisted) {
 				throw new Error('invalid_input');
 			}
