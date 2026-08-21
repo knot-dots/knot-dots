@@ -1,27 +1,13 @@
+import DataLoader from 'dataloader';
 import fetchContainers from '$lib/client/fetchContainers';
 import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
 
-type Waiter = {
-	resolve: (containers: Container<AnyPayload>[]) => void;
-	reject: (reason: unknown) => void;
-};
-
-let queue = new Map<string, Waiter[]>();
-
-export default function fetchComputedProgress(guid: string): Promise<Container<AnyPayload>[]> {
-	return new Promise((resolve, reject) => {
-		if (queue.size == 0) {
-			queueMicrotask(flush);
-		}
-		queue.set(guid, [...(queue.get(guid) ?? []), { resolve, reject }]);
-	});
-}
-
-async function flush() {
-	const batch = queue;
-	queue = new Map();
-
-	try {
+// All loads of one render wave share a single request; the shared pool is
+// returned to every caller because descendant sets of different parents may
+// overlap. Caching is disabled so that a new wave (e.g. after invalidation)
+// always fetches fresh data.
+const loader = new DataLoader<string, Container<AnyPayload>[]>(
+	async (guids) => {
 		const containers = await fetchContainers({
 			payloadType: [
 				payloadTypes.enum.progress,
@@ -30,19 +16,14 @@ async function flush() {
 				payloadTypes.enum.simple_measure,
 				payloadTypes.enum.task
 			],
-			relatedTo: [...batch.keys()].sort(),
+			relatedTo: [...new Set(guids)].sort(),
 			relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']]
 		});
-		for (const waiters of batch.values()) {
-			for (const { resolve } of waiters) {
-				resolve(containers);
-			}
-		}
-	} catch (reason) {
-		for (const waiters of batch.values()) {
-			for (const { reject } of waiters) {
-				reject(reason);
-			}
-		}
-	}
+		return guids.map(() => containers);
+	},
+	{ cache: false }
+);
+
+export default function fetchComputedProgress(guid: string): Promise<Container<AnyPayload>[]> {
+	return loader.load(guid);
 }
