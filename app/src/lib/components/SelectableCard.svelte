@@ -3,12 +3,12 @@
 	import { _, date } from 'svelte-i18n';
 	import Lightbulb from '~icons/flowbite/lightbulb-solid';
 	import { page } from '$app/state';
-	import fetchComputedProgress from '$lib/client/fetchComputedProgress';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import Progress from '$lib/components/Progress.svelte';
 	import StackedProgress from '$lib/components/StackedProgress.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import { getComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -52,6 +52,8 @@
 
 	const id = crypto.randomUUID();
 
+	const computedProgressLoader = getComputedProgressContext();
+
 	function computedProgressSectionFor(parentGuid: string) {
 		return (candidate: Container<AnyPayload>) =>
 			isProgressContainer(candidate) &&
@@ -82,7 +84,8 @@
 					? container
 					: undefined
 		],
-		async ([container]) => (container ? fetchComputedProgress(container.guid) : undefined)
+		async ([container]) =>
+			container && computedProgressLoader ? computedProgressLoader.load(container.guid) : undefined
 	);
 
 	let progressPool = $derived(

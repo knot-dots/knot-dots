@@ -8,7 +8,6 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
-	import fetchComputedProgress from '$lib/client/fetchComputedProgress';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
@@ -17,6 +16,7 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import Tendency from '$lib/components/Tendency.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
+	import { getComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -85,6 +85,8 @@
 
 	const bulkActionContext = getBulkActionContext();
 
+	const computedProgressLoader = getComputedProgressContext();
+
 	function computedProgressSectionFor(parentGuid: string) {
 		return (candidate: Container<AnyPayload>) =>
 			isProgressContainer(candidate) &&
@@ -115,7 +117,8 @@
 					? container
 					: undefined
 		],
-		async ([container]) => (container ? fetchComputedProgress(container.guid) : undefined)
+		async ([container]) =>
+			container && computedProgressLoader ? computedProgressLoader.load(container.guid) : undefined
 	);
 
 	let progressPool = $derived(
