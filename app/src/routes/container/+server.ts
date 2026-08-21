@@ -517,49 +517,30 @@ export const GET = (async ({ locals, url }) => {
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
 	const containers = await locals.pool.connect(
-		parseResult.data.relatedTo.length > 0
-			? getAllRelatedContainers(
-					parseResult.data.organization,
-					parseResult.data.relatedTo,
-					parseResult.data.relationType,
-					{
-						assignees: parseResult.data.assignee,
-						customCategories,
-						indicatorCategories: parseResult.data.indicatorCategory,
-						organizationalUnits: parseResult.data.organizationalUnit ?? [],
-						programTypes: parseResult.data.programType,
-						taskCategories: parseResult.data.taskCategory,
-						terms: parseResult.data.terms[0],
-						type: parseResult.data.payloadType
-					},
-					parseResult.data.sort[0],
-					parseResult.data.limit,
-					parseResult.data.offset
-				)
-			: getManyContainers(
-					parseResult.data.organization,
-					{
-						administrativeTypes: parseResult.data.administrativeType,
-						customCategories,
-						customCategoryMatch: parseResult.data.categoryMatch[0],
-						guid: parseResult.data.guid,
-						federalStates: parseResult.data?.federalState,
-						indicators: parseResult.data.indicator,
-						indicatorCategories: parseResult.data.indicatorCategory,
-						resource: parseResult.data.resource,
-						indicatorTypes: parseResult.data.indicatorType,
-						organizationalUnits: parseResult.data.organizationalUnit,
-						programTypes: parseResult.data.programType,
-						template: parseResult.data.template[0],
-						terms: parseResult.data.terms[0],
-						type: parseResult.data.payloadType
-					},
-					parseResult.data.sort[0],
-					{
-						limit: parseResult.data.limit,
-						offset: parseResult.data.offset
-					}
-				)
+		getManyContainers(
+			parseResult.data.organization,
+			{
+				administrativeTypes: parseResult.data.administrativeType,
+				customCategories,
+				customCategoryMatch: parseResult.data.categoryMatch[0],
+				guid: parseResult.data.guid,
+				federalStates: parseResult.data?.federalState,
+				indicators: parseResult.data.indicator,
+				indicatorCategories: parseResult.data.indicatorCategory,
+				resource: parseResult.data.resource,
+				indicatorTypes: parseResult.data.indicatorType,
+				organizationalUnits: parseResult.data.organizationalUnit,
+				programTypes: parseResult.data.programType,
+				template: parseResult.data.template[0],
+				terms: parseResult.data.terms[0],
+				type: parseResult.data.payloadType
+			},
+			parseResult.data.sort[0],
+			{
+				limit: parseResult.data.limit,
+				offset: parseResult.data.offset
+			}
+		)
 	);
 
 	return json(filterVisible(containers, locals.user));
