@@ -74,7 +74,7 @@ test('adding and removing a progress section updates the card', async ({ dotsBoa
 	await expect(dotsBoard.overlay.locator).not.toBeVisible();
 	await expect(dotsBoard.card(testGoal.payload.title).getByRole('progressbar')).toBeVisible();
 
-	// Remove the Summary section
+	// Remove the Progress section
 	await dotsBoard.card(testGoal.payload.title).click();
 	await section.hover();
 	await section.getByRole('button', { name: 'Settings' }).click();
