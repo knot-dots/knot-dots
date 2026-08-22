@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import ContextTabs from './context-tabs';
 
 export default class Overlay {
@@ -79,9 +79,9 @@ export default class Overlay {
 			throw new Error('Could not determine bounding boxes for section drag-and-drop');
 		}
 
-		const startX = sourceBox.x + sourceBox.width / 2;
+		const startX = sourceBox.x;
 		const startY = sourceBox.y + sourceBox.height / 2;
-		const endX = targetBox.x + targetBox.width / 2;
+		const endX = targetBox.x;
 		const endY = targetBox.y + targetBox.height / 2;
 
 		await this.page.mouse.move(startX, startY);
@@ -94,6 +94,7 @@ export default class Overlay {
 				startY + ((endY - startY) * i) / steps
 			);
 		}
+		await expect(target).not.toBeVisible();
 		await this.page.mouse.up();
 	}
 
