@@ -59,6 +59,36 @@
 
 	const type = crypto.randomUUID();
 
+	async function handleSort(orderedSections: Container[]) {
+		container.relation = [
+			...orderedSections.map(({ guid }, index) => ({
+				object: container.guid,
+				position: index,
+				predicate: predicates.enum['is-section-of'],
+				subject: guid
+			})),
+			...container.relation.filter(
+				({ predicate }) => predicate !== predicates.enum['is-section-of']
+			)
+		];
+		relatedContainers = [
+			...relatedContainers.filter(
+				({ guid }) => !orderedSections.map(({ guid }) => guid).includes(guid)
+			),
+			...orderedSections
+		];
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(container.relation),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+	}
+
 	function createAddSectionHandler(position: number) {
 		return async (event: Event) => {
 			const payloadType = payloadTypes.safeParse((event as CustomEvent).detail.selected?.type).data;
@@ -141,31 +171,7 @@
 					]
 				}))
 			];
-			container.relation = [
-				...sections.map(({ guid }, index) => ({
-					object: container.guid,
-					position: index,
-					predicate: predicates.enum['is-section-of'],
-					subject: guid
-				})),
-				...container.relation.filter(
-					({ predicate }) => predicate !== predicates.enum['is-section-of']
-				)
-			];
-			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => !sections.map(({ guid }) => guid).includes(guid)),
-				...sections
-			];
-
-			const url = `/container/${container.guid}/relation`;
-			await fetch(url, {
-				method: 'POST',
-				body: JSON.stringify(container.relation),
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
+			await handleSort(sections);
 		};
 	}
 
@@ -186,30 +192,8 @@
 				...s.relation.filter(({ predicate }) => predicate !== predicates.enum['is-section-of'])
 			]
 		}));
-		container.relation = [
-			...sections.map(({ guid }, index) => ({
-				object: container.guid,
-				position: index,
-				predicate: predicates.enum['is-section-of'],
-				subject: guid
-			})),
-			...container.relation.filter(
-				({ predicate }) => predicate !== predicates.enum['is-section-of']
-			)
-		];
-		relatedContainers = [
-			...relatedContainers.filter(({ guid }) => !sections.map(({ guid }) => guid).includes(guid)),
-			...orderedSections
-		];
 
-		await fetch(`/container/${container.guid}/relation`, {
-			method: 'POST',
-			body: JSON.stringify(container.relation),
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
+		await handleSort(orderedSections);
 	}
 
 	function heading(position: number) {
@@ -229,7 +213,7 @@
 	</div>
 {/if}
 
-<TableOfContents {sections} />
+<TableOfContents {container} {handleSort} {sections} />
 
 <ul
 	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
