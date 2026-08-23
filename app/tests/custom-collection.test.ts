@@ -19,7 +19,9 @@ test('Selected objects can be displayed in a section', async ({
 
 	// Add "Embed objects" section
 	const section = await landingPage.addSection('Embed objects');
+	const saveResponse = landingPage.page.waitForResponse((r) => r.url().includes('/revision'));
 	await section.getByPlaceholder('Enter title').fill('My selection');
+	await saveResponse;
 	await section.hover();
 
 	// Open dialog to select objects
@@ -112,7 +114,9 @@ test('Rule-based collections can be displayed in a section', async ({
 
 	// Add "Embed objects" section
 	const section = await landingPage.addSection('Embed objects');
+	const saveResponse = landingPage.page.waitForResponse((r) => r.url().includes('/revision'));
 	await section.getByPlaceholder('Enter title').fill('My rule-based collection');
+	await saveResponse;
 	await section.hover();
 
 	// Open dialog to select objects
@@ -175,7 +179,9 @@ test('Organization scope can be configured for rule-based collections', async ({
 
 	// Add "Embed objects" section
 	const section = await landingPage.addSection('Embed objects');
+	const saveResponse = landingPage.page.waitForResponse((r) => r.url().includes('/revision'));
 	await section.getByPlaceholder('Enter title').fill('My scoped collection');
+	await saveResponse;
 	await section.hover();
 
 	// Open dialog to select objects
@@ -263,7 +269,9 @@ test('New item can be added to custom collection', async ({
 
 	// Add "Embed objects" section
 	const section = await landingPage.addSection('Embed objects');
+	const saveResponse = landingPage.page.waitForResponse((r) => r.url().includes('/revision'));
 	await section.getByPlaceholder('Enter title').fill('My selection');
+	await saveResponse;
 	await section.hover();
 
 	// Open dialog to select templates for new items
@@ -338,7 +346,9 @@ test('Template picker can be closed with the close button', async ({
 	await landingPage.header.editModeToggle.check();
 
 	const section = await landingPage.addSection('Embed objects');
+	const saveResponse = landingPage.page.waitForResponse((r) => r.url().includes('/revision'));
 	await section.getByPlaceholder('Enter title').fill('My selection');
+	await saveResponse;
 	await section.hover();
 
 	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
