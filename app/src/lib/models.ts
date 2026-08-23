@@ -772,6 +772,12 @@ function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
 
+const detailViewStyle = z.object({
+	color: backgroundColor.optional(),
+	cover: z.url().optional(),
+	coverSource: z.string().optional()
+});
+
 const basePayload = z.object({
 	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
@@ -1391,10 +1397,8 @@ export function isObjectiveCollectionContainer(
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 export const organizationPayload = z.strictObject({
+	...detailViewStyle.shape,
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
 	customDomain: z.hostname().optional(),
 	customFavicon: z
 		.object({
@@ -1443,13 +1447,11 @@ export function isOrganizationContainer(
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 export const organizationalUnitPayload = z.strictObject({
+	...detailViewStyle.shape,
 	administrativeType: z.array(administrativeTypes).default([]),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	favorite: z
@@ -1493,10 +1495,8 @@ const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ nam
 export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
 
 const pagePayload = z.strictObject({
+	...detailViewStyle.shape,
 	body: z.string().trim(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default(visibility.enum['organization'])
