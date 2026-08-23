@@ -1,36 +1,22 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import EditableOrganizationalUnitDetailView from '$lib/components/EditableOrganizationalUnitDetailView.svelte';
-	import EditableOrganizationDetailView from '$lib/components/EditableOrganizationDetailView.svelte';
+	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
-	import { isOrganizationalUnitContainer, isOrganizationContainer } from '$lib/models';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	let container = $derived.by(() => {
-		let _ = $state(data.container);
-		return _;
-	});
-
-	let sections = $derived(data.sections ?? []);
 </script>
 
-{#snippet layout(header: Snippet, content: Snippet)}
-	<FullscreenLayout {header}>
-		{#snippet main()}
-			<div>{@render content()}</div>
-		{/snippet}
-	</FullscreenLayout>
-{/snippet}
-
 <PageLayout>
-	{#if isOrganizationContainer(container)}
-		<EditableOrganizationDetailView bind:container {layout} {sections} />
-	{:else if isOrganizationalUnitContainer(container)}
-		<EditableOrganizationalUnitDetailView bind:container {layout} {sections} />
-	{/if}
+	<EditableDetailView container={data.container} revisions={[]} sections={data.sections}>
+		{#snippet layout(header, content)}
+			<FullscreenLayout {header}>
+				{#snippet main()}
+					<div>{@render content()}</div>
+				{/snippet}
+			</FullscreenLayout>
+		{/snippet}
+	</EditableDetailView>
 </PageLayout>
 
 <style>
