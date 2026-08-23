@@ -314,14 +314,10 @@ async function inviteUser(
 	if (role.length > 0) {
 		await context.request.post(`/container/${container.guid}/user`, {
 			data: [
-				...user.filter(
-					(u) =>
-						u.predicate != predicates.enum['is-creator-of'] &&
-						!(u.subject == subject && role.includes(u.predicate))
-				),
+				...user.filter((u) => !(u.subject == subject && role.includes(u.predicate))),
 				...role.concat(predicates.enum['is-member-of']).map((r) => ({
 					predicate: r,
-					subject: inviteResponse.headers()['location'].split('/').at(-1)
+					subject
 				}))
 			]
 		});
