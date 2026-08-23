@@ -14,10 +14,6 @@
 		return _;
 	});
 
-	let linkedProfiles = $derived(data.linkedProfiles ?? []);
-
-	let relatedOrganizationalUnitGuids = $derived(data.relatedOrganizationalUnitGuids ?? []);
-
 	let sections = $derived(data.sections ?? []);
 </script>
 
@@ -33,13 +29,7 @@
 	{#if isOrganizationContainer(container)}
 		<EditableOrganizationDetailView bind:container {layout} {sections} />
 	{:else if isOrganizationalUnitContainer(container)}
-		<EditableOrganizationalUnitDetailView
-			bind:container
-			{layout}
-			{linkedProfiles}
-			{relatedOrganizationalUnitGuids}
-			{sections}
-		/>
+		<EditableOrganizationalUnitDetailView bind:container {layout} {sections} />
 	{/if}
 </PageLayout>
 

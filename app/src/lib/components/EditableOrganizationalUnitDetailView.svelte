@@ -37,36 +37,38 @@
 	interface Props {
 		container: Container<OrganizationalUnitPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		linkedProfiles?: Container<AnyPayload>[];
-		relatedOrganizationalUnitGuids?: string[];
 		sections?: Container<AnyPayload>[];
 	}
 
-	let {
-		container = $bindable(),
-		layout,
-		linkedProfiles = [],
-		relatedOrganizationalUnitGuids = [],
-		sections = []
-	}: Props = $props();
+	let { container = $bindable(), layout, sections = [] }: Props = $props();
 
 	let guid = $derived(container.guid);
 
+	let individualProfileRelation = $derived(
+		container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-individual-profile-of']
+		)
+	);
+
+	let isIndividualProfile = $derived(individualProfileRelation?.subject === container.guid);
+
 	let containersQuery = resource([() => guid], async ([guid], _, { signal }) => {
-		const [containers, actualData, sectionContainers] = await Promise.all([
+		const [containers, actualData, sections] = await Promise.all([
 			fetchContainers(
 				{
+					guid: individualProfileRelation
+						? isIndividualProfile
+							? [individualProfileRelation.object]
+							: [individualProfileRelation.subject]
+						: [],
 					organization: [container.organization],
-					organizationalUnit:
-						relatedOrganizationalUnitGuids.length > 0
-							? relatedOrganizationalUnitGuids
-							: [container.guid],
 					payloadType: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
 						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.objective,
+						payloadTypes.enum.organizational_unit,
 						payloadTypes.enum.program,
 						payloadTypes.enum.simple_measure
 					]
@@ -92,7 +94,7 @@
 				{ signal }
 			)
 		]);
-		return [...containers, ...actualData, ...sectionContainers];
+		return [...containers, ...actualData, ...sections];
 	});
 
 	setBulkActionContext({
@@ -105,15 +107,18 @@
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 
-	let isIndividualProfile = $derived(
-		container.relation.some(
-			({ predicate, subject }) =>
-				predicate === predicates.enum['is-individual-profile-of'] && subject === container.guid
-		)
-	);
-
 	let linkedProfile = $derived(
-		linkedProfiles.filter(isOrganizationalUnitContainer).find((c) => c.guid !== container.guid)
+		relatedContainers
+			.filter(isOrganizationalUnitContainer)
+			.find(
+				(c) =>
+					c.guid !== container.guid &&
+					c.relation.some(
+						({ object, predicate, subject }) =>
+							predicate === predicates.enum['is-individual-profile-of'] &&
+							(subject === container.guid || object === container.guid)
+					)
+			)
 	);
 
 	let linkedProfileURL = $derived(
