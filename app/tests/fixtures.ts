@@ -605,7 +605,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				title: `Test Program ${workerInfo.workerIndex}`
 			}
 		});
-		await inviteUser(adminContext, 'builderbob@bobby.com', testProgram, [
+		await inviteUser(adminContext, 'bob@example.org', testProgram, [
 			predicates.enum['is-head-of'],
 			predicates.enum['is-member-of']
 		]);
