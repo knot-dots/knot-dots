@@ -206,11 +206,18 @@
 	"empty": "Empty",
 	"end_date": "End",
 	"error": {
+		"bad_request": "The request could not be read.",
+		"copy_invalid": "The selected content cannot be copied.",
+		"copy_too_large": "The selected content is too large to copy.",
+		"copy_unsupported_source": "This content cannot be copied to the selected destination.",
+		"forbidden": "Sorry, you are not allowed to do this.",
+		"individual_profile_exists": "An individual profile already exists for this organizational unit.",
 		"unauthorized": "Sorry, you are not allowed to do this.",
 		"not_found": "Sorry, there is nothing to show here.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"slug_not_available": "This URL slug is already in use.",
+		"unsupported_media_type": "This request must contain JSON.",
 		"unexpected": "We are working on it."
 	},
 	"establish_relations": "Establish relations",
