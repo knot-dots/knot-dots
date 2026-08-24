@@ -11,6 +11,7 @@ vi.mock('$lib/server/containerCopyService', async (importOriginal) => ({
 }));
 
 import { payloadTypes } from '$lib/models';
+import { ContainerCopyServiceError } from '$lib/server/containerCopyService';
 import { POST } from './+server';
 
 const sourceGuid = '00000000-0000-4000-8000-000000000001';
@@ -105,4 +106,15 @@ test('returns a stable bad-request response for malformed JSON', async () => {
 	await expect(
 		POST({ locals: { pool: {}, user }, request: malformed } as never)
 	).rejects.toMatchObject({ status: 400 });
+});
+
+test('maps only typed service errors to stable HTTP responses', async () => {
+	executeContainerCopy.mockRejectedValueOnce(new ContainerCopyServiceError('source_unavailable'));
+	await expect(POST(event(validRequest))).rejects.toMatchObject({ status: 404 });
+
+	const unrelatedError = Object.assign(new Error('database failure'), {
+		code: 'source_unavailable'
+	});
+	executeContainerCopy.mockRejectedValueOnce(unrelatedError);
+	await expect(POST(event(validRequest))).rejects.toBe(unrelatedError);
 });

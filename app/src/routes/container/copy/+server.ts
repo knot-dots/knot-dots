@@ -3,10 +3,11 @@ import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { containerCopyRequest } from '$lib/containerCopy';
 import { CopyPlanError } from '$lib/server/containerCopyPlan';
-import { executeContainerCopy } from '$lib/server/containerCopyService';
+import { ContainerCopyServiceError, executeContainerCopy } from '$lib/server/containerCopyService';
 import type { RequestHandler } from './$types';
 
 const maxPlanSize = 10000;
+const maxGraphSize = 10000;
 
 function message(key: string) {
 	return unwrapFunctionStore(_)(key);
@@ -22,11 +23,12 @@ const serviceErrorResponses = {
 } as const;
 
 function serviceErrorResponse(caught: unknown) {
-	if (typeof caught !== 'object' || caught === null || !('code' in caught)) {
+	if (!(caught instanceof ContainerCopyServiceError)) {
 		return undefined;
 	}
-	const code = caught.code as keyof typeof serviceErrorResponses;
-	return serviceErrorResponses[code];
+	return Object.hasOwn(serviceErrorResponses, caught.code)
+		? serviceErrorResponses[caught.code as keyof typeof serviceErrorResponses]
+		: undefined;
 }
 
 export const POST = (async ({ locals, request }) => {
@@ -52,6 +54,7 @@ export const POST = (async ({ locals, request }) => {
 			request: parseResult.data,
 			pool: locals.pool,
 			user: locals.user,
+			maxGraphSize,
 			maxPlanSize
 		});
 		return json(root, { status: 201, headers: { location: `/container/${root.guid}` } });
