@@ -204,10 +204,6 @@
 		display: contents;
 	}
 
-	.details-scroll-wrapper {
-		padding-top: 0;
-	}
-
 	header {
 		align-items: center;
 		display: flex;

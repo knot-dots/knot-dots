@@ -372,6 +372,7 @@ const backgroundColorValues = [
 ] as const;
 
 export const backgroundColor = z.enum(backgroundColorValues);
+
 export type BackgroundColor = z.infer<typeof backgroundColor>;
 
 const statusValues = [
@@ -867,6 +868,7 @@ const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPay
 
 export const binaryIndicatorPayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
 	type: z.literal(payloadTypes.enum.binary_indicator)
@@ -1087,6 +1089,7 @@ const initialFileCollectionPayload = fileCollectionPayload;
 
 const goalPayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	fulfillmentDate: z.iso.date().optional(),
 	status: status.default(status.enum['status.idea']),
 	goalType: goalType.optional(),
@@ -1128,6 +1131,7 @@ export function isGoalCollectionContainer(
 const initialGoalCollectionPayload = goalCollectionPayload;
 
 export const helpPayload = z.object({
+	...detailViewStyle.shape,
 	body: z.string().trim().default(''),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
@@ -1231,6 +1235,7 @@ const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 export const indicatorTemplatePayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	externalReference: z.url().optional(),
 	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
@@ -1313,6 +1318,7 @@ const initialMapPayload = mapPayload;
 
 const measurePayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	annotation: z.string().trim().optional(),
 	comment: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
@@ -1534,6 +1540,7 @@ const programPayload = z.strictObject({
 		description: true,
 		summary: true
 	}).shape,
+	...detailViewStyle.shape,
 	chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 	image: z.url().optional(),
 	level: levels.default(levels.enum['level.local']),
@@ -1633,6 +1640,7 @@ const initialQuotePayload = quotePayload.partial({ title: true });
 
 const reportPayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	image: z.url().optional(),
 	type: z.literal(payloadTypes.enum.report)
 });
@@ -1810,6 +1818,7 @@ const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
 export const rulePayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	status: status.default(status.enum['status.idea']),
 	type: z.literal(payloadTypes.enum.rule),
 	validFrom: z.iso.date().optional(),
@@ -1830,6 +1839,7 @@ export type InitialRulePayload = z.infer<typeof initialRulePayload>;
 
 const simpleMeasurePayload = z.strictObject({
 	...basePayload.omit({ summary: true }).shape,
+	...detailViewStyle.shape,
 	annotation: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	file: z.array(z.tuple([z.url(), z.string()])).default([]),
@@ -1871,6 +1881,7 @@ const initialSummaryPayload = summaryPayload;
 
 const taskPayload = z.strictObject({
 	...measureMonitoringBasePayload.shape,
+	...detailViewStyle.shape,
 	assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 	benefit: benefit.optional(),
 	category: z
@@ -2270,35 +2281,6 @@ export function isTemplateContainer(
 	return 'template' in container.payload && container.payload.template === true;
 }
 
-export function isTemplateRoot({
-	guid,
-	payload,
-	relation
-}: {
-	guid: string;
-	payload: { template?: boolean };
-	relation: readonly Relation[];
-}) {
-	return (
-		payload.template === true &&
-		!relation.some(
-			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
-		)
-	);
-}
-
-export function getAvailableInProgramGuids({
-	guid,
-	relation
-}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
-	return relation
-		.filter(
-			({ predicate, subject }) =>
-				predicate === predicates.enum['is-available-in'] && subject === guid
-		)
-		.map(({ object }) => object);
-}
-
 function hasProperty(
 	payload: AnyPayload | AnyInitialPayload,
 	key: PropertyKey
@@ -2322,6 +2304,26 @@ export function isContainerWithCategory(
 	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithCategory {
 	return hasProperty(container.payload, 'category');
+}
+
+export type ContainerWithColor<P extends AnyPayload = Payload> = Container<
+	P & { color: BackgroundColor | undefined }
+>;
+
+export function isContainerWithColor<P extends AnyPayload = Payload>(
+	container: Container<P> | NewContainer
+): container is ContainerWithColor<P> {
+	return hasProperty(container.payload, 'color');
+}
+
+export type ContainerWithCover<P extends AnyPayload = Payload> = Container<
+	P & { cover: string | undefined }
+>;
+
+export function isContainerWithCover<P extends AnyPayload = Payload>(
+	container: Container<P> | NewContainer
+): container is ContainerWithCover<P> {
+	return hasProperty(container.payload, 'cover');
 }
 
 export type ContainerWithDescription = Container<AnyPayload & { description: string | undefined }>;
@@ -2447,6 +2449,35 @@ export const newUser = z.object({
 });
 
 export type NewUser = z.infer<typeof newUser>;
+
+export function isTemplateRoot({
+	guid,
+	payload,
+	relation
+}: {
+	guid: string;
+	payload: { template?: boolean };
+	relation: readonly Relation[];
+}) {
+	return (
+		payload.template === true &&
+		!relation.some(
+			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
+		)
+	);
+}
+
+export function getAvailableInProgramGuids({
+	guid,
+	relation
+}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
+	return relation
+		.filter(
+			({ predicate, subject }) =>
+				predicate === predicates.enum['is-available-in'] && subject === guid
+		)
+		.map(({ object }) => object);
+}
 
 export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
 	return function (candidate: Container<AnyPayload>) {
