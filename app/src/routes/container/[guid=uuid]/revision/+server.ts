@@ -3,6 +3,7 @@ import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { serverOwnedCopyRelationPredicates } from '$lib/containerCopy';
 import {
 	etag,
 	isContainerWithEditorialState,
@@ -65,6 +66,39 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		const serverOwnedRelations = container.relation.filter(({ predicate }) =>
+			serverOwnedCopyRelationPredicates.includes(
+				predicate as (typeof serverOwnedCopyRelationPredicates)[number]
+			)
+		);
+		const hasSpoofedServerOwnedRelation = parseResult.data.relation
+			.filter(({ predicate }) =>
+				serverOwnedCopyRelationPredicates.includes(
+					predicate as (typeof serverOwnedCopyRelationPredicates)[number]
+				)
+			)
+			.some(
+				(submitted) =>
+					!serverOwnedRelations.some(
+						(current) =>
+							current.object === submitted.object &&
+							current.predicate === submitted.predicate &&
+							current.subject === submitted.subject &&
+							current.position === submitted.position
+					)
+			);
+		if (hasSpoofedServerOwnedRelation) {
+			error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+		}
+		const relations = [
+			...parseResult.data.relation.filter(
+				({ predicate }) =>
+					!serverOwnedCopyRelationPredicates.includes(
+						predicate as (typeof serverOwnedCopyRelationPredicates)[number]
+					)
+			),
+			...serverOwnedRelations
+		];
 		const ability = defineAbilityFor(locals.user);
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
@@ -154,6 +188,7 @@ export const POST = (async ({ locals, params, request }) => {
 			const result = await locals.pool.connect(async (connection) => {
 				const updated = await updateContainer({
 					...parseResult.data,
+					relation: relations,
 					payload: {
 						...parseResult.data.payload,
 						...(aiContribution !== undefined ? { aiContribution } : undefined)

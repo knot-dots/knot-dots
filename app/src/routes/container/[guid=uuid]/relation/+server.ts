@@ -4,6 +4,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { isAdoptableProgram } from '$lib/adoptions';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { serverOwnedCopyRelationPredicates } from '$lib/containerCopy';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyPayload,
@@ -214,6 +215,15 @@ export const POST = (async ({ locals, params, request }) => {
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
+	}
+	if (
+		parseResult.data.some(({ predicate }) =>
+			serverOwnedCopyRelationPredicates.includes(
+				predicate as (typeof serverOwnedCopyRelationPredicates)[number]
+			)
+		)
+	) {
+		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
 	}
 
 	const ability = defineAbilityFor(locals.user);
