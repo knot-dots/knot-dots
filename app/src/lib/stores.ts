@@ -207,6 +207,12 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
+			key: 'templates';
+			container: Container<AnyPayload>;
+			containers: Container[];
+			facets: Map<string, Map<string, number>>;
+	  }
+	| {
 			key: 'view';
 			container: Container<AnyPayload>;
 			revisions: Container<AnyPayload>[];
@@ -472,6 +478,29 @@ if (browser) {
 				key: overlayKey.enum.resources,
 				container: result.data.container,
 				containers: result.data.containers
+			});
+		} else if (hashParams.has(overlayKey.enum.templates)) {
+			const programGuid = hashParams.get(overlayKey.enum.templates) as string;
+
+			// Preload for fullscreen and overlay is the same for templates, so we can use the same logic
+			const result = await preloadData(
+				resolve('/[guid=uuid]/[contentGuid=uuid]/templates/catalog', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: programGuid
+				}) +
+					'?' +
+					hashParams.toString()
+			);
+
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+
+			setOverlayIfLatest({
+				key: overlayKey.enum.templates,
+				container: result.data.container,
+				containers: result.data.containers,
+				facets: result.data.facets
 			});
 		} else {
 			setOverlayIfLatest(undefined);

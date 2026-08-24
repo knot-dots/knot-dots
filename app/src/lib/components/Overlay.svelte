@@ -11,6 +11,7 @@
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
+	import TemplatesOverlay from '$lib/components/TemplatesOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, isProgramContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
 
@@ -78,6 +79,8 @@
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['resources']}
 		<ResourcesOverlay containers={data.containers} />
+	{:else if data.key === overlayKey.enum.templates && isProgramContainer(data.container)}
+		<TemplatesOverlay containers={data.containers} facets={data.facets} />
 	{:else if data.key === overlayKey.enum['view']}
 		<EditableDetailView
 			container={data.container}
