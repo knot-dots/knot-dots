@@ -5,7 +5,7 @@
 	import { page } from '$app/state';
 	import { type AnyPayload, type Container, containerOfType, createRootCopyOf } from '$lib/models';
 	import { selectContainerCopyLocation, type ContainerCopyLocation } from '$lib/containerCopy';
-	import { ability, applicationState, newContainer, pendingContainerCopy, user } from '$lib/stores';
+	import { ability, applicationState, openContainerCopyDialog, user } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -60,13 +60,12 @@
 			});
 		}
 
-		$newContainer = copy;
-		$pendingContainerCopy = {
+		openContainerCopyDialog(copy, {
 			operation: 'copy',
 			sourceGuid: container.guid,
 			targetOrganizationGuid: location.organizationGuid,
 			targetOrganizationalUnitGuid: location.organizationalUnitGuid
-		};
+		});
 
 		createContainerDialog.getElement().showModal();
 	}
