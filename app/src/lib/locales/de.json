@@ -206,11 +206,18 @@
 	"empty": "Leer",
 	"end_date": "Ende",
 	"error": {
+		"bad_request": "Die Anfrage konnte nicht gelesen werden.",
+		"copy_invalid": "Die ausgewählten Inhalte können nicht kopiert werden.",
+		"copy_too_large": "Die ausgewählten Inhalte sind zu umfangreich zum Kopieren.",
+		"copy_unsupported_source": "Dieser Inhalt kann nicht an das ausgewählte Ziel kopiert werden.",
+		"forbidden": "Leider ist das nicht erlaubt.",
+		"individual_profile_exists": "Für diese Organisationseinheit gibt es bereits ein individuelles Profil.",
 		"unauthorized": "Leider ist das nicht erlaubt.",
 		"not_found": "Leider geht es hier nicht weiter.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
+		"unsupported_media_type": "Diese Anfrage muss JSON enthalten.",
 		"unexpected": "Wir arbeiten daran."
 	},
 	"establish_relations": "Beziehungen festlegen",
