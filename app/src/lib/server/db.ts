@@ -391,6 +391,7 @@ export function updateContainer(container: ModifiedContainer) {
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
+				ON CONFLICT (object, predicate, subject) DO NOTHING
 				RETURNING predicate, subject
       `);
 
