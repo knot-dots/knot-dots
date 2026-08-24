@@ -5,8 +5,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import saveContainerUser from '$lib/client/saveContainerUser';
-	import saveUser from '$lib/client/saveUser';
-	import Dialog from '$lib/components/Dialog.svelte';
+	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -33,8 +32,6 @@
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
-
-	let email: string = $state('');
 
 	const showViewSwitch = $derived(createFeatureDecisions(page.data.features).usePermissionMatrix());
 
@@ -115,23 +112,6 @@
 		}
 		await invalidateAll();
 	}
-
-	function handleInvite(container: Container<AnyPayload>) {
-		return async (event: Event) => {
-			event.preventDefault();
-
-			try {
-				await saveUser({ email, container });
-				email = '';
-				await invalidateAll();
-			} catch (error) {
-				console.log(error);
-				alert($_('invite.failure'));
-			}
-
-			dialog.close();
-		};
-	}
 </script>
 
 {#if showViewSwitch}
@@ -203,17 +183,7 @@
 	</button>
 </div>
 
-<Dialog bind:dialog>
-	<form onsubmit={handleInvite(container)}>
-		<h3>{$_('invite.heading')}</h3>
-		<label>
-			{$_('invite.email')}
-			<!-- svelte-ignore a11y_autofocus -->
-			<input type="email" bind:value={email} autofocus required />
-		</label>
-		<button class="button-primary system-primary" type="submit">{$_('invite.submit')}</button>
-	</form>
-</Dialog>
+<InviteUserDialog {container} bind:dialog />
 
 <style>
 	.view-switch {
@@ -223,26 +193,6 @@
 
 	td:last-child {
 		text-align: right;
-	}
-
-	form h3 {
-		margin-bottom: 1rem;
-	}
-
-	form button {
-		display: block;
-		margin-top: 1.5rem;
-		width: 100%;
-	}
-
-	form label {
-		display: block;
-		margin-top: 1rem;
-	}
-
-	form input {
-		display: block;
-		width: 100%;
 	}
 
 	table {

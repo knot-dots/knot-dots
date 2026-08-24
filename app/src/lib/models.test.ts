@@ -12,7 +12,8 @@ import {
 	predicates,
 	type ProgramPayload,
 	sortIndicatorsByRelevanceForGoalOrMeasure,
-	units
+	units,
+	userRelationsForMemberRole
 } from '$lib/models';
 import { addRelation } from '$lib/relations';
 
@@ -197,4 +198,19 @@ test('memberRoleOf picks the highest role from the user relations', () => {
 	expect(memberRoleOf({ guid: collaborator }, scope)).toBe(memberRoles.enum.collaborator);
 	expect(memberRoleOf({ guid: admin }, scope)).toBe(memberRoles.enum.administrator);
 	expect(memberRoleOf({ guid: outsider }, scope)).toBeNull();
+});
+
+test('userRelationsForMemberRole builds the role relations of a subject', () => {
+	const subject = '7db24631-935d-4e35-a6d5-5db07f0f4d75';
+	expect(userRelationsForMemberRole(memberRoles.enum.observer, subject)).toEqual([
+		{ predicate: predicates.enum['is-member-of'], subject }
+	]);
+	expect(userRelationsForMemberRole(memberRoles.enum.collaborator, subject)).toEqual([
+		{ predicate: predicates.enum['is-member-of'], subject },
+		{ predicate: predicates.enum['is-collaborator-of'], subject }
+	]);
+	expect(userRelationsForMemberRole(memberRoles.enum.administrator, subject)).toEqual([
+		{ predicate: predicates.enum['is-member-of'], subject },
+		{ predicate: predicates.enum['is-admin-of'], subject }
+	]);
 });

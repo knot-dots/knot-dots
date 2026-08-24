@@ -2,8 +2,15 @@ import { error, json } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
-import type { User } from '$lib/models';
-import { newUser, predicates } from '$lib/models';
+import type { Predicate, User } from '$lib/models';
+import {
+	memberRolePredicates,
+	memberRoles,
+	newUser,
+	payloadTypes,
+	predicates,
+	userRelationsForMemberRole
+} from '$lib/models';
 import {
 	createOrUpdateUser,
 	createUser,
@@ -47,6 +54,16 @@ export const POST = (async ({ locals, request }) => {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
+	const role = parseResult.data.role ?? memberRoles.enum.observer;
+
+	if (
+		role === memberRoles.enum.administrator &&
+		container.payload.type !== payloadTypes.enum.organization &&
+		container.payload.type !== payloadTypes.enum.organizational_unit
+	) {
+		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+	}
+
 	let user: User;
 
 	try {
@@ -83,13 +100,21 @@ export const POST = (async ({ locals, request }) => {
 		await sendVerificationEmail(parseResult.data.email, signupURL);
 	}
 
+	const roleRelationPredicates = new Set<Predicate>([
+		...Object.values(memberRolePredicates),
+		predicates.enum['is-member-of']
+	]);
+
 	await locals.pool.transaction(
 		updateContainer({
 			...container,
 			managed_by: [container.guid],
 			user: [
-				...parseResult.data.container.user,
-				{ subject: user.guid, predicate: predicates.enum['is-member-of'] }
+				...parseResult.data.container.user.filter(
+					({ predicate, subject }) =>
+						subject !== user.guid || !roleRelationPredicates.has(predicate)
+				),
+				...userRelationsForMemberRole(role, user.guid)
 			]
 		})
 	);

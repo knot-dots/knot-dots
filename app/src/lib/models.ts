@@ -638,6 +638,24 @@ export const memberRoles = z.enum(['observer', 'collaborator', 'head', 'administ
 
 export type MemberRole = z.infer<typeof memberRoles>;
 
+export const memberRolePredicates: Record<Exclude<MemberRole, 'observer'>, Predicate> = {
+	administrator: predicates.enum['is-admin-of'],
+	collaborator: predicates.enum['is-collaborator-of'],
+	head: predicates.enum['is-head-of']
+};
+
+export function userRelationsForMemberRole(
+	role: MemberRole,
+	subject: string
+): Array<z.infer<typeof userRelation>> {
+	return [
+		{ predicate: predicates.enum['is-member-of'], subject },
+		...(role === memberRoles.enum.observer
+			? []
+			: [{ predicate: memberRolePredicates[role], subject }])
+	];
+}
+
 export const taskPriority = z.object({
 	priority: z.number().int(),
 	task: z.uuid()
@@ -2327,7 +2345,8 @@ export type KeycloakUser = z.infer<typeof keycloakUser>;
 
 export const newUser = z.object({
 	email: z.email(),
-	container: anyContainer
+	container: anyContainer,
+	role: memberRoles.optional()
 });
 
 export type NewUser = z.infer<typeof newUser>;

@@ -208,6 +208,7 @@
 	"error": {
 		"unauthorized": "Leider ist das nicht erlaubt.",
 		"not_found": "Leider geht es hier nicht weiter.",
+		"unprocessable_entity": "Die Anfrage konnte nicht verarbeitet werden.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",

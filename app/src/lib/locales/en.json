@@ -208,6 +208,7 @@
 	"error": {
 		"unauthorized": "Sorry, you are not allowed to do this.",
 		"not_found": "Sorry, there is nothing to show here.",
+		"unprocessable_entity": "The request could not be processed.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"slug_not_available": "This URL slug is already in use.",

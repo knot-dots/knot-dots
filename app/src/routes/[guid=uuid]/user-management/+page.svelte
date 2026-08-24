@@ -9,7 +9,6 @@
 	import UserIcon from '~icons/flowbite/user-outline';
 	import ArrowDownIcon from '~icons/knotdots/arrow-down-circle-lined';
 	import tooltip from '$lib/attachments/tooltip';
-	import saveUser from '$lib/client/saveUser';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import BadgeDropdown, {
 		type BadgeDropdownOption,
@@ -17,8 +16,8 @@
 	} from '$lib/components/BadgeDropdown.svelte';
 	import ConfirmRemoveUserDialog from '$lib/components/ConfirmRemoveUserDialog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
-	import Dialog from '$lib/components/Dialog.svelte';
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
+	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
@@ -52,8 +51,6 @@
 	let confirmDeleteDialog: HTMLDialogElement;
 
 	let maybeSelectedUser: User | null = $state(null);
-
-	let email: string = $state('');
 
 	const isEditMode = $derived($applicationState.containerDetailView.editable ?? false);
 
@@ -277,41 +274,9 @@
 			pendingRemovals.delete(user.guid);
 		}
 	}
-
-	function handleInvite(container: Container<AnyPayload>) {
-		return async (event: Event) => {
-			event.preventDefault();
-
-			try {
-				const response = await saveUser({ email, container });
-				if (!response.ok) {
-					console.log(await response.json());
-					alert($_('invite.failure'));
-					return;
-				}
-
-				email = '';
-				await invalidateAll();
-				inviteDialog.close();
-			} catch (error) {
-				console.log(error);
-				alert($_('invite.failure'));
-			}
-		};
-	}
 </script>
 
-<Dialog bind:dialog={inviteDialog}>
-	<form onsubmit={handleInvite(data.container)}>
-		<h3>{$_('invite.heading')}</h3>
-		<label>
-			{$_('invite.email')}
-			<!-- svelte-ignore a11y_autofocus -->
-			<input type="email" bind:value={email} autofocus required />
-		</label>
-		<button class="button-primary system-primary" type="submit">{$_('invite.submit')}</button>
-	</form>
-</Dialog>
+<InviteUserDialog container={data.container} bind:dialog={inviteDialog} />
 
 <ConfirmRemoveUserDialog
 	bind:dialog={confirmDeleteDialog}
@@ -507,26 +472,6 @@
 	.not-signed-up {
 		color: var(--color-gray-500);
 		font-style: italic;
-	}
-
-	form h3 {
-		margin-bottom: 1rem;
-	}
-
-	form button {
-		display: block;
-		margin-top: 1.5rem;
-		width: 100%;
-	}
-
-	form label {
-		display: block;
-		margin-top: 1rem;
-	}
-
-	form input {
-		display: block;
-		width: 100%;
 	}
 
 	.header-content {

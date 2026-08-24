@@ -58,4 +58,47 @@ test.describe('Permission matrix', () => {
 		await page.getByText('List', { exact: true }).click();
 		await expect(page.getByRole('combobox').first()).toBeVisible();
 	});
+
+	test('invites a user with a role and suggests registered addresses', async ({
+		page,
+		testOrganization
+	}) => {
+		await page.goto(`/${testOrganization.guid}/user-management`);
+
+		// remove Bob's role so that he is registered in the organization but no
+		// longer a member and therefore shows up among the suggestions
+		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
+		const removeResponse = page.waitForResponse(
+			(r) => r.url().includes('/user') && r.request().method() === 'POST'
+		);
+		await page
+			.getByRole('row', { name: 'Bob Bow' })
+			.getByRole('button', { name: 'Observer' })
+			.click();
+		await page.getByRole('radio', { name: 'No role' }).click();
+		await removeResponse;
+		await expect(page.getByRole('row', { name: 'Bob Bow' })).toBeHidden();
+
+		await page.getByRole('button', { name: 'Invite member' }).click();
+
+		const dialog = page.getByRole('dialog');
+		const emailInput = dialog.getByRole('combobox', { name: 'Email' });
+		await emailInput.click();
+		await expect(dialog.locator('datalist option[value="bob@example.org"]')).toBeAttached();
+		// members are filtered from the suggestions
+		await expect(dialog.locator('datalist option[value="orla@example.org"]')).not.toBeAttached();
+
+		await emailInput.fill('bob@example.org');
+		await dialog.getByLabel('Role').selectOption('collaborator');
+		const inviteResponse = page.waitForResponse(
+			(r) => r.url().endsWith('/user') && r.request().method() === 'POST'
+		);
+		await dialog.getByRole('button', { name: 'Send invitation' }).click();
+		await inviteResponse;
+
+		// The invited user immediately holds the assigned role
+		await expect(
+			page.getByRole('row', { name: 'Bob Bow' }).getByText('Collaborator')
+		).toBeVisible();
+	});
 });

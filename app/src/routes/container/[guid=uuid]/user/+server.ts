@@ -9,15 +9,33 @@ import type { RequestHandler } from './$types';
 import { NotFoundError } from 'slonik';
 import { getMembers } from '$lib/server/keycloak';
 
-export const GET = (async ({ locals, params }) => {
+export const GET = (async ({ locals, params, url }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	const [container, users] = await Promise.all([
-		locals.pool.connect(getContainerByGuid(params.guid)),
-		locals.pool.connect(getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']]))
-	]);
+	const container = await locals.pool.connect(getContainerByGuid(params.guid));
+
+	// with ?registered the response lists everyone registered in the
+	// organization (i.e. the members of its Keycloak group) instead of the
+	// users related to this container
+	if (url.searchParams.has('registered')) {
+		try {
+			const members = await getMembers(container.organization);
+			return json(
+				members
+					.filter(({ enabled }) => enabled)
+					.map(({ id, username }) => ({ email: username, guid: id }))
+			);
+		} catch (error) {
+			log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+			return json([]);
+		}
+	}
+
+	const users = await locals.pool.connect(
+		getAllRelatedUsers(params.guid, [predicates.enum['is-member-of']])
+	);
 
 	try {
 		const members = await getMembers(container.organization);
