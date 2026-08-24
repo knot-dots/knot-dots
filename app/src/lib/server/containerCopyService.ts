@@ -48,6 +48,13 @@ function rootOperation(request: ContainerCopyRequest): ContainerCopyRootOperatio
 	}
 }
 
+function isIndividualProfile(source: Container<AnyPayload>) {
+	return source.relation.some(
+		({ predicate, subject }) =>
+			predicate === predicates.enum['is-individual-profile-of'] && subject === source.guid
+	);
+}
+
 function hasExistingIndividualProfile(source: Container<AnyPayload>) {
 	return source.relation.some(
 		({ object, predicate, subject }) =>
@@ -113,11 +120,13 @@ export async function executeContainerCopy({
 	request,
 	pool,
 	user,
-	maxPlanSize
+	maxPlanSize,
+	maxGraphSize = maxPlanSize
 }: {
 	request: ContainerCopyRequest;
 	pool: DatabasePool;
 	user: User;
+	maxGraphSize?: number;
 	maxPlanSize: number;
 }) {
 	const graph = await pool.connect(getContainerCopyGraph(request.sourceGuid));
@@ -134,6 +143,9 @@ export async function executeContainerCopy({
 		if (!isOrganizationalUnitContainer(source)) {
 			throw new ContainerCopyServiceError('unsupported_copy_source');
 		}
+		if (isIndividualProfile(source)) {
+			throw new ContainerCopyServiceError('unsupported_copy_source');
+		}
 		if (hasExistingIndividualProfile(source)) {
 			throw new ContainerCopyServiceError('individual_profile_exists');
 		}
@@ -144,6 +156,9 @@ export async function executeContainerCopy({
 		request.targetOrganizationalUnitGuid !== null
 	) {
 		throw new ContainerCopyServiceError('invalid_target');
+	}
+	if (graph.containers.length > maxGraphSize) {
+		throw new ContainerCopyServiceError('copy_too_large');
 	}
 
 	const resolvedTarget = await loadTarget(request, source, pool);
@@ -168,9 +183,11 @@ export async function executeContainerCopy({
 		canRetainRequiredDependency: (container, copyTarget) =>
 			container.organization === copyTarget.organization &&
 			(isBinaryIndicatorContainer(container) || isIndicatorTemplateContainer(container)),
-		canRetainCollectionItem: (container) => ability.can('read', container),
-		canUseNewItemTemplate: (container) =>
-			container.payload.visibility === visibility.enum.public || ability.can('read', container)
+		canRetainCollectionItem: (container, copyTarget) =>
+			container.organization === copyTarget.organization && ability.can('read', container),
+		canUseNewItemTemplate: (container, copyTarget) =>
+			container.payload.visibility === visibility.enum.public ||
+			container.organization === copyTarget.organization
 	};
 
 	let plan;

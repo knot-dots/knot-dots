@@ -3,7 +3,7 @@ import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { serverOwnedCopyRelationPredicates } from '$lib/containerCopy';
+import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import {
 	administrativeTypes,
 	indicatorCategories,
@@ -127,11 +127,7 @@ export const POST = (async ({ locals, request }) => {
 		error(422, parseResult.error);
 	}
 	if (
-		parseResult.data.relation.some(({ predicate }) =>
-			serverOwnedCopyRelationPredicates.includes(
-				predicate as (typeof serverOwnedCopyRelationPredicates)[number]
-			)
-		)
+		parseResult.data.relation.some(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
 	) {
 		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
 	}

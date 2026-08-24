@@ -1,4 +1,4 @@
-import type { DatabasePool } from 'slonik';
+import { NotFoundError, type DatabasePool } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { ContainerCopyPlan } from '$lib/server/containerCopyPlan';
@@ -11,7 +11,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('$lib/server/db', () => ({
 	getContainerCopyGraph: () => async () => mocks.graph,
-	getContainerByGuid: (guid: string) => async () => mocks.targets.get(guid)
+	getContainerByGuid: (guid: string) => async () => {
+		const target = mocks.targets.get(guid);
+		if (!target) {
+			throw new NotFoundError('Target not found', { sql: '', values: [] });
+		}
+		return target;
+	}
 }));
 
 vi.mock('$lib/server/containerCopyPersistence', () => ({
@@ -38,17 +44,19 @@ import type { User } from '$lib/stores';
 const sourceGuid = '00000000-0000-4000-8000-000000000001';
 const childGuid = '00000000-0000-4000-8000-000000000002';
 const organizationGuid = '10000000-0000-4000-8000-000000000000';
+const otherOrganizationGuid = '10000000-0000-4000-8000-000000000001';
 const creatorGuid = '20000000-0000-4000-8000-000000000000';
 
 function container(
 	guid: string,
 	payload: Record<string, unknown>,
-	relations: Array<{ object: string; position: number; predicate: string; subject: string }> = []
+	relations: Array<{ object: string; position: number; predicate: string; subject: string }> = [],
+	organization = organizationGuid
 ) {
 	return anyContainer.parse({
 		guid,
-		managed_by: organizationGuid,
-		organization: organizationGuid,
+		managed_by: organization,
+		organization,
 		organizational_unit: null,
 		payload,
 		realm: 'source-realm',
@@ -153,7 +161,39 @@ test('rejects an oversized plan before persistence', async () => {
 			},
 			pool,
 			user: sysadmin,
+			maxGraphSize: 500,
 			maxPlanSize: 1
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('copy_too_large'));
+	expect(mocks.persist).not.toHaveBeenCalled();
+});
+
+test('rejects an oversized graph after source authorization and before planning', async () => {
+	const source = container(sourceGuid, {
+		title: 'Source',
+		type: payloadTypes.enum.text,
+		visibility: visibility.enum.public
+	});
+	const reference = container(childGuid, {
+		title: 'Reference',
+		type: payloadTypes.enum.text,
+		visibility: visibility.enum.public
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, reference] };
+
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'copy',
+				sourceGuid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: source.payload
+			},
+			pool,
+			user: sysadmin,
+			maxGraphSize: 1,
+			maxPlanSize: 500
 		})
 	).rejects.toEqual(new ContainerCopyServiceError('copy_too_large'));
 	expect(mocks.persist).not.toHaveBeenCalled();
@@ -225,10 +265,180 @@ test('uses the same opaque failure for missing and unreadable sources', async ()
 			request: { ...copyRequest, rootPayload: privateSource.payload },
 			pool,
 			user: { ...sysadmin, roles: [] },
+			maxGraphSize: 0,
 			maxPlanSize: 500
 		})
 	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
 	expect(mocks.persist).not.toHaveBeenCalled();
+});
+
+test('rejects missing, malformed, and cross-organization targets', async () => {
+	const source = container(sourceGuid, {
+		title: 'Source',
+		type: payloadTypes.enum.text,
+		visibility: visibility.enum.public
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	const request = {
+		operation: 'copy' as const,
+		sourceGuid,
+		targetOrganizationGuid: otherOrganizationGuid,
+		targetOrganizationalUnitGuid: null,
+		rootPayload: source.payload
+	};
+
+	await expect(
+		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
+
+	mocks.targets.set(otherOrganizationGuid, source);
+	await expect(
+		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
+
+	const organizationalUnitGuid = '00000000-0000-4000-8000-000000000005';
+	const organizationalUnit = container(
+		organizationalUnitGuid,
+		{
+			name: 'Other unit',
+			type: payloadTypes.enum.organizational_unit,
+			visibility: visibility.enum.public
+		},
+		[],
+		otherOrganizationGuid
+	);
+	mocks.targets.set(otherOrganizationGuid, {
+		...organization,
+		guid: otherOrganizationGuid,
+		organization: otherOrganizationGuid,
+		managed_by: [otherOrganizationGuid]
+	});
+	mocks.targets.set(organizationalUnitGuid, organizationalUnit);
+	await expect(
+		executeContainerCopy({
+			request: {
+				...request,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: organizationalUnitGuid
+			},
+			pool,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
+	expect(mocks.persist).not.toHaveBeenCalled();
+});
+
+test('applies template-instance policy through the service', async () => {
+	const source = container(sourceGuid, {
+		template: true,
+		title: 'Template',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	if (source.payload.type !== payloadTypes.enum.program) {
+		throw new Error('Expected a program template');
+	}
+
+	const root = await executeContainerCopy({
+		request: {
+			operation: 'template-instance',
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: { ...source.payload, title: 'Edited template instance' }
+		},
+		pool,
+		user: sysadmin,
+		maxPlanSize: 500
+	});
+
+	expect(root.payload).toMatchObject({ template: false, title: 'Edited template instance' });
+	expect(mocks.persist).toHaveBeenCalledOnce();
+});
+
+test('retains public and same-organization collection references only', async () => {
+	const privateItemGuid = '00000000-0000-4000-8000-000000000010';
+	const publicItemGuid = '00000000-0000-4000-8000-000000000011';
+	const localItemGuid = '00000000-0000-4000-8000-000000000012';
+	const privateTemplateGuid = '00000000-0000-4000-8000-000000000013';
+	const publicTemplateGuid = '00000000-0000-4000-8000-000000000014';
+	const localTemplateGuid = '00000000-0000-4000-8000-000000000015';
+	const source = container(sourceGuid, {
+		allowSearch: false,
+		allowSort: false,
+		filter: {},
+		item: [privateItemGuid, publicItemGuid, localItemGuid],
+		listType: 'wall',
+		newItemTemplate: [privateTemplateGuid, publicTemplateGuid, localTemplateGuid],
+		showDescription: false,
+		sort: 'alpha',
+		terms: '',
+		title: 'Collection',
+		type: payloadTypes.enum.custom_collection,
+		visibility: visibility.enum.public
+	});
+	const references = [
+		container(
+			privateItemGuid,
+			{ title: 'Private foreign item', type: payloadTypes.enum.text },
+			[],
+			otherOrganizationGuid
+		),
+		container(
+			publicItemGuid,
+			{
+				title: 'Public foreign item',
+				type: payloadTypes.enum.text,
+				visibility: visibility.enum.public
+			},
+			[],
+			otherOrganizationGuid
+		),
+		container(localItemGuid, { title: 'Private local item', type: payloadTypes.enum.text }),
+		container(
+			privateTemplateGuid,
+			{ template: true, title: 'Private foreign template', type: payloadTypes.enum.program },
+			[],
+			otherOrganizationGuid
+		),
+		container(
+			publicTemplateGuid,
+			{
+				template: true,
+				title: 'Public foreign template',
+				type: payloadTypes.enum.program,
+				visibility: visibility.enum.public
+			},
+			[],
+			otherOrganizationGuid
+		),
+		container(localTemplateGuid, {
+			template: true,
+			title: 'Private local template',
+			type: payloadTypes.enum.program
+		})
+	];
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, ...references] };
+
+	const root = await executeContainerCopy({
+		request: {
+			operation: 'copy',
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: source.payload
+		},
+		pool,
+		user: sysadmin,
+		maxPlanSize: 500
+	});
+
+	expect(root.payload).toMatchObject({
+		item: [publicItemGuid, localItemGuid],
+		newItemTemplate: [publicTemplateGuid, localTemplateGuid]
+	});
 });
 
 test('rejects organization roots and duplicate individual profiles before persistence', async () => {
@@ -273,5 +483,24 @@ test('rejects organization roots and duplicate individual profiles before persis
 			maxPlanSize: 500
 		})
 	).rejects.toEqual(new ContainerCopyServiceError('individual_profile_exists'));
+
+	const existingProfile = container(
+		profileGuid,
+		{
+			name: 'Individual profile',
+			type: payloadTypes.enum.organizational_unit,
+			visibility: visibility.enum.public
+		},
+		[profileRelation]
+	);
+	mocks.graph = { rootGuid: profileGuid, containers: [existingProfile] };
+	await expect(
+		executeContainerCopy({
+			request: { operation: 'individual-profile', sourceGuid: profileGuid },
+			pool,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('unsupported_copy_source'));
 	expect(mocks.persist).not.toHaveBeenCalled();
 });
