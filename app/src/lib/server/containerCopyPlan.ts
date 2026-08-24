@@ -1,19 +1,24 @@
 import { z } from 'zod';
 import {
+	anyContainer,
 	type AnyPayload,
 	type Container,
 	createDescendantCopyOf,
+	createIndividualProfileCopyOf,
 	createRootCopyOf,
+	createTemplateInstanceOf,
 	isOrganizationalUnitContainer,
+	type NewContainer,
 	newContainer,
 	type Predicate,
 	payloadTypes,
 	predicates,
 	relation,
 	type Relation,
-	type Visibility,
+	type TemplatePayload,
 	visibility
 } from '$lib/models';
+import type { ContainerCopyRootOperation } from '$lib/containerCopy';
 
 export const structuralCopyPredicates = [
 	predicates.enum['is-part-of'],
@@ -43,12 +48,13 @@ export type CopyGraphSnapshot = {
 export type CopyTarget = {
 	organization: string;
 	organizationalUnit: string | null;
-	rootVisibility: Visibility;
+	realm: string;
 	creatorGuid: string;
 };
 
 export type CopyReadPolicy = {
 	canReadSource(container: Container<AnyPayload>): boolean;
+	canRetainRequiredDependency(container: Container<AnyPayload>, target: CopyTarget): boolean;
 	canRetainCollectionItem(container: Container<AnyPayload>, target: CopyTarget): boolean;
 	canUseNewItemTemplate(container: Container<AnyPayload>, target: CopyTarget): boolean;
 };
@@ -57,7 +63,12 @@ export type ContainerCopyPlan = ReadonlyMap<string, NewContainerWithGuid>;
 
 export class CopyPlanError extends Error {
 	constructor(
-		readonly code: 'source_unavailable' | 'required_dependency_unavailable' | 'invalid_copy_graph'
+		readonly code:
+			| 'source_unavailable'
+			| 'required_dependency_unavailable'
+			| 'invalid_copy_graph'
+			| 'payload_type_mismatch'
+			| 'unsupported_copy_source'
 	) {
 		super(code);
 		this.name = 'CopyPlanError';
@@ -113,14 +124,69 @@ function opaqueRequiredDependencyError(): never {
 	throw new CopyPlanError('required_dependency_unavailable');
 }
 
+function createRootForOperation(
+	root: Container<AnyPayload>,
+	target: CopyTarget,
+	operation: ContainerCopyRootOperation
+) {
+	let copy: NewContainer<AnyPayload>;
+
+	switch (operation.kind) {
+		case 'copy': {
+			if (operation.rootPayload.type !== root.payload.type) {
+				throw new CopyPlanError('payload_type_mismatch');
+			}
+			const editedRoot = { ...root, payload: structuredClone(operation.rootPayload) };
+			copy = createRootCopyOf(
+				editedRoot,
+				target.organization,
+				target.organizationalUnit,
+				operation.rootPayload.visibility
+			);
+			break;
+		}
+		case 'template-instance': {
+			if (
+				operation.rootPayload.type !== root.payload.type ||
+				!('template' in operation.rootPayload)
+			) {
+				throw new CopyPlanError('payload_type_mismatch');
+			}
+			if (!('template' in root.payload) || !root.payload.template) {
+				throw new CopyPlanError('unsupported_copy_source');
+			}
+			const editedTemplate = anyContainer.parse({
+				...root,
+				payload: { ...structuredClone(operation.rootPayload), template: true }
+			}) as Container<TemplatePayload>;
+			copy = createTemplateInstanceOf(
+				editedTemplate,
+				target.organization,
+				target.organizationalUnit
+			);
+			break;
+		}
+		case 'individual-profile':
+			if (!isOrganizationalUnitContainer(root)) {
+				throw new CopyPlanError('unsupported_copy_source');
+			}
+			copy = createIndividualProfileCopyOf(root);
+			break;
+	}
+
+	return newContainer.parse({ ...copy, realm: target.realm });
+}
+
 export function createContainerCopyPlan({
 	graph,
 	target,
+	operation,
 	readPolicy,
 	allocateGuid = () => crypto.randomUUID()
 }: {
 	graph: CopyGraphSnapshot;
 	target: CopyTarget;
+	operation: ContainerCopyRootOperation;
 	readPolicy: CopyReadPolicy;
 	allocateGuid?: () => string;
 }): ContainerCopyPlan {
@@ -175,7 +241,12 @@ export function createContainerCopyPlan({
 		if (!dependency) {
 			opaqueRequiredDependencyError();
 		}
-		if (included.has(dependency.guid) || dependency.payload.visibility === visibility.enum.public) {
+		if (
+			included.has(dependency.guid) ||
+			dependency.payload.visibility === visibility.enum.public ||
+			(readPolicy.canReadSource(dependency) &&
+				readPolicy.canRetainRequiredDependency(dependency, target))
+		) {
 			return;
 		}
 		if (!includeReadable(dependency)) {
@@ -241,6 +312,8 @@ export function createContainerCopyPlan({
 	const descendantOrganizationalUnit = isOrganizationalUnitContainer(root)
 		? copiedRootGuid
 		: target.organizationalUnit;
+	const plannedRoot = createRootForOperation(root, target, operation);
+	const rootVisibility = plannedRoot.payload.visibility;
 
 	const resolveRequiredPayloadGuid = (originalGuid: string) => {
 		// Required payload references must resolve either to a copied private dependency or to the
@@ -250,7 +323,12 @@ export function createContainerCopyPlan({
 			return copiedGuid;
 		}
 		const dependency = containersByGuid.get(originalGuid);
-		if (dependency?.payload.visibility === visibility.enum.public) {
+		if (
+			dependency &&
+			(dependency.payload.visibility === visibility.enum.public ||
+				(readPolicy.canReadSource(dependency) &&
+					readPolicy.canRetainRequiredDependency(dependency, target)))
+		) {
 			return originalGuid;
 		}
 		return opaqueRequiredDependencyError();
@@ -259,22 +337,18 @@ export function createContainerCopyPlan({
 	const copies = orderedOriginalGuids.map((originalGuid) => {
 		const source = containersByGuid.get(originalGuid) as Container<AnyPayload>;
 		const copiedGuid = guidMap.get(originalGuid) as string;
-		// Reuse the single-container copy policy for resets and ownership, then apply the root or
-		// descendant visibility rules appropriate to this container's role in the graph.
+		// Apply the explicitly selected root operation before reference remapping. Descendants use the
+		// ordinary envelope policy and retain their cloned payload data.
 		const copy =
 			originalGuid === root.guid
-				? createRootCopyOf(
-						source,
-						target.organization,
-						target.organizationalUnit,
-						target.rootVisibility
-					)
+				? structuredClone(plannedRoot)
 				: createDescendantCopyOf(
 						source,
 						target.organization,
 						descendantOrganizationalUnit,
-						target.rootVisibility
+						rootVisibility
 					);
+		copy.realm = target.realm;
 
 		copy.user = [
 			{
@@ -335,6 +409,14 @@ export function createContainerCopyPlan({
 				subject: copiedGuid
 			}
 		];
+		if (originalGuid === root.guid && operation.kind === 'individual-profile') {
+			copiedRelations.push({
+				object: originalGuid,
+				position: 0,
+				predicate: predicates.enum['is-individual-profile-of'],
+				subject: copiedGuid
+			});
+		}
 
 		for (const relation of relationsBySubject.get(originalGuid) ?? []) {
 			if (relation.predicate === predicates.enum['is-copy-of']) {
@@ -357,7 +439,12 @@ export function createContainerCopyPlan({
 					continue;
 				}
 				const dependency = containersByGuid.get(relation.object);
-				if (dependency?.payload.visibility !== visibility.enum.public) {
+				if (
+					!dependency ||
+					(dependency.payload.visibility !== visibility.enum.public &&
+						(!readPolicy.canReadSource(dependency) ||
+							!readPolicy.canRetainRequiredDependency(dependency, target)))
+				) {
 					opaqueRequiredDependencyError();
 				}
 				copiedRelations.push({ ...relation, subject: copiedGuid });
