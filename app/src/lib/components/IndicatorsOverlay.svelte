@@ -41,10 +41,10 @@
 	);
 </script>
 
-<Header {facets} search />
+<Header compare {facets} search />
 
 <div class="content">
-	<NewIndicators {containers} />
+	<NewIndicators compare {containers} />
 
 	<ContextTabs slug="indicators" />
 </div>

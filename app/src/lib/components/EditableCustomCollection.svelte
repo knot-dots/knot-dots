@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { IsInViewport, resource } from 'runed';
 	import { getContext } from 'svelte';
-	import { SvelteMap, SvelteURLSearchParams } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import ArrowRight from '~icons/knotdots/arrow-right';
@@ -9,6 +8,7 @@
 	import Search from '~icons/knotdots/search';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import AddItemMenu from '$lib/components/AddItemMenu.svelte';
@@ -26,13 +26,11 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 	import {
 		actualDataPayload,
-		type ActualDataPayload,
 		type AnyPayload,
 		type Container,
 		createContainerSchema,
 		createTemplateInstanceOf,
 		type CustomCollectionPayload,
-		isActualDataContainer,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
 		isTemplateContainer,
@@ -44,13 +42,7 @@
 		resolveOrganizationScope
 	} from '$lib/organizationScope';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import {
-		ability,
-		addItemState,
-		compareState,
-		mayCreateContainer,
-		newContainer
-	} from '$lib/stores';
+	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<CustomCollectionPayload>;
@@ -335,65 +327,12 @@
 		return `${path}${queryString ? `?${queryString}` : ''}`;
 	});
 
-	// Fetch comparison data for all indicators in batch
-	let selectedMunicipalityGuids = $derived(
-		$compareState.selectedMunicipalities.map((m) => m.guid) ?? []
-	);
-
-	let indicatorGuids = $derived(
-		items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
-	);
-
-	// Fetch comparison data for all indicators in batch if there are selected municipalities in store
-	const comparisonDataResource = resource(
-		() => [selectedMunicipalityGuids, indicatorGuids, inViewport.current] as const,
-		async ([municipalityGuids, indicators], _, { signal }) => {
-			if (municipalityGuids.length === 0 || indicators.length === 0) return [];
-
-			// Split indicators into chunks to avoid 431 error (Request URI Too Large)
-			const CHUNK_SIZE = 50; // Conservative limit to keep URL under ~8KB
-			const chunks: string[][] = [];
-			for (let i = 0; i < indicators.length; i += CHUNK_SIZE) {
-				chunks.push(indicators.slice(i, i + CHUNK_SIZE));
-			}
-
-			// Fetch all chunks in parallel
-			const fetchPromises = chunks.map(async (indicatorChunk) => {
-				const params = new SvelteURLSearchParams();
-				for (const guid of indicatorChunk) {
-					params.append('indicator', guid);
-				}
-				for (const guid of municipalityGuids) {
-					params.append('organizationalUnit', guid);
-				}
-				params.append('payloadType', payloadTypes.enum.actual_data);
-
-				const response = await fetch(`/container?${params.toString()}`, { signal });
-				if (!response.ok) return [];
-				return z.array(createContainerSchema(actualDataPayload)).parse(await response.json());
-			});
-
-			// Combine results from all chunks
-			const results = await Promise.all(fetchPromises);
-			return results.flat();
-		},
-		{ lazy: true }
-	);
-
-	// Create a map for efficient lookup of comparison data by indicator GUID
-	let comparisonDataMap = $derived.by(() => {
-		const map = new SvelteMap<string, Container<ActualDataPayload>[]>();
-		for (const container of comparisonDataResource.current ?? []) {
-			if (isActualDataContainer(container) && container.payload.indicator) {
-				const indicatorGuid = container.payload.indicator;
-				if (!map.has(indicatorGuid)) {
-					map.set(indicatorGuid, []);
-				}
-				map.get(indicatorGuid)!.push(container);
-			}
-		}
-		return map;
+	const comparisonData = createComparisonData({
+		enabled: () => inViewportOnce,
+		indicatorGuids: () => items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
 	});
+
+	let comparisonDataMap = $derived(comparisonData.comparisonDataMap);
 
 	function addItems() {
 		dialog?.showModal();
