@@ -30,7 +30,11 @@
 			{/snippet}
 
 			{#snippet main()}
-				<Catalog containers={data.containers} payloadType={[...templatablePayloadTypes]} />
+				<Catalog
+					containers={data.containers}
+					payloadType={[...templatablePayloadTypes]}
+					createAsTemplate={true}
+				/>
 
 				<ContextTabs slug="templates-catalog" />
 			{/snippet}

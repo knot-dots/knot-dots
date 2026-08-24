@@ -34,7 +34,7 @@
 <Header {facets} search />
 
 <div class="content">
-	<Catalog {containers} payloadType={[...templatablePayloadTypes]} />
+	<Catalog {containers} payloadType={[...templatablePayloadTypes]} createAsTemplate={true} />
 
 	<ContextTabs slug="templates-catalog" />
 </div>

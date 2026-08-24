@@ -23,18 +23,26 @@
 		containers: T[];
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
+		createAsTemplate?: boolean;
 		hideCreateButton?: boolean;
 		footer?: Snippet;
 	}
 
-	let { containers, item, payloadType, hideCreateButton = false, footer }: Props = $props();
+	let {
+		containers,
+		item,
+		payloadType,
+		createAsTemplate = false,
+		hideCreateButton = false,
+		footer
+	}: Props = $props();
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
 	);
 
 	function createContainer(payloadType: PayloadType) {
-		$newContainer = containerOfType(
+		const container = containerOfType(
 			payloadType,
 			page.data.currentOrganization.guid,
 			page.data.currentOrganizationalUnit?.guid ?? null,
@@ -42,6 +50,11 @@
 			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
+		if (createAsTemplate && 'template' in container.payload) {
+			container.payload.template = true;
+		}
+
+		$newContainer = container;
 		createContainerDialog.getElement().showModal();
 	}
 </script>
