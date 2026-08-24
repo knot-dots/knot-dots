@@ -42,7 +42,13 @@
 		resolveOrganizationScope
 	} from '$lib/organizationScope';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
+	import {
+		ability,
+		addItemState,
+		mayCreateContainer,
+		newContainer,
+		pendingContainerCopy
+	} from '$lib/stores';
 
 	interface Props {
 		container: Container<CustomCollectionPayload>;
@@ -360,6 +366,12 @@
 			container.organization,
 			container.organizational_unit ?? null
 		);
+		$pendingContainerCopy = {
+			operation: 'template-instance',
+			sourceGuid: template.guid,
+			targetOrganizationGuid: container.organization,
+			targetOrganizationalUnitGuid: container.organizational_unit ?? null
+		};
 
 		$addItemState = { target: container };
 		createContainerDialog.getElement().showModal();

@@ -9,10 +9,10 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
+	import copyContainer from '$lib/client/copyContainer';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import saveContainer from '$lib/client/saveContainer';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
@@ -33,7 +33,6 @@
 		type AnyPayload,
 		type Container,
 		containerOfType,
-		createIndividualProfileCopyOf,
 		getOrganizationURL,
 		helpSlug,
 		isOrganizationalUnitContainer,
@@ -163,9 +162,10 @@
 		creatingProfile = true;
 
 		try {
-			const profile = createIndividualProfileCopyOf(container);
-
-			const response = await saveContainer(profile);
+			const response = await copyContainer({
+				operation: 'individual-profile',
+				sourceGuid: container.guid
+			});
 
 			if (response.ok) {
 				const created = await response.json();

@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import copyContainer from '$lib/client/copyContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -54,7 +55,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { addItemState, newContainer } from '$lib/stores';
+	import { addItemState, newContainer, pendingContainerCopy } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -63,18 +64,22 @@
 	let { dialog = $bindable() }: Props = $props();
 
 	async function save(container: NewContainer) {
-		const response = await saveContainer(container);
+		const pendingCopy = $pendingContainerCopy;
+		const addItemTarget = $addItemState.target;
+		const response = pendingCopy
+			? await copyContainer({ ...pendingCopy, rootPayload: container.payload })
+			: await saveContainer(container);
 		if (response.ok) {
 			const savedContainer = await response.json();
 
-			if ($addItemState.target) {
-				const items = $addItemState.target.payload.item.includes(savedContainer.guid)
-					? $addItemState.target.payload.item
-					: [...$addItemState.target.payload.item, savedContainer.guid];
+			if (addItemTarget) {
+				const items = addItemTarget.payload.item.includes(savedContainer.guid)
+					? addItemTarget.payload.item
+					: [...addItemTarget.payload.item, savedContainer.guid];
 				const targetResponse = await saveContainer({
-					...$addItemState.target,
+					...addItemTarget,
 					payload: {
-						...$addItemState.target.payload,
+						...addItemTarget.payload,
 						item: items
 					}
 				});
@@ -86,8 +91,7 @@
 				}
 
 				const savedTarget = await targetResponse.json();
-				Object.assign($addItemState.target, savedTarget);
-				$addItemState = {};
+				Object.assign(addItemTarget, savedTarget);
 			}
 
 			if (isOrganizationalUnitContainer(savedContainer)) {
@@ -105,6 +109,12 @@
 		}
 	}
 
+	function resetDialogState() {
+		$newContainer = undefined;
+		$pendingContainerCopy = undefined;
+		$addItemState = {};
+	}
+
 	function handleSubmit(event: SubmitEvent) {
 		if (!event.submitter) {
 			event.preventDefault();
@@ -116,7 +126,7 @@
 		}
 
 		dialog.close();
-		$newContainer = undefined;
+		resetDialogState();
 	}
 
 	function resizeTextarea(event: Event) {
@@ -143,7 +153,7 @@
 	}
 </script>
 
-<dialog bind:this={dialog}>
+<dialog bind:this={dialog} onclose={resetDialogState}>
 	{#if $newContainer}
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
