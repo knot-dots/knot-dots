@@ -22,6 +22,7 @@ export const overlayKey = z.enum([
 	'relations',
 	'resources',
 	'tasks',
+	'templates',
 	'view'
 ]);
 
@@ -186,6 +187,7 @@ const helpSlugValues = [
 	'tasks-status',
 	'tasks-table',
 	'teaser-view',
+	'templates-catalog',
 	'term-view',
 	'text-view',
 	'user-management'
