@@ -55,6 +55,32 @@ test('copies an edited program root and its descendants through the dedicated en
 	expect(copiedProgram.relation).not.toContainEqual(
 		expect.objectContaining({ subject: testMeasure.guid })
 	);
+	const partsResponse = await dotsBoard.page.request.get(
+		`/container/${copiedProgram.guid}/relation?relationType=is-part-of-program`
+	);
+	expect(partsResponse.ok()).toBe(true);
+	const copiedParts = await partsResponse.json();
+	const copiedMeasure = copiedParts.find(
+		(part: {
+			guid: string;
+			relation: Array<{ object: string; predicate: string; subject: string }>;
+		}) =>
+			part.relation.some(
+				(relation) =>
+					relation.object === testMeasure.guid &&
+					relation.predicate === 'is-copy-of' &&
+					relation.subject === part.guid
+			)
+	);
+	expect(copiedMeasure).toBeDefined();
+	expect(copiedMeasure.guid).not.toBe(testMeasure.guid);
+	expect(copiedMeasure.relation).toContainEqual(
+		expect.objectContaining({
+			object: copiedProgram.guid,
+			predicate: 'is-part-of-program',
+			subject: copiedMeasure.guid
+		})
+	);
 	await expect(dotsBoard.overlay.title).toHaveText(title);
 });
 

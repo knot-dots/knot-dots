@@ -3,7 +3,7 @@ import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { serverOwnedCopyRelationPredicates } from '$lib/containerCopy';
+import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import {
 	etag,
 	isContainerWithEditorialState,
@@ -66,17 +66,15 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		const ability = defineAbilityFor(locals.user);
+		if (ability.cannot('update', container)) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
 		const serverOwnedRelations = container.relation.filter(({ predicate }) =>
-			serverOwnedCopyRelationPredicates.includes(
-				predicate as (typeof serverOwnedCopyRelationPredicates)[number]
-			)
+			isServerOwnedCopyRelationPredicate(predicate)
 		);
 		const hasSpoofedServerOwnedRelation = parseResult.data.relation
-			.filter(({ predicate }) =>
-				serverOwnedCopyRelationPredicates.includes(
-					predicate as (typeof serverOwnedCopyRelationPredicates)[number]
-				)
-			)
+			.filter(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
 			.some(
 				(submitted) =>
 					!serverOwnedRelations.some(
@@ -92,17 +90,10 @@ export const POST = (async ({ locals, params, request }) => {
 		}
 		const relations = [
 			...parseResult.data.relation.filter(
-				({ predicate }) =>
-					!serverOwnedCopyRelationPredicates.includes(
-						predicate as (typeof serverOwnedCopyRelationPredicates)[number]
-					)
+				({ predicate }) => !isServerOwnedCopyRelationPredicate(predicate)
 			),
 			...serverOwnedRelations
 		];
-		const ability = defineAbilityFor(locals.user);
-		if (ability.cannot('update', container)) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
 		if (
 			parseResult.data.organization !== container.organization &&
 			ability.cannot('update', container, 'organization')

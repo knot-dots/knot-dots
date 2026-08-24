@@ -71,3 +71,9 @@ export const serverOwnedCopyRelationPredicates = [
 	predicates.enum['is-copy-of'],
 	predicates.enum['is-individual-profile-of']
 ] as const satisfies readonly Predicate[];
+
+export function isServerOwnedCopyRelationPredicate(
+	predicate: string
+): predicate is (typeof serverOwnedCopyRelationPredicates)[number] {
+	return serverOwnedCopyRelationPredicates.some((candidate) => candidate === predicate);
+}

@@ -1,5 +1,9 @@
 import { expect, test } from 'vitest';
-import { containerCopyRequest, selectContainerCopyLocation } from '$lib/containerCopy';
+import {
+	containerCopyRequest,
+	isServerOwnedCopyRelationPredicate,
+	selectContainerCopyLocation
+} from '$lib/containerCopy';
 import { payloadTypes } from '$lib/models';
 
 const sourceGuid = '00000000-0000-4000-8000-000000000001';
@@ -32,6 +36,12 @@ test('accepts only the operation-specific copy request fields', () => {
 			relation: [{ object: sourceGuid, predicate: 'is-copy-of' }]
 		}).success
 	).toBe(false);
+});
+
+test('recognizes only server-owned copy provenance predicates', () => {
+	expect(isServerOwnedCopyRelationPredicate('is-copy-of')).toBe(true);
+	expect(isServerOwnedCopyRelationPredicate('is-individual-profile-of')).toBe(true);
+	expect(isServerOwnedCopyRelationPredicate('is-part-of')).toBe(false);
 });
 
 test('prefers the current copy location when creation is allowed there', () => {
