@@ -1,460 +1,23 @@
 import { error, json } from '@sveltejs/kit';
-import {
-	type DatabaseConnection,
-	type DatabaseTransactionConnection,
-	UniqueIntegrityConstraintViolationError
-} from 'slonik';
+import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { serverOwnedCopyRelationPredicates } from '$lib/containerCopy';
 import {
 	administrativeTypes,
-	type AnyPayload,
-	type Container,
-	createCopyOf,
-	type GoalPayload,
 	indicatorCategories,
 	indicatorTypes,
-	isEffectContainer,
-	isGoalContainer,
-	isMeasureContainer,
-	isOrganizationalUnitContainer,
-	isProgramContainer,
-	isReportContainer,
-	isTaskContainer,
-	type MeasurePayload,
-	type NewContainer,
 	newContainer,
-	type OrganizationalUnitPayload,
-	type PartialRelation,
 	payloadTypes,
 	predicates,
-	type ProgramPayload,
 	programTypes,
-	type Relation,
-	type ReportPayload,
 	taskCategories
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
-import {
-	createContainer,
-	createManyContainerRelations,
-	getAllContainersRelatedToMeasure,
-	getAllContainersRelatedToProgram,
-	getAllRelatedContainers,
-	getManyContainers,
-	getManyOrganizationContainers
-} from '$lib/server/db';
-import type { User } from '$lib/stores';
+import { createContainer, getManyContainers, getManyOrganizationContainers } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
-
-function findCopiedTargetGuid<T extends Container<AnyPayload>>(
-	originalTargetGuid: string,
-	copied: Array<Container<GoalPayload> | T>
-): string {
-	return copied.find(({ relation }) =>
-		relation.some(
-			({ predicate, object }) =>
-				predicate === predicates.enum['is-copy-of'] && object === originalTargetGuid
-		)
-	)?.guid as string;
-}
-
-function mapRelationsByPredicate<T extends { relation: Relation[]; guid: string }>(
-	copyFrom: T,
-	opts: {
-		predicate: string;
-		subjectMustBeSelf?: boolean;
-		resolveObject: (originalObjectGuid: string) => string;
-		resolveSubject?: (originalSubjectGuid: string) => string;
-	}
-) {
-	const { predicate, subjectMustBeSelf = true, resolveObject, resolveSubject } = opts;
-
-	return copyFrom.relation
-		.filter(
-			({ predicate: p, subject }: { predicate: string; subject?: string }) =>
-				p === predicate && (!subjectMustBeSelf || subject === copyFrom.guid)
-		)
-		.map(({ position, predicate, object: originalObjectGuid, subject: originalSubjectGuid }) => ({
-			position,
-			predicate,
-			object: resolveObject(originalObjectGuid),
-			...(resolveSubject ? { subject: resolveSubject(originalSubjectGuid) } : undefined)
-		}))
-		.filter(({ object }) => object !== undefined);
-}
-
-async function copyMeasureFromOriginal<T extends Container<AnyPayload>>(
-	createdContainer: T,
-	originalMeasure: Container<MeasurePayload>,
-	user: User,
-	txConnection: DatabaseTransactionConnection
-) {
-	const copy = createCopyOf(
-		originalMeasure,
-		createdContainer.organization,
-		createdContainer.organizational_unit
-	);
-
-	const originalProgramGuid = createdContainer.relation.find(
-		({ predicate, subject }) =>
-			predicate === predicates.enum['is-copy-of'] && subject === createdContainer.guid
-	)?.object;
-
-	const copiedMeasure = (await createContainer({
-		...copy,
-		user: [{ predicate: predicates.enum['is-creator-of'], subject: user.guid }],
-		relation: [
-			...copy.relation,
-			{
-				object: createdContainer.guid,
-				predicate: predicates.enum['is-part-of-program'],
-				position:
-					originalMeasure.relation.find(
-						({ object, predicate }) =>
-							predicate === predicates.enum['is-part-of-program'] &&
-							(originalProgramGuid === undefined || object === originalProgramGuid)
-					)?.position ?? 0
-			}
-		]
-	} as NewContainer)(txConnection)) as Container<MeasurePayload>;
-
-	const isCopyOfRelation = copiedMeasure.relation.find(
-		({ object, predicate }) => predicate === predicates.enum['is-copy-of'] && object !== undefined
-	);
-
-	await copyMeasure(copiedMeasure, isCopyOfRelation as PartialRelation, user, txConnection);
-
-	return copiedMeasure;
-}
-
-async function copyGoalsFromOriginal(
-	createdMeasure: Container<MeasurePayload>,
-	originalGoals: Container<GoalPayload>[],
-	userGuid: string,
-	txConnection: DatabaseTransactionConnection
-) {
-	const isPartOfObjects: Array<Container<GoalPayload | MeasurePayload>> = [createdMeasure];
-
-	const originalGoalsSorted = originalGoals.toSorted(
-		(a, b) => a.payload.hierarchyLevel - b.payload.hierarchyLevel
-	);
-
-	for (const copyFrom of originalGoalsSorted) {
-		const copy = createCopyOf(
-			copyFrom,
-			createdMeasure.organization,
-			createdMeasure.organizational_unit
-		);
-
-		copy.relation.push({
-			object: createdMeasure.guid,
-			predicate: predicates.enum['is-part-of'],
-			position: 0
-		});
-
-		copy.relation.push({
-			object: createdMeasure.guid,
-			predicate: predicates.enum['is-part-of-measure'],
-			position: 0
-		});
-
-		copy.relation.push(
-			...mapRelationsByPredicate(copyFrom, {
-				predicate: predicates.enum['is-part-of'],
-				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
-			})
-		);
-
-		copy.user.push({
-			predicate: predicates.enum['is-creator-of'],
-			subject: userGuid
-		});
-
-		isPartOfObjects.push(
-			(await createContainer(copy as NewContainer)(txConnection)) as Container<GoalPayload>
-		);
-	}
-
-	return isPartOfObjects;
-}
-
-async function copyTasksFromOriginal(
-	createdMeasure: Container<MeasurePayload>,
-	originals: Container[],
-	isPartOfObjects: Array<Container<GoalPayload | MeasurePayload>>,
-	userGuid: string,
-	txConnection: DatabaseTransactionConnection
-) {
-	for (const copyFrom of originals.filter(isTaskContainer)) {
-		const copy = createCopyOf(
-			copyFrom,
-			createdMeasure.organization,
-			createdMeasure.organizational_unit
-		);
-
-		copy.relation.push({
-			object: createdMeasure.guid,
-			predicate: predicates.enum['is-part-of-measure'],
-			position: 0
-		});
-
-		copy.relation.push(
-			...mapRelationsByPredicate(copyFrom, {
-				predicate: predicates.enum['is-part-of'],
-				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
-			})
-		);
-
-		copy.user.push({
-			predicate: predicates.enum['is-creator-of'],
-			subject: userGuid
-		});
-
-		await createContainer(copy as NewContainer)(txConnection);
-	}
-}
-
-async function copyEffectsFromOriginal(
-	createdMeasure: Container<MeasurePayload>,
-	originals: Container[],
-	isPartOfObjects: Array<Container<GoalPayload | MeasurePayload>>,
-	userGuid: string,
-	txConnection: DatabaseTransactionConnection
-) {
-	for (const copyFrom of originals.filter(isEffectContainer)) {
-		const copy = createCopyOf(
-			copyFrom,
-			createdMeasure.organization,
-			createdMeasure.organizational_unit
-		);
-
-		copy.relation.push(
-			...mapRelationsByPredicate(copyFrom, {
-				predicate: predicates.enum['is-part-of'],
-				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
-			})
-		);
-
-		copy.relation.push(
-			...mapRelationsByPredicate(copyFrom, {
-				predicate: predicates.enum['is-measured-by'],
-				resolveObject: (origIndicatorGuid) => origIndicatorGuid
-			})
-		);
-
-		copy.user.push({
-			predicate: predicates.enum['is-creator-of'],
-			subject: userGuid
-		});
-
-		await createContainer(copy as NewContainer)(txConnection);
-	}
-}
-
-async function copySectionsFromOriginal(
-	createdContainer: Container<AnyPayload>,
-	originals: Container[],
-	isPartOfObjects: Array<Container<AnyPayload>>,
-	userGuid: string,
-	txConnection: DatabaseTransactionConnection
-) {
-	for (const copyFrom of originals.filter(({ guid, relation }) =>
-		relation.some(
-			({ predicate, subject }) => predicate === predicates.enum['is-section-of'] && subject === guid
-		)
-	)) {
-		const copy = createCopyOf(
-			copyFrom,
-			createdContainer.organization,
-			isOrganizationalUnitContainer(createdContainer)
-				? createdContainer.guid
-				: createdContainer.organizational_unit
-		);
-
-		copy.relation.push(
-			...mapRelationsByPredicate(copyFrom, {
-				predicate: predicates.enum['is-section-of'],
-				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
-			})
-		);
-
-		copy.user.push({
-			predicate: predicates.enum['is-creator-of'],
-			subject: userGuid
-		});
-
-		await createContainer(copy as NewContainer)(txConnection);
-	}
-}
-
-async function copyMeasure(
-	createdContainer: Container<MeasurePayload>,
-	isCopyOfRelation: PartialRelation,
-	user: User,
-	txConnection: DatabaseTransactionConnection
-) {
-	const containersRelatedToOriginal = filterVisible(
-		await getAllContainersRelatedToMeasure(isCopyOfRelation.object as string, {}, '')(txConnection),
-		user
-	);
-
-	const isPartOfObjects = await copyGoalsFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal
-			.filter(isGoalContainer)
-			.filter(({ relation }) =>
-				relation.some(
-					({ predicate, object }) =>
-						predicate == predicates.enum['is-part-of'] && object == isCopyOfRelation.object
-				)
-			),
-		user.guid,
-		txConnection
-	);
-
-	await copyTasksFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal,
-		isPartOfObjects,
-		user.guid,
-		txConnection
-	);
-
-	await copyEffectsFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal,
-		isPartOfObjects,
-		user.guid,
-		txConnection
-	);
-
-	await copySectionsFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal,
-		isPartOfObjects,
-		user.guid,
-		txConnection
-	);
-}
-
-async function copyProgram(
-	createdProgram: Container<ProgramPayload>,
-	isCopyOfRelation: PartialRelation,
-	user: User,
-	txConnection: DatabaseTransactionConnection
-) {
-	const containersRelatedToOriginal = filterVisible(
-		await getAllContainersRelatedToProgram(isCopyOfRelation.object as string, {})(txConnection),
-		user
-	);
-
-	const originalParts = containersRelatedToOriginal
-		.filter(({ relation }) =>
-			relation.some(
-				({ object, predicate }) =>
-					predicate === predicates.enum['is-part-of-program'] && object === isCopyOfRelation.object
-			)
-		)
-		.filter(({ guid }) => guid !== isCopyOfRelation.object);
-
-	const isPartOfObjects = [createdProgram] as Container<AnyPayload>[];
-
-	for (const copyFrom of originalParts) {
-		if (isMeasureContainer(copyFrom)) {
-			isPartOfObjects.push(
-				await copyMeasureFromOriginal(createdProgram, copyFrom, user, txConnection)
-			);
-		} else {
-			const copy = createCopyOf(
-				copyFrom,
-				createdProgram.organization,
-				createdProgram.organizational_unit
-			);
-
-			copy.relation.push({
-				object: createdProgram.guid,
-				predicate: predicates.enum['is-part-of-program'],
-				position:
-					copyFrom.relation.find(
-						({ object, predicate }) =>
-							predicate === predicates.enum['is-part-of-program'] &&
-							object === isCopyOfRelation.object
-					)?.position ?? 0
-			});
-
-			isPartOfObjects.push(await createContainer(copy as NewContainer)(txConnection));
-		}
-	}
-
-	const relations = [];
-
-	for (const copyFrom of containersRelatedToOriginal) {
-		relations.push(
-			...(mapRelationsByPredicate(copyFrom, {
-				predicate: predicates.enum['is-part-of'],
-				resolveObject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects),
-				resolveSubject: (origObj) => findCopiedTargetGuid(origObj, isPartOfObjects)
-			}).filter(({ subject }) => subject !== undefined) as Relation[])
-		);
-	}
-
-	await createManyContainerRelations(relations)(txConnection);
-}
-
-async function copyOrganizationalUnitContainer(
-	createdContainer: Container<OrganizationalUnitPayload>,
-	isCopyOfRelation: PartialRelation,
-	user: User,
-	txConnection: DatabaseTransactionConnection
-) {
-	const containersRelatedToOriginal = filterVisible(
-		await getAllRelatedContainers(
-			[],
-			isCopyOfRelation.object as string,
-			['is-section-of'],
-			{},
-			''
-		)(txConnection),
-		user
-	);
-
-	await copySectionsFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal,
-		[createdContainer],
-		user.guid,
-		txConnection
-	);
-}
-
-async function copyReportContainer(
-	createdContainer: Container<ReportPayload>,
-	isCopyOfRelation: PartialRelation,
-	user: User,
-	txConnection: DatabaseTransactionConnection
-) {
-	const containersRelatedToOriginal = filterVisible(
-		await getAllRelatedContainers(
-			[],
-			isCopyOfRelation.object as string,
-			['is-section-of'],
-			{},
-			''
-		)(txConnection),
-		user
-	);
-
-	await copySectionsFromOriginal(
-		createdContainer,
-		containersRelatedToOriginal,
-		[createdContainer],
-		user.guid,
-		txConnection
-	);
-}
 
 export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
@@ -551,73 +114,53 @@ export const POST = (async ({ locals, request }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	if (request.headers.get('Content-Type') != 'application/json') {
+	if (request.headers.get('content-type')?.split(';', 1)[0].trim() !== 'application/json') {
 		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
 	}
 
-	const data = await request.json().catch((reason: SyntaxError) => {
-		error(400, { message: reason.message });
+	const data = await request.json().catch(() => {
+		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
 	});
 	const parseResult = newContainer.safeParse(data);
 
 	if (!parseResult.success) {
 		error(422, parseResult.error);
-	} else if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
+	}
+	if (
+		parseResult.data.relation.some(({ predicate }) =>
+			serverOwnedCopyRelationPredicates.includes(
+				predicate as (typeof serverOwnedCopyRelationPredicates)[number]
+			)
+		)
+	) {
+		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+	}
+	if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-	} else {
-		try {
-			const result = await locals.pool.connect(async (connection: DatabaseConnection) =>
-				connection.transaction(async (txConnection) => {
-					const createdContainer = await createContainer({
-						...parseResult.data,
-						user: [
-							{
-								predicate: predicates.enum['is-creator-of'],
-								subject: locals.user.guid
-							}
-						]
-					})(txConnection);
+	}
 
-					const isCopyOfRelation = parseResult.data.relation.find(
-						({ object, predicate }) =>
-							predicate === predicates.enum['is-copy-of'] && object !== undefined
-					);
-
-					if (isCopyOfRelation && isMeasureContainer(createdContainer)) {
-						await copyMeasure(createdContainer, isCopyOfRelation, locals.user, txConnection);
-					} else if (isCopyOfRelation && isProgramContainer(createdContainer)) {
-						await copyProgram(createdContainer, isCopyOfRelation, locals.user, txConnection);
-					} else if (isCopyOfRelation && isReportContainer(createdContainer)) {
-						await copyReportContainer(
-							createdContainer,
-							isCopyOfRelation,
-							locals.user,
-							txConnection
-						);
-					} else if (isCopyOfRelation && isOrganizationalUnitContainer(createdContainer)) {
-						await copyOrganizationalUnitContainer(
-							createdContainer,
-							isCopyOfRelation,
-							locals.user,
-							txConnection
-						);
+	try {
+		const result = await locals.pool.connect(
+			createContainer({
+				...parseResult.data,
+				user: [
+					{
+						predicate: predicates.enum['is-creator-of'],
+						subject: locals.user.guid
 					}
+				]
+			})
+		);
 
-					return createdContainer;
-				})
-			);
-
-			return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
-		} catch (e: unknown) {
-			if (
-				e instanceof UniqueIntegrityConstraintViolationError &&
-				(e.constraint == 'container_payload_organization_slug_key' ||
-					e.constraint == 'container_payload_organizational_unit_slug_key')
-			) {
-				error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
-			} else {
-				throw e;
-			}
+		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
+	} catch (caught: unknown) {
+		if (
+			caught instanceof UniqueIntegrityConstraintViolationError &&
+			(caught.constraint === 'container_payload_organization_slug_key' ||
+				caught.constraint === 'container_payload_organizational_unit_slug_key')
+		) {
+			error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
 		}
+		throw caught;
 	}
 }) satisfies RequestHandler;
