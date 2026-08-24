@@ -55,7 +55,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { addItemState, newContainer, pendingContainerCopy } from '$lib/stores';
+	import { addItemState, containerDialogState } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -64,7 +64,8 @@
 	let { dialog = $bindable() }: Props = $props();
 
 	async function save(container: NewContainer) {
-		const pendingCopy = $pendingContainerCopy;
+		const pendingCopy =
+			$containerDialogState?.kind === 'copy' ? $containerDialogState.request : undefined;
 		const addItemTarget = $addItemState.target;
 		const response = pendingCopy
 			? await copyContainer({ ...pendingCopy, rootPayload: container.payload })
@@ -110,8 +111,7 @@
 	}
 
 	function resetDialogState() {
-		$newContainer = undefined;
-		$pendingContainerCopy = undefined;
+		$containerDialogState = undefined;
 		$addItemState = {};
 	}
 
@@ -122,7 +122,9 @@
 		}
 
 		if (event.submitter.classList.contains('button-primary')) {
-			save($newContainer as NewContainer);
+			if ($containerDialogState) {
+				save($containerDialogState.container);
+			}
 		}
 
 		dialog.close();
@@ -154,7 +156,7 @@
 </script>
 
 <dialog bind:this={dialog} onclose={resetDialogState}>
-	{#if $newContainer}
+	{#if $containerDialogState}
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
 				<span>{$_('create_container_dialog.title')}</span>
@@ -168,7 +170,7 @@
 
 			<article class="details">
 				<header class="details-section">
-					{#if isContainerWithName($newContainer)}
+					{#if isContainerWithName($containerDialogState.container)}
 						<textarea
 							aria-label={$_('title')}
 							onkeydown={handleKeyDown}
@@ -176,9 +178,9 @@
 							placeholder={$_('title')}
 							required
 							rows="1"
-							bind:value={$newContainer.payload.name}
+							bind:value={$containerDialogState.container.payload.name}
 							use:init></textarea>
-					{:else if isContainerWithTitle($newContainer)}
+					{:else if isContainerWithTitle($containerDialogState.container)}
 						<textarea
 							aria-label={$_('title')}
 							onkeydown={handleKeyDown}
@@ -186,155 +188,158 @@
 							placeholder={$_('title')}
 							required
 							rows="1"
-							bind:value={$newContainer.payload.title}
+							bind:value={$containerDialogState.container.payload.title}
 							use:init></textarea>
 					{/if}
 
-					{#if isContainer($newContainer)}
-						<Badges bind:container={$newContainer} editable />
+					{#if isContainer($containerDialogState.container)}
+						<Badges bind:container={$containerDialogState.container} editable />
 					{/if}
 
-					{#if isSimpleMeasureContainer($newContainer)}
-						<EditableProgress editable bind:value={$newContainer.payload.progress} />
+					{#if isSimpleMeasureContainer($containerDialogState.container)}
+						<EditableProgress
+							editable
+							bind:value={$containerDialogState.container.payload.progress}
+						/>
 					{/if}
 				</header>
 
-				{#if isCategoryContainer($newContainer)}
+				{#if isCategoryContainer($containerDialogState.container)}
 					<CategoryProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isEventContainer($newContainer)}
+				{:else if isEventContainer($containerDialogState.container)}
 					<EventProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isGoalContainer($newContainer)}
+				{:else if isGoalContainer($containerDialogState.container)}
 					<GoalProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isIndicatorTemplateContainer($newContainer)}
+				{:else if isIndicatorTemplateContainer($containerDialogState.container)}
 					<IndicatorProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isKnowledgeContainer($newContainer)}
+				{:else if isKnowledgeContainer($containerDialogState.container)}
 					<KnowledgeProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isMeasureContainer($newContainer)}
+				{:else if isMeasureContainer($containerDialogState.container)}
 					<MeasureProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isOrganizationContainer($newContainer)}
-					<OrganizationProperties bind:container={$newContainer} editable />
-				{:else if isOrganizationalUnitContainer($newContainer)}
-					<OrganizationalUnitProperties bind:container={$newContainer} editable />
-				{:else if isPostContainer($newContainer)}
+				{:else if isOrganizationContainer($containerDialogState.container)}
+					<OrganizationProperties bind:container={$containerDialogState.container} editable />
+				{:else if isOrganizationalUnitContainer($containerDialogState.container)}
+					<OrganizationalUnitProperties bind:container={$containerDialogState.container} editable />
+				{:else if isPostContainer($containerDialogState.container)}
 					<PostProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isProgramContainer($newContainer)}
+				{:else if isProgramContainer($containerDialogState.container)}
 					<ProgramProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isReportContainer($newContainer)}
+				{:else if isReportContainer($containerDialogState.container)}
 					<ReportProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceContainer($newContainer)}
+				{:else if isResourceContainer($containerDialogState.container)}
 					<ResourceProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceV2Container($newContainer)}
+				{:else if isResourceV2Container($containerDialogState.container)}
 					<ResourceV2Properties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isResourceDataContainer($newContainer)}
+				{:else if isResourceDataContainer($containerDialogState.container)}
 					<ResourceDataProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isRuleContainer($newContainer)}
+				{:else if isRuleContainer($containerDialogState.container)}
 					<RuleProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isSimpleMeasureContainer($newContainer)}
+				{:else if isSimpleMeasureContainer($containerDialogState.container)}
 					<MeasureProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isTaskContainer($newContainer)}
+				{:else if isTaskContainer($containerDialogState.container)}
 					<TaskProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isTeaserContainer($newContainer)}
+				{:else if isTeaserContainer($containerDialogState.container)}
 					<TeaserProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isTextContainer($newContainer)}
+				{:else if isTextContainer($containerDialogState.container)}
 					<TextProperties
-						bind:container={$newContainer}
+						bind:container={$containerDialogState.container}
 						editable
 						relatedContainers={[]}
 						revisions={[]}
 					/>
 				{/if}
 
-				{#if isContainerWithDescription($newContainer)}
+				{#if isContainerWithDescription($containerDialogState.container)}
 					<EditableFormattedText
 						editable
 						label={$_('description')}
-						bind:value={$newContainer.payload.description}
+						bind:value={$containerDialogState.container.payload.description}
 					/>
-				{:else if isContainerWithBody($newContainer)}
+				{:else if isContainerWithBody($containerDialogState.container)}
 					<EditableFormattedText
 						editable
 						label={$_('body')}
-						bind:value={$newContainer.payload.body}
+						bind:value={$containerDialogState.container.payload.body}
 					/>
 				{/if}
 			</article>

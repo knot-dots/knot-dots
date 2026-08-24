@@ -49,8 +49,7 @@
 		addItemState,
 		compareState,
 		mayCreateContainer,
-		newContainer,
-		pendingContainerCopy
+		openContainerCopyDialog
 	} from '$lib/stores';
 
 	interface Props {
@@ -417,17 +416,17 @@
 			throw new Error('Expected a template container');
 		}
 
-		$newContainer = createTemplateInstanceOf(
+		const newContainer = createTemplateInstanceOf(
 			template,
 			container.organization,
 			container.organizational_unit ?? null
 		);
-		$pendingContainerCopy = {
+		openContainerCopyDialog(newContainer, {
 			operation: 'template-instance',
 			sourceGuid: template.guid,
 			targetOrganizationGuid: container.organization,
 			targetOrganizationalUnitGuid: container.organizational_unit ?? null
-		};
+		});
 
 		$addItemState = { target: container };
 		createContainerDialog.getElement().showModal();
