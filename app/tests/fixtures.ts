@@ -558,33 +558,17 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		await deleteContainer(adminContext, testOrganizationalUnit);
 	},
-	testIndividualProfile: async (
-		{ adminContext, testOrganization, testOrganizationalUnit },
-		use,
-		workerInfo
-	) => {
-		const newIndividualProfile = containerOfType(
-			payloadTypes.enum.organizational_unit,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
-		) as Container<OrganizationalUnitPayload>;
-
-		const testIndividualProfile = await createContainer(adminContext, {
-			...newIndividualProfile,
-			payload: {
-				...newIndividualProfile.payload,
-				name: `${testOrganizationalUnit.payload.name} - Individual ${workerInfo.workerIndex}`
-			},
-			relation: [
-				{
-					object: testOrganizationalUnit.guid,
-					position: 0,
-					predicate: predicates.enum['is-individual-profile-of']
-				}
-			]
+	testIndividualProfile: async ({ adminContext, testOrganizationalUnit }, use) => {
+		const response = await adminContext.request.post('/container/copy', {
+			data: {
+				operation: 'individual-profile',
+				sourceGuid: testOrganizationalUnit.guid
+			}
 		});
+		if (!response.ok()) {
+			throw new Error(`Failed to create individual profile: ${await response.text()}`);
+		}
+		const testIndividualProfile = await response.json();
 
 		await use(testIndividualProfile);
 
