@@ -4,6 +4,7 @@ import { preloadData } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/stores';
 import defineAbilityFor from '$lib/authorization';
+import type { PendingContainerCopy } from '$lib/containerCopy';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
@@ -148,6 +149,8 @@ type AddItemState = {
 export const addItemState = writable<AddItemState>({});
 
 export const newContainer = writable<NewContainer | undefined>();
+
+export const pendingContainerCopy = writable<PendingContainerCopy | undefined>();
 
 export const lastCreatedContainers = writable<Map<string, Container<AnyPayload>>>(new Map());
 
