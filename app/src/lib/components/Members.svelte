@@ -22,6 +22,7 @@
 	} from '$lib/models';
 	import type { User } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -128,7 +129,7 @@
 {/if}
 
 {#if view === 'matrix'}
-	<UserPermissionMatrix {container} {users} />
+	<UserPermissionMatrix {container} editable={$ability.can('invite-members', container)} {users} />
 {:else}
 	<table>
 		<thead>

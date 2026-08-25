@@ -20,7 +20,9 @@ import {
 	grantKindsForRole,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
+	type MemberRole,
 	memberRoleFromPredicates,
+	memberRolePredicates,
 	type ModifiedContainer,
 	type NewContainer,
 	organizationalUnitPayload,
@@ -38,6 +40,7 @@ import {
 	user,
 	userRelation,
 	type UserRelation,
+	userRelationsForMemberRole,
 	visibility
 } from '$lib/models';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
@@ -476,6 +479,35 @@ export function updateContainer(container: ModifiedContainer) {
 
 			return { ...containerResult, relation: container.relation, user: userResult };
 		});
+	};
+}
+
+const memberRoleRelationPredicates = new Set<Predicate>([
+	...Object.values(memberRolePredicates),
+	predicates.enum['is-member-of']
+]);
+
+export function updateMemberRole(
+	container: Container<AnyPayload>,
+	subject: string,
+	role: Exclude<MemberRole, 'administrator'> | null
+) {
+	return (connection: DatabaseConnection) => {
+		const user = [
+			...container.user.filter(
+				(u) => u.subject !== subject || !memberRoleRelationPredicates.has(u.predicate)
+			),
+			...(role === null ? [] : userRelationsForMemberRole(role, subject))
+		];
+		return updateContainer({
+			...container,
+			managed_by:
+				container.managed_by[0] == container.guid &&
+				user.every(({ predicate }) => predicate == predicates.enum['is-creator-of'])
+					? [container.organizational_unit ?? container.organization]
+					: container.managed_by,
+			user
+		})(connection);
 	};
 }
 
