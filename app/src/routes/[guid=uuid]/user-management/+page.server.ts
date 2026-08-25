@@ -22,7 +22,8 @@ export const load = (async ({ locals, parent }) => {
 
 	if (
 		!locals.user.roles.includes('sysadmin') &&
-		!locals.user.adminOf.includes(selectedContext.guid)
+		!locals.user.adminOf.includes(selectedContext.guid) &&
+		!locals.user.adminOf.includes(selectedContext.organization)
 	) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
