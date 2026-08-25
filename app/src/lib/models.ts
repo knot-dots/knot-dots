@@ -630,6 +630,8 @@ export const userRelation = z.object({
 	subject: z.uuid()
 });
 
+export type UserRelation = z.infer<typeof userRelation>;
+
 export const grantKinds = z.enum(['read', 'update', 'create', 'delete', 'manage-members']);
 
 export type GrantKind = z.infer<typeof grantKinds>;
@@ -654,6 +656,42 @@ export function userRelationsForMemberRole(
 			? []
 			: [{ predicate: memberRolePredicates[role], subject }])
 	];
+}
+
+// The kinds stored in container_grant follow the member role as a static
+// chain; they express what was GRANTED, not the effective rights of the role
+// on a specific container type (those are derived from the authorization
+// rules).
+const grantKindsByMemberRole: Record<MemberRole, GrantKind[]> = {
+	observer: [grantKinds.enum.read],
+	collaborator: [grantKinds.enum.read, grantKinds.enum.update, grantKinds.enum.create],
+	head: [
+		grantKinds.enum.read,
+		grantKinds.enum.update,
+		grantKinds.enum.create,
+		grantKinds.enum.delete
+	],
+	administrator: grantKinds.options.slice()
+};
+
+export function grantKindsForRole(role: MemberRole): GrantKind[] {
+	return grantKindsByMemberRole[role];
+}
+
+export function memberRoleFromPredicates(relationPredicates: Predicate[]): MemberRole | null {
+	if (relationPredicates.includes(predicates.enum['is-admin-of'])) {
+		return memberRoles.enum.administrator;
+	}
+	if (relationPredicates.includes(predicates.enum['is-head-of'])) {
+		return memberRoles.enum.head;
+	}
+	if (relationPredicates.includes(predicates.enum['is-collaborator-of'])) {
+		return memberRoles.enum.collaborator;
+	}
+	if (relationPredicates.includes(predicates.enum['is-member-of'])) {
+		return memberRoles.enum.observer;
+	}
+	return null;
 }
 
 export const taskPriority = z.object({

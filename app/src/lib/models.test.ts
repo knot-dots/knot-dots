@@ -4,7 +4,9 @@ import {
 	type Container,
 	container,
 	type EffectPayload,
+	grantKindsForRole,
 	type IndicatorTemplatePayload,
+	memberRoleFromPredicates,
 	type MeasurePayload,
 	memberRoleOf,
 	memberRoles,
@@ -213,4 +215,40 @@ test('userRelationsForMemberRole builds the role relations of a subject', () => 
 		{ predicate: predicates.enum['is-member-of'], subject },
 		{ predicate: predicates.enum['is-admin-of'], subject }
 	]);
+});
+
+test('grantKindsForRole maps each role to its granted kinds', () => {
+	expect(grantKindsForRole(memberRoles.enum.observer)).toEqual(['read']);
+	expect(grantKindsForRole(memberRoles.enum.collaborator)).toEqual(['read', 'update', 'create']);
+	expect(grantKindsForRole(memberRoles.enum.head)).toEqual(['read', 'update', 'create', 'delete']);
+	expect(grantKindsForRole(memberRoles.enum.administrator)).toEqual([
+		'read',
+		'update',
+		'create',
+		'delete',
+		'manage-members'
+	]);
+});
+
+test('memberRoleFromPredicates picks the highest role', () => {
+	expect(memberRoleFromPredicates([])).toBeNull();
+	expect(memberRoleFromPredicates([predicates.enum['is-member-of']])).toBe(
+		memberRoles.enum.observer
+	);
+	expect(
+		memberRoleFromPredicates([
+			predicates.enum['is-member-of'],
+			predicates.enum['is-collaborator-of']
+		])
+	).toBe(memberRoles.enum.collaborator);
+	expect(
+		memberRoleFromPredicates([predicates.enum['is-head-of'], predicates.enum['is-member-of']])
+	).toBe(memberRoles.enum.head);
+	expect(
+		memberRoleFromPredicates([
+			predicates.enum['is-admin-of'],
+			predicates.enum['is-head-of'],
+			predicates.enum['is-member-of']
+		])
+	).toBe(memberRoles.enum.administrator);
 });
