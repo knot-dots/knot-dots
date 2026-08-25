@@ -2,16 +2,12 @@
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
-	import defineAbilityFor from '$lib/authorization';
+	import { grantKindsForRoleOn } from '$lib/authorization';
 	import {
 		type AnyPayload,
 		type Container,
 		displayName,
 		grantKinds,
-		isAdminOf,
-		isCollaboratorOf,
-		isHeadOf,
-		isMemberOf,
 		type MemberRole,
 		memberRoleOf,
 		memberRoles,
@@ -33,11 +29,6 @@
 		grantKinds.enum['manage-members']
 	];
 
-	// the manage-members grant corresponds to the invite-members action
-	function actionFor(kind: (typeof visibleGrantKinds)[number]) {
-		return kind === grantKinds.enum['manage-members'] ? ('invite-members' as const) : kind;
-	}
-
 	const roleBadgeColors: Record<MemberRole, string> = {
 		administrator: 'red',
 		head: 'yellow',
@@ -45,22 +36,11 @@
 		observer: 'gray'
 	};
 
-	// Derive the checkboxes from the actual authorization rules instead of a
-	// static role mapping: what a role permits depends on the container type.
+	// The checkboxes show the effective rights of the user's member role on
+	// this container, derived from the actual authorization rules; what a role
+	// permits depends on the container type.
 	function kindsFor(user: User) {
-		const ability = defineAbilityFor({
-			adminOf: isAdminOf(user, container) ? [container.guid] : [],
-			collaboratorOf: isCollaboratorOf(user, container) ? [container.guid] : [],
-			familyName: user.family_name,
-			givenName: user.given_name,
-			guid: user.guid,
-			headOf: isHeadOf(user, container) ? [container.guid] : [],
-			isAuthenticated: true,
-			memberOf: isMemberOf(user, container) ? [container.guid] : [],
-			roles: [],
-			settings: user.settings
-		});
-		return visibleGrantKinds.filter((kind) => ability.can(actionFor(kind), container));
+		return grantKindsForRoleOn(container, user, memberRoleOf(user, container));
 	}
 </script>
 

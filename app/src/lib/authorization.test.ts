@@ -1,7 +1,15 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import defineAbilityFor from '$lib/authorization';
-import { type AnyPayload, newContainer, payloadTypes, predicates, visibility } from '$lib/models';
+import defineAbilityFor, { grantKindsForRoleOn } from '$lib/authorization';
+import {
+	type AnyPayload,
+	type Container,
+	memberRoles,
+	newContainer,
+	payloadTypes,
+	predicates,
+	visibility
+} from '$lib/models';
 import type { User } from '$lib/stores';
 
 // These tests pin down the current behaviour of the CASL policies with
@@ -351,5 +359,95 @@ describe('field-level rules', () => {
 		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
 		expect(ability.can('update', template)).toBe(true);
 		expect(ability.can('update', template, 'indicatorCategory')).toBe(false);
+	});
+});
+
+describe('grantKindsForRoleOn', () => {
+	const viewer = {
+		family_name: 'Muster',
+		given_name: 'Erika',
+		guid: anotherUserGuid,
+		settings: {}
+	};
+
+	function withGuid(container: ReturnType<typeof makeContainer>, guid: string) {
+		return { ...container, guid } as Container<AnyPayload>;
+	}
+
+	test('organization: nobody creates or deletes, head and admin coincide', () => {
+		const orgGuid = crypto.randomUUID();
+		const org = withGuid(
+			testContainer.parse({
+				managed_by: orgGuid,
+				organization: orgGuid,
+				payload: { name: 'Org', type: payloadTypes.enum.organization }
+			}) as ReturnType<typeof makeContainer>,
+			orgGuid
+		);
+
+		expect(grantKindsForRoleOn(org, viewer, null)).toEqual([]);
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.observer)).toEqual(['read']);
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.collaborator)).toEqual(['read']);
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.head)).toEqual([
+			'read',
+			'update',
+			'manage-members'
+		]);
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.administrator)).toEqual(
+			grantKindsForRoleOn(org, viewer, memberRoles.enum.head)
+		);
+	});
+
+	test('organizational unit: head and admin coincide', () => {
+		const unitGuid = crypto.randomUUID();
+		const unit = withGuid(
+			testContainer.parse({
+				managed_by: unitGuid,
+				payload: { name: 'Unit', type: payloadTypes.enum.organizational_unit }
+			}) as ReturnType<typeof makeContainer>,
+			unitGuid
+		);
+
+		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)).toEqual([
+			'read',
+			'update',
+			'manage-members'
+		]);
+		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.administrator)).toEqual(
+			grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)
+		);
+	});
+
+	test('self-managed measure: collaborators may delete, heads also manage members', () => {
+		const measureGuid = crypto.randomUUID();
+		const measure = withGuid(
+			makeContainer(payloadTypes.enum.measure, { managed_by: measureGuid }),
+			measureGuid
+		);
+
+		expect(grantKindsForRoleOn(measure, viewer, memberRoles.enum.observer)).toEqual(['read']);
+		expect(grantKindsForRoleOn(measure, viewer, memberRoles.enum.collaborator)).toEqual([
+			'read',
+			'update',
+			'create',
+			'delete'
+		]);
+		expect(grantKindsForRoleOn(measure, viewer, memberRoles.enum.head)).toEqual([
+			'read',
+			'update',
+			'create',
+			'delete',
+			'manage-members'
+		]);
+	});
+
+	test('public container: even without a role read stays granted', () => {
+		const measureGuid = crypto.randomUUID();
+		const measure = withGuid(
+			makeContainer(payloadTypes.enum.measure, {}, { visibility: visibility.enum.public }),
+			measureGuid
+		);
+
+		expect(grantKindsForRoleOn(measure, viewer, null)).toEqual(['read']);
 	});
 });

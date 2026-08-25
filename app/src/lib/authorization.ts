@@ -1,8 +1,12 @@
 import type { MongoAbility } from '@casl/ability';
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import type { AnyPayload, Container, PayloadType } from '$lib/models';
+import type { AnyPayload, Container, PayloadType, User as ModelUser } from '$lib/models';
 import {
 	type AnyInitialPayload,
+	type GrantKind,
+	grantKinds,
+	type MemberRole,
+	memberRoles,
 	type NewContainer,
 	payloadTypes,
 	predicates,
@@ -235,6 +239,38 @@ export default function defineAbilityFor(user: User) {
 	return build({
 		detectSubjectType: (object) => object.payload.type
 	});
+}
+
+const actionsByGrantKind: Record<GrantKind, Actions> = {
+	read: 'read',
+	update: 'update',
+	create: 'create',
+	delete: 'delete',
+	'manage-members': 'invite-members'
+};
+
+// The effective rights a member role would have on this container, derived
+// from the actual authorization rules: what a role permits depends on the
+// container type. Serves both the permission matrix display and its snapping
+// candidates.
+export function grantKindsForRoleOn(
+	container: Container<AnyPayload>,
+	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
+	role: MemberRole | null
+): GrantKind[] {
+	const ability = defineAbilityFor({
+		adminOf: role === memberRoles.enum.administrator ? [container.guid] : [],
+		collaboratorOf: role === memberRoles.enum.collaborator ? [container.guid] : [],
+		familyName: user.family_name,
+		givenName: user.given_name,
+		guid: user.guid,
+		headOf: role === memberRoles.enum.head ? [container.guid] : [],
+		isAuthenticated: true,
+		memberOf: role !== null ? [container.guid] : [],
+		roles: [],
+		settings: user.settings
+	});
+	return grantKinds.options.filter((kind) => ability.can(actionsByGrantKind[kind], container));
 }
 
 export function filterVisible<T extends Container<AnyPayload>>(
