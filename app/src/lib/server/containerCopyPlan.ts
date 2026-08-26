@@ -28,13 +28,13 @@ export const structuralCopyPredicates = [
 	predicates.enum['is-section-of']
 ] as const satisfies readonly Predicate[];
 
-export const requiredCopyDependencyPredicates = [
+export const referenceCopyPredicates = [
 	predicates.enum['is-measured-by'],
 	predicates.enum['is-objective-for']
 ] as const satisfies readonly Predicate[];
 
 const structuralPredicateSet = new Set<string>(structuralCopyPredicates);
-const requiredDependencyPredicateSet = new Set<string>(requiredCopyDependencyPredicates);
+const referencePredicateSet = new Set<string>(referenceCopyPredicates);
 const uuid = z.uuid();
 const newContainerWithGuid = newContainer.extend({ guid: z.uuid(), relation: z.array(relation) });
 
@@ -54,7 +54,6 @@ export type CopyTarget = {
 
 export type CopyReadPolicy = {
 	canReadSource(container: Container<AnyPayload>): boolean;
-	canRetainRequiredDependency(container: Container<AnyPayload>, target: CopyTarget): boolean;
 	canRetainCollectionItem(container: Container<AnyPayload>, target: CopyTarget): boolean;
 	canUseNewItemTemplate(container: Container<AnyPayload>, target: CopyTarget): boolean;
 };
@@ -88,10 +87,8 @@ function compareRelations(a: Relation, b: Relation) {
 	);
 }
 
-function requiredPayloadDependency(container: Container<AnyPayload>) {
-	return container.payload.type === payloadTypes.enum.resource_data
-		? container.payload.resource
-		: undefined;
+function requiredPayloadReference(payload: AnyPayload) {
+	return payload.type === payloadTypes.enum.resource_data ? payload.resource : undefined;
 }
 
 function normalizeRelations(containers: readonly Container<AnyPayload>[]) {
@@ -214,17 +211,53 @@ export function createContainerCopyPlan({
 		}
 	}
 
-	// `included` is the copy set; the queue contains readable containers whose descendants and
-	// dependencies still need to be considered. A cursor avoids repeatedly shifting the array.
+	if (operation.kind !== 'individual-profile' && operation.rootPayload.type !== root.payload.type) {
+		throw new CopyPlanError('payload_type_mismatch');
+	}
+	if (root.payload.type === payloadTypes.enum.actual_data) {
+		throw new CopyPlanError('unsupported_copy_source');
+	}
+
+	const hasResolvedReferences = (
+		container: Container<AnyPayload>,
+		payload: AnyPayload = container.payload
+	) => {
+		if (
+			(relationsBySubject.get(container.guid) ?? []).some(
+				(relation) =>
+					referencePredicateSet.has(relation.predicate) && !containersByGuid.has(relation.object)
+			)
+		) {
+			return false;
+		}
+
+		const payloadReference = requiredPayloadReference(payload);
+		return payloadReference === undefined || containersByGuid.has(payloadReference);
+	};
+
+	const rootPayload =
+		operation.kind === 'individual-profile' ? root.payload : operation.rootPayload;
+	if (!hasResolvedReferences(root, rootPayload)) {
+		opaqueRequiredDependencyError();
+	}
+	const plannedRoot = createRootForOperation(root, target, operation);
+
+	// `included` is the copy set; the queue contains readable, eligible containers whose descendants
+	// still need to be considered. A cursor avoids repeatedly shifting the array.
 	const included = new Set<string>([root.guid]);
 	const queue = [root.guid];
 	let queueIndex = 0;
 	const processed = new Set<string>();
 
-	const includeReadable = (container: Container<AnyPayload>) => {
-		// Hidden containers never enter the queue, so their descendants are pruned unless another
-		// already-included parent provides a visible path to them.
-		if (!readPolicy.canReadSource(container)) {
+	const includeEligible = (container: Container<AnyPayload>) => {
+		// Hidden, actual-data, descendant-resource, and unresolved-reference containers never enter the
+		// queue, so their descendants are pruned unless another valid structural path reaches them.
+		if (
+			!readPolicy.canReadSource(container) ||
+			container.payload.type === payloadTypes.enum.actual_data ||
+			container.payload.type === payloadTypes.enum.resource_v2 ||
+			!hasResolvedReferences(container)
+		) {
 			return false;
 		}
 		if (!included.has(container.guid)) {
@@ -234,28 +267,8 @@ export function createContainerCopyPlan({
 		return true;
 	};
 
-	const includeRequiredDependency = (dependencyGuid: string) => {
-		// Public dependencies remain shared references. Private dependencies become copy roots of their
-		// own and must be readable before their structural descendants may be explored.
-		const dependency = containersByGuid.get(dependencyGuid);
-		if (!dependency) {
-			opaqueRequiredDependencyError();
-		}
-		if (
-			included.has(dependency.guid) ||
-			dependency.payload.visibility === visibility.enum.public ||
-			(readPolicy.canReadSource(dependency) &&
-				readPolicy.canRetainRequiredDependency(dependency, target))
-		) {
-			return;
-		}
-		if (!includeReadable(dependency)) {
-			opaqueRequiredDependencyError();
-		}
-	};
-
 	// Expand each included container once. The processed set terminates cycles while `included`
-	// deduplicates containers reached through multiple parents or dependency paths.
+	// deduplicates containers reached through multiple structural paths.
 	while (queueIndex < queue.length) {
 		const currentGuid = queue[queueIndex++];
 		if (processed.has(currentGuid)) {
@@ -266,20 +279,8 @@ export function createContainerCopyPlan({
 		for (const relation of structuralRelationsByObject.get(currentGuid) ?? []) {
 			const child = containersByGuid.get(relation.subject);
 			if (child) {
-				includeReadable(child);
+				includeEligible(child);
 			}
-		}
-
-		for (const relation of relationsBySubject.get(currentGuid) ?? []) {
-			if (requiredDependencyPredicateSet.has(relation.predicate)) {
-				includeRequiredDependency(relation.object);
-			}
-		}
-
-		const current = containersByGuid.get(currentGuid) as Container<AnyPayload>;
-		const dependencyGuid = requiredPayloadDependency(current);
-		if (dependencyGuid) {
-			includeRequiredDependency(dependencyGuid);
 		}
 	}
 
@@ -312,23 +313,16 @@ export function createContainerCopyPlan({
 	const descendantOrganizationalUnit = isOrganizationalUnitContainer(root)
 		? copiedRootGuid
 		: target.organizationalUnit;
-	const plannedRoot = createRootForOperation(root, target, operation);
 	const rootVisibility = plannedRoot.payload.visibility;
 
-	const resolveRequiredPayloadGuid = (originalGuid: string) => {
-		// Required payload references must resolve either to a copied private dependency or to the
-		// original public dependency. Anything else indicates an incomplete or inaccessible graph.
+	const resolveReferenceGuid = (originalGuid: string) => {
+		// Definitions reached through an independent structural path are remapped. Reference-only
+		// definitions retain their original GUID, regardless of whether the caller may read them.
 		const copiedGuid = guidMap.get(originalGuid);
 		if (copiedGuid) {
 			return copiedGuid;
 		}
-		const dependency = containersByGuid.get(originalGuid);
-		if (
-			dependency &&
-			(dependency.payload.visibility === visibility.enum.public ||
-				(readPolicy.canReadSource(dependency) &&
-					readPolicy.canRetainRequiredDependency(dependency, target)))
-		) {
+		if (containersByGuid.has(originalGuid)) {
 			return originalGuid;
 		}
 		return opaqueRequiredDependencyError();
@@ -360,11 +354,8 @@ export function createContainerCopyPlan({
 		// Apply only field-specific container-reference policy here. Geometry UUIDs and ordinary payload
 		// data are already handled by the base copy and intentionally remain untouched.
 		switch (copy.payload.type) {
-			case payloadTypes.enum.actual_data:
-				copy.payload.indicator = resolveRequiredPayloadGuid(copy.payload.indicator);
-				break;
 			case payloadTypes.enum.resource_data:
-				copy.payload.resource = resolveRequiredPayloadGuid(copy.payload.resource);
+				copy.payload.resource = resolveReferenceGuid(copy.payload.resource);
 				break;
 			case payloadTypes.enum.custom_collection:
 				copy.payload.item = copy.payload.item.flatMap((itemGuid) => {
@@ -432,19 +423,13 @@ export function createContainerCopyPlan({
 				continue;
 			}
 
-			if (requiredDependencyPredicateSet.has(relation.predicate)) {
-				// Private targets are remapped; public targets keep their original shared GUID.
+			if (referencePredicateSet.has(relation.predicate)) {
+				// Structurally copied targets are remapped; reference-only targets keep their GUID.
 				if (copiedObject) {
 					copiedRelations.push({ ...relation, object: copiedObject, subject: copiedGuid });
 					continue;
 				}
-				const dependency = containersByGuid.get(relation.object);
-				if (
-					!dependency ||
-					(dependency.payload.visibility !== visibility.enum.public &&
-						(!readPolicy.canReadSource(dependency) ||
-							!readPolicy.canRetainRequiredDependency(dependency, target)))
-				) {
+				if (!containersByGuid.has(relation.object)) {
 					opaqueRequiredDependencyError();
 				}
 				copiedRelations.push({ ...relation, subject: copiedGuid });

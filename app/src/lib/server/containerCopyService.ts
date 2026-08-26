@@ -4,8 +4,6 @@ import type { ContainerCopyRequest, ContainerCopyRootOperation } from '$lib/cont
 import {
 	type AnyPayload,
 	type Container,
-	isBinaryIndicatorContainer,
-	isIndicatorTemplateContainer,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	predicates,
@@ -180,9 +178,6 @@ export async function executeContainerCopy({
 	};
 	const readPolicy: CopyReadPolicy = {
 		canReadSource: (container) => ability.can('read', container),
-		canRetainRequiredDependency: (container, copyTarget) =>
-			container.organization === copyTarget.organization &&
-			(isBinaryIndicatorContainer(container) || isIndicatorTemplateContainer(container)),
 		canRetainCollectionItem: (container, copyTarget) =>
 			container.organization === copyTarget.organization && ability.can('read', container),
 		canUseNewItemTemplate: (container, copyTarget) =>

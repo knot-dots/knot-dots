@@ -94,14 +94,12 @@ function allocator() {
 function policy(
 	options: {
 		hidden?: string[];
-		retainedDependencies?: string[];
 		retainedItems?: string[];
 		usableTemplates?: string[];
 	} = {}
 ): CopyReadPolicy {
 	return {
 		canReadSource: ({ guid }) => !(options.hidden ?? []).includes(guid),
-		canRetainRequiredDependency: ({ guid }) => (options.retainedDependencies ?? []).includes(guid),
 		canRetainCollectionItem: ({ guid }) => (options.retainedItems ?? []).includes(guid),
 		canUseNewItemTemplate: ({ guid }) => (options.usableTemplates ?? []).includes(guid)
 	};
@@ -205,7 +203,7 @@ test('prunes hidden paths, accepts an alternate parent, and preserves a structur
 	).toBe(false);
 });
 
-test('copies a shared private dependency once and reuses public dependency targets', () => {
+test('retains indicator targets and excludes actual data and dependency descendants', () => {
 	const containers = [
 		makeContainer(guids.root, {
 			achievedValues: [[2026, 4]],
@@ -260,12 +258,21 @@ test('copies a shared private dependency once and reuses public dependency targe
 		allocateGuid: allocator()
 	});
 
-	expect(plan.has(guids.dependency)).toBe(true);
-	expect(plan.has(guids.dependencyChild)).toBe(true);
+	expect(plan.has(guids.dependency)).toBe(false);
+	expect(plan.has(guids.dependencyChild)).toBe(false);
 	expect(plan.has(guids.publicDependency)).toBe(false);
-	expect(copyFor(plan, guids.actualData)?.payload).toMatchObject({
-		indicator: plan.get(guids.dependency)?.guid,
-		values: []
+	expect(plan.has(guids.actualData)).toBe(false);
+	expect(copyFor(plan, guids.root)?.relation).toContainEqual({
+		object: guids.dependency,
+		position: 9,
+		predicate: predicates.enum['is-measured-by'],
+		subject: plan.get(guids.root)?.guid
+	});
+	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
+		object: guids.dependency,
+		position: 10,
+		predicate: predicates.enum['is-objective-for'],
+		subject: plan.get(guids.child)?.guid
 	});
 	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
 		object: guids.publicDependency,
@@ -285,7 +292,7 @@ test('copies a shared private dependency once and reuses public dependency targe
 	).toBe(false);
 });
 
-test('remaps private resource payload targets and retains public targets', () => {
+test('retains private and public resource payload targets without copying them', () => {
 	const containers = [
 		makeContainer(guids.root, {
 			title: 'Program',
@@ -314,11 +321,17 @@ test('remaps private resource payload targets and retains public targets', () =>
 			title: 'Public resource',
 			type: payloadTypes.enum.resource_v2,
 			visibility: visibility.enum.public
+		}),
+		makeContainer(guids.dependencyChild, {
+			title: 'Resource section',
+			type: payloadTypes.enum.text
 		})
 	];
 	const relations = [
 		relation(guids.resourceData, predicates.enum['is-section-of'], guids.root),
-		relation(guids.publicResourceData, predicates.enum['is-section-of'], guids.root)
+		relation(guids.publicResourceData, predicates.enum['is-section-of'], guids.root),
+		relation(guids.resource, predicates.enum['is-section-of'], guids.root),
+		relation(guids.dependencyChild, predicates.enum['is-section-of'], guids.resource)
 	];
 
 	const plan = createContainerCopyPlan({
@@ -330,13 +343,148 @@ test('remaps private resource payload targets and retains public targets', () =>
 
 	expect(copyFor(plan, guids.resourceData)?.payload).toMatchObject({
 		entries: [{ amount: 12, year: 2026 }],
-		resource: plan.get(guids.resource)?.guid
+		resource: guids.resource
 	});
 	expect(copyFor(plan, guids.publicResourceData)?.payload).toMatchObject({
 		entries: [{ amount: 24, year: 2026 }],
 		resource: guids.publicResource
 	});
+	expect(plan.has(guids.resource)).toBe(false);
 	expect(plan.has(guids.publicResource)).toBe(false);
+	expect(plan.has(guids.dependencyChild)).toBe(false);
+});
+
+test('copies a resource and its structural descendants when the resource is the root', () => {
+	const resource = makeContainer(guids.resource, {
+		title: 'Resource',
+		type: payloadTypes.enum.resource_v2
+	});
+	const child = makeContainer(guids.child, {
+		title: 'Resource section',
+		type: payloadTypes.enum.text
+	});
+
+	const plan = createContainerCopyPlan({
+		graph: graph(
+			guids.resource,
+			[resource, child],
+			[relation(guids.child, predicates.enum['is-section-of'], guids.resource)]
+		),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect([...plan.keys()]).toEqual([guids.resource, guids.child]);
+	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
+		object: plan.get(guids.resource)?.guid,
+		position: 0,
+		predicate: predicates.enum['is-section-of'],
+		subject: plan.get(guids.child)?.guid
+	});
+});
+
+test('rejects actual data roots and prunes actual data descendants unless another path survives', () => {
+	const root = makeContainer(guids.root, {
+		title: 'Program',
+		type: payloadTypes.enum.program
+	});
+	const actualData = makeContainer(guids.actualData, {
+		indicator: guids.dependency,
+		title: 'Actual data',
+		type: payloadTypes.enum.actual_data
+	});
+	const pruned = makeContainer(guids.pruned, {
+		title: 'Pruned child',
+		type: payloadTypes.enum.text
+	});
+	const alternate = makeContainer(guids.child, {
+		title: 'Alternate child',
+		type: payloadTypes.enum.text
+	});
+	const snapshot = graph(
+		guids.root,
+		[root, actualData, pruned, alternate],
+		[
+			relation(guids.actualData, predicates.enum['is-section-of'], guids.root),
+			relation(guids.pruned, predicates.enum['is-section-of'], guids.actualData),
+			relation(guids.child, predicates.enum['is-section-of'], guids.actualData),
+			relation(guids.child, predicates.enum['is-part-of'], guids.root)
+		]
+	);
+
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect([...plan.keys()]).toEqual([guids.root, guids.child]);
+	expect(plan.has(guids.actualData)).toBe(false);
+	expect(plan.has(guids.pruned)).toBe(false);
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(guids.actualData, [actualData], []),
+			target,
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('unsupported_copy_source'));
+});
+
+test('prunes descendants with unresolved relation or payload references', () => {
+	const root = makeContainer(guids.root, {
+		title: 'Program',
+		type: payloadTypes.enum.program
+	});
+	const effect = makeContainer(guids.parent, {
+		achievedValues: [],
+		title: 'Effect',
+		type: payloadTypes.enum.effect
+	});
+	const resourceData = makeContainer(guids.resourceData, {
+		resource: guids.missing,
+		resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+		title: 'Resource data',
+		type: payloadTypes.enum.resource_data
+	});
+	const effectChild = makeContainer(guids.child, {
+		title: 'Effect child',
+		type: payloadTypes.enum.text
+	});
+	const resourceDataChild = makeContainer(guids.pruned, {
+		title: 'Resource data child',
+		type: payloadTypes.enum.text
+	});
+	const validSibling = makeContainer(guids.hidden, {
+		title: 'Valid sibling',
+		type: payloadTypes.enum.text
+	});
+
+	const plan = createContainerCopyPlan({
+		graph: graph(
+			guids.root,
+			[root, effect, resourceData, effectChild, resourceDataChild, validSibling],
+			[
+				relation(guids.parent, predicates.enum['is-section-of'], guids.root),
+				relation(guids.parent, predicates.enum['is-measured-by'], guids.missing),
+				relation(guids.child, predicates.enum['is-section-of'], guids.parent),
+				relation(guids.resourceData, predicates.enum['is-section-of'], guids.root),
+				relation(guids.pruned, predicates.enum['is-section-of'], guids.resourceData),
+				relation(guids.hidden, predicates.enum['is-section-of'], guids.root)
+			]
+		),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect([...plan.keys()]).toEqual([guids.root, guids.hidden]);
+	expect(plan.has(guids.parent)).toBe(false);
+	expect(plan.has(guids.child)).toBe(false);
+	expect(plan.has(guids.resourceData)).toBe(false);
+	expect(plan.has(guids.pruned)).toBe(false);
 });
 
 test('remaps collection members without instantiating template references', () => {
@@ -526,6 +674,24 @@ test('rejects missing and malformed required payload dependencies opaquely', () 
 			})
 		).toThrow(new CopyPlanError('required_dependency_unavailable'));
 	}
+
+	const unresolvedRelationRoot = makeContainer(guids.root, {
+		achievedValues: [],
+		title: 'Effect',
+		type: payloadTypes.enum.effect
+	});
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(
+				guids.root,
+				[unresolvedRelationRoot],
+				[relation(guids.root, predicates.enum['is-measured-by'], guids.missing)]
+			),
+			target,
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('required_dependency_unavailable'));
 });
 
 test('rejects conflicting positions for the same relation', () => {
@@ -599,7 +765,7 @@ test('rejects a final copy that does not satisfy the NewContainer schema', () =>
 	).toThrow(new CopyPlanError('invalid_copy_graph'));
 });
 
-test('uses opaque failures for unreadable roots and required private dependencies', () => {
+test('uses opaque failures for unreadable roots but retains unreadable reference targets', () => {
 	const root = makeContainer(guids.root, {
 		achievedValues: [],
 		title: 'Secret root',
@@ -633,14 +799,19 @@ test('uses opaque failures for unreadable roots and required private dependencie
 			allocateGuid: allocator()
 		})
 	).toThrow(new CopyPlanError('source_unavailable'));
-	expect(() =>
-		createContainerCopyPlan({
-			graph: snapshot,
-			target,
-			readPolicy: policy({ hidden: [guids.dependency] }),
-			allocateGuid: allocator()
-		})
-	).toThrow(new CopyPlanError('required_dependency_unavailable'));
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		readPolicy: policy({ hidden: [guids.dependency] }),
+		allocateGuid: allocator()
+	});
+	expect(plan.has(guids.dependency)).toBe(false);
+	expect(copyFor(plan, guids.root)?.relation).toContainEqual({
+		object: guids.dependency,
+		position: 0,
+		predicate: predicates.enum['is-measured-by'],
+		subject: plan.get(guids.root)?.guid
+	});
 });
 
 test('applies edited root payloads before remapping nested container references', () => {
@@ -756,7 +927,7 @@ test('applies only the explicit individual-profile root policy and provenance', 
 	expect(root.payload).toHaveProperty('slug', 'municipality');
 });
 
-test('retains an authorized private dependency when the server policy marks it shared', () => {
+test('remaps a reference target that is independently included through a structural path', () => {
 	const root = makeContainer(guids.root, {
 		achievedValues: [],
 		title: 'Effect',
@@ -772,16 +943,19 @@ test('retains an authorized private dependency when the server policy marks it s
 		graph: graph(
 			guids.root,
 			[root, dependency],
-			[relation(guids.root, predicates.enum['is-measured-by'], guids.dependency)]
+			[
+				relation(guids.root, predicates.enum['is-measured-by'], guids.dependency),
+				relation(guids.dependency, predicates.enum['is-section-of'], guids.root)
+			]
 		),
 		target,
-		readPolicy: policy({ retainedDependencies: [guids.dependency] }),
+		readPolicy: policy(),
 		allocateGuid: allocator()
 	});
 
-	expect(plan.has(guids.dependency)).toBe(false);
+	expect(plan.has(guids.dependency)).toBe(true);
 	expect(copyFor(plan, guids.root)?.relation).toContainEqual({
-		object: guids.dependency,
+		object: plan.get(guids.dependency)?.guid,
 		position: 0,
 		predicate: predicates.enum['is-measured-by'],
 		subject: plan.get(guids.root)?.guid

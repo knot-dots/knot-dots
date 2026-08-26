@@ -1,7 +1,7 @@
 import { NotFoundError, type DatabasePool } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 
-import type { ContainerCopyPlan } from '$lib/server/containerCopyPlan';
+import { CopyPlanError, type ContainerCopyPlan } from '$lib/server/containerCopyPlan';
 
 const mocks = vi.hoisted(() => ({
 	graph: undefined as unknown,
@@ -502,5 +502,31 @@ test('rejects organization roots and duplicate individual profiles before persis
 			maxPlanSize: 500
 		})
 	).rejects.toEqual(new ContainerCopyServiceError('unsupported_copy_source'));
+	expect(mocks.persist).not.toHaveBeenCalled();
+});
+
+test('rejects actual data roots before persistence', async () => {
+	const actualData = container(sourceGuid, {
+		indicator: childGuid,
+		title: 'Actual data',
+		type: payloadTypes.enum.actual_data,
+		visibility: visibility.enum.organization
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [actualData] };
+
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'copy',
+				sourceGuid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: actualData.payload
+			},
+			pool,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new CopyPlanError('unsupported_copy_source'));
 	expect(mocks.persist).not.toHaveBeenCalled();
 });
