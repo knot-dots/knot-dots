@@ -1,9 +1,10 @@
-import { derived, writable } from 'svelte/store';
+import { derived, writable, type Writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { preloadData } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { page } from '$app/stores';
 import defineAbilityFor from '$lib/authorization';
+import type { PendingContainerCopy } from '$lib/containerCopy';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 import {
@@ -147,7 +148,32 @@ type AddItemState = {
 
 export const addItemState = writable<AddItemState>({});
 
-export const newContainer = writable<NewContainer | undefined>();
+export type CreateContainerDialogState =
+	| { kind: 'create'; container: NewContainer }
+	| { kind: 'copy'; container: NewContainer; request: PendingContainerCopy };
+
+export const createContainerDialogState = writable<CreateContainerDialogState | undefined>();
+
+// Compatibility view for ordinary creation callers. Assigning through this store always starts a
+// normal creation operation and therefore clears any previous copy intent.
+export const newContainer: Writable<NewContainer | undefined> = {
+	subscribe(run, invalidate) {
+		return createContainerDialogState.subscribe((state) => run(state?.container), invalidate);
+	},
+	set(container) {
+		createContainerDialogState.set(container ? { kind: 'create', container } : undefined);
+	},
+	update(updater) {
+		createContainerDialogState.update((state) => {
+			const container = updater(state?.container);
+			return container ? { kind: 'create', container } : undefined;
+		});
+	}
+};
+
+export function openContainerCopyDialog(container: NewContainer, request: PendingContainerCopy) {
+	createContainerDialogState.set({ kind: 'copy', container, request });
+}
 
 export const lastCreatedContainers = writable<Map<string, Container<AnyPayload>>>(new Map());
 

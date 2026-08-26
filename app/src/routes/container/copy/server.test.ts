@@ -11,6 +11,7 @@ vi.mock('$lib/server/containerCopyService', async (importOriginal) => ({
 }));
 
 import { payloadTypes } from '$lib/models';
+import { CopyPlanError } from '$lib/server/containerCopyPlan';
 import { ContainerCopyServiceError } from '$lib/server/containerCopyService';
 import { POST } from './+server';
 
@@ -117,4 +118,10 @@ test('maps only typed service errors to stable HTTP responses', async () => {
 	});
 	executeContainerCopy.mockRejectedValueOnce(unrelatedError);
 	await expect(POST(event(validRequest))).rejects.toBe(unrelatedError);
+});
+
+test('maps copy-plan failures to the generic invalid-copy response', async () => {
+	executeContainerCopy.mockRejectedValueOnce(new CopyPlanError('unsupported_copy_source'));
+
+	await expect(POST(event(validRequest))).rejects.toMatchObject({ status: 422 });
 });

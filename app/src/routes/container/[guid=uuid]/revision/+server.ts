@@ -3,6 +3,7 @@ import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import {
 	etag,
 	isContainerWithEditorialState,
@@ -69,6 +70,30 @@ export const POST = (async ({ locals, params, request }) => {
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
+		const serverOwnedRelations = container.relation.filter(({ predicate }) =>
+			isServerOwnedCopyRelationPredicate(predicate)
+		);
+		const hasSpoofedServerOwnedRelation = parseResult.data.relation
+			.filter(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
+			.some(
+				(submitted) =>
+					!serverOwnedRelations.some(
+						(current) =>
+							current.object === submitted.object &&
+							current.predicate === submitted.predicate &&
+							current.subject === submitted.subject &&
+							current.position === submitted.position
+					)
+			);
+		if (hasSpoofedServerOwnedRelation) {
+			error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+		}
+		const relations = [
+			...parseResult.data.relation.filter(
+				({ predicate }) => !isServerOwnedCopyRelationPredicate(predicate)
+			),
+			...serverOwnedRelations
+		];
 		if (
 			parseResult.data.organization !== container.organization &&
 			ability.cannot('update', container, 'organization')
@@ -154,6 +179,7 @@ export const POST = (async ({ locals, params, request }) => {
 			const result = await locals.pool.connect(async (connection) => {
 				const updated = await updateContainer({
 					...parseResult.data,
+					relation: relations,
 					payload: {
 						...parseResult.data.payload,
 						...(aiContribution !== undefined ? { aiContribution } : undefined)

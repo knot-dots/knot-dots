@@ -42,7 +42,7 @@
 		resolveOrganizationScope
 	} from '$lib/organizationScope';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
-	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
+	import { ability, addItemState, mayCreateContainer, openContainerCopyDialog } from '$lib/stores';
 
 	interface Props {
 		container: Container<CustomCollectionPayload>;
@@ -355,11 +355,17 @@
 			throw new Error('Expected a template container');
 		}
 
-		$newContainer = createTemplateInstanceOf(
+		const newContainer = createTemplateInstanceOf(
 			template,
 			container.organization,
 			container.organizational_unit ?? null
 		);
+		openContainerCopyDialog(newContainer, {
+			operation: 'template-instance',
+			sourceGuid: template.guid,
+			targetOrganizationGuid: container.organization,
+			targetOrganizationalUnitGuid: container.organizational_unit ?? null
+		});
 
 		$addItemState = { target: container };
 		createContainerDialog.getElement().showModal();

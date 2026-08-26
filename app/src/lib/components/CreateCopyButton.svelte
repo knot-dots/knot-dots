@@ -3,8 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import CopyCat from '~icons/knotdots/copycat';
 	import { page } from '$app/state';
-	import { type AnyPayload, type Container, createRootCopyOf } from '$lib/models';
-	import { ability, applicationState, newContainer, user } from '$lib/stores';
+	import { type AnyPayload, type Container, containerOfType, createRootCopyOf } from '$lib/models';
+	import { selectContainerCopyLocation, type ContainerCopyLocation } from '$lib/containerCopy';
+	import { ability, applicationState, openContainerCopyDialog, user } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -16,22 +17,40 @@
 		'createContainerDialog'
 	);
 
-	async function createCopy(container: Container<AnyPayload>) {
-		const organizationalUnit = page.data.organizationalUnits.find(
-			(o) => $user.adminOf[0] == o.guid
+	function canCreateAt(location: ContainerCopyLocation) {
+		const candidate = containerOfType(
+			container.payload.type,
+			location.organizationGuid,
+			location.organizationalUnitGuid,
+			location.organizationalUnitGuid ?? location.organizationGuid,
+			container.realm
 		);
-		let organization;
-		if (organizationalUnit) {
-			organization = organizationalUnit.organization;
-		} else {
-			organization = page.data.organizations.find((o) => $user.adminOf[0] == o.guid)
-				?.guid as string;
+		return $ability.can('create', candidate);
+	}
+
+	let copyLocation = $derived.by(() =>
+		selectContainerCopyLocation(
+			{
+				organizationGuid: page.data.currentOrganization.guid,
+				organizationalUnitGuid: page.data.currentOrganizationalUnit?.guid ?? null
+			},
+			$user.adminOf[0],
+			page.data.organizations,
+			page.data.organizationalUnits,
+			canCreateAt
+		)
+	);
+
+	async function createCopy(container: Container<AnyPayload>) {
+		const location = copyLocation;
+		if (!location) {
+			return;
 		}
 
 		const copy = createRootCopyOf(
 			container,
-			organization,
-			organizationalUnit?.guid ?? null,
+			location.organizationGuid,
+			location.organizationalUnitGuid,
 			container.payload.visibility
 		);
 
@@ -41,13 +60,18 @@
 			});
 		}
 
-		$newContainer = copy;
+		openContainerCopyDialog(copy, {
+			operation: 'copy',
+			sourceGuid: container.guid,
+			targetOrganizationGuid: location.organizationGuid,
+			targetOrganizationalUnitGuid: location.organizationalUnitGuid
+		});
 
 		createContainerDialog.getElement().showModal();
 	}
 </script>
 
-{#if $applicationState.containerDetailView.editable && $user.adminOf.length > 0 && $ability.can('create', container.payload.type)}
+{#if $applicationState.containerDetailView.editable && copyLocation}
 	<button class="button-copycat" type="button" onclick={() => createCopy(container)}>
 		<CopyCat />
 		{$_('copy')}

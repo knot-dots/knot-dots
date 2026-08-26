@@ -640,13 +640,13 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 			grandchild.guid,
 			actualData.guid,
 			privateIndicator.guid,
-			privateIndicatorSection.guid,
 			publicIndicator.guid
 		])
 	);
 	expect(resultGuids).not.toContain(deletedIntermediate.guid);
 	expect(resultGuids).not.toContain(belowDeleted.guid);
 	expect(resultGuids).not.toContain(payloadOnlyIndicator.guid);
+	expect(resultGuids).not.toContain(privateIndicatorSection.guid);
 	expect(resultGuids).not.toContain(publicIndicatorSection.guid);
 	expect(
 		result.containers
@@ -703,6 +703,44 @@ test('getContainerCopyGraph ignores actual data references and follows resource 
 			[]
 		)
 	)(connection);
+	const resourceSection = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: resource.guid,
+					position: 1,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	const deletedResource = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Deleted resource',
+				type: payloadTypes.enum.resource_v2,
+				visibility: visibility.enum.organization
+			},
+			[]
+		)
+	)(connection);
+	const dataWithDeletedResource = await createContainer(
+		initializeNewContainer(
+			{
+				resource: deletedResource.guid,
+				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
+				title: 'Data with deleted resource',
+				type: payloadTypes.enum.resource_data
+			},
+			[]
+		)
+	)(connection);
+	await connection.query(sql.typeAlias('void')`
+		UPDATE container
+		SET deleted = true
+		WHERE guid = ${deletedResource.guid}
+			AND valid_currently
+	`);
 
 	const guidsFor = async (rootGuid: string) =>
 		(await getContainerCopyGraph(rootGuid)(connection)).containers.map(({ guid }) => guid);
@@ -712,7 +750,11 @@ test('getContainerCopyGraph ignores actual data references and follows resource 
 	expect(await guidsFor(resourceData.guid)).toEqual(
 		expect.arrayContaining([resourceData.guid, resource.guid])
 	);
-	expect(await guidsFor(resource.guid)).toEqual([resource.guid]);
+	expect(await guidsFor(resourceData.guid)).not.toContain(resourceSection.guid);
+	expect(await guidsFor(resource.guid)).toEqual(
+		expect.arrayContaining([resource.guid, resourceSection.guid])
+	);
+	expect(await guidsFor(dataWithDeletedResource.guid)).toEqual([dataWithDeletedResource.guid]);
 });
 
 test('getContainerCopyGraph fetches collection references without traversing their descendants', async ({
