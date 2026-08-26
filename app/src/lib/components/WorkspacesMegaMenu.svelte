@@ -40,11 +40,7 @@
 
 	let currentWorkspace = $derived(workspaceFromPathname(pathnameWithoutContext));
 
-	const isOnPage = $derived(
-		pathnameWithoutContext === '/all/page' ||
-			pathnameWithoutContext === '' ||
-			pathnameWithoutContext === '/'
-	);
+	const isOnPage = $derived(pathnameWithoutContext === '' || pathnameWithoutContext === '/');
 
 	const visible = $derived(
 		getVisibleWorkspaces({

@@ -71,7 +71,7 @@ persons.forEach((person) => {
 		await page.getByRole('button', { name: 'Sign In' }).click();
 
 		// Wait for the application to be successfully logged in
-		await expect(page).toHaveTitle('knotdots.net / All');
+		await expect(page).toHaveTitle('knotdots.net');
 
 		// Add an assertion to confirm successful login
 		await expect(

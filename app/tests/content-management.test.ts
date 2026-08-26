@@ -5,7 +5,7 @@ test.use({ suiteId: 'content-management' });
 test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test('stage', async ({ page, testOrganization }) => {
-	await page.goto(`/${testOrganization.guid}/all/page`);
+	await page.goto(`/${testOrganization.guid}`);
 	await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 
 	const fileChooserPromise = page.waitForEvent('filechooser');
@@ -73,7 +73,7 @@ test('create and delete', async ({ dotsBoard, testOrganization }) => {
 });
 
 test('custom favicon support', async ({ page, testOrganization }) => {
-	await page.goto(`/${testOrganization.guid}/all/page`);
+	await page.goto(`/${testOrganization.guid}`);
 	await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 	await page.getByRole('button', { name: 'Show all properties' }).click();
 

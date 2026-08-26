@@ -81,6 +81,6 @@ test('Organization menu links to workspace or landing page', async ({
 	await nav.getByRole('button', { name: 'Organizations' }).click();
 	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
 		'href',
-		new RegExp(`/${testOrganization.guid}/all/page`)
+		new RegExp(`/${testOrganization.guid}`)
 	);
 });

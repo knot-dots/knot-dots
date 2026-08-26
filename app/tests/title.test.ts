@@ -8,9 +8,9 @@ test.use({ suiteId: 'title' });
 test.describe('Document titles', () => {
 	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
-	test('home page title includes organization and workspace (All)', async ({ page }) => {
+	test('home page title is default organization name', async ({ defaultOrganization, page }) => {
 		await page.goto('/');
-		await expect(page).toHaveTitle(/\/\s*All$/);
+		await expect(page).toHaveTitle(defaultOrganization.payload.name);
 	});
 
 	test('404 page title includes organization name and status', async ({ page }) => {
@@ -20,17 +20,16 @@ test.describe('Document titles', () => {
 
 	test('title updates to show test organization name', async ({ page, testOrganization }) => {
 		// Navigate to the test organization's home page
-		await page.goto(`/${testOrganization.guid}/all/page`);
+		await page.goto(`/${testOrganization.guid}`);
 
 		// Title should include the test organization's name
-		const expectedOrgName = testOrganization.payload.name;
-		await expect(page).toHaveTitle(new RegExp(`^${expectedOrgName}\\s*/`));
+		await expect(page).toHaveTitle(testOrganization.payload.name);
 	});
 
 	test('title updates when switching between workspaces', async ({ page, testOrganization }) => {
-		// Start at the organization's home (Pages workspace at /all/page)
-		await page.goto(`/${testOrganization.guid}/all/page`);
-		await expect(page).toHaveTitle(/\/\s*All$/);
+		// Start at the organization's home
+		await page.goto(`/${testOrganization.guid}`);
+		await expect(page).toHaveTitle(testOrganization.payload.name);
 
 		// Navigate to Goals workspace
 		await page.getByRole('button', { name: 'Choose workspace', exact: true }).click();

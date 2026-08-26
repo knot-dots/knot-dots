@@ -57,7 +57,7 @@ class DetailPage extends BasePage {
 
 export class LandingPage extends DetailPage {
 	async goto(baseUrl: string) {
-		await this.page.goto(`${baseUrl}/all/page`);
+		await this.page.goto(baseUrl);
 	}
 }
 

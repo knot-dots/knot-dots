@@ -12,7 +12,7 @@ test('organization dropdown shows options and filters', async ({
 	test.skip(isMobile, 'Sidebar hidden on mobile');
 
 	// Navigate to default org so testOrganization appears in the dropdown
-	await page.goto(`/${defaultOrganization.guid}/all/page`);
+	await page.goto(`/${defaultOrganization.guid}`);
 
 	const orgButton = page
 		.getByRole('button', { name: 'Organizations' })
@@ -34,7 +34,7 @@ test('organizational unit dropdown shows tree and filters', async ({
 }) => {
 	test.skip(isMobile, 'Sidebar hidden on mobile');
 
-	await page.goto(`/${testOrganization.guid}/all/page`);
+	await page.goto(`/${testOrganization.guid}`);
 
 	const orgUnitButton = page
 		.getByRole('button', { name: 'Organizational units' })
@@ -65,7 +65,7 @@ test('organizational unit dropdown navigates on click', async ({
 }) => {
 	test.skip(isMobile, 'Sidebar hidden on mobile');
 
-	await page.goto(`/${testOrganization.guid}/all/page`);
+	await page.goto(`/${testOrganization.guid}`);
 
 	const orgUnitButton = page.getByRole('button', { name: 'Organizational units' });
 	await orgUnitButton.click();
@@ -73,5 +73,5 @@ test('organizational unit dropdown navigates on click', async ({
 	const popover = page.getByRole('tree');
 	await popover.getByRole('treeitem', { name: testOrganizationalUnit.payload.name }).click();
 
-	await page.waitForURL(new RegExp(`/${testOrganizationalUnit.guid}/`));
+	await page.waitForURL(new RegExp(`/${testOrganizationalUnit.guid}`));
 });

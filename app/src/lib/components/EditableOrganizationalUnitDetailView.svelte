@@ -131,7 +131,7 @@
 
 	let linkedProfileURL = $derived(
 		linkedProfile
-			? getOrganizationURL(linkedProfile, '/all/page', env, {
+			? getOrganizationURL(linkedProfile, '', env, {
 					organizationSlug: page.data.currentOrganization.payload.slug,
 					organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 				}).toString()
@@ -171,7 +171,7 @@
 				const created = await response.json();
 				dialog?.close();
 				goto(
-					getOrganizationURL(created, '/all/page', env, {
+					getOrganizationURL(created, '', env, {
 						organizationSlug: page.data.currentOrganization.payload.slug,
 						organizationCustomDomain: page.data.currentOrganization.payload.customDomain
 					}).toString()

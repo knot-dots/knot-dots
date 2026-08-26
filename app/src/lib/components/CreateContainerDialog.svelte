@@ -98,7 +98,7 @@
 			}
 
 			if (isOrganizationalUnitContainer(savedContainer)) {
-				await goto(resolve('/[guid=uuid]/all/page', { guid: savedContainer.guid }), {
+				await goto(resolve('/[guid=uuid]', { guid: savedContainer.guid }), {
 					invalidateAll: true
 				});
 			} else {

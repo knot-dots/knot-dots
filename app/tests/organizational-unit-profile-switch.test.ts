@@ -8,8 +8,8 @@ test('allows switching between standard and individual profile from the profile 
 	testIndividualProfile,
 	testOrganizationalUnit
 }) => {
-	await page.goto(`/${testOrganizationalUnit.guid}/all/page`);
-	await expect(page).toHaveURL(new RegExp(`/${testOrganizationalUnit.guid}/all/page$`));
+	await page.goto(`/${testOrganizationalUnit.guid}`);
+	await expect(page).toHaveURL(new RegExp(`/${testOrganizationalUnit.guid}$`));
 	await expect(
 		page.getByRole('heading', { name: testOrganizationalUnit.payload.name, exact: false })
 	).toBeVisible();
@@ -27,7 +27,7 @@ test('allows switching between standard and individual profile from the profile 
 	await expect(individualLink).toBeVisible();
 
 	await Promise.all([
-		page.waitForURL(new RegExp(`/${testIndividualProfile.guid}/all/page$`)),
+		page.waitForURL(new RegExp(`/${testIndividualProfile.guid}$`)),
 		individualLink.click()
 	]);
 

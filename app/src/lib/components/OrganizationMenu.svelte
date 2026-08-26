@@ -86,7 +86,7 @@
 			user: $user
 		}).flatMap((w) => Object.values(w.views));
 
-		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '/all/page';
+		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '';
 	}
 
 	function optionURL(container: Container<OrganizationPayload>) {

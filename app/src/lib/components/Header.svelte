@@ -130,9 +130,7 @@
 			segments.length > 1 && segments[1] === selectedContext?.guid
 				? '/' + segments.slice(2).join('/')
 				: page.url.pathname;
-		return (
-			pathWithoutContext === '/all/page' || pathWithoutContext === '/' || pathWithoutContext === ''
-		);
+		return pathWithoutContext === '/' || pathWithoutContext === '';
 	});
 
 	let selectedSort = $derived(page.url.searchParams.get('sort') ?? 'alpha');
