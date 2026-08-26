@@ -1042,10 +1042,10 @@ input[type='range'] {
 
 select {
 	background-image: url(/src/lib/assets/chevron-down.svg);
-	background-position: right 12px top 12px;
+	background-position: right 8px center;
 	background-repeat: no-repeat;
-	background-size: 18px;
-	padding-right: 34px;
+	background-size: 16px;
+	padding-right: 32px;
 }
 
 textarea {
