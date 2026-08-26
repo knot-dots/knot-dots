@@ -117,11 +117,11 @@
 {#if showViewSwitch}
 	<nav class="segmented-button view-switch">
 		<label class="button">
-			<input type="radio" bind:group={view} value="list" />
+			<input class="is-visually-hidden" type="radio" bind:group={view} value="list" />
 			{$_('members_view.list')}
 		</label>
 		<label class="button">
-			<input type="radio" bind:group={view} value="matrix" />
+			<input class="is-visually-hidden" type="radio" bind:group={view} value="matrix" />
 			{$_('members_view.matrix')}
 		</label>
 	</nav>
