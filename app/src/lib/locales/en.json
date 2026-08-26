@@ -214,6 +214,7 @@
 		"individual_profile_exists": "An individual profile already exists for this organizational unit.",
 		"unauthorized": "Sorry, you are not allowed to do this.",
 		"not_found": "Sorry, there is nothing to show here.",
+		"unprocessable_entity": "The request could not be processed.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"slug_not_available": "This URL slug is already in use.",
@@ -541,6 +542,10 @@
 	"measures": "Measures",
 	"member_filter.label": "Members",
 	"members": "Members",
+	"members_view": {
+		"list": "List",
+		"matrix": "Matrix"
+	},
 	"milestone": "Milestone",
 	"milestones": "Milestones",
 	"model": "Model",
@@ -600,6 +605,13 @@
 	},
 	"payload_type": "Type of element",
 	"pdf": "PDF",
+	"permission": {
+		"create": "Create",
+		"delete": "Delete",
+		"manage-members": "Manage users",
+		"read": "Read",
+		"update": "Edit"
+	},
 	"planned_duration": "Planned duration",
 	"policy_field_bnk": "Policy field (BNK 2.0)",
 	"policy_field_bnk.climate": "Climate action and climate change adaptation",
@@ -748,6 +760,7 @@
 	"resource_table.subordinate_measures": "Subordinate measures",
 	"resource_table.no_subordinate_measures": "No subordinate measures",
 	"role": {
+		"admin": "Admin",
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
 		"head": "Head",
@@ -949,6 +962,12 @@
 		"remove": "Remove",
 		"remove_failure": "The user could not be removed.",
 		"role": "Role"
+	},
+	"user_management": {
+		"views": {
+			"permissions": "Permissions",
+			"users": "Users"
+		}
 	},
 	"user_menu": "User menu",
 	"valid_from": "Valid from",

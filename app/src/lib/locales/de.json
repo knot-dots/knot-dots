@@ -214,6 +214,7 @@
 		"individual_profile_exists": "Für diese Organisationseinheit gibt es bereits ein individuelles Profil.",
 		"unauthorized": "Leider ist das nicht erlaubt.",
 		"not_found": "Leider geht es hier nicht weiter.",
+		"unprocessable_entity": "Die Anfrage konnte nicht verarbeitet werden.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
@@ -541,6 +542,10 @@
 	"measures": "Maßnahmen",
 	"member_filter.label": "Zuständig",
 	"members": "Mitglieder",
+	"members_view": {
+		"list": "Liste",
+		"matrix": "Matrix"
+	},
 	"milestone": "Meilenstein",
 	"milestones": "Meilensteine",
 	"model": "Leitbild",
@@ -600,6 +605,13 @@
 	},
 	"payload_type": "Elementart",
 	"pdf": "PDF-Dokument",
+	"permission": {
+		"create": "Anlegen",
+		"delete": "Löschen",
+		"manage-members": "Nutzer verwalten",
+		"read": "Lesen",
+		"update": "Bearbeiten"
+	},
 	"planned_duration": "Geplante Laufzeit",
 	"policy_field_bnk": "Handlungsfeld (BNK 2.0)",
 	"policy_field_bnk.climate": "Klimaschutz- und Klimaanpassung",
@@ -747,6 +759,7 @@
 	"resource_table.subordinate_measures": "Nachgeordnete Maßnahmen",
 	"resource_table.no_subordinate_measures": "Keine nachgeordneten Maßnahmen",
 	"role": {
+		"admin": "Admin",
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",
 		"head": "Leitung",
@@ -948,6 +961,12 @@
 		"remove": "Entfernen",
 		"remove_failure": "Die Person konnte leider nicht entfernt werden.",
 		"role": "Rolle"
+	},
+	"user_management": {
+		"views": {
+			"permissions": "Berechtigung",
+			"users": "Nutzer"
+		}
 	},
 	"user_menu": "Benutzermenü",
 	"visible_for": "Sichtbar für",
