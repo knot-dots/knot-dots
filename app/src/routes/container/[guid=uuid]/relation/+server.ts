@@ -147,6 +147,7 @@ export const GET = (async ({ locals, params, url }) => {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToProgram(container.guid, {
 					customCategories,
+					template: container.payload.template,
 					terms: parseResult.data.terms[0],
 					type: parseResult.data.payloadType
 				})
@@ -159,6 +160,7 @@ export const GET = (async ({ locals, params, url }) => {
 						assignees: parseResult.data.assignee,
 						customCategories,
 						taskCategories: parseResult.data.taskCategory,
+						template: container.payload.template,
 						terms: parseResult.data.terms[0],
 						type: parseResult.data.payloadType
 					},
@@ -177,6 +179,7 @@ export const GET = (async ({ locals, params, url }) => {
 						organizationalUnits: parseResult.data.organizationalUnit,
 						programTypes: parseResult.data.programType,
 						taskCategories: parseResult.data.taskCategory,
+						template: 'template' in container.payload ? container.payload.template : undefined,
 						terms: parseResult.data.terms[0],
 						type: parseResult.data.payloadType
 					},

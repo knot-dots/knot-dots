@@ -1319,6 +1319,7 @@ export function getAllRelatedContainers(
 		programTypes?: string[];
 		statuses?: string[];
 		taskCategories?: string[];
+		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
 	},
@@ -1636,6 +1637,7 @@ export function getAllContainersRelatedToProgram(
 	filters: {
 		customCategories?: Record<string, string[]>;
 		statuses?: string[];
+		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
 	}
@@ -1723,6 +1725,7 @@ export function getAllContainersRelatedToMeasure(
 		assignees?: string[];
 		customCategories?: Record<string, string[]>;
 		taskCategories?: string[];
+		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
 	},
