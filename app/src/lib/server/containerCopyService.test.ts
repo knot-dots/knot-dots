@@ -89,8 +89,9 @@ const sysadmin: User = {
 };
 
 const pool = {
-	connect: async (operation: (connection: unknown) => unknown) => operation({})
-} as unknown as DatabasePool;
+	connect: async (operation: Parameters<DatabasePool['connect']>[0]) =>
+		operation({} as Parameters<Parameters<DatabasePool['connect']>[0]>[0])
+} as DatabasePool;
 
 beforeEach(() => {
 	mocks.persist.mockReset();
