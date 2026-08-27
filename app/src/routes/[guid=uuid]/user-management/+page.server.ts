@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import defineAbilityFor from '$lib/authorization';
 import { findDescendants, predicates, type User } from '$lib/models';
 import { getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
@@ -20,10 +21,7 @@ export const load = (async ({ locals, parent }) => {
 	} = await parent();
 	const selectedContext = currentOrganizationalUnit ?? currentOrganization;
 
-	if (
-		!locals.user.roles.includes('sysadmin') &&
-		!locals.user.adminOf.includes(selectedContext.guid)
-	) {
+	if (defineAbilityFor(locals.user).cannot('invite-members', selectedContext)) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 

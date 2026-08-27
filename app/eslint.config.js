@@ -30,6 +30,14 @@ export default ts.config(
 	{
 		rules: {
 			'@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector: 'TSAsExpression[expression.typeAnnotation.type="TSUnknownKeyword"]',
+					message:
+						'Do not use double assertions like "as unknown as ...". Type the value properly instead.'
+				}
+			],
 			'svelte/no-navigation-without-resolve': 'off',
 			'svelte/prefer-svelte-reactivity': 'off'
 		}

@@ -30,7 +30,6 @@ import {
 } from '$lib/models';
 import type { createFeatureDecisions } from '$lib/features';
 import type { MongoAbility } from '@casl/ability';
-import type { User } from '$lib/stores';
 
 export type WorkspaceModuleKey =
 	| 'goal_setting'
@@ -96,7 +95,6 @@ export interface WorkspaceDefinition {
 	/** Map view → URL path (without context segment). The `default` view is the entry view. */
 	views: Partial<Record<WorkspaceViewKey, string>> & { default: string };
 	featureFlag?: WorkspaceFeatureFlag;
-	adminOnly?: boolean;
 }
 
 export const strategyProgramTypes = [
@@ -313,8 +311,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		module: 'organizing',
 		views: {
 			default: '/user-management'
-		},
-		adminOnly: true
+		}
 	}
 ];
 
@@ -327,7 +324,6 @@ interface VisibilityContext {
 	organizationalUnit?: Container<OrganizationalUnitPayload> | null;
 	features: WorkspaceFeatureDecisions;
 	ability?: MongoAbility;
-	user?: User;
 }
 
 /**
@@ -347,17 +343,12 @@ interface VisibilityContext {
  *   (e.g. categories require `mayCreateContainer` permission).
  */
 export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinition[] {
-	const { organization, organizationalUnit, features, ability, user } = ctx;
+	const { organization, organizationalUnit, features, ability } = ctx;
 	const selectedContext = organizationalUnit ?? organization;
 	const orgUnitExplicit = organizationalUnit?.payload.visibleWorkspaces ?? [];
 	const explicit =
 		orgUnitExplicit.length > 0 ? orgUnitExplicit : (organization.payload.visibleWorkspaces ?? []);
 	const explicitSet = new Set(explicit);
-
-	const isCtxAdmin =
-		user?.roles.includes('sysadmin') ||
-		user?.adminOf.includes(selectedContext.guid) ||
-		user?.adminOf.includes(selectedContext.organization);
 
 	return workspaces.filter((workspace) => {
 		if (workspace.featureFlag && !features[workspace.featureFlag]()) {
@@ -399,8 +390,8 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 				}
 			}
 		}
-		if (workspace.adminOnly) {
-			return isCtxAdmin;
+		if (workspace.key === 'users') {
+			return ability ? ability.can('invite-members', selectedContext) : false;
 		}
 		if (explicitSet.size === 0) {
 			return true;

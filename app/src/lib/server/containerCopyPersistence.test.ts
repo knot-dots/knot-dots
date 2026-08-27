@@ -327,10 +327,10 @@ test('persists the plan mapping and queues deduplicated events after the transac
 });
 
 test('returns an empty map without opening a transaction or enqueueing', async () => {
-	const transaction = vi.fn();
+	const transaction: DatabaseNonTransactionConnection['transaction'] = vi.fn();
 	const nonTransactionConnection = {
 		transaction
-	} as unknown as DatabaseNonTransactionConnection;
+	} as DatabaseNonTransactionConnection;
 
 	const result = await persistContainerCopyPlan(new Map())(nonTransactionConnection);
 
@@ -357,9 +357,10 @@ test('does not enqueue when the persistence transaction rolls back', async ({ co
 	});
 	const plan: ContainerCopyPlan = new Map([[originalGuid, planned]]);
 	const nonTransactionConnection = {
-		transaction: <T>(handler: Parameters<DatabaseNonTransactionConnection['transaction']>[0]) =>
-			connection.transaction(handler) as Promise<T>
-	} as unknown as DatabaseNonTransactionConnection;
+		transaction: async <T>(
+			handler: Parameters<DatabaseNonTransactionConnection['transaction']>[0]
+		) => (await connection.transaction(handler)) as T
+	} as DatabaseNonTransactionConnection;
 
 	await expect(persistContainerCopyPlan(plan)(nonTransactionConnection)).rejects.toThrow();
 	expect(enqueueIndexingEvents).not.toHaveBeenCalled();

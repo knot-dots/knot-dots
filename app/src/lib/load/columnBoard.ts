@@ -66,7 +66,7 @@ export function loadColumnBoardPage<T extends Container<AnyPayload>, ColumnId ex
 			parent()
 		]);
 
-		const columns = Object.fromEntries(columnEntries) as unknown as Record<ColumnId, Column<T>>;
+		const columns = Object.fromEntries(columnEntries) as Record<ColumnId, Column<T>>;
 		const columnValues = Object.values(columns) as Column<T>[];
 		const filteredCategoryContext = filterCategoryContext(categoryContext, options.payloadTypes);
 
