@@ -30,14 +30,14 @@ const currentOrganizationalUnit = {
 	relation: []
 };
 
-function user(adminOf: string[]) {
+function user(adminOf: string[], headOf: string[] = []) {
 	return {
 		adminOf,
 		collaboratorOf: [],
 		familyName: 'Admin',
 		givenName: 'Test',
 		guid: userGuid,
-		headOf: [],
+		headOf,
 		isAuthenticated: true,
 		memberOf: [],
 		roles: [],
@@ -45,11 +45,11 @@ function user(adminOf: string[]) {
 	};
 }
 
-function event(adminOf: string[]) {
+function event(adminOf: string[], headOf: string[] = []) {
 	return {
 		locals: {
 			pool: { connect: vi.fn().mockResolvedValue([]) },
-			user: user(adminOf)
+			user: user(adminOf, headOf)
 		},
 		parent: vi.fn().mockResolvedValue({
 			currentOrganization,
@@ -72,6 +72,12 @@ test('grants organization admins access to the user management of an organizatio
 
 test('grants organizational unit admins access to the user management of their unit', async () => {
 	const { container } = await load(event([organizationalUnitGuid]));
+
+	expect(container.guid).toBe(organizationalUnitGuid);
+});
+
+test('grants heads of the organization access to the user management of an organizational unit', async () => {
+	const { container } = await load(event([], [organizationGuid]));
 
 	expect(container.guid).toBe(organizationalUnitGuid);
 });
