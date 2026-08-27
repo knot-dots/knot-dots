@@ -21,7 +21,7 @@ import { withLogger } from '$lib/server/logger';
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
 
-const withAuthentication: Handle = ({ event, resolve }) => {
+export const withAuthentication: Handle = ({ event, resolve }) => {
 	const { handle } = SvelteKitAuth({
 		callbacks: {
 			async jwt({ token, account }) {
@@ -57,28 +57,41 @@ const withAuthentication: Handle = ({ event, resolve }) => {
 				return token;
 			},
 			async session({ session, token }) {
-				const pool = await getPool();
-				const [user, containerUserRelations] = await Promise.all([
-					pool.connect(getUser(token.sub as string)),
-					pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
-				]);
-				session.user.adminOf = containerUserRelations
-					.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
-					.map(({ object }) => object);
-				session.user.collaboratorOf = containerUserRelations
-					.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
-					.map(({ object }) => object);
-				session.user.familyName = user.family_name;
-				session.user.givenName = user.given_name;
-				session.user.guid = user.guid;
-				session.user.headOf = containerUserRelations
-					.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
-					.map(({ object }) => object);
-				session.user.memberOf = containerUserRelations
-					.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
-					.map(({ object }) => object);
+				session.user.adminOf = [];
+				session.user.collaboratorOf = [];
+				session.user.familyName = '';
+				session.user.givenName = '';
+				session.user.guid = token.sub as string;
+				session.user.headOf = [];
+				session.user.memberOf = [];
 				session.user.roles = token.roles as string[];
-				session.user.settings = user.settings;
+				session.user.settings = {};
+				// If this callback throws, Auth.js treats the session as broken and
+				// deletes the session cookie, logging the user out for good.
+				try {
+					const pool = await getPool();
+					const [user, containerUserRelations] = await Promise.all([
+						pool.connect(getUser(token.sub as string)),
+						pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
+					]);
+					session.user.adminOf = containerUserRelations
+						.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+						.map(({ object }) => object);
+					session.user.collaboratorOf = containerUserRelations
+						.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
+						.map(({ object }) => object);
+					session.user.familyName = user.family_name;
+					session.user.givenName = user.given_name;
+					session.user.headOf = containerUserRelations
+						.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
+						.map(({ object }) => object);
+					session.user.memberOf = containerUserRelations
+						.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+						.map(({ object }) => object);
+					session.user.settings = user.settings;
+				} catch (error) {
+					log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
+				}
 				return session;
 			}
 		},
@@ -128,10 +141,10 @@ export const handle = sequence(
 		event.locals.pool = pool;
 		await ensureDefaultCategoryTerms(pool);
 
-		const session = await event.locals.auth();
-		if (session) {
+		event.locals.session = await event.locals.auth();
+		if (event.locals.session) {
 			event.locals.user = {
-				...session.user,
+				...event.locals.session.user,
 				isAuthenticated: true
 			};
 		} else {

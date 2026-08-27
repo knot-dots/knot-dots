@@ -24,7 +24,7 @@ export const load: LayoutServerLoad = async ({ depends, locals, params, url }) =
 
 	return {
 		...context,
-		session: await locals.auth(),
+		session: locals.session,
 		user
 	};
 };
