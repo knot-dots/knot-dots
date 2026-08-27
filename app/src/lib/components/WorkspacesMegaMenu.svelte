@@ -6,7 +6,7 @@
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
 	import { getContextIdentifier, pathnameWithoutContextSegment } from '$lib/models';
-	import { ability, user } from '$lib/stores';
+	import { ability } from '$lib/stores';
 	import {
 		getVisibleWorkspaces,
 		groupWorkspacesByModule,
@@ -51,8 +51,7 @@
 			organization: page.data.currentOrganization,
 			organizationalUnit: page.data.currentOrganizationalUnit,
 			features,
-			ability: $ability,
-			user: $user
+			ability: $ability
 		})
 	);
 
