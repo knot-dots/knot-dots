@@ -128,10 +128,10 @@ export const handle = sequence(
 		event.locals.pool = pool;
 		await ensureDefaultCategoryTerms(pool);
 
-		const session = await event.locals.auth();
-		if (session) {
+		event.locals.session = await event.locals.auth();
+		if (event.locals.session) {
 			event.locals.user = {
-				...session.user,
+				...event.locals.session.user,
 				isAuthenticated: true
 			};
 		} else {

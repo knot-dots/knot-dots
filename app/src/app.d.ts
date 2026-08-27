@@ -17,6 +17,7 @@ declare global {
 		interface Locals {
 			features: string[];
 			pool: DatabasePool;
+			session: Session | null;
 			user: User;
 		}
 		interface PageData {
