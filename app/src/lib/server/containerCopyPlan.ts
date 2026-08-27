@@ -163,6 +163,29 @@ function createRootForOperation(
 			);
 			break;
 		}
+		case 'create-template': {
+			if (
+				operation.rootPayload.type !== root.payload.type ||
+				!('template' in operation.rootPayload)
+			) {
+				throw new CopyPlanError('payload_type_mismatch');
+			}
+			if (!('template' in root.payload) || root.payload.template) {
+				throw new CopyPlanError('unsupported_copy_source');
+			}
+			const editedRoot = { ...root, payload: structuredClone(operation.rootPayload) };
+			copy = createRootCopyOf(
+				editedRoot,
+				target.organization,
+				target.organizationalUnit,
+				operation.rootPayload.visibility
+			);
+			if (!('template' in copy.payload)) {
+				throw new CopyPlanError('unsupported_copy_source');
+			}
+			copy.payload = { ...copy.payload, template: true };
+			break;
+		}
 		case 'individual-profile':
 			if (!isOrganizationalUnitContainer(root)) {
 				throw new CopyPlanError('unsupported_copy_source');
@@ -331,8 +354,8 @@ export function createContainerCopyPlan({
 	const copies = orderedOriginalGuids.map((originalGuid) => {
 		const source = containersByGuid.get(originalGuid) as Container<AnyPayload>;
 		const copiedGuid = guidMap.get(originalGuid) as string;
-		// Apply the explicitly selected root operation before reference remapping. Descendants use the
-		// ordinary envelope policy and retain their cloned payload data.
+		// Apply the selected root operation before reference remapping. Descendants use the ordinary
+		// envelope policy; explicit template operations then adjust only their template metadata.
 		const copy =
 			originalGuid === root.guid
 				? structuredClone(plannedRoot)
@@ -343,6 +366,13 @@ export function createContainerCopyPlan({
 						rootVisibility
 					);
 		copy.realm = target.realm;
+		if ('template' in copy.payload) {
+			if (operation.kind === 'create-template') {
+				copy.payload = { ...copy.payload, template: true };
+			} else if (operation.kind === 'template-instance') {
+				copy.payload = { ...copy.payload, template: false };
+			}
+		}
 
 		copy.user = [
 			{

@@ -37,10 +37,11 @@ test.describe('Templates overlay', () => {
 
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Templates' }).click();
+		await expect(dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title)).toBeVisible();
 		await dotsBoard.overlay.fullScreenButton.click();
 
 		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
-		expect(dotsBoard.page.url()).toContain('/templates/catalog');
+		await expect(dotsBoard.page).toHaveURL(/\/templates\/catalog/);
 		expect(dotsBoard.page.url()).toContain(testProgram.guid);
 		await expect(dotsBoard.page.getByTitle(reportTemplate.payload.title)).toBeVisible();
 

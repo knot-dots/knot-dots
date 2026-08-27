@@ -41,6 +41,8 @@ function rootOperation(request: ContainerCopyRequest): ContainerCopyRootOperatio
 			return { kind: 'copy', rootPayload: request.rootPayload };
 		case 'template-instance':
 			return { kind: 'template-instance', rootPayload: request.rootPayload };
+		case 'create-template':
+			return { kind: 'create-template', rootPayload: request.rootPayload };
 		case 'individual-profile':
 			return { kind: 'individual-profile' };
 	}
@@ -135,6 +137,12 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('source_unavailable');
 	}
 	if (isOrganizationContainer(source)) {
+		throw new ContainerCopyServiceError('unsupported_copy_source');
+	}
+	if (
+		request.operation === 'create-template' &&
+		(!('template' in source.payload) || source.payload.template)
+	) {
 		throw new ContainerCopyServiceError('unsupported_copy_source');
 	}
 	if (request.operation === 'individual-profile') {
