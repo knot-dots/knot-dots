@@ -6,6 +6,7 @@
 	import PrinterIcon from '~icons/heroicons/printer-20-solid';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -88,6 +89,7 @@
 		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<CreateCopyButton {container} />
+				<CreateTemplateButton {container} />
 				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}

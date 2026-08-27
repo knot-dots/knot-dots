@@ -13,6 +13,7 @@
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
@@ -252,6 +253,7 @@
 		<AdoptButton {container} />
 		<CreateAnotherButton {container} {relatedContainers} />
 		<CreateCopyButton {container} />
+		<CreateTemplateButton {container} />
 		{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
 			<KnowledgeAIButton {container} />
 		{:else if createFeatureDecisions(page.data.features).useOpenAI()}

@@ -9,6 +9,7 @@
 	import ChartLineIcon from '~icons/flowbite/chart-outline';
 	import TableIcon from '~icons/flowbite/table-row-outline';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
+	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -204,6 +205,7 @@
 		{#snippet footer()}
 			<footer class="footer-action-bar">
 				<CreateCopyButton {container} />
+				<CreateTemplateButton {container} />
 				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
