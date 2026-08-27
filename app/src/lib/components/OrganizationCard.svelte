@@ -27,7 +27,7 @@
 		button,
 		container,
 		ignoreBulkActionContext = false,
-		linkPath = '/all/page',
+		linkPath = '',
 		showRelationFilter = false
 	}: Props = $props();
 

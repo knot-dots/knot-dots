@@ -2988,7 +2988,7 @@ export function pathnameWithoutContextSegment(
 
 export function getOrganizationURL(
 	container: Container<OrganizationPayload | OrganizationalUnitPayload>,
-	linkPath = '/all/page',
+	linkPath = '',
 	env: { PUBLIC_BASE_URL: string; PUBLIC_DONT_USE_SUBDOMAINS: string },
 	options?: { organizationSlug?: string; organizationCustomDomain?: string }
 ): URL {

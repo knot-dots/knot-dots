@@ -96,7 +96,7 @@ export const POST = (async ({ locals, request }) => {
 			getManyOrganizationContainers({ default: true }, 'alpha')
 		);
 
-		const signupURL = `${env.PUBLIC_BASE_URL}/${organizations[0].guid}/all/page?signup=${user.guid}`;
+		const signupURL = `${env.PUBLIC_BASE_URL}/${organizations[0].guid}?signup=${user.guid}`;
 		await sendVerificationEmail(parseResult.data.email, signupURL);
 	}
 

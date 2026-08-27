@@ -12,11 +12,7 @@
 	let { container }: Props = $props();
 </script>
 
-<Card
-	--height="100%"
-	{container}
-	href={() => resolve('/[guid=uuid]/all/page', { guid: container.guid })}
->
+<Card --height="100%" {container} href={() => resolve('/[guid=uuid]', { guid: container.guid })}>
 	{#snippet body()}
 		{#if container.payload.image}
 			<img
