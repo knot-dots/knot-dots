@@ -35,6 +35,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			customCategories,
 			indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 			indicatorTypes: url.searchParams.getAll('indicatorType'),
+			template: false,
 			type: [payloadTypes.enum.indicator_template]
 		},
 		'',

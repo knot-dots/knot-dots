@@ -46,6 +46,7 @@ export async function fetchResources({
 		{
 			customCategories,
 			resourceCategories: resourceCategoryFilters,
+			template: false,
 			type: [payloadTypes.enum.resource_v2]
 		},
 		sort,

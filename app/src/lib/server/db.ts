@@ -882,10 +882,12 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
-	if (filters.template) {
-		conditions.push(sql.fragment`c.payload @> '{"template": true}'`);
-	} else {
-		conditions.push(sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`);
+	if (filters.template !== undefined) {
+		conditions.push(
+			filters.template
+				? sql.fragment`c.payload @> '{"template": true}'`
+				: sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`
+		);
 	}
 	if (filters.terms) {
 		conditions.push(
@@ -1453,6 +1455,7 @@ export function getAllRelatedContainersByProgramType(
 	filters: {
 		customCategories?: Record<string, string[]>;
 		organizationalUnits?: string[];
+		template?: boolean;
 		terms?: string;
 		type?: PayloadType[];
 	},

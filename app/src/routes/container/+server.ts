@@ -94,7 +94,7 @@ export const GET = (async ({ locals, url }) => {
 				indicatorTypes: parseResult.data.indicatorType,
 				organizationalUnits: parseResult.data.organizationalUnit,
 				programTypes: parseResult.data.programType,
-				template: parseResult.data.template[0],
+				template: parseResult.data.template[0] ?? false,
 				terms: parseResult.data.terms[0],
 				type: parseResult.data.payloadType
 			},

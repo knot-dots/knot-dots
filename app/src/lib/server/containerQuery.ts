@@ -110,7 +110,7 @@ type ContainerQueryParams = Omit<
 	categoryMatch: 'any' | 'all';
 	contextGuid: string | undefined;
 	sort: 'alpha' | 'date' | 'modified' | 'priority' | 'relevance';
-	template: boolean | undefined;
+	template: boolean;
 	terms: string;
 };
 
@@ -148,7 +148,7 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 		categoryMatch: parseResult.data.categoryMatch[0] ?? 'all',
 		contextGuid: parseResult.data.contextGuid[0],
 		sort: parseResult.data.sort[0] ?? 'alpha',
-		template: parseResult.data.template[0],
+		template: parseResult.data.template[0] ?? false,
 		terms: parseResult.data.terms[0] ?? ''
 	};
 }

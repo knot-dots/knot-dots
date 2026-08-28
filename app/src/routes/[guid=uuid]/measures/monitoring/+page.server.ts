@@ -30,6 +30,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
 				{
+					template: false,
 					type: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
@@ -46,6 +47,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			getManyContainers(
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				{
+					template: false,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [
 						payloadTypes.enum.effect,

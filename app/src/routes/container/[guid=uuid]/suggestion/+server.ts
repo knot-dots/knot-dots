@@ -69,6 +69,7 @@ export const GET = (async ({ locals, params, url }) => {
 					customCategories,
 					indicatorCategories: parseResult.data.indicatorCategory,
 					indicatorTypes: parseResult.data.indicatorType,
+					template: false,
 					terms: parseResult.data.terms[0],
 					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 				},
