@@ -1185,7 +1185,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		federalState?: string[];
 		guid?: string[];
 		level?: number;
-		organization?: string;
+		organization: string;
 		terms?: string;
 	};
 	exclude?: {
@@ -1227,14 +1227,16 @@ export function getManyOrganizationalUnitContainers(filters: {
 				sql.fragment`c.payload->>'federalState' = ANY (${sql.array(filters.include.federalState, 'text')})`
 			);
 		}
-		if (filters.include?.guid?.length) {
-			conditions.push(sql.fragment`c.guid = ANY (${sql.array(filters.include.guid, 'uuid')})`);
-		}
 		if (filters.include?.level) {
 			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.include.level}`);
 		}
-		if (filters.include?.organization) {
-			conditions.push(sql.fragment`c.organization = ${filters.include.organization}`);
+		if (filters.include?.organization?.length) {
+			const scopeCondition = sql.fragment`c.organization = ${filters.include.organization}`;
+			conditions.push(
+				filters.include.guid?.length
+					? sql.fragment`(${scopeCondition} OR c.guid = ANY (${sql.array(filters.include.guid, 'uuid')}))`
+					: scopeCondition
+			);
 		}
 		if (filters.include?.terms) {
 			conditions.push(

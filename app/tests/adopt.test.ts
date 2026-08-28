@@ -30,6 +30,11 @@ test.describe('Adopt programs', () => {
 				data: [
 					{
 						object: testOrganizationalUnit.guid,
+						predicate: predicates.enum['is-member-of'],
+						subject: bobRelation.subject
+					},
+					{
+						object: testOrganizationalUnit.guid,
 						predicate: predicates.enum['is-admin-of'],
 						subject: bobRelation.subject
 					}

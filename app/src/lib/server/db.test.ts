@@ -26,6 +26,7 @@ import {
 	getContainerCopyGraph,
 	getContainerByGuid,
 	getManyContainers,
+	getManyOrganizationalUnitContainers,
 	sql,
 	updateContainer,
 	updateManyContainerRelations
@@ -1499,4 +1500,51 @@ test('getManyContainers: includeGuids widens the organizational unit scope', asy
 		'alpha'
 	)(connection);
 	expect(withIncludeGuids.map(({ guid }) => guid)).toContain(foreignUnitRule.guid);
+});
+
+test('getManyOrganizationalUnitContainers: includeGuids widens the organization scope', async ({
+	connection
+}: Fixtures) => {
+	const foreignOrganization = uuid();
+	const organizationalUnitPayload = (name: string) =>
+		({ name, type: payloadTypes.enum.organizational_unit }) as Partial<AnyPayload> &
+			Pick<AnyPayload, 'type'>;
+	const ownUnit = await createContainer(
+		initializeNewContainer(organizationalUnitPayload('Lorem ipsum'), [])
+	)(connection);
+	const managedForeignUnit = await createContainer(
+		newContainer.parse({
+			managed_by: foreignOrganization,
+			organization: foreignOrganization,
+			organizational_unit: null,
+			payload: organizationalUnitPayload('Dolor sit amet'),
+			realm,
+			relation: []
+		})
+	)(connection);
+	const otherForeignUnit = await createContainer(
+		newContainer.parse({
+			managed_by: foreignOrganization,
+			organization: foreignOrganization,
+			organizational_unit: null,
+			payload: organizationalUnitPayload('Consetetur sadipscing'),
+			realm,
+			relation: []
+		})
+	)(connection);
+
+	const withoutGuidFilter = await getManyOrganizationalUnitContainers({
+		include: { organization }
+	})(connection);
+	expect(withoutGuidFilter.map(({ guid }) => guid)).toContain(ownUnit.guid);
+	expect(withoutGuidFilter.map(({ guid }) => guid)).not.toContain(managedForeignUnit.guid);
+
+	const withGuidFilter = await getManyOrganizationalUnitContainers({
+		include: { organization, guid: [managedForeignUnit.guid] }
+	})(connection);
+
+	const guids = withGuidFilter.map(({ guid }) => guid);
+	expect(guids).toContain(ownUnit.guid);
+	expect(guids).toContain(managedForeignUnit.guid);
+	expect(guids).not.toContain(otherForeignUnit.guid);
 });

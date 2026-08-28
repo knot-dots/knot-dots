@@ -41,37 +41,21 @@ export async function loadApplicationContext({
 			return filterVisible(containers, locals.user);
 		}
 
-		const [organizations, organizationalUnits] = await Promise.all([
+		const [organizations, containerFromParams] = await Promise.all([
 			filterVisibleAsync(
 				connect(getManyContainers([], { type: [payloadTypes.enum.organization] }, 'alpha'))
 			) as Promise<Container<OrganizationPayload>[]>,
-			filterVisibleAsync(
-				connect(
-					getManyOrganizationalUnitContainers({
-						exclude: {
-							organizationalUnitType: [
-								organizationalUnitType.enum['organizational_unit_type.administrative_area']
-							]
-						}
-					})
-				)
-			)
+			params?.guid ? connect(getContainerByGuid(params.guid)).catch(() => undefined) : undefined
 		]);
 
 		let currentOrganizationalUnit: Container<OrganizationalUnitPayload> | undefined;
 
-		if (params?.guid) {
-			try {
-				const containerFromParams = await connect(getContainerByGuid(params.guid));
-				if (
-					isOrganizationalUnitContainer(containerFromParams) &&
-					defineAbilityFor(locals.user).can('read', containerFromParams)
-				) {
-					currentOrganizationalUnit = containerFromParams;
-				}
-			} catch {
-				// Do nothing.
-			}
+		if (
+			containerFromParams &&
+			isOrganizationalUnitContainer(containerFromParams) &&
+			defineAbilityFor(locals.user).can('read', containerFromParams)
+		) {
+			currentOrganizationalUnit = containerFromParams;
 		}
 
 		let currentOrganization: Container<OrganizationPayload> | undefined;
@@ -119,11 +103,28 @@ export async function loadApplicationContext({
 		const defaultOrganizationGuid =
 			organizations.find(({ payload }) => payload.default)?.guid ?? currentOrganization.guid;
 
-		const categoryContext = await loadCategoryContext({
-			connect,
-			scope: [currentOrganization.guid, defaultOrganizationGuid],
-			user: locals.user
-		});
+		const [categoryContext, organizationalUnits] = await Promise.all([
+			loadCategoryContext({
+				connect,
+				scope: [currentOrganization.guid, defaultOrganizationGuid],
+				user: locals.user
+			}),
+			filterVisibleAsync(
+				connect(
+					getManyOrganizationalUnitContainers({
+						include: {
+							guid: locals.user.memberOf,
+							organization: currentOrganization.guid
+						},
+						exclude: {
+							organizationalUnitType: [
+								organizationalUnitType.enum['organizational_unit_type.administrative_area']
+							]
+						}
+					})
+				)
+			)
+		]);
 		return {
 			categoryContext,
 			currentOrganization,
