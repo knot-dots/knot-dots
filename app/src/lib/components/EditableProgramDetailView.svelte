@@ -164,7 +164,11 @@
 		const url = `/container/${container.guid}/relation`;
 		await fetch(url, {
 			method: 'POST',
-			body: JSON.stringify(container.relation),
+			body: JSON.stringify(
+				container.relation.filter(
+					({ predicate }) => predicate === predicates.enum['is-part-of-program']
+				)
+			),
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'

@@ -5,12 +5,14 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import Section from '$lib/components/Section.svelte';
+	import TableOfContents from '$lib/components/TableOfContents.svelte';
 	import {
 		type AnyPayload,
 		type Container,
 		container as containerSchema,
 		containerOfType,
 		isChapterContainer,
+		isContainer,
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
 		isTextContainer,
@@ -31,6 +33,7 @@
 
 	let sections = $derived.by(() => {
 		return relatedContainers
+			.filter(isContainer)
 			.filter((c) => c.guid != guid)
 			.filter(({ relation }) =>
 				relation.some(
@@ -49,12 +52,44 @@
 					)!.position
 			)
 			.map((c) => {
-				let _: Container<AnyPayload> = $state(c); // $state() can only be used in an assignment
+				let _: Container = $state(c); // $state() can only be used in an assignment
 				return _;
 			});
 	});
 
 	const type = crypto.randomUUID();
+
+	async function handleSort(orderedSections: Container[]) {
+		container.relation = [
+			...orderedSections.map(({ guid }, index) => ({
+				object: container.guid,
+				position: index,
+				predicate: predicates.enum['is-section-of'],
+				subject: guid
+			})),
+			...container.relation.filter(
+				({ predicate }) => predicate !== predicates.enum['is-section-of']
+			)
+		];
+		relatedContainers = [
+			...relatedContainers.filter(
+				({ guid }) => !orderedSections.map(({ guid }) => guid).includes(guid)
+			),
+			...orderedSections
+		];
+
+		const url = `/container/${container.guid}/relation`;
+		await fetch(url, {
+			method: 'POST',
+			body: JSON.stringify(
+				container.relation.filter(({ predicate }) => predicate === predicates.enum['is-section-of'])
+			),
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+	}
 
 	function createAddSectionHandler(position: number) {
 		return async (event: Event) => {
@@ -138,39 +173,15 @@
 					]
 				}))
 			];
-			container.relation = [
-				...sections.map(({ guid }, index) => ({
-					object: container.guid,
-					position: index,
-					predicate: predicates.enum['is-section-of'],
-					subject: guid
-				})),
-				...container.relation.filter(
-					({ predicate }) => predicate !== predicates.enum['is-section-of']
-				)
-			];
-			relatedContainers = [
-				...relatedContainers.filter(({ guid }) => !sections.map(({ guid }) => guid).includes(guid)),
-				...sections
-			];
-
-			const url = `/container/${container.guid}/relation`;
-			await fetch(url, {
-				method: 'POST',
-				body: JSON.stringify(container.relation),
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
+			await handleSort(sections);
 		};
 	}
 
-	function handleDndConsider(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
+	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
 		sections = event.detail.items;
 	}
 
-	async function handleDndFinalize(event: CustomEvent<DndEvent<Container<AnyPayload>>>) {
+	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
 		const orderedSections = event.detail.items.map((s, i) => ({
 			...s,
 			relation: [
@@ -183,30 +194,8 @@
 				...s.relation.filter(({ predicate }) => predicate !== predicates.enum['is-section-of'])
 			]
 		}));
-		container.relation = [
-			...sections.map(({ guid }, index) => ({
-				object: container.guid,
-				position: index,
-				predicate: predicates.enum['is-section-of'],
-				subject: guid
-			})),
-			...container.relation.filter(
-				({ predicate }) => predicate !== predicates.enum['is-section-of']
-			)
-		];
-		relatedContainers = [
-			...relatedContainers.filter(({ guid }) => !sections.map(({ guid }) => guid).includes(guid)),
-			...orderedSections
-		];
 
-		await fetch(`/container/${container.guid}/relation`, {
-			method: 'POST',
-			body: JSON.stringify(container.relation),
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
+		await handleSort(orderedSections);
 	}
 
 	function heading(position: number) {
@@ -225,6 +214,8 @@
 		/>
 	</div>
 {/if}
+
+<TableOfContents {container} {handleSort} {sections} />
 
 <ul
 	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
