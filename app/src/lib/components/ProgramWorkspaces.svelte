@@ -16,6 +16,7 @@
 	import Level from '~icons/knotdots/level';
 	import Objects from '~icons/knotdots/objects';
 	import Resources from '~icons/knotdots/resources_v2';
+	import Template from '~icons/knotdots/template';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -51,13 +52,17 @@
 		},
 		resources: {
 			catalog: '/resources/catalog'
+		},
+		templates: {
+			catalog: '/templates/catalog'
 		}
 	};
 
 	const workspacesRight: Record<string, Record<string, string>> = {
 		catalog: {
 			indicators: '/indicators/catalog',
-			resources: '/resources/catalog'
+			resources: '/resources/catalog',
+			templates: '/templates/catalog'
 		},
 		level: {
 			all: '/all/level'
@@ -94,6 +99,8 @@
 				return ['measures', 'status'];
 			} else if (params.has('measure-monitoring')) {
 				return ['measures', 'monitoring'];
+			} else if (params.has('templates')) {
+				return ['templates', 'catalog'];
 			} else {
 				return ['all', 'page'];
 			}
@@ -128,6 +135,16 @@
 			label: $_('workspace.measures.title'),
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
+		...(createFeatureDecisions(page.data.features).useProgramTemplateWorkspaces()
+			? [
+					{
+						exists: true,
+						icon: Template,
+						label: $_('workspace.templates.title'),
+						value: workspacesLeft.templates[selectedItem[1]] ?? '/templates/catalog'
+					}
+				]
+			: []),
 		...(createFeatureDecisions(page.data.features).useResourcePlanning()
 			? [
 					{
@@ -205,6 +222,8 @@
 				return '/measures/status';
 			} else if (params.has('measure-monitoring')) {
 				return '/measures/monitoring';
+			} else if (params.has('templates')) {
+				return '/templates/catalog';
 			} else {
 				return '/';
 			}
@@ -317,6 +336,17 @@
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', {
+							guid: selectedContext.guid,
+							contentGuid: container.guid
+						})
+					);
+				}
+			} else if (selected[0] == 'templates' && selected[1] == 'catalog') {
+				if (overlay) {
+					goto(overlayURL(url, overlayKey.enum.templates, container.guid));
+				} else {
+					goto(
+						resolve('/[guid=uuid]/[contentGuid=uuid]/templates/catalog', {
 							guid: selectedContext.guid,
 							contentGuid: container.guid
 						})

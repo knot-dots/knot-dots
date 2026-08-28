@@ -92,7 +92,11 @@ export const actions = {
 			})
 		);
 		const programs = (await locals.pool.connect(
-			getManyContainers([currentOrganizationGuid], { type: [payloadTypes.enum.program] }, '')
+			getManyContainers(
+				[currentOrganizationGuid],
+				{ template: false, type: [payloadTypes.enum.program] },
+				''
+			)
 		)) as Container<ProgramPayload>[];
 
 		const data = await request.formData();

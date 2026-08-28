@@ -901,6 +901,107 @@ test('changes template state only for explicit template instantiation', () => {
 	expect(copyFor(instantiated, guids.root)?.payload).toMatchObject({ template: false });
 });
 
+test('creates a template hierarchy and marks every templatable container as a template', () => {
+	const root = makeContainer(guids.root, {
+		title: 'Program',
+		type: payloadTypes.enum.program
+	});
+	const child = makeContainer(guids.child, {
+		title: 'Goal',
+		type: payloadTypes.enum.goal
+	});
+	const support = makeContainer(guids.dependencyChild, {
+		body: 'Supporting content',
+		title: 'Page',
+		type: payloadTypes.enum.page
+	});
+	const relations = [
+		relation(guids.child, predicates.enum['is-part-of-program'], guids.root),
+		relation(guids.dependencyChild, predicates.enum['is-section-of'], guids.child)
+	];
+	if (root.payload.type !== payloadTypes.enum.program) {
+		throw new Error('Expected a program');
+	}
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, [root, child, support], relations),
+		target,
+		operation: {
+			kind: 'create-template',
+			rootPayload: { ...root.payload, title: 'Edited program template', template: false }
+		},
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.root)?.payload).toMatchObject({
+		template: true,
+		title: 'Edited program template'
+	});
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({
+		template: true
+	});
+	expect(copyFor(plan, guids.dependencyChild)?.payload).not.toHaveProperty('template');
+	expect(root.payload).toMatchObject({ template: false, title: 'Program' });
+});
+
+test('clears template state from every templatable descendant when instantiating a template', () => {
+	const root = makeContainer(guids.root, {
+		template: true,
+		title: 'Program template',
+		type: payloadTypes.enum.program
+	});
+	const child = makeContainer(guids.child, {
+		template: true,
+		title: 'Goal template',
+		type: payloadTypes.enum.goal
+	});
+	const relations = [relation(guids.child, predicates.enum['is-part-of-program'], guids.root)];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, [root, child], relations),
+		target,
+		operation: { kind: 'template-instance', rootPayload: root.payload },
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.root)?.payload).toMatchObject({ template: false });
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ template: false });
+});
+
+test('rejects creating a template from an existing template or a non-templatable root', () => {
+	const template = makeContainer(guids.root, {
+		template: true,
+		title: 'Existing template',
+		type: payloadTypes.enum.program
+	});
+	const page = makeContainer(guids.root, {
+		body: 'Body',
+		title: 'Page',
+		type: payloadTypes.enum.page
+	});
+
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(guids.root, [template], []),
+			target,
+			operation: { kind: 'create-template', rootPayload: template.payload },
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('unsupported_copy_source'));
+	expect(() =>
+		createContainerCopyPlan({
+			graph: graph(guids.root, [page], []),
+			target,
+			operation: { kind: 'create-template', rootPayload: page.payload },
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		})
+	).toThrow(new CopyPlanError('payload_type_mismatch'));
+});
+
 test('applies only the explicit individual-profile root policy and provenance', () => {
 	const root = makeContainer(guids.root, {
 		name: 'Municipality',

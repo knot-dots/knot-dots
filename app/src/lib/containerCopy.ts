@@ -18,6 +18,10 @@ export const containerCopyRequest = z.discriminatedUnion('operation', [
 		...targetedContainerCopyRequest
 	}),
 	z.strictObject({
+		operation: z.literal('create-template'),
+		...targetedContainerCopyRequest
+	}),
+	z.strictObject({
 		operation: z.literal('individual-profile'),
 		sourceGuid: z.uuid()
 	})
@@ -27,7 +31,8 @@ export type ContainerCopyRequest = z.infer<typeof containerCopyRequest>;
 
 export type PendingContainerCopy =
 	| Omit<Extract<ContainerCopyRequest, { operation: 'copy' }>, 'rootPayload'>
-	| Omit<Extract<ContainerCopyRequest, { operation: 'template-instance' }>, 'rootPayload'>;
+	| Omit<Extract<ContainerCopyRequest, { operation: 'template-instance' }>, 'rootPayload'>
+	| Omit<Extract<ContainerCopyRequest, { operation: 'create-template' }>, 'rootPayload'>;
 
 export type ContainerCopyLocation = {
 	organizationGuid: string;
@@ -65,6 +70,7 @@ export function selectContainerCopyLocation(
 export type ContainerCopyRootOperation =
 	| { kind: 'copy'; rootPayload: AnyPayload }
 	| { kind: 'template-instance'; rootPayload: AnyPayload }
+	| { kind: 'create-template'; rootPayload: AnyPayload }
 	| { kind: 'individual-profile' };
 
 export const serverOwnedCopyRelationPredicates = [

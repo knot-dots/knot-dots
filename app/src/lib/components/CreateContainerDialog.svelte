@@ -8,12 +8,15 @@
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
+	import BinaryIndicatorProperties from '$lib/components/BinaryIndicatorProperties.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import EffectProperties from '$lib/components/EffectProperties.svelte';
 	import EventProperties from '$lib/components/EventProperties.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
 	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
+	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PostProperties from '$lib/components/PostProperties.svelte';
@@ -28,16 +31,19 @@
 	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
 		isCategoryContainer,
+		isBinaryIndicatorContainer,
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithName,
 		isContainerWithTitle,
+		isEffectContainer,
 		isEventContainer,
 		isGoalContainer,
 		isIndicatorTemplateContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
+		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPostContainer,
@@ -55,6 +61,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { addItemState, createContainerDialogState } from '$lib/stores';
 
 	interface Props {
@@ -62,6 +69,7 @@
 	}
 
 	let { dialog = $bindable() }: Props = $props();
+	const toast = getToastContext();
 
 	async function save(container: NewContainer) {
 		const pendingCopy =
@@ -95,6 +103,14 @@
 
 				const savedTarget = await targetResponse.json();
 				Object.assign(addItemTarget, savedTarget);
+			}
+
+			if (pendingCopy?.operation === 'create-template') {
+				toast({
+					heading: $_('toast.template_created.heading'),
+					status: 'success'
+				});
+				return;
 			}
 
 			if (isOrganizationalUnitContainer(savedContainer)) {
@@ -161,7 +177,14 @@
 	{#if $createContainerDialogState}
 		<form method="dialog" onsubmit={handleSubmit}>
 			<p class="dialog-actions">
-				<span>{$_('create_container_dialog.title')}</span>
+				<span>
+					{$_(
+						$createContainerDialogState.kind === 'copy' &&
+							$createContainerDialogState.request.operation === 'create-template'
+							? 'create_container_dialog.template_title'
+							: 'create_container_dialog.title'
+					)}
+				</span>
 				<button class="button-xs button-primary system-primary" type="submit">
 					{$_('save')}
 				</button>
@@ -206,8 +229,22 @@
 					{/if}
 				</header>
 
-				{#if isCategoryContainer($createContainerDialogState.container)}
+				{#if isBinaryIndicatorContainer($createContainerDialogState.container)}
+					<BinaryIndicatorProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isCategoryContainer($createContainerDialogState.container)}
 					<CategoryProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isEffectContainer($createContainerDialogState.container)}
+					<EffectProperties
 						bind:container={$createContainerDialogState.container}
 						editable
 						relatedContainers={[]}
@@ -243,6 +280,13 @@
 					/>
 				{:else if isMeasureContainer($createContainerDialogState.container)}
 					<MeasureProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isObjectiveContainer($createContainerDialogState.container)}
+					<ObjectiveProperties
 						bind:container={$createContainerDialogState.container}
 						editable
 						relatedContainers={[]}

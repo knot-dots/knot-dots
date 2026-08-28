@@ -77,6 +77,7 @@ export async function getIndicatorsData(params: {
 			customCategories: filters.customCategories,
 			indicatorCategories: filters.indicatorCategories,
 			indicatorTypes: filters.indicatorTypes,
+			template: false,
 			terms: filters.terms,
 			type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
 		},

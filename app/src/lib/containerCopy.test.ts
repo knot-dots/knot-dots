@@ -21,6 +21,15 @@ test('accepts only the operation-specific copy request fields', () => {
 	).toBe(true);
 	expect(
 		containerCopyRequest.safeParse({
+			operation: 'create-template',
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: { title: 'Edited', type: payloadTypes.enum.text }
+		}).success
+	).toBe(true);
+	expect(
+		containerCopyRequest.safeParse({
 			operation: 'individual-profile',
 			sourceGuid,
 			creatorGuid: sourceGuid

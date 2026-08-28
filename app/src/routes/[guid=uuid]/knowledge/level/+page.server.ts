@@ -36,7 +36,7 @@ export const load = (async ({ locals, url, parent }) => {
 				currentOrganization.payload.default ? [] : [currentOrganization.guid],
 				url.searchParams.get('related-to') as string,
 				[predicates.enum['is-part-of']],
-				{ customCategories, type: [payloadTypes.enum.knowledge] },
+				{ customCategories, template: false, type: [payloadTypes.enum.knowledge] },
 				url.searchParams.get('sort') ?? ''
 			)
 		);
@@ -47,6 +47,7 @@ export const load = (async ({ locals, url, parent }) => {
 				url.searchParams.getAll('programType'),
 				{
 					customCategories,
+					template: false,
 					terms: url.searchParams.get('terms') ?? '',
 					type: [payloadTypes.enum.knowledge]
 				},
@@ -59,6 +60,7 @@ export const load = (async ({ locals, url, parent }) => {
 			{
 				customCategories,
 				programTypes: url.searchParams.getAll('programType'),
+				template: false,
 				terms: url.searchParams.get('terms') ?? '',
 				type: [payloadTypes.enum.knowledge]
 			},
@@ -71,7 +73,7 @@ export const load = (async ({ locals, url, parent }) => {
 
 	const esPrograms = await getManyContainersWithES(
 		currentOrganization.payload.default ? [] : [currentOrganization.guid],
-		{ type: [payloadTypes.enum.program] },
+		{ template: false, type: [payloadTypes.enum.program] },
 		url.searchParams.get('sort') ?? '',
 		{ includeFacets: false }
 	);

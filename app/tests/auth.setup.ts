@@ -90,6 +90,7 @@ persons.forEach((person) => {
 		await page.getByRole('dialog').getByLabel('NewPropertyPanel').check();
 		await page.getByRole('dialog').getByLabel('PermissionMatrix').check();
 		await page.getByRole('dialog').getByLabel('Adoptions').check();
+		await page.getByRole('dialog').getByLabel('Templating').check();
 		await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
 		// Save the authenticated state to a file

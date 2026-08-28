@@ -84,6 +84,67 @@ test('copies an edited program root and its descendants through the dedicated en
 	await expect(dotsBoard.overlay.title).toHaveText(title);
 });
 
+test('creates a template hierarchy without changing the source overlay', async ({
+	dotsBoard,
+	testMeasure,
+	testProgram
+}) => {
+	await dotsBoard.goto(`/${testProgram.organization}`);
+	await dotsBoard.card(testProgram.payload.title).click();
+	await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+	await dotsBoard.overlay.editModeToggle.check();
+
+	await dotsBoard.overlay.locator
+		.getByRole('button', { name: 'Create template', exact: true })
+		.click();
+	const dialog = dotsBoard.page.getByRole('dialog');
+	await expect(dialog).toContainText('Create template');
+	await expect(dialog.getByRole('textbox', { name: 'Title' })).toHaveValue(
+		testProgram.payload.title
+	);
+
+	const title = `Template ${testProgram.payload.title}`;
+	await dialog.getByRole('textbox', { name: 'Title' }).fill(title);
+	const responsePromise = dotsBoard.page.waitForResponse(
+		(response) =>
+			response.url().endsWith('/container/copy') && response.request().method() === 'POST'
+	);
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	const response = await responsePromise;
+
+	expect(response.status()).toBe(201);
+	expect(response.request().postDataJSON()).toMatchObject({
+		operation: 'create-template',
+		sourceGuid: testProgram.guid,
+		targetOrganizationGuid: testProgram.organization,
+		targetOrganizationalUnitGuid: null,
+		rootPayload: { title }
+	});
+	const template = await response.json();
+	expect(template.payload).toMatchObject({ template: true, title });
+
+	const partsResponse = await dotsBoard.page.request.get(
+		`/container/${template.guid}/relation?relationType=is-part-of-program`
+	);
+	expect(partsResponse.ok()).toBe(true);
+	const copiedParts = await partsResponse.json();
+	const copiedMeasure = copiedParts.find(
+		(part: { relation: Array<{ object: string; predicate: string }> }) =>
+			part.relation.some(
+				(relation) => relation.object === testMeasure.guid && relation.predicate === 'is-copy-of'
+			)
+	);
+	expect(copiedMeasure?.payload).toMatchObject({ template: true });
+	await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+	await expect(dotsBoard.page.getByRole('status')).toContainText('Template created');
+
+	await dotsBoard.page.goto(`/${testProgram.organization}/all/level#view=${template.guid}`);
+	await expect(dotsBoard.overlay.title).toHaveText(title);
+	await expect(
+		dotsBoard.overlay.locator.getByRole('button', { name: 'Create template', exact: true })
+	).toHaveCount(0);
+});
+
 test('falls back to an administered location when the current context is denied', async ({
 	dotsBoard,
 	defaultOrganization,

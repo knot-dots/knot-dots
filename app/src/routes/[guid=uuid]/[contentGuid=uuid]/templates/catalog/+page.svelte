@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
+	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 	import Catalog from '$lib/components/Catalog.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
@@ -7,7 +8,6 @@
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { predicates, templatablePayloadTypes } from '$lib/models';
 	import type { PageProps } from './$types';
-	import BulkActionContextProvider from '$lib/components/BulkActionContextProvider.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -20,15 +20,13 @@
 			predicates.enum['is-prerequisite-for']
 		]
 	});
-
-	let facets = $derived(data.facets);
 </script>
 
 <PageLayout>
 	<BulkActionContextProvider actions={['visibility', 'delete']}>
 		<FullscreenLayout>
 			{#snippet header()}
-				<Header {facets} search />
+				<Header facets={data.facets} search />
 			{/snippet}
 
 			{#snippet main()}

@@ -479,6 +479,68 @@ test('a container in several programs appears among the members of each', async 
 	expect(relatedToSecond.map(({ guid }) => guid)).toContain(measure.guid);
 });
 
+test('omitting the template filter returns a complete mixed program hierarchy', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Program template',
+				type: payloadTypes.enum.program
+			},
+			[]
+		)
+	)(connection);
+	const measure = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Measure template',
+				type: payloadTypes.enum.measure
+			},
+			[
+				{
+					object: program.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				}
+			]
+		)
+	)(connection);
+	const section = await createContainer(
+		initializeNewContainer(
+			{ body: 'Section body', title: 'Section', type: payloadTypes.enum.text },
+			[
+				{
+					object: measure.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		)
+	)(connection);
+
+	const all = await getAllContainersRelatedToProgram(program.guid, {})(connection);
+	const templates = await getAllContainersRelatedToProgram(program.guid, { template: true })(
+		connection
+	);
+	const nonTemplates = await getAllContainersRelatedToProgram(program.guid, { template: false })(
+		connection
+	);
+
+	expect(all.map(({ guid }) => guid)).toEqual(
+		expect.arrayContaining([program.guid, measure.guid, section.guid])
+	);
+	expect(templates.map(({ guid }) => guid)).toEqual(
+		expect.arrayContaining([program.guid, measure.guid])
+	);
+	expect(templates.map(({ guid }) => guid)).not.toContain(section.guid);
+	expect(nonTemplates.map(({ guid }) => guid)).toContain(section.guid);
+	expect(nonTemplates.map(({ guid }) => guid)).not.toContain(program.guid);
+	expect(nonTemplates.map(({ guid }) => guid)).not.toContain(measure.guid);
+});
+
 test('getContainerCopyGraph follows current downward copy edges once and stops at cycles', async ({
 	connection
 }: Fixtures) => {

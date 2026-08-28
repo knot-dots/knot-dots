@@ -359,6 +359,58 @@ test('applies template-instance policy through the service', async () => {
 	expect(mocks.persist).toHaveBeenCalledOnce();
 });
 
+test('creates a template through the service and rejects existing templates', async () => {
+	const source = container(sourceGuid, {
+		title: 'Program',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	if (source.payload.type !== payloadTypes.enum.program) {
+		throw new Error('Expected a program');
+	}
+
+	const root = await executeContainerCopy({
+		request: {
+			operation: 'create-template',
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: { ...source.payload, title: 'Edited template' }
+		},
+		pool,
+		user: sysadmin,
+		maxPlanSize: 500
+	});
+
+	expect(root.payload).toMatchObject({
+		template: true,
+		title: 'Edited template'
+	});
+
+	const existingTemplate = container(sourceGuid, {
+		template: true,
+		title: 'Existing template',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [existingTemplate] };
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'create-template',
+				sourceGuid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: existingTemplate.payload
+			},
+			pool,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('unsupported_copy_source'));
+});
+
 test('retains public and same-organization collection references only', async () => {
 	const privateItemGuid = '00000000-0000-4000-8000-000000000010';
 	const publicItemGuid = '00000000-0000-4000-8000-000000000011';

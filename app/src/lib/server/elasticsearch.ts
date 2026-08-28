@@ -329,11 +329,9 @@ export async function getManyContainersWithES(
 			orIncluded({ terms: { organization: organizations } })
 		);
 	}
-	if (filters.template !== undefined) {
-		nonFacetFilters.push({ term: { 'payload.template': filters.template } });
-	} else {
-		// Match SQL behavior: when template filter is not specified, exclude templates by default
-		// SQL: (c.payload @> '{"template": false}' OR NOT payload ? 'template')
+	if (filters.template === true) {
+		nonFacetFilters.push({ term: { 'payload.template': true } });
+	} else if (filters.template === false) {
 		nonFacetFilters.push({
 			bool: {
 				should: [
