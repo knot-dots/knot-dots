@@ -17,8 +17,12 @@ import {
 	container,
 	createContainerSchema,
 	findDescendants,
+	grantKindsForRole,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
+	type MemberRole,
+	memberRoleFromPredicates,
+	memberRolePredicates,
 	type ModifiedContainer,
 	type NewContainer,
 	organizationalUnitPayload,
@@ -35,6 +39,8 @@ import {
 	type User,
 	user,
 	userRelation,
+	type UserRelation,
+	userRelationsForMemberRole,
 	visibility
 } from '$lib/models';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
@@ -173,6 +179,42 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
+// container_grant mirrors the member roles as granted capability kinds until
+// the authorization rules interpret them directly, so every write path
+// replaces the grants of a container as a whole instead of updating them
+// individually.
+function syncContainerGrants(guid: string, userRelations: readonly UserRelation[]) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			DELETE FROM container_grant WHERE object = ${guid}
+		`);
+
+		const predicatesBySubject = new Map<string, Predicate[]>();
+		for (const { predicate, subject } of userRelations) {
+			predicatesBySubject.set(subject, [...(predicatesBySubject.get(subject) ?? []), predicate]);
+		}
+
+		const grantValues: string[][] = [];
+		for (const [subject, relationPredicates] of predicatesBySubject) {
+			const role = memberRoleFromPredicates(relationPredicates);
+			if (role === null) {
+				continue;
+			}
+			for (const kind of grantKindsForRole(role)) {
+				grantValues.push([guid, subject, kind]);
+			}
+		}
+
+		if (grantValues.length > 0) {
+			await connection.query(sql.typeAlias('void')`
+				INSERT INTO container_grant (object, subject, kind)
+				SELECT *
+				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text'])}
+			`);
+		}
+	};
+}
+
 /**
  * Persists ordinary containers already validated by createContainerCopyPlan() on an existing
  * transaction. Explicit GUIDs remain internal to server code; organization creation stays on
@@ -260,6 +302,10 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 			});
 		});
 
+		for (const persisted of persistedContainers) {
+			await syncContainerGrants(persisted.guid, persisted.user)(connection);
+		}
+
 		const affectedIndexingGuids = new Set<string>();
 		for (const persisted of persistedContainers) {
 			if (shouldIndexType(persisted.payload.type)) {
@@ -323,6 +369,8 @@ export function createContainer(container: NewContainer) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
 				RETURNING predicate, subject
       `);
+
+			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
 
 			const relations = container.relation.map((r) => ({
 				...r,
@@ -395,6 +443,8 @@ export function updateContainer(container: ModifiedContainer) {
 				RETURNING predicate, subject
       `);
 
+			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
+
 			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
 			const deletedRelations = relationResult.filter(
 				(r) =>
@@ -429,6 +479,35 @@ export function updateContainer(container: ModifiedContainer) {
 
 			return { ...containerResult, relation: container.relation, user: userResult };
 		});
+	};
+}
+
+const memberRoleRelationPredicates = new Set<Predicate>([
+	...Object.values(memberRolePredicates),
+	predicates.enum['is-member-of']
+]);
+
+export function updateMemberRole(
+	container: Container<AnyPayload>,
+	subject: string,
+	role: Exclude<MemberRole, 'administrator'> | null
+) {
+	return (connection: DatabaseConnection) => {
+		const user = [
+			...container.user.filter(
+				(u) => u.subject !== subject || !memberRoleRelationPredicates.has(u.predicate)
+			),
+			...(role === null ? [] : userRelationsForMemberRole(role, subject))
+		];
+		return updateContainer({
+			...container,
+			managed_by:
+				container.managed_by[0] == container.guid &&
+				user.every(({ predicate }) => predicate == predicates.enum['is-creator-of'])
+					? [container.organizational_unit ?? container.organization]
+					: container.managed_by,
+			user
+		})(connection);
 	};
 }
 
@@ -475,6 +554,8 @@ export function deleteContainer(container: Container<AnyPayload>) {
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
+
+			await syncContainerGrants(container.guid, [])(txConnection);
 
 			if (shouldIndexType(container.payload.type)) {
 				await enqueueIndexingEvent({

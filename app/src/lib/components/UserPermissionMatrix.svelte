@@ -1,29 +1,32 @@
 <script lang="ts">
+	import { SvelteMap } from 'svelte/reactivity';
+	import { invalidateAll } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
-	import defineAbilityFor from '$lib/authorization';
+	import { grantKindsForRoleOn } from '$lib/authorization';
+	import saveMemberRole from '$lib/client/saveMemberRole';
 	import {
 		type AnyPayload,
 		type Container,
 		displayName,
+		type GrantKind,
 		grantKinds,
-		isAdminOf,
-		isCollaboratorOf,
-		isHeadOf,
-		isMemberOf,
 		type MemberRole,
 		memberRoleOf,
 		memberRoles,
+		roleAfterGrantToggle,
+		snapMemberRoles,
 		type User
 	} from '$lib/models';
 
 	interface Props {
 		container: Container<AnyPayload>;
+		editable?: boolean;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, users }: Props = $props();
+	let { container, editable = false, users }: Props = $props();
 
 	const visibleGrantKinds = [
 		grantKinds.enum.read,
@@ -33,11 +36,6 @@
 		grantKinds.enum['manage-members']
 	];
 
-	// the manage-members grant corresponds to the invite-members action
-	function actionFor(kind: (typeof visibleGrantKinds)[number]) {
-		return kind === grantKinds.enum['manage-members'] ? ('invite-members' as const) : kind;
-	}
-
 	const roleBadgeColors: Record<MemberRole, string> = {
 		administrator: 'red',
 		head: 'yellow',
@@ -45,22 +43,62 @@
 		observer: 'gray'
 	};
 
-	// Derive the checkboxes from the actual authorization rules instead of a
-	// static role mapping: what a role permits depends on the container type.
+	let roleOverrides = new SvelteMap<string, MemberRole | null>();
+
+	// drop an optimistic override only once the reloaded data reflects it —
+	// dropping it right after invalidateAll would flash the previous role for
+	// a render cycle until the fresh props arrive
+	$effect(() => {
+		for (const [guid, role] of roleOverrides) {
+			const user = users.find((u) => u.guid === guid);
+			if (!user || memberRoleOf(user, container) === role) {
+				roleOverrides.delete(guid);
+			}
+		}
+	});
+
+	function visibleRoleFor(user: User) {
+		if (roleOverrides.has(user.guid)) {
+			return roleOverrides.get(user.guid) ?? null;
+		}
+		return memberRoleOf(user, container);
+	}
+
+	// The checkboxes show the effective rights of the user's member role on
+	// this container, derived from the actual authorization rules; what a role
+	// permits depends on the container type. The same sets serve as snapping
+	// candidates when toggling, while container_grant stores the granted
+	// role-shaped kinds.
 	function kindsFor(user: User) {
-		const ability = defineAbilityFor({
-			adminOf: isAdminOf(user, container) ? [container.guid] : [],
-			collaboratorOf: isCollaboratorOf(user, container) ? [container.guid] : [],
-			familyName: user.family_name,
-			givenName: user.given_name,
-			guid: user.guid,
-			headOf: isHeadOf(user, container) ? [container.guid] : [],
-			isAuthenticated: true,
-			memberOf: isMemberOf(user, container) ? [container.guid] : [],
-			roles: [],
-			settings: user.settings
-		});
-		return visibleGrantKinds.filter((kind) => ability.can(actionFor(kind), container));
+		return grantKindsForRoleOn(container, user, visibleRoleFor(user));
+	}
+
+	function kindsByRoleFor(user: User) {
+		return snapMemberRoles.map(
+			(role) => [role, grantKindsForRoleOn(container, user, role)] as const
+		);
+	}
+
+	async function toggleGrant(user: User, kind: GrantKind, checked: boolean) {
+		const role = roleAfterGrantToggle(kindsByRoleFor(user), visibleRoleFor(user), kind, checked);
+		if (role === undefined || role === memberRoles.enum.administrator) {
+			return;
+		}
+
+		const hadPrevious = roleOverrides.has(user.guid);
+		const previous = roleOverrides.get(user.guid);
+		roleOverrides.set(user.guid, role);
+
+		const response = await saveMemberRole(container, { role, subject: user.guid });
+
+		if (!response.ok) {
+			if (hadPrevious) roleOverrides.set(user.guid, previous ?? null);
+			else roleOverrides.delete(user.guid);
+			console.log(await response.json());
+			return;
+		}
+
+		await invalidateAll();
 	}
 </script>
 
@@ -86,10 +124,12 @@
 		</thead>
 		<tbody>
 			{#each users as user (user.guid)}
-				{@const role = memberRoleOf(user, container)}
+				{@const role = visibleRoleFor(user)}
 				{@const kinds = kindsFor(user)}
+				{@const kindsByRole = kindsByRoleFor(user)}
 				{@const isAdmin = role === memberRoles.enum.administrator}
-				<tr>
+				{@const locked = !editable || isAdmin}
+				<tr class:locked>
 					<td class="col-name">
 						<span class="user-cell">
 							<span class="user-name">{displayName(user)}</span>
@@ -101,12 +141,15 @@
 						</span>
 					</td>
 					{#each visibleGrantKinds as kind (kind)}
+						{@const checked = kinds.includes(kind)}
 						<td class="col-grant">
 							<input
 								type="checkbox"
 								aria-label={$_(`permission.${kind}`)}
-								checked={kinds.includes(kind)}
-								disabled
+								{checked}
+								disabled={locked ||
+									roleAfterGrantToggle(kindsByRole, role, kind, !checked) === undefined}
+								onchange={(event) => toggleGrant(user, kind, event.currentTarget.checked)}
 							/>
 						</td>
 					{/each}
@@ -203,8 +246,7 @@
 		text-overflow: ellipsis;
 	}
 
-	/* the whole matrix is read-only in this iteration */
-	tbody td {
+	tr.locked td {
 		background: repeating-linear-gradient(45deg, #fff5f5, #fff5f5 2px, #ffebeb 2px, #ffebeb 4px);
 		cursor: not-allowed;
 	}

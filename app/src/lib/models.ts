@@ -632,6 +632,8 @@ export const userRelation = z.object({
 	subject: z.uuid()
 });
 
+export type UserRelation = z.infer<typeof userRelation>;
+
 export const grantKinds = z.enum(['read', 'update', 'create', 'delete', 'manage-members']);
 
 export type GrantKind = z.infer<typeof grantKinds>;
@@ -639,6 +641,13 @@ export type GrantKind = z.infer<typeof grantKinds>;
 export const memberRoles = z.enum(['observer', 'collaborator', 'head', 'administrator']);
 
 export type MemberRole = z.infer<typeof memberRoles>;
+
+export const memberRoleAssignment = z.object({
+	role: memberRoles.exclude(['administrator']).nullable(),
+	subject: z.uuid()
+});
+
+export type MemberRoleAssignment = z.infer<typeof memberRoleAssignment>;
 
 export const memberRolePredicates: Record<Exclude<MemberRole, 'observer'>, Predicate> = {
 	administrator: predicates.enum['is-admin-of'],
@@ -656,6 +665,96 @@ export function userRelationsForMemberRole(
 			? []
 			: [{ predicate: memberRolePredicates[role], subject }])
 	];
+}
+
+// The kinds stored in container_grant follow the member role as a static
+// chain; they express what was GRANTED, not the effective rights of the role
+// on a specific container type (those are derived from the authorization
+// rules).
+const grantKindsByMemberRole: Record<MemberRole, GrantKind[]> = {
+	observer: [grantKinds.enum.read],
+	collaborator: [grantKinds.enum.read, grantKinds.enum.update, grantKinds.enum.create],
+	head: [
+		grantKinds.enum.read,
+		grantKinds.enum.update,
+		grantKinds.enum.create,
+		grantKinds.enum.delete
+	],
+	administrator: grantKinds.options.slice()
+};
+
+export function grantKindsForRole(role: MemberRole): GrantKind[] {
+	return grantKindsByMemberRole[role];
+}
+
+export function memberRoleFromPredicates(relationPredicates: Predicate[]): MemberRole | null {
+	if (relationPredicates.includes(predicates.enum['is-admin-of'])) {
+		return memberRoles.enum.administrator;
+	}
+	if (relationPredicates.includes(predicates.enum['is-head-of'])) {
+		return memberRoles.enum.head;
+	}
+	if (relationPredicates.includes(predicates.enum['is-collaborator-of'])) {
+		return memberRoles.enum.collaborator;
+	}
+	if (relationPredicates.includes(predicates.enum['is-member-of'])) {
+		return memberRoles.enum.observer;
+	}
+	return null;
+}
+
+// Snapping candidates for editing the permission matrix, in ascending order.
+// administrator is deliberately absent: its effective rights equal those of
+// head on organizations and organizational units, so it is assigned in the
+// list views instead.
+export const snapMemberRoles: ReadonlyArray<MemberRole | null> = [
+	null,
+	memberRoles.enum.observer,
+	memberRoles.enum.collaborator,
+	memberRoles.enum.head
+];
+
+export type GrantKindsByRole = ReadonlyArray<
+	readonly [MemberRole | null, ReadonlyArray<GrantKind>]
+>;
+
+function isSupersetOf(kinds: ReadonlyArray<GrantKind>, other: ReadonlyArray<GrantKind>) {
+	return other.every((kind) => kinds.includes(kind));
+}
+
+// Toggling a checkbox snaps to the member role whose effective rights match:
+// checking picks the lowest role covering the current rights plus the toggled
+// kind, unchecking the largest remaining subset without it (ties resolve to
+// the lower role, but removing the membership never wins a tie — on public
+// containers even non-members read, so the observer role would otherwise be
+// unreachable). undefined means no candidate matches and the checkbox should
+// be disabled.
+export function roleAfterGrantToggle(
+	kindsByRole: GrantKindsByRole,
+	currentRole: MemberRole | null,
+	kind: GrantKind,
+	checked: boolean
+): MemberRole | null | undefined {
+	const currentKinds = kindsByRole.find(([role]) => role === currentRole)?.[1] ?? [];
+
+	if (checked) {
+		const target = [...new Set([...currentKinds, kind])];
+		if (isSupersetOf(currentKinds, target)) {
+			return currentRole;
+		}
+		return kindsByRole.find(([, kinds]) => isSupersetOf(kinds, target))?.[0];
+	}
+
+	const candidates = kindsByRole.filter(
+		([, kinds]) => !kinds.includes(kind) && isSupersetOf(currentKinds, kinds)
+	);
+	if (candidates.length === 0) {
+		return undefined;
+	}
+	return [
+		...candidates.filter(([role]) => role !== null),
+		...candidates.filter(([role]) => role === null)
+	].reduce((best, candidate) => (candidate[1].length > best[1].length ? candidate : best))[0];
 }
 
 export const taskPriority = z.object({

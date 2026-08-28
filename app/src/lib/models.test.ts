@@ -4,13 +4,17 @@ import {
 	type Container,
 	container,
 	type EffectPayload,
+	grantKindsForRole,
+	type GrantKindsByRole,
 	type IndicatorTemplatePayload,
+	memberRoleFromPredicates,
 	type MeasurePayload,
 	memberRoleOf,
 	memberRoles,
 	payloadTypes,
 	predicates,
 	type ProgramPayload,
+	roleAfterGrantToggle,
 	sortIndicatorsByRelevanceForGoalOrMeasure,
 	units,
 	userRelationsForMemberRole
@@ -213,4 +217,113 @@ test('userRelationsForMemberRole builds the role relations of a subject', () => 
 		{ predicate: predicates.enum['is-member-of'], subject },
 		{ predicate: predicates.enum['is-admin-of'], subject }
 	]);
+});
+
+test('grantKindsForRole maps each role to its granted kinds', () => {
+	expect(grantKindsForRole(memberRoles.enum.observer)).toEqual(['read']);
+	expect(grantKindsForRole(memberRoles.enum.collaborator)).toEqual(['read', 'update', 'create']);
+	expect(grantKindsForRole(memberRoles.enum.head)).toEqual(['read', 'update', 'create', 'delete']);
+	expect(grantKindsForRole(memberRoles.enum.administrator)).toEqual([
+		'read',
+		'update',
+		'create',
+		'delete',
+		'manage-members'
+	]);
+});
+
+test('memberRoleFromPredicates picks the highest role', () => {
+	expect(memberRoleFromPredicates([])).toBeNull();
+	expect(memberRoleFromPredicates([predicates.enum['is-member-of']])).toBe(
+		memberRoles.enum.observer
+	);
+	expect(
+		memberRoleFromPredicates([
+			predicates.enum['is-member-of'],
+			predicates.enum['is-collaborator-of']
+		])
+	).toBe(memberRoles.enum.collaborator);
+	expect(
+		memberRoleFromPredicates([predicates.enum['is-head-of'], predicates.enum['is-member-of']])
+	).toBe(memberRoles.enum.head);
+	expect(
+		memberRoleFromPredicates([
+			predicates.enum['is-admin-of'],
+			predicates.enum['is-head-of'],
+			predicates.enum['is-member-of']
+		])
+	).toBe(memberRoles.enum.administrator);
+});
+
+test('roleAfterGrantToggle snaps within organization-shaped role sets', () => {
+	// on an organization container observer and collaborator only read, while
+	// head additionally updates and manages members
+	const kindsByRole: GrantKindsByRole = [
+		[null, []],
+		[memberRoles.enum.observer, ['read']],
+		[memberRoles.enum.collaborator, ['read']],
+		[memberRoles.enum.head, ['read', 'update', 'manage-members']]
+	];
+
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.observer, 'update', true)).toBe(
+		memberRoles.enum.head
+	);
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.head, 'manage-members', false)).toBe(
+		memberRoles.enum.observer
+	);
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.observer, 'read', false)).toBeNull();
+	expect(
+		roleAfterGrantToggle(kindsByRole, memberRoles.enum.observer, 'delete', true)
+	).toBeUndefined();
+});
+
+test('roleAfterGrantToggle snaps within measure-shaped role sets', () => {
+	// on a self-managed measure the collaborator role already includes delete
+	const kindsByRole: GrantKindsByRole = [
+		[null, []],
+		[memberRoles.enum.observer, ['read']],
+		[memberRoles.enum.collaborator, ['read', 'update', 'create', 'delete']],
+		[memberRoles.enum.head, ['read', 'update', 'create', 'delete', 'manage-members']]
+	];
+
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.observer, 'create', true)).toBe(
+		memberRoles.enum.collaborator
+	);
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.head, 'delete', false)).toBe(
+		memberRoles.enum.observer
+	);
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.collaborator, 'update', true)).toBe(
+		memberRoles.enum.collaborator
+	);
+});
+
+test('roleAfterGrantToggle keeps public read even without a role', () => {
+	const kindsByRole: GrantKindsByRole = [
+		[null, ['read']],
+		[memberRoles.enum.observer, ['read']],
+		[memberRoles.enum.collaborator, ['read']],
+		[memberRoles.enum.head, ['read', 'update', 'manage-members']]
+	];
+
+	expect(
+		roleAfterGrantToggle(kindsByRole, memberRoles.enum.observer, 'read', false)
+	).toBeUndefined();
+});
+
+test('roleAfterGrantToggle never removes the membership on a tie', () => {
+	// on a public self-managed container non-members read as well, so removing
+	// a kind must demote to observer instead of dropping the membership
+	const kindsByRole: GrantKindsByRole = [
+		[null, ['read']],
+		[memberRoles.enum.observer, ['read']],
+		[memberRoles.enum.collaborator, ['read', 'update', 'create', 'delete']],
+		[memberRoles.enum.head, ['read', 'update', 'create', 'delete', 'manage-members']]
+	];
+
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.collaborator, 'delete', false)).toBe(
+		memberRoles.enum.observer
+	);
+	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.head, 'update', false)).toBe(
+		memberRoles.enum.observer
+	);
 });
