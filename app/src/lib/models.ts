@@ -842,7 +842,7 @@ export function isCategoryContainer(
 const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
 
 const chapterPayload = z.strictObject({
-	...basePayload.omit({ description: true, summary: true }).shape,
+	...basePayload.omit({ description: true, summary: true, template: true }).shape,
 	image: z.url().optional(),
 	number: z.string(),
 	type: z.literal(payloadTypes.enum.chapter)
