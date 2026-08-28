@@ -135,12 +135,16 @@
 			label: $_('workspace.measures.title'),
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
-		{
-			exists: true,
-			icon: Template,
-			label: $_('workspace.templates.title'),
-			value: workspacesLeft.templates[selectedItem[1]] ?? '/templates/catalog'
-		},
+		...(createFeatureDecisions(page.data.features).useProgramTemplateWorkspaces()
+			? [
+					{
+						exists: true,
+						icon: Template,
+						label: $_('workspace.templates.title'),
+						value: workspacesLeft.templates[selectedItem[1]] ?? '/templates/catalog'
+					}
+				]
+			: []),
 		...(createFeatureDecisions(page.data.features).useResourcePlanning()
 			? [
 					{
