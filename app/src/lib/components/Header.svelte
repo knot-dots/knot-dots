@@ -339,7 +339,7 @@
 			{/if}
 		{/if}
 
-		{#if container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || isGoalContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+		{#if container && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || isGoalContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
 			<SettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
 		{/if}
 	</div>

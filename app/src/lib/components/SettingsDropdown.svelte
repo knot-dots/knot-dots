@@ -9,7 +9,7 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyPayload, type Container, getContextIdentifier } from '$lib/models';
+	import { type AnyPayload, type Container, getContextIdentifier, visibility } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
 	interface Props {
@@ -82,64 +82,66 @@
 	}
 </script>
 
-<CascadingMenu title={$_('container_settings_dropdown.title')}>
-	{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
-		{#if openSubMenuTitle === ''}
-			<button
-				class="cascading-menu-item"
-				onclick={() => openSubMenu($_('embed.menu_item_title'))}
-				type="button"
-			>
-				<Link />
-				<span>
-					<strong>{$_('embed.menu_item_title')}</strong>
-					<small>{$_('embed.menu_item_subtitle')}</small>
-				</span>
-				<ChevronRight />
-			</button>
-
-			{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
-				<div class="cascading-menu-divider" role="presentation"></div>
+{#if container.payload.visibility === visibility.enum.public}
+	<CascadingMenu title={$_('container_settings_dropdown.title')}>
+		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+			{#if openSubMenuTitle === ''}
 				<button
-					class="cascading-menu-item system-danger"
-					onclick={() => {
-						closeMenu();
-						confirmDeleteDialog.showModal();
-					}}
+					class="cascading-menu-item"
+					onclick={() => openSubMenu($_('embed.menu_item_title'))}
 					type="button"
 				>
-					<TrashBin />
+					<Link />
 					<span>
-						<strong>{$_('delete')}</strong>
+						<strong>{$_('embed.menu_item_title')}</strong>
+						<small>{$_('embed.menu_item_subtitle')}</small>
 					</span>
-				</button>
-			{/if}
-		{:else if openSubMenuTitle === $_('embed.menu_item_title')}
-			<div class="embed-content">
-				<p class="embed-description">{$_('embed.menu_item_subtitle')}</p>
-				<button class="button button-xs copy-button" onclick={copyEmbedCode} type="button">
-					{#if copied}
-						{$_('embed.copied')}
-					{:else}
-						{$_('embed.copy_code')}
-					{/if}
+					<ChevronRight />
 				</button>
 
-				<div class="code-box">
-					<button class="code-toggle" onclick={() => (codeVisible = !codeVisible)} type="button">
-						<span class="code-toggle-icon" class:rotated={!codeVisible}>
-							<ChevronDown />
+				{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+					<div class="cascading-menu-divider" role="presentation"></div>
+					<button
+						class="cascading-menu-item system-danger"
+						onclick={() => {
+							closeMenu();
+							confirmDeleteDialog.showModal();
+						}}
+						type="button"
+					>
+						<TrashBin />
+						<span>
+							<strong>{$_('delete')}</strong>
 						</span>
-						<span>{$_('embed.show_code')}</span>
 					</button>
-					{#if showCode}
-						<pre>{embedCode}</pre>
-					{/if}
+				{/if}
+			{:else if openSubMenuTitle === $_('embed.menu_item_title')}
+				<div class="embed-content">
+					<p class="embed-description">{$_('embed.menu_item_subtitle')}</p>
+					<button class="button button-xs copy-button" onclick={copyEmbedCode} type="button">
+						{#if copied}
+							{$_('embed.copied')}
+						{:else}
+							{$_('embed.copy_code')}
+						{/if}
+					</button>
+
+					<div class="code-box">
+						<button class="code-toggle" onclick={() => (codeVisible = !codeVisible)} type="button">
+							<span class="code-toggle-icon" class:rotated={!codeVisible}>
+								<ChevronDown />
+							</span>
+							<span>{$_('embed.show_code')}</span>
+						</button>
+						{#if showCode}
+							<pre>{embedCode}</pre>
+						{/if}
+					</div>
 				</div>
-			</div>
-		{/if}
-	{/snippet}
-</CascadingMenu>
+			{/if}
+		{/snippet}
+	</CascadingMenu>
+{/if}
 
 <ConfirmDeleteDialog
 	bind:dialog={confirmDeleteDialog}
