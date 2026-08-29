@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import { getContext, type Snippet } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
@@ -8,6 +9,7 @@
 	import { env } from '$env/dynamic/public';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdoptButton from '$lib/components/AdoptButton.svelte';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
@@ -24,6 +26,7 @@
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -38,8 +41,6 @@
 		programTypes,
 		status
 	} from '$lib/models';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -268,7 +269,11 @@
 {/snippet}
 
 {#snippet header()}
-	<Header {facets} search />
+	<Header {facets} search>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

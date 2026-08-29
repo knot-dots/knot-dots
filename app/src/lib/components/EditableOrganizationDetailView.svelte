@@ -22,6 +22,7 @@
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
 	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
@@ -118,7 +119,11 @@
 </script>
 
 {#snippet header()}
-	<Header />
+	<Header>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

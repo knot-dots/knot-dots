@@ -36,7 +36,6 @@
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
-	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
@@ -68,26 +67,28 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
+		commands?: Snippet;
 		compare?: boolean;
 		facets?: Map<string, Map<string, number>>;
 		filterBarInitiallyOpen?: boolean;
 		search?: boolean;
+		settings?: Snippet;
 		sortOptions?: [string, string][];
 		workspaceOptions?: { label: string; value: string }[];
-		commands?: Snippet;
 	}
 
 	let {
+		commands,
 		compare = false,
 		facets = new Map(),
 		filterBarInitiallyOpen = false,
 		search = false,
+		settings,
 		sortOptions = [
 			[$_('sort_alphabetically'), 'alpha'],
 			[$_('sort_modified'), 'modified']
 		],
-		workspaceOptions,
-		commands
+		workspaceOptions
 	}: Props = $props();
 
 	let overlay = getContext('overlay');
@@ -339,9 +340,7 @@
 			{/if}
 		{/if}
 
-		{#if container && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || isGoalContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
-			<SettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
-		{/if}
+		{@render settings?.()}
 	</div>
 </header>
 
