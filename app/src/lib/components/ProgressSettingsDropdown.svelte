@@ -66,7 +66,7 @@
 			{#if openSubMenuTitle === ''}
 				{#if $ability.can('update', container, 'payload.visibility')}
 					<button
-						class="settings-item"
+						class="cascading-menu-item"
 						onclick={() => openSubMenu($_('container_settings_dropdown.visibility.title'))}
 						type="button"
 					>
@@ -81,7 +81,7 @@
 
 				{#if createFeatureDecisions(page.data.features).useComputedProgress() && $ability.can('update', container)}
 					<button
-						class="settings-item"
+						class="cascading-menu-item"
 						onclick={() => openSubMenu($_('progress_measurement'))}
 						type="button"
 					>
@@ -95,9 +95,9 @@
 				{/if}
 
 				{#if $ability.can('delete', container)}
-					<div class="settings-divider" role="presentation"></div>
+					<div class="cascading-menu-divider" role="presentation"></div>
 					<button
-						class="settings-item settings-item--danger"
+						class="cascading-menu-item cascading-menu-item--danger"
 						onclick={() => {
 							closeMenu();
 							confirmDeleteDialog.showModal();
@@ -158,7 +158,7 @@
 {/if}
 
 <style>
-	.settings-item {
+	.cascading-menu-item {
 		align-items: center;
 		background: transparent;
 		border: none;
@@ -171,18 +171,18 @@
 		width: 100%;
 	}
 
-	.settings-item:hover {
+	.cascading-menu-item:hover {
 		background-color: var(--color-gray-100);
 	}
 
-	.settings-item > :global(svg:first-child) {
+	.cascading-menu-item > :global(svg:first-child) {
 		color: var(--color-gray-700);
 		height: 1rem;
 		max-width: none;
 		width: 1rem;
 	}
 
-	.settings-item > span {
+	.cascading-menu-item > span {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
@@ -190,19 +190,19 @@
 		min-width: 0;
 	}
 
-	.settings-item strong {
+	.cascading-menu-item strong {
 		font-size: 0.875rem;
 		font-weight: 500;
 		line-height: 1;
 	}
 
-	.settings-item small {
+	.cascading-menu-item small {
 		color: var(--color-gray-500);
 		font-size: 0.75rem;
 		line-height: 1.5;
 	}
 
-	.settings-item > :global(svg:last-child) {
+	.cascading-menu-item > :global(svg:last-child) {
 		color: var(--color-gray-400);
 		height: 0.75rem;
 		margin-left: auto;
@@ -242,13 +242,13 @@
 		background-color: var(--color-gray-100);
 	}
 
-	.settings-divider {
+	.cascading-menu-divider {
 		border-top: solid 1px var(--color-gray-200);
 		margin: 0.375rem 0;
 	}
 
-	.settings-item--danger > :global(svg:first-child),
-	.settings-item--danger strong {
+	.cascading-menu-item--danger > :global(svg:first-child),
+	.cascading-menu-item--danger strong {
 		color: var(--color-gray-700);
 	}
 </style>

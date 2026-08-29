@@ -66,7 +66,7 @@
 			{#if openSubMenuTitle === ''}
 				{#if mayUpdateVisibility}
 					<button
-						class="settings-item"
+						class="cascading-menu-item"
 						onclick={() => openSubMenu($_('container_settings_dropdown.visibility.title'))}
 						type="button"
 					>
@@ -81,7 +81,7 @@
 
 				{#if mayUpdateContainer}
 					<button
-						class="settings-item"
+						class="cascading-menu-item"
 						onclick={() => openSubMenu($_('ignite_video.settings.link'))}
 						type="button"
 					>
@@ -96,7 +96,7 @@
 				{#if mayDelete}
 					<div class="divider" role="presentation"></div>
 					<button
-						class="settings-item danger"
+						class="cascading-menu-item danger"
 						onclick={() => {
 							closeMenu();
 							dialog.showModal();
@@ -154,7 +154,7 @@
 {/if}
 
 <style>
-	.settings-item,
+	.cascading-menu-item,
 	.choice {
 		align-items: center;
 		background: transparent;
@@ -169,19 +169,19 @@
 		width: 100%;
 	}
 
-	.settings-item:hover,
+	.cascading-menu-item:hover,
 	.choice:hover,
 	.choice.is-selected {
 		background-color: var(--color-gray-100);
 	}
 
-	.settings-item > :global(svg:first-child) {
+	.cascading-menu-item > :global(svg:first-child) {
 		color: var(--color-gray-700);
 		height: 1rem;
 		width: 1rem;
 	}
 
-	.settings-item > span {
+	.cascading-menu-item > span {
 		display: flex;
 		flex: 1;
 		flex-direction: column;
@@ -189,19 +189,19 @@
 		min-width: 0;
 	}
 
-	.settings-item strong {
+	.cascading-menu-item strong {
 		font-size: 0.875rem;
 		font-weight: 500;
 		line-height: 1;
 	}
 
-	.settings-item small {
+	.cascading-menu-item small {
 		color: var(--color-gray-500);
 		font-size: 0.75rem;
 		line-height: 1.5;
 	}
 
-	.settings-item > :global(svg:last-child) {
+	.cascading-menu-item > :global(svg:last-child) {
 		color: var(--color-gray-400);
 		height: 0.75rem;
 		margin-left: auto;
