@@ -33,10 +33,10 @@
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
-	import OverlaySettingsDropdown from '$lib/components/OverlaySettingsDropdown.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
@@ -339,8 +339,8 @@
 			{/if}
 		{/if}
 
-		{#if overlay && container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || isGoalContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
-			<OverlaySettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
+		{#if container && container.payload.visibility === 'public' && (isReportContainer(container) || isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container) || isGoalContainer(container) || isOrganizationContainer(container) || isOrganizationalUnitContainer(container))}
+			<SettingsDropdown {container} relatedContainers={page.data.relatedContainers ?? []} />
 		{/if}
 	</div>
 </header>
