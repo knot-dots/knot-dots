@@ -113,7 +113,7 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
 			<div class="scope-options" role="radiogroup">
 				<label class="scope-option">
 					<input type="radio" value="current" bind:group={scope} />

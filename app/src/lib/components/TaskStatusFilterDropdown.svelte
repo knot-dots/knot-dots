@@ -50,7 +50,7 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
 			{#each effectiveOptions.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
 				{@const StatusIcon = statusIcons.get(option.value)}
 				<label>

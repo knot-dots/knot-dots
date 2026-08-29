@@ -61,7 +61,7 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
 				<div>
 					{#if $ability.can('update', container, 'payload.visibility')}
 						<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>

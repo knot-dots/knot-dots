@@ -34,7 +34,7 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
 				<div>
 					{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
 						<label>
