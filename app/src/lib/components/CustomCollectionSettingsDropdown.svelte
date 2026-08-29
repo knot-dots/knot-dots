@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import Sort from '~icons/flowbite/sort-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ArrowRightBox from '~icons/knotdots/arrow-right-box';
 	import CarouselIcon from '~icons/knotdots/carousel';
-	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
 	import Text from '~icons/knotdots/text';
@@ -157,7 +157,7 @@
 
 			{#if $ability.can('delete', container)}
 				<button
-					class="cascading-menu-item cascading-menu-item--danger"
+					class="cascading-menu-item system-danger"
 					onclick={() => {
 						closeMenu();
 						confirmDeleteDialog.showModal();

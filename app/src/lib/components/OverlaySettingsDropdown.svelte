@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Link from '~icons/knotdots/link';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Video from '~icons/knotdots/video';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import deleteContainer from '$lib/client/deleteContainer';
@@ -96,7 +96,7 @@
 				{#if mayDelete}
 					<div class="cascading-menu-divider" role="presentation"></div>
 					<button
-						class="cascading-menu-item cascading-menu-item--danger"
+						class="cascading-menu-item system-danger"
 						onclick={() => {
 							closeMenu();
 							dialog.showModal();

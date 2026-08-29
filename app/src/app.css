@@ -1951,31 +1951,31 @@ img.cover {
 /* Cascading menu */
 .cascading-menu-item {
 	align-items: center;
-	background: transparent;
 	border: none;
 	border-radius: 0.5rem;
-	color: var(--color-gray-700);
+	color: var(--color-text-default);
 	display: flex;
 	gap: 0.5rem;
 	padding: 0.5rem;
 	text-align: left;
-	width: 100%;
 }
 
 .cascading-menu-item:hover {
 	background-color: var(--color-gray-100);
 }
 
-.cascading-menu-item > svg:first-child {
-	color: var(--color-gray-700);
+.cascading-menu-item > svg {
 	height: 1rem;
-	max-width: none;
 	width: 1rem;
 }
 
-.cascading-menu-item--danger > svg:first-child,
-.cascading-menu-item--danger strong {
-	color: var(--color-gray-700);
+.cascading-menu-item > svg:first-child {
+	color: var(--color-icon-accent-default);
+}
+
+.cascading-menu-item > svg:last-child {
+	color: var(--color-icon-muted);
+	margin-left: auto;
 }
 
 .cascading-menu-item > span {
@@ -1993,16 +1993,9 @@ img.cover {
 }
 
 .cascading-menu-item small {
-	color: var(--color-gray-500);
+	color: var(--color-text-muted);
 	font-size: 0.75rem;
 	line-height: 1.5;
-}
-
-.cascading-menu-item > svg:last-child {
-	color: var(--color-gray-400);
-	height: 0.75rem;
-	margin-left: auto;
-	width: 0.75rem;
 }
 
 .cascading-menu-divider {
