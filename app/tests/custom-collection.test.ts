@@ -276,7 +276,7 @@ test('New item can be added to custom collection', async ({
 
 	// Open dialog to select templates for new items
 	await section.hover();
-	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
+	const settingsDropdownButton = section.getByRole('button', { name: 'Settings' });
 	await settingsDropdownButton.click();
 	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
 	await settingsPanel.getByRole('button', { name: 'Select templates' }).click();
@@ -351,7 +351,7 @@ test('Template picker can be closed with the close button', async ({
 	await saveResponse;
 	await section.hover();
 
-	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
+	const settingsDropdownButton = section.getByRole('button', { name: 'Settings' });
 	await settingsDropdownButton.click();
 	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
 	await settingsPanel.getByRole('button', { name: 'Select templates' }).click();
@@ -369,7 +369,7 @@ test('Custom collection can be configured', async ({ landingPage, testOrganizati
 
 	const section = await landingPage.addSection('Embed objects');
 	await section.hover();
-	const settingsDropdownButton = section.getByRole('button', { name: 'section settings' });
+	const settingsDropdownButton = section.getByRole('button', { name: 'Settings' });
 	await settingsDropdownButton.click();
 	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
 	await settingsPanel.getByRole('button', { name: 'interactions' }).click();

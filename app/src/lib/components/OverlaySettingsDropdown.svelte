@@ -12,8 +12,6 @@
 	import { type AnyPayload, type Container, getContextIdentifier } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
-	type SettingsSubview = 'main' | 'embed';
-
 	interface Props {
 		container: Container<AnyPayload>;
 		relatedContainers?: Container<AnyPayload>[];
@@ -21,7 +19,6 @@
 
 	let { container, relatedContainers = [] }: Props = $props();
 
-	let settingsSubview = $state<SettingsSubview>('main');
 	let codeVisible = $state(true);
 	let copied = $state(false);
 
@@ -54,19 +51,6 @@
 		return `<!-- knot-dots Embed -->\n<iframe\n  src="${url}"\n  style="width: 100%; height: clamp(700px, 85vh, 1400px); border: 0;"\n  title="${escapedTitle}"\n  loading="lazy">\n</iframe>`;
 	});
 
-	function openSubview(view: SettingsSubview) {
-		settingsSubview = view;
-	}
-
-	function resetSettingsState() {
-		settingsSubview = 'main';
-		codeVisible = true;
-	}
-
-	function backToMain() {
-		settingsSubview = 'main';
-	}
-
 	async function copyEmbedCode() {
 		if (typeof navigator === 'undefined' || !navigator.clipboard) {
 			return;
@@ -98,19 +82,14 @@
 	}
 </script>
 
-<CascadingMenu
-	isRoot={settingsSubview === 'main'}
-	label={$_('container_settings_dropdown.title')}
-	handleBack={backToMain}
-	handleClose={resetSettingsState}
-	handleOpen={resetSettingsState}
-	title={settingsSubview === 'main'
-		? $_('container_settings_dropdown.title')
-		: $_('embed.menu_item_title')}
->
-	{#snippet children(closeDropdown)}
-		{#if settingsSubview === 'main'}
-			<button class="settings-item" onclick={() => openSubview('embed')} type="button">
+<CascadingMenu title={$_('container_settings_dropdown.title')}>
+	{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+		{#if openSubMenuTitle === ''}
+			<button
+				class="settings-item"
+				onclick={() => openSubMenu($_('embed.menu_item_title'))}
+				type="button"
+			>
 				<Link />
 				<span>
 					<strong>{$_('embed.menu_item_title')}</strong>
@@ -124,7 +103,7 @@
 				<button
 					class="settings-item settings-item--danger"
 					onclick={() => {
-						closeDropdown();
+						closeMenu();
 						confirmDeleteDialog.showModal();
 					}}
 					type="button"
@@ -135,7 +114,7 @@
 					</span>
 				</button>
 			{/if}
-		{:else}
+		{:else if openSubMenuTitle === $_('embed.menu_item_title')}
 			<div class="embed-content">
 				<p class="embed-description">{$_('embed.menu_item_subtitle')}</p>
 				<button class="button button-xs copy-button" onclick={copyEmbedCode} type="button">

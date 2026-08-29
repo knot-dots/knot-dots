@@ -8,20 +8,19 @@
 	import Ellipsis from '~icons/knotdots/ellipsis';
 
 	interface Props {
-		children: Snippet<[() => void]>;
-		handleBack?: () => void;
-		handleClose?: () => void;
-		handleOpen?: () => void;
-		isRoot: boolean;
-		label: string;
+		children: Snippet<[string, (title: string) => void, () => void]>;
 		title: string;
 	}
 
-	let { children, handleBack, handleClose, handleOpen, isRoot, label, title }: Props = $props();
+	let { children, title }: Props = $props();
+
+	let subMenuOpen = $state(false);
+
+	let subMenuTitle = $state('');
 
 	let popover = createPopover({
 		get label() {
-			return label;
+			return title;
 		}
 	});
 
@@ -37,49 +36,47 @@
 		]
 	};
 
-	function handleTriggerOpen() {
+	function openSubMenu(title: string) {
+		subMenuTitle = title;
+		subMenuOpen = true;
+	}
+
+	function closeSubMenu() {
+		subMenuTitle = '';
+		subMenuOpen = false;
+	}
+
+	$effect(() => {
 		if (!$popover.expanded) {
-			handleOpen?.();
+			closeSubMenu();
 		}
-	}
-
-	function closePanel() {
-		handleClose?.();
-		popover.close();
-	}
-
-	function handleBackClick(event: MouseEvent) {
-		event.preventDefault();
-		event.stopPropagation();
-		handleBack?.();
-	}
+	});
 </script>
 
 <div class="dropdown" use:popperRef>
-	<button class="dropdown-button" onclick={handleTriggerOpen} type="button" use:popover.button>
+	<button class="dropdown-button" type="button" use:popover.button>
 		<Ellipsis />
-		<span class="is-visually-hidden">{label}</span>
 	</button>
 
 	{#if $popover.expanded}
 		<fieldset class="dropdown-panel" use:popperContent={popperOpts} use:popover.panel>
 			<p class="dropdown-panel-title">
-				{#if !isRoot}
-					<button class="action-button" onclick={handleBackClick} type="button">
+				{#if subMenuOpen}
+					<button class="action-button" onclick={closeSubMenu} type="button">
 						<ArrowLeft />
 						<span class="is-visually-hidden">back</span>
 					</button>
 				{/if}
 
-				<span>{title}</span>
+				<span>{subMenuOpen ? subMenuTitle : title}</span>
 
-				<button class="action-button" onclick={closePanel} type="button">
+				<button class="action-button" onclick={popover.close} type="button">
 					<Close />
 					<span class="is-visually-hidden">{$_('close')}</span>
 				</button>
 			</p>
 
-			{@render children(closePanel)}
+			{@render children(subMenuTitle, openSubMenu, popover.close)}
 		</fieldset>
 	{/if}
 </div>

@@ -12,8 +12,6 @@
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
-	type SettingsSubview = 'main' | 'visibility' | 'link';
-
 	interface Props {
 		container: Container<IgniteVideoPayload>;
 		parentContainer: Container<AnyPayload>;
@@ -26,7 +24,6 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let settingsSubview = $state<SettingsSubview>('main');
 	let iframeUrl = $state(container.payload.iframeUrl ?? '');
 	let dialog: HTMLDialogElement;
 
@@ -34,19 +31,6 @@
 	const mayUpdateContainer = $derived($ability.can('update', container));
 	const mayDelete = $derived($ability.can('delete', container));
 	const mayShowDropdown = $derived(mayUpdateVisibility || mayUpdateContainer || mayDelete);
-
-	function openSubview(view: SettingsSubview) {
-		settingsSubview = view;
-	}
-
-	function resetSettingsState() {
-		settingsSubview = 'main';
-		iframeUrl = container.payload.iframeUrl ?? '';
-	}
-
-	function backToMain() {
-		settingsSubview = 'main';
-	}
 
 	function handleInputIframeUrl(event: Event & { currentTarget: HTMLInputElement }) {
 		event.stopPropagation();
@@ -56,10 +40,10 @@
 		}
 	}
 
-	function handleEmbed(event: MouseEvent, closeDropdown: () => void) {
+	function handleEmbed(event: MouseEvent, closeMenu: () => void) {
 		container.payload.iframeUrl = iframeUrl;
 		requestSubmit(event);
-		closeDropdown();
+		closeMenu();
 	}
 
 	async function handleDelete() {
@@ -77,22 +61,15 @@
 </script>
 
 {#if mayShowDropdown}
-	<CascadingMenu
-		isRoot={settingsSubview === 'main'}
-		label={$_('container_settings_dropdown.title')}
-		handleBack={backToMain}
-		handleClose={resetSettingsState}
-		handleOpen={resetSettingsState}
-		title={settingsSubview === 'main'
-			? $_('container_settings_dropdown.title')
-			: settingsSubview === 'visibility'
-				? $_('container_settings_dropdown.visibility.title')
-				: $_('ignite_video.settings.link')}
-	>
-		{#snippet children(closeDropdown)}
-			{#if settingsSubview === 'main'}
+	<CascadingMenu title={$_('container_settings_dropdown.title')}>
+		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+			{#if openSubMenuTitle === ''}
 				{#if mayUpdateVisibility}
-					<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
+					<button
+						class="settings-item"
+						onclick={() => openSubMenu($_('container_settings_dropdown.visibility.title'))}
+						type="button"
+					>
 						<Eye />
 						<span>
 							<strong>{$_('container_settings_dropdown.visibility.title')}</strong>
@@ -103,7 +80,11 @@
 				{/if}
 
 				{#if mayUpdateContainer}
-					<button class="settings-item" onclick={() => openSubview('link')} type="button">
+					<button
+						class="settings-item"
+						onclick={() => openSubMenu($_('ignite_video.settings.link'))}
+						type="button"
+					>
 						<Video />
 						<span>
 							<strong>{$_('ignite_video.settings.link')}</strong>
@@ -117,7 +98,7 @@
 					<button
 						class="settings-item danger"
 						onclick={() => {
-							closeDropdown();
+							closeMenu();
 							dialog.showModal();
 						}}
 						type="button"
@@ -128,7 +109,7 @@
 						</span>
 					</button>
 				{/if}
-			{:else if settingsSubview === 'visibility'}
+			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
 				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
 					<label class="choice" class:is-selected={container.payload.visibility === option.value}>
 						<input
@@ -140,7 +121,7 @@
 						<span>{option.label}</span>
 					</label>
 				{/each}
-			{:else}
+			{:else if openSubMenuTitle === $_('ignite_video.settings.link')}
 				{@const id = crypto.randomUUID()}
 				<div class="link-content" oninput={(event) => event.stopPropagation()}>
 					<label class="is-visually-hidden" for={id}>
@@ -159,7 +140,7 @@
 						class="button-primary system-primary"
 						disabled={!iframeUrl || iframeUrl === container.payload.iframeUrl}
 						type="button"
-						onclick={(event) => handleEmbed(event, closeDropdown)}
+						onclick={(event) => handleEmbed(event, closeMenu)}
 					>
 						{$_('ignite_video.embed')}
 					</button>

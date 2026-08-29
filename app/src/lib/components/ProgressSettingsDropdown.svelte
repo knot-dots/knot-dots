@@ -18,8 +18,6 @@
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
-	type SettingsSubview = 'main' | 'visibility' | 'measurement';
-
 	interface Props {
 		container: Container<ProgressPayload>;
 		ondelete?: () => Promise<void>;
@@ -36,8 +34,6 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let settingsSubview = $state<SettingsSubview>('main');
-
 	let confirmDeleteDialog: HTMLDialogElement = $state(undefined!);
 
 	let visibilityLabel = $derived(
@@ -45,18 +41,6 @@
 			({ value }) => value === container.payload.visibility
 		)?.label ?? $_(`visibility.${container.payload.visibility}`)
 	);
-
-	function openSubview(view: SettingsSubview) {
-		settingsSubview = view;
-	}
-
-	function resetSettingsState() {
-		settingsSubview = 'main';
-	}
-
-	function backToMain() {
-		settingsSubview = 'main';
-	}
 
 	async function handleDelete() {
 		const response = await deleteContainer(container);
@@ -77,22 +61,15 @@
 </script>
 
 {#if $ability.can('update', container, 'payload.visibility') || $ability.can('update', container) || $ability.can('delete', container)}
-	<CascadingMenu
-		isRoot={settingsSubview === 'main'}
-		label={$_('settings')}
-		handleBack={backToMain}
-		handleClose={resetSettingsState}
-		handleOpen={resetSettingsState}
-		title={settingsSubview === 'main'
-			? $_('container_settings_dropdown.title')
-			: settingsSubview === 'visibility'
-				? $_('container_settings_dropdown.visibility.title')
-				: $_('progress_measurement')}
-	>
-		{#snippet children(closeDropdown)}
-			{#if settingsSubview === 'main'}
+	<CascadingMenu title={$_('container_settings_dropdown.title')}>
+		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+			{#if openSubMenuTitle === ''}
 				{#if $ability.can('update', container, 'payload.visibility')}
-					<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
+					<button
+						class="settings-item"
+						onclick={() => openSubMenu($_('container_settings_dropdown.visibility.title'))}
+						type="button"
+					>
 						<Eye />
 						<span>
 							<strong>{$_('container_settings_dropdown.visibility.title')}</strong>
@@ -103,7 +80,11 @@
 				{/if}
 
 				{#if createFeatureDecisions(page.data.features).useComputedProgress() && $ability.can('update', container)}
-					<button class="settings-item" onclick={() => openSubview('measurement')} type="button">
+					<button
+						class="settings-item"
+						onclick={() => openSubMenu($_('progress_measurement'))}
+						type="button"
+					>
 						<Progress />
 						<span>
 							<strong>{$_('progress_measurement')}</strong>
@@ -118,7 +99,7 @@
 					<button
 						class="settings-item settings-item--danger"
 						onclick={() => {
-							closeDropdown();
+							closeMenu();
 							confirmDeleteDialog.showModal();
 						}}
 						type="button"
@@ -129,7 +110,7 @@
 						</span>
 					</button>
 				{/if}
-			{:else if settingsSubview === 'visibility'}
+			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
 				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
 					<label
 						class="settings-visibility"
@@ -145,7 +126,7 @@
 						<span class="badge badge--gray">{option.label}</span>
 					</label>
 				{/each}
-			{:else}
+			{:else if openSubMenuTitle === $_('progress_measurement')}
 				{#each progressMeasurement.options as option (option)}
 					<label
 						class="settings-choice"

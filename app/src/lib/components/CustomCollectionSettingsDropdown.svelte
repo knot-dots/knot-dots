@@ -20,8 +20,6 @@
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
-	type SettingsSubview = 'main' | 'view' | 'visibility' | 'interactions';
-
 	interface Props {
 		container: Container<CustomCollectionPayload>;
 		onAddItems: () => void;
@@ -38,8 +36,6 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let settingsSubview = $state<SettingsSubview>('main');
-
 	let confirmDeleteDialog: HTMLDialogElement = $state(undefined!);
 
 	let interactionsSummary = $derived.by(() => {
@@ -52,18 +48,6 @@
 		}
 		return interactions.length > 0 ? interactions.join(', ') : $_('empty');
 	});
-
-	function openSubview(view: SettingsSubview) {
-		settingsSubview = view;
-	}
-
-	function resetSettingsState() {
-		settingsSubview = 'main';
-	}
-
-	function backToMain() {
-		settingsSubview = 'main';
-	}
 
 	async function handleDelete() {
 		const response = await deleteContainer(container);
@@ -79,22 +63,9 @@
 	}
 </script>
 
-<CascadingMenu
-	isRoot={settingsSubview === 'main'}
-	label={$_('custom_collection.settings.title')}
-	handleBack={backToMain}
-	handleClose={resetSettingsState}
-	handleOpen={resetSettingsState}
-	title={settingsSubview === 'main'
-		? $_('container_settings_dropdown.title')
-		: settingsSubview === 'view'
-			? $_('custom_collection.settings.view')
-			: settingsSubview === 'visibility'
-				? $_('container_settings_dropdown.visibility.title')
-				: $_('custom_collection.settings.interactions')}
->
-	{#snippet children(closeDropdown)}
-		{#if settingsSubview === 'main'}
+<CascadingMenu title={$_('container_settings_dropdown.title')}>
+	{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+		{#if openSubMenuTitle === ''}
 			<label class="button settings-item">
 				<Text />
 				<span>
@@ -108,7 +79,7 @@
 				/>
 			</label>
 
-			<button class="settings-item" onclick={() => openSubview('view')} type="button">
+			<button class="settings-item" onclick={() => openSubMenu('view')} type="button">
 				{#if container.payload.listType === 'carousel'}
 					<CarouselIcon />
 				{:else}
@@ -123,7 +94,11 @@
 
 			<div class="settings-divider" role="presentation"></div>
 			{#if $ability.can('update', container, 'payload.visibility')}
-				<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
+				<button
+					class="settings-item"
+					onclick={() => openSubMenu($_('container_settings_dropdown.visibility.title'))}
+					type="button"
+				>
 					<Eye />
 					<span>
 						<strong>{$_('container_settings_dropdown.visibility.title')}</strong>
@@ -133,7 +108,11 @@
 				</button>
 			{/if}
 
-			<button class="settings-item" onclick={() => openSubview('interactions')} type="button">
+			<button
+				class="settings-item"
+				onclick={() => openSubMenu($_('custom_collection.settings.interactions'))}
+				type="button"
+			>
 				<ArrowRightBox />
 				<span>
 					<strong>{$_('custom_collection.settings.interactions')}</strong>
@@ -149,7 +128,7 @@
 			<button
 				class="settings-button"
 				onclick={() => {
-					closeDropdown();
+					closeMenu();
 					onAddItems();
 				}}
 				type="button"
@@ -166,7 +145,7 @@
 			<button
 				class="settings-button"
 				onclick={() => {
-					closeDropdown();
+					closeMenu();
 					onAddTemplates();
 				}}
 				type="button"
@@ -180,7 +159,7 @@
 				<button
 					class="settings-item settings-item--danger"
 					onclick={() => {
-						closeDropdown();
+						closeMenu();
 						confirmDeleteDialog.showModal();
 					}}
 					type="button"
@@ -191,7 +170,7 @@
 					</span>
 				</button>
 			{/if}
-		{:else if settingsSubview === 'view'}
+		{:else if openSubMenuTitle === $_('custom_collection.settings.view')}
 			<label class="settings-choice" class:is-selected={container.payload.listType === 'wall'}>
 				<input
 					type="radio"
@@ -214,7 +193,7 @@
 				<CarouselIcon />
 				<span>{$_('list_type.carousel')}</span>
 			</label>
-		{:else if settingsSubview === 'visibility'}
+		{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
 			{#each visibility.options as option (option)}
 				<label
 					class="settings-visibility"
@@ -230,7 +209,7 @@
 					<span class="badge badge--gray">{$_(`visibility.${option}`)}</span>
 				</label>
 			{/each}
-		{:else}
+		{:else if openSubMenuTitle === $_('custom_collection.settings.interactions')}
 			<label class="settings-toggle">
 				<input
 					type="checkbox"
