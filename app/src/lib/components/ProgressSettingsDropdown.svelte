@@ -6,9 +6,9 @@
 	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Progress from '~icons/knotdots/progress';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import { createFeatureDecisions } from '$lib/features';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -77,7 +77,7 @@
 </script>
 
 {#if $ability.can('update', container, 'payload.visibility') || $ability.can('update', container) || $ability.can('delete', container)}
-	<MultilevelSettingsDropdown
+	<CascadingMenu
 		isRoot={settingsSubview === 'main'}
 		label={$_('settings')}
 		handleBack={backToMain}
@@ -166,7 +166,7 @@
 				{/each}
 			{/if}
 		{/snippet}
-	</MultilevelSettingsDropdown>
+	</CascadingMenu>
 
 	<ConfirmDeleteDialog
 		bind:dialog={confirmDeleteDialog}

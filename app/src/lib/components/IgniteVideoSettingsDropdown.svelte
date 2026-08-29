@@ -6,8 +6,8 @@
 	import Video from '~icons/knotdots/video';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
 	import type { AnyPayload, Container, IgniteVideoPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
@@ -77,7 +77,7 @@
 </script>
 
 {#if mayShowDropdown}
-	<MultilevelSettingsDropdown
+	<CascadingMenu
 		isRoot={settingsSubview === 'main'}
 		label={$_('container_settings_dropdown.title')}
 		handleBack={backToMain}
@@ -167,7 +167,7 @@
 				</div>
 			{/if}
 		{/snippet}
-	</MultilevelSettingsDropdown>
+	</CascadingMenu>
 
 	<ConfirmDeleteDialog bind:dialog {container} handleSubmit={handleDelete} {relatedContainers} />
 {/if}

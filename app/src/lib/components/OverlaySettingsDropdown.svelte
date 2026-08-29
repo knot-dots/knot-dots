@@ -7,8 +7,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
 	import { type AnyPayload, type Container, getContextIdentifier } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
@@ -98,7 +98,7 @@
 	}
 </script>
 
-<MultilevelSettingsDropdown
+<CascadingMenu
 	isRoot={settingsSubview === 'main'}
 	label={$_('container_settings_dropdown.title')}
 	handleBack={backToMain}
@@ -160,7 +160,7 @@
 			</div>
 		{/if}
 	{/snippet}
-</MultilevelSettingsDropdown>
+</CascadingMenu>
 
 <ConfirmDeleteDialog
 	bind:dialog={confirmDeleteDialog}

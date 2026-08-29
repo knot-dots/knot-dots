@@ -10,8 +10,8 @@
 	import Search from '~icons/knotdots/search';
 	import Text from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -79,7 +79,7 @@
 	}
 </script>
 
-<MultilevelSettingsDropdown
+<CascadingMenu
 	isRoot={settingsSubview === 'main'}
 	label={$_('custom_collection.settings.title')}
 	handleBack={backToMain}
@@ -251,7 +251,7 @@
 			</label>
 		{/if}
 	{/snippet}
-</MultilevelSettingsDropdown>
+</CascadingMenu>
 
 <ConfirmDeleteDialog
 	bind:dialog={confirmDeleteDialog}
