@@ -240,61 +240,6 @@
 />
 
 <style>
-	.cascading-menu-item {
-		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 0.5rem;
-		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		width: 100%;
-	}
-
-	.cascading-menu-item.button {
-		padding: 0.5rem;
-	}
-
-	.cascading-menu-item:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.cascading-menu-item > :global(svg:first-child) {
-		color: var(--color-gray-700);
-		height: 1rem;
-		max-width: none;
-		width: 1rem;
-	}
-
-	.cascading-menu-item > span {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		gap: 0.125rem;
-		min-width: 0;
-	}
-
-	.cascading-menu-item strong {
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1;
-	}
-
-	.cascading-menu-item small {
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-		line-height: 1.5;
-	}
-
-	.cascading-menu-item > :global(svg:last-child) {
-		color: var(--color-gray-400);
-		height: 0.75rem;
-		margin-left: auto;
-		width: 0.75rem;
-	}
-
 	.settings-choice,
 	.settings-visibility,
 	.settings-toggle {
@@ -342,11 +287,6 @@
 		background-color: var(--color-gray-100);
 	}
 
-	.cascading-menu-divider {
-		border-top: solid 1px var(--color-gray-200);
-		margin: 0.375rem 0;
-	}
-
 	.dropdown-panel-group-title {
 		color: var(--color-gray-400);
 		font-size: 0.75rem;
@@ -366,11 +306,6 @@
 		font-weight: 500;
 		justify-content: center;
 		width: 100%;
-	}
-
-	.cascading-menu-item--danger > :global(svg:first-child),
-	.cascading-menu-item--danger strong {
-		color: var(--color-gray-700);
 	}
 
 	.toggle {
