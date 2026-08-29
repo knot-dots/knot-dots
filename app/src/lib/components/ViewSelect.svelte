@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
@@ -21,6 +22,8 @@
 		table: { icon: TableRow, labelKey: 'workspace.view.table' },
 		monitoring: { icon: Compass, labelKey: 'workspace.view.monitoring' }
 	};
+
+	let overlay = getContext('overlay');
 
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
@@ -69,7 +72,7 @@
 	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 </script>
 
-{#if viewOptions.length > 1}
+{#if !overlay && viewOptions.length > 1}
 	<div class="dropdown" use:popperRef>
 		<button class="dropdown-button" onchange={handleChange} type="button" use:menu.button>
 			{#if currentView}
