@@ -7,6 +7,7 @@
 	import { page } from '$app/state';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import saveContainer from '$lib/client/saveContainer';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
@@ -23,7 +24,7 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
-	import saveContainer from '$lib/client/saveContainer';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type AnyPayload,
@@ -384,7 +385,11 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

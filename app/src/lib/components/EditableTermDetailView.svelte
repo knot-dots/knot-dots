@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
@@ -9,10 +11,9 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import TermProperties from '$lib/components/TermProperties.svelte';
 	import { type AnyPayload, type Container, predicates, type TermPayload } from '$lib/models';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -58,7 +59,11 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

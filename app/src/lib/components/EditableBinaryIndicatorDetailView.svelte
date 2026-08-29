@@ -17,6 +17,7 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -143,7 +144,11 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}
