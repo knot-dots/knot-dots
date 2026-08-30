@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Link from '~icons/knotdots/link';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
-	import { type AnyPayload, type Container, getContextIdentifier } from '$lib/models';
+	import { type AnyPayload, type Container, getContextIdentifier, visibility } from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
-
-	type SettingsSubview = 'main' | 'embed';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -21,7 +19,6 @@
 
 	let { container, relatedContainers = [] }: Props = $props();
 
-	let settingsSubview = $state<SettingsSubview>('main');
 	let codeVisible = $state(true);
 	let copied = $state(false);
 
@@ -54,19 +51,6 @@
 		return `<!-- knot-dots Embed -->\n<iframe\n  src="${url}"\n  style="width: 100%; height: clamp(700px, 85vh, 1400px); border: 0;"\n  title="${escapedTitle}"\n  loading="lazy">\n</iframe>`;
 	});
 
-	function openSubview(view: SettingsSubview) {
-		settingsSubview = view;
-	}
-
-	function resetSettingsState() {
-		settingsSubview = 'main';
-		codeVisible = true;
-	}
-
-	function backToMain() {
-		settingsSubview = 'main';
-	}
-
 	async function copyEmbedCode() {
 		if (typeof navigator === 'undefined' || !navigator.clipboard) {
 			return;
@@ -98,70 +82,66 @@
 	}
 </script>
 
-<MultilevelSettingsDropdown
-	isRoot={settingsSubview === 'main'}
-	label={$_('container_settings_dropdown.title')}
-	handleBack={backToMain}
-	handleClose={resetSettingsState}
-	handleOpen={resetSettingsState}
-	panelMinWidth="17.5rem"
-	title={settingsSubview === 'main'
-		? $_('container_settings_dropdown.title')
-		: $_('embed.menu_item_title')}
->
-	{#snippet children(closeDropdown)}
-		{#if settingsSubview === 'main'}
-			<button class="settings-item" onclick={() => openSubview('embed')} type="button">
-				<Link />
-				<span>
-					<strong>{$_('embed.menu_item_title')}</strong>
-					<small>{$_('embed.menu_item_subtitle')}</small>
-				</span>
-				<ChevronRight />
-			</button>
-
-			{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
-				<div class="settings-divider" role="presentation"></div>
+{#if container.payload.visibility === visibility.enum.public}
+	<CascadingMenu title={$_('container_settings_dropdown.title')}>
+		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+			{#if openSubMenuTitle === ''}
 				<button
-					class="settings-item settings-item--danger"
-					onclick={() => {
-						closeDropdown();
-						confirmDeleteDialog.showModal();
-					}}
+					class="cascading-menu-item"
+					onclick={() => openSubMenu($_('embed.menu_item_title'))}
 					type="button"
 				>
-					<TrashBin />
+					<Link />
 					<span>
-						<strong>{$_('delete')}</strong>
+						<strong>{$_('embed.menu_item_title')}</strong>
+						<small>{$_('embed.menu_item_subtitle')}</small>
 					</span>
-				</button>
-			{/if}
-		{:else}
-			<div class="embed-content">
-				<p class="embed-description">{$_('embed.menu_item_subtitle')}</p>
-				<button class="button button-xs copy-button" onclick={copyEmbedCode} type="button">
-					{#if copied}
-						{$_('embed.copied')}
-					{:else}
-						{$_('embed.copy_code')}
-					{/if}
+					<ChevronRight />
 				</button>
 
-				<div class="code-box">
-					<button class="code-toggle" onclick={() => (codeVisible = !codeVisible)} type="button">
-						<span class="code-toggle-icon" class:rotated={!codeVisible}>
-							<ChevronDown />
+				{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+					<div class="cascading-menu-divider" role="presentation"></div>
+					<button
+						class="cascading-menu-item system-danger"
+						onclick={() => {
+							closeMenu();
+							confirmDeleteDialog.showModal();
+						}}
+						type="button"
+					>
+						<TrashBin />
+						<span>
+							<strong>{$_('delete')}</strong>
 						</span>
-						<span>{$_('embed.show_code')}</span>
 					</button>
-					{#if showCode}
-						<pre>{embedCode}</pre>
-					{/if}
+				{/if}
+			{:else if openSubMenuTitle === $_('embed.menu_item_title')}
+				<div class="embed-content">
+					<p class="embed-description">{$_('embed.menu_item_subtitle')}</p>
+					<button class="button button-xs copy-button" onclick={copyEmbedCode} type="button">
+						{#if copied}
+							{$_('embed.copied')}
+						{:else}
+							{$_('embed.copy_code')}
+						{/if}
+					</button>
+
+					<div class="code-box">
+						<button class="code-toggle" onclick={() => (codeVisible = !codeVisible)} type="button">
+							<span class="code-toggle-icon" class:rotated={!codeVisible}>
+								<ChevronDown />
+							</span>
+							<span>{$_('embed.show_code')}</span>
+						</button>
+						{#if showCode}
+							<pre>{embedCode}</pre>
+						{/if}
+					</div>
 				</div>
-			</div>
-		{/if}
-	{/snippet}
-</MultilevelSettingsDropdown>
+			{/if}
+		{/snippet}
+	</CascadingMenu>
+{/if}
 
 <ConfirmDeleteDialog
 	bind:dialog={confirmDeleteDialog}
@@ -171,61 +151,6 @@
 />
 
 <style>
-	.settings-item {
-		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 0.5rem;
-		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		width: 100%;
-	}
-
-	.settings-item:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.settings-item > :global(svg:first-child) {
-		color: var(--color-gray-700);
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.settings-item > span {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		gap: 0.125rem;
-		min-width: 0;
-	}
-
-	.settings-item strong {
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1;
-	}
-
-	.settings-item small {
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-		line-height: 1.5;
-	}
-
-	.settings-item > :global(svg:last-child) {
-		color: var(--color-gray-400);
-		height: 0.75rem;
-		margin-left: auto;
-		width: 0.75rem;
-	}
-
-	.settings-divider {
-		border-top: solid 1px var(--color-gray-200);
-		margin: 0.375rem 0;
-	}
-
 	.embed-content {
 		display: flex;
 		flex-direction: column;

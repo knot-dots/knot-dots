@@ -13,6 +13,7 @@
 	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyPayload, type Container, predicates, type TaskPayload } from '$lib/models';
@@ -64,7 +65,11 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

@@ -18,6 +18,7 @@
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyPayload, type Container, type PostPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 
 	interface Props {
 		container: Container<PostPayload>;
@@ -44,7 +45,11 @@
 </script>
 
 {#snippet header()}
-	<Header />
+	<Header>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

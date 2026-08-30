@@ -116,7 +116,7 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
 				<div class="dropdown-panel-scroll-wrapper">
 					{#if $ability.can('update', container, 'payload.visibility')}
 						<!-- Group: Text -->

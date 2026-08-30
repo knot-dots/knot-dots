@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { createDisclosure } from 'svelte-headlessui';
@@ -9,6 +10,8 @@
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import DeleteButton from '$lib/components/DeleteButton.svelte';
@@ -20,6 +23,7 @@
 	import ObjectiveChart from '$lib/components/ObjectiveChart.svelte';
 	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -30,10 +34,7 @@
 		type ObjectivePayload,
 		predicates
 	} from '$lib/models';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import { resource } from 'runed';
 	import { ability, applicationState } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		container: Container<ObjectivePayload>;
@@ -142,7 +143,11 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

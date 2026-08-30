@@ -30,6 +30,7 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 
 	interface Props {
 		container: Container<PagePayload>;
@@ -88,7 +89,11 @@
 </script>
 
 {#snippet header()}
-	<Header />
+	<Header>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

@@ -81,7 +81,7 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
 			<div>
 				{#each options.filter((option) => option.count === undefined || option.count > 0 || hasMatchingSubOptions(option)) as option (option.value)}
 					<FilterDisclosureOption {option} bind:selected={value} />

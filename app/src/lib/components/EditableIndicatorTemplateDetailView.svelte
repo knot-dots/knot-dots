@@ -21,6 +21,7 @@
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import {
 		type AnyPayload,
@@ -91,7 +92,11 @@
 </script>
 
 {#snippet header()}
-	<Header compare sortOptions={[]} workspaceOptions={[]} />
+	<Header compare sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

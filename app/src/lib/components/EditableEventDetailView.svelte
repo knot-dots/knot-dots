@@ -15,6 +15,7 @@
 	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyPayload, type Container, type EventPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -44,7 +45,11 @@
 </script>
 
 {#snippet header()}
-	<Header />
+	<Header>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

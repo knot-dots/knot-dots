@@ -54,7 +54,7 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel" use:popperContent use:popover.panel>
+			<fieldset class="dropdown-panel listbox" use:popperContent use:popover.panel>
 				<div>
 					<button class="action-button" onclick={popover.close}>
 						<Close />

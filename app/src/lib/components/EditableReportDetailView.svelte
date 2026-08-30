@@ -13,6 +13,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyPayload, type Container, predicates, type ReportPayload } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -63,7 +64,11 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]} />
+	<Header sortOptions={[]} workspaceOptions={[]}>
+		{#snippet settings()}
+			<SettingsDropdown {container} {relatedContainers} />
+		{/snippet}
+	</Header>
 {/snippet}
 
 {#snippet main()}

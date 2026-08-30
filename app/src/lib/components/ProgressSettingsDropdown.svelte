@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import ChevronRight from '~icons/knotdots/chevron-right';
 	import Progress from '~icons/knotdots/progress';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import { createFeatureDecisions } from '$lib/features';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import MultilevelSettingsDropdown from '$lib/components/MultilevelSettingsDropdown.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -17,8 +17,6 @@
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
-
-	type SettingsSubview = 'main' | 'visibility' | 'measurement';
 
 	interface Props {
 		container: Container<ProgressPayload>;
@@ -36,8 +34,6 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
-	let settingsSubview = $state<SettingsSubview>('main');
-
 	let confirmDeleteDialog: HTMLDialogElement = $state(undefined!);
 
 	let visibilityLabel = $derived(
@@ -45,18 +41,6 @@
 			({ value }) => value === container.payload.visibility
 		)?.label ?? $_(`visibility.${container.payload.visibility}`)
 	);
-
-	function openSubview(view: SettingsSubview) {
-		settingsSubview = view;
-	}
-
-	function resetSettingsState() {
-		settingsSubview = 'main';
-	}
-
-	function backToMain() {
-		settingsSubview = 'main';
-	}
 
 	async function handleDelete() {
 		const response = await deleteContainer(container);
@@ -77,22 +61,15 @@
 </script>
 
 {#if $ability.can('update', container, 'payload.visibility') || $ability.can('update', container) || $ability.can('delete', container)}
-	<MultilevelSettingsDropdown
-		isRoot={settingsSubview === 'main'}
-		label={$_('settings')}
-		handleBack={backToMain}
-		handleClose={resetSettingsState}
-		handleOpen={resetSettingsState}
-		title={settingsSubview === 'main'
-			? $_('container_settings_dropdown.title')
-			: settingsSubview === 'visibility'
-				? $_('container_settings_dropdown.visibility.title')
-				: $_('progress_measurement')}
-	>
-		{#snippet children(closeDropdown)}
-			{#if settingsSubview === 'main'}
+	<CascadingMenu title={$_('container_settings_dropdown.title')}>
+		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
+			{#if openSubMenuTitle === ''}
 				{#if $ability.can('update', container, 'payload.visibility')}
-					<button class="settings-item" onclick={() => openSubview('visibility')} type="button">
+					<button
+						class="cascading-menu-item"
+						onclick={() => openSubMenu($_('container_settings_dropdown.visibility.title'))}
+						type="button"
+					>
 						<Eye />
 						<span>
 							<strong>{$_('container_settings_dropdown.visibility.title')}</strong>
@@ -103,7 +80,11 @@
 				{/if}
 
 				{#if createFeatureDecisions(page.data.features).useComputedProgress() && $ability.can('update', container)}
-					<button class="settings-item" onclick={() => openSubview('measurement')} type="button">
+					<button
+						class="cascading-menu-item"
+						onclick={() => openSubMenu($_('progress_measurement'))}
+						type="button"
+					>
 						<Progress />
 						<span>
 							<strong>{$_('progress_measurement')}</strong>
@@ -114,11 +95,11 @@
 				{/if}
 
 				{#if $ability.can('delete', container)}
-					<div class="settings-divider" role="presentation"></div>
+					<div class="cascading-menu-divider" role="presentation"></div>
 					<button
-						class="settings-item settings-item--danger"
+						class="cascading-menu-item system-danger"
 						onclick={() => {
-							closeDropdown();
+							closeMenu();
 							confirmDeleteDialog.showModal();
 						}}
 						type="button"
@@ -129,7 +110,7 @@
 						</span>
 					</button>
 				{/if}
-			{:else if settingsSubview === 'visibility'}
+			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
 				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
 					<label
 						class="settings-visibility"
@@ -145,7 +126,7 @@
 						<span class="badge badge--gray">{option.label}</span>
 					</label>
 				{/each}
-			{:else}
+			{:else if openSubMenuTitle === $_('progress_measurement')}
 				{#each progressMeasurement.options as option (option)}
 					<label
 						class="settings-choice"
@@ -166,7 +147,7 @@
 				{/each}
 			{/if}
 		{/snippet}
-	</MultilevelSettingsDropdown>
+	</CascadingMenu>
 
 	<ConfirmDeleteDialog
 		bind:dialog={confirmDeleteDialog}
@@ -177,57 +158,6 @@
 {/if}
 
 <style>
-	.settings-item {
-		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 0.5rem;
-		color: var(--color-gray-700);
-		display: flex;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		width: 100%;
-	}
-
-	.settings-item:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.settings-item > :global(svg:first-child) {
-		color: var(--color-gray-700);
-		height: 1rem;
-		max-width: none;
-		width: 1rem;
-	}
-
-	.settings-item > span {
-		display: flex;
-		flex: 1;
-		flex-direction: column;
-		gap: 0.125rem;
-		min-width: 0;
-	}
-
-	.settings-item strong {
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1;
-	}
-
-	.settings-item small {
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-		line-height: 1.5;
-	}
-
-	.settings-item > :global(svg:last-child) {
-		color: var(--color-gray-400);
-		height: 0.75rem;
-		margin-left: auto;
-		width: 0.75rem;
-	}
-
 	.settings-choice,
 	.settings-visibility {
 		align-items: center;
@@ -259,15 +189,5 @@
 
 	.settings-visibility.is-selected {
 		background-color: var(--color-gray-100);
-	}
-
-	.settings-divider {
-		border-top: solid 1px var(--color-gray-200);
-		margin: 0.375rem 0;
-	}
-
-	.settings-item--danger > :global(svg:first-child),
-	.settings-item--danger strong {
-		color: var(--color-gray-700);
 	}
 </style>
