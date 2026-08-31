@@ -667,19 +667,19 @@ export function userRelationsForMemberRole(
 	];
 }
 
-// The kinds stored in container_grant follow the member role as a static
-// chain; they express what was GRANTED, not the effective rights of the role
-// on a specific container type (those are derived from the authorization
-// rules).
+// The kinds granted for a member role, matching what the authorization rules
+// effectively permit: collaborators may also delete managed content, heads
+// may manage members. administrator equals head in kinds and remains a pure
+// label assigned in the list views.
 const grantKindsByMemberRole: Record<MemberRole, GrantKind[]> = {
 	observer: [grantKinds.enum.read],
-	collaborator: [grantKinds.enum.read, grantKinds.enum.update, grantKinds.enum.create],
-	head: [
+	collaborator: [
 		grantKinds.enum.read,
 		grantKinds.enum.update,
 		grantKinds.enum.create,
 		grantKinds.enum.delete
 	],
+	head: grantKinds.options.slice(),
 	administrator: grantKinds.options.slice()
 };
 

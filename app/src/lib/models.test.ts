@@ -221,15 +221,22 @@ test('userRelationsForMemberRole builds the role relations of a subject', () => 
 
 test('grantKindsForRole maps each role to its granted kinds', () => {
 	expect(grantKindsForRole(memberRoles.enum.observer)).toEqual(['read']);
-	expect(grantKindsForRole(memberRoles.enum.collaborator)).toEqual(['read', 'update', 'create']);
-	expect(grantKindsForRole(memberRoles.enum.head)).toEqual(['read', 'update', 'create', 'delete']);
-	expect(grantKindsForRole(memberRoles.enum.administrator)).toEqual([
+	expect(grantKindsForRole(memberRoles.enum.collaborator)).toEqual([
+		'read',
+		'update',
+		'create',
+		'delete'
+	]);
+	expect(grantKindsForRole(memberRoles.enum.head)).toEqual([
 		'read',
 		'update',
 		'create',
 		'delete',
 		'manage-members'
 	]);
+	expect(grantKindsForRole(memberRoles.enum.administrator)).toEqual(
+		grantKindsForRole(memberRoles.enum.head)
+	);
 });
 
 test('memberRoleFromPredicates picks the highest role', () => {
