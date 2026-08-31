@@ -11,7 +11,7 @@ vi.mock('$lib/server/db', () => ({
 	updateContainer: vi.fn()
 }));
 
-import { anyContainer, payloadTypes, visibility } from '$lib/models';
+import { anyContainer, payloadTypes, predicates, visibility } from '$lib/models';
 import { POST } from './+server';
 
 locale.set('en');
@@ -83,4 +83,78 @@ test('checks update authorization before server-owned relation validation', asyn
 	await expect(POST(event('is-copy-of', { ...sysadmin, roles: [] }))).rejects.toMatchObject({
 		status: 403
 	});
+});
+
+function scopedTemplate() {
+	return anyContainer.parse({
+		guid: containerGuid,
+		managed_by: organizationGuid,
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: {
+			template: true,
+			title: 'Scoped template',
+			type: payloadTypes.enum.goal,
+			visibility: visibility.enum.public
+		},
+		realm: 'realm',
+		relation: [
+			{
+				object: sourceGuid,
+				position: 0,
+				predicate: predicates.enum['is-available-in'],
+				subject: containerGuid
+			}
+		],
+		revision: 1,
+		user: [],
+		valid_currently: true,
+		valid_from: new Date('2026-01-01T00:00:00.000Z')
+	});
+}
+
+function revisionEvent(body: unknown) {
+	return {
+		locals: {
+			pool: { connect: async (operation: (connection: unknown) => unknown) => operation({}) },
+			user: sysadmin
+		},
+		params: { guid: containerGuid },
+		request: new Request(`http://localhost/container/${containerGuid}/revision`, {
+			method: 'POST',
+			body: JSON.stringify(body),
+			headers: { 'Content-Type': 'application/json' }
+		})
+	} as never;
+}
+
+test('scoped templates cannot be changed into ordinary containers', async () => {
+	const container = scopedTemplate();
+	mocks.container = container;
+
+	await expect(
+		POST(
+			revisionEvent({
+				...container,
+				payload: { ...container.payload, template: false }
+			})
+		)
+	).rejects.toMatchObject({ status: 422 });
+});
+
+test('scoped templates cannot be moved to another program', async () => {
+	const container = scopedTemplate();
+	mocks.container = container;
+
+	await expect(
+		POST(
+			revisionEvent({
+				...container,
+				relation: container.relation.map((relation) => ({
+					...relation,
+					object: organizationGuid
+				}))
+			})
+		)
+	).rejects.toMatchObject({ status: 403 });
 });
