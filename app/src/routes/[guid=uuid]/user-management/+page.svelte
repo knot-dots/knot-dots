@@ -327,6 +327,7 @@
 					<UserPermissionMatrix
 						container={data.container}
 						editable={isEditMode && $ability.can('invite-members', data.container)}
+						grants={data.grants}
 						{users}
 					/>
 				</div>

@@ -5,8 +5,6 @@ import {
 	type AnyInitialPayload,
 	type GrantKind,
 	grantKinds,
-	grantKindsForRole,
-	type MemberRole,
 	type NewContainer,
 	payloadTypes,
 	predicates,
@@ -249,14 +247,6 @@ const actionsByGrantKind: Record<GrantKind, Actions> = {
 // from the actual authorization rules: what a role permits depends on the
 // container type. Serves both the permission matrix display and its snapping
 // candidates.
-export function grantKindsForRoleOn(
-	container: Container<AnyPayload>,
-	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
-	role: MemberRole | null
-): GrantKind[] {
-	return grantKindsForKindsOn(container, user, role === null ? [] : grantKindsForRole(role));
-}
-
 // The effective rights a set of granted kinds yields on this container,
 // derived from the actual authorization rules: what a kind permits depends on
 // the container type.

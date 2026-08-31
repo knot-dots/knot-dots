@@ -20,16 +20,17 @@
 		isOrganizationContainer,
 		predicates
 	} from '$lib/models';
-	import type { User } from '$lib/models';
+	import type { Grant, User } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
 	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
+		grants: Readonly<Array<Grant>>;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, users }: Props = $props();
+	let { container, grants, users }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -129,7 +130,12 @@
 {/if}
 
 {#if view === 'matrix'}
-	<UserPermissionMatrix {container} editable={$ability.can('invite-members', container)} {users} />
+	<UserPermissionMatrix
+		{container}
+		editable={$ability.can('invite-members', container)}
+		{grants}
+		{users}
+	/>
 {:else}
 	<table>
 		<thead>

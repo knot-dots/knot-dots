@@ -2,13 +2,14 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { locale } from 'svelte-i18n';
 
 const getMembers = vi.hoisted(() => vi.fn());
+const getAllGrantsByContainers = vi.hoisted(() => vi.fn());
 const getAllRelatedUsersByContainers = vi.hoisted(() => vi.fn());
 
 locale.set('en');
 
 vi.mock('$lib/server/keycloak', () => ({ getMembers }));
 
-vi.mock('$lib/server/db', () => ({ getAllRelatedUsersByContainers }));
+vi.mock('$lib/server/db', () => ({ getAllGrantsByContainers, getAllRelatedUsersByContainers }));
 
 import { load } from './+page.server';
 
@@ -62,6 +63,7 @@ function event(manageMembersOf: string[]) {
 
 beforeEach(() => {
 	getMembers.mockReset().mockResolvedValue([]);
+	getAllGrantsByContainers.mockReset().mockReturnValue(vi.fn());
 	getAllRelatedUsersByContainers.mockReset().mockReturnValue(vi.fn());
 });
 

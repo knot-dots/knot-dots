@@ -42,11 +42,13 @@ test.describe('Permission matrix', () => {
 		}
 
 		// With edit mode Bob's row unlocks, but the admin row stays locked and
-		// unreachable kinds (nobody creates or deletes an organization) stay
-		// disabled.
+		// kinds without an effect of their own on an organization stay disabled:
+		// nobody creates or deletes an organization, and editing its profile is
+		// tied to managing its members rather than to the update kind.
 		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
-		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).toBeEnabled();
+		await expect(bobRow.getByRole('checkbox', { name: 'Read' })).toBeEnabled();
 		await expect(bobRow.getByRole('checkbox', { name: 'Manage users' })).toBeEnabled();
+		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).toBeDisabled();
 		await expect(bobRow.getByRole('checkbox', { name: 'Create' })).toBeDisabled();
 		await expect(bobRow.getByRole('checkbox', { name: 'Delete' })).toBeDisabled();
 		for (const kind of ['Read', 'Edit', 'Create', 'Delete', 'Manage users']) {
@@ -54,33 +56,66 @@ test.describe('Permission matrix', () => {
 		}
 	});
 
-	test('toggling a grant snaps to the matching role', async ({ page, testOrganization }) => {
+	test('toggling a grant changes exactly that kind', async ({ page, testOrganization }) => {
 		await page.goto(`/${testOrganization.guid}/user-management?view=permissions`);
 		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 
-		// On an organization container only the head role includes editing, so
-		// checking "Edit" promotes Bob straight from observer to head.
+		// Checking "Manage users" adds exactly the manage-members kind; the badge
+		// keeps showing the role shorthand derived from the granted kinds, so Bob
+		// may now invite users while remaining an observer. Editing the
+		// organization profile is tied to managing its members, so "Edit" lights
+		// up as an effective permission without being individually toggleable.
 		const bobRow = page.getByRole('row', { name: 'Bob Bow' });
 		const saveResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
 		);
-		await bobRow.getByRole('checkbox', { name: 'Edit' }).check();
+		await bobRow.getByRole('checkbox', { name: 'Manage users' }).check();
 		await saveResponse;
+		await expect(bobRow.getByRole('checkbox', { name: 'Manage users' })).toBeChecked();
+		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).toBeChecked();
+		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).toBeDisabled();
+		await expect(bobRow.getByText('Observer')).toBeVisible();
+
+		// Assigning a role in the users view resets the kinds to the role's chain.
+		await page.getByRole('link', { name: 'Users' }).click();
+		const roleResponse = page.waitForResponse(
+			(r) => r.url().includes('/user') && r.request().method() === 'POST'
+		);
+		await page
+			.getByRole('row', { name: 'Bob Bow' })
+			.getByRole('button', { name: 'Observer' })
+			.click();
+		await page.getByRole('radio', { name: 'Head' }).click();
+		await roleResponse;
+		await page.getByRole('link', { name: 'Permissions' }).click();
 		await expect(bobRow.getByRole('checkbox', { name: 'Manage users' })).toBeChecked();
 		await expect(bobRow.getByText('Head')).toBeVisible();
 
-		// The users view reflects the synced role relation — the same write path
-		// that fills container_grant.
-		await page.getByRole('link', { name: 'Users' }).click();
-		await expect(page.getByRole('row', { name: 'Bob Bow' }).getByText('Head')).toBeVisible();
-
-		// Unchecking "Edit" demotes to the largest remaining role without it.
-		await page.getByRole('link', { name: 'Permissions' }).click();
-		const restoreResponse = page.waitForResponse(
+		// Unchecking "Manage users" removes exactly that kind: the remaining
+		// chain kinds survive in storage (the badge falls back to collaborator),
+		// and "Edit" goes dark because organization profile editing was granted
+		// through manage-members, not through the update kind.
+		const removeResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
 		);
-		await bobRow.getByRole('checkbox', { name: 'Edit' }).uncheck();
+		await bobRow.getByRole('checkbox', { name: 'Manage users' }).uncheck();
+		await removeResponse;
+		await expect(bobRow.getByRole('checkbox', { name: 'Manage users' })).not.toBeChecked();
+		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).not.toBeChecked();
+		await expect(bobRow.getByText('Collaborator')).toBeVisible();
+
+		// Restore Bob to a plain observer for the remaining tests.
+		await page.getByRole('link', { name: 'Users' }).click();
+		const restoreResponse = page.waitForResponse(
+			(r) => r.url().includes('/user') && r.request().method() === 'POST'
+		);
+		await page
+			.getByRole('row', { name: 'Bob Bow' })
+			.getByRole('button', { name: 'Collaborator' })
+			.click();
+		await page.getByRole('radio', { name: 'Observer' }).click();
 		await restoreResponse;
+		await page.getByRole('link', { name: 'Permissions' }).click();
 		await expect(bobRow.getByText('Observer')).toBeVisible();
 	});
 
@@ -96,7 +131,7 @@ test.describe('Permission matrix', () => {
 		await expect(bobRow.getByRole('checkbox', { name: 'Read' })).toBeChecked();
 		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).not.toBeChecked();
 		// the viewer administers the organization, so the matrix is editable here
-		await expect(bobRow.getByRole('checkbox', { name: 'Edit' })).toBeEnabled();
+		await expect(bobRow.getByRole('checkbox', { name: 'Manage users' })).toBeEnabled();
 
 		await page.getByText('List', { exact: true }).click();
 		await expect(page.getByRole('combobox').first()).toBeVisible();

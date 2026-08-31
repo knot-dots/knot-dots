@@ -25,7 +25,8 @@ import {
 	type PayloadType,
 	payloadTypes,
 	predicates,
-	type User as UserRecord
+	type User as UserRecord,
+	type Grant
 } from '$lib/models';
 import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -208,6 +209,7 @@ export type OverlayData =
 	| {
 			key: 'members';
 			container: Container<AnyPayload>;
+			grants: Grant[];
 			users: UserRecord[];
 	  }
 	| {
@@ -318,6 +320,7 @@ if (browser) {
 			setOverlayIfLatest({
 				key: overlayKey.enum.members,
 				container: result.data.container,
+				grants: result.data.grants,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

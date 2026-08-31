@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import defineAbilityFor, { grantKindsForKindsOn, grantKindsForRoleOn } from '$lib/authorization';
+import defineAbilityFor, { grantKindsForKindsOn } from '$lib/authorization';
 import {
 	type AnyPayload,
 	type Container,
@@ -482,7 +482,7 @@ describe('field-level rules', () => {
 	});
 });
 
-describe('grantKindsForRoleOn', () => {
+describe('grantKindsForKindsOn', () => {
 	const viewer = {
 		family_name: 'Muster',
 		given_name: 'Erika',
@@ -505,17 +505,21 @@ describe('grantKindsForRoleOn', () => {
 			orgGuid
 		);
 
-		expect(grantKindsForRoleOn(org, viewer, null)).toEqual([]);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.observer)).toEqual(['read']);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.collaborator)).toEqual(['read']);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.head)).toEqual([
+		expect(grantKindsForKindsOn(org, viewer, [])).toEqual([]);
+		expect(grantKindsForKindsOn(org, viewer, grantKindsForRole(memberRoles.enum.observer))).toEqual(
+			['read']
+		);
+		expect(
+			grantKindsForKindsOn(org, viewer, grantKindsForRole(memberRoles.enum.collaborator))
+		).toEqual(['read']);
+		expect(grantKindsForKindsOn(org, viewer, grantKindsForRole(memberRoles.enum.head))).toEqual([
 			'read',
 			'update',
 			'manage-members'
 		]);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.administrator)).toEqual(
-			grantKindsForRoleOn(org, viewer, memberRoles.enum.head)
-		);
+		expect(
+			grantKindsForKindsOn(org, viewer, grantKindsForRole(memberRoles.enum.administrator))
+		).toEqual(grantKindsForKindsOn(org, viewer, grantKindsForRole(memberRoles.enum.head)));
 	});
 
 	test('organizational unit: head and admin coincide', () => {
@@ -528,14 +532,14 @@ describe('grantKindsForRoleOn', () => {
 			unitGuid
 		);
 
-		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)).toEqual([
+		expect(grantKindsForKindsOn(unit, viewer, grantKindsForRole(memberRoles.enum.head))).toEqual([
 			'read',
 			'update',
 			'manage-members'
 		]);
-		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.administrator)).toEqual(
-			grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)
-		);
+		expect(
+			grantKindsForKindsOn(unit, viewer, grantKindsForRole(memberRoles.enum.administrator))
+		).toEqual(grantKindsForKindsOn(unit, viewer, grantKindsForRole(memberRoles.enum.head)));
 	});
 
 	test('self-managed measure: collaborators may delete, heads also manage members', () => {
@@ -545,20 +549,15 @@ describe('grantKindsForRoleOn', () => {
 			measureGuid
 		);
 
-		expect(grantKindsForRoleOn(measure, viewer, memberRoles.enum.observer)).toEqual(['read']);
-		expect(grantKindsForRoleOn(measure, viewer, memberRoles.enum.collaborator)).toEqual([
-			'read',
-			'update',
-			'create',
-			'delete'
-		]);
-		expect(grantKindsForRoleOn(measure, viewer, memberRoles.enum.head)).toEqual([
-			'read',
-			'update',
-			'create',
-			'delete',
-			'manage-members'
-		]);
+		expect(
+			grantKindsForKindsOn(measure, viewer, grantKindsForRole(memberRoles.enum.observer))
+		).toEqual(['read']);
+		expect(
+			grantKindsForKindsOn(measure, viewer, grantKindsForRole(memberRoles.enum.collaborator))
+		).toEqual(['read', 'update', 'create', 'delete']);
+		expect(grantKindsForKindsOn(measure, viewer, grantKindsForRole(memberRoles.enum.head))).toEqual(
+			['read', 'update', 'create', 'delete', 'manage-members']
+		);
 	});
 
 	test('public container: even without a role read stays granted', () => {
@@ -568,7 +567,7 @@ describe('grantKindsForRoleOn', () => {
 			measureGuid
 		);
 
-		expect(grantKindsForRoleOn(measure, viewer, null)).toEqual(['read']);
+		expect(grantKindsForKindsOn(measure, viewer, [])).toEqual(['read']);
 	});
 
 	test('grantKindsForKindsOn reflects individual kinds per container type', () => {

@@ -60,7 +60,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
 	{#if data.key === overlayKey.enum['members']}
-		<MembersOverlay container={data.container} users={data.users} />
+		<MembersOverlay container={data.container} grants={data.grants} users={data.users} />
 	{:else if data.key === overlayKey.enum['chapters'] && isProgramContainer(data.container)}
 		<ChaptersOverlay container={data.container} containers={data.containers} />
 	{:else if data.key === overlayKey.enum['goal-iooi'] && isGoalContainer(data.container)}

@@ -4,30 +4,29 @@
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
-	import { grantKindsForRoleOn } from '$lib/authorization';
+	import { grantKindsForKindsOn } from '$lib/authorization';
 	import saveGrants from '$lib/client/saveGrants';
 	import {
 		type AnyPayload,
 		type Container,
 		displayName,
+		type Grant,
 		type GrantKind,
 		grantKinds,
-		grantKindsForRole,
 		type MemberRole,
 		memberRoleOf,
 		memberRoles,
-		roleAfterGrantToggle,
-		snapMemberRoles,
 		type User
 	} from '$lib/models';
 
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		grants: Readonly<Array<Grant>>;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, editable = false, users }: Props = $props();
+	let { container, editable = false, grants, users }: Props = $props();
 
 	const visibleGrantKinds = [
 		grantKinds.enum.read,
@@ -44,60 +43,62 @@
 		observer: 'gray'
 	};
 
-	let roleOverrides = new SvelteMap<string, MemberRole | null>();
+	let grantOverrides = new SvelteMap<string, GrantKind[]>();
 
-	// drop an optimistic override only once the reloaded data reflects it —
-	// dropping it right after invalidateAll would flash the previous role for
+	const storedKindsBySubject = $derived.by(() => {
+		const index = new Map<string, GrantKind[]>();
+		for (const { kind, subject } of grants) {
+			index.set(subject, [...(index.get(subject) ?? []), kind]);
+		}
+		return index;
+	});
+
+	// drop an optimistic override only once the reloaded grants reflect it —
+	// dropping it right after invalidateAll would flash the previous state for
 	// a render cycle until the fresh props arrive
 	$effect(() => {
-		for (const [guid, role] of roleOverrides) {
-			const user = users.find((u) => u.guid === guid);
-			if (!user || memberRoleOf(user, container) === role) {
-				roleOverrides.delete(guid);
+		for (const [subject, kinds] of grantOverrides) {
+			const stored = storedKindsBySubject.get(subject) ?? [];
+			if (stored.length === kinds.length && kinds.every((kind) => stored.includes(kind))) {
+				grantOverrides.delete(subject);
 			}
 		}
 	});
 
-	function visibleRoleFor(user: User) {
-		if (roleOverrides.has(user.guid)) {
-			return roleOverrides.get(user.guid) ?? null;
-		}
-		return memberRoleOf(user, container);
+	function storedKindsFor(user: User) {
+		return grantOverrides.get(user.guid) ?? storedKindsBySubject.get(user.guid) ?? [];
 	}
 
-	// The checkboxes show the effective rights of the user's member role on
-	// this container, derived from the actual authorization rules; what a role
-	// permits depends on the container type. The same sets serve as snapping
-	// candidates when toggling, while container_grant stores the granted
-	// role-shaped kinds.
-	function kindsFor(user: User) {
-		return grantKindsForRoleOn(container, user, visibleRoleFor(user));
+	// The checkboxes show the granted kinds that are effective on this
+	// container type; granted kinds without a matching rule for the type stay
+	// unchecked and disabled, but survive in storage when others are toggled.
+	function effectiveKindsFor(user: User) {
+		return grantKindsForKindsOn(container, user, storedKindsFor(user));
 	}
 
-	function kindsByRoleFor(user: User) {
-		return snapMemberRoles.map(
-			(role) => [role, grantKindsForRoleOn(container, user, role)] as const
+	// a kind can only be toggled if granting it alone has an effect on this
+	// container type
+	function toggleableKindsFor(user: User) {
+		return grantKinds.options.filter((kind) =>
+			grantKindsForKindsOn(container, user, [kind]).includes(kind)
 		);
 	}
 
 	async function toggleGrant(user: User, kind: GrantKind, checked: boolean) {
-		const role = roleAfterGrantToggle(kindsByRoleFor(user), visibleRoleFor(user), kind, checked);
-		if (role === undefined || role === memberRoles.enum.administrator) {
-			return;
-		}
+		const stored = storedKindsFor(user);
+		const kinds = checked
+			? [...new Set([...stored, kind])]
+			: stored.filter((storedKind) => storedKind !== kind);
 
-		const hadPrevious = roleOverrides.has(user.guid);
-		const previous = roleOverrides.get(user.guid);
-		roleOverrides.set(user.guid, role);
+		const hadPrevious = grantOverrides.has(user.guid);
+		const previous = grantOverrides.get(user.guid);
+		grantOverrides.set(user.guid, kinds);
 
-		const response = await saveGrants(container, {
-			kinds: role === null ? [] : grantKindsForRole(role),
-			subject: user.guid
-		});
+		const response = await saveGrants(container, { kinds, subject: user.guid });
 
 		if (!response.ok) {
-			if (hadPrevious) roleOverrides.set(user.guid, previous ?? null);
-			else roleOverrides.delete(user.guid);
+			if (hadPrevious) grantOverrides.set(user.guid, previous ?? []);
+			else grantOverrides.delete(user.guid);
 			console.log(await response.json());
 			return;
 		}
@@ -128,9 +129,9 @@
 		</thead>
 		<tbody>
 			{#each users as user (user.guid)}
-				{@const role = visibleRoleFor(user)}
-				{@const kinds = kindsFor(user)}
-				{@const kindsByRole = kindsByRoleFor(user)}
+				{@const role = memberRoleOf(user, container)}
+				{@const effectiveKinds = effectiveKindsFor(user)}
+				{@const toggleableKinds = toggleableKindsFor(user)}
 				{@const isAdmin = role === memberRoles.enum.administrator}
 				{@const locked = !editable || isAdmin}
 				<tr class:locked>
@@ -145,14 +146,12 @@
 						</span>
 					</td>
 					{#each visibleGrantKinds as kind (kind)}
-						{@const checked = kinds.includes(kind)}
 						<td class="col-grant">
 							<input
 								type="checkbox"
 								aria-label={$_(`permission.${kind}`)}
-								{checked}
-								disabled={locked ||
-									roleAfterGrantToggle(kindsByRole, role, kind, !checked) === undefined}
+								checked={effectiveKinds.includes(kind)}
+								disabled={locked || !toggleableKinds.includes(kind)}
 								onchange={(event) => toggleGrant(user, kind, event.currentTarget.checked)}
 							/>
 						</td>

@@ -30,7 +30,7 @@
 				</h1>
 
 				<div class="details-section">
-					<Members container={data.container} users={data.users} />
+					<Members container={data.container} grants={data.grants} users={data.users} />
 				</div>
 			</div>
 

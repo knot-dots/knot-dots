@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
 import { findDescendants, predicates, type User } from '$lib/models';
-import { getAllRelatedUsersByContainers } from '$lib/server/db';
+import { getAllGrantsByContainers, getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
@@ -37,9 +37,10 @@ export const load = (async ({ locals, parent }) => {
 		...new Set([selectedContext.guid, ...managedOrganizationalUnits.map(({ guid }) => guid)])
 	];
 
-	const [members, relatedUsers] = await Promise.all([
+	const [members, relatedUsers, grants] = await Promise.all([
 		getMembers(selectedContext.organization),
-		locals.pool.connect(getAllRelatedUsersByContainers(displayedContainerGuids, userPredicates))
+		locals.pool.connect(getAllRelatedUsersByContainers(displayedContainerGuids, userPredicates)),
+		locals.pool.connect(getAllGrantsByContainers([selectedContext.guid]))
 	]);
 
 	const usersByGuid = new Map(relatedUsers.map((user) => [user.guid, user]));
@@ -51,6 +52,7 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		container: selectedContext,
+		grants,
 		managedOrganizationalUnits,
 		users: [...usersByGuid.values()].map(withEmail)
 	};
