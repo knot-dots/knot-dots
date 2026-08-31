@@ -7,6 +7,7 @@ import {
 	grantKindsForRole,
 	type GrantKindsByRole,
 	type IndicatorTemplatePayload,
+	memberRoleFromKinds,
 	memberRoleFromPredicates,
 	type MeasurePayload,
 	memberRoleOf,
@@ -333,4 +334,17 @@ test('roleAfterGrantToggle never removes the membership on a tie', () => {
 	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.head, 'update', false)).toBe(
 		memberRoles.enum.observer
 	);
+});
+
+test('memberRoleFromKinds derives the role shorthand from granted kinds', () => {
+	expect(memberRoleFromKinds([])).toBeNull();
+	expect(memberRoleFromKinds(['read'])).toBe(memberRoles.enum.observer);
+	expect(memberRoleFromKinds(['read', 'update'])).toBe(memberRoles.enum.observer);
+	expect(memberRoleFromKinds(['read', 'update', 'create', 'delete'])).toBe(
+		memberRoles.enum.collaborator
+	);
+	expect(memberRoleFromKinds(['read', 'update', 'create', 'delete', 'manage-members'])).toBe(
+		memberRoles.enum.head
+	);
+	expect(memberRoleFromKinds(['delete'])).toBe(memberRoles.enum.observer);
 });

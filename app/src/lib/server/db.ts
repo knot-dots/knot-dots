@@ -17,6 +17,9 @@ import {
 	container,
 	createContainerSchema,
 	findDescendants,
+	grant,
+	type Grant,
+	type GrantKind,
 	grantKinds,
 	grantKindsForRole,
 	type HelpSlug,
@@ -144,6 +147,7 @@ export async function getPool() {
 const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	grant,
 	guid: z.object({ guid: z.string().uuid() }),
 	indicatorData: z.object({
 		actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
@@ -180,24 +184,47 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
-// container_grant mirrors the member roles as granted capability kinds until
-// the authorization rules interpret them directly, so every write path
-// replaces the grants of a container as a whole instead of updating them
-// individually.
-function syncContainerGrants(guid: string, userRelations: readonly UserRelation[]) {
-	return async (connection: DatabaseConnection) => {
-		await connection.query(sql.typeAlias('void')`
-			DELETE FROM container_grant WHERE object = ${guid}
-		`);
+function memberRolesBySubject(userRelations: readonly UserRelation[]) {
+	const predicatesBySubject = new Map<string, Predicate[]>();
+	for (const { predicate, subject } of userRelations) {
+		predicatesBySubject.set(subject, [...(predicatesBySubject.get(subject) ?? []), predicate]);
+	}
+	return new Map(
+		[...predicatesBySubject].map(([subject, relationPredicates]) => [
+			subject,
+			memberRoleFromPredicates(relationPredicates)
+		])
+	);
+}
 
-		const predicatesBySubject = new Map<string, Predicate[]>();
-		for (const { predicate, subject } of userRelations) {
-			predicatesBySubject.set(subject, [...(predicatesBySubject.get(subject) ?? []), predicate]);
+// container_grant is the leading source for a user's kinds on a container.
+// Role relations remain a shorthand in the UI, so whenever a subject's member
+// role changes, its grants are rewritten from the role's kind chain — while
+// subjects with unchanged roles keep their individually granted kinds.
+function syncContainerGrants(
+	guid: string,
+	previousUserRelations: readonly UserRelation[],
+	userRelations: readonly UserRelation[]
+) {
+	return async (connection: DatabaseConnection) => {
+		const previousRoles = memberRolesBySubject(previousUserRelations);
+		const roles = memberRolesBySubject(userRelations);
+
+		const changedSubjects = [...new Set([...previousRoles.keys(), ...roles.keys()])].filter(
+			(subject) => (previousRoles.get(subject) ?? null) !== (roles.get(subject) ?? null)
+		);
+		if (changedSubjects.length === 0) {
+			return;
 		}
 
+		await connection.query(sql.typeAlias('void')`
+			DELETE FROM container_grant
+			WHERE object = ${guid} AND subject = ANY(${sql.array(changedSubjects, 'uuid')})
+		`);
+
 		const grantValues: string[][] = [];
-		for (const [subject, relationPredicates] of predicatesBySubject) {
-			const role = memberRoleFromPredicates(relationPredicates);
+		for (const subject of changedSubjects) {
+			const role = roles.get(subject) ?? null;
 			if (role === null) {
 				continue;
 			}
@@ -213,6 +240,37 @@ function syncContainerGrants(guid: string, userRelations: readonly UserRelation[
 				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text'])}
 			`);
 		}
+	};
+}
+
+export function setContainerGrants(object: string, subject: string, kinds: readonly GrantKind[]) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			DELETE FROM container_grant WHERE object = ${object} AND subject = ${subject}
+		`);
+		if (kinds.length > 0) {
+			await connection.query(sql.typeAlias('void')`
+				INSERT INTO container_grant (object, subject, kind)
+				SELECT *
+				FROM ${sql.unnest(
+					kinds.map((kind) => [object, subject, kind]),
+					['uuid', 'uuid', 'text']
+				)}
+			`);
+		}
+	};
+}
+
+export function getAllGrantsByContainers(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<ReadonlyArray<Grant>> => {
+		if (guids.length === 0) {
+			return [];
+		}
+		return await connection.any(sql.typeAlias('grant')`
+			SELECT kind, object, subject
+			FROM container_grant
+			WHERE object = ANY(${sql.array(guids, 'uuid')})
+		`);
 	};
 }
 
@@ -304,7 +362,7 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 		});
 
 		for (const persisted of persistedContainers) {
-			await syncContainerGrants(persisted.guid, persisted.user)(connection);
+			await syncContainerGrants(persisted.guid, [], persisted.user)(connection);
 		}
 
 		const affectedIndexingGuids = new Set<string>();
@@ -371,7 +429,7 @@ export function createContainer(container: NewContainer) {
 				RETURNING predicate, subject
       `);
 
-			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
+			await syncContainerGrants(containerResult.guid, [], container.user)(txConnection);
 
 			const relations = container.relation.map((r) => ({
 				...r,
@@ -444,7 +502,11 @@ export function updateContainer(container: ModifiedContainer) {
 				RETURNING predicate, subject
       `);
 
-			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
+			await syncContainerGrants(
+				containerResult.guid,
+				previousRevision.user,
+				container.user
+			)(txConnection);
 
 			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
 			const deletedRelations = relationResult.filter(
@@ -556,7 +618,9 @@ export function deleteContainer(container: Container<AnyPayload>) {
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
       `);
 
-			await syncContainerGrants(container.guid, [])(txConnection);
+			await txConnection.query(sql.typeAlias('void')`
+				DELETE FROM container_grant WHERE object = ${container.guid}
+			`);
 
 			if (shouldIndexType(container.payload.type)) {
 				await enqueueIndexingEvent({

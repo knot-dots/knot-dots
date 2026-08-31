@@ -5,13 +5,14 @@
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import { grantKindsForRoleOn } from '$lib/authorization';
-	import saveMemberRole from '$lib/client/saveMemberRole';
+	import saveGrants from '$lib/client/saveGrants';
 	import {
 		type AnyPayload,
 		type Container,
 		displayName,
 		type GrantKind,
 		grantKinds,
+		grantKindsForRole,
 		type MemberRole,
 		memberRoleOf,
 		memberRoles,
@@ -89,7 +90,10 @@
 		const previous = roleOverrides.get(user.guid);
 		roleOverrides.set(user.guid, role);
 
-		const response = await saveMemberRole(container, { role, subject: user.guid });
+		const response = await saveGrants(container, {
+			kinds: role === null ? [] : grantKindsForRole(role),
+			subject: user.guid
+		});
 
 		if (!response.ok) {
 			if (hadPrevious) roleOverrides.set(user.guid, previous ?? null);

@@ -5,14 +5,16 @@ import {
 	type AnyPayload,
 	type Container,
 	findAncestors,
-	memberRoleAssignment,
+	memberRoleFromKinds,
 	memberRoleOf,
 	memberRoles,
-	predicates
+	predicates,
+	userGrantSet
 } from '$lib/models';
 import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
+	setContainerGrants,
 	updateMemberRole
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -58,19 +60,25 @@ export const POST = (async ({ locals, params, request }) => {
 		error(400, { message: reason.message });
 	});
 
-	const parseResult = memberRoleAssignment.safeParse(data);
+	const parseResult = userGrantSet.safeParse(data);
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	}
 
-	const { role, subject } = parseResult.data;
+	const { kinds, subject } = parseResult.data;
 
 	// administrators are managed in the list views only
 	if (memberRoleOf({ guid: subject }, container) === memberRoles.enum.administrator) {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
-	await locals.pool.connect(updateMemberRole(container, subject, role));
+	// Update the role shorthand first: its diff-aware sync writes the role's
+	// kind chain on role changes, which the individually granted kinds then
+	// overwrite within the same transaction.
+	await locals.pool.transaction(async (txConnection) => {
+		await updateMemberRole(container, subject, memberRoleFromKinds(kinds))(txConnection);
+		await setContainerGrants(container.guid, subject, kinds)(txConnection);
+	});
 
 	return new Response(null, { status: 204 });
 }) satisfies RequestHandler;

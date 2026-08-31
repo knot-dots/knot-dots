@@ -638,16 +638,24 @@ export const grantKinds = z.enum(['read', 'update', 'create', 'delete', 'manage-
 
 export type GrantKind = z.infer<typeof grantKinds>;
 
+export const grant = z.object({
+	kind: grantKinds,
+	object: z.uuid(),
+	subject: z.uuid()
+});
+
+export type Grant = z.infer<typeof grant>;
+
 export const memberRoles = z.enum(['observer', 'collaborator', 'head', 'administrator']);
 
 export type MemberRole = z.infer<typeof memberRoles>;
 
-export const memberRoleAssignment = z.object({
-	role: memberRoles.exclude(['administrator']).nullable(),
+export const userGrantSet = z.object({
+	kinds: z.array(grantKinds),
 	subject: z.uuid()
 });
 
-export type MemberRoleAssignment = z.infer<typeof memberRoleAssignment>;
+export type UserGrantSet = z.infer<typeof userGrantSet>;
 
 export const memberRolePredicates: Record<Exclude<MemberRole, 'observer'>, Predicate> = {
 	administrator: predicates.enum['is-admin-of'],
@@ -685,6 +693,24 @@ const grantKindsByMemberRole: Record<MemberRole, GrantKind[]> = {
 
 export function grantKindsForRole(role: MemberRole): GrantKind[] {
 	return grantKindsByMemberRole[role];
+}
+
+// The member role shorthand for a set of granted kinds: the largest role
+// whose kind chain is fully contained, at least observer for any non-empty
+// set, never administrator (that label is assigned in the list views).
+export function memberRoleFromKinds(
+	kinds: ReadonlyArray<GrantKind>
+): Exclude<MemberRole, 'administrator'> | null {
+	if (kinds.length === 0) {
+		return null;
+	}
+	if (grantKindsByMemberRole.head.every((kind) => kinds.includes(kind))) {
+		return memberRoles.enum.head;
+	}
+	if (grantKindsByMemberRole.collaborator.every((kind) => kinds.includes(kind))) {
+		return memberRoles.enum.collaborator;
+	}
+	return memberRoles.enum.observer;
 }
 
 export function memberRoleFromPredicates(relationPredicates: Predicate[]): MemberRole | null {
