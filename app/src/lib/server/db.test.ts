@@ -86,6 +86,120 @@ test('containers can be related to each other', async ({ connection }: Fixtures)
 	expect(programWithRelations.relation).toEqual(expectedRelations);
 });
 
+test('template queries separate organization and program availability', async ({ connection }) => {
+	const programA = await createContainer(
+		initializeNewContainer({ title: 'Program A', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const programB = await createContainer(
+		initializeNewContainer({ title: 'Program B', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const globalTemplate = await createContainer(
+		initializeNewContainer(
+			{ template: true, title: 'Global template', type: payloadTypes.enum.report },
+			[]
+		)
+	)(connection);
+	const programATemplate = await createContainer(
+		initializeNewContainer(
+			{ template: true, title: 'Program A template', type: payloadTypes.enum.report },
+			[
+				{
+					object: programA.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+	await createContainer(
+		initializeNewContainer(
+			{ template: true, title: 'Program B template', type: payloadTypes.enum.report },
+			[
+				{
+					object: programB.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+
+	const organizationTemplates = await getManyContainers(
+		[organization],
+		{ template: true, type: [payloadTypes.enum.report] },
+		'alpha'
+	)(connection);
+	const programTemplates = await getManyContainers(
+		[organization],
+		{ availableIn: programA.guid, template: true, type: [payloadTypes.enum.report] },
+		'alpha'
+	)(connection);
+
+	expect(organizationTemplates.map(({ guid }) => guid)).toEqual([globalTemplate.guid]);
+	expect(programTemplates.map(({ guid }) => guid)).toEqual([programATemplate.guid]);
+});
+
+test('deleting a program deletes templates whose final availability scope is that program', async ({
+	connection
+}) => {
+	const deletedProgram = await createContainer(
+		initializeNewContainer({ title: 'Deleted program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const remainingProgram = await createContainer(
+		initializeNewContainer({ title: 'Remaining program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const exclusiveTemplate = await createContainer(
+		initializeNewContainer(
+			{ template: true, title: 'Exclusive template', type: payloadTypes.enum.report },
+			[
+				{
+					object: deletedProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+	const sharedTemplate = await createContainer(
+		initializeNewContainer(
+			{ template: true, title: 'Shared template', type: payloadTypes.enum.report },
+			[
+				{
+					object: deletedProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				},
+				{
+					object: remainingProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+
+	await deleteContainer(deletedProgram)(connection);
+
+	const remainingTemplates = await getManyContainers(
+		[organization],
+		{
+			availableIn: remainingProgram.guid,
+			template: true,
+			type: [payloadTypes.enum.report]
+		},
+		'alpha'
+	)(connection);
+	const organizationTemplates = await getManyContainers(
+		[organization],
+		{ template: true, type: [payloadTypes.enum.report] },
+		'alpha'
+	)(connection);
+
+	expect(remainingTemplates.map(({ guid }) => guid)).toEqual([sharedTemplate.guid]);
+	expect(organizationTemplates.map(({ guid }) => guid)).not.toContain(exclusiveTemplate.guid);
+	expect(organizationTemplates.map(({ guid }) => guid)).not.toContain(sharedTemplate.guid);
+});
+
 test('relation positions can be updated', async ({ connection }: Fixtures) => {
 	const expectedRelationsOfProgram: Relation[] = [];
 

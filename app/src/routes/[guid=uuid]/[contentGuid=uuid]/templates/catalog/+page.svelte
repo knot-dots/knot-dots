@@ -31,6 +31,7 @@
 
 			{#snippet main()}
 				<Catalog
+					availableIn={data.container.guid}
 					containers={data.containers}
 					payloadType={[...templatablePayloadTypes]}
 					createAsTemplate={true}

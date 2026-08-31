@@ -8,6 +8,7 @@ test.describe('Templates overlay', () => {
 
 	test('shows templates and returns from a template detail', async ({
 		dotsBoard,
+		programReportTemplate,
 		reportTemplate,
 		testProgram
 	}) => {
@@ -18,18 +19,28 @@ test.describe('Templates overlay', () => {
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Templates' }).click();
 
 		expect(dotsBoard.page.url()).toContain(`templates=${testProgram.guid}`);
-		await expect(dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title)).toBeVisible();
+		const programTemplate = dotsBoard.overlay.locator.getByTitle(
+			programReportTemplate.payload.title,
+			{ exact: true }
+		);
+		await expect(async () => {
+			await dotsBoard.page.reload();
+			await expect(programTemplate).toBeVisible();
+		}).toPass({ timeout: 20000 });
+		await expect(
+			dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title, { exact: true })
+		).not.toBeVisible();
 
-		await dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title).click();
+		await programTemplate.click();
 		await expect(dotsBoard.overlay.backButton).toBeVisible();
 		await dotsBoard.overlay.backButton.click();
 
-		await expect(dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title)).toBeVisible();
+		await expect(programTemplate).toBeVisible();
 	});
 
 	test('switches between overlay and fullscreen', async ({
 		dotsBoard,
-		reportTemplate,
+		programReportTemplate,
 		testProgram
 	}) => {
 		await dotsBoard.goto(`/${testProgram.organization}`);
@@ -37,16 +48,20 @@ test.describe('Templates overlay', () => {
 
 		await dotsBoard.overlay.locator.getByRole('button', { name: 'All', exact: true }).click();
 		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Templates' }).click();
-		await expect(dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title)).toBeVisible();
+		await expect(
+			dotsBoard.overlay.locator.getByTitle(programReportTemplate.payload.title, { exact: true })
+		).toBeVisible();
 		await dotsBoard.overlay.fullScreenButton.click();
 
 		await expect(dotsBoard.overlay.locator.first()).not.toBeVisible();
 		await expect(dotsBoard.page).toHaveURL(/\/templates\/catalog/);
 		expect(dotsBoard.page.url()).toContain(testProgram.guid);
-		await expect(dotsBoard.page.getByTitle(reportTemplate.payload.title)).toBeVisible();
+		await expect(dotsBoard.page.getByTitle(programReportTemplate.payload.title)).toBeVisible();
 
 		await dotsBoard.page.getByRole('link', { name: 'Back to overlay' }).first().click();
 		await expect(dotsBoard.overlay.locator).toBeVisible();
-		await expect(dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title)).toBeVisible();
+		await expect(
+			dotsBoard.overlay.locator.getByTitle(programReportTemplate.payload.title)
+		).toBeVisible();
 	});
 });

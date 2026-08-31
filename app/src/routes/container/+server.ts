@@ -1,5 +1,5 @@
 import { error, json } from '@sveltejs/kit';
-import { UniqueIntegrityConstraintViolationError } from 'slonik';
+import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
@@ -8,6 +8,7 @@ import {
 	administrativeTypes,
 	indicatorCategories,
 	indicatorTypes,
+	isProgramContainer,
 	newContainer,
 	payloadTypes,
 	predicates,
@@ -15,7 +16,12 @@ import {
 	taskCategories
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
-import { createContainer, getManyContainers, getManyOrganizationContainers } from '$lib/server/db';
+import {
+	createContainer,
+	getContainerByGuid,
+	getManyContainers,
+	getManyOrganizationContainers
+} from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
 
@@ -23,6 +29,7 @@ export const GET = (async ({ locals, url }) => {
 	const expectedParams = z.object({
 		administrativeType: z.array(administrativeTypes).default([]),
 		assignee: z.array(z.string().uuid()).default([]),
+		availableIn: z.array(z.string().uuid()).max(1).default([]),
 		federalState: z.array(z.string()).default([]),
 		guid: z.array(z.string().uuid()).default([]),
 		indicator: z.array(z.string().uuid()).default([]),
@@ -63,6 +70,9 @@ export const GET = (async ({ locals, url }) => {
 	if (!parseResult.success) {
 		error(400, { message: parseResult.error.message });
 	}
+	if (parseResult.data.availableIn.length > 0 && parseResult.data.template[0] !== true) {
+		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
+	}
 
 	const organizations = await locals.pool.connect(
 		getManyOrganizationContainers({ default: true }, '')
@@ -84,6 +94,7 @@ export const GET = (async ({ locals, url }) => {
 			parseResult.data.organization,
 			{
 				administrativeTypes: parseResult.data.administrativeType,
+				availableIn: parseResult.data.availableIn[0],
 				customCategories,
 				customCategoryMatch: parseResult.data.categoryMatch[0],
 				guid: parseResult.data.guid,
@@ -131,8 +142,41 @@ export const POST = (async ({ locals, request }) => {
 	) {
 		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
 	}
-	if (defineAbilityFor(locals.user).cannot('create', parseResult.data)) {
+
+	const ability = defineAbilityFor(locals.user);
+	if (ability.cannot('create', parseResult.data)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+	}
+
+	const availableInRelations = parseResult.data.relation.filter(
+		({ predicate }) => predicate === predicates.enum['is-available-in']
+	);
+	if (availableInRelations.length > 0) {
+		const [availability] = availableInRelations;
+		if (
+			availableInRelations.length !== 1 ||
+			availability.subject !== undefined ||
+			availability.object === undefined ||
+			!('template' in parseResult.data.payload) ||
+			parseResult.data.payload.template !== true
+		) {
+			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+		}
+
+		const program = await locals.pool
+			.connect(getContainerByGuid(availability.object))
+			.catch((caught: unknown) => {
+				if (caught instanceof NotFoundError) {
+					error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+				}
+				throw caught;
+			});
+		if (!isProgramContainer(program)) {
+			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+		}
+		if (ability.cannot('read', program) || ability.cannot('relate', program)) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
 	}
 
 	try {

@@ -318,6 +318,7 @@ const predicateValues = [
 	'is-admin-of',
 	'is-adopted-by',
 	'is-affected-by',
+	'is-available-in',
 	'is-collaborator-of',
 	'is-concrete-target-of',
 	'is-consistent-with',

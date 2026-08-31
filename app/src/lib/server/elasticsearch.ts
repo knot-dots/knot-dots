@@ -1,6 +1,12 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
-import { anyContainer, type AnyPayload, type Container, type PayloadType } from '$lib/models';
+import {
+	anyContainer,
+	predicates,
+	type AnyPayload,
+	type Container,
+	type PayloadType
+} from '$lib/models';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import { type ContainerQueryOptions, getPool } from '$lib/server/db';
 
@@ -152,6 +158,7 @@ export async function getManyContainersWithES(
 	filters: {
 		administrativeTypes?: string[];
 		assignees?: string[];
+		availableIn?: string;
 		customCategories?: Record<string, string[]>;
 		federalStates?: string[];
 		guid?: string[];
@@ -331,6 +338,22 @@ export async function getManyContainersWithES(
 	}
 	if (filters.template === true) {
 		nonFacetFilters.push({ term: { 'payload.template': true } });
+		const availabilityQuery: estypes.QueryDslQueryContainer = {
+			nested: {
+				path: 'relation',
+				query: {
+					bool: {
+						filter: [
+							{ term: { 'relation.predicate': predicates.enum['is-available-in'] } },
+							...(filters.availableIn ? [{ term: { 'relation.object': filters.availableIn } }] : [])
+						]
+					}
+				}
+			}
+		};
+		nonFacetFilters.push(
+			filters.availableIn ? availabilityQuery : { bool: { must_not: [availabilityQuery] } }
+		);
 	} else if (filters.template === false) {
 		nonFacetFilters.push({
 			bool: {

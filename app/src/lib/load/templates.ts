@@ -27,7 +27,8 @@ export async function fetchTemplates({
 	url,
 	rawCategoryContext,
 	currentOrganization,
-	currentOrganizationalUnit
+	currentOrganizationalUnit,
+	availableIn
 }: {
 	pool: DatabasePool;
 	user: User;
@@ -35,6 +36,7 @@ export async function fetchTemplates({
 	rawCategoryContext: CategoryContext;
 	currentOrganization: Container<OrganizationPayload>;
 	currentOrganizationalUnit: Container<OrganizationalUnitPayload> | null | undefined;
+	availableIn?: string;
 }) {
 	let subordinateOrganizationalUnits: string[] = [];
 
@@ -59,6 +61,7 @@ export async function fetchTemplates({
 	const esResult = await getManyContainersWithES(
 		currentOrganization.payload.default ? [] : [currentOrganization.guid],
 		{
+			availableIn,
 			customCategories,
 			template: true,
 			terms: url.searchParams.get('terms') ?? '',

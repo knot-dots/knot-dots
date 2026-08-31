@@ -20,6 +20,7 @@ import {
 	grantKindsForRole,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
+	isProgramContainer,
 	type MemberRole,
 	memberRoleFromPredicates,
 	memberRolePredicates,
@@ -518,6 +519,37 @@ export function deleteContainer(container: Container<AnyPayload>) {
 				await deleteGroup(container.guid);
 			}
 
+			if (isProgramContainer(container)) {
+				const scopedTemplateRows = await txConnection.any(sql.typeAlias('anyContainer')`
+					SELECT template.*
+					FROM container_relation availability
+					JOIN container template ON template.guid = availability.subject
+					WHERE availability.object = ${container.guid}
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+						AND availability.valid_currently
+						AND NOT availability.deleted
+						AND template.valid_currently
+						AND NOT template.deleted
+						AND template.payload @> '{"template": true}'
+						AND NOT EXISTS (
+							SELECT 1
+							FROM container_relation other_availability
+							WHERE other_availability.subject = template.guid
+								AND other_availability.object != ${container.guid}
+								AND other_availability.predicate = ${predicates.enum['is-available-in']}
+								AND other_availability.valid_currently
+								AND NOT other_availability.deleted
+						)
+				`);
+				const scopedTemplates = await withUserAndRelation<Container<AnyPayload>>(
+					txConnection,
+					scopedTemplateRows
+				);
+				for (const scopedTemplate of scopedTemplates) {
+					await deleteContainer(scopedTemplate)(txConnection);
+				}
+			}
+
 			const sections = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
@@ -811,6 +843,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	administrativeTypes?: string[];
 	assignees?: string[];
+	availableIn?: string;
 	customCategories?: Record<string, string[]>;
 	customCategoryMatch?: 'any' | 'all';
 	excludeRelation?: string[];
@@ -963,12 +996,28 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
-	if (filters.template !== undefined) {
+	if (filters.template === true) {
+		conditions.push(sql.fragment`c.payload @> '{"template": true}'`);
 		conditions.push(
-			filters.template
-				? sql.fragment`c.payload @> '{"template": true}'`
-				: sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`
+			filters.availableIn
+				? sql.fragment`EXISTS (
+					SELECT 1 FROM container_relation availability
+					WHERE availability.subject = c.guid
+						AND availability.object = ${filters.availableIn}
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+						AND availability.valid_currently
+						AND NOT availability.deleted
+				)`
+				: sql.fragment`NOT EXISTS (
+					SELECT 1 FROM container_relation availability
+					WHERE availability.subject = c.guid
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+						AND availability.valid_currently
+						AND NOT availability.deleted
+				)`
 		);
+	} else if (filters.template === false) {
+		conditions.push(sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`);
 	}
 	if (filters.terms) {
 		conditions.push(
@@ -1077,6 +1126,7 @@ export function getManyContainers(
 	filters: {
 		administrativeTypes?: string[];
 		assignees?: string[];
+		availableIn?: string;
 		customCategories?: Record<string, string[]>;
 		customCategoryMatch?: 'any' | 'all';
 		federalStates?: string[];

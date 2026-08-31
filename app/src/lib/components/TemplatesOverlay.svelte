@@ -5,14 +5,20 @@
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type Container, predicates, templatablePayloadTypes } from '$lib/models';
+	import {
+		type Container,
+		predicates,
+		templatablePayloadTypes,
+		type ProgramPayload
+	} from '$lib/models';
 
 	interface Props {
+		container: Container<ProgramPayload>;
 		containers: Container[];
 		facets: Map<string, Map<string, number>>;
 	}
 
-	let { containers, facets }: Props = $props();
+	let { container, containers, facets }: Props = $props();
 
 	setContext('relationOverlay', {
 		enabled: true,
@@ -34,7 +40,12 @@
 <Header {facets} search />
 
 <div class="content">
-	<Catalog {containers} payloadType={[...templatablePayloadTypes]} createAsTemplate={true} />
+	<Catalog
+		availableIn={container.guid}
+		{containers}
+		payloadType={[...templatablePayloadTypes]}
+		createAsTemplate={true}
+	/>
 
 	<ContextTabs slug="templates-catalog" />
 </div>
