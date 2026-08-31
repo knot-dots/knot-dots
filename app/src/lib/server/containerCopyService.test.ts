@@ -76,16 +76,17 @@ const organization = container(organizationGuid, {
 organization.realm = 'target-realm';
 
 const sysadmin: User = {
-	adminOf: [],
-	collaboratorOf: [],
+	creatableOf: [],
+	deletableOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
 	guid: creatorGuid,
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [],
+	manageMembersOf: [],
+	readableOf: [],
 	roles: ['sysadmin'],
-	settings: {}
+	settings: {},
+	updatableOf: []
 };
 
 const pool = {
@@ -229,7 +230,7 @@ test('fails the complete operation when any planned container cannot be created'
 				rootPayload: source.payload
 			},
 			pool,
-			user: { ...sysadmin, collaboratorOf: [organizationGuid], roles: [] },
+			user: { ...sysadmin, readableOf: [organizationGuid], roles: [] },
 			maxPlanSize: 500
 		})
 	).rejects.toEqual(new ContainerCopyServiceError('create_forbidden'));

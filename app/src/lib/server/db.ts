@@ -17,6 +17,7 @@ import {
 	container,
 	createContainerSchema,
 	findDescendants,
+	grantKinds,
 	grantKindsForRole,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
@@ -2123,20 +2124,13 @@ export function getAllRelatedUsersByContainers(guids: string[], predicates: Pred
 	};
 }
 
-export function getAllMembershipRelationsOfUser(guid: string) {
+export function getAllGrantsOfUser(guid: string) {
 	return async (connection: DatabaseConnection) => {
-		const rolePredicates = [
-			predicates.enum['is-admin-of'],
-			predicates.enum['is-collaborator-of'],
-			predicates.enum['is-head-of'],
-			predicates.enum['is-member-of']
-		];
-		return await connection.any(sql.type(
-			z.object({ predicate: predicates, object: z.string().uuid() })
-		)`
-			SELECT cu.predicate, c.guid AS object
-			FROM container_user cu
-			JOIN container c ON cu.object = c.revision AND c.valid_currently AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
+		// deleted containers have their grants removed, so no container join is
+		// needed to filter for current containers
+		return await connection.any(sql.type(z.object({ kind: grantKinds, object: z.string().uuid() }))`
+			SELECT kind, object
+			FROM container_grant
 			WHERE subject = ${guid};
 		`);
 	};

@@ -41,7 +41,7 @@ export type ContainerCopyLocation = {
 
 export function selectContainerCopyLocation(
 	currentLocation: ContainerCopyLocation,
-	firstAdminOfGuid: string | undefined,
+	preferredOrganizationGuid: string | undefined,
 	organizations: readonly { guid: string }[],
 	organizationalUnits: readonly { guid: string; organization: string }[],
 	canCreateAt: (location: ContainerCopyLocation) => boolean
@@ -50,18 +50,20 @@ export function selectContainerCopyLocation(
 		return currentLocation;
 	}
 
-	if (!firstAdminOfGuid) {
+	if (!preferredOrganizationGuid) {
 		return undefined;
 	}
 
-	const organizationalUnit = organizationalUnits.find(({ guid }) => guid === firstAdminOfGuid);
+	const organizationalUnit = organizationalUnits.find(
+		({ guid }) => guid === preferredOrganizationGuid
+	);
 	const fallbackLocation = organizationalUnit
 		? {
 				organizationGuid: organizationalUnit.organization,
 				organizationalUnitGuid: organizationalUnit.guid
 			}
-		: organizations.some(({ guid }) => guid === firstAdminOfGuid)
-			? { organizationGuid: firstAdminOfGuid, organizationalUnitGuid: null }
+		: organizations.some(({ guid }) => guid === preferredOrganizationGuid)
+			? { organizationGuid: preferredOrganizationGuid, organizationalUnitGuid: null }
 			: undefined;
 
 	return fallbackLocation && canCreateAt(fallbackLocation) ? fallbackLocation : undefined;

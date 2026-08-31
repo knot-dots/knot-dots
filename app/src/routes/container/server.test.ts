@@ -9,14 +9,15 @@ const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const sourceGuid = '00000000-0000-4000-8000-000000000002';
 const userGuid = '00000000-0000-4000-8000-000000000003';
 const user = {
-	adminOf: [],
-	collaboratorOf: [],
+	creatableOf: [],
+	deletableOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
 	guid: userGuid,
-	headOf: [],
+	manageMembersOf: [],
 	isAuthenticated: true,
-	memberOf: [],
+	readableOf: [],
+	updatableOf: [],
 	roles: ['sysadmin'],
 	settings: {}
 };

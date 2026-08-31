@@ -5,7 +5,7 @@ import { withAuthentication } from './hooks.server';
 
 const mocks = vi.hoisted(() => ({
 	createOrUpdateUser: vi.fn(),
-	getAllMembershipRelationsOfUser: vi.fn(),
+	getAllGrantsOfUser: vi.fn(),
 	getPool: vi.fn(),
 	getUser: vi.fn()
 }));
@@ -60,7 +60,7 @@ test('keeps the session when loading session data fails', async () => {
 	expect(session?.user?.roles).toEqual(['member']);
 });
 
-test('returns a session with user data and memberships', async () => {
+test('returns a session with user data and grants', async () => {
 	mocks.getPool.mockResolvedValue({
 		connect: async (routine: (connection: never) => Promise<unknown>) => routine(undefined as never)
 	});
@@ -71,9 +71,11 @@ test('returns a session with user data and memberships', async () => {
 		realm: 'knot-dots',
 		settings: { features: ['ai'] }
 	}));
-	mocks.getAllMembershipRelationsOfUser.mockReturnValue(async () => [
-		{ object: 'org-1', predicate: 'is-admin-of', subject: 'user-guid-1' },
-		{ object: 'org-2', predicate: 'is-member-of', subject: 'user-guid-1' }
+	mocks.getAllGrantsOfUser.mockReturnValue(async () => [
+		{ kind: 'read', object: 'org-1' },
+		{ kind: 'update', object: 'org-1' },
+		{ kind: 'manage-members', object: 'org-1' },
+		{ kind: 'read', object: 'org-2' }
 	]);
 
 	const response = await fetchSession();
@@ -82,6 +84,8 @@ test('returns a session with user data and memberships', async () => {
 	expect(response.status).toBe(200);
 	expect(session?.user?.guid).toBe('user-guid-1');
 	expect(session?.user?.familyName).toBe('Mustermann');
-	expect(session?.user?.adminOf).toEqual(['org-1']);
-	expect(session?.user?.memberOf).toEqual(['org-2']);
+	expect(session?.user?.readableOf).toEqual(['org-1', 'org-2']);
+	expect(session?.user?.updatableOf).toEqual(['org-1']);
+	expect(session?.user?.manageMembersOf).toEqual(['org-1']);
+	expect(session?.user?.creatableOf).toEqual([]);
 });

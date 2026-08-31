@@ -44,18 +44,19 @@ export const compareState = writable<{
 });
 
 export type User = {
-	adminOf: string[];
-	collaboratorOf: string[];
+	creatableOf: string[];
+	deletableOf: string[];
 	familyName: string;
 	givenName: string;
 	guid: string;
-	headOf: string[];
 	isAuthenticated: boolean;
-	memberOf: string[];
+	manageMembersOf: string[];
+	readableOf: string[];
 	roles: string[];
 	settings: {
 		features?: string[];
 	};
+	updatableOf: string[];
 };
 
 export const user = derived(
@@ -68,30 +69,32 @@ export const user = derived(
 			};
 		} else {
 			return {
-				adminOf: [],
-				collaboratorOf: [],
+				creatableOf: [],
+				deletableOf: [],
 				familyName: '',
 				givenName: '',
 				guid: '',
-				headOf: [],
 				isAuthenticated: false,
-				memberOf: [],
+				manageMembersOf: [],
+				readableOf: [],
 				roles: [],
-				settings: {}
+				settings: {},
+				updatableOf: []
 			};
 		}
 	},
 	{
-		adminOf: [],
-		collaboratorOf: [],
+		creatableOf: [],
+		deletableOf: [],
 		familyName: '',
 		givenName: '',
 		guid: '',
-		headOf: [],
 		isAuthenticated: false,
-		memberOf: [],
+		manageMembersOf: [],
+		readableOf: [],
 		roles: [],
-		settings: {}
+		settings: {},
+		updatableOf: []
 	}
 );
 

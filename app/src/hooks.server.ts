@@ -7,13 +7,8 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { predicates } from '$lib/models';
-import {
-	createOrUpdateUser,
-	getAllMembershipRelationsOfUser,
-	getPool,
-	getUser
-} from '$lib/server/db';
+import { grantKinds } from '$lib/models';
+import { createOrUpdateUser, getAllGrantsOfUser, getPool, getUser } from '$lib/server/db';
 import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
 import { withFeatures } from '$lib/server/features';
 import { withLogger } from '$lib/server/logger';
@@ -57,38 +52,42 @@ export const withAuthentication: Handle = ({ event, resolve }) => {
 				return token;
 			},
 			async session({ session, token }) {
-				session.user.adminOf = [];
-				session.user.collaboratorOf = [];
+				session.user.creatableOf = [];
+				session.user.deletableOf = [];
 				session.user.familyName = '';
 				session.user.givenName = '';
 				session.user.guid = token.sub as string;
-				session.user.headOf = [];
-				session.user.memberOf = [];
+				session.user.manageMembersOf = [];
+				session.user.readableOf = [];
 				session.user.roles = token.roles as string[];
 				session.user.settings = {};
+				session.user.updatableOf = [];
 				// If this callback throws, Auth.js treats the session as broken and
 				// deletes the session cookie, logging the user out for good.
 				try {
 					const pool = await getPool();
-					const [user, containerUserRelations] = await Promise.all([
+					const [user, grants] = await Promise.all([
 						pool.connect(getUser(token.sub as string)),
-						pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
+						pool.connect(getAllGrantsOfUser(token.sub as string))
 					]);
-					session.user.adminOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+					session.user.creatableOf = grants
+						.filter(({ kind }) => kind == grantKinds.enum.create)
 						.map(({ object }) => object);
-					session.user.collaboratorOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
+					session.user.deletableOf = grants
+						.filter(({ kind }) => kind == grantKinds.enum.delete)
 						.map(({ object }) => object);
 					session.user.familyName = user.family_name;
 					session.user.givenName = user.given_name;
-					session.user.headOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
+					session.user.manageMembersOf = grants
+						.filter(({ kind }) => kind == grantKinds.enum['manage-members'])
 						.map(({ object }) => object);
-					session.user.memberOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
+					session.user.readableOf = grants
+						.filter(({ kind }) => kind == grantKinds.enum.read)
 						.map(({ object }) => object);
 					session.user.settings = user.settings;
+					session.user.updatableOf = grants
+						.filter(({ kind }) => kind == grantKinds.enum.update)
+						.map(({ object }) => object);
 				} catch (error) {
 					log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 				}
@@ -149,16 +148,17 @@ export const handle = sequence(
 			};
 		} else {
 			event.locals.user = {
-				adminOf: [],
-				collaboratorOf: [],
+				creatableOf: [],
+				deletableOf: [],
 				familyName: '',
 				givenName: '',
 				guid: '',
-				headOf: [],
 				isAuthenticated: false,
-				memberOf: [],
+				manageMembersOf: [],
+				readableOf: [],
 				roles: [],
-				settings: {}
+				settings: {},
+				updatableOf: []
 			};
 		}
 

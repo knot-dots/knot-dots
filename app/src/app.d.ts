@@ -41,16 +41,17 @@ declare global {
 declare module '@auth/sveltekit' {
 	interface Session {
 		user: {
-			adminOf: string[];
-			collaboratorOf: string[];
+			creatableOf: string[];
+			deletableOf: string[];
 			email: string;
 			familyName: string;
 			givenName: string;
 			guid: string;
-			headOf: string[];
-			memberOf: string[];
+			manageMembersOf: string[];
+			readableOf: string[];
 			roles: string[];
 			settings: { features?: string[] };
+			updatableOf: string[];
 		} & DefaultSession['user'];
 	}
 }

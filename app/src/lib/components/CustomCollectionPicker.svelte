@@ -137,9 +137,7 @@
 	);
 
 	let organizationsUserIsMemberOf = $derived(
-		[...$user.adminOf, ...$user.headOf, ...$user.collaboratorOf, ...$user.memberOf].filter(
-			(value) => page.data.organizations.map((o) => o.guid).includes(value)
-		)
+		$user.readableOf.filter((value) => page.data.organizations.map((o) => o.guid).includes(value))
 	);
 
 	const inViewport = new IsInViewport(() => dialog);

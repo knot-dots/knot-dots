@@ -44,7 +44,7 @@ export const POST = (async ({ locals, params, request }) => {
 		);
 		const managedByUser = findAncestors<Container<AnyPayload>>(container, organizationalUnits, [
 			predicates.enum['is-part-of']
-		]).some(({ guid }) => locals.user.adminOf.includes(guid));
+		]).some(({ guid }) => locals.user.manageMembersOf.includes(guid));
 		if (!managedByUser) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}

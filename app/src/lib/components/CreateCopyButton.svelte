@@ -34,7 +34,7 @@
 				organizationGuid: page.data.currentOrganization.guid,
 				organizationalUnitGuid: page.data.currentOrganizationalUnit?.guid ?? null
 			},
-			$user.adminOf[0],
+			$user.creatableOf.find((guid) => page.data.organizations.some((o) => o.guid === guid)),
 			page.data.organizations,
 			page.data.organizationalUnits,
 			canCreateAt

@@ -5,8 +5,8 @@ import {
 	type AnyInitialPayload,
 	type GrantKind,
 	grantKinds,
+	grantKindsForRole,
 	type MemberRole,
-	memberRoles,
 	type NewContainer,
 	payloadTypes,
 	predicates,
@@ -72,38 +72,41 @@ export default function defineAbilityFor(user: User) {
 		);
 		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
-		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		can('create', payloadTypes.enum.help, { organization: { $in: user.creatableOf } });
+		can('update', payloadTypes.enum.help, { organization: { $in: user.updatableOf } });
+		can('delete', payloadTypes.enum.help, { organization: { $in: user.deletableOf } });
+
+		// Documented exceptions from the kind-per-action principle: the
+		// organization profile, the set of organizational units and the
+		// organization-wide view of members-visible content remain with those
+		// who manage the members.
 		can('update', payloadTypes.enum.organization, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+			organization: { $in: user.manageMembersOf }
 		});
-		can(['create', 'update', 'delete'], payloadTypes.enum.organizational_unit, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+		can(['create', 'delete'], payloadTypes.enum.organizational_unit, {
+			organization: { $in: user.manageMembersOf }
+		});
+
+		can('update', payloadTypes.enum.organizational_unit, {
+			organization: { $in: user.updatableOf }
 		});
 		can('update', payloadTypes.enum.organizational_unit, {
-			guid: { $in: [...user.adminOf, ...user.headOf] }
+			guid: { $in: user.updatableOf }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can(
-			['create', 'update', 'delete'],
-			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
-			{
-				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
-		can(
-			['create', 'update', 'delete'],
-			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
-			{
-				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
+
+		const contentTypes = [
+			payloadTypes.enum.program,
+			...commonTypes,
+			payloadTypes.enum.binary_indicator,
+			payloadTypes.enum.indicator_template
+		];
+		can('create', contentTypes, { organization: { $in: user.creatableOf } });
+		can('create', contentTypes, { organizational_unit: { $in: user.creatableOf } });
+		can('update', contentTypes, { organization: { $in: user.updatableOf } });
+		can('update', contentTypes, { organizational_unit: { $in: user.updatableOf } });
+		can('delete', contentTypes, { organization: { $in: user.deletableOf } });
+		can('delete', contentTypes, { organizational_unit: { $in: user.deletableOf } });
+
 		can(
 			'invite-members',
 			[
@@ -114,7 +117,7 @@ export default function defineAbilityFor(user: User) {
 				payloadTypes.enum.simple_measure
 			],
 			{
-				organization: { $in: [...user.adminOf, ...user.headOf] }
+				organization: { $in: user.manageMembersOf }
 			}
 		);
 		can(
@@ -126,113 +129,106 @@ export default function defineAbilityFor(user: User) {
 				payloadTypes.enum.simple_measure
 			],
 			{
-				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+				organizational_unit: { $in: user.manageMembersOf }
 			}
 		);
 		can('invite-members', [payloadTypes.enum.organizational_unit], {
-			guid: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('create', commonTypes, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can(['delete'], commonTypes, {
-			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
-		});
-		can(
-			'delete-recursively',
-			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
-			}
-		);
-		can(
-			['create', 'update', 'delete', 'delete-recursively'],
-			[payloadTypes.enum.category, payloadTypes.enum.term],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf] }
-			}
-		);
-		can('update', payloadTypes.enum.program, ['chapterType'], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
+			guid: { $in: user.manageMembersOf }
 		});
 		can(
 			'invite-members',
 			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf] }
+				managed_by: { $in: user.manageMembersOf }
 			}
 		);
-		can('relate', payloadTypes.options, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+
+		can('create', commonTypes, { managed_by: { $in: user.creatableOf } });
+		can('update', [payloadTypes.enum.program, ...commonTypes], {
+			managed_by: { $in: user.updatableOf }
 		});
-		can('relate', payloadTypes.options, {
-			organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		can('delete', commonTypes, { managed_by: { $in: user.deletableOf } });
+		can(
+			'delete-recursively',
+			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
+			{
+				managed_by: { $in: user.deletableOf }
+			}
+		);
+		can('create', [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: user.creatableOf }
 		});
-		can('relate', payloadTypes.options, {
-			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		can('update', [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: user.updatableOf }
 		});
-		can('prioritize', payloadTypes.enum.task, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+		can(['delete', 'delete-recursively'], [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: user.deletableOf }
 		});
+		can('update', payloadTypes.enum.program, ['chapterType'], {
+			managed_by: { $in: user.updatableOf }
+		});
+
+		can('relate', payloadTypes.options, { managed_by: { $in: user.updatableOf } });
+		can('relate', payloadTypes.options, { organization: { $in: user.updatableOf } });
+		can('relate', payloadTypes.options, { organizational_unit: { $in: user.updatableOf } });
+		can('prioritize', payloadTypes.enum.task, { managed_by: { $in: user.updatableOf } });
+
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
-			organization: { $in: user.adminOf }
+			organization: { $in: user.manageMembersOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+			organization: { $in: user.manageMembersOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+			organizational_unit: { $in: user.manageMembersOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			organization: { $in: user.memberOf }
+			organization: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			organizational_unit: { $in: user.memberOf }
+			organizational_unit: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.members,
-			guid: { $in: user.memberOf }
+			guid: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.enum.organizational_unit, {
 			'payload.visibility': visibility.enum.organization,
-			guid: { $in: [...user.memberOf] }
+			guid: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.options, ['payload.editorialState'], {
 			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: user.readableOf }
 		});
 		can('read', payloadTypes.enum.task, ['assignee'], {
 			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: user.readableOf }
 		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
-		can('update', payloadTypes.options, ['organizational_unit'], {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+		can('update', contentTypes, ['organizational_unit'], {
+			organization: { $in: user.updatableOf }
 		});
 		can('update', [payloadTypes.enum.program, ...commonTypes], ['payload.editorialState'], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			managed_by: { $in: user.updatableOf }
 		});
 	}
 
@@ -258,17 +254,30 @@ export function grantKindsForRoleOn(
 	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
 	role: MemberRole | null
 ): GrantKind[] {
+	return grantKindsForKindsOn(container, user, role === null ? [] : grantKindsForRole(role));
+}
+
+// The effective rights a set of granted kinds yields on this container,
+// derived from the actual authorization rules: what a kind permits depends on
+// the container type.
+export function grantKindsForKindsOn(
+	container: Container<AnyPayload>,
+	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
+	kinds: ReadonlyArray<GrantKind>
+): GrantKind[] {
+	const scoped = (kind: GrantKind) => (kinds.includes(kind) ? [container.guid] : []);
 	const ability = defineAbilityFor({
-		adminOf: role === memberRoles.enum.administrator ? [container.guid] : [],
-		collaboratorOf: role === memberRoles.enum.collaborator ? [container.guid] : [],
+		creatableOf: scoped(grantKinds.enum.create),
+		deletableOf: scoped(grantKinds.enum.delete),
 		familyName: user.family_name,
 		givenName: user.given_name,
 		guid: user.guid,
-		headOf: role === memberRoles.enum.head ? [container.guid] : [],
 		isAuthenticated: true,
-		memberOf: role !== null ? [container.guid] : [],
+		manageMembersOf: scoped(grantKinds.enum['manage-members']),
+		readableOf: scoped(grantKinds.enum.read),
 		roles: [],
-		settings: user.settings
+		settings: user.settings,
+		updatableOf: scoped(grantKinds.enum.update)
 	});
 	return grantKinds.options.filter((kind) => ability.can(actionsByGrantKind[kind], container));
 }

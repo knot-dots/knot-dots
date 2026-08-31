@@ -30,26 +30,27 @@ const currentOrganizationalUnit = {
 	relation: []
 };
 
-function user(adminOf: string[], headOf: string[] = []) {
+function user(manageMembersOf: string[]) {
 	return {
-		adminOf,
-		collaboratorOf: [],
+		creatableOf: [],
+		deletableOf: [],
 		familyName: 'Admin',
 		givenName: 'Test',
 		guid: userGuid,
-		headOf,
 		isAuthenticated: true,
-		memberOf: [],
+		manageMembersOf,
+		readableOf: [],
 		roles: [],
-		settings: {}
+		settings: {},
+		updatableOf: []
 	};
 }
 
-function event(adminOf: string[], headOf: string[] = []) {
+function event(manageMembersOf: string[]) {
 	return {
 		locals: {
 			pool: { connect: vi.fn().mockResolvedValue([]) },
-			user: user(adminOf, headOf)
+			user: user(manageMembersOf)
 		},
 		parent: vi.fn().mockResolvedValue({
 			currentOrganization,
@@ -77,11 +78,11 @@ test('grants organizational unit admins access to the user management of their u
 });
 
 test('grants heads of the organization access to the user management of an organizational unit', async () => {
-	const { container } = await load(event([], [organizationGuid]));
+	const { container } = await load(event([organizationGuid]));
 
 	expect(container.guid).toBe(organizationalUnitGuid);
 });
 
-test('responds with 404 for users without admin rights', async () => {
+test('responds with 404 for users without the manage-members kind', async () => {
 	await expect(load(event([]))).rejects.toMatchObject({ status: 404 });
 });
