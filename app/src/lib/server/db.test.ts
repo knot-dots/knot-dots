@@ -834,6 +834,47 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 	).toBe(7);
 });
 
+test('getContainerCopyGraph includes program availability targets without traversing them', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const programSection = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: program.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	const template = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Program template',
+				type: payloadTypes.enum.report
+			},
+			[
+				{
+					object: program.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+
+	const result = await getContainerCopyGraph(template.guid)(connection);
+	const resultGuids = result.containers.map(({ guid }) => guid);
+
+	expect(resultGuids).toEqual(expect.arrayContaining([template.guid, program.guid]));
+	expect(resultGuids).not.toContain(programSection.guid);
+});
+
 test('getContainerCopyGraph ignores actual data references and follows resource data references forward only', async ({
 	connection
 }: Fixtures) => {

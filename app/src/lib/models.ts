@@ -2307,6 +2307,15 @@ export function isTemplateContainer(
 	return 'template' in container.payload && container.payload.template === true;
 }
 
+export function getAvailableInProgramGuids(container: Container<AnyPayload>) {
+	return container.relation
+		.filter(
+			({ predicate, subject }) =>
+				predicate === predicates.enum['is-available-in'] && subject === container.guid
+		)
+		.map(({ object }) => object);
+}
+
 function hasProperty(
 	payload: AnyPayload | AnyInitialPayload,
 	key: PropertyKey

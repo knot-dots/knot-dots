@@ -33,6 +33,7 @@
 		type CustomCollectionPayload,
 		isIndicatorTemplateContainer,
 		isOrganizationalUnitContainer,
+		isProgramContainer,
 		isTemplateContainer,
 		payloadTypes
 	} from '$lib/models';
@@ -63,6 +64,9 @@
 	let dialog = $state<HTMLDialogElement>();
 
 	let templatePickerDialog = $state<HTMLDialogElement>();
+	let availableIn = $derived(
+		isProgramContainer(parentContainer) ? parentContainer.guid : undefined
+	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -247,10 +251,12 @@
 	});
 
 	const templateResource = resource(
-		[() => container.payload.newItemTemplate, () => inViewportOnce],
-		async ([newItemTemplate], _, { signal }) => {
+		[() => container.payload.newItemTemplate, () => availableIn, () => inViewportOnce],
+		async ([newItemTemplate, availableIn], _, { signal }) => {
 			return newItemTemplate.length > 0
-				? fetchContainers({ guid: newItemTemplate, template: 'true' }, 'alpha', { signal })
+				? fetchContainers({ availableIn, guid: newItemTemplate, template: 'true' }, 'alpha', {
+						signal
+					})
 				: [];
 		},
 		{ lazy: true }
@@ -362,6 +368,7 @@
 		);
 		openContainerCopyDialog(newContainer, {
 			operation: 'template-instance',
+			availableIn: availableIn ?? null,
 			sourceGuid: template.guid,
 			targetOrganizationGuid: container.organization,
 			targetOrganizationalUnitGuid: container.organizational_unit ?? null
@@ -555,7 +562,7 @@
 {#if editable}
 	<CustomCollectionPicker bind:container bind:dialog />
 
-	<TemplatePicker bind:container bind:dialog={templatePickerDialog} />
+	<TemplatePicker {availableIn} bind:container bind:dialog={templatePickerDialog} />
 {/if}
 
 <style>

@@ -714,11 +714,11 @@ export function getContainerByGuid(guid: string) {
  * child subject. Recursive UNION deduplicates containers reached through multiple parents and
  * terminates cycles.
  *
- * Indicator/resource targets and custom-collection item/template references are fetched as
- * reference-only containers without traversing their descendants. The result is enriched with
- * current relations, user relations, and computed management data. It intentionally remains an
- * overinclusive server-side snapshot: visibility and invalid-reference pruning belong to
- * createContainerCopyPlan(), and this result must not be exposed directly to clients.
+ * Indicator/resource targets, custom-collection item/template references, and program availability
+ * targets are fetched as supporting containers without traversing their descendants. The result is
+ * enriched with current relations, user relations, and computed management data. It intentionally
+ * remains an overinclusive server-side snapshot: visibility and invalid-reference pruning belong
+ * to createContainerCopyPlan(), and this result must not be exposed directly to clients.
  */
 export function getContainerCopyGraph(rootGuid: string) {
 	return async (connection: DatabaseConnection): Promise<CopyGraphSnapshot> => {
@@ -750,11 +750,16 @@ export function getContainerCopyGraph(rootGuid: string) {
 			), copy_candidate AS (
 				SELECT guid
 				FROM walk
-			), reference_guid AS (
+			), supporting_guid AS (
 				SELECT cr.object AS guid
 				FROM current_relation cr
 				JOIN copy_candidate candidate ON candidate.guid = cr.subject
 				WHERE cr.predicate = ANY (${sql.array(referenceCopyPredicates, 'text')})
+				UNION
+				SELECT cr.object AS guid
+				FROM current_relation cr
+				JOIN copy_candidate candidate ON candidate.guid = cr.subject
+				WHERE cr.predicate = ${predicates.enum['is-available-in']}
 				UNION
 				SELECT (source.payload->>'resource')::uuid AS guid
 				FROM current_container source
@@ -775,7 +780,7 @@ export function getContainerCopyGraph(rootGuid: string) {
 			), all_guid AS (
 				SELECT guid FROM copy_candidate
 				UNION
-				SELECT guid FROM reference_guid WHERE guid IS NOT NULL
+				SELECT guid FROM supporting_guid WHERE guid IS NOT NULL
 			)
 			SELECT c.*
 			FROM current_container c
