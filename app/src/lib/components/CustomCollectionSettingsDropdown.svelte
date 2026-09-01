@@ -79,7 +79,11 @@
 				/>
 			</label>
 
-			<button class="cascading-menu-item" onclick={() => openSubMenu('view')} type="button">
+			<button
+				class="cascading-menu-item"
+				onclick={() => openSubMenu($_('custom_collection.settings.view'))}
+				type="button"
+			>
 				{#if container.payload.listType === 'carousel'}
 					<CarouselIcon />
 				{:else}
