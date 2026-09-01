@@ -14,19 +14,12 @@ import {
 	payloadTypes,
 	predicates,
 	relation,
+	structuralCopyPredicates,
 	type Relation,
 	type TemplatePayload,
 	visibility
 } from '$lib/models';
 import type { ContainerCopyRootOperation } from '$lib/containerCopy';
-
-export const structuralCopyPredicates = [
-	predicates.enum['is-part-of'],
-	predicates.enum['is-part-of-program'],
-	predicates.enum['is-part-of-measure'],
-	predicates.enum['is-part-of-category'],
-	predicates.enum['is-section-of']
-] as const satisfies readonly Predicate[];
 
 export const referenceCopyPredicates = [
 	predicates.enum['is-measured-by'],

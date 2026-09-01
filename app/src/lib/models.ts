@@ -347,6 +347,16 @@ export const predicates = z.enum(predicateValues);
 
 export type Predicate = z.infer<typeof predicates>;
 
+export const structuralCopyPredicates = [
+	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-program'],
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-part-of-category'],
+	predicates.enum['is-section-of']
+] as const satisfies readonly Predicate[];
+
+const structuralPredicateSet = new Set<string>(structuralCopyPredicates);
+
 const backgroundColorValues = [
 	'color.white',
 	'color.blue',
@@ -2305,6 +2315,23 @@ export function isTemplateContainer(
 	container: Container<AnyPayload>
 ): container is Container<TemplatePayload> {
 	return 'template' in container.payload && container.payload.template === true;
+}
+
+export function isTemplateRoot({
+	guid,
+	payload,
+	relation
+}: {
+	guid: string;
+	payload: { template?: boolean };
+	relation: readonly Relation[];
+}) {
+	return (
+		payload.template === true &&
+		!relation.some(
+			({ predicate, subject }) => subject === guid && structuralPredicateSet.has(predicate)
+		)
+	);
 }
 
 export function getAvailableInProgramGuids(container: Container<AnyPayload>) {

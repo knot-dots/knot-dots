@@ -64,6 +64,7 @@ export async function fetchTemplates({
 			availableIn,
 			customCategories,
 			template: true,
+			templateRoot: true,
 			terms: url.searchParams.get('terms') ?? '',
 			type: typeFilter
 		},

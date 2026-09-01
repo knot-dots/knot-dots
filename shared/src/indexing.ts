@@ -3,7 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
-import type { Relation } from '@knot-dots/app/src/lib/models.ts';
+import { isTemplateRoot, type Relation } from '@knot-dots/app/src/lib/models.ts';
 
 const envSchema = z.object({
 	DE_LABELS_PATH: z.string().default('/opt/labels/de.json')
@@ -110,6 +110,7 @@ export function createIndexWithMappings(client: Client, index: string) {
 				organization: { type: 'keyword' },
 				organizational_unit: { type: 'keyword' },
 				managed_by: { type: 'keyword' },
+				template_root: { type: 'boolean' },
 				type: { type: 'keyword' },
 				title: {
 					type: 'text',
@@ -271,6 +272,7 @@ export function toDoc(row: {
 		organization: row.organization,
 		organizational_unit: row.organizational_unit ?? undefined,
 		managed_by: row.managed_by,
+		template_root: isTemplateRoot({ guid: row.guid, payload: originalPayload, relation }),
 		type,
 		title,
 		visibility,

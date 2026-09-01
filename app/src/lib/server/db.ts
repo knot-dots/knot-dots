@@ -36,6 +36,7 @@ import {
 	predicates,
 	type Relation,
 	relation,
+	structuralCopyPredicates,
 	type TaskPriority,
 	type User,
 	user,
@@ -48,8 +49,7 @@ import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import {
 	type CopyGraphSnapshot,
 	type NewContainerWithGuid,
-	referenceCopyPredicates,
-	structuralCopyPredicates
+	referenceCopyPredicates
 } from '$lib/server/containerCopyPlan';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';

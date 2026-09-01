@@ -174,6 +174,7 @@ export async function getManyContainersWithES(
 		statuses?: string[];
 		taskCategories?: string[];
 		template?: boolean;
+		templateRoot?: boolean;
 		terms?: string;
 		type?: PayloadType[];
 	},
@@ -364,6 +365,9 @@ export async function getManyContainersWithES(
 				minimum_should_match: 1
 			}
 		});
+	}
+	if (filters.templateRoot !== undefined) {
+		nonFacetFilters.push({ term: { template_root: filters.templateRoot } });
 	}
 
 	const allFacetFilters = Object.values(facetFilters).flat();
