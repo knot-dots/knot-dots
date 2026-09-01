@@ -223,7 +223,7 @@
 	onfinalize={handleDndFinalize}
 >
 	{#each sections as { guid }, i (guid)}
-		<li animate:flip={{ duration: 100 }}>
+		<li animate:flip={{ duration: 100 }} id="section-{guid}">
 			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 			<!-- svelte-ignore binding_property_non_reactive -->
 			<Section

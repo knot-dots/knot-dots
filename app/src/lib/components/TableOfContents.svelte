@@ -126,9 +126,12 @@
 					{:else}
 						<Chapter />
 					{/if}
-					<span class="truncated">
+					<a
+						href={`javascript:document.getElementById('section-${node.section.guid}').scrollIntoView({behavior: 'smooth'});`}
+						class="truncated"
+					>
 						{node.section.payload.title}
-					</span>
+					</a>
 				</div>
 				{#if node.children.length > 0}
 					{@render tableOfContents(node.children, node)}
