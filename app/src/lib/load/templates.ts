@@ -19,8 +19,6 @@ import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type { User } from '$lib/stores';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 
-const allowedTemplateTypes = new Set<PayloadType>(templatablePayloadTypes);
-
 export async function fetchTemplates({
 	pool,
 	user,
@@ -28,7 +26,8 @@ export async function fetchTemplates({
 	rawCategoryContext,
 	currentOrganization,
 	currentOrganizationalUnit,
-	availableIn
+	availableIn,
+	templateTypes = templatablePayloadTypes
 }: {
 	pool: DatabasePool;
 	user: User;
@@ -37,14 +36,15 @@ export async function fetchTemplates({
 	currentOrganization: Container<OrganizationPayload>;
 	currentOrganizationalUnit: Container<OrganizationalUnitPayload> | null | undefined;
 	availableIn?: string;
+	templateTypes?: readonly PayloadType[];
 }) {
 	let subordinateOrganizationalUnits: string[] = [];
+	const allowedTemplateTypes = new Set<PayloadType>(templateTypes);
 
 	const requestedTypes = url.searchParams
 		.getAll('type')
 		.filter((value): value is PayloadType => allowedTemplateTypes.has(value as PayloadType));
-	const typeFilter: PayloadType[] =
-		requestedTypes.length > 0 ? requestedTypes : [...templatablePayloadTypes];
+	const typeFilter: PayloadType[] = requestedTypes.length > 0 ? requestedTypes : [...templateTypes];
 
 	const categoryContext = filterCategoryContext(rawCategoryContext, typeFilter);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
@@ -93,7 +93,9 @@ export async function fetchTemplates({
 		facets.set(key, values);
 	}
 
-	facets.set('type', fromCounts([...templatablePayloadTypes] as string[], data?.type));
+	if (templateTypes.length > 1) {
+		facets.set('type', fromCounts([...templateTypes] as string[], data?.type));
+	}
 
 	return { containers, facets };
 }

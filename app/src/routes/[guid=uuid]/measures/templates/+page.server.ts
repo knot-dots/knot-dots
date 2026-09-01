@@ -1,76 +1,23 @@
-import { filterVisible } from '$lib/authorization';
-import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
-import { filterOrganizationalUnits, payloadTypes } from '$lib/models';
-import { getAllRelatedOrganizationalUnitContainers } from '$lib/server/db';
-import { getManyContainersWithES } from '$lib/server/elasticsearch';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import { fetchTemplates } from '$lib/load/templates';
+import { payloadTypes } from '$lib/models';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, parent, url }) => {
 	depends('containers');
 
-	let subordinateOrganizationalUnits: string[] = [];
 	const {
 		categoryContext: rawCategoryContext,
 		currentOrganization,
 		currentOrganizationalUnit
 	} = await parent();
-	const categoryContext = filterCategoryContext(rawCategoryContext, [
-		payloadTypes.enum.measure,
-		payloadTypes.enum.simple_measure
-	]);
-	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
-	if (currentOrganizationalUnit) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(currentOrganizationalUnit.guid)
-		);
-		subordinateOrganizationalUnits = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level > currentOrganizationalUnit.payload.level)
-			.map(({ guid }) => guid);
-	}
-
-	const esResult = await getManyContainersWithES(
-		currentOrganization.payload.default ? [] : [currentOrganization.guid],
-		{
-			customCategories,
-			template: true,
-			terms: url.searchParams.get('terms') ?? '',
-			type: [payloadTypes.enum.measure]
-		},
-		url.searchParams.get('sort') ?? '',
-		{ customCategoryKeys: categoryContext.keys, includeFacets: true }
-	);
-	const containers = esResult.containers;
-	const data = esResult.facets;
-
-	const filtered = filterOrganizationalUnits(
-		filterVisible(containers, locals.user),
+	return fetchTemplates({
+		pool: locals.pool,
+		user: locals.user,
 		url,
-		subordinateOrganizationalUnits,
-		currentOrganizationalUnit ?? undefined
-	);
-
-	const _facets = new Map<string, Map<string, number>>([
-		...((!currentOrganization.payload.default ? [['included', new Map()]] : []) as Array<
-			[string, Map<string, number>]
-		>)
-	]);
-
-	if (categoryContext) {
-		const customFacets = buildCategoryFacetsWithCounts(
-			categoryContext.options,
-			data ? Object.fromEntries(Object.entries(data)) : {}
-		);
-		for (const [key, values] of customFacets.entries()) {
-			_facets.set(key, values);
-		}
-	}
-
-	const facets = _facets;
-
-	return {
-		containers: filtered,
-		facets
-	};
+		rawCategoryContext,
+		currentOrganization,
+		currentOrganizationalUnit,
+		templateTypes: [payloadTypes.enum.measure]
+	});
 }) satisfies PageServerLoad;
