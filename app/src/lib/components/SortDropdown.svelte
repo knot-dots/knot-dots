@@ -33,7 +33,7 @@
 	</button>
 	{#if $popover.expanded}
 		<fieldset
-			class="dropdown-panel"
+			class="dropdown-panel listbox"
 			use:popperContent={extraOpts}
 			use:popover.panel
 			oninput={(e) => e.stopPropagation()}

@@ -134,7 +134,7 @@
 		</div>
 
 		{#if $combobox.expanded}
-			<div class="dropdown-panel">
+			<div class="dropdown-panel listbox">
 				<ul use:combobox.items>
 					{#each administrativeAreasResource.current?.filter((area) => area.nameOSM
 							.toLowerCase()

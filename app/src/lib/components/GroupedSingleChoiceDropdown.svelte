@@ -89,7 +89,7 @@
 	{#if $popover.expanded}
 		<fieldset
 			aria-labelledby={labelledBy}
-			class="dropdown-panel"
+			class="dropdown-panel listbox"
 			use:popperContent={extraOpts}
 			use:popover.panel
 		>
