@@ -714,11 +714,13 @@ export function getContainerByGuid(guid: string) {
  * child subject. Recursive UNION deduplicates containers reached through multiple parents and
  * terminates cycles.
  *
- * Indicator/resource targets, custom-collection item/template references, and program availability
- * targets are fetched as supporting containers without traversing their descendants. The result is
- * enriched with current relations, user relations, and computed management data. It intentionally
- * remains an overinclusive server-side snapshot: visibility and invalid-reference pruning belong
- * to createContainerCopyPlan(), and this result must not be exposed directly to clients.
+ * For program roots, the walk also starts at each template root available in that program, so the
+ * template hierarchies can be copied into the new program scope. Indicator/resource targets,
+ * custom-collection item/template references, and program availability targets are fetched as
+ * supporting containers without traversing their descendants. The result is enriched with current
+ * relations, user relations, and computed management data. It intentionally remains an
+ * overinclusive server-side snapshot: visibility and invalid-reference pruning belong to
+ * createContainerCopyPlan(), and this result must not be exposed directly to clients.
  */
 export function getContainerCopyGraph(rootGuid: string) {
 	return async (connection: DatabaseConnection): Promise<CopyGraphSnapshot> => {
@@ -733,10 +735,28 @@ export function getContainerCopyGraph(rootGuid: string) {
 				FROM container_relation cr
 				WHERE cr.valid_currently
 					AND NOT cr.deleted
-			), walk(guid) AS (
+			), copy_seed(guid) AS (
 				SELECT root.guid
 				FROM current_container root
 				WHERE root.guid = ${rootGuid}
+				UNION
+				SELECT available_template.guid
+				FROM current_container root
+				JOIN current_relation availability ON availability.object = root.guid
+					AND availability.predicate = ${predicates.enum['is-available-in']}
+				JOIN current_container available_template ON available_template.guid = availability.subject
+				WHERE root.guid = ${rootGuid}
+					AND root.payload->>'type' = ${payloadTypes.enum.program}
+					AND available_template.payload @> '{"template": true}'
+					AND NOT EXISTS (
+						SELECT 1
+						FROM current_relation structural_parent
+						WHERE structural_parent.subject = available_template.guid
+							AND structural_parent.predicate = ANY (${sql.array(structuralCopyPredicates, 'text')})
+					)
+			), walk(guid) AS (
+				SELECT guid
+				FROM copy_seed
 				UNION
 				SELECT edge.target
 				FROM walk

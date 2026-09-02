@@ -42,6 +42,10 @@ const guids = {
 	resourceData: '00000000-0000-4000-8000-000000000017',
 	publicResource: '00000000-0000-4000-8000-000000000018',
 	publicResourceData: '00000000-0000-4000-8000-000000000019',
+	scopedTemplate: '00000000-0000-4000-8000-000000000020',
+	scopedTemplateChild: '00000000-0000-4000-8000-000000000021',
+	otherScopedTemplate: '00000000-0000-4000-8000-000000000022',
+	otherProgram: '00000000-0000-4000-8000-000000000023',
 	missing: '00000000-0000-4000-8000-000000000099',
 	external: '00000000-0000-4000-8000-000000000100'
 } as const;
@@ -131,6 +135,65 @@ function createContainerCopyPlan(
 
 function copyFor(plan: ReturnType<typeof createRawContainerCopyPlan>, originalGuid: string) {
 	return plan.get(originalGuid);
+}
+
+function programWithScopedTemplates({
+	programTemplate = false,
+	programChildTemplate = false
+}: {
+	programTemplate?: boolean;
+	programChildTemplate?: boolean;
+} = {}) {
+	const root = makeContainer(guids.root, {
+		template: programTemplate,
+		title: 'Program',
+		type: payloadTypes.enum.program
+	});
+	const child = makeContainer(guids.child, {
+		template: programChildTemplate,
+		title: 'Program goal',
+		type: payloadTypes.enum.goal
+	});
+	const scopedTemplate = makeContainer(guids.scopedTemplate, {
+		template: true,
+		title: 'Scoped report template',
+		type: payloadTypes.enum.report
+	});
+	const scopedTemplateChild = makeContainer(guids.scopedTemplateChild, {
+		template: true,
+		title: 'Scoped goal template',
+		type: payloadTypes.enum.goal
+	});
+	const otherProgram = makeContainer(guids.otherProgram, {
+		template: false,
+		title: 'Other program',
+		type: payloadTypes.enum.program
+	});
+	const otherScopedTemplate = makeContainer(guids.otherScopedTemplate, {
+		template: true,
+		title: 'Other scoped template',
+		type: payloadTypes.enum.report
+	});
+	const relations = [
+		relation(guids.child, predicates.enum['is-part-of-program'], guids.root),
+		relation(guids.scopedTemplate, predicates.enum['is-available-in'], guids.root),
+		relation(guids.scopedTemplateChild, predicates.enum['is-section-of'], guids.scopedTemplate),
+		relation(guids.otherScopedTemplate, predicates.enum['is-available-in'], guids.otherProgram)
+	];
+
+	return {
+		child,
+		otherProgram,
+		otherScopedTemplate,
+		root,
+		scopedTemplate,
+		scopedTemplateChild,
+		snapshot: graph(
+			guids.root,
+			[root, child, scopedTemplate, scopedTemplateChild, otherProgram, otherScopedTemplate],
+			relations
+		)
+	};
 }
 
 test('prunes hidden paths, accepts an alternate parent, and preserves a structural cycle', () => {
@@ -899,6 +962,101 @@ test('changes template state only for explicit template instantiation', () => {
 
 	expect(copyFor(ordinary, guids.root)?.payload).toMatchObject({ template: true });
 	expect(copyFor(instantiated, guids.root)?.payload).toMatchObject({ template: false });
+});
+
+test('copies program-scoped template hierarchies and remaps their availability', () => {
+	const { root, scopedTemplate, scopedTemplateChild, snapshot } = programWithScopedTemplates();
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		operation: { kind: 'copy', rootPayload: root.payload },
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(plan.has(guids.child)).toBe(true);
+	expect(plan.has(guids.scopedTemplate)).toBe(true);
+	expect(plan.has(guids.scopedTemplateChild)).toBe(true);
+	expect(plan.has(guids.otherScopedTemplate)).toBe(false);
+	expect(copyFor(plan, guids.scopedTemplate)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplateChild)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplate)?.relation).toContainEqual({
+		object: copyFor(plan, guids.root)?.guid,
+		position: 0,
+		predicate: predicates.enum['is-available-in'],
+		subject: copyFor(plan, guids.scopedTemplate)?.guid
+	});
+	expect(scopedTemplate.payload).toMatchObject({ template: true });
+	expect(scopedTemplateChild.payload).toMatchObject({ template: true });
+});
+
+test('includes program-scoped template hierarchies when creating a program template', () => {
+	const { root, snapshot } = programWithScopedTemplates();
+	if (root.payload.type !== payloadTypes.enum.program) {
+		throw new Error('Expected a program');
+	}
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		operation: {
+			kind: 'create-template',
+			rootPayload: { ...root.payload, title: 'Program template' }
+		},
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.root)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplate)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplateChild)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplate)?.relation).toContainEqual({
+		object: copyFor(plan, guids.root)?.guid,
+		position: 0,
+		predicate: predicates.enum['is-available-in'],
+		subject: copyFor(plan, guids.scopedTemplate)?.guid
+	});
+});
+
+test('keeps copied scoped template hierarchies as templates when instantiating a program', () => {
+	const { root, snapshot } = programWithScopedTemplates({
+		programTemplate: true,
+		programChildTemplate: true
+	});
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		operation: { kind: 'template-instance', rootPayload: root.payload },
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.root)?.payload).toMatchObject({ template: false });
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ template: false });
+	expect(copyFor(plan, guids.scopedTemplate)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplateChild)?.payload).toMatchObject({ template: true });
+	expect(copyFor(plan, guids.scopedTemplate)?.relation).toContainEqual({
+		object: copyFor(plan, guids.root)?.guid,
+		position: 0,
+		predicate: predicates.enum['is-available-in'],
+		subject: copyFor(plan, guids.scopedTemplate)?.guid
+	});
+});
+
+test('prunes an unreadable scoped template root and its descendants', () => {
+	const { root, snapshot } = programWithScopedTemplates();
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		operation: { kind: 'copy', rootPayload: root.payload },
+		readPolicy: policy({ hidden: [guids.scopedTemplate] }),
+		allocateGuid: allocator()
+	});
+
+	expect(plan.has(guids.root)).toBe(true);
+	expect(plan.has(guids.child)).toBe(true);
+	expect(plan.has(guids.scopedTemplate)).toBe(false);
+	expect(plan.has(guids.scopedTemplateChild)).toBe(false);
 });
 
 test('creates a template hierarchy and marks every templatable container as a template', () => {

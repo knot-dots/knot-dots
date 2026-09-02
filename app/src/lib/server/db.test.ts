@@ -876,6 +876,123 @@ test('getContainerCopyGraph includes program availability targets without traver
 	expect(resultGuids).not.toContain(programSection.guid);
 });
 
+test('getContainerCopyGraph traverses template-root hierarchies available in a program', async ({
+	connection
+}: Fixtures) => {
+	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const programSection = await createContainer(
+		newManagedByContainer(payloadTypes.enum.text, {
+			relation: [
+				{
+					object: program.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		})
+	)(connection);
+	const availableTemplate = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Available template',
+				type: payloadTypes.enum.report
+			},
+			[
+				{
+					object: program.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+	const availableTemplateSection = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Available template section',
+				type: payloadTypes.enum.goal
+			},
+			[
+				{
+					object: availableTemplate.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		)
+	)(connection);
+	const globalTemplate = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Global template',
+				type: payloadTypes.enum.report
+			},
+			[]
+		)
+	)(connection);
+	const nonRootTemplate = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Available non-root template',
+				type: payloadTypes.enum.goal
+			},
+			[
+				{
+					object: program.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				},
+				{
+					object: globalTemplate.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		)
+	)(connection);
+	const otherProgram = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
+		connection
+	);
+	const otherProgramTemplate = await createContainer(
+		initializeNewContainer(
+			{
+				template: true,
+				title: 'Other program template',
+				type: payloadTypes.enum.report
+			},
+			[
+				{
+					object: otherProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		)
+	)(connection);
+
+	const result = await getContainerCopyGraph(program.guid)(connection);
+	const resultGuids = result.containers.map(({ guid }) => guid);
+
+	expect(resultGuids).toEqual(
+		expect.arrayContaining([
+			program.guid,
+			programSection.guid,
+			availableTemplate.guid,
+			availableTemplateSection.guid
+		])
+	);
+	expect(resultGuids).not.toContain(globalTemplate.guid);
+	expect(resultGuids).not.toContain(nonRootTemplate.guid);
+	expect(resultGuids).not.toContain(otherProgram.guid);
+	expect(resultGuids).not.toContain(otherProgramTemplate.guid);
+});
+
 test('getContainerCopyGraph ignores actual data references and follows resource data references forward only', async ({
 	connection
 }: Fixtures) => {
