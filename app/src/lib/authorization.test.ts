@@ -107,7 +107,7 @@ describe('sysadmin', () => {
 		expect(ability.can('read', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
+		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(true);
 	});
 });
 
@@ -174,19 +174,19 @@ describe('categories and terms via managed_by', () => {
 	});
 });
 
-describe('invite-members via managed_by', () => {
+describe('manage-users via managed_by', () => {
 	test('is granted to admins and heads for programs and measures', () => {
 		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
 			const ability = defineAbilityFor(user);
-			expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
-			expect(ability.can('invite-members', makeContainer(payloadTypes.enum.measure))).toBe(true);
+			expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(true);
+			expect(ability.can('manage-users', makeContainer(payloadTypes.enum.measure))).toBe(true);
 		}
 	});
 
 	test('is not granted to collaborators via managed_by', () => {
 		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
-		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(false);
-		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.measure))).toBe(false);
+		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(false);
+		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.measure))).toBe(false);
 	});
 });
 
@@ -277,12 +277,12 @@ describe('multi-valued managed_by', () => {
 	});
 
 	test('admins and heads of one of the managing teams may invite members', () => {
-		expect(defineAbilityFor(makeUser({ adminOf: [team] })).can('invite-members', container)).toBe(
+		expect(defineAbilityFor(makeUser({ adminOf: [team] })).can('manage-users', container)).toBe(
 			true
 		);
-		expect(
-			defineAbilityFor(makeUser({ headOf: [otherTeam] })).can('invite-members', container)
-		).toBe(true);
+		expect(defineAbilityFor(makeUser({ headOf: [otherTeam] })).can('manage-users', container)).toBe(
+			true
+		);
 	});
 
 	test('roles on none of the managing teams grant nothing', () => {

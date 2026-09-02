@@ -306,7 +306,7 @@
 						</a>
 					</nav>
 				{/if}
-				{#if $ability.can('invite-members', data.container)}
+				{#if $ability.can('manage-users', data.container)}
 					<button
 						class="button button-xs button-primary system-primary"
 						type="button"
@@ -326,7 +326,7 @@
 				<div class="matrix-wrapper">
 					<UserPermissionMatrix
 						container={data.container}
-						editable={isEditMode && $ability.can('invite-members', data.container)}
+						editable={isEditMode && $ability.can('manage-users', data.container)}
 						{users}
 					/>
 				</div>

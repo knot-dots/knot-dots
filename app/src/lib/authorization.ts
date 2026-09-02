@@ -14,7 +14,7 @@ import {
 } from '$lib/models';
 import type { User } from '$lib/stores';
 
-type Actions = 'create' | 'read' | 'update' | 'delete' | 'invite-members';
+type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
@@ -40,7 +40,7 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('invite-members', [
+		can('manage-users', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.organization,
 			payloadTypes.enum.organizational_unit,
@@ -88,7 +88,7 @@ export default function defineAbilityFor(user: User) {
 			}
 		);
 		can(
-			'invite-members',
+			'manage-users',
 			[
 				payloadTypes.enum.measure,
 				payloadTypes.enum.organization,
@@ -101,7 +101,7 @@ export default function defineAbilityFor(user: User) {
 			}
 		);
 		can(
-			'invite-members',
+			'manage-users',
 			[
 				payloadTypes.enum.measure,
 				payloadTypes.enum.organizational_unit,
@@ -112,7 +112,7 @@ export default function defineAbilityFor(user: User) {
 				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can('invite-members', [payloadTypes.enum.organizational_unit], {
+		can('manage-users', [payloadTypes.enum.organizational_unit], {
 			guid: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can('create', commonTypes, {
@@ -131,7 +131,7 @@ export default function defineAbilityFor(user: User) {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(
-			'invite-members',
+			'manage-users',
 			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 			{
 				managed_by: { $in: [...user.adminOf, ...user.headOf] }
@@ -206,7 +206,7 @@ const actionsByGrantKind: Record<GrantKind, Actions> = {
 	update: 'update',
 	create: 'create',
 	delete: 'delete',
-	'manage-members': 'invite-members'
+	'manage-members': 'manage-users'
 };
 
 // The effective rights a member role would have on this container, derived

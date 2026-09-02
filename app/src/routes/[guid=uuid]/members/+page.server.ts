@@ -24,7 +24,7 @@ export const load = (async ({ locals, parent }) => {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 
-	if (defineAbilityFor(locals.user).cannot('invite-members', container)) {
+	if (defineAbilityFor(locals.user).cannot('manage-users', container)) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 

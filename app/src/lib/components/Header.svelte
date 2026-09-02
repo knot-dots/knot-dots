@@ -261,7 +261,7 @@
 	{/if}
 
 	<div class="actions">
-		{#if overlay && container && $ability.can('invite-members', container)}
+		{#if overlay && container && $ability.can('manage-users', container)}
 			<div class="divider"></div>
 
 			<a
@@ -271,7 +271,7 @@
 			>
 				<Users />
 			</a>
-		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('invite-members', container)}
+		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('manage-users', container)}
 			<div class="divider"></div>
 
 			<a
@@ -284,7 +284,7 @@
 			>
 				<Users />
 			</a>
-		{:else if !overlay && !$overlayStore?.key && $ability.can('invite-members', selectedContext)}
+		{:else if !overlay && !$overlayStore?.key && $ability.can('manage-users', selectedContext)}
 			<a
 				class="action-button action-button--size-l"
 				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
