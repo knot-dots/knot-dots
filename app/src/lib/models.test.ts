@@ -4,6 +4,7 @@ import {
 	type Container,
 	container,
 	type EffectPayload,
+	getAvailableInProgramGuids,
 	grantKindsForRole,
 	type GrantKindsByRole,
 	type IndicatorTemplatePayload,
@@ -353,7 +354,8 @@ test('recognizes a template without an outgoing structural relation as a root', 
 					predicates.enum['is-part-of-program'],
 					templateRootGuid
 				),
-				templateRelation(templateRootGuid, predicates.enum['is-copy-of'], templateParentGuid)
+				templateRelation(templateRootGuid, predicates.enum['is-copy-of'], templateParentGuid),
+				templateRelation(templateRootGuid, predicates.enum['is-available-in'], templateParentGuid)
 			]
 		})
 	).toBe(true);
@@ -379,4 +381,17 @@ test('rejects a non-template without a structural parent as a template root', ()
 			relation: []
 		})
 	).toBe(false);
+});
+
+test('returns only programs targeted by outgoing availability relations', () => {
+	expect(
+		getAvailableInProgramGuids({
+			guid: templateRootGuid,
+			relation: [
+				templateRelation(templateRootGuid, predicates.enum['is-available-in'], templateParentGuid),
+				templateRelation(templateChildGuid, predicates.enum['is-available-in'], templateRootGuid),
+				templateRelation(templateRootGuid, predicates.enum['is-copy-of'], templateChildGuid)
+			]
+		})
+	).toEqual([templateParentGuid]);
 });
