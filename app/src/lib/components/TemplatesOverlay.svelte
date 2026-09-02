@@ -32,7 +32,6 @@
 
 	setBulkActionContext({
 		actions: ['visibility', 'delete'],
-		cascadingDelete: true,
 		selected: new SvelteSet<string>()
 	});
 </script>

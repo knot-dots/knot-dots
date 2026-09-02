@@ -141,11 +141,7 @@
 		{/if}
 	</fieldset>
 
-	<ConfirmBulkDeleteDialog
-		bind:dialog
-		cascadingDelete={bulkActionContext.cascadingDelete}
-		handleSubmit={() => performBulkAction({ deleted: true })}
-	/>
+	<ConfirmBulkDeleteDialog bind:dialog handleSubmit={() => performBulkAction({ deleted: true })} />
 {/if}
 
 <style>

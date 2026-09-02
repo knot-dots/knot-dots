@@ -107,7 +107,6 @@ describe('sysadmin', () => {
 		expect(ability.can('read', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('delete-recursively', container)).toBe(true);
 		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
 	});
 });
@@ -154,20 +153,6 @@ describe('create, update and delete via managed_by', () => {
 	});
 });
 
-describe('delete-recursively via managed_by', () => {
-	test('is granted to collaborators for goals, programs and measures', () => {
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.goal))).toBe(true);
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.program))).toBe(true);
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.measure))).toBe(true);
-	});
-
-	test('is not granted without a role on the managing team', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [team] }));
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.goal))).toBe(false);
-	});
-});
-
 describe('categories and terms via managed_by', () => {
 	test('admins and heads may manage them', () => {
 		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
@@ -176,7 +161,6 @@ describe('categories and terms via managed_by', () => {
 			expect(ability.can('create', category)).toBe(true);
 			expect(ability.can('update', category)).toBe(true);
 			expect(ability.can('delete', category)).toBe(true);
-			expect(ability.can('delete-recursively', category)).toBe(true);
 			expect(ability.can('update', makeContainer(payloadTypes.enum.term))).toBe(true);
 		}
 	});
@@ -290,7 +274,6 @@ describe('multi-valued managed_by', () => {
 		expect(ability.can('create', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('delete-recursively', container)).toBe(true);
 	});
 
 	test('admins and heads of one of the managing teams may invite members', () => {

@@ -16,7 +16,6 @@ import {
 	filterMembers,
 	type GoalPayload,
 	type IooiType,
-	mayDelete,
 	type MeasurePayload,
 	type NewContainer,
 	type OrganizationalUnitPayload,
@@ -114,7 +113,7 @@ export const mayCreateContainer = derived([page, ability], (values) => {
 
 export const mayDeleteContainer = derived(ability, (values) => {
 	return (container: Container<AnyPayload>): boolean => {
-		return mayDelete(container, values) || values.can('delete-recursively', container);
+		return values.can('delete', container);
 	};
 });
 

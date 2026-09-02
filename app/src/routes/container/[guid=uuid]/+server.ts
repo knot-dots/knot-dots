@@ -9,7 +9,6 @@ import {
 	predicates
 } from '$lib/models';
 import {
-	deleteContainer,
 	deleteContainerRecursively,
 	deleteOrganizationalUnitContainer,
 	deleteOrganizationContainer,
@@ -48,15 +47,8 @@ export const DELETE = (async ({ locals, params, request }) => {
 			error(412, { message: unwrapFunctionStore(_)('error.precondition_failed') });
 		}
 		const ability = defineAbilityFor(locals.user);
-		if (ability.can('delete-recursively', container)) {
-			await locals.pool.connect(
-				deleteContainerRecursively({
-					...container,
-					user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
-				})
-			);
-			return new Response(null, { status: 204 });
-		} else if (ability.can('delete', container)) {
+		// deleting always cascades to the container's descendants
+		if (ability.can('delete', container)) {
 			if (isOrganizationContainer(container)) {
 				await locals.pool.connect(
 					deleteOrganizationContainer({
@@ -73,7 +65,7 @@ export const DELETE = (async ({ locals, params, request }) => {
 				);
 			} else {
 				await locals.pool.connect(
-					deleteContainer({
+					deleteContainerRecursively({
 						...container,
 						user: [{ predicate: predicates.enum['is-creator-of'], subject: locals.user.guid }]
 					})

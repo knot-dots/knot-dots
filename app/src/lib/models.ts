@@ -1,4 +1,3 @@
-import type { MongoAbility } from '@casl/ability';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 
@@ -2627,24 +2626,6 @@ export function containerOfType(
 		payload: { type: payloadType },
 		realm
 	}) as NewContainer<AnyInitialPayload>;
-}
-
-export function mayDelete(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>,
-	ability: MongoAbility
-) {
-	return (
-		'guid' in container &&
-		container.relation.filter(
-			({ predicate, object }) =>
-				(predicate == predicates.enum['is-part-of'] ||
-					predicate == predicates.enum['is-part-of-category'] ||
-					predicate == predicates.enum['is-part-of-measure']) &&
-				'guid' in container &&
-				object == container.guid
-		).length == 0 &&
-		ability.can('delete', container)
-	);
 }
 
 export function findConnected<T extends Container<AnyPayload>>(

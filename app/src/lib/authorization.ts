@@ -14,7 +14,7 @@ import {
 } from '$lib/models';
 import type { User } from '$lib/stores';
 
-type Actions = 'create' | 'read' | 'update' | 'delete' | 'delete-recursively' | 'invite-members';
+type Actions = 'create' | 'read' | 'update' | 'delete' | 'invite-members';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
@@ -40,13 +40,6 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('delete-recursively', [
-			payloadTypes.enum.measure,
-			payloadTypes.enum.program,
-			payloadTypes.enum.goal,
-			payloadTypes.enum.category,
-			payloadTypes.enum.term
-		]);
 		can('invite-members', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.organization,
@@ -131,20 +124,9 @@ export default function defineAbilityFor(user: User) {
 		can(['delete'], commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 		});
-		can(
-			'delete-recursively',
-			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
-			}
-		);
-		can(
-			['create', 'update', 'delete', 'delete-recursively'],
-			[payloadTypes.enum.category, payloadTypes.enum.term],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf] }
-			}
-		);
+		can(['create', 'update', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
