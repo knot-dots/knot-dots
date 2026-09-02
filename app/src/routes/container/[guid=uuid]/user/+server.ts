@@ -22,11 +22,7 @@ export const GET = (async ({ locals, params, url }) => {
 	if (url.searchParams.has('registered')) {
 		try {
 			const members = await getMembers(container.organization);
-			return json(
-				members
-					.filter(({ enabled }) => enabled)
-					.map(({ id, username }) => ({ email: username, guid: id }))
-			);
+			return json(members.filter(({ enabled }) => enabled));
 		} catch (error) {
 			log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
 			return json([]);

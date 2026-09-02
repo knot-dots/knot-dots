@@ -478,7 +478,7 @@
 	"individual_profile.title": "Individual profile",
 	"info_box": "Infobox",
 	"invite": {
-		"email": "Email",
+		"email": "Email or name",
 		"email_text": "Welcome to knotdots.net!\n\nPlease verify your email address:\n{link}",
 		"email_subject": "Welcome to knotdots.net",
 		"failure": "Sorry, something went wrong. We are working on it.",

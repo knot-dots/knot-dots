@@ -127,7 +127,9 @@ test.describe('Permission matrix', () => {
 		const dialog = page.getByRole('dialog');
 		const emailInput = dialog.getByRole('combobox', { name: 'Email' });
 		await emailInput.click();
-		await expect(dialog.locator('datalist option[value="bob@example.org"]')).toBeAttached();
+		// the suggestions carry the person's name as label, so typing a name
+		// suggests the matching address
+		await expect(dialog.locator('datalist option[value="bob@example.org"]')).toHaveText('Bob Bow');
 		// members are filtered from the suggestions
 		await expect(dialog.locator('datalist option[value="orla@example.org"]')).not.toBeAttached();
 

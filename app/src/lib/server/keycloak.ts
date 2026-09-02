@@ -190,6 +190,8 @@ export async function getMembers(group: string) {
 				email: z.string().email(),
 				emailVerified: z.boolean(),
 				enabled: boolean(),
+				firstName: z.string().optional(),
+				lastName: z.string().optional(),
 				username: z.string()
 			})
 		)

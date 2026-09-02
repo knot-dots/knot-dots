@@ -8,10 +8,10 @@
 		type Container,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		type KeycloakUser,
 		type MemberRole,
 		memberRoles,
-		predicates,
-		type User
+		predicates
 	} from '$lib/models';
 
 	interface Props {
@@ -33,23 +33,22 @@
 			: memberRoles.options.filter((option) => option !== memberRoles.enum.administrator)
 	);
 
-	let registeredUsers: Array<Pick<User, 'email' | 'guid'>> = $state([]);
+	let registeredUsers: KeycloakUser[] = $state([]);
 
 	let registeredUsersLoaded = false;
 
-	// suggest addresses registered in the organization, except current members
+	// suggest addresses registered in the organization, except current members;
+	// the name serves as the option label, so typing a name suggests the address
 	const suggestions = $derived(
 		registeredUsers
 			.filter(
-				({ guid }) =>
+				({ id }) =>
 					!container.user.some(
 						({ predicate, subject }) =>
-							subject === guid && predicate === predicates.enum['is-member-of']
+							subject === id && predicate === predicates.enum['is-member-of']
 					)
 			)
-			.map(({ email }) => email)
-			.filter((address): address is string => Boolean(address))
-			.sort()
+			.sort((a, b) => a.email.localeCompare(b.email))
 	);
 
 	async function loadSuggestions() {
@@ -110,8 +109,10 @@
 			/>
 		</label>
 		<datalist id={suggestionsId}>
-			{#each suggestions as suggestion (suggestion)}
-				<option value={suggestion}></option>
+			{#each suggestions as suggestion (suggestion.id)}
+				<option value={suggestion.email}>
+					{[suggestion.firstName, suggestion.lastName].filter(Boolean).join(' ')}
+				</option>
 			{/each}
 		</datalist>
 		<label>
@@ -151,10 +152,10 @@
 	/* show the same chevron as select elements instead of the native picker indicator */
 	form input.has-suggestions {
 		background-image: url(/src/lib/assets/chevron-down.svg);
-		background-position: right 12px top 12px;
+		background-position: right 8px center;
 		background-repeat: no-repeat;
-		background-size: 18px;
-		padding-right: 34px;
+		background-size: 16px;
+		padding-right: 32px;
 	}
 
 	form input::-webkit-calendar-picker-indicator {
