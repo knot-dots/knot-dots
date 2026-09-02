@@ -15,14 +15,7 @@ import {
 import type { User } from '$lib/stores';
 
 type Actions =
-	| 'create'
-	| 'read'
-	| 'update'
-	| 'delete'
-	| 'delete-recursively'
-	| 'invite-members'
-	| 'relate'
-	| 'prioritize';
+	'create' | 'read' | 'update' | 'delete' | 'delete-recursively' | 'invite-members' | 'relate';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
@@ -63,7 +56,6 @@ export default function defineAbilityFor(user: User) {
 			payloadTypes.enum.program,
 			payloadTypes.enum.simple_measure
 		]);
-		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can(
 			'update',
@@ -173,9 +165,6 @@ export default function defineAbilityFor(user: User) {
 		});
 		can('relate', payloadTypes.options, {
 			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('prioritize', payloadTypes.enum.task, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,

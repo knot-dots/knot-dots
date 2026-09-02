@@ -110,7 +110,6 @@ describe('sysadmin', () => {
 		expect(ability.can('relate', container)).toBe(true);
 		expect(ability.can('delete-recursively', container)).toBe(true);
 		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
-		expect(ability.can('prioritize', makeContainer(payloadTypes.enum.task))).toBe(true);
 	});
 });
 
@@ -210,17 +209,17 @@ describe('invite-members via managed_by', () => {
 	});
 });
 
-describe('task prioritization via managed_by', () => {
+describe('task prioritization requires the update permission', () => {
 	test('is granted to collaborators and denied to mere members', () => {
 		expect(
 			defineAbilityFor(makeUser({ collaboratorOf: [team] })).can(
-				'prioritize',
+				'update',
 				makeContainer(payloadTypes.enum.task)
 			)
 		).toBe(true);
 		expect(
 			defineAbilityFor(makeUser({ memberOf: [team] })).can(
-				'prioritize',
+				'update',
 				makeContainer(payloadTypes.enum.task)
 			)
 		).toBe(false);
