@@ -112,8 +112,7 @@
 		use:dragHandleZone={{
 			flipDurationMs: 100,
 			items: nodes,
-			dropTargetStyle: {},
-			type: String(parentNode?.level ?? 0)
+			dropTargetStyle: {}
 		}}
 	>
 		{#each nodes as node (node.guid)}
