@@ -14,8 +14,7 @@ import {
 } from '$lib/models';
 import type { User } from '$lib/stores';
 
-type Actions =
-	'create' | 'read' | 'update' | 'delete' | 'delete-recursively' | 'invite-members' | 'relate';
+type Actions = 'create' | 'read' | 'update' | 'delete' | 'delete-recursively' | 'invite-members';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
@@ -41,7 +40,6 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', payloadTypes.options);
 		can('delete-recursively', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.program,
@@ -157,15 +155,6 @@ export default function defineAbilityFor(user: User) {
 				managed_by: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can('relate', payloadTypes.options, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('relate', payloadTypes.options, {
-			organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('relate', payloadTypes.options, {
-			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }

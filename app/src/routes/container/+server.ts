@@ -174,7 +174,7 @@ export const POST = (async ({ locals, request }) => {
 		if (!isProgramContainer(program)) {
 			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
 		}
-		if (ability.cannot('read', program) || ability.cannot('relate', program)) {
+		if (ability.cannot('read', program) || ability.cannot('update', program)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 	}

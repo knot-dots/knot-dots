@@ -107,7 +107,6 @@ describe('sysadmin', () => {
 		expect(ability.can('read', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('relate', container)).toBe(true);
 		expect(ability.can('delete-recursively', container)).toBe(true);
 		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
 	});
@@ -125,7 +124,6 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('update', measure)).toBe(true);
 		expect(ability.can('delete', measure)).toBe(true);
 		expect(ability.can('update', makeContainer(payloadTypes.enum.program))).toBe(true);
-		expect(ability.can('relate', measure)).toBe(true);
 	});
 
 	test('a user without a role on the managing team may not modify', () => {
@@ -134,7 +132,6 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('create', measure)).toBe(false);
 		expect(ability.can('update', measure)).toBe(false);
 		expect(ability.can('delete', measure)).toBe(false);
-		expect(ability.can('relate', measure)).toBe(false);
 	});
 
 	test('membership alone does not grant modification', () => {
@@ -293,7 +290,6 @@ describe('multi-valued managed_by', () => {
 		expect(ability.can('create', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('relate', container)).toBe(true);
 		expect(ability.can('delete-recursively', container)).toBe(true);
 	});
 
