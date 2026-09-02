@@ -17,6 +17,7 @@
 		isReportContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
+		isTemplateContainer,
 		titleForGoalCollection,
 		titleForMeasureCollection,
 		titleForProgramCollection
@@ -33,6 +34,7 @@
 		columnIds: () => data.columnIds,
 		columns: () => data.columns,
 		created: () => $lastCreatedContainers,
+		createdFilter: (container) => !isTemplateContainer(container),
 		deleted: () => $lastDeletedContainers,
 		fetchPage: async ({ columnId, offset, signal }) => {
 			const result = await fetchContainerPage<Container<AnyPayload>>({
