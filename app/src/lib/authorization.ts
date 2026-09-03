@@ -18,11 +18,9 @@ type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
-	payloadTypes.enum.binary_indicator,
 	payloadTypes.enum.category,
 	payloadTypes.enum.help,
 	payloadTypes.enum.html,
-	payloadTypes.enum.indicator_template,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.program,
@@ -73,20 +71,6 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can(
-			['create', 'update', 'delete'],
-			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
-			{
-				organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
-		can(
-			['create', 'update', 'delete'],
-			[payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator_template],
-			{
-				organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-			}
-		);
 		can(
 			'manage-users',
 			[

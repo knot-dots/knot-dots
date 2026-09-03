@@ -340,6 +340,43 @@ describe('field-level rules', () => {
 	});
 });
 
+describe('indicator types follow the common content rules', () => {
+	const template = makeContainer(
+		payloadTypes.enum.indicator_template,
+		{ managed_by: organization, organization },
+		{ unit: '%' }
+	);
+
+	test('admins and heads manage them organization-wide', () => {
+		for (const user of [
+			makeUser({ adminOf: [organization] }),
+			makeUser({ headOf: [organization] })
+		]) {
+			const ability = defineAbilityFor(user);
+			expect(ability.can('create', template)).toBe(true);
+			expect(ability.can('update', template)).toBe(true);
+			expect(ability.can('delete', template)).toBe(true);
+		}
+	});
+
+	test('collaborators manage them through the managing team only', () => {
+		const viaManagedBy = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
+		expect(viaManagedBy.can('create', template)).toBe(true);
+		expect(viaManagedBy.can('update', template)).toBe(true);
+		expect(viaManagedBy.can('delete', template)).toBe(true);
+
+		// a collaborator of the organization no longer reaches an indicator
+		// template that is managed by a team they are not part of
+		const foreign = makeContainer(
+			payloadTypes.enum.indicator_template,
+			{ managed_by: team, organization },
+			{ unit: '%' }
+		);
+		const ability = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
+		expect(ability.can('update', foreign)).toBe(false);
+	});
+});
+
 describe('grantKindsForRoleOn', () => {
 	const viewer = {
 		family_name: 'Muster',
