@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { toDom } from 'hast-util-to-dom';
+	import rehypeParse from 'rehype-parse';
+	import type { Attachment } from 'svelte/attachments';
+	import { unified } from 'unified';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import { type AnyPayload, type Container, type HtmlPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -16,6 +20,20 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
+
+	/**
+	 * Appends the given HTML content to an element
+	 *
+	 * Beware: any script tags in the content will be executed.
+	 */
+	function appendHTML(content: string): Attachment<HTMLElement> {
+		return (element) => {
+			element.innerHTML = '';
+			element.appendChild(
+				toDom(unified().use(rehypeParse, { fragment: true }).parse(content), { fragment: true })
+			);
+		};
+	}
 </script>
 
 <header>
@@ -31,8 +49,7 @@
 {#if editable && $ability.can('update', container)}
 	<textarea bind:value={container.payload.body} />
 {:else}
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html container.payload.body}
+	<div {@attach appendHTML(container.payload.body)}></div>
 {/if}
 
 <style>
