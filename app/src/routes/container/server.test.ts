@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { locale } from 'svelte-i18n';
-import { newContainer, payloadTypes } from '$lib/models';
+import { newContainer, payloadTypes, predicates } from '$lib/models';
 import { POST } from './+server';
 
 locale.set('en');
@@ -43,3 +43,29 @@ test.each(['is-copy-of', 'is-individual-profile-of'] as const)(
 		});
 	}
 );
+
+test('ordinary creation rejects is-available-in relations on non-templates', async () => {
+	const body = newContainer.parse({
+		managed_by: organizationGuid,
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: { template: false, title: 'Not a template', type: payloadTypes.enum.goal },
+		realm: 'realm',
+		relation: [
+			{
+				object: sourceGuid,
+				position: 0,
+				predicate: predicates.enum['is-available-in']
+			}
+		]
+	});
+	const request = new Request('http://localhost/container', {
+		method: 'POST',
+		body: JSON.stringify(body),
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	await expect(POST({ locals: { pool: {}, user }, request } as never)).rejects.toMatchObject({
+		status: 422
+	});
+});

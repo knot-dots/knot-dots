@@ -80,7 +80,11 @@
 	{:else if data.key === overlayKey.enum['resources']}
 		<ResourcesOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum.templates && isProgramContainer(data.container)}
-		<TemplatesOverlay containers={data.containers} facets={data.facets} />
+		<TemplatesOverlay
+			container={data.container}
+			containers={data.containers}
+			facets={data.facets}
+		/>
 	{:else if data.key === overlayKey.enum['view']}
 		<EditableDetailView
 			container={data.container}

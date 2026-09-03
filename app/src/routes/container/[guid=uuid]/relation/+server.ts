@@ -62,7 +62,6 @@ export const GET = (async ({ locals, params, url }) => {
 	if (!parseResult.success) {
 		error(400, { message: parseResult.error.message });
 	}
-
 	const organizations = await locals.pool.connect(
 		getManyOrganizationContainers({ default: true }, '')
 	);
@@ -218,6 +217,9 @@ export const POST = (async ({ locals, params, request }) => {
 	}
 	if (parseResult.data.some(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))) {
 		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+	}
+	if (parseResult.data.some(({ predicate }) => predicate === predicates.enum['is-available-in'])) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
 	const ability = defineAbilityFor(locals.user);

@@ -21,11 +21,12 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
+		availableIn?: string;
 		container: Container<CustomCollectionPayload>;
 		dialog?: HTMLDialogElement;
 	}
 
-	let { container = $bindable(), dialog = $bindable() }: Props = $props();
+	let { availableIn, container = $bindable(), dialog = $bindable() }: Props = $props();
 
 	let filter = $state<Record<string, string[]>>({});
 
@@ -82,11 +83,18 @@
 	const inViewport = new IsInViewport(() => dialog);
 
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current],
-		async ([filter, sort, terms, inViewport], _, { signal }) => {
+		[
+			() => $state.snapshot(filter),
+			() => sort,
+			() => terms,
+			() => availableIn,
+			() => inViewport.current
+		],
+		async ([filter, sort, terms, availableIn, inViewport], _, { signal }) => {
 			return inViewport
 				? fetchContainers(
 						{
+							availableIn,
 							indicatorCategory: filter.indicatorCategory ?? [],
 							organization: [page.data.currentOrganization.guid],
 							payloadType: filter.type && filter.type.length > 0 ? filter.type : defaultPayloadType,

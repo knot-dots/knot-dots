@@ -6,6 +6,7 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import {
 	etag,
+	getAvailableInProgramGuids,
 	isContainerWithEditorialState,
 	isIndicatorTemplateContainer,
 	isOrganizationContainer,
@@ -70,14 +71,14 @@ export const POST = (async ({ locals, params, request }) => {
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
-		const serverOwnedRelations = container.relation.filter(({ predicate }) =>
+		const serverOwnedCopyRelations = container.relation.filter(({ predicate }) =>
 			isServerOwnedCopyRelationPredicate(predicate)
 		);
 		const hasSpoofedServerOwnedRelation = parseResult.data.relation
 			.filter(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
 			.some(
 				(submitted) =>
-					!serverOwnedRelations.some(
+					!serverOwnedCopyRelations.some(
 						(current) =>
 							current.object === submitted.object &&
 							current.predicate === submitted.predicate &&
@@ -88,11 +89,42 @@ export const POST = (async ({ locals, params, request }) => {
 		if (hasSpoofedServerOwnedRelation) {
 			error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
 		}
+		const normalizeOutgoingAvailabilityRelations = (relations: typeof container.relation) =>
+			relations
+				.filter(
+					({ predicate, subject }) =>
+						predicate === predicates.enum['is-available-in'] && subject === container.guid
+				)
+				.map(({ object, position, predicate, subject }) => ({
+					object,
+					position,
+					predicate,
+					subject
+				}))
+				.toSorted((a, b) => `${a.subject}:${a.object}`.localeCompare(`${b.subject}:${b.object}`));
+		if (
+			JSON.stringify(normalizeOutgoingAvailabilityRelations(parseResult.data.relation)) !==
+			JSON.stringify(normalizeOutgoingAvailabilityRelations(container.relation))
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (
+			getAvailableInProgramGuids(container).length > 0 &&
+			(!('template' in parseResult.data.payload) || parseResult.data.payload.template !== true)
+		) {
+			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+		}
+		const availabilityRelations = container.relation.filter(
+			({ predicate }) => predicate === predicates.enum['is-available-in']
+		);
 		const relations = [
 			...parseResult.data.relation.filter(
-				({ predicate }) => !isServerOwnedCopyRelationPredicate(predicate)
+				({ predicate }) =>
+					!isServerOwnedCopyRelationPredicate(predicate) &&
+					predicate !== predicates.enum['is-available-in']
 			),
-			...serverOwnedRelations
+			...serverOwnedCopyRelations,
+			...availabilityRelations
 		];
 		if (
 			parseResult.data.organization !== container.organization &&

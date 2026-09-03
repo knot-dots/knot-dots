@@ -47,6 +47,7 @@ type MyFixtures = {
 	landingPage: LandingPage;
 	organizationalUnitWithActualData: Container<OrganizationalUnitPayload>;
 	programPage: ProgramPage;
+	programReportTemplate: Container<ReportPayload>;
 	reportTemplate: Container<ReportPayload>;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
@@ -438,6 +439,38 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	programPage: async ({ page }, use) => {
 		await use(new ProgramPage(page));
+	},
+	programReportTemplate: async (
+		{ adminContext, testOrganization, testProgram },
+		use,
+		workerInfo
+	) => {
+		const newReport = containerOfType(
+			payloadTypes.enum.report,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as Container<ReportPayload>;
+		const programReportTemplate = await createContainer(adminContext, {
+			...newReport,
+			payload: {
+				...newReport.payload,
+				template: true,
+				title: `Program report template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: testProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		});
+
+		await use(programReportTemplate);
+
+		await deleteContainer(adminContext, programReportTemplate);
 	},
 	reportTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(

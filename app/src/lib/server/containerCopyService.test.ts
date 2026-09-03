@@ -5,19 +5,14 @@ import { CopyPlanError, type ContainerCopyPlan } from '$lib/server/containerCopy
 
 const mocks = vi.hoisted(() => ({
 	graph: undefined as unknown,
+	getContainerByGuid: vi.fn(),
 	targets: new Map<string, unknown>(),
 	persist: vi.fn()
 }));
 
 vi.mock('$lib/server/db', () => ({
 	getContainerCopyGraph: () => async () => mocks.graph,
-	getContainerByGuid: (guid: string) => async () => {
-		const target = mocks.targets.get(guid);
-		if (!target) {
-			throw new NotFoundError('Target not found', { sql: '', values: [] });
-		}
-		return target;
-	}
+	getContainerByGuid: (guid: string) => mocks.getContainerByGuid(guid)
 }));
 
 vi.mock('$lib/server/containerCopyPersistence', () => ({
@@ -96,6 +91,14 @@ const pool = {
 beforeEach(() => {
 	mocks.persist.mockReset();
 	mocks.targets = new Map([[organizationGuid, organization]]);
+	mocks.getContainerByGuid.mockReset();
+	mocks.getContainerByGuid.mockImplementation((guid: string) => async () => {
+		const target = mocks.targets.get(guid);
+		if (!target) {
+			throw new NotFoundError('Target not found', { sql: '', values: [] });
+		}
+		return target;
+	});
 });
 
 test('derives the target envelope server-side and returns the persisted root-map entry', async () => {
@@ -345,6 +348,7 @@ test('applies template-instance policy through the service', async () => {
 	const root = await executeContainerCopy({
 		request: {
 			operation: 'template-instance',
+			availableIn: null,
 			sourceGuid,
 			targetOrganizationGuid: organizationGuid,
 			targetOrganizationalUnitGuid: null,
@@ -411,6 +415,67 @@ test('creates a template through the service and rejects existing templates', as
 	).rejects.toEqual(new ContainerCopyServiceError('unsupported_copy_source'));
 });
 
+test('requires a scoped template instance to name its readable program', async () => {
+	const programGuid = childGuid;
+	const program = container(programGuid, {
+		title: 'Program',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Scoped template',
+			type: payloadTypes.enum.report,
+			visibility: visibility.enum.public
+		},
+		[
+			{
+				object: programGuid,
+				position: 0,
+				predicate: predicates.enum['is-available-in'],
+				subject: sourceGuid
+			}
+		]
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, program] };
+
+	const request = {
+		operation: 'template-instance' as const,
+		availableIn: programGuid,
+		sourceGuid,
+		targetOrganizationGuid: organizationGuid,
+		targetOrganizationalUnitGuid: null,
+		rootPayload: { ...source.payload, title: 'Instance' }
+	};
+
+	await expect(
+		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+	).resolves.toMatchObject({ payload: { template: false, title: 'Instance' } });
+	expect(mocks.getContainerByGuid).toHaveBeenCalledOnce();
+	expect(mocks.getContainerByGuid).toHaveBeenCalledWith(organizationGuid);
+
+	await expect(
+		executeContainerCopy({
+			request: { ...request, availableIn: null },
+			pool,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
+
+	source.relation.push({
+		object: otherOrganizationGuid,
+		position: 0,
+		predicate: predicates.enum['is-available-in'],
+		subject: sourceGuid
+	});
+	await expect(
+		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
+});
+
 test('retains public and same-organization collection references only', async () => {
 	const privateItemGuid = '00000000-0000-4000-8000-000000000010';
 	const publicItemGuid = '00000000-0000-4000-8000-000000000011';
@@ -418,13 +483,19 @@ test('retains public and same-organization collection references only', async ()
 	const privateTemplateGuid = '00000000-0000-4000-8000-000000000013';
 	const publicTemplateGuid = '00000000-0000-4000-8000-000000000014';
 	const localTemplateGuid = '00000000-0000-4000-8000-000000000015';
+	const scopedTemplateGuid = '00000000-0000-4000-8000-000000000016';
 	const source = container(sourceGuid, {
 		allowSearch: false,
 		allowSort: false,
 		filter: {},
 		item: [privateItemGuid, publicItemGuid, localItemGuid],
 		listType: 'wall',
-		newItemTemplate: [privateTemplateGuid, publicTemplateGuid, localTemplateGuid],
+		newItemTemplate: [
+			privateTemplateGuid,
+			publicTemplateGuid,
+			localTemplateGuid,
+			scopedTemplateGuid
+		],
 		showDescription: false,
 		sort: 'alpha',
 		terms: '',
@@ -471,7 +542,23 @@ test('retains public and same-organization collection references only', async ()
 			template: true,
 			title: 'Private local template',
 			type: payloadTypes.enum.program
-		})
+		}),
+		container(
+			scopedTemplateGuid,
+			{
+				template: true,
+				title: 'Program-scoped template',
+				type: payloadTypes.enum.program
+			},
+			[
+				{
+					object: childGuid,
+					position: 0,
+					predicate: predicates.enum['is-available-in'],
+					subject: scopedTemplateGuid
+				}
+			]
+		)
 	];
 	mocks.graph = { rootGuid: sourceGuid, containers: [source, ...references] };
 

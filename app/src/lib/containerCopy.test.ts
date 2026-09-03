@@ -30,6 +30,25 @@ test('accepts only the operation-specific copy request fields', () => {
 	).toBe(true);
 	expect(
 		containerCopyRequest.safeParse({
+			operation: 'template-instance',
+			availableIn: null,
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: { template: false, title: 'Edited', type: payloadTypes.enum.report }
+		}).success
+	).toBe(true);
+	expect(
+		containerCopyRequest.safeParse({
+			operation: 'template-instance',
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: { template: false, title: 'Edited', type: payloadTypes.enum.report }
+		}).success
+	).toBe(false);
+	expect(
+		containerCopyRequest.safeParse({
 			operation: 'individual-profile',
 			sourceGuid,
 			creatorGuid: sourceGuid

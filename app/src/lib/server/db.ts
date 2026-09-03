@@ -20,6 +20,7 @@ import {
 	grantKindsForRole,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
+	isProgramContainer,
 	type MemberRole,
 	memberRoleFromPredicates,
 	memberRolePredicates,
@@ -35,6 +36,7 @@ import {
 	predicates,
 	type Relation,
 	relation,
+	structuralCopyPredicates,
 	type TaskPriority,
 	type User,
 	user,
@@ -47,8 +49,7 @@ import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import {
 	type CopyGraphSnapshot,
 	type NewContainerWithGuid,
-	referenceCopyPredicates,
-	structuralCopyPredicates
+	referenceCopyPredicates
 } from '$lib/server/containerCopyPlan';
 import { enqueueIndexingEvent } from '$lib/server/indexingQueue';
 import { createGroup, deleteGroup, updateAccessSettings } from '$lib/server/keycloak';
@@ -518,6 +519,37 @@ export function deleteContainer(container: Container<AnyPayload>) {
 				await deleteGroup(container.guid);
 			}
 
+			if (isProgramContainer(container)) {
+				const scopedTemplateRows = await txConnection.any(sql.typeAlias('anyContainer')`
+					SELECT template.*
+					FROM container_relation availability
+					JOIN container template ON template.guid = availability.subject
+					WHERE availability.object = ${container.guid}
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+						AND availability.valid_currently
+						AND NOT availability.deleted
+						AND template.valid_currently
+						AND NOT template.deleted
+						AND template.payload @> '{"template": true}'
+						AND NOT EXISTS (
+							SELECT 1
+							FROM container_relation other_availability
+							WHERE other_availability.subject = template.guid
+								AND other_availability.object != ${container.guid}
+								AND other_availability.predicate = ${predicates.enum['is-available-in']}
+								AND other_availability.valid_currently
+								AND NOT other_availability.deleted
+						)
+				`);
+				const scopedTemplates = await withUserAndRelation<Container<AnyPayload>>(
+					txConnection,
+					scopedTemplateRows
+				);
+				for (const scopedTemplate of scopedTemplates) {
+					await deleteContainer(scopedTemplate)(txConnection);
+				}
+			}
+
 			const sections = await getAllRelatedContainers(
 				[container.organization],
 				container.guid,
@@ -682,11 +714,11 @@ export function getContainerByGuid(guid: string) {
  * child subject. Recursive UNION deduplicates containers reached through multiple parents and
  * terminates cycles.
  *
- * Indicator/resource targets and custom-collection item/template references are fetched as
- * reference-only containers without traversing their descendants. The result is enriched with
- * current relations, user relations, and computed management data. It intentionally remains an
- * overinclusive server-side snapshot: visibility and invalid-reference pruning belong to
- * createContainerCopyPlan(), and this result must not be exposed directly to clients.
+ * Indicator/resource targets, custom-collection item/template references, and program availability
+ * targets are fetched as supporting containers without traversing their descendants. The result is
+ * enriched with current relations, user relations, and computed management data. It intentionally
+ * remains an overinclusive server-side snapshot: visibility and invalid-reference pruning belong
+ * to createContainerCopyPlan(), and this result must not be exposed directly to clients.
  */
 export function getContainerCopyGraph(rootGuid: string) {
 	return async (connection: DatabaseConnection): Promise<CopyGraphSnapshot> => {
@@ -718,11 +750,16 @@ export function getContainerCopyGraph(rootGuid: string) {
 			), copy_candidate AS (
 				SELECT guid
 				FROM walk
-			), reference_guid AS (
+			), supporting_guid AS (
 				SELECT cr.object AS guid
 				FROM current_relation cr
 				JOIN copy_candidate candidate ON candidate.guid = cr.subject
 				WHERE cr.predicate = ANY (${sql.array(referenceCopyPredicates, 'text')})
+				UNION
+				SELECT cr.object AS guid
+				FROM current_relation cr
+				JOIN copy_candidate candidate ON candidate.guid = cr.subject
+				WHERE cr.predicate = ${predicates.enum['is-available-in']}
 				UNION
 				SELECT (source.payload->>'resource')::uuid AS guid
 				FROM current_container source
@@ -743,7 +780,7 @@ export function getContainerCopyGraph(rootGuid: string) {
 			), all_guid AS (
 				SELECT guid FROM copy_candidate
 				UNION
-				SELECT guid FROM reference_guid WHERE guid IS NOT NULL
+				SELECT guid FROM supporting_guid WHERE guid IS NOT NULL
 			)
 			SELECT c.*
 			FROM current_container c
@@ -811,6 +848,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 function prepareWhereCondition(filters: {
 	administrativeTypes?: string[];
 	assignees?: string[];
+	availableIn?: string;
 	customCategories?: Record<string, string[]>;
 	customCategoryMatch?: 'any' | 'all';
 	excludeRelation?: string[];
@@ -963,12 +1001,28 @@ function prepareWhereCondition(filters: {
 			)})`
 		);
 	}
-	if (filters.template !== undefined) {
+	if (filters.template === true) {
+		conditions.push(sql.fragment`c.payload @> '{"template": true}'`);
 		conditions.push(
-			filters.template
-				? sql.fragment`c.payload @> '{"template": true}'`
-				: sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`
+			filters.availableIn
+				? sql.fragment`EXISTS (
+					SELECT 1 FROM container_relation availability
+					WHERE availability.subject = c.guid
+						AND availability.object = ${filters.availableIn}
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+						AND availability.valid_currently
+						AND NOT availability.deleted
+				)`
+				: sql.fragment`NOT EXISTS (
+					SELECT 1 FROM container_relation availability
+					WHERE availability.subject = c.guid
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+						AND availability.valid_currently
+						AND NOT availability.deleted
+				)`
 		);
+	} else if (filters.template === false) {
+		conditions.push(sql.fragment`(c.payload @> '{"template": false}' OR NOT payload ? 'template')`);
 	}
 	if (filters.terms) {
 		conditions.push(
@@ -1077,6 +1131,7 @@ export function getManyContainers(
 	filters: {
 		administrativeTypes?: string[];
 		assignees?: string[];
+		availableIn?: string;
 		customCategories?: Record<string, string[]>;
 		customCategoryMatch?: 'any' | 'all';
 		federalStates?: string[];

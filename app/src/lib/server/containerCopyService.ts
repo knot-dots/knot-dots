@@ -4,8 +4,10 @@ import type { ContainerCopyRequest, ContainerCopyRootOperation } from '$lib/cont
 import {
 	type AnyPayload,
 	type Container,
+	getAvailableInProgramGuids,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
+	isProgramContainer,
 	predicates,
 	visibility
 } from '$lib/models';
@@ -136,6 +138,22 @@ export async function executeContainerCopy({
 	if (!source || ability.cannot('read', source)) {
 		throw new ContainerCopyServiceError('source_unavailable');
 	}
+	if (request.operation === 'template-instance') {
+		const availableIn = getAvailableInProgramGuids(source);
+		if (
+			(request.availableIn === null && availableIn.length !== 0) ||
+			(request.availableIn !== null &&
+				(availableIn.length !== 1 || availableIn[0] !== request.availableIn))
+		) {
+			throw new ContainerCopyServiceError('source_unavailable');
+		}
+		if (request.availableIn !== null) {
+			const program = graph.containers.find(({ guid }) => guid === request.availableIn);
+			if (!program || !isProgramContainer(program) || ability.cannot('read', program)) {
+				throw new ContainerCopyServiceError('source_unavailable');
+			}
+		}
+	}
 	if (isOrganizationContainer(source)) {
 		throw new ContainerCopyServiceError('unsupported_copy_source');
 	}
@@ -188,9 +206,20 @@ export async function executeContainerCopy({
 		canReadSource: (container) => ability.can('read', container),
 		canRetainCollectionItem: (container, copyTarget) =>
 			container.organization === copyTarget.organization && ability.can('read', container),
-		canUseNewItemTemplate: (container, copyTarget) =>
-			container.payload.visibility === visibility.enum.public ||
-			container.organization === copyTarget.organization
+		canUseNewItemTemplate: (container, copyTarget) => {
+			const availableIn = getAvailableInProgramGuids(container);
+			if (availableIn.length > 0) {
+				return (
+					request.operation === 'template-instance' &&
+					request.availableIn !== null &&
+					availableIn.includes(request.availableIn)
+				);
+			}
+			return (
+				container.payload.visibility === visibility.enum.public ||
+				container.organization === copyTarget.organization
+			);
+		}
 	};
 
 	let plan;

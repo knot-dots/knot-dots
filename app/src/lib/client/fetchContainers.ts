@@ -7,6 +7,7 @@ export default async function fetchContainers(
 	filters: {
 		[key: string]: string | string[] | undefined;
 		assignee?: string[];
+		availableIn?: string;
 		guid?: string[];
 		indicator?: string[];
 		indicatorCategory?: string[];
@@ -33,6 +34,9 @@ export default async function fetchContainers(
 	});
 	for (const value of filters.assignee ?? []) {
 		params.append('assignee', value);
+	}
+	if (filters.availableIn) {
+		params.append('availableIn', filters.availableIn);
 	}
 	for (const value of filters.guid ?? []) {
 		params.append('guid', value);

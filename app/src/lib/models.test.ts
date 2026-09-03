@@ -7,6 +7,7 @@ import {
 	grantKindsForRole,
 	type GrantKindsByRole,
 	type IndicatorTemplatePayload,
+	isTemplateRoot,
 	memberRoleFromPredicates,
 	type MeasurePayload,
 	memberRoleOf,
@@ -14,6 +15,7 @@ import {
 	payloadTypes,
 	predicates,
 	type ProgramPayload,
+	type Relation,
 	roleAfterGrantToggle,
 	sortIndicatorsByRelevanceForGoalOrMeasure,
 	units,
@@ -326,4 +328,55 @@ test('roleAfterGrantToggle never removes the membership on a tie', () => {
 	expect(roleAfterGrantToggle(kindsByRole, memberRoles.enum.head, 'update', false)).toBe(
 		memberRoles.enum.observer
 	);
+});
+
+const templateRootGuid = 'cf20d9df-b4dc-43ce-bee1-625c065be97e';
+const templateParentGuid = 'e155f737-e2f8-48bd-bf13-4c71fd8939e5';
+const templateChildGuid = 'e9844538-491d-44cf-8cae-3095b5525127';
+
+function templateRelation(
+	subject: string,
+	predicate: Relation['predicate'],
+	object: string
+): Relation {
+	return { object, position: 0, predicate, subject };
+}
+
+test('recognizes a template without an outgoing structural relation as a root', () => {
+	expect(
+		isTemplateRoot({
+			guid: templateRootGuid,
+			payload: { template: true },
+			relation: [
+				templateRelation(
+					templateChildGuid,
+					predicates.enum['is-part-of-program'],
+					templateRootGuid
+				),
+				templateRelation(templateRootGuid, predicates.enum['is-copy-of'], templateParentGuid)
+			]
+		})
+	).toBe(true);
+});
+
+test('rejects a template with an outgoing structural relation as a root', () => {
+	expect(
+		isTemplateRoot({
+			guid: templateRootGuid,
+			payload: { template: true },
+			relation: [
+				templateRelation(templateRootGuid, predicates.enum['is-section-of'], templateParentGuid)
+			]
+		})
+	).toBe(false);
+});
+
+test('rejects a non-template without a structural parent as a template root', () => {
+	expect(
+		isTemplateRoot({
+			guid: templateRootGuid,
+			payload: { template: false },
+			relation: []
+		})
+	).toBe(false);
 });

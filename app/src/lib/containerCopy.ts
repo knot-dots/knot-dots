@@ -15,6 +15,7 @@ export const containerCopyRequest = z.discriminatedUnion('operation', [
 	}),
 	z.strictObject({
 		operation: z.literal('template-instance'),
+		availableIn: z.uuid().nullable(),
 		...targetedContainerCopyRequest
 	}),
 	z.strictObject({

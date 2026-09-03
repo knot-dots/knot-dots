@@ -15,7 +15,8 @@
 		containerOfType,
 		isOrganizationalUnitContainer,
 		type NewContainer,
-		type PayloadType
+		type PayloadType,
+		predicates
 	} from '$lib/models';
 	import { mayCreateContainer, newContainer } from '$lib/stores';
 
@@ -24,6 +25,7 @@
 		item?: Snippet<[T]>;
 		payloadType: PayloadType[];
 		createAsTemplate?: boolean;
+		availableIn?: string;
 		hideCreateButton?: boolean;
 		footer?: Snippet;
 	}
@@ -33,6 +35,7 @@
 		item,
 		payloadType,
 		createAsTemplate = false,
+		availableIn,
 		hideCreateButton = false,
 		footer
 	}: Props = $props();
@@ -52,6 +55,13 @@
 
 		if (createAsTemplate && 'template' in container.payload) {
 			container.payload.template = true;
+			if (availableIn) {
+				container.relation.push({
+					object: availableIn,
+					predicate: predicates.enum['is-available-in'],
+					position: 0
+				});
+			}
 		}
 
 		$newContainer = container;

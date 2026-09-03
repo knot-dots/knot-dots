@@ -31,6 +31,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 		} = await parent();
 
 		const templates = await fetchTemplates({
+			availableIn: container.guid,
 			pool: locals.pool,
 			user: locals.user,
 			url,

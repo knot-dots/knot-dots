@@ -41,3 +41,28 @@ test.each(['is-copy-of', 'is-individual-profile-of'] as const)(
 		expect(transaction).not.toHaveBeenCalled();
 	}
 );
+
+test('relation updates reject direct availability changes before writing', async () => {
+	const transaction = vi.fn();
+	const request = new Request(`http://localhost/container/${containerGuid}/relation`, {
+		method: 'POST',
+		body: JSON.stringify([
+			{
+				object: sourceGuid,
+				position: 0,
+				predicate: 'is-available-in',
+				subject: containerGuid
+			}
+		]),
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	await expect(
+		POST({
+			locals: { pool: { transaction }, user },
+			params: { guid: containerGuid },
+			request
+		} as never)
+	).rejects.toMatchObject({ status: 403 });
+	expect(transaction).not.toHaveBeenCalled();
+});
