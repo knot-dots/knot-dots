@@ -3,8 +3,11 @@ import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import type { AnyPayload, Container, PayloadType, User as ModelUser } from '$lib/models';
 import {
 	type AnyInitialPayload,
+	containerOfType,
 	type GrantKind,
 	grantKinds,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	type MemberRole,
 	memberRoles,
 	type NewContainer,
@@ -193,16 +196,13 @@ const actionsByGrantKind: Record<GrantKind, Actions> = {
 	'manage-members': 'manage-users'
 };
 
-// The effective rights a member role would have on this container, derived
-// from the actual authorization rules: what a role permits depends on the
-// container type. Serves both the permission matrix display and its snapping
-// candidates.
-export function grantKindsForRoleOn(
+// A synthetic ability holding the given member role on this container only.
+function abilityForRoleOn(
 	container: Container<AnyPayload>,
 	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
 	role: MemberRole | null
-): GrantKind[] {
-	const ability = defineAbilityFor({
+) {
+	return defineAbilityFor({
 		adminOf: role === memberRoles.enum.administrator ? [container.guid] : [],
 		collaboratorOf: role === memberRoles.enum.collaborator ? [container.guid] : [],
 		familyName: user.family_name,
@@ -214,7 +214,42 @@ export function grantKindsForRoleOn(
 		roles: [],
 		settings: user.settings
 	});
+}
+
+// The effective rights a member role would have on this container itself,
+// derived from the actual authorization rules: what a role permits depends on
+// the container type.
+export function grantKindsForRoleOn(
+	container: Container<AnyPayload>,
+	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
+	role: MemberRole | null
+): GrantKind[] {
+	const ability = abilityForRoleOn(container, user, role);
 	return grantKinds.options.filter((kind) => ability.can(actionsByGrantKind[kind], container));
+}
+
+const subordinateGrantKinds: GrantKind[] = [
+	grantKinds.enum.create,
+	grantKinds.enum.update,
+	grantKinds.enum.delete
+];
+
+// The effective rights the same role yields on subordinate objects within this
+// container, probed against a common content type in the container's scope.
+export function grantKindsForRoleOnSubordinates(
+	container: Container<AnyPayload>,
+	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
+	role: MemberRole | null
+): GrantKind[] {
+	const ability = abilityForRoleOn(container, user, role);
+	const subordinate = containerOfType(
+		payloadTypes.enum.goal,
+		isOrganizationContainer(container) ? container.guid : container.organization,
+		isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
+		container.guid,
+		container.realm
+	);
+	return subordinateGrantKinds.filter((kind) => ability.can(actionsByGrantKind[kind], subordinate));
 }
 
 export function filterVisible<T extends Container<AnyPayload>>(
