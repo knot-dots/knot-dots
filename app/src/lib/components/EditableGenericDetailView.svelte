@@ -18,7 +18,8 @@
 		isContainerWithName,
 		isContainerWithTitle,
 		isSimpleMeasureContainer,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -30,7 +31,14 @@
 	let { container = $bindable() }: Props = $props();
 
 	let relatedContainersQuery = resource([() => container.guid], async ([guid], _, { signal }) =>
-		fetchRelatedContainers(guid, {}, 'alpha', { signal })
+		fetchRelatedContainers(
+			guid,
+			{ relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']] },
+			'alpha',
+			{
+				signal
+			}
+		)
 	);
 
 	const handleSubmit = $derived(autoSave(container, 2000));

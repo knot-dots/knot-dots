@@ -16,7 +16,7 @@
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { type AnyPayload, type Container, type PostPayload } from '$lib/models';
+	import { type AnyPayload, type Container, type PostPayload, predicates } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 
@@ -32,7 +32,12 @@
 	let guid = $derived(container.guid);
 
 	let relatedContainersQuery = resource([() => guid], async ([guid], _, { signal }) =>
-		fetchRelatedContainers(guid, {}, 'alpha', { signal })
+		fetchRelatedContainers(
+			guid,
+			{ relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']] },
+			'alpha',
+			{ signal }
+		)
 	);
 
 	setBulkActionContext({

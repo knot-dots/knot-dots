@@ -21,6 +21,7 @@
 		type AnyPayload,
 		type Container,
 		type MeasurePayload,
+		predicates,
 		type SimpleMeasurePayload
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -37,7 +38,12 @@
 	let guid = $derived(container.guid);
 
 	let relatedContainersQuery = resource([() => guid], async ([guid], _, { signal }) =>
-		fetchRelatedContainers(guid, {}, 'alpha', { signal })
+		fetchRelatedContainers(
+			guid,
+			{ relationType: [predicates.enum['is-part-of'], predicates.enum['is-section-of']] },
+			'alpha',
+			{ signal }
+		)
 	);
 
 	setBulkActionContext({
