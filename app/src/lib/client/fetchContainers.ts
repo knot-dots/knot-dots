@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { page } from '$app/state';
 import withRequestCoalescing from '$lib/client/withRequestCoalescing';
 import { anyContainer } from '$lib/models';
+import { MAX_PAGE_SIZE } from '$lib/pagination';
+
+const responseSchema = z.object({
+	containers: z.array(anyContainer)
+});
 
 export default async function fetchContainers(
 	filters: {
@@ -83,11 +88,12 @@ export default async function fetchContainers(
 	if (filters.terms) {
 		params.append('terms', filters.terms);
 	}
-	const response = await withRequestCoalescing(fetch)(`/container?${params}`, init);
+	params.set('limit', String(MAX_PAGE_SIZE));
+	const response = await withRequestCoalescing(fetch)(`/container/v2?${params}`, init);
 	if (!response.ok) {
 		throw new Error(
 			`Failed to fetch containers: ${response.status} ${await response.clone().text()}`
 		);
 	}
-	return z.array(anyContainer).parse(await response.clone().json());
+	return responseSchema.parse(await response.clone().json()).containers;
 }

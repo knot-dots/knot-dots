@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { Roarr as log } from 'roarr';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { adopterScope } from '$lib/adoptions';
 import { filterVisible } from '$lib/authorization';
@@ -57,23 +58,24 @@ export type ContainerV2Response = {
 
 const querySchema = z.object({
 	administrativeType: z.array(administrativeTypes).default([]),
-	assignee: z.array(z.string().uuid()).default([]),
+	assignee: z.array(z.uuid()).default([]),
+	availableIn: z.array(z.uuid()).max(1).default([]),
 	categoryMatch: z.array(z.enum(['any', 'all'])).default(['all']),
-	contextGuid: z.array(z.string().uuid()).default([]),
+	contextGuid: z.array(z.uuid()).default([]),
 	excludeRelation: z.array(predicates).default([]),
 	federalState: z.array(z.string()).default([]),
-	guid: z.array(z.string().uuid()).default([]),
+	guid: z.array(z.uuid()).default([]),
 	hierarchyLevel: z.array(z.coerce.number().int().gte(1).lte(6)).default([]),
-	indicator: z.array(z.string().uuid()).default([]),
+	indicator: z.array(z.uuid()).default([]),
 	indicatorCategory: z.array(indicatorCategories).default([]),
 	indicatorType: z.array(indicatorTypes).default([]),
 	included: z.array(z.enum(['subordinate_organizational_units'])).default([]),
 	level: z.array(levels).default([]),
 	limit: z.coerce.number().int().positive().max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
-	member: z.array(z.string().uuid()).default([]),
+	member: z.array(z.uuid()).default([]),
 	offset: z.coerce.number().int().nonnegative().default(0),
 	organization: z
-		.array(z.string().uuid())
+		.array(z.uuid())
 		.default([])
 		.or(
 			z
@@ -82,7 +84,7 @@ const querySchema = z.object({
 				.transform(() => undefined)
 		),
 	organizationalUnit: z
-		.array(z.string().uuid())
+		.array(z.uuid())
 		.or(
 			z
 				.array(z.literal(''))
@@ -91,7 +93,7 @@ const querySchema = z.object({
 		)
 		.default([]),
 	programType: z.array(programTypes).default([]),
-	relatedTo: z.array(z.string().uuid()).default([]),
+	relatedTo: z.array(z.uuid()).default([]),
 	relationType: z.array(predicates).default([predicates.enum['is-part-of']]),
 	resource: z.array(z.string()).default([]),
 	resourceCategory: z.array(resourceCategories).default([]),
@@ -105,8 +107,9 @@ const querySchema = z.object({
 
 type ContainerQueryParams = Omit<
 	z.infer<typeof querySchema>,
-	'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'terms'
+	'availableIn' | 'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'terms'
 > & {
+	availableIn: string | undefined;
 	categoryMatch: 'any' | 'all';
 	contextGuid: string | undefined;
 	sort: 'alpha' | 'date' | 'modified' | 'priority' | 'relevance';
@@ -142,9 +145,13 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 	if (!parseResult.success) {
 		error(400, { message: parseResult.error.message });
 	}
+	if (parseResult.data.availableIn.length > 0 && parseResult.data.template[0] !== true) {
+		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
+	}
 
 	return {
 		...parseResult.data,
+		availableIn: parseResult.data.availableIn[0],
 		categoryMatch: parseResult.data.categoryMatch[0] ?? 'all',
 		contextGuid: parseResult.data.contextGuid[0],
 		sort: parseResult.data.sort[0] ?? 'alpha',
@@ -211,6 +218,7 @@ function buildFilters(
 	return {
 		administrativeTypes: params.administrativeType,
 		assignees: params.assignee,
+		availableIn: params.availableIn,
 		customCategories,
 		customCategoryMatch: params.categoryMatch,
 		excludeRelation: params.excludeRelation,

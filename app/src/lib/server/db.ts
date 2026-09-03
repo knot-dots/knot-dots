@@ -1472,6 +1472,7 @@ export function getAllRelatedContainers(
 	relations: string[],
 	filters: {
 		assignees?: string[];
+		availableIn?: string;
 		customCategories?: Record<string, string[]>;
 		includeGuids?: string[];
 		indicatorCategories?: string[];
