@@ -1,8 +1,12 @@
 <script lang="ts">
+	import { SvelteMap } from 'svelte/reactivity';
+	import { invalidateAll } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import { grantKindsForRoleOn, grantKindsForRoleOnSubordinates } from '$lib/authorization';
+	import saveMemberRole from '$lib/client/saveMemberRole';
+	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -16,10 +20,11 @@
 
 	interface Props {
 		container: Container<AnyPayload>;
+		editable?: boolean;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, users }: Props = $props();
+	let { container, editable = false, users }: Props = $props();
 
 	// the rights on the container itself and the rights on subordinate objects
 	// within it are shown as separate column groups
@@ -32,22 +37,82 @@
 
 	const subordinateKinds = [grantKinds.enum.create, grantKinds.enum.update, grantKinds.enum.delete];
 
-	const roleBadgeColors: Record<MemberRole, string> = {
-		administrator: 'red',
+	// administrators are managed in the list views only
+	const selectableRoles = [
+		memberRoles.enum.head,
+		memberRoles.enum.collaborator,
+		memberRoles.enum.observer
+	];
+
+	const roleColors: Record<MemberRole, string> = {
+		administrator: 'orange',
 		head: 'yellow',
 		collaborator: 'indigo',
 		observer: 'gray'
 	};
 
+	const roleOptions = selectableRoles.map((role) => ({
+		label: $_(`role.${role}`),
+		value: role,
+		badgeColor: roleColors[role]
+	}));
+
+	let roleOverrides = new SvelteMap<string, MemberRole | null>();
+
+	// drop an optimistic override only once the reloaded data reflects it —
+	// dropping it right after invalidateAll would flash the previous role for
+	// a render cycle until the fresh props arrive
+	$effect(() => {
+		for (const [guid, role] of roleOverrides) {
+			const user = users.find((u) => u.guid === guid);
+			if (!user || memberRoleOf(user, container) === role) {
+				roleOverrides.delete(guid);
+			}
+		}
+	});
+
+	function visibleRoleFor(user: User) {
+		if (roleOverrides.has(user.guid)) {
+			return roleOverrides.get(user.guid) ?? null;
+		}
+		return memberRoleOf(user, container);
+	}
+
+	function isSelectableRole(value: BadgeDropdownValue): value is (typeof selectableRoles)[number] {
+		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
+	}
+
+	async function changeRole(user: User, value: BadgeDropdownValue) {
+		if (value != null && !isSelectableRole(value)) {
+			return;
+		}
+
+		const role = value ?? null;
+		const hadPrevious = roleOverrides.has(user.guid);
+		const previous = roleOverrides.get(user.guid);
+		roleOverrides.set(user.guid, role);
+
+		const response = await saveMemberRole(container, { role, subject: user.guid });
+
+		if (!response.ok) {
+			if (hadPrevious) roleOverrides.set(user.guid, previous ?? null);
+			else roleOverrides.delete(user.guid);
+			console.log(await response.json());
+			return;
+		}
+
+		await invalidateAll();
+	}
+
 	// The checkboxes display the effective rights of the user's member role,
 	// derived from the actual authorization rules; what a role permits depends
 	// on the container type.
 	function objectKindsFor(user: User) {
-		return grantKindsForRoleOn(container, user, memberRoleOf(user, container));
+		return grantKindsForRoleOn(container, user, visibleRoleFor(user));
 	}
 
 	function subordinateKindsFor(user: User) {
-		return grantKindsForRoleOnSubordinates(container, user, memberRoleOf(user, container));
+		return grantKindsForRoleOnSubordinates(container, user, visibleRoleFor(user));
 	}
 </script>
 
@@ -59,6 +124,11 @@
 					<span class="header-content">
 						<UserIcon />
 						<span class="header-label">{$_('user.display_name')}</span>
+					</span>
+				</th>
+				<th class="col-role" rowspan="2">
+					<span class="header-content">
+						<span class="header-label">{$_('user.role')}</span>
 					</span>
 				</th>
 				<th class="col-group" colspan={objectKinds.length} scope="colgroup">
@@ -89,7 +159,7 @@
 		</thead>
 		<tbody>
 			{#each users as user (user.guid)}
-				{@const role = memberRoleOf(user, container)}
+				{@const role = visibleRoleFor(user)}
 				{@const effectiveObjectKinds = objectKindsFor(user)}
 				{@const effectiveSubordinateKinds = subordinateKindsFor(user)}
 				{@const isAdmin = role === memberRoles.enum.administrator}
@@ -97,12 +167,24 @@
 					<td class="col-name">
 						<span class="user-cell">
 							<span class="user-name">{displayName(user)}</span>
-							{#if role}
-								<span class={`badge badge--large badge--${roleBadgeColors[role]}`}>
-									{isAdmin ? $_('role.admin') : $_(`role.${role}`)}
-								</span>
-							{/if}
 						</span>
+					</td>
+					<td class="col-role">
+						{#if isAdmin}
+							<span
+								class={`badge badge--large badge--${roleColors[memberRoles.enum.administrator]}`}
+							>
+								{$_('role.admin')}
+							</span>
+						{:else}
+							<BadgeDropdown
+								value={role ?? undefined}
+								options={roleOptions}
+								editable={editable && !isAdmin}
+								emptyLabel={$_('role.none')}
+								onchange={(value) => changeRole(user, value)}
+							/>
+						{/if}
 					</td>
 					{#each objectKinds as kind (kind)}
 						<td class="col-grant">
@@ -216,6 +298,10 @@
 	.col-name {
 		min-width: 14.75rem;
 		width: 14.75rem;
+	}
+
+	.col-role {
+		min-width: 9rem;
 	}
 
 	.col-grant {

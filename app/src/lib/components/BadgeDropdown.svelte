@@ -95,7 +95,10 @@
 							type="radio"
 							value={option.value}
 							bind:group={value}
-							onchange={() => onchange?.(option.value)}
+							onchange={() => {
+								popover.close();
+								onchange?.(option.value);
+							}}
 						/>
 						<span class={dropdownButtonClass(option)}>{option.label}</span>
 					</label>

@@ -7,6 +7,7 @@
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
+	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -128,7 +129,7 @@
 {/if}
 
 {#if view === 'matrix'}
-	<UserPermissionMatrix {container} {users} />
+	<UserPermissionMatrix {container} editable={$ability.can('manage-users', container)} {users} />
 {:else}
 	<table>
 		<thead>

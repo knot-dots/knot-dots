@@ -324,7 +324,11 @@
 		{#snippet main()}
 			{#if permissionView}
 				<div class="matrix-wrapper">
-					<UserPermissionMatrix container={data.container} {users} />
+					<UserPermissionMatrix
+						container={data.container}
+						editable={isEditMode && $ability.can('manage-users', data.container)}
+						{users}
+					/>
 				</div>
 				<ContextTabs slug="user-management" />
 			{:else}

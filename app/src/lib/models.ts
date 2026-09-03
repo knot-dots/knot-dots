@@ -713,60 +713,6 @@ export function memberRoleFromPredicates(relationPredicates: Predicate[]): Membe
 	return null;
 }
 
-// Snapping candidates for editing the permission matrix, in ascending order.
-// administrator is deliberately absent: its effective rights equal those of
-// head on organizations and organizational units, so it is assigned in the
-// list views instead.
-export const snapMemberRoles: ReadonlyArray<MemberRole | null> = [
-	null,
-	memberRoles.enum.observer,
-	memberRoles.enum.collaborator,
-	memberRoles.enum.head
-];
-
-export type GrantKindsByRole = ReadonlyArray<
-	readonly [MemberRole | null, ReadonlyArray<GrantKind>]
->;
-
-function isSupersetOf(kinds: ReadonlyArray<GrantKind>, other: ReadonlyArray<GrantKind>) {
-	return other.every((kind) => kinds.includes(kind));
-}
-
-// Toggling a checkbox snaps to the member role whose effective rights match:
-// checking picks the lowest role covering the current rights plus the toggled
-// kind, unchecking the largest remaining subset without it (ties resolve to
-// the lower role, but removing the membership never wins a tie — on public
-// containers even non-members read, so the observer role would otherwise be
-// unreachable). undefined means no candidate matches and the checkbox should
-// be disabled.
-export function roleAfterGrantToggle(
-	kindsByRole: GrantKindsByRole,
-	currentRole: MemberRole | null,
-	kind: GrantKind,
-	checked: boolean
-): MemberRole | null | undefined {
-	const currentKinds = kindsByRole.find(([role]) => role === currentRole)?.[1] ?? [];
-
-	if (checked) {
-		const target = [...new Set([...currentKinds, kind])];
-		if (isSupersetOf(currentKinds, target)) {
-			return currentRole;
-		}
-		return kindsByRole.find(([, kinds]) => isSupersetOf(kinds, target))?.[0];
-	}
-
-	const candidates = kindsByRole.filter(
-		([, kinds]) => !kinds.includes(kind) && isSupersetOf(currentKinds, kinds)
-	);
-	if (candidates.length === 0) {
-		return undefined;
-	}
-	return [
-		...candidates.filter(([role]) => role !== null),
-		...candidates.filter(([role]) => role === null)
-	].reduce((best, candidate) => (candidate[1].length > best[1].length ? candidate : best))[0];
-}
-
 export const taskPriority = z.object({
 	priority: z.number().int(),
 	task: z.uuid()
