@@ -107,10 +107,7 @@ describe('sysadmin', () => {
 		expect(ability.can('read', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('relate', container)).toBe(true);
-		expect(ability.can('delete-recursively', container)).toBe(true);
-		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
-		expect(ability.can('prioritize', makeContainer(payloadTypes.enum.task))).toBe(true);
+		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(true);
 	});
 });
 
@@ -126,7 +123,6 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('update', measure)).toBe(true);
 		expect(ability.can('delete', measure)).toBe(true);
 		expect(ability.can('update', makeContainer(payloadTypes.enum.program))).toBe(true);
-		expect(ability.can('relate', measure)).toBe(true);
 	});
 
 	test('a user without a role on the managing team may not modify', () => {
@@ -135,7 +131,6 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('create', measure)).toBe(false);
 		expect(ability.can('update', measure)).toBe(false);
 		expect(ability.can('delete', measure)).toBe(false);
-		expect(ability.can('relate', measure)).toBe(false);
 	});
 
 	test('membership alone does not grant modification', () => {
@@ -158,20 +153,6 @@ describe('create, update and delete via managed_by', () => {
 	});
 });
 
-describe('delete-recursively via managed_by', () => {
-	test('is granted to collaborators for goals, programs and measures', () => {
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.goal))).toBe(true);
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.program))).toBe(true);
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.measure))).toBe(true);
-	});
-
-	test('is not granted without a role on the managing team', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [team] }));
-		expect(ability.can('delete-recursively', makeContainer(payloadTypes.enum.goal))).toBe(false);
-	});
-});
-
 describe('categories and terms via managed_by', () => {
 	test('admins and heads may manage them', () => {
 		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
@@ -180,7 +161,6 @@ describe('categories and terms via managed_by', () => {
 			expect(ability.can('create', category)).toBe(true);
 			expect(ability.can('update', category)).toBe(true);
 			expect(ability.can('delete', category)).toBe(true);
-			expect(ability.can('delete-recursively', category)).toBe(true);
 			expect(ability.can('update', makeContainer(payloadTypes.enum.term))).toBe(true);
 		}
 	});
@@ -194,33 +174,33 @@ describe('categories and terms via managed_by', () => {
 	});
 });
 
-describe('invite-members via managed_by', () => {
+describe('manage-users via managed_by', () => {
 	test('is granted to admins and heads for programs and measures', () => {
 		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
 			const ability = defineAbilityFor(user);
-			expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(true);
-			expect(ability.can('invite-members', makeContainer(payloadTypes.enum.measure))).toBe(true);
+			expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(true);
+			expect(ability.can('manage-users', makeContainer(payloadTypes.enum.measure))).toBe(true);
 		}
 	});
 
 	test('is not granted to collaborators via managed_by', () => {
 		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
-		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.program))).toBe(false);
-		expect(ability.can('invite-members', makeContainer(payloadTypes.enum.measure))).toBe(false);
+		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(false);
+		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.measure))).toBe(false);
 	});
 });
 
-describe('task prioritization via managed_by', () => {
+describe('task prioritization requires the update permission', () => {
 	test('is granted to collaborators and denied to mere members', () => {
 		expect(
 			defineAbilityFor(makeUser({ collaboratorOf: [team] })).can(
-				'prioritize',
+				'update',
 				makeContainer(payloadTypes.enum.task)
 			)
 		).toBe(true);
 		expect(
 			defineAbilityFor(makeUser({ memberOf: [team] })).can(
-				'prioritize',
+				'update',
 				makeContainer(payloadTypes.enum.task)
 			)
 		).toBe(false);
@@ -294,17 +274,15 @@ describe('multi-valued managed_by', () => {
 		expect(ability.can('create', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
-		expect(ability.can('relate', container)).toBe(true);
-		expect(ability.can('delete-recursively', container)).toBe(true);
 	});
 
 	test('admins and heads of one of the managing teams may invite members', () => {
-		expect(defineAbilityFor(makeUser({ adminOf: [team] })).can('invite-members', container)).toBe(
+		expect(defineAbilityFor(makeUser({ adminOf: [team] })).can('manage-users', container)).toBe(
 			true
 		);
-		expect(
-			defineAbilityFor(makeUser({ headOf: [otherTeam] })).can('invite-members', container)
-		).toBe(true);
+		expect(defineAbilityFor(makeUser({ headOf: [otherTeam] })).can('manage-users', container)).toBe(
+			true
+		);
 	});
 
 	test('roles on none of the managing teams grant nothing', () => {

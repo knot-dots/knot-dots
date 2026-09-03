@@ -15,7 +15,6 @@ import {
 	visibility
 } from '$lib/models';
 import {
-	deleteContainer,
 	deleteContainerRecursively,
 	deleteOrganizationalUnitContainer,
 	deleteOrganizationContainer,
@@ -95,16 +94,14 @@ export const POST = (async ({ locals, request }) => {
 				}
 			];
 
-			if (parseResult.data.deleted && ability.can('delete-recursively', container)) {
-				await deleteContainerRecursively({ ...container, user })(txConnection);
-				result.push(container);
-			} else if (parseResult.data.deleted && ability.can('delete', container)) {
+			if (parseResult.data.deleted && ability.can('delete', container)) {
+				// deleting always cascades to the container's descendants
 				if (isOrganizationContainer(container)) {
 					await deleteOrganizationContainer({ ...container, user })(txConnection);
 				} else if (isOrganizationalUnitContainer(container)) {
 					await deleteOrganizationalUnitContainer({ ...container, user })(txConnection);
 				} else {
-					await deleteContainer({ ...container, user })(txConnection);
+					await deleteContainerRecursively({ ...container, user })(txConnection);
 				}
 				result.push(container);
 			} else if (parseResult.data.payload && ability.can('update', container)) {

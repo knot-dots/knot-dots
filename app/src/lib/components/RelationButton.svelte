@@ -17,7 +17,7 @@
 		(getContext('relationOverlay') as { enabled: boolean }).enabled;
 </script>
 
-{#if mayShowRelationButton && $ability.can('relate', container)}
+{#if mayShowRelationButton && $ability.can('update', container)}
 	<a
 		class="button button-relation"
 		href="#relations={container.guid}"

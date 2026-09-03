@@ -3,12 +3,11 @@
 	import Close from '~icons/knotdots/close';
 
 	interface Props {
-		cascadingDelete: boolean;
 		dialog: HTMLDialogElement;
 		handleSubmit: (event: SubmitEvent) => void;
 	}
 
-	let { cascadingDelete, dialog = $bindable(), handleSubmit }: Props = $props();
+	let { dialog = $bindable(), handleSubmit }: Props = $props();
 </script>
 
 <dialog bind:this={dialog}>
@@ -24,10 +23,8 @@
 
 		<h2>{$_('confirm_bulk_delete_dialog.heading')}</h2>
 
-		<p class={cascadingDelete ? 'system-danger' : ''}>
-			{cascadingDelete
-				? $_('confirm_bulk_delete_dialog.message_cascading_delete')
-				: $_('confirm_bulk_delete_dialog.message')}
+		<p class="system-danger">
+			{$_('confirm_bulk_delete_dialog.message_cascading_delete')}
 		</p>
 
 		<button class="button-primary button-xs system-danger" type="submit">

@@ -6,7 +6,6 @@ const key = {};
 
 interface BulkAction {
 	actions: string[];
-	cascadingDelete?: boolean;
 	name?: string;
 	onSuccess?: () => void;
 	registerTarget?: Attachment<HTMLInputElement>;
@@ -23,7 +22,6 @@ export function setBulkActionContext(context: BulkAction) {
 	};
 
 	setContext(key, {
-		cascadingDelete: false,
 		name: `bulk-action-context-${crypto.randomUUID()}`,
 		targets,
 		registerTarget,
@@ -32,9 +30,6 @@ export function setBulkActionContext(context: BulkAction) {
 }
 
 export function getBulkActionContext() {
-	return getContext(key) as Omit<
-		BulkAction,
-		'cascadingDelete' | 'name' | 'registerTarget' | 'targets'
-	> &
-		Required<Pick<BulkAction, 'cascadingDelete' | 'name' | 'registerTarget' | 'targets'>>;
+	return getContext(key) as Omit<BulkAction, 'name' | 'registerTarget' | 'targets'> &
+		Required<Pick<BulkAction, 'name' | 'registerTarget' | 'targets'>>;
 }

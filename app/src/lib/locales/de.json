@@ -123,7 +123,6 @@
 	"confirm": "Bestätigen",
 	"confirm_bulk_delete_dialog.button": "Ich möchte die ausgewählten Objekte löschen",
 	"confirm_bulk_delete_dialog.heading": "Ausgewählte Objekte löschen",
-	"confirm_bulk_delete_dialog.message": "Möchten Sie die ausgewählten Objekte wirklich löschen?",
 	"confirm_bulk_delete_dialog.message_cascading_delete": "Alle ausgewählten Objekte und alle zugehörigen Unterobjekte werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
 	"confirm_delete_dialog.button": "Ich möchte \"{title}\" löschen",
 	"confirm_delete_dialog.heading": "{title} löschen",

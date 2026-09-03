@@ -14,15 +14,7 @@ import {
 } from '$lib/models';
 import type { User } from '$lib/stores';
 
-type Actions =
-	| 'create'
-	| 'read'
-	| 'update'
-	| 'delete'
-	| 'delete-recursively'
-	| 'invite-members'
-	| 'relate'
-	| 'prioritize';
+type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
 const specialTypes: PayloadType[] = [
@@ -48,22 +40,13 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('relate', payloadTypes.options);
-		can('delete-recursively', [
-			payloadTypes.enum.measure,
-			payloadTypes.enum.program,
-			payloadTypes.enum.goal,
-			payloadTypes.enum.category,
-			payloadTypes.enum.term
-		]);
-		can('invite-members', [
+		can('manage-users', [
 			payloadTypes.enum.measure,
 			payloadTypes.enum.organization,
 			payloadTypes.enum.organizational_unit,
 			payloadTypes.enum.program,
 			payloadTypes.enum.simple_measure
 		]);
-		can('prioritize', payloadTypes.enum.task);
 		can('read', payloadTypes.enum.task, ['assignee']);
 		can(
 			'update',
@@ -105,7 +88,7 @@ export default function defineAbilityFor(user: User) {
 			}
 		);
 		can(
-			'invite-members',
+			'manage-users',
 			[
 				payloadTypes.enum.measure,
 				payloadTypes.enum.organization,
@@ -118,7 +101,7 @@ export default function defineAbilityFor(user: User) {
 			}
 		);
 		can(
-			'invite-members',
+			'manage-users',
 			[
 				payloadTypes.enum.measure,
 				payloadTypes.enum.organizational_unit,
@@ -129,7 +112,7 @@ export default function defineAbilityFor(user: User) {
 				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can('invite-members', [payloadTypes.enum.organizational_unit], {
+		can('manage-users', [payloadTypes.enum.organizational_unit], {
 			guid: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can('create', commonTypes, {
@@ -141,42 +124,19 @@ export default function defineAbilityFor(user: User) {
 		can(['delete'], commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 		});
-		can(
-			'delete-recursively',
-			[payloadTypes.enum.goal, payloadTypes.enum.program, payloadTypes.enum.measure],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
-			}
-		);
-		can(
-			['create', 'update', 'delete', 'delete-recursively'],
-			[payloadTypes.enum.category, payloadTypes.enum.term],
-			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf] }
-			}
-		);
+		can(['create', 'update', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: [...user.adminOf, ...user.headOf] }
+		});
 		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(
-			'invite-members',
+			'manage-users',
 			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 			{
 				managed_by: { $in: [...user.adminOf, ...user.headOf] }
 			}
 		);
-		can('relate', payloadTypes.options, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('relate', payloadTypes.options, {
-			organization: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('relate', payloadTypes.options, {
-			organizational_unit: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
-		can('prioritize', payloadTypes.enum.task, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
-		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
@@ -246,7 +206,7 @@ const actionsByGrantKind: Record<GrantKind, Actions> = {
 	update: 'update',
 	create: 'create',
 	delete: 'delete',
-	'manage-members': 'invite-members'
+	'manage-members': 'manage-users'
 };
 
 // The effective rights a member role would have on this container, derived

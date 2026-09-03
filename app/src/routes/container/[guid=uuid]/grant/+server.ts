@@ -37,7 +37,7 @@ export const POST = (async ({ locals, params, request }) => {
 
 	if (
 		!locals.user.roles.includes('sysadmin') &&
-		!defineAbilityFor(locals.user).can('invite-members', container)
+		!defineAbilityFor(locals.user).can('manage-users', container)
 	) {
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({ include: { organization: container.organization } })

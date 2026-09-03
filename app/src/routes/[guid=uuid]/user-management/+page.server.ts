@@ -21,7 +21,7 @@ export const load = (async ({ locals, parent }) => {
 	} = await parent();
 	const selectedContext = currentOrganizationalUnit ?? currentOrganization;
 
-	if (defineAbilityFor(locals.user).cannot('invite-members', selectedContext)) {
+	if (defineAbilityFor(locals.user).cannot('manage-users', selectedContext)) {
 		error(404, unwrapFunctionStore(_)('error.not_found'));
 	}
 

@@ -50,7 +50,7 @@ export const POST = (async ({ locals, request }) => {
 		getContainerByGuid(parseResult.data.container.guid)
 	);
 
-	if (!ability.can('invite-members', container)) {
+	if (!ability.can('manage-users', container)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 

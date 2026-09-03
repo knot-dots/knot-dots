@@ -74,7 +74,7 @@
 </script>
 
 <BoardColumn {addItemUrl} title={$_(status)}>
-	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('prioritize', containerOfTypeTask())}
+	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper"
 			use:dndzone={{ dropTargetStyle: {}, items }}

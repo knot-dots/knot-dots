@@ -228,7 +228,7 @@ export const POST = (async ({ locals, params, request }) => {
 		// This route only allows updating relations if the container
 		// represented by the guid parameter of the route is either the subject or
 		// the object. To ensure consistency with the front-end, the permission to
-		// relate the container represented by the guid parameter of the route and
+		// update the container represented by the guid parameter of the route and
 		// the permission to read the other are required.
 		const containers = await getManyContainers(
 			[],
@@ -249,13 +249,14 @@ export const POST = (async ({ locals, params, request }) => {
 				if (!objectContainer || !subjectContainer) {
 					return false;
 				}
-				// Adopting a public rule-set program does not require 'relate'
-				// permission on the (foreign) program. Instead the user must be
+				// Adopting a public rule-set program deliberately does not require
+				// permission on the (foreign) program itself: the user must be
 				// allowed to update the adopting organization or organizational
-				// unit, and the owning organizational unit may not adopt its own
-				// program. Removal is exempt from the latter rules: taking away a
-				// relation that should not exist must always be possible for those
-				// responsible for the adopting unit.
+				// unit, the program must be adoptable, and the owning
+				// organizational unit may not adopt its own program. Removal is
+				// exempt from the latter rules: taking away a relation that should
+				// not exist must always be possible for those responsible for the
+				// adopting unit.
 				if (predicate == predicates.enum['is-adopted-by']) {
 					return (
 						createFeatureDecisions(locals.features).useAdoptions() &&
@@ -269,7 +270,7 @@ export const POST = (async ({ locals, params, request }) => {
 					);
 				}
 				return ability.can(
-					'relate',
+					'update',
 					[subjectContainer, objectContainer].find(
 						(c) => c.guid == params.guid
 					) as Container<AnyPayload>

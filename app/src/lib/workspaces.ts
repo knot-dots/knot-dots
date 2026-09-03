@@ -391,7 +391,7 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 			}
 		}
 		if (workspace.key === 'users') {
-			return ability ? ability.can('invite-members', selectedContext) : false;
+			return ability ? ability.can('manage-users', selectedContext) : false;
 		}
 		if (explicitSet.size === 0) {
 			return true;

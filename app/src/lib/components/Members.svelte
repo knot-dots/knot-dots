@@ -129,7 +129,7 @@
 {/if}
 
 {#if view === 'matrix'}
-	<UserPermissionMatrix {container} editable={$ability.can('invite-members', container)} {users} />
+	<UserPermissionMatrix {container} editable={$ability.can('manage-users', container)} {users} />
 {:else}
 	<table>
 		<thead>
