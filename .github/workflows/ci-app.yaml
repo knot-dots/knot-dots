@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - ".github/workflows/ci-app.yaml"
+      - "docker-bake.hcl"
       - "app/**"
   pull_request:
     branches:
       - main
     paths:
       - ".github/workflows/ci-app.yaml"
+      - "docker-bake.hcl"
       - "app/**"
   workflow_dispatch:
 
@@ -207,68 +209,15 @@ jobs:
       - run: npx playwright install --with-deps
       - name: Set up Docker Buildx for caching
         uses: docker/setup-buildx-action@v4
-      - name: Load app image from cache
-        uses: docker/build-push-action@v7
+      - name: Load test images from cache in parallel
+        uses: docker/bake-action@v7
         env:
           DOCKER_BUILD_SUMMARY: false
         with:
-          context: "."
-          file: "./app/Dockerfile"
-          target: production
+          source: .
+          files: ./docker-bake.hcl
+          targets: ci-e2e
           load: true
-          tags: app:test
-          cache-from: type=gha
-      - name: Load database image from cache
-        uses: docker/build-push-action@v7
-        env:
-          DOCKER_BUILD_SUMMARY: false
-        with:
-          context: "./db"
-          file: "./db/Dockerfile"
-          load: true
-          tags: db:test
-          cache-from: type=gha,scope=db
-      - name: Load Elasticsearch image from cache
-        uses: docker/build-push-action@v7
-        env:
-          DOCKER_BUILD_SUMMARY: false
-        with:
-          context: "./elasticsearch"
-          file: "./elasticsearch/Dockerfile"
-          build-args: ELASTICSEARCH_VERSION=9.2.3
-          load: true
-          tags: elasticsearch:test
-          cache-from: type=gha,scope=elasticsearch
-      - name: Load migration image from cache
-        uses: docker/build-push-action@v7
-        env:
-          DOCKER_BUILD_SUMMARY: false
-        with:
-          context: "./migrate"
-          file: "./migrate/Dockerfile"
-          load: true
-          tags: migrate:test
-          cache-from: type=gha,scope=migrate
-      - name: Load indexing image from cache
-        uses: docker/build-push-action@v7
-        env:
-          DOCKER_BUILD_SUMMARY: false
-        with:
-          context: "."
-          file: "./import/Dockerfile"
-          load: true
-          tags: index-containers:test
-          cache-from: type=gha,scope=index-containers
-      - name: Load indexing worker image from cache
-        uses: docker/build-push-action@v7
-        env:
-          DOCKER_BUILD_SUMMARY: false
-        with:
-          context: "."
-          file: "./worker/Dockerfile"
-          load: true
-          tags: indexing-worker:test
-          cache-from: type=gha,scope=indexing-worker
       - name: Add keycloak entry to /etc/hosts
         run: echo "127.0.0.1 keycloak" | sudo tee -a /etc/hosts
       - run: npx playwright test --shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
