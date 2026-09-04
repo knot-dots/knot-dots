@@ -2,13 +2,14 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import { locale } from 'svelte-i18n';
 
 const mocks = vi.hoisted(() => ({
-	container: undefined as unknown
+	container: undefined as unknown,
+	updateContainer: vi.fn()
 }));
 
 vi.mock('$lib/server/db', () => ({
 	getAllContainerRevisionsByGuid: () => async () => [mocks.container],
 	getContainerByGuid: () => async () => mocks.container,
-	updateContainer: vi.fn()
+	updateContainer: mocks.updateContainer
 }));
 
 import { anyContainer, payloadTypes, predicates, visibility } from '$lib/models';
@@ -34,6 +35,8 @@ const sysadmin = {
 };
 
 beforeEach(() => {
+	mocks.updateContainer.mockReset();
+	mocks.updateContainer.mockImplementation((updated: unknown) => async () => updated);
 	mocks.container = anyContainer.parse({
 		guid: containerGuid,
 		managed_by: organizationGuid,
@@ -139,7 +142,10 @@ test('scoped templates cannot be changed into ordinary containers', async () => 
 				payload: { ...container.payload, template: false }
 			})
 		)
-	).rejects.toMatchObject({ status: 422 });
+	).rejects.toMatchObject({
+		body: { message: 'error.unprocessable_entity' },
+		status: 422
+	});
 });
 
 test('scoped templates cannot be moved to another program', async () => {
@@ -156,5 +162,22 @@ test('scoped templates cannot be moved to another program', async () => {
 				}))
 			})
 		)
-	).rejects.toMatchObject({ status: 403 });
+	).rejects.toMatchObject({ status: 422 });
+});
+
+test('omitted protected availability relations are restored', async () => {
+	const container = scopedTemplate();
+	mocks.container = container;
+
+	const response = await POST(
+		revisionEvent({
+			...container,
+			relation: []
+		})
+	);
+
+	expect(response.status).toBe(201);
+	expect(mocks.updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({ relation: container.relation })
+	);
 });

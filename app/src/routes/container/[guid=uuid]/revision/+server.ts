@@ -3,7 +3,6 @@ import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import {
 	etag,
 	getAvailableInProgramGuids,
@@ -13,6 +12,7 @@ import {
 	modifiedContainer,
 	predicates
 } from '$lib/models';
+import { isProtectedContainerRelationPredicate } from '$lib/relations';
 import {
 	getAllContainerRevisionsByGuid,
 	getContainerByGuid,
@@ -71,14 +71,14 @@ export const POST = (async ({ locals, params, request }) => {
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
-		const serverOwnedCopyRelations = container.relation.filter(({ predicate }) =>
-			isServerOwnedCopyRelationPredicate(predicate)
+		const protectedRelations = container.relation.filter(({ predicate }) =>
+			isProtectedContainerRelationPredicate(predicate)
 		);
-		const hasSpoofedServerOwnedRelation = parseResult.data.relation
-			.filter(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
+		const hasSpoofedProtectedRelation = parseResult.data.relation
+			.filter(({ predicate }) => isProtectedContainerRelationPredicate(predicate))
 			.some(
 				(submitted) =>
-					!serverOwnedCopyRelations.some(
+					!protectedRelations.some(
 						(current) =>
 							current.object === submitted.object &&
 							current.predicate === submitted.predicate &&
@@ -86,45 +86,20 @@ export const POST = (async ({ locals, params, request }) => {
 							current.position === submitted.position
 					)
 			);
-		if (hasSpoofedServerOwnedRelation) {
-			error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
-		}
-		const normalizeOutgoingAvailabilityRelations = (relations: typeof container.relation) =>
-			relations
-				.filter(
-					({ predicate, subject }) =>
-						predicate === predicates.enum['is-available-in'] && subject === container.guid
-				)
-				.map(({ object, position, predicate, subject }) => ({
-					object,
-					position,
-					predicate,
-					subject
-				}))
-				.toSorted((a, b) => `${a.subject}:${a.object}`.localeCompare(`${b.subject}:${b.object}`));
-		if (
-			JSON.stringify(normalizeOutgoingAvailabilityRelations(parseResult.data.relation)) !==
-			JSON.stringify(normalizeOutgoingAvailabilityRelations(container.relation))
-		) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		if (hasSpoofedProtectedRelation) {
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 		}
 		if (
 			getAvailableInProgramGuids(container).length > 0 &&
 			(!('template' in parseResult.data.payload) || parseResult.data.payload.template !== true)
 		) {
-			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 		}
-		const availabilityRelations = container.relation.filter(
-			({ predicate }) => predicate === predicates.enum['is-available-in']
-		);
 		const relations = [
 			...parseResult.data.relation.filter(
-				({ predicate }) =>
-					!isServerOwnedCopyRelationPredicate(predicate) &&
-					predicate !== predicates.enum['is-available-in']
+				({ predicate }) => !isProtectedContainerRelationPredicate(predicate)
 			),
-			...serverOwnedCopyRelations,
-			...availabilityRelations
+			...protectedRelations
 		];
 		if (
 			parseResult.data.organization !== container.organization &&

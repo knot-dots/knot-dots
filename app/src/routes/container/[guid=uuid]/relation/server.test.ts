@@ -63,6 +63,6 @@ test('relation updates reject direct availability changes before writing', async
 			params: { guid: containerGuid },
 			request
 		} as never)
-	).rejects.toMatchObject({ status: 403 });
+	).rejects.toMatchObject({ status: 422 });
 	expect(transaction).not.toHaveBeenCalled();
 });

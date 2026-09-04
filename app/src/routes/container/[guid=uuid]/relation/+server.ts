@@ -4,7 +4,6 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import { isAdoptableProgram } from '$lib/adoptions';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyPayload,
@@ -21,6 +20,7 @@ import {
 	relation,
 	taskCategories
 } from '$lib/models';
+import { isProtectedContainerRelationPredicate } from '$lib/relations';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	deleteManyContainerRelations,
@@ -215,11 +215,8 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	}
-	if (parseResult.data.some(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))) {
-		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
-	}
-	if (parseResult.data.some(({ predicate }) => predicate === predicates.enum['is-available-in'])) {
-		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+	if (parseResult.data.some(({ predicate }) => isProtectedContainerRelationPredicate(predicate))) {
+		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
 	const ability = defineAbilityFor(locals.user);
