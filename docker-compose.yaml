@@ -30,6 +30,7 @@ services:
       - ./podinfo:/etc/podinfo:ro
 
   db:
+    image: ${TEST_DB_IMAGE:-db-local}
     build:
       context: db
     env_file:
@@ -71,6 +72,7 @@ services:
       - ./shared/src:/srv/knot-dots/shared/src
 
   migrate:
+    image: ${TEST_MIGRATE_IMAGE:-migrate-local}
     build:
       context: migrate
     depends_on:
@@ -116,6 +118,7 @@ services:
       - CONFIG_FILE=/opt/elasticmq.conf
 
   elasticsearch:
+    image: ${TEST_ELASTICSEARCH_IMAGE:-elasticsearch-local}
     build:
       args:
         - ELASTICSEARCH_VERSION=9.2.3
@@ -134,6 +137,7 @@ services:
       - "9200:9200"
 
   indexing-worker:
+    image: ${TEST_INDEXING_WORKER_IMAGE:-indexing-worker-local}
     build:
       context: .
       dockerfile: worker/Dockerfile
@@ -159,6 +163,7 @@ services:
       - ./worker/src:/srv/knot-dots/worker/src
 
   index-containers:
+    image: ${TEST_INDEX_CONTAINERS_IMAGE:-index-containers-local}
     build:
       context: .
       dockerfile: import/Dockerfile
