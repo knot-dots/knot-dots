@@ -653,7 +653,7 @@ export const memberRoles = z.enum(['observer', 'collaborator', 'head', 'administ
 export type MemberRole = z.infer<typeof memberRoles>;
 
 export const memberRoleAssignment = z.object({
-	role: memberRoles.exclude(['administrator']).nullable(),
+	role: memberRoles.nullable(),
 	subject: z.uuid()
 });
 

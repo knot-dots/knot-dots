@@ -14,6 +14,7 @@
 	}
 
 	interface Props {
+		allowEmpty?: boolean;
 		editable?: boolean;
 		emptyLabel?: string;
 		label?: string;
@@ -25,6 +26,7 @@
 	}
 
 	let {
+		allowEmpty = true,
 		editable = false,
 		emptyLabel,
 		label,
@@ -52,10 +54,9 @@
 
 	const selected = $derived(options.find((option) => option.value === value));
 	const selectedLabel = $derived(selected?.label ?? emptyLabel ?? $_('empty'));
-	const effectiveOptions = $derived([
-		{ label: emptyLabel ?? $_('empty'), value: undefined },
-		...options
-	]);
+	const effectiveOptions = $derived(
+		allowEmpty ? [{ label: emptyLabel ?? $_('empty'), value: undefined }, ...options] : options
+	);
 
 	function dropdownButtonClass(option?: BadgeDropdownOption) {
 		return option?.badgeColor

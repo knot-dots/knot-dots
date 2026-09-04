@@ -12,6 +12,8 @@
 		type Container,
 		displayName,
 		grantKinds,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		type MemberRole,
 		memberRoleOf,
 		memberRoles,
@@ -37,12 +39,17 @@
 
 	const subordinateKinds = [grantKinds.enum.create, grantKinds.enum.update, grantKinds.enum.delete];
 
-	// administrators are managed in the list views only
-	const selectableRoles = [
-		memberRoles.enum.head,
-		memberRoles.enum.collaborator,
-		memberRoles.enum.observer
-	];
+	// administrators exist on organizations and organizational units only
+	const selectableRoles = $derived(
+		isOrganizationContainer(container) || isOrganizationalUnitContainer(container)
+			? [
+					memberRoles.enum.administrator,
+					memberRoles.enum.head,
+					memberRoles.enum.collaborator,
+					memberRoles.enum.observer
+				]
+			: [memberRoles.enum.head, memberRoles.enum.collaborator, memberRoles.enum.observer]
+	);
 
 	const roleColors: Record<MemberRole, string> = {
 		administrator: 'orange',
@@ -51,11 +58,13 @@
 		observer: 'gray'
 	};
 
-	const roleOptions = selectableRoles.map((role) => ({
-		label: $_(`role.${role}`),
-		value: role,
-		badgeColor: roleColors[role]
-	}));
+	const roleOptions = $derived(
+		selectableRoles.map((role) => ({
+			label: $_(`role.${role}`),
+			value: role,
+			badgeColor: roleColors[role]
+		}))
+	);
 
 	let roleOverrides = new SvelteMap<string, MemberRole | null>();
 
@@ -78,7 +87,7 @@
 		return memberRoleOf(user, container);
 	}
 
-	function isSelectableRole(value: BadgeDropdownValue): value is (typeof selectableRoles)[number] {
+	function isSelectableRole(value: BadgeDropdownValue): value is MemberRole {
 		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
 	}
 
@@ -162,7 +171,6 @@
 				{@const role = visibleRoleFor(user)}
 				{@const effectiveObjectKinds = objectKindsFor(user)}
 				{@const effectiveSubordinateKinds = subordinateKindsFor(user)}
-				{@const isAdmin = role === memberRoles.enum.administrator}
 				<tr>
 					<td class="col-name">
 						<span class="user-cell">
@@ -170,21 +178,14 @@
 						</span>
 					</td>
 					<td class="col-role">
-						{#if isAdmin}
-							<span
-								class={`badge badge--large badge--${roleColors[memberRoles.enum.administrator]}`}
-							>
-								{$_('role.admin')}
-							</span>
-						{:else}
-							<BadgeDropdown
-								value={role ?? undefined}
-								options={roleOptions}
-								editable={editable && !isAdmin}
-								emptyLabel={$_('role.none')}
-								onchange={(value) => changeRole(user, value)}
-							/>
-						{/if}
+						<BadgeDropdown
+							allowEmpty={false}
+							value={role ?? undefined}
+							options={roleOptions}
+							{editable}
+							emptyLabel={$_('role.none')}
+							onchange={(value) => changeRole(user, value)}
+						/>
 					</td>
 					{#each objectKinds as kind (kind)}
 						<td class="col-grant">

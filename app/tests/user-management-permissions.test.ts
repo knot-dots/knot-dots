@@ -102,16 +102,30 @@ test.describe('Permission matrix', () => {
 			bobRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
 		).toBeChecked();
 
-		// administrators are managed in the list views only — no dropdown here
+		// on an organization the administrator role is selectable as well
+		const adminResponse = page.waitForResponse(
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
+		);
+		await bobRow.getByRole('button', { name: 'Head' }).click();
+		await page.getByRole('radio', { name: 'Administrator' }).click();
+		await adminResponse;
+		await expect(bobRow.getByRole('button', { name: 'Administrator' })).toBeVisible();
+		await expect(
+			bobRow.getByRole('checkbox', { name: 'Manage users (This object)' })
+		).toBeChecked();
+
+		// there is no option for removing the role — that stays with the list views
 		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra' });
-		await expect(orlaRow.getByText('Admin')).toBeVisible();
-		await expect(orlaRow.getByRole('button', { name: 'Admin' })).toBeHidden();
+		await orlaRow.getByRole('button', { name: 'Administrator' }).click();
+		await expect(page.getByRole('radio', { name: 'Observer' })).toBeVisible();
+		await expect(page.getByRole('radio', { name: 'No role' })).toBeHidden();
+		await page.keyboard.press('Escape');
 
 		// restore Bob to a plain observer for the remaining tests
 		const restoreResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
 		);
-		await bobRow.getByRole('button', { name: 'Head' }).click();
+		await bobRow.getByRole('button', { name: 'Administrator' }).click();
 		await expect(page.getByRole('radio', { name: 'Observer' })).toBeVisible();
 		await page.getByRole('radio', { name: 'Observer' }).click();
 		await restoreResponse;
