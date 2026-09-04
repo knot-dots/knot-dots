@@ -11,13 +11,13 @@
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import { createFeatureDecisions } from '$lib/features';
@@ -30,7 +30,6 @@
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
-	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 
 	interface Props {
 		container: Container<PagePayload>;
@@ -192,10 +191,6 @@
 
 		<ContextTabs slug={helpSlug.enum['page-view']} />
 	</div>
-
-	<footer class="footer-action-bar">
-		<DeleteButton {container} {relatedContainers} />
-	</footer>
 {/snippet}
 
 {@render layout(header, main)}

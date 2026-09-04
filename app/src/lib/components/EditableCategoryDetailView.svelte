@@ -7,7 +7,6 @@
 	import CategoryTerms from '$lib/components/CategoryTerms.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -80,7 +79,6 @@
 			<footer class="footer-action-bar">
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 
