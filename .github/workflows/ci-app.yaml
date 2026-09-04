@@ -32,6 +32,17 @@ jobs:
           node-version: 24
           cache: "npm"
           cache-dependency-path: ./package-lock.json
+      - name: Cache lint results
+        uses: actions/cache@v5
+        env:
+          LINT_CACHE_VERSION: ${{ hashFiles('package-lock.json', 'app/.prettierignore', 'app/.prettierrc', 'app/eslint.config.js', 'app/svelte.config.js', 'app/tsconfig.json') }}
+        with:
+          path: |
+            app/.eslintcache
+            app/.prettier-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-app-lint-${{ env.LINT_CACHE_VERSION }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-app-lint-${{ env.LINT_CACHE_VERSION }}-
       - run: npm clean-install
       - run: npm run check
       - run: npm run lint
