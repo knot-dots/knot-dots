@@ -11,9 +11,7 @@
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
-	import Users from '~icons/knotdots/users';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
@@ -52,8 +50,6 @@
 		isProgramContainer,
 		isReportContainer,
 		isSimpleMeasureContainer,
-		overlayKey,
-		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
 	import {
@@ -261,31 +257,6 @@
 	{/if}
 
 	<div class="actions">
-		{#if overlay && container && $ability.can('manage-users', container)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={overlayURL(page.url, overlayKey.enum.members, container.guid)}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('manage-users', container)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
-					guid: selectedContext.guid,
-					contentGuid: container.guid
-				})}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{/if}
-
 		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}
 			<button
 				aria-label={$_('favorite')}
@@ -534,11 +505,6 @@
 		display: flex;
 		gap: inherit;
 		margin-right: auto;
-	}
-
-	.divider {
-		border-left: solid 1px var(--color-gray-200);
-		height: 1.5rem;
 	}
 
 	.dropdown-button.dropdown-button--command {

@@ -5,6 +5,7 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Link from '~icons/knotdots/link';
+	import Users from '~icons/knotdots/users';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -17,9 +18,11 @@
 		getContextIdentifier,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		overlayKey,
+		overlayURL,
 		visibility
 	} from '$lib/models';
-	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
+	import { ability, applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -75,6 +78,17 @@
 
 	let overlay = getContext('overlay');
 
+	let membersURL = $derived.by(() => {
+		if (overlay) {
+			return overlayURL(page.url, overlayKey.enum.members, container.guid);
+		} else {
+			return resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
+				guid: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid,
+				contentGuid: container.guid
+			});
+		}
+	});
+
 	async function handleDelete() {
 		const response = await deleteContainer(container);
 		if (response.ok) {
@@ -101,6 +115,13 @@
 
 	const items = $derived([
 		{
+			condition:
+				$ability.can('manage-users', container) &&
+				!isOrganizationContainer(container) &&
+				!isOrganizationalUnitContainer(container),
+			snippet: membersLink
+		},
+		{
 			condition: container.payload.visibility === visibility.enum.public,
 			snippet: embedCodeMenu
 		},
@@ -114,6 +135,19 @@
 		}
 	]);
 </script>
+
+{#snippet membersLink(openSubMenuTitle: string)}
+	{#if openSubMenuTitle === ''}
+		<a class="cascading-menu-item" href={membersURL}>
+			<Users />
+			<span>
+				<strong>{$_('members')}</strong>
+			</span>
+		</a>
+
+		<div class="cascading-menu-divider" role="presentation"></div>
+	{/if}
+{/snippet}
 
 {#snippet embedCodeMenu(openSubMenuTitle: string, openSubMenu: (title: string) => void)}
 	{#if openSubMenuTitle === ''}
