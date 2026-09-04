@@ -5,7 +5,8 @@ import {
 	type AnyPayload,
 	type Container,
 	findAncestors,
-	memberRoleAssignment,
+	grantSetAssignment,
+	memberRoleFromGrantSet,
 	memberRoles,
 	payloadTypes,
 	predicates
@@ -13,6 +14,7 @@ import {
 import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
+	setContainerGrants,
 	updateMemberRole
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -58,14 +60,17 @@ export const POST = (async ({ locals, params, request }) => {
 		error(400, { message: reason.message });
 	});
 
-	const parseResult = memberRoleAssignment.safeParse(data);
+	const parseResult = grantSetAssignment.safeParse(data);
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	}
 
-	const { role, subject } = parseResult.data;
+	const { self, subject, subordinates } = parseResult.data;
+	const set = { self, subordinates };
 
+	// a subject holding every grant counts as an administrator, and
 	// administrators exist on organizations and organizational units only
+	const role = memberRoleFromGrantSet(set);
 	if (
 		role === memberRoles.enum.administrator &&
 		container.payload.type !== payloadTypes.enum.organization &&
@@ -74,7 +79,7 @@ export const POST = (async ({ locals, params, request }) => {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
-	// the last administrator may not be demoted or removed
+	// the last administrator may not lose any grant
 	const admins = new Set(
 		container.user
 			.filter(({ predicate }) => predicate === predicates.enum['is-admin-of'])
@@ -84,7 +89,10 @@ export const POST = (async ({ locals, params, request }) => {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
-	await locals.pool.connect(updateMemberRole(container, subject, role));
+	await locals.pool.transaction(async (connection) => {
+		await updateMemberRole(container, subject, role)(connection);
+		await setContainerGrants(container.guid, subject, set)(connection);
+	});
 
 	return new Response(null, { status: 204 });
 }) satisfies RequestHandler;

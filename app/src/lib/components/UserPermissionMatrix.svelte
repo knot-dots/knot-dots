@@ -5,13 +5,14 @@
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import { grantKindsForRoleOn, grantKindsForRoleOnSubordinates } from '$lib/authorization';
-	import saveMemberRole from '$lib/client/saveMemberRole';
+	import saveGrants from '$lib/client/saveGrants';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import {
 		type AnyPayload,
 		type Container,
 		displayName,
 		grantKinds,
+		grantSetForRole,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type MemberRole,
@@ -101,7 +102,10 @@
 		const previous = roleOverrides.get(user.guid);
 		roleOverrides.set(user.guid, role);
 
-		const response = await saveMemberRole(container, { role, subject: user.guid });
+		const response = await saveGrants(container, {
+			subject: user.guid,
+			...(role === null ? { self: [], subordinates: [] } : grantSetForRole(role))
+		});
 
 		if (!response.ok) {
 			if (hadPrevious) roleOverrides.set(user.guid, previous ?? null);

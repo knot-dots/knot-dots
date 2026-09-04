@@ -224,6 +224,35 @@ function syncContainerGrants(guid: string, userRelations: readonly UserRelation[
 	};
 }
 
+// Aligns the grants with the member roles for exactly those subjects whose
+// role predicates changed between two revisions. Subjects with an unchanged
+// role keep their stored grants, so individually edited grant sets survive
+// unrelated container updates.
+function syncContainerGrantsForRoleChanges(
+	object: string,
+	previousUser: readonly UserRelation[],
+	nextUser: readonly UserRelation[]
+) {
+	return async (connection: DatabaseConnection) => {
+		const roleFor = (userRelations: readonly UserRelation[], subject: string) =>
+			memberRoleFromPredicates(
+				userRelations.filter((u) => u.subject === subject).map(({ predicate }) => predicate)
+			);
+		const subjects = new Set([...previousUser, ...nextUser].map(({ subject }) => subject));
+		for (const subject of subjects) {
+			const nextRole = roleFor(nextUser, subject);
+			if (roleFor(previousUser, subject) === nextRole) {
+				continue;
+			}
+			await setContainerGrants(
+				object,
+				subject,
+				nextRole === null ? { self: [], subordinates: [] } : grantSetForRole(nextRole)
+			)(connection);
+		}
+	};
+}
+
 // Replaces the individually granted kinds of one subject on one container.
 export function setContainerGrants(object: string, subject: string, set: GrantSet) {
 	return async (connection: DatabaseConnection) => {
@@ -495,7 +524,11 @@ export function updateContainer(container: ModifiedContainer) {
 				RETURNING predicate, subject
       `);
 
-			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
+			await syncContainerGrantsForRoleChanges(
+				containerResult.guid,
+				previousRevision.user,
+				container.user
+			)(txConnection);
 
 			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
 			const deletedRelations = relationResult.filter(

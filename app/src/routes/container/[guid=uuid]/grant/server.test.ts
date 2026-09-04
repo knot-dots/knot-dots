@@ -3,6 +3,7 @@ import { locale } from 'svelte-i18n';
 
 const getContainerByGuid = vi.hoisted(() => vi.fn());
 const getManyOrganizationalUnitContainers = vi.hoisted(() => vi.fn());
+const setContainerGrants = vi.hoisted(() => vi.fn());
 const updateMemberRole = vi.hoisted(() => vi.fn());
 
 locale.set('en');
@@ -10,11 +11,12 @@ locale.set('en');
 vi.mock('$lib/server/db', () => ({
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
+	setContainerGrants,
 	updateMemberRole
 }));
 
 import { POST } from './+server';
-import { grantRecordsForRoleOn, memberRoles } from '$lib/models';
+import { grantRecordsForRoleOn, grantSetForRole, memberRoles } from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const measureGuid = '00000000-0000-4000-8000-000000000002';
@@ -31,6 +33,9 @@ const admin = {
 	roles: [],
 	settings: {}
 };
+
+const administratorSet = grantSetForRole(memberRoles.enum.administrator);
+const headSet = grantSetForRole(memberRoles.enum.head);
 
 function organization(adminSubjects: string[]) {
 	return {
@@ -67,9 +72,13 @@ function post(guid: string, assignment: unknown) {
 		headers: { 'Content-Type': 'application/json' }
 	});
 
+	const run = vi
+		.fn()
+		.mockImplementation(async (value) => (typeof value === 'function' ? value(undefined) : value));
+
 	return POST({
 		locals: {
-			pool: { connect: vi.fn().mockImplementation(async (value) => value) },
+			pool: { connect: run, transaction: run },
 			user: admin
 		},
 		params: { guid },
@@ -79,13 +88,29 @@ function post(guid: string, assignment: unknown) {
 
 beforeEach(() => {
 	vi.resetAllMocks();
-	updateMemberRole.mockReturnValue(undefined);
+	setContainerGrants.mockReturnValue(vi.fn());
+	updateMemberRole.mockReturnValue(vi.fn());
 });
 
-test('assigns the administrator role on an organization', async () => {
+test('stores an individual grant set and derives the member role', async () => {
 	getContainerByGuid.mockReturnValue(organization([adminGuid]));
 
-	const response = await post(organizationGuid, { role: 'administrator', subject: memberGuid });
+	const set = { self: ['read'], subordinates: ['read', 'update'] };
+	const response = await post(organizationGuid, { subject: memberGuid, ...set });
+
+	expect(response.status).toBe(204);
+	expect(updateMemberRole).toHaveBeenCalledWith(
+		expect.objectContaining({ guid: organizationGuid }),
+		memberGuid,
+		'observer'
+	);
+	expect(setContainerGrants).toHaveBeenCalledWith(organizationGuid, memberGuid, set);
+});
+
+test('a subject granted every kind becomes an administrator', async () => {
+	getContainerByGuid.mockReturnValue(organization([adminGuid]));
+
+	const response = await post(organizationGuid, { subject: memberGuid, ...administratorSet });
 
 	expect(response.status).toBe(204);
 	expect(updateMemberRole).toHaveBeenCalledWith(
@@ -93,30 +118,42 @@ test('assigns the administrator role on an organization', async () => {
 		memberGuid,
 		'administrator'
 	);
+	expect(setContainerGrants).toHaveBeenCalledWith(organizationGuid, memberGuid, administratorSet);
 });
 
-test('rejects the administrator role on other container types', async () => {
+test('rejects the full grant set on other container types', async () => {
 	getContainerByGuid.mockReturnValue(measure());
 
 	await expect(
-		post(measureGuid, { role: 'administrator', subject: memberGuid })
+		post(measureGuid, { subject: memberGuid, ...administratorSet })
 	).rejects.toMatchObject({ status: 422 });
 	expect(updateMemberRole).not.toHaveBeenCalled();
+	expect(setContainerGrants).not.toHaveBeenCalled();
 });
 
-test('the last administrator may not be demoted', async () => {
+test('rejects kinds that are not available for the target', async () => {
 	getContainerByGuid.mockReturnValue(organization([adminGuid]));
 
-	await expect(post(organizationGuid, { role: 'head', subject: adminGuid })).rejects.toMatchObject({
+	await expect(
+		post(organizationGuid, { subject: memberGuid, self: ['create'], subordinates: [] })
+	).rejects.toMatchObject({ status: 422 });
+	expect(setContainerGrants).not.toHaveBeenCalled();
+});
+
+test('the last administrator may not lose any grant', async () => {
+	getContainerByGuid.mockReturnValue(organization([adminGuid]));
+
+	await expect(post(organizationGuid, { subject: adminGuid, ...headSet })).rejects.toMatchObject({
 		status: 422
 	});
 	expect(updateMemberRole).not.toHaveBeenCalled();
+	expect(setContainerGrants).not.toHaveBeenCalled();
 });
 
-test('one of several administrators may be demoted', async () => {
+test('one of several administrators may lose grants', async () => {
 	getContainerByGuid.mockReturnValue(organization([adminGuid, otherAdminGuid]));
 
-	const response = await post(organizationGuid, { role: 'head', subject: otherAdminGuid });
+	const response = await post(organizationGuid, { subject: otherAdminGuid, ...headSet });
 
 	expect(response.status).toBe(204);
 	expect(updateMemberRole).toHaveBeenCalledWith(
@@ -124,4 +161,26 @@ test('one of several administrators may be demoted', async () => {
 		otherAdminGuid,
 		'head'
 	);
+	expect(setContainerGrants).toHaveBeenCalledWith(organizationGuid, otherAdminGuid, headSet);
+});
+
+test('empty grant sets remove the subject', async () => {
+	getContainerByGuid.mockReturnValue(organization([adminGuid]));
+
+	const response = await post(organizationGuid, {
+		subject: memberGuid,
+		self: [],
+		subordinates: []
+	});
+
+	expect(response.status).toBe(204);
+	expect(updateMemberRole).toHaveBeenCalledWith(
+		expect.objectContaining({ guid: organizationGuid }),
+		memberGuid,
+		null
+	);
+	expect(setContainerGrants).toHaveBeenCalledWith(organizationGuid, memberGuid, {
+		self: [],
+		subordinates: []
+	});
 });

@@ -1,8 +1,8 @@
-import type { AnyPayload, Container, MemberRoleAssignment } from '$lib/models';
+import type { AnyPayload, Container, GrantSetAssignment } from '$lib/models';
 
-export default async function saveMemberRole(
+export default async function saveGrants(
 	container: Container<AnyPayload>,
-	assignment: MemberRoleAssignment
+	assignment: GrantSetAssignment
 ) {
 	return await fetch(`/container/${container.guid}/grant`, {
 		body: JSON.stringify(assignment),

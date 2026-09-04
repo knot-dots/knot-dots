@@ -3,8 +3,20 @@ import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
 import { z } from 'zod';
-import { type AnyPayload, type Container, predicates, userRelation } from '$lib/models';
-import { getAllRelatedUsers, getContainerByGuid, updateContainer } from '$lib/server/db';
+import defineAbilityFor from '$lib/authorization';
+import {
+	type AnyPayload,
+	type Container,
+	findAncestors,
+	predicates,
+	userRelation
+} from '$lib/models';
+import {
+	getAllRelatedUsers,
+	getContainerByGuid,
+	getManyOrganizationalUnitContainers,
+	updateContainer
+} from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { NotFoundError } from 'slonik';
 import { getMembers } from '$lib/server/keycloak';
@@ -64,6 +76,21 @@ export const POST = (async ({ locals, params, request }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
+	if (
+		!locals.user.roles.includes('sysadmin') &&
+		!defineAbilityFor(locals.user).can('manage-users', container)
+	) {
+		const organizationalUnits = await locals.pool.connect(
+			getManyOrganizationalUnitContainers({ include: { organization: container.organization } })
+		);
+		const managedByUser = findAncestors<Container<AnyPayload>>(container, organizationalUnits, [
+			predicates.enum['is-part-of']
+		]).some(({ guid }) => locals.user.grants.self['manage-users'].includes(guid));
+		if (!managedByUser) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+	}
+
 	if (request.headers.get('Content-Type') != 'application/json') {
 		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
 	}
@@ -80,6 +107,29 @@ export const POST = (async ({ locals, params, request }) => {
 	const updatedUserRelation = parseResult.data.filter(
 		({ predicate }) => predicate != predicates.enum['is-creator-of']
 	);
+
+	if (!locals.user.roles.includes('sysadmin')) {
+		const previousAdmins = container.user
+			.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+			.map(({ subject }) => subject);
+		const nextAdmins = updatedUserRelation
+			.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
+			.map(({ subject }) => subject);
+
+		// administrators may not be removed or demoted
+		if (previousAdmins.some((subject) => !nextAdmins.includes(subject))) {
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+		}
+
+		// appointing administrators is reserved for administrators of the scope
+		if (
+			nextAdmins.some((subject) => !previousAdmins.includes(subject)) &&
+			!locals.user.grants.self['manage-users'].includes(container.guid) &&
+			!locals.user.grants.self['manage-users'].includes(container.organization)
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+	}
 
 	await locals.pool.connect(
 		updateContainer({

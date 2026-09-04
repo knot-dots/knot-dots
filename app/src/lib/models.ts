@@ -705,6 +705,17 @@ export const grantSet = z.object({
 
 export type GrantSet = z.infer<typeof grantSet>;
 
+export const grantSetAssignment = grantSet
+	.extend({ subject: z.uuid() })
+	.refine(
+		({ self, subordinates }) =>
+			self.every((kind) => grantKindsByTarget.self.includes(kind)) &&
+			subordinates.every((kind) => grantKindsByTarget.subordinates.includes(kind)),
+		{ message: 'kind not available for target' }
+	);
+
+export type GrantSetAssignment = z.infer<typeof grantSetAssignment>;
+
 // The grants stored in container_grant map the member role to kinds per
 // target; they express what was GRANTED, not the effective rights on a
 // specific container type (those are derived from the authorization rules).
