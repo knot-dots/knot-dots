@@ -215,16 +215,6 @@
 
 	let mayAddChapter = $derived(isReportContainer(parentContainer));
 
-	let mayAddCustomCollection = $derived(
-		isHelpContainer(parentContainer) ||
-			isEventContainer(parentContainer) ||
-			isOrganizationContainer(parentContainer) ||
-			isOrganizationalUnitContainer(parentContainer) ||
-			isPageContainer(parentContainer) ||
-			isPostContainer(parentContainer) ||
-			isReportContainer(parentContainer)
-	);
-
 	let mayAddIgniteVideo = $derived(
 		isHelpContainer(parentContainer) ||
 			isEventContainer(parentContainer) ||
@@ -249,15 +239,11 @@
 			...(mayAddSummary
 				? [{ icon: Summary, label: $_('summary'), value: payloadTypes.enum.summary }]
 				: []),
-			...(mayAddCustomCollection
-				? [
-						{
-							icon: Grid,
-							label: $_('custom_collection.settings.embed_objects'),
-							value: payloadTypes.enum.custom_collection
-						}
-					]
-				: []),
+			{
+				icon: Grid,
+				label: $_('custom_collection.settings.embed_objects'),
+				value: payloadTypes.enum.custom_collection
+			},
 			...(mayAddChapter
 				? [
 						{
