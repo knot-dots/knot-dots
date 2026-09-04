@@ -34,7 +34,7 @@
 		grantKinds.enum.read,
 		grantKinds.enum.update,
 		grantKinds.enum.delete,
-		grantKinds.enum['manage-members']
+		grantKinds.enum['manage-users']
 	];
 
 	const subordinateKinds = [grantKinds.enum.create, grantKinds.enum.update, grantKinds.enum.delete];

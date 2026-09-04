@@ -193,7 +193,7 @@ const actionsByGrantKind: Record<GrantKind, Actions> = {
 	update: 'update',
 	create: 'create',
 	delete: 'delete',
-	'manage-members': 'manage-users'
+	'manage-users': 'manage-users'
 };
 
 // A synthetic ability holding the given member role on this container only.

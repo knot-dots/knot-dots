@@ -610,7 +610,7 @@
 	"permission": {
 		"create": "Anlegen",
 		"delete": "Löschen",
-		"manage-members": "Nutzer verwalten",
+		"manage-users": "Nutzer verwalten",
 		"read": "Lesen",
 		"update": "Bearbeiten"
 	},

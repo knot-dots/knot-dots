@@ -409,7 +409,7 @@ describe('grantKindsForRoleOn', () => {
 		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.head)).toEqual([
 			'read',
 			'update',
-			'manage-members'
+			'manage-users'
 		]);
 		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.administrator)).toEqual(
 			grantKindsForRoleOn(org, viewer, memberRoles.enum.head)
@@ -429,7 +429,7 @@ describe('grantKindsForRoleOn', () => {
 		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)).toEqual([
 			'read',
 			'update',
-			'manage-members'
+			'manage-users'
 		]);
 		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.administrator)).toEqual(
 			grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)
@@ -455,7 +455,7 @@ describe('grantKindsForRoleOn', () => {
 			'update',
 			'create',
 			'delete',
-			'manage-members'
+			'manage-users'
 		]);
 	});
 

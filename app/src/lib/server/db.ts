@@ -17,7 +17,11 @@ import {
 	container,
 	createContainerSchema,
 	findDescendants,
-	grantKindsForRole,
+	grant,
+	type Grant,
+	type GrantSet,
+	grantSetForRole,
+	grantTargets,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
 	isProgramContainer,
@@ -144,6 +148,7 @@ export async function getPool() {
 const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	grant,
 	guid: z.object({ guid: z.string().uuid() }),
 	indicatorData: z.object({
 		actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
@@ -180,10 +185,9 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
-// container_grant mirrors the member roles as granted capability kinds until
-// the authorization rules interpret them directly, so every write path
-// replaces the grants of a container as a whole instead of updating them
-// individually.
+// container_grant mirrors the member roles as granted kinds per target, so
+// role-based write paths replace the grants of a container as a whole instead
+// of updating them individually.
 function syncContainerGrants(guid: string, userRelations: readonly UserRelation[]) {
 	return async (connection: DatabaseConnection) => {
 		await connection.query(sql.typeAlias('void')`
@@ -201,18 +205,65 @@ function syncContainerGrants(guid: string, userRelations: readonly UserRelation[
 			if (role === null) {
 				continue;
 			}
-			for (const kind of grantKindsForRole(role)) {
-				grantValues.push([guid, subject, kind]);
+			const set = grantSetForRole(role);
+			for (const kind of set.self) {
+				grantValues.push([guid, subject, kind, grantTargets.enum.self]);
+			}
+			for (const kind of set.subordinates) {
+				grantValues.push([guid, subject, kind, grantTargets.enum.subordinates]);
 			}
 		}
 
 		if (grantValues.length > 0) {
 			await connection.query(sql.typeAlias('void')`
-				INSERT INTO container_grant (object, subject, kind)
+				INSERT INTO container_grant (object, subject, kind, target)
 				SELECT *
-				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text'])}
+				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text', 'text'])}
 			`);
 		}
+	};
+}
+
+// Replaces the individually granted kinds of one subject on one container.
+export function setContainerGrants(object: string, subject: string, set: GrantSet) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			DELETE FROM container_grant WHERE object = ${object} AND subject = ${subject}
+		`);
+
+		const grantValues: string[][] = [
+			...set.self.map((kind) => [object, subject, kind, grantTargets.enum.self]),
+			...set.subordinates.map((kind) => [object, subject, kind, grantTargets.enum.subordinates])
+		];
+
+		if (grantValues.length > 0) {
+			await connection.query(sql.typeAlias('void')`
+				INSERT INTO container_grant (object, subject, kind, target)
+				SELECT *
+				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text', 'text'])}
+			`);
+		}
+	};
+}
+
+export function getAllGrantsOfUser(subject: string) {
+	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
+		return connection.any(sql.typeAlias('grant')`
+			SELECT kind, object, subject, target FROM container_grant WHERE subject = ${subject}
+		`);
+	};
+}
+
+export function getAllGrantsByContainers(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
+		if (guids.length === 0) {
+			return [];
+		}
+		return connection.any(sql.typeAlias('grant')`
+			SELECT kind, object, subject, target
+			FROM container_grant
+			WHERE object = ANY(${sql.array(guids, 'uuid')})
+		`);
 	};
 }
 

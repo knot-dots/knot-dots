@@ -610,7 +610,7 @@
 	"permission": {
 		"create": "Create",
 		"delete": "Delete",
-		"manage-members": "Manage users",
+		"manage-users": "Manage users",
 		"read": "Read",
 		"update": "Edit"
 	},
