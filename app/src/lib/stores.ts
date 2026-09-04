@@ -16,6 +16,7 @@ import {
 	emptyGrantRecords,
 	filterMembers,
 	type GoalPayload,
+	type Grant,
 	type GrantRecords,
 	type IooiType,
 	type MeasurePayload,
@@ -197,6 +198,7 @@ export type OverlayData =
 	| {
 			key: 'members';
 			container: Container<AnyPayload>;
+			grants: Grant[];
 			users: UserRecord[];
 	  }
 	| {
@@ -307,6 +309,7 @@ if (browser) {
 			setOverlayIfLatest({
 				key: overlayKey.enum.members,
 				container: result.data.container,
+				grants: result.data.grants,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {
