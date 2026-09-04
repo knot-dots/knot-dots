@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
-import defineAbilityFor, { grantKindsForRoleOn } from '$lib/authorization';
+import defineAbilityFor, {
+	grantKindsForRoleOn,
+	grantKindsForRoleOnSubordinates
+} from '$lib/authorization';
 import {
 	type AnyPayload,
 	type Container,
@@ -340,6 +343,43 @@ describe('field-level rules', () => {
 	});
 });
 
+describe('indicator types follow the common content rules', () => {
+	const template = makeContainer(
+		payloadTypes.enum.indicator_template,
+		{ managed_by: organization, organization },
+		{ unit: '%' }
+	);
+
+	test('admins and heads manage them organization-wide', () => {
+		for (const user of [
+			makeUser({ adminOf: [organization] }),
+			makeUser({ headOf: [organization] })
+		]) {
+			const ability = defineAbilityFor(user);
+			expect(ability.can('create', template)).toBe(true);
+			expect(ability.can('update', template)).toBe(true);
+			expect(ability.can('delete', template)).toBe(true);
+		}
+	});
+
+	test('collaborators manage them through the managing team only', () => {
+		const viaManagedBy = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
+		expect(viaManagedBy.can('create', template)).toBe(true);
+		expect(viaManagedBy.can('update', template)).toBe(true);
+		expect(viaManagedBy.can('delete', template)).toBe(true);
+
+		// a collaborator of the organization no longer reaches an indicator
+		// template that is managed by a team they are not part of
+		const foreign = makeContainer(
+			payloadTypes.enum.indicator_template,
+			{ managed_by: team, organization },
+			{ unit: '%' }
+		);
+		const ability = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
+		expect(ability.can('update', foreign)).toBe(false);
+	});
+});
+
 describe('grantKindsForRoleOn', () => {
 	const viewer = {
 		family_name: 'Muster',
@@ -427,5 +467,83 @@ describe('grantKindsForRoleOn', () => {
 		);
 
 		expect(grantKindsForRoleOn(measure, viewer, null)).toEqual(['read']);
+	});
+});
+
+describe('grantKindsForRoleOnSubordinates', () => {
+	const viewer = {
+		family_name: 'Muster',
+		given_name: 'Erika',
+		guid: anotherUserGuid,
+		settings: {}
+	};
+
+	function withGuid(container: ReturnType<typeof makeContainer>, guid: string) {
+		return { ...container, guid } as Container<AnyPayload>;
+	}
+
+	test('every member role of an organization may work on subordinate objects', () => {
+		const orgGuid = crypto.randomUUID();
+		const org = withGuid(
+			testContainer.parse({
+				managed_by: orgGuid,
+				organization: orgGuid,
+				payload: { name: 'Org', type: payloadTypes.enum.organization }
+			}) as ReturnType<typeof makeContainer>,
+			orgGuid
+		);
+
+		expect(grantKindsForRoleOnSubordinates(org, viewer, null)).toEqual([]);
+		expect(grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.observer)).toEqual([]);
+		// collaborators reach subordinate objects through the managed_by fallback
+		expect(grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.collaborator)).toEqual([
+			'create',
+			'update',
+			'delete'
+		]);
+		expect(grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.head)).toEqual([
+			'create',
+			'update',
+			'delete'
+		]);
+		expect(grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.administrator)).toEqual(
+			grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.head)
+		);
+	});
+
+	test('members of an organizational unit may work on subordinate objects', () => {
+		const unitGuid = crypto.randomUUID();
+		const unit = withGuid(
+			testContainer.parse({
+				managed_by: unitGuid,
+				payload: { name: 'Unit', type: payloadTypes.enum.organizational_unit }
+			}) as ReturnType<typeof makeContainer>,
+			unitGuid
+		);
+
+		expect(grantKindsForRoleOnSubordinates(unit, viewer, memberRoles.enum.observer)).toEqual([]);
+		expect(grantKindsForRoleOnSubordinates(unit, viewer, memberRoles.enum.collaborator)).toEqual([
+			'create',
+			'update',
+			'delete'
+		]);
+		expect(grantKindsForRoleOnSubordinates(unit, viewer, memberRoles.enum.head)).toEqual([
+			'create',
+			'update',
+			'delete'
+		]);
+	});
+
+	test('collaborators of a self-managed measure may work on its subordinate objects', () => {
+		const measureGuid = crypto.randomUUID();
+		const measure = withGuid(
+			makeContainer(payloadTypes.enum.measure, { managed_by: measureGuid }),
+			measureGuid
+		);
+
+		expect(grantKindsForRoleOnSubordinates(measure, viewer, memberRoles.enum.observer)).toEqual([]);
+		expect(grantKindsForRoleOnSubordinates(measure, viewer, memberRoles.enum.collaborator)).toEqual(
+			['create', 'update', 'delete']
+		);
 	});
 });
