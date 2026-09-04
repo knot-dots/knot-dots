@@ -1,3 +1,4 @@
 docker-compose.override.yaml
 node_modules
 .eslintcache
+.prettier-cache
