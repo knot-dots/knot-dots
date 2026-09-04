@@ -5,6 +5,7 @@ test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test('copies an edited program root and its descendants through the dedicated endpoint', async ({
 	dotsBoard,
+	programReportTemplate,
 	testMeasure,
 	testProgram
 }) => {
@@ -82,10 +83,33 @@ test('copies an edited program root and its descendants through the dedicated en
 		})
 	);
 	await expect(dotsBoard.overlay.title).toHaveText(title);
+
+	await dotsBoard.page.goto(`/${testProgram.organization}/${copiedProgram.guid}/templates/catalog`);
+	const copiedScopedTemplate = dotsBoard.page.getByTitle(programReportTemplate.payload.title, {
+		exact: true
+	});
+	await expect(async () => {
+		await dotsBoard.page.reload();
+		await expect(copiedScopedTemplate).toBeVisible();
+	}).toPass({ timeout: 20000 });
+	await expect(
+		dotsBoard.page.getByTitle(`${programReportTemplate.payload.title} child`, {
+			exact: true
+		})
+	).not.toBeVisible();
+
+	await dotsBoard.page.goto(`/${testProgram.organization}/templates`);
+	await expect(
+		dotsBoard.page.getByTitle(programReportTemplate.payload.title, { exact: true })
+	).not.toBeVisible();
+	await expect(
+		dotsBoard.page.getByTitle(`${programReportTemplate.payload.title} child`, { exact: true })
+	).not.toBeVisible();
 });
 
 test('creates a template hierarchy without changing the source overlay', async ({
 	dotsBoard,
+	programReportTemplate,
 	testMeasure,
 	testProgram
 }) => {
@@ -143,6 +167,21 @@ test('creates a template hierarchy without changing the source overlay', async (
 	await expect(
 		dotsBoard.overlay.locator.getByRole('button', { name: 'Create template', exact: true })
 	).toHaveCount(0);
+
+	await dotsBoard.page.goto(`/${testProgram.organization}/${template.guid}/templates/catalog`);
+	const copiedScopedTemplate = dotsBoard.page.getByTitle(programReportTemplate.payload.title, {
+		exact: true
+	});
+	await expect(async () => {
+		await dotsBoard.page.reload();
+		await expect(copiedScopedTemplate).toBeVisible();
+	}).toPass({ timeout: 20000 });
+	await expect(
+		dotsBoard.page.getByTitle(`${programReportTemplate.payload.title} child`, { exact: true })
+	).not.toBeVisible();
+
+	await dotsBoard.page.goto(`/${testProgram.organization}/templates`);
+	await expect(copiedScopedTemplate).not.toBeVisible();
 });
 
 test('falls back to an administered location when the current context is denied', async ({

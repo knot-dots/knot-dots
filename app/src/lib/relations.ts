@@ -1,3 +1,4 @@
+import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import {
 	type AnyPayload,
 	type Container,
@@ -7,6 +8,13 @@ import {
 } from '$lib/models';
 
 export type Node = Pick<Container<AnyPayload>, 'guid' | 'relation'>;
+
+export function isProtectedContainerRelationPredicate(predicate: string) {
+	return (
+		isServerOwnedCopyRelationPredicate(predicate) ||
+		predicate === predicates.enum['is-available-in']
+	);
+}
 
 export function relatedSubjectNodesByPredicate<T extends Node>(
 	container: Node,

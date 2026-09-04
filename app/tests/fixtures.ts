@@ -467,9 +467,32 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				}
 			]
 		});
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as Container<GoalPayload>;
+		const programReportTemplateChild = await createContainer(adminContext, {
+			...newGoal,
+			payload: {
+				...newGoal.payload,
+				template: true,
+				title: `${programReportTemplate.payload.title} child`
+			},
+			relation: [
+				{
+					object: programReportTemplate.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		});
 
 		await use(programReportTemplate);
 
+		await deleteContainer(adminContext, programReportTemplateChild);
 		await deleteContainer(adminContext, programReportTemplate);
 	},
 	reportTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {

@@ -2333,11 +2333,14 @@ export function isTemplateRoot({
 	);
 }
 
-export function getAvailableInProgramGuids(container: Container<AnyPayload>) {
-	return container.relation
+export function getAvailableInProgramGuids({
+	guid,
+	relation
+}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
+	return relation
 		.filter(
 			({ predicate, subject }) =>
-				predicate === predicates.enum['is-available-in'] && subject === container.guid
+				predicate === predicates.enum['is-available-in'] && subject === guid
 		)
 		.map(({ object }) => object);
 }

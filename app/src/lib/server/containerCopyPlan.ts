@@ -8,6 +8,8 @@ import {
 	createRootCopyOf,
 	createTemplateInstanceOf,
 	isOrganizationalUnitContainer,
+	isProgramContainer,
+	isTemplateRoot,
 	type NewContainer,
 	newContainer,
 	type Predicate,
@@ -258,44 +260,93 @@ export function createContainerCopyPlan({
 	}
 	const plannedRoot = createRootForOperation(root, target, operation);
 
-	// `included` is the copy set; the queue contains readable, eligible containers whose descendants
-	// still need to be considered. A cursor avoids repeatedly shifting the array.
+	// `included` is the complete copy set. The ordinary hierarchy and program-scoped template
+	// hierarchies are expanded separately so template instantiation can keep the latter as templates.
 	const included = new Set<string>([root.guid]);
-	const queue = [root.guid];
-	let queueIndex = 0;
-	const processed = new Set<string>();
+	const mainHierarchyGuids = new Set<string>([root.guid]);
+	const scopedTemplateGuids = new Set<string>();
 
-	const includeEligible = (container: Container<AnyPayload>) => {
+	const isEligible = (container: Container<AnyPayload>, allowResourceRoot = false) => {
 		// Hidden, actual-data, descendant-resource, and unresolved-reference containers never enter the
 		// queue, so their descendants are pruned unless another valid structural path reaches them.
 		if (
 			!readPolicy.canReadSource(container) ||
 			container.payload.type === payloadTypes.enum.actual_data ||
-			container.payload.type === payloadTypes.enum.resource_v2 ||
+			(!allowResourceRoot && container.payload.type === payloadTypes.enum.resource_v2) ||
 			!hasResolvedReferences(container)
 		) {
 			return false;
 		}
-		if (!included.has(container.guid)) {
-			included.add(container.guid);
-			queue.push(container.guid);
-		}
 		return true;
 	};
 
-	// Expand each included container once. The processed set terminates cycles while `included`
-	// deduplicates containers reached through multiple structural paths.
-	while (queueIndex < queue.length) {
-		const currentGuid = queue[queueIndex++];
-		if (processed.has(currentGuid)) {
+	const mainQueue = [root.guid];
+	const processedMain = new Set<string>();
+	for (let queueIndex = 0; queueIndex < mainQueue.length; queueIndex++) {
+		const currentGuid = mainQueue[queueIndex];
+		if (processedMain.has(currentGuid)) {
 			continue;
 		}
-		processed.add(currentGuid);
+		processedMain.add(currentGuid);
 
 		for (const relation of structuralRelationsByObject.get(currentGuid) ?? []) {
 			const child = containersByGuid.get(relation.subject);
-			if (child) {
-				includeEligible(child);
+			if (child && isEligible(child)) {
+				included.add(child.guid);
+				mainHierarchyGuids.add(child.guid);
+				mainQueue.push(child.guid);
+			}
+		}
+	}
+
+	const availableTemplateRoots = isProgramContainer(root)
+		? [
+				...new Map(
+					relations
+						.filter(
+							({ object, predicate }) =>
+								object === root.guid && predicate === predicates.enum['is-available-in']
+						)
+						.flatMap((availability) => {
+							const template = containersByGuid.get(availability.subject);
+							return template &&
+								'template' in template.payload &&
+								isTemplateRoot({
+									guid: template.guid,
+									payload: template.payload,
+									relation: template.relation
+								})
+								? [[template.guid, template] as const]
+								: [];
+						})
+				).values()
+			]
+		: [];
+
+	const scopedQueue: string[] = [];
+	for (const templateRoot of availableTemplateRoots) {
+		if (mainHierarchyGuids.has(templateRoot.guid) || !isEligible(templateRoot, true)) {
+			continue;
+		}
+		included.add(templateRoot.guid);
+		scopedTemplateGuids.add(templateRoot.guid);
+		scopedQueue.push(templateRoot.guid);
+	}
+
+	const processedScoped = new Set<string>();
+	for (let queueIndex = 0; queueIndex < scopedQueue.length; queueIndex++) {
+		const currentGuid = scopedQueue[queueIndex];
+		if (processedScoped.has(currentGuid)) {
+			continue;
+		}
+		processedScoped.add(currentGuid);
+
+		for (const relation of structuralRelationsByObject.get(currentGuid) ?? []) {
+			const child = containersByGuid.get(relation.subject);
+			if (child && !mainHierarchyGuids.has(child.guid) && isEligible(child)) {
+				included.add(child.guid);
+				scopedTemplateGuids.add(child.guid);
+				scopedQueue.push(child.guid);
 			}
 		}
 	}
@@ -363,7 +414,10 @@ export function createContainerCopyPlan({
 			if (operation.kind === 'create-template') {
 				copy.payload = { ...copy.payload, template: true };
 			} else if (operation.kind === 'template-instance') {
-				copy.payload = { ...copy.payload, template: false };
+				copy.payload = {
+					...copy.payload,
+					template: scopedTemplateGuids.has(originalGuid)
+				};
 			}
 		}
 

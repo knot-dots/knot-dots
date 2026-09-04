@@ -57,6 +57,8 @@ export function createAllLevelQuery(url: URL, columnId?: AllLevelColumnId) {
 		}
 	}
 
+	query.set('template', 'false');
+
 	return query;
 }
 

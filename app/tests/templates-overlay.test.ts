@@ -30,6 +30,11 @@ test.describe('Templates overlay', () => {
 		await expect(
 			dotsBoard.overlay.locator.getByTitle(reportTemplate.payload.title, { exact: true })
 		).not.toBeVisible();
+		await expect(
+			dotsBoard.overlay.locator.getByTitle(`${programReportTemplate.payload.title} child`, {
+				exact: true
+			})
+		).not.toBeVisible();
 
 		await programTemplate.click();
 		await expect(dotsBoard.overlay.backButton).toBeVisible();
