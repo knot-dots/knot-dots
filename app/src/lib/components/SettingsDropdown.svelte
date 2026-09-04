@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Link from '~icons/knotdots/link';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
@@ -71,15 +73,24 @@
 		}, 2000);
 	}
 
+	let overlay = getContext('overlay');
+
 	async function handleDelete() {
 		const response = await deleteContainer(container);
 		if (response.ok) {
-			if ($overlayHistory.length > 1) {
-				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-				const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-				await goto(`#${newParams.toString()}`, { invalidateAll: true });
+			if (overlay) {
+				if ($overlayHistory.length > 1) {
+					$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+					const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+					await goto(`#${newParams.toString()}`, { invalidateAll: true });
+				} else {
+					await goto('#', { invalidateAll: true });
+				}
 			} else {
-				await goto('#', { invalidateAll: true });
+				await goto(
+					resolve('/[guid=uuid]', { guid: container.organizational_unit ?? container.organization })
+				);
+				await invalidateAll();
 			}
 		} else {
 			const error = await response.json();
