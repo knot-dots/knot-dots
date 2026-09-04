@@ -3,6 +3,7 @@ import type { DatabasePool } from 'slonik';
 import type { CategoryContext } from '$lib/categoryOptions';
 import type {
 	Container,
+	GrantRecords,
 	KeycloakUser,
 	OrganizationalUnitPayload,
 	OrganizationPayload
@@ -41,14 +42,11 @@ declare global {
 declare module '@auth/sveltekit' {
 	interface Session {
 		user: {
-			adminOf: string[];
-			collaboratorOf: string[];
 			email: string;
 			familyName: string;
 			givenName: string;
+			grants: GrantRecords;
 			guid: string;
-			headOf: string[];
-			memberOf: string[];
 			roles: string[];
 			settings: { features?: string[] };
 		} & DefaultSession['user'];

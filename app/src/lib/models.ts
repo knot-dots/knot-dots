@@ -731,6 +731,56 @@ const grantSetsByMemberRole: Record<MemberRole, GrantSet> = {
 	}
 };
 
+export type GrantRecords = Record<GrantTarget, Record<GrantKind, string[]>>;
+
+function emptyKindRecord(): Record<GrantKind, string[]> {
+	return { read: [], update: [], create: [], delete: [], 'manage-users': [] };
+}
+
+export function emptyGrantRecords(): GrantRecords {
+	return { self: emptyKindRecord(), subordinates: emptyKindRecord() };
+}
+
+// Groups a flat grant list into per-target, per-kind guid arrays — the shape
+// the session carries and the authorization rules read.
+export function grantRecordsFromGrants(grants: ReadonlyArray<Grant>): GrantRecords {
+	const records = emptyGrantRecords();
+	for (const { kind, object, target } of grants) {
+		records[target][kind].push(object);
+	}
+	return records;
+}
+
+export function grantRecordsForRoleOn(role: MemberRole | null, object: string): GrantRecords {
+	const records = emptyGrantRecords();
+	if (role === null) {
+		return records;
+	}
+	const set = grantSetForRole(role);
+	for (const kind of set.self) {
+		records.self[kind].push(object);
+	}
+	for (const kind of set.subordinates) {
+		records.subordinates[kind].push(object);
+	}
+	return records;
+}
+
+export function grantSetForSubjectOn(
+	grants: ReadonlyArray<Grant>,
+	object: string,
+	subject: string
+): GrantSet {
+	return {
+		self: grants
+			.filter((g) => g.object === object && g.subject === subject && g.target === 'self')
+			.map(({ kind }) => kind),
+		subordinates: grants
+			.filter((g) => g.object === object && g.subject === subject && g.target === 'subordinates')
+			.map(({ kind }) => kind)
+	};
+}
+
 export function grantSetForRole(role: MemberRole): GrantSet {
 	return {
 		self: [...grantSetsByMemberRole[role].self],

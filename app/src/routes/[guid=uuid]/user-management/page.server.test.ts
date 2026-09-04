@@ -11,6 +11,7 @@ vi.mock('$lib/server/keycloak', () => ({ getMembers }));
 vi.mock('$lib/server/db', () => ({ getAllRelatedUsersByContainers }));
 
 import { load } from './+page.server';
+import { emptyGrantRecords, grantRecordsForRoleOn, memberRoles } from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const organizationalUnitGuid = '00000000-0000-4000-8000-000000000002';
@@ -30,26 +31,23 @@ const currentOrganizationalUnit = {
 	relation: []
 };
 
-function user(adminOf: string[], headOf: string[] = []) {
+function user(grants: ReturnType<typeof emptyGrantRecords>) {
 	return {
-		adminOf,
-		collaboratorOf: [],
 		familyName: 'Admin',
 		givenName: 'Test',
+		grants,
 		guid: userGuid,
-		headOf,
 		isAuthenticated: true,
-		memberOf: [],
 		roles: [],
 		settings: {}
 	};
 }
 
-function event(adminOf: string[], headOf: string[] = []) {
+function event(grants = emptyGrantRecords()) {
 	return {
 		locals: {
 			pool: { connect: vi.fn().mockResolvedValue([]) },
-			user: user(adminOf, headOf)
+			user: user(grants)
 		},
 		parent: vi.fn().mockResolvedValue({
 			currentOrganization,
@@ -65,23 +63,29 @@ beforeEach(() => {
 });
 
 test('grants organization admins access to the user management of an organizational unit', async () => {
-	const { container } = await load(event([organizationGuid]));
+	const { container } = await load(
+		event(grantRecordsForRoleOn(memberRoles.enum.administrator, organizationGuid))
+	);
 
 	expect(container.guid).toBe(organizationalUnitGuid);
 });
 
 test('grants organizational unit admins access to the user management of their unit', async () => {
-	const { container } = await load(event([organizationalUnitGuid]));
+	const { container } = await load(
+		event(grantRecordsForRoleOn(memberRoles.enum.administrator, organizationalUnitGuid))
+	);
 
 	expect(container.guid).toBe(organizationalUnitGuid);
 });
 
 test('grants heads of the organization access to the user management of an organizational unit', async () => {
-	const { container } = await load(event([], [organizationGuid]));
+	const { container } = await load(
+		event(grantRecordsForRoleOn(memberRoles.enum.head, organizationGuid))
+	);
 
 	expect(container.guid).toBe(organizationalUnitGuid);
 });
 
 test('responds with 404 for users without admin rights', async () => {
-	await expect(load(event([]))).rejects.toMatchObject({ status: 404 });
+	await expect(load(event())).rejects.toMatchObject({ status: 404 });
 });

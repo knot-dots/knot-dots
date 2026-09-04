@@ -14,6 +14,7 @@ vi.mock('$lib/server/db', () => ({
 }));
 
 import { POST } from './+server';
+import { grantRecordsForRoleOn, memberRoles } from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const measureGuid = '00000000-0000-4000-8000-000000000002';
@@ -22,14 +23,11 @@ const otherAdminGuid = '00000000-0000-4000-8000-000000000004';
 const memberGuid = '00000000-0000-4000-8000-000000000005';
 
 const admin = {
-	adminOf: [organizationGuid],
-	collaboratorOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
+	grants: grantRecordsForRoleOn(memberRoles.enum.administrator, organizationGuid),
 	guid: adminGuid,
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [organizationGuid],
 	roles: [],
 	settings: {}
 };

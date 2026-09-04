@@ -7,6 +7,13 @@ import defineAbilityFor, {
 import {
 	type AnyPayload,
 	type Container,
+	emptyGrantRecords,
+	type GrantKind,
+	grantKinds,
+	type GrantRecords,
+	grantRecordsForRoleOn,
+	grantTargets,
+	type MemberRole,
 	memberRoles,
 	newContainer,
 	payloadTypes,
@@ -31,17 +38,45 @@ const anotherUserGuid = crypto.randomUUID();
 // The session user (User in stores.ts) has no zod schema of its own, so the
 // tests define one to derive complete users from partial input via parse.
 const testUser = z.object({
-	adminOf: z.array(z.string()).default([]),
-	collaboratorOf: z.array(z.string()).default([]),
 	familyName: z.string().default('Muster'),
 	givenName: z.string().default('Erika'),
+	grants: z.custom<GrantRecords>().default(emptyGrantRecords),
 	guid: z.string().default(userGuid),
-	headOf: z.array(z.string()).default([]),
 	isAuthenticated: z.boolean().default(true),
-	memberOf: z.array(z.string()).default([]),
 	roles: z.array(z.string()).default([]),
 	settings: z.object({ features: z.array(z.string()).optional() }).default({})
 });
+
+// Merges the grants the given member roles map to on the given containers into
+// one session-shaped record, mirroring what the migration backfill produces.
+function grantsForRoles(...assignments: Array<[MemberRole, string]>): GrantRecords {
+	const records = emptyGrantRecords();
+	for (const [role, object] of assignments) {
+		const forRole = grantRecordsForRoleOn(role, object);
+		for (const target of grantTargets.options) {
+			for (const kind of grantKinds.options) {
+				records[target][kind].push(...forRole[target][kind]);
+			}
+		}
+	}
+	return records;
+}
+
+// An individually edited set of grants on a single container, as the editable
+// permission matrix stores it.
+function grantsOn(
+	object: string,
+	set: { self?: GrantKind[]; subordinates?: GrantKind[] }
+): GrantRecords {
+	const records = emptyGrantRecords();
+	for (const kind of set.self ?? []) {
+		records.self[kind].push(object);
+	}
+	for (const kind of set.subordinates ?? []) {
+		records.subordinates[kind].push(object);
+	}
+	return records;
+}
 
 // The policies work with NewContainer<AnyInitialPayload>, so newContainer
 // (which needs neither guid nor revision) serves as the base for test objects.
@@ -104,7 +139,7 @@ describe('anonymous users', () => {
 describe('sysadmin', () => {
 	const ability = defineAbilityFor(makeUser({ roles: ['sysadmin'] }));
 
-	test('has unconditional access regardless of managed_by and membership', () => {
+	test('has unconditional access regardless of managed_by and grants', () => {
 		const container = makeContainer(payloadTypes.enum.measure, { managed_by: otherTeam });
 		expect(ability.can('create', container)).toBe(true);
 		expect(ability.can('read', container)).toBe(true);
@@ -116,9 +151,9 @@ describe('sysadmin', () => {
 
 describe('create, update and delete via managed_by', () => {
 	test.for([
-		['adminOf', makeUser({ adminOf: [team] })],
-		['collaboratorOf', makeUser({ collaboratorOf: [team] })],
-		['headOf', makeUser({ headOf: [team] })]
+		['administrator', makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, team]) })],
+		['collaborator', makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, team]) })],
+		['head', makeUser({ grants: grantsForRoles([memberRoles.enum.head, team]) })]
 	] as const)('a user with the %s role on the managing team may modify', ([, user]) => {
 		const ability = defineAbilityFor(user);
 		const measure = makeContainer(payloadTypes.enum.measure);
@@ -128,16 +163,25 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('update', makeContainer(payloadTypes.enum.program))).toBe(true);
 	});
 
-	test('a user without a role on the managing team may not modify', () => {
-		const ability = defineAbilityFor(makeUser({ adminOf: [otherTeam], memberOf: [team] }));
+	test('a user without modifying grants on the managing team may not modify', () => {
+		const ability = defineAbilityFor(
+			makeUser({
+				grants: grantsForRoles(
+					[memberRoles.enum.administrator, otherTeam],
+					[memberRoles.enum.observer, team]
+				)
+			})
+		);
 		const measure = makeContainer(payloadTypes.enum.measure);
 		expect(ability.can('create', measure)).toBe(false);
 		expect(ability.can('update', measure)).toBe(false);
 		expect(ability.can('delete', measure)).toBe(false);
 	});
 
-	test('membership alone does not grant modification', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [team] }));
+	test('the read grant alone does not allow modification', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.observer, team]) })
+		);
 		const measure = makeContainer(payloadTypes.enum.measure);
 		expect(ability.can('update', measure)).toBe(false);
 	});
@@ -145,7 +189,9 @@ describe('create, update and delete via managed_by', () => {
 	test('containers managed by the organizational unit are modifiable by unit admins', () => {
 		// Without a team of its own, managed_by defaults to the organizational
 		// unit (or organization), so unit admins qualify via the managed_by rule.
-		const ability = defineAbilityFor(makeUser({ adminOf: [organizationalUnit] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, organizationalUnit]) })
+		);
 		const measure = makeContainer(payloadTypes.enum.measure, {
 			managed_by: organizationalUnit,
 			organizational_unit: organizationalUnit
@@ -154,55 +200,129 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('update', measure)).toBe(true);
 		expect(ability.can('delete', measure)).toBe(true);
 	});
-});
 
-describe('categories and terms via managed_by', () => {
-	test('admins and heads may manage them', () => {
-		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
-			const ability = defineAbilityFor(user);
-			const category = makeContainer(payloadTypes.enum.category);
-			expect(ability.can('create', category)).toBe(true);
-			expect(ability.can('update', category)).toBe(true);
-			expect(ability.can('delete', category)).toBe(true);
-			expect(ability.can('update', makeContainer(payloadTypes.enum.term))).toBe(true);
-		}
+	test('individual grants take effect kind by kind', () => {
+		const measure = makeContainer(payloadTypes.enum.measure);
+		const updateOnly = defineAbilityFor(
+			makeUser({ grants: grantsOn(team, { subordinates: ['read', 'update'] }) })
+		);
+		expect(updateOnly.can('update', measure)).toBe(true);
+		expect(updateOnly.can('create', measure)).toBe(false);
+		expect(updateOnly.can('delete', measure)).toBe(false);
+
+		const createOnly = defineAbilityFor(
+			makeUser({ grants: grantsOn(team, { subordinates: ['create'] }) })
+		);
+		expect(createOnly.can('create', measure)).toBe(true);
+		expect(createOnly.can('update', measure)).toBe(false);
 	});
 
-	test('collaborators may not manage them', () => {
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
-		const category = makeContainer(payloadTypes.enum.category);
+	test('grants on the object itself do not extend to subordinate objects', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsOn(team, { self: ['read', 'update'] }) })
+		);
+		expect(ability.can('update', makeContainer(payloadTypes.enum.measure))).toBe(false);
+	});
+});
+
+describe('categories and terms', () => {
+	test('fully self-managed subjects may create, update and delete them', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, organization]) })
+		);
+		const category = makeContainer(payloadTypes.enum.category, { managed_by: organization });
+		expect(ability.can('create', category)).toBe(true);
+		expect(ability.can('update', category)).toBe(true);
+		expect(ability.can('delete', category)).toBe(true);
+		expect(
+			ability.can('update', makeContainer(payloadTypes.enum.term, { managed_by: organization }))
+		).toBe(true);
+	});
+
+	test('heads may update but no longer create or delete them', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.head, organization]) })
+		);
+		const category = makeContainer(payloadTypes.enum.category, { managed_by: organization });
+		expect(ability.can('update', category)).toBe(true);
 		expect(ability.can('create', category)).toBe(false);
-		expect(ability.can('update', category)).toBe(false);
 		expect(ability.can('delete', category)).toBe(false);
+	});
+
+	test('collaborators may update but not create or delete them', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, organization]) })
+		);
+		const category = makeContainer(payloadTypes.enum.category, { managed_by: organization });
+		expect(ability.can('update', category)).toBe(true);
+		expect(ability.can('create', category)).toBe(false);
+		expect(ability.can('delete', category)).toBe(false);
+	});
+});
+
+describe('help sections and organizational units follow the organization rules', () => {
+	const admin = defineAbilityFor(
+		makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, organization]) })
+	);
+	const head = defineAbilityFor(
+		makeUser({ grants: grantsForRoles([memberRoles.enum.head, organization]) })
+	);
+
+	const unit = testContainer.parse({
+		payload: { name: 'Unit', type: payloadTypes.enum.organizational_unit }
+	});
+
+	test('creating and deleting requires full rights on the organization object', () => {
+		const help = makeContainer(payloadTypes.enum.help);
+		expect(admin.can('create', help)).toBe(true);
+		expect(admin.can('delete', help)).toBe(true);
+		expect(admin.can('create', unit)).toBe(true);
+		expect(admin.can('delete', unit)).toBe(true);
+		expect(head.can('create', help)).toBe(false);
+		expect(head.can('delete', unit)).toBe(false);
+	});
+
+	test('updating follows the subordinate update grant', () => {
+		expect(head.can('update', makeContainer(payloadTypes.enum.help))).toBe(true);
+		expect(head.can('update', unit)).toBe(true);
+	});
+
+	test('html sections stay reserved for sysadmins', () => {
+		const html = makeContainer(payloadTypes.enum.html);
+		expect(admin.can('create', html)).toBe(false);
+		expect(admin.can('update', html)).toBe(false);
+		expect(admin.can('delete', html)).toBe(false);
+		expect(defineAbilityFor(makeUser({ roles: ['sysadmin'] })).can('create', html)).toBe(true);
 	});
 });
 
 describe('manage-users via managed_by', () => {
 	test('is granted to admins and heads for programs and measures', () => {
-		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
-			const ability = defineAbilityFor(user);
+		for (const role of [memberRoles.enum.administrator, memberRoles.enum.head]) {
+			const ability = defineAbilityFor(makeUser({ grants: grantsForRoles([role, team]) }));
 			expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(true);
 			expect(ability.can('manage-users', makeContainer(payloadTypes.enum.measure))).toBe(true);
 		}
 	});
 
 	test('is not granted to collaborators via managed_by', () => {
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, team]) })
+		);
 		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.program))).toBe(false);
 		expect(ability.can('manage-users', makeContainer(payloadTypes.enum.measure))).toBe(false);
 	});
 });
 
 describe('task prioritization requires the update permission', () => {
-	test('is granted to collaborators and denied to mere members', () => {
+	test('is granted to collaborators and denied to mere observers', () => {
 		expect(
-			defineAbilityFor(makeUser({ collaboratorOf: [team] })).can(
-				'update',
-				makeContainer(payloadTypes.enum.task)
-			)
+			defineAbilityFor(
+				makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, team]) })
+			).can('update', makeContainer(payloadTypes.enum.task))
 		).toBe(true);
 		expect(
-			defineAbilityFor(makeUser({ memberOf: [team] })).can(
+			defineAbilityFor(makeUser({ grants: grantsForRoles([memberRoles.enum.observer, team]) })).can(
 				'update',
 				makeContainer(payloadTypes.enum.task)
 			)
@@ -212,12 +332,16 @@ describe('task prioritization requires the update permission', () => {
 
 describe('read visibility via managed_by', () => {
 	test('members of the managing team may read members-only containers', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [team] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.observer, team]) })
+		);
 		expect(ability.can('read', makeContainer(payloadTypes.enum.measure))).toBe(true);
 	});
 
 	test('members of the managing team may read organization-visibility containers', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [team] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.observer, team]) })
+		);
 		expect(
 			ability.can(
 				'read',
@@ -227,12 +351,16 @@ describe('read visibility via managed_by', () => {
 	});
 
 	test('non-members may not read members-only containers', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [otherTeam] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.observer, otherTeam]) })
+		);
 		expect(ability.can('read', makeContainer(payloadTypes.enum.measure))).toBe(false);
 	});
 
 	test('organization members may read organization-visibility containers', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [organization] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.observer, organization]) })
+		);
 		expect(
 			ability.can(
 				'read',
@@ -250,16 +378,23 @@ describe('read visibility via managed_by', () => {
 		);
 		expect(defineAbilityFor(makeUser()).can('read', container)).toBe(true);
 		expect(
-			defineAbilityFor(makeUser({ guid: anotherUserGuid, adminOf: [organization] })).can(
-				'read',
-				container
-			)
+			defineAbilityFor(
+				makeUser({
+					guid: anotherUserGuid,
+					grants: grantsForRoles([memberRoles.enum.administrator, organization])
+				})
+			).can('read', container)
 		).toBe(true);
 		expect(
-			defineAbilityFor(makeUser({ guid: anotherUserGuid, memberOf: [team, organization] })).can(
-				'read',
-				container
-			)
+			defineAbilityFor(
+				makeUser({
+					guid: anotherUserGuid,
+					grants: grantsForRoles(
+						[memberRoles.enum.observer, team],
+						[memberRoles.enum.observer, organization]
+					)
+				})
+			).can('read', container)
 		).toBe(false);
 	});
 });
@@ -272,24 +407,32 @@ describe('multi-valued managed_by', () => {
 		managed_by: [otherTeam, team]
 	});
 
-	test('a role on one of the managing teams suffices to modify', () => {
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
+	test('modifying grants on one of the managing teams suffice', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, team]) })
+		);
 		expect(ability.can('create', container)).toBe(true);
 		expect(ability.can('update', container)).toBe(true);
 		expect(ability.can('delete', container)).toBe(true);
 	});
 
 	test('admins and heads of one of the managing teams may invite members', () => {
-		expect(defineAbilityFor(makeUser({ adminOf: [team] })).can('manage-users', container)).toBe(
-			true
-		);
-		expect(defineAbilityFor(makeUser({ headOf: [otherTeam] })).can('manage-users', container)).toBe(
-			true
-		);
+		expect(
+			defineAbilityFor(
+				makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, team]) })
+			).can('manage-users', container)
+		).toBe(true);
+		expect(
+			defineAbilityFor(
+				makeUser({ grants: grantsForRoles([memberRoles.enum.head, otherTeam]) })
+			).can('manage-users', container)
+		).toBe(true);
 	});
 
-	test('roles on none of the managing teams grant nothing', () => {
-		const ability = defineAbilityFor(makeUser({ adminOf: [organizationalUnit] }));
+	test('grants on none of the managing teams yield nothing', () => {
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, organizationalUnit]) })
+		);
 		expect(ability.can('create', container)).toBe(false);
 		expect(ability.can('update', container)).toBe(false);
 		expect(ability.can('delete', container)).toBe(false);
@@ -297,19 +440,32 @@ describe('multi-valued managed_by', () => {
 	});
 
 	test('membership in one of the managing teams suffices to read', () => {
-		expect(defineAbilityFor(makeUser({ memberOf: [team] })).can('read', container)).toBe(true);
-		expect(defineAbilityFor(makeUser({ memberOf: [otherTeam] })).can('read', container)).toBe(true);
 		expect(
-			defineAbilityFor(makeUser({ memberOf: [organizationalUnit] })).can('read', container)
+			defineAbilityFor(makeUser({ grants: grantsForRoles([memberRoles.enum.observer, team]) })).can(
+				'read',
+				container
+			)
+		).toBe(true);
+		expect(
+			defineAbilityFor(
+				makeUser({ grants: grantsForRoles([memberRoles.enum.observer, otherTeam]) })
+			).can('read', container)
+		).toBe(true);
+		expect(
+			defineAbilityFor(
+				makeUser({ grants: grantsForRoles([memberRoles.enum.observer, organizationalUnit]) })
+			).can('read', container)
 		).toBe(false);
 	});
 });
 
 describe('field-level rules', () => {
-	test('roles on the managing team may update chapterType and editorialState', () => {
+	test('modifying grants on the managing team allow updating chapterType and editorialState', () => {
 		// The general update rule conditioned on managed_by carries no field
 		// restriction, so it also covers these fields for collaborators.
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, team]) })
+		);
 		expect(ability.can('update', makeContainer(payloadTypes.enum.program), 'chapterType')).toBe(
 			true
 		);
@@ -319,7 +475,9 @@ describe('field-level rules', () => {
 	});
 
 	test('members of the managing team may read the editorial state', () => {
-		const ability = defineAbilityFor(makeUser({ memberOf: [team] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.observer, team]) })
+		);
 		expect(
 			ability.can('read', makeContainer(payloadTypes.enum.measure), 'payload.editorialState')
 		).toBe(true);
@@ -327,16 +485,20 @@ describe('field-level rules', () => {
 	});
 
 	test('the organization and organizational_unit fields are protected', () => {
-		const ability = defineAbilityFor(makeUser({ adminOf: [organization] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, organization]) })
+		);
 		const measure = makeContainer(payloadTypes.enum.measure);
 		expect(ability.can('update', measure, 'organization')).toBe(false);
 		// Re-parenting into another organizational unit is explicitly allowed
-		// for admins and heads of the organization.
+		// with the subordinate update grant on the organization.
 		expect(ability.can('update', measure, 'organizational_unit')).toBe(true);
 	});
 
 	test('the indicator category of indicator templates is immutable', () => {
-		const ability = defineAbilityFor(makeUser({ adminOf: [organization] }));
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.administrator, organization]) })
+		);
 		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
 		expect(ability.can('update', template)).toBe(true);
 		expect(ability.can('update', template, 'indicatorCategory')).toBe(false);
@@ -351,32 +513,31 @@ describe('indicator types follow the common content rules', () => {
 	);
 
 	test('admins and heads manage them organization-wide', () => {
-		for (const user of [
-			makeUser({ adminOf: [organization] }),
-			makeUser({ headOf: [organization] })
-		]) {
-			const ability = defineAbilityFor(user);
+		for (const role of [memberRoles.enum.administrator, memberRoles.enum.head]) {
+			const ability = defineAbilityFor(makeUser({ grants: grantsForRoles([role, organization]) }));
 			expect(ability.can('create', template)).toBe(true);
 			expect(ability.can('update', template)).toBe(true);
 			expect(ability.can('delete', template)).toBe(true);
 		}
 	});
 
-	test('collaborators manage them through the managing team only', () => {
-		const viaManagedBy = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
-		expect(viaManagedBy.can('create', template)).toBe(true);
-		expect(viaManagedBy.can('update', template)).toBe(true);
-		expect(viaManagedBy.can('delete', template)).toBe(true);
+	test('collaborators of the organization manage them organization-wide as well', () => {
+		// The subordinate grants of the organization apply to everything within
+		// its scope, so a collaborator now also reaches an indicator template
+		// that is managed by a team they are not part of.
+		const ability = defineAbilityFor(
+			makeUser({ grants: grantsForRoles([memberRoles.enum.collaborator, organization]) })
+		);
+		expect(ability.can('create', template)).toBe(true);
+		expect(ability.can('update', template)).toBe(true);
+		expect(ability.can('delete', template)).toBe(true);
 
-		// a collaborator of the organization no longer reaches an indicator
-		// template that is managed by a team they are not part of
 		const foreign = makeContainer(
 			payloadTypes.enum.indicator_template,
 			{ managed_by: team, organization },
 			{ unit: '%' }
 		);
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
-		expect(ability.can('update', foreign)).toBe(false);
+		expect(ability.can('update', foreign)).toBe(true);
 	});
 });
 
@@ -392,7 +553,7 @@ describe('grantKindsForRoleOn', () => {
 		return { ...container, guid } as Container<AnyPayload>;
 	}
 
-	test('organization: nobody creates or deletes, head and admin coincide', () => {
+	test('organization: nobody creates or deletes, only admins manage members', () => {
 		const orgGuid = crypto.randomUUID();
 		const org = withGuid(
 			testContainer.parse({
@@ -405,18 +566,19 @@ describe('grantKindsForRoleOn', () => {
 
 		expect(grantKindsForRoleOn(org, viewer, null)).toEqual([]);
 		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.observer)).toEqual(['read']);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.collaborator)).toEqual(['read']);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.head)).toEqual([
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.collaborator)).toEqual([
+			'read',
+			'update'
+		]);
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.head)).toEqual(['read', 'update']);
+		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.administrator)).toEqual([
 			'read',
 			'update',
 			'manage-users'
 		]);
-		expect(grantKindsForRoleOn(org, viewer, memberRoles.enum.administrator)).toEqual(
-			grantKindsForRoleOn(org, viewer, memberRoles.enum.head)
-		);
 	});
 
-	test('organizational unit: head and admin coincide', () => {
+	test('organizational unit: only admins manage members', () => {
 		const unitGuid = crypto.randomUUID();
 		const unit = withGuid(
 			testContainer.parse({
@@ -426,14 +588,12 @@ describe('grantKindsForRoleOn', () => {
 			unitGuid
 		);
 
-		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)).toEqual([
+		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)).toEqual(['read', 'update']);
+		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.administrator)).toEqual([
 			'read',
 			'update',
 			'manage-users'
 		]);
-		expect(grantKindsForRoleOn(unit, viewer, memberRoles.enum.administrator)).toEqual(
-			grantKindsForRoleOn(unit, viewer, memberRoles.enum.head)
-		);
 	});
 
 	test('self-managed measure: collaborators may delete, heads also manage members', () => {
@@ -495,7 +655,6 @@ describe('grantKindsForRoleOnSubordinates', () => {
 
 		expect(grantKindsForRoleOnSubordinates(org, viewer, null)).toEqual([]);
 		expect(grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.observer)).toEqual([]);
-		// collaborators reach subordinate objects through the managed_by fallback
 		expect(grantKindsForRoleOnSubordinates(org, viewer, memberRoles.enum.collaborator)).toEqual([
 			'create',
 			'update',

@@ -12,6 +12,10 @@ import {
 import {
 	anyContainer,
 	type Container,
+	emptyGrantRecords,
+	type GrantRecords,
+	grantSetForRole,
+	memberRoles,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
 	payloadTypes,
@@ -31,17 +35,24 @@ const foreignUnit = crypto.randomUUID();
 const program = crypto.randomUUID();
 
 const testUser = z.object({
-	adminOf: z.array(z.string()).default([]),
-	collaboratorOf: z.array(z.string()).default([]),
 	familyName: z.string().default('Muster'),
 	givenName: z.string().default('Erika'),
+	grants: z.custom<GrantRecords>().default(emptyGrantRecords),
 	guid: z.string().default(crypto.randomUUID()),
-	headOf: z.array(z.string()).default([]),
 	isAuthenticated: z.boolean().default(true),
-	memberOf: z.array(z.string()).default([]),
 	roles: z.array(z.string()).default([]),
 	settings: z.object({ features: z.array(z.string()).optional() }).default({})
 });
+
+function managing(...objects: string[]): GrantRecords {
+	const records = emptyGrantRecords();
+	for (const object of objects) {
+		for (const kind of grantSetForRole(memberRoles.enum.head).subordinates) {
+			records.subordinates[kind].push(object);
+		}
+	}
+	return records;
+}
 
 const testContainer = anyContainer.extend({
 	guid: z.uuid().default(() => crypto.randomUUID()),
@@ -129,17 +140,25 @@ describe('adoptableOrganizationalUnits', () => {
 
 	test('admins and heads see the units they are responsible for', () => {
 		expect(
-			organizationalUnitsManagedByUser(makeUser({ adminOf: [foreignUnit] }), makeProgram(), units)
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(foreignUnit) }),
+				makeProgram(),
+				units
+			)
 		).toEqual([units[2]]);
 		expect(
-			organizationalUnitsManagedByUser(makeUser({ headOf: [foreignUnit] }), makeProgram(), units)
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(foreignUnit) }),
+				makeProgram(),
+				units
+			)
 		).toEqual([units[2]]);
 	});
 
 	test('organization-level admins see all units of their organization', () => {
 		expect(
 			organizationalUnitsManagedByUser(
-				makeUser({ adminOf: [otherOrganization] }),
+				makeUser({ grants: managing(otherOrganization) }),
 				makeProgram(),
 				units
 			)
@@ -149,7 +168,7 @@ describe('adoptableOrganizationalUnits', () => {
 	test('sibling units of the owning organization are adoptable', () => {
 		expect(
 			organizationalUnitsManagedByUser(
-				makeUser({ adminOf: [organization] }),
+				makeUser({ grants: managing(organization) }),
 				makeProgram({}, owningUnit),
 				units
 			)
@@ -159,7 +178,7 @@ describe('adoptableOrganizationalUnits', () => {
 	test('the owning organizational unit is excluded', () => {
 		expect(
 			organizationalUnitsManagedByUser(
-				makeUser({ adminOf: [owningUnit] }),
+				makeUser({ grants: managing(owningUnit) }),
 				makeProgram({}, owningUnit),
 				units
 			)
@@ -169,7 +188,7 @@ describe('adoptableOrganizationalUnits', () => {
 	test('organization-level programs are adoptable by every unit', () => {
 		expect(
 			organizationalUnitsManagedByUser(
-				makeUser({ adminOf: [organization, otherOrganization] }),
+				makeUser({ grants: managing(organization, otherOrganization) }),
 				makeProgram(),
 				units
 			)

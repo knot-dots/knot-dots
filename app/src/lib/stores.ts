@@ -13,8 +13,10 @@ import {
 	type Container,
 	containerOfType,
 	type CustomCollectionPayload,
+	emptyGrantRecords,
 	filterMembers,
 	type GoalPayload,
+	type GrantRecords,
 	type IooiType,
 	type MeasurePayload,
 	type NewContainer,
@@ -43,14 +45,11 @@ export const compareState = writable<{
 });
 
 export type User = {
-	adminOf: string[];
-	collaboratorOf: string[];
 	familyName: string;
 	givenName: string;
+	grants: GrantRecords;
 	guid: string;
-	headOf: string[];
 	isAuthenticated: boolean;
-	memberOf: string[];
 	roles: string[];
 	settings: {
 		features?: string[];
@@ -67,28 +66,22 @@ export const user = derived(
 			};
 		} else {
 			return {
-				adminOf: [],
-				collaboratorOf: [],
 				familyName: '',
 				givenName: '',
+				grants: emptyGrantRecords(),
 				guid: '',
-				headOf: [],
 				isAuthenticated: false,
-				memberOf: [],
 				roles: [],
 				settings: {}
 			};
 		}
 	},
 	{
-		adminOf: [],
-		collaboratorOf: [],
 		familyName: '',
 		givenName: '',
+		grants: emptyGrantRecords(),
 		guid: '',
-		headOf: [],
 		isAuthenticated: false,
-		memberOf: [],
 		roles: [],
 		settings: {}
 	}
