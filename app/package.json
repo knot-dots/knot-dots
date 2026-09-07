@@ -11,7 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"lint": "prettier --check ./src ./tests && eslint --concurrency=auto ./src ./tests",
+		"lint": "prettier --check ./src ./tests --cache --cache-strategy content --cache-location .prettier-cache && eslint --concurrency=auto ./src ./tests --cache --cache-strategy content --cache-location .eslintcache",
 		"format": "prettier --write ./src ./tests"
 	},
 	"dependencies": {
