@@ -154,12 +154,7 @@
 						</header>
 
 						{#if !useNewPropertyPanel}
-							<PropertiesDialog
-								bind:dialog
-								{container}
-								{relatedContainers}
-								title={$_('organization.properties.title')}
-							>
+							<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
 								<PageProperties
 									bind:container
 									editable={$ability.can('update', container)}
@@ -198,11 +193,9 @@
 		<ContextTabs slug={helpSlug.enum['page-view']} />
 	</div>
 
-	{#if useNewPropertyPanel}
-		<footer class="footer-action-bar">
-			<DeleteButton {container} {relatedContainers} />
-		</footer>
-	{/if}
+	<footer class="footer-action-bar">
+		<DeleteButton {container} {relatedContainers} />
+	</footer>
 {/snippet}
 
 {@render layout(header, main)}

@@ -2,14 +2,20 @@
 	import { _ } from 'svelte-i18n';
 	import { createMenu } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
+	import UsersGroup from '~icons/flowbite/users-group-outline';
+	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Close from '~icons/knotdots/close';
 	import Cog from '~icons/knotdots/cog';
 	import Template from '~icons/knotdots/template';
-	import { goto } from '$app/navigation';
+	import Users from '~icons/knotdots/users';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
+	import deleteContainer from '$lib/client/deleteContainer';
 	import requestSubmit from '$lib/client/requestSubmit';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
@@ -37,6 +43,9 @@
 	// svelte-ignore non_reactive_update
 	let propertiesDialog: HTMLDialogElement;
 
+	// svelte-ignore non_reactive_update
+	let confirmDeleteDialog: HTMLDialogElement;
+
 	const menu = createMenu({ label: $_('administration') });
 
 	const [popperRef, popperContent] = createPopperActions({
@@ -62,6 +71,24 @@
 
 	function showPropertiesDialog() {
 		propertiesDialog.showModal();
+	}
+
+	function showConfirmDeleteDialog() {
+		confirmDeleteDialog.showModal();
+	}
+
+	async function handleDelete() {
+		const response = await deleteContainer(container);
+		if (response.ok) {
+			if (container.guid == container.organization) {
+				window.location.href = env.PUBLIC_BASE_URL;
+			} else {
+				await goto(resolve('/[guid=uuid]', { guid: container.organization }));
+				await invalidateAll();
+			}
+		}
+
+		confirmDeleteDialog.close();
 	}
 </script>
 
@@ -111,6 +138,61 @@
 						</a>
 					</li>
 				{/if}
+
+				{#if $ability.can('manage-users', container)}
+					<li>
+						{const userManagementURl = getOrganizationURL(container, '/user-management', env, {
+							organizationSlug: page.data.currentOrganization.payload.slug,
+							organizationCustomDomain: page.data.currentOrganization.payload.customDomain
+						}).toString()}
+						<a
+							class={[
+								'menu-item',
+								...($menu.active === userManagementURl ? ['menu-item--active'] : [])
+							]}
+							href={userManagementURl}
+							use:menu.item={{ value: userManagementURl }}
+						>
+							<UsersGroup />
+							{$_('workspace.users.title')}
+						</a>
+					</li>
+
+					<li role="none">
+						{const membersURL = getOrganizationURL(container, '/members', env, {
+							organizationSlug: page.data.currentOrganization.payload.slug,
+							organizationCustomDomain: page.data.currentOrganization.payload.customDomain
+						}).toString()}
+						<a
+							class={['menu-item', ...($menu.active === membersURL ? ['menu-item--active'] : [])]}
+							href={membersURL}
+							use:menu.item={{ value: membersURL }}
+						>
+							<Users />
+							{$_('members')}
+						</a>
+					</li>
+				{/if}
+
+				<li class="menu-separator" role="separator"></li>
+
+				{#if $ability.can('delete', container)}
+					<li role="none">
+						<button
+							class={[
+								'system-danger',
+								'menu-item',
+								...($menu.active === showConfirmDeleteDialog ? ['menu-item--active'] : [])
+							]}
+							use:menu.item={{ value: showConfirmDeleteDialog }}
+						>
+							<TrashBin />
+							<span class="truncated">
+								{$_('delete.name', { values: { name: container.payload.name } })}
+							</span>
+						</button>
+					</li>
+				{/if}
 			</ul>
 		</div>
 	{/if}
@@ -118,8 +200,6 @@
 
 <PropertiesDialog
 	bind:dialog={propertiesDialog}
-	{container}
-	relatedContainers={[]}
 	title={$_('configuration_name', { values: { name: container.payload.name } })}
 >
 	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
@@ -130,6 +210,13 @@
 		{/if}
 	</form>
 </PropertiesDialog>
+
+<ConfirmDeleteDialog
+	bind:dialog={confirmDeleteDialog}
+	{container}
+	handleSubmit={handleDelete}
+	relatedContainers={[]}
+/>
 
 <style>
 	form {
@@ -196,5 +283,10 @@
 		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
+	}
+
+	.menu-separator {
+		border-top: solid 1px var(--color-gray-200);
+		margin: 0.5rem 0;
 	}
 </style>

@@ -13,7 +13,6 @@
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
@@ -195,12 +194,7 @@
 						</header>
 
 						{#if !useNewPropertyPanel}
-							<PropertiesDialog
-								bind:dialog
-								{container}
-								{relatedContainers}
-								title={$_('organization.properties.title')}
-							>
+							<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
 								<OrganizationProperties
 									bind:container
 									editable={$ability.can('update', container)}
@@ -234,12 +228,6 @@
 
 		<ContextTabs slug={helpSlug.enum['organization-view']} />
 	</div>
-
-	{#if useNewPropertyPanel}
-		<footer class="footer-action-bar">
-			<DeleteButton {container} {relatedContainers} />
-		</footer>
-	{/if}
 {/snippet}
 
 {@render layout(header, main)}

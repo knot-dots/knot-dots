@@ -9,7 +9,14 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import { type AnyPayload, type Container, getContextIdentifier, visibility } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		getContextIdentifier,
+		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		visibility
+	} from '$lib/models';
 	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
 	interface Props {
@@ -99,7 +106,7 @@
 					<ChevronRight />
 				</button>
 
-				{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
+				{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container) && !isOrganizationContainer(container) && !isOrganizationalUnitContainer(container)}
 					<div class="cascading-menu-divider" role="presentation"></div>
 					<button
 						class="cascading-menu-item system-danger"

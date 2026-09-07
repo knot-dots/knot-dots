@@ -16,7 +16,6 @@
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
@@ -313,12 +312,7 @@
 						</header>
 
 						{#if !useNewPropertyPanel}
-							<PropertiesDialog
-								bind:dialog
-								{container}
-								{relatedContainers}
-								title={$_('organizational_unit.properties.title')}
-							>
+							<PropertiesDialog bind:dialog title={$_('organizational_unit.properties.title')}>
 								{#snippet actions()}
 									{#if mayCreateIndividualProfile}
 										<button
@@ -380,7 +374,6 @@
 					{$_('individual_profile.create')}
 				</button>
 			{/if}
-			<DeleteButton {container} {relatedContainers} />
 		</footer>
 	{/if}
 {/snippet}
