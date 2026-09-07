@@ -19,6 +19,7 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import saveContainer from '$lib/client/saveContainer';
+	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OrganizationalUnitMenu from '$lib/components/OrganizationalUnitMenu.svelte';
@@ -297,6 +298,8 @@
 			</ul>
 		{/if}
 	</div>
+
+	<AdministrationMenu container={page.data.currentOrganization} />
 </div>
 
 {#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)}
@@ -396,6 +399,8 @@
 					</ul>
 				{/if}
 			</div>
+
+			<AdministrationMenu container={page.data.currentOrganizationalUnit} />
 		{/if}
 	</div>
 {/if}
@@ -445,7 +450,6 @@
 		border: 1px solid var(--color-gray-100);
 		border-radius: 12px;
 		flex: 0 1 auto;
-		overflow-y: auto;
 		padding: 0.25rem;
 	}
 
@@ -501,6 +505,7 @@
 	.sidebar-panel-links {
 		display: flex;
 		flex-direction: column;
+		overflow-y: auto;
 	}
 
 	.sidebar-menu {
