@@ -31,14 +31,16 @@ const config: PlaywrightTestConfig = {
 		locale: 'en-US',
 		trace: 'on-first-retry'
 	},
-	webServer: {
-		command: process.env.TEST_IMAGE
-			? 'docker compose up preview'
-			: 'docker compose up --build preview',
-		port: 3000,
-		reuseExistingServer: !process.env.CI,
-		timeout: 240 * 1000
-	}
+	webServer: process.env.PLAYWRIGHT_EXTERNAL_SERVER
+		? undefined
+		: {
+				command: process.env.TEST_IMAGE
+					? 'docker compose up preview'
+					: 'docker compose up --build preview',
+				port: 3000,
+				reuseExistingServer: !process.env.CI,
+				timeout: 240 * 1000
+			}
 };
 
 export default config;
