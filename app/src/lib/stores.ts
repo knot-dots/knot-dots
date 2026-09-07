@@ -199,6 +199,9 @@ export type OverlayData =
 			key: 'members';
 			container: Container<AnyPayload>;
 			grants: Grant[];
+			inheritedGrants: Grant[];
+			inheritedUsers: UserRecord[];
+			scope: Container<AnyPayload>;
 			users: UserRecord[];
 	  }
 	| {
@@ -310,6 +313,9 @@ if (browser) {
 				key: overlayKey.enum.members,
 				container: result.data.container,
 				grants: result.data.grants,
+				inheritedGrants: result.data.inheritedGrants,
+				inheritedUsers: result.data.inheritedUsers,
+				scope: result.data.scope,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {
