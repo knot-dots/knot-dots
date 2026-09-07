@@ -1449,6 +1449,7 @@ const measurePayload = z.strictObject({
 	comment: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+	inheritsGrants: z.boolean().default(true),
 	measureType: measureTypes.optional(),
 	progress: z.number().nonnegative().optional(),
 	result: z.string().trim().optional(),
@@ -1674,6 +1675,7 @@ const programPayload = z.strictObject({
 	}).shape,
 	chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 	image: z.url().optional(),
+	inheritsGrants: z.boolean().default(true),
 	level: levels.default(levels.enum['level.local']),
 	pdf: z.array(z.tuple([z.url(), z.string()])).default([]),
 	status: status.default(status.enum['status.idea']),
@@ -1971,6 +1973,7 @@ const simpleMeasurePayload = z.strictObject({
 	annotation: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	file: z.array(z.tuple([z.url(), z.string()])).default([]),
+	inheritsGrants: z.boolean().default(true),
 	measureType: measureTypes.optional(),
 	progress: z.number().nonnegative().default(0),
 	startDate: z.iso.date().optional(),
@@ -2951,7 +2954,11 @@ export function createCopyOf(
 		managed_by: isOrganizationalUnit ? organization : (organizationalUnit ?? organization),
 		organization,
 		organizational_unit: isOrganizationalUnit ? null : organizationalUnit,
-		payload: container.payload,
+		// copies always start out inheriting the grants of their new scope
+		payload:
+			'inheritsGrants' in container.payload
+				? { ...container.payload, inheritsGrants: true }
+				: container.payload,
 		realm: container.realm,
 		relation: [
 			{
