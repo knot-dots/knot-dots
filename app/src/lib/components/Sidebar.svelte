@@ -518,8 +518,8 @@
 	}
 
 	.sidebar-menu-item {
-		--color: var(--color-gray-600);
-		--icon-color: var(--color-gray-400);
+		--color: var(--color-text-default);
+		--icon-color: var(--color-icon-subtle);
 
 		align-items: center;
 		border-radius: 8px;
@@ -537,7 +537,7 @@
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--footer {
-		color: var(--color-gray-900);
+		color: var(--color-text-strong);
 		font-weight: 500;
 	}
 
@@ -546,17 +546,17 @@
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--active {
-		background-color: rgb(from var(--color-primary-500) r g b / 0.15);
-		color: var(--color-gray-900);
+		background-color: var(--color-background-accent-expanded);
+		color: var(--color-text-strong);
 	}
 
 	.sidebar-menu-item:active {
-		background-color: rgb(from var(--color-gray-500) r g b / 0.25);
+		background-color: var(--color-background-accent-active);
 	}
 
 	.sidebar-menu-item:focus,
 	.sidebar-menu-item:hover {
-		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
+		background-color: var(--color-background-accent-hover);
 	}
 
 	.sidebar-menu .sidebar-menu {
