@@ -5,11 +5,9 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
-	import copyContainer from '$lib/client/copyContainer';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -32,7 +30,6 @@
 	import {
 		type AnyPayload,
 		type Container,
-		containerOfType,
 		getOrganizationURL,
 		helpSlug,
 		isOrganizationalUnitContainer,
@@ -137,53 +134,6 @@
 				}).toString()
 			: undefined
 	);
-
-	let hasGeometry = $derived(Boolean(container.payload.geometry));
-
-	let mayCreateIndividualProfile = $derived(
-		hasGeometry &&
-			!isIndividualProfile &&
-			!linkedProfile &&
-			$ability.can(
-				'create',
-				containerOfType(
-					payloadTypes.enum.organizational_unit,
-					container.organization,
-					null,
-					container.organization,
-					container.realm
-				)
-			)
-	);
-
-	let creatingProfile = $state(false);
-
-	async function createIndividualProfile() {
-		creatingProfile = true;
-
-		try {
-			const response = await copyContainer({
-				operation: 'individual-profile',
-				sourceGuid: container.guid
-			});
-
-			if (response.ok) {
-				const created = await response.json();
-				dialog?.close();
-				goto(
-					getOrganizationURL(created, '', env, {
-						organizationSlug: page.data.currentOrganization.payload.slug,
-						organizationCustomDomain: page.data.currentOrganization.payload.customDomain
-					}).toString()
-				);
-			} else {
-				const err = await response.json();
-				alert(err.message);
-			}
-		} finally {
-			creatingProfile = false;
-		}
-	}
 
 	const propertiesRelocationNotice = getPropertiesRelocationContext();
 
@@ -313,19 +263,6 @@
 
 						{#if !useNewPropertyPanel}
 							<PropertiesDialog bind:dialog title={$_('organizational_unit.properties.title')}>
-								{#snippet actions()}
-									{#if mayCreateIndividualProfile}
-										<button
-											class="button button-xs button-alternative system-primary"
-											disabled={creatingProfile}
-											onclick={createIndividualProfile}
-											type="button"
-										>
-											{$_('individual_profile.create')}
-										</button>
-									{/if}
-								{/snippet}
-
 								<OrganizationalUnitProperties
 									bind:container
 									editable={$ability.can('update', container)}
@@ -361,21 +298,6 @@
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
-
-	{#if useNewPropertyPanel}
-		<footer class="footer-action-bar">
-			{#if mayCreateIndividualProfile}
-				<button
-					class="button button-xs button-alternative system-primary"
-					disabled={creatingProfile}
-					onclick={createIndividualProfile}
-					type="button"
-				>
-					{$_('individual_profile.create')}
-				</button>
-			{/if}
-		</footer>
-	{/if}
 {/snippet}
 
 {@render layout(header, main)}

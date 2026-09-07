@@ -4,13 +4,12 @@
 	import Close from '~icons/knotdots/close';
 
 	interface Props {
-		actions?: Snippet;
 		children: Snippet;
 		dialog: HTMLDialogElement;
 		title: string;
 	}
 
-	let { actions, children, dialog = $bindable(), title }: Props = $props();
+	let { children, dialog = $bindable(), title }: Props = $props();
 
 	onMount(() => {
 		if (!dialog) return;
@@ -42,10 +41,6 @@
 
 		<div class="details">
 			{@render children()}
-
-			<footer class="dialog-footer-actions">
-				{@render actions?.()}
-			</footer>
 		</div>
 	</div>
 </dialog>
@@ -75,20 +70,12 @@
 		color: var(--color-gray-500);
 	}
 
-	footer {
-		padding: 1.5rem;
-	}
-
-	.dialog-footer-actions {
-		align-items: center;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		justify-content: flex-start;
-	}
-
 	p {
 		color: var(--color-gray-500);
 		margin: 0 0 1.5rem;
+	}
+
+	.details {
+		padding-bottom: 3rem;
 	}
 </style>

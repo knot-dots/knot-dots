@@ -6,6 +6,7 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Close from '~icons/knotdots/close';
 	import Cog from '~icons/knotdots/cog';
+	import Plus from '~icons/knotdots/plus';
 	import Template from '~icons/knotdots/template';
 	import Users from '~icons/knotdots/users';
 	import { goto, invalidateAll } from '$app/navigation';
@@ -13,6 +14,7 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
+	import copyContainer from '$lib/client/copyContainer';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
@@ -21,11 +23,14 @@
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import {
 		type Container,
+		containerOfType,
 		getOrganizationURL,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitPayload,
-		type OrganizationPayload
+		type OrganizationPayload,
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 
@@ -89,6 +94,50 @@
 		}
 
 		confirmDeleteDialog.close();
+	}
+
+	let hasGeometry = $derived(Boolean(container.payload.geometry));
+
+	let hasIndividualProfileRelation = $derived(
+		container.relation.some(
+			({ predicate }) => predicate === predicates.enum['is-individual-profile-of']
+		)
+	);
+
+	let mayCreateIndividualProfile = $derived(
+		isOrganizationalUnitContainer(container) &&
+			hasGeometry &&
+			!hasIndividualProfileRelation &&
+			$ability.can(
+				'create',
+				containerOfType(
+					payloadTypes.enum.organizational_unit,
+					container.organization,
+					null,
+					container.organization,
+					container.realm
+				)
+			)
+	);
+
+	async function createIndividualProfile() {
+		const response = await copyContainer({
+			operation: 'individual-profile',
+			sourceGuid: container.guid
+		});
+
+		if (response.ok) {
+			const created = await response.json();
+			await goto(
+				getOrganizationURL(created, '', env, {
+					organizationSlug: page.data.currentOrganization.payload.slug,
+					organizationCustomDomain: page.data.currentOrganization.payload.customDomain
+				}).toString()
+			);
+		} else {
+			const err = await response.json();
+			alert(err.message);
+		}
 	}
 </script>
 
@@ -175,6 +224,23 @@
 				{/if}
 
 				<li class="menu-separator" role="separator"></li>
+
+				{#if mayCreateIndividualProfile}
+					<li role="none">
+						<button
+							class={[
+								'system-danger',
+								'menu-item',
+								...($menu.active === createIndividualProfile ? ['menu-item--active'] : [])
+							]}
+							use:menu.item={{ value: createIndividualProfile }}
+							type="button"
+						>
+							<Plus />
+							{$_('individual_profile.create')}
+						</button>
+					</li>
+				{/if}
 
 				{#if $ability.can('delete', container)}
 					<li role="none">
