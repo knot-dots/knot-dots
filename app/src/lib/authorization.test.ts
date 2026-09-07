@@ -367,6 +367,56 @@ describe('field-level rules', () => {
 	});
 });
 
+describe('decoupled containers', () => {
+	// containers with an own grant matrix (payload.inheritsGrants == false) no
+	// longer follow the subordinate grants of their scope; scope administrators
+	// retain full access either way
+	const decoupled = makeContainer(
+		payloadTypes.enum.measure,
+		{ managed_by: team },
+		{ inheritsGrants: false, visibility: visibility.enum.organization }
+	);
+	const inheriting = makeContainer(
+		payloadTypes.enum.measure,
+		{ managed_by: team },
+		{ visibility: visibility.enum.organization }
+	);
+
+	test('scope grants no longer apply to decoupled containers', () => {
+		const head = defineAbilityFor(makeUser({ headOf: [organization] }));
+		expect(head.can('update', inheriting)).toBe(true);
+		expect(head.can('update', decoupled)).toBe(false);
+		expect(head.can('create', decoupled)).toBe(false);
+		expect(head.can('delete', decoupled)).toBe(false);
+		expect(head.can('manage-users', decoupled)).toBe(false);
+		expect(head.can('read', decoupled)).toBe(false);
+	});
+
+	test('scope administrators retain full access to decoupled containers', () => {
+		const admin = defineAbilityFor(makeUser({ adminOf: [organization] }));
+		expect(admin.can('update', decoupled)).toBe(true);
+		expect(admin.can('create', decoupled)).toBe(true);
+		expect(admin.can('delete', decoupled)).toBe(true);
+		expect(admin.can('manage-users', decoupled)).toBe(true);
+		expect(admin.can('read', decoupled)).toBe(true);
+	});
+
+	test('the own matrix of a decoupled container keeps working', () => {
+		const collaborator = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
+		expect(collaborator.can('update', decoupled)).toBe(true);
+		expect(collaborator.can('create', decoupled)).toBe(true);
+	});
+
+	test('contents managed by the decoupled container stay reachable through it', () => {
+		// the flag lives on the decoupled container itself; its contents follow
+		// the own matrix through managed_by, while content matched through the
+		// organization column is a documented limitation of the live inheritance
+		const content = makeContainer(payloadTypes.enum.goal, { managed_by: team });
+		const collaborator = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
+		expect(collaborator.can('update', content)).toBe(true);
+	});
+});
+
 describe('indicator types follow the common content rules', () => {
 	const template = makeContainer(
 		payloadTypes.enum.indicator_template,
