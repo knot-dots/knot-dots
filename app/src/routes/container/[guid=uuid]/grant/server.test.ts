@@ -121,14 +121,18 @@ test('a subject granted every kind becomes an administrator', async () => {
 	expect(setContainerGrants).toHaveBeenCalledWith(organizationGuid, memberGuid, administratorSet);
 });
 
-test('rejects the full grant set on other container types', async () => {
+test('a subject granted every kind on a measure becomes its administrator', async () => {
 	getContainerByGuid.mockReturnValue(measure());
 
-	await expect(
-		post(measureGuid, { subject: memberGuid, ...administratorSet })
-	).rejects.toMatchObject({ status: 422 });
-	expect(updateMemberRole).not.toHaveBeenCalled();
-	expect(setContainerGrants).not.toHaveBeenCalled();
+	const response = await post(measureGuid, { subject: memberGuid, ...administratorSet });
+
+	expect(response.status).toBe(204);
+	expect(updateMemberRole).toHaveBeenCalledWith(
+		expect.objectContaining({ guid: measureGuid }),
+		memberGuid,
+		'administrator'
+	);
+	expect(setContainerGrants).toHaveBeenCalledWith(measureGuid, memberGuid, administratorSet);
 });
 
 test('rejects kinds that are not available for the target', async () => {
