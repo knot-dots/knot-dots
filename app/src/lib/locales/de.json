@@ -614,6 +614,10 @@
 		"read": "Lesen",
 		"update": "Bearbeiten"
 	},
+	"permission_matrix": {
+		"subordinate_objects": "Unterobjekte",
+		"this_object": "Dieses Objekt"
+	},
 	"planned_duration": "Geplante Laufzeit",
 	"policy_field_bnk": "Handlungsfeld (BNK 2.0)",
 	"policy_field_bnk.climate": "Klimaschutz- und Klimaanpassung",

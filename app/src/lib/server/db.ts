@@ -491,7 +491,7 @@ const memberRoleRelationPredicates = new Set<Predicate>([
 export function updateMemberRole(
 	container: Container<AnyPayload>,
 	subject: string,
-	role: Exclude<MemberRole, 'administrator'> | null
+	role: MemberRole | null
 ) {
 	return (connection: DatabaseConnection) => {
 		const user = [

@@ -7,6 +7,7 @@
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
+	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -22,7 +23,6 @@
 	} from '$lib/models';
 	import type { User } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
-	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;

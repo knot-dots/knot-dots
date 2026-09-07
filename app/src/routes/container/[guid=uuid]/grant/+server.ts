@@ -6,8 +6,8 @@ import {
 	type Container,
 	findAncestors,
 	memberRoleAssignment,
-	memberRoleOf,
 	memberRoles,
+	payloadTypes,
 	predicates
 } from '$lib/models';
 import {
@@ -65,8 +65,22 @@ export const POST = (async ({ locals, params, request }) => {
 
 	const { role, subject } = parseResult.data;
 
-	// administrators are managed in the list views only
-	if (memberRoleOf({ guid: subject }, container) === memberRoles.enum.administrator) {
+	// administrators exist on organizations and organizational units only
+	if (
+		role === memberRoles.enum.administrator &&
+		container.payload.type !== payloadTypes.enum.organization &&
+		container.payload.type !== payloadTypes.enum.organizational_unit
+	) {
+		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+	}
+
+	// the last administrator may not be demoted or removed
+	const admins = new Set(
+		container.user
+			.filter(({ predicate }) => predicate === predicates.enum['is-admin-of'])
+			.map(({ subject: adminSubject }) => adminSubject)
+	);
+	if (role !== memberRoles.enum.administrator && admins.has(subject) && admins.size === 1) {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
