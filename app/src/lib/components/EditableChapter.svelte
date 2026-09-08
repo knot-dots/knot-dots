@@ -34,9 +34,18 @@
 		editable?: boolean;
 		isPartOf: Container<ProgramPayload>;
 		relatedContainers: Container[];
+		showActions?: boolean;
+		useForms?: boolean;
 	}
 
-	let { container = $bindable(), editable = false, isPartOf, relatedContainers }: Props = $props();
+	let {
+		container = $bindable(),
+		editable = false,
+		isPartOf,
+		relatedContainers,
+		showActions = true,
+		useForms = true
+	}: Props = $props();
 
 	let subsections = $state(
 		hasSection(container, relatedContainers).filter(
@@ -136,24 +145,28 @@
 		bind:container={subsections[i]}
 		bind:parentContainer={container}
 		bind:relatedContainers
+		{editable}
+		useForm={useForms}
 	/>
 {/each}
 
-<footer class="content-actions">
-	<a class="button" href={viewInOverlayURL(page.url)}>
-		{$_('read_more')}
-	</a>
+{#if showActions}
+	<footer class="content-actions">
+		<a class="button" href={viewInOverlayURL(page.url)}>
+			{$_('read_more')}
+		</a>
 
-	{#if isPartOf.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
-		<DropDownMenu
-			handleChange={createContainerAt(currentIndex + 1)}
-			label={$_('chapter')}
-			options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
-		>
-			{#snippet icon()}<Plus />{/snippet}
-		</DropDownMenu>
-	{/if}
-</footer>
+		{#if isPartOf.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
+			<DropDownMenu
+				handleChange={createContainerAt(currentIndex + 1)}
+				label={$_('chapter')}
+				options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+			>
+				{#snippet icon()}<Plus />{/snippet}
+			</DropDownMenu>
+		{/if}
+	</footer>
+{/if}
 
 <style>
 	.button {

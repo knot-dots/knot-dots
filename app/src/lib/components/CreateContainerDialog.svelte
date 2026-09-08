@@ -6,9 +6,12 @@
 	import copyContainer from '$lib/client/copyContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
+	import CreateContainerTemplatePicker from '$lib/components/CreateContainerTemplatePicker.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import NewContainerProperties from '$lib/components/NewContainerProperties.svelte';
+	import TemplateHierarchyPreview from '$lib/components/TemplateHierarchyPreview.svelte';
+	import type { RootCopyPlacement, TemplateCopyPreview } from '$lib/containerCopy';
 	import {
 		isContainer,
 		isContainerWithBody,
@@ -17,12 +20,17 @@
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
 		isSimpleMeasureContainer,
+		isStructuralCopyPredicate,
 		type NewContainer,
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
 	import { getToastContext } from '$lib/contexts/toast';
-	import { addItemState, createContainerDialogState } from '$lib/stores';
+	import {
+		addItemState,
+		createContainerDialogState,
+		type CreateContainerDialogState
+	} from '$lib/stores';
 	import AutoresizingTextarea from './AutoresizingTextarea.svelte';
 
 	interface Props {
@@ -31,6 +39,29 @@
 
 	let { dialog = $bindable() }: Props = $props();
 	const toast = getToastContext();
+	let templatePreview = $state<TemplateCopyPreview>();
+	let templateSelectionPending = $state(false);
+
+	function activateTemplate(
+		state: CreateContainerDialogState,
+		preview: TemplateCopyPreview | undefined
+	) {
+		$createContainerDialogState = state;
+		templatePreview = preview;
+	}
+
+	function rootPlacementFor(container: NewContainer): RootCopyPlacement[] {
+		return container.relation.flatMap(({ object, position, predicate, subject }) => {
+			if (
+				object === undefined ||
+				(subject !== undefined && subject !== container.guid) ||
+				!isStructuralCopyPredicate(predicate)
+			) {
+				return [];
+			}
+			return [{ parentGuid: object, position, predicate }];
+		});
+	}
 
 	async function save(container: NewContainer) {
 		const pendingCopy =
@@ -38,8 +69,17 @@
 				? $createContainerDialogState.request
 				: undefined;
 		const addItemTarget = $addItemState.target;
-		const response = pendingCopy
-			? await copyContainer({ ...pendingCopy, rootPayload: container.payload })
+		let copyRequest = pendingCopy && { ...pendingCopy, rootPayload: container.payload };
+		if (copyRequest?.operation === 'template-instance') {
+			// A template instance is placed and managed like the empty object it replaces.
+			copyRequest = {
+				...copyRequest,
+				rootPlacement: rootPlacementFor(container),
+				targetManagedByGuid: container.managed_by[0]
+			};
+		}
+		const response = copyRequest
+			? await copyContainer(copyRequest)
 			: await saveContainer(container);
 		if (response.ok) {
 			const savedContainer = await response.json();
@@ -90,6 +130,8 @@
 	}
 
 	function resetDialogState() {
+		templatePreview = undefined;
+		templateSelectionPending = false;
 		$createContainerDialogState = undefined;
 		$addItemState = {};
 	}
@@ -127,7 +169,11 @@
 					<button class="button-alternative system-primary" formnovalidate type="submit">
 						{$_('cancel')}
 					</button>
-					<button class="button-primary system-primary" type="submit">
+					<button
+						class="button-primary system-primary"
+						disabled={templateSelectionPending}
+						type="submit"
+					>
 						{$_('save')}
 					</button>
 				</div>
@@ -187,7 +233,17 @@
 							/>
 						{/if}
 					</div>
+
+					{#if templatePreview}
+						<TemplateHierarchyPreview preview={templatePreview} />
+					{/if}
 				</div>
+
+				<CreateContainerTemplatePicker
+					dialogState={$createContainerDialogState}
+					onactivate={activateTemplate}
+					onpendingchange={(pending) => (templateSelectionPending = pending)}
+				/>
 			</div>
 		</form>
 	{/if}
@@ -250,6 +306,11 @@
 	}
 
 	.main {
+		align-items: flex-start;
+		align-self: stretch;
+		display: flex;
+		flex: 1 0 0;
+		gap: 1rem;
 		min-height: 0;
 		padding: 0 1.5rem 1.5rem;
 	}

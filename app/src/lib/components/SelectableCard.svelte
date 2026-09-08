@@ -36,6 +36,7 @@
 		checked?: boolean;
 		container: Container<AnyPayload>;
 		inputType?: 'checkbox' | 'radio';
+		name?: string;
 		onchange: (event: Event & { currentTarget: HTMLInputElement }) => void;
 		relatedContainers?: Container<AnyPayload>[];
 	}
@@ -44,6 +45,7 @@
 		checked = false,
 		container,
 		inputType = 'checkbox',
+		name = 'item',
 		onchange,
 		relatedContainers = []
 	}: Props = $props();
@@ -128,7 +130,7 @@
 					{checked}
 					class="is-visually-hidden"
 					{id}
-					name="item"
+					{name}
 					{onchange}
 					type="checkbox"
 					value={container.guid}
@@ -138,7 +140,7 @@
 					{checked}
 					class="is-visually-hidden"
 					{id}
-					name="item"
+					{name}
 					{onchange}
 					type="radio"
 					value={container.guid}

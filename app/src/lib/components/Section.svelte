@@ -69,20 +69,25 @@
 
 	interface Props {
 		container: Container<AnyPayload> & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
+		editable?: boolean;
 		handleAddSection: (event: Event) => void;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
+		useForm?: boolean;
 	}
 
 	let {
 		container = $bindable(),
+		editable: editableOverride,
 		handleAddSection,
 		heading = 'h2',
 		parentContainer = $bindable(),
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		useForm = true
 	}: Props = $props();
 
+	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
 	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 	let isInlineHelpSection = $derived(isInlineHelpTextContainer(container));
 
@@ -116,13 +121,12 @@
 	}
 </script>
 
-<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
+{#snippet content()}
 	<section
 		class="details-section"
-		class:details-section--inline-help={isInlineHelpSection &&
-			$applicationState.containerDetailView.editable}
+		class:details-section--inline-help={isInlineHelpSection && editable}
 	>
-		{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+		{#if editable && $ability.can('update', container)}
 			<DraggableActionBar {container}>
 				{#snippet actions()}
 					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
@@ -135,7 +139,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isChapterContainer(container)}
@@ -143,14 +147,14 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 			/>
 		{:else if isCustomCollectionContainer(container)}
 			<EditableCustomCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isDemographicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
@@ -158,7 +162,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
@@ -166,7 +170,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isFileCollectionContainer(container)}
@@ -174,7 +178,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isGoalCollectionContainer(container)}
@@ -182,22 +186,17 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isHtmlContainer(container)}
-			<EditableHtmlSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-			/>
+			<EditableHtmlSection bind:container bind:parentContainer bind:relatedContainers {editable} />
 		{:else if isIndicatorCollectionContainer(container)}
 			<EditableIndicatorCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isMapContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
@@ -205,7 +204,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isMeasureCollectionContainer(container)}
@@ -213,7 +212,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
@@ -221,7 +220,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isProgramCollectionContainer(container)}
@@ -229,7 +228,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
@@ -237,7 +236,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
@@ -245,7 +244,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isResourceCollectionContainer(container)}
@@ -253,7 +252,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
@@ -261,17 +260,18 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 			/>
 		{:else if isTaskCollectionContainer(container)}
 			<EditableTaskCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
+				fetchDisabled={!useForm}
 				{heading}
 			/>
-		{:else if isInlineHelpTextContainer(container) && $applicationState.containerDetailView.editable}
+		{:else if isInlineHelpTextContainer(container) && editable}
 			<EditableInlineHelpSection
 				bind:container
 				bind:parentContainer
@@ -283,7 +283,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable && !isShadowItem}
+				editable={editable && !isShadowItem}
 				{heading}
 			/>
 		{:else if isTeaserLikeContainer(container)}
@@ -291,7 +291,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isImageContainer(container)}
@@ -299,7 +299,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isIgniteVideoContainer(container)}
@@ -307,7 +307,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				{heading}
 			/>
 		{:else if isTeaserCollectionContainer(container)}
@@ -315,13 +315,21 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
-				fetchDisabled={isShadowItem}
+				{editable}
+				fetchDisabled={isShadowItem || !useForm}
 				{heading}
 			/>
 		{/if}
 	</section>
-</form>
+{/snippet}
+
+{#if useForm}
+	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
+		{@render content()}
+	</form>
+{:else}
+	{@render content()}
+{/if}
 
 <style>
 	.details-section {
