@@ -10,7 +10,7 @@ const responseSchema = z.object({
 
 export default async function fetchContainers(
 	filters: {
-		[key: string]: string | string[] | undefined;
+		[key: string]: boolean | string | string[] | undefined;
 		assignee?: string[];
 		availableIn?: string;
 		guid?: string[];
@@ -26,6 +26,7 @@ export default async function fetchContainers(
 		relationType?: string[];
 		taskCategory?: string[];
 		template?: string;
+		templateRoot?: boolean;
 		terms?: string;
 	},
 	sort?: string,
@@ -84,6 +85,9 @@ export default async function fetchContainers(
 	}
 	if (filters.template) {
 		params.append('template', 'true');
+	}
+	if (filters.templateRoot !== undefined) {
+		params.append('templateRoot', String(filters.templateRoot));
 	}
 	if (filters.terms) {
 		params.append('terms', filters.terms);

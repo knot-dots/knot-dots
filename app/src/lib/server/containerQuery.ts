@@ -101,19 +101,21 @@ const querySchema = z.object({
 	status: z.array(status).default([]),
 	taskCategory: z.array(taskCategories).default([]),
 	template: z.array(z.stringbool()).default([]),
+	templateRoot: z.array(z.stringbool()).max(1).default([]),
 	terms: z.array(z.string()).default([]),
 	type: z.array(payloadTypes).default([])
 });
 
 type ContainerQueryParams = Omit<
 	z.infer<typeof querySchema>,
-	'availableIn' | 'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'terms'
+	'availableIn' | 'categoryMatch' | 'contextGuid' | 'sort' | 'template' | 'templateRoot' | 'terms'
 > & {
 	availableIn: string | undefined;
 	categoryMatch: 'any' | 'all';
 	contextGuid: string | undefined;
 	sort: 'alpha' | 'date' | 'modified' | 'priority' | 'relevance';
 	template: boolean;
+	templateRoot: boolean | undefined;
 	terms: string;
 };
 
@@ -148,6 +150,9 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 	if (parseResult.data.availableIn.length > 0 && parseResult.data.template[0] !== true) {
 		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
 	}
+	if (parseResult.data.templateRoot.length > 0 && parseResult.data.template[0] !== true) {
+		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
+	}
 
 	return {
 		...parseResult.data,
@@ -156,6 +161,7 @@ function parseContainerQuery(url: URL): ContainerQueryParams {
 		contextGuid: parseResult.data.contextGuid[0],
 		sort: parseResult.data.sort[0] ?? 'alpha',
 		template: parseResult.data.template[0] ?? false,
+		templateRoot: parseResult.data.templateRoot[0],
 		terms: parseResult.data.terms[0] ?? ''
 	};
 }
@@ -241,6 +247,7 @@ function buildFilters(
 		statuses: params.status,
 		taskCategories: params.taskCategory,
 		template: params.template,
+		templateRoot: params.templateRoot,
 		terms: params.terms,
 		type: params.type
 	};
