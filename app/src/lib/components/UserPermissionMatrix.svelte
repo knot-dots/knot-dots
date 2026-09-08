@@ -14,8 +14,10 @@
 		displayName,
 		type Grant,
 		type GrantKind,
-		grantKinds,
+		grantKindsByTarget,
 		type GrantSet,
+		type GrantTarget,
+		grantTargets,
 		grantSetForRole,
 		grantSetForSubjectOn,
 		isOrganizationalUnitContainer,
@@ -36,13 +38,15 @@
 
 	let { container, editable = false, grants, oninvite, users }: Props = $props();
 
-	// the matrix edits the granted rights on subordinate objects; the rights on
-	// the object itself travel with the role mapping of the role column
-	const kindColumns = [
-		grantKinds.enum.read,
-		grantKinds.enum.update,
-		grantKinds.enum.create,
-		grantKinds.enum.delete
+	// every stored grant is editable individually: the rights on the object
+	// itself and the rights on subordinate objects form separate column groups
+	const columnGroups = [
+		{ kinds: grantKindsByTarget.self, label: 'this_object', target: grantTargets.enum.self },
+		{
+			kinds: grantKindsByTarget.subordinates,
+			label: 'subordinate_objects',
+			target: grantTargets.enum.subordinates
+		}
 	];
 
 	// administrators exist on organizations and organizational units only
@@ -131,12 +135,12 @@
 		await save(user, grantSetForRole(value));
 	}
 
-	async function toggleKind(user: User, kind: GrantKind, checked: boolean) {
+	async function toggleKind(user: User, target: GrantTarget, kind: GrantKind, checked: boolean) {
 		const current = visibleSetFor(user);
-		const subordinates = checked
-			? [...current.subordinates.filter((k) => k !== kind), kind]
-			: current.subordinates.filter((k) => k !== kind);
-		await save(user, { self: current.self, subordinates });
+		const kinds = checked
+			? [...current[target].filter((k) => k !== kind), kind]
+			: current[target].filter((k) => k !== kind);
+		await save(user, { ...current, [target]: kinds });
 	}
 
 	async function removeSubject(user: User) {
@@ -148,26 +152,35 @@
 	<table>
 		<thead>
 			<tr>
-				<th class="col-name">
+				<th class="col-name" rowspan="2">
 					<span class="header-content">
 						<UserIcon />
 						<span class="header-label">{$_('user.display_name')}</span>
 					</span>
 				</th>
-				<th class="col-role">
+				<th class="col-role" rowspan="2">
 					<span class="header-content">
 						<span class="header-label">{$_('user.role')}</span>
 					</span>
 				</th>
-				{#each kindColumns as kind (kind)}
-					<th class="col-grant">
-						<span class="header-content">
-							<CheckCircleIcon />
-							<span class="header-label">{$_(`permission.${kind}`)}</span>
-						</span>
+				{#each columnGroups as group (group.target)}
+					<th class="col-group" colspan={group.kinds.length} scope="colgroup">
+						{$_(`permission_matrix.${group.label}`)}
 					</th>
 				{/each}
-				<th class="col-actions"></th>
+				<th class="col-actions" rowspan="2"></th>
+			</tr>
+			<tr>
+				{#each columnGroups as group (group.target)}
+					{#each group.kinds as kind (kind)}
+						<th class="col-grant">
+							<span class="header-content">
+								<CheckCircleIcon />
+								<span class="header-label">{$_(`permission.${kind}`)}</span>
+							</span>
+						</th>
+					{/each}
+				{/each}
 			</tr>
 		</thead>
 		<tbody>
@@ -189,16 +202,19 @@
 							onchange={(value) => changeRole(user, value)}
 						/>
 					</td>
-					{#each kindColumns as kind (kind)}
-						<td class="col-grant" class:locked={!editable}>
-							<input
-								type="checkbox"
-								aria-label={$_(`permission.${kind}`)}
-								checked={set.subordinates.includes(kind)}
-								disabled={!editable}
-								onchange={(event) => toggleKind(user, kind, event.currentTarget.checked)}
-							/>
-						</td>
+					{#each columnGroups as group (group.target)}
+						{#each group.kinds as kind (kind)}
+							<td class="col-grant" class:locked={!editable}>
+								<input
+									type="checkbox"
+									aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
+									checked={set[group.target].includes(kind)}
+									disabled={!editable}
+									onchange={(event) =>
+										toggleKind(user, group.target, kind, event.currentTarget.checked)}
+								/>
+							</td>
+						{/each}
 					{/each}
 					<td class="col-actions" class:locked={!editable}>
 						{#if editable}
@@ -216,7 +232,7 @@
 			{/each}
 			{#if oninvite}
 				<tr class="add-row">
-					<td colspan={3 + kindColumns.length}>
+					<td colspan={10}>
 						<button class="quiet add-button" type="button" onclick={oninvite}>
 							<PlusIcon />
 							<span>{$_('add_item')}</span>
@@ -249,8 +265,21 @@
 
 	thead th {
 		position: sticky;
-		top: 0;
 		z-index: 1;
+	}
+
+	thead tr:first-child th {
+		top: 0;
+	}
+
+	th.col-group {
+		font-weight: 600;
+		height: 2.25rem;
+		text-align: left;
+	}
+
+	thead tr:nth-child(2) th {
+		top: 2.25rem;
 	}
 
 	th,

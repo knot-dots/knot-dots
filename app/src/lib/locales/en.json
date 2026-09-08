@@ -614,6 +614,10 @@
 		"read": "Read",
 		"update": "Edit"
 	},
+	"permission_matrix": {
+		"subordinate_objects": "Subordinate objects",
+		"this_object": "This object"
+	},
 	"planned_duration": "Planned duration",
 	"policy_field_bnk": "Policy field (BNK 2.0)",
 	"policy_field_bnk.climate": "Climate action and climate change adaptation",
