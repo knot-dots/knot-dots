@@ -28,6 +28,7 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type OrganizationalUnitPayload,
+		organizationalUnitType,
 		type OrganizationPayload,
 		payloadTypes,
 		predicates
@@ -96,8 +97,6 @@
 		confirmDeleteDialog.close();
 	}
 
-	let hasGeometry = $derived(Boolean(container.payload.geometry));
-
 	let hasIndividualProfileRelation = $derived(
 		container.relation.some(
 			({ predicate }) => predicate === predicates.enum['is-individual-profile-of']
@@ -106,7 +105,8 @@
 
 	let mayCreateIndividualProfile = $derived(
 		isOrganizationalUnitContainer(container) &&
-			hasGeometry &&
+			container.payload.organizationalUnitType ==
+				organizationalUnitType.enum['organizational_unit_type.administrative_area'] &&
 			!hasIndividualProfileRelation &&
 			$ability.can(
 				'create',
