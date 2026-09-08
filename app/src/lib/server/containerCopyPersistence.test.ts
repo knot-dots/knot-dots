@@ -145,7 +145,7 @@ test('bulk-inserts payloads, creators, GUID relations, and reconstructs containe
 	expect(stored.every(({ managed_by }) => managed_by[0] === organization)).toBe(true);
 });
 
-test('preserves inserted and existing program positions without shifting siblings', async ({
+test('shifts existing program siblings for an external copied-root placement', async ({
 	connection
 }) => {
 	const program = await createContainer(copyContainer(payloadTypes.enum.program))(connection);
@@ -166,28 +166,16 @@ test('preserves inserted and existing program positions without shifting sibling
 		existingGuids.push(existing.guid);
 	}
 
-	const firstInserted = uuid();
-	const secondInserted = uuid();
-	await createManyContainers([
+	const inserted = uuid();
+	const result = await createManyContainers([
 		copyContainer(payloadTypes.enum.measure, {
-			guid: firstInserted,
+			guid: inserted,
 			relation: [
 				{
 					object: program.guid,
-					position: 0,
+					position: 1,
 					predicate: predicates.enum['is-part-of-program'],
-					subject: firstInserted
-				}
-			]
-		}),
-		copyContainer(payloadTypes.enum.goal, {
-			guid: secondInserted,
-			relation: [
-				{
-					object: program.guid,
-					position: 2,
-					predicate: predicates.enum['is-part-of-program'],
-					subject: secondInserted
+					subject: inserted
 				}
 			]
 		})
@@ -202,9 +190,11 @@ test('preserves inserted and existing program positions without shifting sibling
 			AND NOT deleted
 	`);
 	const positionBySubject = new Map(positions.map(({ position, subject }) => [subject, position]));
-	expect(positionBySubject.get(firstInserted)).toBe(0);
-	expect(positionBySubject.get(secondInserted)).toBe(2);
-	expect(existingGuids.map((guid) => positionBySubject.get(guid))).toEqual([0, 1, 2]);
+	expect(positionBySubject.get(inserted)).toBe(1);
+	expect(existingGuids.map((guid) => positionBySubject.get(guid))).toEqual([0, 2, 3]);
+	expect(new Set(result.affectedIndexingGuids)).toEqual(
+		new Set([inserted, program.guid, existingGuids[1], existingGuids[2]])
+	);
 });
 
 test('rolls back rows and users when a creator or relation insert fails', async ({

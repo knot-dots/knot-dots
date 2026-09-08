@@ -2,18 +2,22 @@ import { NotFoundError, type DatabasePool } from 'slonik';
 import defineAbilityFor from '$lib/authorization';
 import {
 	templateCopyPreview,
+	hasDuplicateRootPlacements,
 	type ContainerCopyPreviewRequest,
 	type ContainerCopyRequest,
 	type ContainerCopyRootOperation,
+	type RootCopyPlacement,
 	type TemplateCopyPreview
 } from '$lib/containerCopy';
 import {
 	type AnyPayload,
 	type Container,
 	getAvailableInProgramGuids,
+	isMeasureContainer,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isProgramContainer,
+	isSimpleMeasureContainer,
 	isTemplateContainer,
 	isTemplateRoot,
 	predicates,
@@ -28,7 +32,7 @@ import {
 	type ContainerCopySourceSelection
 } from '$lib/server/containerCopyPlan';
 import { persistContainerCopyPlan } from '$lib/server/containerCopyPersistence';
-import { getContainerByGuid, getContainerCopyGraph } from '$lib/server/db';
+import { getContainerByGuid, getContainerCopyGraph, getManyContainers } from '$lib/server/db';
 import type { User } from '$lib/stores';
 
 export type ContainerCopyServiceErrorCode =
@@ -252,6 +256,78 @@ async function loadTarget(
 	return { organization, organizationalUnit };
 }
 
+async function resolveRootPlacement(
+	request: ContainerCopyRequest,
+	source: Container<AnyPayload>,
+	resolvedTarget: Awaited<ReturnType<typeof loadTarget>>,
+	pool: DatabasePool,
+	ability: ReturnType<typeof defineAbilityFor>
+) {
+	let managedBy = resolvedTarget.organizationalUnit?.guid ?? resolvedTarget.organization.guid;
+	let rootPlacement: readonly RootCopyPlacement[] = [];
+	if (request.operation === 'template-instance') {
+		managedBy = request.targetManagedByGuid ?? managedBy;
+		rootPlacement = request.rootPlacement ?? [];
+
+		// Two placements under the same parent would emit conflicting relations, so this is the single
+		// point where a request is rejected for them; the plan trusts what this function returns.
+		if (hasDuplicateRootPlacements(rootPlacement)) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+
+		const referencedGuids = new Set([
+			managedBy,
+			...rootPlacement.map(({ parentGuid }) => parentGuid)
+		]);
+		const referencedContainers = new Map<string, Container<AnyPayload>>([
+			[resolvedTarget.organization.guid, resolvedTarget.organization],
+			...(resolvedTarget.organizationalUnit
+				? ([[resolvedTarget.organizationalUnit.guid, resolvedTarget.organizationalUnit]] as const)
+				: [])
+		]);
+		const missingGuids = [...referencedGuids].filter((guid) => !referencedContainers.has(guid));
+		if (missingGuids.length > 0) {
+			const containers = await pool.connect(getManyContainers([], { guid: missingGuids }, 'alpha'));
+			for (const container of containers) {
+				referencedContainers.set(container.guid, container);
+			}
+		}
+
+		const manager = referencedContainers.get(managedBy);
+		if (
+			!manager ||
+			(!isOrganizationContainer(manager) && !isOrganizationalUnitContainer(manager)) ||
+			manager.organization !== resolvedTarget.organization.guid ||
+			ability.cannot('read', manager)
+		) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+		if (
+			isOrganizationalUnitContainer(source) &&
+			manager.guid !== resolvedTarget.organization.guid
+		) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+
+		for (const { parentGuid, predicate } of rootPlacement) {
+			const parent = referencedContainers.get(parentGuid);
+			if (
+				!parent ||
+				parent.organization !== resolvedTarget.organization.guid ||
+				ability.cannot('read', parent) ||
+				(predicate === predicates.enum['is-part-of-program'] && !isProgramContainer(parent)) ||
+				(predicate === predicates.enum['is-part-of-measure'] &&
+					!isMeasureContainer(parent) &&
+					!isSimpleMeasureContainer(parent))
+			) {
+				throw new ContainerCopyServiceError('invalid_target');
+			}
+		}
+	}
+
+	return { managedBy, rootPlacement };
+}
+
 export async function executeContainerCopy({
 	request,
 	pool,
@@ -319,7 +395,16 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('invalid_target');
 	}
 
+	const { managedBy, rootPlacement } = await resolveRootPlacement(
+		request,
+		source,
+		resolvedTarget,
+		pool,
+		ability
+	);
+
 	const target: CopyTarget = {
+		managedBy,
 		organization: resolvedTarget.organization.guid,
 		organizationalUnit: resolvedTarget.organizationalUnit?.guid ?? null,
 		realm: resolvedTarget.organization.realm,
@@ -351,7 +436,8 @@ export async function executeContainerCopy({
 			graph,
 			target,
 			operation: rootOperation(request),
-			readPolicy
+			readPolicy,
+			rootPlacement
 		});
 	} catch (caught) {
 		rethrowCopyPlanError(caught);

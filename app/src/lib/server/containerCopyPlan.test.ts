@@ -111,6 +111,7 @@ function policy(
 }
 
 const target: CopyTarget = {
+	managedBy: organizationalUnit,
 	organization,
 	organizationalUnit,
 	realm: 'target-realm',
@@ -211,6 +212,38 @@ test('selects the main hierarchy and program-scoped template branches separately
 		scopedTemplateChild.guid
 	]);
 	expect([...selection.includedGuids]).not.toContain(guids.otherScopedTemplate);
+});
+
+test('applies validated template root ownership and external placement', () => {
+	const source = makeContainer(guids.root, {
+		template: true,
+		title: 'Report template',
+		type: payloadTypes.enum.report,
+		visibility: visibility.enum.public
+	});
+	const plan = createRawContainerCopyPlan({
+		graph: graph(source.guid, [source], []),
+		target,
+		operation: { kind: 'template-instance', rootPayload: source.payload },
+		readPolicy: policy(),
+		rootPlacement: [
+			{
+				parentGuid: guids.external,
+				position: 3,
+				predicate: predicates.enum['is-part-of-program']
+			}
+		],
+		allocateGuid: allocator()
+	});
+	const copy = copyFor(plan, source.guid);
+
+	expect(copy?.managed_by).toEqual([target.managedBy]);
+	expect(copy?.relation).toContainEqual({
+		object: guids.external,
+		position: 3,
+		predicate: predicates.enum['is-part-of-program'],
+		subject: copy?.guid
+	});
 });
 
 test('prunes hidden paths, accepts an alternate parent, and preserves a structural cycle', () => {

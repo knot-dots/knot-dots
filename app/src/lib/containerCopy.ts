@@ -8,6 +8,21 @@ import {
 	type Predicate
 } from '$lib/models';
 
+export const rootCopyPlacement = z.strictObject({
+	parentGuid: z.uuid(),
+	position: z.number().int().nonnegative(),
+	predicate: z.enum(structuralCopyPredicates)
+});
+
+export type RootCopyPlacement = z.infer<typeof rootCopyPlacement>;
+
+export function hasDuplicateRootPlacements(placements: readonly RootCopyPlacement[]) {
+	return (
+		new Set(placements.map(({ parentGuid, predicate }) => `${predicate}\u0000${parentGuid}`))
+			.size !== placements.length
+	);
+}
+
 export const containerCopyPreviewRequest = z.strictObject({
 	availableIn: z.uuid().nullable(),
 	sourceGuid: z.uuid()
@@ -44,6 +59,8 @@ export const containerCopyRequest = z.discriminatedUnion('operation', [
 	z.strictObject({
 		operation: z.literal('template-instance'),
 		availableIn: z.uuid().nullable(),
+		rootPlacement: z.array(rootCopyPlacement).max(100).optional(),
+		targetManagedByGuid: z.uuid().optional(),
 		...targetedContainerCopyRequest
 	}),
 	z.strictObject({

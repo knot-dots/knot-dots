@@ -22,7 +22,7 @@ import {
 	type TemplatePayload,
 	visibility
 } from '$lib/models';
-import type { ContainerCopyRootOperation } from '$lib/containerCopy';
+import type { ContainerCopyRootOperation, RootCopyPlacement } from '$lib/containerCopy';
 
 export const referenceCopyPredicates = [
 	predicates.enum['is-measured-by'],
@@ -41,6 +41,7 @@ export type CopyGraphSnapshot = {
 };
 
 export type CopyTarget = {
+	managedBy: string;
 	organization: string;
 	organizationalUnit: string | null;
 	realm: string;
@@ -199,7 +200,7 @@ function createRootForOperation(
 			break;
 	}
 
-	return newContainer.parse({ ...copy, realm: target.realm });
+	return newContainer.parse({ ...copy, managed_by: target.managedBy, realm: target.realm });
 }
 
 export function selectContainerCopySources({
@@ -360,12 +361,14 @@ export function createContainerCopyPlan({
 	target,
 	operation,
 	readPolicy,
+	rootPlacement = [],
 	allocateGuid = () => crypto.randomUUID()
 }: {
 	graph: CopyGraphSnapshot;
 	target: CopyTarget;
 	operation: ContainerCopyRootOperation;
 	readPolicy: CopyReadPolicy;
+	rootPlacement?: readonly RootCopyPlacement[];
 	allocateGuid?: () => string;
 }): ContainerCopyPlan {
 	const { containersByGuid, includedGuids, relationsBySubject, root, scopedTemplateGuids } =
@@ -374,6 +377,10 @@ export function createContainerCopyPlan({
 			canReadSource: readPolicy.canReadSource,
 			rootPayload: operation.kind === 'individual-profile' ? undefined : operation.rootPayload
 		});
+	// Placements are validated against the request by the caller; only template instances carry them.
+	if (rootPlacement.length > 0 && operation.kind !== 'template-instance') {
+		throw new CopyPlanError('invalid_copy_graph');
+	}
 	const plannedRoot = createRootForOperation(root, target, operation);
 
 	// Stabilize the plan independently of database row and relation order: root first, then GUID order.
@@ -407,6 +414,15 @@ export function createContainerCopyPlan({
 		: target.organizationalUnit;
 	const rootVisibility = plannedRoot.payload.visibility;
 
+	// An organizational-unit root is managed by the target organization and manages its own
+	// descendants; every other copy is managed by the manager the caller resolved.
+	const managedByFor = (originalGuid: string) => {
+		if (!isOrganizationalUnitContainer(root)) {
+			return target.managedBy;
+		}
+		return originalGuid === root.guid ? target.organization : copiedRootGuid;
+	};
+
 	const resolveReferenceGuid = (originalGuid: string) => {
 		// Definitions reached through an independent structural path are remapped. Reference-only
 		// definitions retain their original GUID, regardless of whether the caller may read them.
@@ -435,6 +451,7 @@ export function createContainerCopyPlan({
 						rootVisibility
 					);
 		copy.realm = target.realm;
+		copy.managed_by = [managedByFor(originalGuid)];
 		if ('template' in copy.payload) {
 			if (operation.kind === 'create-template') {
 				copy.payload = { ...copy.payload, template: true };
@@ -509,6 +526,16 @@ export function createContainerCopyPlan({
 				predicate: predicates.enum['is-individual-profile-of'],
 				subject: copiedGuid
 			});
+		}
+		if (originalGuid === root.guid && operation.kind === 'template-instance') {
+			copiedRelations.push(
+				...rootPlacement.map(({ parentGuid, position, predicate }) => ({
+					object: parentGuid,
+					position,
+					predicate,
+					subject: copiedGuid
+				}))
+			);
 		}
 
 		for (const relation of relationsBySubject.get(originalGuid) ?? []) {

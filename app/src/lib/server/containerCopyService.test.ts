@@ -12,6 +12,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('$lib/server/db', () => ({
 	getContainerCopyGraph: () => async () => mocks.graph,
+	getManyContainers:
+		(_: string[], { guid }: { guid: string[] }) =>
+		async () =>
+			guid.flatMap((id) => (mocks.targets.has(id) ? [mocks.targets.get(id)] : [])),
 	getContainerByGuid: (guid: string) => mocks.getContainerByGuid(guid)
 }));
 
@@ -338,6 +342,11 @@ test('rejects missing, malformed, and cross-organization targets', async () => {
 });
 
 test('applies template-instance policy through the service', async () => {
+	const parent = container(childGuid, {
+		title: 'Parent program',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
 	const source = container(sourceGuid, {
 		template: true,
 		title: 'Template',
@@ -345,6 +354,7 @@ test('applies template-instance policy through the service', async () => {
 		visibility: visibility.enum.public
 	});
 	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	mocks.targets.set(parent.guid, parent);
 	if (source.payload.type !== payloadTypes.enum.program) {
 		throw new Error('Expected a program template');
 	}
@@ -353,7 +363,15 @@ test('applies template-instance policy through the service', async () => {
 		request: {
 			operation: 'template-instance',
 			availableIn: null,
+			rootPlacement: [
+				{
+					parentGuid: parent.guid,
+					position: 2,
+					predicate: predicates.enum['is-part-of-program']
+				}
+			],
 			sourceGuid,
+			targetManagedByGuid: organizationGuid,
 			targetOrganizationGuid: organizationGuid,
 			targetOrganizationalUnitGuid: null,
 			rootPayload: { ...source.payload, title: 'Edited template instance' }
@@ -365,6 +383,15 @@ test('applies template-instance policy through the service', async () => {
 
 	expect(root.payload).toMatchObject({ template: false, title: 'Edited template instance' });
 	expect(mocks.persist).toHaveBeenCalledOnce();
+	const plan = mocks.persist.mock.calls[0][0] as ContainerCopyPlan;
+	const plannedRoot = plan.get(sourceGuid);
+	expect(plannedRoot?.managed_by).toEqual([organizationGuid]);
+	expect(plannedRoot?.relation).toContainEqual({
+		object: parent.guid,
+		position: 2,
+		predicate: predicates.enum['is-part-of-program'],
+		subject: plannedRoot?.guid
+	});
 });
 
 test('returns a sanitized preview of exactly the selected copy hierarchy', async () => {
@@ -499,6 +526,104 @@ test('keeps preview branches together and visits shared or cyclic descendants on
 		{ guid: grandchildGuid, title: 'A child', type: 'text', depth: 1 },
 		{ guid: siblingGuid, title: 'B', type: 'text', depth: 0 }
 	]);
+});
+
+test.each(['missing', 'other organization', 'unreadable', 'duplicate'])(
+	'rejects a %s placement before persistence',
+	async (scenario) => {
+		const source = container(sourceGuid, {
+			type: 'report',
+			title: 'Template',
+			template: true,
+			visibility: 'public'
+		});
+		mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+		if (scenario !== 'missing') {
+			mocks.targets.set(
+				childGuid,
+				container(
+					childGuid,
+					{
+						type: 'program',
+						title: 'Parent',
+						visibility: scenario === 'unreadable' ? 'creator' : 'public'
+					},
+					[],
+					scenario === 'other organization' ? otherOrganizationGuid : organizationGuid
+				)
+			);
+		}
+		const placement = {
+			parentGuid: childGuid,
+			predicate: predicates.enum['is-part-of-program'],
+			position: 0
+		};
+		await expect(
+			executeContainerCopy({
+				request: {
+					operation: 'template-instance',
+					sourceGuid,
+					availableIn: null,
+					targetOrganizationGuid: organizationGuid,
+					targetOrganizationalUnitGuid: null,
+					rootPayload: source.payload,
+					rootPlacement: scenario === 'duplicate' ? [placement, placement] : [placement]
+				},
+				pool,
+				user: scenario === 'unreadable' ? { ...sysadmin, roles: [] } : sysadmin,
+				maxPlanSize: 500
+			})
+		).rejects.toMatchObject({ code: 'invalid_target' });
+		expect(mocks.persist).not.toHaveBeenCalled();
+	}
+);
+
+test.each([
+	['is-part-of-program', 'program', true],
+	['is-part-of-program', 'report', false],
+	['is-part-of-program', 'text', false],
+	['is-part-of-measure', 'measure', true],
+	['is-part-of-measure', 'simple_measure', true],
+	['is-part-of-measure', 'program', false],
+	['is-part-of', 'report', true],
+	['is-section-of', 'report', true]
+] as const)('validates %s placement under %s', async (predicate, parentType, valid) => {
+	const source = container(sourceGuid, {
+		type: 'report',
+		title: 'Template',
+		template: true,
+		visibility: 'public'
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	mocks.targets.set(
+		childGuid,
+		container(childGuid, {
+			type: parentType,
+			title: 'Parent',
+			visibility: 'public'
+		})
+	);
+	const result = executeContainerCopy({
+		request: {
+			operation: 'template-instance',
+			sourceGuid,
+			availableIn: null,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: source.payload,
+			rootPlacement: [{ parentGuid: childGuid, predicate, position: 0 }]
+		},
+		pool,
+		user: sysadmin,
+		maxPlanSize: 500
+	});
+	if (valid) {
+		await expect(result).resolves.toMatchObject({ payload: { template: false } });
+		expect(mocks.persist).toHaveBeenCalledOnce();
+	} else {
+		await expect(result).rejects.toMatchObject({ code: 'invalid_target' });
+		expect(mocks.persist).not.toHaveBeenCalled();
+	}
 });
 
 test('creates a template through the service and rejects existing templates', async () => {
