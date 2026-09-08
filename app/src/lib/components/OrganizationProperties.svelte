@@ -9,7 +9,6 @@
 	import EditableMultipleChoice from '$lib/components/EditableMultipleChoice.svelte';
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, OrganizationPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -146,12 +145,8 @@
 	{/if}
 {/snippet}
 
-{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-	<PropertyGrid {general} />
-{:else}
-	<div class="details-section">
-		<div class="data-grid">
-			{@render general()}
-		</div>
+<div class="details-section">
+	<div class="data-grid">
+		{@render general()}
 	</div>
-{/if}
+</div>

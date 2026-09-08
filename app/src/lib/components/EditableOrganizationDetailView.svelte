@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { Collapsible } from 'melt/builders';
 	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
-	import Ellipsis from '~icons/knotdots/ellipsis';
-	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
@@ -18,14 +15,9 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
-	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
-	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { setDetailViewContext } from '$lib/contexts/detailView';
-	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -93,28 +85,7 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
-
 	const handleSubmit = $derived(autoSave(container, 2000));
-
-	const propertiesRelocationNotice = getPropertiesRelocationContext();
-
-	let detailView = $state({
-		properties: new Collapsible({
-			onOpenChange: () => {
-				propertiesRelocationNotice.seen = true;
-			}
-		})
-	});
-
-	const useNewPropertyPanel = $derived(
-		createFeatureDecisions(page.data.features).useNewPropertyPanel()
-	);
-
-	if (useNewPropertyPanel) {
-		setDetailViewContext(detailView);
-	}
 </script>
 
 {#snippet header()}
@@ -175,16 +146,6 @@
 										bind:textContent={container.payload.name}
 										onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 									></h1>
-									<button
-										class="action-button"
-										onclick={useNewPropertyPanel
-											? detailView.properties.trigger.onclick
-											: () => dialog.showModal()}
-										type="button"
-									>
-										<Ellipsis />
-										<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-									</button>
 								{:else}
 									<h1 class="details-title" contenteditable="false">
 										{container.payload.name}
@@ -192,15 +153,6 @@
 								{/if}
 							{/if}
 						</header>
-
-						{#if !useNewPropertyPanel}
-							<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
-								<OrganizationProperties
-									bind:container
-									editable={$ability.can('update', container)}
-								/>
-							</PropertiesDialog>
-						{/if}
 
 						{#key container.guid}
 							<EditableFormattedText
@@ -214,16 +166,6 @@
 
 				<Sections bind:container {relatedContainers} />
 			</div>
-
-			{#if useNewPropertyPanel}
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<OrganizationProperties
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-				</form>
-			{/if}
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organization-view']} />
@@ -253,10 +195,6 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding-bottom: 0;
-	}
-
-	header button {
-		margin-left: auto;
 	}
 
 	h1 {
