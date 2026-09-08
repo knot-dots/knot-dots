@@ -22,12 +22,14 @@
 
 	interface Props {
 		container: Container<CategoryPayload | TermPayload>;
+		editable?: boolean;
 		relatedContainers: Container<AnyPayload>[];
 		predicate?: Predicate;
 	}
 
 	let {
 		container = $bindable(),
+		editable: editableOverride,
 		relatedContainers = $bindable(),
 		predicate = predicates.enum['is-part-of-category']
 	}: Props = $props();
@@ -279,7 +281,8 @@
 	}
 
 	const canEdit = $derived(
-		$applicationState.containerDetailView.editable && $ability.can('update', container)
+		(editableOverride ?? $applicationState.containerDetailView.editable) &&
+			$ability.can('update', container)
 	);
 
 	const isSubterm = $derived(
