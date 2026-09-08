@@ -1,9 +1,13 @@
 import { error, json } from '@sveltejs/kit';
 import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { containerCopyRequest } from '$lib/containerCopy';
+import { containerCopyPreviewRequest, containerCopyRequest } from '$lib/containerCopy';
 import { CopyPlanError } from '$lib/server/containerCopyPlan';
-import { ContainerCopyServiceError, executeContainerCopy } from '$lib/server/containerCopyService';
+import {
+	ContainerCopyServiceError,
+	executeContainerCopy,
+	loadContainerCopyPreview
+} from '$lib/server/containerCopyService';
 import type { RequestHandler } from './$types';
 
 const maxPlanSize = 10000;
@@ -30,6 +34,49 @@ function serviceErrorResponse(caught: unknown) {
 		? serviceErrorResponses[caught.code as keyof typeof serviceErrorResponses]
 		: undefined;
 }
+
+export const GET = (async ({ locals, url }) => {
+	if (!locals.user.isAuthenticated) {
+		error(401, { message: message('error.unauthorized') });
+	}
+
+	const sourceGuids = url.searchParams.getAll('sourceGuid');
+	const availableInValues = url.searchParams.getAll('availableIn');
+	const hasUnexpectedParameter = [...url.searchParams.keys()].some(
+		(key) => key !== 'sourceGuid' && key !== 'availableIn'
+	);
+	if (sourceGuids.length !== 1 || availableInValues.length > 1 || hasUnexpectedParameter) {
+		error(400, { message: message('error.bad_request') });
+	}
+
+	const parseResult = containerCopyPreviewRequest.safeParse({
+		availableIn: availableInValues[0] ?? null,
+		sourceGuid: sourceGuids[0]
+	});
+	if (!parseResult.success) {
+		error(400, { message: message('error.bad_request') });
+	}
+
+	try {
+		return json(
+			await loadContainerCopyPreview({
+				request: parseResult.data,
+				pool: locals.pool,
+				user: locals.user,
+				maxGraphSize
+			})
+		);
+	} catch (caught) {
+		const serviceResponse = serviceErrorResponse(caught);
+		if (serviceResponse) {
+			error(serviceResponse[0], { message: message(serviceResponse[1]) });
+		}
+		if (caught instanceof CopyPlanError) {
+			error(404, { message: message('error.copy_invalid') });
+		}
+		throw caught;
+	}
+}) satisfies RequestHandler;
 
 export const POST = (async ({ locals, request }) => {
 	if (!locals.user.isAuthenticated) {

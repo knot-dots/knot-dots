@@ -354,7 +354,13 @@ export const structuralCopyPredicates = [
 	predicates.enum['is-section-of']
 ] as const satisfies readonly Predicate[];
 
+export type StructuralCopyPredicate = (typeof structuralCopyPredicates)[number];
+
 const structuralPredicateSet = new Set<string>(structuralCopyPredicates);
+
+export function isStructuralCopyPredicate(predicate: string): predicate is StructuralCopyPredicate {
+	return structuralPredicateSet.has(predicate);
+}
 
 const backgroundColorValues = [
 	'color.white',
@@ -2274,7 +2280,7 @@ export function isTemplateRoot({
 	return (
 		payload.template === true &&
 		!relation.some(
-			({ predicate, subject }) => subject === guid && structuralPredicateSet.has(predicate)
+			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
 		)
 	);
 }

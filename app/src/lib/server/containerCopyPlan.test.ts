@@ -13,6 +13,7 @@ import {
 import {
 	CopyPlanError,
 	createContainerCopyPlan as createRawContainerCopyPlan,
+	selectContainerCopySources,
 	type CopyReadPolicy,
 	type CopyTarget
 } from '$lib/server/containerCopyPlan';
@@ -195,6 +196,22 @@ function programWithScopedTemplates({
 		)
 	};
 }
+
+test('selects the main hierarchy and program-scoped template branches separately', () => {
+	const { child, root, scopedTemplate, scopedTemplateChild, snapshot } =
+		programWithScopedTemplates();
+	const selection = selectContainerCopySources({
+		graph: snapshot,
+		canReadSource: () => true
+	});
+
+	expect([...selection.mainHierarchyGuids]).toEqual([root.guid, child.guid]);
+	expect([...selection.scopedTemplateGuids]).toEqual([
+		scopedTemplate.guid,
+		scopedTemplateChild.guid
+	]);
+	expect([...selection.includedGuids]).not.toContain(guids.otherScopedTemplate);
+});
 
 test('prunes hidden paths, accepts an alternate parent, and preserves a structural cycle', () => {
 	const containers = [

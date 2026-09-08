@@ -1,6 +1,12 @@
 import { NotFoundError, type DatabasePool } from 'slonik';
 import defineAbilityFor from '$lib/authorization';
-import type { ContainerCopyRequest, ContainerCopyRootOperation } from '$lib/containerCopy';
+import {
+	templateCopyPreview,
+	type ContainerCopyPreviewRequest,
+	type ContainerCopyRequest,
+	type ContainerCopyRootOperation,
+	type TemplateCopyPreview
+} from '$lib/containerCopy';
 import {
 	type AnyPayload,
 	type Container,
@@ -8,6 +14,8 @@ import {
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isProgramContainer,
+	isTemplateContainer,
+	isTemplateRoot,
 	predicates,
 	visibility
 } from '$lib/models';
@@ -15,7 +23,9 @@ import {
 	CopyPlanError,
 	createContainerCopyPlan,
 	type CopyReadPolicy,
-	type CopyTarget
+	type CopyTarget,
+	selectContainerCopySources,
+	type ContainerCopySourceSelection
 } from '$lib/server/containerCopyPlan';
 import { persistContainerCopyPlan } from '$lib/server/containerCopyPersistence';
 import { getContainerByGuid, getContainerCopyGraph } from '$lib/server/db';
@@ -64,6 +74,130 @@ function hasExistingIndividualProfile(source: Container<AnyPayload>) {
 			object === source.guid &&
 			subject !== source.guid
 	);
+}
+
+function validateTemplateScope(
+	source: Container<AnyPayload>,
+	graph: readonly Container<AnyPayload>[],
+	availableIn: string | null,
+	canRead: (container: Container<AnyPayload>) => boolean
+) {
+	const availableInGuids = getAvailableInProgramGuids(source);
+	if (
+		(availableIn === null && availableInGuids.length !== 0) ||
+		(availableIn !== null && (availableInGuids.length !== 1 || availableInGuids[0] !== availableIn))
+	) {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	if (availableIn !== null) {
+		const program = graph.find(({ guid }) => guid === availableIn);
+		if (!program || !isProgramContainer(program) || !canRead(program)) {
+			throw new ContainerCopyServiceError('source_unavailable');
+		}
+	}
+}
+
+/**
+ * A source that becomes unreadable while the plan is built is the same failure as one that was
+ * never readable, so both the preview and the copy report it with the same service error.
+ */
+function rethrowCopyPlanError(caught: unknown): never {
+	if (caught instanceof CopyPlanError && caught.code === 'source_unavailable') {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	throw caught;
+}
+
+/**
+ * Flattens the main copy hierarchy below the root into a depth-annotated outline. Program-scoped
+ * template branches stay out of the preview: they are copied as templates, not as instantiated
+ * objects, so they never appear as part of the new object.
+ */
+function previewRows(selection: ContainerCopySourceSelection): TemplateCopyPreview['rows'] {
+	const rows: TemplateCopyPreview['rows'] = [];
+	const visited = new Set<string>([selection.root.guid]);
+	const stack = childrenOf(selection, selection.root.guid, 0);
+
+	while (stack.length > 0) {
+		const { guid, depth } = stack.pop()!;
+		const container = selection.containersByGuid.get(guid);
+		if (visited.has(guid) || !selection.mainHierarchyGuids.has(guid) || !container) {
+			continue;
+		}
+		visited.add(guid);
+		rows.push({
+			guid,
+			depth,
+			type: container.payload.type,
+			title: 'title' in container.payload ? container.payload.title : container.payload.name
+		});
+		stack.push(...childrenOf(selection, guid, depth + 1));
+	}
+	return rows;
+}
+
+/**
+ * Structural children in reverse display order, so a depth-first pop visits them left to right.
+ */
+function childrenOf(selection: ContainerCopySourceSelection, guid: string, depth: number) {
+	return [...(selection.structuralRelationsByObject.get(guid) ?? [])]
+		.sort(
+			(a, b) =>
+				a.position - b.position ||
+				a.predicate.localeCompare(b.predicate) ||
+				a.subject.localeCompare(b.subject)
+		)
+		.reverse()
+		.map((relation) => ({ guid: relation.subject, depth }));
+}
+
+export async function loadContainerCopyPreview({
+	request,
+	pool,
+	user,
+	maxGraphSize,
+	maxPreviewSize = maxGraphSize
+}: {
+	request: ContainerCopyPreviewRequest;
+	pool: DatabasePool;
+	user: User;
+	maxGraphSize: number;
+	maxPreviewSize?: number;
+}): Promise<TemplateCopyPreview> {
+	const graph = await pool.connect(getContainerCopyGraph(request.sourceGuid));
+	const source = graph.containers.find(({ guid }) => guid === request.sourceGuid);
+	const ability = defineAbilityFor(user);
+
+	if (!source || ability.cannot('read', source) || !isTemplateContainer(source)) {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	if (!isTemplateRoot(source)) {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	if (graph.containers.length > maxGraphSize) {
+		throw new ContainerCopyServiceError('copy_too_large');
+	}
+	validateTemplateScope(source, graph.containers, request.availableIn, (container) =>
+		ability.can('read', container)
+	);
+
+	let selection;
+	try {
+		selection = selectContainerCopySources({
+			graph,
+			canReadSource: (container) => ability.can('read', container)
+		});
+	} catch (caught) {
+		rethrowCopyPlanError(caught);
+	}
+	if (selection.includedGuids.size > maxPreviewSize) {
+		throw new ContainerCopyServiceError('copy_too_large');
+	}
+
+	return templateCopyPreview.parse({
+		rootGuid: selection.root.guid,
+		rows: previewRows(selection)
+	});
 }
 
 async function loadTarget(
@@ -139,20 +273,9 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('source_unavailable');
 	}
 	if (request.operation === 'template-instance') {
-		const availableIn = getAvailableInProgramGuids(source);
-		if (
-			(request.availableIn === null && availableIn.length !== 0) ||
-			(request.availableIn !== null &&
-				(availableIn.length !== 1 || availableIn[0] !== request.availableIn))
-		) {
-			throw new ContainerCopyServiceError('source_unavailable');
-		}
-		if (request.availableIn !== null) {
-			const program = graph.containers.find(({ guid }) => guid === request.availableIn);
-			if (!program || !isProgramContainer(program) || ability.cannot('read', program)) {
-				throw new ContainerCopyServiceError('source_unavailable');
-			}
-		}
+		validateTemplateScope(source, graph.containers, request.availableIn, (container) =>
+			ability.can('read', container)
+		);
 	}
 	if (isOrganizationContainer(source)) {
 		throw new ContainerCopyServiceError('unsupported_copy_source');
@@ -230,11 +353,8 @@ export async function executeContainerCopy({
 			operation: rootOperation(request),
 			readPolicy
 		});
-	} catch (error) {
-		if (error instanceof CopyPlanError && error.code === 'source_unavailable') {
-			throw new ContainerCopyServiceError('source_unavailable');
-		}
-		throw error;
+	} catch (caught) {
+		rethrowCopyPlanError(caught);
 	}
 
 	if (plan.size > maxPlanSize) {

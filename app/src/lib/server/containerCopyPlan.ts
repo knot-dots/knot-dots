@@ -9,6 +9,8 @@ import {
 	createTemplateInstanceOf,
 	isOrganizationalUnitContainer,
 	isProgramContainer,
+	isStructuralCopyPredicate,
+	isTemplateContainer,
 	isTemplateRoot,
 	type NewContainer,
 	newContainer,
@@ -16,7 +18,6 @@ import {
 	payloadTypes,
 	predicates,
 	relation,
-	structuralCopyPredicates,
 	type Relation,
 	type TemplatePayload,
 	visibility
@@ -28,7 +29,6 @@ export const referenceCopyPredicates = [
 	predicates.enum['is-objective-for']
 ] as const satisfies readonly Predicate[];
 
-const structuralPredicateSet = new Set<string>(structuralCopyPredicates);
 const referencePredicateSet = new Set<string>(referenceCopyPredicates);
 const uuid = z.uuid();
 const newContainerWithGuid = newContainer.extend({ guid: z.uuid(), relation: z.array(relation) });
@@ -54,6 +54,16 @@ export type CopyReadPolicy = {
 };
 
 export type ContainerCopyPlan = ReadonlyMap<string, NewContainerWithGuid>;
+
+export type ContainerCopySourceSelection = {
+	containersByGuid: ReadonlyMap<string, Container<AnyPayload>>;
+	includedGuids: ReadonlySet<string>;
+	mainHierarchyGuids: ReadonlySet<string>;
+	relationsBySubject: ReadonlyMap<string, readonly Relation[]>;
+	scopedTemplateGuids: ReadonlySet<string>;
+	structuralRelationsByObject: ReadonlyMap<string, readonly Relation[]>;
+	root: Container<AnyPayload>;
+};
 
 export class CopyPlanError extends Error {
 	constructor(
@@ -192,19 +202,15 @@ function createRootForOperation(
 	return newContainer.parse({ ...copy, realm: target.realm });
 }
 
-export function createContainerCopyPlan({
+export function selectContainerCopySources({
 	graph,
-	target,
-	operation,
-	readPolicy,
-	allocateGuid = () => crypto.randomUUID()
+	canReadSource,
+	rootPayload
 }: {
 	graph: CopyGraphSnapshot;
-	target: CopyTarget;
-	operation: ContainerCopyRootOperation;
-	readPolicy: CopyReadPolicy;
-	allocateGuid?: () => string;
-}): ContainerCopyPlan {
+	canReadSource(container: Container<AnyPayload>): boolean;
+	rootPayload?: AnyPayload;
+}): ContainerCopySourceSelection {
 	// The database snapshot may contain copy candidates and reference-only containers. Index every
 	// container up front so all later graph and GUID lookups remain constant-time.
 	const containersByGuid = new Map(
@@ -212,8 +218,14 @@ export function createContainerCopyPlan({
 	);
 	const root = containersByGuid.get(graph.rootGuid);
 
-	if (!root || !readPolicy.canReadSource(root)) {
+	if (!root || !canReadSource(root)) {
 		throw new CopyPlanError('source_unavailable');
+	}
+	if (rootPayload && rootPayload.type !== root.payload.type) {
+		throw new CopyPlanError('payload_type_mismatch');
+	}
+	if (root.payload.type === payloadTypes.enum.actual_data) {
+		throw new CopyPlanError('unsupported_copy_source');
 	}
 
 	// Relations are attached to both endpoint containers by the database helper. Normalize those
@@ -224,16 +236,9 @@ export function createContainerCopyPlan({
 
 	for (const relation of relations) {
 		addToIndex(relationsBySubject, relation.subject, relation);
-		if (structuralPredicateSet.has(relation.predicate)) {
+		if (isStructuralCopyPredicate(relation.predicate)) {
 			addToIndex(structuralRelationsByObject, relation.object, relation);
 		}
-	}
-
-	if (operation.kind !== 'individual-profile' && operation.rootPayload.type !== root.payload.type) {
-		throw new CopyPlanError('payload_type_mismatch');
-	}
-	if (root.payload.type === payloadTypes.enum.actual_data) {
-		throw new CopyPlanError('unsupported_copy_source');
 	}
 
 	const hasResolvedReferences = (
@@ -253,31 +258,25 @@ export function createContainerCopyPlan({
 		return payloadReference === undefined || containersByGuid.has(payloadReference);
 	};
 
-	const rootPayload =
-		operation.kind === 'individual-profile' ? root.payload : operation.rootPayload;
-	if (!hasResolvedReferences(root, rootPayload)) {
+	if (!hasResolvedReferences(root, rootPayload ?? root.payload)) {
 		opaqueRequiredDependencyError();
 	}
-	const plannedRoot = createRootForOperation(root, target, operation);
 
 	// `included` is the complete copy set. The ordinary hierarchy and program-scoped template
 	// hierarchies are expanded separately so template instantiation can keep the latter as templates.
-	const included = new Set<string>([root.guid]);
+	const includedGuids = new Set<string>([root.guid]);
 	const mainHierarchyGuids = new Set<string>([root.guid]);
 	const scopedTemplateGuids = new Set<string>();
 
 	const isEligible = (container: Container<AnyPayload>, allowResourceRoot = false) => {
 		// Hidden, actual-data, descendant-resource, and unresolved-reference containers never enter the
 		// queue, so their descendants are pruned unless another valid structural path reaches them.
-		if (
-			!readPolicy.canReadSource(container) ||
-			container.payload.type === payloadTypes.enum.actual_data ||
-			(!allowResourceRoot && container.payload.type === payloadTypes.enum.resource_v2) ||
-			!hasResolvedReferences(container)
-		) {
-			return false;
-		}
-		return true;
+		return (
+			canReadSource(container) &&
+			container.payload.type !== payloadTypes.enum.actual_data &&
+			(allowResourceRoot || container.payload.type !== payloadTypes.enum.resource_v2) &&
+			hasResolvedReferences(container)
+		);
 	};
 
 	const mainQueue = [root.guid];
@@ -292,7 +291,7 @@ export function createContainerCopyPlan({
 		for (const relation of structuralRelationsByObject.get(currentGuid) ?? []) {
 			const child = containersByGuid.get(relation.subject);
 			if (child && isEligible(child)) {
-				included.add(child.guid);
+				includedGuids.add(child.guid);
 				mainHierarchyGuids.add(child.guid);
 				mainQueue.push(child.guid);
 			}
@@ -309,13 +308,7 @@ export function createContainerCopyPlan({
 						)
 						.flatMap((availability) => {
 							const template = containersByGuid.get(availability.subject);
-							return template &&
-								'template' in template.payload &&
-								isTemplateRoot({
-									guid: template.guid,
-									payload: template.payload,
-									relation: template.relation
-								})
+							return template && isTemplateContainer(template) && isTemplateRoot(template)
 								? [[template.guid, template] as const]
 								: [];
 						})
@@ -328,7 +321,7 @@ export function createContainerCopyPlan({
 		if (mainHierarchyGuids.has(templateRoot.guid) || !isEligible(templateRoot, true)) {
 			continue;
 		}
-		included.add(templateRoot.guid);
+		includedGuids.add(templateRoot.guid);
 		scopedTemplateGuids.add(templateRoot.guid);
 		scopedQueue.push(templateRoot.guid);
 	}
@@ -344,17 +337,49 @@ export function createContainerCopyPlan({
 		for (const relation of structuralRelationsByObject.get(currentGuid) ?? []) {
 			const child = containersByGuid.get(relation.subject);
 			if (child && !mainHierarchyGuids.has(child.guid) && isEligible(child)) {
-				included.add(child.guid);
+				includedGuids.add(child.guid);
 				scopedTemplateGuids.add(child.guid);
 				scopedQueue.push(child.guid);
 			}
 		}
 	}
 
+	return {
+		containersByGuid,
+		includedGuids,
+		mainHierarchyGuids,
+		relationsBySubject,
+		root,
+		scopedTemplateGuids,
+		structuralRelationsByObject
+	};
+}
+
+export function createContainerCopyPlan({
+	graph,
+	target,
+	operation,
+	readPolicy,
+	allocateGuid = () => crypto.randomUUID()
+}: {
+	graph: CopyGraphSnapshot;
+	target: CopyTarget;
+	operation: ContainerCopyRootOperation;
+	readPolicy: CopyReadPolicy;
+	allocateGuid?: () => string;
+}): ContainerCopyPlan {
+	const { containersByGuid, includedGuids, relationsBySubject, root, scopedTemplateGuids } =
+		selectContainerCopySources({
+			graph,
+			canReadSource: readPolicy.canReadSource,
+			rootPayload: operation.kind === 'individual-profile' ? undefined : operation.rootPayload
+		});
+	const plannedRoot = createRootForOperation(root, target, operation);
+
 	// Stabilize the plan independently of database row and relation order: root first, then GUID order.
 	const orderedOriginalGuids = [
 		root.guid,
-		...[...included].filter((guid) => guid !== root.guid).sort()
+		...[...includedGuids].filter((guid) => guid !== root.guid).sort()
 	];
 	const guidMap = new Map<string, string>();
 	const allocatedGuids = new Set<string>();
@@ -492,7 +517,7 @@ export function createContainerCopyPlan({
 			}
 
 			const copiedObject = guidMap.get(relation.object);
-			if (structuralPredicateSet.has(relation.predicate)) {
+			if (isStructuralCopyPredicate(relation.predicate)) {
 				// A structural edge survives only when both endpoints are in the pruned copy set.
 				if (copiedObject) {
 					copiedRelations.push({ ...relation, object: copiedObject, subject: copiedGuid });

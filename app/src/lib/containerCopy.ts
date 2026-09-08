@@ -1,5 +1,33 @@
 import { z } from 'zod';
-import { newContainer, predicates, type AnyPayload, type Predicate } from '$lib/models';
+import {
+	payloadTypes,
+	newContainer,
+	predicates,
+	structuralCopyPredicates,
+	type AnyPayload,
+	type Predicate
+} from '$lib/models';
+
+export const containerCopyPreviewRequest = z.strictObject({
+	availableIn: z.uuid().nullable(),
+	sourceGuid: z.uuid()
+});
+
+export type ContainerCopyPreviewRequest = z.infer<typeof containerCopyPreviewRequest>;
+
+export const templateCopyPreview = z.strictObject({
+	rootGuid: z.uuid(),
+	rows: z.array(
+		z.strictObject({
+			guid: z.uuid(),
+			title: z.string(),
+			type: payloadTypes,
+			depth: z.number().int().nonnegative()
+		})
+	)
+});
+
+export type TemplateCopyPreview = z.infer<typeof templateCopyPreview>;
 
 const targetedContainerCopyRequest = {
 	sourceGuid: z.uuid(),

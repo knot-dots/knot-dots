@@ -33,7 +33,11 @@ vi.mock('$lib/server/containerCopyPersistence', () => ({
 }));
 
 import { anyContainer, payloadTypes, predicates, visibility } from '$lib/models';
-import { ContainerCopyServiceError, executeContainerCopy } from '$lib/server/containerCopyService';
+import {
+	ContainerCopyServiceError,
+	executeContainerCopy,
+	loadContainerCopyPreview
+} from '$lib/server/containerCopyService';
 import type { User } from '$lib/stores';
 
 const sourceGuid = '00000000-0000-4000-8000-000000000001';
@@ -361,6 +365,140 @@ test('applies template-instance policy through the service', async () => {
 
 	expect(root.payload).toMatchObject({ template: false, title: 'Edited template instance' });
 	expect(mocks.persist).toHaveBeenCalledOnce();
+});
+
+test('returns a sanitized preview of exactly the selected copy hierarchy', async () => {
+	const structuralRelation = {
+		object: sourceGuid,
+		position: 4,
+		predicate: predicates.enum['is-section-of'],
+		subject: childGuid
+	};
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Template',
+			type: payloadTypes.enum.report,
+			visibility: visibility.enum.public
+		},
+		[structuralRelation]
+	);
+	const child = container(
+		childGuid,
+		{ title: 'Section', type: payloadTypes.enum.text, visibility: visibility.enum.public },
+		[structuralRelation]
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, child] };
+
+	const preview = await loadContainerCopyPreview({
+		request: { availableIn: null, sourceGuid },
+		pool,
+		user: sysadmin,
+		maxGraphSize: 500
+	});
+
+	expect(preview.rootGuid).toBe(sourceGuid);
+	expect(preview.rows.map(({ guid }) => guid)).toEqual([childGuid]);
+	expect(preview.rows).toEqual([{ guid: childGuid, title: 'Section', type: 'text', depth: 0 }]);
+});
+
+test('omits program-scoped template branches from the preview', async () => {
+	const scopedTemplateGuid = '00000000-0000-4000-8000-000000000004';
+	const scopedChildGuid = '00000000-0000-4000-8000-000000000005';
+	const structuralRelation = {
+		object: sourceGuid,
+		position: 0,
+		predicate: predicates.enum['is-part-of-program'],
+		subject: childGuid
+	};
+	const availabilityRelation = {
+		object: sourceGuid,
+		position: 0,
+		predicate: predicates.enum['is-available-in'],
+		subject: scopedTemplateGuid
+	};
+	const scopedStructuralRelation = {
+		object: scopedTemplateGuid,
+		position: 0,
+		predicate: predicates.enum['is-section-of'],
+		subject: scopedChildGuid
+	};
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Program template',
+			type: payloadTypes.enum.program,
+			visibility: visibility.enum.public
+		},
+		[structuralRelation, availabilityRelation]
+	);
+	const child = container(
+		childGuid,
+		{ title: 'Program child', type: payloadTypes.enum.text, visibility: visibility.enum.public },
+		[structuralRelation]
+	);
+	const scopedTemplate = container(
+		scopedTemplateGuid,
+		{
+			template: true,
+			title: 'Scoped template',
+			type: payloadTypes.enum.report,
+			visibility: visibility.enum.public
+		},
+		[availabilityRelation, scopedStructuralRelation]
+	);
+	const scopedChild = container(
+		scopedChildGuid,
+		{ title: 'Scoped child', type: payloadTypes.enum.text, visibility: visibility.enum.public },
+		[scopedStructuralRelation]
+	);
+	mocks.graph = {
+		rootGuid: sourceGuid,
+		containers: [source, child, scopedTemplate, scopedChild]
+	};
+
+	const preview = await loadContainerCopyPreview({
+		request: { availableIn: null, sourceGuid },
+		pool,
+		user: sysadmin,
+		maxGraphSize: 500
+	});
+
+	expect(preview.rows.map(({ guid }) => guid)).toEqual([childGuid]);
+});
+
+test('keeps preview branches together and visits shared or cyclic descendants once', async () => {
+	const siblingGuid = '00000000-0000-4000-8000-000000000004';
+	const grandchildGuid = '00000000-0000-4000-8000-000000000005';
+	const relations = [
+		{ object: sourceGuid, subject: siblingGuid, position: 1, predicate: 'is-section-of' },
+		{ object: sourceGuid, subject: childGuid, position: 0, predicate: 'is-section-of' },
+		{ object: childGuid, subject: grandchildGuid, position: 0, predicate: 'is-section-of' },
+		{ object: siblingGuid, subject: grandchildGuid, position: 0, predicate: 'is-section-of' },
+		{ object: grandchildGuid, subject: childGuid, position: 0, predicate: 'is-section-of' }
+	];
+	mocks.graph = {
+		rootGuid: sourceGuid,
+		containers: [
+			container(sourceGuid, { type: 'report', title: 'Root', template: true }, relations),
+			container(siblingGuid, { type: 'text', title: 'B' }, relations),
+			container(grandchildGuid, { type: 'text', title: 'A child' }, relations),
+			container(childGuid, { type: 'text', title: 'A' }, relations)
+		]
+	};
+	const preview = await loadContainerCopyPreview({
+		request: { sourceGuid, availableIn: null },
+		pool,
+		user: sysadmin,
+		maxGraphSize: 500
+	});
+	expect(preview.rows).toEqual([
+		{ guid: childGuid, title: 'A', type: 'text', depth: 0 },
+		{ guid: grandchildGuid, title: 'A child', type: 'text', depth: 1 },
+		{ guid: siblingGuid, title: 'B', type: 'text', depth: 0 }
+	]);
 });
 
 test('creates a template through the service and rejects existing templates', async () => {
