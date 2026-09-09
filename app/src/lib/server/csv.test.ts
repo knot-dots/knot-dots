@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveColumnHeader, reverseTranslationMap } from '$lib/server/csv';
+import { resolveColumnHeader, reverseTranslationMap, statusByLabel } from '$lib/server/csv';
 
 describe('resolveColumnHeader', () => {
 	it.each([
@@ -29,5 +29,23 @@ describe('reverseTranslationMap', () => {
 		expect(reverseTranslationMap.get('Schlüsselindikator')).toBe('indicator_type.key');
 		expect(reverseTranslationMap.get('Leistungsindikator')).toBe('indicator_type.performance');
 		expect(reverseTranslationMap.get('Wirkungsindikator')).toBe('indicator_type.impact');
+	});
+});
+
+describe('statusByLabel', () => {
+	it.each([
+		['Idee', 'status.idea'],
+		['In Planung', 'status.in_planning'],
+		['In Umsetzung', 'status.in_implementation'],
+		['In Betrieb', 'status.in_operation'],
+		['Abgeschlossen', 'status.done'],
+		['Verworfen', 'status.rejected']
+	])('maps the status label %j as shown in the UI to %j', (label, value) => {
+		expect(statusByLabel.get(label)).toBe(value);
+	});
+
+	it('does not know labels of other enums', () => {
+		expect(statusByLabel.get('Erledigt')).toBeUndefined();
+		expect(statusByLabel.get('Beschlossen')).toBeUndefined();
 	});
 });
