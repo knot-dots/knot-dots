@@ -1,9 +1,13 @@
 import { error, json } from '@sveltejs/kit';
 import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { containerCopyRequest } from '$lib/containerCopy';
+import { containerCopyPreviewRequest, containerCopyRequest } from '$lib/containerCopy';
 import { CopyPlanError } from '$lib/server/containerCopyPlan';
-import { ContainerCopyServiceError, executeContainerCopy } from '$lib/server/containerCopyService';
+import {
+	ContainerCopyServiceError,
+	executeContainerCopy,
+	loadContainerCopyPreview
+} from '$lib/server/containerCopyService';
 import type { RequestHandler } from './$types';
 
 const maxPlanSize = 10000;
@@ -31,6 +35,51 @@ function serviceErrorResponse(caught: unknown) {
 		: undefined;
 }
 
+export const GET = (async ({ locals, url }) => {
+	if (!locals.user.isAuthenticated) {
+		error(401, { message: message('error.unauthorized') });
+	}
+
+	const sourceGuids = url.searchParams.getAll('sourceGuid');
+	const availableInValues = url.searchParams.getAll('availableIn');
+	const hasUnexpectedParameter = [...url.searchParams.keys()].some(
+		(key) => key !== 'sourceGuid' && key !== 'availableIn'
+	);
+	if (sourceGuids.length !== 1 || availableInValues.length > 1 || hasUnexpectedParameter) {
+		error(400, { message: message('error.bad_request') });
+	}
+
+	const parseResult = containerCopyPreviewRequest.safeParse({
+		availableIn: availableInValues[0] ?? null,
+		sourceGuid: sourceGuids[0]
+	});
+	if (!parseResult.success) {
+		error(400, { message: message('error.bad_request') });
+	}
+
+	try {
+		return json(
+			await locals.pool.connect((connection) =>
+				loadContainerCopyPreview({
+					request: parseResult.data,
+					connection,
+					user: locals.user,
+					maxGraphSize
+				})
+			)
+		);
+	} catch (caught) {
+		const serviceResponse = serviceErrorResponse(caught);
+		if (serviceResponse) {
+			error(serviceResponse[0], { message: message(serviceResponse[1]) });
+		}
+		if (caught instanceof CopyPlanError) {
+			error(404, { message: message('error.copy_invalid') });
+		}
+		throw caught;
+	}
+}) satisfies RequestHandler;
+
 export const POST = (async ({ locals, request }) => {
 	if (!locals.user.isAuthenticated) {
 		error(401, { message: message('error.unauthorized') });
@@ -50,13 +99,15 @@ export const POST = (async ({ locals, request }) => {
 	}
 
 	try {
-		const root = await executeContainerCopy({
-			request: parseResult.data,
-			pool: locals.pool,
-			user: locals.user,
-			maxGraphSize,
-			maxPlanSize
-		});
+		const root = await locals.pool.connect((connection) =>
+			executeContainerCopy({
+				request: parseResult.data,
+				connection,
+				user: locals.user,
+				maxGraphSize,
+				maxPlanSize
+			})
+		);
 		return json(root, { status: 201, headers: { location: `/container/${root.guid}` } });
 	} catch (caught) {
 		const serviceResponse = serviceErrorResponse(caught);

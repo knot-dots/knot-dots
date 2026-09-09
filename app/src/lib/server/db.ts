@@ -227,6 +227,11 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	}
 
 	const relations = inserts.flatMap((c) => c.relation);
+	const insertedGuids = new Set(inserts.map(({ guid }) => guid));
+	const externalProgramPlacements = relations.filter(
+		({ object, predicate }) =>
+			predicate === predicates.enum['is-part-of-program'] && !insertedGuids.has(object)
+	);
 
 	return async (connection: DatabaseTransactionConnection) => {
 		if (inserts.length === 0) {
@@ -279,6 +284,24 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 					RETURNING object, predicate, subject
 				`);
 
+		const shiftedProgramSiblings =
+			externalProgramPlacements.length === 0
+				? []
+				: await connection.any(sql.typeAlias('guid')`
+					UPDATE container_relation relation
+					SET position = relation.position + 1
+					FROM ${sql.unnest(
+						externalProgramPlacements.map(({ object, position }) => [object, position]),
+						['uuid', 'int4']
+					)} AS placement(object, position)
+					WHERE relation.predicate = ${predicates.enum['is-part-of-program']}
+						AND relation.object = placement.object
+						AND relation.position >= placement.position
+						AND relation.valid_currently
+						AND NOT relation.deleted
+					RETURNING relation.subject AS guid
+				`);
+
 		const relationResult = await insertManyContainerRelations(relations, connection);
 		if (relationResult.length !== relations.length) {
 			throw new Error('relation_conflict');
@@ -316,6 +339,9 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 		for (const { object, subject } of relationResult) {
 			affectedIndexingGuids.add(object);
 			affectedIndexingGuids.add(subject);
+		}
+		for (const { guid } of shiftedProgramSiblings) {
+			affectedIndexingGuids.add(guid);
 		}
 
 		return {

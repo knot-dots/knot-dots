@@ -1,19 +1,23 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { locale } from 'svelte-i18n';
 
-const executeContainerCopy = vi.hoisted(() => vi.fn());
+const { executeContainerCopy, loadContainerCopyPreview } = vi.hoisted(() => ({
+	executeContainerCopy: vi.fn(),
+	loadContainerCopyPreview: vi.fn()
+}));
 
 locale.set('en');
 
 vi.mock('$lib/server/containerCopyService', async (importOriginal) => ({
 	...(await importOriginal<typeof import('$lib/server/containerCopyService')>()),
-	executeContainerCopy
+	executeContainerCopy,
+	loadContainerCopyPreview
 }));
 
 import { payloadTypes } from '$lib/models';
 import { CopyPlanError } from '$lib/server/containerCopyPlan';
 import { ContainerCopyServiceError } from '$lib/server/containerCopyService';
-import { POST } from './+server';
+import { GET, POST } from './+server';
 
 const sourceGuid = '00000000-0000-4000-8000-000000000001';
 const organizationGuid = '00000000-0000-4000-8000-000000000002';
@@ -29,6 +33,10 @@ const user = {
 	roles: ['sysadmin'],
 	settings: {}
 };
+const connection = {};
+const pool = {
+	connect: vi.fn((operation: (connection: object) => unknown) => operation(connection))
+};
 
 function request(body: unknown, contentType = 'application/json; charset=utf-8') {
 	return new Request('http://localhost/container/copy', {
@@ -40,7 +48,7 @@ function request(body: unknown, contentType = 'application/json; charset=utf-8')
 
 function event(body: unknown, contentType?: string) {
 	return {
-		locals: { pool: {}, user },
+		locals: { pool, user },
 		request: request(body, contentType)
 	} as never;
 }
@@ -53,7 +61,48 @@ const validRequest = {
 	rootPayload: { title: 'Edited root', type: payloadTypes.enum.text }
 };
 
-beforeEach(() => executeContainerCopy.mockReset());
+beforeEach(() => {
+	executeContainerCopy.mockReset();
+	loadContainerCopyPreview.mockReset();
+	pool.connect.mockClear();
+});
+
+test('loads a program-scoped copy preview from strict query parameters', async () => {
+	const availableIn = '00000000-0000-4000-8000-000000000005';
+	const preview = { containers: [], rows: [], rootGuid: sourceGuid };
+	loadContainerCopyPreview.mockResolvedValue(preview);
+
+	const response = await GET({
+		locals: { pool, user },
+		url: new URL(
+			`http://localhost/container/copy?sourceGuid=${sourceGuid}&availableIn=${availableIn}`
+		)
+	} as never);
+
+	expect(response.status).toBe(200);
+	expect(await response.json()).toEqual(preview);
+	expect(loadContainerCopyPreview).toHaveBeenCalledWith(
+		expect.objectContaining({ connection, request: { availableIn, sourceGuid }, user })
+	);
+	expect(pool.connect).toHaveBeenCalledOnce();
+});
+
+test('rejects malformed, repeated, and unexpected preview parameters', async () => {
+	for (const query of [
+		'',
+		`?sourceGuid=${sourceGuid}&sourceGuid=${sourceGuid}`,
+		`?sourceGuid=${sourceGuid}&extra=true`,
+		'?sourceGuid=not-a-guid'
+	]) {
+		await expect(
+			GET({
+				locals: { pool, user },
+				url: new URL(`http://localhost/container/copy${query}`)
+			} as never)
+		).rejects.toMatchObject({ status: 400 });
+	}
+	expect(loadContainerCopyPreview).not.toHaveBeenCalled();
+});
 
 test('returns the persisted root with the established creation contract', async () => {
 	const root = { guid: '00000000-0000-4000-8000-000000000004', payload: validRequest.rootPayload };
@@ -66,6 +115,7 @@ test('returns the persisted root with the established creation contract', async 
 	expect(await response.json()).toEqual(root);
 	expect(executeContainerCopy).toHaveBeenCalledWith(
 		expect.objectContaining({
+			connection,
 			request: expect.objectContaining({
 				...validRequest,
 				rootPayload: expect.objectContaining(validRequest.rootPayload)
@@ -73,6 +123,7 @@ test('returns the persisted root with the established creation contract', async 
 			user
 		})
 	);
+	expect(pool.connect).toHaveBeenCalledOnce();
 });
 
 test('rejects client-owned envelope and relation fields', async () => {
@@ -91,7 +142,7 @@ test('rejects client-owned envelope and relation fields', async () => {
 test('rejects unauthenticated and unsupported-content requests before parsing', async () => {
 	await expect(
 		POST({
-			locals: { pool: {}, user: { ...user, isAuthenticated: false } },
+			locals: { pool, user: { ...user, isAuthenticated: false } },
 			request: request(validRequest)
 		} as never)
 	).rejects.toMatchObject({ status: 401 });
@@ -104,9 +155,9 @@ test('returns a stable bad-request response for malformed JSON', async () => {
 		body: '{',
 		headers: { 'Content-Type': 'application/json' }
 	});
-	await expect(
-		POST({ locals: { pool: {}, user }, request: malformed } as never)
-	).rejects.toMatchObject({ status: 400 });
+	await expect(POST({ locals: { pool, user }, request: malformed } as never)).rejects.toMatchObject(
+		{ status: 400 }
+	);
 });
 
 test('maps only typed service errors to stable HTTP responses', async () => {
