@@ -20,7 +20,7 @@ import {
 	predicates,
 	type ProgramPayload
 } from '$lib/models';
-import { reverseTranslationMap } from '$lib/server/csv';
+import { reverseTranslationMap, statusByLabel } from '$lib/server/csv';
 import {
 	createContainer,
 	getAllRelatedUsers,
@@ -186,7 +186,9 @@ export const actions = {
 							},
 							description: record.description,
 							...(record.endDate ? { endDate: record.endDate } : {}),
-							...(record.status ? { status: reverseTranslationMap.get(record.status) } : {}),
+							...(record.status
+								? { status: statusByLabel.get(record.status) ?? record.status }
+								: {}),
 							...(record.startDate ? { startDate: record.startDate } : {}),
 							...(record.summary ? { summary: record.summary } : {}),
 							editorialState: editorialState.enum['editorial_state.draft'],
