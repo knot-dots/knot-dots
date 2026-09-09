@@ -802,3 +802,54 @@ describe('manage-users by member role', () => {
 		}
 	}
 });
+
+describe('read access to team-managed content within the scope', () => {
+	// content managed by a team of its own is readable through the scope roles
+	// only as far as the visibility rules allow
+	function teamManagedMeasure(scope: Scope, teamVisibility: string) {
+		return makeContainer(
+			payloadTypes.enum.measure,
+			{
+				managed_by: team,
+				organizational_unit: scope === 'organizational unit' ? organizationalUnit : null
+			},
+			{ visibility: teamVisibility }
+		);
+	}
+
+	for (const scope of ['organization', 'organizational unit'] as Scope[]) {
+		test(`members-only content in an ${scope} is readable by admins and heads only`, () => {
+			const container = teamManagedMeasure(scope, visibility.enum.members);
+			expect(
+				memberRoles.options.filter((role) =>
+					defineAbilityFor(userWithRoleOn(role, scope)).can('read', container)
+				)
+			).toEqual([memberRoles.enum.head, memberRoles.enum.administrator]);
+		});
+
+		test(`organization-visibility content in an ${scope} is readable by every member`, () => {
+			const container = teamManagedMeasure(scope, visibility.enum.organization);
+			expect(
+				memberRoles.options.filter((role) =>
+					defineAbilityFor(userWithRoleOn(role, scope)).can('read', container)
+				)
+			).toEqual(memberRoles.options);
+		});
+	}
+
+	test('creator-visibility content is readable by organization admins but not unit admins', () => {
+		const container = teamManagedMeasure('organization', visibility.enum.creator);
+		expect(
+			memberRoles.options.filter((role) =>
+				defineAbilityFor(userWithRoleOn(role, 'organization')).can('read', container)
+			)
+		).toEqual([memberRoles.enum.administrator]);
+
+		const unitContainer = teamManagedMeasure('organizational unit', visibility.enum.creator);
+		expect(
+			memberRoles.options.filter((role) =>
+				defineAbilityFor(userWithRoleOn(role, 'organizational unit')).can('read', unitContainer)
+			)
+		).toEqual([]);
+	});
+});
