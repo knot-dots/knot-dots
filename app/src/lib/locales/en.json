@@ -605,7 +605,7 @@
 	"permission": {
 		"create": "Create",
 		"delete": "Delete",
-		"manage-members": "Manage users",
+		"manage-users": "Manage users",
 		"read": "Read",
 		"update": "Edit"
 	},
@@ -759,6 +759,7 @@
 		"admin": "Admin",
 		"administrator": "Administrator",
 		"collaborator": "Collaborator",
+		"custom": "Custom",
 		"head": "Head",
 		"none": "No role",
 		"observer": "Observer"

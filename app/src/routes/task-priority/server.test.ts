@@ -9,6 +9,7 @@ locale.set('en');
 vi.mock('$lib/server/db', () => ({ createOrUpdateTaskPriority, getManyContainers }));
 
 import { POST } from './+server';
+import { grantRecordsForRoleOn, memberRoles } from '$lib/models';
 
 const team = '00000000-0000-4000-8000-000000000001';
 const otherTeam = '00000000-0000-4000-8000-000000000002';
@@ -28,14 +29,11 @@ function task(guid: string, managedBy: string) {
 }
 
 const user = {
-	adminOf: [],
-	collaboratorOf: [team],
 	familyName: 'User',
 	givenName: 'Test',
+	grants: grantRecordsForRoleOn(memberRoles.enum.collaborator, team),
 	guid: '00000000-0000-4000-8000-000000000005',
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [team],
 	roles: [],
 	settings: {}
 };

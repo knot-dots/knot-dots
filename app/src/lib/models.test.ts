@@ -5,7 +5,9 @@ import {
 	container,
 	type EffectPayload,
 	getAvailableInProgramGuids,
-	grantKindsForRole,
+	grantSetForRole,
+	memberRoleFromGrantSet,
+	memberRoleMatchingGrantSet,
 	type IndicatorTemplatePayload,
 	isTemplateRoot,
 	memberRoleFromPredicates,
@@ -220,17 +222,58 @@ test('userRelationsForMemberRole builds the role relations of a subject', () => 
 	]);
 });
 
-test('grantKindsForRole maps each role to its granted kinds', () => {
-	expect(grantKindsForRole(memberRoles.enum.observer)).toEqual(['read']);
-	expect(grantKindsForRole(memberRoles.enum.collaborator)).toEqual(['read', 'update', 'create']);
-	expect(grantKindsForRole(memberRoles.enum.head)).toEqual(['read', 'update', 'create', 'delete']);
-	expect(grantKindsForRole(memberRoles.enum.administrator)).toEqual([
-		'read',
-		'update',
-		'create',
-		'delete',
-		'manage-members'
-	]);
+test('grantSetForRole maps each role to its grants per target', () => {
+	expect(grantSetForRole(memberRoles.enum.observer)).toEqual({
+		self: ['read'],
+		subordinates: ['read']
+	});
+	expect(grantSetForRole(memberRoles.enum.collaborator)).toEqual({
+		self: ['read', 'update'],
+		subordinates: ['read', 'update', 'create', 'delete']
+	});
+	// heads deliberately lack manage-users on the object itself
+	expect(grantSetForRole(memberRoles.enum.head)).toEqual({
+		self: ['read', 'update'],
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+	});
+	expect(grantSetForRole(memberRoles.enum.administrator)).toEqual({
+		self: ['read', 'update', 'manage-users'],
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+	});
+});
+
+test('memberRoleFromGrantSet derives the largest contained role', () => {
+	expect(memberRoleFromGrantSet({ self: [], subordinates: [] })).toBeNull();
+	expect(memberRoleFromGrantSet(grantSetForRole(memberRoles.enum.observer))).toBe(
+		memberRoles.enum.observer
+	);
+	expect(memberRoleFromGrantSet(grantSetForRole(memberRoles.enum.head))).toBe(
+		memberRoles.enum.head
+	);
+	// every kind on both targets counts as an administrator
+	expect(memberRoleFromGrantSet(grantSetForRole(memberRoles.enum.administrator))).toBe(
+		memberRoles.enum.administrator
+	);
+	// a custom set falls back to the largest contained role
+	expect(
+		memberRoleFromGrantSet({ self: ['read', 'update'], subordinates: ['read', 'delete'] })
+	).toBe(memberRoles.enum.observer);
+	expect(memberRoleFromGrantSet({ self: [], subordinates: ['delete'] })).toBe(
+		memberRoles.enum.observer
+	);
+});
+
+test('memberRoleMatchingGrantSet recognizes exact role sets only', () => {
+	expect(memberRoleMatchingGrantSet(grantSetForRole(memberRoles.enum.collaborator))).toBe(
+		memberRoles.enum.collaborator
+	);
+	expect(memberRoleMatchingGrantSet(grantSetForRole(memberRoles.enum.administrator))).toBe(
+		memberRoles.enum.administrator
+	);
+	// custom sets show as user-defined
+	expect(
+		memberRoleMatchingGrantSet({ self: ['read'], subordinates: ['read', 'delete'] })
+	).toBeNull();
 });
 
 test('memberRoleFromPredicates picks the highest role', () => {

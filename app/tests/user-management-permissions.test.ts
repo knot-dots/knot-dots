@@ -10,53 +10,37 @@ test.describe('Permission matrix', () => {
 
 	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
-	test('shows the effective rights split by object and subordinate objects', async ({
-		page,
-		testOrganization
-	}) => {
+	test('shows the stored grants per user', async ({ page, testOrganization }) => {
 		await page.goto(`/${testOrganization.guid}/user-management`);
 		await page.getByRole('link', { name: 'Permissions' }).click();
 
-		// column groups for the object itself and its subordinate objects
+		// the stored grants split into rights on the object itself and rights on
+		// subordinate objects
 		await expect(page.getByRole('columnheader', { name: 'This object' })).toBeVisible();
 		await expect(page.getByRole('columnheader', { name: 'Subordinate objects' })).toBeVisible();
 
-		// An observer may only read the organization and nothing below it.
+		// An observer may only read.
 		const bobRow = page.getByRole('row', { name: 'Bob Bow' });
 		await expect(bobRow.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
 		await expect(bobRow.getByRole('checkbox', { name: 'Edit (This object)' })).not.toBeChecked();
-		await expect(bobRow.getByRole('checkbox', { name: 'Delete (This object)' })).not.toBeChecked();
 		await expect(
-			bobRow.getByRole('checkbox', { name: 'Manage users (This object)' })
-		).not.toBeChecked();
+			bobRow.getByRole('checkbox', { name: 'Read (Subordinate objects)' })
+		).toBeChecked();
 		await expect(
 			bobRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
 		).not.toBeChecked();
-		await expect(
-			bobRow.getByRole('checkbox', { name: 'Delete (Subordinate objects)' })
-		).not.toBeChecked();
 
-		// An admin manages the organization itself (without deleting it) and has
-		// full rights on subordinate objects.
+		// An admin holds every grant.
 		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra' });
-		await expect(orlaRow.getByText('Admin')).toBeVisible();
 		await expect(orlaRow.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
-		await expect(orlaRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeChecked();
-		await expect(orlaRow.getByRole('checkbox', { name: 'Delete (This object)' })).not.toBeChecked();
 		await expect(
 			orlaRow.getByRole('checkbox', { name: 'Manage users (This object)' })
-		).toBeChecked();
-		await expect(
-			orlaRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
-		).toBeChecked();
-		await expect(
-			orlaRow.getByRole('checkbox', { name: 'Edit (Subordinate objects)' })
 		).toBeChecked();
 		await expect(
 			orlaRow.getByRole('checkbox', { name: 'Delete (Subordinate objects)' })
 		).toBeChecked();
 
-		// the matrix is a read-only view
+		// outside of edit mode the matrix is a read-only view
 		await expect(bobRow.getByRole('checkbox', { name: 'Read (This object)' })).toBeDisabled();
 		await expect(
 			orlaRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
@@ -79,80 +63,98 @@ test.describe('Permission matrix', () => {
 		await expect(page.getByRole('combobox').first()).toBeVisible();
 	});
 
-	test('changing the role in the matrix updates the shown rights', async ({
+	test('edits individual grants and maps them to roles', async ({ page, testOrganization }) => {
+		await page.goto(`/${testOrganization.guid}/user-management?view=permissions`);
+		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
+
+		// toggling a single kind stores an individual grant set
+		const bobRow = page.getByRole('row', { name: 'Bob Bow' });
+		const grantResponse = page.waitForResponse(
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
+		);
+		await bobRow.getByRole('checkbox', { name: 'Edit (Subordinate objects)' }).check();
+		await grantResponse;
+		await expect(
+			bobRow.getByRole('checkbox', { name: 'Edit (Subordinate objects)' })
+		).toBeChecked();
+		// the set matches no role, so the role column shows a custom set
+		await expect(bobRow.getByRole('button', { name: 'Custom' })).toBeVisible();
+
+		// removing the kind again restores the observer role
+		const revertResponse = page.waitForResponse(
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
+		);
+		await bobRow.getByRole('checkbox', { name: 'Edit (Subordinate objects)' }).uncheck();
+		await revertResponse;
+		await expect(bobRow.getByRole('button', { name: 'Observer' })).toBeVisible();
+
+		// the role column assigns the mapped grant set in one step
+		const headResponse = page.waitForResponse(
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
+		);
+		await bobRow.getByRole('button', { name: 'Observer' }).click();
+		// on an organization the administrator role is selectable, a role cannot
+		// be removed here
+		await expect(page.getByRole('radio', { name: 'Administrator' })).toBeVisible();
+		await expect(page.getByRole('radio', { name: 'No role' })).toBeHidden();
+		await page.getByRole('radio', { name: 'Head' }).click();
+		await headResponse;
+		await expect(bobRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeChecked();
+		// heads deliberately do not manage the users of the object itself
+		await expect(
+			bobRow.getByRole('checkbox', { name: 'Manage users (This object)' })
+		).not.toBeChecked();
+		await expect(
+			bobRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
+		).toBeChecked();
+		await expect(
+			bobRow.getByRole('checkbox', { name: 'Delete (Subordinate objects)' })
+		).toBeChecked();
+
+		// restore Bob to a plain observer for the remaining tests
+		const restoreResponse = page.waitForResponse(
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
+		);
+		await bobRow.getByRole('button', { name: 'Head' }).click();
+		await page.getByRole('radio', { name: 'Observer' }).click();
+		await restoreResponse;
+		await expect(
+			bobRow.getByRole('checkbox', { name: 'Edit (Subordinate objects)' })
+		).not.toBeChecked();
+
+		// administrator rows stay editable, but the endpoint protects the last
+		// administrator: the removal attempt fails and the row stays
+		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra' });
+		await expect(orlaRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeEnabled();
+		const rejectedResponse = page.waitForResponse(
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
+		);
+		await orlaRow.getByRole('button', { name: 'Remove' }).click();
+		expect((await rejectedResponse).status()).toBe(422);
+		await expect(orlaRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeChecked();
+	});
+
+	test('removes a user from the matrix and invites with suggestions', async ({
 		page,
 		testOrganization
 	}) => {
 		await page.goto(`/${testOrganization.guid}/user-management?view=permissions`);
 		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 
-		const bobRow = page.getByRole('row', { name: 'Bob Bow' });
-		const saveResponse = page.waitForResponse(
-			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
-		);
-		await bobRow.getByRole('button', { name: 'Observer' }).click();
-		await page.getByRole('radio', { name: 'Head' }).click();
-		await saveResponse;
-
-		await expect(bobRow.getByRole('checkbox', { name: 'Edit (This object)' })).toBeChecked();
-		await expect(
-			bobRow.getByRole('checkbox', { name: 'Manage users (This object)' })
-		).toBeChecked();
-		await expect(
-			bobRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
-		).toBeChecked();
-
-		// on an organization the administrator role is selectable as well
-		const adminResponse = page.waitForResponse(
-			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
-		);
-		await bobRow.getByRole('button', { name: 'Head' }).click();
-		await page.getByRole('radio', { name: 'Administrator' }).click();
-		await adminResponse;
-		await expect(bobRow.getByRole('button', { name: 'Administrator' })).toBeVisible();
-		await expect(
-			bobRow.getByRole('checkbox', { name: 'Manage users (This object)' })
-		).toBeChecked();
-
-		// there is no option for removing the role — that stays with the list views
-		const orlaRow = page.getByRole('row', { name: 'Orla Orchestra' });
-		await orlaRow.getByRole('button', { name: 'Administrator' }).click();
-		await expect(page.getByRole('radio', { name: 'Observer' })).toBeVisible();
-		await expect(page.getByRole('radio', { name: 'No role' })).toBeHidden();
-		await page.keyboard.press('Escape');
-
-		// restore Bob to a plain observer for the remaining tests
-		const restoreResponse = page.waitForResponse(
-			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
-		);
-		await bobRow.getByRole('button', { name: 'Administrator' }).click();
-		await expect(page.getByRole('radio', { name: 'Observer' })).toBeVisible();
-		await page.getByRole('radio', { name: 'Observer' }).click();
-		await restoreResponse;
-		await expect(bobRow.getByRole('checkbox', { name: 'Edit (This object)' })).not.toBeChecked();
-	});
-
-	test('invites a user with a role and suggests registered addresses', async ({
-		page,
-		testOrganization
-	}) => {
-		await page.goto(`/${testOrganization.guid}/user-management`);
-
-		// remove Bob's role so that he is registered in the organization but no
+		// remove Bob's grants so that he is registered in the organization but no
 		// longer a member and therefore shows up among the suggestions
-		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 		const removeResponse = page.waitForResponse(
-			(r) => r.url().includes('/user') && r.request().method() === 'POST'
+			(r) => r.url().includes('/grant') && r.request().method() === 'POST'
 		);
 		await page
 			.getByRole('row', { name: 'Bob Bow' })
-			.getByRole('button', { name: 'Observer' })
+			.getByRole('button', { name: 'Remove' })
 			.click();
-		await page.getByRole('radio', { name: 'No role' }).click();
 		await removeResponse;
 		await expect(page.getByRole('row', { name: 'Bob Bow' })).toBeHidden();
 
-		await page.getByRole('button', { name: 'Invite member' }).click();
+		// the add row of the matrix opens the invite dialog
+		await page.getByRole('button', { name: 'Add item' }).click();
 
 		const dialog = page.getByRole('dialog');
 		const emailInput = dialog.getByRole('combobox', { name: 'Email' });
@@ -171,9 +173,11 @@ test.describe('Permission matrix', () => {
 		await dialog.getByRole('button', { name: 'Send invitation' }).click();
 		await inviteResponse;
 
-		// The invited user immediately holds the assigned role
+		// The invited user immediately holds the assigned role and its grants
+		const bobRow = page.getByRole('row', { name: 'Bob Bow' });
+		await expect(bobRow.getByRole('button', { name: 'Collaborator' })).toBeVisible();
 		await expect(
-			page.getByRole('row', { name: 'Bob Bow' }).getByText('Collaborator')
-		).toBeVisible();
+			bobRow.getByRole('checkbox', { name: 'Create (Subordinate objects)' })
+		).toBeChecked();
 	});
 });

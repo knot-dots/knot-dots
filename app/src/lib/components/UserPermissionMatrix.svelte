@@ -3,19 +3,27 @@
 	import { invalidateAll } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
+	import PlusIcon from '~icons/flowbite/plus-outline';
+	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
-	import { grantKindsForRoleOn, grantKindsForRoleOnSubordinates } from '$lib/authorization';
-	import saveMemberRole from '$lib/client/saveMemberRole';
+	import saveGrants from '$lib/client/saveGrants';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
 	import {
 		type AnyPayload,
 		type Container,
 		displayName,
-		grantKinds,
+		type Grant,
+		type GrantKind,
+		grantKindsByTarget,
+		type GrantSet,
+		type GrantTarget,
+		grantTargets,
+		grantSetForRole,
+		grantSetForSubjectOn,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		type MemberRole,
-		memberRoleOf,
+		memberRoleMatchingGrantSet,
 		memberRoles,
 		type User
 	} from '$lib/models';
@@ -23,21 +31,23 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		grants: Readonly<Array<Grant>>;
+		oninvite?: () => void;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, editable = false, users }: Props = $props();
+	let { container, editable = false, grants, oninvite, users }: Props = $props();
 
-	// the rights on the container itself and the rights on subordinate objects
-	// within it are shown as separate column groups
-	const objectKinds = [
-		grantKinds.enum.read,
-		grantKinds.enum.update,
-		grantKinds.enum.delete,
-		grantKinds.enum['manage-members']
+	// every stored grant is editable individually: the rights on the object
+	// itself and the rights on subordinate objects form separate column groups
+	const columnGroups = [
+		{ kinds: grantKindsByTarget.self, label: 'this_object', target: grantTargets.enum.self },
+		{
+			kinds: grantKindsByTarget.subordinates,
+			label: 'subordinate_objects',
+			target: grantTargets.enum.subordinates
+		}
 	];
-
-	const subordinateKinds = [grantKinds.enum.create, grantKinds.enum.update, grantKinds.enum.delete];
 
 	// administrators exist on organizations and organizational units only
 	const selectableRoles = $derived(
@@ -66,46 +76,51 @@
 		}))
 	);
 
-	let roleOverrides = new SvelteMap<string, MemberRole | null>();
+	let setOverrides = new SvelteMap<string, GrantSet>();
+
+	function storedSetFor(user: User) {
+		return grantSetForSubjectOn(grants, container.guid, user.guid);
+	}
+
+	function sameSet(a: GrantSet, b: GrantSet) {
+		return (
+			a.self.length === b.self.length &&
+			a.subordinates.length === b.subordinates.length &&
+			a.self.every((kind) => b.self.includes(kind)) &&
+			a.subordinates.every((kind) => b.subordinates.includes(kind))
+		);
+	}
 
 	// drop an optimistic override only once the reloaded data reflects it —
-	// dropping it right after invalidateAll would flash the previous role for
+	// dropping it right after invalidateAll would flash the previous grants for
 	// a render cycle until the fresh props arrive
 	$effect(() => {
-		for (const [guid, role] of roleOverrides) {
+		for (const [guid, set] of setOverrides) {
 			const user = users.find((u) => u.guid === guid);
-			if (!user || memberRoleOf(user, container) === role) {
-				roleOverrides.delete(guid);
+			if (!user || sameSet(storedSetFor(user), set)) {
+				setOverrides.delete(guid);
 			}
 		}
 	});
 
-	function visibleRoleFor(user: User) {
-		if (roleOverrides.has(user.guid)) {
-			return roleOverrides.get(user.guid) ?? null;
-		}
-		return memberRoleOf(user, container);
+	function visibleSetFor(user: User): GrantSet {
+		return setOverrides.get(user.guid) ?? storedSetFor(user);
 	}
 
 	function isSelectableRole(value: BadgeDropdownValue): value is MemberRole {
 		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
 	}
 
-	async function changeRole(user: User, value: BadgeDropdownValue) {
-		if (value != null && !isSelectableRole(value)) {
-			return;
-		}
+	async function save(user: User, set: GrantSet) {
+		const hadPrevious = setOverrides.has(user.guid);
+		const previous = setOverrides.get(user.guid);
+		setOverrides.set(user.guid, set);
 
-		const role = value ?? null;
-		const hadPrevious = roleOverrides.has(user.guid);
-		const previous = roleOverrides.get(user.guid);
-		roleOverrides.set(user.guid, role);
-
-		const response = await saveMemberRole(container, { role, subject: user.guid });
+		const response = await saveGrants(container, { subject: user.guid, ...set });
 
 		if (!response.ok) {
-			if (hadPrevious) roleOverrides.set(user.guid, previous ?? null);
-			else roleOverrides.delete(user.guid);
+			if (hadPrevious && previous) setOverrides.set(user.guid, previous);
+			else setOverrides.delete(user.guid);
 			console.log(await response.json());
 			return;
 		}
@@ -113,15 +128,23 @@
 		await invalidateAll();
 	}
 
-	// The checkboxes display the effective rights of the user's member role,
-	// derived from the actual authorization rules; what a role permits depends
-	// on the container type.
-	function objectKindsFor(user: User) {
-		return grantKindsForRoleOn(container, user, visibleRoleFor(user));
+	async function changeRole(user: User, value: BadgeDropdownValue) {
+		if (!isSelectableRole(value)) {
+			return;
+		}
+		await save(user, grantSetForRole(value));
 	}
 
-	function subordinateKindsFor(user: User) {
-		return grantKindsForRoleOnSubordinates(container, user, visibleRoleFor(user));
+	async function toggleKind(user: User, target: GrantTarget, kind: GrantKind, checked: boolean) {
+		const current = visibleSetFor(user);
+		const kinds = checked
+			? [...current[target].filter((k) => k !== kind), kind]
+			: current[target].filter((k) => k !== kind);
+		await save(user, { ...current, [target]: kinds });
+	}
+
+	async function removeSubject(user: User) {
+		await save(user, { self: [], subordinates: [] });
 	}
 </script>
 
@@ -140,75 +163,83 @@
 						<span class="header-label">{$_('user.role')}</span>
 					</span>
 				</th>
-				<th class="col-group" colspan={objectKinds.length} scope="colgroup">
-					{$_('permission_matrix.this_object')}
-				</th>
-				<th class="col-group" colspan={subordinateKinds.length} scope="colgroup">
-					{$_('permission_matrix.subordinate_objects')}
-				</th>
-			</tr>
-			<tr>
-				{#each objectKinds as kind (kind)}
-					<th class="col-grant">
-						<span class="header-content">
-							<CheckCircleIcon />
-							<span class="header-label">{$_(`permission.${kind}`)}</span>
-						</span>
+				{#each columnGroups as group (group.target)}
+					<th class="col-group" colspan={group.kinds.length} scope="colgroup">
+						{$_(`permission_matrix.${group.label}`)}
 					</th>
 				{/each}
-				{#each subordinateKinds as kind (kind)}
-					<th class="col-grant">
-						<span class="header-content">
-							<CheckCircleIcon />
-							<span class="header-label">{$_(`permission.${kind}`)}</span>
-						</span>
-					</th>
+				<th class="col-actions" rowspan="2"></th>
+			</tr>
+			<tr>
+				{#each columnGroups as group (group.target)}
+					{#each group.kinds as kind (kind)}
+						<th class="col-grant">
+							<span class="header-content">
+								<CheckCircleIcon />
+								<span class="header-label">{$_(`permission.${kind}`)}</span>
+							</span>
+						</th>
+					{/each}
 				{/each}
 			</tr>
 		</thead>
 		<tbody>
 			{#each users as user (user.guid)}
-				{@const role = visibleRoleFor(user)}
-				{@const effectiveObjectKinds = objectKindsFor(user)}
-				{@const effectiveSubordinateKinds = subordinateKindsFor(user)}
+				{@const set = visibleSetFor(user)}
 				<tr>
-					<td class="col-name">
+					<td class="col-name" class:locked={!editable}>
 						<span class="user-cell">
 							<span class="user-name">{displayName(user)}</span>
 						</span>
 					</td>
-					<td class="col-role">
+					<td class="col-role" class:locked={!editable}>
 						<BadgeDropdown
 							allowEmpty={false}
-							value={role ?? undefined}
+							value={memberRoleMatchingGrantSet(set) ?? undefined}
 							options={roleOptions}
 							{editable}
-							emptyLabel={$_('role.none')}
+							emptyLabel={$_('role.custom')}
 							onchange={(value) => changeRole(user, value)}
 						/>
 					</td>
-					{#each objectKinds as kind (kind)}
-						<td class="col-grant">
-							<input
-								type="checkbox"
-								aria-label={`${$_(`permission.${kind}`)} (${$_('permission_matrix.this_object')})`}
-								checked={effectiveObjectKinds.includes(kind)}
-								disabled
-							/>
-						</td>
+					{#each columnGroups as group (group.target)}
+						{#each group.kinds as kind (kind)}
+							<td class="col-grant" class:locked={!editable}>
+								<input
+									type="checkbox"
+									aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
+									checked={set[group.target].includes(kind)}
+									disabled={!editable}
+									onchange={(event) =>
+										toggleKind(user, group.target, kind, event.currentTarget.checked)}
+								/>
+							</td>
+						{/each}
 					{/each}
-					{#each subordinateKinds as kind (kind)}
-						<td class="col-grant">
-							<input
-								type="checkbox"
-								aria-label={`${$_(`permission.${kind}`)} (${$_('permission_matrix.subordinate_objects')})`}
-								checked={effectiveSubordinateKinds.includes(kind)}
-								disabled
-							/>
-						</td>
-					{/each}
+					<td class="col-actions" class:locked={!editable}>
+						{#if editable}
+							<button
+								aria-label={$_('user.remove')}
+								class="quiet remove-button"
+								type="button"
+								onclick={() => removeSubject(user)}
+							>
+								<TrashBinIcon />
+							</button>
+						{/if}
+					</td>
 				</tr>
 			{/each}
+			{#if oninvite}
+				<tr class="add-row">
+					<td colspan={10}>
+						<button class="quiet add-button" type="button" onclick={oninvite}>
+							<PlusIcon />
+							<span>{$_('add_item')}</span>
+						</button>
+					</td>
+				</tr>
+			{/if}
 		</tbody>
 	</table>
 </div>
@@ -242,7 +273,9 @@
 	}
 
 	th.col-group {
+		font-weight: 600;
 		height: 2.25rem;
+		text-align: left;
 	}
 
 	thead tr:nth-child(2) th {
@@ -266,16 +299,30 @@
 		font-weight: 400;
 	}
 
-	th.col-group {
-		font-weight: 600;
-		text-align: left;
-	}
-
 	td {
 		color: var(--color-gray-800);
 		font-weight: 500;
 		height: 3.25rem;
 		padding: 0.625rem 0.5rem;
+	}
+
+	/* hatched rows mark the matrix as read-only */
+	td.locked {
+		background: repeating-linear-gradient(
+			45deg,
+			var(--color-primary-025),
+			var(--color-primary-025) 2px,
+			var(--color-primary-050) 2px,
+			var(--color-primary-050) 4px
+		);
+	}
+
+	input[type='checkbox'] {
+		accent-color: var(--color-primary-700);
+	}
+
+	td.locked input[type='checkbox'] {
+		accent-color: var(--color-gray-600);
 	}
 
 	.header-content {
@@ -296,9 +343,20 @@
 		white-space: nowrap;
 	}
 
+	.user-cell {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.user-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
 	.col-name {
-		min-width: 14.75rem;
-		width: 14.75rem;
+		min-width: 13.75rem;
+		width: 13.75rem;
 	}
 
 	.col-role {
@@ -307,5 +365,26 @@
 
 	.col-grant {
 		min-width: 7.5rem;
+		width: 7.5rem;
+	}
+
+	.col-actions {
+		min-width: 3.5rem;
+		text-align: center;
+	}
+
+	.remove-button,
+	.add-button {
+		align-items: center;
+		display: inline-flex;
+		gap: 0.25rem;
+	}
+
+	.add-row td {
+		border-right: none;
+	}
+
+	.add-button {
+		color: var(--color-primary-700);
 	}
 </style>

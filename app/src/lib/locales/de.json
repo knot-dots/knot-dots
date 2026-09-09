@@ -605,7 +605,7 @@
 	"permission": {
 		"create": "Anlegen",
 		"delete": "Löschen",
-		"manage-members": "Nutzer verwalten",
+		"manage-users": "Nutzer verwalten",
 		"read": "Lesen",
 		"update": "Bearbeiten"
 	},
@@ -758,6 +758,7 @@
 		"admin": "Admin",
 		"administrator": "Administration",
 		"collaborator": "Mitarbeit",
+		"custom": "Benutzerdefiniert",
 		"head": "Leitung",
 		"none": "Keine Rolle",
 		"observer": "Beobachtung"

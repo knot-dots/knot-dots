@@ -306,7 +306,7 @@
 						</a>
 					</nav>
 				{/if}
-				{#if $ability.can('manage-users', data.container)}
+				{#if !permissionView && $ability.can('manage-users', data.container)}
 					<button
 						class="button button-xs button-primary system-primary"
 						type="button"
@@ -327,6 +327,10 @@
 					<UserPermissionMatrix
 						container={data.container}
 						editable={isEditMode && $ability.can('manage-users', data.container)}
+						grants={data.grants}
+						oninvite={$ability.can('manage-users', data.container)
+							? () => inviteDialog.showModal()
+							: undefined}
 						{users}
 					/>
 				</div>

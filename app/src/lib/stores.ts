@@ -13,8 +13,11 @@ import {
 	type Container,
 	containerOfType,
 	type CustomCollectionPayload,
+	emptyGrantRecords,
 	filterMembers,
 	type GoalPayload,
+	type Grant,
+	type GrantRecords,
 	type IooiType,
 	type MeasurePayload,
 	type NewContainer,
@@ -43,14 +46,11 @@ export const compareState = writable<{
 });
 
 export type User = {
-	adminOf: string[];
-	collaboratorOf: string[];
 	familyName: string;
 	givenName: string;
+	grants: GrantRecords;
 	guid: string;
-	headOf: string[];
 	isAuthenticated: boolean;
-	memberOf: string[];
 	roles: string[];
 	settings: {
 		features?: string[];
@@ -67,28 +67,22 @@ export const user = derived(
 			};
 		} else {
 			return {
-				adminOf: [],
-				collaboratorOf: [],
 				familyName: '',
 				givenName: '',
+				grants: emptyGrantRecords(),
 				guid: '',
-				headOf: [],
 				isAuthenticated: false,
-				memberOf: [],
 				roles: [],
 				settings: {}
 			};
 		}
 	},
 	{
-		adminOf: [],
-		collaboratorOf: [],
 		familyName: '',
 		givenName: '',
+		grants: emptyGrantRecords(),
 		guid: '',
-		headOf: [],
 		isAuthenticated: false,
-		memberOf: [],
 		roles: [],
 		settings: {}
 	}
@@ -204,6 +198,7 @@ export type OverlayData =
 	| {
 			key: 'members';
 			container: Container<AnyPayload>;
+			grants: Grant[];
 			users: UserRecord[];
 	  }
 	| {
@@ -314,6 +309,7 @@ if (browser) {
 			setOverlayIfLatest({
 				key: overlayKey.enum.members,
 				container: result.data.container,
+				grants: result.data.grants,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

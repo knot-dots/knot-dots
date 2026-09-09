@@ -1,15 +1,8 @@
 import type { MongoAbility } from '@casl/ability';
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import type { AnyPayload, Container, PayloadType, User as ModelUser } from '$lib/models';
+import type { AnyPayload, Container, PayloadType } from '$lib/models';
 import {
 	type AnyInitialPayload,
-	containerOfType,
-	type GrantKind,
-	grantKinds,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
-	type MemberRole,
-	memberRoles,
 	type NewContainer,
 	payloadTypes,
 	predicates,
@@ -31,6 +24,16 @@ const specialTypes: PayloadType[] = [
 ];
 
 const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
+
+// Categories, help sections, terms and organizational units follow the
+// organization's subordinate rules for updating, but creating and deleting
+// them additionally requires read, update and manage-users on the
+// organization object itself. HTML sections stay reserved for sysadmins.
+const specialContentTypes: PayloadType[] = [
+	payloadTypes.enum.category,
+	payloadTypes.enum.help,
+	payloadTypes.enum.term
+];
 
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
@@ -56,23 +59,44 @@ export default function defineAbilityFor(user: User) {
 		);
 		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
-		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		const { self, subordinates } = user.grants;
+		const fullySelfManagedOf = self.read
+			.filter((guid) => self.update.includes(guid))
+			.filter((guid) => self['manage-users'].includes(guid));
+
+		can('update', payloadTypes.options, { guid: { $in: self.update } });
 		can('update', payloadTypes.enum.organization, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+			organization: { $in: self.update }
 		});
-		can(['create', 'update', 'delete'], payloadTypes.enum.organizational_unit, {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+		can('update', specialContentTypes, {
+			organization: { $in: subordinates.update }
+		});
+		can(['create', 'delete'], specialContentTypes, {
+			organization: { $in: fullySelfManagedOf }
 		});
 		can('update', payloadTypes.enum.organizational_unit, {
-			guid: { $in: [...user.adminOf, ...user.headOf] }
+			organization: { $in: subordinates.update }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+		can(['create', 'delete'], payloadTypes.enum.organizational_unit, {
+			organization: { $in: fullySelfManagedOf }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+		can('create', [payloadTypes.enum.program, ...commonTypes], {
+			organization: { $in: subordinates.create }
+		});
+		can('create', [payloadTypes.enum.program, ...commonTypes], {
+			organizational_unit: { $in: subordinates.create }
+		});
+		can('update', [payloadTypes.enum.program, ...commonTypes], {
+			organization: { $in: subordinates.update }
+		});
+		can('update', [payloadTypes.enum.program, ...commonTypes], {
+			organizational_unit: { $in: subordinates.update }
+		});
+		can('delete', [payloadTypes.enum.program, ...commonTypes], {
+			organization: { $in: subordinates.delete }
+		});
+		can('delete', [payloadTypes.enum.program, ...commonTypes], {
+			organizational_unit: { $in: subordinates.delete }
 		});
 		can(
 			'manage-users',
@@ -84,7 +108,7 @@ export default function defineAbilityFor(user: User) {
 				payloadTypes.enum.simple_measure
 			],
 			{
-				organization: { $in: [...user.adminOf, ...user.headOf] }
+				guid: { $in: self['manage-users'] }
 			}
 		);
 		can(
@@ -96,32 +120,44 @@ export default function defineAbilityFor(user: User) {
 				payloadTypes.enum.simple_measure
 			],
 			{
-				organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+				organization: { $in: subordinates['manage-users'] }
 			}
 		);
-		can('manage-users', [payloadTypes.enum.organizational_unit], {
-			guid: { $in: [...user.adminOf, ...user.headOf] }
-		});
+		can(
+			'manage-users',
+			[
+				payloadTypes.enum.measure,
+				payloadTypes.enum.organizational_unit,
+				payloadTypes.enum.program,
+				payloadTypes.enum.simple_measure
+			],
+			{
+				organizational_unit: { $in: subordinates['manage-users'] }
+			}
+		);
 		can('create', commonTypes, {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			managed_by: { $in: subordinates.create }
 		});
 		can('update', [payloadTypes.enum.program, ...commonTypes], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			managed_by: { $in: subordinates.update }
 		});
-		can(['delete'], commonTypes, {
-			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
+		can('delete', commonTypes, {
+			managed_by: { $in: subordinates.delete }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
+		can('update', [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: subordinates.update }
+		});
+		can(['create', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
+			managed_by: { $in: fullySelfManagedOf }
 		});
 		can('update', payloadTypes.enum.program, ['chapterType'], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
+			managed_by: { $in: subordinates['manage-users'] }
 		});
 		can(
 			'manage-users',
 			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 			{
-				managed_by: { $in: [...user.adminOf, ...user.headOf] }
+				managed_by: { $in: subordinates['manage-users'] }
 			}
 		);
 		can('read', payloadTypes.options, {
@@ -130,126 +166,63 @@ export default function defineAbilityFor(user: User) {
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
-			organization: { $in: user.adminOf }
+			organization: { $in: self['manage-users'] }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+			organization: { $in: subordinates['manage-users'] }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
+			organizational_unit: { $in: subordinates['manage-users'] }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: subordinates.read }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			organization: { $in: user.memberOf }
+			organization: { $in: subordinates.read }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			organizational_unit: { $in: user.memberOf }
+			organizational_unit: { $in: subordinates.read }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: subordinates.read }
 		});
-		can('read', payloadTypes.enum.organizational_unit, {
+		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			guid: { $in: user.memberOf }
+			guid: { $in: self.read }
 		});
-		can('read', payloadTypes.enum.organizational_unit, {
+		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			guid: { $in: [...user.memberOf] }
+			guid: { $in: self.read }
 		});
 		can('read', payloadTypes.options, ['payload.editorialState'], {
 			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: subordinates.read }
 		});
 		can('read', payloadTypes.enum.task, ['assignee'], {
 			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
+			managed_by: { $in: subordinates.read }
 		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
-			organization: { $in: [...user.adminOf, ...user.headOf] }
+			organization: { $in: subordinates.update }
 		});
 		can('update', [payloadTypes.enum.program, ...commonTypes], ['payload.editorialState'], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
+			managed_by: { $in: subordinates.update }
 		});
+		cannot(['create', 'update', 'delete'], payloadTypes.enum.html);
 	}
 
 	return build({
 		detectSubjectType: (object) => object.payload.type
 	});
-}
-
-const actionsByGrantKind: Record<GrantKind, Actions> = {
-	read: 'read',
-	update: 'update',
-	create: 'create',
-	delete: 'delete',
-	'manage-members': 'manage-users'
-};
-
-// A synthetic ability holding the given member role on this container only.
-function abilityForRoleOn(
-	container: Container<AnyPayload>,
-	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
-	role: MemberRole | null
-) {
-	return defineAbilityFor({
-		adminOf: role === memberRoles.enum.administrator ? [container.guid] : [],
-		collaboratorOf: role === memberRoles.enum.collaborator ? [container.guid] : [],
-		familyName: user.family_name,
-		givenName: user.given_name,
-		guid: user.guid,
-		headOf: role === memberRoles.enum.head ? [container.guid] : [],
-		isAuthenticated: true,
-		memberOf: role !== null ? [container.guid] : [],
-		roles: [],
-		settings: user.settings
-	});
-}
-
-// The effective rights a member role would have on this container itself,
-// derived from the actual authorization rules: what a role permits depends on
-// the container type.
-export function grantKindsForRoleOn(
-	container: Container<AnyPayload>,
-	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
-	role: MemberRole | null
-): GrantKind[] {
-	const ability = abilityForRoleOn(container, user, role);
-	return grantKinds.options.filter((kind) => ability.can(actionsByGrantKind[kind], container));
-}
-
-const subordinateGrantKinds: GrantKind[] = [
-	grantKinds.enum.create,
-	grantKinds.enum.update,
-	grantKinds.enum.delete
-];
-
-// The effective rights the same role yields on subordinate objects within this
-// container, probed against a common content type in the container's scope.
-export function grantKindsForRoleOnSubordinates(
-	container: Container<AnyPayload>,
-	user: Pick<ModelUser, 'family_name' | 'given_name' | 'guid' | 'settings'>,
-	role: MemberRole | null
-): GrantKind[] {
-	const ability = abilityForRoleOn(container, user, role);
-	const subordinate = containerOfType(
-		payloadTypes.enum.goal,
-		isOrganizationContainer(container) ? container.guid : container.organization,
-		isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
-		container.guid,
-		container.realm
-	);
-	return subordinateGrantKinds.filter((kind) => ability.can(actionsByGrantKind[kind], subordinate));
 }
 
 export function filterVisible<T extends Container<AnyPayload>>(

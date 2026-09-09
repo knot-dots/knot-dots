@@ -17,7 +17,11 @@ import {
 	container,
 	createContainerSchema,
 	findDescendants,
-	grantKindsForRole,
+	grant,
+	type Grant,
+	type GrantSet,
+	grantSetForRole,
+	grantTargets,
 	type HelpSlug,
 	type IndicatorTemplatePayload,
 	isProgramContainer,
@@ -144,6 +148,7 @@ export async function getPool() {
 const typeAliases = {
 	anyContainer: anyContainer.omit({ relation: true, user: true }),
 	container: container.omit({ relation: true, user: true }),
+	grant,
 	guid: z.object({ guid: z.string().uuid() }),
 	indicatorData: z.object({
 		actual_values: z.array(z.tuple([z.number().int().positive(), z.number().nullable()])),
@@ -180,10 +185,9 @@ const typeAliases = {
 
 export const sql = createSqlTag({ typeAliases });
 
-// container_grant mirrors the member roles as granted capability kinds until
-// the authorization rules interpret them directly, so every write path
-// replaces the grants of a container as a whole instead of updating them
-// individually.
+// container_grant mirrors the member roles as granted kinds per target, so
+// role-based write paths replace the grants of a container as a whole instead
+// of updating them individually.
 function syncContainerGrants(guid: string, userRelations: readonly UserRelation[]) {
 	return async (connection: DatabaseConnection) => {
 		await connection.query(sql.typeAlias('void')`
@@ -201,18 +205,94 @@ function syncContainerGrants(guid: string, userRelations: readonly UserRelation[
 			if (role === null) {
 				continue;
 			}
-			for (const kind of grantKindsForRole(role)) {
-				grantValues.push([guid, subject, kind]);
+			const set = grantSetForRole(role);
+			for (const kind of set.self) {
+				grantValues.push([guid, subject, kind, grantTargets.enum.self]);
+			}
+			for (const kind of set.subordinates) {
+				grantValues.push([guid, subject, kind, grantTargets.enum.subordinates]);
 			}
 		}
 
 		if (grantValues.length > 0) {
 			await connection.query(sql.typeAlias('void')`
-				INSERT INTO container_grant (object, subject, kind)
+				INSERT INTO container_grant (object, subject, kind, target)
 				SELECT *
-				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text'])}
+				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text', 'text'])}
 			`);
 		}
+	};
+}
+
+// Aligns the grants with the member roles for exactly those subjects whose
+// role predicates changed between two revisions. Subjects with an unchanged
+// role keep their stored grants, so individually edited grant sets survive
+// unrelated container updates.
+function syncContainerGrantsForRoleChanges(
+	object: string,
+	previousUser: readonly UserRelation[],
+	nextUser: readonly UserRelation[]
+) {
+	return async (connection: DatabaseConnection) => {
+		const roleFor = (userRelations: readonly UserRelation[], subject: string) =>
+			memberRoleFromPredicates(
+				userRelations.filter((u) => u.subject === subject).map(({ predicate }) => predicate)
+			);
+		const subjects = new Set([...previousUser, ...nextUser].map(({ subject }) => subject));
+		for (const subject of subjects) {
+			const nextRole = roleFor(nextUser, subject);
+			if (roleFor(previousUser, subject) === nextRole) {
+				continue;
+			}
+			await setContainerGrants(
+				object,
+				subject,
+				nextRole === null ? { self: [], subordinates: [] } : grantSetForRole(nextRole)
+			)(connection);
+		}
+	};
+}
+
+// Replaces the individually granted kinds of one subject on one container.
+export function setContainerGrants(object: string, subject: string, set: GrantSet) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			DELETE FROM container_grant WHERE object = ${object} AND subject = ${subject}
+		`);
+
+		const grantValues: string[][] = [
+			...set.self.map((kind) => [object, subject, kind, grantTargets.enum.self]),
+			...set.subordinates.map((kind) => [object, subject, kind, grantTargets.enum.subordinates])
+		];
+
+		if (grantValues.length > 0) {
+			await connection.query(sql.typeAlias('void')`
+				INSERT INTO container_grant (object, subject, kind, target)
+				SELECT *
+				FROM ${sql.unnest(grantValues, ['uuid', 'uuid', 'text', 'text'])}
+			`);
+		}
+	};
+}
+
+export function getAllGrantsOfUser(subject: string) {
+	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
+		return connection.any(sql.typeAlias('grant')`
+			SELECT kind, object, subject, target FROM container_grant WHERE subject = ${subject}
+		`);
+	};
+}
+
+export function getAllGrantsByContainers(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
+		if (guids.length === 0) {
+			return [];
+		}
+		return connection.any(sql.typeAlias('grant')`
+			SELECT kind, object, subject, target
+			FROM container_grant
+			WHERE object = ANY(${sql.array(guids, 'uuid')})
+		`);
 	};
 }
 
@@ -444,7 +524,11 @@ export function updateContainer(container: ModifiedContainer) {
 				RETURNING predicate, subject
       `);
 
-			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
+			await syncContainerGrantsForRoleChanges(
+				containerResult.guid,
+				previousRevision.user,
+				container.user
+			)(txConnection);
 
 			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
 			const deletedRelations = relationResult.filter(
@@ -2200,26 +2284,6 @@ export function getAllRelatedUsersByContainers(guids: string[], predicates: Pred
 		`);
 	};
 }
-
-export function getAllMembershipRelationsOfUser(guid: string) {
-	return async (connection: DatabaseConnection) => {
-		const rolePredicates = [
-			predicates.enum['is-admin-of'],
-			predicates.enum['is-collaborator-of'],
-			predicates.enum['is-head-of'],
-			predicates.enum['is-member-of']
-		];
-		return await connection.any(sql.type(
-			z.object({ predicate: predicates, object: z.string().uuid() })
-		)`
-			SELECT cu.predicate, c.guid AS object
-			FROM container_user cu
-			JOIN container c ON cu.object = c.revision AND c.valid_currently AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
-			WHERE subject = ${guid};
-		`);
-	};
-}
-
 export function bulkUpdateOrganization(container: Container<AnyPayload>, organization: string) {
 	return async (connection: DatabaseConnection) => {
 		return connection.transaction(async (txConnection) => {

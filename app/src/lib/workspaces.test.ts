@@ -5,6 +5,9 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	anyContainer,
 	type Container,
+	emptyGrantRecords,
+	grantRecordsForRoleOn,
+	memberRoles,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
 	payloadTypes
@@ -39,14 +42,11 @@ const organizationalUnit = testContainer.parse({
 
 function user(overrides: Partial<User>): User {
 	return {
-		adminOf: [],
-		collaboratorOf: [],
 		familyName: 'Admin',
 		givenName: 'Test',
+		grants: emptyGrantRecords(),
 		guid: '00000000-0000-4000-8000-000000000003',
-		headOf: [],
 		isAuthenticated: true,
-		memberOf: [],
 		roles: [],
 		settings: {},
 		...overrides
@@ -63,15 +63,29 @@ function visibleWorkspaceKeys(u: User) {
 }
 
 test('shows the users workspace of an organizational unit to organization admins', () => {
-	expect(visibleWorkspaceKeys(user({ adminOf: [organizationGuid] }))).toContain('users');
+	expect(
+		visibleWorkspaceKeys(
+			user({ grants: grantRecordsForRoleOn(memberRoles.enum.administrator, organizationGuid) })
+		)
+	).toContain('users');
 });
 
 test('shows the users workspace of an organizational unit to its admins', () => {
-	expect(visibleWorkspaceKeys(user({ adminOf: [organizationalUnitGuid] }))).toContain('users');
+	expect(
+		visibleWorkspaceKeys(
+			user({
+				grants: grantRecordsForRoleOn(memberRoles.enum.administrator, organizationalUnitGuid)
+			})
+		)
+	).toContain('users');
 });
 
 test('shows the users workspace of an organizational unit to heads of the organization', () => {
-	expect(visibleWorkspaceKeys(user({ headOf: [organizationGuid] }))).toContain('users');
+	expect(
+		visibleWorkspaceKeys(
+			user({ grants: grantRecordsForRoleOn(memberRoles.enum.head, organizationGuid) })
+		)
+	).toContain('users');
 });
 
 test('hides the users workspace from users without admin rights', () => {

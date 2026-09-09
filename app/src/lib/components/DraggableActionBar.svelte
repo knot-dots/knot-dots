@@ -11,9 +11,10 @@
 	type Props = {
 		actions?: Snippet;
 		container: Container<AnyPayload>;
+		draggable?: boolean;
 	};
 
-	let { actions, container }: Props = $props();
+	let { actions, container, draggable = true }: Props = $props();
 
 	const bulkActionContext = getBulkActionContext();
 
@@ -45,9 +46,11 @@
 		</label>
 	{/if}
 	{#if actions}{@render actions()}{/if}
-	<span class="drag-handle" use:dragHandle>
-		<DragHandle />
-	</span>
+	{#if draggable}
+		<span class="drag-handle" use:dragHandle>
+			<DragHandle />
+		</span>
+	{/if}
 </div>
 
 <style>

@@ -13,6 +13,7 @@
 		type AnyPayload,
 		type Container,
 		displayName,
+		type Grant,
 		isAdminOf,
 		isCollaboratorOf,
 		isHeadOf,
@@ -26,10 +27,11 @@
 
 	interface Props {
 		container: Container<AnyPayload>;
+		grants: Readonly<Array<Grant>>;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, users }: Props = $props();
+	let { container, grants, users }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -129,7 +131,13 @@
 {/if}
 
 {#if view === 'matrix'}
-	<UserPermissionMatrix {container} editable={$ability.can('manage-users', container)} {users} />
+	<UserPermissionMatrix
+		{container}
+		editable={$ability.can('manage-users', container)}
+		{grants}
+		oninvite={() => dialog.showModal()}
+		{users}
+	/>
 {:else}
 	<table>
 		<thead>
@@ -178,11 +186,13 @@
 		</tbody>
 	</table>
 {/if}
-<div class="content-actions">
-	<button class="button-primary system-primary" type="button" onclick={() => dialog.showModal()}>
-		<UserAdd />
-	</button>
-</div>
+{#if view === 'list'}
+	<div class="content-actions">
+		<button class="button-primary system-primary" type="button" onclick={() => dialog.showModal()}>
+			<UserAdd />
+		</button>
+	</div>
+{/if}
 
 <InviteUserDialog {container} bind:dialog />
 

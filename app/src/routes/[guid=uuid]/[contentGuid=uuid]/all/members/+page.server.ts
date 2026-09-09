@@ -8,7 +8,7 @@ import {
 	isSimpleMeasureContainer,
 	predicates
 } from '$lib/models';
-import { getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
+import { getAllGrantsByContainers, getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
@@ -16,8 +16,9 @@ export const load = (async ({ locals, params }) => {
 	const t = unwrapFunctionStore(_);
 
 	try {
-		const [container, users] = await Promise.all([
+		const [container, grants, users] = await Promise.all([
 			locals.pool.connect(getContainerByGuid(params.contentGuid)),
+			locals.pool.connect(getAllGrantsByContainers([params.contentGuid])),
 			locals.pool.connect(getAllRelatedUsers(params.contentGuid, [predicates.enum['is-member-of']]))
 		]);
 
@@ -37,6 +38,7 @@ export const load = (async ({ locals, params }) => {
 
 		return {
 			container,
+			grants,
 			title: `${container.payload.title} / ${t('members')}`,
 			users: users.map((u) => ({
 				...u,

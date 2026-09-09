@@ -644,7 +644,7 @@ export const userRelation = z.object({
 
 export type UserRelation = z.infer<typeof userRelation>;
 
-export const grantKinds = z.enum(['read', 'update', 'create', 'delete', 'manage-members']);
+export const grantKinds = z.enum(['read', 'update', 'create', 'delete', 'manage-users']);
 
 export type GrantKind = z.infer<typeof grantKinds>;
 
@@ -677,24 +677,170 @@ export function userRelationsForMemberRole(
 	];
 }
 
-// The kinds stored in container_grant follow the member role as a static
-// chain; they express what was GRANTED, not the effective rights of the role
-// on a specific container type (those are derived from the authorization
-// rules).
-const grantKindsByMemberRole: Record<MemberRole, GrantKind[]> = {
-	observer: [grantKinds.enum.read],
-	collaborator: [grantKinds.enum.read, grantKinds.enum.update, grantKinds.enum.create],
-	head: [
-		grantKinds.enum.read,
-		grantKinds.enum.update,
-		grantKinds.enum.create,
-		grantKinds.enum.delete
-	],
-	administrator: grantKinds.options.slice()
+export const grantTargets = z.enum(['self', 'subordinates']);
+
+export type GrantTarget = z.infer<typeof grantTargets>;
+
+// The kinds a target admits: the object itself can be read, updated and have
+// its users managed; subordinate objects within it additionally support
+// creating and deleting.
+export const grantKindsByTarget: Record<GrantTarget, GrantKind[]> = {
+	self: [grantKinds.enum.read, grantKinds.enum.update, grantKinds.enum['manage-users']],
+	subordinates: grantKinds.options.slice()
 };
 
-export function grantKindsForRole(role: MemberRole): GrantKind[] {
-	return grantKindsByMemberRole[role];
+export const grant = z.object({
+	kind: grantKinds,
+	object: z.uuid(),
+	subject: z.uuid(),
+	target: grantTargets
+});
+
+export type Grant = z.infer<typeof grant>;
+
+export const grantSet = z.object({
+	self: z.array(grantKinds),
+	subordinates: z.array(grantKinds)
+});
+
+export type GrantSet = z.infer<typeof grantSet>;
+
+export const grantSetAssignment = grantSet
+	.extend({ subject: z.uuid() })
+	.refine(
+		({ self, subordinates }) =>
+			self.every((kind) => grantKindsByTarget.self.includes(kind)) &&
+			subordinates.every((kind) => grantKindsByTarget.subordinates.includes(kind)),
+		{ message: 'kind not available for target' }
+	);
+
+export type GrantSetAssignment = z.infer<typeof grantSetAssignment>;
+
+// The grants stored in container_grant map the member role to kinds per
+// target; they express what was GRANTED, not the effective rights on a
+// specific container type (those are derived from the authorization rules).
+// heads deliberately lack manage-users on the object itself: a subject
+// holding every kind on both targets counts as an administrator.
+const grantSetsByMemberRole: Record<MemberRole, GrantSet> = {
+	observer: { self: [grantKinds.enum.read], subordinates: [grantKinds.enum.read] },
+	collaborator: {
+		self: [grantKinds.enum.read, grantKinds.enum.update],
+		subordinates: [
+			grantKinds.enum.read,
+			grantKinds.enum.update,
+			grantKinds.enum.create,
+			grantKinds.enum.delete
+		]
+	},
+	head: {
+		self: [grantKinds.enum.read, grantKinds.enum.update],
+		subordinates: grantKinds.options.slice()
+	},
+	administrator: {
+		self: grantKindsByTarget.self.slice(),
+		subordinates: grantKinds.options.slice()
+	}
+};
+
+export type GrantRecords = Record<GrantTarget, Record<GrantKind, string[]>>;
+
+function emptyKindRecord(): Record<GrantKind, string[]> {
+	return { read: [], update: [], create: [], delete: [], 'manage-users': [] };
+}
+
+export function emptyGrantRecords(): GrantRecords {
+	return { self: emptyKindRecord(), subordinates: emptyKindRecord() };
+}
+
+// Groups a flat grant list into per-target, per-kind guid arrays — the shape
+// the session carries and the authorization rules read.
+export function grantRecordsFromGrants(grants: ReadonlyArray<Grant>): GrantRecords {
+	const records = emptyGrantRecords();
+	for (const { kind, object, target } of grants) {
+		records[target][kind].push(object);
+	}
+	return records;
+}
+
+export function grantRecordsForRoleOn(role: MemberRole | null, object: string): GrantRecords {
+	const records = emptyGrantRecords();
+	if (role === null) {
+		return records;
+	}
+	const set = grantSetForRole(role);
+	for (const kind of set.self) {
+		records.self[kind].push(object);
+	}
+	for (const kind of set.subordinates) {
+		records.subordinates[kind].push(object);
+	}
+	return records;
+}
+
+export function grantSetForSubjectOn(
+	grants: ReadonlyArray<Grant>,
+	object: string,
+	subject: string
+): GrantSet {
+	return {
+		self: grants
+			.filter((g) => g.object === object && g.subject === subject && g.target === 'self')
+			.map(({ kind }) => kind),
+		subordinates: grants
+			.filter((g) => g.object === object && g.subject === subject && g.target === 'subordinates')
+			.map(({ kind }) => kind)
+	};
+}
+
+export function grantSetForRole(role: MemberRole): GrantSet {
+	return {
+		self: [...grantSetsByMemberRole[role].self],
+		subordinates: [...grantSetsByMemberRole[role].subordinates]
+	};
+}
+
+function containsGrantSet(set: GrantSet, other: GrantSet) {
+	return (
+		other.self.every((kind) => set.self.includes(kind)) &&
+		other.subordinates.every((kind) => set.subordinates.includes(kind))
+	);
+}
+
+// The largest member role whose grants are contained in the set; a subject
+// holding every kind on both targets counts as an administrator, an empty set
+// as no membership at all. Sets matching no role read as custom and fall back
+// to the largest contained role for the stored role relations.
+export function memberRoleFromGrantSet(set: GrantSet): MemberRole | null {
+	if (set.self.length === 0 && set.subordinates.length === 0) {
+		return null;
+	}
+	for (const role of [
+		memberRoles.enum.administrator,
+		memberRoles.enum.head,
+		memberRoles.enum.collaborator,
+		memberRoles.enum.observer
+	]) {
+		if (containsGrantSet(set, grantSetsByMemberRole[role])) {
+			return role;
+		}
+	}
+	return memberRoles.enum.observer;
+}
+
+// Whether the set matches a role's grants exactly; custom sets show as
+// user-defined in the matrix.
+export function memberRoleMatchingGrantSet(set: GrantSet): MemberRole | null {
+	for (const role of memberRoles.options) {
+		const roleSet = grantSetsByMemberRole[role];
+		if (
+			set.self.length === roleSet.self.length &&
+			set.subordinates.length === roleSet.subordinates.length &&
+			containsGrantSet(set, roleSet)
+		) {
+			return role;
+		}
+	}
+	return null;
 }
 
 export function memberRoleFromPredicates(relationPredicates: Predicate[]): MemberRole | null {
