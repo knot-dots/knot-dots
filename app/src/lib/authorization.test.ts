@@ -767,3 +767,38 @@ describe('the basic permission matrix by member role', () => {
 		});
 	}
 });
+
+describe('manage-users by member role', () => {
+	// user management exists on these types only; anywhere else even admins may
+	// not manage users
+	const managedTypesByScope: Record<Scope, PayloadType[]> = {
+		organization: [
+			payloadTypes.enum.measure,
+			payloadTypes.enum.organization,
+			payloadTypes.enum.organizational_unit,
+			payloadTypes.enum.program,
+			payloadTypes.enum.simple_measure
+		],
+		'organizational unit': [
+			payloadTypes.enum.measure,
+			payloadTypes.enum.organizational_unit,
+			payloadTypes.enum.program,
+			payloadTypes.enum.simple_measure
+		]
+	};
+
+	for (const scope of Object.keys(managedTypesByScope) as Scope[]) {
+		for (const role of memberRoles.options) {
+			const mayManage = role === memberRoles.enum.administrator || role === memberRoles.enum.head;
+			const ability = defineAbilityFor(userWithRoleOn(role, scope));
+			test.for(payloadTypes.options)(
+				`a ${role} of an ${scope} may ${mayManage ? 'manage users of the supporting types' : 'never manage users'}: %s`,
+				(type) => {
+					expect(ability.can('manage-users', scopedContainer(scope, type))).toBe(
+						mayManage && managedTypesByScope[scope].includes(type)
+					);
+				}
+			);
+		}
+	}
+});
