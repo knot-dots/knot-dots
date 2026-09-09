@@ -1,4 +1,4 @@
-import { NotFoundError, type DatabasePool } from 'slonik';
+import { NotFoundError, type DatabaseConnection } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import { CopyPlanError, type ContainerCopyPlan } from '$lib/server/containerCopyPlan';
@@ -91,10 +91,7 @@ const sysadmin: User = {
 	settings: {}
 };
 
-const pool = {
-	connect: async (operation: Parameters<DatabasePool['connect']>[0]) =>
-		operation({} as Parameters<Parameters<DatabasePool['connect']>[0]>[0])
-} as DatabasePool;
+const connection = {} as DatabaseConnection;
 
 beforeEach(() => {
 	mocks.persist.mockReset();
@@ -128,7 +125,7 @@ test('derives the target envelope server-side and returns the persisted root-map
 			targetOrganizationalUnitGuid: null,
 			rootPayload: { ...source.payload, title: 'Edited' }
 		},
-		pool,
+		connection,
 		user: sysadmin,
 		maxPlanSize: 500
 	});
@@ -171,7 +168,7 @@ test('rejects an oversized plan before persistence', async () => {
 				targetOrganizationalUnitGuid: null,
 				rootPayload: source.payload
 			},
-			pool,
+			connection,
 			user: sysadmin,
 			maxGraphSize: 500,
 			maxPlanSize: 1
@@ -202,7 +199,7 @@ test('rejects an oversized graph after source authorization and before planning'
 				targetOrganizationalUnitGuid: null,
 				rootPayload: source.payload
 			},
-			pool,
+			connection,
 			user: sysadmin,
 			maxGraphSize: 1,
 			maxPlanSize: 500
@@ -239,7 +236,7 @@ test('fails the complete operation when any planned container cannot be created'
 				targetOrganizationalUnitGuid: null,
 				rootPayload: source.payload
 			},
-			pool,
+			connection,
 			user: { ...sysadmin, collaboratorOf: [organizationGuid], roles: [] },
 			maxPlanSize: 500
 		})
@@ -263,7 +260,7 @@ test('uses the same opaque failure for missing and unreadable sources', async ()
 	};
 
 	await expect(
-		executeContainerCopy({ request: copyRequest, pool, user: sysadmin, maxPlanSize: 500 })
+		executeContainerCopy({ request: copyRequest, connection, user: sysadmin, maxPlanSize: 500 })
 	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
 
 	const privateSource = container(sourceGuid, {
@@ -275,7 +272,7 @@ test('uses the same opaque failure for missing and unreadable sources', async ()
 	await expect(
 		executeContainerCopy({
 			request: { ...copyRequest, rootPayload: privateSource.payload },
-			pool,
+			connection,
 			user: { ...sysadmin, roles: [] },
 			maxGraphSize: 0,
 			maxPlanSize: 500
@@ -300,12 +297,12 @@ test('rejects missing, malformed, and cross-organization targets', async () => {
 	};
 
 	await expect(
-		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+		executeContainerCopy({ request, connection, user: sysadmin, maxPlanSize: 500 })
 	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
 
 	mocks.targets.set(otherOrganizationGuid, source);
 	await expect(
-		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+		executeContainerCopy({ request, connection, user: sysadmin, maxPlanSize: 500 })
 	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
 
 	const organizationalUnitGuid = '00000000-0000-4000-8000-000000000005';
@@ -333,7 +330,7 @@ test('rejects missing, malformed, and cross-organization targets', async () => {
 				targetOrganizationGuid: organizationGuid,
 				targetOrganizationalUnitGuid: organizationalUnitGuid
 			},
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})
@@ -376,7 +373,7 @@ test('applies template-instance policy through the service', async () => {
 			targetOrganizationalUnitGuid: null,
 			rootPayload: { ...source.payload, title: 'Edited template instance' }
 		},
-		pool,
+		connection,
 		user: sysadmin,
 		maxPlanSize: 500
 	});
@@ -425,7 +422,7 @@ test('returns a sanitized preview of exactly the selected copy hierarchy', async
 
 	const preview = await loadContainerCopyPreview({
 		request: { availableIn: null, sourceGuid },
-		pool,
+		connection,
 		user: sysadmin,
 		maxGraphSize: 500
 	});
@@ -496,7 +493,7 @@ test('omits program-scoped template branches from the preview', async () => {
 
 	const preview = await loadContainerCopyPreview({
 		request: { availableIn: null, sourceGuid },
-		pool,
+		connection,
 		user: sysadmin,
 		maxGraphSize: 500
 	});
@@ -533,7 +530,7 @@ test('does not expose unreadable descendants or reference-only containers', asyn
 	mocks.graph = { rootGuid: sourceGuid, containers: [source, hidden, reference] };
 	const preview = await loadContainerCopyPreview({
 		request: { sourceGuid, availableIn: null },
-		pool,
+		connection,
 		user: { ...sysadmin, roles: [] },
 		maxGraphSize: 500
 	});
@@ -563,7 +560,7 @@ test('keeps preview branches together and visits shared or cyclic descendants on
 	};
 	const preview = await loadContainerCopyPreview({
 		request: { sourceGuid, availableIn: null },
-		pool,
+		connection,
 		user: sysadmin,
 		maxGraphSize: 500
 	});
@@ -615,7 +612,7 @@ test.each(['missing', 'other organization', 'unreadable', 'duplicate'])(
 					rootPayload: source.payload,
 					rootPlacement: scenario === 'duplicate' ? [placement, placement] : [placement]
 				},
-				pool,
+				connection,
 				user: scenario === 'unreadable' ? { ...sysadmin, roles: [] } : sysadmin,
 				maxPlanSize: 500
 			})
@@ -659,7 +656,7 @@ test.each([
 			rootPayload: source.payload,
 			rootPlacement: [{ parentGuid: childGuid, predicate, position: 0 }]
 		},
-		pool,
+		connection,
 		user: sysadmin,
 		maxPlanSize: 500
 	});
@@ -691,7 +688,7 @@ test('creates a template through the service and rejects existing templates', as
 			targetOrganizationalUnitGuid: null,
 			rootPayload: { ...source.payload, title: 'Edited template' }
 		},
-		pool,
+		connection,
 		user: sysadmin,
 		maxPlanSize: 500
 	});
@@ -717,7 +714,7 @@ test('creates a template through the service and rejects existing templates', as
 				targetOrganizationalUnitGuid: null,
 				rootPayload: existingTemplate.payload
 			},
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})
@@ -760,7 +757,7 @@ test('requires a scoped template instance to name its readable program', async (
 	};
 
 	await expect(
-		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+		executeContainerCopy({ request, connection, user: sysadmin, maxPlanSize: 500 })
 	).resolves.toMatchObject({ payload: { template: false, title: 'Instance' } });
 	expect(mocks.getContainerByGuid).toHaveBeenCalledOnce();
 	expect(mocks.getContainerByGuid).toHaveBeenCalledWith(organizationGuid);
@@ -768,7 +765,7 @@ test('requires a scoped template instance to name its readable program', async (
 	await expect(
 		executeContainerCopy({
 			request: { ...request, availableIn: null },
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})
@@ -781,7 +778,7 @@ test('requires a scoped template instance to name its readable program', async (
 		subject: sourceGuid
 	});
 	await expect(
-		executeContainerCopy({ request, pool, user: sysadmin, maxPlanSize: 500 })
+		executeContainerCopy({ request, connection, user: sysadmin, maxPlanSize: 500 })
 	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
 });
 
@@ -879,7 +876,7 @@ test('retains public and same-organization collection references only', async ()
 			targetOrganizationalUnitGuid: null,
 			rootPayload: source.payload
 		},
-		pool,
+		connection,
 		user: sysadmin,
 		maxPlanSize: 500
 	});
@@ -901,7 +898,7 @@ test('rejects organization roots and duplicate individual profiles before persis
 				targetOrganizationalUnitGuid: null,
 				rootPayload: organization.payload
 			},
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})
@@ -927,7 +924,7 @@ test('rejects organization roots and duplicate individual profiles before persis
 	await expect(
 		executeContainerCopy({
 			request: { operation: 'individual-profile', sourceGuid },
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})
@@ -946,7 +943,7 @@ test('rejects organization roots and duplicate individual profiles before persis
 	await expect(
 		executeContainerCopy({
 			request: { operation: 'individual-profile', sourceGuid: profileGuid },
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})
@@ -972,7 +969,7 @@ test('rejects actual data roots before persistence', async () => {
 				targetOrganizationalUnitGuid: null,
 				rootPayload: actualData.payload
 			},
-			pool,
+			connection,
 			user: sysadmin,
 			maxPlanSize: 500
 		})

@@ -1,4 +1,4 @@
-import { NotFoundError, type DatabasePool } from 'slonik';
+import { NotFoundError, type DatabaseConnection } from 'slonik';
 import defineAbilityFor from '$lib/authorization';
 import {
 	templateCopyPreview,
@@ -157,18 +157,18 @@ function childrenOf(selection: ContainerCopySourceSelection, guid: string, depth
 
 export async function loadContainerCopyPreview({
 	request,
-	pool,
+	connection,
 	user,
 	maxGraphSize,
 	maxPreviewSize = maxGraphSize
 }: {
 	request: ContainerCopyPreviewRequest;
-	pool: DatabasePool;
+	connection: DatabaseConnection;
 	user: User;
 	maxGraphSize: number;
 	maxPreviewSize?: number;
 }): Promise<TemplateCopyPreview> {
-	const graph = await pool.connect(getContainerCopyGraph(request.sourceGuid));
+	const graph = await getContainerCopyGraph(request.sourceGuid)(connection);
 	const source = graph.containers.find(({ guid }) => guid === request.sourceGuid);
 	const ability = defineAbilityFor(user);
 
@@ -220,7 +220,7 @@ export async function loadContainerCopyPreview({
 async function loadTarget(
 	request: ContainerCopyRequest,
 	source: Container<AnyPayload>,
-	pool: DatabasePool
+	connection: DatabaseConnection
 ) {
 	const targetOrganizationGuid =
 		request.operation === 'individual-profile'
@@ -229,7 +229,7 @@ async function loadTarget(
 
 	let organization: Container<AnyPayload>;
 	try {
-		organization = await pool.connect(getContainerByGuid(targetOrganizationGuid));
+		organization = await getContainerByGuid(targetOrganizationGuid)(connection);
 	} catch (caught) {
 		if (caught instanceof NotFoundError) {
 			throw new ContainerCopyServiceError('invalid_target');
@@ -250,9 +250,7 @@ async function loadTarget(
 
 	let organizationalUnit: Container<AnyPayload>;
 	try {
-		organizationalUnit = await pool.connect(
-			getContainerByGuid(request.targetOrganizationalUnitGuid)
-		);
+		organizationalUnit = await getContainerByGuid(request.targetOrganizationalUnitGuid)(connection);
 	} catch (caught) {
 		if (caught instanceof NotFoundError) {
 			throw new ContainerCopyServiceError('invalid_target');
@@ -273,7 +271,7 @@ async function resolveRootPlacement(
 	request: ContainerCopyRequest,
 	source: Container<AnyPayload>,
 	resolvedTarget: Awaited<ReturnType<typeof loadTarget>>,
-	pool: DatabasePool,
+	connection: DatabaseConnection,
 	ability: ReturnType<typeof defineAbilityFor>
 ) {
 	let managedBy = resolvedTarget.organizationalUnit?.guid ?? resolvedTarget.organization.guid;
@@ -300,7 +298,7 @@ async function resolveRootPlacement(
 		]);
 		const missingGuids = [...referencedGuids].filter((guid) => !referencedContainers.has(guid));
 		if (missingGuids.length > 0) {
-			const containers = await pool.connect(getManyContainers([], { guid: missingGuids }, 'alpha'));
+			const containers = await getManyContainers([], { guid: missingGuids }, 'alpha')(connection);
 			for (const container of containers) {
 				referencedContainers.set(container.guid, container);
 			}
@@ -343,18 +341,18 @@ async function resolveRootPlacement(
 
 export async function executeContainerCopy({
 	request,
-	pool,
+	connection,
 	user,
 	maxPlanSize,
 	maxGraphSize = maxPlanSize
 }: {
 	request: ContainerCopyRequest;
-	pool: DatabasePool;
+	connection: DatabaseConnection;
 	user: User;
 	maxGraphSize?: number;
 	maxPlanSize: number;
 }) {
-	const graph = await pool.connect(getContainerCopyGraph(request.sourceGuid));
+	const graph = await getContainerCopyGraph(request.sourceGuid)(connection);
 	const source = graph.containers.find(({ guid }) => guid === request.sourceGuid);
 	const ability = defineAbilityFor(user);
 
@@ -397,7 +395,7 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('copy_too_large');
 	}
 
-	const resolvedTarget = await loadTarget(request, source, pool);
+	const resolvedTarget = await loadTarget(request, source, connection);
 	if (ability.cannot('read', resolvedTarget.organization)) {
 		throw new ContainerCopyServiceError('invalid_target');
 	}
@@ -412,7 +410,7 @@ export async function executeContainerCopy({
 		request,
 		source,
 		resolvedTarget,
-		pool,
+		connection,
 		ability
 	);
 
@@ -463,7 +461,7 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('create_forbidden');
 	}
 
-	const persisted = await persistContainerCopyPlan(plan)(pool);
+	const persisted = await persistContainerCopyPlan(plan)(connection);
 	const root = persisted.get(request.sourceGuid);
 	if (!root) {
 		throw new ContainerCopyServiceError('persisted_root_missing');

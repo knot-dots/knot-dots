@@ -59,12 +59,14 @@ export const GET = (async ({ locals, url }) => {
 
 	try {
 		return json(
-			await loadContainerCopyPreview({
-				request: parseResult.data,
-				pool: locals.pool,
-				user: locals.user,
-				maxGraphSize
-			})
+			await locals.pool.connect((connection) =>
+				loadContainerCopyPreview({
+					request: parseResult.data,
+					connection,
+					user: locals.user,
+					maxGraphSize
+				})
+			)
 		);
 	} catch (caught) {
 		const serviceResponse = serviceErrorResponse(caught);
@@ -97,13 +99,15 @@ export const POST = (async ({ locals, request }) => {
 	}
 
 	try {
-		const root = await executeContainerCopy({
-			request: parseResult.data,
-			pool: locals.pool,
-			user: locals.user,
-			maxGraphSize,
-			maxPlanSize
-		});
+		const root = await locals.pool.connect((connection) =>
+			executeContainerCopy({
+				request: parseResult.data,
+				connection,
+				user: locals.user,
+				maxGraphSize,
+				maxPlanSize
+			})
+		);
 		return json(root, { status: 201, headers: { location: `/container/${root.guid}` } });
 	} catch (caught) {
 		const serviceResponse = serviceErrorResponse(caught);

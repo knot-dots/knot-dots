@@ -33,6 +33,10 @@ const user = {
 	roles: ['sysadmin'],
 	settings: {}
 };
+const connection = {};
+const pool = {
+	connect: vi.fn((operation: (connection: object) => unknown) => operation(connection))
+};
 
 function request(body: unknown, contentType = 'application/json; charset=utf-8') {
 	return new Request('http://localhost/container/copy', {
@@ -44,7 +48,7 @@ function request(body: unknown, contentType = 'application/json; charset=utf-8')
 
 function event(body: unknown, contentType?: string) {
 	return {
-		locals: { pool: {}, user },
+		locals: { pool, user },
 		request: request(body, contentType)
 	} as never;
 }
@@ -60,6 +64,7 @@ const validRequest = {
 beforeEach(() => {
 	executeContainerCopy.mockReset();
 	loadContainerCopyPreview.mockReset();
+	pool.connect.mockClear();
 });
 
 test('loads a program-scoped copy preview from strict query parameters', async () => {
@@ -68,7 +73,7 @@ test('loads a program-scoped copy preview from strict query parameters', async (
 	loadContainerCopyPreview.mockResolvedValue(preview);
 
 	const response = await GET({
-		locals: { pool: {}, user },
+		locals: { pool, user },
 		url: new URL(
 			`http://localhost/container/copy?sourceGuid=${sourceGuid}&availableIn=${availableIn}`
 		)
@@ -77,8 +82,9 @@ test('loads a program-scoped copy preview from strict query parameters', async (
 	expect(response.status).toBe(200);
 	expect(await response.json()).toEqual(preview);
 	expect(loadContainerCopyPreview).toHaveBeenCalledWith(
-		expect.objectContaining({ request: { availableIn, sourceGuid }, user })
+		expect.objectContaining({ connection, request: { availableIn, sourceGuid }, user })
 	);
+	expect(pool.connect).toHaveBeenCalledOnce();
 });
 
 test('rejects malformed, repeated, and unexpected preview parameters', async () => {
@@ -90,7 +96,7 @@ test('rejects malformed, repeated, and unexpected preview parameters', async () 
 	]) {
 		await expect(
 			GET({
-				locals: { pool: {}, user },
+				locals: { pool, user },
 				url: new URL(`http://localhost/container/copy${query}`)
 			} as never)
 		).rejects.toMatchObject({ status: 400 });
@@ -109,6 +115,7 @@ test('returns the persisted root with the established creation contract', async 
 	expect(await response.json()).toEqual(root);
 	expect(executeContainerCopy).toHaveBeenCalledWith(
 		expect.objectContaining({
+			connection,
 			request: expect.objectContaining({
 				...validRequest,
 				rootPayload: expect.objectContaining(validRequest.rootPayload)
@@ -116,6 +123,7 @@ test('returns the persisted root with the established creation contract', async 
 			user
 		})
 	);
+	expect(pool.connect).toHaveBeenCalledOnce();
 });
 
 test('rejects client-owned envelope and relation fields', async () => {
@@ -134,7 +142,7 @@ test('rejects client-owned envelope and relation fields', async () => {
 test('rejects unauthenticated and unsupported-content requests before parsing', async () => {
 	await expect(
 		POST({
-			locals: { pool: {}, user: { ...user, isAuthenticated: false } },
+			locals: { pool, user: { ...user, isAuthenticated: false } },
 			request: request(validRequest)
 		} as never)
 	).rejects.toMatchObject({ status: 401 });
@@ -147,9 +155,9 @@ test('returns a stable bad-request response for malformed JSON', async () => {
 		body: '{',
 		headers: { 'Content-Type': 'application/json' }
 	});
-	await expect(
-		POST({ locals: { pool: {}, user }, request: malformed } as never)
-	).rejects.toMatchObject({ status: 400 });
+	await expect(POST({ locals: { pool, user }, request: malformed } as never)).rejects.toMatchObject(
+		{ status: 400 }
+	);
 });
 
 test('maps only typed service errors to stable HTTP responses', async () => {
