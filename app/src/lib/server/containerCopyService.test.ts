@@ -413,7 +413,12 @@ test('returns a sanitized preview of exactly the selected copy hierarchy', async
 	);
 	const child = container(
 		childGuid,
-		{ title: 'Section', type: payloadTypes.enum.text, visibility: visibility.enum.public },
+		{
+			title: 'Section',
+			body: '<p>Full section content</p>',
+			type: payloadTypes.enum.text,
+			visibility: visibility.enum.public
+		},
 		[structuralRelation]
 	);
 	mocks.graph = { rootGuid: sourceGuid, containers: [source, child] };
@@ -426,6 +431,9 @@ test('returns a sanitized preview of exactly the selected copy hierarchy', async
 	});
 
 	expect(preview.rootGuid).toBe(sourceGuid);
+	expect(preview.containers).toEqual([source, child]);
+	expect(preview.containers[1]).not.toBe(child);
+	expect(preview.containers[1].payload).toMatchObject({ body: '<p>Full section content</p>' });
 	expect(preview.rows.map(({ guid }) => guid)).toEqual([childGuid]);
 	expect(preview.rows).toEqual([{ guid: childGuid, title: 'Section', type: 'text', depth: 0 }]);
 });
@@ -494,6 +502,44 @@ test('omits program-scoped template branches from the preview', async () => {
 	});
 
 	expect(preview.rows.map(({ guid }) => guid)).toEqual([childGuid]);
+	expect(preview.containers.map(({ guid }) => guid)).toEqual([sourceGuid, childGuid]);
+	expect(preview.containers.flatMap(({ relation }) => relation)).toEqual([
+		structuralRelation,
+		structuralRelation
+	]);
+});
+
+test('does not expose unreadable descendants or reference-only containers', async () => {
+	const referenceGuid = '00000000-0000-4000-8000-000000000009';
+	const relations = [
+		{ subject: childGuid, object: sourceGuid, predicate: 'is-section-of', position: 0 },
+		{ subject: sourceGuid, object: referenceGuid, predicate: 'is-measured-by', position: 0 }
+	];
+	const source = container(
+		sourceGuid,
+		{ type: 'report', title: 'Root', template: true, visibility: 'public' },
+		relations
+	);
+	const hidden = container(
+		childGuid,
+		{ type: 'text', title: 'Secret', visibility: 'creator' },
+		relations
+	);
+	const reference = container(
+		referenceGuid,
+		{ type: 'indicator_template', title: 'Private reference', unit: '%', visibility: 'creator' },
+		relations
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, hidden, reference] };
+	const preview = await loadContainerCopyPreview({
+		request: { sourceGuid, availableIn: null },
+		pool,
+		user: { ...sysadmin, roles: [] },
+		maxGraphSize: 500
+	});
+	expect(preview.containers).toEqual([{ ...source, relation: [] }]);
+	expect(preview.rows).toEqual([]);
+	expect(source.relation).toEqual(relations);
 });
 
 test('keeps preview branches together and visits shared or cyclic descendants once', async () => {

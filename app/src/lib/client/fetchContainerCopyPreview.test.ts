@@ -10,6 +10,7 @@ beforeEach(() => {
 	fetchMock.mockResolvedValue(
 		new Response(
 			JSON.stringify({
+				containers: [],
 				rows: [],
 				rootGuid: sourceGuid
 			}),

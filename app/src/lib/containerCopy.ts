@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+	anyContainer,
 	payloadTypes,
 	newContainer,
 	predicates,
@@ -32,6 +33,7 @@ export type ContainerCopyPreviewRequest = z.infer<typeof containerCopyPreviewReq
 
 export const templateCopyPreview = z.strictObject({
 	rootGuid: z.uuid(),
+	containers: z.array(anyContainer),
 	rows: z.array(
 		z.strictObject({
 			guid: z.uuid(),

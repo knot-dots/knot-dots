@@ -200,6 +200,19 @@ export async function loadContainerCopyPreview({
 
 	return templateCopyPreview.parse({
 		rootGuid: selection.root.guid,
+		// Expose source content, not the overinclusive internal graph. Keep only relations
+		// between visible main-hierarchy objects; scoped templates and reference-only
+		// containers must not leak through the preview response.
+		containers: [...selection.mainHierarchyGuids].map((guid) => {
+			const container = selection.containersByGuid.get(guid)!;
+			return {
+				...container,
+				relation: container.relation.filter(
+					({ subject, object }) =>
+						selection.mainHierarchyGuids.has(subject) && selection.mainHierarchyGuids.has(object)
+				)
+			};
+		}),
 		rows: previewRows(selection)
 	});
 }

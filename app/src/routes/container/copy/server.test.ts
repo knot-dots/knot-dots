@@ -64,7 +64,7 @@ beforeEach(() => {
 
 test('loads a program-scoped copy preview from strict query parameters', async () => {
 	const availableIn = '00000000-0000-4000-8000-000000000005';
-	const preview = { rows: [], rootGuid: sourceGuid };
+	const preview = { containers: [], rows: [], rootGuid: sourceGuid };
 	loadContainerCopyPreview.mockResolvedValue(preview);
 
 	const response = await GET({
