@@ -20,7 +20,7 @@ import type { User } from '$lib/stores';
 type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
-const specialTypes: PayloadType[] = [
+export const specialTypes: PayloadType[] = [
 	payloadTypes.enum.category,
 	payloadTypes.enum.help,
 	payloadTypes.enum.html,
@@ -30,7 +30,7 @@ const specialTypes: PayloadType[] = [
 	payloadTypes.enum.term
 ];
 
-const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
+export const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
 
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(

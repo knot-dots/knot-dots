@@ -1,14 +1,18 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
 import defineAbilityFor, {
+	commonTypes,
 	grantKindsForRoleOn,
-	grantKindsForRoleOnSubordinates
+	grantKindsForRoleOnSubordinates,
+	specialTypes
 } from '$lib/authorization';
 import {
 	type AnyPayload,
 	type Container,
+	type MemberRole,
 	memberRoles,
 	newContainer,
+	type PayloadType,
 	payloadTypes,
 	predicates,
 	visibility
@@ -546,4 +550,220 @@ describe('grantKindsForRoleOnSubordinates', () => {
 			['create', 'update', 'delete']
 		);
 	});
+});
+
+// The complete permission matrix of the role-based system: one test per member
+// role × payload type × scope, pinning which of the four basic actions the
+// role permits on an object belonging to that scope. This is the baseline for
+// the migration to individually assignable grants — the migrated rules must
+// reproduce exactly this matrix.
+//
+// The objects are modelled the way scope-owned content is stored: managed by
+// the scope itself (content managed by a team of its own is covered by the
+// managed_by suites above) with members-only visibility. The organization and
+// the organizational unit appear both as scope and as payload type.
+
+const basicActions = ['read', 'create', 'update', 'delete'] as const;
+
+type BasicAction = (typeof basicActions)[number];
+
+const allBasicActions: BasicAction[] = ['read', 'create', 'update', 'delete'];
+const readAndUpdate: BasicAction[] = ['read', 'update'];
+const readOnly: BasicAction[] = ['read'];
+
+type Scope = 'organization' | 'organizational unit';
+
+function scopeGuidOf(scope: Scope) {
+	return scope === 'organization' ? organization : organizationalUnit;
+}
+
+function userWithRoleOn(role: MemberRole, scope: Scope): User {
+	const guid = scopeGuidOf(scope);
+	return makeUser({
+		adminOf: role === memberRoles.enum.administrator ? [guid] : [],
+		collaboratorOf: role === memberRoles.enum.collaborator ? [guid] : [],
+		headOf: role === memberRoles.enum.head ? [guid] : [],
+		memberOf: [guid]
+	});
+}
+
+// some payload schemas require more than a title
+const requiredPayloadFields: Partial<Record<PayloadType, Record<string, unknown>>> = {
+	[payloadTypes.enum.actual_data]: { indicator: crypto.randomUUID() },
+	[payloadTypes.enum.chapter]: { number: '1' },
+	[payloadTypes.enum.indicator_template]: { unit: 'unit.euro' },
+	[payloadTypes.enum.organization]: { name: 'Lorem ipsum' },
+	[payloadTypes.enum.organizational_unit]: { name: 'Lorem ipsum' },
+	[payloadTypes.enum.page]: { body: 'Lorem ipsum' },
+	[payloadTypes.enum.resource_data]: {
+		resource: crypto.randomUUID(),
+		resourceDataType: 'resource_data_type.budget'
+	},
+	[payloadTypes.enum.resource_data_collection]: {
+		resourceDataType: 'resource_data_type.budget'
+	}
+};
+
+function scopedContainer(scope: Scope, type: PayloadType) {
+	const namedByTitle =
+		type !== payloadTypes.enum.organization && type !== payloadTypes.enum.organizational_unit;
+	return testContainer.parse({
+		// the organization and the organizational unit carry their own guid,
+		// which some of the rules match on
+		...(type === payloadTypes.enum.organization ? { guid: organization } : {}),
+		...(type === payloadTypes.enum.organizational_unit ? { guid: organizationalUnit } : {}),
+		managed_by: scopeGuidOf(scope),
+		organization,
+		organizational_unit: scope === 'organizational unit' ? organizationalUnit : null,
+		payload: {
+			...(namedByTitle ? { title: 'Lorem ipsum' } : {}),
+			...requiredPayloadFields[type],
+			type,
+			visibility: visibility.enum.members
+		}
+	});
+}
+
+const permissionMatrix: Record<
+	Scope,
+	Array<{ types: PayloadType[]; permitted: Record<MemberRole, BasicAction[]> }>
+> = {
+	organization: [
+		{
+			types: commonTypes,
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: allBasicActions,
+				observer: readOnly
+			}
+		},
+		{
+			// collaborators may work on a program but neither add nor remove one
+			types: [payloadTypes.enum.program],
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: readAndUpdate,
+				observer: readOnly
+			}
+		},
+		{
+			// managing these is reserved for admins and heads of the organization
+			types: [
+				payloadTypes.enum.category,
+				payloadTypes.enum.term,
+				payloadTypes.enum.help,
+				payloadTypes.enum.organizational_unit
+			],
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		},
+		{
+			// the organization itself may be updated but not created or deleted;
+			// update on html merely stems from the field-level rule that lets
+			// admins and heads move containers between organizational units
+			types: [payloadTypes.enum.organization, payloadTypes.enum.html],
+			permitted: {
+				administrator: readAndUpdate,
+				head: readAndUpdate,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		}
+	],
+	'organizational unit': [
+		{
+			types: commonTypes,
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: allBasicActions,
+				observer: readOnly
+			}
+		},
+		{
+			types: [payloadTypes.enum.program],
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: readAndUpdate,
+				observer: readOnly
+			}
+		},
+		{
+			types: [payloadTypes.enum.category, payloadTypes.enum.term],
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		},
+		{
+			// the unit itself may be renamed by its admins and heads; adding and
+			// removing units stays with the organization
+			types: [payloadTypes.enum.organizational_unit],
+			permitted: {
+				administrator: readAndUpdate,
+				head: readAndUpdate,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		},
+		{
+			// these belong to the organization, so unit roles yield no rights
+			types: [payloadTypes.enum.help, payloadTypes.enum.html, payloadTypes.enum.organization],
+			permitted: {
+				administrator: readOnly,
+				head: readOnly,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		}
+	]
+};
+
+function inWords(actions: BasicAction[]) {
+	if (actions.length === basicActions.length) {
+		return 'read, create, update and delete';
+	}
+	if (actions.length === 1) {
+		return 'only read';
+	}
+	return `only ${actions.join(' and ')}`;
+}
+
+describe('the basic permission matrix by member role', () => {
+	test('the matrix covers every payload type exactly once per scope', () => {
+		for (const scope of Object.keys(permissionMatrix) as Scope[]) {
+			const covered = permissionMatrix[scope].flatMap(({ types }) => types);
+			expect([...covered].sort()).toEqual([...commonTypes, ...specialTypes].sort());
+		}
+	});
+
+	for (const scope of Object.keys(permissionMatrix) as Scope[]) {
+		describe(`objects belonging to an ${scope}`, () => {
+			for (const { types, permitted } of permissionMatrix[scope]) {
+				for (const role of memberRoles.options) {
+					const ability = defineAbilityFor(userWithRoleOn(role, scope));
+					test.for(types)(`a ${role} may ${inWords(permitted[role])}: %s`, (type) => {
+						expect(
+							basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
+						).toEqual(permitted[role]);
+					});
+				}
+			}
+
+			test('a registered user without a role in the scope has no access', () => {
+				const ability = defineAbilityFor(makeUser());
+				const measure = scopedContainer(scope, payloadTypes.enum.measure);
+				expect(basicActions.filter((action) => ability.can(action, measure))).toEqual([]);
+			});
+		});
+	}
 });
