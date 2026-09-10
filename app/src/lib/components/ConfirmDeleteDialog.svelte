@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
-	import {
-		type AnyPayload,
-		type Container,
-		findDeletableDescendants,
-		predicates
-	} from '$lib/models';
+	import { type AnyPayload, type Container, findDescendants, predicates } from '$lib/models';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -44,10 +39,12 @@
 				values: {
 					count:
 						1 +
-						findDeletableDescendants(container, relatedContainers, [
-							predicates.enum['is-part-of'],
-							predicates.enum['is-part-of-program']
-						]).length
+						findDescendants(
+							container,
+							relatedContainers,
+							[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+							true
+						).length
 				}
 			})}
 		</p>

@@ -2702,30 +2702,6 @@ export function findDescendants<T extends Container<AnyPayload>>(
 	return Array.from(collectDescendants(container, containers, predicate, ignore).values());
 }
 
-// Deleting a program takes its descendants along, except for those that still
-// belong to another program: they are only deleted with their last program.
-export function findDeletableDescendants<T extends Container<AnyPayload>>(
-	container: T,
-	containers: T[],
-	predicate: Predicate[]
-): T[] {
-	const descendants = findDescendants(container, containers, predicate);
-
-	if (!isProgramContainer(container)) {
-		return descendants;
-	}
-
-	return descendants.filter(
-		({ guid, relation }) =>
-			!relation.some(
-				(r) =>
-					r.subject === guid &&
-					r.predicate === predicates.enum['is-part-of-program'] &&
-					r.object !== container.guid
-			)
-	);
-}
-
 export function computeProgressSegments(
 	parentContainer: Container<AnyPayload>,
 	containers: Container<AnyPayload>[],

@@ -595,7 +595,7 @@ test('a container in several programs appears among the members of each', async 
 	expect(relatedToSecond.map(({ guid }) => guid)).toContain(measure.guid);
 });
 
-test('deleting a program only deletes members that belong to no other program', async ({
+test('deleting a program keeps members of other programs together with their children', async ({
 	connection
 }: Fixtures) => {
 	const deletedProgram = await createContainer(
@@ -618,6 +618,11 @@ test('deleting a program only deletes members that belong to no other program', 
 			}
 		])
 	)(connection);
+	const exclusiveGoal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: deletedProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
 	const exclusiveMeasure = await createContainer(
 		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
 			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
@@ -629,7 +634,12 @@ test('deleting a program only deletes members that belong to no other program', 
 		connection
 	);
 
-	await expect(getContainerByGuid(exclusiveMeasure.guid)(connection)).rejects.toThrow();
+	await expect(getContainerByGuid(exclusiveGoal.guid)(connection)).rejects.toThrow();
+
+	const persistedExclusiveMeasure = await getContainerByGuid(exclusiveMeasure.guid)(connection);
+	expect(persistedExclusiveMeasure.relation.map(({ predicate }) => predicate)).toEqual([
+		predicates.enum['is-part-of']
+	]);
 
 	const persistedSharedGoal = await getContainerByGuid(sharedGoal.guid)(connection);
 	expect(

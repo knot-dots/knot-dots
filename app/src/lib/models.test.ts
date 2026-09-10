@@ -3,7 +3,6 @@ import { z } from 'zod';
 import {
 	type Container,
 	container,
-	findDeletableDescendants,
 	findDescendants,
 	type EffectPayload,
 	getAvailableInProgramGuids,
@@ -356,26 +355,6 @@ const exclusiveMeasure = structuralContainer(exclusiveMeasureGuid, payloadTypes.
 	templateRelation(exclusiveMeasureGuid, predicates.enum['is-part-of-program'], programOneGuid)
 ]);
 const deletionPredicates = [predicates.enum['is-part-of'], predicates.enum['is-part-of-program']];
-
-test('deleting a program spares descendants that still belong to another program', () => {
-	expect(
-		findDeletableDescendants(
-			programOne,
-			[sharedGoal, exclusiveGoal, exclusiveMeasure],
-			deletionPredicates
-		)
-			.map(({ guid }) => guid)
-			.sort()
-	).toEqual([exclusiveGoalGuid, exclusiveMeasureGuid].sort());
-});
-
-test('deleting a non-program container takes all descendants along', () => {
-	expect(
-		findDeletableDescendants(sharedGoal, [exclusiveMeasure], deletionPredicates).map(
-			({ guid }) => guid
-		)
-	).toEqual([exclusiveMeasureGuid]);
-});
 
 const multiParentMeasureGuid = 'af2b9193-5e8f-4c70-8f81-6b7c8d9eafb0';
 const multiParentMeasure = structuralContainer(multiParentMeasureGuid, payloadTypes.enum.measure, [
