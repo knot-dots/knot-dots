@@ -328,6 +328,26 @@ describe('field-level rules', () => {
 			ability.can('read', makeContainer(payloadTypes.enum.measure), 'payload.editorialState')
 		).toBe(true);
 		expect(ability.can('read', makeContainer(payloadTypes.enum.task), 'assignee')).toBe(true);
+		// the general read rule carries no field restriction
+		expect(ability.can('read', makeContainer(payloadTypes.enum.measure), 'payload.title')).toBe(
+			true
+		);
+	});
+
+	test('admins and heads may edit the organization except for its custom domain', () => {
+		for (const user of [
+			makeUser({ adminOf: [organization] }),
+			makeUser({ headOf: [organization] })
+		]) {
+			const ability = defineAbilityFor(user);
+			const org = testContainer.parse({
+				guid: organization,
+				managed_by: organization,
+				payload: { name: 'Org', type: payloadTypes.enum.organization }
+			});
+			expect(ability.can('update', org, 'payload.name')).toBe(true);
+			expect(ability.can('update', org, 'payload.customDomain')).toBe(false);
+		}
 	});
 
 	test('the organization and organizational_unit fields are protected', () => {
@@ -737,7 +757,31 @@ describe('scope rules apply regardless of managed_by', () => {
 			expect(ability.can('update', measure)).toBe(false);
 			expect(ability.can('delete', measure)).toBe(false);
 		});
+
+		test.for([memberRoles.enum.administrator, memberRoles.enum.head] as MemberRole[])(
+			`a %s manages users of measures in the ${scope} managed by another team`,
+			(role) => {
+				const ability = defineAbilityFor(userWithRoleOn(role, scope));
+				expect(ability.can('manage-users', measure)).toBe(true);
+			}
+		);
 	}
+
+	test('members read the organizational unit itself regardless of managed_by', () => {
+		const ability = defineAbilityFor(makeUser({ memberOf: [organizationalUnit] }));
+		for (const unitVisibility of [visibility.enum.members, visibility.enum.organization]) {
+			const unit = testContainer.parse({
+				guid: organizationalUnit,
+				managed_by: otherTeam,
+				payload: {
+					name: 'Unit',
+					type: payloadTypes.enum.organizational_unit,
+					visibility: unitVisibility
+				}
+			});
+			expect(ability.can('read', unit)).toBe(true);
+		}
+	});
 });
 
 describe('manage-users by member role', () => {
