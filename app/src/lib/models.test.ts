@@ -4,6 +4,7 @@ import {
 	type Container,
 	container,
 	findDeletableDescendants,
+	findDescendants,
 	type EffectPayload,
 	getAvailableInProgramGuids,
 	grantKindsForRole,
@@ -374,4 +375,43 @@ test('deleting a non-program container takes all descendants along', () => {
 			({ guid }) => guid
 		)
 	).toEqual([exclusiveMeasureGuid]);
+});
+
+const multiParentMeasureGuid = 'af2b9193-5e8f-4c70-8f81-6b7c8d9eafb0';
+const multiParentMeasure = structuralContainer(multiParentMeasureGuid, payloadTypes.enum.measure, [
+	templateRelation(multiParentMeasureGuid, predicates.enum['is-part-of'], exclusiveGoalGuid),
+	templateRelation(multiParentMeasureGuid, predicates.enum['is-part-of'], sharedGoalGuid),
+	templateRelation(multiParentMeasureGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+
+test('findDescendants ignores nodes with several parents and their subtree on request', () => {
+	expect(
+		findDescendants(
+			programOne,
+			[sharedGoal, exclusiveGoal, exclusiveMeasure],
+			deletionPredicates,
+			true
+		).map(({ guid }) => guid)
+	).toEqual([exclusiveGoalGuid]);
+});
+
+test('findDescendants counts parents per predicate when ignoring multi-parent nodes', () => {
+	expect(
+		findDescendants(sharedGoal, [exclusiveMeasure], deletionPredicates, true).map(
+			({ guid }) => guid
+		)
+	).toEqual([exclusiveMeasureGuid]);
+});
+
+test('findDescendants ignores multi-parent nodes for every predicate', () => {
+	expect(
+		findDescendants(exclusiveGoal, [multiParentMeasure], [predicates.enum['is-part-of']], true).map(
+			({ guid }) => guid
+		)
+	).toEqual([]);
+	expect(
+		findDescendants(exclusiveGoal, [multiParentMeasure], [predicates.enum['is-part-of']]).map(
+			({ guid }) => guid
+		)
+	).toEqual([multiParentMeasureGuid]);
 });

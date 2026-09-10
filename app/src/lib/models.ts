@@ -2641,11 +2641,21 @@ export function findAncestors<T extends Container<AnyPayload>>(
 	return Array.from(ancestors.values());
 }
 
-export function findDescendants<T extends Container<AnyPayload>>(
+function hasMultipleParents(container: Container<AnyPayload>, predicate: Predicate[]) {
+	return predicate.some(
+		(p) =>
+			container.relation.filter(
+				(r) => r.subject == container.guid && r.predicate == p && r.object != container.guid
+			).length > 1
+	);
+}
+
+function collectDescendants<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
-	predicate: Predicate[]
-): T[] {
+	predicate: Predicate[],
+	ignore: Set<string>
+) {
 	const descendants = new Map<string, T>();
 
 	function traverse(current: T) {
@@ -2654,7 +2664,9 @@ export function findDescendants<T extends Container<AnyPayload>>(
 				relation.findIndex(
 					(r) =>
 						predicate.some((p) => p == r.predicate) && r.object == current.guid && r.object != guid
-				) > -1 && !descendants.has(guid)
+				) > -1 &&
+				!descendants.has(guid) &&
+				!ignore.has(guid)
 		);
 
 		for (const child of children) {
@@ -2664,7 +2676,30 @@ export function findDescendants<T extends Container<AnyPayload>>(
 	}
 
 	traverse(container);
-	return Array.from(descendants.values());
+	return descendants;
+}
+
+// With ignoreMultiParentNodes, nodes that have several parents via the same
+// predicate are left out together with their whole subtree, e.g. when deleting
+// one of the parents must not take along what still hangs elsewhere.
+export function findDescendants<T extends Container<AnyPayload>>(
+	container: T,
+	containers: T[],
+	predicate: Predicate[],
+	ignoreMultiParentNodes = false
+): T[] {
+	const ignore = new Set<string>();
+
+	if (ignoreMultiParentNodes) {
+		for (const node of containers.filter((c) => hasMultipleParents(c, predicate))) {
+			ignore.add(node.guid);
+			for (const guid of collectDescendants(node, containers, predicate, new Set()).keys()) {
+				ignore.add(guid);
+			}
+		}
+	}
+
+	return Array.from(collectDescendants(container, containers, predicate, ignore).values());
 }
 
 // Deleting a program takes its descendants along, except for those that still
