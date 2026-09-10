@@ -47,9 +47,6 @@ export default function defineAbilityFor(user: User) {
 			payloadTypes.enum.program,
 			payloadTypes.enum.simple_measure
 		]);
-		can('read', payloadTypes.enum.task, ['assignee']);
-		can('update', commonTypes, ['organization', 'organizational_unit']);
-		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
 		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
@@ -109,9 +106,6 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'update', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('update', payloadTypes.enum.program, ['chapterType'], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
-		});
 		can(
 			'manage-users',
 			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
@@ -159,22 +153,11 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.organization,
 			guid: { $in: [...user.memberOf] }
 		});
-		can('read', payloadTypes.options, ['payload.editorialState'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.enum.task, ['assignee'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('update', commonTypes, ['payload.editorialState'], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 	}
 
