@@ -26,7 +26,6 @@ export const specialTypes: PayloadType[] = [
 	payloadTypes.enum.html,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
-	payloadTypes.enum.program,
 	payloadTypes.enum.term
 ];
 
@@ -49,11 +48,7 @@ export default function defineAbilityFor(user: User) {
 			payloadTypes.enum.simple_measure
 		]);
 		can('read', payloadTypes.enum.task, ['assignee']);
-		can(
-			'update',
-			[payloadTypes.enum.program, ...commonTypes],
-			['organization', 'organizational_unit']
-		);
+		can('update', commonTypes, ['organization', 'organizational_unit']);
 		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
 		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
@@ -68,10 +63,10 @@ export default function defineAbilityFor(user: User) {
 		can('update', payloadTypes.enum.organizational_unit, {
 			guid: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
+		can(['create', 'update', 'delete'], commonTypes, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
+		can(['create', 'update', 'delete'], commonTypes, {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(
@@ -105,7 +100,7 @@ export default function defineAbilityFor(user: User) {
 		can('create', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 		can(['delete'], commonTypes, {
@@ -178,7 +173,7 @@ export default function defineAbilityFor(user: User) {
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], ['payload.editorialState'], {
+		can('update', commonTypes, ['payload.editorialState'], {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 	}

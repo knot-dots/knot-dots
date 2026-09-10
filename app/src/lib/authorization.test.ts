@@ -602,16 +602,6 @@ const permissionMatrix: Record<
 			}
 		},
 		{
-			// collaborators may work on a program but neither add nor remove one
-			types: [payloadTypes.enum.program],
-			permitted: {
-				administrator: allBasicActions,
-				head: allBasicActions,
-				collaborator: readAndUpdate,
-				observer: readOnly
-			}
-		},
-		{
 			// managing these is reserved for admins and heads of the organization
 			types: [
 				payloadTypes.enum.category,
@@ -646,15 +636,6 @@ const permissionMatrix: Record<
 				administrator: allBasicActions,
 				head: allBasicActions,
 				collaborator: allBasicActions,
-				observer: readOnly
-			}
-		},
-		{
-			types: [payloadTypes.enum.program],
-			permitted: {
-				administrator: allBasicActions,
-				head: allBasicActions,
-				collaborator: readAndUpdate,
 				observer: readOnly
 			}
 		},
