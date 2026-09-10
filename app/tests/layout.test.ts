@@ -94,6 +94,8 @@ test.describe('Goals table columns', () => {
 		// Simpler: collect texts via all cells and compare arrays.
 		const allHeaderCells = page.locator('.table-head .row .cell');
 		await expect(allHeaderCells).toHaveCount(expectedHeadings.length + 1); // +1 for action column
+		// Headings are rendered in the default locale until the client switches to the browser locale
+		await expect(allHeaderCells.nth(1)).toHaveText(expectedHeadings[0]);
 
 		const received = await allHeaderCells.allTextContents();
 		// Drop the first (action) empty cell
@@ -131,6 +133,8 @@ test.describe('Programs table columns', () => {
 
 		const allHeaderCells = page.locator('.table-head .row .cell');
 		await expect(allHeaderCells).toHaveCount(expectedProgramHeadings.length + 1); // +1 for action column
+		// Headings are rendered in the default locale until the client switches to the browser locale
+		await expect(allHeaderCells.nth(1)).toHaveText(expectedProgramHeadings[0]);
 
 		const received = await allHeaderCells.allTextContents();
 		received.shift(); // remove action cell
@@ -166,6 +170,8 @@ test.describe('Measures table columns', () => {
 
 		const allHeaderCells = page.locator('.table-head .row .cell');
 		await expect(allHeaderCells).toHaveCount(expectedMeasureHeadings.length + 1); // +1 for action column
+		// Headings are rendered in the default locale until the client switches to the browser locale
+		await expect(allHeaderCells.nth(1)).toHaveText(expectedMeasureHeadings[0]);
 
 		const received = await allHeaderCells.allTextContents();
 		received.shift(); // remove action cell
