@@ -649,6 +649,116 @@ test('deleting a program keeps members of other programs together with their chi
 	).toEqual([remainingProgram.guid]);
 });
 
+async function createProgramPair(connection: Fixtures['connection']) {
+	const firstProgram = await createContainer(
+		initializeNewContainer({ title: 'First program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const secondProgram = await createContainer(
+		initializeNewContainer({ title: 'Second program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const sharedGoal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: firstProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] },
+			{ object: secondProgram.guid, position: 0, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const childOfShared = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
+			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+			{ object: firstProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	return { childOfShared, firstProgram, secondProgram, sharedGoal };
+}
+
+test('deleting a shared goal itself takes its children along and leaves both programs', async ({
+	connection
+}: Fixtures) => {
+	const { childOfShared, firstProgram, secondProgram, sharedGoal } =
+		await createProgramPair(connection);
+
+	await deleteContainerRecursively(await getContainerByGuid(sharedGoal.guid)(connection))(
+		connection
+	);
+
+	await expect(getContainerByGuid(sharedGoal.guid)(connection)).rejects.toThrow();
+	await expect(getContainerByGuid(childOfShared.guid)(connection)).rejects.toThrow();
+	for (const program of [firstProgram, secondProgram]) {
+		const members = await getAllContainersRelatedToProgram(program.guid, {})(connection);
+		expect(members.map(({ guid }) => guid)).not.toContain(sharedGoal.guid);
+	}
+});
+
+test('deleting both programs one after the other removes the shared goal with the last one', async ({
+	connection
+}: Fixtures) => {
+	const { childOfShared, firstProgram, secondProgram, sharedGoal } =
+		await createProgramPair(connection);
+
+	await deleteContainerRecursively(await getContainerByGuid(firstProgram.guid)(connection))(
+		connection
+	);
+	await expect(getContainerByGuid(sharedGoal.guid)(connection)).resolves.toBeDefined();
+	await expect(getContainerByGuid(childOfShared.guid)(connection)).resolves.toBeDefined();
+
+	await deleteContainerRecursively(await getContainerByGuid(secondProgram.guid)(connection))(
+		connection
+	);
+	await expect(getContainerByGuid(sharedGoal.guid)(connection)).rejects.toThrow();
+	await expect(getContainerByGuid(childOfShared.guid)(connection)).rejects.toThrow();
+});
+
+test('a measure in two programs survives one program but not its own goal', async ({
+	connection
+}: Fixtures) => {
+	const { firstProgram, secondProgram } = await createProgramPair(connection);
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: firstProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	const measure = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
+			{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+			{ object: firstProgram.guid, position: 2, predicate: predicates.enum['is-part-of-program'] },
+			{ object: secondProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+
+	await deleteContainerRecursively(await getContainerByGuid(firstProgram.guid)(connection))(
+		connection
+	);
+	await expect(getContainerByGuid(goal.guid)(connection)).rejects.toThrow();
+	const survivingMeasure = await getContainerByGuid(measure.guid)(connection);
+	expect(survivingMeasure.relation.map(({ object, predicate }) => [predicate, object])).toEqual([
+		[predicates.enum['is-part-of-program'], secondProgram.guid]
+	]);
+
+	const otherGoal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{ object: secondProgram.guid, position: 2, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+	await updateContainer(
+		modifiedContainer.parse({
+			...survivingMeasure,
+			relation: [
+				...survivingMeasure.relation,
+				{
+					object: otherGoal.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of'],
+					subject: measure.guid
+				}
+			]
+		})
+	)(connection);
+	await deleteContainerRecursively(await getContainerByGuid(otherGoal.guid)(connection))(
+		connection
+	);
+	await expect(getContainerByGuid(measure.guid)(connection)).rejects.toThrow();
+});
+
 test('omitting the template filter returns a complete mixed program hierarchy', async ({
 	connection
 }: Fixtures) => {
