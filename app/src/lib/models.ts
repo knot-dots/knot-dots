@@ -2641,20 +2641,10 @@ export function findAncestors<T extends Container<AnyPayload>>(
 	return Array.from(ancestors.values());
 }
 
-function hasMultipleParents(container: Container<AnyPayload>, predicate: Predicate[]) {
-	return predicate.some(
-		(p) =>
-			container.relation.filter(
-				(r) => r.subject == container.guid && r.predicate == p && r.object != container.guid
-			).length > 1
-	);
-}
-
 function collectDescendants<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
-	predicate: Predicate[],
-	ignore: Set<string>
+	predicate: Predicate[]
 ) {
 	const descendants = new Map<string, T>();
 
@@ -2664,9 +2654,7 @@ function collectDescendants<T extends Container<AnyPayload>>(
 				relation.findIndex(
 					(r) =>
 						predicate.some((p) => p == r.predicate) && r.object == current.guid && r.object != guid
-				) > -1 &&
-				!descendants.has(guid) &&
-				!ignore.has(guid)
+				) > -1 && !descendants.has(guid)
 		);
 
 		for (const child of children) {
@@ -2679,27 +2667,61 @@ function collectDescendants<T extends Container<AnyPayload>>(
 	return descendants;
 }
 
-// With ignoreMultiParentNodes, nodes that have several parents via the same
-// predicate are left out together with their whole subtree, e.g. when deleting
-// one of the parents must not take along what still hangs elsewhere.
+// A node is anchored elsewhere when, via one and the same predicate, it hangs
+// both inside the collected subtree and outside of it. Such nodes and everything
+// below them are left out, e.g. so that deleting one parent does not take along
+// what other parents still hold.
+function findMultiParentNodes<T extends Container<AnyPayload>>(
+	container: T,
+	descendants: Map<string, T>,
+	predicate: Predicate[]
+) {
+	const scope = new Set([container.guid, ...descendants.keys()]);
+	const ignored = new Set<string>();
+	let changed = true;
+
+	while (changed) {
+		changed = false;
+		for (const node of descendants.values()) {
+			if (ignored.has(node.guid)) {
+				continue;
+			}
+			const parents = node.relation.filter(
+				(r) =>
+					r.subject == node.guid && r.object != node.guid && predicate.some((p) => p == r.predicate)
+			);
+			const hasIgnoredParent = parents.some(({ object }) => ignored.has(object));
+			const isAnchoredElsewhere = predicate.some((p) => {
+				const parentsViaPredicate = parents.filter((r) => r.predicate == p);
+				return (
+					parentsViaPredicate.some(({ object }) => scope.has(object)) &&
+					parentsViaPredicate.some(({ object }) => !scope.has(object))
+				);
+			});
+			if (hasIgnoredParent || isAnchoredElsewhere) {
+				ignored.add(node.guid);
+				changed = true;
+			}
+		}
+	}
+
+	return ignored;
+}
+
 export function findDescendants<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicate: Predicate[],
 	ignoreMultiParentNodes = false
 ): T[] {
-	const ignore = new Set<string>();
+	const descendants = collectDescendants(container, containers, predicate);
 
-	if (ignoreMultiParentNodes) {
-		for (const node of containers.filter((c) => hasMultipleParents(c, predicate))) {
-			ignore.add(node.guid);
-			for (const guid of collectDescendants(node, containers, predicate, new Set()).keys()) {
-				ignore.add(guid);
-			}
-		}
+	if (!ignoreMultiParentNodes) {
+		return Array.from(descendants.values());
 	}
 
-	return Array.from(collectDescendants(container, containers, predicate, ignore).values());
+	const ignored = findMultiParentNodes(container, descendants, predicate);
+	return Array.from(descendants.values()).filter(({ guid }) => !ignored.has(guid));
 }
 
 export function computeProgressSegments(
