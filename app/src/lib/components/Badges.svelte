@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import AskAI from '~icons/knotdots/ask-ai';
-	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
 	import {
 		type Container,
 		type Status,
@@ -68,8 +68,7 @@
 	{/if}
 	{#if isContainerWithStatus(container)}
 		<li>
-			<StatusDropdown
-				buttonStyle="badge"
+			<InlineStatusDropdown
 				{editable}
 				labelFn={statusLabelFn}
 				options={statusOptions}
