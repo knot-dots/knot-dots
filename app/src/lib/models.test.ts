@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
 	type Container,
 	container,
+	findDeletableDescendants,
 	type EffectPayload,
 	getAvailableInProgramGuids,
 	grantKindsForRole,
@@ -319,4 +320,58 @@ test('returns only programs targeted by outgoing availability relations', () => 
 			]
 		})
 	).toEqual([templateParentGuid]);
+});
+
+const programOneGuid = '5a6d4c4e-0f3a-4d2b-9a3c-1c2d3e4f5a6b';
+const programTwoGuid = '6b7e5d5f-1a4b-4e3c-8b4d-2d3e4f5a6b7c';
+const sharedGoalGuid = '7c8f6e60-2b5c-4f4d-9c5e-3e4f5a6b7c8d';
+const exclusiveGoalGuid = '8d907f71-3c6d-4a5e-8d6f-4f5a6b7c8d9e';
+const exclusiveMeasureGuid = '9ea18082-4d7e-4b6f-9e70-5a6b7c8d9eaf';
+
+function structuralContainer(
+	guid: string,
+	type: (typeof payloadTypes.enum)['program' | 'goal' | 'measure'],
+	relation: Relation[]
+) {
+	return testContainer.parse({
+		guid,
+		managed_by: organizationOne,
+		organization: organizationOne,
+		payload: { category: {}, title: guid, type },
+		relation
+	}) as Container<ProgramPayload | MeasurePayload>;
+}
+
+const programOne = structuralContainer(programOneGuid, payloadTypes.enum.program, []);
+const sharedGoal = structuralContainer(sharedGoalGuid, payloadTypes.enum.goal, [
+	templateRelation(sharedGoalGuid, predicates.enum['is-part-of-program'], programOneGuid),
+	templateRelation(sharedGoalGuid, predicates.enum['is-part-of-program'], programTwoGuid)
+]);
+const exclusiveGoal = structuralContainer(exclusiveGoalGuid, payloadTypes.enum.goal, [
+	templateRelation(exclusiveGoalGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+const exclusiveMeasure = structuralContainer(exclusiveMeasureGuid, payloadTypes.enum.measure, [
+	templateRelation(exclusiveMeasureGuid, predicates.enum['is-part-of'], sharedGoalGuid),
+	templateRelation(exclusiveMeasureGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+const deletionPredicates = [predicates.enum['is-part-of'], predicates.enum['is-part-of-program']];
+
+test('deleting a program spares descendants that still belong to another program', () => {
+	expect(
+		findDeletableDescendants(
+			programOne,
+			[sharedGoal, exclusiveGoal, exclusiveMeasure],
+			deletionPredicates
+		)
+			.map(({ guid }) => guid)
+			.sort()
+	).toEqual([exclusiveGoalGuid, exclusiveMeasureGuid].sort());
+});
+
+test('deleting a non-program container takes all descendants along', () => {
+	expect(
+		findDeletableDescendants(sharedGoal, [exclusiveMeasure], deletionPredicates).map(
+			({ guid }) => guid
+		)
+	).toEqual([exclusiveMeasureGuid]);
 });
