@@ -215,7 +215,7 @@
 					</div>
 
 					<div class="properties">
-						<NewContainerProperties container={$createContainerDialogState.container} />
+						<NewContainerProperties bind:container={$createContainerDialogState.container} />
 					</div>
 
 					<div class="description">

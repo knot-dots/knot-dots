@@ -1,7 +1,56 @@
+import { payloadTypes } from '$lib/models';
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'container-copy' });
 test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+test('shows subordinate template content as a read-only detail preview', async ({
+	dotsBoard,
+	measureTemplateWithSection: { section, template },
+	testMeasure,
+	testProgram
+}) => {
+	// Template discovery is Elasticsearch-backed and eventually consistent. Keep that concern out
+	// of this preview test while retaining the real database-backed GET /container/copy response.
+	await dotsBoard.page.route('**/container/v2?*', async (route) => {
+		const url = new URL(route.request().url());
+		if (
+			url.searchParams.get('availableIn') === testProgram.guid &&
+			url.searchParams.get('payloadType') === payloadTypes.enum.measure &&
+			url.searchParams.get('templateRoot') === 'true'
+		) {
+			await route.fulfill({ json: { containers: [template] } });
+			return;
+		}
+		await route.fallback();
+	});
+
+	await dotsBoard.goto(`/${testProgram.organization}`);
+	await dotsBoard.card(testMeasure.payload.title).click();
+	await dotsBoard.overlay.editModeToggle.check();
+	await dotsBoard.overlay.locator.getByRole('button', { name: 'Create another element' }).click();
+	await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Measure', exact: true }).click();
+
+	const dialog = dotsBoard.page.getByRole('dialog');
+	const previewResponsePromise = dotsBoard.page.waitForResponse((response) => {
+		const url = new URL(response.url());
+		return (
+			url.pathname === '/container/copy' &&
+			url.searchParams.get('sourceGuid') === template.guid &&
+			response.request().method() === 'GET'
+		);
+	});
+	await dialog.getByRole('article').filter({ hasText: template.payload.title }).click();
+	expect((await previewResponsePromise).status()).toBe(200);
+
+	const preview = dialog.locator('.template-content');
+	const sectionHeading = preview.getByRole('heading', { name: section.payload.title });
+	await expect(sectionHeading).toBeVisible();
+	await expect(sectionHeading).toHaveAttribute('contenteditable', 'false');
+	await expect(preview).toContainText(section.payload.body!);
+	await expect(preview.getByRole('button', { name: 'Add section' })).toHaveCount(0);
+	await expect(preview.getByRole('button', { name: 'Settings' })).toHaveCount(0);
+});
 
 test('copies an edited program root and its descendants through the dedicated endpoint', async ({
 	dotsBoard,
