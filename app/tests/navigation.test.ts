@@ -62,15 +62,19 @@ test('Organization menu links to workspace or landing page', async ({
 	// Ensure the measures workspace is disabled for the test organization.
 	await landingPage.goto(`/${testOrganization.guid}`);
 	await landingPage.header.editModeToggle.check();
-	await landingPage.header.disclosePropertiesButton.click();
-	await landingPage.properties.getByRole('button', { name: 'Visible workspaces' }).click();
+	await landingPage.sidebar.openAdministrationMenu(landingPage.sidebar.organizationPanel);
+	await landingPage.sidebar.locator.getByRole('menuitem', { name: 'Configuration' }).click();
+	await landingPage.page
+		.getByRole('dialog')
+		.getByRole('button', { name: 'Visible workspaces' })
+		.click();
 	const saveResponse = page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);
-	await landingPage.properties.getByRole('checkbox', { name: 'All objects' }).check();
-	await landingPage.properties.getByRole('checkbox', { name: 'Measures' }).uncheck();
+	await landingPage.page.getByRole('dialog').getByRole('checkbox', { name: 'All objects' }).check();
+	await landingPage.page.getByRole('dialog').getByRole('checkbox', { name: 'Measures' }).uncheck();
 	await saveResponse;
-	await landingPage.properties.getByRole('button', { name: 'Close' }).click();
+	await landingPage.page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
 
 	await page.goto(`/${defaultOrganization.guid}/measures/status`);
 	await expect(page).toHaveURL(new RegExp(`/${defaultOrganization.guid}/measures/status`));

@@ -2,65 +2,21 @@
 	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Close from '~icons/knotdots/close';
-	import TrashBin from '~icons/flowbite/trash-bin-outline';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import { env } from '$env/dynamic/public';
-	import deleteContainer from '$lib/client/deleteContainer';
-	import {
-		type AnyPayload,
-		type Container,
-		type OrganizationalUnitPayload,
-		type OrganizationPayload,
-		type PagePayload
-	} from '$lib/models';
-	import { applicationState, mayDeleteContainer } from '$lib/stores';
 
 	interface Props {
-		actions?: Snippet;
 		children: Snippet;
-		container: Container<OrganizationPayload | OrganizationalUnitPayload | PagePayload>;
-		relatedContainers: Container<AnyPayload>[];
 		dialog: HTMLDialogElement;
 		title: string;
 	}
 
-	let {
-		actions,
-		children,
-		container,
-		relatedContainers,
-		dialog = $bindable(),
-		title
-	}: Props = $props();
-
-	let confirmDelete = $state(false);
-
-	function closeDialog() {
-		confirmDelete = false;
-		dialog.close();
-	}
-
-	async function handleConfirmDelete(c: Container<AnyPayload>) {
-		const response = await deleteContainer(c);
-		if (response.ok) {
-			if (container.guid == container.organization) {
-				window.location.href = env.PUBLIC_BASE_URL;
-			} else {
-				await goto(resolve('/[guid=uuid]', { guid: container.organization }));
-				await invalidateAll();
-			}
-			confirmDelete = false;
-			closeDialog();
-		}
-	}
+	let { children, dialog = $bindable(), title }: Props = $props();
 
 	onMount(() => {
 		if (!dialog) return;
 		const handleBackdropClick = (e: MouseEvent) => {
 			// Native <dialog> backdrop clicks fire on the dialog element itself
 			if (e.target === dialog) {
-				closeDialog();
+				dialog.close();
 			}
 		};
 		dialog.addEventListener('click', handleBackdropClick);
@@ -70,82 +26,22 @@
 
 <dialog bind:this={dialog}>
 	<div>
-		{#if confirmDelete}
-			<form class="details" method="dialog" onsubmit={() => handleConfirmDelete(container)}>
-				<button
-					class="action-button action-button--size-s"
-					onclick={() => closeDialog()}
-					type="button"
-				>
-					<Close />
-					<span class="is-visually-hidden">{$_('cancel')}</span>
-				</button>
+		<p class="dialog-actions">
+			<span>{title}</span>
 
-				<h2>
-					{$_('confirm_delete_dialog.heading', {
-						values: {
-							title: 'title' in container.payload ? container.payload.title : container.payload.name
-						}
-					})}
-				</h2>
+			<button
+				class="button-xs button-alternative system-primary"
+				onclick={() => dialog.close()}
+				type="button"
+			>
+				<Close />
+				<span class="is-visually-hidden">{$_('close')}</span>
+			</button>
+		</p>
 
-				<p>
-					{$_('confirm_delete_dialog.message', {
-						values: {
-							count: relatedContainers.length
-						}
-					})}
-				</p>
-
-				<button class="button-primary button-xs system-primary" type="submit">
-					{$_('confirm_delete_dialog.button', {
-						values: {
-							title: 'title' in container.payload ? container.payload.title : container.payload.name
-						}
-					})}
-				</button>
-			</form>
-		{:else}
-			<p class="dialog-actions">
-				<span>{title}</span>
-
-				<button
-					class="button-xs button-alternative system-primary"
-					onclick={() => closeDialog()}
-					type="button"
-				>
-					<Close />
-					<span class="is-visually-hidden">{$_('close')}</span>
-				</button>
-			</p>
-
-			<div class="details">
-				{@render children()}
-
-				<footer class="dialog-footer-actions">
-					{#if $applicationState.containerDetailView.editable && $mayDeleteContainer(container)}
-						<button
-							class="button-alternative button-xs system-danger"
-							onclick={(e) => {
-								e.preventDefault();
-								confirmDelete = true;
-							}}
-							type="button"
-						>
-							<TrashBin />
-							{$_('delete.name', {
-								values: {
-									name:
-										'title' in container.payload ? container.payload.title : container.payload.name
-								}
-							})}
-						</button>
-					{/if}
-
-					{@render actions?.()}
-				</footer>
-			</div>
-		{/if}
+		<div class="details">
+			{@render children()}
+		</div>
 	</div>
 </dialog>
 
@@ -174,43 +70,12 @@
 		color: var(--color-gray-500);
 	}
 
-	footer {
-		padding: 1.5rem;
-	}
-
-	.dialog-footer-actions {
-		align-items: center;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		justify-content: flex-start;
-	}
-
-	form {
-		padding: 3rem;
-	}
-
-	h2 {
-		color: var(--color-gray-600);
-		font-size: 1.25rem;
-		font-weight: 600;
-		line-height: 1.25;
-		margin: 0 0 0.5rem;
-	}
-
 	p {
 		color: var(--color-gray-500);
 		margin: 0 0 1.5rem;
 	}
 
-	.action-button {
-		position: absolute;
-		right: 0.5rem;
-		top: 0.5rem;
-	}
-
-	.button-primary {
-		display: block;
-		width: 100%;
+	.details {
+		padding-bottom: 3rem;
 	}
 </style>

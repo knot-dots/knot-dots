@@ -72,25 +72,35 @@ test('create and delete', async ({ dotsBoard, testOrganization }) => {
 	await expect(dotsBoard.card(titleForSecondGoal)).toBeVisible();
 });
 
-test('custom favicon support', async ({ page, testOrganization }) => {
-	await page.goto(`/${testOrganization.guid}`);
-	await page.getByRole('checkbox', { name: 'Edit mode' }).check();
-	await page.getByRole('button', { name: 'Show all properties' }).click();
+test('custom favicon support', async ({ isMobile, landingPage, testOrganization }) => {
+	await landingPage.goto(`/${testOrganization.guid}`);
+	await landingPage.header.editModeToggle.check();
 
-	const fileChooserPromise = page.waitForEvent('filechooser');
-	await page.getByText('Custom favicon').click();
+	if (isMobile) {
+		await landingPage.sidebar.burgerMenu.click();
+	}
+
+	await landingPage.sidebar.openAdministrationMenu(landingPage.sidebar.organizationPanel);
+	await landingPage.sidebar.locator.getByRole('menuitem', { name: 'Configuration' }).click();
+
+	const fileChooserPromise = landingPage.page.waitForEvent('filechooser');
+	await landingPage.page.getByText('Custom favicon').click();
 	const fileChooser = await fileChooserPromise;
-	const saveResponse = page.waitForResponse(
+	const saveResponse = landingPage.page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);
 	await fileChooser.setFiles(path.resolve(import.meta.dirname, 'pnk-favicon-32.png'));
 	await saveResponse;
-	await expect(page.getByRole('img', { name: 'Custom favicon' })).toBeVisible();
-	const url = await page.getByRole('img', { name: 'Custom favicon' }).getAttribute('src');
+	await expect(landingPage.page.getByRole('img', { name: 'Custom favicon' })).toBeVisible();
+	const url = await landingPage.page
+		.getByRole('img', { name: 'Custom favicon' })
+		.getAttribute('src');
 
-	await page.reload();
-	expect(await page.locator('head link[rel="icon"]').getAttribute('href')).toBe(url);
-	expect(await page.locator('head link[rel="icon"]').getAttribute('type')).toBe('image/png');
+	await landingPage.page.reload();
+	expect(await landingPage.page.locator('head link[rel="icon"]').getAttribute('href')).toBe(url);
+	expect(await landingPage.page.locator('head link[rel="icon"]').getAttribute('type')).toBe(
+		'image/png'
+	);
 });
 
 test('AI badge shows level of AI contribution', async ({ aiGoal, programPage, testProgram }) => {

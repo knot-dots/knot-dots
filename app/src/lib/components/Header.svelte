@@ -284,14 +284,6 @@
 			>
 				<Users />
 			</a>
-		{:else if !overlay && !$overlayStore?.key && $ability.can('manage-users', selectedContext)}
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
 		{/if}
 
 		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}

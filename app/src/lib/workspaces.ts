@@ -1,5 +1,6 @@
 import type { Component } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
+import UsersGroup from '~icons/flowbite/users-group-outline';
 import ChartBar from '~icons/knotdots/chart-bar';
 import ChartLine from '~icons/knotdots/chart-line';
 import ChartMixed from '~icons/knotdots/chart-mixed';
@@ -18,7 +19,6 @@ import Program from '~icons/knotdots/program';
 import Resources from '~icons/knotdots/resources_v2';
 import RuleDatabase from '~icons/knotdots/rule-database';
 import Tag from '~icons/knotdots/tag';
-import Users from '~icons/knotdots/users';
 import Template from '~icons/knotdots/template';
 import {
 	type Container,
@@ -307,7 +307,7 @@ export const workspaces: WorkspaceDefinition[] = [
 	},
 	{
 		key: 'users',
-		icon: Users,
+		icon: UsersGroup,
 		module: 'organizing',
 		views: {
 			default: '/user-management'
