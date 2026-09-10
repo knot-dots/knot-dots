@@ -2701,11 +2701,11 @@ export function findAncestors<T extends Container<AnyPayload>>(
 	return Array.from(ancestors.values());
 }
 
-export function findDescendants<T extends Container<AnyPayload>>(
+function collectDescendants<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],
 	predicate: Predicate[]
-): T[] {
+) {
 	const descendants = new Map<string, T>();
 
 	function traverse(current: T) {
@@ -2724,7 +2724,43 @@ export function findDescendants<T extends Container<AnyPayload>>(
 	}
 
 	traverse(container);
-	return Array.from(descendants.values());
+	return descendants;
+}
+
+function hasMultipleParents(container: Container<AnyPayload>, predicate: Predicate) {
+	return (
+		container.relation.filter(
+			(r) => r.subject == container.guid && r.predicate == predicate && r.object != container.guid
+		).length > 1
+	);
+}
+
+// With ignoreMultiParentNodes, descendants that have several parents via that
+// predicate are left out together with everything below them, e.g. so that
+// deleting one program does not take along what still belongs to another one.
+export function findDescendants<T extends Container<AnyPayload>>(
+	container: T,
+	containers: T[],
+	predicate: Predicate[],
+	ignoreMultiParentNodes?: Predicate
+): T[] {
+	const descendants = collectDescendants(container, containers, predicate);
+
+	if (!ignoreMultiParentNodes) {
+		return Array.from(descendants.values());
+	}
+
+	const ignored = new Set<string>();
+	for (const node of descendants.values()) {
+		if (hasMultipleParents(node, ignoreMultiParentNodes)) {
+			ignored.add(node.guid);
+			for (const guid of collectDescendants(node, containers, predicate).keys()) {
+				ignored.add(guid);
+			}
+		}
+	}
+
+	return Array.from(descendants.values()).filter(({ guid }) => !ignored.has(guid));
 }
 
 export function computeProgressSegments(
