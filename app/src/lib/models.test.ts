@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 import { z } from 'zod';
 import {
+	type AnyPayload,
 	type Container,
 	container,
 	findDescendants,
