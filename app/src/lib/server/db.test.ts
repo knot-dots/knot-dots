@@ -21,6 +21,7 @@ import {
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
+	deleteContainerRecursively,
 	getAdoptedContainerGuids,
 	getAllContainersRelatedToProgram,
 	getContainerCopyGraph,
@@ -592,6 +593,50 @@ test('a container in several programs appears among the members of each', async 
 	)(connection);
 	expect(relatedToFirst.map(({ guid }) => guid)).toContain(measure.guid);
 	expect(relatedToSecond.map(({ guid }) => guid)).toContain(measure.guid);
+});
+
+test('deleting a program only deletes members that belong to no other program', async ({
+	connection
+}: Fixtures) => {
+	const deletedProgram = await createContainer(
+		initializeNewContainer({ title: 'Deleted program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const remainingProgram = await createContainer(
+		initializeNewContainer({ title: 'Remaining program', type: payloadTypes.enum.program }, [])
+	)(connection);
+	const sharedGoal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [
+			{
+				object: deletedProgram.guid,
+				position: 0,
+				predicate: predicates.enum['is-part-of-program']
+			},
+			{
+				object: remainingProgram.guid,
+				position: 0,
+				predicate: predicates.enum['is-part-of-program']
+			}
+		])
+	)(connection);
+	const exclusiveMeasure = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.measure), [
+			{ object: sharedGoal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+			{ object: deletedProgram.guid, position: 1, predicate: predicates.enum['is-part-of-program'] }
+		])
+	)(connection);
+
+	await deleteContainerRecursively(await getContainerByGuid(deletedProgram.guid)(connection))(
+		connection
+	);
+
+	await expect(getContainerByGuid(exclusiveMeasure.guid)(connection)).rejects.toThrow();
+
+	const persistedSharedGoal = await getContainerByGuid(sharedGoal.guid)(connection);
+	expect(
+		persistedSharedGoal.relation
+			.filter(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+			.map(({ object }) => object)
+	).toEqual([remainingProgram.guid]);
 });
 
 test('omitting the template filter returns a complete mixed program hierarchy', async ({

@@ -16,6 +16,7 @@ import {
 	type Container,
 	container,
 	createContainerSchema,
+	findDeletableDescendants,
 	findDescendants,
 	grantKindsForRole,
 	type HelpSlug,
@@ -643,7 +644,7 @@ export function deleteContainerRecursively(container: Container<AnyPayload>) {
 
 			await deleteContainer(container)(txConnection);
 
-			for (const part of findDescendants(container, parts, [
+			for (const part of findDeletableDescendants(container, parts, [
 				predicates.enum['is-part-of'],
 				predicates.enum['is-part-of-program'],
 				predicates.enum['is-part-of-category']
