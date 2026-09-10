@@ -146,12 +146,12 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('update', measure)).toBe(false);
 	});
 
-	test('containers managed by the organizational unit are modifiable by unit admins', () => {
-		// Without a team of its own, managed_by defaults to the organizational
-		// unit (or organization), so unit admins qualify via the managed_by rule.
+	test('containers belonging to the organizational unit are modifiable by unit admins', () => {
+		// Unit admins qualify through the organizational_unit column alone, no
+		// matter which team manages the container.
 		const ability = defineAbilityFor(makeUser({ adminOf: [organizationalUnit] }));
 		const measure = makeContainer(payloadTypes.enum.measure, {
-			managed_by: organizationalUnit,
+			managed_by: otherTeam,
 			organizational_unit: organizationalUnit
 		});
 		expect(ability.can('create', measure)).toBe(true);
@@ -764,6 +764,34 @@ describe('the basic permission matrix by member role', () => {
 				const measure = scopedContainer(scope, payloadTypes.enum.measure);
 				expect(basicActions.filter((action) => ability.can(action, measure))).toEqual([]);
 			});
+		});
+	}
+});
+
+describe('scope rules apply regardless of managed_by', () => {
+	// Admins and heads reach content through the organization and
+	// organizational_unit columns alone; collaborators depend on managed_by.
+	for (const scope of ['organization', 'organizational unit'] as Scope[]) {
+		const measure = makeContainer(payloadTypes.enum.measure, {
+			managed_by: otherTeam,
+			organizational_unit: scope === 'organizational unit' ? organizationalUnit : null
+		});
+
+		test.for([memberRoles.enum.administrator, memberRoles.enum.head] as MemberRole[])(
+			`a %s modifies content of the ${scope} managed by another team`,
+			(role) => {
+				const ability = defineAbilityFor(userWithRoleOn(role, scope));
+				expect(ability.can('create', measure)).toBe(true);
+				expect(ability.can('update', measure)).toBe(true);
+				expect(ability.can('delete', measure)).toBe(true);
+			}
+		);
+
+		test(`a collaborator of the ${scope} may not touch content managed by another team`, () => {
+			const ability = defineAbilityFor(userWithRoleOn(memberRoles.enum.collaborator, scope));
+			expect(ability.can('create', measure)).toBe(false);
+			expect(ability.can('update', measure)).toBe(false);
+			expect(ability.can('delete', measure)).toBe(false);
 		});
 	}
 });
