@@ -14,7 +14,6 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -287,7 +286,6 @@
 			<footer class="footer-action-bar">
 				<RelationButton {container} />
 				<CreateTemplateButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 

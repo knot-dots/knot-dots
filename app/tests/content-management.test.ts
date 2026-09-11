@@ -41,7 +41,7 @@ test('create and delete', async ({ dotsBoard, testOrganization }) => {
 	await dialog.getByRole('textbox', { name: 'Title' }).fill(titleForSecondGoal);
 	await dialog.getByRole('button', { name: 'Save' }).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleForSecondGoal);
-	await expect(dotsBoard.overlay.deleteButton).toBeVisible();
+	await expect(dotsBoard.overlay.settingsButton).toBeVisible();
 
 	// Verify both cards are visible
 	await expect(dotsBoard.card(titleForFirstGoal)).toBeVisible();
@@ -52,6 +52,7 @@ test('create and delete', async ({ dotsBoard, testOrganization }) => {
 	await expect(dotsBoard.overlay.title).toHaveText(titleForFirstGoal);
 
 	// Click delete
+	await dotsBoard.overlay.settingsButton.click();
 	await dotsBoard.overlay.deleteButton.click();
 
 	// Verify confirmation dialog

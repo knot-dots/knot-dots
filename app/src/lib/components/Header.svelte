@@ -11,15 +11,14 @@
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
-	import Users from '~icons/knotdots/users';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
 	import BulkActions from '$lib/components/BulkActions.svelte';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -52,8 +51,6 @@
 		isProgramContainer,
 		isReportContainer,
 		isSimpleMeasureContainer,
-		overlayKey,
-		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
 	import {
@@ -261,42 +258,6 @@
 	{/if}
 
 	<div class="actions">
-		{#if overlay && container && $ability.can('manage-users', container)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={overlayURL(page.url, overlayKey.enum.members, container.guid)}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('manage-users', container)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
-					guid: selectedContext.guid,
-					contentGuid: container.guid
-				})}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{/if}
-
-		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}
-			<button
-				aria-label={$_('favorite')}
-				class="action-button action-button--size-l action-button--favorite"
-				onclick={toggleFavorite}
-				type="button"
-			>
-				{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
-			</button>
-		{/if}
-
 		{#if (!overlay && !$overlayStore?.key) || overlay}
 			{#if $user.isAuthenticated}
 				<EditModeToggle />
@@ -332,7 +293,25 @@
 			{/if}
 		{/if}
 
-		{@render settings?.()}
+		{#if settings}
+			{@render settings()}
+		{:else if !overlay && page.data.title && $ability.can('update', selectedContext)}
+			<CascadingMenu title={$_('container_settings_dropdown.title')}>
+				<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
+					{#if isFavorite}
+						<StarSolid />
+						<span>
+							<strong>{$_('remove_from_sidebar')}</strong>
+						</span>
+					{:else}
+						<StarOutline />
+						<span>
+							<strong>{$_('add_to_sidebar')}</strong>
+						</span>
+					{/if}
+				</button>
+			</CascadingMenu>
+		{/if}
 	</div>
 </header>
 
@@ -534,11 +513,6 @@
 		display: flex;
 		gap: inherit;
 		margin-right: auto;
-	}
-
-	.divider {
-		border-left: solid 1px var(--color-gray-200);
-		height: 1.5rem;
 	}
 
 	.dropdown-button.dropdown-button--command {

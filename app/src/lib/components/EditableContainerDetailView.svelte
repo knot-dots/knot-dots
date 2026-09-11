@@ -20,7 +20,7 @@
 	interface Props {
 		container: Container;
 		data?: Snippet;
-		footer: Snippet;
+		footer?: Snippet;
 		properties?: Snippet;
 	}
 

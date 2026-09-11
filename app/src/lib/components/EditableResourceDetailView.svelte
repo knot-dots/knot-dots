@@ -4,7 +4,6 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
@@ -76,7 +75,6 @@
 				<RelationButton {container} />
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 	</EditableContainerDetailView>

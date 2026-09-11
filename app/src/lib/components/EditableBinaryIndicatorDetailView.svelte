@@ -12,7 +12,6 @@
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -192,7 +191,6 @@
 			<footer class="footer-action-bar">
 				<CreateCopyButton {container} />
 				<CreateTemplateButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 

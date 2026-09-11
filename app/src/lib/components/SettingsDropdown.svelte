@@ -1,23 +1,32 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
+	import StarSolid from '~icons/flowbite/star-solid';
+	import StarOutline from '~icons/flowbite/star-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Link from '~icons/knotdots/link';
-	import { goto } from '$app/navigation';
+	import Users from '~icons/knotdots/users';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import saveContainer from '$lib/client/saveContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
+	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		type AnyPayload,
 		type Container,
 		getContextIdentifier,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
+		overlayKey,
+		overlayURL,
 		visibility
 	} from '$lib/models';
-	import { applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
+	import { ability, applicationState, mayDeleteContainer, overlayHistory } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -71,15 +80,35 @@
 		}, 2000);
 	}
 
+	let overlay = getContext('overlay');
+
+	let membersURL = $derived.by(() => {
+		if (overlay) {
+			return overlayURL(page.url, overlayKey.enum.members, container.guid);
+		} else {
+			return resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
+				guid: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid,
+				contentGuid: container.guid
+			});
+		}
+	});
+
 	async function handleDelete() {
 		const response = await deleteContainer(container);
 		if (response.ok) {
-			if ($overlayHistory.length > 1) {
-				$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
-				const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
-				await goto(`#${newParams.toString()}`, { invalidateAll: true });
+			if (overlay) {
+				if ($overlayHistory.length > 1) {
+					$overlayHistory = $overlayHistory.slice(0, $overlayHistory.length - 1);
+					const newParams = $overlayHistory[$overlayHistory.length - 1] as URLSearchParams;
+					await goto(`#${newParams.toString()}`, { invalidateAll: true });
+				} else {
+					await goto('#', { invalidateAll: true });
+				}
 			} else {
-				await goto('#', { invalidateAll: true });
+				await goto(
+					resolve('/[guid=uuid]', { guid: container.organizational_unit ?? container.organization })
+				);
+				await invalidateAll();
 			}
 		} else {
 			const error = await response.json();
@@ -88,9 +117,64 @@
 		confirmDeleteDialog.close();
 	}
 
+	let favoritesList = getFavoriteListContext();
+
+	let href = $derived(
+		page.url.searchParams.size
+			? `${page.url.pathname}?${page.url.searchParams.toString()}`
+			: page.url.pathname
+	);
+
+	let isFavorite = $derived(
+		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
+			(f) => f.href === href
+		) > -1
+	);
+
+	async function toggleFavorite() {
+		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
+		const index = favoritesList[key].findIndex((f) => f.href === href);
+
+		favoritesList[key] =
+			index > -1
+				? favoritesList[key].filter((_, i) => i !== index)
+				: [...favoritesList[key], { href, title: page.data.title ?? $_('new_favorite') }];
+
+		const selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
+
+		const response = await saveContainer({
+			...selectedContext,
+			payload: { ...selectedContext.payload, favorite: favoritesList[key] }
+		});
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			selectedContext.revision = updatedContainer.revision;
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
+
 	const items = $derived([
 		{
-			condition: container.payload.visibility === visibility.enum.public,
+			condition:
+				$ability.can('manage-users', container) &&
+				!isOrganizationContainer(container) &&
+				!isOrganizationalUnitContainer(container),
+			snippet: membersLink
+		},
+		{
+			condition:
+				!overlay &&
+				page.data.title &&
+				$ability.can(
+					'update',
+					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+				),
+			snippet: toggleFavoriteButton
+		},
+		{
+			condition: container?.payload.visibility === visibility.enum.public,
 			snippet: embedCodeMenu
 		},
 		{
@@ -103,6 +187,37 @@
 		}
 	]);
 </script>
+
+{#snippet membersLink(openSubMenuTitle: string)}
+	{#if openSubMenuTitle === ''}
+		<a class="cascading-menu-item" href={membersURL}>
+			<Users />
+			<span>
+				<strong>{$_('members')}</strong>
+			</span>
+		</a>
+
+		<div class="cascading-menu-divider" role="presentation"></div>
+	{/if}
+{/snippet}
+
+{#snippet toggleFavoriteButton(openSubMenuTitle: string)}
+	{#if openSubMenuTitle === ''}
+		<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
+			{#if isFavorite}
+				<StarSolid />
+				<span>
+					<strong>{$_('remove_from_sidebar')}</strong>
+				</span>
+			{:else}
+				<StarOutline />
+				<span>
+					<strong>{$_('add_to_sidebar')}</strong>
+				</span>
+			{/if}
+		</button>
+	{/if}
+{/snippet}
 
 {#snippet embedCodeMenu(openSubMenuTitle: string, openSubMenu: (title: string) => void)}
 	{#if openSubMenuTitle === ''}
