@@ -18,6 +18,7 @@
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
 	import BulkActions from '$lib/components/BulkActions.svelte';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -257,17 +258,6 @@
 	{/if}
 
 	<div class="actions">
-		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}
-			<button
-				aria-label={$_('favorite')}
-				class="action-button action-button--size-l action-button--favorite"
-				onclick={toggleFavorite}
-				type="button"
-			>
-				{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
-			</button>
-		{/if}
-
 		{#if (!overlay && !$overlayStore?.key) || overlay}
 			{#if $user.isAuthenticated}
 				<EditModeToggle />
@@ -303,7 +293,25 @@
 			{/if}
 		{/if}
 
-		{@render settings?.()}
+		{#if settings}
+			{@render settings()}
+		{:else if !overlay && page.data.title && $ability.can('update', selectedContext)}
+			<CascadingMenu title={$_('container_settings_dropdown.title')}>
+				<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
+					{#if isFavorite}
+						<StarSolid />
+						<span>
+							<strong>{$_('remove_from_sidebar')}</strong>
+						</span>
+					{:else}
+						<StarOutline />
+						<span>
+							<strong>{$_('add_to_sidebar')}</strong>
+						</span>
+					{/if}
+				</button>
+			</CascadingMenu>
+		{/if}
 	</div>
 </header>
 

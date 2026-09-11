@@ -3,6 +3,8 @@
 	import { _ } from 'svelte-i18n';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
+	import StarSolid from '~icons/flowbite/star-solid';
+	import StarOutline from '~icons/flowbite/star-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Link from '~icons/knotdots/link';
 	import Users from '~icons/knotdots/users';
@@ -10,8 +12,10 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
+	import saveContainer from '$lib/client/saveContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
+	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
 	import {
 		type AnyPayload,
 		type Container,
@@ -113,6 +117,44 @@
 		confirmDeleteDialog.close();
 	}
 
+	let favoritesList = getFavoriteListContext();
+
+	let href = $derived(
+		page.url.searchParams.size
+			? `${page.url.pathname}?${page.url.searchParams.toString()}`
+			: page.url.pathname
+	);
+
+	let isFavorite = $derived(
+		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
+			(f) => f.href === href
+		) > -1
+	);
+
+	async function toggleFavorite() {
+		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
+		const index = favoritesList[key].findIndex((f) => f.href === href);
+
+		favoritesList[key] =
+			index > -1
+				? favoritesList[key].filter((_, i) => i !== index)
+				: [...favoritesList[key], { href, title: page.data.title ?? $_('new_favorite') }];
+
+		const selectedContext = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
+
+		const response = await saveContainer({
+			...selectedContext,
+			payload: { ...selectedContext.payload, favorite: favoritesList[key] }
+		});
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			selectedContext.revision = updatedContainer.revision;
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
+
 	const items = $derived([
 		{
 			condition:
@@ -122,7 +164,17 @@
 			snippet: membersLink
 		},
 		{
-			condition: container.payload.visibility === visibility.enum.public,
+			condition:
+				!overlay &&
+				page.data.title &&
+				$ability.can(
+					'update',
+					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+				),
+			snippet: toggleFavoriteButton
+		},
+		{
+			condition: container?.payload.visibility === visibility.enum.public,
 			snippet: embedCodeMenu
 		},
 		{
@@ -146,6 +198,24 @@
 		</a>
 
 		<div class="cascading-menu-divider" role="presentation"></div>
+	{/if}
+{/snippet}
+
+{#snippet toggleFavoriteButton(openSubMenuTitle: string)}
+	{#if openSubMenuTitle === ''}
+		<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
+			{#if isFavorite}
+				<StarSolid />
+				<span>
+					<strong>{$_('remove_from_sidebar')}</strong>
+				</span>
+			{:else}
+				<StarOutline />
+				<span>
+					<strong>{$_('add_to_sidebar')}</strong>
+				</span>
+			{/if}
+		</button>
 	{/if}
 {/snippet}
 
