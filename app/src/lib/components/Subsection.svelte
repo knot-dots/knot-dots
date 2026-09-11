@@ -19,15 +19,13 @@
 		editable?: boolean;
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
-		useForm?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
 		parentContainer = $bindable(),
-		relatedContainers = $bindable(),
-		useForm = true
+		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -71,13 +69,13 @@
 	</section>
 {/snippet}
 
-{#if useForm}
-	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
-		{@render content()}
-	</form>
-{:else}
+<form
+	oninput={editable ? stopPropagation(requestSubmit) : undefined}
+	onsubmit={editable ? handleSubmit : undefined}
+	novalidate
+>
 	{@render content()}
-{/if}
+</form>
 
 <style>
 	@media (hover: hover) {

@@ -73,8 +73,8 @@
 		handleAddSection: (event: Event) => void;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
+		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
-		useForm?: boolean;
 	}
 
 	let {
@@ -83,8 +83,8 @@
 		handleAddSection,
 		heading = 'h2',
 		parentContainer = $bindable(),
-		relatedContainers = $bindable(),
-		useForm = true
+		preview = false,
+		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -268,7 +268,7 @@
 				bind:parentContainer
 				bind:relatedContainers
 				{editable}
-				fetchDisabled={!useForm}
+				fetchDisabled={preview}
 				{heading}
 			/>
 		{:else if isInlineHelpTextContainer(container) && editable}
@@ -316,20 +316,20 @@
 				bind:parentContainer
 				bind:relatedContainers
 				{editable}
-				fetchDisabled={isShadowItem || !useForm}
+				fetchDisabled={isShadowItem || preview}
 				{heading}
 			/>
 		{/if}
 	</section>
 {/snippet}
 
-{#if useForm}
-	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit(container)} novalidate>
-		{@render content()}
-	</form>
-{:else}
+<form
+	oninput={editable ? stopPropagation(requestSubmit) : undefined}
+	onsubmit={editable ? handleSubmit(container) : undefined}
+	novalidate
+>
 	{@render content()}
-{/if}
+</form>
 
 <style>
 	.details-section {

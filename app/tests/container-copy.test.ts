@@ -48,6 +48,20 @@ test('shows subordinate template content as a read-only detail preview', async (
 	await expect(sectionHeading).toBeVisible();
 	await expect(sectionHeading).toHaveAttribute('contenteditable', 'false');
 	await expect(preview).toContainText(section.payload.body!);
+
+	let previewSaveRequested = false;
+	dotsBoard.page.on('request', (request) => {
+		if (
+			new URL(request.url()).pathname === `/container/${section.guid}/revision` &&
+			request.method() === 'POST'
+		) {
+			previewSaveRequested = true;
+		}
+	});
+	await preview.locator('form').first().dispatchEvent('input');
+	await dotsBoard.page.waitForTimeout(2100);
+	expect(previewSaveRequested).toBe(false);
+
 	await expect(preview.getByRole('button', { name: 'Add section' })).toHaveCount(0);
 	await expect(preview.getByRole('button', { name: 'Settings' })).toHaveCount(0);
 });
