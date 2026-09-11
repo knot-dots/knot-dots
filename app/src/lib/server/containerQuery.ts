@@ -259,7 +259,8 @@ function canUseElasticsearch(params: ContainerQueryParams) {
 		params.excludeRelation.length === 0 &&
 		params.indicator.length === 0 &&
 		params.member.length === 0 &&
-		params.resource.length === 0
+		params.resource.length === 0 &&
+		!params.type.includes(payloadTypes.enum.actual_data)
 	);
 }
 
