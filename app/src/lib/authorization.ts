@@ -20,17 +20,16 @@ import type { User } from '$lib/stores';
 type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
-const specialTypes: PayloadType[] = [
+export const specialTypes: PayloadType[] = [
 	payloadTypes.enum.category,
 	payloadTypes.enum.help,
 	payloadTypes.enum.html,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
-	payloadTypes.enum.program,
 	payloadTypes.enum.term
 ];
 
-const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
+export const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
 
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
@@ -48,13 +47,6 @@ export default function defineAbilityFor(user: User) {
 			payloadTypes.enum.program,
 			payloadTypes.enum.simple_measure
 		]);
-		can('read', payloadTypes.enum.task, ['assignee']);
-		can(
-			'update',
-			[payloadTypes.enum.program, ...commonTypes],
-			['organization', 'organizational_unit']
-		);
-		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
 		can(['create', 'update', 'delete'], payloadTypes.enum.help, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
@@ -68,10 +60,10 @@ export default function defineAbilityFor(user: User) {
 		can('update', payloadTypes.enum.organizational_unit, {
 			guid: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
+		can(['create', 'update', 'delete'], commonTypes, {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
 		});
-		can(['create', 'update', 'delete'], [payloadTypes.enum.program, ...commonTypes], {
+		can(['create', 'update', 'delete'], commonTypes, {
 			organizational_unit: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(
@@ -105,16 +97,13 @@ export default function defineAbilityFor(user: User) {
 		can('create', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 		can(['delete'], commonTypes, {
 			managed_by: { $in: [...user.adminOf, ...user.headOf, ...user.collaboratorOf] }
 		});
 		can(['create', 'update', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
-			managed_by: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('update', payloadTypes.enum.program, ['chapterType'], {
 			managed_by: { $in: [...user.adminOf, ...user.headOf] }
 		});
 		can(
@@ -164,22 +153,11 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.organization,
 			guid: { $in: [...user.memberOf] }
 		});
-		can('read', payloadTypes.options, ['payload.editorialState'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
-		can('read', payloadTypes.enum.task, ['assignee'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: user.memberOf }
-		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: [...user.adminOf, ...user.headOf] }
-		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], ['payload.editorialState'], {
-			managed_by: { $in: [...user.adminOf, ...user.collaboratorOf, ...user.headOf] }
 		});
 	}
 

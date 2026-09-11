@@ -1,14 +1,18 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
 import defineAbilityFor, {
+	commonTypes,
 	grantKindsForRoleOn,
-	grantKindsForRoleOnSubordinates
+	grantKindsForRoleOnSubordinates,
+	specialTypes
 } from '$lib/authorization';
 import {
 	type AnyPayload,
 	type Container,
+	type MemberRole,
 	memberRoles,
 	newContainer,
+	type PayloadType,
 	payloadTypes,
 	predicates,
 	visibility
@@ -142,12 +146,12 @@ describe('create, update and delete via managed_by', () => {
 		expect(ability.can('update', measure)).toBe(false);
 	});
 
-	test('containers managed by the organizational unit are modifiable by unit admins', () => {
-		// Without a team of its own, managed_by defaults to the organizational
-		// unit (or organization), so unit admins qualify via the managed_by rule.
+	test('containers belonging to the organizational unit are modifiable by unit admins', () => {
+		// Unit admins qualify through the organizational_unit column alone, no
+		// matter which team manages the container.
 		const ability = defineAbilityFor(makeUser({ adminOf: [organizationalUnit] }));
 		const measure = makeContainer(payloadTypes.enum.measure, {
-			managed_by: organizationalUnit,
+			managed_by: otherTeam,
 			organizational_unit: organizationalUnit
 		});
 		expect(ability.can('create', measure)).toBe(true);
@@ -324,6 +328,26 @@ describe('field-level rules', () => {
 			ability.can('read', makeContainer(payloadTypes.enum.measure), 'payload.editorialState')
 		).toBe(true);
 		expect(ability.can('read', makeContainer(payloadTypes.enum.task), 'assignee')).toBe(true);
+		// the general read rule carries no field restriction
+		expect(ability.can('read', makeContainer(payloadTypes.enum.measure), 'payload.title')).toBe(
+			true
+		);
+	});
+
+	test('admins and heads may edit the organization except for its custom domain', () => {
+		for (const user of [
+			makeUser({ adminOf: [organization] }),
+			makeUser({ headOf: [organization] })
+		]) {
+			const ability = defineAbilityFor(user);
+			const org = testContainer.parse({
+				guid: organization,
+				managed_by: organization,
+				payload: { name: 'Org', type: payloadTypes.enum.organization }
+			});
+			expect(ability.can('update', org, 'payload.name')).toBe(true);
+			expect(ability.can('update', org, 'payload.customDomain')).toBe(false);
+		}
 	});
 
 	test('the organization and organizational_unit fields are protected', () => {
@@ -340,43 +364,6 @@ describe('field-level rules', () => {
 		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
 		expect(ability.can('update', template)).toBe(true);
 		expect(ability.can('update', template, 'indicatorCategory')).toBe(false);
-	});
-});
-
-describe('indicator types follow the common content rules', () => {
-	const template = makeContainer(
-		payloadTypes.enum.indicator_template,
-		{ managed_by: organization, organization },
-		{ unit: '%' }
-	);
-
-	test('admins and heads manage them organization-wide', () => {
-		for (const user of [
-			makeUser({ adminOf: [organization] }),
-			makeUser({ headOf: [organization] })
-		]) {
-			const ability = defineAbilityFor(user);
-			expect(ability.can('create', template)).toBe(true);
-			expect(ability.can('update', template)).toBe(true);
-			expect(ability.can('delete', template)).toBe(true);
-		}
-	});
-
-	test('collaborators manage them through the managing team only', () => {
-		const viaManagedBy = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
-		expect(viaManagedBy.can('create', template)).toBe(true);
-		expect(viaManagedBy.can('update', template)).toBe(true);
-		expect(viaManagedBy.can('delete', template)).toBe(true);
-
-		// a collaborator of the organization no longer reaches an indicator
-		// template that is managed by a team they are not part of
-		const foreign = makeContainer(
-			payloadTypes.enum.indicator_template,
-			{ managed_by: team, organization },
-			{ unit: '%' }
-		);
-		const ability = defineAbilityFor(makeUser({ collaboratorOf: [organization] }));
-		expect(ability.can('update', foreign)).toBe(false);
 	});
 });
 
@@ -545,5 +532,340 @@ describe('grantKindsForRoleOnSubordinates', () => {
 		expect(grantKindsForRoleOnSubordinates(measure, viewer, memberRoles.enum.collaborator)).toEqual(
 			['create', 'update', 'delete']
 		);
+	});
+});
+
+// The complete permission matrix of the role-based system: one test per member
+// role × payload type × scope, pinning which of the four basic actions the
+// role permits on an object belonging to that scope. This is the baseline for
+// the migration to individually assignable grants — the migrated rules must
+// reproduce exactly this matrix.
+//
+// The objects are modelled the way scope-owned content is stored: managed by
+// the scope itself (content managed by a team of its own is covered by the
+// managed_by suites above) with members-only visibility. The organization and
+// the organizational unit appear both as scope and as payload type.
+
+const basicActions = ['read', 'create', 'update', 'delete'] as const;
+
+type BasicAction = (typeof basicActions)[number];
+
+const allBasicActions: BasicAction[] = ['read', 'create', 'update', 'delete'];
+const readAndUpdate: BasicAction[] = ['read', 'update'];
+const readOnly: BasicAction[] = ['read'];
+
+type Scope = 'organization' | 'organizational unit';
+
+function scopeGuidOf(scope: Scope) {
+	return scope === 'organization' ? organization : organizationalUnit;
+}
+
+function userWithRoleOn(role: MemberRole, scope: Scope): User {
+	const guid = scopeGuidOf(scope);
+	return makeUser({
+		adminOf: role === memberRoles.enum.administrator ? [guid] : [],
+		collaboratorOf: role === memberRoles.enum.collaborator ? [guid] : [],
+		headOf: role === memberRoles.enum.head ? [guid] : [],
+		memberOf: [guid]
+	});
+}
+
+// some payload schemas require more than a title
+const requiredPayloadFields: Partial<Record<PayloadType, Record<string, unknown>>> = {
+	[payloadTypes.enum.actual_data]: { indicator: crypto.randomUUID() },
+	[payloadTypes.enum.chapter]: { number: '1' },
+	[payloadTypes.enum.indicator_template]: { unit: 'unit.euro' },
+	[payloadTypes.enum.organization]: { name: 'Lorem ipsum' },
+	[payloadTypes.enum.organizational_unit]: { name: 'Lorem ipsum' },
+	[payloadTypes.enum.page]: { body: 'Lorem ipsum' },
+	[payloadTypes.enum.resource_data]: {
+		resource: crypto.randomUUID(),
+		resourceDataType: 'resource_data_type.budget'
+	},
+	[payloadTypes.enum.resource_data_collection]: {
+		resourceDataType: 'resource_data_type.budget'
+	}
+};
+
+function scopedContainer(scope: Scope, type: PayloadType) {
+	const namedByTitle =
+		type !== payloadTypes.enum.organization && type !== payloadTypes.enum.organizational_unit;
+	return testContainer.parse({
+		// the organization and the organizational unit carry their own guid,
+		// which some of the rules match on
+		...(type === payloadTypes.enum.organization ? { guid: organization } : {}),
+		...(type === payloadTypes.enum.organizational_unit ? { guid: organizationalUnit } : {}),
+		managed_by: scopeGuidOf(scope),
+		organization,
+		organizational_unit: scope === 'organizational unit' ? organizationalUnit : null,
+		payload: {
+			...(namedByTitle ? { title: 'Lorem ipsum' } : {}),
+			...requiredPayloadFields[type],
+			type,
+			visibility: visibility.enum.members
+		}
+	});
+}
+
+const permissionMatrix: Record<
+	Scope,
+	Array<{ types: PayloadType[]; permitted: Record<MemberRole, BasicAction[]> }>
+> = {
+	organization: [
+		{
+			types: commonTypes,
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: allBasicActions,
+				observer: readOnly
+			}
+		},
+		{
+			// managing these is reserved for admins and heads of the organization
+			types: [
+				payloadTypes.enum.category,
+				payloadTypes.enum.term,
+				payloadTypes.enum.help,
+				payloadTypes.enum.organizational_unit
+			],
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		},
+		{
+			// the organization itself may be updated but not created or deleted;
+			// update on html merely stems from the field-level rule that lets
+			// admins and heads move containers between organizational units
+			types: [payloadTypes.enum.organization, payloadTypes.enum.html],
+			permitted: {
+				administrator: readAndUpdate,
+				head: readAndUpdate,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		}
+	],
+	'organizational unit': [
+		{
+			types: commonTypes,
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: allBasicActions,
+				observer: readOnly
+			}
+		},
+		{
+			types: [payloadTypes.enum.category, payloadTypes.enum.term],
+			permitted: {
+				administrator: allBasicActions,
+				head: allBasicActions,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		},
+		{
+			// the unit itself may be renamed by its admins and heads; adding and
+			// removing units stays with the organization
+			types: [payloadTypes.enum.organizational_unit],
+			permitted: {
+				administrator: readAndUpdate,
+				head: readAndUpdate,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		},
+		{
+			// these belong to the organization, so unit roles yield no rights
+			types: [payloadTypes.enum.help, payloadTypes.enum.html, payloadTypes.enum.organization],
+			permitted: {
+				administrator: readOnly,
+				head: readOnly,
+				collaborator: readOnly,
+				observer: readOnly
+			}
+		}
+	]
+};
+
+function inWords(actions: BasicAction[]) {
+	if (actions.length === basicActions.length) {
+		return 'read, create, update and delete';
+	}
+	if (actions.length === 1) {
+		return 'only read';
+	}
+	return `only ${actions.join(' and ')}`;
+}
+
+describe('the basic permission matrix by member role', () => {
+	test('the matrix covers every payload type exactly once per scope', () => {
+		for (const scope of Object.keys(permissionMatrix) as Scope[]) {
+			const covered = permissionMatrix[scope].flatMap(({ types }) => types);
+			expect([...covered].sort()).toEqual([...commonTypes, ...specialTypes].sort());
+		}
+	});
+
+	for (const scope of Object.keys(permissionMatrix) as Scope[]) {
+		describe(`objects belonging to an ${scope}`, () => {
+			for (const { types, permitted } of permissionMatrix[scope]) {
+				for (const role of memberRoles.options) {
+					const ability = defineAbilityFor(userWithRoleOn(role, scope));
+					test.for(types)(`a ${role} may ${inWords(permitted[role])}: %s`, (type) => {
+						expect(
+							basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
+						).toEqual(permitted[role]);
+					});
+				}
+			}
+
+			test('a registered user without a role in the scope has no access', () => {
+				const ability = defineAbilityFor(makeUser());
+				const measure = scopedContainer(scope, payloadTypes.enum.measure);
+				expect(basicActions.filter((action) => ability.can(action, measure))).toEqual([]);
+			});
+		});
+	}
+});
+
+describe('scope rules apply regardless of managed_by', () => {
+	// Admins and heads reach content through the organization and
+	// organizational_unit columns alone; collaborators depend on managed_by.
+	for (const scope of ['organization', 'organizational unit'] as Scope[]) {
+		const measure = makeContainer(payloadTypes.enum.measure, {
+			managed_by: otherTeam,
+			organizational_unit: scope === 'organizational unit' ? organizationalUnit : null
+		});
+
+		test.for([memberRoles.enum.administrator, memberRoles.enum.head] as MemberRole[])(
+			`a %s modifies content of the ${scope} managed by another team`,
+			(role) => {
+				const ability = defineAbilityFor(userWithRoleOn(role, scope));
+				expect(ability.can('create', measure)).toBe(true);
+				expect(ability.can('update', measure)).toBe(true);
+				expect(ability.can('delete', measure)).toBe(true);
+			}
+		);
+
+		test(`a collaborator of the ${scope} may not touch content managed by another team`, () => {
+			const ability = defineAbilityFor(userWithRoleOn(memberRoles.enum.collaborator, scope));
+			expect(ability.can('create', measure)).toBe(false);
+			expect(ability.can('update', measure)).toBe(false);
+			expect(ability.can('delete', measure)).toBe(false);
+		});
+
+		test.for([memberRoles.enum.administrator, memberRoles.enum.head] as MemberRole[])(
+			`a %s manages users of measures in the ${scope} managed by another team`,
+			(role) => {
+				const ability = defineAbilityFor(userWithRoleOn(role, scope));
+				expect(ability.can('manage-users', measure)).toBe(true);
+			}
+		);
+	}
+
+	test('members read the organizational unit itself regardless of managed_by', () => {
+		const ability = defineAbilityFor(makeUser({ memberOf: [organizationalUnit] }));
+		for (const unitVisibility of [visibility.enum.members, visibility.enum.organization]) {
+			const unit = testContainer.parse({
+				guid: organizationalUnit,
+				managed_by: otherTeam,
+				payload: {
+					name: 'Unit',
+					type: payloadTypes.enum.organizational_unit,
+					visibility: unitVisibility
+				}
+			});
+			expect(ability.can('read', unit)).toBe(true);
+		}
+	});
+});
+
+describe('manage-users by member role', () => {
+	// user management exists on these types only; anywhere else even admins may
+	// not manage users
+	const managedTypesByScope: Record<Scope, PayloadType[]> = {
+		organization: [
+			payloadTypes.enum.measure,
+			payloadTypes.enum.organization,
+			payloadTypes.enum.organizational_unit,
+			payloadTypes.enum.program,
+			payloadTypes.enum.simple_measure
+		],
+		'organizational unit': [
+			payloadTypes.enum.measure,
+			payloadTypes.enum.organizational_unit,
+			payloadTypes.enum.program,
+			payloadTypes.enum.simple_measure
+		]
+	};
+
+	for (const scope of Object.keys(managedTypesByScope) as Scope[]) {
+		for (const role of memberRoles.options) {
+			const mayManage = role === memberRoles.enum.administrator || role === memberRoles.enum.head;
+			const ability = defineAbilityFor(userWithRoleOn(role, scope));
+			test.for(payloadTypes.options)(
+				`a ${role} of an ${scope} may ${mayManage ? 'manage users of the supporting types' : 'never manage users'}: %s`,
+				(type) => {
+					expect(ability.can('manage-users', scopedContainer(scope, type))).toBe(
+						mayManage && managedTypesByScope[scope].includes(type)
+					);
+				}
+			);
+		}
+	}
+});
+
+describe('read access to team-managed content within the scope', () => {
+	// content managed by a team of its own is readable through the scope roles
+	// only as far as the visibility rules allow
+	function teamManagedMeasure(scope: Scope, teamVisibility: string) {
+		return makeContainer(
+			payloadTypes.enum.measure,
+			{
+				managed_by: team,
+				organizational_unit: scope === 'organizational unit' ? organizationalUnit : null
+			},
+			{ visibility: teamVisibility }
+		);
+	}
+
+	for (const scope of ['organization', 'organizational unit'] as Scope[]) {
+		test(`members-only content in an ${scope} is readable by admins and heads only`, () => {
+			const container = teamManagedMeasure(scope, visibility.enum.members);
+			expect(
+				memberRoles.options.filter((role) =>
+					defineAbilityFor(userWithRoleOn(role, scope)).can('read', container)
+				)
+			).toEqual([memberRoles.enum.head, memberRoles.enum.administrator]);
+		});
+
+		test(`organization-visibility content in an ${scope} is readable by every member`, () => {
+			const container = teamManagedMeasure(scope, visibility.enum.organization);
+			expect(
+				memberRoles.options.filter((role) =>
+					defineAbilityFor(userWithRoleOn(role, scope)).can('read', container)
+				)
+			).toEqual(memberRoles.options);
+		});
+	}
+
+	test('creator-visibility content is readable by organization admins but not unit admins', () => {
+		const container = teamManagedMeasure('organization', visibility.enum.creator);
+		expect(
+			memberRoles.options.filter((role) =>
+				defineAbilityFor(userWithRoleOn(role, 'organization')).can('read', container)
+			)
+		).toEqual([memberRoles.enum.administrator]);
+
+		const unitContainer = teamManagedMeasure('organizational unit', visibility.enum.creator);
+		expect(
+			memberRoles.options.filter((role) =>
+				defineAbilityFor(userWithRoleOn(role, 'organizational unit')).can('read', unitContainer)
+			)
+		).toEqual([]);
 	});
 });
