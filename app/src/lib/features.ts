@@ -74,6 +74,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useProgramTemplateWorkspaces() {
 			return features.includes('Templating');
+		},
+		useNewCreateContainerDialog() {
+			return features.includes('Templating');
 		}
 	} satisfies Record<string, () => boolean>;
 }

@@ -24,11 +24,19 @@
 
 	interface Props {
 		container: Container<AnyPayload>;
+		editable?: boolean;
+		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
 	}
 
-	let { container = $bindable(), relatedContainers }: Props = $props();
+	let {
+		container = $bindable(),
+		editable: editableOverride,
+		preview = false,
+		relatedContainers
+	}: Props = $props();
 
+	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
 	let guid = $derived(container.guid);
 
 	let sections = $derived.by(() => {
@@ -205,7 +213,7 @@
 	}
 </script>
 
-{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && sections.length === 0}
+{#if editable && $ability.can('update', container) && sections.length === 0}
 	<div class="details-section">
 		<AddSectionMenu
 			bind:relatedContainers
@@ -215,7 +223,7 @@
 	</div>
 {/if}
 
-<TableOfContents {container} {handleSort} {sections} />
+<TableOfContents {container} {editable} {handleSort} {sections} />
 
 <ul
 	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
@@ -230,8 +238,10 @@
 				bind:container={sections[i]}
 				bind:parentContainer={container}
 				bind:relatedContainers
+				{editable}
 				handleAddSection={createAddSectionHandler(i + 1)}
 				heading={heading(i)}
+				useForm={!preview}
 			/>
 		</li>
 	{/each}

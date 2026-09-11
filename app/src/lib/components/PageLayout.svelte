@@ -2,8 +2,11 @@
 	import { setContext, type Snippet } from 'svelte';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { createFeatureDecisions } from '$lib/features';
+	import { page } from '$app/state';
 	import { overlay, overlayWidth } from '$lib/stores';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
+	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 
 	interface Props {
@@ -52,8 +55,11 @@
 	{/if}
 </div>
 
-<CreateContainerDialog bind:dialog />
-
+{#if createFeatureDecisions(page.data.features).useNewCreateContainerDialog()}
+	<NewCreateContainerDialog bind:dialog />
+{:else}
+	<CreateContainerDialog bind:dialog />
+{/if}
 <CreateObjectiveOrEffectDialog bind:dialog={createEffectDialog} />
 
 <style>

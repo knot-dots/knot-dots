@@ -15,6 +15,7 @@
 		type AnyPayload,
 		type Container,
 		containerOfType,
+		isTeaserContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates,
@@ -49,7 +50,7 @@
 		[() => container.guid, () => inViewport.current],
 		async ([guid], _, { signal }) => {
 			if (fetchDisabled) {
-				return Promise.resolve([]);
+				return relatedContainers.filter(isTeaserContainer);
 			} else {
 				return (await fetchRelatedContainers(
 					guid,
