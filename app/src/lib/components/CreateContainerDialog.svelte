@@ -6,32 +6,63 @@
 	import copyContainer from '$lib/client/copyContainer';
 	import saveContainer from '$lib/client/saveContainer';
 	import Badges from '$lib/components/Badges.svelte';
-	import CreateContainerTemplatePicker from '$lib/components/CreateContainerTemplatePicker.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import CategoryProperties from '$lib/components/CategoryProperties.svelte';
+	import BinaryIndicatorProperties from '$lib/components/BinaryIndicatorProperties.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
-	import NewContainerProperties from '$lib/components/NewContainerProperties.svelte';
-	import TemplateHierarchyPreview from '$lib/components/TemplateHierarchyPreview.svelte';
-	import type { RootCopyPlacement, TemplateCopyPreview } from '$lib/containerCopy';
+	import EffectProperties from '$lib/components/EffectProperties.svelte';
+	import EventProperties from '$lib/components/EventProperties.svelte';
+	import GoalProperties from '$lib/components/GoalProperties.svelte';
+	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
+	import KnowledgeProperties from '$lib/components/KnowledgeProperties.svelte';
+	import MeasureProperties from '$lib/components/MeasureProperties.svelte';
+	import ObjectiveProperties from '$lib/components/ObjectiveProperties.svelte';
+	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
+	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
+	import PostProperties from '$lib/components/PostProperties.svelte';
+	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import ReportProperties from '$lib/components/ReportProperties.svelte';
+	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
+	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
+	import ResourceDataProperties from '$lib/components/ResourceDataProperties.svelte';
+	import RuleProperties from '$lib/components/RuleProperties.svelte';
+	import TaskProperties from '$lib/components/TaskProperties.svelte';
+	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
+	import TextProperties from '$lib/components/TextProperties.svelte';
 	import {
+		isCategoryContainer,
+		isBinaryIndicatorContainer,
 		isContainer,
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithName,
 		isContainerWithTitle,
+		isEffectContainer,
+		isEventContainer,
+		isGoalContainer,
+		isIndicatorTemplateContainer,
+		isKnowledgeContainer,
+		isMeasureContainer,
+		isObjectiveContainer,
 		isOrganizationalUnitContainer,
+		isOrganizationContainer,
+		isPostContainer,
+		isProgramContainer,
+		isReportContainer,
+		isResourceContainer,
+		isResourceDataContainer,
+		isResourceV2Container,
+		isRuleContainer,
 		isSimpleMeasureContainer,
-		isStructuralCopyPredicate,
+		isTaskContainer,
+		isTeaserContainer,
+		isTextContainer,
 		type NewContainer,
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
 	import { getToastContext } from '$lib/contexts/toast';
-	import {
-		addItemState,
-		createContainerDialogState,
-		type CreateContainerDialogState
-	} from '$lib/stores';
-	import AutoresizingTextarea from './AutoresizingTextarea.svelte';
+	import { addItemState, createContainerDialogState } from '$lib/stores';
 
 	interface Props {
 		dialog: HTMLDialogElement;
@@ -39,29 +70,6 @@
 
 	let { dialog = $bindable() }: Props = $props();
 	const toast = getToastContext();
-	let templatePreview = $state<TemplateCopyPreview>();
-	let templateSelectionPending = $state(false);
-
-	function activateTemplate(
-		state: CreateContainerDialogState,
-		preview: TemplateCopyPreview | undefined
-	) {
-		$createContainerDialogState = state;
-		templatePreview = preview;
-	}
-
-	function rootPlacementFor(container: NewContainer): RootCopyPlacement[] {
-		return container.relation.flatMap(({ object, position, predicate, subject }) => {
-			if (
-				object === undefined ||
-				(subject !== undefined && subject !== container.guid) ||
-				!isStructuralCopyPredicate(predicate)
-			) {
-				return [];
-			}
-			return [{ parentGuid: object, position, predicate }];
-		});
-	}
 
 	async function save(container: NewContainer) {
 		const pendingCopy =
@@ -69,17 +77,8 @@
 				? $createContainerDialogState.request
 				: undefined;
 		const addItemTarget = $addItemState.target;
-		let copyRequest = pendingCopy && { ...pendingCopy, rootPayload: container.payload };
-		if (copyRequest?.operation === 'template-instance') {
-			// A template instance is placed and managed like the empty object it replaces.
-			copyRequest = {
-				...copyRequest,
-				rootPlacement: rootPlacementFor(container),
-				targetManagedByGuid: container.managed_by[0]
-			};
-		}
-		const response = copyRequest
-			? await copyContainer(copyRequest)
+		const response = pendingCopy
+			? await copyContainer({ ...pendingCopy, rootPayload: container.payload })
 			: await saveContainer(container);
 		if (response.ok) {
 			const savedContainer = await response.json();
@@ -130,8 +129,6 @@
 	}
 
 	function resetDialogState() {
-		templatePreview = undefined;
-		templateSelectionPending = false;
 		$createContainerDialogState = undefined;
 		$addItemState = {};
 	}
@@ -151,233 +148,300 @@
 		dialog.close();
 		resetDialogState();
 	}
+
+	function resizeTextarea(event: Event) {
+		(event.currentTarget as HTMLTextAreaElement).style.height = 'auto';
+		(event.currentTarget as HTMLTextAreaElement).style.height =
+			`${(event.currentTarget as HTMLTextAreaElement).scrollHeight}px`;
+	}
+
+	function handleKeyDown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			(
+				(event.currentTarget as HTMLTextAreaElement)
+					.closest('form')
+					?.querySelector('.button-primary') as HTMLButtonElement | null
+			)?.click();
+		}
+	}
+
+	function init(element: HTMLElement) {
+		element.focus();
+		element.style.height = 'auto';
+		element.style.height = `${element.scrollHeight}px`;
+	}
 </script>
 
 <dialog bind:this={dialog} onclose={resetDialogState}>
 	{#if $createContainerDialogState}
 		<form method="dialog" onsubmit={handleSubmit}>
-			<header>
-				<h2 id="create-container-dialog-title">
+			<p class="dialog-actions">
+				<span>
 					{$_(
 						$createContainerDialogState.kind === 'copy' &&
 							$createContainerDialogState.request.operation === 'create-template'
 							? 'create_container_dialog.template_title'
 							: 'create_container_dialog.title'
 					)}
-				</h2>
-				<div class="actions">
-					<button class="button-alternative system-primary" formnovalidate type="submit">
-						{$_('cancel')}
-					</button>
-					<button
-						class="button-primary system-primary"
-						disabled={templateSelectionPending}
-						type="submit"
-					>
-						{$_('save')}
-					</button>
-				</div>
-			</header>
+				</span>
+				<button class="button-xs button-primary system-primary" type="submit">
+					{$_('save')}
+				</button>
+				<button class="button-xs button-alternative system-primary" formnovalidate type="submit">
+					{$_('cancel')}
+				</button>
+			</p>
 
-			<div class="main">
-				<div class="form-panel">
-					<div class="title">
-						<div class="title-field">
-							{#if isContainerWithName($createContainerDialogState.container)}
-								<AutoresizingTextarea
-									aria-label={$_('title')}
-									placeholder={$_('title')}
-									required
-									rows={1}
-									bind:value={$createContainerDialogState.container.payload.name}
-								/>
-							{:else if isContainerWithTitle($createContainerDialogState.container)}
-								<AutoresizingTextarea
-									aria-label={$_('title')}
-									placeholder={$_('title')}
-									required
-									rows={1}
-									bind:value={$createContainerDialogState.container.payload.title}
-								/>
-							{/if}
-						</div>
-
-						{#if isContainer($createContainerDialogState.container)}
-							<Badges bind:container={$createContainerDialogState.container} editable />
-						{/if}
-
-						{#if isSimpleMeasureContainer($createContainerDialogState.container)}
-							<EditableProgress
-								editable
-								bind:value={$createContainerDialogState.container.payload.progress}
-							/>
-						{/if}
-					</div>
-
-					<div class="properties">
-						<NewContainerProperties bind:container={$createContainerDialogState.container} />
-					</div>
-
-					<div class="description">
-						{#if isContainerWithDescription($createContainerDialogState.container)}
-							<EditableFormattedText
-								editable
-								label={$_('description')}
-								bind:value={$createContainerDialogState.container.payload.description}
-							/>
-						{:else if isContainerWithBody($createContainerDialogState.container)}
-							<EditableFormattedText
-								editable
-								label={$_('body')}
-								bind:value={$createContainerDialogState.container.payload.body}
-							/>
-						{/if}
-					</div>
-
-					{#if templatePreview}
-						<TemplateHierarchyPreview preview={templatePreview} />
+			<article class="details">
+				<header class="details-section">
+					{#if isContainerWithName($createContainerDialogState.container)}
+						<textarea
+							aria-label={$_('title')}
+							onkeydown={handleKeyDown}
+							onkeyup={resizeTextarea}
+							placeholder={$_('title')}
+							required
+							rows="1"
+							bind:value={$createContainerDialogState.container.payload.name}
+							use:init></textarea>
+					{:else if isContainerWithTitle($createContainerDialogState.container)}
+						<textarea
+							aria-label={$_('title')}
+							onkeydown={handleKeyDown}
+							onkeyup={resizeTextarea}
+							placeholder={$_('title')}
+							required
+							rows="1"
+							bind:value={$createContainerDialogState.container.payload.title}
+							use:init></textarea>
 					{/if}
-				</div>
 
-				<CreateContainerTemplatePicker
-					dialogState={$createContainerDialogState}
-					onactivate={activateTemplate}
-					onpendingchange={(pending) => (templateSelectionPending = pending)}
-				/>
-			</div>
+					{#if isContainer($createContainerDialogState.container)}
+						<Badges bind:container={$createContainerDialogState.container} editable />
+					{/if}
+
+					{#if isSimpleMeasureContainer($createContainerDialogState.container)}
+						<EditableProgress
+							editable
+							bind:value={$createContainerDialogState.container.payload.progress}
+						/>
+					{/if}
+				</header>
+
+				{#if isBinaryIndicatorContainer($createContainerDialogState.container)}
+					<BinaryIndicatorProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isCategoryContainer($createContainerDialogState.container)}
+					<CategoryProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isEffectContainer($createContainerDialogState.container)}
+					<EffectProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isEventContainer($createContainerDialogState.container)}
+					<EventProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isGoalContainer($createContainerDialogState.container)}
+					<GoalProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isIndicatorTemplateContainer($createContainerDialogState.container)}
+					<IndicatorProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isKnowledgeContainer($createContainerDialogState.container)}
+					<KnowledgeProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isMeasureContainer($createContainerDialogState.container)}
+					<MeasureProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isObjectiveContainer($createContainerDialogState.container)}
+					<ObjectiveProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isOrganizationContainer($createContainerDialogState.container)}
+					<OrganizationProperties bind:container={$createContainerDialogState.container} editable />
+				{:else if isOrganizationalUnitContainer($createContainerDialogState.container)}
+					<OrganizationalUnitProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+					/>
+				{:else if isPostContainer($createContainerDialogState.container)}
+					<PostProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isProgramContainer($createContainerDialogState.container)}
+					<ProgramProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isReportContainer($createContainerDialogState.container)}
+					<ReportProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isResourceContainer($createContainerDialogState.container)}
+					<ResourceProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isResourceV2Container($createContainerDialogState.container)}
+					<ResourceV2Properties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isResourceDataContainer($createContainerDialogState.container)}
+					<ResourceDataProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isRuleContainer($createContainerDialogState.container)}
+					<RuleProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isSimpleMeasureContainer($createContainerDialogState.container)}
+					<MeasureProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isTaskContainer($createContainerDialogState.container)}
+					<TaskProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isTeaserContainer($createContainerDialogState.container)}
+					<TeaserProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{:else if isTextContainer($createContainerDialogState.container)}
+					<TextProperties
+						bind:container={$createContainerDialogState.container}
+						editable
+						relatedContainers={[]}
+						revisions={[]}
+					/>
+				{/if}
+
+				{#if isContainerWithDescription($createContainerDialogState.container)}
+					<EditableFormattedText
+						editable
+						label={$_('description')}
+						bind:value={$createContainerDialogState.container.payload.description}
+					/>
+				{:else if isContainerWithBody($createContainerDialogState.container)}
+					<EditableFormattedText
+						editable
+						label={$_('body')}
+						bind:value={$createContainerDialogState.container.payload.body}
+					/>
+				{/if}
+			</article>
 		</form>
 	{/if}
 </dialog>
 
 <style>
 	dialog {
-		background-color: var(--color-surface-accent-container);
-		border: 0.0625rem solid var(--color-border-raised);
-		border-radius: 1.5rem;
-		box-shadow: var(--shadow-2xl);
-		height: min(47.5rem, calc(100vh - 2.5rem));
-		max-height: none;
-		max-width: none;
-		overflow: hidden;
-		padding: 0;
-		width: min(80rem, calc(100vw - 2.5rem));
+		width: calc(min(54rem, 100vw));
 	}
 
-	dialog::backdrop {
-		backdrop-filter: blur(0.75rem);
-		background: rgb(0 0 0 / 25%);
+	dialog > * {
+		min-width: 30rem;
 	}
 
-	dialog > form {
-		display: grid;
-		grid-template-rows: auto minmax(0, 1fr);
-		height: 100%;
-		min-width: 0;
-		width: 100%;
-	}
-
-	dialog > form > header {
-		align-items: center;
-		display: flex;
-		gap: 1rem;
-		justify-content: space-between;
-		padding: 1.5rem 1.5rem 1rem 2.25rem;
-	}
-
-	dialog > form > header h2 {
-		color: var(--color-text-strong);
-		font-size: 1.125rem;
-		font-weight: 500;
-		line-height: 1.25;
-		margin: 0;
-	}
-
-	.actions {
-		display: flex;
-		flex-shrink: 0;
-		gap: 0.25rem;
-	}
-
-	.actions button {
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		min-height: 2rem;
-	}
-
-	.main {
-		align-items: flex-start;
-		align-self: stretch;
-		display: flex;
-		flex: 1 0 0;
-		gap: 1rem;
-		min-height: 0;
-		padding: 0 1.5rem 1.5rem;
-	}
-
-	.form-panel {
-		background-color: var(--color-surface-default);
-		border: 0.0625rem solid var(--color-border-subtle);
-		border-radius: 1rem;
-		color: var(--color-gray-500);
-		container: details / inline-size;
-		display: flex;
-		flex-direction: column;
-		font-size: 0.875rem;
-		height: 100%;
-		min-width: 0;
-		overflow-y: auto;
-		padding: 2rem 4rem;
-		position: relative;
-		width: 100%;
-	}
-
-	.title,
-	.properties,
-	.description {
-		max-width: 50.0625rem;
-		width: 100%;
-	}
-
-	.title {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem 1.5rem;
-	}
-
-	.title-field {
-		border-radius: 0.5rem;
-		color: var(--color-text-strong);
+	textarea {
+		background-color: white;
+		border: none;
+		border-radius: 8px;
+		color: var(--color-gray-900);
 		font-size: 2.25rem;
 		font-weight: 700;
 		line-height: 1.25;
+		margin: 0 -0.5rem;
+		min-height: revert;
+		overflow: hidden;
 		padding: 0.5rem;
+		resize: none;
+		width: calc(100% + 1rem);
 	}
 
-	.title-field:has(:global(textarea:invalid)) {
-		background-color: var(--color-red-050);
-		color: var(--color-red-500);
+	textarea:invalid {
+		background-color: var(--color-red-100);
 	}
 
-	.title-field :global(textarea) {
-		background: transparent;
-		color: inherit;
+	.button-primary {
+		margin-left: auto;
 	}
 
-	.title-field :global(textarea::placeholder) {
-		color: inherit;
-		opacity: 1;
-	}
-
-	.properties,
-	.description {
-		--details-max-width: none;
-		--details-padding-left: 0rem;
-		--details-padding-right: 0rem;
-		--details-section-padding-x: 0rem;
-		--details-section-padding-y: 0rem;
-
+	.dialog-actions {
+		align-items: center;
+		background-color: white;
+		display: flex;
+		gap: 0.5rem;
+		justify-content: space-between;
 		padding: 1.5rem;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+
+	.dialog-actions span {
+		color: var(--color-gray-500);
 	}
 </style>
