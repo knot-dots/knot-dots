@@ -48,6 +48,7 @@ test('shows subordinate template content as a read-only detail preview', async (
 	await expect(sectionHeading).toBeVisible();
 	await expect(sectionHeading).toHaveAttribute('contenteditable', 'false');
 	await expect(preview).toContainText(section.payload.body!);
+	await expect(preview.locator('form')).toHaveCount(0);
 	await expect(preview.getByRole('button', { name: 'Add section' })).toHaveCount(0);
 	await expect(preview.getByRole('button', { name: 'Settings' })).toHaveCount(0);
 });

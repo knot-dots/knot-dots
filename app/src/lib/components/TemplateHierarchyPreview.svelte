@@ -58,9 +58,8 @@
 							container={part}
 							editable={false}
 							isPartOf={root}
+							preview={true}
 							{relatedContainers}
-							showActions={false}
-							useForms={false}
 						/>
 					</section>
 				{/each}
@@ -68,7 +67,7 @@
 		{:else if isCategoryContainer(root)}
 			<CategoryTerms container={root} editable={false} {relatedContainers} />
 		{:else}
-			<Sections container={root} editable={false} {relatedContainers} useForms={false} />
+			<Sections container={root} editable={false} preview={true} {relatedContainers} />
 		{/if}
 	</section>
 {/if}

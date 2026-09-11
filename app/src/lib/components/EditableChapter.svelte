@@ -33,18 +33,16 @@
 		container: Container;
 		editable?: boolean;
 		isPartOf: Container<ProgramPayload>;
+		preview?: boolean;
 		relatedContainers: Container[];
-		showActions?: boolean;
-		useForms?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
 		isPartOf,
-		relatedContainers,
-		showActions = true,
-		useForms = true
+		preview = false,
+		relatedContainers
 	}: Props = $props();
 
 	let subsections = $state(
@@ -146,11 +144,11 @@
 		bind:parentContainer={container}
 		bind:relatedContainers
 		{editable}
-		useForm={useForms}
+		useForm={!preview}
 	/>
 {/each}
 
-{#if showActions}
+{#if !preview}
 	<footer class="content-actions">
 		<a class="button" href={viewInOverlayURL(page.url)}>
 			{$_('read_more')}

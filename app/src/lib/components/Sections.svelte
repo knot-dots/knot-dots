@@ -25,15 +25,15 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
-		useForms?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
-		relatedContainers,
-		useForms = true
+		preview = false,
+		relatedContainers
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -241,7 +241,7 @@
 				{editable}
 				handleAddSection={createAddSectionHandler(i + 1)}
 				heading={heading(i)}
-				useForm={useForms}
+				useForm={!preview}
 			/>
 		</li>
 	{/each}
