@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import ChevronDownSmall from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUpSmall from '~icons/heroicons/chevron-up-16-solid';
+	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import transformFileURL from '$lib/transformFileURL';
 
 	type OptionWithSub = {
@@ -79,9 +79,9 @@
 				aria-hidden="true"
 			></span>
 			{#if $disclosure.expanded}
-				<ChevronUpSmall class="suboption-indicator" aria-hidden="true" />
+				<ChevronUp class="suboption-indicator" aria-hidden="true" />
 			{:else}
-				<ChevronDownSmall class="suboption-indicator" aria-hidden="true" />
+				<ChevronDown class="suboption-indicator" aria-hidden="true" />
 			{/if}
 		</button>
 	{/if}

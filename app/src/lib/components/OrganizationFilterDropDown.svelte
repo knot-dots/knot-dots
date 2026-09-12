@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ChevronDownSmall from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUpSmall from '~icons/heroicons/chevron-up-16-solid';
+	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 
@@ -168,9 +168,9 @@
 								aria-hidden="true"
 							></span>
 							{#if expandedOrgs.has(org.value)}
-								<ChevronUpSmall />
+								<ChevronUp />
 							{:else}
-								<ChevronDownSmall />
+								<ChevronDown />
 							{/if}
 						</button>
 					{/if}

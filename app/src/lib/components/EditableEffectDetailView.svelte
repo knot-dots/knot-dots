@@ -5,8 +5,8 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
