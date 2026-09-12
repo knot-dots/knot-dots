@@ -50,21 +50,16 @@
 		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 	</button>
 	{#if $popover.expanded}
-		<fieldset
-			aria-labelledby={labelledBy}
-			class="dropdown-panel listbox"
-			use:popperContent={extraOpts}
-			use:popover.panel
-		>
-			<div>
+		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset aria-labelledby={labelledBy} class="listbox">
 				{#each options as option (option.value)}
 					<label>
 						<input type="checkbox" value={option.value} bind:group={value} />
 						<span class="truncated">{option.label}</span>
 					</label>
 				{/each}
-			</div>
-		</fieldset>
+			</fieldset>
+		</div>
 	{/if}
 </div>
 

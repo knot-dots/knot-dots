@@ -84,27 +84,24 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset
-				aria-labelledby={labelledBy}
-				class="dropdown-panel listbox"
-				use:popperContent={extraOpts}
-				use:popover.panel
-			>
-				{#each effectiveOptions as option (option.value)}
-					<label>
-						<input
-							type="radio"
-							value={option.value}
-							bind:group={value}
-							onchange={() => {
-								popover.close();
-								onchange?.(option.value);
-							}}
-						/>
-						<span class={dropdownButtonClass(option)}>{option.label}</span>
-					</label>
-				{/each}
-			</fieldset>
+			<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset aria-labelledby={labelledBy} class="listbox">
+					{#each effectiveOptions as option (option.value)}
+						<label>
+							<input
+								type="radio"
+								value={option.value}
+								bind:group={value}
+								onchange={() => {
+									popover.close();
+									onchange?.(option.value);
+								}}
+							/>
+							<span class={dropdownButtonClass(option)}>{option.label}</span>
+						</label>
+					{/each}
+				</fieldset>
+			</div>
 		{/if}
 	</div>
 {:else}

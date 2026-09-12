@@ -81,8 +81,8 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-			<div>
+		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="listbox">
 				{#each options.filter((option) => option.count === undefined || option.count > 0 || hasMatchingSubOptions(option)) as option (option.value)}
 					<FilterDisclosureOption {option} bind:selected={value} />
 				{/each}
@@ -90,8 +90,8 @@
 				{#each options.filter((option) => option.count !== undefined && option.count === 0 && !hasMatchingSubOptions(option)) as option (option.value)}
 					<FilterDisclosureOption {option} bind:selected={value} />
 				{/each}
-			</div>
-		</fieldset>
+			</fieldset>
+		</div>
 	{/if}
 </div>
 
@@ -113,7 +113,7 @@
 		z-index: 2;
 	}
 
-	.dropdown-panel > div > p:last-child {
+	.listbox > p:last-child {
 		display: none;
 	}
 </style>

@@ -87,13 +87,8 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset
-			aria-labelledby={labelledBy}
-			class="dropdown-panel listbox"
-			use:popperContent={extraOpts}
-			use:popover.panel
-		>
-			<div>
+		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset aria-labelledby={labelledBy} class="listbox">
 				{#each groups as group (group.title)}
 					{#if group.options.length > 0}
 						<p class="group-title">{group.title}</p>
@@ -113,8 +108,8 @@
 						{/each}
 					{/if}
 				{/each}
-			</div>
-		</fieldset>
+			</fieldset>
+		</div>
 	{/if}
 </div>
 

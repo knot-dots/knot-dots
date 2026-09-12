@@ -34,16 +34,16 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-				<div>
+			<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset class="listbox">
 					{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
 						<label>
 							<input type="radio" value={option.value} bind:group={container.payload.listType} />
 							<span class="truncated">{option.label}</span>
 						</label>
 					{/each}
-				</div>
-			</fieldset>
+				</fieldset>
+			</div>
 		{/if}
 	</div>
 {/if}

@@ -43,8 +43,8 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-			<div>
+		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="listbox">
 				{#each options as option (option.value)}
 					<label>
 						<input
@@ -60,8 +60,8 @@
 						<span class="truncated">{option.label}</span>
 					</label>
 				{/each}
-			</div>
-		</fieldset>
+			</fieldset>
+		</div>
 	{/if}
 </div>
 

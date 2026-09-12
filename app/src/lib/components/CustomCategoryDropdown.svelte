@@ -109,19 +109,14 @@
 			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
 		</button>
 		{#if $popover.expanded}
-			{#if editable}
-				<fieldset
-					aria-labelledby={labelledBy}
-					class="dropdown-panel listbox"
-					use:popperContent={extraOpts}
-					use:popover.panel
-				>
-					{#each options as option (option.value)}
-						<MultipleChoiceDisclosureOption {option} bind:value {iconURL} />
-					{/each}
-				</fieldset>
-			{:else}
-				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				{#if editable}
+					<fieldset aria-labelledby={labelledBy} class="listbox">
+						{#each options as option (option.value)}
+							<MultipleChoiceDisclosureOption {option} bind:value {iconURL} />
+						{/each}
+					</fieldset>
+				{:else}
 					<ul>
 						{#each selectedEntries as entry (entry.option.value)}
 							<li>
@@ -131,8 +126,8 @@
 							</li>
 						{/each}
 					</ul>
-				</div>
-			{/if}
+				{/if}
+			</div>
 		{/if}
 	</div>
 {:else}

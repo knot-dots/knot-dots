@@ -113,8 +113,8 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-			<div class="scope-options" role="radiogroup">
+		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<div class="listbox scope-options" role="radiogroup">
 				<label class="scope-option">
 					<input type="radio" value="current" bind:group={scope} />
 					<span>{$_('organization_filter.current')}</span>
@@ -137,7 +137,7 @@
 				</label>
 			</div>
 
-			<div class="option-list" class:option-list--disabled={disabled}>
+			<div class="listbox option-list" class:option-list--disabled={disabled}>
 				<div class="list-section-title">
 					<span class="section-label">{$_('organization_filter.select')}</span>
 					<button type="button" class="text-button text-button--reset" onclick={resetAll}>
@@ -210,7 +210,7 @@
 					{/if}
 				{/each}
 			</div>
-		</fieldset>
+		</div>
 	{/if}
 </div>
 

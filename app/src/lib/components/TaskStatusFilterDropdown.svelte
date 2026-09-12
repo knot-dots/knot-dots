@@ -50,18 +50,20 @@
 	</button>
 
 	{#if $popover.expanded}
-		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-			{#each effectiveOptions.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
-				{@const StatusIcon = statusIcons.get(option.value)}
-				<label>
-					<input type="checkbox" value={option.value} bind:group={value} />
-					<span class="badge badge--{statusColors.get(option.value)}">
-						<StatusIcon />
-						{option.label}
-					</span>
-				</label>
-			{/each}
-		</fieldset>
+		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+			<fieldset class="listbox">
+				{#each effectiveOptions.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
+					{@const StatusIcon = statusIcons.get(option.value)}
+					<label>
+						<input type="checkbox" value={option.value} bind:group={value} />
+						<span class="badge badge--{statusColors.get(option.value)}">
+							<StatusIcon />
+							{option.label}
+						</span>
+					</label>
+				{/each}
+			</fieldset>
+		</div>
 	{/if}
 </div>
 

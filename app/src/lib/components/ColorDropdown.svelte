@@ -50,17 +50,19 @@
 			{/if}
 		</label>
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-				{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
-					<label>
-						<input type="radio" name="color" value={option.value} bind:group={value} />
-						<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
-							&nbsp;
-						</span>
-						{option.label}
-					</label>
-				{/each}
-			</fieldset>
+			<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset class="listbox">
+					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+						<label>
+							<input type="radio" name="color" value={option.value} bind:group={value} />
+							<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+								&nbsp;
+							</span>
+							{option.label}
+						</label>
+					{/each}
+				</fieldset>
+			</div>
 		{/if}
 	</span>
 {/if}

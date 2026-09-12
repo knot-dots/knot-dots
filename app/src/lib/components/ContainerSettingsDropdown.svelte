@@ -61,8 +61,8 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-				<div>
+			<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset class="listbox">
 					{#if $ability.can('update', container, 'payload.visibility')}
 						<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>
 						<p class="dropdown-panel-group-title">
@@ -93,8 +93,8 @@
 							<span>{$_('delete')}</span>
 						</button>
 					{/if}
-				</div>
-			</fieldset>
+				</fieldset>
+			</div>
 		{/if}
 	</div>
 
