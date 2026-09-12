@@ -111,7 +111,7 @@
 		--dropdown-button-default-background: var(--form-control-background);
 		--dropdown-button-min-height: var(--form-control-min-height);
 		--dropdown-button-padding-y: var(--form-control-padding-y);
-		--dropdown-button-padding-x: var(--form-control-padding-x);
+		--dropdown-button-padding-x: calc(var(--form-control-padding-x) / 2);
 		--dropdown-panel-max-width: 100%;
 		--form-control-background: var(--color-white);
 

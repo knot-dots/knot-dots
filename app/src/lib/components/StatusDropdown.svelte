@@ -50,17 +50,9 @@
 			type="button"
 			use:popover.button
 		>
-			{#if buttonStyle === 'badge'}
-				<span class="badge badge--{statusColors.get(value)}">
-					<StatusIcon />{label(value)}
-					{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-				</span>
-			{:else}
-				<span class="badge badge--{statusColors.get(value)}">
-					<StatusIcon />{label(value)}
-				</span>
-				{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-			{/if}
+			<span class="badge badge--{statusColors.get(value)}">
+				<StatusIcon />{label(value)}
+			</span>
 		</button>
 
 		{#if $popover.expanded}
