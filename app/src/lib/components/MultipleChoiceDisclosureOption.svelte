@@ -162,6 +162,11 @@
 		position: relative;
 	}
 
+	.suboption-button :global(svg) {
+		height: 1rem;
+		width: 1rem;
+	}
+
 	.suboptions-list {
 		display: flex;
 		flex-direction: column;

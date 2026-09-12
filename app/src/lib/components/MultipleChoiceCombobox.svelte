@@ -252,6 +252,11 @@
 		color: inherit;
 	}
 
+	.badge :global(svg) {
+		height: 0.75rem;
+		width: 0.75rem;
+	}
+
 	.badge-wrapper > input {
 		background: transparent;
 		border: none;
@@ -295,6 +300,11 @@
 
 	.icon-wrapper > button {
 		color: var(--color-gray-500);
+	}
+
+	.icon-wrapper :global(svg) {
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.combobox-panel {
