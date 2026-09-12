@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
 		editable?: boolean;
@@ -10,41 +9,31 @@
 
 	let { editable = false, offset = [-24, -39], value = $bindable() }: Props = $props();
 
-	const popover = createPopover();
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = $derived({
-		modifiers: [{ name: 'offset', options: { offset } }]
-	});
-
 	function init(element: HTMLElement) {
 		element.focus();
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button truncated" type="button" use:popover.button>
-		{value}
-	</button>
-	{#if $popover.expanded}
-		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			{#if editable}
-				<h3
-					contenteditable="plaintext-only"
-					onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-					bind:textContent={value}
-					use:init
-				></h3>
-			{:else}
-				<h3 class="truncated">{value}</h3>
-			{/if}
-		</div>
-	{/if}
-</div>
+<Dropdown --dropdown-panel-width="min(80vw, 44rem)" {offset}>
+	{#snippet button(popover)}
+		<button class="dropdown-button truncated" type="button" use:popover.button>
+			{value}
+		</button>
+	{/snippet}
+
+	{#snippet panel()}
+		{#if editable}
+			<h3
+				contenteditable="plaintext-only"
+				onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+				bind:textContent={value}
+				use:init
+			></h3>
+		{:else}
+			<h3 class="truncated">{value}</h3>
+		{/if}
+	{/snippet}
+</Dropdown>
 
 <style>
 	h3 {
@@ -61,11 +50,5 @@
 		font-size: inherit;
 		font-weight: 500;
 		text-align: left;
-	}
-
-	.dropdown-panel {
-		border: solid 1px var(--color-gray-300);
-		border-radius: 0.5rem;
-		width: min(80vw, 44rem);
 	}
 </style>

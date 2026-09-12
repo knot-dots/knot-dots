@@ -43,13 +43,7 @@
 	});
 
 	const extraOpts = {
-		modifiers: [
-			{ name: 'offset', options: { offset: [0, 4] } },
-			{
-				name: 'preventOverflow',
-				options: { altAxis: true, boundary: 'clippingParents', padding: 8 }
-			}
-		]
+		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
@@ -165,12 +159,6 @@
 </div>
 
 <style>
-	.dropdown {
-		display: flex;
-		position: static;
-		width: 100%;
-	}
-
 	.dropdown-panel-title {
 		align-items: center;
 		color: var(--color-gray-700);

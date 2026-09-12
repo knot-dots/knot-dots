@@ -1,9 +1,5 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
-	import { cubicInOut } from 'svelte/easing';
-	import { slide } from 'svelte/transition';
-	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
 	import { Tree, type TreeItem } from 'melt/builders';
 	import { _ } from 'svelte-i18n';
 	import { goto } from '$app/navigation';
@@ -13,6 +9,7 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Close from '~icons/flowbite/close-outline';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import Plus from '~icons/knotdots/plus';
 	import Relation from '~icons/knotdots/relation';
 	import SearchInput from '$lib/components/SearchInput.svelte';
@@ -50,8 +47,6 @@
 
 	const title = $_('organizational_units');
 
-	const popover = createPopover({ label: title });
-
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
 	);
@@ -80,21 +75,6 @@
 		$newContainer = container;
 		createContainerDialog.getElement().showModal();
 	}
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = {
-		modifiers: [
-			{ name: 'offset', options: { offset: [0, 4] } },
-			{
-				name: 'preventOverflow',
-				options: { altAxis: true, boundary: 'clippingParents', padding: 8 }
-			}
-		]
-	};
 
 	let searchQuery = $state('');
 
@@ -243,67 +223,52 @@
 	{/each}
 {/snippet}
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
-		<span class="truncated">
-			{currentOrganizationalUnit?.payload.name ?? $_('organizational_units')}
-		</span>
-		<ChevronSort />
-	</button>
+<Dropdown --dropdown-panel-background="var(--color-gray-025)" label={title} offset={[0, 4]}>
+	{#snippet button(popover)}
+		<button class="dropdown-button dropdown-button--menu" type="button" use:popover.button>
+			<span class="truncated">
+				{currentOrganizationalUnit?.payload.name ?? $_('organizational_units')}
+			</span>
+			<ChevronSort />
+		</button>
+	{/snippet}
 
-	{#if $popover.expanded}
-		<div
-			class="dropdown-panel"
-			transition:slide={{ duration: 125, easing: cubicInOut }}
-			use:popover.panel
-			use:popperContent={extraOpts}
-		>
-			<div class="dropdown-panel-title">
-				<span>{title}</span>
-				{#if canCreateOrgUnit}
-					<button class="action-button" onclick={() => handleCreateOrgUnit(1)} type="button">
-						<Plus />
-						<span class="is-visually-hidden">{$_('organizational_unit.create')}</span>
-					</button>
-				{/if}
-				<button class="action-button" onclick={() => popover.close()} type="button">
-					<Close />
-					<span class="is-visually-hidden">{$_('close')}</span>
+	{#snippet panel(popover)}
+		<div class="dropdown-panel-title">
+			<span>{title}</span>
+			{#if canCreateOrgUnit}
+				<button class="action-button" onclick={() => handleCreateOrgUnit(1)} type="button">
+					<Plus />
+					<span class="is-visually-hidden">{$_('organizational_unit.create')}</span>
 				</button>
-			</div>
-			<div class="search">
-				<SearchInput bind:value={searchQuery} />
-			</div>
-			<ul class="tree-root" {...tree.root}>
-				{@render renderChildren(tree.children, 0)}
-			</ul>
-			{#if defaultOrganization}
-				<a
-					class="dropdown-button dropdown-button--footer"
-					data-sveltekit-preload-code="tap"
-					data-sveltekit-preload-data="tap"
-					href={optionURL(defaultOrganization)}
-				>
-					<Relation />
-					<span>{defaultOrganization.payload.name}</span>
-					<ChevronRight />
-				</a>
 			{/if}
+			<button class="action-button" onclick={() => popover.close()} type="button">
+				<Close />
+				<span class="is-visually-hidden">{$_('close')}</span>
+			</button>
 		</div>
-	{/if}
-</div>
+		<div class="search">
+			<SearchInput bind:value={searchQuery} />
+		</div>
+		<ul class="tree-root" {...tree.root}>
+			{@render renderChildren(tree.children, 0)}
+		</ul>
+		{#if defaultOrganization}
+			<a
+				class="dropdown-button dropdown-button--footer"
+				data-sveltekit-preload-code="tap"
+				data-sveltekit-preload-data="tap"
+				href={optionURL(defaultOrganization)}
+			>
+				<Relation />
+				<span>{defaultOrganization.payload.name}</span>
+				<ChevronRight />
+			</a>
+		{/if}
+	{/snippet}
+</Dropdown>
 
 <style>
-	.dropdown {
-		display: flex;
-		position: static;
-		width: 100%;
-	}
-
-	.dropdown-panel {
-		background-color: var(--color-gray-025);
-	}
-
 	.dropdown-panel-title {
 		align-items: center;
 		color: var(--color-gray-700);

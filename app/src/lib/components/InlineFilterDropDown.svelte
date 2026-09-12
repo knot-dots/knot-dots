@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import FilterDisclosureOption from '$lib/components/FilterDisclosureOption.svelte';
 
 	type Option = {
@@ -43,22 +40,6 @@
 		['type', 'payload_type']
 	]);
 
-	const popover = createPopover({ label });
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = {
-		modifiers: [
-			{
-				name: 'offset',
-				options: { offset: [0, 4] }
-			}
-		]
-	};
-
 	function hasMatchingSubOptions(option: Option) {
 		return (
 			option.subOptions?.some((sub) => (sub.count ?? 0) > 0 || value.includes(sub.value)) ?? false
@@ -66,53 +47,46 @@
 	}
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
-		{#if value.length > 0 && mode == 'apply_rule'}
-			<LightningBolt />
-		{/if}
-		<span>
-			{label ?? $_(labelForKey.get(key) ?? key)}
-		</span>
-		{#if value.length > 0}
-			<span class="indicator">{value.length}</span>
-		{/if}
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
+<Dropdown
+	--dropdown-position="static"
+	--dropdown-button-default-background="transparent"
+	--dropdown-button-active-background="var(--color-primary-100)"
+	--dropdown-button-hover-backgroun="var(--color-primary-100)"
+	--dropdown-button-expanded-background="(--color-primary-100)"
+	--dropdown-button-expanded-color="var(--color-primary-700)"
+	--dropdown-panel-max-height="calc(100vh - 12rem)"
+	--dropdown-panel-max-width="min(24rem, calc(100cqw - 3rem))"
+	{label}
+	offset={[0, 4]}
+>
+	{#snippet button(popover)}
+		<button class="dropdown-button dropdown-button--select" type="button" use:popover.button>
+			{#if value.length > 0 && mode == 'apply_rule'}
+				<LightningBolt />
+			{/if}
+			<span>
+				{label ?? $_(labelForKey.get(key) ?? key)}
+			</span>
+			{#if value.length > 0}
+				<span class="indicator">{value.length}</span>
+			{/if}
+		</button>
+	{/snippet}
 
-	{#if $popover.expanded}
-		<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-			<fieldset class="listbox">
-				{#each options.filter((option) => option.count === undefined || option.count > 0 || hasMatchingSubOptions(option)) as option (option.value)}
-					<FilterDisclosureOption {option} bind:selected={value} />
-				{/each}
-				<p>{$_('filter.no_results')}</p>
-				{#each options.filter((option) => option.count !== undefined && option.count === 0 && !hasMatchingSubOptions(option)) as option (option.value)}
-					<FilterDisclosureOption {option} bind:selected={value} />
-				{/each}
-			</fieldset>
-		</div>
-	{/if}
-</div>
+	{#snippet panel()}
+		<fieldset class="listbox">
+			{#each options.filter((option) => option.count === undefined || option.count > 0 || hasMatchingSubOptions(option)) as option (option.value)}
+				<FilterDisclosureOption {option} bind:selected={value} />
+			{/each}
+			<p>{$_('filter.no_results')}</p>
+			{#each options.filter((option) => option.count !== undefined && option.count === 0 && !hasMatchingSubOptions(option)) as option (option.value)}
+				<FilterDisclosureOption {option} bind:selected={value} />
+			{/each}
+		</fieldset>
+	{/snippet}
+</Dropdown>
 
 <style>
-	.dropdown {
-		--dropdown-button-default-background: transparent;
-		--dropdown-button-active-background: var(--color-primary-100);
-		--dropdown-button-hover-background: var(--color-primary-100);
-		--dropdown-button-expanded-background: var(--color-primary-100);
-		--dropdwon-button-expanded-color: var(--color-primary-700);
-		--dropdown-button-border-radius: 8px;
-		--dropdown-panel-max-height: calc(100vh - 12rem);
-
-		position: static;
-	}
-
-	.dropdown-panel {
-		max-width: min(24rem, calc(100cqw - 3rem));
-		z-index: 2;
-	}
-
 	.listbox > p:last-child {
 		display: none;
 	}

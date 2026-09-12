@@ -1808,7 +1808,7 @@ img.cover {
 
 /* Dropdown */
 .dropdown {
-	position: relative;
+	position: var(--dropdown-position, relative);
 }
 
 .dropdown-button {
