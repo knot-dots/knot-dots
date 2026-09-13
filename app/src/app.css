@@ -1555,7 +1555,8 @@ h4.details-heading {
 
 	align-items: center;
 	background-color: var(--badge-background-color);
-	border-radius: 8px;
+	border: var(--badge-border-width, 0) solid var(--badge-border-color, var(--color-border-raised));
+	border-radius: var(--badge-border-radius, 8px);
 	color: var(--badge-color);
 	display: inline-flex;
 	justify-content: center;
@@ -1563,8 +1564,8 @@ h4.details-heading {
 	font-weight: 500;
 	gap: 0.25rem;
 	line-height: 1.5;
-	min-height: 1.5rem;
-	padding: 0.125rem 0.625rem;
+	min-height: var(--badge-min-height, 1.5rem);
+	padding: var(--badge-padding-y, 0.125rem) var(--badge-padding-x, 0.625rem);
 	text-align: center;
 	white-space: nowrap;
 }

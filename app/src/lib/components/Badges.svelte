@@ -88,9 +88,11 @@
 	</li>
 
 	{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
-		<li class="badge badge--yellow">
-			<AskAI />
-			{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+		<li>
+			<span class="badge badge--yellow">
+				<AskAI />
+				{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+			</span>
 		</li>
 	{/if}
 
@@ -108,12 +110,29 @@
 
 <style>
 	.badges {
-		--dropdown-button-border-radius: 6px;
-		--dropdown-button-padding: 0;
+		--badge-border-radius: 6px;
+		--badge-border-width: 1px;
+		--badge-min-height: 1.75rem;
+		--badge-padding-x: 0.5rem;
+		--dropdown-button-border-radius: 0;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-padding-x: 0.25rem;
+		--dropdown-button-padding-y: 0.25rem;
+		--form-control-border: solid 1px var(--color-border-raised);
+		--form-control-border-radius: 6px;
+		--form-control-min-height: 1.75rem;
+		--form-control-padding-x: 0.5rem;
 
 		display: flex;
-		gap: 0.5rem;
-		line-height: 1;
 		padding: 0.375rem 0 0.75rem;
+	}
+
+	li {
+		display: contents;
+	}
+
+	li > :global(.badge) {
+		height: 1.75rem;
+		margin: 0.25rem;
 	}
 </style>
