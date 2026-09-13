@@ -188,7 +188,11 @@
 				<button class="button-xs button-primary system-primary" type="submit">
 					{$_('save')}
 				</button>
-				<button class="button-xs button-alternative system-primary" formnovalidate type="submit">
+				<button
+					class="button-xs button-alternate-outline system-primary"
+					formnovalidate
+					type="submit"
+				>
 					{$_('cancel')}
 				</button>
 			</p>

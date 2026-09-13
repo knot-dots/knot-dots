@@ -662,8 +662,8 @@ button.button-outline:hover,
 	color: white;
 }
 
-button.button-alternative,
-.button.button-alternative {
+button.button-alternate-outline,
+.button.button-alternate-outline {
 	--button-active-background:
 		linear-gradient(var(--color-background-accent-active), var(--color-background-accent-active)),
 		linear-gradient(var(--button-background), var(--button-background));
@@ -685,14 +685,14 @@ button.button-alternative,
 }
 
 .button-primary > svg:last-child,
-.button-alternative > svg:last-child {
+.button-alternate-outline > svg:last-child {
 	color: var(--button-end-icon-color, inherit);
 	height: var(--button-end-icon-size, 1rem);
 	width: var(--button-end-icon-size, 1rem);
 }
 
 .button-primary > svg:first-child,
-.button-alternative > svg:first-child {
+.button-alternate-outline > svg:first-child {
 	color: var(--button-start-icon-color, inherit);
 	height: var(--button-start-icon-size, 1.25rem);
 	width: var(--button-start-icon-size, 1.25rem);

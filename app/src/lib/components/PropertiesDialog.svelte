@@ -30,7 +30,7 @@
 			<span>{title}</span>
 
 			<button
-				class="button-xs button-alternative system-primary"
+				class="button-xs button-alternate-outline system-primary"
 				onclick={() => dialog.close()}
 				type="button"
 			>
