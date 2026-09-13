@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Label from '~icons/flowbite/label-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
 	import InlineGoalTypeDropdown from '$lib/components/InlineGoalTypeDropdown.svelte';
 	import InlineMeasureTypeDropdown from '$lib/components/InlineMeasureTypeDropdown.svelte';
 	import InlineProgramTypeDropdown from '$lib/components/InlineProgramTypeDropdown.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
 	import InlineTaskCategoryDropdown from '$lib/components/InlineTaskCategoryDropdown.svelte';
+	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		type Container,
 		type Status,
@@ -25,9 +27,16 @@
 	interface Props {
 		container: Container;
 		editable?: boolean;
+		showPropertiesTrigger?: boolean;
 	}
 
-	let { container = $bindable(), editable = false }: Props = $props();
+	let {
+		container = $bindable(),
+		editable = false,
+		showPropertiesTrigger = false
+	}: Props = $props();
+
+	let detailView = getDetailViewContext();
 
 	let statusOptions = $derived.by(() => {
 		if (isGoalContainer(container) || isTaskContainer(container)) {
@@ -104,6 +113,18 @@
 				options={statusOptions}
 				bind:value={container.payload.status}
 			/>
+		</li>
+	{/if}
+
+	{#if detailView && showPropertiesTrigger}
+		<li>
+			<button
+				{...detailView.properties.trigger}
+				class="button-alternate button-sm system-primary"
+				type="button"
+			>
+				<Label />{$_('properties.show_all')}
+			</button>
 		</li>
 	{/if}
 </ul>
