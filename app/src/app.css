@@ -1365,11 +1365,6 @@ label > input[type='checkbox'].toggle {
 	max-width: var(--details-max-width);
 }
 
-header.details-section + div.details-section,
-header.details-section + dialog + div.details-section {
-	padding-top: 0;
-}
-
 .details-section header {
 	align-items: start;
 	display: flex;
@@ -1672,18 +1667,26 @@ h4.details-heading {
 
 /* Stage */
 .stage {
+	--details-padding-x: 0;
+	--details-section-padding-x: 6.5rem;
 	--stage-background-color: var(--color-white);
 	--stage-color: var(--color-black);
 	background-color: var(--stage-background-color);
-	padding-bottom: 1rem;
-	padding-top: 0;
+	border-radius: 0;
+	margin: 0;
 }
 
-img.cover {
-	width: 100%;
-	height: 15rem;
-	object-fit: cover;
-	z-index: 1;
+.details-section.stage + .details-section.stage {
+	padding-top: calc(var(--details-section-padding-y) / 2);
+}
+
+.details-section.stage:has(+ .stage) {
+	padding-bottom: calc(var(--details-section-padding-y) / 2);
+}
+
+.details-section.stage:not(.stage--white):not(:has(+ .stage)) {
+	padding-bottom: 2rem;
+	margin-bottom: 4rem;
 }
 
 .stage.stage--color {
@@ -1720,6 +1723,13 @@ img.cover {
 .stage.stage--yellow {
 	--stage-background-color: var(--color-yellow-050);
 	--stage-color: var(--color-yellow-600);
+}
+
+.stage-buttons {
+	align-items: center;
+	display: flex;
+	gap: 0.75rem;
+	min-height: 2.25rem;
 }
 
 /* Indicators */

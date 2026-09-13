@@ -28,6 +28,13 @@
 {/if}
 
 <style>
+	.cover {
+		width: 100%;
+		height: 15rem;
+		object-fit: cover;
+		z-index: 1;
+	}
+
 	.cover-section {
 		position: relative;
 	}

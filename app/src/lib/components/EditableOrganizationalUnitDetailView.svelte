@@ -151,11 +151,11 @@
 					/>
 
 					<div
-						class="stage stage--{container.payload.color
+						class="details-section stage stage--{container.payload.color
 							? backgroundColors.get(container.payload.color)
 							: 'white'}"
 					>
-						<div class="stage--buttons details-section">
+						<div class="stage-buttons wide">
 							<CoverUpload
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', container)}
@@ -199,47 +199,54 @@
 								</div>
 							{/if}
 						</div>
+					</div>
 
-						<header class="details-section">
-							<EditableLogo
+					<header
+						class="details-section stage stage--{container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}"
+					>
+						<EditableLogo
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.image}
+						/>
+
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<h1
+								class={{
+									'details-title': true,
+									'is-visually-hidden': container.payload.imageReplacesName
+								}}
+								contenteditable="plaintext-only"
+								bind:textContent={container.payload.name}
+								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							></h1>
+						{:else}
+							<h1
+								class={{
+									'details-title': true,
+									'is-visually-hidden': container.payload.imageReplacesName
+								}}
+								contenteditable="false"
+							>
+								{container.payload.name}
+							</h1>
+						{/if}
+					</header>
+
+					{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+						{#key container.guid}
+							<EditableFormattedText
+								color={container.payload.color
+									? backgroundColors.get(container.payload.color)
+									: 'white'}
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', container)}
-								bind:value={container.payload.image}
+								bind:value={container.payload.description}
 							/>
-
-							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-								<h1
-									class={{
-										'details-title': true,
-										'is-visually-hidden': container.payload.imageReplacesName
-									}}
-									contenteditable="plaintext-only"
-									bind:textContent={container.payload.name}
-									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-								></h1>
-							{:else}
-								<h1
-									class={{
-										'details-title': true,
-										'is-visually-hidden': container.payload.imageReplacesName
-									}}
-									contenteditable="false"
-								>
-									{container.payload.name}
-								</h1>
-							{/if}
-						</header>
-
-						{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
-							{#key container.guid}
-								<EditableFormattedText
-									editable={$applicationState.containerDetailView.editable &&
-										$ability.can('update', container)}
-									bind:value={container.payload.description}
-								/>
-							{/key}
-						{/if}
-					</div>
+						{/key}
+					{/if}
 				</form>
 
 				<Sections bind:container {relatedContainers} />
@@ -265,14 +272,6 @@
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
-	}
-
-	.stage--buttons {
-		min-height: 3.125rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding-bottom: 0;
 	}
 
 	h1 {
@@ -309,14 +308,5 @@
 	.profile-switch-item--active {
 		background: var(--color-indigo-800);
 		color: white;
-	}
-
-	.stage {
-		margin-bottom: 4rem;
-		padding-bottom: 0;
-	}
-
-	.stage:not(.stage--white) {
-		padding-bottom: 2rem;
 	}
 </style>

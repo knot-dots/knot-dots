@@ -3,15 +3,16 @@
 	import Viewer from '$lib/components/Viewer.svelte';
 
 	interface Props {
+		color?: string;
 		editable?: boolean;
 		label?: string;
 		value?: string;
 	}
 
-	let { editable = false, label, value = $bindable() }: Props = $props();
+	let { color, editable = false, label, value = $bindable() }: Props = $props();
 </script>
 
-<div class="details-section">
+<div class={['details-section', ...(color ? ['stage', `stage--${color}`] : [])]}>
 	{#if editable}
 		<Editor {label} bind:value />
 	{:else}

@@ -105,13 +105,12 @@
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
 					/>
-
 					<div
-						class="stage stage--{container.payload.color
+						class="details-section stage stage--{container.payload.color
 							? backgroundColors.get(container.payload.color)
 							: 'white'}"
 					>
-						<div class="stage--buttons details-section">
+						<div class="stage-buttons wide">
 							<CoverUpload
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', container)}
@@ -126,51 +125,47 @@
 									$ability.can('update', container)}
 							/>
 						</div>
-
-						<header class="details-section">
-							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-								<h1
-									class="details-title"
-									contenteditable="plaintext-only"
-									bind:textContent={container.payload.title}
-									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-								></h1>
-								<button
-									class="action-button"
-									onclick={useNewPropertyPanel
-										? detailView.properties.trigger.onclick
-										: () => dialog.showModal()}
-									type="button"
-								>
-									<Ellipsis />
-									<span class="is-visually-hidden">{$_('properties.show_all')}</span>
-								</button>
-							{:else}
-								<h1 class="details-title" contenteditable="false">
-									{container.payload.title}
-								</h1>
-							{/if}
-						</header>
-
-						{#if !useNewPropertyPanel}
-							<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
-								<PageProperties
-									bind:container
-									editable={$ability.can('update', container)}
-									{relatedContainers}
-									{revisions}
-								/>
-							</PropertiesDialog>
-						{/if}
-
-						{#key container.guid}
-							<EditableFormattedText
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								bind:value={container.payload.body}
-							/>
-						{/key}
 					</div>
+
+					<header
+						class="details-section stage stage--{container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}"
+					>
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<h1
+								class="details-title"
+								contenteditable="plaintext-only"
+								bind:textContent={container.payload.title}
+								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							></h1>
+							<button
+								class="action-button"
+								onclick={useNewPropertyPanel
+									? detailView.properties.trigger.onclick
+									: () => dialog.showModal()}
+								type="button"
+							>
+								<Ellipsis />
+								<span class="is-visually-hidden">{$_('properties.show_all')}</span>
+							</button>
+						{:else}
+							<h1 class="details-title" contenteditable="false">
+								{container.payload.title}
+							</h1>
+						{/if}
+					</header>
+
+					{#key container.guid}
+						<EditableFormattedText
+							color={container.payload.color
+								? backgroundColors.get(container.payload.color)
+								: 'white'}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.body}
+						/>
+					{/key}
 				</form>
 
 				<Sections bind:container {relatedContainers} />
@@ -186,6 +181,15 @@
 						{revisions}
 					/>
 				</form>
+			{:else}
+				<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
+					<PageProperties
+						bind:container
+						editable={$ability.can('update', container)}
+						{relatedContainers}
+						{revisions}
+					/>
+				</PropertiesDialog>
 			{/if}
 		</article>
 
@@ -210,14 +214,6 @@
 		gap: 0.75rem;
 	}
 
-	.stage--buttons {
-		min-height: 3.125rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding-bottom: 0;
-	}
-
 	header button {
 		margin-left: auto;
 	}
@@ -226,14 +222,5 @@
 		flex-grow: 1;
 		margin: 0;
 		min-height: 3rem;
-	}
-
-	.stage {
-		margin-bottom: 4rem;
-		padding-bottom: 0;
-	}
-
-	.stage:not(.stage--white) {
-		padding-bottom: 2rem;
 	}
 </style>
