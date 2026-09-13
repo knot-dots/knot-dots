@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { type AnyPayload, type Container } from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
@@ -23,15 +22,6 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
-
-	let popover = createPopover({ label: $_('settings') });
-
-	let [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'fixed'
-	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -55,48 +45,49 @@
 </script>
 
 {#if $ability.can('update', container, 'payload.visibility') || $ability.can('delete', container)}
-	<div class="dropdown" use:popperRef>
-		<button class="dropdown-button" use:popover.button>
-			<Ellipsis />
-		</button>
+	<Dropdown
+		--dropdown-panel-background="var(--color-gray-025)"
+		--dropdown-panel-border-radius="16px"
+		label={$_('settings')}
+		offset={[0, 4]}
+	>
+		{#snippet button(popover)}
+			<button class="dropdown-button" use:popover.button>
+				<Ellipsis />
+			</button>
+		{/snippet}
 
-		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-				<div>
-					{#if $ability.can('update', container, 'payload.visibility')}
-						<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>
-						<p class="dropdown-panel-group-title">
-							{$_('container_settings_dropdown.visibility.title')}
-						</p>
-						{#each visibilityOptions(container, relatedContainers) as option (option.value)}
-							<label>
-								<input
-									type="radio"
-									value={option.value}
-									bind:group={container.payload.visibility}
-								/>
-								<span class="truncated">{option.label}</span>
-							</label>
-						{/each}
-					{/if}
+		{#snippet panel()}
+			<fieldset class="listbox">
+				{#if $ability.can('update', container, 'payload.visibility')}
+					<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>
+					<p class="dropdown-panel-group-title">
+						{$_('container_settings_dropdown.visibility.title')}
+					</p>
+					{#each visibilityOptions(container, relatedContainers) as option (option.value)}
+						<label>
+							<input type="radio" value={option.value} bind:group={container.payload.visibility} />
+							<span class="truncated">{option.label}</span>
+						</label>
+					{/each}
+				{/if}
 
-					{#if $ability.can('delete', container)}
-						<p class="dropdown-panel-group-title">
-							{$_('container_settings_dropdown.delete.title')}
-						</p>
-						<button
-							class="action-button action-button--padding-tight"
-							onclick={() => dialog.showModal()}
-							type="button"
-						>
-							<TrashBin />
-							<span>{$_('delete')}</span>
-						</button>
-					{/if}
-				</div>
+				{#if $ability.can('delete', container)}
+					<p class="dropdown-panel-group-title">
+						{$_('container_settings_dropdown.delete.title')}
+					</p>
+					<button
+						class="action-button action-button--padding-tight"
+						onclick={() => dialog.showModal()}
+						type="button"
+					>
+						<TrashBin />
+						<span>{$_('delete')}</span>
+					</button>
+				{/if}
 			</fieldset>
-		{/if}
-	</div>
+		{/snippet}
+	</Dropdown>
 
 	<ConfirmDeleteDialog
 		bind:dialog
@@ -107,11 +98,6 @@
 {/if}
 
 <style>
-	.dropdown-panel {
-		background-color: var(--color-gray-025);
-		border-radius: 16px;
-	}
-
 	.dropdown-panel-title {
 		font-size: 0.75rem;
 		font-weight: 600;
@@ -125,7 +111,7 @@
 		padding: 0.5rem 0.75rem;
 	}
 
-	.dropdown-panel .action-button {
+	.action-button {
 		color: var(--color-red-500);
 		display: flex;
 		font-size: 0.875rem;
@@ -135,7 +121,7 @@
 		width: 100%;
 	}
 
-	.dropdown-panel .action-button span {
+	.action-button span {
 		color: var(--color-gray-500);
 	}
 </style>

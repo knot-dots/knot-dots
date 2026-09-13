@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Plus from '~icons/knotdots/plus';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import transformFileURL from '$lib/transformFileURL.js';
 
 	interface Props {
@@ -24,13 +23,6 @@
 	let uploadInProgress = $state(false);
 
 	const id = crypto.randomUUID();
-
-	const popover = createPopover({});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'top-start',
-		strategy: 'absolute'
-	});
 
 	function remove(event: Event) {
 		value = undefined;
@@ -57,16 +49,19 @@
 
 {#if editable}
 	{#if value}
-		<div class="dropdown" use:popperRef>
-			<button class="dropdown-button" type="button" use:popover.button>
-				<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
-			</button>
-			{#if $popover.expanded}
-				<div class="dropdown-panel" use:popperContent use:popover.panel>
-					<button onclick={remove} type="button"><TrashBin />{$_('upload.image.remove')}</button>
-				</div>
-			{/if}
-		</div>
+		<Dropdown --dropdown-panel-maxwidth="revert" --dropdown-panel-border-radius="16px">
+			{#snippet button(popover)}
+				<button class="dropdown-button" type="button" use:popover.button>
+					<img alt={$_('logo')} class="logo" src={transformFileURL(value!)} />
+				</button>
+			{/snippet}
+
+			{#snippet panel()}
+				<button class="remove" onclick={remove} type="button">
+					<TrashBin />{$_('upload.image.remove')}
+				</button>
+			{/snippet}
+		</Dropdown>
 	{:else if uploadInProgress}
 		<div class="logo-upload">
 			<span class="loader" role="status"></span>
@@ -140,12 +135,7 @@
 		background-color: transparent;
 	}
 
-	.dropdown-panel {
-		border-radius: 16px;
-		max-width: revert;
-	}
-
-	.dropdown-panel button {
+	.remove {
 		--button-active-background: var(--color-gray-100);
 		--button-hover-background: var(--color-gray-100);
 		--padding-y: 0.5rem;
@@ -155,7 +145,7 @@
 		white-space: nowrap;
 	}
 
-	.dropdown-panel button > :global(svg) {
+	.remove > :global(svg) {
 		color: var(--color-gray-800);
 		max-width: none;
 	}

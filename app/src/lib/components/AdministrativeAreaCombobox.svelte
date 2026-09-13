@@ -134,8 +134,8 @@
 		</div>
 
 		{#if $combobox.expanded}
-			<div class="dropdown-panel listbox">
-				<ul use:combobox.items>
+			<div class="dropdown-panel">
+				<ul class="listbox" use:combobox.items>
 					{#each administrativeAreasResource.current?.filter((area) => area.nameOSM
 							.toLowerCase()
 							.includes($combobox.filter.toLowerCase())) ?? [] as value (value.officialRegionalCode)}

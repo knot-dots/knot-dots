@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
 		compact?: boolean;
@@ -20,63 +17,39 @@
 		options,
 		value = $bindable()
 	}: Props = $props();
-
-	const popover = createPopover({});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset } }]
-	};
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button
-		aria-labelledby={labelledBy}
-		class="dropdown-button dropdown-button--select"
-		type="button"
-		use:popover.button
-	>
-		<span class="selected" class:truncated={compact}>
-			{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
-				<span class="value truncated" class:value--compact={compact}>{selectedOption.label}</span>
-			{:else}
-				{$_('empty')}
-			{/each}
-		</span>
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
-	{#if $popover.expanded}
-		<fieldset
+<Dropdown {offset}>
+	{#snippet button(popover)}
+		<button
 			aria-labelledby={labelledBy}
-			class="dropdown-panel listbox"
-			use:popperContent={extraOpts}
-			use:popover.panel
+			class="dropdown-button dropdown-button--select"
+			type="button"
+			use:popover.button
 		>
-			<div>
-				{#each options as option (option.value)}
-					<label>
-						<input type="checkbox" value={option.value} bind:group={value} />
-						<span class="truncated">{option.label}</span>
-					</label>
+			<span class="selected" class:truncated={compact}>
+				{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
+					<span class="value truncated" class:value--compact={compact}>{selectedOption.label}</span>
+				{:else}
+					{$_('empty')}
 				{/each}
-			</div>
+			</span>
+		</button>
+	{/snippet}
+
+	{#snippet panel()}
+		<fieldset aria-labelledby={labelledBy} class="listbox">
+			{#each options as option (option.value)}
+				<label>
+					<input type="checkbox" value={option.value} bind:group={value} />
+					<span class="truncated">{option.label}</span>
+				</label>
+			{/each}
 		</fieldset>
-	{/if}
-</div>
+	{/snippet}
+</Dropdown>
 
 <style>
-	.dropdown {
-		--dropdown-button-align-items: start;
-	}
-
-	.dropdown-button.dropdown-button--select > :global(svg:last-child) {
-		margin: 0.125rem 0 0;
-	}
-
 	.selected {
 		display: block;
 		min-width: 0;

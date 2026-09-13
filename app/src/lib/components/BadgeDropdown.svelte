@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	export type BadgeDropdownValue = string | number | null | undefined;
 
@@ -37,21 +34,6 @@
 		value = $bindable()
 	}: Props = $props();
 
-	const popover = createPopover();
-
-	$effect(() => {
-		popover.set({ label });
-	});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'fixed'
-	});
-
-	const extraOpts = $derived.by(() => ({
-		modifiers: [{ name: 'offset', options: { offset } }]
-	}));
-
 	const selected = $derived(options.find((option) => option.value === value));
 	const selectedLabel = $derived(selected?.label ?? emptyLabel ?? $_('empty'));
 	const effectiveOptions = $derived(
@@ -60,8 +42,8 @@
 
 	function dropdownButtonClass(option?: BadgeDropdownOption) {
 		return option?.badgeColor
-			? `dropdown-button dropdown-button--${option.badgeColor}`
-			: 'dropdown-button dropdown-button--empty';
+			? `dropdown-button dropdown-button--select dropdown-button--${option.badgeColor}`
+			: 'dropdown-button dropdown-button--select dropdown-button--empty';
 	}
 
 	function badgeClass(option?: BadgeDropdownOption) {
@@ -72,24 +54,20 @@
 </script>
 
 {#if editable}
-	<div class="dropdown" use:popperRef>
-		<button
-			aria-labelledby={labelledBy}
-			class={dropdownButtonClass(selected)}
-			type="button"
-			use:popover.button
-		>
-			{selectedLabel}
-			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-		</button>
-
-		{#if $popover.expanded}
-			<fieldset
+	<Dropdown {label} {offset}>
+		{#snippet button(popover)}
+			<button
 				aria-labelledby={labelledBy}
-				class="dropdown-panel listbox"
-				use:popperContent={extraOpts}
-				use:popover.panel
+				class={dropdownButtonClass(selected)}
+				type="button"
+				use:popover.button
 			>
+				{selectedLabel}
+			</button>
+		{/snippet}
+
+		{#snippet panel(popover)}
+			<fieldset aria-labelledby={labelledBy} class="listbox">
 				{#each effectiveOptions as option (option.value)}
 					<label>
 						<input
@@ -105,8 +83,8 @@
 					</label>
 				{/each}
 			</fieldset>
-		{/if}
-	</div>
+		{/snippet}
+	</Dropdown>
 {:else}
 	<div class="value">
 		<span class={badgeClass(selected)}>{selectedLabel}</span>

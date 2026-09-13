@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import type { CategoryOption } from '$lib/categoryOptions';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import MultipleChoiceDisclosureOption from '$lib/components/MultipleChoiceDisclosureOption.svelte';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
@@ -26,17 +23,6 @@
 		options,
 		value = $bindable([])
 	}: Props = $props();
-
-	const popover = createPopover({});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = $derived.by(() => ({
-		modifiers: [{ name: 'offset', options: { offset } }]
-	}));
 
 	type Option = (typeof options)[number];
 	type SubOption = NonNullable<Option['subOptions']>[number];
@@ -81,60 +67,55 @@
 </script>
 
 {#if editable || (value.length > 1 && compact)}
-	<div class="dropdown" use:popperRef>
-		<button
-			aria-labelledby={labelledBy}
-			class="dropdown-button dropdown-button--select"
-			type="button"
-			use:popover.button
-		>
-			<span class="value" class:value--compact={compact}>
-				{#each selectedEntries.slice(0, value.length > 1 && compact ? 1 : value.length) as entry (entry.option.value)}
-					<span
-						class="badge badge--gray"
-						class:value--compact={compact}
-						class:value--child={entry.isChild}
-					>
-						<span class="truncated">{entry.option.label}</span>
-					</span>
-				{:else}
-					{$_('empty')}
-				{/each}
-				{#if value.length > 1 && compact}
-					<span class="badge badge--gray">
-						{$_('n_more', { values: { count: value.length - 1 } })}
-					</span>
-				{/if}
-			</span>
-			{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-		</button>
-		{#if $popover.expanded}
+	<Dropdown {offset}>
+		{#snippet button(popover)}
+			<button
+				aria-labelledby={labelledBy}
+				class="dropdown-button dropdown-button--select"
+				type="button"
+				use:popover.button
+			>
+				<span class="value" class:value--compact={compact}>
+					{#each selectedEntries.slice(0, value.length > 1 && compact ? 1 : value.length) as entry (entry.option.value)}
+						<span
+							class="badge badge--gray"
+							class:value--compact={compact}
+							class:value--child={entry.isChild}
+						>
+							<span class="truncated">{entry.option.label}</span>
+						</span>
+					{:else}
+						{$_('empty')}
+					{/each}
+					{#if value.length > 1 && compact}
+						<span class="badge badge--gray">
+							{$_('n_more', { values: { count: value.length - 1 } })}
+						</span>
+					{/if}
+				</span>
+			</button>
+		{/snippet}
+
+		{#snippet panel()}
 			{#if editable}
-				<fieldset
-					aria-labelledby={labelledBy}
-					class="dropdown-panel listbox"
-					use:popperContent={extraOpts}
-					use:popover.panel
-				>
+				<fieldset aria-labelledby={labelledBy} class="listbox">
 					{#each options as option (option.value)}
 						<MultipleChoiceDisclosureOption {option} bind:value {iconURL} />
 					{/each}
 				</fieldset>
 			{:else}
-				<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
-					<ul>
-						{#each selectedEntries as entry (entry.option.value)}
-							<li>
-								<span class="badge badge--gray">
-									<span class="truncated">{entry.option.label}</span>
-								</span>
-							</li>
-						{/each}
-					</ul>
-				</div>
+				<ul>
+					{#each selectedEntries as entry (entry.option.value)}
+						<li>
+							<span class="badge badge--gray">
+								<span class="truncated">{entry.option.label}</span>
+							</span>
+						</li>
+					{/each}
+				</ul>
 			{/if}
-		{/if}
-	</div>
+		{/snippet}
+	</Dropdown>
 {:else}
 	<div class="value" class:value--compact={compact}>
 		{#each selectedEntries.slice(0, compact ? 1 : value.length) as entry (entry.option.value)}
@@ -148,10 +129,6 @@
 {/if}
 
 <style>
-	.dropdown {
-		--dropdown-button-align-items: start;
-	}
-
 	.dropdown-button:has(.badge),
 	.value:has(.badge) {
 		padding-left: var(--dropdown-button-padding-y);

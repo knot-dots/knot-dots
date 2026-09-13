@@ -116,8 +116,8 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-				<div class="dropdown-panel-scroll-wrapper">
+			<div class="dropdown-panel" use:popperContent={extraOpts} use:popover.panel>
+				<fieldset class="listbox">
 					{#if $ability.can('update', container, 'payload.visibility')}
 						<!-- Group: Text -->
 						<p class="dropdown-panel-group-title">Text</p>
@@ -135,8 +135,8 @@
 						{@render SubMenu('Link URL', Link, LinkUrlSub)}
 						{@render SubMenu('Link Text', Text, LinkTextSub)}
 					{/if}
-				</div>
-			</fieldset>
+				</fieldset>
+			</div>
 		{/if}
 	</div>
 
@@ -228,7 +228,7 @@
 		z-index: 50;
 	}
 
-	.dropdown-panel-scroll-wrapper {
+	.listbox {
 		max-height: 400px;
 		overflow-x: visible;
 		overflow-y: auto;
@@ -285,16 +285,13 @@
 		padding: 0.5rem 0.75rem;
 		width: 100%;
 	}
+
 	.menu-item > button {
 		color: var(--color-gray-500);
 		font-weight: 500;
 		font-size: 0.875rem;
 	}
-	.dropdown-panel-title {
-		font-size: 0.75rem;
-		font-weight: 600;
-		padding: 0.5rem 0.75rem;
-	}
+
 	.dropdown-panel-group-title {
 		color: var(--color-gray-400);
 		font-size: 0.75rem;
