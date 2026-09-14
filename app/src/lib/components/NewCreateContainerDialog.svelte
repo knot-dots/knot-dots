@@ -179,45 +179,45 @@
 				</button>
 			</header>
 
-			<div class="form-panel">
-				<div class="title">
-					<div class="title-field">
-						{#if isContainerWithName($createContainerDialogState.container)}
-							<AutoresizingTextarea
-								aria-label={$_('title')}
-								placeholder={$_('title')}
-								required
-								rows={1}
-								bind:value={$createContainerDialogState.container.payload.name}
-							/>
-						{:else if isContainerWithTitle($createContainerDialogState.container)}
-							<AutoresizingTextarea
-								aria-label={$_('title')}
-								placeholder={$_('title')}
-								required
-								rows={1}
-								bind:value={$createContainerDialogState.container.payload.title}
+			<article class="details">
+				<div class="details-scroll-wrapper">
+					<header class="details-section">
+						<div class="details-header">
+							<h1 class="details-title">
+								{#if isContainerWithName($createContainerDialogState.container)}
+									<AutoresizingTextarea
+										aria-label={$_('title')}
+										placeholder={$_('title')}
+										required
+										rows={1}
+										bind:value={$createContainerDialogState.container.payload.name}
+									/>
+								{:else if isContainerWithTitle($createContainerDialogState.container)}
+									<AutoresizingTextarea
+										aria-label={$_('title')}
+										placeholder={$_('title')}
+										required
+										rows={1}
+										bind:value={$createContainerDialogState.container.payload.title}
+									/>
+								{/if}
+							</h1>
+						</div>
+
+						{#if isContainer($createContainerDialogState.container)}
+							<Badges bind:container={$createContainerDialogState.container} editable />
+						{/if}
+
+						{#if isSimpleMeasureContainer($createContainerDialogState.container)}
+							<EditableProgress
+								editable
+								bind:value={$createContainerDialogState.container.payload.progress}
 							/>
 						{/if}
-					</div>
+					</header>
 
-					{#if isContainer($createContainerDialogState.container)}
-						<Badges bind:container={$createContainerDialogState.container} editable />
-					{/if}
-
-					{#if isSimpleMeasureContainer($createContainerDialogState.container)}
-						<EditableProgress
-							editable
-							bind:value={$createContainerDialogState.container.payload.progress}
-						/>
-					{/if}
-				</div>
-
-				<div class="properties">
 					<NewContainerProperties bind:container={$createContainerDialogState.container} />
-				</div>
 
-				<div class="description">
 					{#if isContainerWithDescription($createContainerDialogState.container)}
 						<EditableFormattedText
 							editable
@@ -231,12 +231,12 @@
 							bind:value={$createContainerDialogState.container.payload.body}
 						/>
 					{/if}
-				</div>
 
-				{#if templatePreview}
-					<TemplateHierarchyPreview preview={templatePreview} />
-				{/if}
-			</div>
+					{#if templatePreview}
+						<TemplateHierarchyPreview preview={templatePreview} />
+					{/if}
+				</div>
+			</article>
 
 			<CreateContainerTemplatePicker
 				dialogState={$createContainerDialogState}
@@ -283,69 +283,33 @@
 		margin: 0 auto 0 0;
 	}
 
-	.form-panel {
+	.details {
+		--details-max-width: none;
+		--details-padding-left: 3.5rem;
+		--details-padding-right: 3.5rem;
+		--details-padding-y: 1.5rem;
+
 		background-color: var(--color-surface-default);
-		border: 0.0625rem solid var(--color-border-subtle);
-		border-radius: 1rem;
-		color: var(--color-gray-500);
-		container: details / inline-size;
-		display: flex;
-		flex-direction: column;
-		font-size: 0.875rem;
-		height: 100%;
-		min-width: 0;
-		overflow-y: auto;
-		padding: 2rem 4rem;
-		position: relative;
-		width: 100%;
+		border-radius: 16px;
 	}
 
-	.title,
-	.properties,
-	.description {
-		max-width: 50.0625rem;
-		width: 100%;
+	.details-title {
+		margin-left: -0.5rem;
+		margin-right: -0.5rem;
+		margin-bottom: 0.25rem;
 	}
 
-	.title {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem 1.5rem;
-	}
-
-	.title-field {
-		border-radius: 0.5rem;
-		color: var(--color-text-strong);
-		font-size: 2.25rem;
-		font-weight: 700;
-		line-height: 1.25;
+	.details-title :global(span::after),
+	.details-title :global(textarea) {
 		padding: 0.5rem;
 	}
 
-	.title-field:has(:global(textarea:invalid)) {
+	.details-title :global(textarea:invalid) {
 		background-color: var(--color-red-050);
+	}
+
+	.details-title :global(textarea::placeholder) {
 		color: var(--color-red-500);
-	}
-
-	.title-field :global(textarea) {
-		background: transparent;
-		color: inherit;
-	}
-
-	.title-field :global(textarea::placeholder) {
-		color: inherit;
 		opacity: 1;
-	}
-
-	.properties,
-	.description {
-		--details-max-width: none;
-		--details-padding-left: 0rem;
-		--details-padding-right: 0rem;
-		--details-section-padding-x: 0rem;
-		--details-section-padding-y: 0rem;
-
-		padding: 1.5rem;
 	}
 </style>
