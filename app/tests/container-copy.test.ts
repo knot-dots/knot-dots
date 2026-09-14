@@ -16,10 +16,24 @@ test('shows subordinate template content as a read-only detail preview', async (
 		const url = new URL(route.request().url());
 		if (
 			url.searchParams.get('availableIn') === testProgram.guid &&
-			url.searchParams.get('payloadType') === payloadTypes.enum.measure &&
 			url.searchParams.get('templateRoot') === 'true'
 		) {
-			await route.fulfill({ json: { containers: [template] } });
+			const containers =
+				url.searchParams.get('payloadType') === payloadTypes.enum.measure ? [template] : [];
+			const limit = Number(url.searchParams.get('limit'));
+			await route.fulfill({
+				json: {
+					containers,
+					facets: {},
+					page: {
+						hasMore: false,
+						limit,
+						nextOffset: null,
+						offset: 0,
+						total: containers.length
+					}
+				}
+			});
 			return;
 		}
 		await route.fallback();
@@ -28,10 +42,23 @@ test('shows subordinate template content as a read-only detail preview', async (
 	await dotsBoard.goto(`/${testProgram.organization}`);
 	await dotsBoard.card(testMeasure.payload.title).click();
 	await dotsBoard.overlay.editModeToggle.check();
-	await dotsBoard.overlay.locator.getByRole('button', { name: 'Create another element' }).click();
+	const createAnother = dotsBoard.overlay.locator.getByRole('button', {
+		name: 'Create another element'
+	});
+	await expect(createAnother).toBeVisible();
+	await createAnother.click();
+	await expect(
+		dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Goal', exact: true })
+	).toHaveCount(0);
+	await expect(
+		dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Supplementary text', exact: true })
+	).toBeVisible();
 	await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Measure', exact: true }).click();
 
 	const dialog = dotsBoard.page.getByRole('dialog');
+	await expect(dialog).toContainText('Select a template to create this object.');
+	await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
+	await expect(dialog.getByRole('button', { name: 'Save' })).toBeDisabled();
 	const previewResponsePromise = dotsBoard.page.waitForResponse((response) => {
 		const url = new URL(response.url());
 		return (
