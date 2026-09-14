@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
 		labelledBy?: string;
@@ -13,53 +10,37 @@
 	}
 
 	let { labelledBy, offset = [0, 4], options, value = $bindable() }: Props = $props();
+
 	let selected = $derived(options.find((o) => o.value == value));
-
-	const popover = createPopover({});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = $derived({
-		modifiers: [{ name: 'offset', options: { offset } }]
-	});
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button
-		aria-labelledby={labelledBy}
-		class="dropdown-button dropdown-button--select"
-		type="button"
-		use:popover.button
-		{value}
-	>
-		<span class="truncated">
-			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
-		</span>
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
-	{#if $popover.expanded}
-		<fieldset
+<Dropdown {offset}>
+	{#snippet button(popover)}
+		<button
 			aria-labelledby={labelledBy}
-			class="dropdown-panel listbox"
-			use:popperContent={extraOpts}
-			use:popover.panel
+			class="dropdown-button dropdown-button--select"
+			type="button"
+			use:popover.button
 		>
-			<div>
-				{#each options as option (option.value)}
-					<label>
-						<input
-							bind:group={value}
-							onchange={() => popover.close()}
-							type="radio"
-							value={option.value}
-						/>
-						<span class="truncated">{option.label}</span>
-					</label>
-				{/each}
-			</div>
+			<span class="truncated">
+				{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+			</span>
+		</button>
+	{/snippet}
+
+	{#snippet panel(popover)}
+		<fieldset aria-labelledby={labelledBy} class="listbox">
+			{#each options as option (option.value)}
+				<label>
+					<input
+						bind:group={value}
+						onchange={() => popover.close()}
+						type="radio"
+						value={option.value}
+					/>
+					<span class="truncated">{option.label}</span>
+				</label>
+			{/each}
 		</fieldset>
-	{/if}
-</div>
+	{/snippet}
+</Dropdown>

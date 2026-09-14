@@ -86,6 +86,7 @@
 		--dropdown-panel-background: var(--color-surface-container);
 		--dropdown-panel-border-color: var(--color-border-raised);
 		--dropdown-panel-border-radius: 16px;
+		--dropdown-panel-gap: 0;
 		--dropdown-panel-max-height: 30rem;
 		--dropdown-panel-width: 20rem;
 	}

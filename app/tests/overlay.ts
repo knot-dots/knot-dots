@@ -42,6 +42,10 @@ export default class Overlay {
 		return this.locator.locator('ul section');
 	}
 
+	get settingsButton() {
+		return this.locator.getByRole('button', { name: 'Settings', exact: true });
+	}
+
 	get title() {
 		return this.locator.getByRole('heading', { level: 1 });
 	}
@@ -99,7 +103,8 @@ export default class Overlay {
 	}
 
 	async delete() {
-		await this.deleteButton.click();
+		await this.settingsButton.click();
+		await this.locator.getByRole('button', { name: 'Delete' }).click();
 		await this.page.getByRole('button', { name: `I want to delete` }).click();
 	}
 }

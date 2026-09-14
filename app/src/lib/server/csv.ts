@@ -1,4 +1,5 @@
 import de from '$lib/locales/de.json';
+import { type Status, status } from '$lib/models';
 
 /**
  * Reverse translation map: maps German translated labels back to internal enum keys.
@@ -8,6 +9,18 @@ export const reverseTranslationMap = new Map<string, string>(
 	Object.entries(de)
 		.filter((e): e is [string, string] => typeof e[1] === 'string')
 		.map(([k, v]) => [v, k])
+);
+
+/**
+ * Status labels as shown in the UI, mapped back to the status enum.
+ * Resolves against the status enum only, so labels shared with other
+ * enums (e.g. "Idee") cannot be mistaken for a different key.
+ */
+export const statusByLabel = new Map<string, Status>(
+	status.options.map((s) => [
+		s === status.enum['status.in_operation'] ? de['status.in_operation.short'] : de[s],
+		s
+	])
 );
 
 /**

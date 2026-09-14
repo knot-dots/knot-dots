@@ -7,7 +7,6 @@
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -15,10 +14,10 @@
 	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { type AnyPayload, type Container, type PostPayload, predicates } from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 
 	interface Props {
 		container: Container<PostPayload>;
@@ -80,7 +79,6 @@
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />
 				<CreateTemplateButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 

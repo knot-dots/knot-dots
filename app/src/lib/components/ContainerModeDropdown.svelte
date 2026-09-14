@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ListType from '~icons/knotdots/tasks';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import {
 		listTypes,
 		isTeaserCollectionContainer,
@@ -16,40 +15,25 @@
 	}
 
 	let { container = $bindable() }: Props = $props();
-
-	let popover = createPopover({ label: $_('settings') });
-
-	let [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset: [0, 4] } }] };
 </script>
 
 {#if $ability.can('update', container, 'visibility') && isTeaserCollectionContainer(container)}
-	<div class="dropdown" use:popperRef>
-		<button class="dropdown-button" use:popover.button>
-			<ListType />
-		</button>
+	<Dropdown --dropdown-panel-border-radius="16px" label={$_('settings')} offset={[0, 4]}>
+		{#snippet button(popover)}
+			<button class="dropdown-button" use:popover.button>
+				<ListType />
+			</button>
+		{/snippet}
 
-		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-				<div>
-					{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
-						<label>
-							<input type="radio" value={option.value} bind:group={container.payload.listType} />
-							<span class="truncated">{option.label}</span>
-						</label>
-					{/each}
-				</div>
+		{#snippet panel()}
+			<fieldset class="listbox">
+				{#each listTypes.options.map( (o) => ({ value: o, label: $_(`list_type.${o}`) }) ) as option (option.value)}
+					<label>
+						<input type="radio" value={option.value} bind:group={container.payload.listType} />
+						<span class="truncated">{option.label}</span>
+					</label>
+				{/each}
 			</fieldset>
-		{/if}
-	</div>
+		{/snippet}
+	</Dropdown>
 {/if}
-
-<style>
-	.dropdown-panel {
-		border-radius: 16px;
-	}
-</style>

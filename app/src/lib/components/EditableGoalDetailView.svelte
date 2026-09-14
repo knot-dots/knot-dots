@@ -7,7 +7,6 @@
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
@@ -96,7 +95,6 @@
 				<CreateAnotherButton {container} {relatedContainers} />
 				<CreateCopyButton {container} />
 				<CreateTemplateButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 

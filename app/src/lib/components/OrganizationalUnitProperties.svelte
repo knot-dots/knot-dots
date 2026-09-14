@@ -9,7 +9,6 @@
 	import EditableSlug from '$lib/components/EditableSlug.svelte';
 	import EditableSuperordinateOrganizationalUnit from '$lib/components/EditableSuperordinateOrganizationalUnit.svelte';
 	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
-	import PropertyGrid from '$lib/components/PropertyGrid.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, OrganizationalUnitPayload } from '$lib/models';
 	import { ability } from '$lib/stores';
@@ -146,13 +145,9 @@
 	<EditableCategories bind:container {editable} />
 {/snippet}
 
-{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-	<PropertyGrid {general} {categories} />
-{:else}
-	<div class="details-section">
-		<div class="data-grid">
-			{@render general()}
-			{@render categories()}
-		</div>
+<div class="details-section">
+	<div class="data-grid">
+		{@render general()}
+		{@render categories()}
 	</div>
-{/if}
+</div>

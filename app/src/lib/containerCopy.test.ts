@@ -32,7 +32,15 @@ test('accepts only the operation-specific copy request fields', () => {
 		containerCopyRequest.safeParse({
 			operation: 'template-instance',
 			availableIn: null,
+			rootPlacement: [
+				{
+					parentGuid: sourceGuid,
+					position: 2,
+					predicate: 'is-part-of-program'
+				}
+			],
 			sourceGuid,
+			targetManagedByGuid: organizationGuid,
 			targetOrganizationGuid: organizationGuid,
 			targetOrganizationalUnitGuid: null,
 			rootPayload: { template: false, title: 'Edited', type: payloadTypes.enum.report }
@@ -41,6 +49,23 @@ test('accepts only the operation-specific copy request fields', () => {
 	expect(
 		containerCopyRequest.safeParse({
 			operation: 'template-instance',
+			sourceGuid,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPayload: { template: false, title: 'Edited', type: payloadTypes.enum.report }
+		}).success
+	).toBe(false);
+	expect(
+		containerCopyRequest.safeParse({
+			operation: 'template-instance',
+			availableIn: null,
+			rootPlacement: [
+				{
+					parentGuid: sourceGuid,
+					position: 0,
+					predicate: 'is-copy-of'
+				}
+			],
 			sourceGuid,
 			targetOrganizationGuid: organizationGuid,
 			targetOrganizationalUnitGuid: null,

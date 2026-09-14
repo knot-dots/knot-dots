@@ -9,7 +9,6 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import type {
@@ -381,12 +380,6 @@
 			</div>
 
 			<Sections bind:container {relatedContainers} />
-		{/snippet}
-
-		{#snippet footer()}
-			<footer class="footer-action-bar">
-				<DeleteButton {container} {relatedContainers} />
-			</footer>
 		{/snippet}
 
 		{#snippet properties()}

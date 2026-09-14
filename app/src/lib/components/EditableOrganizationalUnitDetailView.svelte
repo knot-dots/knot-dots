@@ -1,39 +1,28 @@
 <script lang="ts">
-	import { Collapsible } from 'melt/builders';
 	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
-	import Ellipsis from '~icons/knotdots/ellipsis';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
-	import copyContainer from '$lib/client/copyContainer';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
-	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
-	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { setDetailViewContext } from '$lib/contexts/detailView';
-	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
-		containerOfType,
 		getOrganizationURL,
 		helpSlug,
 		isOrganizationalUnitContainer,
@@ -114,9 +103,6 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
-
 	const handleSubmit = $derived(autoSave(container, 2000));
 
 	let isIndividualProfile = $derived(
@@ -138,69 +124,6 @@
 				}).toString()
 			: undefined
 	);
-
-	let hasGeometry = $derived(Boolean(container.payload.geometry));
-
-	let mayCreateIndividualProfile = $derived(
-		hasGeometry &&
-			!isIndividualProfile &&
-			!linkedProfile &&
-			$ability.can(
-				'create',
-				containerOfType(
-					payloadTypes.enum.organizational_unit,
-					container.organization,
-					null,
-					container.organization,
-					container.realm
-				)
-			)
-	);
-
-	let creatingProfile = $state(false);
-
-	async function createIndividualProfile() {
-		creatingProfile = true;
-
-		try {
-			const response = await copyContainer({
-				operation: 'individual-profile',
-				sourceGuid: container.guid
-			});
-
-			if (response.ok) {
-				const created = await response.json();
-				dialog?.close();
-				goto(
-					getOrganizationURL(created, '', env, {
-						organizationSlug: page.data.currentOrganization.payload.slug,
-						organizationCustomDomain: page.data.currentOrganization.payload.customDomain
-					}).toString()
-				);
-			} else {
-				const err = await response.json();
-				alert(err.message);
-			}
-		} finally {
-			creatingProfile = false;
-		}
-	}
-
-	const propertiesRelocationNotice = getPropertiesRelocationContext();
-
-	let detailView = $state({
-		properties: new Collapsible({
-			onOpenChange: () => {
-				propertiesRelocationNotice.seen = true;
-			}
-		})
-	});
-
-	const useNewPropertyPanel = createFeatureDecisions(page.data.features).useNewPropertyPanel();
-
-	if (useNewPropertyPanel) {
-		setDetailViewContext(detailView);
-	}
 </script>
 
 {#snippet header()}
@@ -289,16 +212,6 @@
 									bind:textContent={container.payload.name}
 									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
 								></h1>
-								<button
-									class="action-button"
-									onclick={useNewPropertyPanel
-										? detailView.properties.trigger.onclick
-										: () => dialog.showModal()}
-									type="button"
-								>
-									<Ellipsis />
-									<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-								</button>
 							{:else}
 								<h1
 									class={{
@@ -311,33 +224,6 @@
 								</h1>
 							{/if}
 						</header>
-
-						{#if !useNewPropertyPanel}
-							<PropertiesDialog
-								bind:dialog
-								{container}
-								{relatedContainers}
-								title={$_('organizational_unit.properties.title')}
-							>
-								{#snippet actions()}
-									{#if mayCreateIndividualProfile}
-										<button
-											class="button button-xs button-alternative system-primary"
-											disabled={creatingProfile}
-											onclick={createIndividualProfile}
-											type="button"
-										>
-											{$_('individual_profile.create')}
-										</button>
-									{/if}
-								{/snippet}
-
-								<OrganizationalUnitProperties
-									bind:container
-									editable={$ability.can('update', container)}
-								/>
-							</PropertiesDialog>
-						{/if}
 
 						{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
 							{#key container.guid}
@@ -353,36 +239,10 @@
 
 				<Sections bind:container {relatedContainers} />
 			</div>
-
-			{#if useNewPropertyPanel}
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<OrganizationalUnitProperties
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-				</form>
-			{/if}
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
-
-	{#if useNewPropertyPanel}
-		<footer class="footer-action-bar">
-			{#if mayCreateIndividualProfile}
-				<button
-					class="button button-xs button-alternative system-primary"
-					disabled={creatingProfile}
-					onclick={createIndividualProfile}
-					type="button"
-				>
-					{$_('individual_profile.create')}
-				</button>
-			{/if}
-			<DeleteButton {container} {relatedContainers} />
-		</footer>
-	{/if}
 {/snippet}
 
 {@render layout(header, main)}
@@ -408,10 +268,6 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding-bottom: 0;
-	}
-
-	header button {
-		margin-left: auto;
 	}
 
 	h1 {

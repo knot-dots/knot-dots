@@ -54,8 +54,8 @@
 		</button>
 
 		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent use:popover.panel>
-				<div>
+			<div class="dropdown-panel" use:popperContent use:popover.panel>
+				<fieldset class="listbox">
 					<button class="action-button" onclick={popover.close}>
 						<Close />
 						<span class="is-visually-hidden">{$_('close')}</span>
@@ -93,8 +93,8 @@
 							type="file"
 						/>
 					</label>
-				</div>
-			</fieldset>
+				</fieldset>
+			</div>
 		{/if}
 	</div>
 {/if}

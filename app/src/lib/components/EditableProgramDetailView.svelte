@@ -16,7 +16,6 @@
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -264,7 +263,6 @@
 		{:else if createFeatureDecisions(page.data.features).useOpenAI()}
 			<AskAIButton {container} />
 		{/if}
-		<DeleteButton {container} {relatedContainers} />
 	</footer>
 {/snippet}
 

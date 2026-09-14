@@ -5,8 +5,8 @@
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { slide } from 'svelte/transition';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import ChevronDown from '~icons/flowbite/chevron-down-outline';
+	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Minus from '~icons/heroicons/minus-small-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
@@ -14,7 +14,6 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -287,7 +286,6 @@
 			<footer class="footer-action-bar">
 				<RelationButton {container} />
 				<CreateTemplateButton {container} />
-				<DeleteButton {container} {relatedContainers} />
 			</footer>
 		{/snippet}
 
