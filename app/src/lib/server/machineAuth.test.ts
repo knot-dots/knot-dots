@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { machineUser, parseClientIds, readBearerToken } from './machineAuth';
 
-const { introspectToken, privateEnv } = vi.hoisted(() => ({
+const { introspectToken, podFeatures, privateEnv } = vi.hoisted(() => ({
 	introspectToken: vi.fn(),
+	podFeatures: new Map<string, boolean>(),
 	privateEnv: {} as Record<string, string | undefined>
 }));
 
 vi.mock('$env/dynamic/private', () => ({ env: privateEnv }));
 vi.mock('$env/dynamic/public', () => ({ env: { PUBLIC_KC_REALM: 'knot-dots' } }));
 vi.mock('$lib/server/keycloak', () => ({ introspectToken }));
+vi.mock('$lib/server/podFeatures', () => ({ getPodFeatures: async () => podFeatures }));
 vi.mock('$lib/server/db', () => ({
 	createOrUpdateUser: vi.fn(() => async () => undefined),
 	getPool: async () => ({ connect: async (query: () => unknown) => query() })
@@ -63,6 +65,8 @@ describe('parseClientIds', () => {
 describe('machineUser', () => {
 	beforeEach(() => {
 		introspectToken.mockReset();
+		podFeatures.clear();
+		podFeatures.set('MachineAuthentication', true);
 		privateEnv.MACHINE_CLIENT_IDS = 'knot-dots-agent';
 	});
 
@@ -86,6 +90,20 @@ describe('machineUser', () => {
 
 	it('does not introspect a request without a bearer token', async () => {
 		expect(await machineUser(requestWith())).toBeUndefined();
+		expect(introspectToken).not.toHaveBeenCalled();
+	});
+
+	it('refuses every token while the deployment has not switched the feature on', async () => {
+		podFeatures.clear();
+
+		expect(await machineUser(requestWith('Bearer a-token'))).toBeUndefined();
+		expect(introspectToken).not.toHaveBeenCalled();
+	});
+
+	it('refuses every token once the feature is switched off again', async () => {
+		podFeatures.set('MachineAuthentication', false);
+
+		expect(await machineUser(requestWith('Bearer a-token'))).toBeUndefined();
 		expect(introspectToken).not.toHaveBeenCalled();
 	});
 

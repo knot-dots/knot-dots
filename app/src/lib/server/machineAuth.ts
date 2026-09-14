@@ -4,10 +4,16 @@ import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
 import { createOrUpdateUser, getPool } from '$lib/server/db';
 import { introspectToken } from '$lib/server/keycloak';
+import { getPodFeatures } from '$lib/server/podFeatures';
 import { enrichSessionUser } from '$lib/server/sessionUser';
 import type { User } from '$lib/stores';
 
 const BEARER = /^Bearer\s+(\S+)$/i;
+
+// Deployment-level switch. Absent annotations mean an absent flag, so an
+// environment that has not opted in keeps the path shut, and an environment
+// that has can close it again with kubectl annotate — without a rollout.
+const FEATURE = 'MachineAuthentication';
 
 export function readBearerToken(header: string | null): string | undefined {
 	return BEARER.exec(header ?? '')?.[1];
@@ -24,10 +30,12 @@ export function parseClientIds(value: string | undefined): string[] {
  * Authenticates a machine account that presents an OAuth access token.
  *
  * This is the only way into the application without a browser session, and it
- * exists so that automation — the bugfix agent filing a ticket — can act as an
- * identity with its own memberships instead of a shared super user. The token
- * has to come from a client listed in MACHINE_CLIENT_IDS, so an access token
- * minted for the web application cannot be replayed here.
+ * exists so that automation — the bug investigation agent filing a ticket —
+ * can act as an identity with its own memberships instead of a shared super
+ * user. Two independent switches guard it: the MachineAuthentication feature
+ * flag has to be on, and the token has to come from a client listed in
+ * MACHINE_CLIENT_IDS, so an access token minted for the web application cannot
+ * be replayed here.
  *
  * Returns undefined for anything it does not accept, and never throws: a
  * broken introspection endpoint must not turn every request into a 500.
@@ -35,6 +43,10 @@ export function parseClientIds(value: string | undefined): string[] {
 export async function machineUser(request: Request): Promise<User | undefined> {
 	const token = readBearerToken(request.headers.get('Authorization'));
 	if (!token) {
+		return undefined;
+	}
+
+	if (!(await getPodFeatures()).get(FEATURE)) {
 		return undefined;
 	}
 

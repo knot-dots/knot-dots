@@ -71,11 +71,15 @@ listed in `MACHINE_CLIENT_IDS`.
 On the instance that is written to:
 
 1. A Keycloak client `knot-dots-agent` with service accounts enabled. The development
-   realm already has it (`keycloak/import/knot-dots.json`); other instances need it once.
-2. `MACHINE_CLIENT_IDS=knot-dots-agent` in the application's environment. Without it every
-   bearer token is refused, so an instance that has not opted in cannot be written to at
-   all.
-3. The service account — it appears as a user the first time it presents a token — needs
+   realm has it in `keycloak/import/knot-dots.json`, the deployed realms in the
+   `keycloak` module of the infrastructure project.
+2. The `MachineAuthentication` feature flag on. It is a deployment-level flag, so it comes
+   from `strategytool_feature_flags` in the infrastructure project and can be closed again
+   with `kubectl annotate` without waiting for a rollout.
+3. `MACHINE_CLIENT_IDS=knot-dots-agent` in the application's environment. Flag and
+   allowlist are independent on purpose: the flag decides whether the path exists at all,
+   the allowlist which identity may use it. Either one missing refuses every bearer token.
+4. The service account — it appears as a user the first time it presents a token — needs
    member rights that allow creating content in the target organization or organizational
    unit. `create` is granted for whatever `managed_by` points at, so being a collaborator
    of that organization is enough. Nothing more should be given.
