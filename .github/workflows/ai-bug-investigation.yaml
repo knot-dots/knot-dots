@@ -110,9 +110,9 @@ jobs:
         continue-on-error: true
         uses: anthropics/claude-code-action@v1
         env:
-          # The job's own token, and the job asks for contents: read only: the
-          # agent can read the checkout and cannot push anything.
-          GH_TOKEN: ${{ github.token }}
+          # Deliberately no GH_TOKEN: the agent investigates and writes nothing
+          # back, so it needs no credential of its own. The action gets one for
+          # its own bookkeeping below.
           TEST_IMAGE: app:test
         with:
           github_token: ${{ github.token }}

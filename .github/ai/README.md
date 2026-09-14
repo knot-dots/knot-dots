@@ -25,6 +25,33 @@ Elasticsearch, S3Mock and the built application, and Playwright drives a browser
 it. The runner therefore holds only the development credentials that are checked into
 this repository.
 
+## What the agent can reach
+
+The agent is driven by text somebody wrote in a chat space, and it runs with
+`--dangerously-skip-permissions`. That is a deliberate choice, not an oversight: the
+investigation needs `docker compose`, `npm`, `npx` and `psql`, and an allowlist containing
+those permits arbitrary commands through `docker compose exec` and `npx` anyway. It would
+look like a control without being one.
+
+The containment is the blast radius instead:
+
+- The job asks for `contents: read` and the agent process gets **no** `GH_TOKEN`. It
+  cannot push a branch, open a pull request or touch another repository.
+- The knot-dots machine credentials and the Google Chat key are set on their own steps,
+  never on the agent's, so the agent's process never sees them.
+- The runner is ephemeral and holds only the development credentials checked into this
+  repository.
+- Only the senders and the space listed in the bridge can trigger a run at all.
+- `--max-turns` and the job timeout bound a run that goes astray.
+
+What remains inside the agent's reach is `ANTHROPIC_API_KEY`, on a runner with
+unrestricted network access. **Use a separate API key for this workflow with a spend limit
+on it**, so that both a leak and a runaway run stay bounded.
+
+The instructions tell the agent to treat the report as data and ignore directives inside
+it. That reduces accidents; it is not a security boundary, and it is not counted as one
+above.
+
 ## Setup
 
 ### 1. Anthropic credentials
