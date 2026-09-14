@@ -179,72 +179,70 @@
 				</div>
 			</header>
 
-			<div class="main">
-				<div class="form-panel">
-					<div class="title">
-						<div class="title-field">
-							{#if isContainerWithName($createContainerDialogState.container)}
-								<AutoresizingTextarea
-									aria-label={$_('title')}
-									placeholder={$_('title')}
-									required
-									rows={1}
-									bind:value={$createContainerDialogState.container.payload.name}
-								/>
-							{:else if isContainerWithTitle($createContainerDialogState.container)}
-								<AutoresizingTextarea
-									aria-label={$_('title')}
-									placeholder={$_('title')}
-									required
-									rows={1}
-									bind:value={$createContainerDialogState.container.payload.title}
-								/>
-							{/if}
-						</div>
-
-						{#if isContainer($createContainerDialogState.container)}
-							<Badges bind:container={$createContainerDialogState.container} editable />
-						{/if}
-
-						{#if isSimpleMeasureContainer($createContainerDialogState.container)}
-							<EditableProgress
-								editable
-								bind:value={$createContainerDialogState.container.payload.progress}
+			<div class="form-panel">
+				<div class="title">
+					<div class="title-field">
+						{#if isContainerWithName($createContainerDialogState.container)}
+							<AutoresizingTextarea
+								aria-label={$_('title')}
+								placeholder={$_('title')}
+								required
+								rows={1}
+								bind:value={$createContainerDialogState.container.payload.name}
+							/>
+						{:else if isContainerWithTitle($createContainerDialogState.container)}
+							<AutoresizingTextarea
+								aria-label={$_('title')}
+								placeholder={$_('title')}
+								required
+								rows={1}
+								bind:value={$createContainerDialogState.container.payload.title}
 							/>
 						{/if}
 					</div>
 
-					<div class="properties">
-						<NewContainerProperties bind:container={$createContainerDialogState.container} />
-					</div>
+					{#if isContainer($createContainerDialogState.container)}
+						<Badges bind:container={$createContainerDialogState.container} editable />
+					{/if}
 
-					<div class="description">
-						{#if isContainerWithDescription($createContainerDialogState.container)}
-							<EditableFormattedText
-								editable
-								label={$_('description')}
-								bind:value={$createContainerDialogState.container.payload.description}
-							/>
-						{:else if isContainerWithBody($createContainerDialogState.container)}
-							<EditableFormattedText
-								editable
-								label={$_('body')}
-								bind:value={$createContainerDialogState.container.payload.body}
-							/>
-						{/if}
-					</div>
-
-					{#if templatePreview}
-						<TemplateHierarchyPreview preview={templatePreview} />
+					{#if isSimpleMeasureContainer($createContainerDialogState.container)}
+						<EditableProgress
+							editable
+							bind:value={$createContainerDialogState.container.payload.progress}
+						/>
 					{/if}
 				</div>
 
-				<CreateContainerTemplatePicker
-					dialogState={$createContainerDialogState}
-					onactivate={activateTemplate}
-					onpendingchange={(pending) => (templateSelectionPending = pending)}
-				/>
+				<div class="properties">
+					<NewContainerProperties bind:container={$createContainerDialogState.container} />
+				</div>
+
+				<div class="description">
+					{#if isContainerWithDescription($createContainerDialogState.container)}
+						<EditableFormattedText
+							editable
+							label={$_('description')}
+							bind:value={$createContainerDialogState.container.payload.description}
+						/>
+					{:else if isContainerWithBody($createContainerDialogState.container)}
+						<EditableFormattedText
+							editable
+							label={$_('body')}
+							bind:value={$createContainerDialogState.container.payload.body}
+						/>
+					{/if}
+				</div>
+
+				{#if templatePreview}
+					<TemplateHierarchyPreview preview={templatePreview} />
+				{/if}
 			</div>
+
+			<CreateContainerTemplatePicker
+				dialogState={$createContainerDialogState}
+				onactivate={activateTemplate}
+				onpendingchange={(pending) => (templateSelectionPending = pending)}
+			/>
 		</form>
 	{/if}
 </dialog>
@@ -259,7 +257,7 @@
 		max-height: none;
 		max-width: none;
 		overflow: hidden;
-		padding: 0;
+		padding: 1.5rem;
 		width: min(80rem, calc(100vw - 2.5rem));
 	}
 
@@ -270,7 +268,9 @@
 
 	dialog > form {
 		display: grid;
-		grid-template-rows: auto minmax(0, 1fr);
+		gap: 1rem;
+		grid-template-columns: 1fr minmax(0, auto);
+		grid-template-rows: minmax(0, auto) 1fr;
 		height: 100%;
 		min-width: 0;
 		width: 100%;
@@ -280,8 +280,9 @@
 		align-items: center;
 		display: flex;
 		gap: 1rem;
+		grid-column: 1 / -1;
 		justify-content: space-between;
-		padding: 1.5rem 1.5rem 1rem 2.25rem;
+		padding: 0.75rem;
 	}
 
 	dialog > form > header h2 {
@@ -303,16 +304,6 @@
 		--padding-y: 0.5rem;
 
 		min-height: 2rem;
-	}
-
-	.main {
-		align-items: flex-start;
-		align-self: stretch;
-		display: flex;
-		flex: 1 0 0;
-		gap: 1rem;
-		min-height: 0;
-		padding: 0 1.5rem 1.5rem;
 	}
 
 	.form-panel {
