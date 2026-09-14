@@ -263,3 +263,36 @@ export async function updateAccessSettings(guid: string) {
 		);
 	}
 }
+
+const introspection = z.object({
+	active: z.boolean(),
+	azp: z.string().optional(),
+	family_name: z.string().optional(),
+	given_name: z.string().optional(),
+	realm_access: z.object({ roles: z.array(z.string()) }).optional(),
+	sub: z.uuid().optional()
+});
+
+export type Introspection = z.infer<typeof introspection>;
+
+/**
+ * Asks Keycloak what an access token stands for.
+ *
+ * Introspection rather than local signature validation: it needs no key
+ * handling, and a token that has been revoked stops working immediately
+ * instead of staying valid until it expires.
+ */
+export async function introspectToken(token: string): Promise<Introspection> {
+	const response = await fetch(
+		`${env.PUBLIC_KC_URL}/realms/${env.PUBLIC_KC_REALM}/protocol/openid-connect/token/introspect`,
+		{
+			body: new URLSearchParams([['token', token]]),
+			headers: { Authorization: `Basic ${credentials}` },
+			method: 'POST'
+		}
+	);
+	if (!response.ok) {
+		throw new Error(`Token introspection failed. Keycloak responded with ${response.status}`);
+	}
+	return introspection.parse(await response.json());
+}

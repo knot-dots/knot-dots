@@ -7,16 +7,12 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
-import { predicates } from '$lib/models';
-import {
-	createOrUpdateUser,
-	getAllMembershipRelationsOfUser,
-	getPool,
-	getUser
-} from '$lib/server/db';
+import { createOrUpdateUser, getPool } from '$lib/server/db';
 import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
 import { withFeatures } from '$lib/server/features';
 import { withLogger } from '$lib/server/logger';
+import { machineUser } from '$lib/server/machineAuth';
+import { emptySessionUser, enrichSessionUser } from '$lib/server/sessionUser';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
@@ -57,41 +53,13 @@ export const withAuthentication: Handle = ({ event, resolve }) => {
 				return token;
 			},
 			async session({ session, token }) {
-				session.user.adminOf = [];
-				session.user.collaboratorOf = [];
-				session.user.familyName = '';
-				session.user.givenName = '';
-				session.user.guid = token.sub as string;
-				session.user.headOf = [];
-				session.user.memberOf = [];
-				session.user.roles = token.roles as string[];
-				session.user.settings = {};
-				// If this callback throws, Auth.js treats the session as broken and
-				// deletes the session cookie, logging the user out for good.
-				try {
-					const pool = await getPool();
-					const [user, containerUserRelations] = await Promise.all([
-						pool.connect(getUser(token.sub as string)),
-						pool.connect(getAllMembershipRelationsOfUser(token.sub as string))
-					]);
-					session.user.adminOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-admin-of'])
-						.map(({ object }) => object);
-					session.user.collaboratorOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-collaborator-of'])
-						.map(({ object }) => object);
-					session.user.familyName = user.family_name;
-					session.user.givenName = user.given_name;
-					session.user.headOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-head-of'])
-						.map(({ object }) => object);
-					session.user.memberOf = containerUserRelations
-						.filter(({ predicate }) => predicate == predicates.enum['is-member-of'])
-						.map(({ object }) => object);
-					session.user.settings = user.settings;
-				} catch (error) {
-					log.error(isErrorLike(error) ? serializeError(error) : {}, String(error));
-				}
+				// enrichSessionUser swallows its own failures on purpose: if this
+				// callback throws, Auth.js treats the session as broken and deletes
+				// the session cookie, logging the user out for good.
+				Object.assign(
+					session.user,
+					await enrichSessionUser(token.sub as string, (token.roles as string[]) ?? [])
+				);
 				return session;
 			}
 		},
@@ -148,17 +116,12 @@ export const handle = sequence(
 				isAuthenticated: true
 			};
 		} else {
-			event.locals.user = {
-				adminOf: [],
-				collaboratorOf: [],
-				familyName: '',
-				givenName: '',
-				guid: '',
-				headOf: [],
-				isAuthenticated: false,
-				memberOf: [],
-				roles: [],
-				settings: {}
+			// Without a browser session, an OAuth access token from a machine
+			// account is the only other way in. Anything it does not accept
+			// stays anonymous rather than becoming an error.
+			event.locals.user = (await machineUser(event.request)) ?? {
+				...emptySessionUser(),
+				isAuthenticated: false
 			};
 		}
 
