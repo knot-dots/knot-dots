@@ -61,6 +61,17 @@
 		templatePreview = preview;
 	}
 
+	const showTemplatePicker = $derived.by(() => {
+		const state = $createContainerDialogState;
+		if (!state) return false;
+
+		if ('template' in state.container.payload && state.container.payload.template) {
+			return false;
+		}
+
+		return state.kind === 'create' || state.request.operation === 'template-instance';
+	});
+
 	function rootPlacementFor(container: NewContainer): RootCopyPlacement[] {
 		return container.relation.flatMap(({ object, position, predicate, subject }) => {
 			if (
@@ -247,11 +258,13 @@
 				</article>
 			{/if}
 
-			<CreateContainerTemplatePicker
-				bind:pendingTemplateGuid
-				dialogState={$createContainerDialogState}
-				onactivate={activateTemplate}
-			/>
+			{#if showTemplatePicker}
+				<CreateContainerTemplatePicker
+					bind:pendingTemplateGuid
+					dialogState={$createContainerDialogState}
+					onactivate={activateTemplate}
+				/>
+			{/if}
 		</form>
 	{/if}
 </dialog>

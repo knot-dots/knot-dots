@@ -1,8 +1,45 @@
-import { payloadTypes } from '$lib/models';
 import { expect, test } from './fixtures';
 
 test.use({ suiteId: 'container-copy' });
 test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+test('creates an empty object as a template in a program template workspace', async ({
+	dotsBoard,
+	testProgram
+}) => {
+	await dotsBoard.page.goto(`/${testProgram.organization}/${testProgram.guid}/templates/catalog`);
+	await dotsBoard.page.getByRole('button', { name: 'Object', exact: true }).click();
+	await dotsBoard.page.getByRole('menuitem', { name: 'Measure', exact: true }).click();
+
+	const dialog = dotsBoard.page.getByRole('dialog');
+	await expect(dialog.getByRole('complementary', { name: 'Templates' })).toHaveCount(0);
+
+	const title = `Template workspace measure ${test.info().workerIndex}`;
+	await dialog.getByRole('textbox', { name: 'Title' }).fill(title);
+	const responsePromise = dotsBoard.page.waitForResponse((response) => {
+		const url = new URL(response.url());
+		return url.pathname === '/container' && response.request().method() === 'POST';
+	});
+	await dialog.getByRole('button', { name: 'Save' }).click();
+	const response = await responsePromise;
+
+	expect(response.status()).toBe(201);
+	expect(response.request().postDataJSON()).toMatchObject({
+		payload: { template: true, title },
+		relation: [
+			expect.objectContaining({
+				object: testProgram.guid,
+				predicate: 'is-available-in'
+			})
+		]
+	});
+	expect(await response.json()).toMatchObject({ payload: { template: true, title } });
+
+	const catalogEntry = dotsBoard.page.getByTitle(title, { exact: true });
+
+	await dotsBoard.page.reload();
+	await expect(catalogEntry).toBeVisible();
+});
 
 test('shows subordinate template content as a read-only detail preview', async ({
 	dotsBoard,
@@ -10,35 +47,6 @@ test('shows subordinate template content as a read-only detail preview', async (
 	testMeasure,
 	testProgram
 }) => {
-	// Template discovery is Elasticsearch-backed and eventually consistent. Keep that concern out
-	// of this preview test while retaining the real database-backed GET /container/copy response.
-	await dotsBoard.page.route('**/container/v2?*', async (route) => {
-		const url = new URL(route.request().url());
-		if (
-			url.searchParams.get('availableIn') === testProgram.guid &&
-			url.searchParams.get('templateRoot') === 'true'
-		) {
-			const containers =
-				url.searchParams.get('payloadType') === payloadTypes.enum.measure ? [template] : [];
-			const limit = Number(url.searchParams.get('limit'));
-			await route.fulfill({
-				json: {
-					containers,
-					facets: {},
-					page: {
-						hasMore: false,
-						limit,
-						nextOffset: null,
-						offset: 0,
-						total: containers.length
-					}
-				}
-			});
-			return;
-		}
-		await route.fallback();
-	});
-
 	await dotsBoard.goto(`/${testProgram.organization}`);
 	await dotsBoard.card(testMeasure.payload.title).click();
 	await dotsBoard.overlay.editModeToggle.check();
@@ -281,20 +289,6 @@ test('falls back to an administered location when the current context is denied'
 	testPublicProgram
 }) => {
 	expect(testOrganization.guid).not.toBe(defaultOrganization.guid);
-	// Browser projects share the org-admin user, so another worker can remove the selected
-	// fallback during teardown. This test covers client selection; persistence is tested above.
-	await dotsBoard.page.route('**/container/copy', async (route) => {
-		const request = route.request().postDataJSON();
-		await route.fulfill({
-			status: 201,
-			contentType: 'application/json',
-			body: JSON.stringify({
-				...testPublicProgram,
-				organization: request.targetOrganizationGuid,
-				organizational_unit: request.targetOrganizationalUnitGuid
-			})
-		});
-	});
 	await dotsBoard.page.goto(
 		`/${defaultOrganization.guid}/all/level#view=${testPublicProgram.guid}`
 	);
