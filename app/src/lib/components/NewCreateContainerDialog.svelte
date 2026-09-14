@@ -250,20 +250,11 @@
 <style>
 	dialog {
 		background-color: var(--color-surface-accent-container);
-		border: 0.0625rem solid var(--color-border-raised);
-		border-radius: 1.5rem;
-		box-shadow: var(--shadow-2xl);
+		border-radius: 12px;
 		height: min(47.5rem, calc(100vh - 2.5rem));
-		max-height: none;
-		max-width: none;
 		overflow: hidden;
 		padding: 1.5rem;
 		width: min(80rem, calc(100vw - 2.5rem));
-	}
-
-	dialog::backdrop {
-		backdrop-filter: blur(0.75rem);
-		background: rgb(0 0 0 / 25%);
 	}
 
 	dialog > form {
