@@ -157,7 +157,7 @@
 	{#if $createContainerDialogState}
 		<form method="dialog" onsubmit={handleSubmit}>
 			<header>
-				<h2 id="create-container-dialog-title">
+				<h2>
 					{$_(
 						$createContainerDialogState.kind === 'copy' &&
 							$createContainerDialogState.request.operation === 'create-template'
@@ -165,18 +165,18 @@
 							: 'create_container_dialog.title'
 					)}
 				</h2>
-				<div class="actions">
-					<button class="button-alternative system-primary" formnovalidate type="submit">
-						{$_('cancel')}
-					</button>
-					<button
-						class="button-primary system-primary"
-						disabled={templateSelectionPending}
-						type="submit"
-					>
-						{$_('save')}
-					</button>
-				</div>
+
+				<button class="button-alternative system-primary" formnovalidate type="submit">
+					{$_('cancel')}
+				</button>
+
+				<button
+					class="button-primary system-primary"
+					disabled={templateSelectionPending}
+					type="submit"
+				>
+					{$_('save')}
+				</button>
 			</header>
 
 			<div class="form-panel">
@@ -272,29 +272,15 @@
 		display: flex;
 		gap: 1rem;
 		grid-column: 1 / -1;
-		justify-content: space-between;
-		padding: 0.75rem;
+		padding: 0 0 0 0.75rem;
 	}
 
-	dialog > form > header h2 {
+	h2 {
 		color: var(--color-text-strong);
 		font-size: 1.125rem;
 		font-weight: 500;
 		line-height: 1.25;
-		margin: 0;
-	}
-
-	.actions {
-		display: flex;
-		flex-shrink: 0;
-		gap: 0.25rem;
-	}
-
-	.actions button {
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		min-height: 2rem;
+		margin: 0 auto 0 0;
 	}
 
 	.form-panel {
