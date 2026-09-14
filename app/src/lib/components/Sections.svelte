@@ -223,7 +223,9 @@
 	</div>
 {/if}
 
-<TableOfContents {container} {editable} {handleSort} {sections} />
+{#if !preview}
+	<TableOfContents {container} {editable} {handleSort} {sections} />
+{/if}
 
 <ul
 	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
