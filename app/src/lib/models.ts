@@ -779,6 +779,10 @@ const detailViewStyle = z.object({
 	coverSource: z.string().optional()
 });
 
+const sectionStyle = z.object({
+	color: backgroundColor.optional()
+});
+
 const basePayload = z.object({
 	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
@@ -800,10 +804,12 @@ const measureMonitoringBasePayload = z.object({
 });
 
 const teaserBasePayload = z.object({
+	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	bodyRight: z.string().trim().optional(),
 	cardStyle: z.string().optional(),
 	colSize: teaserColSizes.default('33-66'),
+	doubleWidth: z.boolean().default(false),
 	description: z.string().optional(),
 	image: z.url().optional(),
 	imageAltText: z.string().optional(),
@@ -848,6 +854,7 @@ export function isActualDataContainer(
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
 
 export const administrativeAreaBasicDataPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -914,6 +921,7 @@ const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, k
 
 const chapterPayload = z.strictObject({
 	...basePayload.omit({ description: true, summary: true, template: true }).shape,
+	...sectionStyle.shape,
 	image: z.url().optional(),
 	number: z.string(),
 	type: z.literal(payloadTypes.enum.chapter)
@@ -954,6 +962,7 @@ export function isColContentContainer(
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
 export const customCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	allowSearch: z.boolean().default(false),
 	allowSort: z.boolean().default(false),
 	description: z.string().trim().optional(),
@@ -980,6 +989,7 @@ export function isCustomCollectionContainer(
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
 export const demographicDataPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.trim()
@@ -1059,6 +1069,7 @@ export function isEventContainer(
 const initialEventPayload = eventPayload.partial({ title: true });
 
 const fileCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	file: z
 		.array(
 			z.object({
@@ -1112,6 +1123,7 @@ const initialGoalPayload = goalPayload.partial({
 });
 
 const goalCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1157,6 +1169,7 @@ export function isHelpContainer(
 const initialHelpPayload = helpPayload.partial({ title: true });
 
 const htmlPayload = z.strictObject({
+	...sectionStyle.shape,
 	body: z.string().trim().default(''),
 	title: z.string().trim().default(''),
 	type: z.literal(payloadTypes.enum.html),
@@ -1174,6 +1187,7 @@ export function isHtmlContainer(
 const initialHtmlPayload = htmlPayload;
 
 const igniteVideoPayload = z.strictObject({
+	...sectionStyle.shape,
 	iframeUrl: z
 		.string()
 		.trim()
@@ -1195,6 +1209,7 @@ export function isIgniteVideoContainer(
 const initialIgniteVideoPayload = igniteVideoPayload.partial({ title: true });
 
 const imagePayload = z.strictObject({
+	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	image: z.url().optional(),
 	imageAltText: z.string().optional(),
@@ -1215,6 +1230,7 @@ export function isImageContainer(
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
 const indicatorCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1297,6 +1313,7 @@ export function isKnowledgeContainer(
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 export const mapPayload = z.strictObject({
+	...sectionStyle.shape,
 	geometry: z.uuid().optional(),
 	title: z
 		.string()
@@ -1342,6 +1359,7 @@ export function isMeasureContainer(
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
 const measureCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1384,6 +1402,7 @@ const initialObjectivePayload = objectivePayload.partial({ title: true });
 export type InitialObjectivePayload = z.infer<typeof initialObjectivePayload>;
 
 const objectiveCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1563,6 +1582,7 @@ const initialProgramPayload = programPayload.partial({
 });
 
 const programCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1594,6 +1614,7 @@ export const progressObjectType = z.enum([
 export type ProgressObjectType = z.infer<typeof progressObjectType>;
 
 const progressPayload = z.strictObject({
+	...sectionStyle.shape,
 	measurement: progressMeasurement.default(progressMeasurement.enum.manual),
 	objectType: progressObjectType.default(payloadTypes.enum.task),
 	title: z
@@ -1679,6 +1700,7 @@ const initialResourcePayload = resourcePayload.partial({
 });
 
 const resourceCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1777,6 +1799,7 @@ const initialResourceDataPayload = resourceDataPayload.partial({
 });
 
 const resourceDataCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	resourceDataType: resourceDataTypes,
 	title: z
 		.string()
@@ -1861,6 +1884,7 @@ export function isSimpleMeasureContainer(
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
 const summaryPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1905,6 +1929,7 @@ export function isTaskContainer(
 const initialTaskPayload = taskPayload.partial({ title: true });
 
 const taskCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1939,6 +1964,7 @@ export function isTeaserContainer(
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
 const teaserCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -2009,6 +2035,7 @@ export function isTermContainer(
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 const textPayload = z.strictObject({
+	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.text),

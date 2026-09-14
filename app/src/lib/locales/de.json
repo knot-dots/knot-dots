@@ -135,6 +135,8 @@
 	"confirm_remove_user_dialog.heading": "{name} alle Rechte entziehen",
 	"confirm_remove_user_dialog.message": "Es werden Rechte in allen Organisationsbereichen entzogen. Explizit hinzugefügte Rechte in Programmen oder Maßnahmen bleiben erhalten.",
 	"container_settings_dropdown.delete.title": "Abschnitt entfernen",
+	"container_settings_dropdown.layout.double_width": "Double width",
+	"container_settings_dropdown.layout.title": "Layout",
 	"container_settings_dropdown.title": "Einstellungen",
 	"container_settings_dropdown.visibility.title": "Sichtbarkeit wählen",
 	"copy": "Duplizieren",
