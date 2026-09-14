@@ -7,7 +7,6 @@
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Bars from '~icons/flowbite/bars-outline';
-	import Label from '~icons/flowbite/label-outline';
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
@@ -38,9 +37,7 @@
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
-	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
-	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -92,10 +89,6 @@
 
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
-
-	const detailView = getDetailViewContext();
-
-	const propertiesRelocationNotice = getPropertiesRelocationContext();
 
 	let container = $derived.by(() => {
 		const base = overlay ? $overlayStore?.container : page.data.container;
@@ -268,27 +261,6 @@
 					type="button"
 				>
 					{$_('login')}
-				</button>
-			{/if}
-		{/if}
-
-		{#if container && detailView && !paramsFromFragment(page.url).has('table')}
-			{#if !(isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || isPageContainer(container)) || $ability.can('update', container)}
-				<button
-					{@attach tooltip($_('properties.show_all'))}
-					{...detailView.properties.trigger}
-					class="action-button action-button--size-l"
-					onclick={detailView.properties.trigger.onclick}
-					style:position="relative"
-					type="button"
-				>
-					<Label />
-					{#if propertiesRelocationNotice && !propertiesRelocationNotice.seen}
-						<span
-							class="indicator system-info"
-							style:--indicator-background-color="var(--color-background-accent-default)"
-						></span>
-					{/if}
 				</button>
 			{/if}
 		{/if}

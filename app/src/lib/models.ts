@@ -519,6 +519,8 @@ const taskCategoryValues = [
 
 export const taskCategories = z.enum(taskCategoryValues);
 
+export type TaskCategory = z.infer<typeof taskCategories>;
+
 const organizationCategoryValues = [
 	'organization_category.business',
 	'organization_category.government',

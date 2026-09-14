@@ -27,7 +27,6 @@
 	import EditableTextDetailView from '$lib/components/EditableTextDetailView.svelte';
 	import EditableTermDetailView from '$lib/components/EditableTermDetailView.svelte';
 	import { setDetailViewContext } from '$lib/contexts/detailView';
-	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -72,17 +71,8 @@
 		return _;
 	});
 
-	const propertiesRelocationNotice = getPropertiesRelocationContext();
-
 	if (createFeatureDecisions(page.data.features).useNewPropertyPanel()) {
-		let detailView = $state({
-			properties: new Collapsible({
-				onOpenChange: () => {
-					propertiesRelocationNotice.seen = true;
-				}
-			})
-		});
-
+		let detailView = $state({ properties: new Collapsible() });
 		setDetailViewContext(detailView);
 	}
 </script>

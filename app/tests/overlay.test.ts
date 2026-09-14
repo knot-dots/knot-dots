@@ -30,8 +30,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	await dotsBoard.card(titleOfFirstGoal).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfFirstGoal);
 	await dotsBoard.overlay.editModeToggle.check();
-	await dotsBoard.overlay.disclosePropertiesButton.click();
-	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
+	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Goal');
 	const firstSaveResponse = dotsBoard.page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);
@@ -44,7 +43,7 @@ test('objects can be edited sequentially', async ({ dotsBoard, testOrganization 
 	await dotsBoard.card(titleOfSecondGoal).click();
 	await expect(dotsBoard.overlay.title).toHaveText(titleOfSecondGoal);
 	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveCount(1);
-	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Empty');
+	await expect(dotsBoard.overlay.locator.getByLabel('Goal type')).toHaveText('Goal');
 	const secondSaveResponse = dotsBoard.page.waitForResponse(
 		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
 	);

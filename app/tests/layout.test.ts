@@ -33,7 +33,7 @@ test.describe(() => {
 		await dotsBoard.overlay.editModeToggle.check();
 
 		const badgeList = dotsBoard.overlay.locator.locator('ul.badges');
-		const badgeButtons = badgeList.getByRole('button');
+		const badgeButtons = badgeList.getByRole('button', { name: 'Status' });
 
 		if ((await badgeButtons.count()) > 0) {
 			await expect(badgeButtons).not.toBeEditable();

@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Label from '~icons/flowbite/label-solid';
 	import AskAI from '~icons/knotdots/ask-ai';
-	import StatusDropdown from '$lib/components/StatusDropdown.svelte';
+	import InlineGoalTypeDropdown from '$lib/components/InlineGoalTypeDropdown.svelte';
+	import InlineMeasureTypeDropdown from '$lib/components/InlineMeasureTypeDropdown.svelte';
+	import InlineProgramTypeDropdown from '$lib/components/InlineProgramTypeDropdown.svelte';
+	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
+	import InlineTaskCategoryDropdown from '$lib/components/InlineTaskCategoryDropdown.svelte';
+	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		type Container,
 		type Status,
@@ -9,17 +15,28 @@
 		isGoalContainer,
 		isRuleContainer,
 		isTaskContainer,
-		programTypes,
 		status,
-		isResourceDataContainer
+		isResourceDataContainer,
+		payloadTypes,
+		type PayloadType,
+		isSimpleMeasureContainer,
+		isMeasureContainer,
+		isProgramContainer
 	} from '$lib/models';
 
 	interface Props {
 		container: Container;
 		editable?: boolean;
+		showPropertiesTrigger?: boolean;
 	}
 
-	let { container = $bindable(), editable = false }: Props = $props();
+	let {
+		container = $bindable(),
+		editable = false,
+		showPropertiesTrigger = false
+	}: Props = $props();
+
+	let detailView = getDetailViewContext();
 
 	let statusOptions = $derived.by(() => {
 		if (isGoalContainer(container) || isTaskContainer(container)) {
@@ -36,40 +53,61 @@
 		}
 		return $_(s);
 	}
+
+	const moduleByType = new Map<PayloadType, string>([
+		[payloadTypes.enum.binary_indicator, 'impact-measurement'],
+		[payloadTypes.enum.category, 'organizing'],
+		[payloadTypes.enum.effect, 'impact-measurement'],
+		[payloadTypes.enum.goal, 'goal-setting'],
+		[payloadTypes.enum.help, 'knowledge-transfer'],
+		[payloadTypes.enum.indicator_template, 'impact-measurement'],
+		[payloadTypes.enum.knowledge, 'knowledge-transfer'],
+		[payloadTypes.enum.measure, 'implementation-planning'],
+		[payloadTypes.enum.objective, 'impact-measurement'],
+		[payloadTypes.enum.page, 'organizing'],
+		[payloadTypes.enum.program, 'goal-setting'],
+		[payloadTypes.enum.report, 'impact-measurement'],
+		[payloadTypes.enum.resource, 'resource-planning'],
+		[payloadTypes.enum.resource_data, 'resource-planning'],
+		[payloadTypes.enum.resource_v2, 'resource-planning'],
+		[payloadTypes.enum.rule, 'rules'],
+		[payloadTypes.enum.simple_measure, 'implementation-planning'],
+		[payloadTypes.enum.task, 'implementation-planning'],
+		[payloadTypes.enum.term, 'organizing']
+	]);
 </script>
 
 <ul class="badges">
-	<li class="badge badge--purple">
+	<li class="module-{moduleByType.get(container.payload.type)}">
 		{#if container.payload.type === 'category'}
-			{$_('categories.columns.root')}
-		{:else if 'goalType' in container.payload && container.payload.goalType}
-			{$_(container.payload.goalType as string)}
-		{:else if 'measureType' in container.payload && container.payload.measureType?.length}
-			{$_(
-				(Array.isArray(container.payload.measureType)
-					? container.payload.measureType[0]
-					: container.payload.measureType) as string
-			)}
-		{:else if 'programType' in container.payload && container.payload.programType !== programTypes.enum['program_type.misc']}
-			{$_(container.payload.programType as string)}
-		{:else if 'taskCategory' in container.payload && container.payload.taskCategory}
-			{$_(container.payload.taskCategory as string)}
+			<span class="badge">{$_('categories.columns.root')}</span>
+		{:else if isGoalContainer(container)}
+			<InlineGoalTypeDropdown bind:value={container.payload.goalType} {editable} />
+		{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+			<InlineMeasureTypeDropdown bind:value={container.payload.measureType} {editable} />
+		{:else if isProgramContainer(container)}
+			<InlineProgramTypeDropdown bind:value={container.payload.programType} {editable} />
+		{:else if isTaskContainer(container)}
+			<InlineTaskCategoryDropdown bind:value={container.payload.taskCategory} {editable} />
 		{:else if isResourceDataContainer(container)}
-			{$_(container.payload.resourceDataType)}
+			<span class="badge">{$_(container.payload.resourceDataType)}</span>
 		{:else}
-			{$_(container.payload.type)}
+			<span class="badge">{$_(container.payload.type)}</span>
 		{/if}
 	</li>
+
 	{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
-		<li class="badge badge--yellow">
-			<AskAI />
-			{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+		<li>
+			<span class="badge badge--yellow">
+				<AskAI />
+				{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
+			</span>
 		</li>
 	{/if}
+
 	{#if isContainerWithStatus(container)}
 		<li>
-			<StatusDropdown
-				buttonStyle="badge"
+			<InlineStatusDropdown
 				{editable}
 				labelFn={statusLabelFn}
 				options={statusOptions}
@@ -77,16 +115,45 @@
 			/>
 		</li>
 	{/if}
+
+	{#if detailView && showPropertiesTrigger}
+		<li>
+			<button
+				{...detailView.properties.trigger}
+				class="button-alternate button-sm system-primary"
+				type="button"
+			>
+				<Label />{$_('properties.show_all')}
+			</button>
+		</li>
+	{/if}
 </ul>
 
 <style>
 	.badges {
-		--dropdown-button-border-radius: 6px;
-		--dropdown-button-padding: 0;
+		--badge-border-radius: 6px;
+		--badge-border-width: 1px;
+		--badge-min-height: 1.75rem;
+		--badge-padding-x: 0.5rem;
+		--dropdown-button-border-radius: 0;
+		--dropdown-button-default-background: transparent;
+		--dropdown-button-padding-x: 0.25rem;
+		--dropdown-button-padding-y: 0.25rem;
+		--form-control-border: solid 1px var(--color-border-raised);
+		--form-control-border-radius: 6px;
+		--form-control-min-height: 1.75rem;
+		--form-control-padding-x: 0.5rem;
 
 		display: flex;
-		gap: 0.5rem;
-		line-height: 1;
 		padding: 0.375rem 0 0.75rem;
+	}
+
+	li {
+		display: contents;
+	}
+
+	li > :global(.badge) {
+		height: 1.75rem;
+		margin: 0.25rem;
 	}
 </style>

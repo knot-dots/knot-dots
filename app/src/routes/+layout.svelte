@@ -12,7 +12,6 @@
 	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
-	import { setPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
 	import transformFileURL from '$lib/transformFileURL';
@@ -61,12 +60,6 @@
 	});
 
 	setFavoriteListContext(favoriteList);
-
-	const propertiesRelocationNotice = $state({
-		seen: false
-	});
-
-	setPropertiesRelocationContext(propertiesRelocationNotice);
 
 	setComputedProgressContext(createComputedProgressLoader());
 
