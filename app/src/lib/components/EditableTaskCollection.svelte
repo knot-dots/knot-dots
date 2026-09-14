@@ -11,6 +11,7 @@
 		type Container,
 		containerOfType,
 		findAncestors,
+		isTaskContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates,
@@ -23,6 +24,7 @@
 	interface Props {
 		container: Container<TaskCollectionPayload>;
 		editable?: boolean;
+		fetchDisabled?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
@@ -31,18 +33,21 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		fetchDisabled = false,
 		heading,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 
 	let tasksRequest = $derived(
-		parentContainer
-			? fetchRelatedContainers(parentContainer.guid, {
-					payloadType: [payloadTypes.enum.task],
-					relationType: [predicates.enum['is-part-of']]
-				})
-			: new Promise(() => [])
+		fetchDisabled
+			? Promise.resolve(relatedContainers.filter(isTaskContainer))
+			: parentContainer
+				? fetchRelatedContainers(parentContainer.guid, {
+						payloadType: [payloadTypes.enum.task],
+						relationType: [predicates.enum['is-part-of']]
+					})
+				: new Promise(() => [])
 	) as Promise<Container<TaskPayload>[]>;
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
