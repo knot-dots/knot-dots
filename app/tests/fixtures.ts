@@ -72,6 +72,7 @@ type MyFixtures = {
 	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
 	testOrganizationalUnitGoal: Container<GoalPayload>;
 	testProgram: Container<ProgramPayload>;
+	testProgramGoalTemplate: Container<GoalPayload>;
 	testPublicProgram: Container<ProgramPayload>;
 	testPublicReport: Container<ReportPayload>;
 	testReport: Container<ReportPayload>;
@@ -232,17 +233,20 @@ export async function createUser(apiRequest: APIRequest, newUser: KeycloakUser) 
 	}
 }
 
-export async function createContainer(context: BrowserContext, newContainer: NewContainer) {
+export async function createContainer<P extends AnyPayload>(
+	context: BrowserContext,
+	newContainer: NewContainer<P>
+): Promise<Container<P>> {
 	const response = await context.request.post('/container', { data: newContainer });
 
 	if (!response.ok()) {
 		throw new Error(`Failed to create ${newContainer.payload.type}: ${await response.text()}`);
 	}
 
-	const container = await response.json();
+	const container = (await response.json()) as Container<P>;
 
 	// Wait for the indexing worker to pick up the event and refresh ES
-	await new Promise((r) => setTimeout(r, 500));
+	await new Promise((resolve) => setTimeout(resolve, 500));
 
 	return container;
 }
@@ -261,11 +265,11 @@ export async function deleteContainer(context: BrowserContext, container: Contai
 	});
 }
 
-async function createProgramContainerFromTemplate(
+export async function createProgramContainerFromTemplate<P extends AnyPayload>(
 	context: BrowserContext,
-	newContainer: NewContainer,
+	newContainer: NewContainer<P>,
 	program: Container<ProgramPayload>
-) {
+): Promise<Container<P>> {
 	const template = await createContainer(context, {
 		...newContainer,
 		payload: { ...newContainer.payload, template: true },
@@ -286,7 +290,7 @@ async function createProgramContainerFromTemplate(
 			availableIn: program.guid,
 			rootPlacement,
 			sourceGuid: template.guid,
-			targetManagedByGuid: program.managed_by[0],
+			targetManagedByGuid: newContainer.managed_by[0],
 			targetOrganizationGuid: newContainer.organization,
 			targetOrganizationalUnitGuid: newContainer.organizational_unit,
 			rootPayload: newContainer.payload
@@ -297,7 +301,7 @@ async function createProgramContainerFromTemplate(
 			`Failed to instantiate ${newContainer.payload.type} template: ${await response.text()}`
 		);
 	}
-	const container = await response.json();
+	const container = (await response.json()) as Container<P>;
 	await deleteContainer(context, template);
 	await new Promise((resolve) => setTimeout(resolve, 500));
 	return container;
@@ -759,6 +763,38 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testProgram);
 
 		await deleteContainer(adminContext, testProgram);
+	},
+	testProgramGoalTemplate: async (
+		{ adminContext, testOrganization, testProgram },
+		use,
+		workerInfo
+	) => {
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as Container<GoalPayload>;
+		const testProgramGoalTemplate = await createContainer(adminContext, {
+			...newGoal,
+			payload: {
+				...newGoal.payload,
+				template: true,
+				title: `Test Program Goal Template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: testProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		});
+
+		await use(testProgramGoalTemplate);
+
+		await deleteContainer(adminContext, testProgramGoalTemplate);
 	},
 	testGoal: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newGoal = containerOfType(

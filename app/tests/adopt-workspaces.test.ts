@@ -5,7 +5,7 @@ import {
 	predicates,
 	type RulePayload
 } from '$lib/models';
-import { createContainer, deleteContainer, expect, test } from './fixtures';
+import { createProgramContainerFromTemplate, deleteContainer, expect, test } from './fixtures';
 
 test.use({ suiteId: 'adopt-workspaces' });
 test.use({ storageState: 'tests/.auth/bob.json' });
@@ -53,36 +53,44 @@ test.describe('Adopted content in workspaces', () => {
 			defaultOrganization.guid,
 			'knot-dots'
 		) as Container<RulePayload>;
-		const publicRule = await createContainer(adminContext, {
-			...newRule,
-			payload: {
-				...newRule.payload,
-				title: `Public Rule ${testInfo.workerIndex}`,
-				visibility: 'public'
+		const publicRule = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newRule,
+				payload: {
+					...newRule.payload,
+					title: `Public Rule ${testInfo.workerIndex}`,
+					visibility: 'public'
+				},
+				relation: [
+					{
+						object: testPublicProgram.guid,
+						position: 0,
+						predicate: predicates.enum['is-part-of-program']
+					}
+				]
 			},
-			relation: [
-				{
-					object: testPublicProgram.guid,
-					position: 0,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			]
-		});
-		const internalRule = await createContainer(adminContext, {
-			...newRule,
-			payload: {
-				...newRule.payload,
-				title: `Internal Rule ${testInfo.workerIndex}`,
-				visibility: 'organization'
+			testPublicProgram
+		);
+		const internalRule = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newRule,
+				payload: {
+					...newRule.payload,
+					title: `Internal Rule ${testInfo.workerIndex}`,
+					visibility: 'organization'
+				},
+				relation: [
+					{
+						object: testPublicProgram.guid,
+						position: 1,
+						predicate: predicates.enum['is-part-of-program']
+					}
+				]
 			},
-			relation: [
-				{
-					object: testPublicProgram.guid,
-					position: 1,
-					predicate: predicates.enum['is-part-of-program']
-				}
-			]
-		});
+			testPublicProgram
+		);
 
 		const programCard = page.getByTitle(testPublicProgram.payload.title);
 		const publicRuleCard = page.getByTitle(publicRule.payload.title);
