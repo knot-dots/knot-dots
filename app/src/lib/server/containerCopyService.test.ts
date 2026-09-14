@@ -379,7 +379,7 @@ test('places a program-scoped template instance only in that program', async () 
 				}
 			],
 			sourceGuid,
-			targetManagedByGuid: organizationGuid,
+			targetManagedByGuid: parent.guid,
 			targetOrganizationGuid: organizationGuid,
 			targetOrganizationalUnitGuid: null,
 			rootPayload: { ...source.payload, title: 'Edited template instance' }
@@ -393,13 +393,71 @@ test('places a program-scoped template instance only in that program', async () 
 	expect(mocks.persist).toHaveBeenCalledOnce();
 	const plan = mocks.persist.mock.calls[0][0] as ContainerCopyPlan;
 	const plannedRoot = plan.get(sourceGuid);
-	expect(plannedRoot?.managed_by).toEqual([organizationGuid]);
+	expect(plannedRoot?.managed_by).toEqual([parent.guid]);
 	expect(plannedRoot?.relation).toContainEqual({
 		object: parent.guid,
 		position: 2,
 		predicate: predicates.enum['is-part-of-program'],
 		subject: plannedRoot?.guid
 	});
+});
+
+test('rejects a program manager outside the template availability scope', async () => {
+	const availableIn = container(childGuid, {
+		title: 'Available program',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	const otherProgram = container('00000000-0000-4000-8000-000000000003', {
+		title: 'Other program',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Template',
+			type: payloadTypes.enum.goal,
+			visibility: visibility.enum.public
+		},
+		[
+			{
+				object: availableIn.guid,
+				position: 0,
+				predicate: predicates.enum['is-available-in'],
+				subject: sourceGuid
+			}
+		]
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, availableIn] };
+	mocks.targets.set(availableIn.guid, availableIn);
+	mocks.targets.set(otherProgram.guid, otherProgram);
+
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'template-instance',
+				availableIn: availableIn.guid,
+				rootPlacement: [
+					{
+						parentGuid: availableIn.guid,
+						position: 0,
+						predicate: predicates.enum['is-part-of-program']
+					}
+				],
+				sourceGuid,
+				targetManagedByGuid: otherProgram.guid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: source.payload
+			},
+			connection,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
+	expect(mocks.persist).not.toHaveBeenCalled();
 });
 
 test('rejects a global template instance placed directly in a program', async () => {

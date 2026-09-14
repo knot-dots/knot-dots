@@ -313,7 +313,9 @@ async function resolveRootPlacement(
 		const manager = referencedContainers.get(managedBy);
 		if (
 			!manager ||
-			(!isOrganizationContainer(manager) && !isOrganizationalUnitContainer(manager)) ||
+			(!isOrganizationContainer(manager) &&
+				!isOrganizationalUnitContainer(manager) &&
+				(!isProgramContainer(manager) || request.availableIn !== manager.guid)) ||
 			manager.organization !== resolvedTarget.organization.guid ||
 			ability.cannot('read', manager)
 		) {
