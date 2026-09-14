@@ -231,6 +231,7 @@
 		"unprocessable_entity": "Die Anfrage konnte nicht verarbeitet werden.",
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
+		"program_template_required": "Objekte in einem Programm müssen aus einer in diesem Programm verfügbaren Vorlage erstellt werden.",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
 		"unsupported_media_type": "Diese Anfrage muss JSON enthalten.",
 		"unexpected": "Wir arbeiten daran."

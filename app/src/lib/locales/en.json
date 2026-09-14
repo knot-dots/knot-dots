@@ -231,6 +231,7 @@
 		"unprocessable_entity": "The request could not be processed.",
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
+		"program_template_required": "Objects in a program must be created from a template available in that program.",
 		"slug_not_available": "This URL slug is already in use.",
 		"unsupported_media_type": "This request must contain JSON.",
 		"unexpected": "We are working on it."

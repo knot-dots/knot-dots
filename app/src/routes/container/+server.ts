@@ -4,6 +4,7 @@ import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
 	indicatorCategories,
@@ -15,6 +16,7 @@ import {
 	programTypes,
 	taskCategories
 } from '$lib/models';
+import { requiresProgramTemplate } from '$lib/programTemplates';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
 	createContainer,
@@ -141,6 +143,12 @@ export const POST = (async ({ locals, request }) => {
 		parseResult.data.relation.some(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
 	) {
 		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+	}
+	if (
+		createFeatureDecisions(locals.features ?? []).useProgramTemplateWorkspaces() &&
+		requiresProgramTemplate(parseResult.data)
+	) {
+		error(422, { message: unwrapFunctionStore(_)('error.program_template_required') });
 	}
 
 	const ability = defineAbilityFor(locals.user);

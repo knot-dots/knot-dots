@@ -69,3 +69,32 @@ test('ordinary creation rejects is-available-in relations on non-templates', asy
 		status: 422
 	});
 });
+
+test('ordinary creation rejects non-text objects placed directly in a program when templating is enabled', async () => {
+	const body = newContainer.parse({
+		managed_by: organizationGuid,
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: { title: 'Measure', type: payloadTypes.enum.measure },
+		realm: 'realm',
+		relation: [
+			{
+				object: sourceGuid,
+				position: 0,
+				predicate: predicates.enum['is-part-of-program']
+			}
+		]
+	});
+	const request = new Request('http://localhost/container', {
+		method: 'POST',
+		body: JSON.stringify(body),
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	await expect(
+		POST({ locals: { features: ['Templating'], pool: {}, user }, request } as never)
+	).rejects.toMatchObject({
+		body: { message: 'error.program_template_required' },
+		status: 422
+	});
+});
