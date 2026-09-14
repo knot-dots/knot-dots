@@ -372,6 +372,7 @@ const backgroundColorValues = [
 ] as const;
 
 export const backgroundColor = z.enum(backgroundColorValues);
+
 export type BackgroundColor = z.infer<typeof backgroundColor>;
 
 const statusValues = [
@@ -772,6 +773,16 @@ function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
 
+const detailViewStyle = z.object({
+	color: backgroundColor.optional(),
+	cover: z.url().optional(),
+	coverSource: z.string().optional()
+});
+
+const sectionStyle = z.object({
+	color: backgroundColor.optional()
+});
+
 const basePayload = z.object({
 	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
@@ -793,10 +804,12 @@ const measureMonitoringBasePayload = z.object({
 });
 
 const teaserBasePayload = z.object({
+	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	bodyRight: z.string().trim().optional(),
 	cardStyle: z.string().optional(),
 	colSize: teaserColSizes.default('33-66'),
+	doubleWidth: z.boolean().default(false),
 	description: z.string().optional(),
 	image: z.url().optional(),
 	imageAltText: z.string().optional(),
@@ -841,6 +854,7 @@ export function isActualDataContainer(
 const initialActualDataPayload = actualDataPayload.partial({ indicator: true, title: true });
 
 export const administrativeAreaBasicDataPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -861,6 +875,7 @@ const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPay
 
 export const binaryIndicatorPayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
 	type: z.literal(payloadTypes.enum.binary_indicator)
@@ -906,6 +921,7 @@ const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, k
 
 const chapterPayload = z.strictObject({
 	...basePayload.omit({ description: true, summary: true, template: true }).shape,
+	...sectionStyle.shape,
 	image: z.url().optional(),
 	number: z.string(),
 	type: z.literal(payloadTypes.enum.chapter)
@@ -946,6 +962,7 @@ export function isColContentContainer(
 const initialColContentPayload = colContentPayload.partial({ title: true });
 
 export const customCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	allowSearch: z.boolean().default(false),
 	allowSort: z.boolean().default(false),
 	description: z.string().trim().optional(),
@@ -972,6 +989,7 @@ export function isCustomCollectionContainer(
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
 export const demographicDataPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.trim()
@@ -1051,6 +1069,7 @@ export function isEventContainer(
 const initialEventPayload = eventPayload.partial({ title: true });
 
 const fileCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	file: z
 		.array(
 			z.object({
@@ -1081,6 +1100,7 @@ const initialFileCollectionPayload = fileCollectionPayload;
 
 const goalPayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	fulfillmentDate: z.iso.date().optional(),
 	status: status.default(status.enum['status.idea']),
 	goalType: goalType.optional(),
@@ -1103,6 +1123,7 @@ const initialGoalPayload = goalPayload.partial({
 });
 
 const goalCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1122,6 +1143,7 @@ export function isGoalCollectionContainer(
 const initialGoalCollectionPayload = goalCollectionPayload;
 
 export const helpPayload = z.object({
+	...detailViewStyle.shape,
 	body: z.string().trim().default(''),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
@@ -1147,6 +1169,7 @@ export function isHelpContainer(
 const initialHelpPayload = helpPayload.partial({ title: true });
 
 const htmlPayload = z.strictObject({
+	...sectionStyle.shape,
 	body: z.string().trim().default(''),
 	title: z.string().trim().default(''),
 	type: z.literal(payloadTypes.enum.html),
@@ -1164,6 +1187,7 @@ export function isHtmlContainer(
 const initialHtmlPayload = htmlPayload;
 
 const igniteVideoPayload = z.strictObject({
+	...sectionStyle.shape,
 	iframeUrl: z
 		.string()
 		.trim()
@@ -1185,6 +1209,7 @@ export function isIgniteVideoContainer(
 const initialIgniteVideoPayload = igniteVideoPayload.partial({ title: true });
 
 const imagePayload = z.strictObject({
+	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	image: z.url().optional(),
 	imageAltText: z.string().optional(),
@@ -1205,6 +1230,7 @@ export function isImageContainer(
 const initialImagePayload = imagePayload.partial({ body: true, title: true });
 
 const indicatorCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1225,6 +1251,7 @@ const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
 export const indicatorTemplatePayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	externalReference: z.url().optional(),
 	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
@@ -1286,6 +1313,7 @@ export function isKnowledgeContainer(
 const initialKnowledgePayload = knowledgePayload.partial({ title: true });
 
 export const mapPayload = z.strictObject({
+	...sectionStyle.shape,
 	geometry: z.uuid().optional(),
 	title: z
 		.string()
@@ -1307,6 +1335,7 @@ const initialMapPayload = mapPayload;
 
 const measurePayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	annotation: z.string().trim().optional(),
 	comment: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
@@ -1330,6 +1359,7 @@ export function isMeasureContainer(
 const initialMeasurePayload = measurePayload.partial({ title: true });
 
 const measureCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1372,6 +1402,7 @@ const initialObjectivePayload = objectivePayload.partial({ title: true });
 export type InitialObjectivePayload = z.infer<typeof initialObjectivePayload>;
 
 const objectiveCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1391,10 +1422,8 @@ export function isObjectiveCollectionContainer(
 const initialObjectiveCollectionPayload = objectiveCollectionPayload;
 
 export const organizationPayload = z.strictObject({
+	...detailViewStyle.shape,
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
 	customDomain: z.hostname().optional(),
 	customFavicon: z
 		.object({
@@ -1443,13 +1472,11 @@ export function isOrganizationContainer(
 const initialOrganizationPayload = organizationPayload.partial({ name: true });
 
 export const organizationalUnitPayload = z.strictObject({
+	...detailViewStyle.shape,
 	administrativeType: z.array(administrativeTypes).default([]),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
 	cityAndMunicipalityTypeBBSR: z.string().optional(),
 	description: z.string().trim().optional(),
 	favorite: z
@@ -1493,10 +1520,8 @@ const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ nam
 export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
 
 const pagePayload = z.strictObject({
+	...detailViewStyle.shape,
 	body: z.string().trim(),
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -1534,6 +1559,7 @@ const programPayload = z.strictObject({
 		description: true,
 		summary: true
 	}).shape,
+	...detailViewStyle.shape,
 	chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 	image: z.url().optional(),
 	level: levels.default(levels.enum['level.local']),
@@ -1556,6 +1582,7 @@ const initialProgramPayload = programPayload.partial({
 });
 
 const programCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1587,6 +1614,7 @@ export const progressObjectType = z.enum([
 export type ProgressObjectType = z.infer<typeof progressObjectType>;
 
 const progressPayload = z.strictObject({
+	...sectionStyle.shape,
 	measurement: progressMeasurement.default(progressMeasurement.enum.manual),
 	objectType: progressObjectType.default(payloadTypes.enum.task),
 	title: z
@@ -1633,6 +1661,7 @@ const initialQuotePayload = quotePayload.partial({ title: true });
 
 const reportPayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	image: z.url().optional(),
 	type: z.literal(payloadTypes.enum.report)
 });
@@ -1671,6 +1700,7 @@ const initialResourcePayload = resourcePayload.partial({
 });
 
 const resourceCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1769,6 +1799,7 @@ const initialResourceDataPayload = resourceDataPayload.partial({
 });
 
 const resourceDataCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	resourceDataType: resourceDataTypes,
 	title: z
 		.string()
@@ -1810,6 +1841,7 @@ const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
 export const rulePayload = z.strictObject({
 	...basePayload.shape,
+	...detailViewStyle.shape,
 	status: status.default(status.enum['status.idea']),
 	type: z.literal(payloadTypes.enum.rule),
 	validFrom: z.iso.date().optional(),
@@ -1830,6 +1862,7 @@ export type InitialRulePayload = z.infer<typeof initialRulePayload>;
 
 const simpleMeasurePayload = z.strictObject({
 	...basePayload.omit({ summary: true }).shape,
+	...detailViewStyle.shape,
 	annotation: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	file: z.array(z.tuple([z.url(), z.string()])).default([]),
@@ -1851,6 +1884,7 @@ export function isSimpleMeasureContainer(
 const initialSimpleMeasurePayload = simpleMeasurePayload.partial({ title: true });
 
 const summaryPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1871,6 +1905,7 @@ const initialSummaryPayload = summaryPayload;
 
 const taskPayload = z.strictObject({
 	...measureMonitoringBasePayload.shape,
+	...detailViewStyle.shape,
 	assignee: z.array(z.uuid()).transform(deduplicate).default([]),
 	benefit: benefit.optional(),
 	category: z
@@ -1894,6 +1929,7 @@ export function isTaskContainer(
 const initialTaskPayload = taskPayload.partial({ title: true });
 
 const taskCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1928,6 +1964,7 @@ export function isTeaserContainer(
 const initialTeaserPayload = teaserPayload.partial({ title: true });
 
 const teaserCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
 	title: z
 		.string()
 		.readonly()
@@ -1998,6 +2035,7 @@ export function isTermContainer(
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 const textPayload = z.strictObject({
+	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.text),
@@ -2270,35 +2308,6 @@ export function isTemplateContainer(
 	return 'template' in container.payload && container.payload.template === true;
 }
 
-export function isTemplateRoot({
-	guid,
-	payload,
-	relation
-}: {
-	guid: string;
-	payload: { template?: boolean };
-	relation: readonly Relation[];
-}) {
-	return (
-		payload.template === true &&
-		!relation.some(
-			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
-		)
-	);
-}
-
-export function getAvailableInProgramGuids({
-	guid,
-	relation
-}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
-	return relation
-		.filter(
-			({ predicate, subject }) =>
-				predicate === predicates.enum['is-available-in'] && subject === guid
-		)
-		.map(({ object }) => object);
-}
-
 function hasProperty(
 	payload: AnyPayload | AnyInitialPayload,
 	key: PropertyKey
@@ -2322,6 +2331,26 @@ export function isContainerWithCategory(
 	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithCategory {
 	return hasProperty(container.payload, 'category');
+}
+
+export type ContainerWithColor<P extends AnyPayload = Payload> = Container<
+	P & { color: BackgroundColor | undefined }
+>;
+
+export function isContainerWithColor<P extends AnyPayload = Payload>(
+	container: Container<P> | NewContainer
+): container is ContainerWithColor<P> {
+	return hasProperty(container.payload, 'color');
+}
+
+export type ContainerWithCover<P extends AnyPayload = Payload> = Container<
+	P & { cover: string | undefined }
+>;
+
+export function isContainerWithCover<P extends AnyPayload = Payload>(
+	container: Container<P> | NewContainer
+): container is ContainerWithCover<P> {
+	return hasProperty(container.payload, 'cover');
 }
 
 export type ContainerWithDescription = Container<AnyPayload & { description: string | undefined }>;
@@ -2447,6 +2476,35 @@ export const newUser = z.object({
 });
 
 export type NewUser = z.infer<typeof newUser>;
+
+export function isTemplateRoot({
+	guid,
+	payload,
+	relation
+}: {
+	guid: string;
+	payload: { template?: boolean };
+	relation: readonly Relation[];
+}) {
+	return (
+		payload.template === true &&
+		!relation.some(
+			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
+		)
+	);
+}
+
+export function getAvailableInProgramGuids({
+	guid,
+	relation
+}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
+	return relation
+		.filter(
+			({ predicate, subject }) =>
+				predicate === predicates.enum['is-available-in'] && subject === guid
+		)
+		.map(({ object }) => object);
+}
 
 export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
 	return function (candidate: Container<AnyPayload>) {

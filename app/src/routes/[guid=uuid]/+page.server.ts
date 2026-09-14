@@ -1,48 +1,22 @@
 import type { GeoJsonObject } from 'geojson';
 import { filterVisible } from '$lib/authorization';
-import { isMapContainer, isOrganizationalUnitContainer, predicates } from '$lib/models';
-import {
-	getAllRelatedContainers,
-	getAllRelatedOrganizationalUnitContainers,
-	getRelatedOrganizationalUnitContainersByPredicates,
-	getManySpatialFeatures
-} from '$lib/server/db';
+import { isMapContainer, predicates } from '$lib/models';
+import { getAllRelatedContainers, getManySpatialFeatures } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent }) => {
 	const { currentOrganization, currentOrganizationalUnit } = await parent();
 	const container = currentOrganizationalUnit ?? currentOrganization;
 
-	let relatedOrganizationalUnitGuids: string[] = [];
-
-	if (isOrganizationalUnitContainer(container)) {
-		const relatedOrganizationalUnits = await locals.pool.connect(
-			getAllRelatedOrganizationalUnitContainers(container.guid)
-		);
-		relatedOrganizationalUnitGuids = relatedOrganizationalUnits
-			.filter(({ payload }) => payload.level > container.payload.level)
-			.map(({ guid }) => guid)
-			.concat(container.guid);
-	}
-
-	const [sections, linkedProfiles] = await Promise.all([
-		locals.pool.connect(
-			getAllRelatedContainers(
-				[container.organization],
-				container.guid,
-				[predicates.enum['is-section-of']],
-				{},
-				''
-			)
-		),
-		isOrganizationalUnitContainer(container)
-			? locals.pool.connect(
-					getRelatedOrganizationalUnitContainersByPredicates(container.guid, [
-						predicates.enum['is-individual-profile-of']
-					])
-				)
-			: Promise.resolve([])
-	]);
+	const sections = await locals.pool.connect(
+		getAllRelatedContainers(
+			[container.organization],
+			container.guid,
+			[predicates.enum['is-section-of']],
+			{},
+			''
+		)
+	);
 
 	let spatialFeatures: Array<GeoJsonObject & { id: string }> = [];
 
@@ -68,8 +42,6 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		container,
-		linkedProfiles: filterVisible(linkedProfiles, locals.user),
-		relatedOrganizationalUnitGuids,
 		sections: filterVisible(sections, locals.user),
 		spatialFeatures
 	};

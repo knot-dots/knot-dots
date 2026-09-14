@@ -1453,45 +1453,6 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 	};
 }
 
-export function getRelatedOrganizationalUnitContainersByPredicates(
-	guid: string,
-	relationTypes: Predicate[]
-) {
-	return async (
-		connection: DatabaseConnection
-	): Promise<Container<OrganizationalUnitPayload>[]> => {
-		if (relationTypes.length === 0) {
-			return [];
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			WITH related_container AS (
-				SELECT
-					CASE
-						WHEN cr.subject = ${guid} THEN cr.object
-						ELSE cr.subject
-					END AS guid
-				FROM container_relation cr
-				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
-					AND cr.predicate IN (${sql.join(relationTypes, sql.fragment`, `)})
-					AND cr.valid_currently
-					AND NOT cr.deleted
-			)
-			SELECT DISTINCT c.*
-			FROM container c
-			JOIN related_container rc ON rc.guid = c.guid
-			WHERE c.valid_currently
-				AND NOT c.deleted
-				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-		`);
-
-		return applyComputedManagedBy(
-			connection,
-			await withUserAndRelation<Container<OrganizationalUnitPayload>>(connection, containerResult)
-		);
-	};
-}
-
 export function getAllRelatedContainers(
 	organizations: string[],
 	guid: string | string[],

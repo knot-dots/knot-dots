@@ -13,6 +13,7 @@
 		containerOfType,
 		isChapterContainer,
 		isContainer,
+		isContainerWithColor,
 		isContainerWithTitle,
 		isOrganizationalUnitContainer,
 		isTextContainer,
@@ -21,6 +22,7 @@
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -232,8 +234,14 @@
 	onconsider={handleDndConsider}
 	onfinalize={handleDndFinalize}
 >
-	{#each sections as { guid }, i (guid)}
-		<li animate:flip={{ duration: 100 }} id="section-{guid}">
+	{#each sections as section, i (section.guid)}
+		<li
+			animate:flip={{ duration: 100 }}
+			class={isContainerWithColor(section) && section.payload.color
+				? `highlighted highlighted--${backgroundColors.get(section.payload.color)}`
+				: undefined}
+			id="section-{section.guid}"
+		>
 			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 			<!-- svelte-ignore binding_property_non_reactive -->
 			<Section

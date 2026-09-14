@@ -135,6 +135,8 @@
 	"confirm_remove_user_dialog.heading": "Revoke all permissions from {name}",
 	"confirm_remove_user_dialog.message": "Permissions will be revoked in all organizational units. Explicitly granted permissions in programs and measures will not be revoked.",
 	"container_settings_dropdown.delete.title": "Remove section",
+	"container_settings_dropdown.layout.double_width": "Double width",
+	"container_settings_dropdown.layout.title": "Layout",
 	"container_settings_dropdown.title": "Settings",
 	"container_settings_dropdown.visibility.title": "Choose visibility",
 	"copy": "Copy",

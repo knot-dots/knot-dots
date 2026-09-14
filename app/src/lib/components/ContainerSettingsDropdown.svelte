@@ -5,9 +5,16 @@
 	import deleteContainer from '$lib/client/deleteContainer';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import Dropdown from '$lib/components/Dropdown.svelte';
-	import { type AnyPayload, type Container } from '$lib/models';
+	import {
+		type AnyPayload,
+		backgroundColor,
+		type Container,
+		isContainerWithColor,
+		isTeaserLikeContainer
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
+	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -61,6 +68,42 @@
 			<fieldset class="listbox">
 				{#if $ability.can('update', container, 'payload.visibility')}
 					<p class="dropdown-panel-title">{$_('container_settings_dropdown.title')}</p>
+
+					{#if isTeaserLikeContainer(container) || isContainerWithColor(container)}
+						<p class="dropdown-panel-group-title">
+							{$_('container_settings_dropdown.layout.title')}
+						</p>
+						{#if isContainerWithColor(container)}
+							{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+								<label>
+									<input
+										bind:group={container.payload.color}
+										name="color"
+										type="radio"
+										value={option.value}
+									/>
+									<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+										&nbsp;
+									</span>
+									{option.label}
+								</label>
+							{/each}
+						{/if}
+						{#if isTeaserLikeContainer(container)}
+							<label>
+								<span class="truncated">
+									{$_('container_settings_dropdown.layout.double_width')}
+								</span>
+								<input
+									bind:checked={container.payload.doubleWidth}
+									class="toggle"
+									name="sectionLayout"
+									type="checkbox"
+								/>
+							</label>
+						{/if}
+					{/if}
+
 					<p class="dropdown-panel-group-title">
 						{$_('container_settings_dropdown.visibility.title')}
 					</p>
@@ -111,7 +154,15 @@
 		padding: 0.5rem 0.75rem;
 	}
 
+	.toggle {
+		--height: 1rem;
+		--width: 2.25rem;
+
+		margin-left: auto;
+	}
+
 	.action-button {
+		border-radius: 8px;
 		color: var(--color-red-500);
 		display: flex;
 		font-size: 0.875rem;
