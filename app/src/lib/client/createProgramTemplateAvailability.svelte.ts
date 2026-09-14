@@ -85,7 +85,7 @@ export default function createProgramTemplateAvailability({
 
 	return {
 		has(payloadType: PayloadType) {
-			return !enabled || availableTypes.has(payloadType);
+			return !enabled || !templatableTypes.has(payloadType) || availableTypes.has(payloadType);
 		},
 		get error() {
 			return availabilityResource.error;

@@ -129,6 +129,12 @@ test('requires templates for direct program objects but not section-only contain
 			relation: [programPlacement]
 		})
 	).toBe(false);
+	expect(
+		requiresProgramTemplate({
+			payload: { type: payloadTypes.enum.task },
+			relation: [programPlacement]
+		})
+	).toBe(false);
 });
 
 function placement(position = 0): Relation {

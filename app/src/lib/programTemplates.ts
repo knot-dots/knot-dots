@@ -7,12 +7,14 @@ import {
 	isTemplateRoot,
 	type PartialRelation,
 	type PayloadType,
-	payloadTypes,
 	predicates,
-	type Relation
+	type Relation,
+	templatablePayloadTypes
 } from '$lib/models';
 
 type SubmittedRelation = Relation & { deleted?: boolean };
+
+const templatableTypes = new Set<string>(templatablePayloadTypes);
 
 export function requiresProgramTemplate(container: {
 	guid?: string;
@@ -22,7 +24,7 @@ export function requiresProgramTemplate(container: {
 	// A section may live below an object that belongs to a program, but it is not itself a
 	// program object. Only a direct is-part-of-program placement triggers the requirement.
 	return (
-		container.payload.type !== payloadTypes.enum.text && getDirectProgramGuids(container).length > 0
+		templatableTypes.has(container.payload.type) && getDirectProgramGuids(container).length > 0
 	);
 }
 
