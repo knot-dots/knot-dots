@@ -338,19 +338,30 @@ test('rejects missing, malformed, and cross-organization targets', async () => {
 	expect(mocks.persist).not.toHaveBeenCalled();
 });
 
-test('applies template-instance policy through the service', async () => {
+test('places a program-scoped template instance only in that program', async () => {
 	const parent = container(childGuid, {
 		title: 'Parent program',
 		type: payloadTypes.enum.program,
 		visibility: visibility.enum.public
 	});
-	const source = container(sourceGuid, {
-		template: true,
-		title: 'Template',
-		type: payloadTypes.enum.program,
-		visibility: visibility.enum.public
-	});
-	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Template',
+			type: payloadTypes.enum.program,
+			visibility: visibility.enum.public
+		},
+		[
+			{
+				object: parent.guid,
+				position: 0,
+				predicate: predicates.enum['is-available-in'],
+				subject: sourceGuid
+			}
+		]
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, parent] };
 	mocks.targets.set(parent.guid, parent);
 	if (source.payload.type !== payloadTypes.enum.program) {
 		throw new Error('Expected a program template');
@@ -359,7 +370,7 @@ test('applies template-instance policy through the service', async () => {
 	const root = await executeContainerCopy({
 		request: {
 			operation: 'template-instance',
-			availableIn: null,
+			availableIn: parent.guid,
 			rootPlacement: [
 				{
 					parentGuid: parent.guid,
@@ -389,6 +400,84 @@ test('applies template-instance policy through the service', async () => {
 		predicate: predicates.enum['is-part-of-program'],
 		subject: plannedRoot?.guid
 	});
+});
+
+test('rejects a global template instance placed directly in a program', async () => {
+	const parent = container(childGuid, {
+		title: 'Parent program',
+		type: payloadTypes.enum.program,
+		visibility: visibility.enum.public
+	});
+	const source = container(sourceGuid, {
+		template: true,
+		title: 'Global template',
+		type: payloadTypes.enum.report,
+		visibility: visibility.enum.public
+	});
+	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+	mocks.targets.set(parent.guid, parent);
+
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'template-instance',
+				availableIn: null,
+				rootPlacement: [
+					{
+						parentGuid: parent.guid,
+						position: 0,
+						predicate: predicates.enum['is-part-of-program']
+					}
+				],
+				sourceGuid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: source.payload
+			},
+			connection,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
+	expect(mocks.persist).not.toHaveBeenCalled();
+});
+
+test('rejects a non-root template as an instance source', async () => {
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Subordinate template',
+			type: payloadTypes.enum.report,
+			visibility: visibility.enum.public
+		},
+		[
+			{
+				object: childGuid,
+				position: 0,
+				predicate: predicates.enum['is-section-of'],
+				subject: sourceGuid
+			}
+		]
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
+
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'template-instance',
+				availableIn: null,
+				sourceGuid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: source.payload
+			},
+			connection,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
+	expect(mocks.persist).not.toHaveBeenCalled();
 });
 
 test('returns a sanitized preview of exactly the selected copy hierarchy', async () => {
@@ -631,26 +720,39 @@ test.each([
 	['is-part-of', 'report', true],
 	['is-section-of', 'report', true]
 ] as const)('validates %s placement under %s', async (predicate, parentType, valid) => {
-	const source = container(sourceGuid, {
-		type: 'report',
-		title: 'Template',
-		template: true,
+	const parent = container(childGuid, {
+		type: parentType,
+		title: 'Parent',
 		visibility: 'public'
 	});
-	mocks.graph = { rootGuid: sourceGuid, containers: [source] };
-	mocks.targets.set(
-		childGuid,
-		container(childGuid, {
-			type: parentType,
-			title: 'Parent',
+	const availableIn =
+		predicate === 'is-part-of-program' && parentType === 'program' ? childGuid : null;
+	const source = container(
+		sourceGuid,
+		{
+			type: 'report',
+			title: 'Template',
+			template: true,
 			visibility: 'public'
-		})
+		},
+		availableIn
+			? [
+					{
+						object: availableIn,
+						position: 0,
+						predicate: predicates.enum['is-available-in'],
+						subject: sourceGuid
+					}
+				]
+			: []
 	);
+	mocks.graph = { rootGuid: sourceGuid, containers: availableIn ? [source, parent] : [source] };
+	mocks.targets.set(childGuid, parent);
 	const result = executeContainerCopy({
 		request: {
 			operation: 'template-instance',
 			sourceGuid,
-			availableIn: null,
+			availableIn,
 			targetOrganizationGuid: organizationGuid,
 			targetOrganizationalUnitGuid: null,
 			rootPayload: source.payload,
@@ -780,6 +882,56 @@ test('requires a scoped template instance to name its readable program', async (
 	await expect(
 		executeContainerCopy({ request, connection, user: sysadmin, maxPlanSize: 500 })
 	).rejects.toEqual(new ContainerCopyServiceError('source_unavailable'));
+});
+
+test('rejects instantiating a scoped template into another organization', async () => {
+	const programGuid = childGuid;
+	const program = container(
+		programGuid,
+		{
+			title: 'Foreign program',
+			type: payloadTypes.enum.program,
+			visibility: visibility.enum.public
+		},
+		[],
+		otherOrganizationGuid
+	);
+	const source = container(
+		sourceGuid,
+		{
+			template: true,
+			title: 'Foreign scoped template',
+			type: payloadTypes.enum.report,
+			visibility: visibility.enum.public
+		},
+		[
+			{
+				object: programGuid,
+				position: 0,
+				predicate: predicates.enum['is-available-in'],
+				subject: sourceGuid
+			}
+		],
+		otherOrganizationGuid
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, program] };
+
+	await expect(
+		executeContainerCopy({
+			request: {
+				operation: 'template-instance',
+				availableIn: programGuid,
+				sourceGuid,
+				targetOrganizationGuid: organizationGuid,
+				targetOrganizationalUnitGuid: null,
+				rootPayload: source.payload
+			},
+			connection,
+			user: sysadmin,
+			maxPlanSize: 500
+		})
+	).rejects.toEqual(new ContainerCopyServiceError('invalid_target'));
+	expect(mocks.persist).not.toHaveBeenCalled();
 });
 
 test('retains public and same-organization collection references only', async () => {

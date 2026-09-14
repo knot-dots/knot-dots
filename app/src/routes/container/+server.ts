@@ -171,7 +171,7 @@ export const POST = (async ({ locals, request }) => {
 				}
 				throw caught;
 			});
-		if (!isProgramContainer(program)) {
+		if (!isProgramContainer(program) || program.organization !== parseResult.data.organization) {
 			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
 		}
 		if (ability.cannot('read', program) || ability.cannot('update', program)) {
