@@ -1,4 +1,5 @@
 <script lang="ts">
+	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -23,6 +24,21 @@
 	}
 
 	let { containers, program }: Props = $props();
+
+	const templateAvailability = createProgramTemplateAvailability({
+		candidateTypes: () => program.payload.chapterType,
+		organizationGuid: () => program.organization,
+		programGuid: () => program.guid
+	});
+
+	function availableCreateEntries(entries: string[][]) {
+		return entries.filter(
+			([key, value]) =>
+				key !== overlayKey.enum.create ||
+				value === payloadTypes.enum.text ||
+				templateAvailability.has(value as (typeof program.payload.chapterType)[number])
+		);
+	}
 
 	let goals = $derived(
 		containersByHierarchyLevel(
@@ -49,12 +65,14 @@
 		...Array.from(goals.entries())
 			.toSorted()
 			.map(([hierarchyLevel, containers]) => ({
-				addItemUrl: addItemUrl([
-					[overlayKey.enum.create, payloadTypes.enum.goal],
-					['hierarchyLevel', String(hierarchyLevel)],
-					[predicates.enum['is-part-of-program'], program.guid],
-					['managedBy', program.managed_by[0]]
-				]),
+				addItemUrl: addItemUrl(
+					availableCreateEntries([
+						[overlayKey.enum.create, payloadTypes.enum.goal],
+						['hierarchyLevel', String(hierarchyLevel)],
+						[predicates.enum['is-part-of-program'], program.guid],
+						['managedBy', program.managed_by[0]]
+					])
+				),
 				containers,
 				key: `goals-${hierarchyLevel}`,
 				title: titleForGoalCollection(containers, [...goals.keys()].length > 1 ? hierarchyLevel : 0)
@@ -64,14 +82,16 @@
 			.map(([hierarchyLevel, containers]) => {
 				if (hierarchyLevel === 1) {
 					return {
-						addItemUrl: addItemUrl([
-							[overlayKey.enum.create, payloadTypes.enum.measure],
-							[overlayKey.enum.create, payloadTypes.enum.simple_measure],
-							[overlayKey.enum.create, payloadTypes.enum.rule],
-							['hierarchyLevel', String(hierarchyLevel)],
-							[predicates.enum['is-part-of-program'], program.guid],
-							['managedBy', program.managed_by[0]]
-						]),
+						addItemUrl: addItemUrl(
+							availableCreateEntries([
+								[overlayKey.enum.create, payloadTypes.enum.measure],
+								[overlayKey.enum.create, payloadTypes.enum.simple_measure],
+								[overlayKey.enum.create, payloadTypes.enum.rule],
+								['hierarchyLevel', String(hierarchyLevel)],
+								[predicates.enum['is-part-of-program'], program.guid],
+								['managedBy', program.managed_by[0]]
+							])
+						),
 						containers,
 						key: `implementation-${hierarchyLevel}`,
 						title: titleForMeasureCollection(
@@ -81,12 +101,14 @@
 					};
 				} else {
 					return {
-						addItemUrl: addItemUrl([
-							[overlayKey.enum.create, payloadTypes.enum.measure],
-							['hierarchyLevel', String(hierarchyLevel)],
-							[predicates.enum['is-part-of-program'], program.guid],
-							['managedBy', program.managed_by[0]]
-						]),
+						addItemUrl: addItemUrl(
+							availableCreateEntries([
+								[overlayKey.enum.create, payloadTypes.enum.measure],
+								['hierarchyLevel', String(hierarchyLevel)],
+								[predicates.enum['is-part-of-program'], program.guid],
+								['managedBy', program.managed_by[0]]
+							])
+						),
 						containers,
 						key: `implementation-${hierarchyLevel}`,
 						title: titleForMeasureCollection(containers.filter(isMeasureContainer), hierarchyLevel)

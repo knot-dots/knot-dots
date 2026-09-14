@@ -2,11 +2,13 @@
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import CodeMerge from '~icons/flowbite/code-merge-outline';
+	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		type AnyPayload,
 		type Container,
 		containerOfType,
+		getDirectProgramGuids,
 		isProgramContainer,
 		isTaskContainer,
 		type NewContainer,
@@ -22,6 +24,20 @@
 
 	let { container, relatedContainers }: Props = $props();
 
+	let program = $derived.by(() => {
+		if (isProgramContainer(container)) {
+			return container;
+		}
+		const [programGuid] = getDirectProgramGuids(container);
+		return relatedContainers.filter(isProgramContainer).find(({ guid }) => guid === programGuid);
+	});
+
+	const templateAvailability = createProgramTemplateAvailability({
+		candidateTypes: () => program?.payload.chapterType ?? [],
+		organizationGuid: () => program?.organization ?? container.organization,
+		programGuid: () => program?.guid ?? container.guid
+	});
+
 	let options = $derived.by(() => {
 		let options: { label: string; value: string }[] = [];
 
@@ -34,18 +50,13 @@
 		);
 
 		if (isProgramContainer(container)) {
-			options = [...container.payload.chapterType].map((p) => ({ label: $_(p), value: p }));
+			options = [...container.payload.chapterType]
+				.filter((type) => type === payloadTypes.enum.text || templateAvailability.has(type))
+				.map((p) => ({ label: $_(p), value: p }));
 		} else if (isPartOfProgramRelation) {
-			const program = relatedContainers
-				.filter(isProgramContainer)
-				.find(({ relation }) =>
-					relation.some(
-						({ predicate, object }) =>
-							object == isPartOfProgramRelation.object &&
-							predicate == isPartOfProgramRelation.predicate
-					)
-				);
-			options = [...(program?.payload.chapterType ?? [])].map((p) => ({ label: $_(p), value: p }));
+			options = [...(program?.payload.chapterType ?? [])]
+				.filter((type) => type === payloadTypes.enum.text || templateAvailability.has(type))
+				.map((p) => ({ label: $_(p), value: p }));
 		} else if (isPartOfMeasureRelation) {
 			options = [payloadTypes.enum.goal, payloadTypes.enum.task].map((p) => ({
 				label: $_(p),
@@ -144,7 +155,7 @@
 	}
 </script>
 
-{#if $applicationState.containerDetailView.editable && $ability.can('create', container) && mayDeriveFrom(container)}
+{#if $applicationState.containerDetailView.editable && $ability.can('create', container) && mayDeriveFrom(container) && options.length > 0}
 	<DropDownMenu label={$_('create_another')} {options} handleChange={createHandler(container)}>
 		{#snippet icon()}<CodeMerge />{/snippet}
 	</DropDownMenu>

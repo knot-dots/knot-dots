@@ -2506,6 +2506,26 @@ export function getAvailableInProgramGuids({
 		.map(({ object }) => object);
 }
 
+export function getDirectProgramGuids({
+	guid,
+	relation
+}: {
+	guid?: string;
+	relation: readonly PartialRelation[];
+}) {
+	return [
+		...new Set(
+			relation.flatMap(({ object, predicate, subject }) =>
+				predicate === predicates.enum['is-part-of-program'] &&
+				object !== undefined &&
+				(subject === undefined || subject === guid)
+					? [object]
+					: []
+			)
+		)
+	];
+}
+
 export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
