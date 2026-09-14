@@ -1,0 +1,4 @@
+{
+	"scriptId": "<the Apps Script project id, from clasp create or the project settings>",
+	"rootDir": "src"
+}
