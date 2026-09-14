@@ -33,9 +33,11 @@ docker compose exec db psql -U app               # inspect the database
 docker compose logs preview                      # server-side logs
 ```
 
-The application is reachable at <http://localhost:3000>, started on demand by the
-`webServer` block in `app/playwright.config.ts` — the first `npx playwright test` brings
-it up. Keycloak is at <http://keycloak:8080>, mail at <http://localhost:8081>.
+The application is **already running** at <http://localhost:3000> — the workflow starts
+the stack and waits for it before handing over to you. Keycloak is at
+<http://keycloak:8080>, mail at <http://localhost:8081>. If a page does not load, that is
+a finding about the application, not about the environment; check
+`docker compose logs preview` before you conclude anything.
 
 Feature flags: `podinfo/annotations` is mounted into the container and holds the pod-level
 flags. To reproduce a bug behind a flag, add or flip a line there — and restore the file
