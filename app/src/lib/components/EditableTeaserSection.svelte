@@ -196,6 +196,7 @@
 
 					{#if container.payload.imageEnable}
 						<EditableImageInline
+							alt={container.payload.imageAltText}
 							{editable}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.image}
@@ -273,6 +274,7 @@
 					{/if}
 					{#if container.payload.imageEnableRight}
 						<EditableImageInline
+							alt={container.payload.imageAltTextRight}
 							{editable}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.imageRight}
