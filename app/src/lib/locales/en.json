@@ -875,6 +875,8 @@
 	"teaser_image_alt_text": "Enter alt text",
 	"teaser_image_alt_text_placeholder": "e.g. description of the image...",
 	"teaser_image_enable": "Show image",
+	"teaser_image_source": "Image source",
+	"teaser_image_source_placeholder": "Creator or source...",
 	"teaser_link_caption": "Caption",
 	"teaser_link_enable": "Show link",
 	"teaser_link_label": "URL",

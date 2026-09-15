@@ -874,6 +874,8 @@
 	"teaser_image_alt_text": "Alt-Text eingeben",
 	"teaser_image_alt_text_placeholder": "z.B. Beschreibung des Bildes...",
 	"teaser_image_enable": "Bild einblenden",
+	"teaser_image_source": "Bildquelle",
+	"teaser_image_source_placeholder": "Name des Urhebers oder Quelle...",
 	"teaser_link_caption": "Beschriftung",
 	"teaser_link_enable": "Link einblenden",
 	"teaser_link_label": "URL",
