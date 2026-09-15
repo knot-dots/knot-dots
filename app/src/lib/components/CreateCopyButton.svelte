@@ -34,7 +34,7 @@
 				organizationGuid: page.data.currentOrganization.guid,
 				organizationalUnitGuid: page.data.currentOrganizationalUnit?.guid ?? null
 			},
-			$user.adminOf[0],
+			$user.grants.self['manage-users'][0],
 			page.data.organizations,
 			page.data.organizationalUnits,
 			canCreateAt

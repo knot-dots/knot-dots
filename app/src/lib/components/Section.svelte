@@ -53,8 +53,8 @@
 		isMeasureCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
-		isOrganizationContainer,
 		isOrganizationalUnitContainer,
+		isOrganizationContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
 		isResourceCollectionContainer,
@@ -63,9 +63,10 @@
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
 		isTeaserLikeContainer,
-		isTextContainer
+		isTextContainer,
+		payloadTypes
 	} from '$lib/models';
-	import { ability, applicationState } from '$lib/stores';
+	import { ability, applicationState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload> & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
@@ -126,8 +127,11 @@
 		class="details-section"
 		class:details-section--inline-help={isInlineHelpSection && editable}
 	>
-		{#if editable && $ability.can('update', container)}
-			<DraggableActionBar {container}>
+		<!-- The add menu is offered to anyone who may create sections here — text
+			is its unconditional first option — while sorting requires the update
+			grant on the section itself. -->
+		{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer.managed_by))}
+			<DraggableActionBar {container} draggable={$ability.can('update', container)}>
 				{#snippet actions()}
 					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
 				{/snippet}

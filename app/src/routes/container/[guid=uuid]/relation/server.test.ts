@@ -26,6 +26,7 @@ vi.mock('$lib/server/db', () => ({
 }));
 
 import { POST } from './+server';
+import { emptyGrantRecords, grantRecordsForRoleOn, memberRoles } from '$lib/models';
 
 locale.set('en');
 
@@ -34,14 +35,11 @@ const sourceGuid = '00000000-0000-4000-8000-000000000002';
 const team = '00000000-0000-4000-8000-000000000004';
 const otherTeam = '00000000-0000-4000-8000-000000000005';
 const user = {
-	adminOf: [],
-	collaboratorOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
+	grants: emptyGrantRecords(),
 	guid: '00000000-0000-4000-8000-000000000003',
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [],
 	roles: ['sysadmin'],
 	settings: {}
 };
@@ -90,7 +88,11 @@ test('the update permission on the route container authorizes a relation', async
 		measure(sourceGuid, otherTeam)
 	]);
 
-	const response = await postRelation({ ...user, roles: [], collaboratorOf: [team] });
+	const response = await postRelation({
+		...user,
+		roles: [],
+		grants: grantRecordsForRoleOn(memberRoles.enum.collaborator, team)
+	});
 
 	expect(response.status).toBe(204);
 	expect(updateManyContainerRelations).toHaveBeenCalledWith([
@@ -111,7 +113,11 @@ test('relations without the update permission on the route container are ignored
 		measure(sourceGuid, team)
 	]);
 
-	const response = await postRelation({ ...user, roles: [], collaboratorOf: [team] });
+	const response = await postRelation({
+		...user,
+		roles: [],
+		grants: grantRecordsForRoleOn(memberRoles.enum.collaborator, team)
+	});
 
 	expect(response.status).toBe(204);
 	expect(updateManyContainerRelations).not.toHaveBeenCalled();

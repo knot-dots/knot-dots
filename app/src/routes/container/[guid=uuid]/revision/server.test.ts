@@ -12,7 +12,7 @@ vi.mock('$lib/server/db', () => ({
 	updateContainer: mocks.updateContainer
 }));
 
-import { anyContainer, payloadTypes, predicates, visibility } from '$lib/models';
+import { anyContainer, emptyGrantRecords, payloadTypes, predicates, visibility } from '$lib/models';
 import { POST } from './+server';
 
 locale.set('en');
@@ -22,14 +22,11 @@ const sourceGuid = '00000000-0000-4000-8000-000000000002';
 const organizationGuid = '00000000-0000-4000-8000-000000000003';
 const userGuid = '00000000-0000-4000-8000-000000000004';
 const sysadmin = {
-	adminOf: [],
-	collaboratorOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
+	grants: emptyGrantRecords(),
 	guid: userGuid,
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [],
 	roles: ['sysadmin'],
 	settings: {}
 };

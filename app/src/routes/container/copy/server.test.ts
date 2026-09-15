@@ -14,7 +14,7 @@ vi.mock('$lib/server/containerCopyService', async (importOriginal) => ({
 	loadContainerCopyPreview
 }));
 
-import { payloadTypes } from '$lib/models';
+import { emptyGrantRecords, payloadTypes } from '$lib/models';
 import { CopyPlanError } from '$lib/server/containerCopyPlan';
 import { ContainerCopyServiceError } from '$lib/server/containerCopyService';
 import { GET, POST } from './+server';
@@ -22,14 +22,11 @@ import { GET, POST } from './+server';
 const sourceGuid = '00000000-0000-4000-8000-000000000001';
 const organizationGuid = '00000000-0000-4000-8000-000000000002';
 const user = {
-	adminOf: [],
-	collaboratorOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
+	grants: emptyGrantRecords(),
 	guid: '00000000-0000-4000-8000-000000000003',
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [],
 	roles: ['sysadmin'],
 	settings: {}
 };

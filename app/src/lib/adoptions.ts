@@ -28,7 +28,7 @@ export function organizationalUnitsManagedByUser(
 	return organizationalUnits.filter(
 		(unit) =>
 			unit.guid !== program.organizational_unit &&
-			[...user.adminOf, ...user.headOf].some(
+			user.grants.subordinates.create.some(
 				(guid) => guid === unit.guid || guid === unit.organization
 			)
 	);

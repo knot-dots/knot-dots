@@ -113,7 +113,7 @@ export async function loadApplicationContext({
 				connect(
 					getManyOrganizationalUnitContainers({
 						include: {
-							guid: locals.user.memberOf,
+							guid: locals.user.grants.self.read,
 							organization: currentOrganization.guid
 						},
 						exclude: {

@@ -36,7 +36,15 @@ vi.mock('$lib/server/containerCopyPersistence', () => ({
 	}
 }));
 
-import { anyContainer, payloadTypes, predicates, visibility } from '$lib/models';
+import {
+	anyContainer,
+	emptyGrantRecords,
+	grantRecordsForRoleOn,
+	memberRoles,
+	payloadTypes,
+	predicates,
+	visibility
+} from '$lib/models';
 import {
 	ContainerCopyServiceError,
 	executeContainerCopy,
@@ -79,14 +87,11 @@ const organization = container(organizationGuid, {
 organization.realm = 'target-realm';
 
 const sysadmin: User = {
-	adminOf: [],
-	collaboratorOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
+	grants: emptyGrantRecords(),
 	guid: creatorGuid,
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [],
 	roles: ['sysadmin'],
 	settings: {}
 };
@@ -237,7 +242,11 @@ test('fails the complete operation when any planned container cannot be created'
 				rootPayload: source.payload
 			},
 			connection,
-			user: { ...sysadmin, collaboratorOf: [organizationGuid], roles: [] },
+			user: {
+				...sysadmin,
+				grants: grantRecordsForRoleOn(memberRoles.enum.collaborator, organizationGuid),
+				roles: []
+			},
 			maxPlanSize: 500
 		})
 	).rejects.toEqual(new ContainerCopyServiceError('create_forbidden'));

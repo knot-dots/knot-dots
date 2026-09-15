@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { locale } from 'svelte-i18n';
-import { newContainer, payloadTypes, predicates } from '$lib/models';
+import { emptyGrantRecords, newContainer, payloadTypes, predicates } from '$lib/models';
 import { POST } from './+server';
 
 locale.set('en');
@@ -9,14 +9,11 @@ const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const sourceGuid = '00000000-0000-4000-8000-000000000002';
 const userGuid = '00000000-0000-4000-8000-000000000003';
 const user = {
-	adminOf: [],
-	collaboratorOf: [],
 	familyName: 'Admin',
 	givenName: 'Test',
+	grants: emptyGrantRecords(),
 	guid: userGuid,
-	headOf: [],
 	isAuthenticated: true,
-	memberOf: [],
 	roles: ['sysadmin'],
 	settings: {}
 };
