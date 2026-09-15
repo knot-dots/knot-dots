@@ -25,6 +25,8 @@
 	}: Props = $props();
 
 	let iframeUrl = $state(container.payload.iframeUrl ?? '');
+
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	const mayUpdateVisibility = $derived($ability.can('update', container, 'payload.visibility'));
@@ -109,21 +111,39 @@
 						</span>
 					</button>
 				{/if}
+			{:else if openSubMenuTitle == $_('container_settings_dropdown.color.title')}
+				<fieldset class="listbox">
+					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+						<label>
+							<input
+								bind:group={container.payload.color}
+								name="color"
+								type="radio"
+								value={option.value}
+							/>
+							<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+								&nbsp;
+							</span>
+							{option.label}
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
-				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
-					<label
-						class="cascading-menu-item choice"
-						class:is-selected={container.payload.visibility === option.value}
-					>
-						<input
-							type="radio"
-							name="visibility"
-							value={option.value}
-							bind:group={container.payload.visibility}
-						/>
-						<span>{option.label}</span>
-					</label>
-				{/each}
+				<fieldset class="listbox">
+					{#each visibilityOptions(container, relatedContainers) as option (option.value)}
+						<label>
+							<input
+								type="radio"
+								name="visibility"
+								value={option.value}
+								bind:group={container.payload.visibility}
+							/>
+							<span class="badge badge--gray">
+								<span class="truncated">{option.label}</span>
+							</span>
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('ignite_video.settings.link')}
 				{@const id = crypto.randomUUID()}
 				<div class="link-content" oninput={(event) => event.stopPropagation()}>
@@ -157,10 +177,6 @@
 {/if}
 
 <style>
-	.choice input {
-		margin: 0;
-	}
-
 	.link-content {
 		align-items: stretch;
 		display: flex;

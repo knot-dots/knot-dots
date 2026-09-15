@@ -111,40 +111,40 @@
 					</button>
 				{/if}
 			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
-				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
-					<label
-						class="settings-visibility"
-						class:is-selected={container.payload.visibility === option.value}
-					>
-						<input
-							type="radio"
-							name="visibility"
-							value={option.value}
-							checked={container.payload.visibility === option.value}
-							onchange={() => (container.payload.visibility = option.value)}
-						/>
-						<span class="badge badge--gray">{option.label}</span>
-					</label>
-				{/each}
+				<fieldset class="listbox">
+					{#each visibilityOptions(container, relatedContainers) as option (option.value)}
+						<label>
+							<input
+								type="radio"
+								name="visibility"
+								value={option.value}
+								checked={container.payload.visibility === option.value}
+								onchange={() => (container.payload.visibility = option.value)}
+							/>
+							<span class="badge badge--gray">
+								<span class="truncated">{option.label}</span>
+							</span>
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('progress_measurement')}
-				{#each progressMeasurement.options as option (option)}
-					<label
-						class="settings-choice"
-						class:is-selected={container.payload.measurement === option}
-					>
-						<input
-							type="radio"
-							name="measurement"
-							value={option}
-							checked={container.payload.measurement === option}
-							onchange={() => {
-								container.payload.measurement = option;
-								onmeasurementchange?.();
-							}}
-						/>
-						<span>{$_(`progress_measurement.${option}`)}</span>
-					</label>
-				{/each}
+				<fieldset class="listbox">
+					{#each progressMeasurement.options as option (option)}
+						<label>
+							<input
+								type="radio"
+								name="measurement"
+								value={option}
+								checked={container.payload.measurement === option}
+								onchange={() => {
+									container.payload.measurement = option;
+									onmeasurementchange?.();
+								}}
+							/>
+							<span>{$_(`progress_measurement.${option}`)}</span>
+						</label>
+					{/each}
+				</fieldset>
 			{/if}
 		{/snippet}
 	</CascadingMenu>
@@ -156,38 +156,3 @@
 		{relatedContainers}
 	/>
 {/if}
-
-<style>
-	.settings-choice,
-	.settings-visibility {
-		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 0.5rem;
-		color: var(--color-gray-700);
-		display: flex;
-		font-size: 0.875rem;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		width: 100%;
-	}
-
-	.settings-visibility:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.settings-choice:hover,
-	.settings-choice.is-selected {
-		background-color: var(--color-primary-100);
-	}
-
-	.settings-choice:hover > span,
-	.settings-choice.is-selected > span {
-		color: var(--color-primary-700);
-	}
-
-	.settings-visibility.is-selected {
-		background-color: var(--color-gray-100);
-	}
-</style>
