@@ -1,10 +1,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
+	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
+	import CoverUpload from '$lib/components/CoverUpload.svelte';
+	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
@@ -12,15 +16,18 @@
 	import {
 		type Container,
 		helpSlugForDetailView,
+		isContainerWithColor,
+		isContainerWithCover,
 		isSimpleMeasureContainer,
 		payloadTypes
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container;
 		data?: Snippet;
-		footer: Snippet;
+		footer?: Snippet;
 		properties?: Snippet;
 	}
 
@@ -37,7 +44,46 @@
 	<article style:--details-padding-x={useBulkActions ? '6rem' : undefined} class="details">
 		<div class="details-scroll-wrapper">
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<header class="details-section">
+				{#if isContainerWithCover(container)}
+					<EditableCoverSection
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+					/>
+				{/if}
+
+				{#if isContainerWithColor(container)}
+					<div
+						class="details-section stage stage--{container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}"
+					>
+						<div class="stage-buttons wide">
+							{#if isContainerWithCover(container)}
+								<CoverUpload
+									editable={$applicationState.containerDetailView.editable &&
+										$ability.can('update', container)}
+									label={$_('add_cover')}
+									bind:value={container.payload.cover}
+								/>
+							{/if}
+							<ColorDropdown
+								buttonStyle="button"
+								bind:value={container.payload.color}
+								label={$_('highlight')}
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+							/>
+						</div>
+					</div>
+				{/if}
+
+				<header
+					class="details-section stage stage--{'color' in container.payload &&
+					container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
 					<div class="details-header">
 						{#if container.payload.type === payloadTypes.enum.term}
 							{#if $applicationState.containerDetailView.editable || container.payload.icon}
@@ -70,6 +116,7 @@
 						bind:container
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
+						showPropertiesTrigger
 					/>
 
 					{#if isSimpleMeasureContainer(container)}

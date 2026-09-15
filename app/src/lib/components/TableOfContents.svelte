@@ -12,6 +12,7 @@
 
 	interface Props {
 		container: Container<AnyPayload>;
+		editable?: boolean;
 		handleSort: (sections: Container[]) => Promise<void>;
 		sections: Container[];
 	}
@@ -23,7 +24,9 @@
 		children: TableOfContentsNode[];
 	}
 
-	let { container, handleSort, sections }: Props = $props();
+	let { container, editable: editableOverride, handleSort, sections }: Props = $props();
+
+	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
 
 	const disclosure = createDisclosure();
 
@@ -118,7 +121,7 @@
 		{#each nodes as node (node.guid)}
 			<li animate:flip={{ duration: 100 }}>
 				<div class="table-of-contents-entry">
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+					{#if editable && $ability.can('update', container)}
 						<span class="drag-handle" use:dragHandle>
 							<DragHandle />
 						</span>

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { FormEventHandler } from 'svelte/elements';
-	import { createPopover } from 'svelte-headlessui';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ArrowCircleDownOutline from '~icons/knotdots/arrow-circle-down-outline';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
 		disabled?: boolean;
@@ -21,66 +20,48 @@
 		options,
 		value = $bindable()
 	}: Props = $props();
-
-	const popover = $derived(createPopover({ label }));
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = $derived({
-		modifiers: [{ name: 'offset', options: { offset } }]
-	});
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" {disabled} type="button" use:popover.button>
-		<ArrowCircleDownOutline />
-		<span class="truncated">
-			{label}
-		</span>
-	</button>
+<Dropdown --dropdown-panel-border-radius="12px" {label} {offset}>
+	{#snippet button(popover)}
+		<button class="dropdown-button" {disabled} type="button" use:popover.button>
+			<ArrowCircleDownOutline />
+			<span class="truncated">
+				{label}
+			</span>
+		</button>
+	{/snippet}
 
-	{#if $popover.expanded}
-		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
-			<div>
-				{#each options as option (option.value)}
-					<label>
-						<input
-							{disabled}
-							onchange={async (e) => {
-								await onchange?.(e);
-								popover.close();
-							}}
-							type="radio"
-							value={option.value}
-							bind:group={value}
-						/>
-						<span class="truncated">{option.label}</span>
-					</label>
-				{/each}
-			</div>
+	{#snippet panel(popover)}
+		<fieldset class="listbox">
+			{#each options as option (option.value)}
+				<label>
+					<input
+						{disabled}
+						onchange={async (e) => {
+							await onchange?.(e);
+							popover.close();
+						}}
+						type="radio"
+						value={option.value}
+						bind:group={value}
+					/>
+					<span class="truncated">{option.label}</span>
+				</label>
+			{/each}
 		</fieldset>
-	{/if}
-</div>
+	{/snippet}
+</Dropdown>
 
 <style>
-	.dropdown {
+	.dropdown-button {
 		--dropdown-button-border-radius: 0;
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-default-color: var(--color-text-accent-default);
 		--dropdown-button-icon-default-color: var(--color-text-accent-default);
 		--dropdown-button-min-height: 100%;
 		--dropdown-button-padding: 0.25rem 0.5rem;
-	}
 
-	.dropdown-button {
 		font-weight: 400;
-	}
-
-	.dropdown-panel {
-		border-radius: 12px;
-		box-shadow: var(--shadow-lg);
 	}
 </style>

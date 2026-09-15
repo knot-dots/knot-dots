@@ -16,7 +16,6 @@
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -24,7 +23,6 @@
 	import Header from '$lib/components/Header.svelte';
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
-	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -264,7 +262,6 @@
 		{:else if createFeatureDecisions(page.data.features).useOpenAI()}
 			<AskAIButton {container} />
 		{/if}
-		<DeleteButton {container} {relatedContainers} />
 	</footer>
 {/snippet}
 
@@ -280,8 +277,6 @@
 	{#if viewMode === 'view_mode.preview'}
 		<EditableContainerDetailView bind:container {footer}>
 			{#snippet data()}
-				<PropertiesRelocationNotice />
-
 				<div class="chapters">
 					{#each filteredParts as part, i (part.guid)}
 						<form

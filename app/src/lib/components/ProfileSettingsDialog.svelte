@@ -64,7 +64,11 @@
 			<button class="button-xs button-primary system-primary" type="submit">
 				{$_('save')}
 			</button>
-			<button class="button-xs button-alternative system-primary" formnovalidate type="submit">
+			<button
+				class="button-xs button-alternate-outline system-primary"
+				formnovalidate
+				type="submit"
+			>
 				{$_('cancel')}
 			</button>
 		</p>
@@ -132,7 +136,7 @@
 
 			<footer>
 				<a
-					class="button button-xs button-alternative system-primary"
+					class="button button-xs button-alternate-outline system-primary"
 					href={changePasswordURL(page.url.href)}
 				>
 					{$_('profile_settings.change_password')}

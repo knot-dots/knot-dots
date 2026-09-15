@@ -5,6 +5,7 @@
 	import Sort from '~icons/flowbite/sort-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ArrowRightBox from '~icons/knotdots/arrow-right-box';
+	import Background from '~icons/knotdots/background';
 	import CarouselIcon from '~icons/knotdots/carousel';
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
@@ -14,11 +15,13 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import {
 		type AnyPayload,
+		backgroundColor,
 		type Container,
-		type CustomCollectionPayload,
-		visibility
+		type CustomCollectionPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { backgroundColors } from '$lib/theme/models';
+	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
 	interface Props {
 		container: Container<CustomCollectionPayload>;
@@ -96,7 +99,20 @@
 				<ChevronRight />
 			</button>
 
+			<button
+				class="cascading-menu-item"
+				onclick={() => openSubMenu($_('container_settings_dropdown.highlight.title'))}
+				type="button"
+			>
+				<Background />
+				<span>
+					<strong>{$_('container_settings_dropdown.highlight.title')}</strong>
+				</span>
+				<ChevronRight />
+			</button>
+
 			<div class="cascading-menu-divider" role="presentation"></div>
+
 			{#if $ability.can('update', container, 'payload.visibility')}
 				<button
 					class="cascading-menu-item"
@@ -130,7 +146,7 @@
 				{$_('custom_collection.settings.objects_title')}
 			</p>
 			<button
-				class="settings-button"
+				class="cascading-menu-item"
 				onclick={() => {
 					closeMenu();
 					onAddItems();
@@ -147,7 +163,7 @@
 			</p>
 
 			<button
-				class="settings-button"
+				class="cascading-menu-item"
 				onclick={() => {
 					closeMenu();
 					onAddTemplates();
@@ -175,46 +191,68 @@
 				</button>
 			{/if}
 		{:else if openSubMenuTitle === $_('custom_collection.settings.view')}
-			<label class="settings-choice" class:is-selected={container.payload.listType === 'wall'}>
-				<input
-					type="radio"
-					name="listType"
-					value="wall"
-					checked={container.payload.listType === 'wall'}
-					onchange={() => (container.payload.listType = 'wall')}
-				/>
-				<Grid />
-				<span>{$_('list_type.wall')}</span>
-			</label>
-			<label class="settings-choice" class:is-selected={container.payload.listType === 'carousel'}>
-				<input
-					type="radio"
-					name="listType"
-					value="carousel"
-					checked={container.payload.listType === 'carousel'}
-					onchange={() => (container.payload.listType = 'carousel')}
-				/>
-				<CarouselIcon />
-				<span>{$_('list_type.carousel')}</span>
-			</label>
-		{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
-			{#each visibility.options as option (option)}
-				<label
-					class="settings-visibility"
-					class:is-selected={container.payload.visibility === option}
-				>
+			<fieldset class="listbox">
+				<label>
 					<input
 						type="radio"
-						name="visibility"
-						value={option}
-						checked={container.payload.visibility === option}
-						onchange={() => (container.payload.visibility = option)}
+						name="listType"
+						value="wall"
+						checked={container.payload.listType === 'wall'}
+						onchange={() => (container.payload.listType = 'wall')}
 					/>
-					<span class="badge badge--gray">{$_(`visibility.${option}`)}</span>
+					<Grid />
+					<span>{$_('list_type.wall')}</span>
 				</label>
-			{/each}
+				<label>
+					<input
+						type="radio"
+						name="listType"
+						value="carousel"
+						checked={container.payload.listType === 'carousel'}
+						onchange={() => (container.payload.listType = 'carousel')}
+					/>
+					<CarouselIcon />
+					<span>{$_('list_type.carousel')}</span>
+				</label>
+			</fieldset>
+		{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
+			<fieldset class="listbox">
+				{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+					<label>
+						<input
+							bind:group={container.payload.color}
+							name="color"
+							type="radio"
+							value={option.value}
+						/>
+						<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+							&nbsp;
+						</span>
+						{option.label}
+					</label>
+				{/each}
+			</fieldset>
+		{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
+			<fieldset class="listbox">
+				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
+					<label>
+						<input
+							type="radio"
+							name="visibility"
+							value={option}
+							checked={container.payload.visibility === option.value}
+							onchange={() => (container.payload.visibility = option.value)}
+						/>
+						<span class="badge badge--gray">
+							<span class="truncated">
+								{$_(option.label)}
+							</span>
+						</span>
+					</label>
+				{/each}
+			</fieldset>
 		{:else if openSubMenuTitle === $_('custom_collection.settings.interactions')}
-			<label class="settings-toggle">
+			<label>
 				<input
 					type="checkbox"
 					checked={container.payload.allowSearch}
@@ -223,7 +261,7 @@
 				<Search />
 				<span>{$_('search')}</span>
 			</label>
-			<label class="settings-toggle">
+			<label>
 				<input
 					type="checkbox"
 					checked={container.payload.allowSort}
@@ -244,51 +282,9 @@
 />
 
 <style>
-	.settings-choice,
-	.settings-visibility,
-	.settings-toggle {
-		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 0.5rem;
-		color: var(--color-gray-700);
-		display: flex;
-		font-size: 0.875rem;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		width: 100%;
-	}
-
-	.settings-visibility:hover,
-	.settings-toggle:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.settings-choice:hover,
-	.settings-choice.is-selected {
-		background-color: var(--color-primary-100);
-	}
-
-	.settings-choice > :global(svg),
-	.settings-toggle > :global(svg) {
-		color: var(--color-gray-700);
+	label > :global(svg) {
 		height: 1rem;
 		width: 1rem;
-	}
-
-	.settings-choice:hover > :global(svg),
-	.settings-choice.is-selected > :global(svg) {
-		color: var(--color-primary-700);
-	}
-
-	.settings-choice:hover > span,
-	.settings-choice.is-selected > span {
-		color: var(--color-primary-700);
-	}
-
-	.settings-visibility.is-selected {
-		background-color: var(--color-gray-100);
 	}
 
 	.dropdown-panel-group-title {
@@ -296,20 +292,6 @@
 		font-size: 0.75rem;
 		font-weight: 500;
 		padding: 0.5rem;
-	}
-
-	.settings-button {
-		--button-background: var(--color-white);
-		--button-hover-background: var(--color-gray-100);
-		--button-active-background: var(--color-gray-200);
-		--padding-x: 0.75rem;
-		--padding-y: 0.5rem;
-
-		border: 1px solid var(--color-gray-200);
-		color: var(--color-gray-900);
-		font-weight: 500;
-		justify-content: center;
-		width: 100%;
 	}
 
 	.toggle {

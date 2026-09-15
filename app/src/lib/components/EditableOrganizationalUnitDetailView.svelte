@@ -1,39 +1,28 @@
 <script lang="ts">
-	import { Collapsible } from 'melt/builders';
 	import { resource } from 'runed';
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
-	import Ellipsis from '~icons/knotdots/ellipsis';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import autoSave from '$lib/client/autoSave';
-	import copyContainer from '$lib/client/copyContainer';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import ImageReplacesNameToggle from '$lib/components/ImageReplacesNameToggle.svelte';
-	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
-	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { setDetailViewContext } from '$lib/contexts/detailView';
-	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
-	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
-		containerOfType,
 		getOrganizationURL,
 		helpSlug,
 		isOrganizationalUnitContainer,
@@ -48,36 +37,38 @@
 	interface Props {
 		container: Container<OrganizationalUnitPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
-		linkedProfiles?: Container<AnyPayload>[];
-		relatedOrganizationalUnitGuids?: string[];
 		sections?: Container<AnyPayload>[];
 	}
 
-	let {
-		container = $bindable(),
-		layout,
-		linkedProfiles = [],
-		relatedOrganizationalUnitGuids = [],
-		sections = []
-	}: Props = $props();
+	let { container = $bindable(), layout, sections = [] }: Props = $props();
 
 	let guid = $derived(container.guid);
 
+	let individualProfileRelation = $derived(
+		container.relation.find(
+			({ predicate }) => predicate === predicates.enum['is-individual-profile-of']
+		)
+	);
+
+	let isIndividualProfile = $derived(individualProfileRelation?.subject === container.guid);
+
 	let containersQuery = resource([() => guid], async ([guid], _, { signal }) => {
-		const [containers, actualData, sectionContainers] = await Promise.all([
+		const [containers, actualData, sections] = await Promise.all([
 			fetchContainers(
 				{
+					guid: individualProfileRelation
+						? isIndividualProfile
+							? [individualProfileRelation.object]
+							: [individualProfileRelation.subject]
+						: [],
 					organization: [container.organization],
-					organizationalUnit:
-						relatedOrganizationalUnitGuids.length > 0
-							? relatedOrganizationalUnitGuids
-							: [container.guid],
 					payloadType: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
 						payloadTypes.enum.indicator_template,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.objective,
+						payloadTypes.enum.organizational_unit,
 						payloadTypes.enum.program,
 						payloadTypes.enum.simple_measure
 					]
@@ -103,7 +94,7 @@
 				{ signal }
 			)
 		]);
-		return [...containers, ...actualData, ...sectionContainers];
+		return [...containers, ...actualData, ...sections];
 	});
 
 	setBulkActionContext({
@@ -114,20 +105,20 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
-
 	const handleSubmit = $derived(autoSave(container, 2000));
 
-	let isIndividualProfile = $derived(
-		container.relation.some(
-			({ predicate, subject }) =>
-				predicate === predicates.enum['is-individual-profile-of'] && subject === container.guid
-		)
-	);
-
 	let linkedProfile = $derived(
-		linkedProfiles.filter(isOrganizationalUnitContainer).find((c) => c.guid !== container.guid)
+		relatedContainers
+			.filter(isOrganizationalUnitContainer)
+			.find(
+				(c) =>
+					c.guid !== container.guid &&
+					c.relation.some(
+						({ object, predicate, subject }) =>
+							predicate === predicates.enum['is-individual-profile-of'] &&
+							(subject === container.guid || object === container.guid)
+					)
+			)
 	);
 
 	let linkedProfileURL = $derived(
@@ -138,69 +129,6 @@
 				}).toString()
 			: undefined
 	);
-
-	let hasGeometry = $derived(Boolean(container.payload.geometry));
-
-	let mayCreateIndividualProfile = $derived(
-		hasGeometry &&
-			!isIndividualProfile &&
-			!linkedProfile &&
-			$ability.can(
-				'create',
-				containerOfType(
-					payloadTypes.enum.organizational_unit,
-					container.organization,
-					null,
-					container.organization,
-					container.realm
-				)
-			)
-	);
-
-	let creatingProfile = $state(false);
-
-	async function createIndividualProfile() {
-		creatingProfile = true;
-
-		try {
-			const response = await copyContainer({
-				operation: 'individual-profile',
-				sourceGuid: container.guid
-			});
-
-			if (response.ok) {
-				const created = await response.json();
-				dialog?.close();
-				goto(
-					getOrganizationURL(created, '', env, {
-						organizationSlug: page.data.currentOrganization.payload.slug,
-						organizationCustomDomain: page.data.currentOrganization.payload.customDomain
-					}).toString()
-				);
-			} else {
-				const err = await response.json();
-				alert(err.message);
-			}
-		} finally {
-			creatingProfile = false;
-		}
-	}
-
-	const propertiesRelocationNotice = getPropertiesRelocationContext();
-
-	let detailView = $state({
-		properties: new Collapsible({
-			onOpenChange: () => {
-				propertiesRelocationNotice.seen = true;
-			}
-		})
-	});
-
-	const useNewPropertyPanel = createFeatureDecisions(page.data.features).useNewPropertyPanel();
-
-	if (useNewPropertyPanel) {
-		setDetailViewContext(detailView);
-	}
 </script>
 
 {#snippet header()}
@@ -223,11 +151,11 @@
 					/>
 
 					<div
-						class="stage stage--{container.payload.color
+						class="details-section stage stage--{container.payload.color
 							? backgroundColors.get(container.payload.color)
 							: 'white'}"
 					>
-						<div class="stage--buttons details-section">
+						<div class="stage-buttons wide">
 							<CoverUpload
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', container)}
@@ -271,118 +199,62 @@
 								</div>
 							{/if}
 						</div>
+					</div>
 
-						<header class="details-section">
-							<EditableLogo
+					<header
+						class="details-section stage stage--{container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}"
+					>
+						<EditableLogo
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.image}
+						/>
+
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+							<h1
+								class={{
+									'details-title': true,
+									'is-visually-hidden': container.payload.imageReplacesName
+								}}
+								contenteditable="plaintext-only"
+								bind:textContent={container.payload.name}
+								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+							></h1>
+						{:else}
+							<h1
+								class={{
+									'details-title': true,
+									'is-visually-hidden': container.payload.imageReplacesName
+								}}
+								contenteditable="false"
+							>
+								{container.payload.name}
+							</h1>
+						{/if}
+					</header>
+
+					{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+						{#key container.guid}
+							<EditableFormattedText
+								color={container.payload.color
+									? backgroundColors.get(container.payload.color)
+									: 'white'}
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', container)}
-								bind:value={container.payload.image}
+								bind:value={container.payload.description}
 							/>
-
-							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-								<h1
-									class={{
-										'details-title': true,
-										'is-visually-hidden': container.payload.imageReplacesName
-									}}
-									contenteditable="plaintext-only"
-									bind:textContent={container.payload.name}
-									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-								></h1>
-								<button
-									class="action-button"
-									onclick={useNewPropertyPanel
-										? detailView.properties.trigger.onclick
-										: () => dialog.showModal()}
-									type="button"
-								>
-									<Ellipsis />
-									<span class="is-visually-hidden">{$_('organization.properties.title')}</span>
-								</button>
-							{:else}
-								<h1
-									class={{
-										'details-title': true,
-										'is-visually-hidden': container.payload.imageReplacesName
-									}}
-									contenteditable="false"
-								>
-									{container.payload.name}
-								</h1>
-							{/if}
-						</header>
-
-						{#if !useNewPropertyPanel}
-							<PropertiesDialog
-								bind:dialog
-								{container}
-								{relatedContainers}
-								title={$_('organizational_unit.properties.title')}
-							>
-								{#snippet actions()}
-									{#if mayCreateIndividualProfile}
-										<button
-											class="button button-xs button-alternative system-primary"
-											disabled={creatingProfile}
-											onclick={createIndividualProfile}
-											type="button"
-										>
-											{$_('individual_profile.create')}
-										</button>
-									{/if}
-								{/snippet}
-
-								<OrganizationalUnitProperties
-									bind:container
-									editable={$ability.can('update', container)}
-								/>
-							</PropertiesDialog>
-						{/if}
-
-						{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
-							{#key container.guid}
-								<EditableFormattedText
-									editable={$applicationState.containerDetailView.editable &&
-										$ability.can('update', container)}
-									bind:value={container.payload.description}
-								/>
-							{/key}
-						{/if}
-					</div>
+						{/key}
+					{/if}
 				</form>
 
 				<Sections bind:container {relatedContainers} />
 			</div>
-
-			{#if useNewPropertyPanel}
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<OrganizationalUnitProperties
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-				</form>
-			{/if}
 		</article>
 
 		<ContextTabs slug={helpSlug.enum['organizational-unit-view']} />
 	</div>
-
-	{#if useNewPropertyPanel}
-		<footer class="footer-action-bar">
-			{#if mayCreateIndividualProfile}
-				<button
-					class="button button-xs button-alternative system-primary"
-					disabled={creatingProfile}
-					onclick={createIndividualProfile}
-					type="button"
-				>
-					{$_('individual_profile.create')}
-				</button>
-			{/if}
-			<DeleteButton {container} {relatedContainers} />
-		</footer>
-	{/if}
 {/snippet}
 
 {@render layout(header, main)}
@@ -392,26 +264,10 @@
 		display: contents;
 	}
 
-	.details-scroll-wrapper {
-		padding-top: 0;
-	}
-
 	header {
 		align-items: center;
 		display: flex;
 		gap: 0.75rem;
-	}
-
-	.stage--buttons {
-		min-height: 3.125rem;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding-bottom: 0;
-	}
-
-	header button {
-		margin-left: auto;
 	}
 
 	h1 {
@@ -448,14 +304,5 @@
 	.profile-switch-item--active {
 		background: var(--color-indigo-800);
 		color: white;
-	}
-
-	.stage {
-		margin-bottom: 4rem;
-		padding-bottom: 0;
-	}
-
-	.stage:not(.stage--white) {
-		padding-bottom: 2rem;
 	}
 </style>

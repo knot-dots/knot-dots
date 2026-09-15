@@ -13,17 +13,16 @@ import type { User } from '$lib/stores';
 type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage-users';
 type Subjects = Container<AnyPayload> | NewContainer<AnyInitialPayload> | PayloadType;
 
-const specialTypes: PayloadType[] = [
+export const specialTypes: PayloadType[] = [
 	payloadTypes.enum.category,
 	payloadTypes.enum.help,
 	payloadTypes.enum.html,
 	payloadTypes.enum.organization,
 	payloadTypes.enum.organizational_unit,
-	payloadTypes.enum.program,
 	payloadTypes.enum.term
 ];
 
-const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
+export const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
 
 // Categories, help sections, terms and organizational units follow the
 // organization's subordinate rules for updating, but creating and deleting
@@ -51,13 +50,6 @@ export default function defineAbilityFor(user: User) {
 			payloadTypes.enum.program,
 			payloadTypes.enum.simple_measure
 		]);
-		can('read', payloadTypes.enum.task, ['assignee']);
-		can(
-			'update',
-			[payloadTypes.enum.program, ...commonTypes],
-			['organization', 'organizational_unit']
-		);
-		can('update', payloadTypes.enum.program, ['chapterType']);
 	} else if (user.isAuthenticated) {
 		const { self, subordinates } = user.grants;
 		const fullySelfManagedOf = self.read
@@ -85,46 +77,46 @@ export default function defineAbilityFor(user: User) {
 		can(['create', 'delete'], payloadTypes.enum.organizational_unit, {
 			organization: { $in: fullySelfManagedOf }
 		});
-		can('create', [payloadTypes.enum.program, ...commonTypes], {
+		can('create', commonTypes, {
 			...whileInheriting,
 			organization: { $in: subordinates.create }
 		});
-		can('create', [payloadTypes.enum.program, ...commonTypes], {
+		can('create', commonTypes, {
 			organization: { $in: fullySelfManagedOf }
 		});
-		can('create', [payloadTypes.enum.program, ...commonTypes], {
+		can('create', commonTypes, {
 			...whileInheriting,
 			organizational_unit: { $in: subordinates.create }
 		});
-		can('create', [payloadTypes.enum.program, ...commonTypes], {
+		can('create', commonTypes, {
 			organizational_unit: { $in: fullySelfManagedOf }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			...whileInheriting,
 			organization: { $in: subordinates.update }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			organization: { $in: fullySelfManagedOf }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			...whileInheriting,
 			organizational_unit: { $in: subordinates.update }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			organizational_unit: { $in: fullySelfManagedOf }
 		});
-		can('delete', [payloadTypes.enum.program, ...commonTypes], {
+		can('delete', commonTypes, {
 			...whileInheriting,
 			organization: { $in: subordinates.delete }
 		});
-		can('delete', [payloadTypes.enum.program, ...commonTypes], {
+		can('delete', commonTypes, {
 			organization: { $in: fullySelfManagedOf }
 		});
-		can('delete', [payloadTypes.enum.program, ...commonTypes], {
+		can('delete', commonTypes, {
 			...whileInheriting,
 			organizational_unit: { $in: subordinates.delete }
 		});
-		can('delete', [payloadTypes.enum.program, ...commonTypes], {
+		can('delete', commonTypes, {
 			organizational_unit: { $in: fullySelfManagedOf }
 		});
 		can(
@@ -193,7 +185,7 @@ export default function defineAbilityFor(user: User) {
 		can('create', commonTypes, {
 			managed_by: { $in: subordinates.create }
 		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], {
+		can('update', commonTypes, {
 			managed_by: { $in: subordinates.update }
 		});
 		can('delete', commonTypes, {
@@ -275,14 +267,6 @@ export default function defineAbilityFor(user: User) {
 			'payload.visibility': visibility.enum.organization,
 			guid: { $in: self.read }
 		});
-		can('read', payloadTypes.options, ['payload.editorialState'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: subordinates.read }
-		});
-		can('read', payloadTypes.enum.task, ['assignee'], {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: subordinates.read }
-		});
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
@@ -292,9 +276,6 @@ export default function defineAbilityFor(user: User) {
 		});
 		can('update', payloadTypes.options, ['organizational_unit'], {
 			organization: { $in: fullySelfManagedOf }
-		});
-		can('update', [payloadTypes.enum.program, ...commonTypes], ['payload.editorialState'], {
-			managed_by: { $in: subordinates.update }
 		});
 		cannot(['create', 'update', 'delete'], payloadTypes.enum.html);
 	}

@@ -2,9 +2,7 @@
 	import { tick } from 'svelte';
 	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	export type GroupedSingleChoiceOption = {
 		label: string;
@@ -41,82 +39,67 @@
 	let radioName = $derived(name ?? labelledBy ?? 'grouped-single-choice');
 	let buttonEl: HTMLButtonElement | null = null;
 
-	const popover = createPopover({});
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	let extraOpts = $derived({
-		modifiers: [{ name: 'offset', options: { offset } }]
-	});
-
-	async function handleInvalid() {
-		if (!$popover.expanded) {
-			popover.open();
-			await tick();
-			buttonEl?.focus();
-		}
+	async function handleInvalid(popover: ReturnType<typeof createPopover>) {
+		popover.open();
+		await tick();
+		buttonEl?.focus();
 	}
 </script>
 
-<div class="dropdown" class:dropdown--invalid={missingRequired} use:popperRef>
-	{#if required && !value}
-		<input
-			class="validation-input"
-			name={radioName}
-			oninvalid={handleInvalid}
-			required
-			tabindex={-1}
-			type="radio"
-			value=""
-		/>
-	{/if}
-	<button
-		bind:this={buttonEl}
-		aria-labelledby={labelledBy}
-		class="dropdown-button"
-		type="button"
-		use:popover.button
-	>
-		<span class="truncated" class:dropdown-placeholder={!selected}>
-			{#if selected}{selected.label}{:else}{$_('empty')}{/if}
-		</span>
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
-
-	{#if $popover.expanded}
-		<fieldset
+<Dropdown {offset}>
+	{#snippet button(popover)}
+		{#if required && !value}
+			<input
+				class="validation-input"
+				name={radioName}
+				oninvalid={() => handleInvalid(popover)}
+				required
+				tabindex={-1}
+				type="radio"
+				value=""
+			/>
+		{/if}
+		<button
+			bind:this={buttonEl}
 			aria-labelledby={labelledBy}
-			class="dropdown-panel listbox"
-			use:popperContent={extraOpts}
-			use:popover.panel
+			class={[
+				'dropdown-button',
+				'dropdown-button--select',
+				...(missingRequired ? ['dropdown-button--invalid'] : [])
+			]}
+			type="button"
+			use:popover.button
 		>
-			<div>
-				{#each groups as group (group.title)}
-					{#if group.options.length > 0}
-						<p class="group-title">{group.title}</p>
-						{#each group.options as option (option.value)}
-							<label class:label--disabled={option.disabled}>
-								<input
-									oninvalid={handleInvalid}
-									disabled={option.disabled}
-									name={radioName}
-									{required}
-									type="radio"
-									value={option.value}
-									bind:group={value}
-								/>
-								<span class="truncated">{option.label}</span>
-							</label>
-						{/each}
-					{/if}
-				{/each}
-			</div>
+			<span class="truncated" class:dropdown-placeholder={!selected}>
+				{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+			</span>
+		</button>
+	{/snippet}
+
+	{#snippet panel(popover)}
+		<fieldset aria-labelledby={labelledBy} class="listbox">
+			{#each groups as group (group.title)}
+				{#if group.options.length > 0}
+					<p class="group-title">{group.title}</p>
+					{#each group.options as option (option.value)}
+						<label class:label--disabled={option.disabled}>
+							<input
+								oninvalid={() => handleInvalid(popover)}
+								disabled={option.disabled}
+								name={radioName}
+								{required}
+								type="radio"
+								value={option.value}
+								bind:group={value}
+							/>
+							<span class="truncated">{option.label}</span>
+						</label>
+					{/each}
+				{/if}
+			{/each}
 		</fieldset>
-	{/if}
-</div>
+	{/snippet}
+</Dropdown>
 
 <style>
 	/* Hidden input for form validation when dropdown is closed */
@@ -129,7 +112,7 @@
 	}
 
 	/* Validation state */
-	.dropdown--invalid {
+	.dropdown-button.dropdown-button--invalid {
 		--dropdown-button-default-background: var(--color-red-050);
 		--dropdown-button-default-border-color: var(--color-red-500);
 		--dropdown-button-default-color: var(--color-red-700);

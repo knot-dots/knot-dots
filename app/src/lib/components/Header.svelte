@@ -7,19 +7,17 @@
 	import StarOutline from '~icons/flowbite/star-outline';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import Bars from '~icons/flowbite/bars-outline';
-	import Label from '~icons/flowbite/label-outline';
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
-	import Users from '~icons/knotdots/users';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
 	import BulkActions from '$lib/components/BulkActions.svelte';
+	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
 	import DotsBoardButton from '$lib/components/DotsBoardButton.svelte';
 	import EditModeToggle from '$lib/components/EditModeToggle.svelte';
@@ -39,9 +37,7 @@
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
-	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
-	import { getPropertiesRelocationContext } from '$lib/contexts/propertiesRelocationNotice';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -52,8 +48,6 @@
 		isProgramContainer,
 		isReportContainer,
 		isSimpleMeasureContainer,
-		overlayKey,
-		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
 	import {
@@ -95,10 +89,6 @@
 
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
-
-	const detailView = getDetailViewContext();
-
-	const propertiesRelocationNotice = getPropertiesRelocationContext();
 
 	let container = $derived.by(() => {
 		const base = overlay ? $overlayStore?.container : page.data.container;
@@ -261,50 +251,6 @@
 	{/if}
 
 	<div class="actions">
-		{#if overlay && container && $ability.can('manage-users', container)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={overlayURL(page.url, overlayKey.enum.members, container.guid)}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{:else if !overlay && !$overlayStore?.key && container && (isProgramContainer(container) || isMeasureContainer(container) || isSimpleMeasureContainer(container)) && $ability.can('manage-users', container)}
-			<div class="divider"></div>
-
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/[contentGuid=uuid]/all/members', {
-					guid: selectedContext.guid,
-					contentGuid: container.guid
-				})}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{:else if !overlay && !$overlayStore?.key && $ability.can('manage-users', selectedContext)}
-			<a
-				class="action-button action-button--size-l"
-				href={resolve('/[guid=uuid]/members', { guid: selectedContext.guid })}
-				{@attach tooltip($_('members'))}
-			>
-				<Users />
-			</a>
-		{/if}
-
-		{#if !overlay && page.data.title && $ability.can('update', selectedContext)}
-			<button
-				aria-label={$_('favorite')}
-				class="action-button action-button--size-l action-button--favorite"
-				onclick={toggleFavorite}
-				type="button"
-			>
-				{#if isFavorite}<StarSolid />{:else}<StarOutline />{/if}
-			</button>
-		{/if}
-
 		{#if (!overlay && !$overlayStore?.key) || overlay}
 			{#if $user.isAuthenticated}
 				<EditModeToggle />
@@ -319,28 +265,25 @@
 			{/if}
 		{/if}
 
-		{#if container && detailView && !paramsFromFragment(page.url).has('table')}
-			{#if !(isOrganizationContainer(container) || isOrganizationalUnitContainer(container) || isPageContainer(container)) || $ability.can('update', container)}
-				<button
-					{@attach tooltip($_('properties.show_all'))}
-					{...detailView.properties.trigger}
-					class="action-button action-button--size-l"
-					onclick={detailView.properties.trigger.onclick}
-					style:position="relative"
-					type="button"
-				>
-					<Label />
-					{#if propertiesRelocationNotice && !propertiesRelocationNotice.seen}
-						<span
-							class="indicator system-info"
-							style:--indicator-background-color="var(--color-background-accent-default)"
-						></span>
+		{#if settings}
+			{@render settings()}
+		{:else if !overlay && page.data.title && $ability.can('update', selectedContext)}
+			<CascadingMenu title={$_('container_settings_dropdown.title')}>
+				<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
+					{#if isFavorite}
+						<StarSolid />
+						<span>
+							<strong>{$_('remove_from_sidebar')}</strong>
+						</span>
+					{:else}
+						<StarOutline />
+						<span>
+							<strong>{$_('add_to_sidebar')}</strong>
+						</span>
 					{/if}
 				</button>
-			{/if}
+			</CascadingMenu>
 		{/if}
-
-		{@render settings?.()}
 	</div>
 </header>
 
@@ -542,11 +485,6 @@
 		display: flex;
 		gap: inherit;
 		margin-right: auto;
-	}
-
-	.divider {
-		border-left: solid 1px var(--color-gray-200);
-		height: 1.5rem;
 	}
 
 	.dropdown-button.dropdown-button--command {

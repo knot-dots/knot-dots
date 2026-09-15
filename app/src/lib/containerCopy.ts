@@ -1,5 +1,50 @@
 import { z } from 'zod';
-import { newContainer, predicates, type AnyPayload, type Predicate } from '$lib/models';
+import {
+	anyContainer,
+	payloadTypes,
+	newContainer,
+	predicates,
+	structuralCopyPredicates,
+	type AnyPayload,
+	type Predicate
+} from '$lib/models';
+
+export const rootCopyPlacement = z.strictObject({
+	parentGuid: z.uuid(),
+	position: z.number().int().nonnegative(),
+	predicate: z.enum(structuralCopyPredicates)
+});
+
+export type RootCopyPlacement = z.infer<typeof rootCopyPlacement>;
+
+export function hasDuplicateRootPlacements(placements: readonly RootCopyPlacement[]) {
+	return (
+		new Set(placements.map(({ parentGuid, predicate }) => `${predicate}\u0000${parentGuid}`))
+			.size !== placements.length
+	);
+}
+
+export const containerCopyPreviewRequest = z.strictObject({
+	availableIn: z.uuid().nullable(),
+	sourceGuid: z.uuid()
+});
+
+export type ContainerCopyPreviewRequest = z.infer<typeof containerCopyPreviewRequest>;
+
+export const templateCopyPreview = z.strictObject({
+	rootGuid: z.uuid(),
+	containers: z.array(anyContainer),
+	rows: z.array(
+		z.strictObject({
+			guid: z.uuid(),
+			title: z.string(),
+			type: payloadTypes,
+			depth: z.number().int().nonnegative()
+		})
+	)
+});
+
+export type TemplateCopyPreview = z.infer<typeof templateCopyPreview>;
 
 const targetedContainerCopyRequest = {
 	sourceGuid: z.uuid(),
@@ -16,6 +61,8 @@ export const containerCopyRequest = z.discriminatedUnion('operation', [
 	z.strictObject({
 		operation: z.literal('template-instance'),
 		availableIn: z.uuid().nullable(),
+		rootPlacement: z.array(rootCopyPlacement).max(100).optional(),
+		targetManagedByGuid: z.uuid().optional(),
 		...targetedContainerCopyRequest
 	}),
 	z.strictObject({

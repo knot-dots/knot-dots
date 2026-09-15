@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
 	import Filter from '~icons/knotdots/filter-badge';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { type Status, status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
@@ -18,39 +15,29 @@
 	let effectiveOptions = $derived(
 		options ?? status.options.filter((s) => s !== 'status.in_operation')
 	);
-
-	const popover = createPopover({ label: $_('filter') });
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
-	};
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
-		<Filter />
-		<strong class="label">{$_('status')}:</strong>
-		{#if value.length > 0}
-			<span class="selected">
-				{#each effectiveOptions
-					.filter((o) => value.includes(o))
-					.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
-					<span class="value">{selectedOption.label}</span>
-				{:else}
-					&nbsp;
-				{/each}
-			</span>
-		{/if}
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
+<Dropdown offset={[0, 4]}>
+	{#snippet button(popover)}
+		<button class="dropdown-button dropdown-button--select" type="button" use:popover.button>
+			<Filter />
+			<strong class="label">{$_('status')}:</strong>
+			{#if value.length > 0}
+				<span class="selected">
+					{#each effectiveOptions
+						.filter((o) => value.includes(o))
+						.map((o) => ({ label: $_(o), value: o })) as selectedOption (selectedOption.value)}
+						<span class="value">{selectedOption.label}</span>
+					{:else}
+						&nbsp;
+					{/each}
+				</span>
+			{/if}
+		</button>
+	{/snippet}
 
-	{#if $popover.expanded}
-		<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
+	{#snippet panel()}
+		<fieldset class="listbox">
 			{#each effectiveOptions.map((o) => ({ label: $_(o), value: o })) as option (option.value)}
 				{@const StatusIcon = statusIcons.get(option.value)}
 				<label>
@@ -62,8 +49,8 @@
 				</label>
 			{/each}
 		</fieldset>
-	{/if}
-</div>
+	{/snippet}
+</Dropdown>
 
 <style>
 	.selected {
@@ -80,10 +67,5 @@
 
 	.value:not(:last-child)::after {
 		content: ', ';
-	}
-
-	.dropdown-button :global(svg:first-child) {
-		height: 1rem;
-		width: 1rem;
 	}
 </style>

@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
 	import ArrowsUpDown from '~icons/heroicons/arrows-up-down-16-solid';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
 		options: Array<{ href?: string; label: string; value: string | undefined }>;
@@ -12,32 +9,19 @@
 	}
 
 	let { options, value = $bindable() }: Props = $props();
+
 	let selected = $derived(options.find((o) => o.value == value));
-
-	const popover = createPopover({ label: $_('sort') });
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = {
-		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
-	};
 </script>
 
-<div class="dropdown" use:popperRef>
-	<button class="dropdown-button" type="button" use:popover.button>
-		<ArrowsUpDown />{#if selected}{selected.label}{:else}&nbsp;{/if}
-		{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-	</button>
-	{#if $popover.expanded}
-		<fieldset
-			class="dropdown-panel listbox"
-			use:popperContent={extraOpts}
-			use:popover.panel
-			oninput={(e) => e.stopPropagation()}
-		>
+<Dropdown label={$_('sort')} offset={[0, 4]}>
+	{#snippet button(popover)}
+		<button class="dropdown-button dropdown-button--select" type="button" use:popover.button>
+			<ArrowsUpDown />{#if selected}{selected.label}{:else}&nbsp;{/if}
+		</button>
+	{/snippet}
+
+	{#snippet panel()}
+		<fieldset class="listbox" oninput={(e) => e.stopPropagation()}>
 			{#each options as option (option.value)}
 				<label>
 					<input type="radio" value={option.value} bind:group={value} />
@@ -45,5 +29,5 @@
 				</label>
 			{/each}
 		</fieldset>
-	{/if}
-</div>
+	{/snippet}
+</Dropdown>

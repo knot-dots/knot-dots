@@ -4,7 +4,6 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { _ } from 'svelte-i18n';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
@@ -72,12 +71,6 @@
 			{/key}
 
 			<Sections bind:container {relatedContainers} />
-		{/snippet}
-
-		{#snippet footer()}
-			<footer class="footer-action-bar">
-				<DeleteButton {container} {relatedContainers} />
-			</footer>
 		{/snippet}
 
 		{#snippet properties()}

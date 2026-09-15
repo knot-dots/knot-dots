@@ -1,14 +1,10 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { type Status, status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
 
 	interface Props {
-		buttonStyle?: 'badge' | 'default';
 		editable?: boolean;
 		labelFn?: (s: Status) => string;
 		offset?: [number, number];
@@ -17,22 +13,12 @@
 	}
 
 	let {
-		buttonStyle = 'default',
 		editable = false,
 		labelFn,
 		offset = [0, 4],
 		options,
 		value = $bindable()
 	}: Props = $props();
-
-	const popover = createPopover({ label: $_('status') });
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset } }] };
 
 	const StatusIcon = $derived(statusIcons.get(value));
 
@@ -44,29 +30,18 @@
 </script>
 
 {#if editable}
-	<div class="dropdown" use:popperRef>
-		<button
-			class={['dropdown-button', buttonStyle === 'default' ? 'dropdown-button--select' : '']}
-			type="button"
-			use:popover.button
-		>
-			{#if buttonStyle === 'badge'}
-				<span class="badge badge--{statusColors.get(value)}">
-					<StatusIcon />{label(value)}
-					{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-				</span>
-			{:else}
+	<Dropdown label={$_('status')} {offset}>
+		{#snippet button(popover)}
+			<button class="dropdown-button dropdown-button--select" type="button" use:popover.button>
 				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{label(value)}
 				</span>
-				{#if $popover.expanded}<ChevronUp />{:else}<ChevronDown />{/if}
-			{/if}
-		</button>
+			</button>
+		{/snippet}
 
-		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
+		{#snippet panel(popover)}
+			<fieldset class="listbox">
 				{#each effectiveOptions.map( (o) => ({ label: label(o), value: o }) ) as option (option.value)}
-					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
 						<input
 							bind:group={value}
@@ -81,10 +56,9 @@
 					</label>
 				{/each}
 			</fieldset>
-		{/if}
-	</div>
+		{/snippet}
+	</Dropdown>
 {:else}
-	{@const StatusIcon = statusIcons.get(value)}
 	<div class="value">
 		<span class="badge badge--{statusColors.get(value)}">
 			<StatusIcon />
@@ -94,10 +68,6 @@
 {/if}
 
 <style>
-	.dropdown-button {
-		--dropdown-button-border-radius: 8px;
-	}
-
 	.dropdown-button.dropdown-button--select,
 	.value {
 		padding-left: var(--dropdown-button-padding-y);

@@ -307,6 +307,11 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	}
 
 	const relations = inserts.flatMap((c) => c.relation);
+	const insertedGuids = new Set(inserts.map(({ guid }) => guid));
+	const externalProgramPlacements = relations.filter(
+		({ object, predicate }) =>
+			predicate === predicates.enum['is-part-of-program'] && !insertedGuids.has(object)
+	);
 
 	return async (connection: DatabaseTransactionConnection) => {
 		if (inserts.length === 0) {
@@ -359,6 +364,24 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 					RETURNING object, predicate, subject
 				`);
 
+		const shiftedProgramSiblings =
+			externalProgramPlacements.length === 0
+				? []
+				: await connection.any(sql.typeAlias('guid')`
+					UPDATE container_relation relation
+					SET position = relation.position + 1
+					FROM ${sql.unnest(
+						externalProgramPlacements.map(({ object, position }) => [object, position]),
+						['uuid', 'int4']
+					)} AS placement(object, position)
+					WHERE relation.predicate = ${predicates.enum['is-part-of-program']}
+						AND relation.object = placement.object
+						AND relation.position >= placement.position
+						AND relation.valid_currently
+						AND NOT relation.deleted
+					RETURNING relation.subject AS guid
+				`);
+
 		const relationResult = await insertManyContainerRelations(relations, connection);
 		if (relationResult.length !== relations.length) {
 			throw new Error('relation_conflict');
@@ -396,6 +419,9 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 		for (const { object, subject } of relationResult) {
 			affectedIndexingGuids.add(object);
 			affectedIndexingGuids.add(subject);
+		}
+		for (const { guid } of shiftedProgramSiblings) {
+			affectedIndexingGuids.add(guid);
 		}
 
 		return {
@@ -701,11 +727,16 @@ export function deleteContainerRecursively(container: Container<AnyPayload>) {
 
 			await deleteContainer(container)(txConnection);
 
-			for (const part of findDescendants(container, parts, [
-				predicates.enum['is-part-of'],
-				predicates.enum['is-part-of-program'],
-				predicates.enum['is-part-of-category']
-			])) {
+			for (const part of findDescendants(
+				container,
+				parts,
+				[
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-program'],
+					predicates.enum['is-part-of-category']
+				],
+				predicates.enum['is-part-of-program']
+			)) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
 		});
@@ -1508,45 +1539,6 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as Container<OrganizationalUnitPayload>[];
 		return applyComputedManagedBy(connection, containerResult);
-	};
-}
-
-export function getRelatedOrganizationalUnitContainersByPredicates(
-	guid: string,
-	relationTypes: Predicate[]
-) {
-	return async (
-		connection: DatabaseConnection
-	): Promise<Container<OrganizationalUnitPayload>[]> => {
-		if (relationTypes.length === 0) {
-			return [];
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			WITH related_container AS (
-				SELECT
-					CASE
-						WHEN cr.subject = ${guid} THEN cr.object
-						ELSE cr.subject
-					END AS guid
-				FROM container_relation cr
-				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
-					AND cr.predicate IN (${sql.join(relationTypes, sql.fragment`, `)})
-					AND cr.valid_currently
-					AND NOT cr.deleted
-			)
-			SELECT DISTINCT c.*
-			FROM container c
-			JOIN related_container rc ON rc.guid = c.guid
-			WHERE c.valid_currently
-				AND NOT c.deleted
-				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-		`);
-
-		return applyComputedManagedBy(
-			connection,
-			await withUserAndRelation<Container<OrganizationalUnitPayload>>(connection, containerResult)
-		);
 	};
 }
 

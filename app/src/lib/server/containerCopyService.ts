@@ -1,13 +1,25 @@
-import { NotFoundError, type DatabasePool } from 'slonik';
+import { NotFoundError, type DatabaseConnection } from 'slonik';
 import defineAbilityFor from '$lib/authorization';
-import type { ContainerCopyRequest, ContainerCopyRootOperation } from '$lib/containerCopy';
+import {
+	templateCopyPreview,
+	hasDuplicateRootPlacements,
+	type ContainerCopyPreviewRequest,
+	type ContainerCopyRequest,
+	type ContainerCopyRootOperation,
+	type RootCopyPlacement,
+	type TemplateCopyPreview
+} from '$lib/containerCopy';
 import {
 	type AnyPayload,
 	type Container,
 	getAvailableInProgramGuids,
+	isMeasureContainer,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isProgramContainer,
+	isSimpleMeasureContainer,
+	isTemplateContainer,
+	isTemplateRoot,
 	predicates,
 	visibility
 } from '$lib/models';
@@ -15,10 +27,12 @@ import {
 	CopyPlanError,
 	createContainerCopyPlan,
 	type CopyReadPolicy,
-	type CopyTarget
+	type CopyTarget,
+	selectContainerCopySources,
+	type ContainerCopySourceSelection
 } from '$lib/server/containerCopyPlan';
 import { persistContainerCopyPlan } from '$lib/server/containerCopyPersistence';
-import { getContainerByGuid, getContainerCopyGraph } from '$lib/server/db';
+import { getContainerByGuid, getContainerCopyGraph, getManyContainers } from '$lib/server/db';
 import type { User } from '$lib/stores';
 
 export type ContainerCopyServiceErrorCode =
@@ -66,10 +80,147 @@ function hasExistingIndividualProfile(source: Container<AnyPayload>) {
 	);
 }
 
+function validateTemplateScope(
+	source: Container<AnyPayload>,
+	graph: readonly Container<AnyPayload>[],
+	availableIn: string | null,
+	canRead: (container: Container<AnyPayload>) => boolean
+) {
+	const availableInGuids = getAvailableInProgramGuids(source);
+	if (
+		(availableIn === null && availableInGuids.length !== 0) ||
+		(availableIn !== null && (availableInGuids.length !== 1 || availableInGuids[0] !== availableIn))
+	) {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	if (availableIn !== null) {
+		const program = graph.find(({ guid }) => guid === availableIn);
+		if (!program || !isProgramContainer(program) || !canRead(program)) {
+			throw new ContainerCopyServiceError('source_unavailable');
+		}
+	}
+}
+
+/**
+ * A source that becomes unreadable while the plan is built is the same failure as one that was
+ * never readable, so both the preview and the copy report it with the same service error.
+ */
+function rethrowCopyPlanError(caught: unknown): never {
+	if (caught instanceof CopyPlanError && caught.code === 'source_unavailable') {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	throw caught;
+}
+
+/**
+ * Flattens the main copy hierarchy below the root into a depth-annotated outline. Program-scoped
+ * template branches stay out of the preview: they are copied as templates, not as instantiated
+ * objects, so they never appear as part of the new object.
+ */
+function previewRows(selection: ContainerCopySourceSelection): TemplateCopyPreview['rows'] {
+	const rows: TemplateCopyPreview['rows'] = [];
+	const visited = new Set<string>([selection.root.guid]);
+	const stack = childrenOf(selection, selection.root.guid, 0);
+
+	while (stack.length > 0) {
+		const { guid, depth } = stack.pop()!;
+		const container = selection.containersByGuid.get(guid);
+		if (visited.has(guid) || !selection.mainHierarchyGuids.has(guid) || !container) {
+			continue;
+		}
+		visited.add(guid);
+		rows.push({
+			guid,
+			depth,
+			type: container.payload.type,
+			title: 'title' in container.payload ? container.payload.title : container.payload.name
+		});
+		stack.push(...childrenOf(selection, guid, depth + 1));
+	}
+	return rows;
+}
+
+/**
+ * Structural children in reverse display order, so a depth-first pop visits them left to right.
+ */
+function childrenOf(selection: ContainerCopySourceSelection, guid: string, depth: number) {
+	return [...(selection.structuralRelationsByObject.get(guid) ?? [])]
+		.sort(
+			(a, b) =>
+				a.position - b.position ||
+				a.predicate.localeCompare(b.predicate) ||
+				a.subject.localeCompare(b.subject)
+		)
+		.reverse()
+		.map((relation) => ({ guid: relation.subject, depth }));
+}
+
+export async function loadContainerCopyPreview({
+	request,
+	connection,
+	user,
+	maxGraphSize,
+	maxPreviewSize = maxGraphSize
+}: {
+	request: ContainerCopyPreviewRequest;
+	connection: DatabaseConnection;
+	user: User;
+	maxGraphSize: number;
+	maxPreviewSize?: number;
+}): Promise<TemplateCopyPreview> {
+	const graph = await getContainerCopyGraph(request.sourceGuid)(connection);
+	const source = graph.containers.find(({ guid }) => guid === request.sourceGuid);
+	const ability = defineAbilityFor(user);
+
+	if (!source || ability.cannot('read', source) || !isTemplateContainer(source)) {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	if (!isTemplateRoot(source)) {
+		throw new ContainerCopyServiceError('source_unavailable');
+	}
+	if (graph.containers.length > maxGraphSize) {
+		throw new ContainerCopyServiceError('copy_too_large');
+	}
+	validateTemplateScope(source, graph.containers, request.availableIn, (container) =>
+		ability.can('read', container)
+	);
+
+	let selection;
+	try {
+		selection = selectContainerCopySources({
+			graph,
+			canReadSource: (container) => ability.can('read', container)
+		});
+	} catch (caught) {
+		rethrowCopyPlanError(caught);
+	}
+	if (selection.includedGuids.size > maxPreviewSize) {
+		throw new ContainerCopyServiceError('copy_too_large');
+	}
+
+	return templateCopyPreview.parse({
+		rootGuid: selection.root.guid,
+		// Expose source content, not the overinclusive internal graph. Keep only relations
+		// between visible main-hierarchy objects; scoped templates and reference-only
+		// containers must not leak through the preview response.
+		containers: [...selection.mainHierarchyGuids].map((guid) => {
+			const container = selection.containersByGuid.get(guid)!;
+			return {
+				...container,
+				relation: container.relation.filter(
+					({ subject, object }) =>
+						selection.mainHierarchyGuids.has(subject) && selection.mainHierarchyGuids.has(object)
+				)
+			};
+		}),
+		rows: previewRows(selection)
+	});
+}
+
 async function loadTarget(
 	request: ContainerCopyRequest,
 	source: Container<AnyPayload>,
-	pool: DatabasePool
+	connection: DatabaseConnection
 ) {
 	const targetOrganizationGuid =
 		request.operation === 'individual-profile'
@@ -78,7 +229,7 @@ async function loadTarget(
 
 	let organization: Container<AnyPayload>;
 	try {
-		organization = await pool.connect(getContainerByGuid(targetOrganizationGuid));
+		organization = await getContainerByGuid(targetOrganizationGuid)(connection);
 	} catch (caught) {
 		if (caught instanceof NotFoundError) {
 			throw new ContainerCopyServiceError('invalid_target');
@@ -99,9 +250,7 @@ async function loadTarget(
 
 	let organizationalUnit: Container<AnyPayload>;
 	try {
-		organizationalUnit = await pool.connect(
-			getContainerByGuid(request.targetOrganizationalUnitGuid)
-		);
+		organizationalUnit = await getContainerByGuid(request.targetOrganizationalUnitGuid)(connection);
 	} catch (caught) {
 		if (caught instanceof NotFoundError) {
 			throw new ContainerCopyServiceError('invalid_target');
@@ -118,20 +267,92 @@ async function loadTarget(
 	return { organization, organizationalUnit };
 }
 
+async function resolveRootPlacement(
+	request: ContainerCopyRequest,
+	source: Container<AnyPayload>,
+	resolvedTarget: Awaited<ReturnType<typeof loadTarget>>,
+	connection: DatabaseConnection,
+	ability: ReturnType<typeof defineAbilityFor>
+) {
+	let managedBy = resolvedTarget.organizationalUnit?.guid ?? resolvedTarget.organization.guid;
+	let rootPlacement: readonly RootCopyPlacement[] = [];
+	if (request.operation === 'template-instance') {
+		managedBy = request.targetManagedByGuid ?? managedBy;
+		rootPlacement = request.rootPlacement ?? [];
+
+		// Two placements under the same parent would emit conflicting relations, so this is the single
+		// point where a request is rejected for them; the plan trusts what this function returns.
+		if (hasDuplicateRootPlacements(rootPlacement)) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+
+		const referencedGuids = new Set([
+			managedBy,
+			...rootPlacement.map(({ parentGuid }) => parentGuid)
+		]);
+		const referencedContainers = new Map<string, Container<AnyPayload>>([
+			[resolvedTarget.organization.guid, resolvedTarget.organization],
+			...(resolvedTarget.organizationalUnit
+				? ([[resolvedTarget.organizationalUnit.guid, resolvedTarget.organizationalUnit]] as const)
+				: [])
+		]);
+		const missingGuids = [...referencedGuids].filter((guid) => !referencedContainers.has(guid));
+		if (missingGuids.length > 0) {
+			const containers = await getManyContainers([], { guid: missingGuids }, 'alpha')(connection);
+			for (const container of containers) {
+				referencedContainers.set(container.guid, container);
+			}
+		}
+
+		const manager = referencedContainers.get(managedBy);
+		if (
+			!manager ||
+			(!isOrganizationContainer(manager) && !isOrganizationalUnitContainer(manager)) ||
+			manager.organization !== resolvedTarget.organization.guid ||
+			ability.cannot('read', manager)
+		) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+		if (
+			isOrganizationalUnitContainer(source) &&
+			manager.guid !== resolvedTarget.organization.guid
+		) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+
+		for (const { parentGuid, predicate } of rootPlacement) {
+			const parent = referencedContainers.get(parentGuid);
+			if (
+				!parent ||
+				parent.organization !== resolvedTarget.organization.guid ||
+				ability.cannot('read', parent) ||
+				(predicate === predicates.enum['is-part-of-program'] && !isProgramContainer(parent)) ||
+				(predicate === predicates.enum['is-part-of-measure'] &&
+					!isMeasureContainer(parent) &&
+					!isSimpleMeasureContainer(parent))
+			) {
+				throw new ContainerCopyServiceError('invalid_target');
+			}
+		}
+	}
+
+	return { managedBy, rootPlacement };
+}
+
 export async function executeContainerCopy({
 	request,
-	pool,
+	connection,
 	user,
 	maxPlanSize,
 	maxGraphSize = maxPlanSize
 }: {
 	request: ContainerCopyRequest;
-	pool: DatabasePool;
+	connection: DatabaseConnection;
 	user: User;
 	maxGraphSize?: number;
 	maxPlanSize: number;
 }) {
-	const graph = await pool.connect(getContainerCopyGraph(request.sourceGuid));
+	const graph = await getContainerCopyGraph(request.sourceGuid)(connection);
 	const source = graph.containers.find(({ guid }) => guid === request.sourceGuid);
 	const ability = defineAbilityFor(user);
 
@@ -139,20 +360,9 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('source_unavailable');
 	}
 	if (request.operation === 'template-instance') {
-		const availableIn = getAvailableInProgramGuids(source);
-		if (
-			(request.availableIn === null && availableIn.length !== 0) ||
-			(request.availableIn !== null &&
-				(availableIn.length !== 1 || availableIn[0] !== request.availableIn))
-		) {
-			throw new ContainerCopyServiceError('source_unavailable');
-		}
-		if (request.availableIn !== null) {
-			const program = graph.containers.find(({ guid }) => guid === request.availableIn);
-			if (!program || !isProgramContainer(program) || ability.cannot('read', program)) {
-				throw new ContainerCopyServiceError('source_unavailable');
-			}
-		}
+		validateTemplateScope(source, graph.containers, request.availableIn, (container) =>
+			ability.can('read', container)
+		);
 	}
 	if (isOrganizationContainer(source)) {
 		throw new ContainerCopyServiceError('unsupported_copy_source');
@@ -185,7 +395,7 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('copy_too_large');
 	}
 
-	const resolvedTarget = await loadTarget(request, source, pool);
+	const resolvedTarget = await loadTarget(request, source, connection);
 	if (ability.cannot('read', resolvedTarget.organization)) {
 		throw new ContainerCopyServiceError('invalid_target');
 	}
@@ -196,7 +406,16 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('invalid_target');
 	}
 
+	const { managedBy, rootPlacement } = await resolveRootPlacement(
+		request,
+		source,
+		resolvedTarget,
+		connection,
+		ability
+	);
+
 	const target: CopyTarget = {
+		managedBy,
 		organization: resolvedTarget.organization.guid,
 		organizationalUnit: resolvedTarget.organizationalUnit?.guid ?? null,
 		realm: resolvedTarget.organization.realm,
@@ -228,13 +447,11 @@ export async function executeContainerCopy({
 			graph,
 			target,
 			operation: rootOperation(request),
-			readPolicy
+			readPolicy,
+			rootPlacement
 		});
-	} catch (error) {
-		if (error instanceof CopyPlanError && error.code === 'source_unavailable') {
-			throw new ContainerCopyServiceError('source_unavailable');
-		}
-		throw error;
+	} catch (caught) {
+		rethrowCopyPlanError(caught);
 	}
 
 	if (plan.size > maxPlanSize) {
@@ -244,7 +461,7 @@ export async function executeContainerCopy({
 		throw new ContainerCopyServiceError('create_forbidden');
 	}
 
-	const persisted = await persistContainerCopyPlan(plan)(pool);
+	const persisted = await persistContainerCopyPlan(plan)(connection);
 	const root = persisted.get(request.sourceGuid);
 	if (!root) {
 		throw new ContainerCopyServiceError('persisted_root_missing');

@@ -16,16 +16,19 @@
 
 	interface Props {
 		container: Container<AnyPayload>;
+		editable?: boolean;
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
 
 	let {
 		container = $bindable(),
+		editable: editableOverride,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 
+	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
 	const handleSubmit = autoSave(container, 2000);
 
 	function stopPropagation(fn: (event: Event) => void) {
@@ -36,14 +39,14 @@
 	}
 </script>
 
-<section class="details-subsection">
-	<form oninput={stopPropagation(requestSubmit)} onsubmit={handleSubmit} novalidate>
+{#snippet content()}
+	<section class="details-subsection">
 		{#if isGoalCollectionContainer(container)}
 			<EditableGoalCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				heading="h3"
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
@@ -51,7 +54,7 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				heading="h3"
 			/>
 		{:else if isResourceCollectionContainer(container)}
@@ -59,12 +62,20 @@
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
-				editable={$applicationState.containerDetailView.editable}
+				{editable}
 				heading="h3"
 			/>
 		{/if}
-	</form>
-</section>
+	</section>
+{/snippet}
+
+<form
+	oninput={editable ? stopPropagation(requestSubmit) : undefined}
+	onsubmit={editable ? handleSubmit : undefined}
+	novalidate
+>
+	{@render content()}
+</form>
 
 <style>
 	@media (hover: hover) {

@@ -19,6 +19,7 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import saveContainer from '$lib/client/saveContainer';
+	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
 	import OrganizationalUnitMenu from '$lib/components/OrganizationalUnitMenu.svelte';
@@ -297,6 +298,8 @@
 			</ul>
 		{/if}
 	</div>
+
+	<AdministrationMenu container={page.data.currentOrganization} />
 </div>
 
 {#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)}
@@ -396,6 +399,8 @@
 					</ul>
 				{/if}
 			</div>
+
+			<AdministrationMenu container={page.data.currentOrganizationalUnit} />
 		{/if}
 	</div>
 {/if}
@@ -445,7 +450,6 @@
 		border: 1px solid var(--color-gray-100);
 		border-radius: 12px;
 		flex: 0 1 auto;
-		overflow-y: auto;
 		padding: 0.25rem;
 	}
 
@@ -501,6 +505,7 @@
 	.sidebar-panel-links {
 		display: flex;
 		flex-direction: column;
+		overflow-y: auto;
 	}
 
 	.sidebar-menu {
@@ -518,8 +523,8 @@
 	}
 
 	.sidebar-menu-item {
-		--color: var(--color-gray-600);
-		--icon-color: var(--color-gray-400);
+		--color: var(--color-text-default);
+		--icon-color: var(--color-icon-subtle);
 
 		align-items: center;
 		border-radius: 8px;
@@ -537,7 +542,7 @@
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--footer {
-		color: var(--color-gray-900);
+		color: var(--color-text-strong);
 		font-weight: 500;
 	}
 
@@ -546,17 +551,17 @@
 	}
 
 	.sidebar-menu-item.sidebar-menu-item--active {
-		background-color: rgb(from var(--color-primary-500) r g b / 0.15);
-		color: var(--color-gray-900);
+		background-color: var(--color-background-accent-expanded);
+		color: var(--color-text-strong);
 	}
 
 	.sidebar-menu-item:active {
-		background-color: rgb(from var(--color-gray-500) r g b / 0.25);
+		background-color: var(--color-background-accent-active);
 	}
 
 	.sidebar-menu-item:focus,
 	.sidebar-menu-item:hover {
-		background-color: rgb(from var(--color-gray-500) r g b / 0.1);
+		background-color: var(--color-background-accent-hover);
 	}
 
 	.sidebar-menu .sidebar-menu {

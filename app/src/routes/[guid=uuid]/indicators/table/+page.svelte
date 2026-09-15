@@ -232,7 +232,7 @@
 		<form method="dialog">
 			<p class="dialog-actions">
 				<span>{$_('indicator_csv.upload')}</span>
-				<button class="button-xs button-alternative system-primary" type="submit">
+				<button class="button-xs button-alternate-outline system-primary" type="submit">
 					{$_('cancel')}
 				</button>
 			</p>

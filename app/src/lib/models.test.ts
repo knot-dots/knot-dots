@@ -1,19 +1,22 @@
 import { expect, test } from 'vitest';
 import { z } from 'zod';
 import {
+	type AnyPayload,
 	type Container,
 	container,
 	type EffectPayload,
+	findDescendants,
 	getAvailableInProgramGuids,
 	grantSetForRole,
 	memberRoleFromGrantSet,
 	memberRoleMatchingGrantSet,
 	type IndicatorTemplatePayload,
 	isTemplateRoot,
-	memberRoleFromPredicates,
 	type MeasurePayload,
+	memberRoleFromPredicates,
 	memberRoleOf,
 	memberRoles,
+	type PayloadType,
 	payloadTypes,
 	predicates,
 	type ProgramPayload,
@@ -362,4 +365,221 @@ test('returns only programs targeted by outgoing availability relations', () => 
 			]
 		})
 	).toEqual([templateParentGuid]);
+});
+
+const programOneGuid = '5a6d4c4e-0f3a-4d2b-9a3c-1c2d3e4f5a6b';
+const programTwoGuid = '6b7e5d5f-1a4b-4e3c-8b4d-2d3e4f5a6b7c';
+const sharedGoalGuid = '7c8f6e60-2b5c-4f4d-9c5e-3e4f5a6b7c8d';
+const exclusiveGoalGuid = '8d907f71-3c6d-4a5e-8d6f-4f5a6b7c8d9e';
+const childOfSharedGuid = '9ea18082-4d7e-4b6f-9e70-5a6b7c8d9eaf';
+const grandchildOfSharedGuid = '59be656a-6c52-4a0b-acc3-44d3b8e5bd96';
+const childOfExclusiveGuid = 'c463f243-9e82-4d0a-8569-4d2b8fc2fbb0';
+const twoGoalsMeasureGuid = 'af2b9193-5e8f-4c70-8f81-6b7c8d9eafb0';
+const twoProgramsMeasureGuid = '2f60d1ab-05a9-499b-85d5-46ee6c99290b';
+
+function makeContainer(guid: string, type: PayloadType, relation: Relation[]) {
+	return testContainer.parse({
+		guid,
+		managed_by: organizationOne,
+		organization: organizationOne,
+		payload:
+			type == payloadTypes.enum.category || type == payloadTypes.enum.term
+				? { title: guid, type }
+				: { category: {}, title: guid, type },
+		relation
+	}) as Container;
+}
+
+const programOne = makeContainer(programOneGuid, payloadTypes.enum.program, []);
+// Belongs to both programs.
+const sharedGoal = makeContainer(sharedGoalGuid, payloadTypes.enum.goal, [
+	templateRelation(sharedGoalGuid, predicates.enum['is-part-of-program'], programOneGuid),
+	templateRelation(sharedGoalGuid, predicates.enum['is-part-of-program'], programTwoGuid)
+]);
+const exclusiveGoal = makeContainer(exclusiveGoalGuid, payloadTypes.enum.goal, [
+	templateRelation(exclusiveGoalGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+// Hangs below the shared goal but is only assigned to program one.
+const childOfShared = makeContainer(childOfSharedGuid, payloadTypes.enum.measure, [
+	templateRelation(childOfSharedGuid, predicates.enum['is-part-of'], sharedGoalGuid),
+	templateRelation(childOfSharedGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+const grandchildOfShared = makeContainer(grandchildOfSharedGuid, payloadTypes.enum.measure, [
+	templateRelation(grandchildOfSharedGuid, predicates.enum['is-part-of'], childOfSharedGuid),
+	templateRelation(grandchildOfSharedGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+const childOfExclusive = makeContainer(childOfExclusiveGuid, payloadTypes.enum.measure, [
+	templateRelation(childOfExclusiveGuid, predicates.enum['is-part-of'], exclusiveGoalGuid),
+	templateRelation(childOfExclusiveGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+// Two parents via is-part-of, one of them shared with program two.
+const twoGoalsMeasure = makeContainer(twoGoalsMeasureGuid, payloadTypes.enum.measure, [
+	templateRelation(twoGoalsMeasureGuid, predicates.enum['is-part-of'], exclusiveGoalGuid),
+	templateRelation(twoGoalsMeasureGuid, predicates.enum['is-part-of'], sharedGoalGuid),
+	templateRelation(twoGoalsMeasureGuid, predicates.enum['is-part-of-program'], programOneGuid)
+]);
+// Below the exclusive goal, but assigned to both programs.
+const twoProgramsMeasure = makeContainer(twoProgramsMeasureGuid, payloadTypes.enum.measure, [
+	templateRelation(twoProgramsMeasureGuid, predicates.enum['is-part-of'], exclusiveGoalGuid),
+	templateRelation(twoProgramsMeasureGuid, predicates.enum['is-part-of-program'], programOneGuid),
+	templateRelation(twoProgramsMeasureGuid, predicates.enum['is-part-of-program'], programTwoGuid)
+]);
+const programOneMembers = [
+	programOne,
+	sharedGoal,
+	exclusiveGoal,
+	childOfShared,
+	grandchildOfShared,
+	childOfExclusive,
+	twoGoalsMeasure,
+	twoProgramsMeasure
+];
+
+const guidsOf = (containers: Container<AnyPayload>[]) => containers.map(({ guid }) => guid).sort();
+
+test('findDescendants without the flag still returns every descendant', () => {
+	expect(
+		guidsOf(
+			findDescendants(programOne, programOneMembers, [
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-program']
+			])
+		)
+	).toEqual(
+		[
+			sharedGoalGuid,
+			exclusiveGoalGuid,
+			childOfSharedGuid,
+			grandchildOfSharedGuid,
+			childOfExclusiveGuid,
+			twoGoalsMeasureGuid,
+			twoProgramsMeasureGuid
+		].sort()
+	);
+});
+
+test('deleting a program spares what still hangs elsewhere, including the subtree below it', () => {
+	expect(
+		guidsOf(
+			findDescendants(
+				programOne,
+				programOneMembers,
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				predicates.enum['is-part-of-program']
+			)
+		)
+	).toEqual([exclusiveGoalGuid, childOfExclusiveGuid].sort());
+});
+
+test('the result does not depend on the order of the candidates', () => {
+	expect(
+		guidsOf(
+			findDescendants(
+				programOne,
+				[...programOneMembers].reverse(),
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				predicates.enum['is-part-of-program']
+			)
+		)
+	).toEqual([exclusiveGoalGuid, childOfExclusiveGuid].sort());
+});
+
+test('deleting a goal takes its measures along unless they belong to several programs', () => {
+	expect(
+		guidsOf(
+			findDescendants(
+				exclusiveGoal,
+				programOneMembers,
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				predicates.enum['is-part-of-program']
+			)
+		)
+	).toEqual([childOfExclusiveGuid, twoGoalsMeasureGuid].sort());
+});
+
+test('deleting a node with several parents itself still takes its subtree along', () => {
+	expect(
+		guidsOf(
+			findDescendants(
+				sharedGoal,
+				programOneMembers,
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				predicates.enum['is-part-of-program']
+			)
+		)
+	).toEqual([childOfSharedGuid, grandchildOfSharedGuid, twoGoalsMeasureGuid].sort());
+});
+
+test('deleting a child of a node with several parents takes the subtree of the child along', () => {
+	expect(
+		guidsOf(
+			findDescendants(
+				childOfShared,
+				programOneMembers,
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				predicates.enum['is-part-of-program']
+			)
+		)
+	).toEqual([grandchildOfSharedGuid]);
+});
+
+test('any predicate can be watched for several parents, e.g. terms in several categories', () => {
+	const firstCategoryGuid = '08790153-599a-4832-a9a7-27d8a7853934';
+	const secondCategoryGuid = '5b4ab097-2876-46ab-b26e-3378360b1779';
+	const sharedTermGuid = 'fa67809b-7ae3-403e-b395-b8de628a4319';
+	const exclusiveTermGuid = '6ae5f87f-3bb7-4550-a76e-88b6fe123500';
+	const firstCategory = makeContainer(firstCategoryGuid, payloadTypes.enum.category, []);
+	const sharedTerm = makeContainer(sharedTermGuid, payloadTypes.enum.term, [
+		templateRelation(sharedTermGuid, predicates.enum['is-part-of-category'], firstCategoryGuid),
+		templateRelation(sharedTermGuid, predicates.enum['is-part-of-category'], secondCategoryGuid)
+	]);
+	const exclusiveTerm = makeContainer(exclusiveTermGuid, payloadTypes.enum.term, [
+		templateRelation(exclusiveTermGuid, predicates.enum['is-part-of-category'], firstCategoryGuid)
+	]);
+
+	expect(
+		guidsOf(
+			findDescendants(
+				firstCategory,
+				[sharedTerm, exclusiveTerm],
+				[predicates.enum['is-part-of-category']],
+				predicates.enum['is-part-of-category']
+			)
+		)
+	).toEqual([exclusiveTermGuid]);
+	expect(
+		guidsOf(
+			findDescendants(
+				firstCategory,
+				[sharedTerm, exclusiveTerm],
+				[predicates.enum['is-part-of-category']]
+			)
+		)
+	).toEqual([sharedTermGuid, exclusiveTermGuid].sort());
+});
+
+test('cyclic relations do not trap the traversal when ignoring multi-parent nodes', () => {
+	const programGuid = '2c68bdc4-9df1-47f4-88a9-7a0b5aae1766';
+	const firstGuid = '7cb7e038-b50c-4c9d-984f-527ed36479b2';
+	const secondGuid = 'b85f684a-e611-4116-b467-b9948d8fe058';
+	const program = makeContainer(programGuid, payloadTypes.enum.program, []);
+	const first = makeContainer(firstGuid, payloadTypes.enum.goal, [
+		templateRelation(firstGuid, predicates.enum['is-part-of'], secondGuid),
+		templateRelation(firstGuid, predicates.enum['is-part-of-program'], programGuid)
+	]);
+	const second = makeContainer(secondGuid, payloadTypes.enum.goal, [
+		templateRelation(secondGuid, predicates.enum['is-part-of'], firstGuid),
+		templateRelation(secondGuid, predicates.enum['is-part-of-program'], programGuid)
+	]);
+
+	expect(
+		guidsOf(
+			findDescendants(
+				program,
+				[program, first, second],
+				[predicates.enum['is-part-of'], predicates.enum['is-part-of-program']],
+				predicates.enum['is-part-of-program']
+			)
+		)
+	).toEqual([firstGuid, secondGuid].sort());
 });

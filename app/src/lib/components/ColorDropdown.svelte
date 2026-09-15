@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import { createPopperActions } from 'svelte-popperjs';
-	import ChevronDown from '~icons/heroicons/chevron-down-16-solid';
-	import ChevronUp from '~icons/heroicons/chevron-up-16-solid';
+	import Background from '~icons/knotdots/background';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { type BackgroundColor, backgroundColor } from '$lib/models';
 	import { backgroundColors } from '$lib/theme/models';
-	import Background from '~icons/knotdots/background';
 
 	interface Props {
 		buttonStyle?: 'button' | 'default';
@@ -23,34 +20,23 @@
 		offset,
 		value = $bindable()
 	}: Props = $props();
-
-	const popover = createPopover();
-
-	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
-	});
-
-	const extraOpts = { modifiers: [{ name: 'offset', options: { offset } }] };
 </script>
 
 {#if editable}
-	<span class="dropdown" use:popperRef>
-		<label class="button action-button action-button--size-l" use:popover.button>
-			{#if buttonStyle === 'button'}
-				<Background /> {label}
-			{:else}
-				<Background />
-				{label}
-				{#if $popover.expanded}
-					<ChevronUp />
+	<Dropdown {offset}>
+		{#snippet button(popover)}
+			<label class="button action-button action-button--size-l" use:popover.button>
+				{#if buttonStyle === 'button'}
+					<Background /> {label}
 				{:else}
-					<ChevronDown />
+					<Background />
+					{label}
 				{/if}
-			{/if}
-		</label>
-		{#if $popover.expanded}
-			<fieldset class="dropdown-panel listbox" use:popperContent={extraOpts} use:popover.panel>
+			</label>
+		{/snippet}
+
+		{#snippet panel()}
+			<fieldset class="listbox">
 				{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 					<label>
 						<input type="radio" name="color" value={option.value} bind:group={value} />
@@ -61,6 +47,6 @@
 					</label>
 				{/each}
 			</fieldset>
-		{/if}
-	</span>
+		{/snippet}
+	</Dropdown>
 {/if}
