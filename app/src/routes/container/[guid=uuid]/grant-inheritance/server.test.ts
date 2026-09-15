@@ -57,10 +57,10 @@ function grantsFor(object: string, subject: string, role: MemberRole): Grant[] {
 	];
 }
 
-function measure(inheritsGrants: boolean) {
+function measure(inheritsGrants: boolean, managedBy = measureGuid) {
 	return {
 		guid: measureGuid,
-		managed_by: [measureGuid],
+		managed_by: [managedBy],
 		organization: organizationGuid,
 		organizational_unit: null,
 		payload: { inheritsGrants, title: 'Measure', type: 'measure', visibility: 'organization' },
@@ -198,6 +198,37 @@ test('subjects with own grants keep them when decoupling', async () => {
 	expect(setContainerGrants).not.toHaveBeenCalled();
 });
 
+test('decoupling re-homes scope-managed containers to themselves', async () => {
+	// otherwise the scope's subordinate grants would keep reaching the
+	// decoupled container through the managed_by rules
+	getContainerByGuid.mockReturnValue(measure(true, organizationGuid));
+
+	const response = await post({ inherit: false });
+
+	expect(response.status).toBe(204);
+	expect(updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			managed_by: [measureGuid],
+			payload: expect.objectContaining({ inheritsGrants: false })
+		})
+	);
+});
+
+test('decoupling keeps containers managed by another team with their team', async () => {
+	const teamGuid = '00000000-0000-4000-8000-000000000006';
+	getContainerByGuid.mockReturnValue(measure(true, teamGuid));
+
+	const response = await post({ inherit: false });
+
+	expect(response.status).toBe(204);
+	expect(updateContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			managed_by: [teamGuid],
+			payload: expect.objectContaining({ inheritsGrants: false })
+		})
+	);
+});
+
 test('re-enabling inheritance only resets the flag', async () => {
 	getContainerByGuid.mockReturnValue(measure(false));
 
@@ -206,6 +237,7 @@ test('re-enabling inheritance only resets the flag', async () => {
 	expect(response.status).toBe(204);
 	expect(updateContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
+			managed_by: [measureGuid],
 			payload: expect.objectContaining({ inheritsGrants: true })
 		})
 	);

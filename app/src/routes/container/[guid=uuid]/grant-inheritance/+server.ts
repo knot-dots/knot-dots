@@ -108,6 +108,12 @@ export const POST = (async ({ locals, params, request }) => {
 			getAllGrantsByContainers([container.guid])(connection)
 		]);
 
+		// A container managed by its scope would remain reachable through the
+		// scope's subordinate grants via managed_by even when decoupled, so it
+		// becomes self-managed — like containers with a matrix of their own.
+		// Containers managed by another team keep their team.
+		const managedBy = container.managed_by[0] === scope ? [container.guid] : container.managed_by;
+
 		const copiedSubjects = [...new Set(scopeGrants.map(({ subject }) => subject))]
 			.filter((subject) => !ownGrants.some((grant) => grant.subject === subject))
 			.map((subject) => ({
@@ -118,6 +124,7 @@ export const POST = (async ({ locals, params, request }) => {
 
 		await updateContainer({
 			...container,
+			managed_by: managedBy,
 			payload: { ...payload, inheritsGrants: false },
 			user: [
 				...container.user.filter(
