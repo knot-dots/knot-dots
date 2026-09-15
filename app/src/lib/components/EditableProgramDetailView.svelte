@@ -9,6 +9,7 @@
 	import { env } from '$env/dynamic/public';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
+	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdoptButton from '$lib/components/AdoptButton.svelte';
@@ -34,6 +35,7 @@
 		type NewContainer,
 		paramsFromFragment,
 		type PayloadType,
+		payloadTypes,
 		predicates,
 		type ProgramPayload,
 		programTypes,
@@ -49,6 +51,17 @@
 	}
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
+
+	const templateAvailability = createProgramTemplateAvailability({
+		candidateTypes: () => container.payload.chapterType,
+		organizationGuid: () => container.organization,
+		programGuid: () => container.guid
+	});
+	let availableChapterTypes = $derived(
+		container.payload.chapterType.filter(
+			(type) => type === payloadTypes.enum.text || templateAvailability.has(type)
+		)
+	);
 
 	let guid = $derived(container.guid);
 
@@ -296,12 +309,12 @@
 							/>
 						</form>
 					{:else}
-						{#if $applicationState.containerDetailView.editable && container.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM)) )}
+						{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM)) )}
 							<div class="details-section">
 								<DropDownMenu
 									handleChange={createContainer}
 									label={$_('chapter')}
-									options={container.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+									options={availableChapterTypes.map((t) => ({ label: $_(t), value: t }))}
 								>
 									{#snippet icon()}<Plus />{/snippet}
 								</DropDownMenu>

@@ -3,12 +3,14 @@ import { locale } from 'svelte-i18n';
 
 const mocks = vi.hoisted(() => ({
 	container: undefined as unknown,
+	getManyContainers: vi.fn(),
 	updateContainer: vi.fn()
 }));
 
 vi.mock('$lib/server/db', () => ({
 	getAllContainerRevisionsByGuid: () => async () => [mocks.container],
 	getContainerByGuid: () => async () => mocks.container,
+	getManyContainers: mocks.getManyContainers,
 	updateContainer: mocks.updateContainer
 }));
 
@@ -33,6 +35,7 @@ const sysadmin = {
 
 beforeEach(() => {
 	mocks.updateContainer.mockReset();
+	mocks.getManyContainers.mockReset();
 	mocks.updateContainer.mockImplementation((updated: unknown) => async () => updated);
 	mocks.container = anyContainer.parse({
 		guid: containerGuid,
@@ -127,6 +130,38 @@ function revisionEvent(body: unknown) {
 		})
 	} as never;
 }
+
+test('revisions reject adding an existing non-text object to a program when templating is enabled', async () => {
+	mocks.container = anyContainer.parse({
+		...(mocks.container as Record<string, unknown>),
+		payload: {
+			title: 'Measure',
+			type: payloadTypes.enum.measure,
+			visibility: visibility.enum.public
+		}
+	});
+	const body = {
+		...(mocks.container as Record<string, unknown>),
+		relation: [
+			{
+				object: sourceGuid,
+				position: 0,
+				predicate: predicates.enum['is-part-of-program'],
+				subject: containerGuid
+			}
+		]
+	};
+	const event = revisionEvent(body) as {
+		locals: { features?: string[] };
+	};
+	event.locals.features = ['Templating'];
+
+	await expect(POST(event as never)).rejects.toMatchObject({
+		body: { message: 'error.program_template_required' },
+		status: 422
+	});
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
 
 test('scoped templates cannot be changed into ordinary containers', async () => {
 	const container = scopedTemplate();

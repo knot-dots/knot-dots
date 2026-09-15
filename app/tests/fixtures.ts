@@ -72,6 +72,7 @@ type MyFixtures = {
 	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
 	testOrganizationalUnitGoal: Container<GoalPayload>;
 	testProgram: Container<ProgramPayload>;
+	testProgramGoalTemplate: Container<GoalPayload>;
 	testPublicProgram: Container<ProgramPayload>;
 	testPublicReport: Container<ReportPayload>;
 	testReport: Container<ReportPayload>;
@@ -232,17 +233,20 @@ export async function createUser(apiRequest: APIRequest, newUser: KeycloakUser) 
 	}
 }
 
-export async function createContainer(context: BrowserContext, newContainer: NewContainer) {
+export async function createContainer<P extends AnyPayload>(
+	context: BrowserContext,
+	newContainer: NewContainer<P>
+): Promise<Container<P>> {
 	const response = await context.request.post('/container', { data: newContainer });
 
 	if (!response.ok()) {
 		throw new Error(`Failed to create ${newContainer.payload.type}: ${await response.text()}`);
 	}
 
-	const container = await response.json();
+	const container = (await response.json()) as Container<P>;
 
 	// Wait for the indexing worker to pick up the event and refresh ES
-	await new Promise((r) => setTimeout(r, 500));
+	await new Promise((resolve) => setTimeout(resolve, 500));
 
 	return container;
 }
@@ -259,6 +263,48 @@ export async function deleteContainer(context: BrowserContext, container: Contai
 	await context.request.delete(`/container/${container.guid}`, {
 		headers: { 'If-Match': etag(currentVersion) }
 	});
+}
+
+export async function createProgramContainerFromTemplate<P extends AnyPayload>(
+	context: BrowserContext,
+	newContainer: NewContainer<P>,
+	program: Container<ProgramPayload>
+): Promise<Container<P>> {
+	const template = await createContainer(context, {
+		...newContainer,
+		payload: { ...newContainer.payload, template: true },
+		relation: [
+			{
+				object: program.guid,
+				position: 0,
+				predicate: predicates.enum['is-available-in']
+			}
+		]
+	} as NewContainer);
+	const rootPlacement = newContainer.relation.flatMap(({ object, position, predicate }) =>
+		object === undefined ? [] : [{ parentGuid: object, position, predicate }]
+	);
+	const response = await context.request.post('/container/copy', {
+		data: {
+			operation: 'template-instance',
+			availableIn: program.guid,
+			rootPlacement,
+			sourceGuid: template.guid,
+			targetManagedByGuid: newContainer.managed_by[0],
+			targetOrganizationGuid: newContainer.organization,
+			targetOrganizationalUnitGuid: newContainer.organizational_unit,
+			rootPayload: newContainer.payload
+		}
+	});
+	if (!response.ok()) {
+		throw new Error(
+			`Failed to instantiate ${newContainer.payload.type} template: ${await response.text()}`
+		);
+	}
+	const container = (await response.json()) as Container<P>;
+	await deleteContainer(context, template);
+	await new Promise((resolve) => setTimeout(resolve, 500));
+	return container;
 }
 
 async function createResourceV2(
@@ -352,23 +398,27 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			testProgram.organization,
 			'knot-dots'
 		) as Container<GoalPayload>;
-		const testGoal = await createContainer(adminContext, {
-			...newGoal,
-			payload: {
-				...newGoal.payload,
-				aiContribution: 1,
-				aiSuggestion: true,
-				description: 'Lorem ipsum',
-				title: 'Goal suggested by AI'
+		const testGoal = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newGoal,
+				payload: {
+					...newGoal.payload,
+					aiContribution: 1,
+					aiSuggestion: true,
+					description: 'Lorem ipsum',
+					title: 'Goal suggested by AI'
+				},
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of-program'],
+						object: testProgram.guid
+					}
+				]
 			},
-			relation: [
-				{
-					position: 0,
-					predicate: predicates.enum['is-part-of-program'],
-					object: testProgram.guid
-				}
-			]
-		});
+			testProgram
+		);
 
 		await use(testGoal);
 
@@ -714,6 +764,38 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		await deleteContainer(adminContext, testProgram);
 	},
+	testProgramGoalTemplate: async (
+		{ adminContext, testOrganization, testProgram },
+		use,
+		workerInfo
+	) => {
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as Container<GoalPayload>;
+		const testProgramGoalTemplate = await createContainer(adminContext, {
+			...newGoal,
+			payload: {
+				...newGoal.payload,
+				template: true,
+				title: `Test Program Goal Template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: testProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		});
+
+		await use(testProgramGoalTemplate);
+
+		await deleteContainer(adminContext, testProgramGoalTemplate);
+	},
 	testGoal: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
@@ -852,20 +934,24 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			testProgram.guid,
 			'knot-dots'
 		) as Container<MeasurePayload>;
-		const testMeasure = await createContainer(adminContext, {
-			...newMeasure,
-			payload: {
-				...newMeasure.payload,
-				title: `Test Measure ${workerInfo.workerIndex}`
+		const testMeasure = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newMeasure,
+				payload: {
+					...newMeasure.payload,
+					title: `Test Measure ${workerInfo.workerIndex}`
+				},
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of-program'],
+						object: testProgram.guid
+					}
+				]
 			},
-			relation: [
-				{
-					position: 0,
-					predicate: predicates.enum['is-part-of-program'],
-					object: testProgram.guid
-				}
-			]
-		});
+			testProgram
+		);
 
 		await use(testMeasure);
 
@@ -883,25 +969,29 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			testProgram.guid,
 			'knot-dots'
 		) as Container<MeasurePayload>;
-		const testSubordinateMeasure = await createContainer(adminContext, {
-			...newMeasure,
-			payload: {
-				...newMeasure.payload,
-				title: `Subordinate Measure ${workerInfo.workerIndex}`
-			},
-			relation: [
-				{
-					position: 0,
-					predicate: predicates.enum['is-part-of'],
-					object: testSubordinateGoal.guid
+		const testSubordinateMeasure = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newMeasure,
+				payload: {
+					...newMeasure.payload,
+					title: `Subordinate Measure ${workerInfo.workerIndex}`
 				},
-				{
-					position: 1,
-					predicate: predicates.enum['is-part-of-program'],
-					object: testProgram.guid
-				}
-			]
-		});
+				relation: [
+					{
+						position: 0,
+						predicate: predicates.enum['is-part-of'],
+						object: testSubordinateGoal.guid
+					},
+					{
+						position: 1,
+						predicate: predicates.enum['is-part-of-program'],
+						object: testProgram.guid
+					}
+				]
+			},
+			testProgram
+		);
 
 		await use(testSubordinateMeasure);
 

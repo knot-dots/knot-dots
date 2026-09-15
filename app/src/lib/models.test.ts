@@ -317,8 +317,9 @@ function templateRelation(
 test('recognizes a template without an outgoing structural relation as a root', () => {
 	expect(
 		isTemplateRoot({
+			...measure,
 			guid: templateRootGuid,
-			payload: { template: true },
+			payload: { ...measure.payload, template: true },
 			relation: [
 				templateRelation(
 					templateChildGuid,
@@ -335,8 +336,9 @@ test('recognizes a template without an outgoing structural relation as a root', 
 test('rejects a template with an outgoing structural relation as a root', () => {
 	expect(
 		isTemplateRoot({
+			...measure,
 			guid: templateRootGuid,
-			payload: { template: true },
+			payload: { ...measure.payload, template: true },
 			relation: [
 				templateRelation(templateRootGuid, predicates.enum['is-section-of'], templateParentGuid)
 			]
@@ -347,8 +349,9 @@ test('rejects a template with an outgoing structural relation as a root', () => 
 test('rejects a non-template without a structural parent as a template root', () => {
 	expect(
 		isTemplateRoot({
+			...measure,
 			guid: templateRootGuid,
-			payload: { template: false },
+			payload: { ...measure.payload, template: false },
 			relation: []
 		})
 	).toBe(false);
@@ -357,6 +360,7 @@ test('rejects a non-template without a structural parent as a template root', ()
 test('returns only programs targeted by outgoing availability relations', () => {
 	expect(
 		getAvailableInProgramGuids({
+			...measure,
 			guid: templateRootGuid,
 			relation: [
 				templateRelation(templateRootGuid, predicates.enum['is-available-in'], templateParentGuid),

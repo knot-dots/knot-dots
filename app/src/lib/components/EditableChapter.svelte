@@ -4,6 +4,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
@@ -23,6 +24,7 @@
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
+		payloadTypes,
 		predicates,
 		type ProgramPayload
 	} from '$lib/models';
@@ -44,6 +46,17 @@
 		preview = false,
 		relatedContainers
 	}: Props = $props();
+
+	const templateAvailability = createProgramTemplateAvailability({
+		candidateTypes: () => isPartOf.payload.chapterType,
+		organizationGuid: () => isPartOf.organization,
+		programGuid: () => isPartOf.guid
+	});
+	let availableChapterTypes = $derived(
+		isPartOf.payload.chapterType.filter(
+			(type) => type === payloadTypes.enum.text || templateAvailability.has(type)
+		)
+	);
 
 	let subsections = $state(
 		hasSection(container, relatedContainers).filter(
@@ -153,11 +166,11 @@
 			{$_('read_more')}
 		</a>
 
-		{#if isPartOf.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
+		{#if availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
 			<DropDownMenu
 				handleChange={createContainerAt(currentIndex + 1)}
 				label={$_('chapter')}
-				options={isPartOf.payload.chapterType.map((t) => ({ label: $_(t), value: t }))}
+				options={availableChapterTypes.map((t) => ({ label: $_(t), value: t }))}
 			>
 				{#snippet icon()}<Plus />{/snippet}
 			</DropDownMenu>

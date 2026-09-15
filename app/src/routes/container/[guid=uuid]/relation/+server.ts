@@ -22,6 +22,7 @@ import {
 } from '$lib/models';
 import { isProtectedContainerRelationPredicate } from '$lib/relations';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
+import { newProgramPlacements, programPlacementsRequireTemplate } from '$lib/programTemplates';
 import {
 	deleteManyContainerRelations,
 	getAllContainersRelatedToIndicators,
@@ -273,6 +274,19 @@ export const POST = (async ({ locals, params, request }) => {
 					) as Container<AnyPayload>
 				);
 			});
+
+		if (
+			createFeatureDecisions(locals.features ?? []).useProgramTemplateWorkspaces() &&
+			programPlacementsRequireTemplate(
+				newProgramPlacements(
+					authorized,
+					containers.flatMap(({ relation }) => relation)
+				),
+				containers
+			)
+		) {
+			error(422, { message: unwrapFunctionStore(_)('error.program_template_required') });
+		}
 
 		const removed = authorized.filter(({ deleted }) => deleted);
 		if (removed.length > 0) {

@@ -5,8 +5,9 @@ test.use({ suiteId: 'programs' });
 test.describe('Level board', () => {
 	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
-	test('create goals', async ({ dotsBoard, isMobile, testProgram }) => {
+	test('create goals', async ({ dotsBoard, isMobile, testProgram, testProgramGoalTemplate }) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');
+		void testProgramGoalTemplate;
 
 		await dotsBoard.goto(`/${testProgram.organization}`);
 
@@ -30,11 +31,21 @@ test.describe('Level board', () => {
 			// Create a new item
 			const column = dotsBoard.overlay.locator.locator('section', { hasText: item });
 			await column.getByRole('button', { name: 'Add item' }).first().click();
+			await dotsBoard.page
+				.getByRole('dialog')
+				.getByRole('article')
+				.filter({ hasText: testProgramGoalTemplate.payload.title })
+				.click();
 			await dotsBoard.page.getByRole('textbox', { name: 'Title' }).fill(title);
+			dotsBoard.page.waitForResponse(
+				(response) =>
+					new URL(response.url()).pathname === '/container/copy' &&
+					response.request().method() === 'POST'
+			);
 			await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
 
 			// Verify the created item is part of the program and managed by the same team
-			await expect(dotsBoard.overlay.title).toHaveText(title);
+			await expect(dotsBoard.overlay.title).toHaveText(title, { timeout: 15000 });
 			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await expect(dotsBoard.overlay.locator.getByLabel('Program', { exact: true })).toHaveText(
 				testProgram.payload.title
