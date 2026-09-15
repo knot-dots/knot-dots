@@ -3,7 +3,7 @@
 
 	interface Props {
 		editable?: boolean;
-		value: string;
+		value?: string;
 	}
 
 	let { editable = false, value = $bindable() }: Props = $props();
@@ -29,9 +29,12 @@
 	}
 
 	label {
+		align-items: center;
 		color: inherit;
+		display: flex;
 		font-size: inherit;
 		font-weight: inherit;
+		width: 100%;
 	}
 
 	input {
@@ -39,10 +42,8 @@
 		border-radius: 4px;
 		display: inline;
 		color: inherit;
-		field-sizing: content;
 		font-size: inherit;
 		font-weight: inherit;
 		padding: 0.125rem 0.25rem;
-		width: fit-content;
 	}
 </style>

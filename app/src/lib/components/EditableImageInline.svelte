@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { _ } from 'svelte-i18n';
 	import transformFileURL from '$lib/transformFileURL.js';
 	import { createPopover } from 'svelte-headlessui';
 	import { createPopperActions } from 'svelte-popperjs';
 	import UppyImageUploader from '$lib/components/UppyImageUploader.svelte';
 
 	interface Props {
+		alt?: string;
 		editable?: boolean;
 		label: string;
 		value: string | undefined;
 	}
 
-	let { editable = false, label, value = $bindable() }: Props = $props();
+	let { alt = '', editable = false, label, value = $bindable() }: Props = $props();
 
 	const id = crypto.randomUUID();
 
@@ -36,9 +36,9 @@
 	<UppyImageUploader bind:value {label} mode="placeholder" {onSuccess} />
 {:else if value}
 	{#if editable}
-		<img use:popover.button alt={$_('logo')} class="logo" src={transformFileURL(value)} />
+		<img {alt} class="logo" src={transformFileURL(value)} use:popover.button />
 	{:else}
-		<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
+		<img {alt} class="logo" src={transformFileURL(value)} />
 	{/if}
 	{#if $popover.expanded}
 		<div class="dropdown-panel" use:popperContent use:popover.panel>

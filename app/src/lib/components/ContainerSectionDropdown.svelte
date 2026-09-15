@@ -121,19 +121,19 @@
 					{#if $ability.can('update', container, 'payload.visibility')}
 						<!-- Group: Text -->
 						<p class="dropdown-panel-group-title">Text</p>
-						{@render CheckboxItem('titleEnable', 'Titel einblenden')}
-						{@render CheckboxItem('textEnable', 'Text einblenden')}
+						{@render CheckboxItem('titleEnable', $_('teaser_title_enable'))}
+						{@render CheckboxItem('textEnable', $_('teaser_text_enable'))}
 
 						<!-- Group: Bild -->
 						<p class="dropdown-panel-group-title">Bild</p>
-						{@render CheckboxItem('imageEnable', 'Bild einblenden')}
-						{@render SubMenu('Alt-Text', Text, AltTextSub)}
+						{@render CheckboxItem('imageEnable', $_('teaser_image_enable'))}
+						{@render SubMenu($_('teaser_image_alt_text'), Text, AltTextSub)}
 
 						<!-- Group: Link -->
 						<p class="dropdown-panel-group-title">Link</p>
-						{@render CheckboxItem('linkEnable', 'Link einblenden')}
-						{@render SubMenu('Link URL', Link, LinkUrlSub)}
-						{@render SubMenu('Link Text', Text, LinkTextSub)}
+						{@render CheckboxItem('linkEnable', $_('teaser_link_enable'))}
+						{@render SubMenu($_('teaser_link_url'), Link, LinkUrlSub)}
+						{@render SubMenu($_('teaser_link_text'), Text, LinkTextSub)}
 					{/if}
 				</fieldset>
 			</div>
@@ -173,12 +173,12 @@
 		) as keyof typeof teaserContainer.payload}
 
 		<label class="input-group">
-			<span>Alt-Text eingeben</span>
+			<span>{$_('teaser_image_alt_text')}</span>
 			<input
 				bind:value={teaserContainer.payload[payloadKey] as string}
 				name={String(payloadKey)}
 				type="text"
-				placeholder="z.B. Beschreibung des Bildes..."
+				placeholder={$_('teaser_image_alt_text_placeholder')}
 			/>
 		</label>
 	{/if}
@@ -190,12 +190,12 @@
 			payloadSuffix === 'Right' ? 'linkRight' : 'link'
 		) as keyof typeof teaserContainer.payload}
 		<label class="input-group">
-			<span>URL</span>
+			<span>{$_('teaser_link_url')}</span>
 			<input
 				bind:value={teaserContainer.payload[payloadKey] as string}
 				name={String(payloadKey)}
 				type="url"
-				placeholder="https://..."
+				placeholder={$_('teaser_link_url_placeholder')}
 			/>
 		</label>
 	{/if}
@@ -207,12 +207,12 @@
 			payloadSuffix === 'Right' ? 'linkCaptionRight' : 'linkCaption'
 		) as keyof typeof teaserContainer.payload}
 		<label class="input-group">
-			<span>Anzeigetext</span>
+			<span>{$_('teaser_link_text')}</span>
 			<input
 				bind:value={teaserContainer.payload[payloadKey] as string}
 				name={String(payloadKey)}
 				type="text"
-				placeholder="Link Text..."
+				placeholder={$_('teaser_link_text_placeholder')}
 			/>
 		</label>
 	{/if}
