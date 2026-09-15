@@ -31,7 +31,8 @@ import {
 	type ResourceV2Payload,
 	type TaskCollectionPayload,
 	type TaskPayload,
-	type TermPayload
+	type TermPayload,
+	type TextPayload
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
@@ -45,6 +46,10 @@ type MyFixtures = {
 	dotsBoard: DotsBoard;
 	indicatorCatalog: IndicatorCatalog;
 	landingPage: LandingPage;
+	measureTemplateWithSection: {
+		section: Container<TextPayload>;
+		template: Container<MeasurePayload>;
+	};
 	organizationalUnitWithActualData: Container<OrganizationalUnitPayload>;
 	programPage: ProgramPage;
 	programReportTemplate: Container<ReportPayload>;
@@ -394,6 +399,61 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	landingPage: async ({ page }, use) => {
 		await use(new LandingPage(page));
+	},
+	measureTemplateWithSection: async (
+		{ adminContext, testOrganization, testProgram },
+		use,
+		workerInfo
+	) => {
+		const newTemplate = containerOfType(
+			payloadTypes.enum.measure,
+			testOrganization.guid,
+			null,
+			testProgram.guid,
+			'knot-dots'
+		) as Container<MeasurePayload>;
+		const template = await createContainer(adminContext, {
+			...newTemplate,
+			payload: {
+				...newTemplate.payload,
+				template: true,
+				title: `Measure template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: testProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-available-in']
+				}
+			]
+		});
+		const newSection = containerOfType(
+			payloadTypes.enum.text,
+			testOrganization.guid,
+			null,
+			testProgram.guid,
+			'knot-dots'
+		) as Container<TextPayload>;
+		const section = await createContainer(adminContext, {
+			...newSection,
+			payload: {
+				...newSection.payload,
+				body: `Template section body ${workerInfo.workerIndex}`,
+				title: `Template section ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: template.guid,
+					position: 0,
+					predicate: predicates.enum['is-section-of']
+				}
+			]
+		});
+
+		await use({ section, template });
+
+		await deleteContainer(adminContext, section);
+		await deleteContainer(adminContext, template);
 	},
 	organizationalUnitWithActualData: async (
 		{ adminContext, testIndicatorTemplate, testOrganization },

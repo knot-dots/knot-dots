@@ -11,7 +11,6 @@
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import GoalProperties from '$lib/components/GoalProperties.svelte';
 	import Header from '$lib/components/Header.svelte';
-	import PropertiesRelocationNotice from '$lib/components/PropertiesRelocationNotice.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
@@ -75,8 +74,6 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container>
 		{#snippet data()}
-			<PropertiesRelocationNotice />
-
 			{#key container.guid}
 				<EditableFormattedText
 					editable={$applicationState.containerDetailView.editable &&

@@ -133,7 +133,10 @@
 		}
 	});
 
-	let cssClass = $derived(cssClassMap[container.payload.type] ?? 'teaser');
+	let cssClass = $derived([
+		cssClassMap[container.payload.type] ?? 'teaser',
+		...(container.payload.doubleWidth ? ['double-width'] : [])
+	]);
 	let canUpdate = $derived(editable && $ability.can('update', container));
 	let isInfoBox = $derived(container.payload.type === 'info_box');
 	let hasLink = $derived(

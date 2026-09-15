@@ -30,9 +30,9 @@
 </script>
 
 {#if editable}
-	<Dropdown label={$_('status')} {offset}>
+	<Dropdown {offset}>
 		{#snippet button(popover)}
-			<button class="dropdown-button dropdown-button--select" type="button" use:popover.button>
+			<button class="dropdown-button" use:popover.button>
 				<span class="badge badge--{statusColors.get(value)}">
 					<StatusIcon />{label(value)}
 				</span>
@@ -42,6 +42,7 @@
 		{#snippet panel(popover)}
 			<fieldset class="listbox">
 				{#each effectiveOptions.map( (o) => ({ label: label(o), value: o }) ) as option (option.value)}
+					{@const StatusIcon = statusIcons.get(option.value)}
 					<label>
 						<input
 							bind:group={value}
@@ -59,17 +60,8 @@
 		{/snippet}
 	</Dropdown>
 {:else}
-	<div class="value">
-		<span class="badge badge--{statusColors.get(value)}">
-			<StatusIcon />
-			{label(value)}
-		</span>
-	</div>
+	<span class="badge badge--{statusColors.get(value)}">
+		<StatusIcon />
+		{label(value)}
+	</span>
 {/if}
-
-<style>
-	.dropdown-button.dropdown-button--select,
-	.value {
-		padding-left: var(--dropdown-button-padding-y);
-	}
-</style>

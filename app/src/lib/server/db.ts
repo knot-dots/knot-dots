@@ -727,11 +727,16 @@ export function deleteContainerRecursively(container: Container<AnyPayload>) {
 
 			await deleteContainer(container)(txConnection);
 
-			for (const part of findDescendants(container, parts, [
-				predicates.enum['is-part-of'],
-				predicates.enum['is-part-of-program'],
-				predicates.enum['is-part-of-category']
-			])) {
+			for (const part of findDescendants(
+				container,
+				parts,
+				[
+					predicates.enum['is-part-of'],
+					predicates.enum['is-part-of-program'],
+					predicates.enum['is-part-of-category']
+				],
+				predicates.enum['is-part-of-program']
+			)) {
 				await deleteContainer({ ...part, user: container.user })(txConnection);
 			}
 		});
@@ -1534,45 +1539,6 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as Container<OrganizationalUnitPayload>[];
 		return applyComputedManagedBy(connection, containerResult);
-	};
-}
-
-export function getRelatedOrganizationalUnitContainersByPredicates(
-	guid: string,
-	relationTypes: Predicate[]
-) {
-	return async (
-		connection: DatabaseConnection
-	): Promise<Container<OrganizationalUnitPayload>[]> => {
-		if (relationTypes.length === 0) {
-			return [];
-		}
-
-		const containerResult = await connection.any(sql.typeAlias('organizationalUnitContainer')`
-			WITH related_container AS (
-				SELECT
-					CASE
-						WHEN cr.subject = ${guid} THEN cr.object
-						ELSE cr.subject
-					END AS guid
-				FROM container_relation cr
-				WHERE (cr.subject = ${guid} OR cr.object = ${guid})
-					AND cr.predicate IN (${sql.join(relationTypes, sql.fragment`, `)})
-					AND cr.valid_currently
-					AND NOT cr.deleted
-			)
-			SELECT DISTINCT c.*
-			FROM container c
-			JOIN related_container rc ON rc.guid = c.guid
-			WHERE c.valid_currently
-				AND NOT c.deleted
-				AND c.payload->>'type' = ${payloadTypes.enum.organizational_unit}
-		`);
-
-		return applyComputedManagedBy(
-			connection,
-			await withUserAndRelation<Container<OrganizationalUnitPayload>>(connection, containerResult)
-		);
 	};
 }
 

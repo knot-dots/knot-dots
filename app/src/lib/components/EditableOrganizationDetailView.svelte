@@ -108,11 +108,11 @@
 					/>
 
 					<div
-						class="stage stage--{container.payload.color
+						class="details-section stage stage--{container.payload.color
 							? backgroundColors.get(container.payload.color)
 							: 'white'}"
 					>
-						<div class="stage--buttons details-section">
+						<div class="stage--buttons">
 							<CoverUpload
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', container)}
@@ -130,38 +130,45 @@
 								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
 							{/if}
 						</div>
-
-						<header class="details-section">
-							<EditableLogo
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								bind:value={container.payload.image}
-							/>
-
-							{#if !container.payload.imageReplacesName}
-								{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-									<h1
-										class="details-title"
-										contenteditable="plaintext-only"
-										bind:textContent={container.payload.name}
-										onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-									></h1>
-								{:else}
-									<h1 class="details-title" contenteditable="false">
-										{container.payload.name}
-									</h1>
-								{/if}
-							{/if}
-						</header>
-
-						{#key container.guid}
-							<EditableFormattedText
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								bind:value={container.payload.description}
-							/>
-						{/key}
 					</div>
+
+					<header
+						class="details-section stage stage--{container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}"
+					>
+						<EditableLogo
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.image}
+						/>
+
+						{#if !container.payload.imageReplacesName}
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+								<h1
+									class="details-title"
+									contenteditable="plaintext-only"
+									bind:textContent={container.payload.name}
+									onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+								></h1>
+							{:else}
+								<h1 class="details-title" contenteditable="false">
+									{container.payload.name}
+								</h1>
+							{/if}
+						{/if}
+					</header>
+
+					{#key container.guid}
+						<EditableFormattedText
+							color={container.payload.color
+								? backgroundColors.get(container.payload.color)
+								: 'white'}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.description}
+						/>
+					{/key}
 				</form>
 
 				<Sections bind:container {relatedContainers} />
@@ -177,10 +184,6 @@
 <style>
 	form {
 		display: contents;
-	}
-
-	.details-scroll-wrapper {
-		padding-top: 0;
 	}
 
 	header {
@@ -201,14 +204,5 @@
 		flex-grow: 1;
 		margin: 0;
 		min-height: 3rem;
-	}
-
-	.stage {
-		margin-bottom: 4rem;
-		padding-bottom: 0;
-	}
-
-	.stage:not(.stage--white) {
-		padding-bottom: 2rem;
 	}
 </style>

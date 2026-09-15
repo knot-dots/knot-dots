@@ -43,7 +43,7 @@ export default class Overlay {
 	}
 
 	get settingsButton() {
-		return this.locator.getByRole('button', { name: 'Settings', exact: true });
+		return this.locator.getByRole('button', { name: 'Settings', exact: true }).first();
 	}
 
 	get title() {
