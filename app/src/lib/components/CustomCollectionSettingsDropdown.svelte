@@ -5,6 +5,7 @@
 	import Sort from '~icons/flowbite/sort-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import ArrowRightBox from '~icons/knotdots/arrow-right-box';
+	import Background from '~icons/knotdots/background';
 	import CarouselIcon from '~icons/knotdots/carousel';
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
@@ -14,10 +15,12 @@
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import {
 		type AnyPayload,
+		backgroundColor,
 		type Container,
 		type CustomCollectionPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { backgroundColors } from '$lib/theme/models';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
 	interface Props {
@@ -96,7 +99,20 @@
 				<ChevronRight />
 			</button>
 
+			<button
+				class="cascading-menu-item"
+				onclick={() => openSubMenu($_('container_settings_dropdown.highlight.title'))}
+				type="button"
+			>
+				<Background />
+				<span>
+					<strong>{$_('container_settings_dropdown.highlight.title')}</strong>
+				</span>
+				<ChevronRight />
+			</button>
+
 			<div class="cascading-menu-divider" role="presentation"></div>
+
 			{#if $ability.can('update', container, 'payload.visibility')}
 				<button
 					class="cascading-menu-item"
@@ -198,6 +214,23 @@
 					<CarouselIcon />
 					<span>{$_('list_type.carousel')}</span>
 				</label>
+			</fieldset>
+		{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
+			<fieldset class="listbox">
+				{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+					<label>
+						<input
+							bind:group={container.payload.color}
+							name="color"
+							type="radio"
+							value={option.value}
+						/>
+						<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+							&nbsp;
+						</span>
+						{option.label}
+					</label>
+				{/each}
 			</fieldset>
 		{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
 			<fieldset class="listbox">

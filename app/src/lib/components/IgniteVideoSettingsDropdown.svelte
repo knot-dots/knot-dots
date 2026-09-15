@@ -3,13 +3,20 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import Background from '~icons/knotdots/background';
 	import Video from '~icons/knotdots/video';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import type { AnyPayload, Container, IgniteVideoPayload } from '$lib/models';
+	import {
+		type AnyPayload,
+		backgroundColor,
+		type Container,
+		type IgniteVideoPayload
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { backgroundColors } from '$lib/theme/models';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
 	interface Props {
@@ -66,6 +73,20 @@
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
 			{#if openSubMenuTitle === ''}
+				{#if mayUpdateContainer}
+					<button
+						class="cascading-menu-item"
+						onclick={() => openSubMenu($_('container_settings_dropdown.highlight.title'))}
+						type="button"
+					>
+						<Background />
+						<span>
+							<strong>{$_('container_settings_dropdown.highlight.title')}</strong>
+						</span>
+						<ChevronRight />
+					</button>
+				{/if}
+
 				{#if mayUpdateVisibility}
 					<button
 						class="cascading-menu-item"
@@ -111,7 +132,7 @@
 						</span>
 					</button>
 				{/if}
-			{:else if openSubMenuTitle == $_('container_settings_dropdown.color.title')}
+			{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
 				<fieldset class="listbox">
 					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
 						<label>
@@ -172,7 +193,9 @@
 			{/if}
 		{/snippet}
 	</CascadingMenu>
+{/if}
 
+{#if mayDelete}
 	<ConfirmDeleteDialog bind:dialog {container} handleSubmit={handleDelete} {relatedContainers} />
 {/if}
 

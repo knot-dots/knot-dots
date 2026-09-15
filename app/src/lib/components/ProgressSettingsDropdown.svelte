@@ -4,6 +4,7 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import Background from '~icons/knotdots/background';
 	import Progress from '~icons/knotdots/progress';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
@@ -11,12 +12,14 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
+		backgroundColor,
 		type Container,
 		progressMeasurement,
 		type ProgressPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
+	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<ProgressPayload>;
@@ -64,6 +67,18 @@
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
 			{#if openSubMenuTitle === ''}
+				<button
+					class="cascading-menu-item"
+					onclick={() => openSubMenu($_('container_settings_dropdown.highlight.title'))}
+					type="button"
+				>
+					<Background />
+					<span>
+						<strong>{$_('container_settings_dropdown.highlight.title')}</strong>
+					</span>
+					<ChevronRight />
+				</button>
+
 				{#if $ability.can('update', container, 'payload.visibility')}
 					<button
 						class="cascading-menu-item"
@@ -110,6 +125,23 @@
 						</span>
 					</button>
 				{/if}
+			{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
+				<fieldset class="listbox">
+					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+						<label>
+							<input
+								bind:group={container.payload.color}
+								name="color"
+								type="radio"
+								value={option.value}
+							/>
+							<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+								&nbsp;
+							</span>
+							{option.label}
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
 				<fieldset class="listbox">
 					{#each visibilityOptions(container, relatedContainers) as option (option.value)}
@@ -148,7 +180,9 @@
 			{/if}
 		{/snippet}
 	</CascadingMenu>
+{/if}
 
+{#if $ability.can('delete', container)}
 	<ConfirmDeleteDialog
 		bind:dialog={confirmDeleteDialog}
 		{container}
