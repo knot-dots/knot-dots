@@ -2,3 +2,5 @@ docker-compose.override.yaml
 node_modules
 .eslintcache
 .prettier-cache
+.ai-task
+chat-bridge/.clasp.json

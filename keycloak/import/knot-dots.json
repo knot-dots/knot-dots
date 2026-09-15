@@ -537,6 +537,21 @@
       },
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "id": "d5f0a3b6-1c47-4e58-9b21-6a8d2f4c7e91",
+      "username": "service-account-knot-dots-agent",
+      "emailVerified": false,
+      "enabled": true,
+      "serviceAccountClientId": "knot-dots-agent",
+      "credentials": [],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-knot-dots"
+      ],
+      "notBefore": 0,
+      "groups": []
     }
   ],
   "scopeMappings": [
@@ -956,6 +971,31 @@
         "offline_access",
         "microprofile-jwt"
       ]
+    },
+    {
+      "id": "9f2b6c14-7d18-4a6e-9a2b-2f7c8d1e5a30",
+      "clientId": "knot-dots-agent",
+      "name": "knot dots agent",
+      "description": "Machine account for automation such as the bug investigation agent.",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "development-only-agent-secret",
+      "redirectUris": [],
+      "webOrigins": [],
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "use.jwks.url": "false"
+      }
     }
   ],
   "clientScopes": [

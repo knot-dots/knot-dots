@@ -1,0 +1,39 @@
+name: CI (AI bug investigation)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/ai/**"
+      - ".github/workflows/ci-ai-bug-investigation.yaml"
+      - "chat-bridge/**"
+      - "scripts/*bugfix*"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/ai/**"
+      - ".github/workflows/ci-ai-bug-investigation.yaml"
+      - "chat-bridge/**"
+      - "scripts/*bugfix*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    timeout-minutes: 5
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      # The test file has to be named explicitly: the test runner skips
+      # dot-directories such as .github when it discovers tests itself.
+      - run: >-
+          node --test .github/ai/lib.test.mjs chat-bridge/lib.test.mjs
+          scripts/bugfix-ticket.test.mjs
+      - run: bash -n .github/ai/post-chat-message.sh
