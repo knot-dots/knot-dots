@@ -30,7 +30,14 @@
 				</h1>
 
 				<div class="details-section">
-					<Members container={data.container} grants={data.grants} users={data.users} />
+					<Members
+						container={data.container}
+						grants={data.grants}
+						inheritedGrants={data.inheritedGrants}
+						inheritedUsers={data.inheritedUsers}
+						scope={data.scope}
+						users={data.users}
+					/>
 				</div>
 			</div>
 

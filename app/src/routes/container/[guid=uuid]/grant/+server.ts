@@ -8,7 +8,6 @@ import {
 	grantSetAssignment,
 	memberRoleFromGrantSet,
 	memberRoles,
-	payloadTypes,
 	predicates
 } from '$lib/models';
 import {
@@ -68,16 +67,8 @@ export const POST = (async ({ locals, params, request }) => {
 	const { self, subject, subordinates } = parseResult.data;
 	const set = { self, subordinates };
 
-	// a subject holding every grant counts as an administrator, and
-	// administrators exist on organizations and organizational units only
+	// a subject holding every grant counts as an administrator
 	const role = memberRoleFromGrantSet(set);
-	if (
-		role === memberRoles.enum.administrator &&
-		container.payload.type !== payloadTypes.enum.organization &&
-		container.payload.type !== payloadTypes.enum.organizational_unit
-	) {
-		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
-	}
 
 	// the last administrator may not lose any grant
 	const admins = new Set(
