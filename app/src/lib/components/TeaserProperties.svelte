@@ -22,17 +22,21 @@
 
 <PropertyGrid>
 	{#snippet top()}
-		<EditablePlainText {editable} label={$_('teaser.link')} bind:value={container.payload.link} />
+		<EditablePlainText
+			{editable}
+			label={$_('teaser_link_url')}
+			bind:value={container.payload.link}
+		/>
 
 		<EditablePlainText
 			{editable}
-			label={$_('teaser.link_caption')}
+			label={$_('teaser_link_caption')}
 			bind:value={container.payload.linkCaption}
 		/>
 
 		<EditableLinkStyle
 			{editable}
-			label={$_('teaser.link_style')}
+			label={$_('teaser_link_style')}
 			bind:value={container.payload.style}
 		/>
 
@@ -48,17 +52,21 @@
 	{/snippet}
 
 	{#snippet general()}
-		<EditablePlainText {editable} label={$_('teaser.link')} bind:value={container.payload.link} />
+		<EditablePlainText
+			{editable}
+			label={$_('teaser_link_label')}
+			bind:value={container.payload.link}
+		/>
 
 		<EditablePlainText
 			{editable}
-			label={$_('teaser.link_caption')}
+			label={$_('teaser_link_caption')}
 			bind:value={container.payload.linkCaption}
 		/>
 
 		<EditableLinkStyle
 			{editable}
-			label={$_('teaser.link_style')}
+			label={$_('teaser_link_style')}
 			bind:value={container.payload.style}
 		/>
 
