@@ -4,6 +4,7 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import Background from '~icons/knotdots/background';
 	import Progress from '~icons/knotdots/progress';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
@@ -11,12 +12,14 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
+		backgroundColor,
 		type Container,
 		progressMeasurement,
 		type ProgressPayload
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
+	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<ProgressPayload>;
@@ -64,6 +67,18 @@
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
 			{#if openSubMenuTitle === ''}
+				<button
+					class="cascading-menu-item"
+					onclick={() => openSubMenu($_('container_settings_dropdown.highlight.title'))}
+					type="button"
+				>
+					<Background />
+					<span>
+						<strong>{$_('container_settings_dropdown.highlight.title')}</strong>
+					</span>
+					<ChevronRight />
+				</button>
+
 				{#if $ability.can('update', container, 'payload.visibility')}
 					<button
 						class="cascading-menu-item"
@@ -110,45 +125,64 @@
 						</span>
 					</button>
 				{/if}
+			{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
+				<fieldset class="listbox">
+					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+						<label>
+							<input
+								bind:group={container.payload.color}
+								name="color"
+								type="radio"
+								value={option.value}
+							/>
+							<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+								&nbsp;
+							</span>
+							{option.label}
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
-				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
-					<label
-						class="settings-visibility"
-						class:is-selected={container.payload.visibility === option.value}
-					>
-						<input
-							type="radio"
-							name="visibility"
-							value={option.value}
-							checked={container.payload.visibility === option.value}
-							onchange={() => (container.payload.visibility = option.value)}
-						/>
-						<span class="badge badge--gray">{option.label}</span>
-					</label>
-				{/each}
+				<fieldset class="listbox">
+					{#each visibilityOptions(container, relatedContainers) as option (option.value)}
+						<label>
+							<input
+								type="radio"
+								name="visibility"
+								value={option.value}
+								checked={container.payload.visibility === option.value}
+								onchange={() => (container.payload.visibility = option.value)}
+							/>
+							<span class="badge badge--gray">
+								<span class="truncated">{option.label}</span>
+							</span>
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('progress_measurement')}
-				{#each progressMeasurement.options as option (option)}
-					<label
-						class="settings-choice"
-						class:is-selected={container.payload.measurement === option}
-					>
-						<input
-							type="radio"
-							name="measurement"
-							value={option}
-							checked={container.payload.measurement === option}
-							onchange={() => {
-								container.payload.measurement = option;
-								onmeasurementchange?.();
-							}}
-						/>
-						<span>{$_(`progress_measurement.${option}`)}</span>
-					</label>
-				{/each}
+				<fieldset class="listbox">
+					{#each progressMeasurement.options as option (option)}
+						<label>
+							<input
+								type="radio"
+								name="measurement"
+								value={option}
+								checked={container.payload.measurement === option}
+								onchange={() => {
+									container.payload.measurement = option;
+									onmeasurementchange?.();
+								}}
+							/>
+							<span>{$_(`progress_measurement.${option}`)}</span>
+						</label>
+					{/each}
+				</fieldset>
 			{/if}
 		{/snippet}
 	</CascadingMenu>
+{/if}
 
+{#if $ability.can('delete', container)}
 	<ConfirmDeleteDialog
 		bind:dialog={confirmDeleteDialog}
 		{container}
@@ -156,38 +190,3 @@
 		{relatedContainers}
 	/>
 {/if}
-
-<style>
-	.settings-choice,
-	.settings-visibility {
-		align-items: center;
-		background: transparent;
-		border: none;
-		border-radius: 0.5rem;
-		color: var(--color-gray-700);
-		display: flex;
-		font-size: 0.875rem;
-		gap: 0.5rem;
-		padding: 0.5rem;
-		text-align: left;
-		width: 100%;
-	}
-
-	.settings-visibility:hover {
-		background-color: var(--color-gray-100);
-	}
-
-	.settings-choice:hover,
-	.settings-choice.is-selected {
-		background-color: var(--color-primary-100);
-	}
-
-	.settings-choice:hover > span,
-	.settings-choice.is-selected > span {
-		color: var(--color-primary-700);
-	}
-
-	.settings-visibility.is-selected {
-		background-color: var(--color-gray-100);
-	}
-</style>

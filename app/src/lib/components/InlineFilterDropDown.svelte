@@ -49,11 +49,12 @@
 
 <Dropdown
 	--dropdown-position="static"
-	--dropdown-button-default-background="transparent"
+	--dropdown-button-border-radius="8px"
 	--dropdown-button-active-background="var(--color-primary-100)"
-	--dropdown-button-hover-backgroun="var(--color-primary-100)"
+	--dropdown-button-default-background="transparent"
 	--dropdown-button-expanded-background="(--color-primary-100)"
 	--dropdown-button-expanded-color="var(--color-primary-700)"
+	--dropdown-button-hover-backgroun="var(--color-primary-100)"
 	--dropdown-panel-max-height="calc(100vh - 12rem)"
 	--dropdown-panel-max-width="min(24rem, calc(100cqw - 3rem))"
 	{label}

@@ -3,13 +3,20 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
+	import Background from '~icons/knotdots/background';
 	import Video from '~icons/knotdots/video';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
-	import type { AnyPayload, Container, IgniteVideoPayload } from '$lib/models';
+	import {
+		type AnyPayload,
+		backgroundColor,
+		type Container,
+		type IgniteVideoPayload
+	} from '$lib/models';
 	import { ability } from '$lib/stores';
+	import { backgroundColors } from '$lib/theme/models';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
 
 	interface Props {
@@ -25,6 +32,8 @@
 	}: Props = $props();
 
 	let iframeUrl = $state(container.payload.iframeUrl ?? '');
+
+	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
 	const mayUpdateVisibility = $derived($ability.can('update', container, 'payload.visibility'));
@@ -64,6 +73,20 @@
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(openSubMenuTitle, openSubMenu, closeMenu)}
 			{#if openSubMenuTitle === ''}
+				{#if mayUpdateContainer}
+					<button
+						class="cascading-menu-item"
+						onclick={() => openSubMenu($_('container_settings_dropdown.highlight.title'))}
+						type="button"
+					>
+						<Background />
+						<span>
+							<strong>{$_('container_settings_dropdown.highlight.title')}</strong>
+						</span>
+						<ChevronRight />
+					</button>
+				{/if}
+
 				{#if mayUpdateVisibility}
 					<button
 						class="cascading-menu-item"
@@ -109,21 +132,39 @@
 						</span>
 					</button>
 				{/if}
+			{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
+				<fieldset class="listbox">
+					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}
+						<label>
+							<input
+								bind:group={container.payload.color}
+								name="color"
+								type="radio"
+								value={option.value}
+							/>
+							<span class="stage stage--color stage--{backgroundColors.get(option.value)}">
+								&nbsp;
+							</span>
+							{option.label}
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('container_settings_dropdown.visibility.title')}
-				{#each visibilityOptions(container, relatedContainers) as option (option.value)}
-					<label
-						class="cascading-menu-item choice"
-						class:is-selected={container.payload.visibility === option.value}
-					>
-						<input
-							type="radio"
-							name="visibility"
-							value={option.value}
-							bind:group={container.payload.visibility}
-						/>
-						<span>{option.label}</span>
-					</label>
-				{/each}
+				<fieldset class="listbox">
+					{#each visibilityOptions(container, relatedContainers) as option (option.value)}
+						<label>
+							<input
+								type="radio"
+								name="visibility"
+								value={option.value}
+								bind:group={container.payload.visibility}
+							/>
+							<span class="badge badge--gray">
+								<span class="truncated">{option.label}</span>
+							</span>
+						</label>
+					{/each}
+				</fieldset>
 			{:else if openSubMenuTitle === $_('ignite_video.settings.link')}
 				{@const id = crypto.randomUUID()}
 				<div class="link-content" oninput={(event) => event.stopPropagation()}>
@@ -152,15 +193,13 @@
 			{/if}
 		{/snippet}
 	</CascadingMenu>
+{/if}
 
+{#if mayDelete}
 	<ConfirmDeleteDialog bind:dialog {container} handleSubmit={handleDelete} {relatedContainers} />
 {/if}
 
 <style>
-	.choice input {
-		margin: 0;
-	}
-
 	.link-content {
 		align-items: stretch;
 		display: flex;
