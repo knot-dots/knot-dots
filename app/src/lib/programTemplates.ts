@@ -5,7 +5,7 @@ import {
 	getDirectProgramGuids,
 	isTemplateContainer,
 	isTemplateRoot,
-	type PartialRelation,
+	type NewContainer,
 	type PayloadType,
 	predicates,
 	type Relation,
@@ -16,11 +16,7 @@ type SubmittedRelation = Relation & { deleted?: boolean };
 
 const templatableTypes = new Set<string>(templatablePayloadTypes);
 
-export function requiresProgramTemplate(container: {
-	guid?: string;
-	payload: { type: PayloadType };
-	relation: readonly PartialRelation[];
-}) {
+export function requiresProgramTemplate(container: NewContainer) {
 	// A section may live below an object that belongs to a program, but it is not itself a
 	// program object. Only a direct is-part-of-program placement triggers the requirement.
 	return (
@@ -77,6 +73,6 @@ export function programPlacementsRequireTemplate(
 ) {
 	return placements.some(({ subject }) => {
 		const container = containers.find(({ guid }) => guid === subject);
-		return !container || requiresProgramTemplate({ ...container, relation: placements });
+		return !container || requiresProgramTemplate({ ...container, relation: [...placements] });
 	});
 }

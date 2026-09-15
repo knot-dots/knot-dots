@@ -1,11 +1,5 @@
 import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
-import {
-	type AnyPayload,
-	type Container,
-	type Predicate,
-	predicates,
-	type Relation
-} from '$lib/models';
+import { type AnyPayload, type Container, type Predicate, predicates } from '$lib/models';
 
 export type Node = Pick<Container<AnyPayload>, 'guid' | 'relation'>;
 
@@ -44,29 +38,23 @@ export function relatedObjectNodesByPredicate<T extends Node>(
 		);
 }
 
-export function hasSection<T extends Container<AnyPayload>>(
-	container: { guid: string; relation: Relation[] },
-	containers: T[]
-): T[] {
+export function hasSection<T extends Container<AnyPayload>>(container: Node, containers: T[]): T[] {
 	return relatedSubjectNodesByPredicate(container, predicates.enum['is-section-of'], containers);
 }
 
 export function sectionOf<T extends Container<AnyPayload>>(
-	container: { guid: string; relation: Relation[] },
+	container: Node,
 	containers: T[]
 ): T | undefined {
 	return relatedObjectNodesByPredicate(container, predicates.enum['is-section-of'], containers)[0];
 }
 
-export function hasPart<T extends Container<AnyPayload>>(
-	container: { guid: string; relation: Relation[] },
-	containers: T[]
-): T[] {
+export function hasPart<T extends Container<AnyPayload>>(container: Node, containers: T[]): T[] {
 	return relatedSubjectNodesByPredicate(container, predicates.enum['is-part-of'], containers);
 }
 
 export function isPartOf<T extends Container<AnyPayload>>(
-	container: { guid: string; relation: Relation[] },
+	container: Node,
 	containers: T[]
 ): T | undefined {
 	return relatedObjectNodesByPredicate(container, predicates.enum['is-part-of'], containers)[0];

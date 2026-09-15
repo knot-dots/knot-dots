@@ -116,7 +116,10 @@ test('requires templates for direct program objects but not section-only contain
 		position: 0,
 		predicate: predicates.enum['is-section-of']
 	};
-	const measure = { payload: { type: payloadTypes.enum.measure }, relation: [programPlacement] };
+	const measure = {
+		...programObject(payloadTypes.enum.measure),
+		relation: [programPlacement]
+	};
 
 	expect(requiresProgramTemplate(measure)).toBe(true);
 	expect(requiresProgramTemplate({ ...measure, relation: [sectionPlacement] })).toBe(false);
@@ -125,13 +128,13 @@ test('requires templates for direct program objects but not section-only contain
 	).toBe(true);
 	expect(
 		requiresProgramTemplate({
-			payload: { type: payloadTypes.enum.text },
+			...programObject(payloadTypes.enum.text),
 			relation: [programPlacement]
 		})
 	).toBe(false);
 	expect(
 		requiresProgramTemplate({
-			payload: { type: payloadTypes.enum.task },
+			...programObject(payloadTypes.enum.task),
 			relation: [programPlacement]
 		})
 	).toBe(false);
@@ -146,7 +149,10 @@ function placement(position = 0): Relation {
 	};
 }
 
-function programObject(type: typeof payloadTypes.enum.text | typeof payloadTypes.enum.measure) {
+function programObject(
+	type:
+		typeof payloadTypes.enum.text | typeof payloadTypes.enum.measure | typeof payloadTypes.enum.task
+) {
 	return anyContainer.parse({
 		guid: templateGuid,
 		managed_by: organizationGuid,

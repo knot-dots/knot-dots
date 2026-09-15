@@ -2477,48 +2477,31 @@ export const newUser = z.object({
 
 export type NewUser = z.infer<typeof newUser>;
 
-export function isTemplateRoot({
-	guid,
-	payload,
-	relation
-}: {
-	guid: string;
-	payload: { template?: boolean };
-	relation: readonly Relation[];
-}) {
+export function isTemplateRoot(container: Container<AnyPayload>) {
 	return (
-		payload.template === true &&
-		!relation.some(
-			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
+		isTemplateContainer(container) &&
+		!container.relation.some(
+			({ predicate, subject }) => subject === container.guid && isStructuralCopyPredicate(predicate)
 		)
 	);
 }
 
-export function getAvailableInProgramGuids({
-	guid,
-	relation
-}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
-	return relation
+export function getAvailableInProgramGuids(container: Container<AnyPayload>) {
+	return container.relation
 		.filter(
 			({ predicate, subject }) =>
-				predicate === predicates.enum['is-available-in'] && subject === guid
+				predicate === predicates.enum['is-available-in'] && subject === container.guid
 		)
 		.map(({ object }) => object);
 }
 
-export function getDirectProgramGuids({
-	guid,
-	relation
-}: {
-	guid?: string;
-	relation: readonly PartialRelation[];
-}) {
+export function getDirectProgramGuids(container: NewContainer) {
 	return [
 		...new Set(
-			relation.flatMap(({ object, predicate, subject }) =>
+			container.relation.flatMap(({ object, predicate, subject }) =>
 				predicate === predicates.enum['is-part-of-program'] &&
 				object !== undefined &&
-				(subject === undefined || subject === guid)
+				(subject === undefined || subject === container.guid)
 					? [object]
 					: []
 			)
@@ -2526,7 +2509,7 @@ export function getDirectProgramGuids({
 	];
 }
 
-export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
+export function isPartOf(container: Container<AnyPayload>) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
@@ -2539,7 +2522,7 @@ export function isPartOf(container: { relation: PartialRelation[]; guid: string 
 	};
 }
 
-export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: string }) {
+export function isPartOfMeasure(container: Container<AnyPayload>) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
@@ -2552,7 +2535,7 @@ export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: 
 	};
 }
 
-export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
+export function isRelatedTo(container: Container<AnyPayload>) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
