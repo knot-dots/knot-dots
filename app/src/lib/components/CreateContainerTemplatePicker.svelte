@@ -367,13 +367,12 @@
 	}
 
 	aside {
-		align-items: flex-start;
-		align-self: stretch;
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
 		overflow-y: auto;
 		width: 18.75rem;
+	}
+
+	aside > :global(*) {
+		margin-bottom: 0.5rem;
 	}
 
 	.without-template {
