@@ -101,6 +101,7 @@ test('perform bulk action in detail view', async ({
 	// Verify the section is not public.
 	await section.hover();
 	await section.getByRole('button', { name: 'Settings' }).click();
+	await section.getByRole('button', { name: 'Visibility' }).click();
 	await expect(section.getByLabel('Public')).not.toBeChecked();
 
 	// Select the section for bulk actions
@@ -124,6 +125,7 @@ test('perform bulk action in detail view', async ({
 	// Verify the visibility has been updated.
 	await section.hover();
 	await section.getByRole('button', { name: 'Settings' }).click();
+	await section.getByRole('button', { name: 'Visibility' }).click();
 	await expect(section.getByLabel('public')).toBeChecked();
 });
 
