@@ -177,28 +177,27 @@ describe('create, update and delete via managed_by', () => {
 });
 
 describe('categories and terms via managed_by', () => {
-	// With individual grants, creating and deleting categories requires full
-	// rights on the organization object; heads keep updating only. Skipped
-	// until the matrix rules are settled with the inheritance PR.
-	test.skip('admins and heads may manage them', () => {
-		for (const user of [makeUser({ adminOf: [team] }), makeUser({ headOf: [team] })]) {
-			const ability = defineAbilityFor(user);
-			const category = makeContainer(payloadTypes.enum.category);
-			expect(ability.can('create', category)).toBe(true);
-			expect(ability.can('update', category)).toBe(true);
-			expect(ability.can('delete', category)).toBe(true);
-			expect(ability.can('update', makeContainer(payloadTypes.enum.term))).toBe(true);
-		}
+	test('admins keep full control while heads may only update them', () => {
+		// creating and deleting categories requires the full self set on the
+		// managing team, which only the admin role carries
+		const admin = defineAbilityFor(makeUser({ adminOf: [team] }));
+		const category = makeContainer(payloadTypes.enum.category);
+		expect(admin.can('create', category)).toBe(true);
+		expect(admin.can('update', category)).toBe(true);
+		expect(admin.can('delete', category)).toBe(true);
+
+		const head = defineAbilityFor(makeUser({ headOf: [team] }));
+		expect(head.can('create', category)).toBe(false);
+		expect(head.can('update', category)).toBe(true);
+		expect(head.can('delete', category)).toBe(false);
+		expect(head.can('update', makeContainer(payloadTypes.enum.term))).toBe(true);
 	});
 
-	// With individual grants, the subordinate update grant of a collaborator
-	// covers categories and terms as well. Skipped until the matrix rules are
-	// settled with the inheritance PR.
-	test.skip('collaborators may not manage them', () => {
+	test('collaborators may update but neither add nor remove them', () => {
 		const ability = defineAbilityFor(makeUser({ collaboratorOf: [team] }));
 		const category = makeContainer(payloadTypes.enum.category);
 		expect(ability.can('create', category)).toBe(false);
-		expect(ability.can('update', category)).toBe(false);
+		expect(ability.can('update', category)).toBe(true);
 		expect(ability.can('delete', category)).toBe(false);
 	});
 });
@@ -511,18 +510,12 @@ function scopedContainer(scope: Scope, type: PayloadType) {
 	});
 }
 
-// pending marks the roles whose outcome changed with individual grants: the
-// affected combinations are skipped until the matrix rules are settled with
-// the inheritance PR (heads lost create/delete on special content types,
-// collaborators gained update through the subordinate rules, html moved to
-// sysadmins).
+// The matrix pins the grant-based rules as derived from the member roles:
+// heads and collaborators update special content types but only admins (the
+// full self set on the scope) add or remove them; html stays with sysadmins.
 const permissionMatrix: Record<
 	Scope,
-	Array<{
-		types: PayloadType[];
-		permitted: Record<MemberRole, BasicAction[]>;
-		pending?: MemberRole[];
-	}>
+	Array<{ types: PayloadType[]; permitted: Record<MemberRole, BasicAction[]> }>
 > = {
 	organization: [
 		{
@@ -535,7 +528,8 @@ const permissionMatrix: Record<
 			}
 		},
 		{
-			// managing these is reserved for admins and heads of the organization
+			// adding and removing these requires the full self set on the
+			// organization object, which only admins carry
 			types: [
 				payloadTypes.enum.category,
 				payloadTypes.enum.term,
@@ -544,11 +538,10 @@ const permissionMatrix: Record<
 			],
 			permitted: {
 				administrator: allBasicActions,
-				head: allBasicActions,
-				collaborator: readOnly,
+				head: readAndUpdate,
+				collaborator: readAndUpdate,
 				observer: readOnly
-			},
-			pending: [memberRoles.enum.head, memberRoles.enum.collaborator]
+			}
 		},
 		{
 			// the organization itself may be updated but not created or deleted
@@ -556,22 +549,19 @@ const permissionMatrix: Record<
 			permitted: {
 				administrator: readAndUpdate,
 				head: readAndUpdate,
-				collaborator: readOnly,
+				collaborator: readAndUpdate,
 				observer: readOnly
-			},
-			pending: [memberRoles.enum.collaborator]
+			}
 		},
 		{
-			// update on html merely stemmed from the field-level rule that lets
-			// admins and heads move containers between organizational units
+			// html sections are reserved for sysadmins
 			types: [payloadTypes.enum.html],
 			permitted: {
-				administrator: readAndUpdate,
-				head: readAndUpdate,
+				administrator: readOnly,
+				head: readOnly,
 				collaborator: readOnly,
 				observer: readOnly
-			},
-			pending: [memberRoles.enum.administrator, memberRoles.enum.head]
+			}
 		}
 	],
 	'organizational unit': [
@@ -588,23 +578,21 @@ const permissionMatrix: Record<
 			types: [payloadTypes.enum.category, payloadTypes.enum.term],
 			permitted: {
 				administrator: allBasicActions,
-				head: allBasicActions,
-				collaborator: readOnly,
+				head: readAndUpdate,
+				collaborator: readAndUpdate,
 				observer: readOnly
-			},
-			pending: [memberRoles.enum.head, memberRoles.enum.collaborator]
+			}
 		},
 		{
-			// the unit itself may be renamed by its admins and heads; adding and
-			// removing units stays with the organization
+			// the unit itself may be renamed; adding and removing units stays with
+			// the organization
 			types: [payloadTypes.enum.organizational_unit],
 			permitted: {
 				administrator: readAndUpdate,
 				head: readAndUpdate,
-				collaborator: readOnly,
+				collaborator: readAndUpdate,
 				observer: readOnly
-			},
-			pending: [memberRoles.enum.collaborator]
+			}
 		},
 		{
 			// these belong to the organization, so unit roles yield no rights
@@ -639,17 +627,14 @@ describe('the basic permission matrix by member role', () => {
 
 	for (const scope of Object.keys(permissionMatrix) as Scope[]) {
 		describe(`objects belonging to an ${scope}`, () => {
-			for (const { types, permitted, pending } of permissionMatrix[scope]) {
+			for (const { types, permitted } of permissionMatrix[scope]) {
 				for (const role of memberRoles.options) {
 					const ability = defineAbilityFor(userWithRoleOn(role, scope));
-					test.skipIf(pending?.includes(role)).for(types)(
-						`a ${role} may ${inWords(permitted[role])}: %s`,
-						(type) => {
-							expect(
-								basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
-							).toEqual(permitted[role]);
-						}
-					);
+					test.for(types)(`a ${role} may ${inWords(permitted[role])}: %s`, (type) => {
+						expect(
+							basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
+						).toEqual(permitted[role]);
+					});
 				}
 			}
 
@@ -681,14 +666,13 @@ describe('scope rules apply regardless of managed_by', () => {
 			}
 		);
 
-		// With individual grants, subordinate rights of collaborators reach all
-		// content of the scope regardless of managed_by. Skipped until the matrix
-		// rules are settled with the inheritance PR.
-		test.skip(`a collaborator of the ${scope} may not touch content managed by another team`, () => {
+		test(`a collaborator of the ${scope} reaches content managed by another team as well`, () => {
+			// subordinate grants attach to the scope, so they cover its content
+			// regardless of managed_by
 			const ability = defineAbilityFor(userWithRoleOn(memberRoles.enum.collaborator, scope));
-			expect(ability.can('create', measure)).toBe(false);
-			expect(ability.can('update', measure)).toBe(false);
-			expect(ability.can('delete', measure)).toBe(false);
+			expect(ability.can('create', measure)).toBe(true);
+			expect(ability.can('update', measure)).toBe(true);
+			expect(ability.can('delete', measure)).toBe(true);
 		});
 
 		test.for([memberRoles.enum.administrator, memberRoles.enum.head] as MemberRole[])(
@@ -742,18 +726,15 @@ describe('manage-users by member role', () => {
 			const ability = defineAbilityFor(userWithRoleOn(role, scope));
 			test.for(payloadTypes.options)(
 				`a ${role} of an ${scope} may ${mayManage ? 'manage users of the supporting types' : 'never manage users'}: %s`,
-				(type, ctx) => {
-					// with individual grants, only admins manage users of the
-					// organization object itself; skipped until settled
-					if (
-						role === memberRoles.enum.head &&
-						scope === 'organization' &&
-						type === payloadTypes.enum.organization
-					) {
-						ctx.skip();
-					}
+				(type) => {
+					// managing the users of the organization object itself requires
+					// the self grant, which only admins carry
+					const requiresSelfGrant =
+						scope === 'organization' && type === payloadTypes.enum.organization;
 					expect(ability.can('manage-users', scopedContainer(scope, type))).toBe(
-						mayManage && managedTypesByScope[scope].includes(type)
+						mayManage &&
+							managedTypesByScope[scope].includes(type) &&
+							(!requiresSelfGrant || role === memberRoles.enum.administrator)
 					);
 				}
 			);
