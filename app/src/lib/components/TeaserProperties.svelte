@@ -56,6 +56,20 @@
 			bind:value={container.payload.linkCaption}
 		/>
 
+		<EditableLinkStyle
+			{editable}
+			label={$_('teaser.link_style')}
+			bind:value={container.payload.style}
+		/>
+
+		<EditableCardStyle {editable} label={$_('card_style')} bind:value={container.payload.style} />
+
+		<EditableImage
+			{editable}
+			label={$_('upload.image.choose')}
+			bind:value={container.payload.image}
+		/>
+
 		{#if $ability.can('update', container, 'payload.visibility')}
 			<EditableVisibility {editable} bind:container {relatedContainers} />
 		{/if}
