@@ -103,6 +103,12 @@
 		if (workspaceTranslated) {
 			title += ' / ' + workspaceTranslated;
 		}
+
+		// Add container title if present
+		if (page.data.container?.payload.title) {
+			title += ' / ' + page.data.container.payload.title;
+		}
+
 		return title;
 	});
 
