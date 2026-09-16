@@ -141,65 +141,104 @@ test('template queries separate organization and program availability', async ({
 	expect(programTemplates.map(({ guid }) => guid)).toEqual([programATemplate.guid]);
 });
 
-test('deleting a program deletes templates whose final availability scope is that program', async ({
+for (const type of ['program', 'measure', 'simple_measure'] as const) {
+	test(`deleting a ${type} deletes exclusively scoped templates`, async ({ connection }) => {
+		const deletedProgram = await createContainer(
+			initializeNewContainer({ title: 'Deleted scope', type }, [])
+		)(connection);
+		const remainingProgram = await createContainer(
+			initializeNewContainer({ title: 'Remaining program', type: payloadTypes.enum.program }, [])
+		)(connection);
+		const exclusiveTemplate = await createContainer(
+			initializeNewContainer(
+				{ template: true, title: 'Exclusive template', type: payloadTypes.enum.report },
+				[
+					{
+						object: deletedProgram.guid,
+						position: 0,
+						predicate: predicates.enum['is-available-in']
+					}
+				]
+			)
+		)(connection);
+		const sharedTemplate = await createContainer(
+			initializeNewContainer(
+				{ template: true, title: 'Shared template', type: payloadTypes.enum.report },
+				[
+					{
+						object: deletedProgram.guid,
+						position: 0,
+						predicate: predicates.enum['is-available-in']
+					},
+					{
+						object: remainingProgram.guid,
+						position: 0,
+						predicate: predicates.enum['is-available-in']
+					}
+				]
+			)
+		)(connection);
+
+		await deleteContainer(deletedProgram)(connection);
+
+		const remainingTemplates = await getManyContainers(
+			[organization],
+			{
+				availableIn: remainingProgram.guid,
+				template: true,
+				type: [payloadTypes.enum.report]
+			},
+			'alpha'
+		)(connection);
+		const organizationTemplates = await getManyContainers(
+			[organization],
+			{ template: true, type: [payloadTypes.enum.report] },
+			'alpha'
+		)(connection);
+
+		expect(remainingTemplates.map(({ guid }) => guid)).toEqual([sharedTemplate.guid]);
+		expect(organizationTemplates.map(({ guid }) => guid)).not.toContain(exclusiveTemplate.guid);
+		expect(organizationTemplates.map(({ guid }) => guid)).not.toContain(sharedTemplate.guid);
+	});
+}
+
+test('nested measure template scopes are discovered when copying a program', async ({
 	connection
 }) => {
-	const deletedProgram = await createContainer(
-		initializeNewContainer({ title: 'Deleted program', type: payloadTypes.enum.program }, [])
+	const program = await createContainer(
+		initializeNewContainer({ type: 'program', title: 'Program' }, [])
 	)(connection);
-	const remainingProgram = await createContainer(
-		initializeNewContainer({ title: 'Remaining program', type: payloadTypes.enum.program }, [])
+	const measure = await createContainer(
+		initializeNewContainer({ type: 'measure', title: 'Measure' }, [
+			{ object: program.guid, predicate: 'is-part-of-program', position: 0 }
+		])
 	)(connection);
-	const exclusiveTemplate = await createContainer(
-		initializeNewContainer(
-			{ template: true, title: 'Exclusive template', type: payloadTypes.enum.report },
-			[
-				{
-					object: deletedProgram.guid,
-					position: 0,
-					predicate: predicates.enum['is-available-in']
-				}
-			]
-		)
+	const nested = await createContainer(
+		initializeNewContainer({ type: 'measure', title: 'Nested', template: true }, [
+			{ object: measure.guid, predicate: 'is-available-in', position: 0 }
+		])
 	)(connection);
-	const sharedTemplate = await createContainer(
-		initializeNewContainer(
-			{ template: true, title: 'Shared template', type: payloadTypes.enum.report },
-			[
-				{
-					object: deletedProgram.guid,
-					position: 0,
-					predicate: predicates.enum['is-available-in']
-				},
-				{
-					object: remainingProgram.guid,
-					position: 0,
-					predicate: predicates.enum['is-available-in']
-				}
-			]
-		)
+	const task = await createContainer(
+		initializeNewContainer({ type: 'goal', title: 'Goal', template: true }, [
+			{ object: nested.guid, predicate: 'is-available-in', position: 0 }
+		])
 	)(connection);
-
-	await deleteContainer(deletedProgram)(connection);
-
-	const remainingTemplates = await getManyContainers(
-		[organization],
-		{
-			availableIn: remainingProgram.guid,
-			template: true,
-			type: [payloadTypes.enum.report]
-		},
-		'alpha'
-	)(connection);
-	const organizationTemplates = await getManyContainers(
-		[organization],
-		{ template: true, type: [payloadTypes.enum.report] },
-		'alpha'
-	)(connection);
-
-	expect(remainingTemplates.map(({ guid }) => guid)).toEqual([sharedTemplate.guid]);
-	expect(organizationTemplates.map(({ guid }) => guid)).not.toContain(exclusiveTemplate.guid);
-	expect(organizationTemplates.map(({ guid }) => guid)).not.toContain(sharedTemplate.guid);
+	const result = await getContainerCopyGraph(program.guid)(connection);
+	expect(result.containers.map(({ guid }) => guid)).toEqual(
+		expect.arrayContaining([program.guid, measure.guid, nested.guid, task.guid])
+	);
+	const measureResult = await getContainerCopyGraph(measure.guid)(connection);
+	expect(measureResult.containers.map(({ guid }) => guid)).toEqual(
+		expect.arrayContaining([measure.guid, nested.guid, task.guid])
+	);
+	await deleteContainer(measure)(connection);
+	expect(
+		await getManyContainers(
+			[],
+			{ guid: [measure.guid, nested.guid, task.guid] },
+			'alpha'
+		)(connection)
+	).toEqual([]);
 });
 
 test('relation positions can be updated', async ({ connection }: Fixtures) => {

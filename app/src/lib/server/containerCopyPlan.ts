@@ -8,7 +8,6 @@ import {
 	createRootCopyOf,
 	createTemplateInstanceOf,
 	isOrganizationalUnitContainer,
-	isProgramContainer,
 	isStructuralCopyPredicate,
 	isTemplateContainer,
 	isTemplateRoot,
@@ -23,6 +22,7 @@ import {
 	visibility
 } from '$lib/models';
 import type { ContainerCopyRootOperation, RootCopyPlacement } from '$lib/containerCopy';
+import { isTemplateScope } from '$lib/templateScopes';
 
 export const referenceCopyPredicates = [
 	predicates.enum['is-measured-by'],
@@ -299,33 +299,19 @@ export function selectContainerCopySources({
 		}
 	}
 
-	const availableTemplateRoots = isProgramContainer(root)
-		? [
-				...new Map(
-					relations
-						.filter(
-							({ object, predicate }) =>
-								object === root.guid && predicate === predicates.enum['is-available-in']
-						)
-						.flatMap((availability) => {
-							const template = containersByGuid.get(availability.subject);
-							return template && isTemplateContainer(template) && isTemplateRoot(template)
-								? [[template.guid, template] as const]
-								: [];
-						})
-				).values()
-			]
-		: [];
-
-	const scopedQueue: string[] = [];
-	for (const templateRoot of availableTemplateRoots) {
-		if (mainHierarchyGuids.has(templateRoot.guid) || !isEligible(templateRoot, true)) {
-			continue;
+	const templatesByScope = new Map<string, Container<AnyPayload>[]>();
+	for (const { object, predicate, subject } of relations) {
+		if (predicate !== predicates.enum['is-available-in']) continue;
+		const template = containersByGuid.get(subject);
+		if (template && isTemplateContainer(template) && isTemplateRoot(template)) {
+			const templates = templatesByScope.get(object) ?? [];
+			templates.push(template);
+			templatesByScope.set(object, templates);
 		}
-		includedGuids.add(templateRoot.guid);
-		scopedTemplateGuids.add(templateRoot.guid);
-		scopedQueue.push(templateRoot.guid);
 	}
+
+	// Start with every included owner, then discover owners inside template branches too.
+	const scopedQueue = [...mainHierarchyGuids];
 
 	const processedScoped = new Set<string>();
 	for (let queueIndex = 0; queueIndex < scopedQueue.length; queueIndex++) {
@@ -334,6 +320,17 @@ export function selectContainerCopySources({
 			continue;
 		}
 		processedScoped.add(currentGuid);
+		const current = containersByGuid.get(currentGuid)!;
+		if (isTemplateScope(current)) {
+			for (const template of templatesByScope.get(currentGuid) ?? []) {
+				if (!includedGuids.has(template.guid) && isEligible(template, true)) {
+					includedGuids.add(template.guid);
+					scopedTemplateGuids.add(template.guid);
+					scopedQueue.push(template.guid);
+				}
+			}
+		}
+		if (mainHierarchyGuids.has(currentGuid)) continue;
 
 		for (const relation of structuralRelationsByObject.get(currentGuid) ?? []) {
 			const child = containersByGuid.get(relation.subject);
