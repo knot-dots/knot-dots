@@ -36,6 +36,10 @@ test('ignores flags the rings do not offer', async () => {
 	]);
 });
 
+test('users cannot enable the permission matrix themselves', async () => {
+	expect(await featuresFor(['PermissionMatrix'], new Map())).toEqual([]);
+});
+
 test('lets the deployment govern annotated flags regardless of the settings', async () => {
 	expect(
 		await featuresFor(
