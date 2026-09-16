@@ -1486,6 +1486,7 @@ const measurePayload = z.strictObject({
 	comment: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+	inheritsGrants: z.boolean().default(true),
 	measureType: measureTypes.optional(),
 	progress: z.number().nonnegative().optional(),
 	result: z.string().trim().optional(),
@@ -1620,6 +1621,7 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 export const organizationalUnitPayload = z.strictObject({
 	...detailViewStyle.shape,
 	administrativeType: z.array(administrativeTypes).default([]),
+	inheritsGrants: z.boolean().default(true),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
@@ -1708,6 +1710,7 @@ const programPayload = z.strictObject({
 	...detailViewStyle.shape,
 	chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 	image: z.url().optional(),
+	inheritsGrants: z.boolean().default(true),
 	level: levels.default(levels.enum['level.local']),
 	pdf: z.array(z.tuple([z.url(), z.string()])).default([]),
 	status: status.default(status.enum['status.idea']),
@@ -2012,6 +2015,7 @@ const simpleMeasurePayload = z.strictObject({
 	annotation: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	file: z.array(z.tuple([z.url(), z.string()])).default([]),
+	inheritsGrants: z.boolean().default(true),
 	measureType: measureTypes.optional(),
 	progress: z.number().nonnegative().default(0),
 	startDate: z.iso.date().optional(),
@@ -2845,6 +2849,22 @@ export function findAncestors<T extends Container<AnyPayload>>(
 
 	traverse(container);
 	return Array.from(ancestors.values());
+}
+
+// The source a container inherits its grant matrix from: the nearest manager
+// that is not the container itself — for contents of a program that is the
+// program, otherwise the organizational unit or organization.
+export function grantSourceOf(
+	container: Pick<
+		Container<AnyPayload>,
+		'guid' | 'managed_by' | 'organization' | 'organizational_unit'
+	>
+): string {
+	return (
+		container.managed_by.find((guid) => guid !== container.guid) ??
+		container.organizational_unit ??
+		container.organization
+	);
 }
 
 function collectDescendants<T extends Container<AnyPayload>>(
