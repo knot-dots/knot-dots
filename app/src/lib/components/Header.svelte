@@ -456,6 +456,10 @@
 		width: 0;
 	}
 
+	.sidebar-toggle {
+		color: var(--color-text-muted);
+	}
+
 	.actions {
 		align-items: center;
 		display: flex;
