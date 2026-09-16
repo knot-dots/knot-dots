@@ -430,6 +430,7 @@
 		--dropdown-button-min-height: 2rem;
 		--dropdown-button-padding: 0.25rem 0.5rem;
 
+		align-items: center;
 		color: var(--color-text-default);
 		display: flex;
 		flex-shrink: 0;
