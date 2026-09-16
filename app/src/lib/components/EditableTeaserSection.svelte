@@ -22,6 +22,7 @@
 	import EditableImageInline from '$lib/components/EditableImageInline.svelte';
 	import { Pane, Splitpanes } from 'svelte-splitpanes';
 	import ContainerSectionDropdown from '$lib/components/ContainerSectionDropdown.svelte';
+	import EditableImageSource from '$lib/components/EditableImageSource.svelte';
 
 	interface Props {
 		container: Container<
@@ -196,11 +197,17 @@
 
 					{#if container.payload.imageEnable}
 						<EditableImageInline
-							{editable}
+							alt={container.payload.imageAltText}
+							editable={editable && canUpdate}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.image}
 						/>
+						<EditableImageSource
+							bind:value={container.payload.imageSource}
+							editable={editable && canUpdate}
+						/>
 					{/if}
+
 					{#if container.payload.titleEnable}
 						<header class="">
 							{#if isInfoBox}
@@ -273,9 +280,14 @@
 					{/if}
 					{#if container.payload.imageEnableRight}
 						<EditableImageInline
-							{editable}
+							alt={container.payload.imageAltTextRight}
+							editable={editable && canUpdate}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.imageRight}
+						/>
+						<EditableImageSource
+							bind:value={container.payload.imageSourceRight}
+							editable={editable && canUpdate}
 						/>
 					{/if}
 					{#if container.payload.titleEnableRight}
