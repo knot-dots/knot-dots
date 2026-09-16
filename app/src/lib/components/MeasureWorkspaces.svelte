@@ -11,6 +11,7 @@
 	import Compass from '~icons/knotdots/compass';
 	import LandingPage from '~icons/knotdots/landing-page';
 	import Objects from '~icons/knotdots/objects';
+	import Template from '~icons/knotdots/template';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -22,6 +23,7 @@
 		overlayURL,
 		paramsFromFragment
 	} from '$lib/models';
+	import { isMeasureTemplateScope } from '$lib/templateScopes';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -41,6 +43,9 @@
 		},
 		tasks: {
 			status: '/tasks/status'
+		},
+		templates: {
+			catalog: '/templates/catalog'
 		}
 	};
 
@@ -53,6 +58,9 @@
 		},
 		page: {
 			all: '/'
+		},
+		catalog: {
+			templates: '/templates/catalog'
 		}
 	};
 
@@ -68,6 +76,8 @@
 				return ['all', 'monitoring'];
 			} else if (params.has('tasks')) {
 				return ['tasks', 'status'];
+			} else if (params.has('templates')) {
+				return ['templates', 'catalog'];
 			} else {
 				return ['all', 'page'];
 			}
@@ -111,10 +121,31 @@
 			icon: ClipboardCheck,
 			label: $_('workspace.tasks.title'),
 			value: workspacesLeft.tasks[selectedItem[1]] ?? '/tasks/status'
-		}
+		},
+		...(isMeasureTemplateScope(container) &&
+		createFeatureDecisions(page.data.features).useTemplateWorkspaces()
+			? [
+					{
+						exists: true,
+						icon: Template,
+						label: $_('workspace.templates.title'),
+						value: '/templates/catalog'
+					}
+				]
+			: [])
 	]);
 
 	let rightOptions: Option[] = $derived([
+		...(selectedItem[0] === 'templates'
+			? [
+					{
+						exists: true,
+						icon: Template,
+						label: $_('workspace.view.catalog'),
+						value: '/templates/catalog'
+					}
+				]
+			: []),
 		{
 			exists: selectedItem[0] in workspacesRight.page,
 			icon: LandingPage,
@@ -147,6 +178,8 @@
 				return '/all/monitoring';
 			} else if (params.has('tasks')) {
 				return '/tasks/status';
+			} else if (params.has('templates')) {
+				return '/templates/catalog';
 			} else {
 				return '/';
 			}
@@ -178,7 +211,16 @@
 				return;
 			}
 
-			if (selected[0] == 'iooi' && selected[1] == 'board') {
+			if (selected[0] === 'templates' && selected[1] === 'catalog') {
+				goto(
+					overlay
+						? overlayURL(url, overlayKey.enum.templates, container.guid)
+						: resolve('/[guid=uuid]/[contentGuid=uuid]/templates/catalog', {
+								guid: selectedContext.guid,
+								contentGuid: container.guid
+							})
+				);
+			} else if (selected[0] == 'iooi' && selected[1] == 'board') {
 				if (overlay) {
 					goto(overlayURL(url, overlayKey.enum['measure-iooi'], container.guid));
 				} else {
