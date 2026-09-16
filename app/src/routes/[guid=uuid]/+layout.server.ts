@@ -16,11 +16,7 @@ function pageTitle(url: URL) {
 		return '';
 	}
 
-	return (
-		unwrapFunctionStore(_)('workspace.' + workspaceType + '.title') +
-		' / ' +
-		unwrapFunctionStore(_)('workspace.view.' + workspaceView)
-	);
+	return unwrapFunctionStore(_)('workspace.' + workspaceType + '.title');
 }
 
 export const load = (async ({ url }) => {
