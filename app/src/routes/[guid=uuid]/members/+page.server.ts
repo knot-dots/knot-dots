@@ -36,6 +36,7 @@ export const load = (async ({ locals, parent }) => {
 	return {
 		container,
 		grants,
+		title: unwrapFunctionStore(_)('members'),
 		users: users.map((u) => ({
 			...u,
 			email: members.find(({ id }) => id == u.guid)?.username ?? u.guid

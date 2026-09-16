@@ -1,3 +1,4 @@
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import {
@@ -80,6 +81,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	return {
 		container: currentOrganization,
 		containers: filtered,
-		facets
+		facets,
+		title: unwrapFunctionStore(_)('workspace.objectives-and-effects.title')
 	};
 }) satisfies PageServerLoad;

@@ -24,6 +24,7 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 	)) as Array<Container<CategoryPayload | TermPayload>>;
 
 	return {
-		containers: filterVisible(containers, locals.user)
+		containers: filterVisible(containers, locals.user),
+		title: unwrapFunctionStore(_)('workspace.categories.title')
 	};
 };
