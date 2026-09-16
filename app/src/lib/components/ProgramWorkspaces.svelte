@@ -135,7 +135,7 @@
 			label: $_('workspace.measures.title'),
 			value: workspacesLeft.measures[selectedItem[1]] ?? '/measures/status'
 		},
-		...(createFeatureDecisions(page.data.features).useProgramTemplateWorkspaces()
+		...(createFeatureDecisions(page.data.features).useTemplateWorkspaces()
 			? [
 					{
 						exists: true,

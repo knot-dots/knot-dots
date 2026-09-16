@@ -4,28 +4,26 @@ import { page } from '$app/state';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { createFeatureDecisions } from '$lib/features';
 import { type PayloadType, templatablePayloadTypes } from '$lib/models';
-import { isProgramScopedTemplateRoot } from '$lib/programTemplates';
+import { isScopedTemplateRoot } from '$lib/templateScopes';
 import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 
 interface Options {
 	candidateTypes: () => readonly PayloadType[];
 	organizationGuid: () => string;
-	programGuid: () => string;
+	scopeGuid: () => string | undefined;
 }
 
 const templatableTypes = new Set<string>(templatablePayloadTypes);
 
-export default function createProgramTemplateAvailability({
+export default function createScopedTemplateAvailability({
 	candidateTypes,
 	organizationGuid,
-	programGuid
+	scopeGuid
 }: Options) {
 	const created = fromStore(lastCreatedContainers);
 	const deleted = fromStore(lastDeletedContainers);
 	const updated = fromStore(lastUpdatedContainers);
-	const enabled = $derived(
-		createFeatureDecisions(page.data.features).useProgramTemplateWorkspaces()
-	);
+	const enabled = $derived(createFeatureDecisions(page.data.features).useTemplateWorkspaces());
 
 	const candidateKey = $derived(
 		[...new Set(candidateTypes().filter((type) => templatableTypes.has(type)))]
@@ -34,10 +32,10 @@ export default function createProgramTemplateAvailability({
 	);
 
 	const availabilityResource = resource(
-		[() => enabled, () => candidateKey, organizationGuid, programGuid],
+		[() => enabled, () => candidateKey, organizationGuid, scopeGuid],
 		async ([isEnabled, typesKey, organization, program], _, { signal }) => {
-			if (!isEnabled) {
-				return [];
+			if (!isEnabled || !program) {
+				return { scopeGuid: program, organization, types: [] as PayloadType[] };
 			}
 			const types = typesKey ? (typesKey.split('\u0000') as PayloadType[]) : [];
 			const matches = await Promise.all(
@@ -61,20 +59,28 @@ export default function createProgramTemplateAvailability({
 					return result.containers.length > 0 ? payloadType : undefined;
 				})
 			);
-			return matches.filter((type) => type !== undefined);
+			return {
+				scopeGuid: program,
+				organization,
+				types: matches.filter((type) => type !== undefined)
+			};
 		}
 	);
 
 	const availableTypes = $derived.by(() => {
-		const available = new Set<PayloadType>(availabilityResource.current ?? []);
 		const organization = organizationGuid();
-		const program = programGuid();
+		const program = scopeGuid();
+		const result = availabilityResource.current;
+		const available = new Set<PayloadType>(
+			result?.scopeGuid === program && result?.organization === organization ? result.types : []
+		);
 		for (const container of [...created.current.values(), ...updated.current.values()]) {
 			if (
+				program &&
 				!deleted.current.has(container.guid) &&
-				isProgramScopedTemplateRoot(container, {
+				isScopedTemplateRoot(container, {
 					organizationGuid: organization,
-					programGuid: program
+					scopeGuid: program
 				})
 			) {
 				available.add(container.payload.type);
@@ -85,7 +91,12 @@ export default function createProgramTemplateAvailability({
 
 	return {
 		has(payloadType: PayloadType) {
-			return !enabled || !templatableTypes.has(payloadType) || availableTypes.has(payloadType);
+			return (
+				!enabled ||
+				!scopeGuid() ||
+				!templatableTypes.has(payloadType) ||
+				availableTypes.has(payloadType)
+			);
 		},
 		get error() {
 			return availabilityResource.error;

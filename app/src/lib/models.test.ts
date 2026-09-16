@@ -6,7 +6,7 @@ import {
 	container,
 	type EffectPayload,
 	findDescendants,
-	getAvailableInProgramGuids,
+	getAvailableInScopeGuids,
 	grantSetForRole,
 	memberRoleFromGrantSet,
 	memberRoleMatchingGrantSet,
@@ -359,7 +359,7 @@ test('rejects a non-template without a structural parent as a template root', ()
 
 test('returns only programs targeted by outgoing availability relations', () => {
 	expect(
-		getAvailableInProgramGuids({
+		getAvailableInScopeGuids({
 			...measure,
 			guid: templateRootGuid,
 			relation: [

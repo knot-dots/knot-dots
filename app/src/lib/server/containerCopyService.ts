@@ -12,7 +12,7 @@ import {
 import {
 	type AnyPayload,
 	type Container,
-	getAvailableInProgramGuids,
+	getAvailableInScopeGuids,
 	isMeasureContainer,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
@@ -86,7 +86,7 @@ function validateTemplateScope(
 	availableIn: string | null,
 	canRead: (container: Container<AnyPayload>) => boolean
 ) {
-	const availableInGuids = getAvailableInProgramGuids(source);
+	const availableInGuids = getAvailableInScopeGuids(source);
 	if (
 		(availableIn === null && availableInGuids.length !== 0) ||
 		(availableIn !== null && (availableInGuids.length !== 1 || availableInGuids[0] !== availableIn))
@@ -447,7 +447,7 @@ export async function executeContainerCopy({
 		canRetainCollectionItem: (container, copyTarget) =>
 			container.organization === copyTarget.organization && ability.can('read', container),
 		canUseNewItemTemplate: (container, copyTarget) => {
-			const availableIn = getAvailableInProgramGuids(container);
+			const availableIn = getAvailableInScopeGuids(container);
 			if (availableIn.length > 0) {
 				return (
 					request.operation === 'template-instance' &&

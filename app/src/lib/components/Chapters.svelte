@@ -1,5 +1,5 @@
 <script lang="ts">
-	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
+	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -25,10 +25,10 @@
 
 	let { containers, program }: Props = $props();
 
-	const templateAvailability = createProgramTemplateAvailability({
+	const templateAvailability = createScopedTemplateAvailability({
 		candidateTypes: () => program.payload.chapterType,
 		organizationGuid: () => program.organization,
-		programGuid: () => program.guid
+		scopeGuid: () => program.guid
 	});
 
 	function availableCreateEntries(entries: string[][]) {

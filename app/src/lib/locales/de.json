@@ -145,7 +145,7 @@
 	"create_another": "Weiteres Objekt ableiten",
 	"create_container_dialog.title": "Neues Objekt erstellen",
 	"create_container_dialog.included_objects": "Enthaltene Objekte",
-	"create_container_dialog.no_templates": "Für diesen Objekttyp sind in diesem Programm keine Vorlagen verfügbar.",
+	"create_container_dialog.no_templates": "Für diesen Objekttyp sind in diesem Arbeitsbereich keine Vorlagen verfügbar.",
 	"create_container_dialog.select_template": "Wählen Sie eine Vorlage aus, um dieses Objekt zu erstellen.",
 	"create_container_dialog.template_load_error": "Die Vorlage konnte nicht geladen werden.",
 	"create_container_dialog.template_title": "Vorlage erstellen",
@@ -232,6 +232,7 @@
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"program_template_required": "Objekte in einem Programm müssen aus einer in diesem Programm verfügbaren Vorlage erstellt werden.",
+		"scoped_template_required": "Objekte in einem Programm oder einer Maßnahme müssen aus einer im jeweiligen Arbeitsbereich verfügbaren Vorlage erstellt werden.",
 		"slug_not_available": "Dieser URL-Slug ist bereits vergeben.",
 		"unsupported_media_type": "Diese Anfrage muss JSON enthalten.",
 		"unexpected": "Wir arbeiten daran."

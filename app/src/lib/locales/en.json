@@ -145,7 +145,7 @@
 	"create_another": "Create another element",
 	"create_container_dialog.title": "Create new object",
 	"create_container_dialog.included_objects": "Included objects",
-	"create_container_dialog.no_templates": "No templates are available for this object type in this program.",
+	"create_container_dialog.no_templates": "No templates are available for this object type in this workspace.",
 	"create_container_dialog.select_template": "Select a template to create this object.",
 	"create_container_dialog.template_load_error": "The template could not be loaded.",
 	"create_container_dialog.template_title": "Create template",
@@ -232,6 +232,7 @@
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"program_template_required": "Objects in a program must be created from a template available in that program.",
+		"scoped_template_required": "Objects in a program or measure must be created from a template available in that workspace.",
 		"slug_not_available": "This URL slug is already in use.",
 		"unsupported_media_type": "This request must contain JSON.",
 		"unexpected": "We are working on it."
