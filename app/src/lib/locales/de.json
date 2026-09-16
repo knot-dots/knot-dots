@@ -396,6 +396,7 @@
 	"ignite_video.url": "Ignite-iframe-URL",
 	"ignite_video.url_help": "Funktioniert mit Ignite-Videos, für DSGVO-Konformität",
 	"inline_help": "Inline-Hilfe",
+	"import": "Import",
 	"import.csv_file": "CSV-Datei",
 	"import.error.invalid_record": "Fehler in Zeile {line}: {errors}",
 	"import.error.missing": "Die CSV-Datei fehlt",
