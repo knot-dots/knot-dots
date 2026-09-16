@@ -198,12 +198,16 @@
 					{#if container.payload.imageEnable}
 						<EditableImageInline
 							alt={container.payload.imageAltText}
-							{editable}
+							editable={editable && canUpdate}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.image}
 						/>
-						<EditableImageSource bind:value={container.payload.imageSource} {editable} />
+						<EditableImageSource
+							bind:value={container.payload.imageSource}
+							editable={editable && canUpdate}
+						/>
 					{/if}
+
 					{#if container.payload.titleEnable}
 						<header class="">
 							{#if isInfoBox}
@@ -277,11 +281,14 @@
 					{#if container.payload.imageEnableRight}
 						<EditableImageInline
 							alt={container.payload.imageAltTextRight}
-							{editable}
+							editable={editable && canUpdate}
 							label={$_(canUpdate ? 'upload.image.add' : 'cover')}
 							bind:value={container.payload.imageRight}
 						/>
-						<EditableImageSource bind:value={container.payload.imageSourceRight} {editable} />
+						<EditableImageSource
+							bind:value={container.payload.imageSourceRight}
+							editable={editable && canUpdate}
+						/>
 					{/if}
 					{#if container.payload.titleEnableRight}
 						<header>
