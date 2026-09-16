@@ -154,12 +154,12 @@ export const workspaces: WorkspaceDefinition[] = [
 		}
 	},
 	{
-		key: 'measure-monitoring',
+		key: 'monitoring',
 		icon: ChartBar,
 		module: 'implementation_planning',
 		views: {
-			default: '/measures/monitoring',
-			monitoring: '/measures/monitoring'
+			default: '/monitoring',
+			monitoring: '/monitoring'
 		}
 	},
 	{
