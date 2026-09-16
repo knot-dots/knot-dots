@@ -107,7 +107,7 @@ export const strategyProgramTypes = [
 ] as const;
 
 export const workspaces: WorkspaceDefinition[] = [
-	// Goals planning
+	// Goal setting
 	{
 		key: 'strategies',
 		icon: Compass,
@@ -173,7 +173,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			table: '/tasks/table'
 		}
 	},
-	// Effect measurement
+	// Impact measurement
 	{
 		key: 'indicators',
 		icon: ChartLine,
@@ -301,7 +301,6 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/all/catalog',
 			catalog: '/all/catalog',
-			level: '/all/level',
 			table: '/all/table'
 		}
 	},
