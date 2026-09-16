@@ -40,7 +40,11 @@
 			bind:value={container.payload.style}
 		/>
 
-		<EditableCardStyle {editable} label={$_('card_style')} bind:value={container.payload.style} />
+		<EditableCardStyle
+			{editable}
+			label={$_('card_style')}
+			bind:value={container.payload.cardStyle}
+		/>
 
 		<EditableImage
 			{editable}
@@ -70,7 +74,11 @@
 			bind:value={container.payload.style}
 		/>
 
-		<EditableCardStyle {editable} label={$_('card_style')} bind:value={container.payload.style} />
+		<EditableCardStyle
+			{editable}
+			label={$_('card_style')}
+			bind:value={container.payload.cardStyle}
+		/>
 
 		<EditableImage
 			{editable}
