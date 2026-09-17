@@ -714,6 +714,27 @@ export const grantSet = z.object({
 
 export type GrantSet = z.infer<typeof grantSet>;
 
+// The effective grants of the request user on one container, computed at read
+// time from the matrix that governs the container (see computeUserGrants).
+// `source` names the container whose matrix governs — the container itself
+// while decoupled, otherwise the nearest decoupled ancestor, organizational
+// unit or organization. `subordinates` holds the kinds applying within the
+// container and `self` those applying to it (the source's subordinate kinds),
+// while `own` carries the kinds granted on the container's own matrix rows.
+// `admin` marks holders of every self kind at the source or on one of the
+// container's areas; `member` marks subjects the governing matrix grants read
+// through something other than an area — members of the team, so to speak.
+export const userGrants = z.object({
+	admin: z.boolean(),
+	member: z.boolean(),
+	own: z.array(grantKinds),
+	self: z.array(grantKinds),
+	source: z.uuid(),
+	subordinates: z.array(grantKinds)
+});
+
+export type UserGrants = z.infer<typeof userGrants>;
+
 export const grantSetAssignment = grantSet
 	.extend({ subject: z.uuid() })
 	.refine(
@@ -2349,6 +2370,10 @@ export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) 
 		// ComputedManagedBy feature flag is enabled. Carries all teams along the
 		// hierarchy, nearest first. See computeManagedBy.ts.
 		computed_managed_by: z.array(z.uuid()).optional(),
+		// Read-time computed grants of the authenticated user on this container,
+		// never stored; grants of other subjects do not leave the server. See
+		// computeUserGrants.ts.
+		user_grants: userGrants.optional(),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
