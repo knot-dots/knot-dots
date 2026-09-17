@@ -10,7 +10,6 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	anyInitialPayload,
 	type Container,
-	containerOfType,
 	createNewContainerSchema,
 	editorialState,
 	isOrganizationalUnitContainer,
@@ -43,7 +42,6 @@ export const actions = {
 		}
 
 		let currentOrganizationGuid: string;
-		let currentOrganizationalUnitGuid: string | undefined;
 
 		// the scope the import creates into; its computed grants authorize creating
 		let scopeContainer!: Awaited<ReturnType<ReturnType<typeof getContainerByGuid>>>;
@@ -54,7 +52,6 @@ export const actions = {
 				isOrganizationalUnitContainer(containerFromParams) &&
 				defineAbilityFor(locals.user).can('read', containerFromParams)
 			) {
-				currentOrganizationalUnitGuid = containerFromParams.guid;
 				currentOrganizationGuid = containerFromParams.organization;
 			} else if (
 				isOrganizationContainer(containerFromParams) &&
@@ -72,18 +69,7 @@ export const actions = {
 			}
 		}
 
-		if (
-			!defineAbilityFor(locals.user).can(
-				'create',
-				containerOfType(
-					payloadTypes.enum.program,
-					currentOrganizationGuid,
-					currentOrganizationalUnitGuid ?? null,
-					currentOrganizationalUnitGuid ?? currentOrganizationGuid,
-					env.PUBLIC_KC_REALM
-				)
-			)
-		) {
+		if (!defineAbilityFor(locals.user).can('create', scopeContainer, payloadTypes.enum.program)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 
@@ -257,13 +243,8 @@ export const load = (async ({ locals, parent }) => {
 	if (
 		!defineAbilityFor(locals.user).can(
 			'create',
-			containerOfType(
-				payloadTypes.enum.program,
-				currentOrganization.guid,
-				currentOrganizationalUnit?.guid ?? null,
-				currentOrganizationalUnit?.guid ?? currentOrganization.guid,
-				env.PUBLIC_KC_REALM
-			)
+			currentOrganizationalUnit ?? currentOrganization,
+			payloadTypes.enum.program
 		)
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });

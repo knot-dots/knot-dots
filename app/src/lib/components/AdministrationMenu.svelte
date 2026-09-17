@@ -23,7 +23,6 @@
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
 	import {
 		type Container,
-		containerOfType,
 		getOrganizationURL,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -108,16 +107,7 @@
 			container.payload.organizationalUnitType ==
 				organizationalUnitType.enum['organizational_unit_type.administrative_area'] &&
 			!hasIndividualProfileRelation &&
-			$ability.can(
-				'create',
-				containerOfType(
-					payloadTypes.enum.organizational_unit,
-					container.organization,
-					null,
-					container.organization,
-					container.realm
-				)
-			)
+			$ability.can('create', page.data.currentOrganization, payloadTypes.enum.organizational_unit)
 	);
 
 	async function createIndividualProfile() {

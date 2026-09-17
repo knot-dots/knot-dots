@@ -13,28 +13,29 @@ test.describe('Object members matrix', () => {
 	test('inherits, decouples into an own matrix and re-inherits', async ({
 		page,
 		testOrganization,
-		testMeasure
+		testMeasure,
+		testProgram
 	}) => {
 		await page.goto(`/${testOrganization.guid}/all/level#members=${testMeasure.guid}`);
 
 		const overlay = page.locator('.overlay');
 		// the segmented button hides its radio inputs, so click the label instead
 		await overlay.getByText('Matrix', { exact: true }).click();
-		// the managing program still inherits, so its matrix lies dormant and the
-		// surrounding area governs
+		// assigning roles gave the managing program a matrix of its own, so the
+		// measure inherits from the program rather than from the organization
 		await expect(
-			overlay.getByText(`Inherited from ${testOrganization.payload.name}`, { exact: false })
+			overlay.getByText(`Inherited from ${testProgram.payload.title}`, { exact: false })
 		).toBeVisible();
 
 		// While inheriting, the effective matrix shows read-only and the own
-		// section offers no way to add members. Bob's row on the inheriting
-		// program does not count; he is a plain member of the organization.
+		// section offers no way to add members. Bob heads the program, so his
+		// row carries every subordinate kind.
 		const inheritedBob = overlay.getByRole('row', { name: 'Bob Bow' }).first();
 		await expect(inheritedBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
 		await expect(inheritedBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeDisabled();
 		await expect(
 			inheritedBob.getByRole('checkbox', { name: 'Edit (Subordinate objects)' })
-		).not.toBeChecked();
+		).toBeChecked();
 		// members of the surrounding areas show with their effective sets
 		await expect(overlay.getByRole('row', { name: 'Orla Orchestra' })).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toBeDisabled();

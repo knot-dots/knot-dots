@@ -86,18 +86,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		}
 	}
 
-	if (
-		!ability.can(
-			'create',
-			containerOfType(
-				payloadTypes.enum.indicator_template,
-				currentOrganizationGuid,
-				currentOrganizationalUnitGuid ?? null,
-				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
-				env.PUBLIC_KC_REALM
-			)
-		)
-	) {
+	if (!ability.can('create', scopeContainer, payloadTypes.enum.indicator_template)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
