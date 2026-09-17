@@ -77,7 +77,13 @@ export async function computeUserGrants(
 		),
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
-				coalesce(c.payload->>'inheritsGrants', 'true') = 'false' AS decoupled
+				coalesce(c.payload->>'inheritsGrants', 'true') = 'false'
+					-- an organizational unit is an area: its rows act as soon as
+					-- they exist, matching the units-override of the old rules
+					OR (
+						c.payload->>'type' = 'organizational_unit'
+						AND EXISTS (SELECT 1 FROM container_grant g WHERE g.object = c.guid)
+					) AS decoupled
 			FROM container c
 			WHERE c.guid = ANY(${sql.array(guids, 'uuid')}) AND c.valid_currently AND NOT c.deleted
 		),
@@ -97,7 +103,10 @@ export async function computeUserGrants(
 						SELECT u.guid
 						FROM container u
 						WHERE u.guid = b.organizational_unit AND u.valid_currently AND NOT u.deleted
-							AND u.payload->>'inheritsGrants' = 'false'
+							AND (
+								u.payload->>'inheritsGrants' = 'false'
+								OR EXISTS (SELECT 1 FROM container_grant g WHERE g.object = u.guid)
+							)
 					),
 					b.organization
 				) END AS source

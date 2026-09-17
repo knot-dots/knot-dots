@@ -337,3 +337,31 @@ test('member roles govern while the permission matrix is off', async ({ connecti
 	const fromGrants = await computeUserGrants(connection, subject, [measure.guid]);
 	expect(fromGrants.get(measure.guid)?.self).toEqual(['delete']);
 });
+
+test('rows on an organizational unit act as soon as they exist', async ({
+	connection
+}: Fixtures) => {
+	// units are areas: unlike programs and measures, their rows need no
+	// decoupling to override the organization — the units-override of old
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.organizational_unit)
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: unit.guid })
+	)(connection);
+	await setContainerGrants(unit.guid, subject, {
+		self: ['read', 'update', 'manage-users'],
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, subject, [unit.guid, measure.guid]);
+
+	// the unit administers itself through its own rows
+	expect(grants.get(unit.guid)?.own).toEqual(['read', 'update', 'manage-users']);
+	expect(grants.get(unit.guid)?.admin).toBe(true);
+	// and governs its contents
+	expect(grants.get(measure.guid)?.source).toBe(unit.guid);
+	expect(grants.get(measure.guid)?.self).toEqual(['read', 'update', 'delete', 'manage-users']);
+});
