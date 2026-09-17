@@ -211,6 +211,11 @@ services:
       - "3000:3000"
     profiles:
       - qa
+    volumes:
+      # Stand-in for the downward API volume, see the app service. Unlike the
+      # dev service, preview carries only the flags the E2E suites expect
+      # instead of the full local flag set.
+      - ./podinfo-preview:/etc/podinfo:ro
 
   smtp:
     image: axllent/mailpit

@@ -283,6 +283,48 @@ export function getAllGrantsOfUser(subject: string) {
 	};
 }
 
+export function getAllGrantsOfUserFromMemberRoles(subject: string) {
+	// While the permission matrix is off, the stored grants lie dormant and a
+	// session carries the grants its member roles stand for instead — the
+	// pre-matrix, role-based behavior.
+	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
+		const memberships = await connection.any(sql.type(
+			z.object({ object: z.uuid(), predicate: predicates })
+		)`
+			SELECT c.guid AS object, cu.predicate
+			FROM container_user cu
+			JOIN container c ON c.revision = cu.object AND c.valid_currently AND NOT c.deleted
+			WHERE cu.subject = ${subject}
+				AND cu.predicate = ANY(${sql.array(
+					[...Object.values(memberRolePredicates), predicates.enum['is-member-of']],
+					'text'
+				)})
+		`);
+
+		const predicatesByObject = new Map<string, Predicate[]>();
+		for (const { object, predicate } of memberships) {
+			predicatesByObject.set(object, [...(predicatesByObject.get(object) ?? []), predicate]);
+		}
+
+		return [...predicatesByObject.entries()].flatMap(([object, relationPredicates]) => {
+			const role = memberRoleFromPredicates(relationPredicates);
+			if (role === null) {
+				return [];
+			}
+			const set = grantSetForRole(role);
+			return [
+				...set.self.map((kind) => ({ kind, object, subject, target: grantTargets.enum.self })),
+				...set.subordinates.map((kind) => ({
+					kind,
+					object,
+					subject,
+					target: grantTargets.enum.subordinates
+				}))
+			];
+		});
+	};
+}
+
 export function getAllGrantsByContainers(guids: string[]) {
 	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
 		if (guids.length === 0) {

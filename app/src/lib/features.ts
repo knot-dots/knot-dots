@@ -1,8 +1,8 @@
-// ComputedManagedBy and MultipleProgramAssignment are managed per deployment
-// via pod annotations (see $lib/server/podFeatures) and deliberately absent
-// from these user-facing rings.
+// ComputedManagedBy, MultipleProgramAssignment and PermissionMatrix are
+// managed per deployment via pod annotations (see $lib/server/podFeatures)
+// and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'Adoptions', 'PermissionMatrix', 'Templating'] as const],
+	['alpha', ['OpenAI', 'Adoptions', 'Templating'] as const],
 	[
 		'beta',
 		[

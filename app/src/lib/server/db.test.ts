@@ -4,7 +4,9 @@ import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
 	type Container,
+	grantSetForRole,
 	type MeasurePayload,
+	memberRoles,
 	modifiedContainer,
 	type NewContainer,
 	newContainer,
@@ -24,6 +26,7 @@ import {
 	deleteContainerRecursively,
 	getAdoptedContainerGuids,
 	getAllContainersRelatedToProgram,
+	getAllGrantsOfUserFromMemberRoles,
 	getContainerCopyGraph,
 	getContainerByGuid,
 	getManyContainers,
@@ -1984,4 +1987,50 @@ test('getManyOrganizationalUnitContainers: includeGuids widens the organization 
 	expect(guids).toContain(ownUnit.guid);
 	expect(guids).toContain(managedForeignUnit.guid);
 	expect(guids).not.toContain(otherForeignUnit.guid);
+});
+
+test('derives grants from the member roles, the strongest role per container', async ({
+	connection
+}: Fixtures) => {
+	const member = uuid();
+	await createOrUpdateUser({ family_name: '', given_name: '', guid: member, realm, settings: {} })(
+		connection
+	);
+	const headedMeasure = await createContainer(
+		newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: null,
+			payload: { title: 'Lorem ipsum', type: payloadTypes.enum.measure },
+			realm,
+			relation: [],
+			user: [
+				{ predicate: predicates.enum['is-head-of'], subject: member },
+				{ predicate: predicates.enum['is-member-of'], subject: member }
+			]
+		})
+	)(connection);
+	const observedProgram = await createContainer(
+		newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: null,
+			payload: { title: 'Lorem ipsum', type: payloadTypes.enum.program },
+			realm,
+			relation: [],
+			user: [{ predicate: predicates.enum['is-member-of'], subject: member }]
+		})
+	)(connection);
+
+	const grants = await getAllGrantsOfUserFromMemberRoles(member)(connection);
+
+	const setFor = (object: string) => ({
+		self: grants.filter((g) => g.object === object && g.target === 'self').map(({ kind }) => kind),
+		subordinates: grants
+			.filter((g) => g.object === object && g.target === 'subordinates')
+			.map(({ kind }) => kind)
+	});
+	expect(setFor(headedMeasure.guid)).toEqual(grantSetForRole(memberRoles.enum.head));
+	expect(setFor(observedProgram.guid)).toEqual(grantSetForRole(memberRoles.enum.observer));
+	expect(grants.every(({ subject }) => subject === member)).toBe(true);
 });
