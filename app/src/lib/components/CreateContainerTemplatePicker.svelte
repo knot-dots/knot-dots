@@ -7,6 +7,7 @@
 	import withOptimistic from '$lib/client/withOptimistic';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 	import type { TemplateCopyPreview } from '$lib/containerCopy';
+	import { createContainerDialogDraft } from '$lib/createContainerDialogState.svelte';
 	import {
 		createTemplateInstanceOf,
 		getAvailableInProgramGuids,
@@ -197,7 +198,7 @@
 			container.relation = $state.snapshot(initialState.container.relation);
 			draft = {
 				preview: templatePreview,
-				state: {
+				state: createContainerDialogDraft({
 					kind: 'copy',
 					container,
 					request: {
@@ -207,7 +208,7 @@
 						targetOrganizationGuid: initialState.container.organization,
 						targetOrganizationalUnitGuid: initialState.container.organizational_unit
 					}
-				}
+				})
 			};
 			templateDrafts.set(key, draft);
 		}
