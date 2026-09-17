@@ -53,7 +53,7 @@
 	let isIndividualProfile = $derived(individualProfileRelation?.subject === container.guid);
 
 	let containersQuery = resource([() => guid], async ([guid], _, { signal }) => {
-		const [containers, actualData, sections] = await Promise.all([
+		const [containers, sections] = await Promise.all([
 			fetchContainers(
 				{
 					guid: individualProfileRelation
@@ -64,6 +64,7 @@
 					organization: [container.organization],
 					organizationalUnit: [container.guid],
 					payloadType: [
+						payloadTypes.enum.actual_data,
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
 						payloadTypes.enum.indicator_template,
@@ -77,15 +78,6 @@
 				'alpha',
 				{ signal }
 			),
-			fetchContainers(
-				{
-					organization: [container.organization],
-					organizationalUnit: [container.guid],
-					payloadType: [payloadTypes.enum.actual_data]
-				},
-				'alpha',
-				{ signal }
-			),
 			fetchRelatedContainers(
 				guid,
 				{
@@ -95,7 +87,7 @@
 				{ signal }
 			)
 		]);
-		return [...containers, ...actualData, ...sections];
+		return [...containers, ...sections];
 	});
 
 	setBulkActionContext({
