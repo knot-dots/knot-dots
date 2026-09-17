@@ -3,7 +3,13 @@ import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import { type AnyPayload, newContainer, payloadTypes, predicates } from '$lib/models';
 import { computeUserGrants } from '$lib/server/computeUserGrants';
-import { createContainer, createOrUpdateUser, setContainerGrants } from '$lib/server/db';
+import {
+	createContainer,
+	createOrUpdateUser,
+	getContainerByGuid,
+	setContainerGrants
+} from '$lib/server/db';
+import { withRequestUser } from '$lib/server/requestUser';
 
 const realm = 'test';
 
@@ -226,4 +232,41 @@ test('organization administrators keep every kind regardless of decoupling', asy
 		source: measure.guid,
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
 	});
+});
+
+test('the read paths enrich containers with the grants of the request user', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
+		connection
+	);
+	await setContainerGrants(organization, subject, { self: [], subordinates: ['read', 'update'] })(
+		connection
+	);
+
+	let loaded: Awaited<ReturnType<ReturnType<typeof getContainerByGuid>>> | undefined;
+	await withRequestUser({
+		event: { locals: { user: { guid: subject, isAuthenticated: true } } } as never,
+		resolve: async () => {
+			loaded = await getContainerByGuid(measure.guid)(connection);
+			return new Response();
+		}
+	});
+
+	expect(loaded!.user_grants).toEqual({
+		admin: false,
+		area_sourced: true,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update'],
+		source: organization,
+		subordinates: ['read', 'update']
+	});
+
+	// outside a request the enrichment stands down
+	const outside = await getContainerByGuid(measure.guid)(connection);
+	expect(outside.user_grants).toBeUndefined();
 });

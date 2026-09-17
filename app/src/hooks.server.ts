@@ -12,6 +12,7 @@ import { createOrUpdateUser, getAllGrantsOfUser, getPool, getUser } from '$lib/s
 import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
 import { withFeatures } from '$lib/server/features';
 import { withLogger } from '$lib/server/logger';
+import { withRequestUser } from '$lib/server/requestUser';
 
 const baseURL = new URL(env.PUBLIC_BASE_URL ?? 'http://localhost:5173');
 const useSecureCookies = baseURL.protocol === 'https:';
@@ -149,6 +150,7 @@ export const handle = sequence(
 
 		return resolve(event);
 	},
+	withRequestUser,
 	withFeatures
 );
 

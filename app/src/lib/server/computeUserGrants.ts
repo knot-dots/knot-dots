@@ -7,6 +7,8 @@ import {
 	predicates,
 	type UserGrants
 } from '$lib/models';
+import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
+import { getRequestUser } from '$lib/server/requestUser';
 
 // Structural relations along which grants are inherited from a container
 // towards its ancestors (child.subject -> parent.object); the same chain
@@ -173,4 +175,22 @@ export async function applyUserGrants<T extends UserGrantsComparable>(
 	}
 
 	return containers;
+}
+
+type Enrichable = UserGrantsComparable & Parameters<typeof applyComputedManagedBy>[1][number];
+
+/**
+ * The read-time enrichment pipeline of the read paths: computes managed_by
+ * (behind its feature flag) and attaches the effective grants of the request
+ * user. Outside a request there is no user and the grants step is a no-op.
+ */
+export async function enrichContainers<T extends Enrichable>(
+	connection: DatabaseConnection,
+	containers: T[]
+): Promise<T[]> {
+	return applyUserGrants(
+		connection,
+		getRequestUser(),
+		await applyComputedManagedBy(connection, containers)
+	);
 }
