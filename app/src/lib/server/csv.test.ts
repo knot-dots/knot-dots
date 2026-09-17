@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	resolveColumnHeader,
 	reverseTranslationMap,
+	reverseTranslationMapForPayloadType,
 	reverseTranslationMapForStatus
 } from '$lib/server/csv';
 
@@ -51,5 +52,18 @@ describe('reverseTranslationMapForStatus', () => {
 	it('does not know labels of other enums', () => {
 		expect(reverseTranslationMapForStatus.get('Erledigt')).toBeUndefined();
 		expect(reverseTranslationMapForStatus.get('Beschlossen')).toBeUndefined();
+	});
+});
+
+describe('reverseTranslationMapForPayloadType', () => {
+	it.each([
+		['Aufgabe', 'task'],
+		['Einfache Maßnahme', 'simple_measure'],
+		['Maßnahme', 'measure'],
+		['Programm', 'program'],
+		['Wissen', 'knowledge'],
+		['Ziel', 'goal']
+	])('maps the payload type label %j as shown in the UI to %j', (label, value) => {
+		expect(reverseTranslationMapForPayloadType.get(label)).toBe(value);
 	});
 });

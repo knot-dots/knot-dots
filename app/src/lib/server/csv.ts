@@ -1,9 +1,16 @@
 import de from '$lib/locales/de.json';
-import { status } from '$lib/models';
+import { payloadTypes, status } from '$lib/models';
 
 export const reverseTranslationMap = new Map<string, string>(
 	Object.entries(de)
 		.filter((e): e is [string, string] => typeof e[1] === 'string')
+		.map(([k, v]) => [v, k])
+);
+
+export const reverseTranslationMapForPayloadType = new Map<string, string>(
+	Object.entries(de)
+		.filter((e): e is [string, string] => typeof e[1] === 'string')
+		.filter(([k]) => (payloadTypes.options as string[]).includes(k))
 		.map(([k, v]) => [v, k])
 );
 
