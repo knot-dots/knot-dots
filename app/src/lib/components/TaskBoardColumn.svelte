@@ -4,19 +4,11 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import saveContainer from '$lib/client/saveContainer';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import {
-		type Container,
-		containerOfType,
-		payloadTypes,
-		type Status,
-		type TaskPayload
-	} from '$lib/models';
-	import { ability } from '$lib/stores';
+	import { type Container, type Status, type TaskPayload } from '$lib/models';
 
 	interface Props {
 		addItemUrl?: string;
@@ -27,16 +19,6 @@
 	}
 
 	let { addItemUrl, onSort, itemSnippet, items = [], status }: Props = $props();
-
-	function containerOfTypeTask() {
-		return containerOfType(
-			payloadTypes.enum.task,
-			page.data.currentOrganization.guid,
-			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
-			env.PUBLIC_KC_REALM
-		);
-	}
 
 	function handleDndConsider(e: CustomEvent<DndEvent<Container<TaskPayload>>>) {
 		items = e.detail.items;
@@ -74,7 +56,7 @@
 </script>
 
 <BoardColumn {addItemUrl} title={$_(status)}>
-	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', containerOfTypeTask())}
+	{#if browser && !matchMedia('(pointer: coarse)').matches && (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).user_grants?.subordinates.includes('update')}
 		<div
 			class="vertical-scroll-wrapper"
 			use:dndzone={{ dropTargetStyle: {}, items }}
