@@ -1,14 +1,18 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { v4 as uuid } from 'uuid';
 import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import { type AnyPayload, newContainer, payloadTypes, predicates } from '$lib/models';
-import { computeUserGrants } from '$lib/server/computeUserGrants';
+import { computeUserGrants, computeUserGrantsFromRoles } from '$lib/server/computeUserGrants';
 import {
 	createContainer,
 	createOrUpdateUser,
 	getContainerByGuid,
 	setContainerGrants
 } from '$lib/server/db';
+import { withFeatures } from '$lib/server/features';
 import { withRequestUser } from '$lib/server/requestUser';
 
 const realm = 'test';
@@ -20,6 +24,7 @@ function newTestContainer(
 		inheritsGrants?: boolean;
 		organizationalUnit?: string;
 		relation?: { object: string; predicate: string }[];
+		user?: { predicate: string; subject: string }[];
 	} = {}
 ) {
 	return newContainer.parse({
@@ -35,7 +40,7 @@ function newTestContainer(
 		},
 		realm,
 		relation: options.relation?.map((r, position) => ({ ...r, position })) ?? [],
-		user: []
+		user: options.user ?? []
 	});
 }
 
@@ -246,14 +251,37 @@ test('the read paths enrich containers with the grants of the request user', asy
 		connection
 	);
 
-	let loaded: Awaited<ReturnType<ReturnType<typeof getContainerByGuid>>> | undefined;
-	await withRequestUser({
-		event: { locals: { user: { guid: subject, isAuthenticated: true } } } as never,
-		resolve: async () => {
-			loaded = await getContainerByGuid(measure.guid)(connection);
-			return new Response();
-		}
-	});
+	// the permission matrix flag governs which derivation the read paths use;
+	// it is deployment-governed, so the test provides pod annotations
+	const annotationsPath = path.join(
+		fs.mkdtempSync(path.join(os.tmpdir(), 'podinfo-')),
+		'annotations'
+	);
+	const previousPath = process.env.PODINFO_ANNOTATIONS_PATH;
+	process.env.PODINFO_ANNOTATIONS_PATH = annotationsPath;
+	const read = async () => {
+		let result: Awaited<ReturnType<ReturnType<typeof getContainerByGuid>>> | undefined;
+		await withFeatures({
+			event: { locals: {} } as never,
+			resolve: () =>
+				withRequestUser({
+					event: { locals: { user: { guid: subject, isAuthenticated: true } } } as never,
+					resolve: async () => {
+						result = await getContainerByGuid(measure.guid)(connection);
+						return new Response();
+					}
+				})
+		});
+		return result;
+	};
+
+	fs.writeFileSync(annotationsPath, 'knotdots.net/PermissionMatrix="true"\n');
+	const loaded = await read();
+	if (previousPath === undefined) {
+		delete process.env.PODINFO_ANNOTATIONS_PATH;
+	} else {
+		process.env.PODINFO_ANNOTATIONS_PATH = previousPath;
+	}
 
 	expect(loaded!.user_grants).toEqual({
 		admin: false,
@@ -269,4 +297,43 @@ test('the read paths enrich containers with the grants of the request user', asy
 	// outside a request the enrichment stands down
 	const outside = await getContainerByGuid(measure.guid)(connection);
 	expect(outside.user_grants).toBeUndefined();
+});
+
+test('member roles govern while the permission matrix is off', async ({ connection }: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const program = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, {
+			user: [
+				{ predicate: predicates.enum['is-head-of'], subject },
+				{ predicate: predicates.enum['is-member-of'], subject }
+			]
+		})
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
+		})
+	)(connection);
+	// stored grant rows play no part while the roles govern
+	await setContainerGrants(organization, subject, { self: [], subordinates: ['delete'] })(
+		connection
+	);
+
+	const fromRoles = await computeUserGrantsFromRoles(connection, subject, [measure.guid]);
+
+	expect(fromRoles.get(measure.guid)).toEqual({
+		admin: false,
+		area_sourced: false,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update', 'delete', 'manage-users'],
+		source: program.guid,
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+	});
+
+	// the grant-based derivation ignores the roles and reads the stored rows
+	const fromGrants = await computeUserGrants(connection, subject, [measure.guid]);
+	expect(fromGrants.get(measure.guid)?.self).toEqual(['delete']);
 });
