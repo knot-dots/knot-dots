@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
-import { type AnyPayload, type Container, payloadTypes, predicates } from '$lib/models';
+import { type CategoryPayload, type Container, payloadTypes, type TermPayload } from '$lib/models';
 import { getManyContainers } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -12,68 +12,18 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 
 	const { currentOrganization, defaultOrganizationGuid } = await parent();
 
-	const organizationScope = Array.from(
-		new Set(
-			[currentOrganization.guid, defaultOrganizationGuid].filter((guid): guid is string =>
-				Boolean(guid)
-			)
-		)
-	);
-
-	const searchTerms = url.searchParams.get('terms') ?? '';
-	const categorySort = url.searchParams.get('sort') ?? 'alpha';
-
-	const splitTerms = (terms: Container<AnyPayload>[]) =>
-		terms.reduce(
-			(result, term) => {
-				const hasParentTerm = term.relation.some(
-					({ predicate, subject, object }) =>
-						predicate === predicates.enum['is-part-of'] &&
-						subject === term.guid &&
-						object !== term.guid
-				);
-
-				if (hasParentTerm) {
-					result.subterms.push(term);
-				} else {
-					result.terms.push(term);
-				}
-
-				return result;
+	const containers = (await locals.pool.connect(
+		getManyContainers(
+			[currentOrganization.guid, defaultOrganizationGuid],
+			{
+				terms: url.searchParams.get('terms') ?? '',
+				type: [payloadTypes.enum.category, payloadTypes.enum.term]
 			},
-			{ terms: [] as Container<AnyPayload>[], subterms: [] as Container<AnyPayload>[] }
-		);
-
-	const [containers, terms] = await Promise.all([
-		locals.pool.connect(
-			getManyContainers(
-				organizationScope,
-				{
-					terms: searchTerms,
-					type: [payloadTypes.enum.category]
-				},
-				categorySort
-			)
-		),
-		locals.pool.connect(
-			getManyContainers(
-				organizationScope,
-				{
-					terms: searchTerms,
-					type: [payloadTypes.enum.term]
-				},
-				'alpha'
-			)
+			url.searchParams.get('sort') ?? 'alpha'
 		)
-	]);
-
-	const visibleContainers = filterVisible(containers, locals.user);
-	const visibleTerms = filterVisible(terms, locals.user);
-	const { terms: rootTerms, subterms } = splitTerms(visibleTerms);
+	)) as Array<Container<CategoryPayload | TermPayload>>;
 
 	return {
-		containers: visibleContainers,
-		terms: rootTerms,
-		subterms
+		containers: filterVisible(containers, locals.user)
 	};
 };
