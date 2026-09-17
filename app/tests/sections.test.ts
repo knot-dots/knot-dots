@@ -129,16 +129,6 @@ test('progress can be computed from subordinate objects', async ({
 	await expect(stackedBar.locator('.segment')).toHaveCount(1, { timeout: 15000 });
 	await stackedBar.locator('.segment').hover();
 	await expect(dotsBoard.page.getByRole('tooltip')).toContainText(testTask.payload.title);
-
-	// Remove the Progress section so subsequent tests start from a pristine goal
-	await section.hover();
-	await section.getByRole('button', { name: 'Settings' }).click();
-	await section.getByRole('button', { name: 'Remove section' }).click();
-	const saveResponseForDelete = dotsBoard.page.waitForResponse(
-		(r) => r.url().includes('/revision') && r.request().method() === 'POST'
-	);
-	await dotsBoard.page.getByRole('button', { name: /I want to delete/i }).click();
-	await saveResponseForDelete;
 });
 
 test('inline help is edit-only', async ({ dotsBoard, testReport }) => {
