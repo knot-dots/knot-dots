@@ -141,9 +141,7 @@
 
 		const response = await fetch(`/container/${container.guid}/relation`, {
 			method: 'POST',
-			body: JSON.stringify(
-				container.relation.filter(({ predicate }) => predicate === predicates.enum['is-section-of'])
-			),
+			body: JSON.stringify(container.relation.filter(({ predicate: p }) => p === predicate)),
 			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json'
