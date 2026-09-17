@@ -20,7 +20,11 @@ import {
 	predicates,
 	type ProgramPayload
 } from '$lib/models';
-import { reverseTranslationMap, statusByLabel } from '$lib/server/csv';
+import {
+	reverseTranslationMap,
+	reverseTranslationMapForPayloadType,
+	reverseTranslationMapForStatus
+} from '$lib/server/csv';
 import {
 	createContainer,
 	getAllRelatedUsers,
@@ -187,13 +191,13 @@ export const actions = {
 							description: record.description,
 							...(record.endDate ? { endDate: record.endDate } : {}),
 							...(record.status
-								? { status: statusByLabel.get(record.status) ?? record.status }
+								? { status: reverseTranslationMapForStatus.get(record.status) ?? record.status }
 								: {}),
 							...(record.startDate ? { startDate: record.startDate } : {}),
 							...(record.summary ? { summary: record.summary } : {}),
 							editorialState: editorialState.enum['editorial_state.draft'],
 							title: record.title,
-							type: reverseTranslationMap.get(record.type)
+							type: reverseTranslationMapForPayloadType.get(record.type)
 						},
 						realm: env.PUBLIC_KC_REALM,
 						relation: program
