@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import CopyCat from '~icons/knotdots/copycat';
 	import { page } from '$app/state';
-	import { type AnyPayload, type Container, containerOfType, createRootCopyOf } from '$lib/models';
+	import { type AnyPayload, type Container, createRootCopyOf } from '$lib/models';
 	import { selectContainerCopyLocation, type ContainerCopyLocation } from '$lib/containerCopy';
 	import { ability, applicationState, openContainerCopyDialog, user } from '$lib/stores';
 
@@ -18,14 +18,15 @@
 	);
 
 	function canCreateAt(location: ContainerCopyLocation) {
-		const candidate = containerOfType(
-			container.payload.type,
-			location.organizationGuid,
-			location.organizationalUnitGuid,
-			location.organizationalUnitGuid ?? location.organizationGuid,
-			container.realm
-		);
-		return $ability.can('create', candidate);
+		// creating happens within the location, whose computed grants decide
+		const scope =
+			page.data.organizationalUnits.find(
+				({ guid }: { guid: string }) => guid === location.organizationalUnitGuid
+			) ??
+			page.data.organizations.find(
+				({ guid }: { guid: string }) => guid === location.organizationGuid
+			);
+		return scope !== undefined && $ability.can('create', scope, container.payload.type);
 	}
 
 	let copyLocation = $derived.by(() =>

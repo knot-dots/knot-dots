@@ -176,6 +176,9 @@
 		) as Container<ResourceDataPayload>;
 
 		c.guid = temporaryGuid;
+		// the stub stands in for a child of the resource, so the resource's
+		// computed grants decide whether it may be edited
+		c.user_grants = container.user_grants;
 		c.payload.title = title;
 		c.payload.resourceDataType = resourceDataType;
 		c.payload.resource = container.guid;
