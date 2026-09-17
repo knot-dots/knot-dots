@@ -1,6 +1,7 @@
 import { type DefaultSession } from '@auth/sveltekit';
 import type { DatabasePool } from 'slonik';
 import type { CategoryContext } from '$lib/categoryOptions';
+import type { Favorite } from '$lib/contexts/favoriteList';
 import type {
 	Container,
 	GrantRecords,
@@ -48,7 +49,7 @@ declare module '@auth/sveltekit' {
 			grants: GrantRecords;
 			guid: string;
 			roles: string[];
-			settings: { features?: string[] };
+			settings: { favorite?: Favorite[]; features?: string[] };
 		} & DefaultSession['user'];
 	}
 }
