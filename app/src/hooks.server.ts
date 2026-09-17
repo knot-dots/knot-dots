@@ -7,10 +7,17 @@ import { isErrorLike, serializeError } from 'serialize-error';
 import { _, locale, unwrapFunctionStore } from 'svelte-i18n';
 import { env as privateEnv } from '$env/dynamic/private';
 import { env } from '$env/dynamic/public';
+import { createFeatureDecisions } from '$lib/features';
 import { emptyGrantRecords, grantRecordsFromGrants } from '$lib/models';
-import { createOrUpdateUser, getAllGrantsOfUser, getPool, getUser } from '$lib/server/db';
+import {
+	createOrUpdateUser,
+	getAllGrantsOfUser,
+	getAllGrantsOfUserFromMemberRoles,
+	getPool,
+	getUser
+} from '$lib/server/db';
 import { ensureDefaultCategoryTerms } from '$lib/server/defaultCategories';
-import { withFeatures } from '$lib/server/features';
+import { addUserFeatures, getFeatures, withFeatures } from '$lib/server/features';
 import { withLogger } from '$lib/server/logger';
 import { withRequestUser } from '$lib/server/requestUser';
 
@@ -63,9 +70,18 @@ export const withAuthentication: Handle = ({ event, resolve }) => {
 				// deletes the session cookie, logging the user out for good.
 				try {
 					const pool = await getPool();
+					// The permission matrix flag is governed at the deployment level;
+					// withFeatures has run at this point and carries only those flags.
+					// While the matrix is off, the session falls back to the grants the
+					// member roles stand for and stored grants lie dormant.
+					const matrixEnabled = createFeatureDecisions(getFeatures()).usePermissionMatrix();
 					const [user, grants] = await Promise.all([
 						pool.connect(getUser(token.sub as string)),
-						pool.connect(getAllGrantsOfUser(token.sub as string))
+						pool.connect(
+							matrixEnabled
+								? getAllGrantsOfUser(token.sub as string)
+								: getAllGrantsOfUserFromMemberRoles(token.sub as string)
+						)
 					]);
 					session.user.familyName = user.family_name;
 					session.user.givenName = user.given_name;
@@ -114,6 +130,9 @@ export const withAuthentication: Handle = ({ event, resolve }) => {
 
 export const handle = sequence(
 	withLogger,
+	// ahead of authentication so that the session callback sees the
+	// deployment-governed flags via getFeatures()
+	withFeatures,
 	withAuthentication,
 	async ({ event, resolve }) => {
 		const lang = event.request.headers.get('accept-language')?.split(',')[0];
@@ -141,6 +160,8 @@ export const handle = sequence(
 			};
 		}
 
+		await addUserFeatures(event);
+
 		if (
 			event.locals.user.isAuthenticated &&
 			event.url.searchParams.has('redirectToProfileIfLoggedIn')
@@ -150,8 +171,7 @@ export const handle = sequence(
 
 		return resolve(event);
 	},
-	withRequestUser,
-	withFeatures
+	withRequestUser
 );
 
 export const handleError = async ({ error }) => {

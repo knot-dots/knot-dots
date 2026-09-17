@@ -178,16 +178,6 @@ test.describe('Goal IOOI Board', () => {
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
-
-		// Go to main overlay view to delete the auto-created section
-		await dotsBoard.page.goto(`/${testGoal.organization}#view=${testGoal.guid}`);
-		await dotsBoard.overlay.editModeToggle.check();
-		const budgetSection = dotsBoard.overlay.sections.filter({
-			hasText: 'Budget'
-		});
-		if ((await budgetSection.count()) > 0) {
-			await dotsBoard.overlay.deleteSection(budgetSection.first());
-		}
 	});
 
 	test('automatically creates resource data collection section when adding resource data from Input column', async ({
@@ -250,7 +240,6 @@ test.describe('Goal IOOI Board', () => {
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
-		await dotsBoard.overlay.deleteSection(budgetSection);
 	});
 });
 
@@ -447,16 +436,6 @@ test.describe('Measure IOOI Board', () => {
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
-
-		// Go to main overlay view to delete the auto-created section
-		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
-		await dotsBoard.overlay.editModeToggle.check();
-		const plannedSection = dotsBoard.overlay.sections.filter({
-			hasText: 'Planned resource allocation'
-		});
-		if ((await plannedSection.count()) > 0) {
-			await dotsBoard.overlay.deleteSection(plannedSection.first());
-		}
 	});
 
 	test('can create actual resource allocation in Input column for measure', async ({
@@ -509,16 +488,6 @@ test.describe('Measure IOOI Board', () => {
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
-
-		// Go to main overlay view to delete the auto-created section
-		await dotsBoard.page.goto(`/${testMeasure.organization}#view=${testMeasure.guid}`);
-		await dotsBoard.overlay.editModeToggle.check();
-		const actualSection = dotsBoard.overlay.sections.filter({
-			hasText: 'Actual resource allocation'
-		});
-		if ((await actualSection.count()) > 0) {
-			await dotsBoard.overlay.deleteSection(actualSection.first());
-		}
 	});
 
 	test('automatically creates resource data collection section when adding resource data from Input column for measure', async ({
@@ -590,7 +559,6 @@ test.describe('Measure IOOI Board', () => {
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.editModeToggle.check();
 		await dotsBoard.overlay.delete();
-		await dotsBoard.overlay.deleteSection(plannedSection);
 	});
 
 	test('Input column shows resource data', async ({
@@ -653,6 +621,5 @@ test.describe('Measure IOOI Board', () => {
 		await section.getByTitle(resourceDataTitle).click();
 		await expect(dotsBoard.overlay.title).toHaveText(resourceDataTitle);
 		await dotsBoard.overlay.delete();
-		await dotsBoard.overlay.deleteSection(section);
 	});
 });

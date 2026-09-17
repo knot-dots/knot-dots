@@ -16,6 +16,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
+	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import BulkActions from '$lib/components/BulkActions.svelte';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
@@ -219,6 +220,8 @@
 		>
 			<Bars />
 		</button>
+
+		<Breadcrumb />
 	{/if}
 
 	{#if overlay}
@@ -427,6 +430,7 @@
 		--dropdown-button-min-height: 2rem;
 		--dropdown-button-padding: 0.25rem 0.5rem;
 
+		align-items: center;
 		color: var(--color-text-default);
 		display: flex;
 		flex-shrink: 0;
@@ -450,6 +454,10 @@
 		height: 1.5rem;
 		margin: 0 0.5rem;
 		width: 0;
+	}
+
+	.sidebar-toggle {
+		color: var(--color-text-muted);
 	}
 
 	.actions {

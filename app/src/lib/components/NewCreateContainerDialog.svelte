@@ -25,6 +25,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
+	import { requiresProgramTemplate } from '$lib/programTemplates';
 	import { getToastContext } from '$lib/contexts/toast';
 	import {
 		addItemState,
@@ -40,7 +41,17 @@
 	let { dialog = $bindable() }: Props = $props();
 	const toast = getToastContext();
 	let templatePreview = $state<TemplateCopyPreview>();
-	let templateSelectionPending = $state(false);
+	let pendingTemplateGuid = $state<string>();
+	let templateRequired = $derived(
+		$createContainerDialogState !== undefined &&
+			requiresProgramTemplate($createContainerDialogState.container)
+	);
+	let templateReady = $derived(
+		pendingTemplateGuid === undefined &&
+			(!templateRequired ||
+				($createContainerDialogState?.kind === 'copy' &&
+					$createContainerDialogState.request.operation === 'template-instance'))
+	);
 
 	function activateTemplate(
 		state: CreateContainerDialogState,
@@ -49,6 +60,17 @@
 		$createContainerDialogState = state;
 		templatePreview = preview;
 	}
+
+	const showTemplatePicker = $derived.by(() => {
+		const state = $createContainerDialogState;
+		if (!state) return false;
+
+		if ('template' in state.container.payload && state.container.payload.template) {
+			return false;
+		}
+
+		return state.kind === 'create' || state.request.operation === 'template-instance';
+	});
 
 	function rootPlacementFor(container: NewContainer): RootCopyPlacement[] {
 		return container.relation.flatMap(({ object, position, predicate, subject }) => {
@@ -131,7 +153,7 @@
 
 	function resetDialogState() {
 		templatePreview = undefined;
-		templateSelectionPending = false;
+		pendingTemplateGuid = undefined;
 		$createContainerDialogState = undefined;
 		$addItemState = {};
 	}
@@ -170,79 +192,79 @@
 					{$_('cancel')}
 				</button>
 
-				<button
-					class="button-primary system-primary"
-					disabled={templateSelectionPending}
-					type="submit"
-				>
+				<button class="button-primary system-primary" disabled={!templateReady} type="submit">
 					{$_('save')}
 				</button>
 			</header>
 
-			<article class="details">
-				<div class="details-scroll-wrapper">
-					<header class="details-section">
-						<div class="details-header">
-							<h1 class="details-title">
-								{#if isContainerWithName($createContainerDialogState.container)}
-									<AutoresizingTextarea
-										aria-label={$_('title')}
-										placeholder={$_('title')}
-										required
-										rows={1}
-										bind:value={$createContainerDialogState.container.payload.name}
-									/>
-								{:else if isContainerWithTitle($createContainerDialogState.container)}
-									<AutoresizingTextarea
-										aria-label={$_('title')}
-										placeholder={$_('title')}
-										required
-										rows={1}
-										bind:value={$createContainerDialogState.container.payload.title}
-									/>
-								{/if}
-							</h1>
-						</div>
+			{#if templateReady}
+				<article class="details">
+					<div class="details-scroll-wrapper">
+						<header class="details-section">
+							<div class="details-header">
+								<h1 class="details-title">
+									{#if isContainerWithName($createContainerDialogState.container)}
+										<AutoresizingTextarea
+											aria-label={$_('title')}
+											placeholder={$_('title')}
+											required
+											rows={1}
+											bind:value={$createContainerDialogState.container.payload.name}
+										/>
+									{:else if isContainerWithTitle($createContainerDialogState.container)}
+										<AutoresizingTextarea
+											aria-label={$_('title')}
+											placeholder={$_('title')}
+											required
+											rows={1}
+											bind:value={$createContainerDialogState.container.payload.title}
+										/>
+									{/if}
+								</h1>
+							</div>
 
-						{#if isContainer($createContainerDialogState.container)}
-							<Badges bind:container={$createContainerDialogState.container} editable />
-						{/if}
+							{#if isContainer($createContainerDialogState.container)}
+								<Badges bind:container={$createContainerDialogState.container} editable />
+							{/if}
 
-						{#if isSimpleMeasureContainer($createContainerDialogState.container)}
-							<EditableProgress
+							{#if isSimpleMeasureContainer($createContainerDialogState.container)}
+								<EditableProgress
+									editable
+									bind:value={$createContainerDialogState.container.payload.progress}
+								/>
+							{/if}
+						</header>
+
+						<NewContainerProperties bind:container={$createContainerDialogState.container} />
+
+						{#if isContainerWithDescription($createContainerDialogState.container)}
+							<EditableFormattedText
 								editable
-								bind:value={$createContainerDialogState.container.payload.progress}
+								label={$_('description')}
+								bind:value={$createContainerDialogState.container.payload.description}
+							/>
+						{:else if isContainerWithBody($createContainerDialogState.container)}
+							<EditableFormattedText
+								editable
+								label={$_('body')}
+								bind:value={$createContainerDialogState.container.payload.body}
 							/>
 						{/if}
-					</header>
 
-					<NewContainerProperties bind:container={$createContainerDialogState.container} />
+						{#if templatePreview}
+							<TemplateHierarchyPreview preview={templatePreview} />
+						{/if}
+					</div>
+				</article>
+			{/if}
 
-					{#if isContainerWithDescription($createContainerDialogState.container)}
-						<EditableFormattedText
-							editable
-							label={$_('description')}
-							bind:value={$createContainerDialogState.container.payload.description}
-						/>
-					{:else if isContainerWithBody($createContainerDialogState.container)}
-						<EditableFormattedText
-							editable
-							label={$_('body')}
-							bind:value={$createContainerDialogState.container.payload.body}
-						/>
-					{/if}
-
-					{#if templatePreview}
-						<TemplateHierarchyPreview preview={templatePreview} />
-					{/if}
-				</div>
-			</article>
-
-			<CreateContainerTemplatePicker
-				dialogState={$createContainerDialogState}
-				onactivate={activateTemplate}
-				onpendingchange={(pending) => (templateSelectionPending = pending)}
-			/>
+			{#if showTemplatePicker}
+				<CreateContainerTemplatePicker
+					bind:pendingTemplateGuid
+					dialogState={$createContainerDialogState}
+					onactivate={activateTemplate}
+				/>
+			{/if}
 		</form>
 	{/if}
 </dialog>
@@ -294,9 +316,9 @@
 	}
 
 	.details-title {
+		margin-bottom: 0.25rem;
 		margin-left: -0.5rem;
 		margin-right: -0.5rem;
-		margin-bottom: 0.25rem;
 	}
 
 	.details-title :global(span::after),

@@ -3,6 +3,7 @@ import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	etag,
 	getAvailableInProgramGuids,
@@ -16,9 +17,11 @@ import { isProtectedContainerRelationPredicate } from '$lib/relations';
 import {
 	getAllContainerRevisionsByGuid,
 	getContainerByGuid,
+	getManyContainers,
 	updateContainer
 } from '$lib/server/db';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
+import { newProgramPlacements, programPlacementsRequireTemplate } from '$lib/programTemplates';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -70,6 +73,25 @@ export const POST = (async ({ locals, params, request }) => {
 		const ability = defineAbilityFor(locals.user);
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		if (createFeatureDecisions(locals.features ?? []).useProgramTemplateWorkspaces()) {
+			const placements = newProgramPlacements(parseResult.data.relation, container.relation);
+			if (placements.length > 0) {
+				const otherSubjectGuids = [
+					...new Set(
+						placements.map(({ subject }) => subject).filter((subject) => subject !== container.guid)
+					)
+				];
+				const subjects = [
+					container,
+					...(otherSubjectGuids.length > 0
+						? await locals.pool.connect(getManyContainers([], { guid: otherSubjectGuids }, 'alpha'))
+						: [])
+				];
+				if (programPlacementsRequireTemplate(placements, subjects)) {
+					error(422, { message: unwrapFunctionStore(_)('error.program_template_required') });
+				}
+			}
 		}
 		const protectedRelations = container.relation.filter(({ predicate }) =>
 			isProtectedContainerRelationPredicate(predicate)

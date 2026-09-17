@@ -38,6 +38,13 @@ test.describe('Measure monitoring', () => {
 			const column = dotsBoard.overlay.locator.locator('section', { hasText: item });
 			await column.getByRole('button', { name: 'Add item' }).first().click();
 			await dotsBoard.page.getByRole('textbox', { name: 'Title' }).fill(title);
+			dotsBoard.page.waitForResponse((response) => {
+				const path = new URL(response.url()).pathname;
+				return (
+					(path === '/container/copy' || path === '/container') &&
+					response.request().method() === 'POST'
+				);
+			});
 			await dotsBoard.page.getByRole('button', { name: 'Save' }).click();
 
 			// Verify the created item is part of the measure and managed by the same team
@@ -78,6 +85,7 @@ test.describe('Measures section', () => {
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
 		await dotsBoard.overlay.backButton.click();
+		await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
 		await expect(subMeasureSection.getByRole('heading', { level: 2 })).toHaveText('Modules');
 		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
 		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();

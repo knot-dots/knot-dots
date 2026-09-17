@@ -1031,14 +1031,16 @@ const teaserBasePayload = z.object({
 	bodyRight: z.string().trim().optional(),
 	cardStyle: z.string().optional(),
 	colSize: teaserColSizes.default('33-66'),
-	doubleWidth: z.boolean().default(false),
 	description: z.string().optional(),
+	doubleWidth: z.boolean().default(false),
 	image: z.url().optional(),
 	imageAltText: z.string().optional(),
 	imageAltTextRight: z.string().optional(),
 	imageEnable: z.boolean().default(true),
 	imageEnableRight: z.boolean().default(false),
 	imageRight: z.url().optional(),
+	imageSource: z.string().optional(),
+	imageSourceRight: z.string().optional(),
 	link: z.string().optional(),
 	linkEnable: z.boolean().default(false),
 	linkEnableRight: z.boolean().default(false),
@@ -1681,7 +1683,11 @@ export const organizationPayload = z.strictObject({
 	type: z.literal(payloadTypes.enum.organization),
 	useAnalytics: z.boolean().default(true),
 	visibility: visibility.default(visibility.enum['organization']),
-	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
+	visibleWorkspaces: z
+		.array(z.string())
+		.transform((v) => v.map((v) => (v == 'measure-monitoring' ? 'monitoring' : v)))
+		.transform(deduplicate)
+		.default([])
 });
 
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
@@ -2707,36 +2713,39 @@ export const newUser = z.object({
 
 export type NewUser = z.infer<typeof newUser>;
 
-export function isTemplateRoot({
-	guid,
-	payload,
-	relation
-}: {
-	guid: string;
-	payload: { template?: boolean };
-	relation: readonly Relation[];
-}) {
+export function isTemplateRoot(container: Container<AnyPayload>) {
 	return (
-		payload.template === true &&
-		!relation.some(
-			({ predicate, subject }) => subject === guid && isStructuralCopyPredicate(predicate)
+		isTemplateContainer(container) &&
+		!container.relation.some(
+			({ predicate, subject }) => subject === container.guid && isStructuralCopyPredicate(predicate)
 		)
 	);
 }
 
-export function getAvailableInProgramGuids({
-	guid,
-	relation
-}: Pick<Container<AnyPayload>, 'guid' | 'relation'>) {
-	return relation
+export function getAvailableInProgramGuids(container: Container<AnyPayload>) {
+	return container.relation
 		.filter(
 			({ predicate, subject }) =>
-				predicate === predicates.enum['is-available-in'] && subject === guid
+				predicate === predicates.enum['is-available-in'] && subject === container.guid
 		)
 		.map(({ object }) => object);
 }
 
-export function isPartOf(container: { relation: PartialRelation[]; guid: string }) {
+export function getDirectProgramGuids(container: NewContainer) {
+	return [
+		...new Set(
+			container.relation.flatMap(({ object, predicate, subject }) =>
+				predicate === predicates.enum['is-part-of-program'] &&
+				object !== undefined &&
+				(subject === undefined || subject === container.guid)
+					? [object]
+					: []
+			)
+		)
+	];
+}
+
+export function isPartOf(container: Container<AnyPayload>) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
@@ -2749,7 +2758,7 @@ export function isPartOf(container: { relation: PartialRelation[]; guid: string 
 	};
 }
 
-export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: string }) {
+export function isPartOfMeasure(container: Container<AnyPayload>) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(
@@ -2762,7 +2771,7 @@ export function isPartOfMeasure(container: { relation: PartialRelation[]; guid: 
 	};
 }
 
-export function isRelatedTo(container: { relation: Relation[]; guid: string }) {
+export function isRelatedTo(container: Container<AnyPayload>) {
 	return function (candidate: Container<AnyPayload>) {
 		return (
 			container.relation.findIndex(

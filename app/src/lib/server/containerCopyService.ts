@@ -95,9 +95,15 @@ function validateTemplateScope(
 	}
 	if (availableIn !== null) {
 		const program = graph.find(({ guid }) => guid === availableIn);
-		if (!program || !isProgramContainer(program) || !canRead(program)) {
+		if (
+			!program ||
+			!isProgramContainer(program) ||
+			program.organization !== source.organization ||
+			!canRead(program)
+		) {
 			throw new ContainerCopyServiceError('source_unavailable');
 		}
+		return program;
 	}
 }
 
@@ -307,7 +313,9 @@ async function resolveRootPlacement(
 		const manager = referencedContainers.get(managedBy);
 		if (
 			!manager ||
-			(!isOrganizationContainer(manager) && !isOrganizationalUnitContainer(manager)) ||
+			(!isOrganizationContainer(manager) &&
+				!isOrganizationalUnitContainer(manager) &&
+				(!isProgramContainer(manager) || request.availableIn !== manager.guid)) ||
 			manager.organization !== resolvedTarget.organization.guid ||
 			ability.cannot('read', manager)
 		) {
@@ -326,7 +334,10 @@ async function resolveRootPlacement(
 				!parent ||
 				parent.organization !== resolvedTarget.organization.guid ||
 				ability.cannot('read', parent) ||
-				(predicate === predicates.enum['is-part-of-program'] && !isProgramContainer(parent)) ||
+				(predicate === predicates.enum['is-part-of-program'] &&
+					(!isProgramContainer(parent) ||
+						request.availableIn === null ||
+						parentGuid !== request.availableIn)) ||
 				(predicate === predicates.enum['is-part-of-measure'] &&
 					!isMeasureContainer(parent) &&
 					!isSimpleMeasureContainer(parent))
@@ -359,10 +370,17 @@ export async function executeContainerCopy({
 	if (!source || ability.cannot('read', source)) {
 		throw new ContainerCopyServiceError('source_unavailable');
 	}
-	if (request.operation === 'template-instance') {
-		validateTemplateScope(source, graph.containers, request.availableIn, (container) =>
-			ability.can('read', container)
-		);
+	const scopedProgram =
+		request.operation === 'template-instance'
+			? validateTemplateScope(source, graph.containers, request.availableIn, (container) =>
+					ability.can('read', container)
+				)
+			: undefined;
+	if (
+		request.operation === 'template-instance' &&
+		(!isTemplateContainer(source) || !isTemplateRoot(source))
+	) {
+		throw new ContainerCopyServiceError('source_unavailable');
 	}
 	if (isOrganizationContainer(source)) {
 		throw new ContainerCopyServiceError('unsupported_copy_source');
@@ -396,6 +414,9 @@ export async function executeContainerCopy({
 	}
 
 	const resolvedTarget = await loadTarget(request, source, connection);
+	if (scopedProgram && scopedProgram.organization !== resolvedTarget.organization.guid) {
+		throw new ContainerCopyServiceError('invalid_target');
+	}
 	if (ability.cannot('read', resolvedTarget.organization)) {
 		throw new ContainerCopyServiceError('invalid_target');
 	}

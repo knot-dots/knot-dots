@@ -283,6 +283,48 @@ export function getAllGrantsOfUser(subject: string) {
 	};
 }
 
+export function getAllGrantsOfUserFromMemberRoles(subject: string) {
+	// While the permission matrix is off, the stored grants lie dormant and a
+	// session carries the grants its member roles stand for instead — the
+	// pre-matrix, role-based behavior.
+	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
+		const memberships = await connection.any(sql.type(
+			z.object({ object: z.uuid(), predicate: predicates })
+		)`
+			SELECT c.guid AS object, cu.predicate
+			FROM container_user cu
+			JOIN container c ON c.revision = cu.object AND c.valid_currently AND NOT c.deleted
+			WHERE cu.subject = ${subject}
+				AND cu.predicate = ANY(${sql.array(
+					[...Object.values(memberRolePredicates), predicates.enum['is-member-of']],
+					'text'
+				)})
+		`);
+
+		const predicatesByObject = new Map<string, Predicate[]>();
+		for (const { object, predicate } of memberships) {
+			predicatesByObject.set(object, [...(predicatesByObject.get(object) ?? []), predicate]);
+		}
+
+		return [...predicatesByObject.entries()].flatMap(([object, relationPredicates]) => {
+			const role = memberRoleFromPredicates(relationPredicates);
+			if (role === null) {
+				return [];
+			}
+			const set = grantSetForRole(role);
+			return [
+				...set.self.map((kind) => ({ kind, object, subject, target: grantTargets.enum.self })),
+				...set.subordinates.map((kind) => ({
+					kind,
+					object,
+					subject,
+					target: grantTargets.enum.subordinates
+				}))
+			];
+		});
+	};
+}
+
 export function getAllGrantsByContainers(guids: string[]) {
 	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
 		if (guids.length === 0) {
@@ -432,8 +474,8 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 }
 
 export function createContainer(container: NewContainer) {
-	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
-		return connection.transaction(async (txConnection) => {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+		const result = await connection.transaction(async (txConnection) => {
 			let organizationGuid;
 
 			if (container.payload.type === payloadTypes.enum.organization) {
@@ -474,8 +516,7 @@ export function createContainer(container: NewContainer) {
 				INSERT INTO container_user (object, predicate, subject)
 				SELECT *
 				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
-				RETURNING predicate, subject
-      `);
+				RETURNING predicate, subject`);
 
 			await syncContainerGrants(containerResult.guid, container.user)(txConnection);
 
@@ -484,7 +525,7 @@ export function createContainer(container: NewContainer) {
 				object: r.object ?? containerResult.guid,
 				subject: r.subject ?? containerResult.guid
 			}));
-			const relationResult = await createManyContainerRelations(relations)(txConnection);
+			const relationResult = await insertManyContainerRelations(relations, txConnection);
 
 			// Shift the sibling positions within every program the new container
 			// became part of; each program keeps its own ordering.
@@ -500,14 +541,6 @@ export function createContainer(container: NewContainer) {
 				`);
 			}
 
-			if (shouldIndexType(containerResult.payload.type)) {
-				await enqueueIndexingEvent({
-					action: 'upsert',
-					guid: containerResult.guid,
-					timestamp: new Date().toISOString()
-				});
-			}
-
 			// the caller hands the created container straight back to the client,
 			// so it carries the request user's grants like any read result
 			const [created] = await enrichContainers(txConnection, [
@@ -515,12 +548,19 @@ export function createContainer(container: NewContainer) {
 			]);
 			return created;
 		});
+
+		await enqueueContainerUpserts([
+			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
+			...affectedContainerGuids(result.relation)
+		]);
+
+		return result;
 	};
 }
 
 export function updateContainer(container: ModifiedContainer) {
-	return (connection: DatabaseConnection) => {
-		return connection.transaction(async (txConnection) => {
+	return async (connection: DatabaseConnection) => {
+		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
 			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
 
 			await txConnection.query(sql.typeAlias('void')`
@@ -569,8 +609,8 @@ export function updateContainer(container: ModifiedContainer) {
 							object === r.object && predicate === r.predicate && subject === r.subject
 					) == -1
 			);
-			await deleteManyContainerRelations(deletedRelations)(txConnection);
-			await updateManyContainerRelations(container.relation)(txConnection);
+			await deleteManyContainerRelationsInTransaction(deletedRelations, txConnection);
+			await updateManyContainerRelationsInTransaction(container.relation, txConnection);
 
 			if (previousRevision.organizational_unit != container.organizational_unit) {
 				await bulkUpdateOrganizationalUnit(
@@ -585,19 +625,21 @@ export function updateContainer(container: ModifiedContainer) {
 				await bulkUpdateManagedBy(previousRevision, container.managed_by[0])(txConnection);
 			}
 
-			if (shouldIndexType(containerResult.payload.type)) {
-				await enqueueIndexingEvent({
-					action: 'upsert',
-					guid: containerResult.guid,
-					timestamp: new Date().toISOString()
-				});
-			}
-
 			const [updated] = await enrichContainers(txConnection, [
 				{ ...containerResult, relation: container.relation, user: userResult }
 			]);
-			return updated;
+			return {
+				affectedGuids: affectedContainerGuids([...deletedRelations, ...container.relation]),
+				result: updated
+			};
 		});
+
+		await enqueueContainerUpserts([
+			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
+			...affectedGuids
+		]);
+
+		return result;
 	};
 }
 
@@ -631,8 +673,8 @@ export function updateMemberRole(
 }
 
 export function deleteContainer(container: Container<AnyPayload>) {
-	return (connection: DatabaseConnection) => {
-		return connection.transaction(async (txConnection) => {
+	return async (connection: DatabaseConnection) => {
+		const affectedGuids = await connection.transaction(async (txConnection) => {
 			if (container.payload.type === payloadTypes.enum.organization) {
 				await deleteGroup(container.guid);
 			}
@@ -696,7 +738,7 @@ export function deleteContainer(container: Container<AnyPayload>) {
 			`);
 
 			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
-			await deleteManyContainerRelations(relationResult)(txConnection);
+			await deleteManyContainerRelationsInTransaction(relationResult, txConnection);
 
 			const userValues = container.user.map((u) => [deletedRevision, u.predicate, u.subject]);
 			await txConnection.query(sql.typeAlias('void')`
@@ -707,14 +749,17 @@ export function deleteContainer(container: Container<AnyPayload>) {
 
 			await syncContainerGrants(container.guid, [])(txConnection);
 
-			if (shouldIndexType(container.payload.type)) {
-				await enqueueIndexingEvent({
-					action: 'delete',
-					guid: container.guid,
-					timestamp: new Date().toISOString()
-				});
-			}
+			return affectedContainerGuids(relationResult);
 		});
+
+		await enqueueContainerUpserts(affectedGuids.filter((guid) => guid !== container.guid));
+		if (shouldIndexType(container.payload.type)) {
+			await enqueueIndexingEvent({
+				action: 'delete',
+				guid: container.guid,
+				timestamp: new Date().toISOString()
+			});
+		}
 	};
 }
 
@@ -2129,35 +2174,40 @@ async function insertManyContainerRelations(
 	`);
 }
 
+function affectedContainerGuids(relations: ReadonlyArray<Relation>) {
+	const affectedGuids = new Set<string>();
+	for (const { object, subject } of relations) {
+		affectedGuids.add(object);
+		affectedGuids.add(subject);
+	}
+	return [...affectedGuids];
+}
+
+async function enqueueContainerUpserts(guids: ReadonlyArray<string>) {
+	const timestamp = new Date().toISOString();
+	for (const guid of new Set(guids)) {
+		await enqueueIndexingEvent({ action: 'upsert', guid, timestamp });
+	}
+}
+
 export function createManyContainerRelations(relations: ReadonlyArray<Relation>) {
 	return async (connection: DatabaseConnection) => {
-		const result = await insertManyContainerRelations(relations, connection);
+		const result = await connection.transaction((txConnection) =>
+			insertManyContainerRelations(relations, txConnection)
+		);
 
-		if (result.length > 0) {
-			const affectedGuids = new Set<string>();
-			for (const r of result) {
-				affectedGuids.add(r.object);
-				affectedGuids.add(r.subject);
-			}
-
-			for (const guid of affectedGuids) {
-				await enqueueIndexingEvent({
-					action: 'upsert',
-					guid,
-					timestamp: new Date().toISOString()
-				});
-			}
-		}
+		await enqueueContainerUpserts(affectedContainerGuids(result));
 
 		return result;
 	};
 }
 
-export function updateManyContainerRelations(relations: ReadonlyArray<Relation>) {
-	return async (connection: DatabaseConnection) => {
-		const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
-		return connection.transaction(async (txConnection) => {
-			await txConnection.query(sql.typeAlias('void')`
+async function updateManyContainerRelationsInTransaction(
+	relations: ReadonlyArray<Relation>,
+	connection: DatabaseTransactionConnection
+) {
+	const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
+	await connection.query(sql.typeAlias('void')`
 				UPDATE container_relation cr
 				SET valid_currently = false
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])} AS u(object, position, predicate, subject)
@@ -2166,42 +2216,46 @@ export function updateManyContainerRelations(relations: ReadonlyArray<Relation>)
 				  AND cr.subject = u.subject
 					AND cr.valid_currently
 			`);
-			return createManyContainerRelations(relations)(txConnection);
-		});
+	return insertManyContainerRelations(relations, connection);
+}
+
+export function updateManyContainerRelations(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		const result = await connection.transaction((txConnection) =>
+			updateManyContainerRelationsInTransaction(relations, txConnection)
+		);
+
+		await enqueueContainerUpserts(affectedContainerGuids(result));
+
+		return result;
 	};
 }
 
-export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>) {
-	return async (connection: DatabaseConnection) => {
-		return connection.transaction(async (txConnection) => {
-			const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
-			await txConnection.query(sql.typeAlias('void')`
+async function deleteManyContainerRelationsInTransaction(
+	relations: ReadonlyArray<Relation>,
+	connection: DatabaseTransactionConnection
+) {
+	const values = relations.map((r) => [r.object, r.position, r.predicate, r.subject]);
+	await connection.query(sql.typeAlias('void')`
 				UPDATE container_relation cr
 				SET valid_currently = false
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])} AS u(object, position, predicate, subject)
 				WHERE cr.object = u.object AND cr.predicate = u.predicate AND cr.subject = u.subject
 			`);
-			await txConnection.query(sql.typeAlias('void')`
+	await connection.query(sql.typeAlias('void')`
 				INSERT INTO container_relation (object, position, predicate, subject, deleted)
 				SELECT *, true
 				FROM ${sql.unnest(values, ['uuid', 'int4', 'text', 'uuid'])}
 			`);
+}
 
-			if (relations.length > 0) {
-				const affectedGuids = new Set<string>();
-				for (const r of relations) {
-					affectedGuids.add(r.object);
-					affectedGuids.add(r.subject);
-				}
-				for (const guid of affectedGuids) {
-					await enqueueIndexingEvent({
-						action: 'upsert',
-						guid,
-						timestamp: new Date().toISOString()
-					});
-				}
-			}
-		});
+export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>) {
+	return async (connection: DatabaseConnection) => {
+		await connection.transaction((txConnection) =>
+			deleteManyContainerRelationsInTransaction(relations, txConnection)
+		);
+
+		await enqueueContainerUpserts(affectedContainerGuids(relations));
 	};
 }
 
