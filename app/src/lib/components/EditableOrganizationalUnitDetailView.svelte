@@ -62,6 +62,7 @@
 							: [individualProfileRelation.subject]
 						: [],
 					organization: [container.organization],
+					organizationalUnit: [container.guid],
 					payloadType: [
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
