@@ -4,12 +4,17 @@ import { locale } from 'svelte-i18n';
 const getMembers = vi.hoisted(() => vi.fn());
 const getAllGrantsByContainers = vi.hoisted(() => vi.fn());
 const getAllRelatedUsersByContainers = vi.hoisted(() => vi.fn());
+const getContainerByGuid = vi.hoisted(() => vi.fn());
 
 locale.set('en');
 
 vi.mock('$lib/server/keycloak', () => ({ getMembers }));
 
-vi.mock('$lib/server/db', () => ({ getAllGrantsByContainers, getAllRelatedUsersByContainers }));
+vi.mock('$lib/server/db', () => ({
+	getAllGrantsByContainers,
+	getAllRelatedUsersByContainers,
+	getContainerByGuid
+}));
 
 import { load } from './+page.server';
 import {

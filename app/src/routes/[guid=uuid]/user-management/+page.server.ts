@@ -6,7 +6,7 @@ import {
 	type Container,
 	findDescendants,
 	type Grant,
-	inheritedGrantSetFor,
+	grantSetForSubjectOn,
 	predicates,
 	type User
 } from '$lib/models';
@@ -75,10 +75,9 @@ export const load = (async ({ locals, parent }) => {
 				getAllRelatedUsersByContainers([selectedContext.organization], userPredicates)
 			)
 		]);
-		const areas = [{ guid: selectedContext.organization, grants: sourceGrants }];
 		scope = organizationContainer;
 		inheritedGrants = sourceUsers.flatMap(({ guid: subject }) => {
-			const set = inheritedGrantSetFor(subject, areas);
+			const set = grantSetForSubjectOn(sourceGrants, selectedContext.organization, subject);
 			return [
 				...set.self.map((kind) => ({
 					kind,

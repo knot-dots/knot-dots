@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
 import {
-	inheritedGrantSetFor,
+	grantSetForSubjectOn,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	predicates
@@ -63,9 +63,8 @@ export const load = (async ({ locals, parent }) => {
 				)
 			)
 		]);
-		const areas = [{ guid: container.organization, grants: sourceGrants }];
 		const inheritedGrants = sourceUsers.flatMap(({ guid: subject }) => {
-			const set = inheritedGrantSetFor(subject, areas);
+			const set = grantSetForSubjectOn(sourceGrants, container.organization, subject);
 			return [
 				...set.self.map((kind) => ({ kind, object: scope.guid, subject, target: 'self' as const })),
 				...set.subordinates.map((kind) => ({
