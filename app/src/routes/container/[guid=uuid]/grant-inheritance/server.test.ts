@@ -19,6 +19,7 @@ vi.mock('$lib/server/db', () => ({
 
 import { POST } from './+server';
 import {
+	composeUserGrants,
 	type Grant,
 	grantRecordsForRoleOn,
 	grantSetForRole,
@@ -56,6 +57,10 @@ function grantsFor(object: string, subject: string, role: MemberRole): Grant[] {
 	];
 }
 
+// the container arrives at the endpoint enriched with the grants of the
+// request user — an administrator of the organization in these tests
+const adminSet = grantSetForRole(memberRoles.enum.administrator);
+
 function measure(inheritsGrants: boolean, managedBy = measureGuid) {
 	return {
 		guid: measureGuid,
@@ -64,7 +69,16 @@ function measure(inheritsGrants: boolean, managedBy = measureGuid) {
 		organizational_unit: null,
 		payload: { inheritsGrants, title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
-		user: [{ predicate: 'is-creator-of', subject: adminGuid }]
+		user: [{ predicate: 'is-creator-of', subject: adminGuid }],
+		user_grants: composeUserGrants({
+			areaSourced: !inheritsGrants ? false : true,
+			governsItself: !inheritsGrants,
+			organizationSelf: adminSet.self,
+			organizationalUnitSelf: [],
+			source: inheritsGrants ? organizationGuid : measureGuid,
+			sourceSelf: inheritsGrants ? adminSet.self : [],
+			sourceSubordinates: inheritsGrants ? adminSet.subordinates : []
+		})
 	};
 }
 

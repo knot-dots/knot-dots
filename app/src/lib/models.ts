@@ -722,11 +722,15 @@ export type GrantSet = z.infer<typeof grantSet>;
 // container and `self` those applying to it (the source's subordinate kinds),
 // while `own` carries the kinds granted on the container's own matrix rows.
 // `admin` marks holders of every self kind at the source or on one of the
-// container's areas; `member` marks subjects the governing matrix grants read
-// through something other than an area — members of the team, so to speak.
+// container's areas, `organization_manager` holders of the manage-users kind
+// on the organization object itself, `member` subjects the governing matrix
+// grants read, and `area_sourced` containers governed directly by their
+// organizational unit or organization.
 export const userGrants = z.object({
 	admin: z.boolean(),
+	area_sourced: z.boolean(),
 	member: z.boolean(),
+	organization_manager: z.boolean(),
 	own: z.array(grantKinds),
 	self: z.array(grantKinds),
 	source: z.uuid(),
@@ -734,6 +738,57 @@ export const userGrants = z.object({
 });
 
 export type UserGrants = z.infer<typeof userGrants>;
+
+const fullSelfSet: GrantKind[] = [
+	grantKinds.enum.read,
+	grantKinds.enum.update,
+	grantKinds.enum['manage-users']
+];
+
+// Composes the user_grants of one container from the subject's rows at the
+// governing matrix (source) and at the container's areas. computeUserGrants
+// resolves the source and collects the rows; the tests share this mapping for
+// their fixtures.
+export function composeUserGrants(input: {
+	areaSourced: boolean;
+	governsItself: boolean;
+	organizationSelf: GrantKind[];
+	organizationalUnitSelf: GrantKind[];
+	source: string;
+	sourceSelf: GrantKind[];
+	sourceSubordinates: GrantKind[];
+}): UserGrants {
+	const canonical = (kinds: Iterable<GrantKind>) =>
+		grantKinds.options.filter((kind) => new Set(kinds).has(kind));
+
+	// Holders of every self kind at the source administer everything it
+	// governs; administrators of an area keep that hold on its contents
+	// regardless of decoupled matrices in between.
+	const admin = [input.sourceSelf, input.organizationSelf, input.organizationalUnitSelf].some(
+		(kinds) => fullSelfSet.every((kind) => kinds.includes(kind))
+	);
+
+	// The subordinate kinds of the source apply within the container and,
+	// except for creating (which happens within a container, never on it), to
+	// the container itself. The container's own self rows count only while its
+	// own matrix governs.
+	const subordinates = admin ? grantKinds.options.slice() : canonical(input.sourceSubordinates);
+	const self = subordinates.filter((kind) => kind !== grantKinds.enum.create);
+	const own = input.governsItself ? canonical(input.sourceSelf) : [];
+
+	return {
+		admin,
+		area_sourced: input.areaSourced,
+		// The governing matrix granting read makes the subject a member — the
+		// mark members-only visibility asks for.
+		member: subordinates.includes(grantKinds.enum.read) || own.includes(grantKinds.enum.read),
+		organization_manager: input.organizationSelf.includes(grantKinds.enum['manage-users']),
+		own,
+		self,
+		source: input.source,
+		subordinates
+	};
+}
 
 export const grantSetAssignment = grantSet
 	.extend({ subject: z.uuid() })

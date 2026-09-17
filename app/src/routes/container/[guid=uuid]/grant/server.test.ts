@@ -16,7 +16,12 @@ vi.mock('$lib/server/db', () => ({
 }));
 
 import { POST } from './+server';
-import { grantRecordsForRoleOn, grantSetForRole, memberRoles } from '$lib/models';
+import {
+	composeUserGrants,
+	grantRecordsForRoleOn,
+	grantSetForRole,
+	memberRoles
+} from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const measureGuid = '00000000-0000-4000-8000-000000000002';
@@ -37,6 +42,19 @@ const admin = {
 const administratorSet = grantSetForRole(memberRoles.enum.administrator);
 const headSet = grantSetForRole(memberRoles.enum.head);
 
+// the containers arrive at the endpoint enriched with the grants of the
+// request user — an administrator of the organization in these tests
+const userGrants = (guid: string) =>
+	composeUserGrants({
+		areaSourced: true,
+		governsItself: guid === organizationGuid,
+		organizationSelf: administratorSet.self,
+		organizationalUnitSelf: [],
+		source: organizationGuid,
+		sourceSelf: administratorSet.self,
+		sourceSubordinates: administratorSet.subordinates
+	});
+
 function organization(adminSubjects: string[]) {
 	return {
 		guid: organizationGuid,
@@ -45,6 +63,7 @@ function organization(adminSubjects: string[]) {
 		organizational_unit: null,
 		payload: { name: 'Org', type: 'organization', visibility: 'public' },
 		relation: [],
+		user_grants: userGrants(organizationGuid),
 		user: [
 			...adminSubjects.map((subject) => ({ predicate: 'is-admin-of', subject })),
 			...adminSubjects.map((subject) => ({ predicate: 'is-member-of', subject })),
@@ -61,6 +80,7 @@ function measure() {
 		organizational_unit: null,
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
+		user_grants: userGrants(measureGuid),
 		user: [{ predicate: 'is-member-of', subject: memberGuid }]
 	};
 }

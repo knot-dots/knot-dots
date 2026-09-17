@@ -9,12 +9,21 @@ locale.set('en');
 vi.mock('$lib/server/db', () => ({ createOrUpdateTaskPriority, getManyContainers }));
 
 import { POST } from './+server';
-import { grantRecordsForRoleOn, memberRoles } from '$lib/models';
+import {
+	composeUserGrants,
+	grantRecordsForRoleOn,
+	grantSetForRole,
+	memberRoles
+} from '$lib/models';
 
 const team = '00000000-0000-4000-8000-000000000001';
 const otherTeam = '00000000-0000-4000-8000-000000000002';
 const editableTask = '00000000-0000-4000-8000-000000000003';
 const foreignTask = '00000000-0000-4000-8000-000000000004';
+
+// the tasks arrive enriched with the request user's grants: a collaborator
+// of the matrix governing the editable task
+const collaboratorSet = grantSetForRole(memberRoles.enum.collaborator);
 
 function task(guid: string, managedBy: string) {
 	return {
@@ -24,7 +33,16 @@ function task(guid: string, managedBy: string) {
 		organizational_unit: null,
 		payload: { title: 'Task', type: 'task', visibility: 'members' },
 		relation: [],
-		user: []
+		user: [],
+		user_grants: composeUserGrants({
+			areaSourced: false,
+			governsItself: false,
+			organizationSelf: [],
+			organizationalUnitSelf: [],
+			source: managedBy,
+			sourceSelf: managedBy === team ? collaboratorSet.self : [],
+			sourceSubordinates: managedBy === team ? collaboratorSet.subordinates : []
+		})
 	};
 }
 

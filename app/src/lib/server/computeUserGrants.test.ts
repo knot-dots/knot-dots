@@ -56,7 +56,9 @@ test('contents inherit from the organization by default', async ({ connection }:
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		member: false,
+		area_sourced: true,
+		member: true,
+		organization_manager: false,
 		own: [],
 		self: ['read', 'update'],
 		source: organization,
@@ -79,7 +81,9 @@ test('rows on an inheriting container lie dormant', async ({ connection }: Fixtu
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
+		area_sourced: true,
 		member: false,
+		organization_manager: false,
 		own: [],
 		self: [],
 		source: organization,
@@ -109,7 +113,9 @@ test('a decoupled container is governed by its own matrix alone', async ({
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
+		area_sourced: false,
 		member: true,
+		organization_manager: false,
 		own: ['read', 'update'],
 		self: ['delete'],
 		source: measure.guid,
@@ -142,7 +148,9 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
+		area_sourced: false,
 		member: true,
+		organization_manager: false,
 		own: [],
 		self: ['read', 'update'],
 		source: program.guid,
@@ -150,7 +158,9 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 	});
 	expect(grants.get(program.guid)).toEqual({
 		admin: false,
+		area_sourced: false,
 		member: true,
+		organization_manager: false,
 		own: ['read'],
 		self: ['read', 'update'],
 		source: program.guid,
@@ -181,7 +191,9 @@ test('a decoupled organizational unit cuts the organization off its contents', a
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		member: false,
+		area_sourced: true,
+		member: true,
+		organization_manager: false,
 		own: [],
 		self: ['read'],
 		source: unit.guid,
@@ -206,7 +218,9 @@ test('organization administrators keep every kind regardless of decoupling', asy
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: true,
+		area_sourced: false,
 		member: true,
+		organization_manager: true,
 		own: [],
 		self: ['read', 'update', 'delete', 'manage-users'],
 		source: measure.guid,

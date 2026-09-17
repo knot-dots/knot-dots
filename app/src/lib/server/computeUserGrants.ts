@@ -1,6 +1,12 @@
 import { type DatabaseConnection, sql } from 'slonik';
 import { z } from 'zod';
-import { type GrantKind, grantKinds, predicates, type UserGrants } from '$lib/models';
+import {
+	composeUserGrants,
+	type GrantKind,
+	grantKinds,
+	predicates,
+	type UserGrants
+} from '$lib/models';
 
 // Structural relations along which grants are inherited from a container
 // towards its ancestors (child.subject -> parent.object); the same chain
@@ -20,12 +26,6 @@ const row = z.object({
 	kind: grantKinds.nullable(),
 	target: z.enum(['self', 'subordinates']).nullable()
 });
-
-const fullSelfSet: GrantKind[] = [
-	grantKinds.enum.read,
-	grantKinds.enum.update,
-	grantKinds.enum['manage-users']
-];
 
 /**
  * Computes the effective grants of one subject on the given containers: for
@@ -113,9 +113,6 @@ export async function computeUserGrants(
 
 	const result = new Map<string, UserGrants>();
 
-	const canonical = (kinds: Iterable<GrantKind>) =>
-		grantKinds.options.filter((kind) => new Set(kinds).has(kind));
-
 	for (const guid of new Set(rows.map((r) => r.guid))) {
 		const forGuid = rows.filter((r) => r.guid === guid);
 		const { source, area_sourced } = forGuid[0];
@@ -124,34 +121,18 @@ export async function computeUserGrants(
 				.filter((r) => r.place === place && r.target === target && r.kind !== null)
 				.map((r) => r.kind as GrantKind);
 
-		const sourceSelfRows = canonical(kindsAt('source', 'self'));
-		// Holders of every self kind at the source administer everything it
-		// governs; administrators of an area keep that hold on its contents
-		// regardless of decoupled matrices in between.
-		const admin =
-			fullSelfSet.every((kind) => sourceSelfRows.includes(kind)) ||
-			['organization', 'organizational_unit'].some((place) =>
-				fullSelfSet.every((kind) => kindsAt(place, 'self').includes(kind))
-			);
-
-		// The subordinate kinds of the source apply within the container and,
-		// except for creating (which happens within a container, never on it),
-		// to the container itself. The container's own self rows count only
-		// while its own matrix governs.
-		const subordinates = admin
-			? grantKinds.options.slice()
-			: canonical(kindsAt('source', 'subordinates'));
-		const self = subordinates.filter((kind) => kind !== grantKinds.enum.create);
-		const own = source === guid ? sourceSelfRows : [];
-
-		// Read granted by something other than an area makes the subject a
-		// member of the governing matrix — the mark members-only visibility
-		// asks for.
-		const member =
-			!area_sourced &&
-			(subordinates.includes(grantKinds.enum.read) || own.includes(grantKinds.enum.read));
-
-		result.set(guid, { admin, member, own, self, source, subordinates });
+		result.set(
+			guid,
+			composeUserGrants({
+				areaSourced: area_sourced,
+				governsItself: source === guid,
+				organizationSelf: kindsAt('organization', 'self'),
+				organizationalUnitSelf: kindsAt('organizational_unit', 'self'),
+				source,
+				sourceSelf: kindsAt('source', 'self'),
+				sourceSubordinates: kindsAt('source', 'subordinates')
+			})
+		);
 	}
 
 	return result;

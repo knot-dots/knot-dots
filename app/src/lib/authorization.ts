@@ -25,15 +25,28 @@ export const specialTypes: PayloadType[] = [
 export const commonTypes = payloadTypes.options.filter((t) => !specialTypes.includes(t));
 
 // Categories, help sections, terms and organizational units follow the
-// organization's subordinate rules for updating, but creating and deleting
-// them additionally requires read, update and manage-users on the
-// organization object itself. HTML sections stay reserved for sysadmins.
+// governing matrix for updating, but creating and deleting them is reserved
+// for its administrators. HTML sections stay reserved for sysadmins.
 const specialContentTypes: PayloadType[] = [
 	payloadTypes.enum.category,
 	payloadTypes.enum.help,
 	payloadTypes.enum.term
 ];
 
+const userManagedTypes: PayloadType[] = [
+	payloadTypes.enum.measure,
+	payloadTypes.enum.organization,
+	payloadTypes.enum.organizational_unit,
+	payloadTypes.enum.program,
+	payloadTypes.enum.simple_measure
+];
+
+// The rules read the effective grants the server computed for the request
+// user on each container (user_grants, see computeUserGrants): `self` and
+// `subordinates` carry the kinds of the governing matrix, `own` the kinds of
+// the container's own rows, `admin` and `member` the subject's standing with
+// the governing matrix. Creating is checked against the loaded parent — the
+// payload type of the container to create passes as the field.
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
 		createMongoAbility
@@ -43,66 +56,13 @@ export default function defineAbilityFor(user: User) {
 
 	if (user.isAuthenticated && user.roles.includes('sysadmin')) {
 		can(['create', 'update', 'read', 'delete'], payloadTypes.options);
-		can('manage-users', [
-			payloadTypes.enum.measure,
-			payloadTypes.enum.organization,
-			payloadTypes.enum.organizational_unit,
-			payloadTypes.enum.program,
-			payloadTypes.enum.simple_measure
-		]);
+		can('manage-users', userManagedTypes);
 	} else if (user.isAuthenticated) {
-		const { self, subordinates } = user.grants;
-		const fullySelfManagedOf = self.read
-			.filter((guid) => self.update.includes(guid))
-			.filter((guid) => self['manage-users'].includes(guid));
-
-		can('update', payloadTypes.options, { guid: { $in: self.update } });
-		can('update', payloadTypes.enum.organization, {
-			organization: { $in: self.update }
+		// —— contents follow the kinds of their governing matrix ——
+		can('update', [...commonTypes, ...specialContentTypes, payloadTypes.enum.organizational_unit], {
+			'user_grants.self': 'update'
 		});
-		can('update', specialContentTypes, {
-			organization: { $in: subordinates.update }
-		});
-		can(['create', 'delete'], specialContentTypes, {
-			organization: { $in: fullySelfManagedOf }
-		});
-		can('update', payloadTypes.enum.organizational_unit, {
-			organization: { $in: subordinates.update }
-		});
-		can(['create', 'delete'], payloadTypes.enum.organizational_unit, {
-			organization: { $in: fullySelfManagedOf }
-		});
-		can('create', commonTypes, {
-			organization: { $in: subordinates.create }
-		});
-		can('create', commonTypes, {
-			organizational_unit: { $in: subordinates.create }
-		});
-		can('update', commonTypes, {
-			organization: { $in: subordinates.update }
-		});
-		can('update', commonTypes, {
-			organizational_unit: { $in: subordinates.update }
-		});
-		can('delete', commonTypes, {
-			organization: { $in: subordinates.delete }
-		});
-		can('delete', commonTypes, {
-			organizational_unit: { $in: subordinates.delete }
-		});
-		can(
-			'manage-users',
-			[
-				payloadTypes.enum.measure,
-				payloadTypes.enum.organization,
-				payloadTypes.enum.organizational_unit,
-				payloadTypes.enum.program,
-				payloadTypes.enum.simple_measure
-			],
-			{
-				guid: { $in: self['manage-users'] }
-			}
-		);
+		can('delete', commonTypes, { 'user_grants.self': 'delete' });
 		can(
 			'manage-users',
 			[
@@ -111,94 +71,74 @@ export default function defineAbilityFor(user: User) {
 				payloadTypes.enum.program,
 				payloadTypes.enum.simple_measure
 			],
-			{
-				organization: { $in: subordinates['manage-users'] }
-			}
+			{ 'user_grants.self': 'manage-users' }
 		);
-		can(
-			'manage-users',
-			[
-				payloadTypes.enum.measure,
-				payloadTypes.enum.organizational_unit,
-				payloadTypes.enum.program,
-				payloadTypes.enum.simple_measure
-			],
-			{
-				organizational_unit: { $in: subordinates['manage-users'] }
-			}
-		);
-		can('create', commonTypes, {
-			managed_by: { $in: subordinates.create }
-		});
-		can('update', commonTypes, {
-			managed_by: { $in: subordinates.update }
-		});
-		can('delete', commonTypes, {
-			managed_by: { $in: subordinates.delete }
-		});
-		can('update', [payloadTypes.enum.category, payloadTypes.enum.term], {
-			managed_by: { $in: subordinates.update }
-		});
-		can(['create', 'delete'], [payloadTypes.enum.category, payloadTypes.enum.term], {
-			managed_by: { $in: fullySelfManagedOf }
+		can('create', payloadTypes.options, commonTypes, {
+			'user_grants.subordinates': 'create'
 		});
 		can('update', payloadTypes.enum.program, ['chapterType'], {
-			managed_by: { $in: subordinates['manage-users'] }
+			'user_grants.self': 'manage-users'
 		});
+
+		// —— rows on the container's own matrix ——
+		can('update', payloadTypes.options, { 'user_grants.own': 'update' });
+		can('manage-users', userManagedTypes, { 'user_grants.own': 'manage-users' });
+
+		// —— administrators of the governing matrix or an area ——
+		can('create', payloadTypes.options, [payloadTypes.enum.category, payloadTypes.enum.term], {
+			'user_grants.admin': true
+		});
+		// help sections and organizational units belong to the organization
 		can(
-			'manage-users',
-			[payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
-			{
-				managed_by: { $in: subordinates['manage-users'] }
-			}
+			'create',
+			payloadTypes.enum.organization,
+			[payloadTypes.enum.help, payloadTypes.enum.organizational_unit],
+			{ 'user_grants.admin': true }
 		);
+		can('delete', [payloadTypes.enum.category, payloadTypes.enum.term], {
+			'user_grants.admin': true
+		});
+		can('delete', [payloadTypes.enum.help, payloadTypes.enum.organizational_unit], {
+			'user_grants.organization_manager': true
+		});
+
+		// —— visibility ——
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
 			user: { $elemMatch: { predicate: predicates.enum['is-creator-of'], subject: user.guid } }
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
-			organization: { $in: self['manage-users'] }
+			'user_grants.organization_manager': true
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organization: { $in: subordinates['manage-users'] }
+			'user_grants.member': true
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			organizational_unit: { $in: subordinates['manage-users'] }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			managed_by: { $in: subordinates.read }
+			'user_grants.self': 'manage-users'
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			organization: { $in: subordinates.read }
+			'user_grants.self': 'read'
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			organizational_unit: { $in: subordinates.read }
+			'user_grants.own': 'read'
 		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.organization,
-			managed_by: { $in: subordinates.read }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			guid: { $in: self.read }
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.organization,
-			guid: { $in: self.read }
-		});
+
+		// —— field-level restrictions ——
 		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
+		// moving content between units takes an update grant of the area itself
 		can('update', payloadTypes.options, ['organizational_unit'], {
-			organization: { $in: subordinates.update }
+			'user_grants.self': 'update',
+			'user_grants.area_sourced': true
 		});
 		cannot(['create', 'update', 'delete'], payloadTypes.enum.html);
+		cannot('create', payloadTypes.options, [payloadTypes.enum.html]);
 	}
 
 	return build({
@@ -214,6 +154,6 @@ export function filterVisible<T extends Container<AnyPayload>>(
 	return containers.filter((c) => ability.can('read', c));
 }
 
-export function mayImportFromCSV(user: User) {
-	return defineAbilityFor(user).can('create', payloadTypes.enum.program);
+export function mayImportFromCSV(user: User, scope: Container<AnyPayload>) {
+	return defineAbilityFor(user).can('create', scope, payloadTypes.enum.program);
 }

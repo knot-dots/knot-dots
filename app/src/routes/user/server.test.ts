@@ -30,7 +30,12 @@ vi.mock('$lib/server/db', () => ({
 }));
 
 import { POST } from './+server';
-import { grantRecordsForRoleOn, memberRoles } from '$lib/models';
+import {
+	composeUserGrants,
+	grantRecordsForRoleOn,
+	grantSetForRole,
+	memberRoles
+} from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const adminGuid = '00000000-0000-4000-8000-000000000002';
@@ -46,6 +51,16 @@ const container = {
 	relation: [],
 	revision: 1,
 	user: [],
+	// enriched with the request user's grants — an organization administrator
+	user_grants: composeUserGrants({
+		areaSourced: true,
+		governsItself: true,
+		organizationSelf: grantSetForRole(memberRoles.enum.administrator).self,
+		organizationalUnitSelf: [],
+		source: organizationGuid,
+		sourceSelf: grantSetForRole(memberRoles.enum.administrator).self,
+		sourceSubordinates: grantSetForRole(memberRoles.enum.administrator).subordinates
+	}),
 	valid_currently: true,
 	valid_from: new Date().toISOString()
 };

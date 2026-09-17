@@ -4,9 +4,12 @@ import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	anyContainer,
+	composeUserGrants,
 	type Container,
 	emptyGrantRecords,
+	grantKinds,
 	grantRecordsForRoleOn,
+	grantTargets,
 	memberRoles,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
@@ -53,10 +56,38 @@ function user(overrides: Partial<User>): User {
 	};
 }
 
+// the layout hands the workspaces enriched containers; this mirrors
+// computeUserGrants for the plain fixtures
+function enriched<T extends Container<OrganizationPayload> | Container<OrganizationalUnitPayload>>(
+	container: T,
+	u: User
+): T {
+	const kindsAt = (object: string, target: 'self' | 'subordinates') =>
+		grantKinds.options.filter((kind) => u.grants[target][kind].includes(object));
+	const holdsRowsOn = (object: string) =>
+		grantTargets.options.some((target) => kindsAt(object, target).length > 0);
+	const source =
+		container.payload.type === payloadTypes.enum.organization || holdsRowsOn(container.guid)
+			? container.guid
+			: container.organization;
+	return {
+		...container,
+		user_grants: composeUserGrants({
+			areaSourced: true,
+			governsItself: source === container.guid,
+			organizationSelf: kindsAt(container.organization, 'self'),
+			organizationalUnitSelf: [],
+			source,
+			sourceSelf: kindsAt(source, 'self'),
+			sourceSubordinates: kindsAt(source, 'subordinates')
+		})
+	};
+}
+
 function visibleWorkspaceKeys(u: User) {
 	return getVisibleWorkspaces({
-		organization,
-		organizationalUnit,
+		organization: enriched(organization, u),
+		organizationalUnit: enriched(organizationalUnit, u),
 		features: createFeatureDecisions([]),
 		ability: defineAbilityFor(u)
 	}).map(({ key }) => key);
