@@ -54,7 +54,7 @@
 
 <li>
 	{#if isCreateForm}
-		<form class="details-section" onsubmit={onSubmit}>
+		<form class="details-section" onsubmit={onSubmit} oninput={(e) => e.stopPropagation()}>
 			<header>
 				<EditableLogo editable allowedFileTypes={['image/svg+xml']} bind:value={formState.icon} />
 
