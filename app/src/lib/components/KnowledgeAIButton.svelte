@@ -71,7 +71,7 @@
 	}
 </script>
 
-{#if container.payload.pdf.length > 0 && $applicationState.containerDetailView.editable && $ability.can('create', payloadTypes.enum.knowledge)}
+{#if container.payload.pdf.length > 0 && $applicationState.containerDetailView.editable && $ability.can('create', container, payloadTypes.enum.knowledge)}
 	<button
 		class="button-ai"
 		class:is-active={isThinking}

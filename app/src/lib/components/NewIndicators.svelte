@@ -89,13 +89,11 @@
 
 	let comparisonDataMap = $derived(comparisonData.comparisonDataMap);
 
-	let managedBy = $derived(
-		(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
-	);
+	let parent = $derived(page.data.currentOrganizationalUnit ?? page.data.currentOrganization);
 
 	let mayCreateBinaryIndicator = $derived(
 		createFeatureDecisions(page.data.features).useBinaryIndicators() &&
-			$mayCreateContainer(payloadTypes.enum.binary_indicator, managedBy)
+			$mayCreateContainer(payloadTypes.enum.binary_indicator, parent)
 	);
 
 	// svelte-ignore non_reactive_update
@@ -187,9 +185,9 @@
 </script>
 
 <div class="indicators">
-	{#if ($mayCreateContainer(payloadTypes.enum.indicator_template, managedBy) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
+	{#if ($mayCreateContainer(payloadTypes.enum.indicator_template, parent) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
 		<p>
-			{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
+			{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 				<button
 					class="button button-xs button-primary system-primary"
 					onclick={() => dialog.showModal()}
@@ -199,7 +197,7 @@
 				</button>
 			{/if}
 
-			{#if $mayCreateContainer(payloadTypes.enum.indicator_template, managedBy)}
+			{#if $mayCreateContainer(payloadTypes.enum.indicator_template, parent)}
 				<button class="button button-xs" type="button" onclick={createCustomIndicatorTemplate}>
 					<Plus />
 					{$_('indicators.create_custom')}
@@ -284,7 +282,7 @@
 	{/if}
 </div>
 
-{#if $mayCreateContainer(payloadTypes.enum.actual_data, managedBy)}
+{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 	<IndicatorPicker bind:dialog />
 {/if}
 

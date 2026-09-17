@@ -136,7 +136,7 @@ export const POST = (async ({ locals, request }) => {
 										}
 									]
 								}) as NewContainer;
-								if (ability.can('create', newContainer)) {
+								if (ability.can('create', container, newContainer.payload.type)) {
 									await locals.pool.connect(createContainer(newContainer));
 								} else {
 									log.error(

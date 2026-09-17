@@ -153,7 +153,7 @@
 			{$_('read_more')}
 		</a>
 
-		{#if isPartOf.payload.chapterType.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
+		{#if isPartOf.payload.chapterType.some((t) => $ability.can('create', isPartOf, t))}
 			<DropDownMenu
 				handleChange={createContainerAt(currentIndex + 1)}
 				label={$_('chapter')}

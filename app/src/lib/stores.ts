@@ -11,7 +11,6 @@ import {
 	type AnyPayload,
 	type ApplicationState,
 	type Container,
-	containerOfType,
 	type CustomCollectionPayload,
 	emptyGrantRecords,
 	filterMembers,
@@ -92,16 +91,10 @@ export const ability = derived(user, defineAbilityFor);
 
 export const dragged = writable<Container<AnyPayload> | undefined>();
 
-export const mayCreateContainer = derived([page, ability], (values) => {
-	return (payloadType: PayloadType, managedBy: string | string[]): boolean => {
-		const container = containerOfType(
-			payloadType,
-			values[0].data.currentOrganization.guid,
-			values[0].data.currentOrganizationalUnit?.guid ?? null,
-			managedBy,
-			''
-		);
-		return values[1].can('create', container);
+export const mayCreateContainer = derived(ability, (values) => {
+	return (payloadType: PayloadType, parent: Container<AnyPayload>): boolean => {
+		// creating happens within the parent; its computed grants decide
+		return values.can('create', parent, payloadType);
 	};
 });
 

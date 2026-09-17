@@ -70,7 +70,7 @@
 </script>
 
 <div>
-	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
+	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit ?? page.data.currentOrganization) )}
 		{#if payloadType.length === 1}
 			<p>
 				<button
@@ -92,7 +92,7 @@
 						.filter((t) =>
 							$mayCreateContainer(
 								t,
-								page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
+								page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 							)
 						)
 						.map((t) => ({ label: $_(t), value: t }))

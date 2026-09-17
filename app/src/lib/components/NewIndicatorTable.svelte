@@ -305,7 +305,7 @@
 			!customActualDataContainer &&
 			$mayCreateContainer(
 				payloadTypes.enum.actual_data,
-				(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
+				page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 			)
 		) {
 			actualDataRows.push({

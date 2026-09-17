@@ -457,7 +457,13 @@ export async function executeContainerCopy({
 	if (plan.size > maxPlanSize) {
 		throw new ContainerCopyServiceError('copy_too_large');
 	}
-	if ([...plan.values()].some((container) => ability.cannot('create', container))) {
+	// creating happens within the target scope, whose computed grants decide
+	const creationScope = resolvedTarget.organizationalUnit ?? resolvedTarget.organization;
+	if (
+		[...plan.values()].some((container) =>
+			ability.cannot('create', creationScope, container.payload.type)
+		)
+	) {
 		throw new ContainerCopyServiceError('create_forbidden');
 	}
 

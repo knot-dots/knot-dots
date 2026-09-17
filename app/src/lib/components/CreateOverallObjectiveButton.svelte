@@ -27,7 +27,7 @@
 	}
 </script>
 
-{#if !findOverallObjective(container, relatedContainers) && $ability.can('create', payloadTypes.enum.objective)}
+{#if !findOverallObjective(container, relatedContainers) && $ability.can('create', container, payloadTypes.enum.objective)}
 	<button
 		type="button"
 		onclick={createOverallObjective(container)}

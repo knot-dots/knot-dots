@@ -126,7 +126,7 @@
 	}
 
 	let canCreateOrgUnit = $derived(
-		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)
+		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization)
 	);
 
 	function filterTree(items: OrgUnitTreeItem[], query: string): OrgUnitTreeItem[] {

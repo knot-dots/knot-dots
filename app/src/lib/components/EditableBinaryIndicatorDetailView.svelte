@@ -162,7 +162,7 @@
 			{/key}
 
 			<div class="details-section" oninput={(e) => e.stopPropagation()}>
-				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', newActualDataContainer)}
+				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', container, payloadTypes.enum.actual_data)}
 					{#if addingActualData}
 						<span class="loader"></span>
 					{:else}

@@ -89,7 +89,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.task, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.task, container)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -127,7 +127,7 @@
 	<Carousel
 		{addItem}
 		items={directChildren}
-		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container.managed_by) && editable}
+		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container) && editable}
 	>
 		{#snippet itemSnippet(item)}
 			<TaskCard container={item} ignoreBulkActionContext showTaskStatusBadge />

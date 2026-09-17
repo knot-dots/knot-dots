@@ -95,7 +95,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.resource_data, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.resource_data, container)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -118,8 +118,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.resource_data, container.managed_by) &&
-		editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.resource_data, container) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<ResourceDataCard

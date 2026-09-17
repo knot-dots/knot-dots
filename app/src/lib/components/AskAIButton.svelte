@@ -71,7 +71,7 @@
 	}
 </script>
 
-{#if container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.goal)}
+{#if container.payload.pdf.length > 0 && $ability.can('create', container, payloadTypes.enum.goal)}
 	<button
 		class="button-ai"
 		class:is-active={isThinking}

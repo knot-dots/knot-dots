@@ -19,7 +19,6 @@
 	} from '$lib/adoptions';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, ProgramPayload } from '$lib/models';
-	import { user } from '$lib/stores';
 
 	interface Props {
 		container: Container<ProgramPayload>;
@@ -39,7 +38,7 @@
 	};
 
 	const potentialAdopters = $derived(
-		organizationalUnitsManagedByUser($user, container, page.data.organizationalUnits)
+		organizationalUnitsManagedByUser(container, page.data.organizationalUnits)
 	);
 
 	const mayAdopt = $derived(

@@ -45,8 +45,11 @@ export const actions = {
 		let currentOrganizationGuid: string;
 		let currentOrganizationalUnitGuid: string | undefined;
 
+		// the scope the import creates into; its computed grants authorize creating
+		let scopeContainer!: Awaited<ReturnType<ReturnType<typeof getContainerByGuid>>>;
 		try {
 			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
+			scopeContainer = containerFromParams;
 			if (
 				isOrganizationalUnitContainer(containerFromParams) &&
 				defineAbilityFor(locals.user).can('read', containerFromParams)
@@ -232,7 +235,7 @@ export const actions = {
 		await locals.pool.transaction(async (connection) => {
 			const ability = defineAbilityFor(locals.user);
 			for (const container of containers) {
-				if (ability.can('create', container)) {
+				if (ability.can('create', scopeContainer, container.payload.type)) {
 					await createContainer(container)(connection);
 				}
 			}

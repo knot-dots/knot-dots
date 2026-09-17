@@ -265,9 +265,7 @@
 	const mayAddItem = $derived.by(() => {
 		return (
 			editable &&
-			templateResource.current?.some(({ payload }) =>
-				$mayCreateContainer(payload.type, container.managed_by)
-			)
+			templateResource.current?.some(({ payload }) => $mayCreateContainer(payload.type, container))
 		);
 	});
 
@@ -494,7 +492,7 @@
 				{#if mayAddItem}
 					<li>
 						<AddItemMenu
-							managedBy={container.managed_by}
+							parent={container}
 							onchange={handleAddItem}
 							options={templateResource.current?.map(({ guid, payload }) => ({
 								label: 'title' in payload ? payload.title : payload.name,
@@ -533,7 +531,7 @@
 				<li>
 					<AddItemMenu
 						--height="100%"
-						managedBy={container.managed_by}
+						parent={container}
 						onchange={handleAddItem}
 						options={templateResource.current?.map(({ guid, payload }) => ({
 							label: 'title' in payload ? payload.title : payload.name,

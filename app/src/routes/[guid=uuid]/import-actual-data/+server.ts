@@ -78,15 +78,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(422, error(400, { message: parseResult.error.message }));
 	}
 
-	const container = containerOfType(
-		payloadTypes.enum.actual_data,
-		currentOrganizationGuid,
-		currentOrganizationalUnitGuid ?? null,
-		currentOrganizationalUnitGuid ?? currentOrganizationGuid,
-		env.PUBLIC_KC_REALM
-	);
-
-	if (!defineAbilityFor(locals.user).can('create', container)) {
+	if (
+		!defineAbilityFor(locals.user).can('create', containerFromParams, payloadTypes.enum.actual_data)
+	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 

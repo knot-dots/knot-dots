@@ -45,9 +45,7 @@
 			.filter((t) =>
 				$mayCreateContainer(
 					t as PayloadType,
-					addItemParams.has('managedBy')
-						? (addItemParams.get('managedBy') as string)
-						: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid)
+					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 				)
 			) as PayloadType[]
 	);
