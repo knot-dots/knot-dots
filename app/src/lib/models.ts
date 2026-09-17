@@ -2940,6 +2940,33 @@ export function findAncestors<T extends Container<AnyPayload>>(
 	return Array.from(ancestors.values());
 }
 
+// Assigning roles or rows to an inheriting measure or program gives it a
+// matrix of its own: the write paths decouple it so the assigned rights act
+// immediately, exactly as the inheritance toggle would. Rows keep resting
+// (they are never deleted) when the container starts inheriting again.
+export function withOwnMatrix<
+	T extends Pick<
+		Container<AnyPayload>,
+		'guid' | 'managed_by' | 'organization' | 'organizational_unit' | 'payload'
+	>
+>(container: T): T {
+	if (
+		container.payload.type === payloadTypes.enum.organizational_unit ||
+		!('inheritsGrants' in container.payload) ||
+		container.payload.inheritsGrants === false
+	) {
+		return container;
+	}
+	return {
+		...container,
+		managed_by:
+			container.managed_by[0] === grantSourceOf(container)
+				? [container.guid]
+				: container.managed_by,
+		payload: { ...container.payload, inheritsGrants: false }
+	};
+}
+
 // The source a container inherits its grant matrix from: the nearest manager
 // that is not the container itself — for contents of a program that is the
 // program, otherwise the organizational unit or organization.

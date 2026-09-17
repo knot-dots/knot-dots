@@ -8,7 +8,8 @@ import {
 	grantSetAssignment,
 	memberRoleFromGrantSet,
 	memberRoles,
-	predicates
+	predicates,
+	withOwnMatrix
 } from '$lib/models';
 import {
 	getContainerByGuid,
@@ -81,7 +82,9 @@ export const POST = (async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.transaction(async (connection) => {
-		await updateMemberRole(container, subject, role)(connection);
+		// assigning rows to an inheriting container decouples it, so they act
+		const target = role === null ? container : withOwnMatrix(container);
+		await updateMemberRole(target, subject, role)(connection);
 		await setContainerGrants(container.guid, subject, set)(connection);
 	});
 

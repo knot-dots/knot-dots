@@ -208,3 +208,39 @@ test('empty grant sets remove the subject', async () => {
 		subordinates: []
 	});
 });
+
+test('assigning rows to an inheriting measure decouples it', async () => {
+	getContainerByGuid.mockReturnValue({
+		...measure(),
+		payload: { inheritsGrants: true, title: 'Measure', type: 'measure', visibility: 'organization' }
+	});
+
+	const response = await post(measureGuid, {
+		subject: memberGuid,
+		self: ['read'],
+		subordinates: ['read', 'update']
+	});
+
+	expect(response.status).toBe(204);
+	expect(updateMemberRole).toHaveBeenCalledWith(
+		expect.objectContaining({ payload: expect.objectContaining({ inheritsGrants: false }) }),
+		memberGuid,
+		'observer'
+	);
+});
+
+test('removing rows leaves the inheritance untouched', async () => {
+	getContainerByGuid.mockReturnValue({
+		...measure(),
+		payload: { inheritsGrants: true, title: 'Measure', type: 'measure', visibility: 'organization' }
+	});
+
+	const response = await post(measureGuid, { subject: memberGuid, self: [], subordinates: [] });
+
+	expect(response.status).toBe(204);
+	expect(updateMemberRole).toHaveBeenCalledWith(
+		expect.objectContaining({ payload: expect.objectContaining({ inheritsGrants: true }) }),
+		memberGuid,
+		null
+	);
+});
