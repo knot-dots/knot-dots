@@ -2598,6 +2598,19 @@ export const user = z.object({
 
 export type User = z.infer<typeof user>;
 
+export const mcpToken = z.object({
+	created_at: z.coerce.date(),
+	expires_at: z.coerce.date(),
+	id: z.uuid(),
+	last_used_at: z.coerce.date().nullable(),
+	name: z.string(),
+	prefix: z.string().max(16),
+	revoked_at: z.coerce.date().nullable(),
+	scopes: z.array(z.string())
+});
+
+export type McpToken = z.infer<typeof mcpToken>;
+
 export function displayName(user: User) {
 	if (user.given_name != '' && user.family_name != '') {
 		return `${user.given_name} ${user.family_name}`;
