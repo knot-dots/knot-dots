@@ -6,7 +6,7 @@
 	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import CloseSidebar from '~icons/flowbite/close-sidebar-outline';
+	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Grid from '~icons/flowbite/grid-solid';
@@ -199,7 +199,7 @@
 	</a>
 
 	<button class="action-button" onclick={() => sidebar.collapse()} type="button">
-		<CloseSidebar />
+		<ChevronDoubleLeft />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
 </header>
@@ -441,10 +441,6 @@
 		flex-direction: row;
 		justify-content: space-between;
 		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
-	}
-
-	header .action-button {
-		color: var(--color-text-muted);
 	}
 
 	.sidebar-panel {
