@@ -63,7 +63,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 				url.searchParams.getAll('member')
 			),
 			revisions: filterVisible(revisions, locals.user),
-			title: `${container.payload.title} / ${t('workspace.measures.title')} / ${t('workspace.view.status')}`
+			title: t('workspace.measures.title')
 		};
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {
