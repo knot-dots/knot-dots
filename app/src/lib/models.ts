@@ -1606,11 +1606,7 @@ export const organizationPayload = z.strictObject({
 	type: z.literal(payloadTypes.enum.organization),
 	useAnalytics: z.boolean().default(true),
 	visibility: visibility.default(visibility.enum['organization']),
-	visibleWorkspaces: z
-		.array(z.string())
-		.transform((v) => v.map((v) => (v == 'measure-monitoring' ? 'monitoring' : v)))
-		.transform(deduplicate)
-		.default([])
+	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
 });
 
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
