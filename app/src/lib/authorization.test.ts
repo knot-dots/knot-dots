@@ -257,12 +257,12 @@ describe('categories and terms via the governing matrix', () => {
 		// governing matrix, which only the admin role carries
 		const admin = abilityOn({ adminOf: [team] }, team);
 		const category = makeContainer(payloadTypes.enum.category);
-		expect(admin.can('create', makeContainer(payloadTypes.enum.measure), 'category')).toBe(true);
+		expect(admin.can('create', category)).toBe(true);
 		expect(admin.can('update', category)).toBe(true);
 		expect(admin.can('delete', category)).toBe(true);
 
 		const head = abilityOn({ headOf: [team] }, team);
-		expect(head.can('create', makeContainer(payloadTypes.enum.measure), 'category')).toBe(false);
+		expect(head.can('create', category)).toBe(false);
 		expect(head.can('update', category)).toBe(true);
 		expect(head.can('delete', category)).toBe(false);
 		expect(head.can('update', makeContainer(payloadTypes.enum.term))).toBe(true);
@@ -271,7 +271,7 @@ describe('categories and terms via the governing matrix', () => {
 	test('collaborators may update but neither add nor remove them', () => {
 		const ability = abilityOn({ collaboratorOf: [team] }, team);
 		const category = makeContainer(payloadTypes.enum.category);
-		expect(ability.can('create', makeContainer(payloadTypes.enum.measure), 'category')).toBe(false);
+		expect(ability.can('create', category)).toBe(false);
 		expect(ability.can('update', category)).toBe(true);
 		expect(ability.can('delete', category)).toBe(false);
 	});
@@ -623,24 +623,13 @@ describe('the basic permission matrix by member role', () => {
 	});
 
 	for (const scope of Object.keys(permissionMatrix) as Scope[]) {
-		const scopeObject = scopedContainer(
-			scope,
-			scope === 'organization'
-				? payloadTypes.enum.organization
-				: payloadTypes.enum.organizational_unit
-		);
-
 		describe(`objects belonging to an ${scope}`, () => {
 			for (const { types, permitted } of permissionMatrix[scope]) {
 				for (const role of memberRoles.options) {
 					const ability = abilityOn(userWithRoleOn(role, scope));
 					test.for(types)(`a ${role} may ${inWords(permitted[role])}: %s`, (type) => {
 						expect(
-							basicActions.filter((action) =>
-								action === 'create'
-									? ability.can('create', scopeObject, type)
-									: ability.can(action, scopedContainer(scope, type))
-							)
+							basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
 						).toEqual(permitted[role]);
 					});
 				}
@@ -649,13 +638,7 @@ describe('the basic permission matrix by member role', () => {
 			test('a registered user without a role in the scope has no access', () => {
 				const ability = abilityOn({});
 				const measure = scopedContainer(scope, payloadTypes.enum.measure);
-				expect(
-					basicActions.filter((action) =>
-						action === 'create'
-							? ability.can('create', scopeObject, payloadTypes.enum.measure)
-							: ability.can(action, measure)
-					)
-				).toEqual([]);
+				expect(basicActions.filter((action) => ability.can(action, measure))).toEqual([]);
 			});
 		});
 	}

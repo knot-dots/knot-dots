@@ -11,6 +11,7 @@ import {
 	anyInitialPayload,
 	type Container,
 	containerOfType,
+	containerToCreate,
 	createNewContainerSchema,
 	editorialState,
 	type IndicatorTemplatePayload,
@@ -86,7 +87,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		}
 	}
 
-	if (!ability.can('create', scopeContainer, payloadTypes.enum.indicator_template)) {
+	if (
+		!ability.can('create', containerToCreate(payloadTypes.enum.indicator_template, scopeContainer))
+	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
@@ -290,7 +293,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 					})(connection);
 				}
 				indicatorGuid = existingContainer.guid;
-			} else if (ability.can('create', scopeContainer, payloadTypes.enum.indicator_template)) {
+			} else if (
+				ability.can(
+					'create',
+					containerToCreate(payloadTypes.enum.indicator_template, scopeContainer)
+				)
+			) {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);
 				indicatorGuid = created.guid;
@@ -339,7 +347,9 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 						}
 					];
 
-					if (ability.can('create', scopeContainer, payloadTypes.enum.actual_data))
+					if (
+						ability.can('create', containerToCreate(payloadTypes.enum.actual_data, scopeContainer))
+					)
 						await createContainer(actualDataContainer)(connection);
 				}
 			}

@@ -2882,6 +2882,22 @@ export function containerOfType(
 	}) as NewContainer<AnyInitialPayload>;
 }
 
+// A stub of a container to create within the given parent. It inherits the
+// computed grants of the parent, so the create rules judge it like any loaded
+// container.
+export function containerToCreate(payloadType: PayloadType, parent: Container<AnyPayload>) {
+	return {
+		...containerOfType(
+			payloadType,
+			parent.organization,
+			isOrganizationalUnitContainer(parent) ? parent.guid : parent.organizational_unit,
+			parent.guid,
+			parent.realm
+		),
+		grant: parent.grant
+	};
+}
+
 export function findConnected<T extends Container<AnyPayload>>(
 	container: T,
 	containers: T[],

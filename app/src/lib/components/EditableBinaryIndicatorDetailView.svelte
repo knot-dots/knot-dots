@@ -22,6 +22,7 @@
 		type BinaryIndicatorPayload,
 		type Container,
 		containerOfType,
+		containerToCreate,
 		isActualDataContainer,
 		type NewContainer,
 		payloadTypes,
@@ -162,7 +163,7 @@
 			{/key}
 
 			<div class="details-section" oninput={(e) => e.stopPropagation()}>
-				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', container, payloadTypes.enum.actual_data)}
+				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', containerToCreate(payloadTypes.enum.actual_data, container))}
 					{#if addingActualData}
 						<span class="loader"></span>
 					{:else}

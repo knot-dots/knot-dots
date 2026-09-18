@@ -5,6 +5,7 @@
 	import createObjective from '$lib/client/createObjective';
 	import {
 		type Container,
+		containerToCreate,
 		findOverallObjective,
 		type IndicatorTemplatePayload,
 		payloadTypes
@@ -27,7 +28,7 @@
 	}
 </script>
 
-{#if !findOverallObjective(container, relatedContainers) && $ability.can('create', container, payloadTypes.enum.objective)}
+{#if !findOverallObjective(container, relatedContainers) && $ability.can('create', containerToCreate(payloadTypes.enum.objective, container))}
 	<button
 		type="button"
 		onclick={createOverallObjective(container)}

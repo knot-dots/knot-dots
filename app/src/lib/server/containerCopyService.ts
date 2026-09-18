@@ -12,10 +12,11 @@ import {
 import {
 	type AnyPayload,
 	type Container,
+	containerToCreate,
 	getAvailableInProgramGuids,
 	isMeasureContainer,
-	isOrganizationContainer,
 	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	isProgramContainer,
 	isSimpleMeasureContainer,
 	isTemplateContainer,
@@ -482,7 +483,7 @@ export async function executeContainerCopy({
 	const creationScope = resolvedTarget.organizationalUnit ?? resolvedTarget.organization;
 	if (
 		[...plan.values()].some((container) =>
-			ability.cannot('create', creationScope, container.payload.type)
+			ability.cannot('create', containerToCreate(container.payload.type, creationScope))
 		)
 	) {
 		throw new ContainerCopyServiceError('create_forbidden');

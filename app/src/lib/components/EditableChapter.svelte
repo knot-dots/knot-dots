@@ -14,6 +14,7 @@
 	import {
 		type Container,
 		containerOfType,
+		containerToCreate,
 		isContainerWithBody,
 		isContainerWithDescription,
 		isGoalCollectionContainer,
@@ -166,7 +167,7 @@
 			{$_('read_more')}
 		</a>
 
-		{#if availableChapterTypes.some((t) => $ability.can('create', isPartOf, t))}
+		{#if availableChapterTypes.some((t) => $ability.can('create', containerToCreate(t, isPartOf)))}
 			<DropDownMenu
 				handleChange={createContainerAt(currentIndex + 1)}
 				label={$_('chapter')}

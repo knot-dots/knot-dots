@@ -3,7 +3,12 @@
 	import { _ } from 'svelte-i18n';
 	import CopyCat from '~icons/knotdots/copycat';
 	import { page } from '$app/state';
-	import { type AnyPayload, type Container, createRootCopyOf } from '$lib/models';
+	import {
+		type AnyPayload,
+		type Container,
+		containerToCreate,
+		createRootCopyOf
+	} from '$lib/models';
 	import { selectContainerCopyLocation, type ContainerCopyLocation } from '$lib/containerCopy';
 	import { ability, applicationState, openContainerCopyDialog, user } from '$lib/stores';
 
@@ -26,7 +31,10 @@
 			page.data.organizations.find(
 				({ guid }: { guid: string }) => guid === location.organizationGuid
 			);
-		return scope !== undefined && $ability.can('create', scope, container.payload.type);
+		return (
+			scope !== undefined &&
+			$ability.can('create', containerToCreate(container.payload.type, scope))
+		);
 	}
 
 	let copyLocation = $derived.by(() =>

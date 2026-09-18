@@ -45,8 +45,8 @@ const userManagedTypes: PayloadType[] = [
 // user on each container (grant, see computeUserGrants): `self` and
 // `subordinates` carry the kinds of the governing matrix, `own` the kinds of
 // the container's own rows, `admin` and `member` the subject's standing with
-// the governing matrix. Creating is checked against the loaded parent — the
-// payload type of the container to create passes as the field.
+// the governing matrix. Creating is checked against a stub of the container
+// to create that inherits the grants of its parent (containerToCreate).
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
 		createMongoAbility
@@ -73,7 +73,7 @@ export default function defineAbilityFor(user: User) {
 			],
 			{ 'grant.self': 'manage-users' }
 		);
-		can('create', payloadTypes.options, commonTypes, {
+		can('create', commonTypes, {
 			'grant.subordinates': 'create'
 		});
 		can('update', payloadTypes.enum.program, ['chapterType'], {
@@ -85,16 +85,13 @@ export default function defineAbilityFor(user: User) {
 		can('manage-users', userManagedTypes, { 'grant.own': 'manage-users' });
 
 		// —— administrators of the governing matrix or an area ——
-		can('create', payloadTypes.options, [payloadTypes.enum.category, payloadTypes.enum.term], {
+		can('create', [payloadTypes.enum.category, payloadTypes.enum.term], {
 			'grant.admin': true
 		});
 		// help sections and organizational units belong to the organization
-		can(
-			'create',
-			payloadTypes.enum.organization,
-			[payloadTypes.enum.help, payloadTypes.enum.organizational_unit],
-			{ 'grant.admin': true }
-		);
+		can('create', [payloadTypes.enum.help, payloadTypes.enum.organizational_unit], {
+			'grant.organization_manager': true
+		});
 		can('delete', [payloadTypes.enum.category, payloadTypes.enum.term], {
 			'grant.admin': true
 		});
@@ -138,7 +135,6 @@ export default function defineAbilityFor(user: User) {
 			'grant.area_sourced': true
 		});
 		cannot(['create', 'update', 'delete'], payloadTypes.enum.html);
-		cannot('create', payloadTypes.options, [payloadTypes.enum.html]);
 	}
 
 	return build({

@@ -21,6 +21,7 @@
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type Container,
+		containerToCreate,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isIndicatorTemplateContainer,
@@ -56,8 +57,10 @@
 		createFeatureDecisions(data.features).useImportFromCsv() &&
 			$ability.can(
 				'create',
-				page.data.currentOrganizationalUnit ?? page.data.currentOrganization,
-				payloadTypes.enum.indicator_template
+				containerToCreate(
+					payloadTypes.enum.indicator_template,
+					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+				)
 			)
 	);
 

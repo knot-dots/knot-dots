@@ -8,6 +8,7 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	type ActualDataPayload,
 	containerOfType,
+	containerToCreate,
 	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
 	isOrganizationalUnitContainer,
@@ -79,7 +80,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 
 	if (
-		!defineAbilityFor(locals.user).can('create', containerFromParams, payloadTypes.enum.actual_data)
+		!defineAbilityFor(locals.user).can(
+			'create',
+			containerToCreate(payloadTypes.enum.actual_data, containerFromParams)
+		)
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}

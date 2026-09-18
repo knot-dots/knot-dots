@@ -32,6 +32,7 @@
 		computeFacetCount,
 		type Container,
 		containerOfType,
+		containerToCreate,
 		type NewContainer,
 		paramsFromFragment,
 		type PayloadType,
@@ -309,7 +310,7 @@
 							/>
 						</form>
 					{:else}
-						{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', container, t) )}
+						{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', containerToCreate(t, container)) )}
 							<div class="details-section">
 								<DropDownMenu
 									handleChange={createContainer}

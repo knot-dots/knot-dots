@@ -7,6 +7,7 @@ import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
+	containerToCreate,
 	indicatorCategories,
 	indicatorTypes,
 	isProgramContainer,
@@ -209,7 +210,7 @@ export const POST = (async ({ locals, request }) => {
 		});
 	if (
 		parent
-			? ability.cannot('create', parent, parseResult.data.payload.type)
+			? ability.cannot('create', containerToCreate(parseResult.data.payload.type, parent))
 			: ability.cannot('create', parseResult.data.payload.type)
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
