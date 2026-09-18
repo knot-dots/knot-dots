@@ -228,15 +228,20 @@ export const POST = (async ({ locals, params, request }) => {
 		// the object. To ensure consistency with the front-end, the permission to
 		// update the container represented by the guid parameter of the route and
 		// the permission to read the other are required.
-		const containers = await getManyContainers(
-			[],
-			{
-				guid: parseResult.data
-					.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-					.flatMap(({ object, subject }) => [object, subject])
-			},
-			'alpha'
-		)(tx);
+		const guid = parseResult.data
+			.filter(({ object, subject }) => object == params.guid || subject == params.guid)
+			.flatMap(({ object, subject }) => [object, subject]);
+
+		const containers =
+			guid.length > 0
+				? await getManyContainers(
+						[],
+						{
+							guid
+						},
+						'alpha'
+					)(tx)
+				: [];
 		const authorized = parseResult.data
 			.filter(({ object, subject }) => object == params.guid || subject == params.guid)
 			.filter(({ deleted, object, predicate, subject }) => {

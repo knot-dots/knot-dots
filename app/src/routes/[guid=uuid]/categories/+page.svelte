@@ -13,12 +13,13 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
-		type AnyPayload,
 		type Container,
+		findAncestors,
+		findDescendants,
 		isCategoryContainer,
 		isTermContainer,
 		predicates,
-		type Predicate
+		type TermPayload
 	} from '$lib/models';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
@@ -35,121 +36,74 @@
 		)
 	);
 
-	const hasParentTerm = (term: Container<AnyPayload>) =>
-		term.relation.some(
-			({ predicate, subject, object }) =>
-				predicate === predicates.enum['is-part-of'] && subject === term.guid && object !== term.guid
-		);
-
-	let allTerms = $derived(
-		withOptimistic(
-			[...data.terms, ...data.subterms],
-			$lastCreatedContainers,
-			$lastDeletedContainers,
-			$lastUpdatedContainers,
-			isTermContainer
-		)
-	);
-
-	let terms = $derived(allTerms.filter((term) => !hasParentTerm(term)));
-
-	let subterms = $derived(allTerms.filter(hasParentTerm));
-
-	const defaultRelationPredicates: Predicate[] = [
-		predicates.enum['is-equivalent-to'],
-		predicates.enum['implies']
-	];
-
-	const hierarchyPredicates: Predicate[] = [
-		predicates.enum['is-part-of'],
-		predicates.enum['is-part-of-category'],
-		predicates.enum['is-part-of-program']
-	];
-
 	setContext('relationOverlay', {
 		enabled: true,
-		predicates: defaultRelationPredicates
+		predicates: [predicates.enum['is-equivalent-to'], predicates.enum['implies']]
 	});
 
-	let relationPredicates = $derived.by(() =>
-		page.url.searchParams.getAll('relationType').length > 0
-			? (page.url.searchParams.getAll('relationType') as Predicate[])
-			: defaultRelationPredicates
-	);
+	let containers = $derived.by(() => {
+		let containers = new Set<Container>();
 
-	let combinedContainers = $derived([...allContainers, ...allTerms]);
+		if (page.url.searchParams.has('related-to')) {
+			const selectedContainer = allContainers.find(
+				({ guid }) => guid === page.url.searchParams.get('related-to')
+			);
 
-	let relatedGuids = $derived.by(() => {
-		const target = page.url.searchParams.get('related-to');
-		if (!target) return null;
-
-		const knownGuids = new Set(combinedContainers.map(({ guid }) => guid));
-		if (!knownGuids.has(target)) return null;
-
-		type Edge = { to: string; dir: 'up' | 'down' | 'undirected' };
-		const adjacency = new Map<string, Edge[]>();
-		// Ensure the selected node exists even if it has no relations.
-		adjacency.set(target, []);
-
-		const allowedPredicates = new Set<Predicate>([...relationPredicates, ...hierarchyPredicates]);
-
-		for (const container of combinedContainers) {
-			for (const { predicate, subject, object } of container.relation) {
-				const predicateType = predicate as Predicate;
-				if (!allowedPredicates.has(predicateType)) continue;
-				if (!subject || !object) continue;
-
-				if (!adjacency.has(subject)) adjacency.set(subject, []);
-				if (!adjacency.has(object)) adjacency.set(object, []);
-
-				if (hierarchyPredicates.includes(predicateType)) {
-					// subject = child, object = parent
-					adjacency.get(subject)?.push({ to: object, dir: 'up' });
-					adjacency.get(object)?.push({ to: subject, dir: 'down' });
-				} else {
-					adjacency.get(subject)?.push({ to: object, dir: 'undirected' });
-					adjacency.get(object)?.push({ to: subject, dir: 'undirected' });
-				}
+			if (selectedContainer) {
+				containers = new Set([
+					selectedContainer,
+					...findAncestors(selectedContainer, allContainers, [
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-category']
+					]),
+					...findDescendants(selectedContainer, allContainers, [
+						predicates.enum['is-part-of'],
+						predicates.enum['is-part-of-category']
+					]),
+					...allContainers.filter(({ relation }) =>
+						relation.some(
+							({ object, predicate, subject }) =>
+								(predicate === predicates.enum['implies'] ||
+									predicate === predicates.enum['is-equivalent-to']) &&
+								(object == selectedContainer.guid || subject == selectedContainer.guid)
+						)
+					)
+				]);
 			}
+		} else {
+			containers = new Set(allContainers);
 		}
 
-		if (!adjacency.has(target)) return null;
-
-		const visited = new Set<string>([target]);
-		const queue: Array<{ node: string; cameFrom?: 'up' | 'down' | 'undirected' }> = [
-			{ node: target }
-		];
-
-		while (queue.length > 0) {
-			const { node, cameFrom } = queue.shift() as {
-				node: string;
-				cameFrom?: 'up' | 'down' | 'undirected';
-			};
-			for (const edge of adjacency.get(node) ?? []) {
-				// Prevent sibling bleed: if we came from a child (up), do not expand back down to other children.
-				if (cameFrom === 'up' && edge.dir === 'down') {
-					continue;
-				}
-				if (!visited.has(edge.to)) {
-					visited.add(edge.to);
-					queue.push({ node: edge.to, cameFrom: edge.dir });
-				}
-			}
-		}
-
-		return visited;
+		return containers;
 	});
 
-	let filteredContainers = $derived.by(() =>
-		relatedGuids ? allContainers.filter(({ guid }) => relatedGuids.has(guid)) : allContainers
+	const categories = $derived(
+		allContainers.filter(isCategoryContainer).filter((c) => containers.has(c))
 	);
 
-	let filteredTerms = $derived.by(() =>
-		relatedGuids ? terms.filter(({ guid }) => relatedGuids.has(guid)) : terms
-	);
+	const { terms, subterms } = $derived(
+		allContainers
+			.filter(isTermContainer)
+			.filter((t) => containers.has(t))
+			.reduce(
+				(result, term) => {
+					const hasParentTerm = term.relation.some(
+						({ predicate, subject, object }) =>
+							predicate === predicates.enum['is-part-of'] &&
+							subject === term.guid &&
+							object !== term.guid
+					);
 
-	let filteredSubterms = $derived.by(() =>
-		relatedGuids ? subterms.filter(({ guid }) => relatedGuids.has(guid)) : subterms
+					if (hasParentTerm) {
+						result.subterms.push(term);
+					} else {
+						result.terms.push(term);
+					}
+
+					return result;
+				},
+				{ terms: [] as Container<TermPayload>[], subterms: [] as Container<TermPayload>[] }
+			)
 	);
 </script>
 
@@ -161,23 +115,21 @@
 			{/snippet}
 
 			{#snippet main()}
-				{#key page.url.searchParams}
-					<Board>
-						<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
-							<div class="vertical-scroll-wrapper">
-								{#each filteredContainers as container (container.guid)}
-									<Card {container} showRelationFilter />
-								{/each}
-							</div>
-						</BoardColumn>
-						<BoardColumn title={$_('category.terms.heading')}>
-							<MaybeDragZone containers={filteredTerms} />
-						</BoardColumn>
-						<BoardColumn title={$_('category.subterms.heading')}>
-							<MaybeDragZone containers={filteredSubterms} />
-						</BoardColumn>
-					</Board>
-				{/key}
+				<Board>
+					<BoardColumn addItemUrl="#create=category" title={$_('categories.columns.root')}>
+						<div class="vertical-scroll-wrapper">
+							{#each categories.filter((c) => containers.has(c)) as container (container.guid)}
+								<Card {container} showRelationFilter />
+							{/each}
+						</div>
+					</BoardColumn>
+					<BoardColumn title={$_('category.terms.heading')}>
+						<MaybeDragZone containers={terms} />
+					</BoardColumn>
+					<BoardColumn title={$_('category.subterms.heading')}>
+						<MaybeDragZone containers={subterms} />
+					</BoardColumn>
+				</Board>
 
 				<ContextTabs slug="categories" />
 			{/snippet}

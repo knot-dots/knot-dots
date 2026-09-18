@@ -4,7 +4,7 @@ export default class Column {
 	constructor(readonly locator: Locator) {}
 
 	card(title: string) {
-		return this.locator.getByTitle(title);
+		return this.locator.getByTitle(title, { exact: true });
 	}
 
 	get addItemButton() {
