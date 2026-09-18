@@ -2611,6 +2611,12 @@ export const mcpToken = z.object({
 
 export type McpToken = z.infer<typeof mcpToken>;
 
+export const authenticatedMcpToken = mcpToken
+	.pick({ expires_at: true, id: true, scopes: true })
+	.extend({ user_id: z.uuid() });
+
+export type AuthenticatedMcpToken = z.infer<typeof authenticatedMcpToken>;
+
 export function displayName(user: User) {
 	if (user.given_name != '' && user.family_name != '') {
 		return `${user.given_name} ${user.family_name}`;

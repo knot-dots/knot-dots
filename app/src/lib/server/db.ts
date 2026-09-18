@@ -11,6 +11,7 @@ import {
 import { z } from 'zod';
 import {
 	anyContainer,
+	authenticatedMcpToken,
 	type AnyPayload,
 	type BinaryIndicatorPayload,
 	type Container,
@@ -186,6 +187,19 @@ const typeAliases = {
 };
 
 export const sql = createSqlTag({ typeAliases });
+
+export function authenticateMcpToken(secretHash: Buffer) {
+	return async (connection: DatabaseConnection) => {
+		return connection.maybeOne(sql.type(authenticatedMcpToken)`
+			UPDATE mcp_token
+			SET last_used_at = now()
+			WHERE secret_hash = ${sql.binary(secretHash)}
+				AND revoked_at IS NULL
+				AND expires_at > now()
+			RETURNING id, user_id, scopes, expires_at
+		`);
+	};
+}
 
 export function getMcpTokensForUser(userId: string) {
 	return async (connection: DatabaseConnection) => {
