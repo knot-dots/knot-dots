@@ -12,7 +12,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const containers = await locals.pool.connect(getAllContainersRelatedToUser(locals.user.guid));
 
 	return {
-		containers: filterVisible(containers, locals.user),
-		title: unwrapFunctionStore(_)('workspace.profile')
+		containers: filterVisible(containers, locals.user)
 	};
 };

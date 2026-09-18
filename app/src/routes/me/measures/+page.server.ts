@@ -1,10 +1,10 @@
-import { error } from '@sveltejs/kit';
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 import { isContainerWithEffect, isMemberOf, computeFacetCount, payloadTypes } from '$lib/models';
 import { getAllContainersRelatedToUser } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 
 export const load = (async ({ locals, parent }) => {
 	if (!locals.user.isAuthenticated) {
@@ -37,7 +37,6 @@ export const load = (async ({ locals, parent }) => {
 
 	return {
 		containers: filtered,
-		facets,
-		title: unwrapFunctionStore(_)('workspace.profile.measures')
+		facets
 	};
 }) satisfies PageServerLoad;

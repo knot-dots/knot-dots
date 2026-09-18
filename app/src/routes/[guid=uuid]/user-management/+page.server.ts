@@ -54,7 +54,6 @@ export const load = (async ({ locals, parent }) => {
 		container: selectedContext,
 		grants,
 		managedOrganizationalUnits,
-		title: unwrapFunctionStore(_)('workspace.users.title'),
 		users: [...usersByGuid.values()].map(withEmail)
 	};
 }) satisfies PageServerLoad;

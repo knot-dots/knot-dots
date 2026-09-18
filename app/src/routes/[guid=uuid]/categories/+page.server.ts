@@ -74,7 +74,6 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 	return {
 		containers: visibleContainers,
 		terms: rootTerms,
-		title: unwrapFunctionStore(_)('workspace.categories.title'),
 		subterms
 	};
 };

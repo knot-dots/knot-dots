@@ -30,7 +30,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		containers: filtered,
-		facets,
-		title: unwrapFunctionStore(_)('workspace.profile.tasks')
+		facets
 	};
 };

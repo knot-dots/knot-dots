@@ -1,8 +1,8 @@
 import { error, fail } from '@sveltejs/kit';
+import { NotFoundError } from 'slonik';
 import { parse } from 'csv-parse';
 import stream from 'node:stream';
 import type { ReadableStream } from 'node:stream/web';
-import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
@@ -271,7 +271,6 @@ export const load = (async ({ locals, parent }) => {
 	}
 
 	return {
-		title: unwrapFunctionStore(_)('import'),
 		users: locals.pool.connect(
 			getAllRelatedUsers(currentOrganizationalUnit?.guid ?? currentOrganization.guid, [
 				predicates.enum['is-admin-of'],

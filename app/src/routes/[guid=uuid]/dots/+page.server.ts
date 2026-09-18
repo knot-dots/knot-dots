@@ -1,4 +1,3 @@
-import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterCategoryContext } from '$lib/categoryOptions';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { type AnyPayload, type Container, payloadTypes } from '$lib/models';
@@ -77,7 +76,6 @@ export const load: PageServerLoad = async ({ depends, fetch, params, parent, url
 					['status', facetData.facets.get('status') ?? new Map()],
 					...[...facetData.facets].filter(([key]) => filteredCategoryContext.keys.includes(key)),
 					['programType', facetData.facets.get('programType') ?? new Map()]
-				]),
-		title: unwrapFunctionStore(_)('dots')
+				])
 	};
 };
