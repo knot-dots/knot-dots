@@ -18,7 +18,7 @@
 </script>
 
 {#if visible && !page.params.contentGuid}
-	<a class="dropdown-button" href={resolve('/[guid=uuid]/dots', { guid: context.guid })}>
+	<a class="dropdown-button" href={resolve('/[guid=uuid]/all/level', { guid: context.guid })}>
 		<Dots />
 		<span class="is-visually-hidden">{$_('dots')}</span>
 	</a>

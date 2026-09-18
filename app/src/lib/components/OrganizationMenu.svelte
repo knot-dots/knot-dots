@@ -79,7 +79,7 @@
 			ability: $ability
 		}).flatMap((w) => Object.values(w.views));
 
-		return ['/dots', ...workspacePaths].some((w) => w.endsWith(pathname)) ? pathname : '';
+		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '';
 	}
 
 	function optionURL(container: Container<OrganizationPayload>) {
