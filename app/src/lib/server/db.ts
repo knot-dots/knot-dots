@@ -25,6 +25,7 @@ import {
 	type HelpSlug,
 	type IndicatorTemplatePayload,
 	isProgramContainer,
+	mcpToken,
 	type MemberRole,
 	memberRoleFromPredicates,
 	memberRolePredicates,
@@ -185,6 +186,60 @@ const typeAliases = {
 };
 
 export const sql = createSqlTag({ typeAliases });
+
+export function getMcpTokensForUser(userId: string) {
+	return async (connection: DatabaseConnection) => {
+		return connection.any(sql.type(mcpToken)`
+			SELECT id, name, prefix, scopes, created_at, expires_at, last_used_at, revoked_at
+			FROM mcp_token
+			WHERE user_id = ${userId}
+			ORDER BY created_at DESC
+		`);
+	};
+}
+
+export function createMcpToken({
+	name,
+	prefix,
+	scopes,
+	secretHash,
+	userId
+}: {
+	name: string;
+	prefix: string;
+	scopes: string[];
+	secretHash: Buffer;
+	userId: string;
+}) {
+	return async (connection: DatabaseConnection) => {
+		return connection.one(sql.type(mcpToken)`
+			INSERT INTO mcp_token (user_id, name, secret_hash, prefix, scopes)
+			VALUES (
+				${userId},
+				${name},
+				${sql.binary(secretHash)},
+				${prefix},
+				${sql.array(scopes, 'text')}
+			)
+			RETURNING id, name, prefix, scopes, created_at, expires_at, last_used_at, revoked_at
+		`);
+	};
+}
+
+export function revokeMcpToken(id: string, userId: string) {
+	return async (connection: DatabaseConnection) => {
+		const token = await connection.maybeOne(sql.typeAlias('guid')`
+			UPDATE mcp_token
+			SET revoked_at = now()
+			WHERE id = ${id}
+				AND user_id = ${userId}
+				AND revoked_at IS NULL
+			RETURNING id AS guid
+		`);
+
+		return token !== null;
+	};
+}
 
 // container_grant mirrors the member roles as granted kinds per target, so
 // role-based write paths replace the grants of a container as a whole instead
