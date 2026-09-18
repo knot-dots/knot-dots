@@ -30,7 +30,9 @@ export const load = (async ({ locals, params }) => {
 			locals.pool.connect(getAllRelatedUsers(params.contentGuid, [predicates.enum['is-member-of']]))
 		]);
 
-		if (!defineAbilityFor(locals.user).can('read', container)) {
+		const ability = defineAbilityFor(locals.user);
+
+		if (!ability.can('read', container)) {
 			error(404, { message: t('error.not_found') });
 		}
 
@@ -40,6 +42,24 @@ export const load = (async ({ locals, params }) => {
 			!isSimpleMeasureContainer(container)
 		) {
 			error(404, { message: t('error.not_found') });
+		}
+
+		// The inherited section discloses the governing matrix and its members;
+		// that view belongs to those who may manage the container's users.
+		if (!ability.can('manage-users', container)) {
+			const [members, grants] = await Promise.all([
+				getMembers(container.organization),
+				locals.pool.connect(getAllGrantsByContainers([container.guid]))
+			]);
+			return {
+				container,
+				grants,
+				title: t('members'),
+				users: users.map((u) => ({
+					...u,
+					email: members.find(({ id }) => id == u.guid)?.username ?? u.guid
+				}))
+			};
 		}
 
 		// The matrix governing this container names itself: the read-time

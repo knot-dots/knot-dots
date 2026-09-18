@@ -7,9 +7,9 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		grants: Grant[];
-		inheritedGrants: Grant[];
-		inheritedUsers: User[];
-		scope: Container<AnyPayload>;
+		inheritedGrants?: Grant[];
+		inheritedUsers?: User[];
+		scope?: Container<AnyPayload>;
 		users: User[];
 	}
 

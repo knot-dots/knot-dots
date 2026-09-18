@@ -193,9 +193,9 @@ export type OverlayData =
 			key: 'members';
 			container: Container<AnyPayload>;
 			grants: Grant[];
-			inheritedGrants: Grant[];
-			inheritedUsers: UserRecord[];
-			scope: Container<AnyPayload>;
+			inheritedGrants?: Grant[];
+			inheritedUsers?: UserRecord[];
+			scope?: Container<AnyPayload>;
 			users: UserRecord[];
 	  }
 	| {
