@@ -14,6 +14,7 @@
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
+	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
@@ -51,7 +52,8 @@
 
 	let favoriteList = $state({
 		organization: page.data.currentOrganization.payload.favorite,
-		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? []
+		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? [],
+		user: $user.settings.favorite ?? []
 	});
 
 	$effect(() => {
