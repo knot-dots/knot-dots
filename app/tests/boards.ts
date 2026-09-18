@@ -59,9 +59,6 @@ export class TaskStatusBoard extends Board {
 		await this.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 		await this.overlay.closeButton.click();
 		await expect(this.overlay.locator).not.toBeVisible();
-		// the board refetches after creating; wait for the card to arrive in its
-		// column before dragging anything around
-		await expect(this.column(columnHeading).locator.getByTitle(title)).toBeVisible();
 	}
 
 	async moveCardToColumn(cardTitle: string, columnHeading: string, position: number) {

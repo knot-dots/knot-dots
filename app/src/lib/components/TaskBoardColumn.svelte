@@ -3,12 +3,20 @@
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { env } from '$env/dynamic/public';
 	import { page } from '$app/state';
+	import { ability } from '$lib/stores';
 	import saveContainer from '$lib/client/saveContainer';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
-	import { type Container, type Status, type TaskPayload } from '$lib/models';
+	import {
+		payloadTypes,
+		containerOfType,
+		type Container,
+		type Status,
+		type TaskPayload
+	} from '$lib/models';
 
 	interface Props {
 		addItemUrl?: string;
@@ -19,6 +27,22 @@
 	}
 
 	let { addItemUrl, onSort, itemSnippet, items = [], status }: Props = $props();
+
+	// a task created here belongs to the current scope, so the stub carries
+	// the scope's computed grants for the ability check
+	function containerOfTypeTask() {
+		const scope = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
+		return {
+			...containerOfType(
+				payloadTypes.enum.task,
+				page.data.currentOrganization.guid,
+				page.data.currentOrganizationalUnit?.guid ?? null,
+				scope.guid,
+				env.PUBLIC_KC_REALM
+			),
+			user_grants: scope.user_grants
+		};
+	}
 
 	function handleDndConsider(e: CustomEvent<DndEvent<Container<TaskPayload>>>) {
 		items = e.detail.items;
@@ -56,7 +80,7 @@
 </script>
 
 <BoardColumn {addItemUrl} title={$_(status)}>
-	{#if browser && !matchMedia('(pointer: coarse)').matches && (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).user_grants?.subordinates.includes('update')}
+	{#if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', containerOfTypeTask())}
 		<div
 			class="vertical-scroll-wrapper"
 			use:dndzone={{ dropTargetStyle: {}, items }}
