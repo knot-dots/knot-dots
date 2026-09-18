@@ -34,7 +34,7 @@ import {
 	type TermPayload,
 	type TextPayload
 } from '$lib/models';
-import { CategoriesBoard, DotsBoard, TaskStatusBoard } from './boards';
+import { CategoriesBoard, DotsBoard, GoalsBoard, TaskStatusBoard } from './boards';
 import { IndicatorCatalog, ResourceCatalog } from './catalogs';
 import { LandingPage, ProgramPage } from './pages';
 import { AllTable } from './tables';
@@ -44,6 +44,7 @@ type MyFixtures = {
 	allTable: AllTable;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
+	goalsBoard: GoalsBoard;
 	indicatorCatalog: IndicatorCatalog;
 	landingPage: LandingPage;
 	measureTemplateWithSection: {
@@ -443,6 +444,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	],
 	dotsBoard: async ({ page }, use) => {
 		await use(new DotsBoard(page));
+	},
+	goalsBoard: async ({ page }, use) => {
+		await use(new GoalsBoard(page));
 	},
 	indicatorCatalog: async ({ page }, use) => {
 		await use(new IndicatorCatalog(page));
