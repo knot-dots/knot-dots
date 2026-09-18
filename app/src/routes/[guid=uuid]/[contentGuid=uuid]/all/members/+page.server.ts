@@ -50,7 +50,7 @@ export const load = (async ({ locals, params }) => {
 		const inherits =
 			!('inheritsGrants' in container.payload) || container.payload.inheritsGrants !== false;
 		const sourceGuid = inherits
-			? (container.user_grants?.source ?? container.organizational_unit ?? container.organization)
+			? (container.grant?.source ?? container.organizational_unit ?? container.organization)
 			: grantSourceOf(container);
 		const areaGuids = [
 			...new Set([

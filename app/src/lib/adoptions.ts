@@ -25,7 +25,7 @@ export function organizationalUnitsManagedByUser(
 ): Array<Container<OrganizationalUnitPayload>> {
 	return organizationalUnits.filter(
 		(unit) =>
-			unit.guid !== program.organizational_unit && unit.user_grants?.subordinates.includes('create')
+			unit.guid !== program.organizational_unit && unit.grant?.subordinates.includes('create')
 	);
 }
 

@@ -63,7 +63,7 @@ function organization(adminSubjects: string[]) {
 		organizational_unit: null,
 		payload: { name: 'Org', type: 'organization', visibility: 'public' },
 		relation: [],
-		user_grants: userGrants(organizationGuid),
+		grant: userGrants(organizationGuid),
 		user: [
 			...adminSubjects.map((subject) => ({ predicate: 'is-admin-of', subject })),
 			...adminSubjects.map((subject) => ({ predicate: 'is-member-of', subject })),
@@ -80,7 +80,7 @@ function measure() {
 		organizational_unit: null,
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
-		user_grants: userGrants(measureGuid),
+		grant: userGrants(measureGuid),
 		user: [{ predicate: 'is-member-of', subject: memberGuid }]
 	};
 }

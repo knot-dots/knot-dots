@@ -40,7 +40,7 @@
 				scope.guid,
 				env.PUBLIC_KC_REALM
 			),
-			user_grants: scope.user_grants
+			grant: scope.grant
 		};
 	}
 

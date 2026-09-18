@@ -63,7 +63,7 @@ function measure(guid: string, managedBy: string) {
 		payload: { title: 'Measure', type: 'measure', visibility: 'public' },
 		relation: [],
 		user: [],
-		user_grants: composeUserGrants({
+		grant: composeUserGrants({
 			areaSourced: false,
 			governsItself: false,
 			organizationSelf: [],

@@ -745,7 +745,7 @@ const fullSelfSet: GrantKind[] = [
 	grantKinds.enum['manage-users']
 ];
 
-// Composes the user_grants of one container from the subject's rows at the
+// Composes the grant of one container from the subject's rows at the
 // governing matrix (source) and at the container's areas. computeUserGrants
 // resolves the source and collects the rows; the tests share this mapping for
 // their fixtures.
@@ -2434,7 +2434,7 @@ export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) 
 		// Read-time computed grants of the authenticated user on this container,
 		// never stored; grants of other subjects do not leave the server. See
 		// computeUserGrants.ts.
-		user_grants: userGrants.optional(),
+		grant: userGrants.optional(),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,

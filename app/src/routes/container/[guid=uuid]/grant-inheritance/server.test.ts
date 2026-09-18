@@ -70,7 +70,7 @@ function measure(inheritsGrants: boolean, managedBy = measureGuid) {
 		payload: { inheritsGrants, title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
 		user: [{ predicate: 'is-creator-of', subject: adminGuid }],
-		user_grants: composeUserGrants({
+		grant: composeUserGrants({
 			areaSourced: !inheritsGrants ? false : true,
 			governsItself: !inheritsGrants,
 			organizationSelf: adminSet.self,

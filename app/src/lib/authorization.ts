@@ -42,7 +42,7 @@ const userManagedTypes: PayloadType[] = [
 ];
 
 // The rules read the effective grants the server computed for the request
-// user on each container (user_grants, see computeUserGrants): `self` and
+// user on each container (grant, see computeUserGrants): `self` and
 // `subordinates` carry the kinds of the governing matrix, `own` the kinds of
 // the container's own rows, `admin` and `member` the subject's standing with
 // the governing matrix. Creating is checked against the loaded parent — the
@@ -60,9 +60,9 @@ export default function defineAbilityFor(user: User) {
 	} else if (user.isAuthenticated) {
 		// —— contents follow the kinds of their governing matrix ——
 		can('update', [...commonTypes, ...specialContentTypes, payloadTypes.enum.organizational_unit], {
-			'user_grants.self': 'update'
+			'grant.self': 'update'
 		});
-		can('delete', commonTypes, { 'user_grants.self': 'delete' });
+		can('delete', commonTypes, { 'grant.self': 'delete' });
 		can(
 			'manage-users',
 			[
@@ -71,35 +71,35 @@ export default function defineAbilityFor(user: User) {
 				payloadTypes.enum.program,
 				payloadTypes.enum.simple_measure
 			],
-			{ 'user_grants.self': 'manage-users' }
+			{ 'grant.self': 'manage-users' }
 		);
 		can('create', payloadTypes.options, commonTypes, {
-			'user_grants.subordinates': 'create'
+			'grant.subordinates': 'create'
 		});
 		can('update', payloadTypes.enum.program, ['chapterType'], {
-			'user_grants.self': 'manage-users'
+			'grant.self': 'manage-users'
 		});
 
 		// —— rows on the container's own matrix ——
-		can('update', payloadTypes.options, { 'user_grants.own': 'update' });
-		can('manage-users', userManagedTypes, { 'user_grants.own': 'manage-users' });
+		can('update', payloadTypes.options, { 'grant.own': 'update' });
+		can('manage-users', userManagedTypes, { 'grant.own': 'manage-users' });
 
 		// —— administrators of the governing matrix or an area ——
 		can('create', payloadTypes.options, [payloadTypes.enum.category, payloadTypes.enum.term], {
-			'user_grants.admin': true
+			'grant.admin': true
 		});
 		// help sections and organizational units belong to the organization
 		can(
 			'create',
 			payloadTypes.enum.organization,
 			[payloadTypes.enum.help, payloadTypes.enum.organizational_unit],
-			{ 'user_grants.admin': true }
+			{ 'grant.admin': true }
 		);
 		can('delete', [payloadTypes.enum.category, payloadTypes.enum.term], {
-			'user_grants.admin': true
+			'grant.admin': true
 		});
 		can('delete', [payloadTypes.enum.help, payloadTypes.enum.organizational_unit], {
-			'user_grants.organization_manager': true
+			'grant.organization_manager': true
 		});
 
 		// —— visibility ——
@@ -109,23 +109,23 @@ export default function defineAbilityFor(user: User) {
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.creator,
-			'user_grants.organization_manager': true
+			'grant.organization_manager': true
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			'user_grants.member': true
+			'grant.member': true
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
-			'user_grants.self': 'manage-users'
+			'grant.self': 'manage-users'
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			'user_grants.self': 'read'
+			'grant.self': 'read'
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
-			'user_grants.own': 'read'
+			'grant.own': 'read'
 		});
 
 		// —— field-level restrictions ——
@@ -134,8 +134,8 @@ export default function defineAbilityFor(user: User) {
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		// moving content between units takes an update grant of the area itself
 		can('update', payloadTypes.options, ['organizational_unit'], {
-			'user_grants.self': 'update',
-			'user_grants.area_sourced': true
+			'grant.self': 'update',
+			'grant.area_sourced': true
 		});
 		cannot(['create', 'update', 'delete'], payloadTypes.enum.html);
 		cannot('create', payloadTypes.options, [payloadTypes.enum.html]);

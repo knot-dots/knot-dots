@@ -59,7 +59,7 @@ function organizationContainer(role: MemberRole) {
 			{ predicate: 'is-member-of', subject: adminGuid },
 			{ predicate: 'is-member-of', subject: memberGuid }
 		],
-		user_grants: composeUserGrants({
+		grant: composeUserGrants({
 			areaSourced: true,
 			governsItself: true,
 			organizationSelf: set.self,
@@ -122,7 +122,7 @@ test('appointing administrators is reserved for administrators of the scope', as
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
 		user: [{ predicate: 'is-member-of', subject: memberGuid }],
-		user_grants: composeUserGrants({
+		grant: composeUserGrants({
 			areaSourced: false,
 			governsItself: true,
 			organizationSelf: [],

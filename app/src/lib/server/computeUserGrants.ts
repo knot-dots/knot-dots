@@ -272,12 +272,12 @@ export async function computeUserGrantsFromRoles(
 
 type UserGrantsComparable = {
 	guid: string;
-	user_grants?: UserGrants;
+	grant?: UserGrants;
 };
 
 /**
  * Attaches the effective grants of the given subject to the containers as
- * `user_grants`, computed at read time and never stored. The property is
+ * `grant`, computed at read time and never stored. The property is
  * specific to the authenticated user of the request; grants of other subjects
  * do not leave the server. Without a subject (anonymous requests) it is a
  * no-op and only the visibility rules apply.
@@ -305,7 +305,7 @@ export async function applyUserGrants<T extends UserGrantsComparable>(
 	for (const container of containers) {
 		const value = computed.get(container.guid);
 		if (value !== undefined) {
-			container.user_grants = value;
+			container.grant = value;
 		}
 	}
 

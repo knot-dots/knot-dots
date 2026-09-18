@@ -72,7 +72,7 @@ function enriched<T extends Container<OrganizationPayload> | Container<Organizat
 			: container.organization;
 	return {
 		...container,
-		user_grants: composeUserGrants({
+		grant: composeUserGrants({
 			areaSourced: true,
 			governsItself: source === container.guid,
 			organizationSelf: kindsAt(container.organization, 'self'),

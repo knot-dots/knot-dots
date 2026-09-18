@@ -22,7 +22,7 @@ import type { User } from '$lib/stores';
 
 // These tests pin down the behaviour of the CASL policies with plain-object
 // users and containers. The rules read the effective grants the server
-// computes per container (user_grants); `enrich` mirrors that computation for
+// computes per container (grant); `enrich` mirrors that computation for
 // test objects, so the pinned outcomes cover the rule side while the
 // computeUserGrants tests cover the derivation against the database.
 
@@ -127,7 +127,7 @@ function enrich<T extends TestContainer>(container: T, user: User, source?: stri
 
 	return {
 		...container,
-		user_grants: composeUserGrants({
+		grant: composeUserGrants({
 			areaSourced: src === container.organization || src === container.organizational_unit,
 			governsItself: src === guid,
 			organizationSelf: kindsAt(user, container.organization, 'self'),

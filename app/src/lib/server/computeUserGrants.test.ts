@@ -283,7 +283,7 @@ test('the read paths enrich containers with the grants of the request user', asy
 		process.env.PODINFO_ANNOTATIONS_PATH = previousPath;
 	}
 
-	expect(loaded!.user_grants).toEqual({
+	expect(loaded!.grant).toEqual({
 		admin: false,
 		area_sourced: true,
 		member: true,
@@ -296,7 +296,7 @@ test('the read paths enrich containers with the grants of the request user', asy
 
 	// outside a request the enrichment stands down
 	const outside = await getContainerByGuid(measure.guid)(connection);
-	expect(outside.user_grants).toBeUndefined();
+	expect(outside.grant).toBeUndefined();
 });
 
 test('member roles govern while the permission matrix is off', async ({ connection }: Fixtures) => {
