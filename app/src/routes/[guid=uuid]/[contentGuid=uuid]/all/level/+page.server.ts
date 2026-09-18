@@ -44,7 +44,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 			container,
 			containers: filterVisible(containers, locals.user),
 			revisions: filterVisible(revisions, locals.user),
-			title: t('workspace.view.level')
+			title: `${container.payload.title} / ${t('workspace.view.level')}`
 		};
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {
