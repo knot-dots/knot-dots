@@ -61,6 +61,13 @@
 							? [individualProfileRelation.object]
 							: [individualProfileRelation.subject]
 						: [],
+					organization: [container.organization]
+				},
+				'alpha',
+				{ signal }
+			),
+			fetchContainers(
+				{
 					organization: [container.organization],
 					organizationalUnit: [container.guid],
 					payloadType: [
