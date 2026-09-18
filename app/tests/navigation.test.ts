@@ -46,7 +46,7 @@ test('Organization menu links to workspace or landing page', async ({
 }) => {
 	test.skip(isMobile, 'Sidebar is not visible on mobile');
 
-	await page.goto(`/${defaultOrganization.guid}/dots`);
+	await page.goto(`/${defaultOrganization.guid}/all/level`);
 
 	const nav = page.getByRole('navigation');
 
@@ -55,7 +55,7 @@ test('Organization menu links to workspace or landing page', async ({
 	await nav.getByRole('button', { name: 'Organizations' }).click();
 	await expect(page.getByRole('link', { name: testOrganization.payload.name })).toHaveAttribute(
 		'href',
-		new RegExp(`/${testOrganization.guid}/dots`)
+		new RegExp(`/${testOrganization.guid}/all/level`)
 	);
 	await page.keyboard.press('Escape');
 
