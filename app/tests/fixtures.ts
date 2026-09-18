@@ -14,6 +14,7 @@ import {
 	type EffectPayload,
 	etag,
 	type GoalPayload,
+	type GoalCollectionPayload,
 	type IndicatorTemplatePayload,
 	type MeasurePayload,
 	type NewContainer,
@@ -29,6 +30,7 @@ import {
 	type ResourceDataPayload,
 	resourceDataTypes,
 	type ResourceV2Payload,
+	type SimpleMeasurePayload,
 	type TaskCollectionPayload,
 	type TaskPayload,
 	type TermPayload,
@@ -53,6 +55,11 @@ type MyFixtures = {
 	organizationalUnitWithActualData: Container<OrganizationalUnitPayload>;
 	programPage: ProgramPage;
 	programReportTemplate: Container<ReportPayload>;
+	measureGoalTemplate: Container<GoalPayload>;
+	measureMeasureTemplate: Container<MeasurePayload>;
+	measureGoalCollection: Container<GoalCollectionPayload>;
+	simpleMeasureGoalCollection: Container<GoalCollectionPayload>;
+	simpleMeasureGoalTemplate: Container<GoalPayload>;
 	reportTemplate: Container<ReportPayload>;
 	resourceCatalog: ResourceCatalog;
 	taskStatusBoard: TaskStatusBoard;
@@ -67,6 +74,7 @@ type MyFixtures = {
 	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testMeasure: Container<MeasurePayload>;
+	testSimpleMeasure: Container<SimpleMeasurePayload>;
 	testObjective: Container<ObjectivePayload>;
 	testOrganization: Container<OrganizationPayload>;
 	testOrganizationalUnit: Container<OrganizationalUnitPayload>;
@@ -549,6 +557,135 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	programPage: async ({ page }, use) => {
 		await use(new ProgramPage(page));
+	},
+	measureGoalCollection: async ({ adminContext, testMeasure }, use) => {
+		const draft = containerOfType(
+			payloadTypes.enum.goal_collection,
+			testMeasure.organization,
+			testMeasure.organizational_unit,
+			testMeasure.managed_by,
+			testMeasure.realm
+		) as NewContainer<GoalCollectionPayload>;
+		const section = await createContainer(adminContext, {
+			...draft,
+			relation: [
+				{ object: testMeasure.guid, predicate: predicates.enum['is-section-of'], position: 0 }
+			]
+		});
+		await use(section);
+		await deleteContainer(adminContext, section);
+	},
+	measureGoalTemplate: async ({ adminContext, testMeasure, testOrganization }, use, workerInfo) => {
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as Container<GoalPayload>;
+		const template = await createContainer(adminContext, {
+			...newGoal,
+			payload: {
+				...newGoal.payload,
+				template: true,
+				title: `Measure Goal Template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{ object: testMeasure.guid, predicate: predicates.enum['is-available-in'], position: 0 }
+			]
+		});
+		await use(template as Container<GoalPayload>);
+		await deleteContainer(adminContext, template);
+	},
+	measureMeasureTemplate: async (
+		{ adminContext, testMeasure, testOrganization },
+		use,
+		workerInfo
+	) => {
+		const draft = containerOfType(
+			payloadTypes.enum.measure,
+			testOrganization.guid,
+			null,
+			testMeasure.managed_by,
+			'knot-dots'
+		) as NewContainer<MeasurePayload>;
+		const template = await createContainer(adminContext, {
+			...draft,
+			payload: {
+				...draft.payload,
+				template: true,
+				title: `Measure Measure Template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: testMeasure.guid,
+					predicate: predicates.enum['is-available-in'],
+					position: 0
+				}
+			]
+		});
+		await use(template);
+		await deleteContainer(adminContext, template);
+	},
+	testSimpleMeasure: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const draft = containerOfType(
+			payloadTypes.enum.simple_measure,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as NewContainer<SimpleMeasurePayload>;
+		const measure = await createContainer(adminContext, {
+			...draft,
+			payload: { ...draft.payload, title: `Test Simple Measure ${workerInfo.workerIndex}` }
+		});
+		await use(measure);
+		await deleteContainer(adminContext, measure);
+	},
+	simpleMeasureGoalCollection: async ({ adminContext, testSimpleMeasure }, use) => {
+		const draft = containerOfType(
+			payloadTypes.enum.goal_collection,
+			testSimpleMeasure.organization,
+			testSimpleMeasure.organizational_unit,
+			testSimpleMeasure.managed_by,
+			testSimpleMeasure.realm
+		) as NewContainer<GoalCollectionPayload>;
+		const section = await createContainer(adminContext, {
+			...draft,
+			relation: [
+				{ object: testSimpleMeasure.guid, predicate: predicates.enum['is-section-of'], position: 0 }
+			]
+		});
+		await use(section);
+	},
+	simpleMeasureGoalTemplate: async (
+		{ adminContext, testOrganization, testSimpleMeasure },
+		use,
+		workerInfo
+	) => {
+		const draft = containerOfType(
+			payloadTypes.enum.goal,
+			testOrganization.guid,
+			null,
+			testOrganization.guid,
+			'knot-dots'
+		) as NewContainer<GoalPayload>;
+		const template = await createContainer(adminContext, {
+			...draft,
+			payload: {
+				...draft.payload,
+				template: true,
+				title: `Simple Measure Goal Template ${workerInfo.workerIndex}`
+			},
+			relation: [
+				{
+					object: testSimpleMeasure.guid,
+					predicate: predicates.enum['is-available-in'],
+					position: 0
+				}
+			]
+		});
+		await use(template);
 	},
 	programReportTemplate: async (
 		{ adminContext, testOrganization, testProgram },

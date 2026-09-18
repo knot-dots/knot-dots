@@ -25,7 +25,7 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { requiresProgramTemplate } from '$lib/programTemplates';
+	import createTemplateScopeSelection from '$lib/client/createTemplateScopeSelection.svelte';
 	import { getToastContext } from '$lib/contexts/toast';
 	import {
 		addItemState,
@@ -42,12 +42,11 @@
 	const toast = getToastContext();
 	let templatePreview = $state<TemplateCopyPreview>();
 	let pendingTemplateGuid = $state<string>();
-	let templateRequired = $derived(
-		$createContainerDialogState !== undefined &&
-			requiresProgramTemplate($createContainerDialogState.container)
-	);
+	const templateScope = createTemplateScopeSelection(() => $createContainerDialogState?.container);
+	let templateRequired = $derived(templateScope.required);
 	let templateReady = $derived(
-		pendingTemplateGuid === undefined &&
+		templateScope.ready &&
+			pendingTemplateGuid === undefined &&
 			(!templateRequired ||
 				($createContainerDialogState?.kind === 'copy' &&
 					$createContainerDialogState.request.operation === 'template-instance'))
@@ -165,6 +164,10 @@
 		}
 
 		if (event.submitter.classList.contains('button-primary')) {
+			if (!templateReady) {
+				event.preventDefault();
+				return;
+			}
 			if ($createContainerDialogState) {
 				save($createContainerDialogState.container);
 			}
@@ -260,6 +263,7 @@
 
 			{#if showTemplatePicker}
 				<CreateContainerTemplatePicker
+					scope={templateScope}
 					bind:pendingTemplateGuid
 					dialogState={$createContainerDialogState}
 					onactivate={activateTemplate}

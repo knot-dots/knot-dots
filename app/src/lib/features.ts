@@ -72,7 +72,7 @@ export function createFeatureDecisions(features: string[]) {
 		usePermissionMatrix() {
 			return features.includes('PermissionMatrix');
 		},
-		useProgramTemplateWorkspaces() {
+		useTemplateWorkspaces() {
 			return features.includes('Templating');
 		},
 		useNewCreateContainerDialog() {

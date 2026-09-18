@@ -6,7 +6,7 @@ import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	etag,
-	getAvailableInProgramGuids,
+	getAvailableInScopeGuids,
 	isContainerWithEditorialState,
 	isIndicatorTemplateContainer,
 	isOrganizationContainer,
@@ -21,7 +21,7 @@ import {
 	updateContainer
 } from '$lib/server/db';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
-import { newProgramPlacements, programPlacementsRequireTemplate } from '$lib/programTemplates';
+import { newTemplateScopePlacements, scopePlacementsRequireTemplate } from '$lib/templateScopes';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -74,12 +74,12 @@ export const POST = (async ({ locals, params, request }) => {
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
-		if (createFeatureDecisions(locals.features ?? []).useProgramTemplateWorkspaces()) {
-			const placements = newProgramPlacements(parseResult.data.relation, container.relation);
+		if (createFeatureDecisions(locals.features ?? []).useTemplateWorkspaces()) {
+			const placements = newTemplateScopePlacements(parseResult.data.relation, container.relation);
 			if (placements.length > 0) {
 				const otherSubjectGuids = [
 					...new Set(
-						placements.map(({ subject }) => subject).filter((subject) => subject !== container.guid)
+						placements.map(({ subject }) => subject).filter((guid) => guid !== container.guid)
 					)
 				];
 				const subjects = [
@@ -88,8 +88,8 @@ export const POST = (async ({ locals, params, request }) => {
 						? await locals.pool.connect(getManyContainers([], { guid: otherSubjectGuids }, 'alpha'))
 						: [])
 				];
-				if (programPlacementsRequireTemplate(placements, subjects)) {
-					error(422, { message: unwrapFunctionStore(_)('error.program_template_required') });
+				if (scopePlacementsRequireTemplate(placements, subjects)) {
+					error(422, { message: unwrapFunctionStore(_)('error.scoped_template_required') });
 				}
 			}
 		}
@@ -112,7 +112,7 @@ export const POST = (async ({ locals, params, request }) => {
 			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 		}
 		if (
-			getAvailableInProgramGuids(container).length > 0 &&
+			getAvailableInScopeGuids(container).length > 0 &&
 			(!('template' in parseResult.data.payload) || parseResult.data.payload.template !== true)
 		) {
 			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });

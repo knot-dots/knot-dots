@@ -9,11 +9,13 @@
 		type Container,
 		predicates,
 		templatablePayloadTypes,
-		type ProgramPayload
+		type ProgramPayload,
+		type MeasurePayload,
+		type SimpleMeasurePayload
 	} from '$lib/models';
 
 	interface Props {
-		container: Container<ProgramPayload>;
+		container: Container<ProgramPayload | MeasurePayload | SimpleMeasurePayload>;
 		containers: Container[];
 		facets: Map<string, Map<string, number>>;
 	}

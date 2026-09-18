@@ -98,6 +98,84 @@ const sysadmin: User = {
 
 const connection = {} as DatabaseConnection;
 
+test.each([
+	'matching',
+	'inherited-manager',
+	'other-measure',
+	'no-placement',
+	'global',
+	'simple-scope',
+	'hidden-scope',
+	'foreign-scope'
+] as const)('measure-scoped instantiation validates %s', async (scenario) => {
+	const owner = container(childGuid, {
+		type: scenario === 'simple-scope' ? 'simple_measure' : 'measure',
+		title: 'Owner',
+		visibility: 'members'
+	});
+	if (scenario === 'foreign-scope') owner.organization = otherOrganizationGuid;
+	const source = container(
+		sourceGuid,
+		{ type: 'goal', title: 'Goal', template: true, visibility: 'public' },
+		scenario === 'global'
+			? []
+			: [{ subject: sourceGuid, object: childGuid, predicate: 'is-available-in', position: 0 }]
+	);
+	mocks.graph = { rootGuid: sourceGuid, containers: [source, owner] };
+	mocks.targets.set(childGuid, owner);
+	const other = container(otherOrganizationGuid, {
+		type: 'measure',
+		title: 'Other',
+		visibility: 'public'
+	});
+	mocks.targets.set(other.guid, other);
+	if (scenario === 'inherited-manager') {
+		const manager = container(other.guid, {
+			type: 'program',
+			title: 'Manager',
+			visibility: 'public'
+		});
+		mocks.targets.set(manager.guid, manager);
+		owner.managed_by = [manager.guid];
+	}
+	const result = executeContainerCopy({
+		request: {
+			operation: 'template-instance',
+			sourceGuid,
+			availableIn: scenario === 'global' ? null : childGuid,
+			targetManagedByGuid: scenario === 'inherited-manager' ? other.guid : undefined,
+			rootPayload: source.payload,
+			targetOrganizationGuid: organizationGuid,
+			targetOrganizationalUnitGuid: null,
+			rootPlacement:
+				scenario === 'no-placement'
+					? []
+					: [
+							{
+								parentGuid: scenario === 'other-measure' ? other.guid : childGuid,
+								predicate: 'is-part-of-measure',
+								position: 0
+							}
+						]
+		},
+		connection,
+		user: scenario === 'hidden-scope' ? { ...sysadmin, roles: [] } : sysadmin,
+		features: ['Templating'],
+		maxPlanSize: 500
+	});
+	if (scenario === 'matching' || scenario === 'inherited-manager' || scenario === 'simple-scope') {
+		await expect(result).resolves.toMatchObject({
+			payload: { template: false },
+			relation: expect.arrayContaining([
+				expect.objectContaining({ object: childGuid, predicate: 'is-part-of-measure' })
+			])
+		});
+	} else {
+		await expect(result).rejects.toBeInstanceOf(ContainerCopyServiceError);
+		expect(mocks.persist).not.toHaveBeenCalled();
+	}
+});
+
 beforeEach(() => {
 	mocks.persist.mockReset();
 	mocks.targets = new Map([[organizationGuid, organization]]);

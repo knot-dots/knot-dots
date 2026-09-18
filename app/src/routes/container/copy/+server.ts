@@ -101,6 +101,7 @@ export const POST = (async ({ locals, request }) => {
 	try {
 		const root = await locals.pool.connect((connection) =>
 			executeContainerCopy({
+				features: locals.features ?? [],
 				request: parseResult.data,
 				connection,
 				user: locals.user,
