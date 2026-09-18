@@ -208,11 +208,15 @@ export const POST = (async ({ locals, request }) => {
 			}
 			throw caught;
 		});
-	if (
-		parent
-			? ability.cannot('create', containerToCreate(parseResult.data.payload.type, parent))
-			: ability.cannot('create', parseResult.data.payload.type)
-	) {
+	if (parent) {
+		// the persisted scope must be the one the parent was authorized for
+		if (
+			parseResult.data.organization !== parent.organization ||
+			ability.cannot('create', containerToCreate(parseResult.data.payload.type, parent))
+		) {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+	} else if (!locals.user.roles.includes('sysadmin')) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
