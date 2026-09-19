@@ -309,16 +309,13 @@ export async function createProgramContainerFromTemplate<P extends AnyPayload>(
 
 async function createResourceV2(
 	context: BrowserContext,
-	organization: string,
+	organization: Container<OrganizationPayload>,
 	title: string,
 	payload: Partial<ResourceV2Payload>
 ): Promise<Container<ResourceV2Payload>> {
 	const template = containerOfType(
 		payloadTypes.enum.resource_v2,
-		organization,
-		null,
-		organization,
-		'knot-dots'
+		organization
 	) as Container<ResourceV2Payload>;
 	return createContainer(context, {
 		...template,
@@ -328,17 +325,14 @@ async function createResourceV2(
 
 async function createResourceData(
 	context: BrowserContext,
-	organization: string,
+	organization: Container<OrganizationPayload>,
 	title: string,
 	payload: Partial<ResourceDataPayload>,
 	partOf: string
 ): Promise<Container<ResourceDataPayload>> {
 	const template = containerOfType(
 		payloadTypes.enum.resource_data,
-		organization,
-		null,
-		organization,
-		'knot-dots'
+		organization
 	) as Container<ResourceDataPayload>;
 	return createContainer(context, {
 		...template,
@@ -390,13 +384,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		},
 		{ scope: 'worker' }
 	],
-	aiGoal: async ({ adminContext, testProgram }, use) => {
+	aiGoal: async ({ adminContext, testOrganization, testProgram }, use) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
-			testProgram.organization,
-			null,
-			testProgram.organization,
-			'knot-dots'
+			testOrganization
 		) as Container<GoalPayload>;
 		const testGoal = await createProgramContainerFromTemplate(
 			adminContext,
@@ -450,17 +441,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	landingPage: async ({ page }, use) => {
 		await use(new LandingPage(page));
 	},
-	measureTemplateWithSection: async (
-		{ adminContext, testOrganization, testProgram },
-		use,
-		workerInfo
-	) => {
+	measureTemplateWithSection: async ({ adminContext, testProgram }, use, workerInfo) => {
 		const newTemplate = containerOfType(
 			payloadTypes.enum.measure,
-			testOrganization.guid,
-			null,
-			testProgram.guid,
-			'knot-dots'
+			testProgram
 		) as Container<MeasurePayload>;
 		const template = await createContainer(adminContext, {
 			...newTemplate,
@@ -479,10 +463,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		});
 		const newSection = containerOfType(
 			payloadTypes.enum.text,
-			testOrganization.guid,
-			null,
-			testProgram.guid,
-			'knot-dots'
+			testProgram
 		) as Container<TextPayload>;
 		const section = await createContainer(adminContext, {
 			...newSection,
@@ -511,10 +492,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const newOrganizationalUnit = containerOfType(
 			payloadTypes.enum.organizational_unit,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<OrganizationalUnitPayload>;
 		const organizationalUnitWithActualData = await createContainer(adminContext, {
 			...newOrganizationalUnit,
@@ -526,10 +504,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		const newActualData = containerOfType(
 			payloadTypes.enum.actual_data,
-			testOrganization.guid,
-			organizationalUnitWithActualData.guid,
-			organizationalUnitWithActualData.guid,
-			'knot-dots'
+			organizationalUnitWithActualData
 		) as Container<ActualDataPayload>;
 		await createContainer(adminContext, {
 			...newActualData,
@@ -557,10 +532,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const newReport = containerOfType(
 			payloadTypes.enum.report,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<ReportPayload>;
 		const programReportTemplate = await createContainer(adminContext, {
 			...newReport,
@@ -579,10 +551,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		});
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<GoalPayload>;
 		const programReportTemplateChild = await createContainer(adminContext, {
 			...newGoal,
@@ -608,10 +577,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	reportTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(
 			payloadTypes.enum.report,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<ReportPayload>;
 		const reportTemplate = await createContainer(adminContext, {
 			...newReport,
@@ -632,13 +598,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	taskStatusBoard: async ({ page }, use) => {
 		await use(new TaskStatusBoard(page));
 	},
-	testCategoryWithTerms: async ({ adminContext, testGoal }, use, workerInfo) => {
+	testCategoryWithTerms: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newCategory = containerOfType(
 			payloadTypes.enum.category,
-			testGoal.organization,
-			null,
-			testGoal.organization,
-			'knot-dots'
+			testOrganization
 		) as Container<CategoryPayload>;
 		const category = await createContainer(adminContext, {
 			...newCategory,
@@ -653,10 +616,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		for (const [index, termName] of termNames.entries()) {
 			const newTerm = containerOfType(
 				payloadTypes.enum.term,
-				testGoal.organization,
-				null,
-				testGoal.organization,
-				'knot-dots'
+				testOrganization
 			) as Container<TermPayload>;
 			const term = await createContainer(adminContext, {
 				...newTerm,
@@ -683,10 +643,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testOrganization: async ({ adminContext, defaultOrganization }, use, workerInfo) => {
 		const newOrganization = containerOfType(
 			payloadTypes.enum.organization,
-			defaultOrganization.guid,
-			null,
-			defaultOrganization.guid,
-			'knot-dots'
+			defaultOrganization
 		) as Container<OrganizationPayload>;
 		const testOrganization = await createContainer(adminContext, {
 			...newOrganization,
@@ -707,10 +664,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testOrganizationalUnit: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newOrganizationalUnit = containerOfType(
 			payloadTypes.enum.organizational_unit,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<OrganizationalUnitPayload>;
 		const testOrganizationalUnit = await createContainer(adminContext, {
 			...newOrganizationalUnit,
@@ -743,10 +697,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testProgram: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newProgram = containerOfType(
 			payloadTypes.enum.program,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<ProgramPayload>;
 		const testProgram = await createContainer(adminContext, {
 			...newProgram,
@@ -771,10 +722,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<GoalPayload>;
 		const testProgramGoalTemplate = await createContainer(adminContext, {
 			...newGoal,
@@ -799,10 +747,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testGoal: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<GoalPayload>;
 		const testGoal = await createContainer(adminContext, {
 			...newGoal,
@@ -816,17 +761,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		await deleteContainer(adminContext, testGoal);
 	},
-	testOrganizationalUnitGoal: async (
-		{ adminContext, testOrganization, testOrganizationalUnit },
-		use,
-		workerInfo
-	) => {
+	testOrganizationalUnitGoal: async ({ adminContext, testOrganizationalUnit }, use, workerInfo) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
-			testOrganization.guid,
-			testOrganizationalUnit.guid,
-			testOrganizationalUnit.guid,
-			'knot-dots'
+			testOrganizationalUnit
 		) as Container<GoalPayload>;
 		const testOrganizationalUnitGoal = await createContainer(adminContext, {
 			...newGoal,
@@ -843,10 +781,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testSubordinateGoal: async ({ adminContext, testOrganization, testGoal }, use, workerInfo) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<GoalPayload>;
 		const testSubordinateGoal = await createContainer(adminContext, {
 			...newGoal,
@@ -870,10 +805,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testIndicatorTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newIndicatorTemplate = containerOfType(
 			payloadTypes.enum.indicator_template,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<IndicatorTemplatePayload>;
 		const testIndicatorTemplate = await createContainer(adminContext, {
 			...newIndicatorTemplate,
@@ -896,10 +828,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const newObjective = containerOfType(
 			payloadTypes.enum.objective,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<ObjectivePayload>;
 		const testObjective = await createContainer(adminContext, {
 			...newObjective,
@@ -926,13 +855,10 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		await deleteContainer(adminContext, testObjective);
 	},
-	testMeasure: async ({ adminContext, testOrganization, testProgram }, use, workerInfo) => {
+	testMeasure: async ({ adminContext, testProgram }, use, workerInfo) => {
 		const newMeasure = containerOfType(
 			payloadTypes.enum.measure,
-			testOrganization.guid,
-			null,
-			testProgram.guid,
-			'knot-dots'
+			testProgram
 		) as Container<MeasurePayload>;
 		const testMeasure = await createProgramContainerFromTemplate(
 			adminContext,
@@ -958,16 +884,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await deleteContainer(adminContext, testMeasure);
 	},
 	testSubordinateMeasure: async (
-		{ adminContext, testOrganization, testProgram, testSubordinateGoal },
+		{ adminContext, testProgram, testSubordinateGoal },
 		use,
 		workerInfo
 	) => {
 		const newMeasure = containerOfType(
 			payloadTypes.enum.measure,
-			testOrganization.guid,
-			null,
-			testProgram.guid,
-			'knot-dots'
+			testProgram
 		) as Container<MeasurePayload>;
 		const testSubordinateMeasure = await createProgramContainerFromTemplate(
 			adminContext,
@@ -1004,10 +927,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const newEffect = containerOfType(
 			payloadTypes.enum.effect,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<EffectPayload>;
 		const testEffect = await createContainer(adminContext, {
 			...newEffect,
@@ -1037,7 +957,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testResourceV2: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const testResourceV2 = await createResourceV2(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Test Resource ${workerInfo.workerIndex}`,
 			{ resourceCategory: 'resource_category.money', resourceUnit: 'unit.euro' }
 		);
@@ -1051,7 +971,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testResourceDataBudget = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Test Budget ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
@@ -1073,7 +993,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testResourceDataPlanned = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Test Planned ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.planned_resource_allocation'],
@@ -1095,7 +1015,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testResourceDataActual = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Test Actual ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.actual_resource_allocation'],
@@ -1117,7 +1037,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testGoalBudget = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Goal Budget ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
@@ -1139,7 +1059,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testSubordinateGoalBudget = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Sub Goal Budget ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
@@ -1161,7 +1081,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testSubordinateMeasureResourceData = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Sub Measure Data ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
@@ -1179,7 +1099,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testResourceV2Other: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const testResourceV2Other = await createResourceV2(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Other Resource ${workerInfo.workerIndex}`,
 			{ resourceCategory: 'resource_category.money', resourceUnit: 'unit.euro' }
 		);
@@ -1193,7 +1113,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testSubordinateGoalBudgetOtherResource = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Sub Goal Budget Other ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
@@ -1215,7 +1135,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	) => {
 		const testSubordinateMeasureResourceDataOtherResource = await createResourceData(
 			adminContext,
-			testOrganization.guid,
+			testOrganization,
 			`Sub Measure Data Other ${workerInfo.workerIndex}`,
 			{
 				resourceDataType: resourceDataTypes.enum['resource_data_type.budget'],
@@ -1233,10 +1153,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testTaskCollection: async ({ adminContext, testGoal }, use) => {
 		const newTaskCollection = containerOfType(
 			payloadTypes.enum.task_collection,
-			testGoal.organization,
-			null,
-			testGoal.managed_by,
-			'knot-dots'
+			testGoal
 		) as Container<TaskCollectionPayload>;
 		const testTaskCollection = await createContainer(adminContext, {
 			...newTaskCollection,
@@ -1250,10 +1167,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testTask: async ({ adminContext, testTaskCollection, testGoal }, use, workerInfo) => {
 		const newTask = containerOfType(
 			payloadTypes.enum.task,
-			testTaskCollection.organization,
-			null,
-			testTaskCollection.managed_by,
-			'knot-dots'
+			testTaskCollection
 		) as Container<TaskPayload>;
 		const testTask = await createContainer(adminContext, {
 			...newTask,
@@ -1272,10 +1186,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testReport: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(
 			payloadTypes.enum.report,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<ReportPayload>;
 		const testReport = await createContainer(adminContext, {
 			...newReport,
@@ -1292,10 +1203,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testPublicReport: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newReport = containerOfType(
 			payloadTypes.enum.report,
-			testOrganization.guid,
-			null,
-			testOrganization.guid,
-			'knot-dots'
+			testOrganization
 		) as Container<ReportPayload>;
 		const testPublicReport = await createContainer(adminContext, {
 			...newReport,
@@ -1313,10 +1221,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	testPublicProgram: async ({ adminContext, defaultOrganization }, use, workerInfo) => {
 		const newProgram = containerOfType(
 			payloadTypes.enum.program,
-			defaultOrganization.guid,
-			null,
-			defaultOrganization.guid,
-			'knot-dots'
+			defaultOrganization
 		) as Container<ProgramPayload>;
 		const testPublicProgram = await createContainer(adminContext, {
 			...newProgram,

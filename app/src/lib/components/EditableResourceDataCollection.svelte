@@ -65,13 +65,7 @@
 		}
 
 		// Create new resource_data container
-		const item = containerOfType(
-			payloadTypes.enum.resource_data,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		const item = containerOfType(payloadTypes.enum.resource_data, container) as NewContainer;
 
 		// Set the resourceDataType from the collection
 		(item.payload as { resourceDataType?: string }).resourceDataType =

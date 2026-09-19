@@ -2861,36 +2861,59 @@ export function isAssignedTo(user: { guid: string }) {
 	return (container: Container<TaskPayload>) => container.payload.assignee.includes(user.guid);
 }
 
-export function containerOfType(
-	payloadType: PayloadType,
-	organization: string,
-	organizationalUnit: string | null,
-	managedBy: string | string[],
-	realm: string
-) {
-	return createNewContainerSchema(anyInitialPayload).parse({
-		managed_by: payloadType == payloadTypes.enum.organizational_unit ? organization : managedBy,
-		organization,
-		organizational_unit:
-			payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
-		payload: { type: payloadType },
-		realm
-	}) as NewContainer<AnyInitialPayload>;
+// Computes the grant field of a new container from its direct scope — the
+// JavaScript equivalent of the read-time database derivation, which needs no
+// ancestry walk here: the scope's computed grant already names the governing
+// matrix (`source`; the scope itself when decoupled) and carries its kinds.
+// The child inherits that matrix: the subordinate kinds act within it and,
+// except for creating, on the child itself; it has no rows of its own yet.
+// The permission matrix feature toggle is part of the scope's server-computed
+// grant (the server derives it from member roles while the matrix is off), so
+// the derivation holds in both modes.
+export function grantForNewContainer(scope: Container<AnyPayload>): UserGrants | undefined {
+	if (scope.grant === undefined) {
+		return undefined;
+	}
+	const organizationalUnit = isOrganizationalUnitContainer(scope)
+		? scope.guid
+		: scope.organizational_unit;
+	const subordinates = scope.grant.subordinates;
+	return {
+		admin: scope.grant.admin,
+		area_sourced:
+			scope.grant.source === scope.organization || scope.grant.source === organizationalUnit,
+		member: subordinates.includes(grantKinds.enum.read),
+		organization_manager: scope.grant.organization_manager,
+		own: [],
+		self: subordinates.filter((kind) => kind !== grantKinds.enum.create),
+		source: scope.grant.source,
+		subordinates
+	};
 }
 
-// A stub of a container to create within the given parent. It inherits the
-// computed grants of the parent, so the create rules judge it like any loaded
-// container.
-export function containerToCreate(payloadType: PayloadType, parent: Container<AnyPayload>) {
+// A new container of the given type within the given scope: it lives in the
+// scope's organization and area, is managed by and related to the scope, and
+// carries the grants the request user would hold on it (grantForNewContainer),
+// so the create rules judge it like any loaded container.
+export function containerOfType(payloadType: PayloadType, scope: Container<AnyPayload>) {
+	const isArea = isOrganizationContainer(scope) || isOrganizationalUnitContainer(scope);
+	const organizationalUnit = isOrganizationalUnitContainer(scope)
+		? scope.guid
+		: scope.organizational_unit;
 	return {
-		...containerOfType(
-			payloadType,
-			parent.organization,
-			isOrganizationalUnitContainer(parent) ? parent.guid : parent.organizational_unit,
-			parent.guid,
-			parent.realm
-		),
-		grant: parent.grant
+		...(createNewContainerSchema(anyInitialPayload).parse({
+			managed_by:
+				payloadType == payloadTypes.enum.organizational_unit ? scope.organization : scope.guid,
+			organization: scope.organization,
+			organizational_unit:
+				payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
+			payload: { type: payloadType },
+			realm: scope.realm,
+			relation: isArea
+				? []
+				: [{ object: scope.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		}) as NewContainer<AnyInitialPayload>),
+		grant: grantForNewContainer(scope)
 	};
 }
 

@@ -75,13 +75,7 @@
 			return;
 		}
 
-		const item = containerOfType(
-			payloadTypes.enum.teaser,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		const item = containerOfType(payloadTypes.enum.teaser, container) as NewContainer;
 
 		item.relation = [
 			{

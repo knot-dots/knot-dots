@@ -74,10 +74,7 @@
 	function addItem() {
 		$newContainer = containerOfType(
 			payloadTypes.enum.indicator_template,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
+			container
 		) as NewContainer;
 
 		createContainerDialog.getElement().showModal();

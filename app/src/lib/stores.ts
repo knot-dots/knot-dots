@@ -12,7 +12,7 @@ import {
 	type ApplicationState,
 	type Container,
 	type CustomCollectionPayload,
-	containerToCreate,
+	containerOfType,
 	emptyGrantRecords,
 	filterMembers,
 	type GoalPayload,
@@ -95,7 +95,7 @@ export const dragged = writable<Container<AnyPayload> | undefined>();
 export const mayCreateContainer = derived(ability, (values) => {
 	return (payloadType: PayloadType, parent: Container<AnyPayload>): boolean => {
 		// creating happens within the parent; the stub inherits its computed grants
-		return values.can('create', containerToCreate(payloadType, parent));
+		return values.can('create', containerOfType(payloadType, parent));
 	};
 });
 

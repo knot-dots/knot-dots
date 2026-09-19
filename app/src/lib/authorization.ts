@@ -46,7 +46,7 @@ const userManagedTypes: PayloadType[] = [
 // `subordinates` carry the kinds of the governing matrix, `own` the kinds of
 // the container's own rows, `admin` and `member` the subject's standing with
 // the governing matrix. Creating is checked against a stub of the container
-// to create that inherits the grants of its parent (containerToCreate).
+// to create that inherits the grants of its parent (containerOfType).
 export default function defineAbilityFor(user: User) {
 	const { can, cannot, build } = new AbilityBuilder<MongoAbility<[Actions, Subjects]>>(
 		createMongoAbility

@@ -57,10 +57,7 @@
 	function handleCreateOrganization() {
 		const container = containerOfType(
 			payloadTypes.enum.organization,
-			page.data.currentOrganization.guid,
-			null,
-			page.data.currentOrganization.guid,
-			env.PUBLIC_KC_REALM as string
+			page.data.currentOrganization
 		) as NewContainer;
 
 		$newContainer = container;

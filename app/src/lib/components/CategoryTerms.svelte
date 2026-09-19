@@ -199,13 +199,7 @@
 		}
 
 		const previousRelatedContainers = relatedContainers;
-		const newTerm = containerOfType(
-			payloadTypes.enum.term,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer<TermPayload>;
+		const newTerm = containerOfType(payloadTypes.enum.term, container) as NewContainer<TermPayload>;
 		newTerm.payload.title = formState.title;
 		newTerm.payload.description = formState.description;
 		newTerm.payload.filterLabel = formState.filterLabel;

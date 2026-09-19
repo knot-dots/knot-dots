@@ -3,12 +3,10 @@ import assert from 'node:assert';
 import { type DatabaseTransactionConnection, NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import {
 	type ActualDataPayload,
 	containerOfType,
-	containerToCreate,
 	isBinaryIndicatorContainer,
 	isIndicatorTemplateContainer,
 	isOrganizationalUnitContainer,
@@ -82,7 +80,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	if (
 		!defineAbilityFor(locals.user).can(
 			'create',
-			containerToCreate(payloadTypes.enum.actual_data, containerFromParams)
+			containerOfType(payloadTypes.enum.actual_data, containerFromParams)
 		)
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
@@ -101,10 +99,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 			const newActualDataContainer = containerOfType(
 				payloadTypes.enum.actual_data,
-				currentOrganizationGuid,
-				currentOrganizationalUnitGuid ?? null,
-				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
-				env.PUBLIC_KC_REALM
+				containerFromParams
 			) as NewContainer<ActualDataPayload>;
 
 			if (

@@ -41,13 +41,7 @@
 	);
 
 	function addItem() {
-		$newContainer = containerOfType(
-			payloadTypes.enum.program,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		$newContainer = containerOfType(payloadTypes.enum.program, container) as NewContainer;
 
 		createContainerDialog.getElement().showModal();
 	}

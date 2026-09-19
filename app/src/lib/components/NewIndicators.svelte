@@ -11,7 +11,6 @@
 	import Plus from '~icons/knotdots/plus';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import createComparisonData from '$lib/client/createComparisonData.svelte';
 	import IndicatorPicker from '$lib/components/IndicatorPicker.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
@@ -106,10 +105,7 @@
 	function createCustomIndicatorTemplate() {
 		const container = containerOfType(
 			payloadTypes.enum.indicator_template,
-			page.data.currentOrganization.guid,
-			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
-			env.PUBLIC_KC_REALM as string
+			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 		) as NewContainer<IndicatorTemplatePayload>;
 
 		container.payload.title = '';
@@ -124,10 +120,7 @@
 	function createBinaryIndicator() {
 		const container = containerOfType(
 			payloadTypes.enum.binary_indicator,
-			page.data.currentOrganization.guid,
-			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
-			env.PUBLIC_KC_REALM as string
+			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 		) as NewContainer<BinaryIndicatorPayload>;
 
 		container.payload.title = '';

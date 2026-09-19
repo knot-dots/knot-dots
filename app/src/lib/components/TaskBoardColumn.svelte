@@ -3,7 +3,6 @@
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
-	import { env } from '$env/dynamic/public';
 	import { page } from '$app/state';
 	import { ability } from '$lib/stores';
 	import saveContainer from '$lib/client/saveContainer';
@@ -29,19 +28,12 @@
 	let { addItemUrl, onSort, itemSnippet, items = [], status }: Props = $props();
 
 	// a task created here belongs to the current scope, so the stub carries
-	// the scope's computed grants for the ability check
+	// the grants derived from the scope for the ability check
 	function containerOfTypeTask() {
-		const scope = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
-		return {
-			...containerOfType(
-				payloadTypes.enum.task,
-				page.data.currentOrganization.guid,
-				page.data.currentOrganizationalUnit?.guid ?? null,
-				scope.guid,
-				env.PUBLIC_KC_REALM
-			),
-			grant: scope.grant
-		};
+		return containerOfType(
+			payloadTypes.enum.task,
+			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+		);
 	}
 
 	function handleDndConsider(e: CustomEvent<DndEvent<Container<TaskPayload>>>) {

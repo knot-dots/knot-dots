@@ -3,12 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import Template from '~icons/knotdots/template';
 	import { page } from '$app/state';
-	import {
-		type AnyPayload,
-		type Container,
-		containerToCreate,
-		createRootCopyOf
-	} from '$lib/models';
+	import { type AnyPayload, type Container, containerOfType, createRootCopyOf } from '$lib/models';
 	import { selectContainerCopyLocation, type ContainerCopyLocation } from '$lib/containerCopy';
 	import { ability, applicationState, openContainerCopyDialog, user } from '$lib/stores';
 
@@ -32,8 +27,7 @@
 				({ guid }: { guid: string }) => guid === location.organizationGuid
 			);
 		return (
-			scope !== undefined &&
-			$ability.can('create', containerToCreate(container.payload.type, scope))
+			scope !== undefined && $ability.can('create', containerOfType(container.payload.type, scope))
 		);
 	}
 

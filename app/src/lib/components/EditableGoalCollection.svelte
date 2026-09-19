@@ -52,13 +52,7 @@
 			return;
 		}
 
-		const item = containerOfType(
-			payloadTypes.enum.goal,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		const item = containerOfType(payloadTypes.enum.goal, container) as NewContainer;
 
 		item.relation = [
 			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] },

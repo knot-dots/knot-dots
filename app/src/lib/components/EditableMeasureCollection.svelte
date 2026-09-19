@@ -54,10 +54,7 @@
 	function addItem() {
 		const item = containerOfType(
 			payloadTypes.enum.measure,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
+			container
 		) as NewContainer<MeasurePayload>;
 
 		if (isMeasureContainer(parentContainer)) {

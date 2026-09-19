@@ -10,7 +10,7 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	anyInitialPayload,
 	type Container,
-	containerToCreate,
+	containerOfType,
 	createNewContainerSchema,
 	editorialState,
 	isOrganizationalUnitContainer,
@@ -77,7 +77,7 @@ export const actions = {
 		if (
 			!defineAbilityFor(locals.user).can(
 				'create',
-				containerToCreate(payloadTypes.enum.program, scopeContainer)
+				containerOfType(payloadTypes.enum.program, scopeContainer)
 			)
 		) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
@@ -231,7 +231,7 @@ export const actions = {
 		await locals.pool.transaction(async (connection) => {
 			const ability = defineAbilityFor(locals.user);
 			for (const container of containers) {
-				if (ability.can('create', containerToCreate(container.payload.type, scopeContainer))) {
+				if (ability.can('create', containerOfType(container.payload.type, scopeContainer))) {
 					await createContainer(container)(connection);
 				}
 			}
@@ -253,7 +253,7 @@ export const load = (async ({ locals, parent }) => {
 	if (
 		!defineAbilityFor(locals.user).can(
 			'create',
-			containerToCreate(payloadTypes.enum.program, currentOrganizationalUnit ?? currentOrganization)
+			containerOfType(payloadTypes.enum.program, currentOrganizationalUnit ?? currentOrganization)
 		)
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });

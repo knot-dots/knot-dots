@@ -22,7 +22,7 @@ import Tag from '~icons/knotdots/tag';
 import Template from '~icons/knotdots/template';
 import {
 	type Container,
-	containerToCreate,
+	containerOfType,
 	isOrganizationContainer,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
@@ -361,15 +361,13 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		}
 		if (ability) {
 			if (workspace.key === 'categories') {
-				if (
-					!ability.can('create', containerToCreate(payloadTypes.enum.category, selectedContext))
-				) {
+				if (!ability.can('create', containerOfType(payloadTypes.enum.category, selectedContext))) {
 					return false;
 				}
 			}
 			if (workspace.key === 'help') {
 				// help sections belong to the organization
-				if (!ability.can('create', containerToCreate(payloadTypes.enum.help, organization))) {
+				if (!ability.can('create', containerOfType(payloadTypes.enum.help, organization))) {
 					return false;
 				}
 			}

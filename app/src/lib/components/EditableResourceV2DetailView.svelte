@@ -169,10 +169,7 @@
 	): Container<ResourceDataPayload> {
 		let c = containerOfType(
 			payloadTypes.enum.resource_data,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
+			container
 		) as Container<ResourceDataPayload>;
 
 		c.guid = temporaryGuid;
@@ -324,10 +321,7 @@
 		if (isNewContainer) {
 			const newContainer = containerOfType(
 				payloadTypes.enum.resource_data,
-				container.organization,
-				container.organizational_unit,
-				container.managed_by,
-				container.realm
+				container
 			) as NewContainer;
 
 			newContainer.payload = containerToSave.payload;
