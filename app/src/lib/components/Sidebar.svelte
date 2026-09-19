@@ -19,6 +19,7 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import saveContainer from '$lib/client/saveContainer';
+	import saveUser from '$lib/client/saveUser';
 	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
@@ -31,9 +32,10 @@
 		getOrganizationURL,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
-		payloadTypes
+		payloadTypes,
+		user as userSchema
 	} from '$lib/models';
-	import { ability, applicationState, mayCreateContainer, user } from '$lib/stores';
+	import { ability, applicationState, mayCreateContainer, type User, user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
 	let favoriteList = getFavoriteListContext();
@@ -88,6 +90,26 @@
 			} else {
 				const error = await response.json();
 				alert(error.message);
+			}
+		};
+	}
+
+	function updateUserFavorite(user: User, favorite: Favorite[]) {
+		return async () => {
+			const parseResult = userSchema.safeParse({
+				family_name: user.familyName,
+				given_name: user.givenName,
+				guid: user.guid,
+				realm: env.PUBLIC_KC_REALM,
+				settings: { ...user.settings, favorite }
+			});
+
+			if (parseResult.success) {
+				const response = await saveUser(parseResult.data);
+				if (!response.ok) {
+					const error = await response.json();
+					alert(error.message);
+				}
 			}
 		};
 	}
@@ -148,6 +170,17 @@
 		}))
 	);
 
+	let favoriteItemsUser = $derived.by(() => {
+		let _ = $state(
+			favoriteList.user.map((favorite) => ({
+				...favorite,
+				guid: favorite.href,
+				href: visibleFavoriteHref(favorite.href)
+			}))
+		);
+		return _;
+	});
+
 	function handleDndConsiderOrganization(
 		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
 	) {
@@ -184,6 +217,31 @@
 			})
 		);
 		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
+	}
+
+	function handleDndConsiderUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
+		favoriteItemsUser = event.detail.items;
+	}
+
+	function handleDndFinalizeUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
+		favoriteItemsUser = event.detail.items;
+		favoriteList.user = favoriteItemsUser.map(({ href, icon, title }) => ({
+			href,
+			icon,
+			title
+		}));
+
+		const parseResult = userSchema.safeParse({
+			family_name: $user.familyName,
+			given_name: $user.givenName,
+			guid: $user.guid,
+			realm: env.PUBLIC_KC_REALM,
+			settings: { ...$user.settings, favorite: favoriteList.user }
+		});
+
+		if (parseResult.success) {
+			saveUser(parseResult.data);
+		}
 	}
 </script>
 
@@ -421,6 +479,52 @@
 					<Grid />
 					<span>{$_('workspace.profile')}</span>
 				</a>
+			</li>
+
+			<li>
+				<ul
+					class="sidebar-menu"
+					onconsider={handleDndConsiderUser}
+					onfinalize={handleDndFinalizeUser}
+					use:dragHandleZone={{
+						dropTargetStyle: {},
+						flipDurationMs: 100,
+						items: favoriteItemsUser,
+						type: 'user'
+					}}
+				>
+					{#each favoriteItemsUser as item, index (item.guid)}
+						{@const href = page.url.searchParams.size
+							? `${page.url.pathname}?${page.url.searchParams.toString()}`
+							: page.url.pathname}
+						<li>
+							{#if $applicationState.containerDetailView.editable}
+								<span
+									class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+									use:dragHandle
+								>
+									<DragHandle />
+								</span>
+							{/if}
+							<a
+								class="sidebar-menu-item"
+								class:sidebar-menu-item--active={item.href === href}
+								href={item.href}
+							>
+								{#if item.icon}
+									<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+								{:else}
+									<StarSolid />
+								{/if}
+								<span>{item.title}</span>
+							</a>
+							<EditableFavorite
+								bind:favorite={favoriteItemsUser[index]}
+								onchange={updateUserFavorite($user, favoriteItemsUser)}
+							/>
+						</li>
+					{/each}
+				</ul>
 			</li>
 		</ul>
 	</div>

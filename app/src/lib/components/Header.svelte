@@ -34,6 +34,7 @@
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import UserFavoriteToggle from '$lib/components/UserFavoriteToggle.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
@@ -263,6 +264,10 @@
 					{$_('login')}
 				</button>
 			{/if}
+		{/if}
+
+		{#if !overlay}
+			<UserFavoriteToggle />
 		{/if}
 
 		{#if settings}

@@ -75,3 +75,20 @@ test('organizational unit dropdown navigates on click', async ({
 
 	await page.waitForURL(new RegExp(`/${testOrganizationalUnit.guid}`));
 });
+
+test('users can manage their own favorites', async ({ dotsBoard, testOrganization }) => {
+	await dotsBoard.goto(`/${testOrganization.guid}`);
+	await expect(
+		dotsBoard.sidebar.userPanel.getByRole('link', { name: 'All / Level board' })
+	).not.toBeVisible();
+	await expect(dotsBoard.header.userFavoriteToggle).toHaveAccessibleName('Add to sidebar');
+	await dotsBoard.header.userFavoriteToggle.click();
+	await expect(dotsBoard.header.userFavoriteToggle).toHaveAccessibleName('Remove from sidebar');
+	await expect(
+		dotsBoard.sidebar.userPanel.getByRole('link', { name: 'All / Level board' })
+	).toBeVisible();
+	await dotsBoard.header.userFavoriteToggle.click();
+	await expect(
+		dotsBoard.sidebar.userPanel.getByRole('link', { name: 'All / Level board' })
+	).not.toBeVisible();
+});

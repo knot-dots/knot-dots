@@ -19,6 +19,10 @@ export default class Header {
 		return this.locator.getByRole('checkbox', { name: 'Edit mode' });
 	}
 
+	get userFavoriteToggle() {
+		return this.locator.getByRole('button', { name: /Add to sidebar|Remove from sidebar/ });
+	}
+
 	async openWorkspaceMenu(currentWorkspace: string) {
 		const trigger = this.locator.getByRole('button', { name: currentWorkspace, exact: true });
 		await expect(trigger).toBeVisible();
