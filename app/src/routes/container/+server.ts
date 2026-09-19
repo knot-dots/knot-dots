@@ -7,7 +7,7 @@ import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
-	containerToCreate,
+	grantForNewContainer,
 	indicatorCategories,
 	indicatorTypes,
 	isProgramContainer,
@@ -208,15 +208,17 @@ export const POST = (async ({ locals, request }) => {
 			}
 			throw caught;
 		});
-	if (parent) {
-		// the persisted scope must be the one the parent was authorized for
-		if (
-			parseResult.data.organization !== parent.organization ||
-			ability.cannot('create', containerToCreate(parseResult.data.payload.type, parent))
-		) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
-	} else if (!locals.user.roles.includes('sysadmin')) {
+	// The submitted container is tested with the grants derived from its
+	// parent. Without a resolvable parent there are no grants, so only the
+	// unconditional sysadmin rule passes; the persisted scope must be the one
+	// the parent was authorized for.
+	if (
+		(parent && parseResult.data.organization !== parent.organization) ||
+		ability.cannot('create', {
+			...parseResult.data,
+			...(parent ? { grant: grantForNewContainer(parent) } : {})
+		})
+	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
