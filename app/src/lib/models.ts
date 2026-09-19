@@ -714,6 +714,82 @@ export const grantSet = z.object({
 
 export type GrantSet = z.infer<typeof grantSet>;
 
+// The effective grants of the request user on one container, computed at read
+// time from the matrix that governs the container (see computeUserGrants).
+// `source` names the container whose matrix governs — the container itself
+// while decoupled, otherwise the nearest decoupled ancestor, organizational
+// unit or organization. `subordinates` holds the kinds applying within the
+// container and `self` those applying to it (the source's subordinate kinds),
+// while `own` carries the kinds granted on the container's own matrix rows.
+// `admin` marks holders of every self kind at the source or on one of the
+// container's areas, `organization_manager` holders of the manage-users kind
+// on the organization object itself, `member` subjects the governing matrix
+// grants read, and `area_sourced` containers governed directly by their
+// organizational unit or organization.
+export const userGrants = z.object({
+	admin: z.boolean(),
+	area_sourced: z.boolean(),
+	member: z.boolean(),
+	organization_manager: z.boolean(),
+	own: z.array(grantKinds),
+	self: z.array(grantKinds),
+	source: z.uuid(),
+	subordinates: z.array(grantKinds)
+});
+
+export type UserGrants = z.infer<typeof userGrants>;
+
+const fullSelfSet: GrantKind[] = [
+	grantKinds.enum.read,
+	grantKinds.enum.update,
+	grantKinds.enum['manage-users']
+];
+
+// Composes the grant of one container from the subject's rows at the
+// governing matrix (source) and at the container's areas. computeUserGrants
+// resolves the source and collects the rows; the tests share this mapping for
+// their fixtures.
+export function composeUserGrants(input: {
+	areaSourced: boolean;
+	governsItself: boolean;
+	organizationSelf: GrantKind[];
+	organizationalUnitSelf: GrantKind[];
+	source: string;
+	sourceSelf: GrantKind[];
+	sourceSubordinates: GrantKind[];
+}): UserGrants {
+	const canonical = (kinds: Iterable<GrantKind>) =>
+		grantKinds.options.filter((kind) => new Set(kinds).has(kind));
+
+	// Holders of every self kind at the source administer everything it
+	// governs; administrators of an area keep that hold on its contents
+	// regardless of decoupled matrices in between.
+	const admin = [input.sourceSelf, input.organizationSelf, input.organizationalUnitSelf].some(
+		(kinds) => fullSelfSet.every((kind) => kinds.includes(kind))
+	);
+
+	// The subordinate kinds of the source apply within the container and,
+	// except for creating (which happens within a container, never on it), to
+	// the container itself. The container's own self rows count only while its
+	// own matrix governs.
+	const subordinates = admin ? grantKinds.options.slice() : canonical(input.sourceSubordinates);
+	const self = subordinates.filter((kind) => kind !== grantKinds.enum.create);
+	const own = input.governsItself ? canonical(input.sourceSelf) : [];
+
+	return {
+		admin,
+		area_sourced: input.areaSourced,
+		// The governing matrix granting read makes the subject a member — the
+		// mark members-only visibility asks for.
+		member: subordinates.includes(grantKinds.enum.read) || own.includes(grantKinds.enum.read),
+		organization_manager: input.organizationSelf.includes(grantKinds.enum['manage-users']),
+		own,
+		self,
+		source: input.source,
+		subordinates
+	};
+}
+
 export const grantSetAssignment = grantSet
 	.extend({ subject: z.uuid() })
 	.refine(
@@ -1488,6 +1564,7 @@ const measurePayload = z.strictObject({
 	comment: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
+	inheritsGrants: z.boolean().default(true),
 	measureType: measureTypes.optional(),
 	progress: z.number().nonnegative().optional(),
 	result: z.string().trim().optional(),
@@ -1622,6 +1699,7 @@ const initialOrganizationPayload = organizationPayload.partial({ name: true });
 export const organizationalUnitPayload = z.strictObject({
 	...detailViewStyle.shape,
 	administrativeType: z.array(administrativeTypes).default([]),
+	inheritsGrants: z.boolean().default(true),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
@@ -1710,6 +1788,7 @@ const programPayload = z.strictObject({
 	...detailViewStyle.shape,
 	chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
 	image: z.url().optional(),
+	inheritsGrants: z.boolean().default(true),
 	level: levels.default(levels.enum['level.local']),
 	pdf: z.array(z.tuple([z.url(), z.string()])).default([]),
 	status: status.default(status.enum['status.idea']),
@@ -2014,6 +2093,7 @@ const simpleMeasurePayload = z.strictObject({
 	annotation: z.string().trim().optional(),
 	endDate: z.iso.date().optional(),
 	file: z.array(z.tuple([z.url(), z.string()])).default([]),
+	inheritsGrants: z.boolean().default(true),
 	measureType: measureTypes.optional(),
 	progress: z.number().nonnegative().default(0),
 	startDate: z.iso.date().optional(),
@@ -2347,6 +2427,10 @@ export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) 
 		// ComputedManagedBy feature flag is enabled. Carries all teams along the
 		// hierarchy, nearest first. See computeManagedBy.ts.
 		computed_managed_by: z.array(z.uuid()).optional(),
+		// Read-time computed grants of the authenticated user on this container,
+		// never stored; grants of other subjects do not leave the server. See
+		// computeUserGrants.ts.
+		grant: userGrants.optional(),
 		organization: z.uuid(),
 		organizational_unit: z.uuid().nullable(),
 		payload: payloadSchema,
@@ -2777,21 +2861,60 @@ export function isAssignedTo(user: { guid: string }) {
 	return (container: Container<TaskPayload>) => container.payload.assignee.includes(user.guid);
 }
 
-export function containerOfType(
-	payloadType: PayloadType,
-	organization: string,
-	organizationalUnit: string | null,
-	managedBy: string | string[],
-	realm: string
-) {
-	return createNewContainerSchema(anyInitialPayload).parse({
-		managed_by: payloadType == payloadTypes.enum.organizational_unit ? organization : managedBy,
-		organization,
-		organizational_unit:
-			payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
-		payload: { type: payloadType },
-		realm
-	}) as NewContainer<AnyInitialPayload>;
+// Computes the grant field of a new container from its direct scope — the
+// JavaScript equivalent of the read-time database derivation, which needs no
+// ancestry walk here: the scope's computed grant already names the governing
+// matrix (`source`; the scope itself when decoupled) and carries its kinds.
+// The child inherits that matrix: the subordinate kinds act within it and,
+// except for creating, on the child itself; it has no rows of its own yet.
+// The permission matrix feature toggle is part of the scope's server-computed
+// grant (the server derives it from member roles while the matrix is off), so
+// the derivation holds in both modes.
+export function grantForNewContainer(scope: Container<AnyPayload>): UserGrants | undefined {
+	if (scope.grant === undefined) {
+		return undefined;
+	}
+	const organizationalUnit = isOrganizationalUnitContainer(scope)
+		? scope.guid
+		: scope.organizational_unit;
+	const subordinates = scope.grant.subordinates;
+	return {
+		admin: scope.grant.admin,
+		area_sourced:
+			scope.grant.source === scope.organization || scope.grant.source === organizationalUnit,
+		member: subordinates.includes(grantKinds.enum.read),
+		organization_manager: scope.grant.organization_manager,
+		own: [],
+		self: subordinates.filter((kind) => kind !== grantKinds.enum.create),
+		source: scope.grant.source,
+		subordinates
+	};
+}
+
+// A new container of the given type within the given scope: it lives in the
+// scope's organization and area, is managed by and related to the scope, and
+// carries the grants the request user would hold on it (grantForNewContainer),
+// so the create rules judge it like any loaded container.
+export function containerOfType(payloadType: PayloadType, scope: Container<AnyPayload>) {
+	const isArea = isOrganizationContainer(scope) || isOrganizationalUnitContainer(scope);
+	const organizationalUnit = isOrganizationalUnitContainer(scope)
+		? scope.guid
+		: scope.organizational_unit;
+	return {
+		...(createNewContainerSchema(anyInitialPayload).parse({
+			managed_by:
+				payloadType == payloadTypes.enum.organizational_unit ? scope.organization : scope.guid,
+			organization: scope.organization,
+			organizational_unit:
+				payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,
+			payload: { type: payloadType },
+			realm: scope.realm,
+			relation: isArea
+				? []
+				: [{ object: scope.guid, position: 0, predicate: predicates.enum['is-part-of'] }]
+		}) as NewContainer<AnyInitialPayload>),
+		grant: grantForNewContainer(scope)
+	};
 }
 
 export function findConnected<T extends Container<AnyPayload>>(
@@ -2850,6 +2973,49 @@ export function findAncestors<T extends Container<AnyPayload>>(
 
 	traverse(container);
 	return Array.from(ancestors.values());
+}
+
+// Assigning roles or rows to an inheriting measure or program gives it a
+// matrix of its own: the write paths decouple it so the assigned rights act
+// immediately, exactly as the inheritance toggle would. Rows keep resting
+// (they are never deleted) when the container starts inheriting again.
+export function withOwnMatrix<
+	T extends Pick<
+		Container<AnyPayload>,
+		'guid' | 'managed_by' | 'organization' | 'organizational_unit' | 'payload'
+	>
+>(container: T): T {
+	if (
+		container.payload.type === payloadTypes.enum.organizational_unit ||
+		!('inheritsGrants' in container.payload) ||
+		container.payload.inheritsGrants === false
+	) {
+		return container;
+	}
+	return {
+		...container,
+		managed_by:
+			container.managed_by[0] === grantSourceOf(container)
+				? [container.guid]
+				: container.managed_by,
+		payload: { ...container.payload, inheritsGrants: false }
+	};
+}
+
+// The source a container inherits its grant matrix from: the nearest manager
+// that is not the container itself — for contents of a program that is the
+// program, otherwise the organizational unit or organization.
+export function grantSourceOf(
+	container: Pick<
+		Container<AnyPayload>,
+		'guid' | 'managed_by' | 'organization' | 'organizational_unit'
+	>
+): string {
+	return (
+		container.managed_by.find((guid) => guid !== container.guid) ??
+		container.organizational_unit ??
+		container.organization
+	);
 }
 
 function collectDescendants<T extends Container<AnyPayload>>(

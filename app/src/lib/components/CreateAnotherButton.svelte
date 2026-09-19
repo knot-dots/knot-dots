@@ -79,10 +79,7 @@
 
 			const derived = containerOfType(
 				(event as CustomEvent).detail.selected,
-				container.organization,
-				container.organizational_unit,
-				container.managed_by,
-				container.realm
+				container
 			) as NewContainer;
 
 			derived.payload = {

@@ -1,24 +1,23 @@
 import { error } from '@sveltejs/kit';
 import { unwrapFunctionStore, _ } from 'svelte-i18n';
+import { z } from 'zod';
 import defineAbilityFor from '$lib/authorization';
 import {
 	type AnyPayload,
 	type Container,
 	findAncestors,
-	grantSetAssignment,
-	memberRoleFromGrantSet,
-	memberRoles,
-	predicates,
-	withOwnMatrix
+	grantSourceOf,
+	predicates
 } from '$lib/models';
 import {
 	getContainerByGuid,
 	getManyOrganizationalUnitContainers,
-	setContainerGrants,
-	updateMemberRole
+	updateContainer
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 import { NotFoundError } from 'slonik';
+
+const grantInheritanceRequest = z.object({ inherit: z.boolean() });
 
 export const POST = (async ({ locals, params, request }) => {
 	if (!locals.user.isAuthenticated) {
@@ -35,6 +34,11 @@ export const POST = (async ({ locals, params, request }) => {
 		} else {
 			throw e;
 		}
+	}
+
+	const payload = container.payload;
+	if (!('inheritsGrants' in payload)) {
+		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
 	if (
@@ -60,32 +64,40 @@ export const POST = (async ({ locals, params, request }) => {
 		error(400, { message: reason.message });
 	});
 
-	const parseResult = grantSetAssignment.safeParse(data);
+	const parseResult = grantInheritanceRequest.safeParse(data);
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	}
 
-	const { self, subject, subordinates } = parseResult.data;
-	const set = { self, subordinates };
+	const { inherit } = parseResult.data;
 
-	// a subject holding every grant counts as an administrator
-	const role = memberRoleFromGrantSet(set);
-
-	// the last administrator may not lose any grant
-	const admins = new Set(
-		container.user
-			.filter(({ predicate }) => predicate === predicates.enum['is-admin-of'])
-			.map(({ subject: adminSubject }) => adminSubject)
-	);
-	if (role !== memberRoles.enum.administrator && admins.has(subject) && admins.size === 1) {
-		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+	if (inherit === payload.inheritsGrants) {
+		return new Response(null, { status: 204 });
 	}
 
-	await locals.pool.transaction(async (connection) => {
-		// assigning rows to an inheriting container decouples it, so they act
-		const target = role === null ? container : withOwnMatrix(container);
-		await updateMemberRole(target, subject, role)(connection);
-		await setContainerGrants(container.guid, subject, set)(connection);
+	await locals.pool.connect(async (connection) => {
+		if (inherit) {
+			// re-enabling keeps the individually granted rows; they simply become
+			// read-only additions next to the inherited matrix again
+			await updateContainer({
+				...container,
+				payload: { ...payload, inheritsGrants: true }
+			})(connection);
+			return;
+		}
+
+		// Decoupling starts with an empty matrix of the object's own; nothing is
+		// copied. A container managed by its inheritance source would remain
+		// reachable through the source's subordinate grants via managed_by even
+		// when decoupled, so it becomes self-managed.
+		const source = grantSourceOf(container);
+		const managedBy = container.managed_by[0] === source ? [container.guid] : container.managed_by;
+
+		await updateContainer({
+			...container,
+			managed_by: managedBy,
+			payload: { ...payload, inheritsGrants: false }
+		})(connection);
 	});
 
 	return new Response(null, { status: 204 });

@@ -211,7 +211,12 @@ export const POST = (async ({ locals, params, request }) => {
 					relation: relations,
 					payload: {
 						...parseResult.data.payload,
-						...(aiContribution !== undefined ? { aiContribution } : undefined)
+						...(aiContribution !== undefined ? { aiContribution } : undefined),
+						// the inheritance flag is owned by the grant-inheritance endpoint,
+						// so revisions always carry the stored value forward
+						...('inheritsGrants' in container.payload
+							? { inheritsGrants: container.payload.inheritsGrants }
+							: undefined)
 					},
 					managed_by,
 					user: [

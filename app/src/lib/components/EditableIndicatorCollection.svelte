@@ -74,10 +74,7 @@
 	function addItem() {
 		$newContainer = containerOfType(
 			payloadTypes.enum.indicator_template,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
+			container
 		) as NewContainer;
 
 		createContainerDialog.getElement().showModal();
@@ -89,7 +86,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.goal, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.goal, container)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -112,8 +109,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator_template, container.managed_by) &&
-		editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator_template, container) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<NewIndicatorCard

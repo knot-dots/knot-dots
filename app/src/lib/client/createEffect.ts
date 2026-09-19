@@ -1,4 +1,3 @@
-import { env } from '$env/dynamic/public';
 import {
 	type BinaryIndicatorPayload,
 	type Container,
@@ -19,10 +18,7 @@ export default async function createEffect(
 ) {
 	const newEffect = containerOfType(
 		payloadTypes.enum.effect,
-		target.organization,
-		target.organizational_unit,
-		target.managed_by,
-		env.PUBLIC_KC_REALM
+		target
 	) as NewContainer<InitialEffectPayload>;
 	const response = await saveContainer({
 		...newEffect,

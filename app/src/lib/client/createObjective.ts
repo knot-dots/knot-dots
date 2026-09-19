@@ -1,5 +1,4 @@
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { env } from '$env/dynamic/public';
 import saveContainer from '$lib/client/saveContainer';
 import {
 	type BinaryIndicatorPayload,
@@ -22,10 +21,7 @@ export default async function createObjective(
 	const isOverallObjective = target.guid == indicator.guid;
 	const newObjective = containerOfType(
 		payloadTypes.enum.objective,
-		target.organization,
-		target.organizational_unit,
-		target.managed_by,
-		env.PUBLIC_KC_REALM
+		target
 	) as NewContainer<InitialObjectivePayload>;
 
 	const response = await saveContainer({

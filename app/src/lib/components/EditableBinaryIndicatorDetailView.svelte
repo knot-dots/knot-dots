@@ -4,7 +4,6 @@
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
@@ -45,10 +44,7 @@
 	let newActualDataContainer = $derived.by(() => {
 		const newActualDataContainer = containerOfType(
 			payloadTypes.enum.actual_data,
-			page.data.currentOrganization.guid,
-			page.data.currentOrganizationalUnit?.guid ?? null,
-			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
-			env.PUBLIC_KC_REALM
+			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 		) as NewContainer<ActualDataPayload>;
 		newActualDataContainer.payload.indicator = guid;
 		newActualDataContainer.payload.title = title;
@@ -162,7 +158,7 @@
 			{/key}
 
 			<div class="details-section" oninput={(e) => e.stopPropagation()}>
-				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', newActualDataContainer)}
+				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', containerOfType(payloadTypes.enum.actual_data, container))}
 					{#if addingActualData}
 						<span class="loader"></span>
 					{:else}

@@ -537,6 +537,13 @@
 		"update": "Bearbeiten"
 	},
 	"permission_matrix": {
+		"create_objects": "Objekte Anlegen",
+		"delete_objects": "Objekte Löschen",
+		"edit_objects": "Objekte Bearbeiten",
+		"edit_this": "{type} Bearbeiten",
+		"inherit_toggle": "Rechte werden übernommen",
+		"inherited_from": "Vererbt von {name}",
+		"manage_permissions": "Rechte Verwalten",
 		"subordinate_objects": "Unterobjekte",
 		"this_object": "Dieses Objekt"
 	},
@@ -677,6 +684,7 @@
 	"role": {
 		"admin": "Admin",
 		"administrator": "Administration",
+		"author": "Autor",
 		"collaborator": "Mitarbeit",
 		"custom": "Benutzerdefiniert",
 		"head": "Leitung",

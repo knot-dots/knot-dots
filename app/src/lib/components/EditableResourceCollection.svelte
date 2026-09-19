@@ -52,13 +52,7 @@
 			return;
 		}
 
-		const item = containerOfType(
-			payloadTypes.enum.resource,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		const item = containerOfType(payloadTypes.enum.resource, container) as NewContainer;
 
 		item.relation = [
 			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] },
@@ -80,7 +74,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.resource, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.resource, container)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -103,7 +97,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.resource, container.managed_by) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.resource, container) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<Card

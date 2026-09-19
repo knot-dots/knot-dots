@@ -12,10 +12,11 @@ import {
 import {
 	type AnyPayload,
 	type Container,
+	containerOfType,
 	getAvailableInProgramGuids,
 	isMeasureContainer,
-	isOrganizationContainer,
 	isOrganizationalUnitContainer,
+	isOrganizationContainer,
 	isProgramContainer,
 	isSimpleMeasureContainer,
 	isTemplateContainer,
@@ -478,7 +479,13 @@ export async function executeContainerCopy({
 	if (plan.size > maxPlanSize) {
 		throw new ContainerCopyServiceError('copy_too_large');
 	}
-	if ([...plan.values()].some((container) => ability.cannot('create', container))) {
+	// creating happens within the target scope, whose computed grants decide
+	const creationScope = resolvedTarget.organizationalUnit ?? resolvedTarget.organization;
+	if (
+		[...plan.values()].some((container) =>
+			ability.cannot('create', containerOfType(container.payload.type, creationScope))
+		)
+	) {
 		throw new ContainerCopyServiceError('create_forbidden');
 	}
 
