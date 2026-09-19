@@ -159,10 +159,10 @@ async function run() {
 		const rand = Math.random().toString(36).slice(2, 6);
 		const alt = `${newIndexName}-${rand}`;
 		await createIndexWithMappings(client, alt);
-		log.info({ index: alt }, '[indexer] Created index');
+		log.info({ index: alt }, 'Created index');
 	} else {
 		await createIndexWithMappings(client, newIndexName);
-		log.info({ index: newIndexName }, '[indexer] Created index');
+		log.info({ index: newIndexName }, 'Created index');
 	}
 
 	let indexed = 0;
@@ -203,12 +203,12 @@ async function run() {
 						caused_by: e?.caused_by
 					};
 				});
-				log.error({ errorCount: errs.length, details }, '[indexer] Bulk had errors');
+				log.error({ errorCount: errs.length, details }, 'Bulk had errors');
 				throw new Error('Bulk indexing failed');
 			}
 			indexed += ops.length / 2;
 			ops = [];
-			log.info({ indexed }, '[indexer] Indexed documents');
+			log.info({ indexed }, 'Indexed documents');
 		}
 	}
 
@@ -244,7 +244,7 @@ async function run() {
 					caused_by: e?.caused_by
 				};
 			});
-			log.error({ errorCount: errs.length, details }, '[indexer] Bulk had errors');
+			log.error({ errorCount: errs.length, details }, 'Bulk had errors');
 			throw new Error('Bulk indexing failed');
 		}
 		indexed += ops.length / 2;
@@ -258,7 +258,7 @@ async function run() {
 	// Elasticsearch forbids creating an alias with that name. Migrate by deleting the legacy index first.
 	const aliasIndexExists = await client.indices.exists({ index: aliasName });
 	if (aliasIndexExists && (!currentAliases || Object.keys(currentAliases).length === 0)) {
-		log.warn({ aliasName }, '[indexer] Found legacy index. Deleting it to allow alias creation');
+		log.warn({ aliasName }, 'Found legacy index. Deleting it to allow alias creation');
 		await client.indices.delete({ index: aliasName });
 	}
 	const removeActions: any[] = [];
@@ -274,14 +274,11 @@ async function run() {
 	await client.indices.updateAliases({ actions });
 	log.info(
 		{ indexed, newIndexName, aliasName },
-		'[indexer] Done. Indexed documents and pointed alias to new index'
+		'Done. Indexed documents and pointed alias to new index'
 	);
 }
 
 run().catch((err) => {
-	log.error(
-		{ error: isErrorLike(err) ? serializeError(err) : String(err) },
-		'[indexer] Fatal error'
-	);
+	log.error({ error: isErrorLike(err) ? serializeError(err) : String(err) }, 'Fatal error');
 	process.exit(1);
 });
