@@ -1006,6 +1006,15 @@ const sectionStyle = z.object({
 	color: backgroundColor.optional()
 });
 
+const propertiesConfiguration = z.partialRecord(
+	payloadTypes,
+	z.object({
+		headerAndPanel: z.array(z.string()),
+		onlyPanel: z.array(z.string()),
+		unused: z.array(z.string())
+	})
+);
+
 const basePayload = z.object({
 	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
@@ -1672,13 +1681,14 @@ export const organizationPayload = z.strictObject({
 		)
 		.default([]),
 	federalState: z.string().optional(),
-	geometry: z.string().uuid().optional(),
+	geometry: z.uuid().optional(),
 	image: z.url().optional(),
 	imageReplacesName: z.boolean().default(false),
 	name: z.string().trim(),
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
+	propertiesConfiguration: propertiesConfiguration.default({}),
 	slug: z
 		.string()
 		.slugify()
