@@ -92,8 +92,8 @@ const units = [
 function enrichedUnits(...governed: string[]) {
 	return units.map((unit) => ({
 		...unit,
-		grant: composeUserGrants({
-			areaSourced: true,
+		user_grant: composeUserGrants({
+			scopeSourced: true,
 			governsItself: false,
 			organizationSelf: [],
 			organizationalUnitSelf: [],

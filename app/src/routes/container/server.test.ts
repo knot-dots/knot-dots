@@ -58,8 +58,8 @@ function organization() {
 		realm: 'knot-dots',
 		payload: { name: 'Org', type: 'organization', visibility: 'public' },
 		relation: [],
-		grant: composeUserGrants({
-			areaSourced: true,
+		user_grant: composeUserGrants({
+			scopeSourced: true,
 			governsItself: true,
 			organizationSelf: headSet.self,
 			organizationalUnitSelf: [],

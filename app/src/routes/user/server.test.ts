@@ -52,8 +52,8 @@ const container = {
 	revision: 1,
 	user: [],
 	// enriched with the request user's grants — an organization administrator
-	grant: composeUserGrants({
-		areaSourced: true,
+	user_grant: composeUserGrants({
+		scopeSourced: true,
 		governsItself: true,
 		organizationSelf: grantSetForRole(memberRoles.enum.administrator).self,
 		organizationalUnitSelf: [],

@@ -216,7 +216,7 @@ export const POST = (async ({ locals, request }) => {
 		(parent && parseResult.data.organization !== parent.organization) ||
 		ability.cannot('create', {
 			...parseResult.data,
-			...(parent ? { grant: grantForNewContainer(parent) } : {})
+			...(parent ? { user_grant: grantForNewContainer(parent) } : {})
 		})
 	) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });

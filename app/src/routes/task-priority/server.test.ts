@@ -34,8 +34,8 @@ function task(guid: string, managedBy: string) {
 		payload: { title: 'Task', type: 'task', visibility: 'members' },
 		relation: [],
 		user: [],
-		grant: composeUserGrants({
-			areaSourced: false,
+		user_grant: composeUserGrants({
+			scopeSourced: false,
 			governsItself: false,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
