@@ -255,7 +255,12 @@ export async function computeUserGrantsFromRoles(
 			admin: [teamSet, organizationSet, unitSet].some((set) =>
 				['read', 'update', 'manage-users'].every((kind) => (set.self as string[]).includes(kind))
 			),
-			scope_sourced: team === undefined,
+			// the pre-matrix rules let organization-wide roles move content between
+			// units regardless of a team of its own, so roles on the surrounding
+			// scopes count as scope-sourced
+			scope_sourced:
+				[organizationSet, unitSet].some((set) => set.self.length + set.subordinates.length > 0) ||
+				team === undefined,
 			member: team
 				? teamSet.subordinates.includes(grantKinds.enum.read)
 				: subordinates.includes(grantKinds.enum.read),

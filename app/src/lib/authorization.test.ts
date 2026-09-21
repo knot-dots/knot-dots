@@ -171,7 +171,9 @@ function enrichFromRoles<T extends TestContainer>(container: T, user: User): T {
 			admin: [teamSet, organizationSet, unitSet].some((set) =>
 				['read', 'update', 'manage-users'].every((kind) => (set.self as string[]).includes(kind))
 			),
-			scope_sourced: team === undefined,
+			scope_sourced:
+				[organizationSet, unitSet].some((set) => set.self.length + set.subordinates.length > 0) ||
+				team === undefined,
 			member: team
 				? teamSet.subordinates.includes(grantKinds.enum.read)
 				: subordinates.includes(grantKinds.enum.read),
@@ -466,6 +468,23 @@ describe('field-level rules', () => {
 		const measure = makeContainer(payloadTypes.enum.measure);
 		expect(ability.can('update', measure)).toBe(true);
 		expect(ability.can('update', measure, 'organizational_unit')).toBe(false);
+	});
+
+	test('while the matrix is off, organization roles stay scope-sourced beside a team', () => {
+		// the pre-matrix rules let organization-wide roles move content between
+		// units even when the container carries a team of its own
+		const teamed = makeContainer(payloadTypes.enum.measure, { guid: team });
+		// with the matrix on, the team's own matrix governs and is not scope-sourced
+		const organizationHead = abilityOn({ headOf: [organization], collaboratorOf: [team] }, team);
+		expect(organizationHead.can('update', teamed, 'organizational_unit')).toBe(false);
+		const roleMode = abilityOn(
+			{ headOf: [organization], collaboratorOf: [team] },
+			undefined,
+			'roles'
+		);
+		expect(roleMode.can('update', teamed, 'organizational_unit')).toBe(true);
+		const teamOnly = abilityOn({ collaboratorOf: [team] }, undefined, 'roles');
+		expect(teamOnly.can('update', teamed, 'organizational_unit')).toBe(false);
 	});
 
 	test('the indicator category of indicator templates is immutable', () => {
