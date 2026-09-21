@@ -141,9 +141,60 @@ function enrich<T extends TestContainer>(container: T, user: User, source?: stri
 	};
 }
 
+// Mirrors computeUserGrantsFromRoles for plain test objects: while the
+// permission matrix is off, the member roles govern additively — the roles on
+// the container itself (its team) and on the surrounding areas apply side by
+// side. Test containers carry no relations, so the ancestry walk reduces to
+// the container itself.
+function enrichFromRoles<T extends TestContainer>(container: T, user: User): T {
+	const guid = container.guid;
+	const setAt = (object: string | null | undefined) => ({
+		self: object ? kindsAt(user, object, 'self') : [],
+		subordinates: object ? kindsAt(user, object, 'subordinates') : []
+	});
+	const holdsRowsOn = (object: string) =>
+		grantTargets.options.some((target) => kindsAt(user, object, target).length > 0);
+	const team = guid !== undefined && holdsRowsOn(guid) ? guid : undefined;
+	const teamSet = setAt(team);
+	const organizationSet = setAt(container.organization);
+	const unitSet = setAt(container.organizational_unit);
+
+	const union = (target: 'self' | 'subordinates') =>
+		grantKinds.options.filter((kind) =>
+			[teamSet, organizationSet, unitSet].some((set) => set[target].includes(kind))
+		);
+
+	const subordinates = union('subordinates');
+	return {
+		...container,
+		grant: {
+			admin: [teamSet, organizationSet, unitSet].some((set) =>
+				['read', 'update', 'manage-users'].every((kind) => (set.self as string[]).includes(kind))
+			),
+			area_sourced: team === undefined,
+			member: team
+				? teamSet.subordinates.includes(grantKinds.enum.read)
+				: subordinates.includes(grantKinds.enum.read),
+			organization_manager: organizationSet.self.includes(grantKinds.enum['manage-users']),
+			own: team === guid && team !== undefined ? teamSet.self : [],
+			self: subordinates.filter((kind) => kind !== grantKinds.enum.create),
+			source: team ?? container.organizational_unit ?? container.organization,
+			subordinates
+		}
+	};
+}
+
+type GrantMode = 'matrix' | 'roles';
+
 // Facade combining a user's ability with the per-container enrichment: checks
-// run against the container as the server would hand it out.
-function abilityOn(overrides: z.input<typeof testUser> = {}, source?: string) {
+// run against the container as the server would hand it out — grants composed
+// from the stored matrix rows, or derived from member roles while the
+// permission matrix feature is off.
+function abilityOn(
+	overrides: z.input<typeof testUser> = {},
+	source?: string,
+	mode: GrantMode = 'matrix'
+) {
 	const user = makeUser(overrides);
 	const ability = defineAbilityFor(user);
 	return {
@@ -151,7 +202,12 @@ function abilityOn(overrides: z.input<typeof testUser> = {}, source?: string) {
 			action: 'create' | 'read' | 'update' | 'delete' | 'manage-users',
 			container: TestContainer,
 			field?: string
-		) => ability.can(action, enrich(container, user, source), field)
+		) =>
+			ability.can(
+				action,
+				mode === 'matrix' ? enrich(container, user, source) : enrichFromRoles(container, user),
+				field
+			)
 	};
 }
 
@@ -622,25 +678,30 @@ describe('the basic permission matrix by member role', () => {
 		}
 	});
 
-	for (const scope of Object.keys(permissionMatrix) as Scope[]) {
-		describe(`objects belonging to an ${scope}`, () => {
-			for (const { types, permitted } of permissionMatrix[scope]) {
-				for (const role of memberRoles.options) {
-					const ability = abilityOn(userWithRoleOn(role, scope));
-					test.for(types)(`a ${role} may ${inWords(permitted[role])}: %s`, (type) => {
-						expect(
-							basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
-						).toEqual(permitted[role]);
-					});
+	// The same cells must hold in both modes of the feature switch: with the
+	// permission matrix on (grants composed from stored rows) and off (grants
+	// derived from the member roles, the pre-matrix behavior).
+	for (const mode of ['matrix', 'roles'] as GrantMode[]) {
+		for (const scope of Object.keys(permissionMatrix) as Scope[]) {
+			describe(`objects belonging to an ${scope} (${mode} mode)`, () => {
+				for (const { types, permitted } of permissionMatrix[scope]) {
+					for (const role of memberRoles.options) {
+						const ability = abilityOn(userWithRoleOn(role, scope), undefined, mode);
+						test.for(types)(`a ${role} may ${inWords(permitted[role])}: %s`, (type) => {
+							expect(
+								basicActions.filter((action) => ability.can(action, scopedContainer(scope, type)))
+							).toEqual(permitted[role]);
+						});
+					}
 				}
-			}
 
-			test('a registered user without a role in the scope has no access', () => {
-				const ability = abilityOn({});
-				const measure = scopedContainer(scope, payloadTypes.enum.measure);
-				expect(basicActions.filter((action) => ability.can(action, measure))).toEqual([]);
+				test('a registered user without a role in the scope has no access', () => {
+					const ability = abilityOn({}, undefined, mode);
+					const measure = scopedContainer(scope, payloadTypes.enum.measure);
+					expect(basicActions.filter((action) => ability.can(action, measure))).toEqual([]);
+				});
 			});
-		});
+		}
 	}
 });
 
