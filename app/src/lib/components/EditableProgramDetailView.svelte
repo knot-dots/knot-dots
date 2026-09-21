@@ -8,7 +8,7 @@
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
-	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
+	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdoptButton from '$lib/components/AdoptButton.svelte';
@@ -51,10 +51,10 @@
 
 	let { container = $bindable(), layout, revisions }: Props = $props();
 
-	const templateAvailability = createProgramTemplateAvailability({
+	const templateAvailability = createScopedTemplateAvailability({
 		candidateTypes: () => container.payload.chapterType,
 		organizationGuid: () => container.organization,
-		programGuid: () => container.guid
+		scopeGuid: () => container.guid
 	});
 	let availableChapterTypes = $derived(
 		container.payload.chapterType.filter(

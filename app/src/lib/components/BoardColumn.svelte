@@ -1,4 +1,5 @@
 <script lang="ts">
+	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
 	import { getContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -13,6 +14,7 @@
 		isGoalContainer,
 		isRuleContainer,
 		isTaskContainer,
+		payloadTypes,
 		type Level,
 		type NewContainer,
 		type PartialRelation,
@@ -37,6 +39,14 @@
 	);
 
 	let addItemParams = $derived(new URLSearchParams(addItemUrl?.substring(1)));
+	const templateAvailability = createCreationTemplateAvailability(
+		() => {
+			const type = payloadTypes.safeParse(addItemParams.get('create'));
+			return type.success ? createDraft(type.data, addItemParams) : undefined;
+		},
+		() =>
+			(createOptions?.map(({ value }) => value) ?? addItemParams.getAll('create')) as PayloadType[]
+	);
 
 	let mayCreate = $derived(
 		addItemParams
@@ -52,13 +62,15 @@
 	// Use explicit createOptions if provided, otherwise derive from URL
 	let effectiveOptions = $derived.by(() => {
 		if (createOptions && createOptions.length > 0) {
-			return createOptions;
+			return createOptions.filter(({ value }) => templateAvailability.has(value as PayloadType));
 		}
 		// Convert mayCreate PayloadTypes to options format
-		return mayCreate.map((t) => ({ value: t, label: $_(t) }));
+		return mayCreate
+			.filter((t) => templateAvailability.has(t))
+			.map((t) => ({ value: t, label: $_(t) }));
 	});
 
-	function defaultCreateContainer(payloadType: PayloadType, params: URLSearchParams) {
+	function createDraft(payloadType: PayloadType, params: URLSearchParams) {
 		const container = containerOfType(
 			payloadType,
 			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
@@ -107,8 +119,11 @@
 			}))
 		];
 
-		$newContainer = container;
+		return container;
+	}
 
+	function defaultCreateContainer(payloadType: PayloadType, params: URLSearchParams) {
+		$newContainer = createDraft(payloadType, params);
 		createContainerDialog.getElement().showModal();
 	}
 
@@ -116,7 +131,7 @@
 		if (onCreateContainer) {
 			onCreateContainer(effectiveOptions[0].value);
 		} else {
-			defaultCreateContainer(mayCreate[0], addItemParams);
+			defaultCreateContainer(effectiveOptions[0].value as PayloadType, addItemParams);
 		}
 	}
 

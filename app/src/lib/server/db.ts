@@ -49,6 +49,7 @@ import {
 	userRelationsForMemberRole,
 	visibility
 } from '$lib/models';
+import { isMeasureTemplateScope } from '$lib/templateScopes';
 import { enrichContainers } from '$lib/server/computeUserGrants';
 import {
 	type CopyGraphSnapshot,
@@ -678,14 +679,16 @@ export function updateMemberRole(
 	};
 }
 
-export function deleteContainer(container: Container<AnyPayload>) {
+export function deleteContainer(container: Container<AnyPayload>, visited = new Set<string>()) {
 	return async (connection: DatabaseConnection) => {
+		if (visited.has(container.guid)) return;
+		visited.add(container.guid);
 		const affectedGuids = await connection.transaction(async (txConnection) => {
 			if (container.payload.type === payloadTypes.enum.organization) {
 				await deleteGroup(container.guid);
 			}
 
-			if (isProgramContainer(container)) {
+			if (isProgramContainer(container) || isMeasureTemplateScope(container)) {
 				const scopedTemplateRows = await txConnection.any(sql.typeAlias('anyContainer')`
 					SELECT template.*
 					FROM container_relation availability
@@ -712,7 +715,7 @@ export function deleteContainer(container: Container<AnyPayload>) {
 					scopedTemplateRows
 				);
 				for (const scopedTemplate of scopedTemplates) {
-					await deleteContainer(scopedTemplate)(txConnection);
+					await deleteContainer(scopedTemplate, visited)(txConnection);
 				}
 			}
 
@@ -727,7 +730,7 @@ export function deleteContainer(container: Container<AnyPayload>) {
 			for (const section of findDescendants(container, sections, [
 				predicates.enum['is-section-of']
 			])) {
-				await deleteContainer({ ...section, user: container.user })(txConnection);
+				await deleteContainer({ ...section, user: container.user }, visited)(txConnection);
 			}
 
 			await txConnection.query(sql.typeAlias('void')`
@@ -888,9 +891,9 @@ export function getContainerByGuid(guid: string) {
  * child subject. Recursive UNION deduplicates containers reached through multiple parents and
  * terminates cycles.
  *
- * For program roots, the walk also starts at each template root available in that program, so the
- * template hierarchies can be copied into the new program scope. Indicator/resource targets,
- * custom-collection item/template references, and program availability targets are fetched as
+ * Every encountered program or measure also expands its scoped template roots, including nested
+ * scopes inside template branches. Indicator/resource targets,
+ * custom-collection item/template references, and availability targets are fetched as
  * supporting containers without traversing their descendants. The result is enriched with current
  * relations, user relations, and computed management data. It intentionally remains an
  * overinclusive server-side snapshot: visibility and invalid-reference pruning belong to
@@ -913,21 +916,6 @@ export function getContainerCopyGraph(rootGuid: string) {
 				SELECT root.guid
 				FROM current_container root
 				WHERE root.guid = ${rootGuid}
-				UNION
-				SELECT available_template.guid
-				FROM current_container root
-				JOIN current_relation availability ON availability.object = root.guid
-					AND availability.predicate = ${predicates.enum['is-available-in']}
-				JOIN current_container available_template ON available_template.guid = availability.subject
-				WHERE root.guid = ${rootGuid}
-					AND root.payload->>'type' = ${payloadTypes.enum.program}
-					AND available_template.payload @> '{"template": true}'
-					AND NOT EXISTS (
-						SELECT 1
-						FROM current_relation structural_parent
-						WHERE structural_parent.subject = available_template.guid
-							AND structural_parent.predicate = ANY (${sql.array(structuralCopyPredicates, 'text')})
-					)
 			), walk(guid) AS (
 				SELECT guid
 				FROM copy_seed
@@ -940,6 +928,20 @@ export function getContainerCopyGraph(rootGuid: string) {
 					JOIN current_container child ON child.guid = cr.subject
 					WHERE cr.object = walk.guid
 						AND cr.predicate = ANY (${sql.array(structuralCopyPredicates, 'text')})
+					UNION
+					SELECT template.guid AS target
+					FROM current_container owner
+					JOIN current_relation availability ON availability.object = owner.guid
+						AND availability.predicate = ${predicates.enum['is-available-in']}
+					JOIN current_container template ON template.guid = availability.subject
+					WHERE owner.guid = walk.guid
+						AND owner.payload->>'type' = ANY (${sql.array([payloadTypes.enum.program, payloadTypes.enum.measure, payloadTypes.enum.simple_measure], 'text')})
+						AND template.payload @> '{"template": true}'
+						AND NOT EXISTS (
+							SELECT 1 FROM current_relation structural_parent
+							WHERE structural_parent.subject = template.guid
+								AND structural_parent.predicate = ANY (${sql.array(structuralCopyPredicates, 'text')})
+						)
 				) edge
 			), copy_candidate AS (
 				SELECT guid

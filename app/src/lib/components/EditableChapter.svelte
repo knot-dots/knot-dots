@@ -3,7 +3,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import createProgramTemplateAvailability from '$lib/client/createProgramTemplateAvailability.svelte';
+	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
@@ -46,10 +46,10 @@
 		relatedContainers
 	}: Props = $props();
 
-	const templateAvailability = createProgramTemplateAvailability({
+	const templateAvailability = createScopedTemplateAvailability({
 		candidateTypes: () => isPartOf.payload.chapterType,
 		organizationGuid: () => isPartOf.organization,
-		programGuid: () => isPartOf.guid
+		scopeGuid: () => isPartOf.guid
 	});
 	let availableChapterTypes = $derived(
 		isPartOf.payload.chapterType.filter(

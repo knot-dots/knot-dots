@@ -19,6 +19,101 @@ import {
 } from '$lib/server/containerCopyPlan';
 
 const organization = '10000000-0000-4000-8000-000000000000';
+
+test.each(['copy', 'create-template', 'template-instance'] as const)(
+	'%s carries nested measure template scopes and remaps ownership',
+	(kind) => {
+		const program = makeContainer(guids.root, {
+			type: 'program',
+			title: 'Program',
+			template: kind !== 'create-template'
+		});
+		if (program.payload.type !== 'program') throw new Error('Expected program');
+		const measure = makeContainer(guids.child, {
+			type: 'measure',
+			title: 'Measure',
+			template: true
+		});
+		const scoped = makeContainer(guids.scopedTemplate, {
+			type: 'measure',
+			title: 'Nested template',
+			template: true
+		});
+		const nested = makeContainer(guids.scopedTemplateChild, {
+			type: 'goal',
+			title: 'Goal template',
+			template: true
+		});
+		const snapshot = graph(
+			program.guid,
+			[program, measure, scoped, nested],
+			[
+				relation(measure.guid, 'is-part-of-program', program.guid),
+				relation(scoped.guid, 'is-available-in', measure.guid),
+				relation(nested.guid, 'is-available-in', scoped.guid)
+			]
+		);
+		const plan = createContainerCopyPlan({
+			graph: snapshot,
+			target,
+			operation: { kind, rootPayload: program.payload },
+			readPolicy: policy(),
+			allocateGuid: allocator()
+		});
+		expect(plan.size).toBe(4);
+		expect(plan.get(scoped.guid)?.payload).toMatchObject({ template: true });
+		expect(plan.get(nested.guid)?.payload).toMatchObject({ template: true });
+		expect(plan.get(measure.guid)?.payload).toMatchObject({
+			template: kind !== 'template-instance'
+		});
+		expect(plan.get(scoped.guid)?.relation).toContainEqual(
+			expect.objectContaining({
+				predicate: 'is-available-in',
+				object: plan.get(measure.guid)?.guid
+			})
+		);
+		expect(plan.get(nested.guid)?.relation).toContainEqual(
+			expect.objectContaining({ predicate: 'is-available-in', object: plan.get(scoped.guid)?.guid })
+		);
+		const pruned = createContainerCopyPlan({
+			graph: snapshot,
+			target,
+			operation: { kind, rootPayload: program.payload },
+			readPolicy: policy({ hidden: [measure.guid] }),
+			allocateGuid: allocator()
+		});
+		expect(pruned.size).toBe(1);
+	}
+);
+
+test('scoped template cycles terminate and simple measures do not own template workspaces', () => {
+	const measure = makeContainer(guids.root, { type: 'measure', title: 'Measure', template: true });
+	const scoped = makeContainer(guids.scopedTemplate, {
+		type: 'measure',
+		title: 'Template',
+		template: true
+	});
+	const snapshot = graph(
+		measure.guid,
+		[measure, scoped],
+		[
+			relation(scoped.guid, 'is-available-in', measure.guid),
+			relation(measure.guid, 'is-available-in', scoped.guid)
+		]
+	);
+	const selection = selectContainerCopySources({ graph: snapshot, canReadSource: () => true });
+	expect(selection.includedGuids.size).toBe(2);
+	const simple = makeContainer(guids.root, { type: 'simple_measure', title: 'Simple' });
+	const simpleSelection = selectContainerCopySources({
+		graph: graph(
+			simple.guid,
+			[simple, scoped],
+			[relation(scoped.guid, 'is-available-in', simple.guid)]
+		),
+		canReadSource: () => true
+	});
+	expect(simpleSelection.includedGuids).toEqual(new Set([simple.guid, scoped.guid]));
+});
 const organizationalUnit = '20000000-0000-4000-8000-000000000000';
 const creator = '30000000-0000-4000-8000-000000000000';
 const geometry = '40000000-0000-4000-8000-000000000000';

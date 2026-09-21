@@ -4,7 +4,7 @@ import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 import {
-	getAvailableInProgramGuids,
+	getAvailableInScopeGuids,
 	isTemplateRoot,
 	type Relation
 } from '@knot-dots/app/src/lib/models.ts';
@@ -277,7 +277,7 @@ export function toDoc(row: {
 		organization: row.organization,
 		organizational_unit: row.organizational_unit ?? undefined,
 		managed_by: row.managed_by,
-		available_in: getAvailableInProgramGuids({ guid: row.guid, relation }),
+		available_in: getAvailableInScopeGuids({ guid: row.guid, relation }),
 		template_root: isTemplateRoot({ guid: row.guid, payload: originalPayload, relation }),
 		type,
 		title,

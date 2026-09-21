@@ -13,12 +13,10 @@ import {
 	type AnyPayload,
 	type Container,
 	containerOfType,
-	getAvailableInProgramGuids,
-	isMeasureContainer,
-	isOrganizationalUnitContainer,
+	getAvailableInScopeGuids,
 	isOrganizationContainer,
+	isOrganizationalUnitContainer,
 	isProgramContainer,
-	isSimpleMeasureContainer,
 	isTemplateContainer,
 	isTemplateRoot,
 	predicates,
@@ -35,6 +33,8 @@ import {
 import { persistContainerCopyPlan } from '$lib/server/containerCopyPersistence';
 import { getContainerByGuid, getContainerCopyGraph, getManyContainers } from '$lib/server/db';
 import type { User } from '$lib/stores';
+import { isMeasureTemplateScope, isTemplateScope } from '$lib/templateScopes';
+import { createFeatureDecisions } from '$lib/features';
 
 export type ContainerCopyServiceErrorCode =
 	| 'source_unavailable'
@@ -87,7 +87,7 @@ function validateTemplateScope(
 	availableIn: string | null,
 	canRead: (container: Container<AnyPayload>) => boolean
 ) {
-	const availableInGuids = getAvailableInProgramGuids(source);
+	const availableInGuids = getAvailableInScopeGuids(source);
 	if (
 		(availableIn === null && availableInGuids.length !== 0) ||
 		(availableIn !== null && (availableInGuids.length !== 1 || availableInGuids[0] !== availableIn))
@@ -98,7 +98,7 @@ function validateTemplateScope(
 		const program = graph.find(({ guid }) => guid === availableIn);
 		if (
 			!program ||
-			!isProgramContainer(program) ||
+			!isTemplateScope(program) ||
 			program.organization !== source.organization ||
 			!canRead(program)
 		) {
@@ -279,7 +279,9 @@ async function resolveRootPlacement(
 	source: Container<AnyPayload>,
 	resolvedTarget: Awaited<ReturnType<typeof loadTarget>>,
 	connection: DatabaseConnection,
-	ability: ReturnType<typeof defineAbilityFor>
+	ability: ReturnType<typeof defineAbilityFor>,
+	features: string[],
+	scopeOwner?: Container<AnyPayload>
 ) {
 	let managedBy = resolvedTarget.organizationalUnit?.guid ?? resolvedTarget.organization.guid;
 	let rootPlacement: readonly RootCopyPlacement[] = [];
@@ -316,7 +318,13 @@ async function resolveRootPlacement(
 			!manager ||
 			(!isOrganizationContainer(manager) &&
 				!isOrganizationalUnitContainer(manager) &&
-				(!isProgramContainer(manager) || request.availableIn !== manager.guid)) ||
+				(!isTemplateScope(manager) ||
+					(request.availableIn !== manager.guid &&
+						!(
+							scopeOwner &&
+							isMeasureTemplateScope(scopeOwner) &&
+							scopeOwner.managed_by.includes(manager.guid)
+						)))) ||
 			manager.organization !== resolvedTarget.organization.guid ||
 			ability.cannot('read', manager)
 		) {
@@ -325,6 +333,22 @@ async function resolveRootPlacement(
 		if (
 			isOrganizationalUnitContainer(source) &&
 			manager.guid !== resolvedTarget.organization.guid
+		) {
+			throw new ContainerCopyServiceError('invalid_target');
+		}
+
+		const scopePlacements = rootPlacement.filter(
+			({ parentGuid, predicate }) =>
+				predicate === predicates.enum['is-part-of-program'] ||
+				(predicate === predicates.enum['is-part-of-measure'] &&
+					referencedContainers.has(parentGuid) &&
+					isMeasureTemplateScope(referencedContainers.get(parentGuid)!))
+		);
+		if (
+			new Set(scopePlacements.map(({ parentGuid }) => parentGuid)).size > 1 ||
+			(scopeOwner &&
+				isMeasureTemplateScope(scopeOwner) &&
+				!scopePlacements.some(({ parentGuid }) => parentGuid === request.availableIn))
 		) {
 			throw new ContainerCopyServiceError('invalid_target');
 		}
@@ -340,8 +364,10 @@ async function resolveRootPlacement(
 						request.availableIn === null ||
 						parentGuid !== request.availableIn)) ||
 				(predicate === predicates.enum['is-part-of-measure'] &&
-					!isMeasureContainer(parent) &&
-					!isSimpleMeasureContainer(parent))
+					(!isMeasureTemplateScope(parent) ||
+						((request.availableIn !== null ||
+							createFeatureDecisions(features).useTemplateWorkspaces()) &&
+							parentGuid !== request.availableIn)))
 			) {
 				throw new ContainerCopyServiceError('invalid_target');
 			}
@@ -356,6 +382,7 @@ export async function executeContainerCopy({
 	connection,
 	user,
 	maxPlanSize,
+	features = [],
 	maxGraphSize = maxPlanSize
 }: {
 	request: ContainerCopyRequest;
@@ -363,6 +390,7 @@ export async function executeContainerCopy({
 	user: User;
 	maxGraphSize?: number;
 	maxPlanSize: number;
+	features?: string[];
 }) {
 	const graph = await getContainerCopyGraph(request.sourceGuid)(connection);
 	const source = graph.containers.find(({ guid }) => guid === request.sourceGuid);
@@ -433,7 +461,9 @@ export async function executeContainerCopy({
 		source,
 		resolvedTarget,
 		connection,
-		ability
+		ability,
+		features,
+		scopedProgram
 	);
 
 	const target: CopyTarget = {
@@ -448,7 +478,7 @@ export async function executeContainerCopy({
 		canRetainCollectionItem: (container, copyTarget) =>
 			container.organization === copyTarget.organization && ability.can('read', container),
 		canUseNewItemTemplate: (container, copyTarget) => {
-			const availableIn = getAvailableInProgramGuids(container);
+			const availableIn = getAvailableInScopeGuids(container);
 			if (availableIn.length > 0) {
 				return (
 					request.operation === 'template-instance' &&

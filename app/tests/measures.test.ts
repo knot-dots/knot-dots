@@ -10,7 +10,8 @@ test.describe('Measure monitoring', () => {
 		isMobile,
 		testOrganization,
 		testProgram,
-		testMeasure
+		testMeasure,
+		measureGoalTemplate
 	}) => {
 		test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
@@ -37,6 +38,13 @@ test.describe('Measure monitoring', () => {
 			// Create a new item
 			const column = dotsBoard.overlay.locator.locator('section', { hasText: item });
 			await column.getByRole('button', { name: 'Add item' }).first().click();
+			if (item === 'Goal') {
+				await dotsBoard.page
+					.getByRole('dialog')
+					.getByRole('article')
+					.filter({ hasText: measureGoalTemplate.payload.title })
+					.click();
+			}
 			await dotsBoard.page.getByRole('textbox', { name: 'Title' }).fill(title);
 			dotsBoard.page.waitForResponse((response) => {
 				const path = new URL(response.url()).pathname;
@@ -67,7 +75,11 @@ test.describe('Measure monitoring', () => {
 test.describe('Measures section', () => {
 	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
-	test('sub-measure can be created and persists', async ({ dotsBoard, testMeasure }) => {
+	test('sub-measure can be created and persists', async ({
+		dotsBoard,
+		testMeasure,
+		measureMeasureTemplate
+	}) => {
 		await dotsBoard.goto(`/${testMeasure.organization}`);
 		await dotsBoard.card(testMeasure.payload.title).click();
 		await dotsBoard.overlay.editModeToggle.check();
@@ -76,6 +88,11 @@ test.describe('Measures section', () => {
 		const subMeasureTitle = `Sub-measure ${Date.now()}`;
 
 		await subMeasureSection.getByRole('button', { name: 'Add item' }).first().click();
+		await dotsBoard.page
+			.getByRole('dialog')
+			.getByRole('article')
+			.filter({ hasText: measureMeasureTemplate.payload.title })
+			.click();
 		await dotsBoard.page
 			.getByRole('dialog')
 			.getByRole('textbox', { name: 'Title' })

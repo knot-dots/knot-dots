@@ -1,4 +1,5 @@
 <script lang="ts">
+	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -12,6 +13,7 @@
 		containerOfType,
 		findAncestors,
 		isTaskContainer,
+		isMeasureContainer,
 		type NewContainer,
 		payloadTypes,
 		predicates,
@@ -54,7 +56,9 @@
 		'createContainerDialog'
 	);
 
-	function addItem() {
+	const templateAvailability = createCreationTemplateAvailability(createItem);
+
+	function createItem() {
 		if (!parentContainer) {
 			return;
 		}
@@ -63,17 +67,25 @@
 
 		item.relation = [
 			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] },
-			...parentContainer.relation
-				.filter(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
-				.map(({ object }) => ({
-					object,
-					position: 0,
-					predicate: predicates.enum['is-part-of-measure']
-				}))
+			...(isMeasureContainer(parentContainer)
+				? [{ object: parentContainer.guid, predicate: predicates.enum['is-part-of-measure'] }]
+				: parentContainer.relation.filter(
+						({ predicate, subject }) =>
+							predicate == predicates.enum['is-part-of-measure'] && subject === parentContainer.guid
+					)
+			).map(({ object }) => ({
+				object,
+				position: 0,
+				predicate: predicates.enum['is-part-of-measure']
+			}))
 		];
 
-		$newContainer = item;
+		return item;
+	}
 
+	function addItem() {
+		if (!templateAvailability.has(payloadTypes.enum.task)) return;
+		$newContainer = createItem();
 		createContainerDialog.getElement().showModal();
 	}
 </script>
@@ -83,7 +95,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.task, container)}
+			{#if $mayCreateContainer(payloadTypes.enum.task, container) && templateAvailability.has(payloadTypes.enum.task)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -121,7 +133,9 @@
 	<Carousel
 		{addItem}
 		items={directChildren}
-		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container) && editable}
+		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container) &&
+			editable &&
+			templateAvailability.has(payloadTypes.enum.task)}
 	>
 		{#snippet itemSnippet(item)}
 			<TaskCard container={item} ignoreBulkActionContext showTaskStatusBadge />

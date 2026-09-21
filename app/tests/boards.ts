@@ -47,6 +47,13 @@ export class DotsBoard extends Board {
 	}
 }
 
+export class GoalsBoard extends Board {
+	async goto(baseURL: string) {
+		await this.page.goto(`${baseURL}/goals/level`);
+		await this.page.waitForLoadState('networkidle');
+	}
+}
+
 export class TaskStatusBoard extends Board {
 	async goto(baseURL: string) {
 		await this.page.goto(`${baseURL}/tasks/status`);
