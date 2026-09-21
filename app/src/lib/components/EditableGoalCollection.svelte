@@ -1,4 +1,5 @@
 <script lang="ts">
+	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
 	import { getContext } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
@@ -47,7 +48,9 @@
 		'createContainerDialog'
 	);
 
-	function addItem() {
+	const templateAvailability = createCreationTemplateAvailability(createItem);
+
+	function createItem() {
 		if (!parentContainer) {
 			return;
 		}
@@ -69,8 +72,12 @@
 			}
 		];
 
-		$newContainer = item;
+		return item;
+	}
 
+	function addItem() {
+		if (!templateAvailability.has(payloadTypes.enum.goal)) return;
+		$newContainer = createItem();
 		createContainerDialog.getElement().showModal();
 	}
 </script>
@@ -80,7 +87,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.goal, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.goal, container.managed_by) && templateAvailability.has(payloadTypes.enum.goal)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -103,7 +110,9 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.goal, container.managed_by) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.goal, container.managed_by) &&
+		editable &&
+		templateAvailability.has(payloadTypes.enum.goal)}
 >
 	{#snippet itemSnippet(item)}
 		<Card

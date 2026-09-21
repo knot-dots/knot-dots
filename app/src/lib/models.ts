@@ -2634,7 +2634,7 @@ export function isTemplateRoot(container: Container<AnyPayload>) {
 	);
 }
 
-export function getAvailableInProgramGuids(container: Container<AnyPayload>) {
+export function getAvailableInScopeGuids(container: Container<AnyPayload>) {
 	return container.relation
 		.filter(
 			({ predicate, subject }) =>

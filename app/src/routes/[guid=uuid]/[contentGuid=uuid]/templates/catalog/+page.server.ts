@@ -3,7 +3,8 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { fetchTemplates } from '$lib/load/templates';
-import { type AnyPayload, type Container, isProgramContainer } from '$lib/models';
+import { type AnyPayload, type Container } from '$lib/models';
+import { isTemplateScope } from '$lib/templateScopes';
 import { getAllContainerRevisionsByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -20,7 +21,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		if (!isProgramContainer(container)) {
+		if (!isTemplateScope(container)) {
 			error(404, { message: t('error.not_found') });
 		}
 

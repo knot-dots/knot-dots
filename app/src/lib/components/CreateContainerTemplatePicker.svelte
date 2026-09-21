@@ -10,14 +10,13 @@
 	import { createContainerDialogDraft } from '$lib/createContainerDialogState.svelte';
 	import {
 		createTemplateInstanceOf,
-		getAvailableInProgramGuids,
-		getDirectProgramGuids,
-		isProgramContainer,
+		getAvailableInScopeGuids,
 		isTemplateContainer,
 		isTemplateRoot,
 		templatablePayloadTypes
 	} from '$lib/models';
-	import { isProgramScopedTemplateRoot, requiresProgramTemplate } from '$lib/programTemplates';
+	import { isScopedTemplateRoot } from '$lib/templateScopes';
+	import type { TemplateScopeSelection } from '$lib/client/createTemplateScopeSelection.svelte';
 	import {
 		lastCreatedContainers,
 		lastDeletedContainers,
@@ -32,6 +31,7 @@
 		state: CreateContainerDialogState;
 	};
 	interface Props {
+		scope: TemplateScopeSelection;
 		dialogState: CreateContainerDialogState;
 		onactivate: (
 			state: CreateContainerDialogState,
@@ -40,18 +40,18 @@
 		pendingTemplateGuid?: string;
 	}
 
-	let { dialogState, onactivate, pendingTemplateGuid = $bindable() }: Props = $props();
+	let { scope, dialogState, onactivate, pendingTemplateGuid = $bindable() }: Props = $props();
 
 	const templatePayloadTypes = new Set<string>(templatablePayloadTypes);
-	// Drafts are cached per template *and* program scope: the same template instantiated inside a
-	// different program is a different request, so a scope change must not replay a stale draft.
+	// Drafts are cached per template *and* template scope: the same template instantiated inside a
+	// different scope is a different request, so a scope change must not replay a stale draft.
 	const templateDrafts = new Map<string, TemplateDraft>();
 	let initialState = $state<Extract<CreateContainerDialogState, { kind: 'create' }>>();
 	let activeChoiceKey = $state<string>(emptyChoiceKey);
 	let selectionError = $state(false);
 
-	function draftKey(templateGuid: string, programGuid: string | undefined) {
-		return `${templateGuid}\u0000${programGuid ?? ''}`;
+	function draftKey(templateGuid: string, scopeGuid: string | undefined) {
+		return `${templateGuid}\u0000${scopeGuid ?? ''}`;
 	}
 
 	$effect(() => {
@@ -63,24 +63,8 @@
 	let enabled = $derived(
 		initialState !== undefined && templatePayloadTypes.has(initialState.container.payload.type)
 	);
-	let directProgramGuids = $derived(
-		initialState ? getDirectProgramGuids(initialState.container) : []
-	);
-	let required = $derived(initialState ? requiresProgramTemplate(initialState.container) : false);
-
-	let availableIn = $derived.by(() => {
-		const container = initialState?.container;
-		if (!container) {
-			return undefined;
-		}
-
-		if (directProgramGuids.length > 0) {
-			return directProgramGuids.length === 1 ? directProgramGuids[0] : undefined;
-		}
-
-		const context = page.data.container;
-		return context && isProgramContainer(context) ? context.guid : undefined;
-	});
+	let required = $derived(scope.required || !scope.ready);
+	let availableIn = $derived(scope.availableIn);
 
 	const templatesResource = resource(
 		[
@@ -88,20 +72,20 @@
 			() => initialState?.container.payload.type,
 			() => page.data.currentOrganization.guid,
 			() => availableIn,
-			() => directProgramGuids.length
+			() => scope.ready
 		],
 		async (
-			[selectionEnabled, payloadType, organizationGuid, programGuid, programCount],
+			[selectionEnabled, payloadType, organizationGuid, scopeGuid, scopeReady],
 			previous,
 			{ signal }
 		) => {
-			if (!selectionEnabled || !payloadType || programCount > 1) {
-				return { availableIn: programGuid, templates: [] };
+			if (!selectionEnabled || !payloadType || !scopeReady) {
+				return { availableIn: scopeGuid, templates: [] };
 			}
 
 			const templates = await fetchContainers(
 				{
-					availableIn: programGuid,
+					availableIn: scopeGuid,
 					organization: [organizationGuid],
 					payloadType: [payloadType],
 					template: 'true',
@@ -112,7 +96,7 @@
 			);
 
 			return {
-				availableIn: programGuid,
+				availableIn: scopeGuid,
 				templates: templates.filter(isTemplateContainer).filter(isTemplateRoot)
 			};
 		}
@@ -126,16 +110,16 @@
 			return false;
 		}
 		if (availableIn) {
-			return isProgramScopedTemplateRoot(container, {
+			return isScopedTemplateRoot(container, {
 				organizationGuid: page.data.currentOrganization.guid,
 				payloadType: initialState.container.payload.type,
-				programGuid: availableIn
+				scopeGuid: availableIn
 			});
 		}
 		return (
 			isTemplateContainer(container) &&
 			isTemplateRoot(container) &&
-			getAvailableInProgramGuids(container).length === 0
+			getAvailableInScopeGuids(container).length === 0
 		);
 	}
 
@@ -158,15 +142,15 @@
 
 	const previewResource = resource(
 		[() => pendingTemplateGuid, () => availableIn],
-		async ([sourceGuid, programGuid], previous, { signal }) => {
+		async ([sourceGuid, scopeGuid], previous, { signal }) => {
 			if (!sourceGuid) {
 				return undefined;
 			}
 
 			return {
-				availableIn: programGuid,
+				availableIn: scopeGuid,
 				preview: await fetchContainerCopyPreview(
-					{ availableIn: programGuid ?? null, sourceGuid },
+					{ availableIn: scopeGuid ?? null, sourceGuid },
 					{ signal }
 				),
 				sourceGuid
@@ -303,11 +287,11 @@
 {#if enabled || required}
 	{#if required && (!templateSelected || pendingTemplateGuid !== undefined)}
 		<article class="template-prompt" aria-live="polite">
-			{#if !enabled || directProgramGuids.length !== 1}
+			{#if !enabled || (!scope.ready && !scope.error)}
 				<p>{$_('create_container_dialog.no_templates')}</p>
 			{:else if templatesResource.loading || pendingTemplateGuid !== undefined}
 				<p>{$_('loading')}</p>
-			{:else if templatesResource.error || selectionError}
+			{:else if scope.error || templatesResource.error || selectionError}
 				<p>{$_('create_container_dialog.template_load_error')}</p>
 			{:else if templateRoots.length === 0}
 				<p>{$_('create_container_dialog.no_templates')}</p>

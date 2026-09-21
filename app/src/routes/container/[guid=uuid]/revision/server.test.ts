@@ -131,37 +131,47 @@ function revisionEvent(body: unknown) {
 	} as never;
 }
 
-test('revisions reject adding an existing non-text object to a program when templating is enabled', async () => {
-	mocks.container = anyContainer.parse({
-		...(mocks.container as Record<string, unknown>),
-		payload: {
-			title: 'Measure',
-			type: payloadTypes.enum.measure,
-			visibility: visibility.enum.public
-		}
-	});
-	const body = {
-		...(mocks.container as Record<string, unknown>),
-		relation: [
-			{
-				object: sourceGuid,
-				position: 0,
-				predicate: predicates.enum['is-part-of-program'],
-				subject: containerGuid
+test.each(['is-part-of-program', 'is-part-of-measure'] as const)(
+	'revisions reject new %s placement when templating is enabled',
+	async (predicate) => {
+		mocks.getManyContainers.mockReturnValue(async () => [
+			anyContainer.parse({
+				...(mocks.container as object),
+				guid: sourceGuid,
+				payload: { type: 'measure', title: 'Owner' }
+			})
+		]);
+		mocks.container = anyContainer.parse({
+			...(mocks.container as Record<string, unknown>),
+			payload: {
+				title: 'Measure',
+				type: payloadTypes.enum.measure,
+				visibility: visibility.enum.public
 			}
-		]
-	};
-	const event = revisionEvent(body) as {
-		locals: { features?: string[] };
-	};
-	event.locals.features = ['Templating'];
+		});
+		const body = {
+			...(mocks.container as Record<string, unknown>),
+			relation: [
+				{
+					object: sourceGuid,
+					position: 0,
+					predicate,
+					subject: containerGuid
+				}
+			]
+		};
+		const event = revisionEvent(body) as {
+			locals: { features?: string[] };
+		};
+		event.locals.features = ['Templating'];
 
-	await expect(POST(event as never)).rejects.toMatchObject({
-		body: { message: 'error.program_template_required' },
-		status: 422
-	});
-	expect(mocks.updateContainer).not.toHaveBeenCalled();
-});
+		await expect(POST(event as never)).rejects.toMatchObject({
+			body: { message: 'error.scoped_template_required' },
+			status: 422
+		});
+		expect(mocks.updateContainer).not.toHaveBeenCalled();
+	}
+);
 
 test('scoped templates cannot be changed into ordinary containers', async () => {
 	const container = scopedTemplate();

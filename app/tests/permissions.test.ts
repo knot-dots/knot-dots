@@ -138,7 +138,8 @@ test.describe('Permissions', () => {
 			dotsBoard,
 			testOrganizationalUnit,
 			testProgram,
-			testMeasure
+			testMeasure,
+			measureGoalTemplate
 		}) => {
 			await dotsBoard.goto(`/${testMeasure.organization}`);
 			await dotsBoard.card(testMeasure.payload.title).click();
@@ -150,6 +151,10 @@ test.describe('Permissions', () => {
 			await expect(section).toBeVisible();
 			const titleOfFirstGoal = 'First goal';
 			await section.getByRole('button', { name: 'Add item' }).click();
+			await dialog
+				.getByRole('article')
+				.filter({ hasText: measureGoalTemplate.payload.title })
+				.click();
 
 			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
 				testMeasure.payload.title
@@ -195,7 +200,14 @@ test.describe('Permissions', () => {
 			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.card(testMeasure.payload.title).click();
 			await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
-			await section.getByRole('button', { name: 'Add item' }).click();
+			await expect(async () => {
+				await section.getByRole('button', { name: 'Add item' }).click();
+				await expect(dialog).toBeVisible();
+			}).toPass();
+			await dialog
+				.getByRole('article')
+				.filter({ hasText: measureGoalTemplate.payload.title })
+				.click();
 			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
 				testMeasure.payload.title
 			);

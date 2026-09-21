@@ -14,6 +14,7 @@
 	import TemplatesOverlay from '$lib/components/TemplatesOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, isProgramContainer, overlayKey } from '$lib/models';
 	import { type OverlayData, overlayWidth } from '$lib/stores';
+	import { isTemplateScope } from '$lib/templateScopes';
 
 	interface Props {
 		data: OverlayData;
@@ -79,7 +80,7 @@
 		<IndicatorsOverlay containers={data.containers} />
 	{:else if data.key === overlayKey.enum['resources']}
 		<ResourcesOverlay containers={data.containers} />
-	{:else if data.key === overlayKey.enum.templates && isProgramContainer(data.container)}
+	{:else if data.key === overlayKey.enum.templates && isTemplateScope(data.container)}
 		<TemplatesOverlay
 			container={data.container}
 			containers={data.containers}
