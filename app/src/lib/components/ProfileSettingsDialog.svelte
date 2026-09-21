@@ -24,7 +24,7 @@
 			given_name: data.get('givenName'),
 			guid: $user.guid,
 			realm: env.PUBLIC_KC_REALM,
-			settings: { features: data.getAll('feature') }
+			settings: { ...$user.settings, features: data.getAll('feature') }
 		});
 
 		if (parseResult.success) {
