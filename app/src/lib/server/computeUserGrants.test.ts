@@ -21,27 +21,29 @@ function newTestContainer(
 	organization: string,
 	type: AnyPayload['type'],
 	options: {
-		inheritsGrants?: boolean;
+		ownMatrix?: boolean;
 		organizationalUnit?: string;
 		relation?: { object: string; predicate: string }[];
 		user?: { predicate: string; subject: string }[];
 	} = {}
 ) {
-	return newContainer.parse({
-		managed_by: organization,
-		organization,
-		organizational_unit: options.organizationalUnit ?? null,
-		payload: {
-			...(type === payloadTypes.enum.organizational_unit
-				? { name: 'Lorem ipsum' }
-				: { title: 'Lorem ipsum' }),
-			type,
-			...(options.inheritsGrants === undefined ? {} : { inheritsGrants: options.inheritsGrants })
-		},
-		realm,
-		relation: options.relation?.map((r, position) => ({ ...r, position })) ?? [],
-		user: options.user ?? []
-	});
+	return {
+		...newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: options.organizationalUnit ?? null,
+			payload: {
+				...(type === payloadTypes.enum.organizational_unit
+					? { name: 'Lorem ipsum' }
+					: { title: 'Lorem ipsum' }),
+				type
+			},
+			realm,
+			relation: options.relation?.map((r, position) => ({ ...r, position })) ?? [],
+			user: options.user ?? []
+		}),
+		own_matrix: options.ownMatrix ?? false
+	};
 }
 
 async function newTestUser(connection: Fixtures['connection']) {
@@ -67,7 +69,7 @@ test('contents inherit from the organization by default', async ({ connection }:
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		area_sourced: true,
+		scope_sourced: true,
 		member: true,
 		organization_manager: false,
 		own: [],
@@ -92,7 +94,7 @@ test('rows on an inheriting container lie dormant', async ({ connection }: Fixtu
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		area_sourced: true,
+		scope_sourced: true,
 		member: false,
 		organization_manager: false,
 		own: [],
@@ -108,7 +110,7 @@ test('a decoupled container is governed by its own matrix alone', async ({
 	const organization = uuid();
 	const subject = await newTestUser(connection);
 	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { inheritsGrants: false })
+		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
 	)(connection);
 	await setContainerGrants(measure.guid, subject, {
 		self: ['read', 'update'],
@@ -124,7 +126,7 @@ test('a decoupled container is governed by its own matrix alone', async ({
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		area_sourced: false,
+		scope_sourced: false,
 		member: true,
 		organization_manager: false,
 		own: ['read', 'update'],
@@ -138,7 +140,7 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 	const organization = uuid();
 	const subject = await newTestUser(connection);
 	const program = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.program, { inheritsGrants: false })
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
 	)(connection);
 	const measure = await createContainer(
 		newTestContainer(organization, payloadTypes.enum.measure, {
@@ -159,7 +161,7 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		area_sourced: false,
+		scope_sourced: false,
 		member: true,
 		organization_manager: false,
 		own: [],
@@ -169,7 +171,7 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 	});
 	expect(grants.get(program.guid)).toEqual({
 		admin: false,
-		area_sourced: false,
+		scope_sourced: false,
 		member: true,
 		organization_manager: false,
 		own: ['read'],
@@ -186,7 +188,7 @@ test('a decoupled organizational unit cuts the organization off its contents', a
 	const subject = await newTestUser(connection);
 	const unit = await createContainer(
 		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
-			inheritsGrants: false
+			ownMatrix: true
 		})
 	)(connection);
 	const measure = await createContainer(
@@ -202,7 +204,7 @@ test('a decoupled organizational unit cuts the organization off its contents', a
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
-		area_sourced: true,
+		scope_sourced: true,
 		member: true,
 		organization_manager: false,
 		own: [],
@@ -218,7 +220,7 @@ test('organization administrators keep every kind regardless of decoupling', asy
 	const organization = uuid();
 	const subject = await newTestUser(connection);
 	const measure = await createContainer(
-		newTestContainer(organization, payloadTypes.enum.measure, { inheritsGrants: false })
+		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
 	)(connection);
 	await setContainerGrants(organization, subject, {
 		self: ['read', 'update', 'manage-users'],
@@ -229,7 +231,7 @@ test('organization administrators keep every kind regardless of decoupling', asy
 
 	expect(grants.get(measure.guid)).toEqual({
 		admin: true,
-		area_sourced: false,
+		scope_sourced: false,
 		member: true,
 		organization_manager: true,
 		own: [],
@@ -283,9 +285,9 @@ test('the read paths enrich containers with the grants of the request user', asy
 		process.env.PODINFO_ANNOTATIONS_PATH = previousPath;
 	}
 
-	expect(loaded!.grant).toEqual({
+	expect(loaded!.user_grant).toEqual({
 		admin: false,
-		area_sourced: true,
+		scope_sourced: true,
 		member: true,
 		organization_manager: false,
 		own: [],
@@ -296,7 +298,7 @@ test('the read paths enrich containers with the grants of the request user', asy
 
 	// outside a request the enrichment stands down
 	const outside = await getContainerByGuid(measure.guid)(connection);
-	expect(outside.grant).toBeUndefined();
+	expect(outside.user_grant).toBeUndefined();
 });
 
 test('member roles govern while the permission matrix is off', async ({ connection }: Fixtures) => {
@@ -324,7 +326,7 @@ test('member roles govern while the permission matrix is off', async ({ connecti
 
 	expect(fromRoles.get(measure.guid)).toEqual({
 		admin: false,
-		area_sourced: false,
+		scope_sourced: false,
 		member: true,
 		organization_manager: false,
 		own: [],

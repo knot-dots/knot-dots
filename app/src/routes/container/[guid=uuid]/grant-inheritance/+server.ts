@@ -7,7 +7,9 @@ import {
 	type Container,
 	findAncestors,
 	grantSourceOf,
-	predicates
+	type PayloadType,
+	predicates,
+	typesWithOwnMatrix
 } from '$lib/models';
 import {
 	getContainerByGuid,
@@ -36,8 +38,7 @@ export const POST = (async ({ locals, params, request }) => {
 		}
 	}
 
-	const payload = container.payload;
-	if (!('inheritsGrants' in payload)) {
+	if (!(typesWithOwnMatrix as PayloadType[]).includes(container.payload.type)) {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
@@ -71,7 +72,7 @@ export const POST = (async ({ locals, params, request }) => {
 
 	const { inherit } = parseResult.data;
 
-	if (inherit === payload.inheritsGrants) {
+	if (inherit === !container.own_matrix) {
 		return new Response(null, { status: 204 });
 	}
 
@@ -79,10 +80,7 @@ export const POST = (async ({ locals, params, request }) => {
 		if (inherit) {
 			// re-enabling keeps the individually granted rows; they simply become
 			// read-only additions next to the inherited matrix again
-			await updateContainer({
-				...container,
-				payload: { ...payload, inheritsGrants: true }
-			})(connection);
+			await updateContainer({ ...container, own_matrix: false })(connection);
 			return;
 		}
 
@@ -96,7 +94,7 @@ export const POST = (async ({ locals, params, request }) => {
 		await updateContainer({
 			...container,
 			managed_by: managedBy,
-			payload: { ...payload, inheritsGrants: false }
+			own_matrix: true
 		})(connection);
 	});
 

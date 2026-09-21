@@ -473,7 +473,9 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	};
 }
 
-export function createContainer(container: NewContainer) {
+export function createContainer(
+	container: NewContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
+) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		const result = await connection.transaction(async (txConnection) => {
 			let organizationGuid;
@@ -496,11 +498,12 @@ export function createContainer(container: NewContainer) {
 					RETURNING *
 				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
+					INSERT INTO container (managed_by, organization, organizational_unit, own_matrix, payload, realm)
 					VALUES (
 						${container.managed_by[0]},
 						${container.organization},
 						${container.organizational_unit},
+						${container.own_matrix ?? false},
 						${sql.jsonb(container.payload)},
 						${container.realm}
 					)
@@ -558,7 +561,9 @@ export function createContainer(container: NewContainer) {
 	};
 }
 
-export function updateContainer(container: ModifiedContainer) {
+export function updateContainer(
+	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
+) {
 	return async (connection: DatabaseConnection) => {
 		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
 			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
@@ -570,12 +575,13 @@ export function updateContainer(container: ModifiedContainer) {
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
+				INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
 				VALUES (
 					${container.guid},
 					${container.managed_by[0]},
 					${container.organization},
 					${container.organizational_unit},
+					${container.own_matrix ?? false},
 					${sql.jsonb(container.payload)},
 					${container.realm}
 				)

@@ -75,17 +75,18 @@ test('applyComputedManagedBy: a decoupled container manages itself even without 
 }: Fixtures) => {
 	// Otherwise it would fall back to the scope, whose subordinate grants it
 	// just opted out of by decoupling its grant matrix.
-	const measure = await createContainer(
-		newContainer.parse({
+	const measure = await createContainer({
+		...newContainer.parse({
 			managed_by: organization,
 			organization,
 			organizational_unit: null,
-			payload: { inheritsGrants: false, title: 'Lorem ipsum', type: payloadTypes.enum.measure },
+			payload: { title: 'Lorem ipsum', type: payloadTypes.enum.measure },
 			realm,
 			relation: [],
 			user: []
-		})
-	)(connection);
+		}),
+		own_matrix: true
+	})(connection);
 
 	const loaded = await getContainerByGuid(measure.guid)(connection);
 

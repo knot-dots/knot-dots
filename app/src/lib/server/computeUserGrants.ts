@@ -28,7 +28,7 @@ const hierarchyPredicates = [
 const row = z.object({
 	guid: z.uuid(),
 	source: z.uuid(),
-	area_sourced: z.boolean(),
+	scope_sourced: z.boolean(),
 	place: z.enum(['source', 'organization', 'organizational_unit']),
 	kind: grantKinds.nullable(),
 	target: z.enum(['self', 'subordinates']).nullable()
@@ -38,12 +38,12 @@ const row = z.object({
  * Computes the effective grants of one subject on the given containers: for
  * each container the matrix that governs it (its grant source) and the kinds
  * the subject holds there. The source is the container itself while its
- * matrix is decoupled (payload.inheritsGrants = false), otherwise the nearest
+ * matrix is decoupled (own_matrix), otherwise the nearest
  * decoupled ancestor along the is-part-of chains, the container's
  * organizational unit if that has decoupled its matrix, and the organization
  * as the last resort — rows on inheriting containers lie dormant. Subjects
  * holding every self kind on the organization or on the container's
- * organizational unit act as administrators of that area and keep every kind
+ * organizational unit act as administrators of that scope and keep every kind
  * regardless of the source.
  */
 export async function computeUserGrants(
@@ -77,8 +77,8 @@ export async function computeUserGrants(
 		),
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
-				coalesce(c.payload->>'inheritsGrants', 'true') = 'false'
-					-- an organizational unit is an area: its rows act as soon as
+				c.own_matrix
+					-- an organizational unit is a scope of its own: its rows act as soon as
 					-- they exist, matching the units-override of the old rules
 					OR (
 						c.payload->>'type' = 'organizational_unit'
@@ -95,7 +95,7 @@ export async function computeUserGrants(
 						FROM ancestry a
 						JOIN container c ON c.guid = a.guid AND c.valid_currently AND NOT c.deleted
 						WHERE a.root = b.root AND a.depth > 0
-							AND c.payload->>'inheritsGrants' = 'false'
+							AND c.own_matrix
 						ORDER BY a.depth ASC, a.guid ASC
 						LIMIT 1
 					),
@@ -104,7 +104,7 @@ export async function computeUserGrants(
 						FROM container u
 						WHERE u.guid = b.organizational_unit AND u.valid_currently AND NOT u.deleted
 							AND (
-								u.payload->>'inheritsGrants' = 'false'
+								u.own_matrix
 								OR EXISTS (SELECT 1 FROM container_grant g WHERE g.object = u.guid)
 							)
 					),
@@ -113,7 +113,7 @@ export async function computeUserGrants(
 			FROM base b
 		)
 		SELECT b.root AS guid, s.source,
-			s.source = b.organization OR coalesce(s.source = b.organizational_unit, false) AS area_sourced,
+			s.source = b.organization OR coalesce(s.source = b.organizational_unit, false) AS scope_sourced,
 			p.place, g.kind, g.target
 		FROM base b
 		JOIN source s ON s.root = b.root
@@ -131,7 +131,7 @@ export async function computeUserGrants(
 
 	for (const guid of new Set(rows.map((r) => r.guid))) {
 		const forGuid = rows.filter((r) => r.guid === guid);
-		const { source, area_sourced } = forGuid[0];
+		const { source, scope_sourced } = forGuid[0];
 		const kindsAt = (place: string, target: string) =>
 			forGuid
 				.filter((r) => r.place === place && r.target === target && r.kind !== null)
@@ -140,7 +140,7 @@ export async function computeUserGrants(
 		result.set(
 			guid,
 			composeUserGrants({
-				areaSourced: area_sourced,
+				scopeSourced: scope_sourced,
 				governsItself: source === guid,
 				organizationSelf: kindsAt('organization', 'self'),
 				organizationalUnitSelf: kindsAt('organizational_unit', 'self'),
@@ -169,7 +169,7 @@ const rolePredicates = ['is-admin-of', 'is-collaborator-of', 'is-head-of', 'is-m
  * The role-based counterpart of computeUserGrants, in effect while the
  * permission matrix is off: the subject's grants follow from its member roles
  * on the nearest team along the is-part-of chains and on the container's
- * areas, additively — the pre-matrix behavior. Stored grant rows lie dormant.
+ * organization scopes, additively — the pre-matrix behavior. Stored grant rows lie dormant.
  */
 export async function computeUserGrantsFromRoles(
 	connection: DatabaseConnection,
@@ -243,7 +243,7 @@ export async function computeUserGrantsFromRoles(
 		const unitSet = setAt('organizational_unit');
 
 		// the pre-matrix rules are additive: the team's roles and the roles on
-		// the surrounding areas apply side by side
+		// the surrounding organization scopes apply side by side
 		const union = (target: 'self' | 'subordinates') =>
 			grantKinds.options.filter((kind) =>
 				[teamSet, organizationSet, unitSet].some((set) => set[target].includes(kind))
@@ -255,7 +255,7 @@ export async function computeUserGrantsFromRoles(
 			admin: [teamSet, organizationSet, unitSet].some((set) =>
 				['read', 'update', 'manage-users'].every((kind) => (set.self as string[]).includes(kind))
 			),
-			area_sourced: team === undefined,
+			scope_sourced: team === undefined,
 			member: team
 				? teamSet.subordinates.includes(grantKinds.enum.read)
 				: subordinates.includes(grantKinds.enum.read),
@@ -272,7 +272,7 @@ export async function computeUserGrantsFromRoles(
 
 type UserGrantsComparable = {
 	guid: string;
-	grant?: UserGrants;
+	user_grant?: UserGrants;
 };
 
 /**
@@ -305,7 +305,7 @@ export async function applyUserGrants<T extends UserGrantsComparable>(
 	for (const container of containers) {
 		const value = computed.get(container.guid);
 		if (value !== undefined) {
-			container.grant = value;
+			container.user_grant = value;
 		}
 	}
 

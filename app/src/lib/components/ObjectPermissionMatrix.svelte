@@ -86,9 +86,7 @@
 		}))
 	);
 
-	const storedInherits = $derived(
-		'inheritsGrants' in container.payload ? container.payload.inheritsGrants : true
-	);
+	const storedInherits = $derived(!container.own_matrix);
 
 	let inheritsOverride = $state<boolean | undefined>();
 

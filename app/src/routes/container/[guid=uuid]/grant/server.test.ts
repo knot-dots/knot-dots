@@ -46,7 +46,7 @@ const headSet = grantSetForRole(memberRoles.enum.head);
 // request user — an administrator of the organization in these tests
 const userGrants = (guid: string) =>
 	composeUserGrants({
-		areaSourced: true,
+		scopeSourced: true,
 		governsItself: guid === organizationGuid,
 		organizationSelf: administratorSet.self,
 		organizationalUnitSelf: [],
@@ -63,7 +63,7 @@ function organization(adminSubjects: string[]) {
 		organizational_unit: null,
 		payload: { name: 'Org', type: 'organization', visibility: 'public' },
 		relation: [],
-		grant: userGrants(organizationGuid),
+		user_grant: userGrants(organizationGuid),
 		user: [
 			...adminSubjects.map((subject) => ({ predicate: 'is-admin-of', subject })),
 			...adminSubjects.map((subject) => ({ predicate: 'is-member-of', subject })),
@@ -80,7 +80,7 @@ function measure() {
 		organizational_unit: null,
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
-		grant: userGrants(measureGuid),
+		user_grant: userGrants(measureGuid),
 		user: [{ predicate: 'is-member-of', subject: memberGuid }]
 	};
 }
@@ -212,7 +212,8 @@ test('empty grant sets remove the subject', async () => {
 test('assigning rows to an inheriting measure decouples it', async () => {
 	getContainerByGuid.mockReturnValue({
 		...measure(),
-		payload: { inheritsGrants: true, title: 'Measure', type: 'measure', visibility: 'organization' }
+		own_matrix: false,
+		payload: { title: 'Measure', type: 'measure', visibility: 'organization' }
 	});
 
 	const response = await post(measureGuid, {
@@ -223,7 +224,7 @@ test('assigning rows to an inheriting measure decouples it', async () => {
 
 	expect(response.status).toBe(204);
 	expect(updateMemberRole).toHaveBeenCalledWith(
-		expect.objectContaining({ payload: expect.objectContaining({ inheritsGrants: false }) }),
+		expect.objectContaining({ own_matrix: true }),
 		memberGuid,
 		'observer'
 	);
@@ -232,14 +233,15 @@ test('assigning rows to an inheriting measure decouples it', async () => {
 test('removing rows leaves the inheritance untouched', async () => {
 	getContainerByGuid.mockReturnValue({
 		...measure(),
-		payload: { inheritsGrants: true, title: 'Measure', type: 'measure', visibility: 'organization' }
+		own_matrix: false,
+		payload: { title: 'Measure', type: 'measure', visibility: 'organization' }
 	});
 
 	const response = await post(measureGuid, { subject: memberGuid, self: [], subordinates: [] });
 
 	expect(response.status).toBe(204);
 	expect(updateMemberRole).toHaveBeenCalledWith(
-		expect.objectContaining({ payload: expect.objectContaining({ inheritsGrants: true }) }),
+		expect.objectContaining({ own_matrix: false }),
 		memberGuid,
 		null
 	);

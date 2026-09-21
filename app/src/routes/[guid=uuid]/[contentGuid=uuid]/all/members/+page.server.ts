@@ -67,18 +67,17 @@ export const load = (async ({ locals, params }) => {
 		// organizational unit or the organization. A decoupled container is its
 		// own source; the inherited section then shows what would apply again
 		// after re-inheriting, so it falls back to the nearest manager.
-		const inherits =
-			!('inheritsGrants' in container.payload) || container.payload.inheritsGrants !== false;
+		const inherits = !container.own_matrix;
 		const sourceGuid = inherits
-			? (container.grant?.source ?? container.organizational_unit ?? container.organization)
+			? (container.user_grant?.source ?? container.organizational_unit ?? container.organization)
 			: grantSourceOf(container);
-		const areaGuids = [
+		const scopeGuids = [
 			...new Set([
 				container.organization,
 				...(container.organizational_unit ? [container.organizational_unit] : [])
 			])
 		].filter((guid) => guid !== container.guid);
-		const matrixGuids = [...new Set([sourceGuid, ...areaGuids])];
+		const matrixGuids = [...new Set([sourceGuid, ...scopeGuids])];
 
 		const [members, grants, scope, matrixGrants, matrixUsers] = await Promise.all([
 			getMembers(container.organization),
@@ -100,8 +99,8 @@ export const load = (async ({ locals, params }) => {
 		// surrounding areas keep every kind regardless of the source — the same
 		// overlay the enforcement applies.
 		const administratorSet = grantSetForRole(memberRoles.enum.administrator);
-		const isAreaAdmin = (subject: string) =>
-			areaGuids.some((area) =>
+		const isScopeAdmin = (subject: string) =>
+			scopeGuids.some((area) =>
 				administratorSet.self.every((kind) =>
 					matrixGrants.some(
 						(grant) =>
@@ -113,7 +112,7 @@ export const load = (async ({ locals, params }) => {
 				)
 			);
 		const inheritedGrants = matrixUsers.flatMap(({ guid: subject }) => {
-			const set = isAreaAdmin(subject)
+			const set = isScopeAdmin(subject)
 				? administratorSet
 				: grantSetForSubjectOn(matrixGrants, sourceGuid, subject);
 			return [

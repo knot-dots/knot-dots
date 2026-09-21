@@ -86,7 +86,7 @@ export async function computeManagedBy(
 						-- a container with a grant matrix of its own manages itself even
 						-- while that matrix has no members yet; otherwise it would fall
 						-- back to the scope, whose subordinate grants it just opted out of
-						OR c.payload->>'inheritsGrants' = 'false'
+						OR c.own_matrix
 					)
 				LIMIT 1
 			) t ON true

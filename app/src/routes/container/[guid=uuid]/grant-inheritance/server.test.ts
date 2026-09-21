@@ -62,16 +62,18 @@ function grantsFor(object: string, subject: string, role: MemberRole): Grant[] {
 const adminSet = grantSetForRole(memberRoles.enum.administrator);
 
 function measure(inheritsGrants: boolean, managedBy = measureGuid) {
+	const ownMatrix = !inheritsGrants;
 	return {
 		guid: measureGuid,
 		managed_by: [managedBy],
 		organization: organizationGuid,
 		organizational_unit: null,
-		payload: { inheritsGrants, title: 'Measure', type: 'measure', visibility: 'organization' },
+		own_matrix: ownMatrix,
+		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
 		user: [{ predicate: 'is-creator-of', subject: adminGuid }],
-		grant: composeUserGrants({
-			areaSourced: !inheritsGrants ? false : true,
+		user_grant: composeUserGrants({
+			scopeSourced: !inheritsGrants ? false : true,
 			governsItself: !inheritsGrants,
 			organizationSelf: adminSet.self,
 			organizationalUnitSelf: [],
@@ -153,7 +155,7 @@ test('decoupling copies nothing and starts with an empty own matrix', async () =
 	expect(response.status).toBe(204);
 	expect(updateContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
-			payload: expect.objectContaining({ inheritsGrants: false }),
+			own_matrix: true,
 			user: [{ predicate: 'is-creator-of', subject: adminGuid }]
 		})
 	);
@@ -171,7 +173,7 @@ test('decoupling re-homes scope-managed containers to themselves', async () => {
 	expect(updateContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
 			managed_by: [measureGuid],
-			payload: expect.objectContaining({ inheritsGrants: false })
+			own_matrix: true
 		})
 	);
 });
@@ -186,7 +188,7 @@ test('decoupling re-homes containers managed by a program or team as well', asyn
 	expect(updateContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
 			managed_by: [measureGuid],
-			payload: expect.objectContaining({ inheritsGrants: false })
+			own_matrix: true
 		})
 	);
 });
@@ -200,7 +202,7 @@ test('re-enabling inheritance only resets the flag', async () => {
 	expect(updateContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
 			managed_by: [measureGuid],
-			payload: expect.objectContaining({ inheritsGrants: true })
+			own_matrix: false
 		})
 	);
 	expect(getAllGrantsByContainers).not.toHaveBeenCalled();
