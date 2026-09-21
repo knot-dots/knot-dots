@@ -75,7 +75,12 @@
 			return;
 		}
 
-		const item = containerOfType(payloadTypes.enum.teaser, container) as NewContainer;
+		const item = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.teaser, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer;
 
 		item.relation = [
 			{

@@ -55,10 +55,12 @@
 	const templateAvailability = createCreationTemplateAvailability(createItem);
 
 	function createItem() {
-		const item = containerOfType(
-			payloadTypes.enum.measure,
-			container
-		) as NewContainer<MeasurePayload>;
+		const item = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.measure, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer<MeasurePayload>;
 
 		if (isMeasureContainer(parentContainer)) {
 			item.payload.category = parentContainer.payload.category;

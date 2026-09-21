@@ -65,7 +65,12 @@
 		}
 
 		// Create new resource_data container
-		const item = containerOfType(payloadTypes.enum.resource_data, container) as NewContainer;
+		const item = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.resource_data, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer;
 
 		// Set the resourceDataType from the collection
 		(item.payload as { resourceDataType?: string }).resourceDataType =

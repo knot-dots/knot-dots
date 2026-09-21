@@ -167,10 +167,10 @@
 		title: string,
 		temporaryGuid: string
 	): Container<ResourceDataPayload> {
-		let c = containerOfType(
-			payloadTypes.enum.resource_data,
-			container
-		) as Container<ResourceDataPayload>;
+		let c = {
+			...containerOfType(payloadTypes.enum.resource_data, container),
+			managed_by: container.managed_by
+		} as Container<ResourceDataPayload>;
 
 		c.guid = temporaryGuid;
 		// the stub stands in for a child of the resource, so the resource's
@@ -319,10 +319,10 @@
 		let response: Response;
 
 		if (isNewContainer) {
-			const newContainer = containerOfType(
-				payloadTypes.enum.resource_data,
-				container
-			) as NewContainer;
+			const newContainer = {
+				...containerOfType(payloadTypes.enum.resource_data, container),
+				managed_by: container.managed_by
+			} as NewContainer;
 
 			newContainer.payload = containerToSave.payload;
 			newContainer.relation = [

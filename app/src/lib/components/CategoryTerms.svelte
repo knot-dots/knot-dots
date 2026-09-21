@@ -197,7 +197,12 @@
 		}
 
 		const previousRelatedContainers = relatedContainers;
-		const newTerm = containerOfType(payloadTypes.enum.term, container) as NewContainer<TermPayload>;
+		const newTerm = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.term, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer<TermPayload>;
 		newTerm.payload.title = formState.title;
 		newTerm.payload.description = formState.description;
 		newTerm.payload.filterLabel = formState.filterLabel;

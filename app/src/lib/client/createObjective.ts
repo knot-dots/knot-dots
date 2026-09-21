@@ -19,10 +19,12 @@ export default async function createObjective(
 	iooiType?: IooiType
 ) {
 	const isOverallObjective = target.guid == indicator.guid;
-	const newObjective = containerOfType(
-		payloadTypes.enum.objective,
-		target
-	) as NewContainer<InitialObjectivePayload>;
+	const newObjective = {
+		// items join the collection's manager; relations follow separately
+		...containerOfType(payloadTypes.enum.objective, target),
+		managed_by: target.managed_by,
+		relation: []
+	} as NewContainer<InitialObjectivePayload>;
 
 	const response = await saveContainer({
 		...newObjective,
