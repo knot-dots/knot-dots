@@ -19,8 +19,12 @@ const scopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['organizations:read']
 };
+const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
-const toolHandler = createKnotDotsMcpHandler({ listOrganizationMemberships });
+const toolHandler = createKnotDotsMcpHandler({
+	listOrganizationalUnits,
+	listOrganizationMemberships
+});
 
 function request(body: object, headers: HeadersInit = {}) {
 	return new Request('http://localhost/mcp', {
@@ -54,6 +58,7 @@ function modernRequest(method: string, params: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
+	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 });
 
@@ -103,23 +108,107 @@ test('rejects a legacy initialize request', async () => {
 	expect(response.status).toBe(400);
 });
 
-test('advertises the organization tool without requiring its scope', async () => {
+test('advertises the organization tools without requiring their scope', async () => {
 	const response = await toolHandler.fetch(modernRequest('tools/list'), { authInfo });
 
 	expect(response.status).toBe(200);
+	const body = await response.json();
+	expect(body).toMatchObject({ id: 1, jsonrpc: '2.0' });
+	expect(body.result.tools).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: true
+				},
+				name: 'list_organizational_units',
+				title: 'List organizational units'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: true
+				},
+				name: 'list_my_organizations',
+				title: 'List my organizations'
+			})
+		])
+	);
+});
+
+test('lists visible organizational units in the requested organization', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		nextOffset: null,
+		organizationalUnits: [
+			{
+				guid: '00000000-0000-4000-8000-000000000004',
+				level: 1,
+				name: 'Anytown administration',
+				organizationGuid,
+				slug: 'administration'
+			}
+		]
+	};
+	listOrganizationalUnits.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid },
+			name: 'list_organizational_units'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(response.status).toBe(200);
+	expect(listOrganizationalUnits).toHaveBeenCalledExactlyOnceWith(userId, {
+		limit: 50,
+		offset: 0,
+		organizationGuid
+	});
 	await expect(response.json()).resolves.toMatchObject({
 		result: {
-			tools: [
-				{
-					annotations: {
-						idempotentHint: true,
-						openWorldHint: false,
-						readOnlyHint: true
-					},
-					name: 'list_my_organizations',
-					title: 'List my organizations'
-				}
-			]
+			content: [{ text: JSON.stringify(output), type: 'text' }],
+			structuredContent: output
+		}
+	});
+});
+
+test('denies the organizational-unit tool without its scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'list_organizational_units'
+		}),
+		{ authInfo: { ...authInfo, extra: { tokenId, userId } } }
+	);
+
+	expect(listOrganizationalUnits).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: organizations:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('does not expose organizational-unit query failures to MCP clients', async () => {
+	listOrganizationalUnits.mockRejectedValue(new Error('database connection details'));
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'list_organizational_units'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Unable to list organizational units.', type: 'text' }],
+			isError: true
 		}
 	});
 });

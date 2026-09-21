@@ -3,8 +3,8 @@ import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
 import { organizationMembership, type OrganizationMembership } from '$lib/organizationMembership';
-import { mcpAuthExtra } from '$lib/server/mcp/auth';
 import { mcpScopes } from '$lib/server/mcp/scopes';
+import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
 
 export const listMyOrganizationsOutput = z.strictObject({
 	organizations: z.array(organizationMembership)
@@ -12,13 +12,6 @@ export const listMyOrganizationsOutput = z.strictObject({
 
 export interface ListMyOrganizationsDependencies {
 	listOrganizationMemberships(userId: string): Promise<OrganizationMembership[]>;
-}
-
-function toolError(message: string) {
-	return {
-		content: [{ type: 'text' as const, text: message }],
-		isError: true
-	};
 }
 
 export function registerListMyOrganizationsTool(
@@ -41,18 +34,14 @@ export function registerListMyOrganizationsTool(
 			title: 'List my organizations'
 		},
 		async () => {
-			if (!authInfo?.scopes.includes(mcpScopes.organizationsRead)) {
-				return toolError(`Missing required scope: ${mcpScopes.organizationsRead}`);
-			}
-
-			const parsedAuthExtra = mcpAuthExtra.safeParse(authInfo.extra);
-			if (!parsedAuthExtra.success) {
-				return toolError('Invalid authentication context.');
+			const authorization = authorizeMcpTool(authInfo, mcpScopes.organizationsRead);
+			if (!authorization.success) {
+				return authorization.result;
 			}
 
 			try {
 				const output = {
-					organizations: await dependencies.listOrganizationMemberships(parsedAuthExtra.data.userId)
+					organizations: await dependencies.listOrganizationMemberships(authorization.auth.userId)
 				};
 
 				return {
