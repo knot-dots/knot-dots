@@ -2592,6 +2592,16 @@ export const user = z.object({
 	guid: z.uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
+		favorite: z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([])
+			.optional(),
 		features: z.array(z.string()).transform(deduplicate).optional()
 	})
 });

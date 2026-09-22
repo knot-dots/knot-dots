@@ -23,6 +23,12 @@ export default class Sidebar {
 		});
 	}
 
+	get userPanel() {
+		return this.page.locator('.sidebar-panel', {
+			has: this.page.getByRole('button', { name: 'User menu' })
+		});
+	}
+
 	async openAdministrationMenu(panel: Locator) {
 		await panel.getByRole('button', { name: 'Administration' }).click();
 	}
