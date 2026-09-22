@@ -239,7 +239,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: BookOpenOutline,
 		module: 'knowledge_transfer',
 		views: {
-			default: '/knowledge/level',
+			default: '/knowledge/catalog',
 			catalog: '/knowledge/catalog',
 			level: '/knowledge/level',
 			table: '/knowledge/table'
