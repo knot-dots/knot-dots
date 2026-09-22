@@ -24,10 +24,12 @@ const containerScopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['containers:read']
 };
+const getContainer = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
+	getContainer,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	searchContainers
@@ -72,6 +74,7 @@ async function legacyResponseJson(response: Response) {
 }
 
 beforeEach(() => {
+	getContainer.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	searchContainers.mockReset();
@@ -190,6 +193,15 @@ test('advertises tools without requiring their scopes', async () => {
 					openWorldHint: false,
 					readOnlyHint: true
 				},
+				name: 'get_container',
+				title: 'Get container'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: true
+				},
 				name: 'list_organizational_units',
 				title: 'List organizational units'
 			}),
@@ -290,6 +302,106 @@ test('does not expose container search failures to MCP clients', async () => {
 	await expect(response.json()).resolves.toMatchObject({
 		result: {
 			content: [{ text: 'Unable to search containers.', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('gets a complete visible container', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const guid = '00000000-0000-4000-8000-000000000004';
+	const container = {
+		guid,
+		managed_by: [organizationGuid],
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: {
+			aiContribution: 0,
+			aiSuggestion: false,
+			category: {},
+			chapterType: [],
+			level: 'level.local',
+			pdf: [],
+			programType: 'program_type.misc',
+			status: 'status.idea',
+			template: false,
+			title: 'Climate plan',
+			type: 'program',
+			visibility: 'organization'
+		},
+		realm: 'test',
+		relation: [],
+		revision: 1,
+		user: [],
+		valid_currently: true,
+		valid_from: new Date('2026-09-22T00:00:00.000Z')
+	};
+	getContainer.mockResolvedValue(container);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: { guid }, name: 'get_container' }),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(getContainer).toHaveBeenCalledExactlyOnceWith(userId, guid);
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			structuredContent: {
+				container: expect.objectContaining({
+					guid,
+					payload: expect.objectContaining({ type: 'program' })
+				})
+			}
+		}
+	});
+});
+
+test('denies the container detail tool without its scope', async () => {
+	const guid = '00000000-0000-4000-8000-000000000004';
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: { guid }, name: 'get_container' }),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(getContainer).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('does not distinguish a missing container from an inaccessible container', async () => {
+	const guid = '00000000-0000-4000-8000-000000000004';
+	getContainer.mockResolvedValue(null);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: { guid }, name: 'get_container' }),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Container not found.', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('does not expose container query failures to MCP clients', async () => {
+	const guid = '00000000-0000-4000-8000-000000000004';
+	getContainer.mockRejectedValue(new Error('database connection details'));
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: { guid }, name: 'get_container' }),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Unable to get container.', type: 'text' }],
 			isError: true
 		}
 	});

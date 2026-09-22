@@ -1,8 +1,12 @@
 import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { getOrganizationMemberships, getPool } from '$lib/server/db';
-import { searchMcpContainers } from '$lib/server/mcp/containers';
+import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import {
+	registerGetContainerTool,
+	type GetContainerDependencies
+} from '$lib/server/mcp/tools/getContainer';
 import {
 	registerListOrganizationalUnitsTool,
 	type ListOrganizationalUnitsDependencies
@@ -17,11 +21,15 @@ import {
 } from '$lib/server/mcp/tools/searchContainers';
 import packageMetadata from '../../../../package.json';
 
-type McpServerDependencies = ListMyOrganizationsDependencies &
+type McpServerDependencies = GetContainerDependencies &
+	ListMyOrganizationsDependencies &
 	ListOrganizationalUnitsDependencies &
 	SearchContainersDependencies;
 
 const defaultDependencies: McpServerDependencies = {
+	async getContainer(userId, guid) {
+		return (await getPool()).connect(getMcpContainer({ guid, userId }));
+	},
 	async listOrganizationalUnits(userId, input) {
 		return (await getPool()).connect(listMcpOrganizationalUnits({ ...input, userId }));
 	},
@@ -43,6 +51,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				version: packageMetadata.version
 			});
 
+			registerGetContainerTool(server, authInfo, dependencies);
 			registerListOrganizationalUnitsTool(server, authInfo, dependencies);
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);
