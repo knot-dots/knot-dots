@@ -12,7 +12,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const tokenName = z.string().trim().min(1).max(100);
 const tokenId = z.uuid();
-const scopes = [mcpScopes.organizationsRead];
+const scopes = [mcpScopes.containersRead, mcpScopes.organizationsRead];
 
 function requireAuthenticatedUser(locals: App.Locals) {
 	if (!locals.user.isAuthenticated) {

@@ -1,4 +1,5 @@
 export const mcpScopes = {
+	containersRead: 'containers:read',
 	organizationsRead: 'organizations:read'
 } as const;
 
