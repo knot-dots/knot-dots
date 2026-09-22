@@ -343,7 +343,9 @@
 		{/if}
 	</div>
 
-	<AdministrationMenu container={page.data.currentOrganization} />
+	{#if $ability.can('update', page.data.currentOrganization)}
+		<AdministrationMenu container={page.data.currentOrganization} />
+	{/if}
 </div>
 
 {#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)}
@@ -444,7 +446,9 @@
 				{/if}
 			</div>
 
-			<AdministrationMenu container={page.data.currentOrganizationalUnit} />
+			{#if $ability.can('update', page.data.currentOrganizationalUnit)}
+				<AdministrationMenu container={page.data.currentOrganizationalUnit} />
+			{/if}
 		{/if}
 	</div>
 {/if}
