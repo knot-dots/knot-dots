@@ -35,7 +35,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 
 			return server;
 		},
-		{ legacy: 'reject' }
+		{ legacy: 'stateless' }
 	);
 }
 

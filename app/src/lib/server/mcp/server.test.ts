@@ -57,6 +57,13 @@ function modernRequest(method: string, params: Record<string, unknown> = {}) {
 	);
 }
 
+async function legacyResponseJson(response: Response) {
+	expect(response.headers.get('content-type')).toContain('text/event-stream');
+	const data = (await response.text()).split('\n').find((line) => line.startsWith('data: '));
+	expect(data).toBeDefined();
+	return JSON.parse(data!.slice('data: '.length));
+}
+
 beforeEach(() => {
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
@@ -90,22 +97,75 @@ test('serves a modern MCP discovery request', async () => {
 	});
 });
 
-test('rejects a legacy initialize request', async () => {
+test('serves a legacy initialize request', async () => {
 	const response = await mcpHandler.fetch(
-		request({
-			jsonrpc: '2.0',
-			id: 1,
-			method: 'initialize',
-			params: {
-				capabilities: {},
-				clientInfo: { name: 'legacy-client', version: '1.0.0' },
-				protocolVersion: '2025-11-25'
+		request(
+			{
+				jsonrpc: '2.0',
+				id: 1,
+				method: 'initialize',
+				params: {
+					capabilities: {},
+					clientInfo: { name: 'legacy-client', version: '1.0.0' },
+					protocolVersion: '2025-11-25'
+				}
+			},
+			{
+				Accept: 'application/json, text/event-stream',
+				'Mcp-Protocol-Version': '2025-11-25'
 			}
-		}),
+		),
 		{ authInfo }
 	);
 
-	expect(response.status).toBe(400);
+	expect(response.status).toBe(200);
+	expect(await legacyResponseJson(response)).toMatchObject({
+		id: 1,
+		jsonrpc: '2.0',
+		result: {
+			protocolVersion: '2025-11-25',
+			serverInfo: { name: '@knot-dots/app' }
+		}
+	});
+});
+
+test('serves tools to legacy clients with the request authentication context', async () => {
+	const organizations = [
+		{
+			guid: '00000000-0000-4000-8000-000000000003',
+			name: 'Anytown',
+			role: 'administrator',
+			slug: 'anytown'
+		}
+	];
+	listOrganizationMemberships.mockResolvedValue(organizations);
+
+	const response = await toolHandler.fetch(
+		request(
+			{
+				jsonrpc: '2.0',
+				id: 1,
+				method: 'tools/call',
+				params: { arguments: {}, name: 'list_my_organizations' }
+			},
+			{
+				Accept: 'application/json, text/event-stream',
+				'Mcp-Protocol-Version': '2025-11-25'
+			}
+		),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(response.status).toBe(200);
+	expect(listOrganizationMemberships).toHaveBeenCalledExactlyOnceWith(userId);
+	expect(await legacyResponseJson(response)).toMatchObject({
+		id: 1,
+		jsonrpc: '2.0',
+		result: {
+			content: [{ text: JSON.stringify({ organizations }), type: 'text' }],
+			structuredContent: { organizations }
+		}
+	});
 });
 
 test('advertises the organization tools without requiring their scope', async () => {
