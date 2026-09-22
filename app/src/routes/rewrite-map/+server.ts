@@ -16,11 +16,12 @@ export const GET: RequestHandler = async ({ locals }) => {
 	const rewriteMap: RewriteMap = {};
 
 	for (const organization of organizations) {
-		const hostname = organization.payload.default
-			? baseURL.hostname
-			: `${organization.guid}.${baseURL.hostname}`;
+		const hostname =
+			env.PUBLIC_DONT_USE_SUBDOMAINS || organization.payload.default
+				? baseURL.hostname
+				: `${organization.guid}.${baseURL.hostname}`;
 
-		rewriteMap[hostname] = {
+		const entries = {
 			...(organization.payload.slug
 				? { [organization.payload.slug]: organization.guid }
 				: undefined),
@@ -30,13 +31,18 @@ export const GET: RequestHandler = async ({ locals }) => {
 					.map(({ guid, payload }) => [payload.slug as string, guid])
 			)
 		};
+		rewriteMap[hostname] = { ...rewriteMap[hostname], ...entries };
 
-		if (organization.payload.slug && !organization.payload.default) {
-			rewriteMap[`${organization.payload.slug}.${baseURL.hostname}`] = rewriteMap[hostname];
+		if (
+			!env.PUBLIC_DONT_USE_SUBDOMAINS &&
+			organization.payload.slug &&
+			!organization.payload.default
+		) {
+			rewriteMap[`${organization.payload.slug}.${baseURL.hostname}`] = entries;
 		}
 
 		if (organization.payload.customDomain) {
-			rewriteMap[organization.payload.customDomain] = rewriteMap[hostname];
+			rewriteMap[organization.payload.customDomain] = entries;
 		}
 	}
 
