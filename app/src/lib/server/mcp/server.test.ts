@@ -19,11 +19,18 @@ const scopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['organizations:read']
 };
+const containerScopedAuthInfo = {
+	...authInfo,
+	extra: { tokenId, userId },
+	scopes: ['containers:read']
+};
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
+const searchContainers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	listOrganizationalUnits,
-	listOrganizationMemberships
+	listOrganizationMemberships,
+	searchContainers
 });
 
 function request(body: object, headers: HeadersInit = {}) {
@@ -67,6 +74,7 @@ async function legacyResponseJson(response: Response) {
 beforeEach(() => {
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
+	searchContainers.mockReset();
 });
 
 test('serves a modern MCP discovery request', async () => {
@@ -168,7 +176,7 @@ test('serves tools to legacy clients with the request authentication context', a
 	});
 });
 
-test('advertises the organization tools without requiring their scope', async () => {
+test('advertises tools without requiring their scopes', async () => {
 	const response = await toolHandler.fetch(modernRequest('tools/list'), { authInfo });
 
 	expect(response.status).toBe(200);
@@ -193,9 +201,98 @@ test('advertises the organization tools without requiring their scope', async ()
 				},
 				name: 'list_my_organizations',
 				title: 'List my organizations'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: true
+				},
+				name: 'search_containers',
+				title: 'Search containers'
 			})
 		])
 	);
+});
+
+test('searches visible containers with defaults for the authenticated token owner', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		containers: [
+			{
+				guid: '00000000-0000-4000-8000-000000000004',
+				label: 'Climate plan',
+				organizationGuid,
+				organizationalUnitGuid: null,
+				status: 'status.idea',
+				summary: 'A short summary',
+				type: 'program'
+			}
+		],
+		nextOffset: null
+	};
+	searchContainers.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { assigneeGuids: [userId], organizationGuid, terms: 'climate' },
+			name: 'search_containers'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(searchContainers).toHaveBeenCalledExactlyOnceWith(userId, {
+		assigneeGuids: [userId],
+		limit: 50,
+		offset: 0,
+		organizationGuid,
+		statuses: [],
+		terms: 'climate',
+		types: []
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: JSON.stringify(output), type: 'text' }],
+			structuredContent: output
+		}
+	});
+});
+
+test('denies the container search tool without its scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_containers'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(searchContainers).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('does not expose container search failures to MCP clients', async () => {
+	searchContainers.mockRejectedValue(new Error('Elasticsearch connection details'));
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_containers'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Unable to search containers.', type: 'text' }],
+			isError: true
+		}
+	});
 });
 
 test('lists visible organizational units in the requested organization', async () => {
