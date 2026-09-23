@@ -144,19 +144,6 @@ export function buildCategoryLabels(options: CategoryOptions) {
 		labels.set(facetKey, label);
 	}
 
-	for (const list of Object.values(options)) {
-		if (!Array.isArray(list)) continue;
-		const addOption = (option?: CategoryOption) => {
-			if (!option) return;
-			const resolved = option.label ?? option.value;
-			labels.set(option.value, resolved);
-			if (option.guid) labels.set(option.guid, resolved);
-			option.subOptions?.forEach(addOption);
-		};
-
-		list.forEach(addOption);
-	}
-
 	return labels;
 }
 
