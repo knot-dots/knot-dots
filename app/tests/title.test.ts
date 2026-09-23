@@ -5,13 +5,15 @@ test.use({ suiteId: 'title' });
 test.describe('Document titles and breadcrumb', () => {
 	test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
-	test('home page title is default organization name, breadcrumb is hidden', async ({
+	test('home page title is default organization name, breadcrumb shows only default organization link', async ({
 		defaultOrganization,
 		page
 	}) => {
 		await page.goto('/');
 		await expect(page).toHaveTitle(defaultOrganization.payload.name);
-		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).not.toBeVisible();
+		await expect(
+			page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link')
+		).toHaveAttribute('href', new RegExp(`\\/${defaultOrganization.guid}$`));
 	});
 
 	test('404 page title includes organization name and status', async ({ page }) => {
@@ -26,8 +28,10 @@ test.describe('Document titles and breadcrumb', () => {
 		// Title should include the test organization's name
 		await expect(page).toHaveTitle(testOrganization.payload.name);
 
-		// Still no breadcrumb should be shown
-		await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).not.toBeVisible();
+		// Breadcrumb should include the organization's landing page link
+		await expect(
+			page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link')
+		).toHaveAttribute('href', new RegExp(`\\/${testOrganization.guid}$`));
 	});
 
 	test('title and breadcrumb update switching between workspaces of organization', async ({

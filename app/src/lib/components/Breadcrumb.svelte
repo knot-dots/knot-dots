@@ -14,15 +14,11 @@
 	);
 
 	const breadcrumb = $derived([
-		...(page.route.id != '/[guid=uuid]' || page.params.guid != page.data.currentOrganization.guid
-			? [
-					{
-						href: getOrganizationURL(page.data.currentOrganization, '/', env),
-						icon: Home,
-						title: page.data.currentOrganization.payload.name
-					}
-				]
-			: []),
+		{
+			href: getOrganizationURL(page.data.currentOrganization, '', env),
+			icon: Home,
+			title: page.data.currentOrganization.payload.name
+		},
 		...(superordinateOrganizationalUnit ? [{ title: '…' }] : []),
 		...(page.data.currentOrganizationalUnit
 			? [

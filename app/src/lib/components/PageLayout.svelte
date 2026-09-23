@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
+	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import { createFeatureDecisions } from '$lib/features';
-	import { page } from '$app/state';
-	import { overlay, overlayWidth } from '$lib/stores';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
-	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
+	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
+	import { createFeatureDecisions } from '$lib/features';
+	import { overlay, overlayWidth } from '$lib/stores';
 
 	interface Props {
 		children: Snippet;
@@ -40,7 +41,10 @@
 </script>
 
 <div class="app-wrapper" style="--overlay-width-factor: {$overlayWidth}">
-	<nav class={{ collapsed: sidebarExpanded === false, expanded: sidebarExpanded === true }}>
+	<nav
+		aria-label={$_('main_navigation_aria_label')}
+		class={{ collapsed: sidebarExpanded === false, expanded: sidebarExpanded === true }}
+	>
 		{#if sidebar}
 			{@render sidebar()}
 		{:else}

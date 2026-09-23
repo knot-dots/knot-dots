@@ -7,7 +7,7 @@ test('home screen has expected regions', async ({ page, viewport }) => {
 	await expect(page.getByRole('banner')).toBeVisible();
 	await expect(page.getByRole('main')).toBeVisible();
 	if (viewport && viewport.width >= 960) {
-		await expect(page.getByRole('navigation')).toBeVisible();
+		await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
 	}
 });
 
@@ -17,9 +17,14 @@ test('navigation contains expected elements', async ({ page, viewport }) => {
 
 	if (viewport && viewport.width >= 960) {
 		await expect(
-			page.getByRole('navigation').locator('header').getByRole('link', { name: 'knotdots.net' })
+			page
+				.getByRole('navigation', { name: 'Main' })
+				.locator('header')
+				.getByRole('link', { name: 'knotdots.net' })
 		).toBeVisible();
-		await expect(page.getByRole('banner').getByRole('link', { name: 'dots' })).toBeVisible();
+		await expect(
+			page.getByRole('banner').getByRole('link', { name: 'dots', exact: true })
+		).toBeVisible();
 	}
 });
 
