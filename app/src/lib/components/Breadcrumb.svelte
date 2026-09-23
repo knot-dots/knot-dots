@@ -61,7 +61,7 @@
 		<ol>
 			{#each breadcrumb as item, index (index)}
 				<li>
-					{#if index < breadcrumb.length - 1 && item.href}
+					{#if (index < breadcrumb.length - 1 || index == 0) && item.href}
 						<a class="truncated" href={item.href.toString()}>
 							{#if item.icon}
 								<item.icon />
@@ -97,23 +97,42 @@
 		display: flex;
 		font-size: 0.75rem;
 		font-weight: 500;
+		line-height: 1.5;
 		min-width: 2rem;
 	}
 
 	li:first-child {
+		color: var(--color-text-accent-strong);
 		flex-shrink: 0;
 	}
 
-	li:has(+ li)::after {
+	li:first-child::after,
+	li:not(:last-child)::after {
 		content: ' / ';
 		display: inline-block;
 		flex-shrink: 0;
-		padding: 0 0.5rem;
+		padding: 0.25rem;
 	}
 
 	li :global(svg) {
+		display: inline-block;
 		height: 1rem;
 		max-width: none;
+		vertical-align: text-bottom;
 		width: 1rem;
+	}
+
+	li > a {
+		border-radius: 8px;
+		padding: 0.25rem;
+	}
+
+	li > span {
+		padding: 0.25rem;
+	}
+
+	li > a:active,
+	li > a:hover {
+		background-color: var(--color-background-accent-hover);
 	}
 </style>
