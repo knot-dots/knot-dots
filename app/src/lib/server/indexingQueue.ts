@@ -1,8 +1,10 @@
 import { SendMessageBatchCommand, SQSClient } from '@aws-sdk/client-sqs';
 import { env as privateEnv } from '$env/dynamic/private';
-import { Roarr as log } from 'roarr';
+import { Roarr } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import { z } from 'zod';
+
+const log = Roarr.child({ module: 'indexingQueue' });
 
 export interface IndexingEvent {
 	action: 'upsert' | 'delete';
@@ -91,7 +93,7 @@ export async function enqueueIndexingEvents(
 							senderFault: SenderFault
 						}))
 					},
-					'[indexingQueue] Some indexing events could not be enqueued'
+					'Some indexing events could not be enqueued'
 				);
 			}
 		} catch (error) {
@@ -101,7 +103,7 @@ export async function enqueueIndexingEvents(
 	}
 
 	if (successful > 0) {
-		log.info({ failed, successful }, '[indexingQueue] Enqueued indexing events');
+		log.info({ failed, successful }, 'Enqueued indexing events');
 	}
 
 	return { failed, successful };
