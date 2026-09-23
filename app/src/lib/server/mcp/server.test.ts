@@ -4,6 +4,10 @@ import {
 	PROTOCOL_VERSION_META_KEY
 } from '@modelcontextprotocol/server';
 import { beforeEach, expect, test, vi } from 'vitest';
+import {
+	mcpPayloadSchemaTypes,
+	payloadSchemaCatalogUri
+} from '$lib/server/mcp/resources/payloadSchemas';
 import { createKnotDotsMcpHandler, mcpHandler } from './server';
 
 const userId = '00000000-0000-4000-8000-000000000002';
@@ -72,6 +76,9 @@ function modernRequest(method: string, params: Record<string, unknown> = {}) {
 	};
 	if (typeof params.name === 'string') {
 		headers['Mcp-Name'] = params.name;
+	}
+	if (typeof params.uri === 'string') {
+		headers['Mcp-Name'] = params.uri;
 	}
 
 	return request(
@@ -293,6 +300,138 @@ test('advertises tools without requiring their scopes', async () => {
 				assigneeGuids: { items: { type: 'string' }, type: 'array' }
 			}
 		}
+	});
+});
+
+test('advertises the payload schema catalog and template', async () => {
+	const resourcesResponse = await toolHandler.fetch(modernRequest('resources/list'), { authInfo });
+	const templatesResponse = await toolHandler.fetch(modernRequest('resources/templates/list'), {
+		authInfo
+	});
+
+	expect(resourcesResponse.status).toBe(200);
+	await expect(resourcesResponse.json()).resolves.toMatchObject({
+		result: {
+			resources: [
+				expect.objectContaining({
+					mimeType: 'application/json',
+					name: 'payload-schema-catalog',
+					uri: payloadSchemaCatalogUri
+				})
+			]
+		}
+	});
+
+	expect(templatesResponse.status).toBe(200);
+	await expect(templatesResponse.json()).resolves.toMatchObject({
+		result: {
+			resourceTemplates: [
+				expect.objectContaining({
+					mimeType: 'application/schema+json',
+					name: 'payload-schema',
+					uriTemplate: `${payloadSchemaCatalogUri}/{type}`
+				})
+			]
+		}
+	});
+});
+
+test('serves a catalog containing exactly the curated payload schemas', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('resources/read', { uri: payloadSchemaCatalogUri }),
+		{ authInfo }
+	);
+
+	expect(response.status).toBe(200);
+	const body = await response.json();
+	const content = body.result.contents[0];
+	expect(content).toMatchObject({ mimeType: 'application/json', uri: payloadSchemaCatalogUri });
+	expect(JSON.parse(content.text)).toEqual({
+		description:
+			'Canonical payload validation schemas exposed through MCP. Schema availability does not imply that an MCP creation tool is available.',
+		payloads: mcpPayloadSchemaTypes.map((type) => ({
+			type,
+			uri: `${payloadSchemaCatalogUri}/${type}`
+		})),
+		schemaVersion: 1
+	});
+});
+
+test('serves each curated payload as a direct JSON Schema', async () => {
+	for (const payloadType of mcpPayloadSchemaTypes) {
+		const uri = `${payloadSchemaCatalogUri}/${payloadType}`;
+		const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), {
+			authInfo
+		});
+
+		expect(response.status).toBe(200);
+		const body = await response.json();
+		const content = body.result.contents[0];
+		expect(content).toMatchObject({ mimeType: 'application/schema+json', uri });
+		const schema = JSON.parse(content.text);
+		expect(schema).toMatchObject({
+			$id: uri,
+			$schema: 'https://json-schema.org/draft/2020-12/schema',
+			properties: { type: { const: payloadType, type: 'string' } },
+			type: 'object'
+		});
+		expect(schema).not.toHaveProperty('anyOf');
+		expect(schema).not.toHaveProperty('oneOf');
+	}
+});
+
+test.each(['effect', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
+	const uri = `${payloadSchemaCatalogUri}/${type}`;
+	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });
+
+	expect(response.status).toBe(200);
+	await expect(response.json()).resolves.toMatchObject({
+		error: { code: -32602, data: { uri } },
+		id: 1,
+		jsonrpc: '2.0'
+	});
+});
+
+test('completes only curated payload schema types', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('completion/complete', {
+			argument: { name: 'type', value: 's' },
+			ref: { type: 'ref/resource', uri: `${payloadSchemaCatalogUri}/{type}` }
+		}),
+		{ authInfo }
+	);
+
+	expect(response.status).toBe(200);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { completion: { values: ['simple_measure'] } }
+	});
+});
+
+test('serves payload schema resources to legacy clients', async () => {
+	const uri = `${payloadSchemaCatalogUri}/task`;
+	const response = await toolHandler.fetch(
+		request(
+			{
+				jsonrpc: '2.0',
+				id: 1,
+				method: 'resources/read',
+				params: { uri }
+			},
+			{
+				Accept: 'application/json, text/event-stream',
+				'Mcp-Protocol-Version': '2025-11-25'
+			}
+		),
+		{ authInfo }
+	);
+
+	expect(response.status).toBe(200);
+	const body = await legacyResponseJson(response);
+	const content = body.result.contents[0];
+	expect(content).toMatchObject({ mimeType: 'application/schema+json', uri });
+	expect(JSON.parse(content.text)).toMatchObject({
+		$id: uri,
+		properties: { type: { const: 'task' } }
 	});
 });
 
