@@ -24,15 +24,35 @@ const containerScopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['containers:read']
 };
+const writeScopedAuthInfo = {
+	...authInfo,
+	extra: { tokenId, userId },
+	scopes: ['containers:write']
+};
+const userScopedAuthInfo = {
+	...authInfo,
+	extra: { tokenId, userId },
+	scopes: ['users:read']
+};
+const addCustomCollectionSection = vi.fn();
+const createPage = vi.fn();
 const getContainer = vi.fn();
+const listContainerCategories = vi.fn();
+const listContainerCategoryValues = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
+const searchOrganizationUsers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
+	addCustomCollectionSection,
+	createPage,
 	getContainer,
+	listContainerCategories,
+	listContainerCategoryValues,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
-	searchContainers
+	searchContainers,
+	searchOrganizationUsers
 });
 
 const modernProtocolVersion = '2026-07-28';
@@ -79,10 +99,15 @@ async function legacyResponseJson(response: Response) {
 }
 
 beforeEach(() => {
+	addCustomCollectionSection.mockReset();
+	createPage.mockReset();
 	getContainer.mockReset();
+	listContainerCategories.mockReset();
+	listContainerCategoryValues.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	searchContainers.mockReset();
+	searchOrganizationUsers.mockReset();
 });
 
 test('serves a modern MCP discovery request', async () => {
@@ -227,9 +252,281 @@ test('advertises tools without requiring their scopes', async () => {
 				},
 				name: 'search_containers',
 				title: 'Search containers'
+			}),
+			expect.objectContaining({
+				name: 'list_container_categories',
+				title: 'List container categories'
+			}),
+			expect.objectContaining({
+				name: 'list_container_category_values',
+				title: 'List container category values'
+			}),
+			expect.objectContaining({
+				name: 'search_organization_users',
+				title: 'Search organization users'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'create_page',
+				title: 'Create page'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'add_custom_collection_section',
+				title: 'Add custom collection section'
 			})
 		])
 	);
+	expect(
+		body.result.tools.find(({ name }: { name: string }) => name === 'search_containers')
+	).toMatchObject({
+		inputSchema: {
+			properties: {
+				assigneeGuids: { items: { type: 'string' }, type: 'array' }
+			}
+		}
+	});
+});
+
+test('lists container categories using the read scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		categories: [
+			{
+				applicableTypes: ['indicator_template'],
+				key: 'sdg',
+				label: 'Sustainable Development Goal',
+				valueCount: 186
+			}
+		]
+	};
+	listContainerCategories.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid, types: ['indicator_template'] },
+			name: 'list_container_categories'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerCategories).toHaveBeenCalledExactlyOnceWith(userId, {
+		organizationGuid,
+		types: ['indicator_template']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('lists a bounded page of category values using the read scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		category: { key: 'sdg', label: 'Sustainable Development Goal' },
+		nextOffset: null,
+		values: [{ label: 'Climate action', parentValue: null, value: '13' }]
+	};
+	listContainerCategoryValues.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				categoryKey: 'sdg',
+				organizationGuid,
+				terms: 'climate',
+				types: ['indicator_template']
+			},
+			name: 'list_container_category_values'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerCategoryValues).toHaveBeenCalledExactlyOnceWith(userId, {
+		categoryKey: 'sdg',
+		limit: 50,
+		offset: 0,
+		organizationGuid,
+		terms: 'climate',
+		types: ['indicator_template']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('searches organization users with the dedicated scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		nextOffset: null,
+		users: [{ guid: userId, name: 'Niels Example' }]
+	};
+	searchOrganizationUsers.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid, terms: 'Niels' },
+			name: 'search_organization_users'
+		}),
+		{ authInfo: userScopedAuthInfo }
+	);
+
+	expect(searchOrganizationUsers).toHaveBeenCalledExactlyOnceWith(userId, {
+		limit: 50,
+		offset: 0,
+		organizationGuid,
+		terms: 'Niels'
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('denies user lookup without its dedicated scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_organization_users'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(searchOrganizationUsers).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: users:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('denies the category tool without the container read scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				organizationGuid: '00000000-0000-4000-8000-000000000003'
+			},
+			name: 'list_container_categories'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(listContainerCategories).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('creates a page with defaults using the write scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		page: {
+			guid: '00000000-0000-4000-8000-000000000004',
+			organizationGuid,
+			organizationalUnitGuid: null,
+			title: 'Climate indicators',
+			visibility: 'organization'
+		}
+	};
+	createPage.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid, title: 'Climate indicators' },
+			name: 'create_page'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(createPage).toHaveBeenCalledExactlyOnceWith(userId, {
+		body: '',
+		organizationGuid,
+		organizationalUnitGuid: null,
+		title: 'Climate indicators',
+		visibility: 'organization'
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('adds a custom collection section with categories using the write scope', async () => {
+	const pageGuid = '00000000-0000-4000-8000-000000000003';
+	const input = {
+		categories: { sdg: ['13'] },
+		includeSubordinateOrganizationalUnits: true,
+		pageGuid,
+		title: 'Objekte einbinden',
+		types: ['indicator_template']
+	};
+	const output = {
+		section: {
+			...input,
+			guid: '00000000-0000-4000-8000-000000000004'
+		}
+	};
+	addCustomCollectionSection.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				categories: { sdg: ['13'] },
+				pageGuid,
+				title: 'Objekte einbinden',
+				types: ['indicator_template']
+			},
+			name: 'add_custom_collection_section'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(addCustomCollectionSection).toHaveBeenCalledExactlyOnceWith(userId, input);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test.each([
+	[
+		'create_page',
+		createPage,
+		{
+			organizationGuid: '00000000-0000-4000-8000-000000000003',
+			title: 'Climate indicators'
+		}
+	],
+	[
+		'add_custom_collection_section',
+		addCustomCollectionSection,
+		{
+			pageGuid: '00000000-0000-4000-8000-000000000003',
+			title: 'Objekte einbinden',
+			types: ['indicator_template']
+		}
+	]
+])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: arguments_, name }),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(dependency).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:write', type: 'text' }],
+			isError: true
+		}
+	});
 });
 
 test('searches visible containers with defaults for the authenticated token owner', async () => {
@@ -237,6 +534,8 @@ test('searches visible containers with defaults for the authenticated token owne
 	const output = {
 		containers: [
 			{
+				assigneeGuids: [],
+				creatorGuids: [],
 				guid: '00000000-0000-4000-8000-000000000004',
 				label: 'Climate plan',
 				organizationGuid,

@@ -1,5 +1,5 @@
 import { beforeEach, expect, test, vi } from 'vitest';
-import { emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
+import { anyContainer, emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
 import { getRequestUser } from '$lib/server/requestUser';
 
 const getManyContainersWithES = vi.hoisted(() => vi.fn());
@@ -116,6 +116,8 @@ test('searches existing container data and paginates after authorization', async
 	).resolves.toEqual({
 		containers: [
 			{
+				assigneeGuids: [],
+				creatorGuids: [],
 				guid: alpha.guid,
 				label: 'Alpha',
 				organizationGuid,
@@ -168,4 +170,35 @@ test('supports organization-level filtering and an authorized-result offset', as
 		'alpha',
 		expect.any(Object)
 	);
+});
+
+test('exposes participant GUIDs so names can be resolved through the user tool', async () => {
+	const creatorGuid = '00000000-0000-4000-8000-000000000006';
+	const task = anyContainer.parse({
+		guid: '00000000-0000-4000-8000-000000000003',
+		managed_by: [organizationGuid],
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: { assignee: [userGuid], title: 'Research AGENTS.md', type: 'task' },
+		realm: 'test',
+		revision: 1,
+		user: [{ predicate: 'is-creator-of', subject: creatorGuid }],
+		valid_currently: true,
+		valid_from: new Date('2026-09-23T00:00:00.000Z')
+	});
+	resolveSearch([task]);
+
+	await expect(
+		searchMcpContainers({
+			assigneeGuids: [userGuid],
+			limit: 50,
+			offset: 0,
+			organizationGuid,
+			statuses: [],
+			types: ['task'],
+			user: memberUser()
+		})
+	).resolves.toMatchObject({
+		containers: [{ assigneeGuids: [userGuid], creatorGuids: [creatorGuid], guid: task.guid }]
+	});
 });

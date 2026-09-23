@@ -1,8 +1,22 @@
 import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { getOrganizationMemberships, getPool } from '$lib/server/db';
+import {
+	listMcpContainerCategories,
+	listMcpContainerCategoryValues
+} from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
+import { addMcpCustomCollectionSection, createMcpPage } from '$lib/server/mcp/creation';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { searchMcpOrganizationUsers } from '$lib/server/mcp/users';
+import {
+	registerAddCustomCollectionSectionTool,
+	type AddCustomCollectionSectionDependencies
+} from '$lib/server/mcp/tools/addCustomCollectionSection';
+import {
+	registerCreatePageTool,
+	type CreatePageDependencies
+} from '$lib/server/mcp/tools/createPage';
 import {
 	registerGetContainerTool,
 	type GetContainerDependencies
@@ -16,19 +30,48 @@ import {
 	type ListMyOrganizationsDependencies
 } from '$lib/server/mcp/tools/listMyOrganizations';
 import {
+	registerListContainerCategoriesTool,
+	type ListContainerCategoriesDependencies
+} from '$lib/server/mcp/tools/listContainerCategories';
+import {
+	registerListContainerCategoryValuesTool,
+	type ListContainerCategoryValuesDependencies
+} from '$lib/server/mcp/tools/listContainerCategoryValues';
+import {
 	registerSearchContainersTool,
 	type SearchContainersDependencies
 } from '$lib/server/mcp/tools/searchContainers';
+import {
+	registerSearchOrganizationUsersTool,
+	type SearchOrganizationUsersDependencies
+} from '$lib/server/mcp/tools/searchOrganizationUsers';
 import packageMetadata from '../../../../package.json';
 
-type McpServerDependencies = GetContainerDependencies &
+type McpServerDependencies = AddCustomCollectionSectionDependencies &
+	CreatePageDependencies &
+	GetContainerDependencies &
+	ListContainerCategoriesDependencies &
+	ListContainerCategoryValuesDependencies &
 	ListMyOrganizationsDependencies &
 	ListOrganizationalUnitsDependencies &
-	SearchContainersDependencies;
+	SearchContainersDependencies &
+	SearchOrganizationUsersDependencies;
 
 const defaultDependencies: McpServerDependencies = {
+	async addCustomCollectionSection(userId, input) {
+		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, userId }));
+	},
+	async createPage(userId, input) {
+		return (await getPool()).connect(createMcpPage({ ...input, userId }));
+	},
 	async getContainer(userId, guid) {
 		return (await getPool()).connect(getMcpContainer({ guid, userId }));
+	},
+	async listContainerCategories(userId, input) {
+		return (await getPool()).connect(listMcpContainerCategories({ ...input, userId }));
+	},
+	async listContainerCategoryValues(userId, input) {
+		return (await getPool()).connect(listMcpContainerCategoryValues({ ...input, userId }));
 	},
 	async listOrganizationalUnits(userId, input) {
 		return (await getPool()).connect(listMcpOrganizationalUnits({ ...input, userId }));
@@ -40,6 +83,9 @@ const defaultDependencies: McpServerDependencies = {
 		const pool = await getPool();
 		const user = await pool.connect((connection) => loadMcpUserContext(connection, userId));
 		return searchMcpContainers({ ...input, user });
+	},
+	async searchOrganizationUsers(userId, input) {
+		return (await getPool()).connect(searchMcpOrganizationUsers({ ...input, userId }));
 	}
 };
 
@@ -51,10 +97,15 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				version: packageMetadata.version
 			});
 
+			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
+			registerCreatePageTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
+			registerListContainerCategoriesTool(server, authInfo, dependencies);
+			registerListContainerCategoryValuesTool(server, authInfo, dependencies);
 			registerListOrganizationalUnitsTool(server, authInfo, dependencies);
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);
+			registerSearchOrganizationUsersTool(server, authInfo, dependencies);
 
 			return server;
 		},

@@ -56,6 +56,16 @@
 								{$_('mcp_tokens.create')}
 							</button>
 						</div>
+						<label class="scope-option">
+							<input name="containersWrite" type="checkbox" value="true" />
+							<span>{$_('mcp_tokens.allow_write')}</span>
+						</label>
+						<p class="hint">{$_('mcp_tokens.write_hint')}</p>
+						<label class="scope-option">
+							<input name="usersRead" type="checkbox" value="true" />
+							<span>{$_('mcp_tokens.allow_user_names')}</span>
+						</label>
+						<p class="hint">{$_('mcp_tokens.user_names_hint')}</p>
 						<p class="hint">{$_('mcp_tokens.expiry_hint')}</p>
 						{#if form?.action === 'create' && 'error' in form}
 							<p class="error">{$_('mcp_tokens.invalid_name')}</p>
@@ -203,6 +213,14 @@
 		display: block;
 		font-weight: 600;
 		margin-bottom: 0.25rem;
+	}
+
+	.create-form .scope-option {
+		align-items: center;
+		display: flex;
+		font-weight: 400;
+		gap: 0.5rem;
+		margin-top: 0.75rem;
 	}
 
 	.create-form input[type='text'] {

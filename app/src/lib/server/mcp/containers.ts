@@ -1,6 +1,6 @@
 import { NotFoundError, type DatabaseConnection } from 'slonik';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import type { AnyPayload, Container } from '$lib/models';
+import { predicates, type AnyPayload, type Container } from '$lib/models';
 import { getContainerByGuid } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type {
@@ -23,6 +23,10 @@ function summarizeContainer(container: Container<AnyPayload>): ContainerSummary 
 	const label = 'title' in payload ? payload.title : 'name' in payload ? payload.name : null;
 
 	return {
+		assigneeGuids: 'assignee' in payload && Array.isArray(payload.assignee) ? payload.assignee : [],
+		creatorGuids: container.user
+			.filter(({ predicate }) => predicate === predicates.enum['is-creator-of'])
+			.map(({ subject }) => subject),
 		guid: container.guid,
 		label: typeof label === 'string' ? label : null,
 		organizationGuid: container.organization,

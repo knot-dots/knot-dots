@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { payloadTypes, relation, status, userRelation } from '$lib/models';
 
 export const containerSummary = z.strictObject({
+	assigneeGuids: z.array(z.uuid()),
+	creatorGuids: z.array(z.uuid()),
 	guid: z.uuid(),
 	label: z.string().nullable(),
 	organizationGuid: z.uuid(),
