@@ -6,6 +6,7 @@ import {
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
+import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import {
 	registerGetContainerTool,
@@ -66,10 +67,18 @@ const defaultDependencies: McpServerDependencies = {
 export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 	return createMcpHandler(
 		({ authInfo }) => {
-			const server = new McpServer({
-				name: packageMetadata.name,
-				version: packageMetadata.version
-			});
+			const server = new McpServer(
+				{
+					name: packageMetadata.name,
+					version: packageMetadata.version
+				},
+				{
+					instructions:
+						'Read knotdots://schemas/payloads and its linked payload schema resources when you need canonical payload field information. Resource availability does not imply that a creation tool is available.'
+				}
+			);
+
+			registerPayloadSchemaResources(server);
 
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);

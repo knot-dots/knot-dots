@@ -2357,6 +2357,16 @@ const anyPayload = z.discriminatedUnion('type', [
 
 export type AnyPayload = z.infer<typeof anyPayload>;
 
+const payloadSchemaByType = new Map(
+	anyPayload.options.map((schema) => [schema.shape.type.value, schema] as const)
+);
+
+export function getPayloadSchema(payloadType: PayloadType) {
+	const schema = payloadSchemaByType.get(payloadType);
+	if (!schema) throw new Error(`Payload schema not found: ${payloadType}`);
+	return schema;
+}
+
 export type TemplatablePayload = Extract<AnyPayload, { template: boolean }>;
 
 export type TemplatePayload = TemplatablePayload & { template: true };
