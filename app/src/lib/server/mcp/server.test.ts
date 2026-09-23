@@ -25,11 +25,15 @@ const containerScopedAuthInfo = {
 	scopes: ['containers:read']
 };
 const getContainer = vi.fn();
+const listContainerCategories = vi.fn();
+const listContainerCategoryValues = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	getContainer,
+	listContainerCategories,
+	listContainerCategoryValues,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	searchContainers
@@ -80,6 +84,8 @@ async function legacyResponseJson(response: Response) {
 
 beforeEach(() => {
 	getContainer.mockReset();
+	listContainerCategories.mockReset();
+	listContainerCategoryValues.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	searchContainers.mockReset();
@@ -227,9 +233,111 @@ test('advertises tools without requiring their scopes', async () => {
 				},
 				name: 'search_containers',
 				title: 'Search containers'
+			}),
+			expect.objectContaining({
+				name: 'list_container_categories',
+				title: 'List container categories'
+			}),
+			expect.objectContaining({
+				name: 'list_container_category_values',
+				title: 'List container category values'
 			})
 		])
 	);
+	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
+		'get_container',
+		'list_container_categories',
+		'list_container_category_values',
+		'list_my_organizations',
+		'list_organizational_units',
+		'search_containers'
+	]);
+});
+
+test('lists container categories using the read scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		categories: [
+			{
+				applicableTypes: ['indicator_template'],
+				key: 'sdg',
+				label: 'Sustainable Development Goal',
+				valueCount: 186
+			}
+		]
+	};
+	listContainerCategories.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid, types: ['indicator_template'] },
+			name: 'list_container_categories'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerCategories).toHaveBeenCalledExactlyOnceWith(userId, {
+		organizationGuid,
+		types: ['indicator_template']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('lists a bounded page of category values using the read scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		category: { key: 'sdg', label: 'Sustainable Development Goal' },
+		nextOffset: null,
+		values: [{ label: 'Climate action', parentValue: null, value: '13' }]
+	};
+	listContainerCategoryValues.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				categoryKey: 'sdg',
+				organizationGuid,
+				terms: 'climate',
+				types: ['indicator_template']
+			},
+			name: 'list_container_category_values'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerCategoryValues).toHaveBeenCalledExactlyOnceWith(userId, {
+		categoryKey: 'sdg',
+		limit: 50,
+		offset: 0,
+		organizationGuid,
+		terms: 'climate',
+		types: ['indicator_template']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('denies the category tool without the container read scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				organizationGuid: '00000000-0000-4000-8000-000000000003'
+			},
+			name: 'list_container_categories'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(listContainerCategories).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
 });
 
 test('searches visible containers with defaults for the authenticated token owner', async () => {
