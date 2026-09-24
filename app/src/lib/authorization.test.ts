@@ -487,11 +487,10 @@ describe('field-level rules', () => {
 		expect(teamOnly.can('update', teamed, 'organizational_unit')).toBe(false);
 	});
 
-	test('the indicator category of indicator templates is immutable', () => {
+	test('the indicator category follows the update grant', () => {
 		const ability = abilityOn({ adminOf: [organization] });
 		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
-		expect(ability.can('update', template)).toBe(true);
-		expect(ability.can('update', template, 'indicatorCategory')).toBe(false);
+		expect(ability.can('update', template, 'indicatorCategory')).toBe(true);
 	});
 });
 

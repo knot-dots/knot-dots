@@ -126,7 +126,6 @@ export default function defineAbilityFor(user: User) {
 		});
 
 		// —— field-level restrictions ——
-		cannot('update', payloadTypes.enum.indicator_template, ['indicatorCategory']);
 		cannot('update', payloadTypes.options, ['organization', 'organizational_unit']);
 		cannot('update', payloadTypes.enum.organization, ['payload.customDomain']);
 		// moving content between units takes an update grant of the scope itself
