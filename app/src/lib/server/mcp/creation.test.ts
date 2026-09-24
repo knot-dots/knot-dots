@@ -19,15 +19,21 @@ const mocks = vi.hoisted(() => ({
 	containers: new Map<string, Container<AnyPayload>>(),
 	createAuthorizedContainer: vi.fn(),
 	relations: [] as Array<{ object: string; position: number; predicate: string }>,
-	unreadableGuids: new Set<string>()
+	unreadableGuids: new Set<string>(),
+	unupdatableGuids: new Set<string>()
 }));
+
+function isDenied(action: string, subject: Container<AnyPayload>) {
+	return (
+		(action === 'read' && mocks.unreadableGuids.has(subject.guid)) ||
+		(action === 'update' && mocks.unupdatableGuids.has(subject.guid))
+	);
+}
 
 vi.mock('$lib/authorization', () => ({
 	default: () => ({
-		can: (action: string, subject: Container<AnyPayload>) =>
-			action !== 'read' || !mocks.unreadableGuids.has(subject.guid),
-		cannot: (action: string, subject: Container<AnyPayload>) =>
-			action === 'read' && mocks.unreadableGuids.has(subject.guid)
+		can: (action: string, subject: Container<AnyPayload>) => !isDenied(action, subject),
+		cannot: isDenied
 	})
 }));
 vi.mock('$lib/server/containerCreation', async (importOriginal) => ({
@@ -115,6 +121,7 @@ beforeEach(() => {
 	);
 	mocks.relations = [];
 	mocks.unreadableGuids.clear();
+	mocks.unupdatableGuids.clear();
 	mocks.createAuthorizedContainer.mockReset();
 	mocks.createAuthorizedContainer.mockImplementation(({ data }) => async () => ({
 		...data,
@@ -277,6 +284,26 @@ test.each(['hidden', 'other organization'])('rejects a %s parent', async (condit
 		'Parent container not found or inaccessible.'
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test('accepts a visible parent that the user cannot update', async () => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: 'program' }));
+	mocks.unupdatableGuids.add(parentGuid);
+	const input = createContainerInput.parse({
+		organizationGuid,
+		parentRelations: [{ parentGuid, predicate: 'is-part-of-program' }],
+		payload: { title: 'New goal', type: 'goal' }
+	});
+
+	await createMcpContainer({ ...input, userId })({} as never);
+
+	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			data: expect.objectContaining({
+				relation: [{ object: parentGuid, position: 0, predicate: 'is-part-of-program' }]
+			})
+		})
+	);
 });
 
 test('rejects duplicate parent relations in the MCP contract', () => {
