@@ -16,9 +16,9 @@
 	},
 	"dependencies": {
 		"@opentelemetry/api": "^1.9.1",
-		"@opentelemetry/auto-instrumentations-node": "^0.79.0",
-		"@opentelemetry/exporter-trace-otlp-proto": "^0.221.0",
-		"@opentelemetry/sdk-node": "^0.221.0",
+		"@opentelemetry/auto-instrumentations-node": "^0.80.0",
+		"@opentelemetry/exporter-trace-otlp-proto": "^0.222.0",
+		"@opentelemetry/sdk-node": "^0.222.0",
 		"@opentelemetry/sdk-trace-node": "^2.11.0",
 		"import-in-the-middle": "^3.5.1",
 		"roarr": "^7.21.7"
