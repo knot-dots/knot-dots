@@ -97,7 +97,7 @@
 				}).flatMap((w) => Object.values(w.views))
 			: [];
 
-		return workspacePaths.some((w) => w.endsWith(pathname)) ? pathname : '';
+		return ['/dots', ...workspacePaths].some((w) => w.endsWith(pathname)) ? pathname : '';
 	}
 
 	function optionURL(
