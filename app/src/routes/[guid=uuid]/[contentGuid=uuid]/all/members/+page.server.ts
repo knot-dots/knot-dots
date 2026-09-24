@@ -54,7 +54,7 @@ export const load = (async ({ locals, params }) => {
 			return {
 				container,
 				grants,
-				title: `${container.payload.title} / ${t('members')}`,
+				title: t('members'),
 				users: users.map((u) => ({
 					...u,
 					email: members.find(({ id }) => id == u.guid)?.username ?? u.guid
@@ -135,7 +135,7 @@ export const load = (async ({ locals, params }) => {
 			inheritedGrants,
 			inheritedUsers,
 			scope,
-			title: `${container.payload.title} / ${t('members')}`,
+			title: t('members'),
 			users: users.map((u) => ({
 				...u,
 				email: members.find(({ id }) => id == u.guid)?.username ?? u.guid

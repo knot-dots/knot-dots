@@ -1682,7 +1682,11 @@ export const organizationPayload = z.strictObject({
 	type: z.literal(payloadTypes.enum.organization),
 	useAnalytics: z.boolean().default(true),
 	visibility: visibility.default(visibility.enum['organization']),
-	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
+	visibleWorkspaces: z
+		.array(z.string())
+		.transform((v) => v.map((v) => (v == 'measure-monitoring' ? 'monitoring' : v)))
+		.transform(deduplicate)
+		.default([])
 });
 
 export type OrganizationPayload = z.infer<typeof organizationPayload>;
@@ -1728,7 +1732,11 @@ export const organizationalUnitPayload = z.strictObject({
 		.optional(),
 	type: z.literal(payloadTypes.enum.organizational_unit),
 	visibility: visibility.default(visibility.enum['organization']),
-	visibleWorkspaces: z.array(z.string()).transform(deduplicate).default([])
+	visibleWorkspaces: z
+		.array(z.string())
+		.transform((v) => v.map((v) => (v == 'measure-monitoring' ? 'monitoring' : v)))
+		.transform(deduplicate)
+		.default([])
 });
 
 export type OrganizationalUnitPayload = z.infer<typeof organizationalUnitPayload>;
@@ -2676,11 +2684,40 @@ export const user = z.object({
 	guid: z.uuid(),
 	realm: z.string().max(1024),
 	settings: z.object({
+		favorite: z
+			.array(
+				z.object({
+					href: z.string(),
+					icon: z.url().optional(),
+					title: z.string().trim()
+				})
+			)
+			.default([])
+			.optional(),
 		features: z.array(z.string()).transform(deduplicate).optional()
 	})
 });
 
 export type User = z.infer<typeof user>;
+
+export const mcpToken = z.object({
+	created_at: z.coerce.date(),
+	expires_at: z.coerce.date(),
+	id: z.uuid(),
+	last_used_at: z.coerce.date().nullable(),
+	name: z.string(),
+	prefix: z.string().max(16),
+	revoked_at: z.coerce.date().nullable(),
+	scopes: z.array(z.string())
+});
+
+export type McpToken = z.infer<typeof mcpToken>;
+
+export const authenticatedMcpToken = mcpToken
+	.pick({ expires_at: true, id: true, scopes: true })
+	.extend({ user_id: z.uuid() });
+
+export type AuthenticatedMcpToken = z.infer<typeof authenticatedMcpToken>;
 
 export function displayName(user: User) {
 	if (user.given_name != '' && user.family_name != '') {

@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
@@ -109,6 +110,7 @@ export const load = (async ({ locals, parent, url }) => {
 
 	return {
 		containers: filtered,
-		facets
+		facets,
+		title: unwrapFunctionStore(_)('organizational_units')
 	};
 }) satisfies PageServerLoad;

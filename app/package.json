@@ -15,7 +15,6 @@
 		"format": "prettier --write ./src ./tests"
 	},
 	"dependencies": {
-		"@aws-sdk/client-sqs": "^3.1113.0",
 		"@opentelemetry/api": "^1.9.1",
 		"@opentelemetry/auto-instrumentations-node": "^0.79.0",
 		"@opentelemetry/exporter-trace-otlp-proto": "^0.221.0",
@@ -28,6 +27,7 @@
 		"@auth/core": "^0.41.1",
 		"@auth/sveltekit": "^1.11.3",
 		"@aws-sdk/client-s3": "^3.1113.0",
+		"@aws-sdk/client-sqs": "^3.1113.0",
 		"@casl/ability": "^7.0.1",
 		"@elastic/elasticsearch": "^9.5.0",
 		"@eslint/js": "^10.0.1",
@@ -40,6 +40,8 @@
 		"@milkdown/plugin-upload": "^7.5.0",
 		"@milkdown/preset-commonmark": "^7.5.0",
 		"@milkdown/preset-gfm": "^7.5.0",
+		"@modelcontextprotocol/client": "^2.0.0",
+		"@modelcontextprotocol/server": "^2.0.0",
 		"@observablehq/plot": "^0.6.17",
 		"@playwright/test": "^1.62.1",
 		"@stefanprobst/remark-excerpt": "^2.0.2",

@@ -16,6 +16,7 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
+	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import BulkActions from '$lib/components/BulkActions.svelte';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import CompareBar from '$lib/components/CompareBar.svelte';
@@ -34,6 +35,7 @@
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import UserFavoriteToggle from '$lib/components/UserFavoriteToggle.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
@@ -219,6 +221,8 @@
 		>
 			<Bars />
 		</button>
+
+		<Breadcrumb />
 	{/if}
 
 	{#if overlay}
@@ -263,6 +267,10 @@
 					{$_('login')}
 				</button>
 			{/if}
+		{/if}
+
+		{#if !overlay && $user.isAuthenticated}
+			<UserFavoriteToggle />
 		{/if}
 
 		{#if settings}
@@ -451,6 +459,10 @@
 		height: 1.5rem;
 		margin: 0 0.5rem;
 		width: 0;
+	}
+
+	.sidebar-toggle {
+		color: var(--color-text-muted);
 	}
 
 	.actions {

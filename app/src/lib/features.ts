@@ -2,7 +2,7 @@
 // managed per deployment via pod annotations (see $lib/server/podFeatures)
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'Adoptions', 'Templating'] as const],
+	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
 	[
 		'beta',
 		[
@@ -77,6 +77,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useNewCreateContainerDialog() {
 			return features.includes('Templating');
+		},
+		useMcpTokenMenu() {
+			return features.includes('MCP');
 		}
 	} satisfies Record<string, () => boolean>;
 }

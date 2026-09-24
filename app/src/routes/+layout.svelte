@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
-	import { _ } from 'svelte-i18n';
 	import { asset } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -14,6 +13,7 @@
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
+	import { user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
@@ -51,7 +51,8 @@
 
 	let favoriteList = $state({
 		organization: page.data.currentOrganization.payload.favorite,
-		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? []
+		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? [],
+		user: [...($user.settings.favorite ?? [])]
 	});
 
 	$effect(() => {
@@ -63,44 +64,19 @@
 
 	setComputedProgressContext(createComputedProgressLoader());
 
-	const workspaceTranslated = $derived.by(() => {
-		const segments = page.url.pathname.split('/');
-		let msgId;
-
-		// Determine workspace type from URL segments
-		if (segments[1] == 'me') {
-			if (!segments[2]) {
-				msgId = 'workspace.profile';
-			} else {
-				const personalWorkspaceType = segments[2];
-				msgId = 'workspace.profile.' + personalWorkspaceType;
-			}
-		} else {
-			const workspaceType = segments[2];
-
-			if (!workspaceType) return null;
-
-			msgId = 'workspace.' + workspaceType + '.title';
-		}
-
-		const translation = $_(msgId);
-
-		// If translation is same as msgId, it means no translation was found and null should be returned
-		return translation == msgId ? null : translation;
-	});
-
 	const title = $derived.by(() => {
-		let title = page.data?.currentOrganization?.payload?.name ?? $_('page_title');
+		let title = page.data.currentOrganization.payload.name;
 
 		// Add organizational unit if present
 		if (page.data.currentOrganizationalUnit) {
 			title += ' / ' + page.data.currentOrganizationalUnit.payload.name;
 		}
 
-		// Add workspace type if present
-		if (workspaceTranslated) {
-			title += ' / ' + workspaceTranslated;
+		// Add title from page.data if present
+		if (page.data.title) {
+			title += ' / ' + page.data.title;
 		}
+
 		return title;
 	});
 

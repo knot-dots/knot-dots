@@ -87,6 +87,7 @@ export const load = (async ({ locals, parent }) => {
 		...(inherited && inheritedUsers
 			? { inheritedGrants: inherited.grants, inheritedUsers, scope: inherited.scope }
 			: {}),
+		title: unwrapFunctionStore(_)('members'),
 		users: users.map((u) => ({
 			...u,
 			email: members.find(({ id }) => id == u.guid)?.username ?? u.guid

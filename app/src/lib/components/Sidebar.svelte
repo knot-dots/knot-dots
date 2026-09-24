@@ -6,7 +6,7 @@
 	import { type DndEvent, dragHandle, dragHandleZone } from 'svelte-dnd-action';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
-	import ChevronDoubleLeft from '~icons/flowbite/chevron-double-left-outline';
+	import CloseSidebar from '~icons/flowbite/close-sidebar-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Grid from '~icons/flowbite/grid-solid';
@@ -19,6 +19,7 @@
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
 	import saveContainer from '$lib/client/saveContainer';
+	import saveUser from '$lib/client/saveUser';
 	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
 	import OrganizationMenu from '$lib/components/OrganizationMenu.svelte';
@@ -31,9 +32,10 @@
 		getOrganizationURL,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
-		payloadTypes
+		payloadTypes,
+		user as userSchema
 	} from '$lib/models';
-	import { ability, applicationState, mayCreateContainer, user } from '$lib/stores';
+	import { ability, applicationState, mayCreateContainer, type User, user } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
 	let favoriteList = getFavoriteListContext();
@@ -88,6 +90,26 @@
 			} else {
 				const error = await response.json();
 				alert(error.message);
+			}
+		};
+	}
+
+	function updateUserFavorite(user: User, favorite: Favorite[]) {
+		return async () => {
+			const parseResult = userSchema.safeParse({
+				family_name: user.familyName,
+				given_name: user.givenName,
+				guid: user.guid,
+				realm: env.PUBLIC_KC_REALM,
+				settings: { ...user.settings, favorite }
+			});
+
+			if (parseResult.success) {
+				const response = await saveUser(parseResult.data);
+				if (!response.ok) {
+					const error = await response.json();
+					alert(error.message);
+				}
 			}
 		};
 	}
@@ -148,6 +170,14 @@
 		}))
 	);
 
+	let favoriteItemsUser = $derived(
+		favoriteList.user.map((favorite) => ({
+			...favorite,
+			guid: favorite.href,
+			href: visibleFavoriteHref(favorite.href)
+		}))
+	);
+
 	function handleDndConsiderOrganization(
 		event: CustomEvent<DndEvent<Favorite & { guid: string }>>
 	) {
@@ -185,6 +215,20 @@
 		);
 		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
 	}
+
+	function handleDndConsiderUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
+		favoriteItemsUser = event.detail.items;
+	}
+
+	function handleDndFinalizeUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
+		favoriteItemsUser = event.detail.items;
+		favoriteList.user = favoriteItemsUser.map(({ href, icon, title }) => ({
+			href,
+			icon,
+			title
+		}));
+		updateUserFavorite($user, favoriteList.user)();
+	}
 </script>
 
 <header>
@@ -199,7 +243,7 @@
 	</a>
 
 	<button class="action-button" onclick={() => sidebar.collapse()} type="button">
-		<ChevronDoubleLeft />
+		<CloseSidebar />
 		<span class="is-visually-hidden">{$_('collapse_sidebar')}</span>
 	</button>
 </header>
@@ -299,7 +343,9 @@
 		{/if}
 	</div>
 
-	<AdministrationMenu container={page.data.currentOrganization} />
+	{#if $ability.can('update', page.data.currentOrganization)}
+		<AdministrationMenu container={page.data.currentOrganization} />
+	{/if}
 </div>
 
 {#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization)}
@@ -400,7 +446,9 @@
 				{/if}
 			</div>
 
-			<AdministrationMenu container={page.data.currentOrganizationalUnit} />
+			{#if $ability.can('update', page.data.currentOrganizationalUnit)}
+				<AdministrationMenu container={page.data.currentOrganizationalUnit} />
+			{/if}
 		{/if}
 	</div>
 {/if}
@@ -422,6 +470,52 @@
 					<span>{$_('workspace.profile')}</span>
 				</a>
 			</li>
+
+			<li>
+				<ul
+					class="sidebar-menu"
+					onconsider={handleDndConsiderUser}
+					onfinalize={handleDndFinalizeUser}
+					use:dragHandleZone={{
+						dropTargetStyle: {},
+						flipDurationMs: 100,
+						items: favoriteItemsUser,
+						type: 'user'
+					}}
+				>
+					{#each favoriteItemsUser as item, index (item.guid)}
+						{@const href = page.url.searchParams.size
+							? `${page.url.pathname}?${page.url.searchParams.toString()}`
+							: page.url.pathname}
+						<li>
+							{#if $applicationState.containerDetailView.editable}
+								<span
+									class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+									use:dragHandle
+								>
+									<DragHandle />
+								</span>
+							{/if}
+							<a
+								class="sidebar-menu-item"
+								class:sidebar-menu-item--active={item.href === href}
+								href={item.href}
+							>
+								{#if item.icon}
+									<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+								{:else}
+									<StarSolid />
+								{/if}
+								<span>{item.title}</span>
+							</a>
+							<EditableFavorite
+								bind:favorite={favoriteList.user[index]}
+								onchange={updateUserFavorite($user, favoriteList.user)}
+							/>
+						</li>
+					{/each}
+				</ul>
+			</li>
 		</ul>
 	</div>
 {/if}
@@ -441,6 +535,10 @@
 		flex-direction: row;
 		justify-content: space-between;
 		padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+	}
+
+	header .action-button {
+		color: var(--color-text-muted);
 	}
 
 	.sidebar-panel {

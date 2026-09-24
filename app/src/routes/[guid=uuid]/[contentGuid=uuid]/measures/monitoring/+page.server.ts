@@ -53,7 +53,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 			container,
 			containers: filterVisible(containers, locals.user),
 			revisions: filterVisible(revisions, locals.user),
-			title: `${container.payload.title} / ${t('workspace.measures.title')} / ${t('workspace.view.monitoring')}`
+			title: t('workspace.monitoring.title')
 		};
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {

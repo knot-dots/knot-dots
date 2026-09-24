@@ -6,6 +6,7 @@ import { page } from '$app/stores';
 import defineAbilityFor from '$lib/authorization';
 import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+import type { Favorite } from '$lib/contexts/favoriteList';
 import {
 	type AnyPayload,
 	type ApplicationState,
@@ -51,6 +52,7 @@ export type User = {
 	isAuthenticated: boolean;
 	roles: string[];
 	settings: {
+		favorite?: Favorite[];
 		features?: string[];
 	};
 };

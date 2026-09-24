@@ -1,4 +1,3 @@
-import { Roarr as log } from 'roarr';
 import { type DatabaseConnection, sql } from 'slonik';
 import { z } from 'zod';
 import { createFeatureDecisions } from '$lib/features';
@@ -153,21 +152,6 @@ export async function applyComputedManagedBy<T extends ManagedByComparable>(
 		const value = computed.get(container.guid);
 		if (value === undefined) {
 			continue;
-		}
-		// The stored column is expected to carry the effective (nearest) manager,
-		// which the accumulated array orders first.
-		if (container.managed_by[0] !== value[0]) {
-			log.warn(
-				{
-					guid: container.guid,
-					type: container.payload.type,
-					organization: container.organization,
-					organizational_unit: container.organizational_unit,
-					managed_by: container.managed_by,
-					computed_managed_by: value
-				},
-				'[managed_by] stored/computed discrepancy'
-			);
 		}
 		container.computed_managed_by = value;
 		container.managed_by = value;

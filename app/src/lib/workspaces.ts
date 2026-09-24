@@ -107,7 +107,7 @@ export const strategyProgramTypes = [
 ] as const;
 
 export const workspaces: WorkspaceDefinition[] = [
-	// Goals planning
+	// Goal setting
 	{
 		key: 'strategies',
 		icon: Compass,
@@ -154,12 +154,12 @@ export const workspaces: WorkspaceDefinition[] = [
 		}
 	},
 	{
-		key: 'measure-monitoring',
+		key: 'monitoring',
 		icon: ChartBar,
 		module: 'implementation_planning',
 		views: {
-			default: '/measures/monitoring',
-			monitoring: '/measures/monitoring'
+			default: '/monitoring',
+			monitoring: '/monitoring'
 		}
 	},
 	{
@@ -173,7 +173,7 @@ export const workspaces: WorkspaceDefinition[] = [
 			table: '/tasks/table'
 		}
 	},
-	// Effect measurement
+	// Impact measurement
 	{
 		key: 'indicators',
 		icon: ChartLine,
@@ -239,7 +239,7 @@ export const workspaces: WorkspaceDefinition[] = [
 		icon: BookOpenOutline,
 		module: 'knowledge_transfer',
 		views: {
-			default: '/knowledge/level',
+			default: '/knowledge/catalog',
 			catalog: '/knowledge/catalog',
 			level: '/knowledge/level',
 			table: '/knowledge/table'
@@ -301,7 +301,6 @@ export const workspaces: WorkspaceDefinition[] = [
 		views: {
 			default: '/all/catalog',
 			catalog: '/all/catalog',
-			level: '/all/level',
 			table: '/all/table'
 		}
 	},

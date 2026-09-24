@@ -104,6 +104,7 @@ export const load = (async ({ locals, parent }) => {
 			? { inheritedGrants, inheritedUsers, scope }
 			: {}),
 		managedOrganizationalUnits,
+		title: unwrapFunctionStore(_)('workspace.users.title'),
 		users: [...usersByGuid.values()].map(withEmail)
 	};
 }) satisfies PageServerLoad;

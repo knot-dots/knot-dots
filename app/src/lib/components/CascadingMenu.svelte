@@ -83,6 +83,7 @@
 
 <style>
 	.dropdown {
+		--dropdown-button-default-background: transparent;
 		--dropdown-panel-background: var(--color-surface-container);
 		--dropdown-panel-border-color: var(--color-border-raised);
 		--dropdown-panel-border-radius: 16px;

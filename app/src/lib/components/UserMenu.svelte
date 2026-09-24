@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
+	import { goto } from '$app/navigation';
 	import { cubicInOut } from 'svelte/easing';
 	import { createMenu } from 'svelte-headlessui';
 	import { slide } from 'svelte/transition';
@@ -8,7 +9,10 @@
 	import ArrowRightToBracket from '~icons/flowbite/arrow-right-to-bracket-outline';
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import Close from '~icons/flowbite/close-outline';
+	import ApiKey from '~icons/flowbite/api-key-outline';
 	import Cog from '~icons/knotdots/cog';
+	import { page } from '$app/state';
+	import { createFeatureDecisions } from '$lib/features';
 	import ProfileSettingsDialog from '$lib/components/ProfileSettingsDialog.svelte';
 	import { user } from '$lib/stores';
 
@@ -32,6 +36,8 @@
 
 		if (selected === 'settings') {
 			dialog.showModal();
+		} else if (selected === 'tokens') {
+			goto('/me/settings/tokens');
 		} else if (selected === 'logout') {
 			signOut();
 		}
@@ -74,6 +80,17 @@
 						<span class="truncated">{$_('profile.settings')}</span>
 					</button>
 				</li>
+				{#if createFeatureDecisions(page.data.features).useMcpTokenMenu()}
+					<li
+						class={['menu-item', ...($menu.active === 'tokens' ? ['menu-item--active'] : [])]}
+						use:menu.item={{ value: 'tokens' }}
+					>
+						<button type="button">
+							<ApiKey />
+							<span class="truncated">{$_('mcp_tokens.title')}</span>
+						</button>
+					</li>
+				{/if}
 				<li
 					class={[
 						'menu-item',
