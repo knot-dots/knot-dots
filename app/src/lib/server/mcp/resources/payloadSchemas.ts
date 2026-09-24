@@ -4,41 +4,28 @@ import {
 	type McpServer
 } from '@modelcontextprotocol/server';
 import { z } from 'zod';
-import { getPayloadSchema, payloadTypes, type PayloadType } from '$lib/models';
-
-export const mcpPayloadSchemaTypes = [
-	payloadTypes.enum.page,
-	payloadTypes.enum.program,
-	payloadTypes.enum.goal,
-	payloadTypes.enum.measure,
-	payloadTypes.enum.simple_measure,
-	payloadTypes.enum.task,
-	payloadTypes.enum.knowledge,
-	payloadTypes.enum.indicator_template,
-	payloadTypes.enum.resource_v2
-] as const satisfies readonly PayloadType[];
+import { getPayloadSchema } from '$lib/models';
+import {
+	mcpPayloadTypes,
+	mcpPayloadTypeValues,
+	type McpPayloadType
+} from '$lib/server/mcp/contracts/payloads';
 
 export const payloadSchemaCatalogUri = 'knotdots://schemas/payloads';
 
-const payloadSchemaTypeSet = new Set<PayloadType>(mcpPayloadSchemaTypes);
-
-function payloadSchemaUri(payloadType: (typeof mcpPayloadSchemaTypes)[number]) {
+function payloadSchemaUri(payloadType: McpPayloadType) {
 	return `${payloadSchemaCatalogUri}/${payloadType}`;
-}
-
-function isMcpPayloadSchemaType(value: string): value is (typeof mcpPayloadSchemaTypes)[number] {
-	return payloadSchemaTypeSet.has(value as PayloadType);
 }
 
 const catalog = {
 	description:
 		'Canonical payload validation schemas exposed through MCP. Schema availability does not imply that an MCP creation tool is available.',
-	payloads: mcpPayloadSchemaTypes.map((type) => ({ type, uri: payloadSchemaUri(type) })),
+	payloads: mcpPayloadTypeValues.map((type) => ({ type, uri: payloadSchemaUri(type) })),
 	schemaVersion: 1
 };
 
 const jsonSchemas = new Map(
-	mcpPayloadSchemaTypes.map(
+	mcpPayloadTypeValues.map(
 		(type) =>
 			[
 				type,
@@ -77,7 +64,7 @@ export function registerPayloadSchemaResources(server: McpServer) {
 		'payload-schema',
 		new ResourceTemplate(`${payloadSchemaCatalogUri}/{type}`, {
 			complete: {
-				type: (value) => mcpPayloadSchemaTypes.filter((type) => type.startsWith(value))
+				type: (value) => mcpPayloadTypeValues.filter((type) => type.startsWith(value))
 			},
 			list: undefined
 		}),
@@ -87,10 +74,11 @@ export function registerPayloadSchemaResources(server: McpServer) {
 			title: 'Payload schema'
 		},
 		(uri, variables) => {
-			const payloadType = variables.type;
-			if (typeof payloadType !== 'string' || !isMcpPayloadSchemaType(payloadType)) {
+			const parseResult = mcpPayloadTypes.safeParse(variables.type);
+			if (!parseResult.success) {
 				throw new ResourceNotFoundError(uri.href);
 			}
+			const payloadType = parseResult.data;
 			const schema = jsonSchemas.get(payloadType);
 			if (!schema) throw new ResourceNotFoundError(uri.href);
 

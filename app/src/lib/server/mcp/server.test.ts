@@ -4,10 +4,8 @@ import {
 	PROTOCOL_VERSION_META_KEY
 } from '@modelcontextprotocol/server';
 import { beforeEach, expect, test, vi } from 'vitest';
-import {
-	mcpPayloadSchemaTypes,
-	payloadSchemaCatalogUri
-} from '$lib/server/mcp/resources/payloadSchemas';
+import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
+import { payloadSchemaCatalogUri } from '$lib/server/mcp/resources/payloadSchemas';
 import { createKnotDotsMcpHandler, mcpHandler } from './server';
 
 const userId = '00000000-0000-4000-8000-000000000002';
@@ -393,7 +391,7 @@ test('serves a catalog containing exactly the curated payload schemas', async ()
 	expect(JSON.parse(content.text)).toEqual({
 		description:
 			'Canonical payload validation schemas exposed through MCP. Schema availability does not imply that an MCP creation tool is available.',
-		payloads: mcpPayloadSchemaTypes.map((type) => ({
+		payloads: mcpPayloadTypeValues.map((type) => ({
 			type,
 			uri: `${payloadSchemaCatalogUri}/${type}`
 		})),
@@ -402,7 +400,7 @@ test('serves a catalog containing exactly the curated payload schemas', async ()
 });
 
 test('serves each curated payload as a direct JSON Schema', async () => {
-	for (const payloadType of mcpPayloadSchemaTypes) {
+	for (const payloadType of mcpPayloadTypeValues) {
 		const uri = `${payloadSchemaCatalogUri}/${payloadType}`;
 		const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), {
 			authInfo
