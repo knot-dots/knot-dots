@@ -12,7 +12,11 @@ export const mcpParentRelationPredicates = z.enum([
 ]);
 
 const parentRelation = z.strictObject({
-	parentGuid: z.uuid().describe('GUID of the existing visible parent container.'),
+	parentGuid: z
+		.uuid()
+		.describe(
+			'GUID of an existing parent container that is visible to you in the same organization.'
+		),
 	predicate: mcpParentRelationPredicates.describe(
 		'Structural relation from the new container to the parent.'
 	)
