@@ -76,9 +76,6 @@ export default function defineAbilityFor(user: User) {
 		can('create', commonTypes, {
 			'user_grant.subordinates': 'create'
 		});
-		can('update', payloadTypes.enum.program, ['chapterType'], {
-			'user_grant.self': 'manage-users'
-		});
 
 		// —— rows on the container's own matrix ——
 		can('update', payloadTypes.options, { 'user_grant.own': 'update' });
@@ -111,10 +108,6 @@ export default function defineAbilityFor(user: User) {
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.members,
 			'user_grant.member': true
-		});
-		can('read', payloadTypes.options, {
-			'payload.visibility': visibility.enum.members,
-			'user_grant.self': 'manage-users'
 		});
 		can('read', payloadTypes.options, {
 			'payload.visibility': visibility.enum.organization,
