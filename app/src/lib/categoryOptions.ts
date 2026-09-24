@@ -9,7 +9,6 @@ import {
 export type CategoryOption = {
 	label: string;
 	value: string;
-	guid: string;
 	icon?: string;
 	subOptions?: CategoryOption[];
 };
@@ -42,13 +41,12 @@ function findTermsForCategory(
 }
 
 function toOption(term: Container<TermPayload>): CategoryOption {
-	const value = term.payload.value ?? term.payload.title ?? term.guid;
+	const value = term.guid;
 	const filterLabel = term.payload.filterLabel?.trim();
 	const label = filterLabel ? filterLabel : (term.payload.title ?? value);
 	return {
 		label,
 		value,
-		guid: term.guid,
 		icon: term.payload.icon
 	};
 }
@@ -71,9 +69,6 @@ export function buildCategoryOptionsFromContainers(
 	}
 
 	for (const category of categories) {
-		const key = category.payload.key;
-		if (!key) continue;
-
 		const options = findTermsForCategory(category, terms).map((term) => {
 			const option = toOption(term);
 			const subterms = (subtermsByParent.get(term.guid) ?? []).filter(
@@ -85,22 +80,14 @@ export function buildCategoryOptionsFromContainers(
 			return option;
 		});
 
-		result[key] = sortOptions(options);
-	}
-
-	for (const key of Object.keys(result)) {
-		if (!result[key]) {
-			result[key] = [];
-		}
+		result[category.guid] = sortOptions(options);
 	}
 
 	return result;
 }
 
 export function getCategoryKeys(categories: Container<CategoryPayload>[]): string[] {
-	return deduplicate(
-		categories.map((category) => category.payload.key).filter((key) => key !== undefined)
-	);
+	return deduplicate(categories.map((category) => category.guid));
 }
 
 export function buildCategoryFacetsWithCounts(
@@ -116,12 +103,10 @@ export function buildCategoryFacetsWithCounts(
 	) => {
 		if (!option) return;
 		const fallbackCount = facetMap.get(option.value) ?? 0;
-		const resolvedCount =
-			countsForFacet[option.value] ?? (option.guid ? countsForFacet[option.guid] : undefined);
+		const resolvedCount = countsForFacet[option.value] ?? countsForFacet[option.value];
 		const count = resolvedCount ?? fallbackCount;
 
 		facetMap.set(option.value, count);
-		if (option.guid) facetMap.set(option.guid, count);
 		option.subOptions?.forEach((sub) => applyCounts(sub, countsForFacet, facetMap));
 	};
 
@@ -139,12 +124,7 @@ export function buildCategoryFacetsWithCounts(
 
 export function buildCategoryLabels(categories: Container<CategoryPayload>[]) {
 	return new Map(
-		categories
-			.filter(
-				(category): category is Container<CategoryPayload & { key: string }> =>
-					category.payload.key !== undefined
-			)
-			.map((category): [string, string] => [category.payload.key, category.payload.title])
+		categories.map((category): [string, string] => [category.guid, category.payload.title])
 	);
 }
 

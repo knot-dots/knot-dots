@@ -742,8 +742,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				...newTerm,
 				payload: {
 					...newTerm.payload,
-					title: termName,
-					value: termName.toLowerCase().replace(/\s+/g, '-')
+					title: termName
 				},
 				relation: [
 					{

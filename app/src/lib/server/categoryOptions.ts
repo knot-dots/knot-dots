@@ -1,3 +1,4 @@
+import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import {
 	buildCategoryLabels,
@@ -6,9 +7,8 @@ import {
 	getCategoryKeys
 } from '$lib/categoryOptions';
 import { isCategoryContainer, isTermContainer, payloadTypes } from '$lib/models';
-import type { User } from '$lib/stores';
 import { getManyContainers } from '$lib/server/db';
-import type { DatabaseConnection } from 'slonik';
+import type { User } from '$lib/stores';
 
 type Connect = <T>(fn: (connection: DatabaseConnection) => Promise<T>) => Promise<T>;
 
@@ -37,10 +37,7 @@ export async function loadCategoryContext(params: {
 
 	const objectTypesPerKey: Record<string, string[]> = {};
 	for (const category of categories) {
-		const key = category.payload.key;
-		if (key) {
-			objectTypesPerKey[key] = category.payload.objectTypes ?? [];
-		}
+		objectTypesPerKey[category.guid] = category.payload.objectTypes ?? [];
 	}
 
 	return {

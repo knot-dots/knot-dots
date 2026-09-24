@@ -54,49 +54,39 @@ function translate(key: string) {
 }
 
 type TermSeed = {
-	value: string;
 	title: string;
 	description?: string;
 };
 
 type CategorySeed = {
 	description?: string;
-	key: string;
 	title: string;
 	terms: TermSeed[];
 };
 
 const defaultCategorySeeds: CategorySeed[] = [
 	{
-		key: 'sdg',
 		title: translate('category'),
 		terms: sustainableDevelopmentGoals.options.map((value) => ({
-			title: translate(value),
-			value
+			title: translate(value)
 		}))
 	},
 	{
-		key: 'topic',
 		title: translate('topic'),
 		terms: topics.options.map((value) => ({
-			title: translate(value),
-			value
+			title: translate(value)
 		}))
 	},
 	{
-		key: 'policyFieldBNK',
 		title: translate('policy_field_bnk'),
 		terms: policyFieldBNK.options.map((value) => ({
-			title: translate(value),
-			value
+			title: translate(value)
 		}))
 	},
 	{
-		key: 'audience',
 		title: translate('audience'),
 		terms: audience.options.map((value) => ({
-			title: translate(value),
-			value
+			title: translate(value)
 		}))
 	}
 ];
@@ -148,8 +138,6 @@ async function seedForOrganization(pool: DatabasePool, organization: Container<A
 		return true;
 	}
 
-	// Removed ensureCategoryKeys call
-
 	const terms = (
 		await pool.connect(getManyContainers([], { type: [payloadTypes.enum.term] }, 'alpha'))
 	)
@@ -157,24 +145,7 @@ async function seedForOrganization(pool: DatabasePool, organization: Container<A
 		.filter((container) => container.organization === organization.guid);
 
 	for (const seed of defaultCategorySeeds) {
-		let category = categories.find((candidate) => candidate.payload.key === seed.key);
-
-		if (!category) {
-			const byTitle = categories.find(
-				(candidate) =>
-					candidate.payload.title === seed.title || candidate.payload.title === seed.key
-			);
-
-			if (byTitle) {
-				if (byTitle.payload.key !== seed.key) {
-					byTitle.payload = { ...byTitle.payload, key: seed.key };
-					const updated = await pool.connect(updateContainer(byTitle as ModifiedContainer));
-					category = { ...updated, relation: byTitle.relation } as Container<CategoryPayload>;
-				} else {
-					category = byTitle;
-				}
-			}
-		}
+		let category = categories.find((candidate) => candidate.payload.title === seed.title);
 
 		if (!category) {
 			category = await createCategory(pool, organization, seed);
@@ -198,7 +169,6 @@ async function createCategory(
 	const newCategory = containerOfType(payloadTypes.enum.category, organization) as NewContainer;
 
 	const payload = newCategory.payload as Container<CategoryPayload>['payload'];
-	payload.key = seed.key;
 	payload.title = seed.title;
 	if (seed.description) {
 		payload.description = seed.description;
@@ -223,7 +193,7 @@ async function ensureTermsForCategory(
 	const relationsToUpdate: Relation[] = [];
 
 	for (const [index, termSeed] of seed.terms.entries()) {
-		let term = allTerms.find((candidate) => candidate.payload.value === termSeed.value);
+		let term = allTerms.find((candidate) => candidate.payload.title === termSeed.title);
 
 		if (!term) {
 			term = await createTerm(pool, category, termSeed, index);
@@ -301,18 +271,16 @@ async function ensureCategoryMetadata(
 	category: Container<CategoryPayload>,
 	seed: CategorySeed
 ) {
-	const needsKeyUpdate = category.payload.key !== seed.key;
 	const needsTitleUpdate = category.payload.title !== seed.title;
 	const needsDescriptionUpdate =
 		seed.description !== undefined && category.payload.description !== seed.description;
 
-	if (!needsKeyUpdate && !needsTitleUpdate && !needsDescriptionUpdate) {
+	if (!needsTitleUpdate && !needsDescriptionUpdate) {
 		return category;
 	}
 
 	category.payload = {
 		...category.payload,
-		key: needsKeyUpdate ? seed.key : category.payload.key,
 		title: needsTitleUpdate ? seed.title : category.payload.title,
 		description: needsDescriptionUpdate ? seed.description : category.payload.description
 	};
@@ -356,7 +324,6 @@ async function createTerm(
 
 	const payload = newTerm.payload as TermPayload;
 	payload.title = seed.title;
-	payload.value = seed.value;
 	if (seed.description) {
 		payload.description = seed.description;
 	}

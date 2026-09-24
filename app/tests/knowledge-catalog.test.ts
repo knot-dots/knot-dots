@@ -61,11 +61,11 @@ test.describe('Knowledge catalog overlay', () => {
 		testOrganization
 	}) => {
 		const { category, terms } = testCategoryWithTerms;
-		const categoryKey = category.payload.key as string;
+		const categoryKey = category.guid;
 		const suffix = test.info().project.name;
 
-		const termAValue = terms[0].payload.value as string;
-		const termBValue = terms[1].payload.value as string;
+		const termAValue = terms[0].guid;
+		const termBValue = terms[1].guid;
 
 		const makeKnowledge = (title: string, termValues: string[]) => {
 			const template = containerOfType(
@@ -129,8 +129,8 @@ test.describe('Knowledge catalog overlay', () => {
 		testOrganization
 	}) => {
 		const { category, terms } = testCategoryWithTerms;
-		const categoryKey = category.payload.key as string;
-		const termAValue = terms[0].payload.value as string;
+		const categoryKey = category.guid;
+		const termAValue = terms[0].guid;
 
 		// Use a suffix to avoid title collisions with leftover data from crashed runs.
 		const suffix = test.info().project.name;
