@@ -8,9 +8,7 @@ export type CategoryOption = {
 	subOptions?: CategoryOption[];
 };
 
-export type CategoryOptions = Record<string, CategoryOption[]> & {
-	__categoryLabels__?: Record<string, string>;
-};
+export type CategoryOptions = Record<string, CategoryOption[]>;
 
 export type CategoryContext = {
 	options: CategoryOptions;
@@ -18,8 +16,6 @@ export type CategoryContext = {
 	keys: string[];
 	objectTypesPerKey: Record<string, string[]>;
 };
-
-const LABELS_KEY = '__categoryLabels__';
 
 function sortOptions(options: CategoryOption[]) {
 	return options.toSorted((a, b) =>
@@ -55,7 +51,6 @@ export function buildCategoryOptionsFromContainers(
 	categories: Array<Container<CategoryPayload>>,
 	terms: Array<Container<TermPayload>>
 ): CategoryOptions {
-	const categoryLabels: Record<string, string> = {};
 	const result: CategoryOptions = {};
 	const subtermsByParent = new Map<string, Container<TermPayload>[]>();
 
@@ -72,7 +67,6 @@ export function buildCategoryOptionsFromContainers(
 	for (const category of categories) {
 		const key = category.payload.key;
 		if (!key) continue;
-		categoryLabels[key] = category.payload.title ?? key;
 
 		const options = findTermsForCategory(category, terms).map((term) => {
 			const option = toOption(term);
@@ -94,12 +88,11 @@ export function buildCategoryOptionsFromContainers(
 		}
 	}
 
-	result[LABELS_KEY] = categoryLabels;
 	return result;
 }
 
-export function getCategoryKeys(options: CategoryOptions): string[] {
-	return Object.keys(options).filter((key) => key !== LABELS_KEY);
+export function getCategoryKeys(categories: Container<CategoryPayload>[]): string[] {
+	return categories.map((category) => category.payload.key).filter((key) => key !== undefined);
 }
 
 export function buildCategoryFacetsWithCounts(
@@ -125,7 +118,6 @@ export function buildCategoryFacetsWithCounts(
 	};
 
 	for (const [rawKey, list] of Object.entries(options)) {
-		if (rawKey === LABELS_KEY) continue;
 		if (!Array.isArray(list)) continue;
 		const facetMap = new Map<string, number>();
 		const countsForFacet = counts[rawKey] ?? {};
@@ -137,14 +129,15 @@ export function buildCategoryFacetsWithCounts(
 	return result;
 }
 
-export function buildCategoryLabels(options: CategoryOptions) {
-	const labels = new Map<string, string>();
-
-	for (const [facetKey, label] of Object.entries(options[LABELS_KEY] ?? {})) {
-		labels.set(facetKey, label);
-	}
-
-	return labels;
+export function buildCategoryLabels(categories: Container<CategoryPayload>[]) {
+	return new Map(
+		categories
+			.filter(
+				(category): category is Container<CategoryPayload & { key: string }> =>
+					category.payload.key !== undefined
+			)
+			.map((category): [string, string] => [category.payload.key, category.payload.title])
+	);
 }
 
 export function filterCategoryContext(
@@ -171,13 +164,10 @@ export function filterCategoryContext(
 			filteredOptions[key] = context.options[key];
 		}
 	}
-	if (context.options.__categoryLabels__) {
-		filteredOptions.__categoryLabels__ = context.options.__categoryLabels__;
-	}
 
 	return {
 		options: filteredOptions,
-		labels: buildCategoryLabels(filteredOptions),
+		labels: new Map(context.labels.entries().filter(([key]) => filteredKeys.includes(key))),
 		keys: filteredKeys,
 		objectTypesPerKey: context.objectTypesPerKey
 	};
