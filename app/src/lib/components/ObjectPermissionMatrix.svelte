@@ -476,10 +476,16 @@
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* the hatched rows mark the inherited matrix as read-only;
-	   pattern and colors as specified in the Figma component */
+	/* the hatched rows mark the inherited matrix as read-only; the pattern of
+	   the Figma component (#fff5f5/#ffebeb), overlaid at 75% like in the design */
 	td.locked {
-		background: repeating-linear-gradient(45deg, #fff5f5, #fff5f5 2px, #ffebeb 2px, #ffebeb 4px);
+		background: repeating-linear-gradient(
+			45deg,
+			rgba(255, 245, 245, 0.75),
+			rgba(255, 245, 245, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 4px
+		);
 		cursor: not-allowed;
 	}
 
