@@ -33,7 +33,7 @@ export async function loadCategoryContext(params: {
 		categories,
 		filterVisible(containers.filter(isTermContainer), params.user)
 	);
-	const keys = getCategoryKeys(options);
+	const keys = getCategoryKeys(categories);
 
 	const objectTypesPerKey: Record<string, string[]> = {};
 	for (const category of categories) {
@@ -45,7 +45,7 @@ export async function loadCategoryContext(params: {
 
 	return {
 		options,
-		labels: buildCategoryLabels(options),
+		labels: buildCategoryLabels(categories),
 		keys,
 		objectTypesPerKey
 	};

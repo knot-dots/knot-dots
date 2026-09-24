@@ -915,7 +915,7 @@ export function isReservedContextSlug(slug: string) {
 	]).has(slug.toLowerCase());
 }
 
-function deduplicate<T>(v: T[]) {
+export function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
 

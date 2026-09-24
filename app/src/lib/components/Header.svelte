@@ -385,7 +385,7 @@
 						: [...foci.entries()]
 								.map(([k, v]) => ({
 									count: v,
-									label: facetLabels.get(k) ?? $_(k),
+									label: $_(k),
 									value: k,
 									subOptions: undefined
 								}))
