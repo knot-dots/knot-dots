@@ -667,8 +667,16 @@ export function createContainer(
 	};
 }
 
+export type AfterContainerUpdated = (
+	container: Container<AnyPayload>,
+	connection: DatabaseTransactionConnection
+) => Promise<void>;
+
+// afterUpdate runs inside the updating transaction, before indexing events
+// are enqueued, so additional writes commit or roll back with the revision.
 export function updateContainer(
-	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
+	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>,
+	{ afterUpdate }: { afterUpdate?: AfterContainerUpdated } = {}
 ) {
 	return async (connection: DatabaseConnection) => {
 		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
@@ -738,8 +746,9 @@ export function updateContainer(
 			}
 
 			const [updated] = await enrichContainers(txConnection, [
-				{ ...containerResult, relation: container.relation, user: userResult }
+				{ ...containerResult, relation: container.relation, user: [...userResult] }
 			]);
+			await afterUpdate?.(updated, txConnection);
 			return {
 				affectedGuids: affectedContainerGuids([...deletedRelations, ...container.relation]),
 				result: updated
