@@ -1,17 +1,8 @@
 import { error, json } from '@sveltejs/kit';
 import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
-import { deepEqual } from 'ts-deep-equal';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import {
-	etag,
-	getAvailableInScopeGuids,
-	isContainerWithEditorialState,
-	isIndicatorTemplateContainer,
-	isOrganizationContainer,
-	modifiedContainer,
-	predicates
-} from '$lib/models';
+import { etag, modifiedContainer, predicates, type AnyPayload } from '$lib/models';
 import { isProtectedContainerRelationPredicate } from '$lib/relations';
 import {
 	getAllContainerRevisionsByGuid,
@@ -19,6 +10,7 @@ import {
 	updateContainer
 } from '$lib/server/db';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
+import { authorizeContainerUpdate, ContainerUpdateError } from '$lib/server/containerUpdate';
 import type { RequestHandler } from './$types';
 
 export const GET = (async ({ locals, params }) => {
@@ -67,15 +59,24 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
-		// Authorization runs against the container addressed by the URL, so the
-		// body must not name another one.
-		if (parseResult.data.guid !== params.guid) {
-			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+		let payload: AnyPayload;
+		try {
+			payload = authorizeContainerUpdate({
+				current: container,
+				next: parseResult.data,
+				user: locals.user
+			});
+		} catch (e) {
+			if (e instanceof ContainerUpdateError) {
+				error(e.kind === 'forbidden' ? 403 : 422, {
+					message: unwrapFunctionStore(_)(
+						e.kind === 'forbidden' ? 'error.forbidden' : 'error.unprocessable_entity'
+					)
+				});
+			}
+			throw e;
 		}
 		const ability = defineAbilityFor(locals.user);
-		if (ability.cannot('update', container)) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
 		const protectedRelations = container.relation.filter(({ predicate }) =>
 			isProtectedContainerRelationPredicate(predicate)
 		);
@@ -94,12 +95,6 @@ export const POST = (async ({ locals, params, request }) => {
 		if (hasSpoofedProtectedRelation) {
 			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 		}
-		if (
-			getAvailableInScopeGuids(container).length > 0 &&
-			(!('template' in parseResult.data.payload) || parseResult.data.payload.template !== true)
-		) {
-			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
-		}
 		const relations = [
 			...parseResult.data.relation.filter(
 				({ predicate }) => !isProtectedContainerRelationPredicate(predicate)
@@ -115,31 +110,6 @@ export const POST = (async ({ locals, params, request }) => {
 		if (
 			parseResult.data.organizational_unit !== container.organizational_unit &&
 			ability.cannot('update', container, 'organizational_unit')
-		) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
-		if (
-			isOrganizationContainer(container) &&
-			isOrganizationContainer(parseResult.data) &&
-			parseResult.data.payload.customDomain !== container.payload.customDomain &&
-			ability.cannot('update', container, 'payload.customDomain')
-		) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
-		if (
-			isIndicatorTemplateContainer(container) &&
-			isIndicatorTemplateContainer(parseResult.data) &&
-			JSON.stringify(parseResult.data.payload.indicatorCategory) !==
-				JSON.stringify(container.payload.indicatorCategory) &&
-			ability.cannot('update', container, 'indicatorCategory')
-		) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
-		if (
-			isContainerWithEditorialState(container) &&
-			isContainerWithEditorialState(parseResult.data) &&
-			parseResult.data.payload.editorialState !== container.payload.editorialState &&
-			ability.cannot('update', container, 'payload.editorialState')
 		) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
@@ -175,27 +145,12 @@ export const POST = (async ({ locals, params, request }) => {
 			}
 		}
 
-		let aiContribution: number | undefined;
-
-		if (
-			'aiContribution' in container.payload &&
-			container.payload.aiContribution == 1 &&
-			'aiContribution' in parseResult.data.payload
-		) {
-			const { aiContribution: _, ...originalPayload } = container.payload;
-			const { aiContribution: __, ...currentPayload } = parseResult.data.payload;
-			aiContribution = deepEqual(originalPayload, currentPayload) ? 1 : 0.5;
-		}
-
 		try {
 			const result = await locals.pool.connect(async (connection) => {
 				const updated = await updateContainer({
 					...parseResult.data,
 					relation: relations,
-					payload: {
-						...parseResult.data.payload,
-						...(aiContribution !== undefined ? { aiContribution } : undefined)
-					},
+					payload,
 					// the own-matrix marker is owned by the grant endpoints, so
 					// revisions always carry the stored value forward
 					own_matrix: container.own_matrix,
