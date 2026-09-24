@@ -521,6 +521,7 @@
 	}
 
 	tr.section-row--inherited .inherit-toggle {
+		background-color: var(--color-green-025);
 		color: var(--color-green-900);
 	}
 
@@ -536,6 +537,7 @@
 	}
 
 	tr.section-row--inherited.inactive .inherit-toggle {
+		background-color: var(--color-gray-025);
 		color: var(--color-gray-900);
 	}
 
@@ -569,11 +571,16 @@
 		width: 1rem;
 	}
 
+	/* keep the toggle visible when the matrix is wider than the viewport;
+	   the sticky inset compensates the 16rem end padding of the wrapper */
 	.inherit-toggle {
 		align-items: center;
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.5rem;
+		padding-left: 0.5rem;
+		position: sticky;
+		right: calc(0.5rem - 16rem);
 	}
 
 	.inherit-toggle .toggle {
