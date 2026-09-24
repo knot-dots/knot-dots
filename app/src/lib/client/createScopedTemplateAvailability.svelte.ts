@@ -8,6 +8,7 @@ import { isScopedTemplateRoot } from '$lib/templateScopes';
 import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 
 interface Options {
+	active?: () => boolean | undefined;
 	candidateTypes: () => readonly PayloadType[];
 	organizationGuid: () => string;
 	scopeGuid: () => string | undefined;
@@ -16,6 +17,7 @@ interface Options {
 const templatableTypes = new Set<string>(templatablePayloadTypes);
 
 export default function createScopedTemplateAvailability({
+	active = () => true,
 	candidateTypes,
 	organizationGuid,
 	scopeGuid
@@ -32,7 +34,7 @@ export default function createScopedTemplateAvailability({
 	);
 
 	const availabilityResource = resource(
-		[() => enabled, () => candidateKey, organizationGuid, scopeGuid],
+		[() => enabled && active(), () => candidateKey, organizationGuid, scopeGuid],
 		async ([isEnabled, typesKey, organization, program], _, { signal }) => {
 			if (!isEnabled || !program) {
 				return { scopeGuid: program, organization, types: [] as PayloadType[] };

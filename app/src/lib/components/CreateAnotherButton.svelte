@@ -34,7 +34,10 @@
 	});
 
 	const templateAvailability = createCreationTemplateAvailability(
-		() => createDraft(container, payloadTypes.enum.goal),
+		() =>
+			$applicationState.containerDetailView.editable
+				? createDraft(container, payloadTypes.enum.goal)
+				: undefined,
 		() => program?.payload.chapterType ?? [payloadTypes.enum.goal, payloadTypes.enum.task]
 	);
 

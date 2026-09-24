@@ -52,6 +52,7 @@
 	let { container = $bindable(), layout, revisions }: Props = $props();
 
 	const templateAvailability = createScopedTemplateAvailability({
+		active: () => $applicationState.containerDetailView.editable,
 		candidateTypes: () => container.payload.chapterType,
 		organizationGuid: () => container.organization,
 		scopeGuid: () => container.guid

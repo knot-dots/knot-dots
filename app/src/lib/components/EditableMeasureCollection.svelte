@@ -52,7 +52,9 @@
 		'createContainerDialog'
 	);
 
-	const templateAvailability = createCreationTemplateAvailability(createItem);
+	const templateAvailability = createCreationTemplateAvailability(() =>
+		editable ? createItem() : undefined
+	);
 
 	function createItem() {
 		const item = {
