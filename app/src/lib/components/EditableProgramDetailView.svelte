@@ -297,6 +297,7 @@
 							<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 							<!-- svelte-ignore binding_property_non_reactive -->
 							<EditableChapter
+								{availableChapterTypes}
 								bind:container={filteredParts[i]}
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', part)}

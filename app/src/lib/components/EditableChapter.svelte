@@ -3,7 +3,6 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
@@ -23,7 +22,6 @@
 		overlayKey,
 		paramsFromFragment,
 		type PayloadType,
-		payloadTypes,
 		predicates,
 		type ProgramPayload
 	} from '$lib/models';
@@ -31,6 +29,7 @@
 	import { ability, newContainer } from '$lib/stores';
 
 	interface Props {
+		availableChapterTypes?: PayloadType[];
 		container: Container;
 		editable?: boolean;
 		isPartOf: Container<ProgramPayload>;
@@ -39,23 +38,13 @@
 	}
 
 	let {
+		availableChapterTypes = [],
 		container = $bindable(),
 		editable = false,
 		isPartOf,
 		preview = false,
 		relatedContainers
 	}: Props = $props();
-
-	const templateAvailability = createScopedTemplateAvailability({
-		candidateTypes: () => isPartOf.payload.chapterType,
-		organizationGuid: () => isPartOf.organization,
-		scopeGuid: () => isPartOf.guid
-	});
-	let availableChapterTypes = $derived(
-		isPartOf.payload.chapterType.filter(
-			(type) => type === payloadTypes.enum.text || templateAvailability.has(type)
-		)
-	);
 
 	let subsections = $state(
 		hasSection(container, relatedContainers).filter(
