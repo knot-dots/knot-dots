@@ -64,7 +64,7 @@ export const POST = (async ({ locals, params, request }) => {
 	});
 	const parseResult = modifiedContainer.safeParse(data);
 
-	if (!parseResult.success) {
+	if (!parseResult.success || parseResult.data.guid !== params.guid) {
 		error(422, parseResult.error);
 	} else {
 		const ability = defineAbilityFor(locals.user);
