@@ -20,6 +20,7 @@
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
+	import ObjectPermissionMatrix from '$lib/components/ObjectPermissionMatrix.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -324,15 +325,30 @@
 		{#snippet main()}
 			{#if permissionView}
 				<div class="matrix-wrapper">
-					<UserPermissionMatrix
-						container={data.container}
-						editable={isEditMode && $ability.can('manage-users', data.container)}
-						grants={data.grants}
-						oninvite={$ability.can('manage-users', data.container)
-							? () => inviteDialog.showModal()
-							: undefined}
-						{users}
-					/>
+					{#if data.inheritedGrants && data.inheritedUsers && data.scope}
+						<ObjectPermissionMatrix
+							container={data.container}
+							editable={isEditMode && $ability.can('manage-users', data.container)}
+							grants={data.grants}
+							inheritedGrants={data.inheritedGrants}
+							inheritedUsers={data.inheritedUsers}
+							oninvite={$ability.can('manage-users', data.container)
+								? () => inviteDialog.showModal()
+								: undefined}
+							scope={data.scope}
+							{users}
+						/>
+					{:else}
+						<UserPermissionMatrix
+							container={data.container}
+							editable={isEditMode && $ability.can('manage-users', data.container)}
+							grants={data.grants}
+							oninvite={$ability.can('manage-users', data.container)
+								? () => inviteDialog.showModal()
+								: undefined}
+							{users}
+						/>
+					{/if}
 				</div>
 				<ContextTabs slug="user-management" />
 			{:else}

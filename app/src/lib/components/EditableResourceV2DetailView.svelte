@@ -167,15 +167,15 @@
 		title: string,
 		temporaryGuid: string
 	): Container<ResourceDataPayload> {
-		let c = containerOfType(
-			payloadTypes.enum.resource_data,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as Container<ResourceDataPayload>;
+		let c = {
+			...containerOfType(payloadTypes.enum.resource_data, container),
+			managed_by: container.managed_by
+		} as Container<ResourceDataPayload>;
 
 		c.guid = temporaryGuid;
+		// the stub stands in for a child of the resource, so the resource's
+		// computed grants decide whether it may be edited
+		c.user_grant = container.user_grant;
 		c.payload.title = title;
 		c.payload.resourceDataType = resourceDataType;
 		c.payload.resource = container.guid;
@@ -319,13 +319,10 @@
 		let response: Response;
 
 		if (isNewContainer) {
-			const newContainer = containerOfType(
-				payloadTypes.enum.resource_data,
-				container.organization,
-				container.organizational_unit,
-				container.managed_by,
-				container.realm
-			) as NewContainer;
+			const newContainer = {
+				...containerOfType(payloadTypes.enum.resource_data, container),
+				managed_by: container.managed_by
+			} as NewContainer;
 
 			newContainer.payload = containerToSave.payload;
 			newContainer.relation = [

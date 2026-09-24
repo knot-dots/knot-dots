@@ -213,6 +213,9 @@ export const POST = (async ({ locals, params, request }) => {
 						...parseResult.data.payload,
 						...(aiContribution !== undefined ? { aiContribution } : undefined)
 					},
+					// the own-matrix marker is owned by the grant endpoints, so
+					// revisions always carry the stored value forward
+					own_matrix: container.own_matrix,
 					managed_by,
 					user: [
 						...parseResult.data.user.filter(

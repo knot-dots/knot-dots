@@ -1,8 +1,18 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
-import { isOrganizationalUnitContainer, isOrganizationContainer, predicates } from '$lib/models';
-import { getAllGrantsByContainers, getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
+import {
+	grantSetForSubjectOn,
+	isOrganizationalUnitContainer,
+	isOrganizationContainer,
+	predicates
+} from '$lib/models';
+import {
+	getAllGrantsByContainers,
+	getAllRelatedUsers,
+	getAllRelatedUsersByContainers,
+	getContainerByGuid
+} from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
 import type { PageServerLoad } from './$types';
 
@@ -33,9 +43,50 @@ export const load = (async ({ locals, parent }) => {
 
 	const members = await getMembers(container.organization);
 
+	// an organizational unit inherits its matrix from the organization, shown
+	// with the same toggle as measures and programs
+	let inherited;
+	let inheritedUsers;
+	if (isOrganizationalUnitContainer(container)) {
+		const [scope, sourceGrants, sourceUsers] = await Promise.all([
+			locals.pool.connect(getContainerByGuid(container.organization)),
+			locals.pool.connect(getAllGrantsByContainers([container.organization])),
+			locals.pool.connect(
+				getAllRelatedUsersByContainers(
+					[container.organization],
+					[
+						predicates.enum['is-admin-of'],
+						predicates.enum['is-collaborator-of'],
+						predicates.enum['is-head-of'],
+						predicates.enum['is-member-of']
+					]
+				)
+			)
+		]);
+		const inheritedGrants = sourceUsers.flatMap(({ guid: subject }) => {
+			const set = grantSetForSubjectOn(sourceGrants, container.organization, subject);
+			return [
+				...set.self.map((kind) => ({ kind, object: scope.guid, subject, target: 'self' as const })),
+				...set.subordinates.map((kind) => ({
+					kind,
+					object: scope.guid,
+					subject,
+					target: 'subordinates' as const
+				}))
+			];
+		});
+		inherited = { grants: inheritedGrants, scope };
+		inheritedUsers = sourceUsers.filter(({ guid }) =>
+			inheritedGrants.some(({ subject }) => subject === guid)
+		);
+	}
+
 	return {
 		container,
 		grants,
+		...(inherited && inheritedUsers
+			? { inheritedGrants: inherited.grants, inheritedUsers, scope: inherited.scope }
+			: {}),
 		title: unwrapFunctionStore(_)('members'),
 		users: users.map((u) => ({
 			...u,

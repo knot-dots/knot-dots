@@ -11,8 +11,8 @@ import {
 	type AnyPayload,
 	type ApplicationState,
 	type Container,
-	containerOfType,
 	type CustomCollectionPayload,
+	containerOfType,
 	emptyGrantRecords,
 	filterMembers,
 	type GoalPayload,
@@ -92,16 +92,10 @@ export const ability = derived(user, defineAbilityFor);
 
 export const dragged = writable<Container<AnyPayload> | undefined>();
 
-export const mayCreateContainer = derived([page, ability], (values) => {
-	return (payloadType: PayloadType, managedBy: string | string[]): boolean => {
-		const container = containerOfType(
-			payloadType,
-			values[0].data.currentOrganization.guid,
-			values[0].data.currentOrganizationalUnit?.guid ?? null,
-			managedBy,
-			''
-		);
-		return values[1].can('create', container);
+export const mayCreateContainer = derived(ability, (values) => {
+	return (payloadType: PayloadType, parent: Container<AnyPayload>): boolean => {
+		// creating happens within the parent; the stub inherits its computed grants
+		return values.can('create', containerOfType(payloadType, parent));
 	};
 });
 
@@ -179,6 +173,9 @@ export type OverlayData =
 			key: 'members';
 			container: Container<AnyPayload>;
 			grants: Grant[];
+			inheritedGrants?: Grant[];
+			inheritedUsers?: UserRecord[];
+			scope?: Container<AnyPayload>;
 			users: UserRecord[];
 	  }
 	| {
@@ -290,6 +287,9 @@ if (browser) {
 				key: overlayKey.enum.members,
 				container: result.data.container,
 				grants: result.data.grants,
+				inheritedGrants: result.data.inheritedGrants,
+				inheritedUsers: result.data.inheritedUsers,
+				scope: result.data.scope,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

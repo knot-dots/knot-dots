@@ -3,7 +3,6 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import Badges from '$lib/components/Badges.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
@@ -90,10 +89,7 @@
 
 			const chapter = containerOfType(
 				(event as CustomEvent).detail.selected as PayloadType,
-				isPartOf.organization,
-				isPartOf.organizational_unit,
-				isPartOf.managed_by,
-				env.PUBLIC_KC_REALM as string
+				isPartOf
 			) as NewContainer;
 
 			chapter.relation = [
@@ -166,7 +162,7 @@
 			{$_('read_more')}
 		</a>
 
-		{#if availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, isPartOf.managed_by, env.PUBLIC_KC_REALM)) )}
+		{#if availableChapterTypes.some((t) => $ability.can('create', containerOfType(t, isPartOf)))}
 			<DropDownMenu
 				handleChange={createContainerAt(currentIndex + 1)}
 				label={$_('chapter')}

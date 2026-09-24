@@ -65,13 +65,12 @@
 		}
 
 		// Create new resource_data container
-		const item = containerOfType(
-			payloadTypes.enum.resource_data,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		const item = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.resource_data, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer;
 
 		// Set the resourceDataType from the collection
 		(item.payload as { resourceDataType?: string }).resourceDataType =
@@ -95,7 +94,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.resource_data, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.resource_data, container)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -118,8 +117,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.resource_data, container.managed_by) &&
-		editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.resource_data, container) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<ResourceDataCard

@@ -7,6 +7,7 @@ import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	administrativeTypes,
+	grantForNewContainer,
 	indicatorCategories,
 	indicatorTypes,
 	newContainer,
@@ -150,9 +151,6 @@ export const POST = (async ({ locals, request }) => {
 	}
 
 	const ability = defineAbilityFor(locals.user);
-	if (ability.cannot('create', parseResult.data)) {
-		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-	}
 
 	const availableInRelations = parseResult.data.relation.filter(
 		({ predicate }) => predicate === predicates.enum['is-available-in']
@@ -183,6 +181,43 @@ export const POST = (async ({ locals, request }) => {
 		if (ability.cannot('read', program) || ability.cannot('update', program)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
+	}
+
+	// Creating happens within a parent, whose computed grants decide: the
+	// container the new one is part of, otherwise its area. Only sysadmins
+	// create containers without a parent, such as organizations.
+	const hierarchyPredicates: string[] = [
+		predicates.enum['is-part-of'],
+		predicates.enum['is-part-of-program'],
+		predicates.enum['is-part-of-measure'],
+		predicates.enum['is-section-of']
+	];
+	const parentGuid =
+		parseResult.data.relation.find(
+			({ object, predicate }) => object !== undefined && hierarchyPredicates.includes(predicate)
+		)?.object ??
+		parseResult.data.organizational_unit ??
+		parseResult.data.organization;
+	const parent = await locals.pool
+		.connect(getContainerByGuid(parentGuid))
+		.catch((caught: unknown) => {
+			if (caught instanceof NotFoundError) {
+				return undefined;
+			}
+			throw caught;
+		});
+	// The submitted container is tested with the grants derived from its
+	// parent. Without a resolvable parent there are no grants, so only the
+	// unconditional sysadmin rule passes; the persisted scope must be the one
+	// the parent was authorized for.
+	if (
+		(parent && parseResult.data.organization !== parent.organization) ||
+		ability.cannot('create', {
+			...parseResult.data,
+			...(parent ? { user_grant: grantForNewContainer(parent) } : {})
+		})
+	) {
+		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
 	try {

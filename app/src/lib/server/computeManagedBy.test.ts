@@ -69,3 +69,27 @@ test('applyComputedManagedBy: keeps the stored value when it matches', async ({
 	expect(loaded.managed_by).toEqual([organization]);
 	expect(loaded.computed_managed_by).toEqual([organization]);
 });
+
+test('applyComputedManagedBy: a decoupled container manages itself even without members', async ({
+	connection
+}: Fixtures) => {
+	// Otherwise it would fall back to the scope, whose subordinate grants it
+	// just opted out of by decoupling its grant matrix.
+	const measure = await createContainer({
+		...newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: null,
+			payload: { title: 'Lorem ipsum', type: payloadTypes.enum.measure },
+			realm,
+			relation: [],
+			user: []
+		}),
+		own_matrix: true
+	})(connection);
+
+	const loaded = await getContainerByGuid(measure.guid)(connection);
+
+	expect(loaded.managed_by).toEqual([measure.guid]);
+	expect(loaded.computed_managed_by).toEqual([measure.guid]);
+});

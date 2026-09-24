@@ -41,13 +41,12 @@
 	);
 
 	function addItem() {
-		$newContainer = containerOfType(
-			payloadTypes.enum.program,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		$newContainer = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.program, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer;
 
 		createContainerDialog.getElement().showModal();
 	}
@@ -60,7 +59,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.goal, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.goal, container)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -83,7 +82,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.goal, container.managed_by) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.goal, container) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<Card container={item} ignoreBulkActionContext />

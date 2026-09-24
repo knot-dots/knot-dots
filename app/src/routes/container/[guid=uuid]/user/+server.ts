@@ -9,7 +9,8 @@ import {
 	type Container,
 	findAncestors,
 	predicates,
-	userRelation
+	userRelation,
+	withOwnMatrix
 } from '$lib/models';
 import {
 	getAllRelatedUsers,
@@ -132,20 +133,23 @@ export const POST = (async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.connect(
-		updateContainer({
-			...container,
-			managed_by:
-				container.managed_by[0] == container.guid && updatedUserRelation.length == 0
-					? [container.organizational_unit ?? container.organization]
-					: container.managed_by,
-			user: [
-				{
-					predicate: predicates.enum['is-creator-of'],
-					subject: locals.user.guid
-				},
-				...updatedUserRelation
-			]
-		})
+		updateContainer(
+			// assigning roles to an inheriting container decouples it, so they act
+			(updatedUserRelation.length > 0 ? withOwnMatrix : (c: typeof container) => c)({
+				...container,
+				managed_by:
+					container.managed_by[0] == container.guid && updatedUserRelation.length == 0
+						? [container.organizational_unit ?? container.organization]
+						: container.managed_by,
+				user: [
+					{
+						predicate: predicates.enum['is-creator-of'],
+						subject: locals.user.guid
+					},
+					...updatedUserRelation
+				]
+			})
+		)
 	);
 
 	return new Response(null, { status: 204 });

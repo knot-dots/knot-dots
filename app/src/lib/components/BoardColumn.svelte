@@ -4,7 +4,6 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
-	import { env } from '$env/dynamic/public';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import {
 		containerOfType,
@@ -55,9 +54,7 @@
 			.filter((t) =>
 				$mayCreateContainer(
 					t as PayloadType,
-					addItemParams.has('managedBy')
-						? (addItemParams.get('managedBy') as string)
-						: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid)
+					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 				)
 			) as PayloadType[]
 	);
@@ -76,13 +73,12 @@
 	function createDraft(payloadType: PayloadType, params: URLSearchParams) {
 		const container = containerOfType(
 			payloadType,
-			page.data.currentOrganization.guid,
-			page.data.currentOrganizationalUnit?.guid ?? null,
-			params.has('managedBy')
-				? (params.get('managedBy') as string)
-				: (page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid),
-			env.PUBLIC_KC_REALM as string
+			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 		) as NewContainer;
+
+		if (params.has('managedBy')) {
+			container.managed_by = [params.get('managedBy') as string];
+		}
 
 		if (isOrganizationalUnitContainer(container) && params.has('level')) {
 			container.payload.level = parseInt(params.get('level') as string);

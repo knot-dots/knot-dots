@@ -75,13 +75,12 @@
 			return;
 		}
 
-		const item = containerOfType(
-			payloadTypes.enum.teaser,
-			container.organization,
-			container.organizational_unit,
-			container.managed_by,
-			container.realm
-		) as NewContainer;
+		const item = {
+			// items join the collection's manager; relations follow separately
+			...containerOfType(payloadTypes.enum.teaser, container),
+			managed_by: container.managed_by,
+			relation: []
+		} as NewContainer;
 
 		item.relation = [
 			{
@@ -148,7 +147,7 @@
 			<li>
 				<ContainerModeDropdown bind:container />
 			</li>
-			{#if $mayCreateContainer(payloadTypes.enum.teaser, container.managed_by)}
+			{#if $mayCreateContainer(payloadTypes.enum.teaser, container)}
 				<li>
 					<button
 						aria-label={$_('add_item')}
@@ -181,7 +180,7 @@
 			{addItem}
 			{handleSort}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container) && editable}
 		>
 			{#snippet itemSnippet(item)}
 				<TeaserCard container={item} {editable} maxSummaryLength={200} />
@@ -192,7 +191,7 @@
 			{addItem}
 			{handleSort}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container) && editable}
 		>
 			{#snippet itemSnippet(item)}
 				<TeaserCard container={item} {editable} maxSummaryLength={100} />
@@ -203,7 +202,7 @@
 			{addItem}
 			{handleSort}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container) && editable}
 		>
 			{#snippet itemSnippet(item)}
 				<TeaserCard container={item} {editable} maxSummaryLength={1000} />
@@ -214,7 +213,7 @@
 			{addItem}
 			{handleSort}
 			{items}
-			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container.managed_by) && editable}
+			mayAddItem={$mayCreateContainer(payloadTypes.enum.teaser, container) && editable}
 		>
 			{#snippet itemSnippet(item)}
 				<TeaserCard container={item} {editable} maxSummaryLength={100} />
