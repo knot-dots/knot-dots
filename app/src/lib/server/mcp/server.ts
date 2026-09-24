@@ -7,6 +7,7 @@ import {
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
 import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
+import { updateMcpContainer } from '$lib/server/mcp/update';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { searchMcpOrganizationUsers } from '$lib/server/mcp/users';
@@ -18,6 +19,10 @@ import {
 	registerCreateContainerTool,
 	type CreateContainerDependencies
 } from '$lib/server/mcp/tools/createContainer';
+import {
+	registerUpdateContainerTool,
+	type UpdateContainerDependencies
+} from '$lib/server/mcp/tools/updateContainer';
 import {
 	registerGetContainerTool,
 	type GetContainerDependencies
@@ -56,7 +61,8 @@ type McpServerDependencies = AddCustomCollectionSectionDependencies &
 	ListMyOrganizationsDependencies &
 	ListOrganizationalUnitsDependencies &
 	SearchContainersDependencies &
-	SearchOrganizationUsersDependencies;
+	SearchOrganizationUsersDependencies &
+	UpdateContainerDependencies;
 
 const defaultDependencies: McpServerDependencies = {
 	async addCustomCollectionSection(auth, input) {
@@ -87,6 +93,9 @@ const defaultDependencies: McpServerDependencies = {
 	},
 	async searchOrganizationUsers(userId, input) {
 		return (await getPool()).connect(searchMcpOrganizationUsers({ ...input, userId }));
+	},
+	async updateContainer(auth, input) {
+		return (await getPool()).connect(updateMcpContainer({ ...input, ...auth }));
 	}
 };
 
@@ -100,7 +109,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Call get_container before update_container and pass the revision it returns. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
@@ -115,6 +124,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);
 			registerSearchOrganizationUsersTool(server, authInfo, dependencies);
+			registerUpdateContainerTool(server, authInfo, dependencies);
 
 			return server;
 		},
