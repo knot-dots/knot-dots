@@ -2,11 +2,8 @@ import type { AuthInfo, McpServer } from '@modelcontextprotocol/server';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import type { AnyPayload, Container } from '$lib/models';
-import {
-	getContainerInput,
-	getContainerOutput,
-	type GetContainerOutput
-} from '$lib/server/mcp/contracts/containers';
+import { getContainerInput, getContainerOutput } from '$lib/server/mcp/contracts/containers';
+import { serializeMcpContainer } from '$lib/server/mcp/containers';
 import { mcpScopes } from '$lib/server/mcp/scopes';
 import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
 
@@ -44,9 +41,7 @@ export function registerGetContainerTool(
 					return toolError('Container not found.');
 				}
 
-				const output = {
-					container: { ...container, valid_from: container.valid_from.toISOString() }
-				} satisfies GetContainerOutput;
+				const output = serializeMcpContainer(container);
 				return {
 					content: [{ type: 'text', text: JSON.stringify(output) }],
 					structuredContent: output

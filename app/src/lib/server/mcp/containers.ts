@@ -5,6 +5,7 @@ import { getContainerByGuid } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type {
 	ContainerSummary,
+	GetContainerOutput,
 	SearchContainersInput,
 	SearchContainersOutput
 } from '$lib/server/mcp/contracts/containers';
@@ -13,6 +14,12 @@ import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
 
 const searchBatchSize = 250;
+
+export function serializeMcpContainer(container: Container<AnyPayload>): GetContainerOutput {
+	return {
+		container: { ...container, valid_from: container.valid_from.toISOString() }
+	};
+}
 
 export interface SearchMcpContainersOptions extends SearchContainersInput {
 	user: User;
