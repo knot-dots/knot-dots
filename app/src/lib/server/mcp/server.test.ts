@@ -46,6 +46,7 @@ const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
+const updateContainer = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	addCustomCollectionSection,
 	createContainer,
@@ -55,7 +56,8 @@ const toolHandler = createKnotDotsMcpHandler({
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	searchContainers,
-	searchOrganizationUsers
+	searchOrganizationUsers,
+	updateContainer
 });
 
 const modernProtocolVersion = '2026-07-28';
@@ -107,6 +109,7 @@ async function legacyResponseJson(response: Response) {
 beforeEach(() => {
 	addCustomCollectionSection.mockReset();
 	createContainer.mockReset();
+	updateContainer.mockReset();
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
@@ -288,6 +291,15 @@ test('advertises tools without requiring their scopes', async () => {
 				},
 				name: 'add_custom_collection_section',
 				title: 'Add custom collection section'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'update_container',
+				title: 'Update container'
 			})
 		])
 	);
@@ -612,6 +624,45 @@ test('creates a container using the write scope', async () => {
 	});
 });
 
+test('updates a container using the write scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const guid = '00000000-0000-4000-8000-000000000004';
+	const container = {
+		guid,
+		managed_by: [organizationGuid],
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: { body: '', title: 'Renamed', type: 'page', visibility: 'organization' },
+		realm: 'test',
+		relation: [],
+		revision: 3,
+		user: [],
+		valid_currently: true,
+		valid_from: new Date('2026-09-24T00:00:00.000Z')
+	} as Container<AnyPayload>;
+	updateContainer.mockResolvedValue(container);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { expectedRevision: 2, guid, payloadPatch: { title: 'Renamed' } },
+			name: 'update_container'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(updateContainer).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{ expectedRevision: 2, guid, payloadPatch: { title: 'Renamed' } }
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			structuredContent: {
+				container: { ...container, valid_from: '2026-09-24T00:00:00.000Z' }
+			}
+		}
+	});
+});
+
 test('adds a custom collection section with categories using the write scope', async () => {
 	const pageGuid = '00000000-0000-4000-8000-000000000003';
 	const input = {
@@ -664,6 +715,15 @@ test.each([
 			pageGuid: '00000000-0000-4000-8000-000000000003',
 			title: 'Objekte einbinden',
 			types: ['indicator_template']
+		}
+	],
+	[
+		'update_container',
+		updateContainer,
+		{
+			expectedRevision: 1,
+			guid: '00000000-0000-4000-8000-000000000003',
+			payloadPatch: { title: 'Renamed' }
 		}
 	]
 ])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {

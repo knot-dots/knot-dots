@@ -41,7 +41,7 @@ export class McpCreationError extends Error {
 	}
 }
 
-async function findVisibleContainer(
+export async function findVisibleContainer(
 	connection: DatabaseConnection,
 	user: User,
 	guid: string
@@ -65,7 +65,7 @@ function mapCreationError(error: unknown): never {
 	throw error;
 }
 
-function payloadValidationMessage(error: {
+export function payloadValidationMessage(error: {
 	issues: Array<{ message: string; path: PropertyKey[] }>;
 }) {
 	return error.issues
