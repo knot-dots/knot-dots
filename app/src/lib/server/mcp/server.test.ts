@@ -4,6 +4,7 @@ import {
 	PROTOCOL_VERSION_META_KEY
 } from '@modelcontextprotocol/server';
 import { beforeEach, expect, test, vi } from 'vitest';
+import type { AnyPayload, Container } from '$lib/models';
 import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
 import { payloadSchemaCatalogUri } from '$lib/server/mcp/resources/payloadSchemas';
 import { createKnotDotsMcpHandler, mcpHandler } from './server';
@@ -37,7 +38,7 @@ const userScopedAuthInfo = {
 	scopes: ['users:read']
 };
 const addCustomCollectionSection = vi.fn();
-const createPage = vi.fn();
+const createContainer = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
 const listContainerCategoryValues = vi.fn();
@@ -47,7 +48,7 @@ const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	addCustomCollectionSection,
-	createPage,
+	createContainer,
 	getContainer,
 	listContainerCategories,
 	listContainerCategoryValues,
@@ -105,7 +106,7 @@ async function legacyResponseJson(response: Response) {
 
 beforeEach(() => {
 	addCustomCollectionSection.mockReset();
-	createPage.mockReset();
+	createContainer.mockReset();
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
@@ -276,8 +277,8 @@ test('advertises tools without requiring their scopes', async () => {
 					openWorldHint: false,
 					readOnlyHint: false
 				},
-				name: 'create_page',
-				title: 'Create page'
+				name: 'create_container',
+				title: 'Create container'
 			}),
 			expect.objectContaining({
 				annotations: {
@@ -290,6 +291,7 @@ test('advertises tools without requiring their scopes', async () => {
 			})
 		])
 	);
+	expect(body.result.tools.map(({ name }: { name: string }) => name)).not.toContain('create_page');
 	expect(
 		body.result.tools.find(({ name }: { name: string }) => name === 'search_containers')
 	).toMatchObject({
@@ -564,36 +566,46 @@ test('denies the category tool without the container read scope', async () => {
 	});
 });
 
-test('creates a page with defaults using the write scope', async () => {
+test('creates a container using the write scope', async () => {
 	const organizationGuid = '00000000-0000-4000-8000-000000000003';
-	const output = {
-		page: {
-			guid: '00000000-0000-4000-8000-000000000004',
-			organizationGuid,
-			organizationalUnitGuid: null,
-			title: 'Climate indicators',
-			visibility: 'organization'
-		}
-	};
-	createPage.mockResolvedValue(output);
+	const container = {
+		guid: '00000000-0000-4000-8000-000000000004',
+		managed_by: [organizationGuid],
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: { body: '', title: 'Climate indicators', type: 'page', visibility: 'organization' },
+		realm: 'test',
+		relation: [],
+		revision: 1,
+		user: [],
+		valid_currently: true,
+		valid_from: new Date('2026-09-23T00:00:00.000Z')
+	} as Container<AnyPayload>;
+	createContainer.mockResolvedValue(container);
 
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
-			arguments: { organizationGuid, title: 'Climate indicators' },
-			name: 'create_page'
+			arguments: {
+				organizationGuid,
+				payload: { body: '', title: 'Climate indicators', type: 'page' }
+			},
+			name: 'create_container'
 		}),
 		{ authInfo: writeScopedAuthInfo }
 	);
 
-	expect(createPage).toHaveBeenCalledExactlyOnceWith(userId, {
-		body: '',
+	expect(createContainer).toHaveBeenCalledExactlyOnceWith(userId, {
 		organizationGuid,
 		organizationalUnitGuid: null,
-		title: 'Climate indicators',
-		visibility: 'organization'
+		parentRelations: [],
+		payload: { body: '', title: 'Climate indicators', type: 'page' }
 	});
 	await expect(response.json()).resolves.toMatchObject({
-		result: { structuredContent: output }
+		result: {
+			structuredContent: {
+				container: { ...container, valid_from: '2026-09-23T00:00:00.000Z' }
+			}
+		}
 	});
 });
 
@@ -635,11 +647,11 @@ test('adds a custom collection section with categories using the write scope', a
 
 test.each([
 	[
-		'create_page',
-		createPage,
+		'create_container',
+		createContainer,
 		{
 			organizationGuid: '00000000-0000-4000-8000-000000000003',
-			title: 'Climate indicators'
+			payload: { body: '', title: 'Climate indicators', type: 'page' }
 		}
 	],
 	[

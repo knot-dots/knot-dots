@@ -1,39 +1,60 @@
 import { z } from 'zod';
-import { payloadTypes, visibility } from '$lib/models';
+import { payloadTypes, predicates } from '$lib/models';
+import { getContainerOutput } from '$lib/server/mcp/contracts/containers';
+import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 
 const title = z.string().trim().min(1).describe('Non-empty title of the new container.');
 
-export const createPageInput = z.strictObject({
-	body: z
-		.string()
-		.trim()
-		.default('')
-		.describe('Optional GitHub-flavored Markdown body of the page.'),
-	organizationGuid: z.uuid().describe('Organization in which the page should be created.'),
+export const mcpParentRelationPredicates = z.enum([
+	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-program'],
+	predicates.enum['is-part-of-measure']
+]);
+
+const parentRelation = z.strictObject({
+	parentGuid: z.uuid().describe('GUID of the existing visible parent container.'),
+	predicate: mcpParentRelationPredicates.describe(
+		'Structural relation from the new container to the parent.'
+	)
+});
+
+const parentRelations = z
+	.array(parentRelation)
+	.max(20)
+	.superRefine((relations, context) => {
+		const seen = new Set<string>();
+		for (const [index, relation] of relations.entries()) {
+			const key = `${relation.parentGuid}:${relation.predicate}`;
+			if (seen.has(key)) {
+				context.addIssue({
+					code: 'custom',
+					message: 'Parent relations must be unique.',
+					path: [index]
+				});
+			}
+			seen.add(key);
+		}
+	})
+	.default([]);
+
+export const createContainerInput = z.strictObject({
+	organizationGuid: z.uuid().describe('Organization in which the container should be created.'),
 	organizationalUnitGuid: z
 		.uuid()
 		.nullable()
 		.default(null)
-		.describe('Optional organizational unit that should own the page.'),
-	title,
-	visibility: visibility
-		.default(visibility.enum.organization)
-		.describe('Visibility of the new page; defaults to organization.')
+		.describe('Optional organizational unit that should own the container.'),
+	parentRelations,
+	payload: z
+		.looseObject({ type: mcpPayloadTypes })
+		.describe('Complete payload matching the resource at knotdots://schemas/payloads/{type}.')
 });
 
-export type CreatePageInput = z.infer<typeof createPageInput>;
+export type CreateContainerInput = z.infer<typeof createContainerInput>;
 
-const createdPage = z.strictObject({
-	guid: z.uuid(),
-	organizationGuid: z.uuid(),
-	organizationalUnitGuid: z.uuid().nullable(),
-	title: z.string(),
-	visibility
-});
+export const createContainerOutput = getContainerOutput;
 
-export const createPageOutput = z.strictObject({ page: createdPage });
-
-export type CreatePageOutput = z.infer<typeof createPageOutput>;
+export type CreateContainerOutput = z.infer<typeof createContainerOutput>;
 
 const uniqueStrings = z
 	.array(z.string().trim().min(1))

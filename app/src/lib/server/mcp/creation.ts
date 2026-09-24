@@ -3,6 +3,7 @@ import defineAbilityFor from '$lib/authorization';
 import { getFeatures } from '$lib/server/features';
 import {
 	containerOfType,
+	getPayloadSchema,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isPageContainer,
@@ -11,18 +12,20 @@ import {
 	type AnyPayload,
 	type Container,
 	type CustomCollectionPayload,
-	type NewContainer,
-	type PagePayload
+	type NewContainer
 } from '$lib/models';
 import { organizationScopeAsFilter } from '$lib/organizationScope';
 import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
-import { getAllDirectContainerRelations, getContainerByGuid } from '$lib/server/db';
+import {
+	getAllDirectContainerRelations,
+	getContainerByGuid,
+	getManyContainers
+} from '$lib/server/db';
 import { loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import type {
 	AddCustomCollectionSectionInput,
 	AddCustomCollectionSectionOutput,
-	CreatePageInput,
-	CreatePageOutput
+	CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import type { User } from '$lib/stores';
@@ -49,14 +52,28 @@ async function findVisibleContainer(
 }
 
 function mapCreationError(error: unknown): never {
-	if (error instanceof ContainerCreationError && error.kind === 'forbidden') {
-		throw new McpCreationError('You are not allowed to create content in this context.');
+	if (error instanceof ContainerCreationError) {
+		if (error.kind === 'forbidden') {
+			throw new McpCreationError('You are not allowed to create content in this context.');
+		}
+		throw new McpCreationError('The container could not be created with the supplied data.');
 	}
 	throw error;
 }
 
-export function createMcpPage(input: CreatePageInput & { userId: string }) {
-	return async (connection: DatabaseConnection): Promise<CreatePageOutput> => {
+function payloadValidationMessage(error: {
+	issues: Array<{ message: string; path: PropertyKey[] }>;
+}) {
+	return error.issues
+		.map(
+			({ message, path }) =>
+				`${path.length > 0 ? `payload.${path.join('.')}` : 'payload'}: ${message}`
+		)
+		.join('; ');
+}
+
+export function createMcpContainer(input: CreateContainerInput & { userId: string }) {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		const user = await loadMcpUserContext(connection, input.userId);
 		const organization = await findVisibleContainer(connection, user, input.organizationGuid);
 		if (!organization || !isOrganizationContainer(organization)) {
@@ -81,35 +98,60 @@ export function createMcpPage(input: CreatePageInput & { userId: string }) {
 			}
 		}
 
-		const page = containerOfType(
-			payloadTypes.enum.page,
+		const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
+		if (!payloadResult.success) {
+			throw new McpCreationError(payloadValidationMessage(payloadResult.error));
+		}
+		if ('template' in payloadResult.data && payloadResult.data.template === true) {
+			throw new McpCreationError('Template creation is not supported by this tool.');
+		}
+
+		const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];
+		const parents =
+			parentGuids.length > 0
+				? await getManyContainers([], { guid: parentGuids }, 'alpha')(connection)
+				: [];
+		const ability = defineAbilityFor(user);
+		if (
+			parents.length !== parentGuids.length ||
+			parents.some(
+				(parent) => parent.organization !== organization.guid || ability.cannot('read', parent)
+			)
+		) {
+			throw new McpCreationError('Parent container not found or inaccessible.');
+		}
+		const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
+
+		const candidate = containerOfType(
+			input.payload.type,
 			organization.guid,
 			organizationalUnit?.guid ?? null,
 			organizationalUnit?.guid ?? organization.guid,
 			organization.realm
-		) as NewContainer<PagePayload>;
-		page.payload.body = input.body;
-		page.payload.title = input.title;
-		page.payload.visibility = input.visibility;
+		) as NewContainer;
+		candidate.payload = payloadResult.data;
+		candidate.relation = input.parentRelations.map(({ parentGuid, predicate }) => {
+			const parent = parentsByGuid.get(parentGuid);
+			if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
+			const position =
+				Math.max(
+					-1,
+					...parent.relation
+						.filter(
+							(relation) => relation.object === parentGuid && relation.predicate === predicate
+						)
+						.map(({ position }) => position)
+				) + 1;
+			return { object: parentGuid, position, predicate };
+		});
 
-		let created: Container<AnyPayload>;
 		try {
-			created = await createAuthorizedContainer({ data: page, features: getFeatures(), user })(
+			return await createAuthorizedContainer({ data: candidate, features: getFeatures(), user })(
 				connection
 			);
 		} catch (error) {
 			mapCreationError(error);
 		}
-
-		return {
-			page: {
-				guid: created.guid,
-				organizationGuid: created.organization,
-				organizationalUnitGuid: created.organizational_unit,
-				title: input.title,
-				visibility: input.visibility
-			}
-		};
 	};
 }
 
