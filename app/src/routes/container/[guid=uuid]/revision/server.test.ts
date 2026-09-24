@@ -75,6 +75,27 @@ function event(predicate: 'is-copy-of' | 'is-individual-profile-of', user = sysa
 	} as never;
 }
 
+test('rejects a body that names a different container than the URL', async () => {
+	const otherGuid = '00000000-0000-4000-8000-000000000005';
+	const request = new Request(`http://localhost/container/${containerGuid}/revision`, {
+		method: 'POST',
+		body: JSON.stringify({ ...(mocks.container as Record<string, unknown>), guid: otherGuid }),
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	await expect(
+		POST({
+			locals: {
+				pool: { connect: async (operation: (connection: unknown) => unknown) => operation({}) },
+				user: sysadmin
+			},
+			params: { guid: containerGuid },
+			request
+		} as never)
+	).rejects.toMatchObject({ status: 422 });
+	expect(mocks.updateContainer).not.toHaveBeenCalled();
+});
+
 test.each(['is-copy-of', 'is-individual-profile-of'] as const)(
 	'revisions reject newly submitted %s provenance',
 	async (predicate) => {

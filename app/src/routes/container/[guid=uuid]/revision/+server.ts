@@ -67,6 +67,11 @@ export const POST = (async ({ locals, params, request }) => {
 	if (!parseResult.success) {
 		error(422, parseResult.error);
 	} else {
+		// Authorization runs against the container addressed by the URL, so the
+		// body must not name another one.
+		if (parseResult.data.guid !== params.guid) {
+			error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+		}
 		const ability = defineAbilityFor(locals.user);
 		if (ability.cannot('update', container)) {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
