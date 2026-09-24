@@ -1,49 +1,29 @@
 import { expect, test } from 'vitest';
-import {
-	anyContainer,
-	type PayloadType,
-	payloadTypes,
-	predicates,
-	type Relation,
-	visibility
-} from '$lib/models';
+import { anyContainer, type PayloadType, payloadTypes, predicates, visibility } from '$lib/models';
 import {
 	getDirectMeasureGuids,
 	getTemplateScopeGuids,
 	isScopedTemplateRoot,
 	isTemplateScope,
-	newTemplateScopePlacements,
-	scopePlacementsRequireTemplate,
 	requiresScopedTemplate
 } from '$lib/templateScopes';
 
-test.each(['measure', 'simple_measure'] as const)(
-	'template requirement respects %s scope type',
-	(type) => {
-		const owner = anyContainer.parse({
-			...template(),
-			guid: parentGuid,
-			payload: { type, title: 'Owner' },
-			relation: []
-		});
-		const child = anyContainer.parse({
-			...template(),
-			payload: { type: 'goal', title: 'Child' },
-			relation: [
-				{ subject: templateGuid, object: parentGuid, predicate: 'is-part-of-measure', position: 0 }
-			]
-		});
-		expect(requiresScopedTemplate(child)).toBe(true);
-		expect(scopePlacementsRequireTemplate(child.relation, [child, owner])).toBe(true);
-		expect(newTemplateScopePlacements(child.relation, child.relation)).toEqual([]);
-		expect(
-			requiresScopedTemplate({
-				...child,
-				relation: [{ object: parentGuid, predicate: 'is-section-of', position: 0 }]
-			})
-		).toBe(false);
-	}
-);
+test('requires a template for direct scope placement but not section-only placement', () => {
+	const child = anyContainer.parse({
+		...template(),
+		payload: { type: 'goal', title: 'Child' },
+		relation: [
+			{ subject: templateGuid, object: parentGuid, predicate: 'is-part-of-measure', position: 0 }
+		]
+	});
+	expect(requiresScopedTemplate(child)).toBe(true);
+	expect(
+		requiresScopedTemplate({
+			...child,
+			relation: [{ object: parentGuid, predicate: 'is-section-of', position: 0 }]
+		})
+	).toBe(false);
+});
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const otherOrganizationGuid = '00000000-0000-4000-8000-000000000002';
@@ -178,15 +158,6 @@ test('requires templates for direct program objects but not section-only contain
 	).toBe(false);
 });
 
-function placement(position = 0): Relation {
-	return {
-		object: scopeGuid,
-		position,
-		predicate: predicates.enum['is-part-of-program'],
-		subject: templateGuid
-	};
-}
-
 function programObject(
 	type:
 		typeof payloadTypes.enum.text | typeof payloadTypes.enum.measure | typeof payloadTypes.enum.task
@@ -209,28 +180,6 @@ function programObject(
 		valid_from: new Date('2026-01-01T00:00:00.000Z')
 	});
 }
-
-test('detects only newly added program placements', () => {
-	const sectionPlacement = {
-		...placement(),
-		predicate: predicates.enum['is-section-of']
-	};
-
-	expect(newTemplateScopePlacements([placement(4)], [placement(0)])).toEqual([]);
-	expect(newTemplateScopePlacements([{ ...placement(), deleted: true }], [])).toEqual([]);
-	expect(newTemplateScopePlacements([sectionPlacement], [])).toEqual([]);
-	expect(newTemplateScopePlacements([placement()], [])).toEqual([placement()]);
-});
-
-test('requires the template-copy path for non-text program objects', () => {
-	expect(
-		scopePlacementsRequireTemplate([placement()], [programObject(payloadTypes.enum.measure)])
-	).toBe(true);
-	expect(
-		scopePlacementsRequireTemplate([placement()], [programObject(payloadTypes.enum.text)])
-	).toBe(false);
-	expect(scopePlacementsRequireTemplate([placement()], [])).toBe(true);
-});
 
 function scopeOwner(type: PayloadType, guid = parentGuid) {
 	return anyContainer.parse({

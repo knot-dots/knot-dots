@@ -132,15 +132,8 @@ function revisionEvent(body: unknown) {
 }
 
 test.each(['is-part-of-program', 'is-part-of-measure'] as const)(
-	'revisions reject new %s placement when templating is enabled',
+	'revisions accept an existing object with a new %s placement when templating is enabled',
 	async (predicate) => {
-		mocks.getManyContainers.mockReturnValue(async () => [
-			anyContainer.parse({
-				...(mocks.container as object),
-				guid: sourceGuid,
-				payload: { type: 'measure', title: 'Owner' }
-			})
-		]);
 		mocks.container = anyContainer.parse({
 			...(mocks.container as Record<string, unknown>),
 			payload: {
@@ -165,11 +158,12 @@ test.each(['is-part-of-program', 'is-part-of-measure'] as const)(
 		};
 		event.locals.features = ['Templating'];
 
-		await expect(POST(event as never)).rejects.toMatchObject({
-			body: { message: 'error.scoped_template_required' },
-			status: 422
-		});
-		expect(mocks.updateContainer).not.toHaveBeenCalled();
+		const response = await POST(event as never);
+
+		expect(response.status).toBe(201);
+		expect(mocks.updateContainer).toHaveBeenCalledWith(
+			expect.objectContaining({ relation: body.relation })
+		);
 	}
 );
 

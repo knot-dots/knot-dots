@@ -1,4 +1,4 @@
-import { expect, test, deleteContainer } from './fixtures';
+import { deleteContainer, expect, test } from './fixtures';
 import MeasurePage from './measure-page';
 
 test.use({ suiteId: 'measure-templates', storageState: 'tests/.auth/orgadmin.json' });
@@ -85,6 +85,50 @@ test('measure creation requires its own template and preserves program managemen
 	} finally {
 		await deleteContainer(adminContext, instance);
 	}
+});
+
+test('an existing measure can be assigned to a program without a template', async ({
+	dotsBoard,
+	testMeasure,
+	testProgram
+}) => {
+	await dotsBoard.goto(`/${testMeasure.organization}`);
+	await dotsBoard.card(testMeasure.payload.title).click();
+	await dotsBoard.overlay.editModeToggle.check();
+	await dotsBoard.overlay.disclosePropertiesButton.click();
+
+	const programButton = dotsBoard.overlay.locator.getByRole('button', {
+		name: 'Program',
+		exact: true
+	});
+	const selectProgram = async (name: string) => {
+		const option = dotsBoard.overlay.locator.getByRole('radio', { name, exact: true });
+		await expect(async () => {
+			await programButton.click();
+			await expect(option).toBeVisible();
+		}).toPass({ timeout: 20_000 });
+		const saved = dotsBoard.page.waitForResponse(
+			(response) =>
+				new URL(response.url()).pathname === `/container/${testMeasure.guid}/revision` &&
+				response.request().method() === 'POST'
+		);
+		await option.click();
+		return saved;
+	};
+
+	expect((await selectProgram('Empty')).status()).toBe(201);
+	const response = await selectProgram(testProgram.payload.title);
+	expect(response.status()).toBe(201);
+	const updated = await response.json();
+	expect(updated.relation).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({
+				object: testProgram.guid,
+				predicate: 'is-part-of-program',
+				subject: testMeasure.guid
+			})
+		])
+	);
 });
 
 test('measure with no scoped templates hides goal creation', async ({

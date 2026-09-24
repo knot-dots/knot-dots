@@ -14,11 +14,8 @@ import {
 	type NewContainer,
 	type PayloadType,
 	predicates,
-	type Relation,
 	templatablePayloadTypes
 } from '$lib/models';
-
-type SubmittedRelation = Relation & { deleted?: boolean };
 
 const templatableTypes = new Set<string>(templatablePayloadTypes);
 
@@ -80,36 +77,4 @@ export function isScopedTemplateRoot(
 		availableIn.length === 1 &&
 		availableIn[0] === scopeGuid
 	);
-}
-
-function sameRelation(left: Relation, right: Relation) {
-	return (
-		left.object === right.object &&
-		left.predicate === right.predicate &&
-		left.subject === right.subject
-	);
-}
-
-export function newTemplateScopePlacements(
-	submitted: readonly SubmittedRelation[],
-	current: readonly Relation[]
-) {
-	return submitted.filter(
-		(relation) =>
-			!relation.deleted &&
-			(relation.predicate === predicates.enum['is-part-of-program'] ||
-				relation.predicate === predicates.enum['is-part-of-measure']) &&
-			!current.some((existing) => sameRelation(existing, relation))
-	);
-}
-
-export function scopePlacementsRequireTemplate(
-	placements: readonly Relation[],
-	containers: readonly Container<AnyPayload>[]
-) {
-	return placements.some((placement) => {
-		const { subject } = placement;
-		const container = containers.find(({ guid }) => guid === subject);
-		return !container || requiresScopedTemplate({ ...container, relation: [placement] });
-	});
 }

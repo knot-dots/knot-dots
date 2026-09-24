@@ -75,6 +75,13 @@ function measure(guid: string, managedBy: string) {
 	};
 }
 
+function program(guid: string, managedBy: string) {
+	return {
+		...measure(guid, managedBy),
+		payload: { title: 'Program', type: 'program', visibility: 'public' }
+	};
+}
+
 function postRelation(currentUser: unknown) {
 	const request = new Request(`http://localhost/container/${containerGuid}/relation`, {
 		method: 'POST',
@@ -191,13 +198,13 @@ test('relation updates reject direct availability changes before writing', async
 	expect(transaction).not.toHaveBeenCalled();
 });
 
-test.each(['is-part-of-program', 'is-part-of-measure'])(
-	'relation updates reject new %s placement when templating is enabled',
-	async (predicate) => {
-		getManyContainers.mockReturnValue(async () => [
-			measure(containerGuid, team),
-			measure(sourceGuid, otherTeam)
-		]);
+test.each([
+	['is-part-of-program', () => program(sourceGuid, otherTeam)],
+	['is-part-of-measure', () => measure(sourceGuid, otherTeam)]
+] as const)(
+	'relation updates accept an existing object with a new %s placement when templating is enabled',
+	async (predicate, parent) => {
+		getManyContainers.mockReturnValue(async () => [measure(containerGuid, team), parent()]);
 		const request = new Request(`http://localhost/container/${containerGuid}/relation`, {
 			method: 'POST',
 			body: JSON.stringify([
@@ -211,20 +218,25 @@ test.each(['is-part-of-program', 'is-part-of-measure'])(
 			headers: { 'Content-Type': 'application/json' }
 		});
 
-		await expect(
-			POST({
-				locals: {
-					features: ['Templating'],
-					pool: { transaction: vi.fn().mockImplementation((callback) => callback({})) },
-					user
-				},
-				params: { guid: containerGuid },
-				request
-			} as never)
-		).rejects.toMatchObject({
-			body: { message: 'error.scoped_template_required' },
-			status: 422
-		});
-		expect(updateManyContainerRelations).not.toHaveBeenCalled();
+		const response = await POST({
+			locals: {
+				features: ['Templating'],
+				pool: { transaction: vi.fn().mockImplementation((callback) => callback({})) },
+				user
+			},
+			params: { guid: containerGuid },
+			request
+		} as never);
+
+		expect(response.status).toBe(204);
+		expect(updateManyContainerRelations).toHaveBeenCalledWith([
+			{
+				deleted: false,
+				object: sourceGuid,
+				position: 0,
+				predicate,
+				subject: containerGuid
+			}
+		]);
 	}
 );
