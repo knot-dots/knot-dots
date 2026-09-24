@@ -21,9 +21,10 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
+		templateAvailability?: { has(type: PayloadType): boolean };
 	}
 
-	let { container, relatedContainers }: Props = $props();
+	let { container, relatedContainers, templateAvailability: sharedAvailability }: Props = $props();
 
 	let program = $derived.by(() => {
 		if (isProgramContainer(container)) {
@@ -33,13 +34,14 @@
 		return relatedContainers.filter(isProgramContainer).find(({ guid }) => guid === programGuid);
 	});
 
-	const templateAvailability = createCreationTemplateAvailability(
+	const ownAvailability = createCreationTemplateAvailability(
 		() =>
-			$applicationState.containerDetailView.editable
+			$applicationState.containerDetailView.editable && !sharedAvailability
 				? createDraft(container, payloadTypes.enum.goal)
 				: undefined,
 		() => program?.payload.chapterType ?? [payloadTypes.enum.goal, payloadTypes.enum.task]
 	);
+	let templateAvailability = $derived(sharedAvailability ?? ownAvailability);
 
 	let options = $derived.by(() => {
 		let options: { label: string; value: string }[] = [];

@@ -264,7 +264,7 @@
 	<footer class="footer-action-bar">
 		<RelationButton {container} />
 		<AdoptButton {container} />
-		<CreateAnotherButton {container} {relatedContainers} />
+		<CreateAnotherButton {container} {relatedContainers} {templateAvailability} />
 		<CreateCopyButton {container} />
 		<CreateTemplateButton {container} />
 		{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
