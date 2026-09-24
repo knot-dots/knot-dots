@@ -1,4 +1,10 @@
-import { type CategoryPayload, type Container, predicates, type TermPayload } from '$lib/models';
+import {
+	type CategoryPayload,
+	type Container,
+	deduplicate,
+	predicates,
+	type TermPayload
+} from '$lib/models';
 
 export type CategoryOption = {
 	label: string;
@@ -92,7 +98,9 @@ export function buildCategoryOptionsFromContainers(
 }
 
 export function getCategoryKeys(categories: Container<CategoryPayload>[]): string[] {
-	return categories.map((category) => category.payload.key).filter((key) => key !== undefined);
+	return deduplicate(
+		categories.map((category) => category.payload.key).filter((key) => key !== undefined)
+	);
 }
 
 export function buildCategoryFacetsWithCounts(
