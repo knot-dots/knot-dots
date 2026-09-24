@@ -19,13 +19,17 @@ import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/c
 import {
 	getAllDirectContainerRelations,
 	getContainerByGuid,
-	getManyContainers
+	getManyContainers,
+	recordMcpWriteEvent
 } from '$lib/server/db';
+import type { McpAuth } from '$lib/server/mcp/auth';
 import { loadMcpCategoryContext } from '$lib/server/mcp/categories';
-import type {
-	AddCustomCollectionSectionInput,
-	AddCustomCollectionSectionOutput,
-	CreateContainerInput
+import {
+	addCustomCollectionSectionToolName,
+	createContainerToolName,
+	type AddCustomCollectionSectionInput,
+	type AddCustomCollectionSectionOutput,
+	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
@@ -73,7 +77,39 @@ function payloadValidationMessage(error: {
 		.join('; ');
 }
 
-export function createMcpContainer(input: CreateContainerInput & { userId: string }) {
+function createAndRecordContainer({
+	auth: { tokenId, userId },
+	data,
+	tool,
+	user
+}: {
+	auth: McpAuth;
+	data: NewContainer;
+	tool: string;
+	user: User;
+}) {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+		try {
+			return await createAuthorizedContainer({
+				afterCreate: (created, txConnection) =>
+					recordMcpWriteEvent({
+						containerGuid: created.guid,
+						revision: created.revision,
+						tokenId,
+						tool,
+						userId
+					})(txConnection),
+				data,
+				features: getFeatures(),
+				user
+			})(connection);
+		} catch (error) {
+			mapCreationError(error);
+		}
+	};
+}
+
+export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
 		runAsRequestUser(input.userId, async () => {
 			const user = await loadMcpUserContext(connection, input.userId);
@@ -146,13 +182,12 @@ export function createMcpContainer(input: CreateContainerInput & { userId: strin
 				return { object: parentGuid, position, predicate };
 			});
 
-			try {
-				return await createAuthorizedContainer({ data: candidate, features: getFeatures(), user })(
-					connection
-				);
-			} catch (error) {
-				mapCreationError(error);
-			}
+			return createAndRecordContainer({
+				auth: input,
+				data: candidate,
+				tool: createContainerToolName,
+				user
+			})(connection);
 		});
 }
 
@@ -172,9 +207,7 @@ function categoryValues(context: Awaited<ReturnType<typeof loadMcpCategoryContex
 	);
 }
 
-export function addMcpCustomCollectionSection(
-	input: AddCustomCollectionSectionInput & { userId: string }
-) {
+export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionInput & McpAuth) {
 	return (connection: DatabaseConnection): Promise<AddCustomCollectionSectionOutput> =>
 		runAsRequestUser(input.userId, async () => {
 			const user = await loadMcpUserContext(connection, input.userId);
@@ -231,14 +264,12 @@ export function addMcpCustomCollectionSection(
 				}
 			];
 
-			let created: Container<AnyPayload>;
-			try {
-				created = await createAuthorizedContainer({ data: section, features: getFeatures(), user })(
-					connection
-				);
-			} catch (error) {
-				mapCreationError(error);
-			}
+			const created = await createAndRecordContainer({
+				auth: input,
+				data: section,
+				tool: addCustomCollectionSectionToolName,
+				user
+			})(connection);
 
 			return {
 				section: {

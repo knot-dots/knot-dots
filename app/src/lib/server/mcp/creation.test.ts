@@ -18,7 +18,9 @@ const mocks = vi.hoisted(() => ({
 	},
 	containers: new Map<string, Container<AnyPayload>>(),
 	createAuthorizedContainer: vi.fn(),
+	recordMcpWriteEvent: vi.fn(),
 	relations: [] as Array<{ object: string; position: number; predicate: string }>,
+	transactionConnection: { transaction: true },
 	unreadableGuids: new Set<string>(),
 	unupdatableGuids: new Set<string>()
 }));
@@ -46,7 +48,9 @@ vi.mock('$lib/server/db', () => ({
 	getManyContainers:
 		(_organizations: string[], { guid }: { guid: string[] }) =>
 		async () =>
-			guid.map((value) => mocks.containers.get(value)).filter(Boolean)
+			guid.map((value) => mocks.containers.get(value)).filter(Boolean),
+	recordMcpWriteEvent: (event: unknown) => async (connection: unknown) =>
+		mocks.recordMcpWriteEvent(event, connection)
 }));
 vi.mock('$lib/server/features', () => ({ getFeatures: () => [] }));
 vi.mock('$lib/server/mcp/categories', () => ({
@@ -76,6 +80,8 @@ const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const pageGuid = '00000000-0000-4000-8000-000000000002';
 const userId = '00000000-0000-4000-8000-000000000003';
 const createdGuid = '00000000-0000-4000-8000-000000000004';
+const createdRevision = 11;
+const tokenId = '00000000-0000-4000-8000-000000000009';
 const parentGuid = '00000000-0000-4000-8000-000000000005';
 const organizationalUnitGuid = '00000000-0000-4000-8000-000000000006';
 const otherOrganizationGuid = '00000000-0000-4000-8000-000000000007';
@@ -122,11 +128,13 @@ beforeEach(() => {
 	mocks.relations = [];
 	mocks.unreadableGuids.clear();
 	mocks.unupdatableGuids.clear();
+	mocks.recordMcpWriteEvent.mockReset();
 	mocks.createAuthorizedContainer.mockReset();
-	mocks.createAuthorizedContainer.mockImplementation(({ data }) => async () => ({
-		...data,
-		guid: createdGuid
-	}));
+	mocks.createAuthorizedContainer.mockImplementation(({ afterCreate, data }) => async () => {
+		const created = { ...data, guid: createdGuid, revision: createdRevision };
+		await afterCreate?.(created, mocks.transactionConnection);
+		return created;
+	});
 });
 
 const payloadCases = [
@@ -152,7 +160,7 @@ test.each(payloadCases)(
 	'creates a %s through the shared authorized service',
 	async (_, payload) => {
 		const input = createContainerInput.parse({ organizationGuid, payload });
-		const created = await createMcpContainer({ ...input, userId })({} as never);
+		const created = await createMcpContainer({ ...input, tokenId, userId })({} as never);
 
 		expect(created).toMatchObject({
 			guid: createdGuid,
@@ -160,6 +168,7 @@ test.each(payloadCases)(
 		});
 
 		expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith({
+			afterCreate: expect.any(Function),
 			data: expect.objectContaining({
 				managed_by: [organizationGuid],
 				organization: organizationGuid,
@@ -170,6 +179,16 @@ test.each(payloadCases)(
 			features: [],
 			user: expect.objectContaining({ guid: userId })
 		});
+		expect(mocks.recordMcpWriteEvent).toHaveBeenCalledExactlyOnceWith(
+			{
+				containerGuid: createdGuid,
+				revision: createdRevision,
+				tokenId,
+				tool: 'create_container',
+				userId
+			},
+			mocks.transactionConnection
+		);
 	}
 );
 
@@ -184,9 +203,10 @@ test('uses the organizational unit as owner when creating in a unit', async () =
 		payload: { body: '', title: 'Unit page', type: 'page' }
 	});
 
-	await createMcpContainer({ ...input, userId })({} as never);
+	await createMcpContainer({ ...input, tokenId, userId })({} as never);
 
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith({
+		afterCreate: expect.any(Function),
 		data: expect.objectContaining({
 			managed_by: [organizationalUnitGuid],
 			organizational_unit: organizationalUnitGuid
@@ -229,9 +249,10 @@ test('appends structural parent relations using server-assigned positions', asyn
 		payload: { title: 'New goal', type: 'goal' }
 	});
 
-	await createMcpContainer({ ...input, userId })({} as never);
+	await createMcpContainer({ ...input, tokenId, userId })({} as never);
 
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith({
+		afterCreate: expect.any(Function),
 		data: expect.objectContaining({
 			relation: [
 				{ object: parentGuid, position: 5, predicate: 'is-part-of-program' },
@@ -253,13 +274,14 @@ test('rejects invalid payloads and templates', async () => {
 		payload: { template: true, title: 'Template goal', type: 'goal' }
 	});
 
-	await expect(createMcpContainer({ ...invalidInput, userId })({} as never)).rejects.toThrow(
-		'payload.title'
-	);
-	await expect(createMcpContainer({ ...templateInput, userId })({} as never)).rejects.toThrow(
-		'Template creation is not supported'
-	);
+	await expect(
+		createMcpContainer({ ...invalidInput, tokenId, userId })({} as never)
+	).rejects.toThrow('payload.title');
+	await expect(
+		createMcpContainer({ ...templateInput, tokenId, userId })({} as never)
+	).rejects.toThrow('Template creation is not supported');
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
 });
 
 test.each(['hidden', 'other organization'])('rejects a %s parent', async (condition) => {
@@ -280,7 +302,7 @@ test.each(['hidden', 'other organization'])('rejects a %s parent', async (condit
 		payload: { title: 'New goal', type: 'goal' }
 	});
 
-	await expect(createMcpContainer({ ...input, userId })({} as never)).rejects.toThrow(
+	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
 		'Parent container not found or inaccessible.'
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
@@ -295,7 +317,7 @@ test('accepts a visible parent that the user cannot update', async () => {
 		payload: { title: 'New goal', type: 'goal' }
 	});
 
-	await createMcpContainer({ ...input, userId })({} as never);
+	await createMcpContainer({ ...input, tokenId, userId })({} as never);
 
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith(
 		expect.objectContaining({
@@ -343,7 +365,7 @@ test('rejects an organizational unit of another organization', async () => {
 		payload: { title: 'New goal', type: 'goal' }
 	});
 
-	await expect(createMcpContainer({ ...input, userId })({} as never)).rejects.toThrow(
+	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
 		'Organization or organizational unit not found or inaccessible.'
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
@@ -361,10 +383,12 @@ test('maps categories to the persisted collection filter and appends the section
 		pageGuid,
 		title: 'Objekte einbinden',
 		types: ['indicator_template'],
+		tokenId,
 		userId
 	})({} as never);
 
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith({
+		afterCreate: expect.any(Function),
 		data: expect.objectContaining({
 			payload: expect.objectContaining({
 				filter: {
@@ -381,6 +405,16 @@ test('maps categories to the persisted collection filter and appends the section
 		features: [],
 		user: expect.objectContaining({ guid: userId })
 	});
+	expect(mocks.recordMcpWriteEvent).toHaveBeenCalledExactlyOnceWith(
+		{
+			containerGuid: createdGuid,
+			revision: createdRevision,
+			tokenId,
+			tool: 'add_custom_collection_section',
+			userId
+		},
+		mocks.transactionConnection
+	);
 });
 
 test('rejects category values that are not available for the selected types', async () => {
@@ -391,6 +425,7 @@ test('rejects category values that are not available for the selected types', as
 			pageGuid,
 			title: 'Objekte einbinden',
 			types: ['indicator_template'],
+			tokenId,
 			userId
 		})({} as never)
 	).rejects.toEqual(expect.any(McpCreationError));

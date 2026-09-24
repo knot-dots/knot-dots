@@ -3,6 +3,9 @@ import { payloadTypes, predicates } from '$lib/models';
 import { getContainerOutput } from '$lib/server/mcp/contracts/containers';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 
+export const createContainerToolName = 'create_container';
+export const addCustomCollectionSectionToolName = 'add_custom_collection_section';
+
 const title = z.string().trim().min(1).describe('Non-empty title of the new container.');
 
 export const mcpParentRelationPredicates = z.enum([

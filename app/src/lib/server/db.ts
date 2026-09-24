@@ -276,6 +276,27 @@ export function createMcpToken({
 	};
 }
 
+export function recordMcpWriteEvent({
+	containerGuid,
+	revision,
+	tokenId,
+	tool,
+	userId
+}: {
+	containerGuid: string;
+	revision: number | null;
+	tokenId: string;
+	tool: string;
+	userId: string;
+}) {
+	return async (connection: DatabaseConnection) => {
+		await connection.query(sql.typeAlias('void')`
+			INSERT INTO mcp_write_event (token_id, user_id, tool, container_guid, revision)
+			VALUES (${tokenId}, ${userId}, ${tool}, ${containerGuid}, ${revision})
+		`);
+	};
+}
+
 export function revokeMcpToken(id: string, userId: string) {
 	return async (connection: DatabaseConnection) => {
 		const token = await connection.maybeOne(sql.typeAlias('guid')`
@@ -579,8 +600,16 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	};
 }
 
+export type AfterContainerCreated = (
+	container: Container<AnyPayload>,
+	connection: DatabaseTransactionConnection
+) => Promise<void>;
+
+// afterCreate runs inside the creating transaction, before indexing events
+// are enqueued, so additional writes commit or roll back with the container.
 export function createContainer(
-	container: NewContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
+	container: NewContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>,
+	{ afterCreate }: { afterCreate?: AfterContainerCreated } = {}
 ) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		const result = await connection.transaction(async (txConnection) => {
@@ -655,6 +684,7 @@ export function createContainer(
 			const [created] = await enrichContainers(txConnection, [
 				{ ...containerResult, relation: [...relationResult], user: [...userResult] }
 			]);
+			await afterCreate?.(created, txConnection);
 			return created;
 		});
 

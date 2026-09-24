@@ -1,9 +1,11 @@
 import type { AuthInfo, McpServer } from '@modelcontextprotocol/server';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
+import type { McpAuth } from '$lib/server/mcp/auth';
 import {
 	addCustomCollectionSectionInput,
 	addCustomCollectionSectionOutput,
+	addCustomCollectionSectionToolName,
 	type AddCustomCollectionSectionInput,
 	type AddCustomCollectionSectionOutput
 } from '$lib/server/mcp/contracts/creation';
@@ -13,7 +15,7 @@ import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
 
 export interface AddCustomCollectionSectionDependencies {
 	addCustomCollectionSection(
-		userId: string,
+		auth: McpAuth,
 		input: AddCustomCollectionSectionInput
 	): Promise<AddCustomCollectionSectionOutput>;
 }
@@ -24,7 +26,7 @@ export function registerAddCustomCollectionSectionTool(
 	dependencies: AddCustomCollectionSectionDependencies
 ) {
 	server.registerTool(
-		'add_custom_collection_section',
+		addCustomCollectionSectionToolName,
 		{
 			annotations: {
 				idempotentHint: false,
@@ -41,10 +43,7 @@ export function registerAddCustomCollectionSectionTool(
 			if (!authorization.success) return authorization.result;
 
 			try {
-				const output = await dependencies.addCustomCollectionSection(
-					authorization.auth.userId,
-					input
-				);
+				const output = await dependencies.addCustomCollectionSection(authorization.auth, input);
 				return {
 					content: [{ type: 'text', text: JSON.stringify(output) }],
 					structuredContent: output
