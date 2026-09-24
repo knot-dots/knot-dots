@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { expect, vi } from 'vitest';
+import { z } from 'zod';
 
 const { enqueueIndexingEvent, enqueueIndexingEvents } = vi.hoisted(() => ({
 	enqueueIndexingEvent: vi.fn(),
@@ -10,18 +11,44 @@ vi.mock('$lib/server/indexingQueue', () => ({ enqueueIndexingEvent, enqueueIndex
 
 import { type Fixtures, test } from '$lib/fixtures';
 import { newContainer, payloadTypes, predicates, type Predicate } from '$lib/models';
-import { createContainer, createOrUpdateUser, sql } from '$lib/server/db';
+import { createContainer, createMcpToken, createOrUpdateUser, sql } from '$lib/server/db';
+import type { McpAuth } from '$lib/server/mcp/auth';
 import { createContainerInput } from '$lib/server/mcp/contracts/creation';
 import { createMcpContainer } from '$lib/server/mcp/creation';
+import { generateMcpToken } from '$lib/server/mcp/tokens';
 
 const realm = 'test';
 
-async function createTestUser(connection: Fixtures['connection']) {
-	const guid = uuid();
-	await createOrUpdateUser({ family_name: '', given_name: '', guid, realm, settings: {} })(
+async function createTestAuth(connection: Fixtures['connection']): Promise<McpAuth> {
+	const userId = uuid();
+	await createOrUpdateUser({ family_name: '', given_name: '', guid: userId, realm, settings: {} })(
 		connection
 	);
-	return guid;
+	const { prefix, secretHash } = generateMcpToken();
+	const token = await createMcpToken({
+		name: 'Test token',
+		prefix,
+		scopes: ['containers:write'],
+		secretHash,
+		userId
+	})(connection);
+	return { tokenId: token.id, userId };
+}
+
+async function findWriteEvents(connection: Fixtures['connection'], tokenId: string) {
+	return connection.any(sql.type(
+		z.object({
+			container_guid: z.uuid(),
+			revision: z.number().nullable(),
+			tool: z.string(),
+			user_id: z.uuid()
+		})
+	)`
+		SELECT container_guid, revision, tool, user_id
+		FROM mcp_write_event
+		WHERE token_id = ${tokenId}
+		ORDER BY created_at, revision
+	`);
 }
 
 async function createOrganization(
@@ -67,30 +94,30 @@ async function createProgram(connection: Fixtures['connection'], organization: s
 	)(connection);
 }
 
-function createGoalUnder(organizationGuid: string, parentGuid: string, userId: string) {
+function createGoalUnder(organizationGuid: string, parentGuid: string, auth: McpAuth) {
 	return createMcpContainer({
 		...createContainerInput.parse({
 			organizationGuid,
 			parentRelations: [{ parentGuid, predicate: predicates.enum['is-part-of-program'] }],
 			payload: { title: 'Climate goal', type: payloadTypes.enum.goal }
 		}),
-		userId
+		...auth
 	});
 }
 
 test('creates containers under a structural parent with appended positions', async ({
 	connection
 }: Fixtures) => {
-	const user = await createTestUser(connection);
+	const auth = await createTestAuth(connection);
 	const organization = await createOrganization(
 		connection,
-		user,
+		auth.userId,
 		predicates.enum['is-collaborator-of']
 	);
 	const program = await createProgram(connection, organization);
 
-	const first = await createGoalUnder(organization, program.guid, user)(connection);
-	const second = await createGoalUnder(organization, program.guid, user)(connection);
+	const first = await createGoalUnder(organization, program.guid, auth)(connection);
+	const second = await createGoalUnder(organization, program.guid, auth)(connection);
 
 	expect(first).toMatchObject({
 		organization,
@@ -115,39 +142,52 @@ test('creates containers under a structural parent with appended positions', asy
 	);
 	expect(first.user).toContainEqual({
 		predicate: predicates.enum['is-creator-of'],
-		subject: user
+		subject: auth.userId
 	});
+	await expect(findWriteEvents(connection, auth.tokenId)).resolves.toEqual(
+		[first, second].map(({ guid, revision }) => ({
+			container_guid: guid,
+			revision,
+			tool: 'create_container',
+			user_id: auth.userId
+		}))
+	);
 });
 
 test('rejects creation for a user who may only observe the organization', async ({
 	connection
 }: Fixtures) => {
-	const user = await createTestUser(connection);
-	const organization = await createOrganization(connection, user, predicates.enum['is-member-of']);
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-member-of']
+	);
 	const program = await createProgram(connection, organization);
 
-	await expect(createGoalUnder(organization, program.guid, user)(connection)).rejects.toThrow(
+	await expect(createGoalUnder(organization, program.guid, auth)(connection)).rejects.toThrow(
 		'You are not allowed to create content in this context.'
 	);
+	await expect(findWriteEvents(connection, auth.tokenId)).resolves.toEqual([]);
 });
 
 test('rejects a visible parent that belongs to another organization', async ({
 	connection
 }: Fixtures) => {
-	const user = await createTestUser(connection);
+	const auth = await createTestAuth(connection);
 	const organization = await createOrganization(
 		connection,
-		user,
+		auth.userId,
 		predicates.enum['is-collaborator-of']
 	);
 	const otherOrganization = await createOrganization(
 		connection,
-		user,
+		auth.userId,
 		predicates.enum['is-collaborator-of']
 	);
 	const foreignProgram = await createProgram(connection, otherOrganization);
 
 	await expect(
-		createGoalUnder(organization, foreignProgram.guid, user)(connection)
+		createGoalUnder(organization, foreignProgram.guid, auth)(connection)
 	).rejects.toThrow('Parent container not found or inaccessible.');
 });

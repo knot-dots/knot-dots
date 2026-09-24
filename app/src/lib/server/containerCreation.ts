@@ -11,7 +11,7 @@ import {
 	type AnyPayload
 } from '$lib/models';
 import { isTemplateScope, requiresScopedTemplate } from '$lib/templateScopes';
-import { createContainer, getContainerByGuid } from '$lib/server/db';
+import { createContainer, getContainerByGuid, type AfterContainerCreated } from '$lib/server/db';
 import type { User } from '$lib/stores';
 
 export type ContainerCreationErrorKind =
@@ -28,10 +28,12 @@ export class ContainerCreationError extends Error {
 }
 
 export function createAuthorizedContainer({
+	afterCreate,
 	data,
 	features,
 	user
 }: {
+	afterCreate?: AfterContainerCreated;
 	data: unknown;
 	features: string[];
 	user: User;
@@ -130,14 +132,17 @@ export function createAuthorizedContainer({
 			throw new ContainerCreationError('forbidden');
 		}
 
-		return createContainer({
-			...parseResult.data,
-			user: [
-				{
-					predicate: predicates.enum['is-creator-of'],
-					subject: user.guid
-				}
-			]
-		})(connection);
+		return createContainer(
+			{
+				...parseResult.data,
+				user: [
+					{
+						predicate: predicates.enum['is-creator-of'],
+						subject: user.guid
+					}
+				]
+			},
+			{ afterCreate }
+		)(connection);
 	};
 }

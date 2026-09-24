@@ -2,9 +2,11 @@ import type { AuthInfo, McpServer } from '@modelcontextprotocol/server';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
 import type { AnyPayload, Container } from '$lib/models';
+import type { McpAuth } from '$lib/server/mcp/auth';
 import {
 	createContainerInput,
 	createContainerOutput,
+	createContainerToolName,
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { serializeMcpContainer } from '$lib/server/mcp/containers';
@@ -13,7 +15,7 @@ import { mcpScopes } from '$lib/server/mcp/scopes';
 import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
 
 export interface CreateContainerDependencies {
-	createContainer(userId: string, input: CreateContainerInput): Promise<Container<AnyPayload>>;
+	createContainer(auth: McpAuth, input: CreateContainerInput): Promise<Container<AnyPayload>>;
 }
 
 export function registerCreateContainerTool(
@@ -22,7 +24,7 @@ export function registerCreateContainerTool(
 	dependencies: CreateContainerDependencies
 ) {
 	server.registerTool(
-		'create_container',
+		createContainerToolName,
 		{
 			annotations: {
 				idempotentHint: false,
@@ -40,7 +42,7 @@ export function registerCreateContainerTool(
 			if (!authorization.success) return authorization.result;
 
 			try {
-				const container = await dependencies.createContainer(authorization.auth.userId, input);
+				const container = await dependencies.createContainer(authorization.auth, input);
 				const output = serializeMcpContainer(container);
 				return {
 					content: [{ type: 'text', text: JSON.stringify(output) }],

@@ -59,11 +59,11 @@ type McpServerDependencies = AddCustomCollectionSectionDependencies &
 	SearchOrganizationUsersDependencies;
 
 const defaultDependencies: McpServerDependencies = {
-	async addCustomCollectionSection(userId, input) {
-		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, userId }));
+	async addCustomCollectionSection(auth, input) {
+		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, ...auth }));
 	},
-	async createContainer(userId, input) {
-		return (await getPool()).connect(createMcpContainer({ ...input, userId }));
+	async createContainer(auth, input) {
+		return (await getPool()).connect(createMcpContainer({ ...input, ...auth }));
 	},
 	async getContainer(userId, guid) {
 		return (await getPool()).connect(getMcpContainer({ guid, userId }));

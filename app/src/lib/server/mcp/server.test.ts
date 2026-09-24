@@ -594,12 +594,15 @@ test('creates a container using the write scope', async () => {
 		{ authInfo: writeScopedAuthInfo }
 	);
 
-	expect(createContainer).toHaveBeenCalledExactlyOnceWith(userId, {
-		organizationGuid,
-		organizationalUnitGuid: null,
-		parentRelations: [],
-		payload: { body: '', title: 'Climate indicators', type: 'page' }
-	});
+	expect(createContainer).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{
+			organizationGuid,
+			organizationalUnitGuid: null,
+			parentRelations: [],
+			payload: { body: '', title: 'Climate indicators', type: 'page' }
+		}
+	);
 	await expect(response.json()).resolves.toMatchObject({
 		result: {
 			structuredContent: {
@@ -639,7 +642,7 @@ test('adds a custom collection section with categories using the write scope', a
 		{ authInfo: writeScopedAuthInfo }
 	);
 
-	expect(addCustomCollectionSection).toHaveBeenCalledExactlyOnceWith(userId, input);
+	expect(addCustomCollectionSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
 	await expect(response.json()).resolves.toMatchObject({
 		result: { structuredContent: output }
 	});
