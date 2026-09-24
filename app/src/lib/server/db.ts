@@ -697,83 +697,172 @@ export function createContainer(
 	};
 }
 
+// Writes a new current revision of an existing container. With
+// replaceRelations the submitted relations replace the direct relations of the
+// container; otherwise its relations are left untouched.
+async function writeContainerRevision(
+	txConnection: DatabaseTransactionConnection,
+	previousRevision: Container<AnyPayload>,
+	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>,
+	{ replaceRelations }: { replaceRelations: boolean }
+) {
+	await txConnection.query(sql.typeAlias('void')`
+		UPDATE container
+		SET valid_currently = false
+		WHERE guid = ${container.guid}
+	`);
+
+	const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
+		INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
+		VALUES (
+			${container.guid},
+			${container.managed_by[0]},
+			${container.organization},
+			${container.organizational_unit},
+			${container.own_matrix ?? false},
+			${sql.jsonb(container.payload)},
+			${container.realm}
+		)
+		RETURNING *
+	`);
+
+	const userValues = container.user.map((u) => [containerResult.revision, u.predicate, u.subject]);
+	const userResult = await txConnection.any(sql.typeAlias('userRelation')`
+		INSERT INTO container_user (object, predicate, subject)
+		SELECT *
+		FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
+		ON CONFLICT (object, predicate, subject) DO NOTHING
+		RETURNING predicate, subject
+	`);
+
+	await syncContainerGrantsForRoleChanges(
+		containerResult.guid,
+		previousRevision.user,
+		container.user
+	)(txConnection);
+
+	let affectedRelations: ReadonlyArray<Relation> = previousRevision.relation;
+	let relation: Relation[] = previousRevision.relation;
+	if (replaceRelations) {
+		const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
+		const deletedRelations = relationResult.filter(
+			(r) =>
+				container.relation.findIndex(
+					({ object, predicate, subject }) =>
+						object === r.object && predicate === r.predicate && subject === r.subject
+				) == -1
+		);
+		await deleteManyContainerRelationsInTransaction(deletedRelations, txConnection);
+		await updateManyContainerRelationsInTransaction(container.relation, txConnection);
+		affectedRelations = [...deletedRelations, ...container.relation];
+		relation = container.relation;
+	}
+
+	if (previousRevision.organizational_unit != container.organizational_unit) {
+		await bulkUpdateOrganizationalUnit(
+			previousRevision,
+			container.organizational_unit
+		)(txConnection);
+	}
+	if (previousRevision.organization != container.organization) {
+		await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
+	}
+	if (previousRevision.managed_by[0] != container.managed_by[0]) {
+		await bulkUpdateManagedBy(previousRevision, container.managed_by[0])(txConnection);
+	}
+
+	// the caller hands the new revision straight back to the client, so it
+	// carries the request user's grants like any read result
+	const [result] = await enrichContainers(txConnection, [
+		{ ...containerResult, relation, user: [...userResult] }
+	]);
+	return { affectedGuids: affectedContainerGuids(affectedRelations), result };
+}
+
 export function updateContainer(
 	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
 ) {
 	return async (connection: DatabaseConnection) => {
 		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
 			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
+			return writeContainerRevision(txConnection, previousRevision, container, {
+				replaceRelations: true
+			});
+		});
 
-			await txConnection.query(sql.typeAlias('void')`
-				UPDATE container
-				SET valid_currently = false
-				WHERE guid = ${container.guid}
+		await enqueueContainerUpserts([
+			...(shouldIndexType(result.payload.type) ? [result.guid] : []),
+			...affectedGuids
+		]);
+
+		return result;
+	};
+}
+
+export class ContainerRevisionConflictError extends Error {
+	constructor(public readonly currentRevision: number) {
+		super(`Container revision conflict; current revision is ${currentRevision}`);
+		this.name = 'ContainerRevisionConflictError';
+	}
+}
+
+export type AfterContainerUpdated = (
+	container: Container<AnyPayload>,
+	connection: DatabaseTransactionConnection
+) => Promise<void>;
+
+// Replaces the payload of the current revision if it is still expectedRevision.
+// Ownership, users and relations are kept; editorGuid becomes the creator of
+// the new revision. afterUpdate runs inside the transaction, before indexing
+// events are enqueued.
+export function updateContainerPayload(
+	{
+		editorGuid,
+		expectedRevision,
+		guid,
+		payload
+	}: { editorGuid: string; expectedRevision: number; guid: string; payload: AnyPayload },
+	{ afterUpdate }: { afterUpdate?: AfterContainerUpdated } = {}
+) {
+	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
+		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
+			const locked = await txConnection.one(sql.type(
+				z.object({ managed_by: z.uuid(), revision: z.number().int() })
+			)`
+				SELECT managed_by, revision
+				FROM container
+				WHERE guid = ${guid}
+					AND valid_currently
+					AND NOT deleted
+				FOR UPDATE
 			`);
-
-			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
-				VALUES (
-					${container.guid},
-					${container.managed_by[0]},
-					${container.organization},
-					${container.organizational_unit},
-					${container.own_matrix ?? false},
-					${sql.jsonb(container.payload)},
-					${container.realm}
-				)
-				RETURNING *
-      `);
-
-			const userValues = container.user.map((u) => [
-				containerResult.revision,
-				u.predicate,
-				u.subject
-			]);
-			const userResult = await txConnection.any(sql.typeAlias('userRelation')`
-				INSERT INTO container_user (object, predicate, subject)
-				SELECT *
-				FROM ${sql.unnest(userValues, ['int8', 'text', 'uuid'])}
-				ON CONFLICT (object, predicate, subject) DO NOTHING
-				RETURNING predicate, subject
-      `);
-
-			await syncContainerGrantsForRoleChanges(
-				containerResult.guid,
-				previousRevision.user,
-				container.user
-			)(txConnection);
-
-			const relationResult = await getAllDirectContainerRelations(container.guid)(txConnection);
-			const deletedRelations = relationResult.filter(
-				(r) =>
-					container.relation.findIndex(
-						({ object, predicate, subject }) =>
-							object === r.object && predicate === r.predicate && subject === r.subject
-					) == -1
-			);
-			await deleteManyContainerRelationsInTransaction(deletedRelations, txConnection);
-			await updateManyContainerRelationsInTransaction(container.relation, txConnection);
-
-			if (previousRevision.organizational_unit != container.organizational_unit) {
-				await bulkUpdateOrganizationalUnit(
-					previousRevision,
-					container.organizational_unit
-				)(txConnection);
-			}
-			if (previousRevision.organization != container.organization) {
-				await bulkUpdateOrganization(previousRevision, container.organization)(txConnection);
-			}
-			if (previousRevision.managed_by[0] != container.managed_by[0]) {
-				await bulkUpdateManagedBy(previousRevision, container.managed_by[0])(txConnection);
+			if (locked.revision !== expectedRevision) {
+				throw new ContainerRevisionConflictError(locked.revision);
 			}
 
-			const [updated] = await enrichContainers(txConnection, [
-				{ ...containerResult, relation: container.relation, user: userResult }
-			]);
-			return {
-				affectedGuids: affectedContainerGuids([...deletedRelations, ...container.relation]),
-				result: updated
+			// managed_by may be replaced by the computed value on read; keep the
+			// stored owner so a payload change never moves the container.
+			const previousRevision = {
+				...(await getContainerByGuid(guid)(txConnection)),
+				managed_by: [locked.managed_by]
 			};
+			const written = await writeContainerRevision(
+				txConnection,
+				previousRevision,
+				{
+					...previousRevision,
+					payload,
+					user: [
+						...previousRevision.user.filter(
+							({ predicate }) => predicate !== predicates.enum['is-creator-of']
+						),
+						{ predicate: predicates.enum['is-creator-of'], subject: editorGuid }
+					]
+				},
+				{ replaceRelations: false }
+			);
+			await afterUpdate?.(written.result, txConnection);
+			return written;
 		});
 
 		await enqueueContainerUpserts([
