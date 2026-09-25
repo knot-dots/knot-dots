@@ -245,11 +245,20 @@
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
-	// Programs offer one object section per scoped goal template; the templates are
-	// only requested once the menu opens.
+	// Programs offer one object section per scoped goal template. The templates are
+	// requested once the menu has been opened; the menu store itself must not be a
+	// dependency because item registration updates it while the menu is open.
+	let templatesRequested = $state(false);
+
+	$effect(() => {
+		if ($menu.expanded) {
+			templatesRequested = true;
+		}
+	});
+
 	const goalTemplatesResource = resource(
 		[
-			() => $menu.expanded,
+			() => templatesRequested,
 			() =>
 				isProgramContainer(parentContainer) &&
 				createFeatureDecisions(page.data.features).useTemplateWorkspaces(),
@@ -257,15 +266,12 @@
 			() => parentContainer.organization
 		],
 		async (
-			[expanded, enabled, scopeGuid, organizationGuid],
+			[requested, enabled, scopeGuid, organizationGuid],
 			_,
-			{ data, signal }
+			{ signal }
 		): Promise<Container<TemplatePayload>[]> => {
-			if (!enabled) {
+			if (!enabled || !requested) {
 				return [];
-			}
-			if (!expanded) {
-				return data ?? [];
 			}
 			const containers = await fetchContainers(
 				{
