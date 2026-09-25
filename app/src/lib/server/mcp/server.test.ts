@@ -35,6 +35,8 @@ const toolHandler = createKnotDotsMcpHandler({
 	searchContainers
 });
 
+const modernProtocolVersion = '2026-07-28';
+
 function request(body: object, headers: HeadersInit = {}) {
 	return new Request('http://localhost/mcp', {
 		body: JSON.stringify(body),
@@ -44,7 +46,10 @@ function request(body: object, headers: HeadersInit = {}) {
 }
 
 function modernRequest(method: string, params: Record<string, unknown> = {}) {
-	const headers: HeadersInit = { 'Mcp-Method': method };
+	const headers: HeadersInit = {
+		'Mcp-Method': method,
+		'Mcp-Protocol-Version': modernProtocolVersion
+	};
 	if (typeof params.name === 'string') {
 		headers['Mcp-Name'] = params.name;
 	}
@@ -58,7 +63,7 @@ function modernRequest(method: string, params: Record<string, unknown> = {}) {
 				...params,
 				_meta: {
 					[CLIENT_CAPABILITIES_META_KEY]: {},
-					[PROTOCOL_VERSION_META_KEY]: '2026-07-28'
+					[PROTOCOL_VERSION_META_KEY]: modernProtocolVersion
 				}
 			}
 		},
@@ -91,11 +96,11 @@ test('serves a modern MCP discovery request', async () => {
 					_meta: {
 						[CLIENT_CAPABILITIES_META_KEY]: {},
 						[CLIENT_INFO_META_KEY]: { name: 'test-client', version: '1.0.0' },
-						[PROTOCOL_VERSION_META_KEY]: '2026-07-28'
+						[PROTOCOL_VERSION_META_KEY]: modernProtocolVersion
 					}
 				}
 			},
-			{ 'Mcp-Method': 'server/discover' }
+			{ 'Mcp-Method': 'server/discover', 'Mcp-Protocol-Version': modernProtocolVersion }
 		),
 		{ authInfo }
 	);
@@ -104,7 +109,7 @@ test('serves a modern MCP discovery request', async () => {
 	await expect(response.json()).resolves.toMatchObject({
 		id: 1,
 		jsonrpc: '2.0',
-		result: { supportedVersions: ['2026-07-28'] }
+		result: { supportedVersions: [modernProtocolVersion] }
 	});
 });
 
