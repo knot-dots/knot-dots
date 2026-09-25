@@ -61,7 +61,7 @@ export class LandingPage extends DetailPage {
 	}
 }
 
-export class ProgramPage extends BasePage {
+export class ProgramPage extends DetailPage {
 	get chapters() {
 		return this.page.locator('.chapters .details-section');
 	}
