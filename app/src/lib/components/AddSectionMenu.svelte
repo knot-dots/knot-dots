@@ -18,7 +18,6 @@
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
 	import Link from '~icons/knotdots/link';
-	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
@@ -28,7 +27,9 @@
 	import Summary from '~icons/knotdots/summary';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
+	import Video from '~icons/knotdots/video';
 	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -68,7 +69,6 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		compact?: boolean;
@@ -444,9 +444,10 @@
 							<button
 								use:menu.item={{
 									value: {
-										type: option.value,
 										resourceDataType: option.resourceDataType,
-										textType: option.textType
+										textType: option.textType,
+										title: option.label,
+										type: option.value
 									}
 								}}
 								type="button"

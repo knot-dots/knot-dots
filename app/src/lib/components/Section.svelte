@@ -21,6 +21,7 @@
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
+	import EditableRelationCollection from '$lib/components/EditableRelationCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
 	import EditableResourceDataCollection from '$lib/components/EditableResourceDataCollection.svelte';
 	import EditableSummarySection from '$lib/components/EditableSummarySection.svelte';
@@ -57,6 +58,7 @@
 		isOrganizationContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isRelationCollectionContainer,
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
 		isSummaryContainer,
@@ -237,6 +239,14 @@
 			/>
 		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
 			<EditableProgressSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				{editable}
+				{heading}
+			/>
+		{:else if isRelationCollectionContainer(container)}
+			<EditableRelationCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
