@@ -15,6 +15,7 @@
 		isContainer,
 		isContainerWithColor,
 		isContainerWithTitle,
+		isObjectCollectionContainer,
 		isTextContainer,
 		type NewContainer,
 		payloadTypes,
@@ -130,6 +131,13 @@
 
 			if (isTextContainer(newContainer) && (event as CustomEvent).detail.selected.textType) {
 				newContainer.payload.textType = (event as CustomEvent).detail.selected.textType;
+			}
+
+			if (isObjectCollectionContainer(newContainer)) {
+				const { newItemTemplate, objectType, title } = (event as CustomEvent).detail.selected;
+				newContainer.payload.newItemTemplate = newItemTemplate;
+				newContainer.payload.objectType = objectType;
+				newContainer.payload.title = title;
 			}
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
