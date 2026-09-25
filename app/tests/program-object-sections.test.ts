@@ -39,6 +39,27 @@ test('a template-bound goal section only lists goals created from it', async ({
 		testProgramGoalTemplate.payload.title
 	);
 
+	// The title can be renamed and the view switched to a wall
+	const revisionSaved = () =>
+		page.waitForResponse(
+			(response) =>
+				new URL(response.url()).pathname === `/container/${sectionContainer.guid}/revision` &&
+				response.request().method() === 'POST'
+		);
+	const titleSaved = revisionSaved();
+	await section.getByRole('textbox', { name: 'Title' }).fill('Strategic goals');
+	await titleSaved;
+	await section.hover();
+	const settingsDropdownButton = section.getByRole('button', { name: 'Settings' });
+	await settingsDropdownButton.click();
+	const settingsPanel = settingsDropdownButton.locator('//following-sibling::fieldset');
+	await settingsPanel.getByRole('button', { name: 'View' }).click();
+	const viewSaved = revisionSaved();
+	await settingsPanel.getByRole('radio', { name: 'Wall' }).check();
+	await viewSaved;
+	await expect(section.locator('ul.catalog')).toBeVisible();
+	await page.keyboard.press('Escape');
+
 	// The same template is not offered a second time
 	const templatesLoaded = page.waitForResponse((response) =>
 		response.url().includes(`availableIn=${testProgram.guid}`)
@@ -65,11 +86,7 @@ test('a template-bound goal section only lists goals created from it', async ({
 			new URL(response.url()).pathname === '/container/copy' &&
 			response.request().method() === 'POST'
 	);
-	const sectionUpdated = page.waitForResponse(
-		(response) =>
-			new URL(response.url()).pathname === `/container/${sectionContainer.guid}/revision` &&
-			response.request().method() === 'POST'
-	);
+	const sectionUpdated = revisionSaved();
 	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
 	const response = await saved;
 	expect(response.status()).toBe(201);
@@ -110,6 +127,8 @@ test('a template-bound goal section only lists goals created from it', async ({
 		await expect(async () => {
 			await programPage.goto(testProgram);
 			const savedSection = page.locator(`#section-${sectionContainer.guid}`);
+			await expect(savedSection.getByRole('heading', { name: 'Strategic goals' })).toBeVisible();
+			await expect(savedSection.locator('ul.catalog')).toBeVisible();
 			await expect(savedSection.getByTitle('Section goal', { exact: true })).toBeVisible();
 			await expect(savedSection.getByTitle('Chapter goal', { exact: true })).toHaveCount(0);
 			await expect(programPage.chapters.filter({ hasText: 'Chapter goal' })).toHaveCount(1);
