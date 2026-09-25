@@ -15,6 +15,7 @@ import {
 } from '$lib/server/mcp/contracts/update';
 import { findVisibleContainer, payloadValidationMessage } from '$lib/server/mcp/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { runAsRequestUser } from '$lib/server/requestUser';
 
 export class McpUpdateError extends Error {
 	constructor(message: string) {
@@ -48,74 +49,75 @@ function mergePayloadPatch(payload: AnyPayload, patch: Record<string, unknown>) 
 }
 
 export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
-	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
-		const user = await loadMcpUserContext(connection, input.userId);
-		const current = await findVisibleContainer(connection, user, input.guid);
-		if (!current || !mcpPayloadTypes.safeParse(current.payload.type).success) {
-			throw new McpUpdateError(notFound);
-		}
-		if ('type' in input.payloadPatch && input.payloadPatch.type !== current.payload.type) {
-			throw new McpUpdateError('The payload type cannot be changed.');
-		}
-		if (current.revision !== input.expectedRevision) {
-			throw conflict(input.expectedRevision);
-		}
-
-		const merged = mergePayloadPatch(current.payload, input.payloadPatch);
-		if (isTemplate(current.payload) || isTemplate(merged)) {
-			throw new McpUpdateError('Templates cannot be updated by this tool.');
-		}
-		const payloadResult = getPayloadSchema(current.payload.type).safeParse(merged);
-		if (!payloadResult.success) {
-			throw new McpUpdateError(payloadValidationMessage(payloadResult.error));
-		}
-
-		let payload: AnyPayload;
-		try {
-			payload = authorizeContainerUpdate({
-				current,
-				next: { ...current, payload: payloadResult.data },
-				user
-			});
-		} catch (error) {
-			if (error instanceof ContainerUpdateError) {
-				throw new McpUpdateError(
-					error.kind === 'forbidden'
-						? 'You are not allowed to update this container.'
-						: 'This change is not allowed for this container.'
-				);
+	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
+		runAsRequestUser(input.userId, async () => {
+			const user = await loadMcpUserContext(connection, input.userId);
+			const current = await findVisibleContainer(connection, user, input.guid);
+			if (!current || !mcpPayloadTypes.safeParse(current.payload.type).success) {
+				throw new McpUpdateError(notFound);
 			}
-			throw error;
-		}
+			if ('type' in input.payloadPatch && input.payloadPatch.type !== current.payload.type) {
+				throw new McpUpdateError('The payload type cannot be changed.');
+			}
+			if (current.revision !== input.expectedRevision) {
+				throw conflict(input.expectedRevision);
+			}
 
-		let updated: Container<AnyPayload>;
-		try {
-			updated = await updateContainerPayload(
-				{
-					editorGuid: user.guid,
-					expectedRevision: input.expectedRevision,
-					guid: current.guid,
-					payload
-				},
-				{
-					afterUpdate: (container, txConnection) =>
-						recordMcpWriteEvent({
-							containerGuid: container.guid,
-							revision: container.revision,
-							tokenId: input.tokenId,
-							tool: updateContainerToolName,
-							userId: input.userId
-						})(txConnection)
+			const merged = mergePayloadPatch(current.payload, input.payloadPatch);
+			if (isTemplate(current.payload) || isTemplate(merged)) {
+				throw new McpUpdateError('Templates cannot be updated by this tool.');
+			}
+			const payloadResult = getPayloadSchema(current.payload.type).safeParse(merged);
+			if (!payloadResult.success) {
+				throw new McpUpdateError(payloadValidationMessage(payloadResult.error));
+			}
+
+			let payload: AnyPayload;
+			try {
+				payload = authorizeContainerUpdate({
+					current,
+					next: { ...current, payload: payloadResult.data },
+					user
+				});
+			} catch (error) {
+				if (error instanceof ContainerUpdateError) {
+					throw new McpUpdateError(
+						error.kind === 'forbidden'
+							? 'You are not allowed to update this container.'
+							: 'This change is not allowed for this container.'
+					);
 				}
-			)(connection);
-		} catch (error) {
-			if (error instanceof ContainerRevisionConflictError) throw conflict(input.expectedRevision);
-			if (error instanceof NotFoundError) throw new McpUpdateError(notFound);
-			throw error;
-		}
+				throw error;
+			}
 
-		// Match the view get_container returns.
-		const [withComputed] = await applyComputedManagedBy(connection, [updated]);
-		return withComputed;
-	};
+			let updated: Container<AnyPayload>;
+			try {
+				updated = await updateContainerPayload(
+					{
+						editorGuid: user.guid,
+						expectedRevision: input.expectedRevision,
+						guid: current.guid,
+						payload
+					},
+					{
+						afterUpdate: (container, txConnection) =>
+							recordMcpWriteEvent({
+								containerGuid: container.guid,
+								revision: container.revision,
+								tokenId: input.tokenId,
+								tool: updateContainerToolName,
+								userId: input.userId
+							})(txConnection)
+					}
+				)(connection);
+			} catch (error) {
+				if (error instanceof ContainerRevisionConflictError) throw conflict(input.expectedRevision);
+				if (error instanceof NotFoundError) throw new McpUpdateError(notFound);
+				throw error;
+			}
+
+			// Match the view get_container returns.
+			const [withComputed] = await applyComputedManagedBy(connection, [updated]);
+			return withComputed;
+		});
 }

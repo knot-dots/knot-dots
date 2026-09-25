@@ -14,6 +14,7 @@ import type {
 	ListContainerCategoryValuesOutput
 } from '$lib/server/mcp/contracts/categories';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
 
 function flattenCategoryValues(
@@ -65,19 +66,20 @@ export function listMcpContainerCategories({
 	types,
 	userId
 }: ListContainerCategoriesInput & { userId: string }) {
-	return async (connection: DatabaseConnection): Promise<ListContainerCategoriesOutput> => {
-		const user = await loadMcpUserContext(connection, userId);
-		const context = await loadMcpCategoryContext({ connection, organizationGuid, types, user });
+	return (connection: DatabaseConnection): Promise<ListContainerCategoriesOutput> =>
+		runAsRequestUser(userId, async () => {
+			const user = await loadMcpUserContext(connection, userId);
+			const context = await loadMcpCategoryContext({ connection, organizationGuid, types, user });
 
-		return {
-			categories: context.keys.map((key) => ({
-				applicableTypes: categoryObjectTypes.array().parse(context.objectTypesPerKey[key] ?? []),
-				key,
-				label: context.labels.get(key) ?? key,
-				valueCount: flattenCategoryValues(context.options[key] ?? []).length
-			}))
-		};
-	};
+			return {
+				categories: context.keys.map((key) => ({
+					applicableTypes: categoryObjectTypes.array().parse(context.objectTypesPerKey[key] ?? []),
+					key,
+					label: context.labels.get(key) ?? key,
+					valueCount: flattenCategoryValues(context.options[key] ?? []).length
+				}))
+			};
+		});
 }
 
 export function listMcpContainerCategoryValues({
@@ -89,26 +91,27 @@ export function listMcpContainerCategoryValues({
 	types,
 	userId
 }: ListContainerCategoryValuesInput & { userId: string }) {
-	return async (connection: DatabaseConnection): Promise<ListContainerCategoryValuesOutput> => {
-		const user = await loadMcpUserContext(connection, userId);
-		const context = await loadMcpCategoryContext({ connection, organizationGuid, types, user });
-		if (!context.keys.includes(categoryKey)) {
-			throw new McpCategoryError('Category not found or unavailable for the selected types.');
-		}
+	return (connection: DatabaseConnection): Promise<ListContainerCategoryValuesOutput> =>
+		runAsRequestUser(userId, async () => {
+			const user = await loadMcpUserContext(connection, userId);
+			const context = await loadMcpCategoryContext({ connection, organizationGuid, types, user });
+			if (!context.keys.includes(categoryKey)) {
+				throw new McpCategoryError('Category not found or unavailable for the selected types.');
+			}
 
-		const normalizedTerms = terms?.toLocaleLowerCase();
-		const matchingValues = flattenCategoryValues(context.options[categoryKey] ?? []).filter(
-			({ label, value }) =>
-				!normalizedTerms ||
-				label.toLocaleLowerCase().includes(normalizedTerms) ||
-				value.toLocaleLowerCase().includes(normalizedTerms)
-		);
-		const values = matchingValues.slice(offset, offset + limit);
+			const normalizedTerms = terms?.toLocaleLowerCase();
+			const matchingValues = flattenCategoryValues(context.options[categoryKey] ?? []).filter(
+				({ label, value }) =>
+					!normalizedTerms ||
+					label.toLocaleLowerCase().includes(normalizedTerms) ||
+					value.toLocaleLowerCase().includes(normalizedTerms)
+			);
+			const values = matchingValues.slice(offset, offset + limit);
 
-		return {
-			category: { key: categoryKey, label: context.labels.get(categoryKey) ?? categoryKey },
-			nextOffset: offset + values.length < matchingValues.length ? offset + values.length : null,
-			values
-		};
-	};
+			return {
+				category: { key: categoryKey, label: context.labels.get(categoryKey) ?? categoryKey },
+				nextOffset: offset + values.length < matchingValues.length ? offset + values.length : null,
+				values
+			};
+		});
 }

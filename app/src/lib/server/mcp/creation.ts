@@ -32,6 +32,7 @@ import {
 	type CreateContainerInput
 } from '$lib/server/mcp/contracts/creation';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
 
 export class McpCreationError extends Error {
@@ -109,82 +110,85 @@ function createAndRecordContainer({
 }
 
 export function createMcpContainer(input: CreateContainerInput & McpAuth) {
-	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
-		const user = await loadMcpUserContext(connection, input.userId);
-		const organization = await findVisibleContainer(connection, user, input.organizationGuid);
-		if (!organization || !isOrganizationContainer(organization)) {
-			throw new McpCreationError('Organization or organizational unit not found or inaccessible.');
-		}
-
-		let organizationalUnit: Container<AnyPayload> | null = null;
-		if (input.organizationalUnitGuid) {
-			organizationalUnit = await findVisibleContainer(
-				connection,
-				user,
-				input.organizationalUnitGuid
-			);
-			if (
-				!organizationalUnit ||
-				!isOrganizationalUnitContainer(organizationalUnit) ||
-				organizationalUnit.organization !== organization.guid
-			) {
+	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
+		runAsRequestUser(input.userId, async () => {
+			const user = await loadMcpUserContext(connection, input.userId);
+			const organization = await findVisibleContainer(connection, user, input.organizationGuid);
+			if (!organization || !isOrganizationContainer(organization)) {
 				throw new McpCreationError(
 					'Organization or organizational unit not found or inaccessible.'
 				);
 			}
-		}
 
-		const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
-		if (!payloadResult.success) {
-			throw new McpCreationError(payloadValidationMessage(payloadResult.error));
-		}
-		if ('template' in payloadResult.data && payloadResult.data.template === true) {
-			throw new McpCreationError('Template creation is not supported by this tool.');
-		}
+			let organizationalUnit: Container<AnyPayload> | null = null;
+			if (input.organizationalUnitGuid) {
+				organizationalUnit = await findVisibleContainer(
+					connection,
+					user,
+					input.organizationalUnitGuid
+				);
+				if (
+					!organizationalUnit ||
+					!isOrganizationalUnitContainer(organizationalUnit) ||
+					organizationalUnit.organization !== organization.guid
+				) {
+					throw new McpCreationError(
+						'Organization or organizational unit not found or inaccessible.'
+					);
+				}
+			}
 
-		const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];
-		const parents =
-			parentGuids.length > 0
-				? await getManyContainers([], { guid: parentGuids }, 'alpha')(connection)
-				: [];
-		const ability = defineAbilityFor(user);
-		if (
-			parents.length !== parentGuids.length ||
-			parents.some(
-				(parent) => parent.organization !== organization.guid || ability.cannot('read', parent)
-			)
-		) {
-			throw new McpCreationError('Parent container not found or inaccessible.');
-		}
-		const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
+			const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
+			if (!payloadResult.success) {
+				throw new McpCreationError(payloadValidationMessage(payloadResult.error));
+			}
+			if ('template' in payloadResult.data && payloadResult.data.template === true) {
+				throw new McpCreationError('Template creation is not supported by this tool.');
+			}
 
-		const candidate = containerOfType(
-			input.payload.type,
-			organizationalUnit ?? organization
-		) as NewContainer;
-		candidate.payload = payloadResult.data;
-		candidate.relation = input.parentRelations.map(({ parentGuid, predicate }) => {
-			const parent = parentsByGuid.get(parentGuid);
-			if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
-			const position =
-				Math.max(
-					-1,
-					...parent.relation
-						.filter(
-							(relation) => relation.object === parentGuid && relation.predicate === predicate
-						)
-						.map(({ position }) => position)
-				) + 1;
-			return { object: parentGuid, position, predicate };
+			const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];
+			const parents =
+				parentGuids.length > 0
+					? await getManyContainers([], { guid: parentGuids }, 'alpha')(connection)
+					: [];
+			const ability = defineAbilityFor(user);
+			if (
+				parents.length !== parentGuids.length ||
+				parents.some(
+					(parent) => parent.organization !== organization.guid || ability.cannot('read', parent)
+				)
+			) {
+				throw new McpCreationError('Parent container not found or inaccessible.');
+			}
+			const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
+
+			const candidate = containerOfType(
+				input.payload.type,
+				organizationalUnit ?? organization
+			) as NewContainer;
+			candidate.payload = payloadResult.data;
+			candidate.relation = input.parentRelations.map(({ parentGuid, predicate }) => {
+				const parent = parentsByGuid.get(parentGuid);
+				if (!parent) throw new McpCreationError('Parent container not found or inaccessible.');
+				const position =
+					Math.max(
+						-1,
+						...parent.relation
+							.filter(
+								(relation) => relation.object === parentGuid && relation.predicate === predicate
+							)
+							.map(({ position }) => position)
+					) + 1;
+				return { object: parentGuid, position, predicate };
+			});
+
+			return createAndRecordContainer({
+				auth: input,
+				data: candidate,
+				tool: createContainerToolName,
+				user
+			})(connection);
 		});
-
-		return createAndRecordContainer({
-			auth: input,
-			data: candidate,
-			tool: createContainerToolName,
-			user
-		})(connection);
-	};
 }
 
 function categoryValues(context: Awaited<ReturnType<typeof loadMcpCategoryContext>>) {
@@ -204,77 +208,78 @@ function categoryValues(context: Awaited<ReturnType<typeof loadMcpCategoryContex
 }
 
 export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionInput & McpAuth) {
-	return async (connection: DatabaseConnection): Promise<AddCustomCollectionSectionOutput> => {
-		const user = await loadMcpUserContext(connection, input.userId);
-		const page = await findVisibleContainer(connection, user, input.pageGuid);
-		const ability = defineAbilityFor(user);
-		if (!page || !isPageContainer(page) || ability.cannot('update', page)) {
-			throw new McpCreationError('Page not found or inaccessible.');
-		}
+	return (connection: DatabaseConnection): Promise<AddCustomCollectionSectionOutput> =>
+		runAsRequestUser(input.userId, async () => {
+			const user = await loadMcpUserContext(connection, input.userId);
+			const page = await findVisibleContainer(connection, user, input.pageGuid);
+			const ability = defineAbilityFor(user);
+			if (!page || !isPageContainer(page) || ability.cannot('update', page)) {
+				throw new McpCreationError('Page not found or inaccessible.');
+			}
 
-		const categoryContext = await loadMcpCategoryContext({
-			connection,
-			organizationGuid: page.organization,
-			types: input.types,
-			user
+			const categoryContext = await loadMcpCategoryContext({
+				connection,
+				organizationGuid: page.organization,
+				types: input.types,
+				user
+			});
+			const allowedCategories = categoryValues(categoryContext);
+			for (const [key, values] of Object.entries(input.categories)) {
+				const allowedValues = allowedCategories.get(key);
+				if (!allowedValues || values.some((value) => !allowedValues.has(value))) {
+					throw new McpCreationError(`Unknown category or category value: ${key}`);
+				}
+			}
+
+			const relations = await getAllDirectContainerRelations(page.guid)(connection);
+			const position =
+				Math.max(
+					-1,
+					...relations
+						.filter(
+							({ object, predicate }) =>
+								object === page.guid && predicate === predicates.enum['is-section-of']
+						)
+						.map(({ position }) => position)
+				) + 1;
+			const section = containerOfType(
+				payloadTypes.enum.custom_collection,
+				page
+			) as NewContainer<CustomCollectionPayload>;
+			section.payload.title = input.title;
+			section.payload.item = [];
+			section.payload.filter = {
+				type: input.types,
+				...input.categories,
+				...organizationScopeAsFilter({
+					includeSubordinateOrganizationalUnits: input.includeSubordinateOrganizationalUnits,
+					type: 'current'
+				})
+			};
+			section.relation = [
+				{
+					object: page.guid,
+					position,
+					predicate: predicates.enum['is-section-of']
+				}
+			];
+
+			const created = await createAndRecordContainer({
+				auth: input,
+				data: section,
+				tool: addCustomCollectionSectionToolName,
+				user
+			})(connection);
+
+			return {
+				section: {
+					categories: input.categories,
+					guid: created.guid,
+					includeSubordinateOrganizationalUnits: input.includeSubordinateOrganizationalUnits,
+					pageGuid: page.guid,
+					title: input.title,
+					types: input.types
+				}
+			};
 		});
-		const allowedCategories = categoryValues(categoryContext);
-		for (const [key, values] of Object.entries(input.categories)) {
-			const allowedValues = allowedCategories.get(key);
-			if (!allowedValues || values.some((value) => !allowedValues.has(value))) {
-				throw new McpCreationError(`Unknown category or category value: ${key}`);
-			}
-		}
-
-		const relations = await getAllDirectContainerRelations(page.guid)(connection);
-		const position =
-			Math.max(
-				-1,
-				...relations
-					.filter(
-						({ object, predicate }) =>
-							object === page.guid && predicate === predicates.enum['is-section-of']
-					)
-					.map(({ position }) => position)
-			) + 1;
-		const section = containerOfType(
-			payloadTypes.enum.custom_collection,
-			page
-		) as NewContainer<CustomCollectionPayload>;
-		section.payload.title = input.title;
-		section.payload.item = [];
-		section.payload.filter = {
-			type: input.types,
-			...input.categories,
-			...organizationScopeAsFilter({
-				includeSubordinateOrganizationalUnits: input.includeSubordinateOrganizationalUnits,
-				type: 'current'
-			})
-		};
-		section.relation = [
-			{
-				object: page.guid,
-				position,
-				predicate: predicates.enum['is-section-of']
-			}
-		];
-
-		const created = await createAndRecordContainer({
-			auth: input,
-			data: section,
-			tool: addCustomCollectionSectionToolName,
-			user
-		})(connection);
-
-		return {
-			section: {
-				categories: input.categories,
-				guid: created.guid,
-				includeSubordinateOrganizationalUnits: input.includeSubordinateOrganizationalUnits,
-				pageGuid: page.guid,
-				title: input.title,
-				types: input.types
-			}
-		};
-	};
 }
