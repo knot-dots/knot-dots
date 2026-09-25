@@ -14,10 +14,12 @@ import {
 	type IndicatorPayload,
 	isTemplateRoot,
 	linearRegressionSlope,
+	listTypes,
 	type MeasurePayload,
 	memberRoleFromPredicates,
 	memberRoleOf,
 	memberRoles,
+	objectCollectionPayload,
 	type PayloadType,
 	payloadTypes,
 	predicates,
@@ -699,3 +701,46 @@ test.each([
 		expect(trendDirection(points)).toBe(direction);
 	}
 );
+test('object collection payload defaults to an empty carousel of goals', () => {
+	const parsed = objectCollectionPayload.parse({
+		objectType: payloadTypes.enum.goal,
+		title: 'Strategic goals',
+		type: payloadTypes.enum.object_collection
+	});
+
+	expect(parsed).toEqual({
+		item: [],
+		listType: listTypes.enum.carousel,
+		objectType: payloadTypes.enum.goal,
+		title: 'Strategic goals',
+		type: payloadTypes.enum.object_collection,
+		visibility: 'organization'
+	});
+});
+
+test('object collection payload keeps its bound template and items', () => {
+	const templateGuid = '5f0c0e66-2c4a-4d0e-9a1e-2a7c1b6f9d10';
+	const itemGuid = '0d4e3a6b-8c9f-4e2b-b1d3-7f6a5c4e3d21';
+	const parsed = objectCollectionPayload.parse({
+		item: [itemGuid],
+		listType: listTypes.enum.wall,
+		newItemTemplate: templateGuid,
+		objectType: payloadTypes.enum.goal,
+		title: 'Strategic goals',
+		type: payloadTypes.enum.object_collection
+	});
+
+	expect(parsed.item).toEqual([itemGuid]);
+	expect(parsed.listType).toBe(listTypes.enum.wall);
+	expect(parsed.newItemTemplate).toBe(templateGuid);
+});
+
+test('object collection payload rejects unsupported object types', () => {
+	const result = objectCollectionPayload.safeParse({
+		objectType: payloadTypes.enum.measure,
+		title: 'Measures',
+		type: payloadTypes.enum.object_collection
+	});
+
+	expect(result.success).toBe(false);
+});
