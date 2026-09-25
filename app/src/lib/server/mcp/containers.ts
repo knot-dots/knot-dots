@@ -9,6 +9,7 @@ import type {
 	SearchContainersOutput
 } from '$lib/server/mcp/contracts/containers';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
 
 const searchBatchSize = 250;
@@ -48,23 +49,25 @@ export async function searchMcpContainers({
 	let total = Number.POSITIVE_INFINITY;
 
 	while (visibleContainers.length < offset + limit + 1 && rawOffset < total) {
-		const result = await getManyContainersWithES(
-			[organizationGuid],
-			{
-				assignees: assigneeGuids,
-				organizationalUnits:
-					organizationalUnitGuid === undefined
-						? undefined
-						: organizationalUnitGuid === null
-							? null
-							: [organizationalUnitGuid],
-				statuses,
-				template: false,
-				terms,
-				type: types
-			},
-			terms ? 'relevance' : 'alpha',
-			{ includeFacets: false, limit: searchBatchSize, offset: rawOffset }
+		const result = await runAsRequestUser(user.guid, () =>
+			getManyContainersWithES(
+				[organizationGuid],
+				{
+					assignees: assigneeGuids,
+					organizationalUnits:
+						organizationalUnitGuid === undefined
+							? undefined
+							: organizationalUnitGuid === null
+								? null
+								: [organizationalUnitGuid],
+					statuses,
+					template: false,
+					terms,
+					type: types
+				},
+				terms ? 'relevance' : 'alpha',
+				{ includeFacets: false, limit: searchBatchSize, offset: rawOffset }
+			)
 		);
 
 		total = result.total;
@@ -90,7 +93,9 @@ export function getMcpContainer({ guid, userId }: { guid: string; userId: string
 		const user = await loadMcpUserContext(connection, userId);
 
 		try {
-			const container = await getContainerByGuid(guid)(connection);
+			const container = await runAsRequestUser(user.guid, () =>
+				getContainerByGuid(guid)(connection)
+			);
 			return defineAbilityFor(user).can('read', container) ? container : null;
 		} catch (error) {
 			if (error instanceof NotFoundError) {

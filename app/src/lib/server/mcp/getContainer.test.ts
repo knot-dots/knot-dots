@@ -1,6 +1,7 @@
 import { NotFoundError } from 'slonik';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
+import { getRequestUser } from '$lib/server/requestUser';
 
 const getContainerByGuid = vi.hoisted(() => vi.fn());
 const loadMcpUserContext = vi.hoisted(() => vi.fn());
@@ -15,7 +16,7 @@ const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const userGuid = '00000000-0000-4000-8000-000000000002';
 const containerGuid = '00000000-0000-4000-8000-000000000003';
 
-function goalContainer(visibility: 'creator' | 'public'): Container<AnyPayload> {
+function goalContainer(visibility: 'creator' | 'organization' | 'public'): Container<AnyPayload> {
 	return {
 		guid: containerGuid,
 		managed_by: [organizationGuid],
@@ -63,6 +64,28 @@ test('returns a container that the MCP user may read', async () => {
 	await expect(
 		getMcpContainer({ guid: containerGuid, userId: userGuid })({} as never)
 	).resolves.toBe(container);
+});
+
+test('reads the container with the grants of the MCP user', async () => {
+	getContainerByGuid.mockReturnValue(async () => ({
+		...goalContainer('organization'),
+		...(getRequestUser() === userGuid && {
+			user_grant: {
+				admin: false,
+				member: true,
+				organization_manager: false,
+				own: [],
+				scope_sourced: true,
+				self: ['read'],
+				source: organizationGuid,
+				subordinates: ['read']
+			}
+		})
+	}));
+
+	await expect(
+		getMcpContainer({ guid: containerGuid, userId: userGuid })({} as never)
+	).resolves.toMatchObject({ guid: containerGuid });
 });
 
 test('returns null for an inaccessible container', async () => {

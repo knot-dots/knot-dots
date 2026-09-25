@@ -3,6 +3,7 @@ import { filterVisible } from '$lib/authorization';
 import type { OrganizationalUnitSummary } from '$lib/organizationalUnitSummary';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { runAsRequestUser } from '$lib/server/requestUser';
 
 export interface ListMcpOrganizationalUnitsOptions {
 	limit: number;
@@ -24,9 +25,11 @@ export function listMcpOrganizationalUnits({
 }: ListMcpOrganizationalUnitsOptions) {
 	return async (connection: DatabaseConnection): Promise<ListMcpOrganizationalUnitsResult> => {
 		const user = await loadMcpUserContext(connection, userId);
-		const containers = await getManyOrganizationalUnitContainers({
-			include: { organization: organizationGuid }
-		})(connection);
+		const containers = await runAsRequestUser(user.guid, () =>
+			getManyOrganizationalUnitContainers({
+				include: { organization: organizationGuid }
+			})(connection)
+		);
 		const visiblePage = filterVisible(containers, user).slice(offset, offset + limit + 1);
 		const hasNextPage = visiblePage.length > limit;
 

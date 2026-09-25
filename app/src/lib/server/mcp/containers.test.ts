@@ -1,5 +1,6 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { emptyGrantRecords, type AnyPayload, type Container } from '$lib/models';
+import { getRequestUser } from '$lib/server/requestUser';
 
 const getManyContainersWithES = vi.hoisted(() => vi.fn());
 
@@ -45,14 +46,37 @@ function goalContainer(
 	};
 }
 
-function memberUser() {
-	const grants = emptyGrantRecords();
-	grants.subordinates.read.push(organizationGuid);
+// Mirrors the read-time enrichment of getManyContainersWithES: containers only
+// carry the member's grants when the search runs as that member.
+function resolveSearch(containers: Container<AnyPayload>[]) {
+	getManyContainersWithES.mockImplementation(async () => ({
+		containers: containers.map((container) =>
+			getRequestUser() === userGuid
+				? {
+						...container,
+						user_grant: {
+							admin: false,
+							member: true,
+							organization_manager: false,
+							own: [],
+							scope_sourced: true,
+							self: ['read'],
+							source: organizationGuid,
+							subordinates: ['read']
+						}
+					}
+				: container
+		),
+		facets: {},
+		total: containers.length
+	}));
+}
 
+function memberUser() {
 	return {
 		familyName: '',
 		givenName: '',
-		grants,
+		grants: emptyGrantRecords(),
 		guid: userGuid,
 		isAuthenticated: true,
 		roles: [],
@@ -76,11 +100,7 @@ test('searches existing container data and paginates after authorization', async
 	const bravo = goalContainer('00000000-0000-4000-8000-000000000005', {
 		title: 'Bravo'
 	});
-	getManyContainersWithES.mockResolvedValue({
-		containers: [hidden, alpha, bravo],
-		facets: {},
-		total: 3
-	});
+	resolveSearch([hidden, alpha, bravo]);
 
 	await expect(
 		searchMcpContainers({
@@ -125,11 +145,7 @@ test('searches existing container data and paginates after authorization', async
 test('supports organization-level filtering and an authorized-result offset', async () => {
 	const alpha = goalContainer('00000000-0000-4000-8000-000000000004', { title: 'Alpha' });
 	const bravo = goalContainer('00000000-0000-4000-8000-000000000005', { title: 'Bravo' });
-	getManyContainersWithES.mockResolvedValue({
-		containers: [alpha, bravo],
-		facets: {},
-		total: 2
-	});
+	resolveSearch([alpha, bravo]);
 
 	await expect(
 		searchMcpContainers({
