@@ -5,6 +5,8 @@
 	import DoubleWidth from '~icons/flowbite/merge-or-split-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Background from '~icons/knotdots/background';
+	import CarouselIcon from '~icons/knotdots/carousel';
+	import Grid from '~icons/knotdots/grid';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
@@ -13,7 +15,9 @@
 		backgroundColor,
 		type Container,
 		isContainerWithColor,
-		isTeaserLikeContainer
+		isObjectCollectionContainer,
+		isTeaserLikeContainer,
+		listTypes
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
@@ -54,7 +58,7 @@
 	}
 </script>
 
-{#if $ability.can('update', container, 'payload.visibility') || ($ability.can('update', container) && isContainerWithColor(container)) || ($ability.can('update', container) && isTeaserLikeContainer(container)) || $ability.can('delete', container)}
+{#if $ability.can('update', container, 'payload.visibility') || ($ability.can('update', container) && isContainerWithColor(container)) || ($ability.can('update', container) && isTeaserLikeContainer(container)) || ($ability.can('update', container) && isObjectCollectionContainer(container)) || $ability.can('delete', container)}
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(
 			openSubMenuTitle: string,
@@ -62,6 +66,25 @@
 			closeMenu: () => void
 		)}
 			{#if openSubMenuTitle == ''}
+				{#if isObjectCollectionContainer(container) && $ability.can('update', container)}
+					<button
+						class="cascading-menu-item"
+						onclick={() => openSubMenu($_('custom_collection.settings.view'))}
+						type="button"
+					>
+						{#if container.payload.listType === listTypes.enum.carousel}
+							<CarouselIcon />
+						{:else}
+							<Grid />
+						{/if}
+						<span>
+							<strong>{$_('custom_collection.settings.view')}</strong>
+							<small>{$_(`list_type.${container.payload.listType}`)}</small>
+						</span>
+						<ChevronRight />
+					</button>
+				{/if}
+
 				{#if isContainerWithColor(container) && $ability.can('update', container)}
 					<button
 						class="cascading-menu-item"
@@ -122,6 +145,31 @@
 						</span>
 					</button>
 				{/if}
+			{:else if openSubMenuTitle == $_('custom_collection.settings.view') && isObjectCollectionContainer(container)}
+				<fieldset class="listbox">
+					<label>
+						<input
+							type="radio"
+							name="listType"
+							value={listTypes.enum.wall}
+							checked={container.payload.listType === listTypes.enum.wall}
+							onchange={() => (container.payload.listType = listTypes.enum.wall)}
+						/>
+						<Grid />
+						<span>{$_('list_type.wall')}</span>
+					</label>
+					<label>
+						<input
+							type="radio"
+							name="listType"
+							value={listTypes.enum.carousel}
+							checked={container.payload.listType === listTypes.enum.carousel}
+							onchange={() => (container.payload.listType = listTypes.enum.carousel)}
+						/>
+						<CarouselIcon />
+						<span>{$_('list_type.carousel')}</span>
+					</label>
+				</fieldset>
 			{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title') && isContainerWithColor(container)}
 				<fieldset class="listbox">
 					{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}

@@ -18,6 +18,7 @@
 	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
+	import EditableObjectCollection from '$lib/components/EditableObjectCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
@@ -51,6 +52,7 @@
 		isInlineHelpTextContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
+		isObjectCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
@@ -213,6 +215,14 @@
 			/>
 		{:else if isMeasureCollectionContainer(container)}
 			<EditableMeasureCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				{editable}
+				{heading}
+			/>
+		{:else if isObjectCollectionContainer(container)}
+			<EditableObjectCollection
 				bind:container
 				bind:parentContainer
 				bind:relatedContainers
