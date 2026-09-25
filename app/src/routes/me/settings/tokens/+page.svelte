@@ -74,6 +74,7 @@
 									<tr>
 										<th>{$_('mcp_tokens.name')}</th>
 										<th>{$_('mcp_tokens.token')}</th>
+										<th>{$_('mcp_tokens.scopes')}</th>
 										<th>{$_('mcp_tokens.created')}</th>
 										<th>{$_('mcp_tokens.expires')}</th>
 										<th>{$_('mcp_tokens.last_used')}</th>
@@ -87,6 +88,12 @@
 										<tr>
 											<td>{token.name}</td>
 											<td><code>{token.prefix}…</code></td>
+											<td>
+												{#each token.scopes as scope, index (scope)}
+													{#if index > 0},
+													{/if}<code>{scope}</code>
+												{/each}
+											</td>
 											<td>{$date(token.created_at, { dateStyle: 'medium' })}</td>
 											<td>{$date(token.expires_at, { dateStyle: 'medium' })}</td>
 											<td>

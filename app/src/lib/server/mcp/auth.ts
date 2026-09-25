@@ -5,10 +5,16 @@ import {
 	type OAuthTokenVerifier
 } from '@modelcontextprotocol/server';
 import type { DatabasePool } from 'slonik';
+import { z } from 'zod';
 import { authenticateMcpToken } from '$lib/server/db';
 import { hashMcpToken } from '$lib/server/mcp/tokens';
 
 const tokenPattern = /^mcp_pat_[A-Za-z0-9_-]{43}$/;
+
+export const mcpAuthExtra = z.strictObject({
+	tokenId: z.uuid(),
+	userId: z.uuid()
+});
 
 function invalidToken(): OAuthError {
 	return new OAuthError(OAuthErrorCode.InvalidToken, 'Invalid access token');

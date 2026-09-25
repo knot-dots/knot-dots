@@ -30,6 +30,7 @@ import {
 	type MemberRole,
 	memberRoleFromPredicates,
 	memberRolePredicates,
+	memberRoles,
 	type ModifiedContainer,
 	type NewContainer,
 	organizationalUnitPayload,
@@ -52,6 +53,7 @@ import {
 	visibility
 } from '$lib/models';
 import { isMeasureTemplateScope } from '$lib/templateScopes';
+import { organizationMembership, type OrganizationMembership } from '$lib/organizationMembership';
 import { enrichContainers } from '$lib/server/computeUserGrants';
 import {
 	type CopyGraphSnapshot,
@@ -198,6 +200,40 @@ export function authenticateMcpToken(secretHash: Buffer) {
 				AND expires_at > now()
 			RETURNING id, user_id, scopes, expires_at
 		`);
+	};
+}
+
+const organizationMembershipRow = organizationMembership.omit({ role: true }).extend({
+	predicates: z.array(predicates)
+});
+
+export function getOrganizationMemberships(userId: string) {
+	return async (connection: DatabaseConnection): Promise<OrganizationMembership[]> => {
+		const memberships = await connection.any(sql.type(organizationMembershipRow)`
+			SELECT
+				c.guid,
+				c.payload->>'name' AS name,
+				c.payload->>'slug' AS slug,
+				array_agg(role.predicate ORDER BY role.predicate) AS predicates
+			FROM container c
+			JOIN container_user membership
+				ON membership.object = c.revision
+				AND membership.subject = ${userId}
+				AND membership.predicate = ${predicates.enum['is-member-of']}
+			JOIN container_user role
+				ON role.object = c.revision
+				AND role.subject = ${userId}
+			WHERE c.valid_currently
+				AND NOT c.deleted
+				AND c.payload->>'type' = ${payloadTypes.enum.organization}
+			GROUP BY c.guid, c.payload->>'name', c.payload->>'slug'
+			ORDER BY c.payload->>'name', c.guid
+		`);
+
+		return memberships.map(({ predicates: relationPredicates, ...organization }) => ({
+			...organization,
+			role: memberRoleFromPredicates(relationPredicates) ?? memberRoles.enum.observer
+		}));
 	};
 }
 

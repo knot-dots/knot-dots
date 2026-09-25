@@ -482,6 +482,7 @@
 	"mcp_tokens.never": "Never",
 	"mcp_tokens.revoke": "Revoke",
 	"mcp_tokens.revoked": "Revoked",
+	"mcp_tokens.scopes": "Scopes",
 	"mcp_tokens.status": "Status",
 	"mcp_tokens.title": "MCP access tokens",
 	"mcp_tokens.token": "Token",
