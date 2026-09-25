@@ -471,6 +471,17 @@ export function createContainerCopyPlan({
 			}
 		];
 
+		const canUseNewItemTemplate = (templateGuid: string) => {
+			const template = containersByGuid.get(templateGuid);
+			return Boolean(
+				template &&
+				'template' in template.payload &&
+				template.payload.template &&
+				readPolicy.canReadSource(template) &&
+				readPolicy.canUseNewItemTemplate(template, target)
+			);
+		};
+
 		// Apply only field-specific container-reference policy here. Geometry UUIDs and ordinary payload
 		// data are already handled by the base copy and intentionally remain untouched.
 		switch (copy.payload.type) {
@@ -497,15 +508,12 @@ export function createContainerCopyPlan({
 					}
 					return [];
 				});
-				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter((templateGuid) => {
-					const template = containersByGuid.get(templateGuid);
-					return Boolean(
-						template &&
-						'template' in template.payload &&
-						template.payload.template &&
-						readPolicy.canReadSource(template) &&
-						readPolicy.canUseNewItemTemplate(template, target)
-					);
+				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter(canUseNewItemTemplate);
+				break;
+			case payloadTypes.enum.relation_collection:
+				copy.payload.item = copy.payload.item.flatMap((itemGuid) => {
+					const copiedItemGuid = guidMap.get(itemGuid);
+					return copiedItemGuid ? [copiedItemGuid] : [];
 				});
 				break;
 			default:
