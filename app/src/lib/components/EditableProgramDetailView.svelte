@@ -52,6 +52,7 @@
 	let { container = $bindable(), layout, revisions }: Props = $props();
 
 	const templateAvailability = createScopedTemplateAvailability({
+		active: () => $applicationState.containerDetailView.editable,
 		candidateTypes: () => container.payload.chapterType,
 		organizationGuid: () => container.organization,
 		scopeGuid: () => container.guid
@@ -263,7 +264,7 @@
 	<footer class="footer-action-bar">
 		<RelationButton {container} />
 		<AdoptButton {container} />
-		<CreateAnotherButton {container} {relatedContainers} />
+		<CreateAnotherButton {container} {relatedContainers} {templateAvailability} />
 		<CreateCopyButton {container} />
 		<CreateTemplateButton {container} />
 		{#if [programTypes.enum['program_type.guide'], programTypes.enum['program_type.publication']].some((t) => t == container.payload.programType) && createFeatureDecisions(page.data.features).useMistral()}
@@ -297,6 +298,7 @@
 							<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
 							<!-- svelte-ignore binding_property_non_reactive -->
 							<EditableChapter
+								{availableChapterTypes}
 								bind:container={filteredParts[i]}
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', part)}
