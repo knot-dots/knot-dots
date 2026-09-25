@@ -24,6 +24,7 @@
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
+	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -31,6 +32,7 @@
 		computeFacetCount,
 		type Container,
 		containerOfType,
+		isObjectCollectionContainer,
 		type NewContainer,
 		paramsFromFragment,
 		type PayloadType,
@@ -40,6 +42,7 @@
 		programTypes,
 		status
 	} from '$lib/models';
+	import { hasSection } from '$lib/relations';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -91,6 +94,17 @@
 	let filteredParts = $derived(
 		parts.filter(({ payload }) => byPayloadType(payload.type, page.url))
 	);
+
+	// Objects created inside an object section are listed there, not among the chapters.
+	let sectionItemGuids = $derived(
+		new Set(
+			hasSection(container, relatedContainers)
+				.filter(isObjectCollectionContainer)
+				.flatMap(({ payload }) => payload.item)
+		)
+	);
+
+	let previewParts = $derived(filteredParts.filter(({ guid }) => !sectionItemGuids.has(guid)));
 
 	let relatedParts = $derived(
 		relatedContainersQuery.current?.filter(({ guid, relation }) =>
@@ -288,7 +302,7 @@
 		<EditableContainerDetailView bind:container {footer}>
 			{#snippet data()}
 				<div class="chapters">
-					{#each filteredParts as part, i (part.guid)}
+					{#each previewParts as part, i (part.guid)}
 						<form
 							class="details-section"
 							oninput={stopPropagation(requestSubmit)}
@@ -299,7 +313,7 @@
 							<!-- svelte-ignore binding_property_non_reactive -->
 							<EditableChapter
 								{availableChapterTypes}
-								bind:container={filteredParts[i]}
+								bind:container={previewParts[i]}
 								editable={$applicationState.containerDetailView.editable &&
 									$ability.can('update', part)}
 								isPartOf={container}
@@ -320,6 +334,8 @@
 						{/if}
 					{/each}
 				</div>
+
+				<Sections bind:container {relatedContainers} />
 			{/snippet}
 
 			{#snippet properties()}
