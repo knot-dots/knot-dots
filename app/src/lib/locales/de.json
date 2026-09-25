@@ -517,6 +517,7 @@
 	"n_more": "{count, plural, one {+1} other {+#}}",
 	"no": "Nein",
 	"object": "Objekt",
+	"object_collection": "Unterobjekte",
 	"objective": "Gewünschte Entwicklung",
 	"objective.tendency": "Tendenz",
 	"objective.trend_value_up": "Für diesen Indikator ist eine steigende Tendenz erwünscht",
