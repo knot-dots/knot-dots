@@ -518,6 +518,7 @@
 	"n_more": "{count, plural, one {+1} other {+#}}",
 	"no": "No",
 	"object": "Object",
+	"object_collection": "Sub-objects",
 	"objective": "Objective",
 	"objective.tendency": "Tendency",
 	"objective.trend_value_up": "An increasing trend is desired",

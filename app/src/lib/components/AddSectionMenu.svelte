@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resource } from 'runed';
 	import { createMenu } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { createPopperActions } from 'svelte-popperjs';
@@ -29,6 +30,7 @@
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
 	import { page } from '$app/state';
+	import fetchContainers from '$lib/client/fetchContainers';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -47,12 +49,14 @@
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
+		isObjectCollectionContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isPageContainer,
 		isPostContainer,
 		isProgramCollectionContainer,
+		isProgramContainer,
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
@@ -61,13 +65,18 @@
 		isSummaryContainer,
 		isTaskCollectionContainer,
 		isTaskContainer,
+		isTemplateContainer,
+		type ObjectCollectionObjectType,
+		type PayloadType,
 		payloadTypes,
 		predicates,
 		resourceDataTypes,
+		type TemplatePayload,
 		textType
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
+	import { isScopedTemplateRoot } from '$lib/templateScopes';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
@@ -83,6 +92,16 @@
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
+
+	type SectionOption = {
+		icon: typeof Plus;
+		label: string;
+		newItemTemplate?: string;
+		objectType?: ObjectCollectionObjectType;
+		resourceDataType?: string;
+		textType?: string;
+		value: PayloadType;
+	};
 
 	let menu = createMenu({ label: $_('add_section') });
 
@@ -226,7 +245,90 @@
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
-	let options = $derived(
+	// Programs offer one object section per scoped goal template. The templates are
+	// requested once the menu has been opened; the menu store itself must not be a
+	// dependency because item registration updates it while the menu is open.
+	let templatesRequested = $state(false);
+
+	$effect(() => {
+		if ($menu.expanded) {
+			templatesRequested = true;
+		}
+	});
+
+	const goalTemplatesResource = resource(
+		[
+			() => templatesRequested,
+			() =>
+				isProgramContainer(parentContainer) &&
+				createFeatureDecisions(page.data.features).useTemplateWorkspaces(),
+			() => parentContainer.guid,
+			() => parentContainer.organization
+		],
+		async (
+			[requested, enabled, scopeGuid, organizationGuid],
+			_,
+			{ signal }
+		): Promise<Container<TemplatePayload>[]> => {
+			if (!enabled || !requested) {
+				return [];
+			}
+			const containers = await fetchContainers(
+				{
+					availableIn: scopeGuid,
+					organization: [organizationGuid],
+					payloadType: [payloadTypes.enum.goal],
+					template: 'true',
+					templateRoot: true
+				},
+				'alpha',
+				{ signal }
+			);
+			return containers.filter(isTemplateContainer).filter((container) =>
+				isScopedTemplateRoot(container, {
+					organizationGuid,
+					payloadType: payloadTypes.enum.goal,
+					scopeGuid
+				})
+			);
+		}
+	);
+
+	let objectCollections = $derived(
+		hasSection(parentContainer, relatedContainers).filter(isObjectCollectionContainer)
+	);
+
+	let programOptions: SectionOption[] = $derived.by(() => {
+		if (goalTemplatesResource.loading) {
+			return [];
+		}
+		const templates = goalTemplatesResource.current ?? [];
+		if (templates.length > 0) {
+			return templates
+				.filter((t) => !objectCollections.some((s) => s.payload.newItemTemplate === t.guid))
+				.map((t) => ({
+					icon: Goal,
+					label: t.payload.title,
+					newItemTemplate: t.guid,
+					objectType: payloadTypes.enum.goal,
+					value: payloadTypes.enum.object_collection
+				}));
+		}
+		return objectCollections.some(
+			(s) => s.payload.objectType === payloadTypes.enum.goal && !s.payload.newItemTemplate
+		)
+			? []
+			: [
+					{
+						icon: Goal,
+						label: $_('goals'),
+						objectType: payloadTypes.enum.goal,
+						value: payloadTypes.enum.object_collection
+					}
+				];
+	});
+
+	let sectionOptions: SectionOption[] = $derived(
 		[
 			{ icon: Text, label: $_('text'), value: payloadTypes.enum.text },
 			{
@@ -420,6 +522,8 @@
 			{ icon: Quote, label: $_('quote'), value: payloadTypes.enum.quote }
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
+
+	let options = $derived(isProgramContainer(parentContainer) ? programOptions : sectionOptions);
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
@@ -438,15 +542,18 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer)}
 						<li class="menu-item">
 							<button
 								use:menu.item={{
 									value: {
 										type: option.value,
+										newItemTemplate: option.newItemTemplate,
+										objectType: option.objectType,
 										resourceDataType: option.resourceDataType,
-										textType: option.textType
+										textType: option.textType,
+										title: option.label
 									}
 								}}
 								type="button"

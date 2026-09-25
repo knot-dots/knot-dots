@@ -1417,3 +1417,85 @@ test('plans mixed-depth program, measure, goal, task, effect, category, report, 
 		subject: plan.get(sectionGuid)?.guid
 	});
 });
+
+test('remaps object section items and bound templates when instantiating a program', () => {
+	const program = makeContainer(guids.root, {
+		template: true,
+		title: 'Program template',
+		type: payloadTypes.enum.program
+	});
+	const section = makeContainer(guids.parent, {
+		item: [guids.child, guids.missing],
+		newItemTemplate: guids.scopedTemplate,
+		objectType: payloadTypes.enum.goal,
+		title: 'Strategic goals',
+		type: payloadTypes.enum.object_collection
+	});
+	const goal = makeContainer(guids.child, {
+		title: 'Strategic goal',
+		type: payloadTypes.enum.goal
+	});
+	const scopedTemplate = makeContainer(guids.scopedTemplate, {
+		template: true,
+		title: 'Strategic goal template',
+		type: payloadTypes.enum.goal
+	});
+	const snapshot = graph(
+		guids.root,
+		[program, section, goal, scopedTemplate],
+		[
+			relation(guids.parent, predicates.enum['is-section-of'], guids.root),
+			relation(guids.child, predicates.enum['is-part-of-program'], guids.root),
+			relation(guids.scopedTemplate, predicates.enum['is-available-in'], guids.root)
+		]
+	);
+
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		operation: { kind: 'template-instance', rootPayload: program.payload },
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.parent)?.payload).toMatchObject({
+		item: [copyFor(plan, guids.child)?.guid],
+		newItemTemplate: copyFor(plan, guids.scopedTemplate)?.guid
+	});
+	expect(copyFor(plan, guids.scopedTemplate)?.payload).toMatchObject({ template: true });
+});
+
+test('drops a bound template outside the copy set unless the target may use it', () => {
+	const section = makeContainer(guids.root, {
+		item: [],
+		newItemTemplate: guids.usableTemplate,
+		objectType: payloadTypes.enum.goal,
+		title: 'Goals',
+		type: payloadTypes.enum.object_collection
+	});
+	const template = makeContainer(guids.usableTemplate, {
+		template: true,
+		title: 'Goal template',
+		type: payloadTypes.enum.goal
+	});
+	const snapshot = graph(guids.root, [section, template], []);
+
+	const usable = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		readPolicy: policy({ usableTemplates: [guids.usableTemplate] }),
+		allocateGuid: allocator()
+	});
+	expect(copyFor(usable, guids.root)?.payload).toMatchObject({
+		newItemTemplate: guids.usableTemplate
+	});
+	expect(usable.has(guids.usableTemplate)).toBe(false);
+
+	const unusable = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+	expect(copyFor(unusable, guids.root)?.payload).not.toHaveProperty('newItemTemplate');
+});

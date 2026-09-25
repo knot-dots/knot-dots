@@ -533,6 +533,7 @@ const requiredPayloadFields: Partial<Record<PayloadType, Record<string, unknown>
 	[payloadTypes.enum.actual_data]: { indicator: crypto.randomUUID() },
 	[payloadTypes.enum.chapter]: { number: '1' },
 	[payloadTypes.enum.indicator_template]: { unit: 'unit.euro' },
+	[payloadTypes.enum.object_collection]: { objectType: payloadTypes.enum.goal },
 	[payloadTypes.enum.organization]: { name: 'Lorem ipsum' },
 	[payloadTypes.enum.organizational_unit]: { name: 'Lorem ipsum' },
 	[payloadTypes.enum.page]: { body: 'Lorem ipsum' },
