@@ -160,10 +160,7 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 
 		const candidate = containerOfType(
 			input.payload.type,
-			organization.guid,
-			organizationalUnit?.guid ?? null,
-			organizationalUnit?.guid ?? organization.guid,
-			organization.realm
+			organizationalUnit ?? organization
 		) as NewContainer;
 		candidate.payload = payloadResult.data;
 		candidate.relation = input.parentRelations.map(({ parentGuid, predicate }) => {
@@ -242,10 +239,7 @@ export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionI
 			) + 1;
 		const section = containerOfType(
 			payloadTypes.enum.custom_collection,
-			page.organization,
-			page.organizational_unit,
-			page.managed_by,
-			page.realm
+			page
 		) as NewContainer<CustomCollectionPayload>;
 		section.payload.title = input.title;
 		section.payload.item = [];
