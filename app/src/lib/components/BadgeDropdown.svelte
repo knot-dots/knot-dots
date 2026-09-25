@@ -54,7 +54,8 @@
 </script>
 
 {#if editable}
-	<Dropdown {label} {offset}>
+	<!-- fixed positioning lets the panel escape the scrolling table wrapper -->
+	<Dropdown {label} {offset} strategy="fixed">
 		{#snippet button(popover)}
 			<button
 				aria-labelledby={labelledBy}

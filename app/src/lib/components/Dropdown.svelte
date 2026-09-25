@@ -8,9 +8,10 @@
 		panel?: Snippet<[ReturnType<typeof createPopover>]>;
 		label?: string;
 		offset?: [number, number];
+		strategy?: 'absolute' | 'fixed';
 	}
 
-	let { button, panel, label, offset = [0, 4] }: Props = $props();
+	let { button, panel, label, offset = [0, 4], strategy = 'absolute' }: Props = $props();
 
 	const popover = createPopover({
 		get label() {
@@ -19,12 +20,12 @@
 	});
 
 	const [popperRef, popperContent] = createPopperActions({
-		placement: 'bottom-start',
-		strategy: 'absolute'
+		placement: 'bottom-start'
 	});
 
 	const extraOptions = $derived({
-		modifiers: [{ name: 'offset', options: { offset } }]
+		modifiers: [{ name: 'offset', options: { offset } }],
+		strategy
 	});
 </script>
 
