@@ -75,6 +75,11 @@ function requiredPayloadFields(type: PayloadType) {
 			return { name: 'Context' };
 		case payloadTypes.enum.page:
 			return { body: 'Body' };
+		case payloadTypes.enum.relation_collection:
+			return {
+				payloadType: payloadTypes.enum.goal,
+				predicate: predicates.enum['is-part-of-program']
+			};
 		case payloadTypes.enum.resource_data:
 			return {
 				resource: relatedGuid,
