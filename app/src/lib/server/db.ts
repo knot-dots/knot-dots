@@ -1035,13 +1035,18 @@ export function getContainerCopyGraph(rootGuid: string) {
 				FROM current_container source
 				JOIN copy_candidate candidate ON candidate.guid = source.guid
 				CROSS JOIN LATERAL jsonb_array_elements_text(source.payload->'item') item(value)
-				WHERE source.payload->>'type' = ${payloadTypes.enum.custom_collection}
+				WHERE source.payload->>'type' = ANY (${sql.array([payloadTypes.enum.custom_collection, payloadTypes.enum.object_collection], 'text')})
 				UNION
 				SELECT template.value::uuid
 				FROM current_container source
 				JOIN copy_candidate candidate ON candidate.guid = source.guid
 				CROSS JOIN LATERAL jsonb_array_elements_text(source.payload->'newItemTemplate') template(value)
 				WHERE source.payload->>'type' = ${payloadTypes.enum.custom_collection}
+				UNION
+				SELECT (source.payload->>'newItemTemplate')::uuid AS guid
+				FROM current_container source
+				JOIN copy_candidate candidate ON candidate.guid = source.guid
+				WHERE source.payload->>'type' = ${payloadTypes.enum.object_collection}
 			), all_guid AS (
 				SELECT guid FROM copy_candidate
 				UNION
