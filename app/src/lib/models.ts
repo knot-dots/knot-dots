@@ -996,15 +996,15 @@ export function deduplicate<T>(v: T[]) {
 	return [...new Set(v)];
 }
 
-const detailViewStyle = z.object({
-	color: backgroundColor.optional(),
-	cover: z.url().optional(),
-	coverSource: z.string().optional()
-});
+export const payloadRegistry = z.registry<{
+	description?: string;
+	layout?: { detail: { headerAndPanel: string[]; onlyPanel: string[]; unused: string[] } };
+}>();
 
-const sectionStyle = z.object({
-	color: backgroundColor.optional()
-});
+export const propertyRegistry = z.registry<{
+	label: string;
+	emptyLabel?: string;
+}>();
 
 const propertiesConfiguration = z.partialRecord(
 	payloadTypes,
@@ -1015,35 +1015,51 @@ const propertiesConfiguration = z.partialRecord(
 	})
 );
 
+const detailViewStyle = z.object({
+	color: backgroundColor.optional(),
+	cover: z.url().optional(),
+	coverSource: z.string().optional()
+});
+
+const sectionStyle = z.object({
+	color: backgroundColor.optional()
+});
+
 const basePayload = z.object({
 	aiContribution: z.number().min(0).max(1).default(0),
 	aiSuggestion: z.boolean().default(false),
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	description: z.string().trim().describe('GitHub-flavored Markdown.').optional(),
-	editorialState: editorialState.optional(),
+	description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
+	editorialState: editorialState.optional().register(propertyRegistry, {
+		label: 'editorial_state'
+	}),
 	summary: z.string().trim().max(200).optional(),
 	template: z.boolean().default(false),
 	title: z.string().trim(),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility
+		.default(visibility.enum['organization'])
+		.register(propertyRegistry, { label: 'visibility.label' })
 });
 
 const measureMonitoringBasePayload = z.object({
-	description: z.string().trim().describe('GitHub-flavored Markdown.').optional(),
+	description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
 	title: z.string(),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility
+		.default(visibility.enum['organization'])
+		.register(propertyRegistry, { label: 'visibility.label' })
 });
 
 const teaserBasePayload = z.object({
 	...sectionStyle.shape,
 	body: z.string().trim().optional(),
 	bodyRight: z.string().trim().optional(),
-	cardStyle: z.string().optional(),
+	cardStyle: z.string().optional().register(propertyRegistry, { label: 'card_style' }),
 	colSize: teaserColSizes.default('33-66'),
 	description: z.string().optional(),
 	doubleWidth: z.boolean().default(false),
-	image: z.url().optional(),
+	image: z.url().optional().register(propertyRegistry, { label: 'image' }),
 	imageAltText: z.string().optional(),
 	imageAltTextRight: z.string().optional(),
 	imageEnable: z.boolean().default(true),
@@ -1051,20 +1067,26 @@ const teaserBasePayload = z.object({
 	imageRight: z.url().optional(),
 	imageSource: z.string().optional(),
 	imageSourceRight: z.string().optional(),
-	link: z.string().optional(),
+	link: z.string().optional().register(propertyRegistry, { label: 'teaser_link_url' }),
 	linkEnable: z.boolean().default(false),
 	linkEnableRight: z.boolean().default(false),
 	linkRight: z.string().optional(),
-	linkCaption: z.string().optional(),
+	linkCaption: z.string().optional().register(propertyRegistry, { label: 'teaser_link_caption' }),
 	linkCaptionRight: z.string().optional(),
-	style: z.string().optional().default('default'),
+	style: z
+		.string()
+		.optional()
+		.default('default')
+		.register(propertyRegistry, { label: 'teaser_link_style' }),
 	textEnable: z.boolean().default(false),
 	textEnableRight: z.boolean().default(true),
 	title: z.string().trim(),
 	titleEnable: z.boolean().default(false),
 	titleEnableRight: z.boolean().default(true),
 	titleRight: z.string().trim().optional(),
-	visibility: visibility.default(visibility.enum['organization'])
+	visibility: visibility
+		.default(visibility.enum['organization'])
+		.register(propertyRegistry, { label: 'visibility.label' })
 });
 
 export const actualDataPayload = z.strictObject({
@@ -1107,13 +1129,39 @@ export function isAdministrativeAreaBasicDataContainer(
 
 const initialAdministrativeAreaBasicDataPayload = administrativeAreaBasicDataPayload;
 
-export const binaryIndicatorPayload = z.strictObject({
-	...basePayload.shape,
-	...detailViewStyle.shape,
-	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
-	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
-	type: z.literal(payloadTypes.enum.binary_indicator)
-});
+export const binaryIndicatorPayload = z
+	.strictObject({
+		...basePayload.shape,
+		...detailViewStyle.shape,
+		indicatorCategory: z
+			.array(indicatorCategories)
+			.transform(deduplicate)
+			.default([])
+			.register(propertyRegistry, { label: 'indicator_category' }),
+		indicatorType: z
+			.array(indicatorTypes)
+			.transform(deduplicate)
+			.default([])
+			.register(propertyRegistry, { label: 'indicator_type' }),
+		type: z.literal(payloadTypes.enum.binary_indicator)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'indicatorCategory',
+					'indicatorType',
+					'category.sdg',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type BinaryIndicatorPayload = z.infer<typeof binaryIndicatorPayload>;
 
@@ -1125,17 +1173,30 @@ export function isBinaryIndicatorContainer(
 
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
-const unrefinedCategoryPayload = z.strictObject({
-	description: z.string().trim().optional(),
-	key: z.string().trim().optional(),
-	objectTypes: z
-		.array(categoryObjectTypes)
-		.transform(deduplicate)
-		.default(categoryObjectTypes.options),
-	title: z.string().trim().min(1),
-	type: z.literal(payloadTypes.enum.category),
-	visibility: visibility.default(visibility.enum['public'])
-});
+const unrefinedCategoryPayload = z
+	.strictObject({
+		description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
+		key: z.string().trim().optional(),
+		objectTypes: z
+			.array(categoryObjectTypes)
+			.transform(deduplicate)
+			.default(categoryObjectTypes.options)
+			.register(propertyRegistry, { label: 'payload_type' }),
+		title: z.string().trim().min(1),
+		type: z.literal(payloadTypes.enum.category),
+		visibility: visibility
+			.default(visibility.enum['public'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['objectTypes', 'organization', 'organizational_unit'],
+				unused: ['visibility']
+			}
+		}
+	});
 
 export const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
 	if (payload.title && !payload.key) {
@@ -1248,15 +1309,27 @@ const initialDemographicDataPayload = demographicDataPayload.partial({
 	title: true
 });
 
-const effectPayload = z.strictObject({
-	...measureMonitoringBasePayload.shape,
-	achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	booleanValue: z.boolean().optional(),
-	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-	plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
-	trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
-	type: z.literal(payloadTypes.enum.effect)
-});
+const effectPayload = z
+	.strictObject({
+		...measureMonitoringBasePayload.shape,
+		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		booleanValue: z.boolean().optional(),
+		iooiType: iooiTypes
+			.default(iooiTypes.enum['iooi.output'])
+			.register(propertyRegistry, { label: 'iooi_type' }),
+		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
+		trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
+		type: z.literal(payloadTypes.enum.effect)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['iooiType', 'visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type EffectPayload = z.infer<typeof effectPayload>;
 
@@ -1289,12 +1362,29 @@ export function isEffectCollectionContainer(
 
 const initialEffectCollectionPayload = effectCollectionPayload;
 
-const eventPayload = z.strictObject({
-	...basePayload.shape,
-	endDate: z.iso.datetime().optional(),
-	startDate: z.iso.datetime().optional(),
-	type: z.literal(payloadTypes.enum.event)
-});
+const eventPayload = z
+	.strictObject({
+		...basePayload.shape,
+		endDate: z.iso.datetime().optional().register(propertyRegistry, { label: 'end_date' }),
+		startDate: z.iso.datetime().optional().register(propertyRegistry, { label: 'start_date' }),
+		type: z.literal(payloadTypes.enum.event)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'startDate',
+					'endDate',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type EventPayload = z.infer<typeof eventPayload>;
 
@@ -1336,16 +1426,50 @@ export function isFileCollectionContainer(
 
 const initialFileCollectionPayload = fileCollectionPayload;
 
-const goalPayload = z.strictObject({
-	...basePayload.shape,
-	...detailViewStyle.shape,
-	fulfillmentDate: z.iso.date().optional(),
-	status: status.default(status.enum['status.idea']),
-	goalType: goalType.optional(),
-	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-	progress: z.number().nonnegative().optional(),
-	type: z.literal(payloadTypes.enum.goal)
-});
+const goalPayload = z
+	.strictObject({
+		...basePayload.shape,
+		...detailViewStyle.shape,
+		fulfillmentDate: z.iso
+			.date()
+			.optional()
+			.register(propertyRegistry, { label: 'fulfillment_date' }),
+		status: status
+			.default(status.enum['status.idea'])
+			.register(propertyRegistry, { label: 'status' }),
+		goalType: goalType
+			.optional()
+			.register(propertyRegistry, { label: 'goal_type', emptyLabel: 'goal' }),
+		hierarchyLevel: z
+			.number()
+			.int()
+			.gte(1)
+			.lte(6)
+			.default(1)
+			.register(propertyRegistry, { label: 'goal.hierarchy_level' }),
+		progress: z.number().nonnegative().optional(),
+		type: z.literal(payloadTypes.enum.goal)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: ['goalType', 'status'],
+				onlyPanel: [
+					'hierarchyLevel',
+					'fulfillmentDate',
+					'category.sdg',
+					'measure',
+					'program',
+					'parent',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type GoalPayload = z.infer<typeof goalPayload>;
 
@@ -1380,21 +1504,34 @@ export function isGoalCollectionContainer(
 
 const initialGoalCollectionPayload = goalCollectionPayload;
 
-export const helpPayload = z.object({
-	...detailViewStyle.shape,
-	body: z.string().trim().default(''),
-	category: z
-		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
-		.default({}),
-	image: z.url().optional(),
-	slug: z
-		.preprocess((v) => (Array.isArray(v) ? v.filter(isHelpSlug) : []), z.array(helpSlug))
-		.transform(deduplicate)
-		.default([]),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.help),
-	visibility: visibility.default(visibility.enum['public'])
-});
+export const helpPayload = z
+	.object({
+		...detailViewStyle.shape,
+		body: z.string().trim().default(''),
+		category: z
+			.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+			.default({}),
+		image: z.url().optional().register(propertyRegistry, { label: 'image' }),
+		slug: z
+			.preprocess((v) => (Array.isArray(v) ? v.filter(isHelpSlug) : []), z.array(helpSlug))
+			.transform(deduplicate)
+			.default([])
+			.register(propertyRegistry, { label: 'help_slug.label' }),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.help),
+		visibility: visibility
+			.default(visibility.enum['public'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['image', 'slug', 'visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type HelpPayload = z.infer<typeof helpPayload>;
 
@@ -1487,15 +1624,42 @@ export function isIndicatorCollectionContainer(
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
-export const indicatorPayload = z.strictObject({
-	...basePayload.shape,
-	...detailViewStyle.shape,
-	externalReference: z.url().optional(),
-	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
-	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
-	type: z.literal(payloadTypes.enum.indicator),
-	unit: z.string()
-});
+export const indicatorPayload = z
+	.strictObject({
+		...basePayload.shape,
+		...detailViewStyle.shape,
+		externalReference: z.url().optional(),
+		indicatorCategory: z
+			.array(indicatorCategories)
+			.transform(deduplicate)
+			.default([])
+			.register(propertyRegistry, { label: 'indicator_category' }),
+		indicatorType: z
+			.array(indicatorTypes)
+			.transform(deduplicate)
+			.default([])
+			.register(propertyRegistry, { label: 'indicator_type' }),
+		type: z.literal(payloadTypes.enum.indicator),
+		unit: z.string().register(propertyRegistry, { label: 'unit' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'indicatorType',
+					'unit',
+					'indicatorCategory',
+					'category.sdg',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type IndicatorPayload = z.infer<typeof indicatorPayload>;
 
@@ -1534,11 +1698,29 @@ export function isInfoBoxContainer(
 
 const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
 
-export const knowledgePayload = z.strictObject({
-	...basePayload.shape,
-	type: z.literal(payloadTypes.enum.knowledge),
-	aiSuggestionPageReference: z.number().int().positive().optional()
-});
+export const knowledgePayload = z
+	.strictObject({
+		...basePayload.shape,
+		type: z.literal(payloadTypes.enum.knowledge),
+		aiSuggestionPageReference: z.number().int().positive().optional()
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'category.sdg',
+					'program',
+					'parent',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type KnowledgePayload = z.infer<typeof knowledgePayload>;
 
@@ -1571,20 +1753,51 @@ export function isMapContainer(
 
 const initialMapPayload = mapPayload;
 
-const measurePayload = z.strictObject({
-	...basePayload.shape,
-	...detailViewStyle.shape,
-	annotation: z.string().trim().optional(),
-	comment: z.string().trim().optional(),
-	endDate: z.iso.date().optional(),
-	hierarchyLevel: z.number().int().gte(1).lte(6).default(1),
-	measureType: measureTypes.optional(),
-	progress: z.number().nonnegative().optional(),
-	result: z.string().trim().optional(),
-	startDate: z.iso.date().optional(),
-	status: status.default(status.enum['status.idea']),
-	type: z.literal(payloadTypes.enum.measure)
-});
+const measurePayload = z
+	.strictObject({
+		...basePayload.shape,
+		...detailViewStyle.shape,
+		annotation: z.string().trim().optional(),
+		comment: z.string().trim().optional(),
+		endDate: z.iso.date().optional().register(propertyRegistry, { label: 'end_date' }),
+		hierarchyLevel: z
+			.number()
+			.int()
+			.gte(1)
+			.lte(6)
+			.default(1)
+			.register(propertyRegistry, { label: 'measure.hierarchy_level' }),
+		measureType: measureTypes
+			.optional()
+			.register(propertyRegistry, { label: 'measure_type', emptyLabel: 'measure' }),
+		progress: z.number().nonnegative().optional(),
+		result: z.string().trim().optional(),
+		startDate: z.iso.date().optional().register(propertyRegistry, { label: 'start_date' }),
+		status: status
+			.default(status.enum['status.idea'])
+			.register(propertyRegistry, { label: 'status' }),
+		type: z.literal(payloadTypes.enum.measure)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: ['measureType', 'status'],
+				onlyPanel: [
+					'startDate',
+					'endDate',
+					'hierarchyLevel',
+					'category.sdg',
+					'program',
+					'parent',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type MeasurePayload = z.infer<typeof measurePayload>;
 
@@ -1616,16 +1829,28 @@ export function isMeasureCollectionContainer(
 
 const initialMeasureCollectionPayload = measureCollectionPayload;
 
-const objectivePayload = z.strictObject({
-	...basePayload.omit({ category: true, summary: true }).shape,
-	iooiType: iooiTypes.default(iooiTypes.enum['iooi.output']),
-	trendValue: z
-		.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
-		.optional(),
-	type: z.literal(payloadTypes.enum.objective),
-	booleanValue: z.boolean().optional(),
-	wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
-});
+const objectivePayload = z
+	.strictObject({
+		...basePayload.omit({ category: true, summary: true }).shape,
+		iooiType: iooiTypes
+			.default(iooiTypes.enum['iooi.output'])
+			.register(propertyRegistry, { label: 'iooi_type' }),
+		trendValue: z
+			.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
+			.optional(),
+		type: z.literal(payloadTypes.enum.objective),
+		booleanValue: z.boolean().optional(),
+		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['iooiType', 'visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type ObjectivePayload = z.infer<typeof objectivePayload>;
 
@@ -1766,13 +1991,25 @@ const initialOrganizationalUnitPayload = organizationalUnitPayload.partial({ nam
 
 export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizationalUnitPayload>;
 
-const pagePayload = z.strictObject({
-	...detailViewStyle.shape,
-	body: z.string().trim().describe('GitHub-flavored Markdown.'),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.page),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const pagePayload = z
+	.strictObject({
+		...detailViewStyle.shape,
+		body: z.string().trim().describe('GitHub-flavored Markdown.'),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.page),
+		visibility: visibility
+			.default(visibility.enum['organization'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type PagePayload = z.infer<typeof pagePayload>;
 
@@ -1784,12 +2021,31 @@ export function isPageContainer(
 
 const initialPagePayload = pagePayload.partial({ body: true, title: true });
 
-const postPayload = z.strictObject({
-	...basePayload.omit({ description: true, summary: true }).shape,
-	body: z.string().trim().optional(),
-	publicationDate: z.iso.datetime().optional(),
-	type: z.literal(payloadTypes.enum.post)
-});
+const postPayload = z
+	.strictObject({
+		...basePayload.omit({ description: true, summary: true }).shape,
+		body: z.string().trim().optional(),
+		publicationDate: z.iso
+			.datetime()
+			.optional()
+			.register(propertyRegistry, { label: 'publication_date' }),
+		type: z.literal(payloadTypes.enum.post)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'publicationDate',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type PostPayload = z.infer<typeof postPayload>;
 
@@ -1801,20 +2057,53 @@ export function isPostContainer(
 
 const initialPostPayload = postPayload.partial({ title: true });
 
-const programPayload = z.strictObject({
-	...basePayload.omit({
-		description: true,
-		summary: true
-	}).shape,
-	...detailViewStyle.shape,
-	chapterType: z.array(payloadTypes).transform(deduplicate).default(chapterTypeOptions),
-	image: z.url().optional(),
-	level: levels.default(levels.enum['level.local']),
-	pdf: z.array(z.tuple([z.url(), z.string()])).default([]),
-	status: status.default(status.enum['status.idea']),
-	programType: programTypes.default(programTypes.enum['program_type.misc']),
-	type: z.literal(payloadTypes.enum.program)
-});
+const programPayload = z
+	.strictObject({
+		...basePayload.omit({
+			description: true,
+			summary: true
+		}).shape,
+		...detailViewStyle.shape,
+		chapterType: z
+			.array(payloadTypes)
+			.transform(deduplicate)
+			.default(chapterTypeOptions)
+			.register(propertyRegistry, { label: 'chapter_type' }),
+		image: z.url().optional().register(propertyRegistry, { label: 'cover' }),
+		level: levels
+			.default(levels.enum['level.local'])
+			.register(propertyRegistry, { label: 'level.label' }),
+		pdf: z
+			.array(z.tuple([z.url(), z.string()]))
+			.default([])
+			.register(propertyRegistry, { label: 'pdf' }),
+		status: status
+			.default(status.enum['status.idea'])
+			.register(propertyRegistry, { label: 'status' }),
+		programType: programTypes
+			.default(programTypes.enum['program_type.misc'])
+			.register(propertyRegistry, { label: 'program_type', emptyLabel: 'program' }),
+		type: z.literal(payloadTypes.enum.program)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: ['programType', 'status'],
+				onlyPanel: [
+					'image',
+					'pdf',
+					'chapterType',
+					'level',
+					'category.sdg',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type ProgramPayload = z.infer<typeof programPayload>;
 
@@ -1906,12 +2195,22 @@ export function isQuoteContainer(
 
 const initialQuotePayload = quotePayload.partial({ title: true });
 
-const reportPayload = z.strictObject({
-	...basePayload.shape,
-	...detailViewStyle.shape,
-	image: z.url().optional(),
-	type: z.literal(payloadTypes.enum.report)
-});
+const reportPayload = z
+	.strictObject({
+		...basePayload.shape,
+		...detailViewStyle.shape,
+		image: z.url().optional().register(propertyRegistry, { label: 'image' }),
+		type: z.literal(payloadTypes.enum.report)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['image', 'editorialState', 'visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type ReportPayload = z.infer<typeof reportPayload>;
 
@@ -1923,13 +2222,33 @@ export function isReportContainer(
 
 const initialReportPayload = reportPayload.partial({ title: true });
 
-const resourcePayload = z.strictObject({
-	...measureMonitoringBasePayload.omit({ description: true }).shape,
-	amount: z.coerce.number().optional(),
-	fulfillmentDate: z.iso.date().optional(),
-	type: z.literal(payloadTypes.enum.resource),
-	unit: z.string().optional()
-});
+const resourcePayload = z
+	.strictObject({
+		...measureMonitoringBasePayload.omit({ description: true }).shape,
+		amount: z.coerce.number().optional().register(propertyRegistry, { label: 'amount' }),
+		fulfillmentDate: z.iso
+			.date()
+			.optional()
+			.register(propertyRegistry, { label: 'fulfillment_date' }),
+		type: z.literal(payloadTypes.enum.resource),
+		unit: z.string().optional().register(propertyRegistry, { label: 'unit' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'amount',
+					'unit',
+					'fulfillmentDate',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type ResourcePayload = z.infer<typeof resourcePayload>;
 
@@ -1966,22 +2285,34 @@ export function isResourceCollectionContainer(
 
 const initialResourceCollectionPayload = resourceCollectionPayload;
 
-const resourceDataPayload = z.strictObject({
-	description: z.string().trim().optional(),
-	entries: z
-		.array(
-			z.object({
-				year: z.number().int().positive(),
-				amount: z.coerce.number()
-			})
-		)
-		.default([]),
-	resource: z.uuid(),
-	resourceDataType: resourceDataTypes,
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.resource_data),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const resourceDataPayload = z
+	.strictObject({
+		description: z.string().trim().optional(),
+		entries: z
+			.array(
+				z.object({
+					year: z.number().int().positive(),
+					amount: z.coerce.number()
+				})
+			)
+			.default([]),
+		resource: z.uuid(),
+		resourceDataType: resourceDataTypes,
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.resource_data),
+		visibility: visibility
+			.default(visibility.enum['organization'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type ResourceDataPayload = z.infer<typeof resourceDataPayload>;
 
@@ -2068,13 +2399,36 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 	resourceDataType: true
 });
 
-const resourceV2Payload = z.strictObject({
-	...basePayload.omit({ category: true, summary: true }).shape,
-	type: z.literal(payloadTypes.enum.resource_v2),
-	resourceCategory: resourceCategories.default(resourceCategories.enum['resource_category.money']),
-	resourceUnit: resourceUnits.default(resourceUnits.enum['unit.euro']),
-	visibility: visibility.default(visibility.enum['public'])
-});
+const resourceV2Payload = z
+	.strictObject({
+		...basePayload.omit({ category: true, summary: true }).shape,
+		type: z.literal(payloadTypes.enum.resource_v2),
+		resourceCategory: resourceCategories
+			.default(resourceCategories.enum['resource_category.money'])
+			.register(propertyRegistry, { label: 'resource_category' }),
+		resourceUnit: resourceUnits
+			.default(resourceUnits.enum['unit.euro'])
+			.register(propertyRegistry, { label: 'unit' }),
+		visibility: visibility
+			.default(visibility.enum['public'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: [
+					'resourceCategory',
+					'resourceUnit',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type ResourceV2Payload = z.infer<typeof resourceV2Payload>;
 
@@ -2086,14 +2440,34 @@ export function isResourceV2Container(
 
 const initialResourceV2Payload = resourceV2Payload.partial({ title: true });
 
-export const rulePayload = z.strictObject({
-	...basePayload.shape,
-	...detailViewStyle.shape,
-	status: status.default(status.enum['status.idea']),
-	type: z.literal(payloadTypes.enum.rule),
-	validFrom: z.iso.date().optional(),
-	validUntil: z.iso.date().optional()
-});
+export const rulePayload = z
+	.strictObject({
+		...basePayload.shape,
+		...detailViewStyle.shape,
+		status: status
+			.default(status.enum['status.idea'])
+			.register(propertyRegistry, { label: 'status' }),
+		type: z.literal(payloadTypes.enum.rule),
+		validFrom: z.iso.date().optional().register(propertyRegistry, { label: 'valid_from' }),
+		validUntil: z.iso.date().optional().register(propertyRegistry, { label: 'valid_until' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: ['status', 'validFrom', 'validUntil'],
+				onlyPanel: [
+					'category.sdg',
+					'program',
+					'parent',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type RulePayload = z.infer<typeof rulePayload>;
 
@@ -2107,18 +2481,41 @@ const initialRulePayload = rulePayload.partial({ title: true });
 
 export type InitialRulePayload = z.infer<typeof initialRulePayload>;
 
-const simpleMeasurePayload = z.strictObject({
-	...basePayload.omit({ summary: true }).shape,
-	...detailViewStyle.shape,
-	annotation: z.string().trim().optional(),
-	endDate: z.iso.date().optional(),
-	file: z.array(z.tuple([z.url(), z.string()])).default([]),
-	measureType: measureTypes.optional(),
-	progress: z.number().nonnegative().default(0),
-	startDate: z.iso.date().optional(),
-	status: status.default(status.enum['status.idea']),
-	type: z.literal(payloadTypes.enum.simple_measure)
-});
+const simpleMeasurePayload = z
+	.strictObject({
+		...basePayload.omit({ summary: true }).shape,
+		...detailViewStyle.shape,
+		annotation: z.string().trim().optional(),
+		endDate: z.iso.date().optional().register(propertyRegistry, { label: 'end_date' }),
+		file: z.array(z.tuple([z.url(), z.string()])).default([]),
+		measureType: measureTypes
+			.optional()
+			.register(propertyRegistry, { label: 'measure_type', emptyLabel: 'simple_measure' }),
+		progress: z.number().nonnegative().default(0),
+		startDate: z.iso.date().optional().register(propertyRegistry, { label: 'start_date' }),
+		status: status
+			.default(status.enum['status.idea'])
+			.register(propertyRegistry, { label: 'status' }),
+		type: z.literal(payloadTypes.enum.simple_measure)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: ['measureType', 'status'],
+				onlyPanel: [
+					'startDate',
+					'endDate',
+					'program',
+					'parent',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type SimpleMeasurePayload = z.infer<typeof simpleMeasurePayload>;
 
@@ -2150,20 +2547,51 @@ export function isSummaryContainer(
 
 const initialSummaryPayload = summaryPayload;
 
-const taskPayload = z.strictObject({
-	...measureMonitoringBasePayload.shape,
-	...detailViewStyle.shape,
-	assignee: z.array(z.uuid()).transform(deduplicate).default([]),
-	benefit: benefit.optional(),
-	category: z
-		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
-		.default({}),
-	effort: z.string().optional(),
-	fulfillmentDate: z.iso.date().optional(),
-	taskCategory: taskCategories.default(taskCategories.enum['task_category.default']),
-	status: status.default(status.enum['status.idea']),
-	type: z.literal(payloadTypes.enum.task)
-});
+const taskPayload = z
+	.strictObject({
+		...measureMonitoringBasePayload.shape,
+		...detailViewStyle.shape,
+		assignee: z
+			.array(z.uuid())
+			.transform(deduplicate)
+			.default([])
+			.register(propertyRegistry, { label: 'assignee' }),
+		benefit: benefit.optional().register(propertyRegistry, { label: 'benefit' }),
+		category: z
+			.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
+			.default({}),
+		effort: z.string().optional().register(propertyRegistry, { label: 'effort' }),
+		fulfillmentDate: z.iso
+			.date()
+			.optional()
+			.register(propertyRegistry, { label: 'fulfillment_date' }),
+		taskCategory: taskCategories
+			.default(taskCategories.enum['task_category.default'])
+			.register(propertyRegistry, { label: 'task_category.label' }),
+		status: status
+			.default(status.enum['status.idea'])
+			.register(propertyRegistry, { label: 'status' }),
+		type: z.literal(payloadTypes.enum.task)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: ['taskCategory', 'status'],
+				onlyPanel: [
+					'benefit',
+					'effort',
+					'fulfillmentDate',
+					'assignee',
+					'measure',
+					'parent',
+					'visibility',
+					'organization',
+					'organizational_unit'
+				],
+				unused: []
+			}
+		}
+	});
 
 export type TaskPayload = z.infer<typeof taskPayload>;
 
@@ -2195,10 +2623,20 @@ export function isTaskCollectionContainer(
 
 const initialTaskCollectionPayload = taskCollectionPayload;
 
-const teaserPayload = z.strictObject({
-	...teaserBasePayload.shape,
-	type: z.literal(payloadTypes.enum.teaser)
-});
+const teaserPayload = z
+	.strictObject({
+		...teaserBasePayload.shape,
+		type: z.literal(payloadTypes.enum.teaser)
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['link', 'linkCaption', 'style', 'cardStyle', 'image', 'visibility'],
+				unused: []
+			}
+		}
+	});
 
 export type TeaserPayload = z.infer<typeof teaserPayload>;
 
@@ -2255,15 +2693,32 @@ export function isTeaserHighlightContainer(
 
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
-const unrefinedTermPayload = z.strictObject({
-	description: z.string().trim().optional(),
-	filterLabel: z.string().trim().max(256).optional(),
-	title: z.string().trim().min(1),
-	value: z.string().trim().optional(),
-	icon: z.string().trim().optional(),
-	type: z.literal(payloadTypes.enum.term),
-	visibility: visibility.default(visibility.enum['public'])
-});
+const unrefinedTermPayload = z
+	.strictObject({
+		description: z.string().trim().optional(),
+		filterLabel: z
+			.string()
+			.trim()
+			.max(256)
+			.optional()
+			.register(propertyRegistry, { label: 'filter_label' }),
+		title: z.string().trim().min(1),
+		value: z.string().trim().optional(),
+		icon: z.string().trim().optional(),
+		type: z.literal(payloadTypes.enum.term),
+		visibility: visibility
+			.default(visibility.enum['public'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['filterLabel', 'organization', 'organizational_unit'],
+				unused: ['visibility']
+			}
+		}
+	});
 
 export const termPayload = unrefinedTermPayload.superRefine((payload) => {
 	if (payload.title && !payload.value) {
@@ -2281,14 +2736,28 @@ export function isTermContainer(
 
 const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
-const textPayload = z.strictObject({
-	...sectionStyle.shape,
-	body: z.string().trim().optional(),
-	title: z.string().trim(),
-	type: z.literal(payloadTypes.enum.text),
-	textType: textType.default(textType.enum.default),
-	visibility: visibility.default(visibility.enum['organization'])
-});
+const textPayload = z
+	.strictObject({
+		...sectionStyle.shape,
+		body: z.string().trim().optional(),
+		title: z.string().trim(),
+		type: z.literal(payloadTypes.enum.text),
+		textType: textType
+			.default(textType.enum.default)
+			.register(propertyRegistry, { label: 'text_type' }),
+		visibility: visibility
+			.default(visibility.enum['organization'])
+			.register(propertyRegistry, { label: 'visibility.label' })
+	})
+	.register(payloadRegistry, {
+		layout: {
+			detail: {
+				headerAndPanel: [],
+				onlyPanel: ['textType', 'visibility', 'organization', 'organizational_unit'],
+				unused: []
+			}
+		}
+	});
 
 export type TextPayload = z.infer<typeof textPayload>;
 
@@ -2364,7 +2833,7 @@ export const templatablePayloadTypes = payload.options
 	.filter(({ shape }) => 'template' in shape)
 	.map(({ shape }) => shape.type.value);
 
-const anyPayload = z.discriminatedUnion('type', [
+export const anyPayload = z.discriminatedUnion('type', [
 	...payload.options,
 	organizationPayload,
 	organizationalUnitPayload
