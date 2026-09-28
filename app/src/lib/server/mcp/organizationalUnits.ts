@@ -1,20 +1,15 @@
 import type { DatabaseConnection } from 'slonik';
 import { filterVisible } from '$lib/authorization';
-import type { OrganizationalUnitSummary } from '$lib/organizationalUnitSummary';
 import { getManyOrganizationalUnitContainers } from '$lib/server/db';
+import type {
+	ListOrganizationalUnitsInput,
+	ListOrganizationalUnitsOutput
+} from '$lib/server/mcp/contracts/organizationalUnits';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 
-export interface ListMcpOrganizationalUnitsOptions {
-	limit: number;
-	offset: number;
-	organizationGuid: string;
+export interface ListMcpOrganizationalUnitsOptions extends ListOrganizationalUnitsInput {
 	userId: string;
-}
-
-export interface ListMcpOrganizationalUnitsResult {
-	nextOffset: number | null;
-	organizationalUnits: OrganizationalUnitSummary[];
 }
 
 export function listMcpOrganizationalUnits({
@@ -23,7 +18,7 @@ export function listMcpOrganizationalUnits({
 	organizationGuid,
 	userId
 }: ListMcpOrganizationalUnitsOptions) {
-	return async (connection: DatabaseConnection): Promise<ListMcpOrganizationalUnitsResult> => {
+	return async (connection: DatabaseConnection): Promise<ListOrganizationalUnitsOutput> => {
 		const user = await loadMcpUserContext(connection, userId);
 		const containers = await runAsRequestUser(user.guid, () =>
 			getManyOrganizationalUnitContainers({

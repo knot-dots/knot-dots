@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { categoryObjectTypes, payloadTypes } from '$lib/models';
+import { nextOffset, paginationInput } from '$lib/server/mcp/contracts/pagination';
 
 export const listContainerCategoriesInput = z.strictObject({
 	organizationGuid: z.uuid().describe('Organization whose categories should be listed.'),
@@ -38,8 +39,7 @@ export const listContainerCategoryValuesInput = z.strictObject({
 		.trim()
 		.min(1)
 		.describe('Category key returned by list_container_categories.'),
-	limit: z.number().int().min(1).max(100).default(50).describe('Maximum number of values.'),
-	offset: z.number().int().nonnegative().default(0).describe('Offset within matching values.'),
+	...paginationInput('values'),
 	organizationGuid: z.uuid().describe('Organization whose category values should be listed.'),
 	terms: z
 		.string()
@@ -58,7 +58,7 @@ export type ListContainerCategoryValuesInput = z.infer<typeof listContainerCateg
 
 export const listContainerCategoryValuesOutput = z.strictObject({
 	category: z.strictObject({ key: z.string(), label: z.string() }),
-	nextOffset: z.number().int().nonnegative().nullable(),
+	nextOffset,
 	values: z.array(categoryValue)
 });
 
