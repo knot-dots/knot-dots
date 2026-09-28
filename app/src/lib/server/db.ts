@@ -2451,6 +2451,32 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 	};
 }
 
+export type AfterContainerRelationsChanged = (
+	connection: DatabaseTransactionConnection
+) => Promise<void>;
+
+// Removes and upserts relations in one transaction. afterChange runs inside
+// the transaction, and indexing events are enqueued only after it committed,
+// so the worker never indexes a state that could still be rolled back.
+export function changeManyContainerRelations(
+	{ removed, upserted }: { removed: ReadonlyArray<Relation>; upserted: ReadonlyArray<Relation> },
+	{ afterChange }: { afterChange?: AfterContainerRelationsChanged } = {}
+) {
+	return async (connection: DatabaseConnection) => {
+		await connection.transaction(async (txConnection) => {
+			if (removed.length > 0) {
+				await deleteManyContainerRelationsInTransaction(removed, txConnection);
+			}
+			if (upserted.length > 0) {
+				await updateManyContainerRelationsInTransaction(upserted, txConnection);
+			}
+			await afterChange?.(txConnection);
+		});
+
+		await enqueueContainerUpserts(affectedContainerGuids([...removed, ...upserted]));
+	};
+}
+
 export function getAllDirectContainerRelations(guid: string) {
 	return async (connection: DatabaseConnection) => {
 		return await connection.any(sql.typeAlias('relation')`

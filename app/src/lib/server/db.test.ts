@@ -20,6 +20,7 @@ import {
 	visibility
 } from '$lib/models';
 import {
+	changeManyContainerRelations,
 	ContainerRevisionConflictError,
 	createContainer,
 	createOrUpdateUser,
@@ -290,6 +291,58 @@ test('relation positions can be updated', async ({ connection }: Fixtures) => {
 			position: index
 		}))
 	);
+});
+
+test('relation changes commit together with afterChange or not at all', async ({
+	connection
+}: Fixtures) => {
+	const subject = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
+	)(connection);
+	const object = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
+	)(connection);
+	const relationWith = (predicate: string): Relation => ({
+		object: object.guid,
+		position: 0,
+		predicate,
+		subject: subject.guid
+	});
+	const consistent = relationWith(predicates.enum['is-consistent-with']);
+	const contributing = relationWith(predicates.enum['contributes-to']);
+	const relationsOfSubject = async () =>
+		(await getContainerByGuid(subject.guid)(connection)).relation;
+
+	await changeManyContainerRelations({ removed: [], upserted: [consistent] })(connection);
+	expect(await relationsOfSubject()).toEqual([consistent]);
+
+	let changedIn: unknown;
+	await changeManyContainerRelations(
+		{ removed: [consistent], upserted: [contributing] },
+		{
+			afterChange: async (txConnection) => {
+				changedIn = txConnection;
+			}
+		}
+	)(connection);
+	expect(changedIn).toBeDefined();
+	expect(await relationsOfSubject()).toEqual([contributing]);
+
+	await expect(
+		changeManyContainerRelations(
+			{ removed: [contributing], upserted: [consistent] },
+			{
+				afterChange: async () => {
+					throw new Error('afterChange failed');
+				}
+			}
+		)(connection)
+	).rejects.toThrow('afterChange failed');
+	expect(await relationsOfSubject()).toEqual([contributing]);
+
+	// a relation removed before can be added again
+	await changeManyContainerRelations({ removed: [], upserted: [consistent] })(connection);
+	expect(await relationsOfSubject()).toEqual([contributing, consistent]);
 });
 
 test('relations are added or removed when updating a container', async ({
