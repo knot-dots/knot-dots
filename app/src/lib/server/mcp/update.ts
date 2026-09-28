@@ -12,6 +12,7 @@ import {
 	updateContainer
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
+import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 import {
 	updateContainerToolName,
@@ -74,6 +75,22 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 			const payloadResult = getPayloadSchema(current.payload.type).safeParse(merged);
 			if (!payloadResult.success) {
 				throw new McpUpdateError(payloadValidationMessage(payloadResult.error));
+			}
+			if ('category' in payloadResult.data) {
+				const unknownCategory = await findUnknownCategory({
+					category: payloadResult.data.category,
+					loadContext: () =>
+						loadMcpCategoryContext({
+							connection,
+							organizationGuid: current.organization,
+							types: [current.payload.type],
+							user
+						}),
+					previous: 'category' in current.payload ? current.payload.category : {}
+				});
+				if (unknownCategory) {
+					throw new McpUpdateError(unknownCategory);
+				}
 			}
 
 			let payload: AnyPayload;

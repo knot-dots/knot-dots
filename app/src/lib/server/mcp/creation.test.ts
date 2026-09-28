@@ -53,7 +53,8 @@ vi.mock('$lib/server/db', () => ({
 		mocks.recordMcpWriteEvent(event, connection)
 }));
 vi.mock('$lib/server/features', () => ({ getFeatures: () => [] }));
-vi.mock('$lib/server/mcp/categories', () => ({
+vi.mock('$lib/server/mcp/categories', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/mcp/categories')>()),
 	loadMcpCategoryContext: async () => mocks.categoryContext
 }));
 vi.mock('$lib/server/mcp/userContext', () => ({
@@ -539,4 +540,32 @@ test.each([
 	await createMcpContainer({ ...input, tokenId, userId })({} as never);
 
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledOnce();
+});
+
+function createWith(payload: Record<string, unknown>, parentRelations: unknown[] = []) {
+	return createMcpContainer({
+		...createContainerInput.parse({ organizationGuid, parentRelations, payload }),
+		tokenId,
+		userId
+	})({} as never);
+}
+
+function createdPayload() {
+	return mocks.createAuthorizedContainer.mock.calls[0][0].data.payload;
+}
+
+test('accepts category values the organization offers', async () => {
+	await createWith({ category: { sdg: ['13'] }, title: 'Climate indicator', type: 'goal' });
+
+	expect(createdPayload()).toMatchObject({ category: { sdg: ['13'] } });
+});
+
+test.each([
+	[{ policyField: ['mobility'] }, 'Unknown category: policyField.'],
+	[{ sdg: ['Climate action'] }, 'Unknown value of category sdg: Climate action.']
+])('rejects unknown categories and category values', async (category, message) => {
+	await expect(createWith({ category, title: 'Climate goal', type: 'goal' })).rejects.toThrow(
+		message
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });

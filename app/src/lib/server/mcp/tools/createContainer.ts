@@ -32,7 +32,7 @@ export function registerCreateContainerTool(
 				readOnlyHint: false
 			},
 			description:
-				'Create a non-template container. Read knotdots://schemas/payloads/{type} before supplying the complete payload. Parents must be visible to you and belong to the same organization; create permission is checked for the new container itself, not for its parents. The container is appended after the existing children of each parent.',
+				'Create a non-template container. Read knotdots://schemas/payloads/{type} before supplying the complete payload. Parents must be visible to you and belong to the same organization; create permission is checked for the new container itself, not for its parents. The container is appended after the existing children of each parent. Category values: category keys come from list_container_categories and values from list_container_category_values; use the value, not the label. Each value is chosen on its own, as in the web application: a sub-value neither requires nor implies its parent value. Unknown keys and values are rejected.',
 			inputSchema: createContainerInput,
 			outputSchema: createContainerOutput,
 			title: 'Create container'

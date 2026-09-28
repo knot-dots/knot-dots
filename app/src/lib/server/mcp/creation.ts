@@ -26,7 +26,11 @@ import {
 	recordMcpWriteEvent
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
-import { loadMcpCategoryContext } from '$lib/server/mcp/categories';
+import {
+	categoryValuesByKey,
+	findUnknownCategory,
+	loadMcpCategoryContext
+} from '$lib/server/mcp/categories';
 import {
 	addCustomCollectionSectionToolName,
 	createContainerToolName,
@@ -216,6 +220,22 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				}
 			}
 
+			if ('category' in payloadResult.data) {
+				const unknownCategory = await findUnknownCategory({
+					category: payloadResult.data.category,
+					loadContext: () =>
+						loadMcpCategoryContext({
+							connection,
+							organizationGuid: organization.guid,
+							types: [input.payload.type],
+							user
+						})
+				});
+				if (unknownCategory) {
+					throw new McpCreationError(unknownCategory);
+				}
+			}
+
 			const candidate = containerOfType(
 				input.payload.type,
 				organizationalUnit ?? organization
@@ -245,22 +265,6 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 		});
 }
 
-function categoryValues(context: Awaited<ReturnType<typeof loadMcpCategoryContext>>) {
-	return new Map(
-		context.keys.map((key) => {
-			const values = new Set<string>();
-			const collect = (options: (typeof context.options)[string]) => {
-				for (const option of options ?? []) {
-					values.add(option.value);
-					collect(option.subOptions ?? []);
-				}
-			};
-			collect(context.options[key]);
-			return [key, values] as const;
-		})
-	);
-}
-
 export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionInput & McpAuth) {
 	return (connection: DatabaseConnection): Promise<AddCustomCollectionSectionOutput> =>
 		runAsRequestUser(input.userId, async () => {
@@ -277,7 +281,7 @@ export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionI
 				types: input.types,
 				user
 			});
-			const allowedCategories = categoryValues(categoryContext);
+			const allowedCategories = categoryValuesByKey(categoryContext);
 			for (const [key, values] of Object.entries(input.categories)) {
 				const allowedValues = allowedCategories.get(key);
 				if (!allowedValues || values.some((value) => !allowedValues.has(value))) {

@@ -32,7 +32,7 @@ export function registerUpdateContainerTool(
 				readOnlyHint: false
 			},
 			description:
-				'Change payload fields of a non-template container. Pass the revision from the latest get_container, create_container or update_container response as expectedRevision; see knotdots://schemas/payloads/{type} for the fields. Relations, ownership and the payload type cannot be changed.',
+				'Change payload fields of a non-template container. Pass the revision from the latest get_container, create_container or update_container response as expectedRevision; see knotdots://schemas/payloads/{type} for the fields. Relations, ownership and the payload type cannot be changed. Category values: category keys come from list_container_categories and values from list_container_category_values; use the value, not the label. Each value is chosen on its own, as in the web application: a sub-value neither requires nor implies its parent value. Unknown keys and values are rejected. Category values that are already stored are kept even if the organization no longer offers them.',
 			inputSchema: updateContainerInput,
 			outputSchema: updateContainerOutput,
 			title: 'Update container'
