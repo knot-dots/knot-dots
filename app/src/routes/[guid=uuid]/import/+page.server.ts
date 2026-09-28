@@ -86,7 +86,7 @@ export const actions = {
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
 				include: {
-					organization: currentOrganizationGuid
+					organization: [currentOrganizationGuid]
 				}
 			})
 		);

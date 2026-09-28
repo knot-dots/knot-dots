@@ -39,7 +39,7 @@ export const load = (async ({ locals, parent, url }) => {
 					customCategories,
 					federalState: url.searchParams.getAll('federalState'),
 					level: currentOrganizationalUnit.payload.level + 1,
-					organization: currentOrganization.guid,
+					organization: [currentOrganization.guid],
 					terms: url.searchParams.get('terms') ?? ''
 				}
 			})
@@ -56,7 +56,7 @@ export const load = (async ({ locals, parent, url }) => {
 					customCategories,
 					federalState: url.searchParams.getAll('federalState'),
 					level: 1,
-					organization: currentOrganization.guid,
+					organization: [currentOrganization.guid],
 					terms: url.searchParams.get('terms') ?? ''
 				}
 			})

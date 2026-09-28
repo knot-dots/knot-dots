@@ -42,7 +42,7 @@ export const POST = (async ({ locals, params, request }) => {
 		!defineAbilityFor(locals.user).can('manage-users', container)
 	) {
 		const organizationalUnits = await locals.pool.connect(
-			getManyOrganizationalUnitContainers({ include: { organization: container.organization } })
+			getManyOrganizationalUnitContainers({ include: { organization: [container.organization] } })
 		);
 		const managedByUser = findAncestors<Container<AnyPayload>>(container, organizationalUnits, [
 			predicates.enum['is-part-of']

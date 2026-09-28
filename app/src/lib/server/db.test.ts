@@ -2013,19 +2013,29 @@ test('getManyOrganizationalUnitContainers: includeGuids widens the organization 
 	)(connection);
 
 	const withoutGuidFilter = await getManyOrganizationalUnitContainers({
-		include: { organization }
+		include: { organization: [organization] }
 	})(connection);
 	expect(withoutGuidFilter.map(({ guid }) => guid)).toContain(ownUnit.guid);
 	expect(withoutGuidFilter.map(({ guid }) => guid)).not.toContain(managedForeignUnit.guid);
 
 	const withGuidFilter = await getManyOrganizationalUnitContainers({
-		include: { organization, guid: [managedForeignUnit.guid] }
+		include: { organization: [organization], guid: [managedForeignUnit.guid] }
 	})(connection);
 
 	const guids = withGuidFilter.map(({ guid }) => guid);
 	expect(guids).toContain(ownUnit.guid);
 	expect(guids).toContain(managedForeignUnit.guid);
 	expect(guids).not.toContain(otherForeignUnit.guid);
+
+	// several organizations: all of their units, guids that are no
+	// organization simply match nothing
+	const withSeveralOrganizations = await getManyOrganizationalUnitContainers({
+		include: { organization: [organization, foreignOrganization, ownUnit.guid] }
+	})(connection);
+	const severalGuids = withSeveralOrganizations.map(({ guid }) => guid);
+	expect(severalGuids).toContain(ownUnit.guid);
+	expect(severalGuids).toContain(managedForeignUnit.guid);
+	expect(severalGuids).toContain(otherForeignUnit.guid);
 });
 
 test('derives grants from the member roles, the strongest role per container', async ({

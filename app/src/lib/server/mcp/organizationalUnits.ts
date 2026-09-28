@@ -27,7 +27,7 @@ export function listMcpOrganizationalUnits({
 		const user = await loadMcpUserContext(connection, userId);
 		const containers = await runAsRequestUser(user.guid, () =>
 			getManyOrganizationalUnitContainers({
-				include: { organization: organizationGuid }
+				include: { organization: [organizationGuid] }
 			})(connection)
 		);
 		const visiblePage = filterVisible(containers, user).slice(offset, offset + limit + 1);
