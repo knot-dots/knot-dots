@@ -3,6 +3,8 @@ import { createContainerSchema, payloadTypes, status } from '$lib/models';
 import { nextOffset, paginationInput } from '$lib/server/mcp/contracts/pagination';
 
 export const containerSummary = z.strictObject({
+	assigneeGuids: z.array(z.uuid()),
+	creatorGuids: z.array(z.uuid()),
 	guid: z.uuid(),
 	label: z.string().nullable(),
 	organizationGuid: z.uuid(),

@@ -44,7 +44,8 @@ export const actions = {
 		const generatedToken = generateMcpToken();
 		const scopes = [
 			...readScopes,
-			...(data.get('containersWrite') === 'true' ? [mcpScopes.containersWrite] : [])
+			...(data.get('containersWrite') === 'true' ? [mcpScopes.containersWrite] : []),
+			...(data.get('usersRead') === 'true' ? [mcpScopes.usersRead] : [])
 		];
 		await locals.pool.connect(
 			insertMcpToken({

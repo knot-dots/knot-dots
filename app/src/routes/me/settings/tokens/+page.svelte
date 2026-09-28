@@ -61,6 +61,11 @@
 							<span>{$_('mcp_tokens.allow_write')}</span>
 						</label>
 						<p class="hint">{$_('mcp_tokens.write_hint')}</p>
+						<label class="scope-option">
+							<input name="usersRead" type="checkbox" value="true" />
+							<span>{$_('mcp_tokens.allow_user_names')}</span>
+						</label>
+						<p class="hint">{$_('mcp_tokens.user_names_hint')}</p>
 						<p class="hint">{$_('mcp_tokens.expiry_hint')}</p>
 						{#if form?.action === 'create' && 'error' in form}
 							<p class="error">{$_('mcp_tokens.invalid_name')}</p>

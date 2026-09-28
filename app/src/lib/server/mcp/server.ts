@@ -9,6 +9,7 @@ import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/m
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { searchMcpOrganizationUsers } from '$lib/server/mcp/users';
 import {
 	registerAddCustomCollectionSectionTool,
 	type AddCustomCollectionSectionDependencies
@@ -41,6 +42,10 @@ import {
 	registerSearchContainersTool,
 	type SearchContainersDependencies
 } from '$lib/server/mcp/tools/searchContainers';
+import {
+	registerSearchOrganizationUsersTool,
+	type SearchOrganizationUsersDependencies
+} from '$lib/server/mcp/tools/searchOrganizationUsers';
 import packageMetadata from '../../../../package.json';
 
 type McpServerDependencies = AddCustomCollectionSectionDependencies &
@@ -50,7 +55,8 @@ type McpServerDependencies = AddCustomCollectionSectionDependencies &
 	ListContainerCategoryValuesDependencies &
 	ListMyOrganizationsDependencies &
 	ListOrganizationalUnitsDependencies &
-	SearchContainersDependencies;
+	SearchContainersDependencies &
+	SearchOrganizationUsersDependencies;
 
 const defaultDependencies: McpServerDependencies = {
 	async addCustomCollectionSection(userId, input) {
@@ -78,6 +84,9 @@ const defaultDependencies: McpServerDependencies = {
 		const pool = await getPool();
 		const user = await pool.connect((connection) => loadMcpUserContext(connection, userId));
 		return searchMcpContainers({ ...input, user });
+	},
+	async searchOrganizationUsers(userId, input) {
+		return (await getPool()).connect(searchMcpOrganizationUsers({ ...input, userId }));
 	}
 };
 
@@ -105,6 +114,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerListOrganizationalUnitsTool(server, authInfo, dependencies);
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);
+			registerSearchOrganizationUsersTool(server, authInfo, dependencies);
 
 			return server;
 		},

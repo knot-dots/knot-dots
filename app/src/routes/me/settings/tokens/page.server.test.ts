@@ -76,3 +76,27 @@ test('adds the container write scope when explicitly selected', async () => {
 		userId
 	});
 });
+
+test('adds the user read scope when explicitly selected', async () => {
+	const connect = vi.fn().mockResolvedValue(undefined);
+	const request = new Request('http://localhost/me/settings/tokens?/create', {
+		body: new URLSearchParams({ name: 'Claude user lookup', usersRead: 'true' }),
+		method: 'POST'
+	});
+
+	await actions.create({
+		locals: {
+			pool: { connect },
+			user: { guid: userId, isAuthenticated: true }
+		},
+		request
+	} as never);
+
+	expect(insertMcpToken).toHaveBeenCalledExactlyOnceWith({
+		name: 'Claude user lookup',
+		prefix: 'mcp_pat_example',
+		scopes: ['containers:read', 'organizations:read', 'users:read'],
+		secretHash: Buffer.from('hash'),
+		userId
+	});
+});
