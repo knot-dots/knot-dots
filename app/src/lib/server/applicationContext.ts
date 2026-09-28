@@ -112,9 +112,14 @@ export async function loadApplicationContext({
 			filterVisibleAsync(
 				connect(
 					getManyOrganizationalUnitContainers({
+						// Units the user holds rows on, and every unit of the organizations
+						// whose matrix grants them creating; whether that right actually
+						// applies to a unit is decided by its computed user_grant. Which
+						// objects carry a create grant follows the permission matrix
+						// flag: stored rows while it is on, member roles while it is off.
 						include: {
 							guid: locals.user.grants.self.read,
-							organization: currentOrganization.guid
+							organization: [currentOrganization.guid, ...locals.user.grants.subordinates.create]
 						},
 						exclude: {
 							organizationalUnitType: [

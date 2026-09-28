@@ -19,6 +19,10 @@ export function isAdoptableProgram(container: Container<AnyPayload>): boolean {
 	);
 }
 
+// The units the user may create objects in: a create grant on the
+// subordinates of a unit is what the create rule reads for a program placed
+// within it (containerOfType), and the relation route applies that very rule
+// when the adoption is stored. Inheritance is already folded into user_grant.
 export function organizationalUnitsManagedByUser(
 	program: { organizational_unit: string | null },
 	organizationalUnits: Array<Container<OrganizationalUnitPayload>>
