@@ -146,20 +146,38 @@
 				: undefined
 	);
 
-	// The organization responsible for a container that entered the current
-	// context from elsewhere, e.g. by adoption. On the default organization
-	// foreign containers are the norm, so no badge is shown there.
-	let foreignOrganizationName = $derived.by(() => {
+	// The organization or organizational unit responsible for a container that
+	// entered the current context from elsewhere, e.g. by adoption: another
+	// organization, or within the organization a unit outside the current
+	// unit and its subordinates. On the default organization foreign
+	// containers are the norm, so no badge is shown there.
+	let foreignScopeName = $derived.by(() => {
 		if (
 			!createFeatureDecisions(page.data.features).useAdoptions() ||
 			page.data.currentOrganization === undefined ||
-			page.data.currentOrganization.payload.default ||
-			container.organization === page.data.currentOrganization.guid
+			page.data.currentOrganization.payload.default
 		) {
 			return undefined;
 		}
-		return page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
-			.name;
+		if (container.organization !== page.data.currentOrganization.guid) {
+			return page.data.organizations.find(({ guid }) => guid === container.organization)?.payload
+				.name;
+		}
+		const currentUnit = page.data.currentOrganizationalUnit;
+		const unit = page.data.organizationalUnits.find(
+			({ guid }: Container<AnyPayload>) => guid === container.organizational_unit
+		);
+		if (
+			!currentUnit ||
+			!unit ||
+			unit.guid === currentUnit.guid ||
+			findAncestors(unit, page.data.organizationalUnits, [predicates.enum['is-part-of']]).some(
+				({ guid }) => guid === currentUnit.guid
+			)
+		) {
+			return undefined;
+		}
+		return unit.payload.name;
 	});
 
 	let relatedTo = $derived(
@@ -447,10 +465,10 @@
 	</div>
 
 	<footer>
-		{#if foreignOrganizationName}
-			<span class="badge" title={foreignOrganizationName}>
+		{#if foreignScopeName}
+			<span class="badge" title={foreignScopeName}>
 				<Adopt />
-				<span class="truncated">{foreignOrganizationName}</span>
+				<span class="truncated">{foreignScopeName}</span>
 			</span>
 		{/if}
 
