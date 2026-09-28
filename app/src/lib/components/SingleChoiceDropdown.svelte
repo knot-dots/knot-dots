@@ -1,12 +1,12 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { _ } from 'svelte-i18n';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
 		labelledBy?: string;
 		offset?: [number, number];
-		options: Array<{ href?: string; label: string; value: string | null | undefined }>;
-		value: string | null | undefined;
+		options: Array<{ href?: string; label: string; value: T }>;
+		value: T;
 	}
 
 	let { labelledBy, offset = [0, 4], options, value = $bindable() }: Props = $props();

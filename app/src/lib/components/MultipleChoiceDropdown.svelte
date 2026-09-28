@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { _ } from 'svelte-i18n';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 
@@ -6,8 +6,8 @@
 		compact?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];
-		options: Array<{ label: string; value: string }>;
-		value: string[];
+		options: Array<{ label: string; value: T }>;
+		value: T[];
 	}
 
 	let {
