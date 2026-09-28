@@ -841,6 +841,14 @@ test('serves each curated payload as a direct JSON Schema', async () => {
 		});
 		expect(schema).not.toHaveProperty('anyOf');
 		expect(schema).not.toHaveProperty('oneOf');
+		for (const field of ['body', 'description']) {
+			if (field in schema.properties) {
+				expect(schema.properties[field]).toMatchObject({
+					description: 'GitHub-flavored Markdown.',
+					type: 'string'
+				});
+			}
+		}
 	}
 });
 

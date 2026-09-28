@@ -138,7 +138,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Call get_container before update_container and pass the revision it returns. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Pass update_container the revision from the latest get_container, create_container or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them. The description and body fields are GitHub-flavored Markdown. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 

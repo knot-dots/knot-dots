@@ -9,7 +9,7 @@ export const updateContainerInput = z.strictObject({
 		.int()
 		.positive()
 		.describe(
-			'Revision of the container as last read with get_container; the update fails if it is no longer current.'
+			'Revision from the latest get_container, create_container or update_container response; the update fails if the container changed since. Relation changes do not create revisions.'
 		),
 	guid: z.uuid().describe('GUID of the container to update.'),
 	payloadPatch: z

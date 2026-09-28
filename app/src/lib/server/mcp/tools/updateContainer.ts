@@ -32,7 +32,7 @@ export function registerUpdateContainerTool(
 				readOnlyHint: false
 			},
 			description:
-				'Change payload fields of a non-template container. Read it with get_container first and pass its revision as expectedRevision; see knotdots://schemas/payloads/{type} for the fields. Relations, ownership and the payload type cannot be changed.',
+				'Change payload fields of a non-template container. Pass the revision from the latest get_container, create_container or update_container response as expectedRevision; see knotdots://schemas/payloads/{type} for the fields. Relations, ownership and the payload type cannot be changed.',
 			inputSchema: updateContainerInput,
 			outputSchema: updateContainerOutput,
 			title: 'Update container'

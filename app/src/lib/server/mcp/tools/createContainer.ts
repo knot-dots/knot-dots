@@ -32,7 +32,7 @@ export function registerCreateContainerTool(
 				readOnlyHint: false
 			},
 			description:
-				'Create a non-template container. Read knotdots://schemas/payloads/{type} before supplying the complete payload. Parents must be visible to you and belong to the same organization; create permission is checked for the new container itself, not for its parents.',
+				'Create a non-template container. Read knotdots://schemas/payloads/{type} before supplying the complete payload. Parents must be visible to you and belong to the same organization; create permission is checked for the new container itself, not for its parents. The container is appended after the existing children of each parent.',
 			inputSchema: createContainerInput,
 			outputSchema: createContainerOutput,
 			title: 'Create container'
