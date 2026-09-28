@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { payloadTypes, relation, status, userRelation } from '$lib/models';
+import { createContainerSchema, payloadTypes, status } from '$lib/models';
 import { nextOffset, paginationInput } from '$lib/server/mcp/contracts/pagination';
 
 export const containerSummary = z.strictObject({
@@ -18,18 +18,11 @@ export const getContainerInput = z.strictObject({
 	guid: z.uuid().describe('GUID of the container to retrieve.')
 });
 
-const serializedContainer = z.looseObject({
-	computed_managed_by: z.array(z.uuid()).optional(),
-	guid: z.uuid(),
+// The payload stays loose: its schema is published per type as a resource, and
+// the payload schemas' transforms cannot be represented as output JSON Schema.
+// managed_by and valid_from are overridden for the same reason.
+const serializedContainer = createContainerSchema(z.looseObject({ type: payloadTypes })).extend({
 	managed_by: z.array(z.uuid()).nonempty(),
-	organization: z.uuid(),
-	organizational_unit: z.uuid().nullable(),
-	payload: z.looseObject({ type: payloadTypes }),
-	realm: z.string(),
-	relation: z.array(relation),
-	revision: z.number().int().positive(),
-	user: z.array(userRelation),
-	valid_currently: z.boolean(),
 	valid_from: z.iso.datetime()
 });
 
