@@ -42,6 +42,7 @@ const createContainer = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
 const listContainerCategoryValues = vi.fn();
+const listContainerRelations = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
@@ -53,6 +54,7 @@ const toolHandler = createKnotDotsMcpHandler({
 	getContainer,
 	listContainerCategories,
 	listContainerCategoryValues,
+	listContainerRelations,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	searchContainers,
@@ -113,6 +115,7 @@ beforeEach(() => {
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
+	listContainerRelations.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	searchContainers.mockReset();
@@ -271,6 +274,15 @@ test('advertises tools without requiring their scopes', async () => {
 				title: 'List container category values'
 			}),
 			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: true
+				},
+				name: 'list_container_relations',
+				title: 'List container relations'
+			}),
+			expect.objectContaining({
 				name: 'search_organization_users',
 				title: 'Search organization users'
 			}),
@@ -309,6 +321,7 @@ test('advertises tools without requiring their scopes', async () => {
 		'get_container',
 		'list_container_categories',
 		'list_container_category_values',
+		'list_container_relations',
 		'list_my_organizations',
 		'list_organizational_units',
 		'search_containers',
@@ -449,6 +462,68 @@ test('denies the category tool without the container read scope', async () => {
 	);
 
 	expect(listContainerCategories).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('lists container relations using the read scope', async () => {
+	const guid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		nextOffset: null,
+		relations: [
+			{
+				container: {
+					assigneeGuids: [],
+					creatorGuids: [],
+					guid: '00000000-0000-4000-8000-000000000004',
+					label: 'Climate goal',
+					organizationGuid: '00000000-0000-4000-8000-000000000005',
+					organizationalUnitGuid: null,
+					status: null,
+					summary: null,
+					type: 'goal'
+				},
+				direction: 'outgoing',
+				position: 0,
+				predicate: 'contributes-to'
+			}
+		]
+	};
+	listContainerRelations.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { guid, predicates: ['contributes-to'] },
+			name: 'list_container_relations'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerRelations).toHaveBeenCalledExactlyOnceWith(userId, {
+		guid,
+		limit: 50,
+		offset: 0,
+		predicates: ['contributes-to']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('denies listing container relations without the container read scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { guid: '00000000-0000-4000-8000-000000000003' },
+			name: 'list_container_relations'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(listContainerRelations).not.toHaveBeenCalled();
 	await expect(response.json()).resolves.toMatchObject({
 		result: {
 			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],

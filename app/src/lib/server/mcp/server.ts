@@ -7,6 +7,7 @@ import {
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
 import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
+import { listMcpContainerRelations } from '$lib/server/mcp/relations';
 import { updateMcpContainer } from '$lib/server/mcp/update';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
@@ -44,6 +45,10 @@ import {
 	type ListContainerCategoryValuesDependencies
 } from '$lib/server/mcp/tools/listContainerCategoryValues';
 import {
+	registerListContainerRelationsTool,
+	type ListContainerRelationsDependencies
+} from '$lib/server/mcp/tools/listContainerRelations';
+import {
 	registerSearchContainersTool,
 	type SearchContainersDependencies
 } from '$lib/server/mcp/tools/searchContainers';
@@ -58,6 +63,7 @@ type McpServerDependencies = AddCustomCollectionSectionDependencies &
 	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
 	ListContainerCategoryValuesDependencies &
+	ListContainerRelationsDependencies &
 	ListMyOrganizationsDependencies &
 	ListOrganizationalUnitsDependencies &
 	SearchContainersDependencies &
@@ -79,6 +85,9 @@ const defaultDependencies: McpServerDependencies = {
 	},
 	async listContainerCategoryValues(userId, input) {
 		return (await getPool()).connect(listMcpContainerCategoryValues({ ...input, userId }));
+	},
+	async listContainerRelations(userId, input) {
+		return (await getPool()).connect(listMcpContainerRelations({ ...input, userId }));
 	},
 	async listOrganizationalUnits(userId, input) {
 		return (await getPool()).connect(listMcpOrganizationalUnits({ ...input, userId }));
@@ -120,6 +129,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);
 			registerListContainerCategoryValuesTool(server, authInfo, dependencies);
+			registerListContainerRelationsTool(server, authInfo, dependencies);
 			registerListOrganizationalUnitsTool(server, authInfo, dependencies);
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);

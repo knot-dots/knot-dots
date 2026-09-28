@@ -25,7 +25,7 @@ export interface SearchMcpContainersOptions extends SearchContainersInput {
 	user: User;
 }
 
-function summarizeContainer(container: Container<AnyPayload>): ContainerSummary {
+export function summarizeContainer(container: Container<AnyPayload>): ContainerSummary {
 	const { payload } = container;
 	const label = 'title' in payload ? payload.title : 'name' in payload ? payload.name : null;
 
