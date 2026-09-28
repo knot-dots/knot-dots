@@ -5,9 +5,18 @@ import {
 	listMcpContainerCategoryValues
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
+import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import {
+	registerAddCustomCollectionSectionTool,
+	type AddCustomCollectionSectionDependencies
+} from '$lib/server/mcp/tools/addCustomCollectionSection';
+import {
+	registerCreateContainerTool,
+	type CreateContainerDependencies
+} from '$lib/server/mcp/tools/createContainer';
 import {
 	registerGetContainerTool,
 	type GetContainerDependencies
@@ -34,7 +43,9 @@ import {
 } from '$lib/server/mcp/tools/searchContainers';
 import packageMetadata from '../../../../package.json';
 
-type McpServerDependencies = GetContainerDependencies &
+type McpServerDependencies = AddCustomCollectionSectionDependencies &
+	CreateContainerDependencies &
+	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
 	ListContainerCategoryValuesDependencies &
 	ListMyOrganizationsDependencies &
@@ -42,6 +53,12 @@ type McpServerDependencies = GetContainerDependencies &
 	SearchContainersDependencies;
 
 const defaultDependencies: McpServerDependencies = {
+	async addCustomCollectionSection(userId, input) {
+		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, userId }));
+	},
+	async createContainer(userId, input) {
+		return (await getPool()).connect(createMcpContainer({ ...input, userId }));
+	},
 	async getContainer(userId, guid) {
 		return (await getPool()).connect(getMcpContainer({ guid, userId }));
 	},
@@ -74,12 +91,14 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and its linked payload schema resources when you need canonical payload field information. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
 			registerPayloadSchemaResources(server);
 
+			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
+			registerCreateContainerTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);
 			registerListContainerCategoryValuesTool(server, authInfo, dependencies);
