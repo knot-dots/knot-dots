@@ -2917,7 +2917,7 @@ export type AnyInitialPayload = z.infer<typeof anyInitialPayload>;
 // older clients stay valid during the transition.
 const managedBy = z.union([z.uuid().transform((value) => [value]), z.array(z.uuid()).nonempty()]);
 
-export function createContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
+export function createContainerSchema<P extends z.ZodType>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid(),
 		managed_by: managedBy,
@@ -2953,7 +2953,7 @@ export const container = createContainerSchema(payload);
 
 export const anyContainer = createContainerSchema(anyPayload);
 
-export function createModifiedContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
+export function createModifiedContainerSchema<P extends z.ZodType>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid(),
 		managed_by: managedBy,
@@ -2974,7 +2974,7 @@ export type ModifiedContainer<P extends AnyPayload = AnyPayload> = z.infer<
 
 export const modifiedContainer = createModifiedContainerSchema(anyPayload);
 
-export function createNewContainerSchema<P extends z.ZodTypeAny>(payloadSchema: P) {
+export function createNewContainerSchema<P extends z.ZodType>(payloadSchema: P) {
 	return z.object({
 		guid: z.uuid().optional(),
 		managed_by: managedBy,
