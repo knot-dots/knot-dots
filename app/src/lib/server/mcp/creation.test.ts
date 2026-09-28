@@ -569,3 +569,39 @@ test.each([
 	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
+
+test('derives the hierarchy level of a measure below a measure', async () => {
+	mocks.containers.set(
+		parentGuid,
+		container(parentGuid, { hierarchyLevel: 2, title: 'Mobility', type: 'measure' })
+	);
+
+	await createWith({ hierarchyLevel: 1, title: 'Bike lanes', type: 'measure' }, [
+		{ parentGuid, predicate: 'is-part-of-measure' }
+	]);
+
+	expect(createdPayload()).toMatchObject({ hierarchyLevel: 3 });
+});
+
+test('keeps the hierarchy level of a measure that is not below a measure', async () => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Plan', type: 'program' }));
+
+	await createWith({ hierarchyLevel: 2, title: 'Bike lanes', type: 'measure' }, [
+		{ parentGuid, predicate: 'is-part-of-program' }
+	]);
+
+	expect(createdPayload()).toMatchObject({ hierarchyLevel: 2 });
+});
+
+test('rejects nesting measures deeper than the deepest hierarchy level', async () => {
+	mocks.containers.set(
+		parentGuid,
+		container(parentGuid, { hierarchyLevel: 6, title: 'Detail', type: 'measure' })
+	);
+
+	await expect(
+		createWith({ title: 'Too deep', type: 'measure' }, [
+			{ parentGuid, predicate: 'is-part-of-measure' }
+		])
+	).rejects.toThrow('Measures can be nested at most 6 levels deep.');
+});

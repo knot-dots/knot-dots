@@ -6,6 +6,7 @@ import {
 	getPayloadSchema,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
+	isMeasureContainer,
 	isPageContainer,
 	isProgramContainer,
 	payloadTypes,
@@ -14,6 +15,7 @@ import {
 	type AnyPayload,
 	type Container,
 	type CustomCollectionPayload,
+	type MeasurePayload,
 	type NewContainer
 } from '$lib/models';
 import { organizationScopeAsFilter } from '$lib/organizationScope';
@@ -42,6 +44,8 @@ import {
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
+
+const maxHierarchyLevel = 6;
 
 export class McpCreationError extends Error {
 	constructor(message: string) {
@@ -255,6 +259,25 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 					) + 1;
 				return { object: parentGuid, position, predicate };
 			});
+
+			// As in the web application, a measure below a measure is one level
+			// deeper; the level is derived rather than taken from the payload.
+			const parentMeasure = input.parentRelations
+				.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+				.map(({ parentGuid }) => parentsByGuid.get(parentGuid))
+				.find(
+					(parent): parent is Container<MeasurePayload> =>
+						parent !== undefined && isMeasureContainer(parent)
+				);
+			if (parentMeasure && isMeasureContainer(candidate)) {
+				const hierarchyLevel = parentMeasure.payload.hierarchyLevel + 1;
+				if (hierarchyLevel > maxHierarchyLevel) {
+					throw new McpCreationError(
+						`Measures can be nested at most ${maxHierarchyLevel} levels deep.`
+					);
+				}
+				candidate.payload.hierarchyLevel = hierarchyLevel;
+			}
 
 			return createAndRecordContainer({
 				auth: input,
