@@ -7,11 +7,19 @@ import {
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
 import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
-import { listMcpContainerRelations } from '$lib/server/mcp/relations';
+import {
+	addMcpContainerRelation,
+	listMcpContainerRelations,
+	removeMcpContainerRelation
+} from '$lib/server/mcp/relations';
 import { updateMcpContainer } from '$lib/server/mcp/update';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { searchMcpOrganizationUsers } from '$lib/server/mcp/users';
+import {
+	registerAddContainerRelationTool,
+	type AddContainerRelationDependencies
+} from '$lib/server/mcp/tools/addContainerRelation';
 import {
 	registerAddCustomCollectionSectionTool,
 	type AddCustomCollectionSectionDependencies
@@ -20,6 +28,10 @@ import {
 	registerCreateContainerTool,
 	type CreateContainerDependencies
 } from '$lib/server/mcp/tools/createContainer';
+import {
+	registerRemoveContainerRelationTool,
+	type RemoveContainerRelationDependencies
+} from '$lib/server/mcp/tools/removeContainerRelation';
 import {
 	registerUpdateContainerTool,
 	type UpdateContainerDependencies
@@ -58,7 +70,8 @@ import {
 } from '$lib/server/mcp/tools/searchOrganizationUsers';
 import packageMetadata from '../../../../package.json';
 
-type McpServerDependencies = AddCustomCollectionSectionDependencies &
+type McpServerDependencies = AddContainerRelationDependencies &
+	AddCustomCollectionSectionDependencies &
 	CreateContainerDependencies &
 	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
@@ -68,9 +81,13 @@ type McpServerDependencies = AddCustomCollectionSectionDependencies &
 	ListOrganizationalUnitsDependencies &
 	SearchContainersDependencies &
 	SearchOrganizationUsersDependencies &
+	RemoveContainerRelationDependencies &
 	UpdateContainerDependencies;
 
 const defaultDependencies: McpServerDependencies = {
+	async addContainerRelation(auth, input) {
+		return (await getPool()).connect(addMcpContainerRelation({ ...input, ...auth }));
+	},
 	async addCustomCollectionSection(auth, input) {
 		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, ...auth }));
 	},
@@ -103,6 +120,9 @@ const defaultDependencies: McpServerDependencies = {
 	async searchOrganizationUsers(userId, input) {
 		return (await getPool()).connect(searchMcpOrganizationUsers({ ...input, userId }));
 	},
+	async removeContainerRelation(auth, input) {
+		return (await getPool()).connect(removeMcpContainerRelation({ ...input, ...auth }));
+	},
 	async updateContainer(auth, input) {
 		return (await getPool()).connect(updateMcpContainer({ ...input, ...auth }));
 	}
@@ -118,12 +138,13 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Call get_container before update_container and pass the revision it returns. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Call get_container before update_container and pass the revision it returns. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
 			registerPayloadSchemaResources(server);
 
+			registerAddContainerRelationTool(server, authInfo, dependencies);
 			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
 			registerCreateContainerTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
@@ -134,6 +155,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);
 			registerSearchOrganizationUsersTool(server, authInfo, dependencies);
+			registerRemoveContainerRelationTool(server, authInfo, dependencies);
 			registerUpdateContainerTool(server, authInfo, dependencies);
 
 			return server;

@@ -37,6 +37,7 @@ const userScopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['users:read']
 };
+const addContainerRelation = vi.fn();
 const addCustomCollectionSection = vi.fn();
 const createContainer = vi.fn();
 const getContainer = vi.fn();
@@ -45,10 +46,12 @@ const listContainerCategoryValues = vi.fn();
 const listContainerRelations = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
+const removeContainerRelation = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const updateContainer = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
+	addContainerRelation,
 	addCustomCollectionSection,
 	createContainer,
 	getContainer,
@@ -57,6 +60,7 @@ const toolHandler = createKnotDotsMcpHandler({
 	listContainerRelations,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
+	removeContainerRelation,
 	searchContainers,
 	searchOrganizationUsers,
 	updateContainer
@@ -109,6 +113,7 @@ async function legacyResponseJson(response: Response) {
 }
 
 beforeEach(() => {
+	addContainerRelation.mockReset();
 	addCustomCollectionSection.mockReset();
 	createContainer.mockReset();
 	updateContainer.mockReset();
@@ -118,6 +123,7 @@ beforeEach(() => {
 	listContainerRelations.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
+	removeContainerRelation.mockReset();
 	searchContainers.mockReset();
 	searchOrganizationUsers.mockReset();
 });
@@ -306,6 +312,24 @@ test('advertises tools without requiring their scopes', async () => {
 			}),
 			expect.objectContaining({
 				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'add_container_relation',
+				title: 'Add container relation'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'remove_container_relation',
+				title: 'Remove container relation'
+			}),
+			expect.objectContaining({
+				annotations: {
 					idempotentHint: false,
 					openWorldHint: false,
 					readOnlyHint: false
@@ -316,6 +340,7 @@ test('advertises tools without requiring their scopes', async () => {
 		])
 	);
 	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
+		'add_container_relation',
 		'add_custom_collection_section',
 		'create_container',
 		'get_container',
@@ -324,6 +349,7 @@ test('advertises tools without requiring their scopes', async () => {
 		'list_container_relations',
 		'list_my_organizations',
 		'list_organizational_units',
+		'remove_container_relation',
 		'search_containers',
 		'search_organization_users',
 		'update_container'
@@ -655,6 +681,48 @@ test('adds a custom collection section with categories using the write scope', a
 	});
 });
 
+const relationArguments = {
+	objectGuid: '00000000-0000-4000-8000-000000000004',
+	predicate: 'contributes-to',
+	subjectGuid: '00000000-0000-4000-8000-000000000003'
+};
+
+test.each([
+	['add_container_relation', addContainerRelation],
+	['remove_container_relation', removeContainerRelation]
+])('changes a relation with the %s tool using the write scope', async (name, dependency) => {
+	const output = {
+		changed: true,
+		relation: relationArguments
+	};
+	dependency.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: relationArguments, name }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(dependency).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, relationArguments);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('rejects structural predicates in the relation tools', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { ...relationArguments, predicate: 'is-part-of' },
+			name: 'add_container_relation'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(addContainerRelation).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: { isError: true }
+	});
+});
+
 test.each([
 	[
 		'create_container',
@@ -681,7 +749,9 @@ test.each([
 			guid: '00000000-0000-4000-8000-000000000003',
 			payloadPatch: { title: 'Renamed' }
 		}
-	]
+	],
+	['add_container_relation', addContainerRelation, relationArguments],
+	['remove_container_relation', removeContainerRelation, relationArguments]
 ])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', { arguments: arguments_, name }),
