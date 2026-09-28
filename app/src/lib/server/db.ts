@@ -276,14 +276,18 @@ export function createMcpToken({
 	};
 }
 
+// A relation change records the relation: containerGuid is its subject and
+// relation.relatedContainerGuid its object.
 export function recordMcpWriteEvent({
 	containerGuid,
+	relation,
 	revision,
 	tokenId,
 	tool,
 	userId
 }: {
 	containerGuid: string;
+	relation?: { predicate: string; relatedContainerGuid: string };
 	revision: number | null;
 	tokenId: string;
 	tool: string;
@@ -291,8 +295,18 @@ export function recordMcpWriteEvent({
 }) {
 	return async (connection: DatabaseConnection) => {
 		await connection.query(sql.typeAlias('void')`
-			INSERT INTO mcp_write_event (token_id, user_id, tool, container_guid, revision)
-			VALUES (${tokenId}, ${userId}, ${tool}, ${containerGuid}, ${revision})
+			INSERT INTO mcp_write_event (
+				token_id, user_id, tool, container_guid, revision, predicate, related_container_guid
+			)
+			VALUES (
+				${tokenId},
+				${userId},
+				${tool},
+				${containerGuid},
+				${revision},
+				${relation?.predicate ?? null},
+				${relation?.relatedContainerGuid ?? null}
+			)
 		`);
 	};
 }
