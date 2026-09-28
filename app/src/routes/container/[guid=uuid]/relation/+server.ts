@@ -8,6 +8,7 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	type AnyPayload,
 	type Container,
+	containerOfType,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
 	isOrganizationalUnitContainer,
@@ -253,17 +254,18 @@ export const POST = (async ({ locals, params, request }) => {
 				}
 				// Adopting a public rule-set program deliberately does not require
 				// permission on the (foreign) program itself: the user must be
-				// allowed to update the adopting organization or organizational
-				// unit, the program must be adoptable, and the owning
-				// organizational unit may not adopt its own program. Removal is
-				// exempt from the latter rules: taking away a relation that should
-				// not exist must always be possible for those responsible for the
-				// adopting unit.
+				// allowed to create programs within the adopting organization or
+				// organizational unit (the same create-inside rule the client
+				// applies when listing the adopters, inherited grants included),
+				// the program must be adoptable, and the owning organizational
+				// unit may not adopt its own program. Removal is exempt from the
+				// latter rules: taking away a relation that should not exist must
+				// always be possible for those responsible for the adopting unit.
 				if (predicate == predicates.enum['is-adopted-by']) {
 					return (
 						createFeatureDecisions(locals.features).useAdoptions() &&
 						subject == params.guid &&
-						ability.can('update', objectContainer) &&
+						ability.can('create', containerOfType(payloadTypes.enum.program, objectContainer)) &&
 						(deleted ||
 							(isAdoptableProgram(subjectContainer) &&
 								(isOrganizationContainer(objectContainer) ||

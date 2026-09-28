@@ -18,23 +18,22 @@ test.describe('Adopt programs', () => {
 	}) => {
 		test.skip(isMobile, 'Adopt button may not be visible on mobile');
 
-		// Give Bob admin role on testOrganizationalUnit so he may adopt for it.
+		// Make Bob an administrator of the organization only: the unit inherits
+		// its grants, so he may adopt for it without holding a role there.
 		const orgResponse = await adminContext.request.get(`/container/${testOrganization.guid}`);
 		const orgData = await orgResponse.json();
 		const bobRelation = orgData.user.find(
 			(u: { predicate: string }) => u.predicate === predicates.enum['is-member-of']
 		);
 		const adminResponse = await adminContext.request.post(
-			`/container/${testOrganizationalUnit.guid}/user`,
+			`/container/${testOrganization.guid}/user`,
 			{
 				data: [
+					...orgData.user.filter(
+						(u: { predicate: string }) => u.predicate !== predicates.enum['is-creator-of']
+					),
 					{
-						object: testOrganizationalUnit.guid,
-						predicate: predicates.enum['is-member-of'],
-						subject: bobRelation.subject
-					},
-					{
-						object: testOrganizationalUnit.guid,
+						object: testOrganization.guid,
 						predicate: predicates.enum['is-admin-of'],
 						subject: bobRelation.subject
 					}
@@ -63,6 +62,7 @@ test.describe('Adopt programs', () => {
 		await openProgramOverlay();
 		await adoptButton.click();
 		await expect(popover).toBeVisible();
+		await expect(unitCheckbox).toBeVisible();
 		await unitCheckbox.check();
 		await confirmButton.click();
 
