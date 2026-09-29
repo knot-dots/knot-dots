@@ -202,7 +202,7 @@
 	}
 </script>
 
-<div class="table-wrapper table-wrapper--with-end-padding wide">
+<div class="table-wrapper wide">
 	<table>
 		<thead>
 			<tr>
@@ -560,8 +560,6 @@
 		width: 1rem;
 	}
 
-	/* keep the toggle visible when the matrix is wider than the viewport;
-	   the sticky inset compensates the 16rem end padding of the wrapper */
 	.inherit-toggle {
 		align-items: center;
 		display: inline-flex;
@@ -569,7 +567,7 @@
 		gap: 0.5rem;
 		padding-left: 0.5rem;
 		position: sticky;
-		right: calc(0.5rem - 16rem);
+		right: calc(0.5rem);
 	}
 
 	.inherit-toggle .toggle {
