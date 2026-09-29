@@ -50,7 +50,9 @@ export const createContainerInput = z.strictObject({
 		.uuid()
 		.nullable()
 		.default(null)
-		.describe('Optional organizational unit that should own the container.'),
+		.describe(
+			'Organizational unit that should own the container. With parent relations, the container belongs to the unit of its parents; omit it or pass that unit.'
+		),
 	parentRelations,
 	payload: z
 		.looseObject({ type: mcpPayloadTypes })

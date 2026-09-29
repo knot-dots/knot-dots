@@ -431,3 +431,72 @@ test('rejects category values that are not available for the selected types', as
 	).rejects.toEqual(expect.any(McpCreationError));
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
+
+function setUnitScopedProgram(guid = parentGuid, unit = organizationalUnitGuid) {
+	mocks.containers.set(
+		unit,
+		container(unit, { name: 'Climate office', type: 'organizational_unit' })
+	);
+	mocks.containers.set(
+		guid,
+		container(guid, { title: 'Unit program', type: 'program' }, { organizationalUnit: unit })
+	);
+}
+
+function createGoalInProgram(organizationalUnit: string | null, parents = [parentGuid]) {
+	return createMcpContainer({
+		...createContainerInput.parse({
+			organizationGuid,
+			organizationalUnitGuid: organizationalUnit,
+			parentRelations: parents.map((guid) => ({
+				parentGuid: guid,
+				predicate: 'is-part-of-program'
+			})),
+			payload: { title: 'Unit goal', type: 'goal' }
+		}),
+		tokenId,
+		userId
+	})({} as never);
+}
+
+test.each([
+	['omitted', null],
+	['given', organizationalUnitGuid]
+])('creates the container in the unit of its parents when the unit is %s', async (_, unit) => {
+	setUnitScopedProgram();
+
+	await createGoalInProgram(unit);
+
+	expect(mocks.createAuthorizedContainer).toHaveBeenCalledWith(
+		expect.objectContaining({
+			data: expect.objectContaining({
+				managed_by: [organizationalUnitGuid],
+				organizational_unit: organizationalUnitGuid
+			})
+		})
+	);
+});
+
+test('rejects a unit that differs from the unit of the parents', async () => {
+	const otherUnitGuid = '00000000-0000-4000-8000-00000000000a';
+	setUnitScopedProgram();
+	mocks.containers.set(
+		otherUnitGuid,
+		container(otherUnitGuid, { name: 'Mobility office', type: 'organizational_unit' })
+	);
+
+	await expect(createGoalInProgram(otherUnitGuid)).rejects.toThrow(
+		'The organizational unit must be the one of the parents; omit it to use theirs.'
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test('rejects parents of different units', async () => {
+	const otherProgramGuid = '00000000-0000-4000-8000-00000000000b';
+	setUnitScopedProgram();
+	setUnitScopedProgram(otherProgramGuid, '00000000-0000-4000-8000-00000000000c');
+
+	await expect(createGoalInProgram(null, [parentGuid, otherProgramGuid])).rejects.toThrow(
+		'All parents must belong to the same organizational unit.'
+	);
+});

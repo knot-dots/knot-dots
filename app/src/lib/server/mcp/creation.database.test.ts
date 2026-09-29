@@ -191,3 +191,51 @@ test('rejects a visible parent that belongs to another organization', async ({
 		createGoalUnder(organization, foreignProgram.guid, auth)(connection)
 	).rejects.toThrow('Parent container not found or inaccessible.');
 });
+
+test('creates a container below a unit-scoped parent in that unit', async ({
+	connection
+}: Fixtures) => {
+	const auth = await createTestAuth(connection);
+	const organization = await createOrganization(
+		connection,
+		auth.userId,
+		predicates.enum['is-collaborator-of']
+	);
+	const unit = await createContainer(
+		newContainer.parse({
+			managed_by: organization,
+			organization,
+			organizational_unit: null,
+			payload: { level: 1, name: 'Climate office', type: payloadTypes.enum.organizational_unit },
+			realm,
+			relation: [],
+			user: []
+		})
+	)(connection);
+	await connection.query(sql.typeAlias('void')`
+		INSERT INTO container_user (object, predicate, subject)
+		VALUES
+			(${unit.revision}, ${predicates.enum['is-member-of']}, ${auth.userId}),
+			(${unit.revision}, ${predicates.enum['is-collaborator-of']}, ${auth.userId})
+		ON CONFLICT DO NOTHING
+	`);
+	const program = await createContainer(
+		newContainer.parse({
+			managed_by: unit.guid,
+			organization,
+			organizational_unit: unit.guid,
+			payload: { title: 'Unit program', type: payloadTypes.enum.program },
+			realm,
+			relation: [],
+			user: []
+		})
+	)(connection);
+
+	await expect(
+		createGoalUnder(organization, program.guid, auth)(connection)
+	).resolves.toMatchObject({
+		managed_by: [unit.guid],
+		organization,
+		organizational_unit: unit.guid
+	});
+});

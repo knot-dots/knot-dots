@@ -120,24 +120,6 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				);
 			}
 
-			let organizationalUnit: Container<AnyPayload> | null = null;
-			if (input.organizationalUnitGuid) {
-				organizationalUnit = await findVisibleContainer(
-					connection,
-					user,
-					input.organizationalUnitGuid
-				);
-				if (
-					!organizationalUnit ||
-					!isOrganizationalUnitContainer(organizationalUnit) ||
-					organizationalUnit.organization !== organization.guid
-				) {
-					throw new McpCreationError(
-						'Organization or organizational unit not found or inaccessible.'
-					);
-				}
-			}
-
 			const payloadResult = getPayloadSchema(input.payload.type).safeParse(input.payload);
 			if (!payloadResult.success) {
 				throw new McpCreationError(payloadValidationMessage(payloadResult.error));
@@ -161,6 +143,39 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				throw new McpCreationError('Parent container not found or inaccessible.');
 			}
 			const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
+
+			// Like a container created within its parents in the web application,
+			// the container belongs to the organizational unit of its parents,
+			// whose grants authorize the creation.
+			const parentUnits = [...new Set(parents.map((parent) => parent.organizational_unit))];
+			if (parentUnits.length > 1) {
+				throw new McpCreationError('All parents must belong to the same organizational unit.');
+			}
+			if (
+				parents.length > 0 &&
+				input.organizationalUnitGuid !== null &&
+				input.organizationalUnitGuid !== parentUnits[0]
+			) {
+				throw new McpCreationError(
+					'The organizational unit must be the one of the parents; omit it to use theirs.'
+				);
+			}
+			const organizationalUnitGuid =
+				parents.length > 0 ? parentUnits[0] : input.organizationalUnitGuid;
+
+			let organizationalUnit: Container<AnyPayload> | null = null;
+			if (organizationalUnitGuid) {
+				organizationalUnit = await findVisibleContainer(connection, user, organizationalUnitGuid);
+				if (
+					!organizationalUnit ||
+					!isOrganizationalUnitContainer(organizationalUnit) ||
+					organizationalUnit.organization !== organization.guid
+				) {
+					throw new McpCreationError(
+						'Organization or organizational unit not found or inaccessible.'
+					);
+				}
+			}
 
 			const candidate = containerOfType(
 				input.payload.type,
