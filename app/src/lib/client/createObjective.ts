@@ -1,4 +1,5 @@
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { env } from '$env/dynamic/public';
 import saveContainer from '$lib/client/saveContainer';
 import {
 	type BinaryIndicatorPayload,
@@ -19,12 +20,13 @@ export default async function createObjective(
 	iooiType?: IooiType
 ) {
 	const isOverallObjective = target.guid == indicator.guid;
-	const newObjective = {
-		// items join the collection's manager; relations follow separately
-		...containerOfType(payloadTypes.enum.objective, target),
-		managed_by: target.managed_by,
-		relation: []
-	} as NewContainer<InitialObjectivePayload>;
+	const newObjective = containerOfType(
+		payloadTypes.enum.objective,
+		target.organization,
+		target.organizational_unit,
+		target.managed_by,
+		env.PUBLIC_KC_REALM
+	) as NewContainer<InitialObjectivePayload>;
 
 	const response = await saveContainer({
 		...newObjective,

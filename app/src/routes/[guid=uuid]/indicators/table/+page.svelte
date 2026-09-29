@@ -59,7 +59,10 @@
 				'create',
 				containerOfType(
 					payloadTypes.enum.indicator_template,
-					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+					page.data.currentOrganization.guid,
+					page.data.currentOrganizationalUnit?.guid ?? null,
+					page.data.currentOrganization.guid,
+					''
 				)
 			)
 	);

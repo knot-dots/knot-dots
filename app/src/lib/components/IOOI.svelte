@@ -91,12 +91,13 @@
 
 		if (!collectionExists) {
 			// Create the collection
-			const collection = {
-				// items join the collection's manager; relations follow separately
-				...containerOfType(payloadTypes.enum.resource_data_collection, container),
-				managed_by: container.managed_by,
-				relation: []
-			} as NewContainer;
+			const collection = containerOfType(
+				payloadTypes.enum.resource_data_collection,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
 
 			// Set the resourceDataType
 			(collection.payload as { resourceDataType?: string }).resourceDataType = resourceDataType;
@@ -231,12 +232,13 @@
 					: resourceDataTypes.enum['resource_data_type.budget']);
 
 			// Create new resource_data container
-			const item = {
-				// items join the collection's manager; relations follow separately
-				...containerOfType(payloadTypes.enum.resource_data, container),
-				managed_by: container.managed_by,
-				relation: []
-			} as NewContainer;
+			const item = containerOfType(
+				payloadTypes.enum.resource_data,
+				container.organization,
+				container.organizational_unit,
+				container.managed_by,
+				container.realm
+			) as NewContainer;
 
 			// Set the resourceDataType
 			(item.payload as { resourceDataType?: string }).resourceDataType = resourceDataType;

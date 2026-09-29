@@ -57,12 +57,13 @@
 	);
 
 	function createItem() {
-		const item = {
-			// items join the collection's manager; relations follow separately
-			...containerOfType(payloadTypes.enum.measure, container),
-			managed_by: container.managed_by,
-			relation: []
-		} as NewContainer<MeasurePayload>;
+		const item = containerOfType(
+			payloadTypes.enum.measure,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer<MeasurePayload>;
 
 		if (isMeasureContainer(parentContainer)) {
 			item.payload.category = parentContainer.payload.category;
@@ -111,7 +112,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.measure, container) && templateAvailability.has(payloadTypes.enum.measure)}
+			{#if $mayCreateContainer(payloadTypes.enum.measure, container.managed_by) && templateAvailability.has(payloadTypes.enum.measure)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -134,7 +135,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.measure, container) &&
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.measure, container.managed_by) &&
 		editable &&
 		templateAvailability.has(payloadTypes.enum.measure)}
 >

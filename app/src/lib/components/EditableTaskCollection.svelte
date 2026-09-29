@@ -65,12 +65,13 @@
 			return;
 		}
 
-		const item = {
-			// items join the collection's manager; relations follow separately
-			...containerOfType(payloadTypes.enum.task, container),
-			managed_by: container.managed_by,
-			relation: []
-		} as NewContainer;
+		const item = containerOfType(
+			payloadTypes.enum.task,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer;
 
 		item.relation = [
 			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] },
@@ -102,7 +103,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.task, container) && templateAvailability.has(payloadTypes.enum.task)}
+			{#if $mayCreateContainer(payloadTypes.enum.task, container.managed_by) && templateAvailability.has(payloadTypes.enum.task)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -140,7 +141,7 @@
 	<Carousel
 		{addItem}
 		items={directChildren}
-		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container) &&
+		mayAddItem={$mayCreateContainer(payloadTypes.enum.task, container.managed_by) &&
 			editable &&
 			templateAvailability.has(payloadTypes.enum.task)}
 	>

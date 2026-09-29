@@ -72,12 +72,13 @@
 	);
 
 	function addItem() {
-		$newContainer = {
-			// items join the collection's manager; relations follow separately
-			...containerOfType(payloadTypes.enum.indicator_template, container),
-			managed_by: container.managed_by,
-			relation: []
-		} as NewContainer;
+		$newContainer = containerOfType(
+			payloadTypes.enum.indicator_template,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer;
 
 		createContainerDialog.getElement().showModal();
 	}
@@ -88,7 +89,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.goal, container)}
+			{#if $mayCreateContainer(payloadTypes.enum.goal, container.managed_by)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -111,7 +112,8 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator_template, container) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator_template, container.managed_by) &&
+		editable}
 >
 	{#snippet itemSnippet(item)}
 		<NewIndicatorCard

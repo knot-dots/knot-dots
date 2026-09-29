@@ -15,6 +15,7 @@
 		isContainer,
 		isContainerWithColor,
 		isContainerWithTitle,
+		isOrganizationalUnitContainer,
 		isTextContainer,
 		type NewContainer,
 		payloadTypes,
@@ -108,7 +109,13 @@
 				return;
 			}
 
-			const newContainer = containerOfType(payloadType, container) as NewContainer;
+			const newContainer = containerOfType(
+				payloadType,
+				container.organization,
+				isOrganizationalUnitContainer(container) ? container.guid : container.organizational_unit,
+				isOrganizationalUnitContainer(container) ? container.guid : container.managed_by,
+				container.realm
+			) as NewContainer;
 
 			newContainer.relation = [
 				{

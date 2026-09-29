@@ -7,6 +7,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
 	import Card from '$lib/components/Card.svelte';
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
@@ -46,7 +47,10 @@
 	function createContainer(payloadType: PayloadType) {
 		const container = containerOfType(
 			payloadType,
-			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
 		if (createAsTemplate && 'template' in container.payload) {
@@ -66,7 +70,7 @@
 </script>
 
 <div>
-	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit ?? page.data.currentOrganization) )}
+	{#if !hideCreateButton && payloadType.some( (t) => $mayCreateContainer(t, page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid) )}
 		{#if payloadType.length === 1}
 			<p>
 				<button
@@ -88,7 +92,7 @@
 						.filter((t) =>
 							$mayCreateContainer(
 								t,
-								page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+								page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid
 							)
 						)
 						.map((t) => ({ label: $_(t), value: t }))

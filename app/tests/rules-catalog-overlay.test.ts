@@ -11,18 +11,15 @@ test.use({ suiteId: 'rules-catalog-overlay' });
 test.use({ storageState: 'tests/.auth/orgadmin.json' });
 
 test.describe('Rules catalog overlay', () => {
-	test('opens and lists rules', async ({
-		adminContext,
-		dotsBoard,
-		isMobile,
-		testGoal,
-		testOrganization
-	}) => {
+	test('opens and lists rules', async ({ adminContext, dotsBoard, isMobile, testGoal }) => {
 		const suffix = test.info().project.name;
 		const makeRule = (title: string) => {
 			const template = containerOfType(
 				payloadTypes.enum.rule,
-				testOrganization
+				testGoal.organization,
+				null,
+				testGoal.organization,
+				'knot-dots'
 			) as Container<RulePayload>;
 			return createContainer(adminContext, {
 				...template,
@@ -52,9 +49,8 @@ test.describe('Rules catalog overlay', () => {
 		adminContext,
 		dotsBoard,
 		isMobile,
-		testCategoryWithTerms,
 		testGoal,
-		testOrganization
+		testCategoryWithTerms
 	}) => {
 		const { category, terms } = testCategoryWithTerms;
 		const categoryKey = category.payload.key as string;
@@ -66,7 +62,10 @@ test.describe('Rules catalog overlay', () => {
 		const makeRule = (title: string, termValues: string[]) => {
 			const template = containerOfType(
 				payloadTypes.enum.rule,
-				testOrganization
+				testGoal.organization,
+				null,
+				testGoal.organization,
+				'knot-dots'
 			) as Container<RulePayload>;
 			return createContainer(adminContext, {
 				...template,
@@ -115,9 +114,8 @@ test.describe('Rules catalog overlay', () => {
 		adminContext,
 		dotsBoard,
 		isMobile,
-		testCategoryWithTerms,
 		testGoal,
-		testOrganization
+		testCategoryWithTerms
 	}) => {
 		const { category, terms } = testCategoryWithTerms;
 		const categoryKey = category.payload.key as string;
@@ -130,7 +128,10 @@ test.describe('Rules catalog overlay', () => {
 
 		const goalTemplate = containerOfType(
 			payloadTypes.enum.goal,
-			testOrganization
+			testGoal.organization,
+			null,
+			testGoal.organization,
+			'knot-dots'
 		) as Container<GoalPayload>;
 		const goalWithCategory = await createContainer(adminContext, {
 			...goalTemplate,
@@ -143,7 +144,10 @@ test.describe('Rules catalog overlay', () => {
 
 		const matchTemplate = containerOfType(
 			payloadTypes.enum.rule,
-			testOrganization
+			testGoal.organization,
+			null,
+			testGoal.organization,
+			'knot-dots'
 		) as Container<RulePayload>;
 		const ruleMatch = (await createContainer(adminContext, {
 			...matchTemplate,
@@ -156,7 +160,10 @@ test.describe('Rules catalog overlay', () => {
 
 		const noMatchTemplate = containerOfType(
 			payloadTypes.enum.rule,
-			testOrganization
+			testGoal.organization,
+			null,
+			testGoal.organization,
+			'knot-dots'
 		) as Container<RulePayload>;
 		const ruleNoMatch = (await createContainer(adminContext, {
 			...noMatchTemplate,

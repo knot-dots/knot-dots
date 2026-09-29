@@ -360,13 +360,26 @@ export function getVisibleWorkspaces(ctx: VisibilityContext): WorkspaceDefinitio
 		}
 		if (ability) {
 			if (workspace.key === 'categories') {
-				if (!ability.can('create', containerOfType(payloadTypes.enum.category, selectedContext))) {
+				const container = containerOfType(
+					payloadTypes.enum.category,
+					organization.guid,
+					organizationalUnit?.guid ?? null,
+					selectedContext.guid,
+					''
+				);
+				if (!ability.can('create', container)) {
 					return false;
 				}
 			}
 			if (workspace.key === 'help') {
-				// help sections belong to the organization
-				if (!ability.can('create', containerOfType(payloadTypes.enum.help, organization))) {
+				const container = containerOfType(
+					payloadTypes.enum.help,
+					organization.guid,
+					organizationalUnit?.guid ?? null,
+					selectedContext.guid,
+					''
+				);
+				if (!ability.can('create', container)) {
 					return false;
 				}
 			}

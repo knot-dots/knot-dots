@@ -8,8 +8,8 @@ import {
 	grantSetAssignment,
 	memberRoleFromGrantSet,
 	memberRoles,
-	predicates,
-	withOwnMatrix
+	payloadTypes,
+	predicates
 } from '$lib/models';
 import {
 	getContainerByGuid,
@@ -68,8 +68,16 @@ export const POST = (async ({ locals, params, request }) => {
 	const { self, subject, subordinates } = parseResult.data;
 	const set = { self, subordinates };
 
-	// a subject holding every grant counts as an administrator
+	// a subject holding every grant counts as an administrator, and
+	// administrators exist on organizations and organizational units only
 	const role = memberRoleFromGrantSet(set);
+	if (
+		role === memberRoles.enum.administrator &&
+		container.payload.type !== payloadTypes.enum.organization &&
+		container.payload.type !== payloadTypes.enum.organizational_unit
+	) {
+		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
+	}
 
 	// the last administrator may not lose any grant
 	const admins = new Set(
@@ -82,9 +90,7 @@ export const POST = (async ({ locals, params, request }) => {
 	}
 
 	await locals.pool.transaction(async (connection) => {
-		// assigning rows to an inheriting container decouples it, so they act
-		const target = role === null ? container : withOwnMatrix(container);
-		await updateMemberRole(target, subject, role)(connection);
+		await updateMemberRole(container, subject, role)(connection);
 		await setContainerGrants(container.guid, subject, set)(connection);
 	});
 

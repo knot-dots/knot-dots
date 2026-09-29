@@ -11,8 +11,9 @@ import {
 } from '$lib/adoptions';
 import {
 	anyContainer,
-	composeUserGrants,
 	type Container,
+	emptyGrantRecords,
+	type GrantRecords,
 	grantSetForRole,
 	memberRoles,
 	type OrganizationalUnitPayload,
@@ -24,6 +25,7 @@ import {
 	type Relation,
 	visibility
 } from '$lib/models';
+import type { User } from '$lib/stores';
 
 const organization = crypto.randomUUID();
 const otherOrganization = crypto.randomUUID();
@@ -31,6 +33,26 @@ const owningUnit = crypto.randomUUID();
 const siblingUnit = crypto.randomUUID();
 const foreignUnit = crypto.randomUUID();
 const program = crypto.randomUUID();
+
+const testUser = z.object({
+	familyName: z.string().default('Muster'),
+	givenName: z.string().default('Erika'),
+	grants: z.custom<GrantRecords>().default(emptyGrantRecords),
+	guid: z.string().default(crypto.randomUUID()),
+	isAuthenticated: z.boolean().default(true),
+	roles: z.array(z.string()).default([]),
+	settings: z.object({ features: z.array(z.string()).optional() }).default({})
+});
+
+function managing(...objects: string[]): GrantRecords {
+	const records = emptyGrantRecords();
+	for (const object of objects) {
+		for (const kind of grantSetForRole(memberRoles.enum.head).subordinates) {
+			records.subordinates[kind].push(object);
+		}
+	}
+	return records;
+}
 
 const testContainer = anyContainer.extend({
 	guid: z.uuid().default(() => crypto.randomUUID()),
@@ -42,6 +64,10 @@ const testContainer = anyContainer.extend({
 	valid_currently: z.boolean().default(true),
 	valid_from: z.coerce.date().default(() => new Date())
 });
+
+function makeUser(overrides: z.input<typeof testUser> = {}): User {
+	return testUser.parse(overrides);
+}
 
 function makeProgram(
 	payloadOverrides: Partial<ProgramPayload> = {},
@@ -86,31 +112,6 @@ const units = [
 	makeOrganizationalUnit(foreignUnit, otherOrganization)
 ];
 
-// The units arrive enriched with the request user's grants; `governed` names
-// the objects (units or their organizations) whose matrix grants the user the
-// create kind — the head role's subordinate set stands in for it.
-function enrichedUnits(...governed: string[]) {
-	return units.map((unit) => ({
-		...unit,
-		user_grant: composeUserGrants({
-			scopeSourced: true,
-			governsItself: false,
-			organizationSelf: [],
-			organizationalUnitSelf: [],
-			source: unit.organization,
-			sourceSelf: [],
-			sourceSubordinates:
-				governed.includes(unit.guid) || governed.includes(unit.organization)
-					? grantSetForRole(memberRoles.enum.head).subordinates
-					: []
-		})
-	}));
-}
-
-function guids(result: Array<{ guid: string }>) {
-	return result.map(({ guid }) => guid);
-}
-
 describe('isAdoptableProgram', () => {
 	test('public rule-set programs are adoptable', () => {
 		expect(isAdoptableProgram(makeProgram())).toBe(true);
@@ -131,46 +132,73 @@ describe('isAdoptableProgram', () => {
 });
 
 describe('adoptableOrganizationalUnits', () => {
-	test('units without a create grant are not adoptable', () => {
-		expect(organizationalUnitsManagedByUser(makeProgram(), units)).toEqual([]);
-		expect(organizationalUnitsManagedByUser(makeProgram(), enrichedUnits())).toEqual([]);
+	test('anonymous users have no adoptable units', () => {
+		expect(
+			organizationalUnitsManagedByUser(makeUser({ isAuthenticated: false }), makeProgram(), units)
+		).toEqual([]);
 	});
 
 	test('admins and heads see the units they are responsible for', () => {
 		expect(
-			guids(organizationalUnitsManagedByUser(makeProgram(), enrichedUnits(foreignUnit)))
-		).toEqual([foreignUnit]);
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(foreignUnit) }),
+				makeProgram(),
+				units
+			)
+		).toEqual([units[2]]);
+		expect(
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(foreignUnit) }),
+				makeProgram(),
+				units
+			)
+		).toEqual([units[2]]);
 	});
 
 	test('organization-level admins see all units of their organization', () => {
 		expect(
-			guids(organizationalUnitsManagedByUser(makeProgram(), enrichedUnits(otherOrganization)))
-		).toEqual([foreignUnit]);
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(otherOrganization) }),
+				makeProgram(),
+				units
+			)
+		).toEqual([units[2]]);
 	});
 
 	test('sibling units of the owning organization are adoptable', () => {
 		expect(
-			guids(
-				organizationalUnitsManagedByUser(makeProgram({}, owningUnit), enrichedUnits(organization))
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(organization) }),
+				makeProgram({}, owningUnit),
+				units
 			)
-		).toEqual([siblingUnit]);
+		).toEqual([units[1]]);
 	});
 
 	test('the owning organizational unit is excluded', () => {
 		expect(
-			organizationalUnitsManagedByUser(makeProgram({}, owningUnit), enrichedUnits(owningUnit))
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(owningUnit) }),
+				makeProgram({}, owningUnit),
+				units
+			)
 		).toEqual([]);
 	});
 
 	test('organization-level programs are adoptable by every unit', () => {
 		expect(
-			guids(
-				organizationalUnitsManagedByUser(
-					makeProgram(),
-					enrichedUnits(organization, otherOrganization)
-				)
+			organizationalUnitsManagedByUser(
+				makeUser({ grants: managing(organization, otherOrganization) }),
+				makeProgram(),
+				units
 			)
-		).toEqual([owningUnit, siblingUnit, foreignUnit]);
+		).toEqual(units);
+	});
+
+	test('the sysadmin role alone yields no adoptable units', () => {
+		expect(
+			organizationalUnitsManagedByUser(makeUser({ roles: ['sysadmin'] }), makeProgram(), units)
+		).toEqual([]);
 	});
 });
 

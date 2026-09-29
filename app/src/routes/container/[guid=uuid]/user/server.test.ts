@@ -16,14 +16,7 @@ vi.mock('$lib/server/db', () => ({
 vi.mock('$lib/server/keycloak', () => ({ getMembers: vi.fn() }));
 
 import { POST } from './+server';
-import {
-	composeUserGrants,
-	emptyGrantRecords,
-	grantRecordsForRoleOn,
-	grantSetForRole,
-	type MemberRole,
-	memberRoles
-} from '$lib/models';
+import { emptyGrantRecords, grantRecordsForRoleOn, memberRoles } from '$lib/models';
 
 locale.set('en');
 
@@ -43,10 +36,7 @@ function user(grants: ReturnType<typeof emptyGrantRecords>) {
 	};
 }
 
-// the container arrives enriched with the grants of the request user, so the
-// fixture takes the role the respective test acts with
-function organizationContainer(role: MemberRole) {
-	const set = grantSetForRole(role);
+function organizationContainer() {
 	return {
 		guid: organizationGuid,
 		managed_by: [organizationGuid],
@@ -58,16 +48,7 @@ function organizationContainer(role: MemberRole) {
 			{ predicate: 'is-admin-of', subject: adminGuid },
 			{ predicate: 'is-member-of', subject: adminGuid },
 			{ predicate: 'is-member-of', subject: memberGuid }
-		],
-		user_grant: composeUserGrants({
-			scopeSourced: true,
-			governsItself: true,
-			organizationSelf: set.self,
-			organizationalUnitSelf: [],
-			source: organizationGuid,
-			sourceSelf: set.self,
-			sourceSubordinates: set.subordinates
-		})
+		]
 	};
 }
 
@@ -90,7 +71,7 @@ function post(currentUser: unknown, relations: unknown) {
 }
 
 test('member role changes require permission to manage users', async () => {
-	getContainerByGuid.mockReturnValue(organizationContainer(memberRoles.enum.observer));
+	getContainerByGuid.mockReturnValue(organizationContainer());
 	getManyOrganizationalUnitContainers.mockReturnValue([]);
 
 	await expect(
@@ -100,7 +81,7 @@ test('member role changes require permission to manage users', async () => {
 });
 
 test('administrators may not be removed or demoted', async () => {
-	getContainerByGuid.mockReturnValue(organizationContainer(memberRoles.enum.administrator));
+	getContainerByGuid.mockReturnValue(organizationContainer());
 
 	await expect(
 		post(user(grantRecordsForRoleOn(memberRoles.enum.administrator, organizationGuid)), [
@@ -121,16 +102,7 @@ test('appointing administrators is reserved for administrators of the scope', as
 		organizational_unit: null,
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
-		user: [{ predicate: 'is-member-of', subject: memberGuid }],
-		user_grant: composeUserGrants({
-			scopeSourced: false,
-			governsItself: true,
-			organizationSelf: [],
-			organizationalUnitSelf: [],
-			source: measureGuid,
-			sourceSelf: grantSetForRole(memberRoles.enum.head).self,
-			sourceSubordinates: grantSetForRole(memberRoles.enum.head).subordinates
-		})
+		user: [{ predicate: 'is-member-of', subject: memberGuid }]
 	});
 
 	await expect(
@@ -143,7 +115,7 @@ test('appointing administrators is reserved for administrators of the scope', as
 });
 
 test('administrators of the scope may change other member roles', async () => {
-	getContainerByGuid.mockReturnValue(organizationContainer(memberRoles.enum.administrator));
+	getContainerByGuid.mockReturnValue(organizationContainer());
 	updateContainer.mockReturnValue(vi.fn());
 
 	const response = await post(

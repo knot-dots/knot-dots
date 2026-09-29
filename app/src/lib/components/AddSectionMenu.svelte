@@ -439,7 +439,7 @@
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
 				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
-					{#if $mayCreateContainer(option.value, parentContainer)}
+					{#if $mayCreateContainer(option.value, parentContainer.managed_by)}
 						<li class="menu-item">
 							<button
 								use:menu.item={{

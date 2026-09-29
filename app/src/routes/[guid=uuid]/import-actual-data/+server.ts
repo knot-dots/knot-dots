@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import { type DatabaseTransactionConnection, NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
 import {
 	type ActualDataPayload,
@@ -77,12 +78,15 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		error(422, error(400, { message: parseResult.error.message }));
 	}
 
-	if (
-		!defineAbilityFor(locals.user).can(
-			'create',
-			containerOfType(payloadTypes.enum.actual_data, containerFromParams)
-		)
-	) {
+	const container = containerOfType(
+		payloadTypes.enum.actual_data,
+		currentOrganizationGuid,
+		currentOrganizationalUnitGuid ?? null,
+		currentOrganizationalUnitGuid ?? currentOrganizationGuid,
+		env.PUBLIC_KC_REALM
+	);
+
+	if (!defineAbilityFor(locals.user).can('create', container)) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
@@ -99,7 +103,10 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 			const newActualDataContainer = containerOfType(
 				payloadTypes.enum.actual_data,
-				containerFromParams
+				currentOrganizationGuid,
+				currentOrganizationalUnitGuid ?? null,
+				currentOrganizationalUnitGuid ?? currentOrganizationGuid,
+				env.PUBLIC_KC_REALM
 			) as NewContainer<ActualDataPayload>;
 
 			if (

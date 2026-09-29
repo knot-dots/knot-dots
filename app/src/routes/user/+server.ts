@@ -9,8 +9,7 @@ import {
 	newUser,
 	payloadTypes,
 	predicates,
-	userRelationsForMemberRole,
-	withOwnMatrix
+	userRelationsForMemberRole
 } from '$lib/models';
 import {
 	createOrUpdateUser,
@@ -107,20 +106,17 @@ export const POST = (async ({ locals, request }) => {
 	]);
 
 	await locals.pool.transaction(
-		updateContainer(
-			// inviting someone gives the container a matrix of its own
-			withOwnMatrix({
-				...container,
-				managed_by: [container.guid],
-				user: [
-					...parseResult.data.container.user.filter(
-						({ predicate, subject }) =>
-							subject !== user.guid || !roleRelationPredicates.has(predicate)
-					),
-					...userRelationsForMemberRole(role, user.guid)
-				]
-			})
-		)
+		updateContainer({
+			...container,
+			managed_by: [container.guid],
+			user: [
+				...parseResult.data.container.user.filter(
+					({ predicate, subject }) =>
+						subject !== user.guid || !roleRelationPredicates.has(predicate)
+				),
+				...userRelationsForMemberRole(role, user.guid)
+			]
+		})
 	);
 
 	await addUserToGroup(user, parseResult.data.container.organization);

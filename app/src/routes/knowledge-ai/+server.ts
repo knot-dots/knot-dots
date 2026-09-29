@@ -10,7 +10,6 @@ import { createFeatureDecisions } from '$lib/features';
 import {
 	anyInitialPayload,
 	audience,
-	containerOfType,
 	createNewContainerSchema,
 	editorialState,
 	isProgramContainer,
@@ -142,7 +141,7 @@ export const POST = (async ({ locals, request }) => {
 									}
 								]
 							}) as NewContainer;
-							if (ability.can('create', containerOfType(newContainer.payload.type, container))) {
+							if (ability.can('create', newContainer)) {
 								await locals.pool.connect(createContainer(newContainer));
 							} else {
 								log.error(

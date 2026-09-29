@@ -26,13 +26,7 @@ vi.mock('$lib/server/db', () => ({
 }));
 
 import { POST } from './+server';
-import {
-	composeUserGrants,
-	emptyGrantRecords,
-	grantRecordsForRoleOn,
-	grantSetForRole,
-	memberRoles
-} from '$lib/models';
+import { emptyGrantRecords, grantRecordsForRoleOn, memberRoles } from '$lib/models';
 
 locale.set('en');
 
@@ -50,10 +44,6 @@ const user = {
 	settings: {}
 };
 
-// the containers arrive enriched with the request user's grants: a
-// collaborator of `team` in these tests
-const collaboratorSet = grantSetForRole(memberRoles.enum.collaborator);
-
 function measure(guid: string, managedBy: string) {
 	return {
 		guid,
@@ -62,16 +52,7 @@ function measure(guid: string, managedBy: string) {
 		organizational_unit: null,
 		payload: { title: 'Measure', type: 'measure', visibility: 'public' },
 		relation: [],
-		user: [],
-		user_grant: composeUserGrants({
-			scopeSourced: false,
-			governsItself: false,
-			organizationSelf: [],
-			organizationalUnitSelf: [],
-			source: managedBy,
-			sourceSelf: managedBy === team ? collaboratorSet.self : [],
-			sourceSubordinates: managedBy === team ? collaboratorSet.subordinates : []
-		})
+		user: []
 	};
 }
 

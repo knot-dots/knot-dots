@@ -2,7 +2,6 @@ import { Roarr as log } from 'roarr';
 import type { DatabasePool } from 'slonik';
 import de from '$lib/locales/de.json' with { type: 'json' };
 import {
-	type AnyPayload,
 	audience,
 	type CategoryPayload,
 	type Container,
@@ -136,7 +135,10 @@ async function seedDefaultCategories(pool: DatabasePool): Promise<boolean> {
 	return seedForOrganization(pool, defaultOrganization);
 }
 
-async function seedForOrganization(pool: DatabasePool, organization: Container<AnyPayload>) {
+async function seedForOrganization(
+	pool: DatabasePool,
+	organization: { guid: string; realm: string }
+) {
 	const categories = (
 		await pool.connect(getManyContainers([], { type: [payloadTypes.enum.category] }, 'alpha'))
 	)
@@ -177,7 +179,7 @@ async function seedForOrganization(pool: DatabasePool, organization: Container<A
 		}
 
 		if (!category) {
-			category = await createCategory(pool, organization, seed);
+			category = await createCategory(pool, organization.guid, organization.realm, seed);
 			categories.push(category);
 		}
 
@@ -192,10 +194,17 @@ async function seedForOrganization(pool: DatabasePool, organization: Container<A
 
 async function createCategory(
 	pool: DatabasePool,
-	organization: Container<AnyPayload>,
+	organizationGuid: string,
+	realm: string,
 	seed: CategorySeed
 ) {
-	const newCategory = containerOfType(payloadTypes.enum.category, organization) as NewContainer;
+	const newCategory = containerOfType(
+		payloadTypes.enum.category,
+		organizationGuid,
+		null,
+		organizationGuid,
+		realm
+	) as NewContainer;
 
 	const payload = newCategory.payload as Container<CategoryPayload>['payload'];
 	payload.key = seed.key;
@@ -352,7 +361,13 @@ async function createTerm(
 	seed: TermSeed,
 	position: number
 ) {
-	const newTerm = containerOfType(payloadTypes.enum.term, category) as NewContainer;
+	const newTerm = containerOfType(
+		payloadTypes.enum.term,
+		category.organization,
+		category.organizational_unit,
+		category.managed_by,
+		category.realm
+	) as NewContainer;
 
 	const payload = newTerm.payload as TermPayload;
 	payload.title = seed.title;

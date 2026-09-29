@@ -6,7 +6,6 @@
 	import { page } from '$app/state';
 	import saveContainerUser from '$lib/client/saveContainerUser';
 	import InviteUserDialog from '$lib/components/InviteUserDialog.svelte';
-	import ObjectPermissionMatrix from '$lib/components/ObjectPermissionMatrix.svelte';
 	import UserPermissionMatrix from '$lib/components/UserPermissionMatrix.svelte';
 	import { ability } from '$lib/stores';
 	import { createFeatureDecisions } from '$lib/features';
@@ -29,13 +28,10 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		grants: Readonly<Array<Grant>>;
-		inheritedGrants?: Readonly<Array<Grant>>;
-		inheritedUsers?: Readonly<Array<User>>;
-		scope?: Container<AnyPayload>;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, grants, inheritedGrants, inheritedUsers, scope, users }: Props = $props();
+	let { container, grants, users }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -135,26 +131,13 @@
 {/if}
 
 {#if view === 'matrix'}
-	{#if inheritedGrants && inheritedUsers && scope}
-		<ObjectPermissionMatrix
-			{container}
-			editable={$ability.can('manage-users', container)}
-			{grants}
-			{inheritedGrants}
-			{inheritedUsers}
-			oninvite={() => dialog.showModal()}
-			{scope}
-			{users}
-		/>
-	{:else}
-		<UserPermissionMatrix
-			{container}
-			editable={$ability.can('manage-users', container)}
-			{grants}
-			oninvite={() => dialog.showModal()}
-			{users}
-		/>
-	{/if}
+	<UserPermissionMatrix
+		{container}
+		editable={$ability.can('manage-users', container)}
+		{grants}
+		oninvite={() => dialog.showModal()}
+		{users}
+	/>
 {:else}
 	<table>
 		<thead>

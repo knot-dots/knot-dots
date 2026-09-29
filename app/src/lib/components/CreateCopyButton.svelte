@@ -18,17 +18,14 @@
 	);
 
 	function canCreateAt(location: ContainerCopyLocation) {
-		// creating happens within the location, whose computed grants decide
-		const scope =
-			page.data.organizationalUnits.find(
-				({ guid }: { guid: string }) => guid === location.organizationalUnitGuid
-			) ??
-			page.data.organizations.find(
-				({ guid }: { guid: string }) => guid === location.organizationGuid
-			);
-		return (
-			scope !== undefined && $ability.can('create', containerOfType(container.payload.type, scope))
+		const candidate = containerOfType(
+			container.payload.type,
+			location.organizationGuid,
+			location.organizationalUnitGuid,
+			location.organizationalUnitGuid ?? location.organizationGuid,
+			container.realm
 		);
+		return $ability.can('create', candidate);
 	}
 
 	let copyLocation = $derived.by(() =>

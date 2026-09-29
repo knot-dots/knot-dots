@@ -4,12 +4,11 @@
 	import { createPopperActions } from 'svelte-popperjs';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
 	import tooltip from '$lib/attachments/tooltip';
-	import type { AnyPayload, Container } from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 	import type { PayloadType } from '$lib/models';
 
 	interface Props {
-		parent: Container<AnyPayload>;
+		managedBy: string | string[];
 		onchange: (event: Event) => void;
 		options: {
 			label: string;
@@ -18,7 +17,7 @@
 		}[];
 	}
 
-	let { onchange, options, parent }: Props = $props();
+	let { onchange, options, managedBy }: Props = $props();
 
 	const menu = createMenu({ label: $_('add_item') });
 
@@ -47,7 +46,7 @@
 	<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 		<ul class="menu">
 			{#each options as option (option.value)}
-				{#if $mayCreateContainer(option.type, parent)}
+				{#if $mayCreateContainer(option.type, managedBy)}
 					<li class="menu-item">
 						<button
 							use:menu.item={{

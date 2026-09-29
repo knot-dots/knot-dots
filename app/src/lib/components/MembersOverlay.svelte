@@ -7,13 +7,10 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		grants: Grant[];
-		inheritedGrants?: Grant[];
-		inheritedUsers?: User[];
-		scope?: Container<AnyPayload>;
 		users: User[];
 	}
 
-	let { container, grants, inheritedGrants, inheritedUsers, scope, users }: Props = $props();
+	let { container, grants, users }: Props = $props();
 </script>
 
 <Header workspaceOptions={[]} />
@@ -21,7 +18,7 @@
 <div class="content">
 	<div class="details details-scroll-wrapper">
 		<div class="details-section">
-			<Members {container} {grants} {inheritedGrants} {inheritedUsers} {scope} {users} />
+			<Members {container} {grants} {users} />
 		</div>
 	</div>
 

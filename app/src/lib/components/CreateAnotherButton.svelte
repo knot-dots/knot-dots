@@ -81,12 +81,13 @@
 	);
 
 	function createDraft(container: Container<AnyPayload>, type: PayloadType) {
-		// the derived container is a sibling of the original: it keeps the
-		// original's manager, and its relations are derived below instead of the
-		// is-part-of default towards the scope
-		const derived = containerOfType(type, container) as NewContainer;
-		derived.managed_by = container.managed_by;
-		derived.relation = [];
+		const derived = containerOfType(
+			type,
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			container.realm
+		) as NewContainer;
 
 		derived.payload = {
 			...derived.payload,

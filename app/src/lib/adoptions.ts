@@ -10,6 +10,7 @@ import {
 	type Relation,
 	visibility
 } from '$lib/models';
+import type { User } from '$lib/stores';
 
 export function isAdoptableProgram(container: Container<AnyPayload>): boolean {
 	return (
@@ -20,12 +21,16 @@ export function isAdoptableProgram(container: Container<AnyPayload>): boolean {
 }
 
 export function organizationalUnitsManagedByUser(
+	user: User,
 	program: { organizational_unit: string | null },
 	organizationalUnits: Array<Container<OrganizationalUnitPayload>>
 ): Array<Container<OrganizationalUnitPayload>> {
 	return organizationalUnits.filter(
 		(unit) =>
-			unit.guid !== program.organizational_unit && unit.user_grant?.subordinates.includes('create')
+			unit.guid !== program.organizational_unit &&
+			user.grants.subordinates.create.some(
+				(guid) => guid === unit.guid || guid === unit.organization
+			)
 	);
 }
 

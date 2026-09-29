@@ -4,18 +4,19 @@
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
-	import { ability } from '$lib/stores';
+	import { env } from '$env/dynamic/public';
 	import saveContainer from '$lib/client/saveContainer';
 	import saveTaskPriority from '$lib/client/saveTaskPriority';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import {
-		payloadTypes,
-		containerOfType,
 		type Container,
+		containerOfType,
+		payloadTypes,
 		type Status,
 		type TaskPayload
 	} from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		addItemUrl?: string;
@@ -27,12 +28,13 @@
 
 	let { addItemUrl, onSort, itemSnippet, items = [], status }: Props = $props();
 
-	// a task created here belongs to the current scope, so the stub carries
-	// the grants derived from the scope for the ability check
 	function containerOfTypeTask() {
 		return containerOfType(
 			payloadTypes.enum.task,
-			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM
 		);
 	}
 

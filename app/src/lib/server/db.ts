@@ -52,7 +52,7 @@ import {
 	visibility
 } from '$lib/models';
 import { isMeasureTemplateScope } from '$lib/templateScopes';
-import { enrichContainers } from '$lib/server/computeUserGrants';
+import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import {
 	type CopyGraphSnapshot,
 	type NewContainerWithGuid,
@@ -543,9 +543,7 @@ export function createManyContainers(inserts: readonly NewContainerWithGuid[]) {
 	};
 }
 
-export function createContainer(
-	container: NewContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
-) {
+export function createContainer(container: NewContainer) {
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		const result = await connection.transaction(async (txConnection) => {
 			let organizationGuid;
@@ -568,12 +566,11 @@ export function createContainer(
 					RETURNING *
 				`)
 				: await txConnection.one(sql.typeAlias('anyContainer')`
-					INSERT INTO container (managed_by, organization, organizational_unit, own_matrix, payload, realm)
+					INSERT INTO container (managed_by, organization, organizational_unit, payload, realm)
 					VALUES (
 						${container.managed_by[0]},
 						${container.organization},
 						${container.organizational_unit},
-						${container.own_matrix ?? false},
 						${sql.jsonb(container.payload)},
 						${container.realm}
 					)
@@ -614,12 +611,7 @@ export function createContainer(
 				`);
 			}
 
-			// the caller hands the created container straight back to the client,
-			// so it carries the request user's grants like any read result
-			const [created] = await enrichContainers(txConnection, [
-				{ ...containerResult, relation: [...relationResult], user: [...userResult] }
-			]);
-			return created;
+			return { ...containerResult, relation: [...relationResult], user: [...userResult] };
 		});
 
 		await enqueueContainerUpserts([
@@ -631,9 +623,7 @@ export function createContainer(
 	};
 }
 
-export function updateContainer(
-	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>
-) {
+export function updateContainer(container: ModifiedContainer) {
 	return async (connection: DatabaseConnection) => {
 		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
 			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
@@ -645,13 +635,12 @@ export function updateContainer(
 			`);
 
 			const containerResult = await txConnection.one(sql.typeAlias('anyContainer')`
-				INSERT INTO container (guid, managed_by, organization, organizational_unit, own_matrix, payload, realm)
+				INSERT INTO container (guid, managed_by, organization, organizational_unit, payload, realm)
 				VALUES (
 					${container.guid},
 					${container.managed_by[0]},
 					${container.organization},
 					${container.organizational_unit},
-					${container.own_matrix ?? false},
 					${sql.jsonb(container.payload)},
 					${container.realm}
 				)
@@ -701,12 +690,9 @@ export function updateContainer(
 				await bulkUpdateManagedBy(previousRevision, container.managed_by[0])(txConnection);
 			}
 
-			const [updated] = await enrichContainers(txConnection, [
-				{ ...containerResult, relation: container.relation, user: userResult }
-			]);
 			return {
 				affectedGuids: affectedContainerGuids([...deletedRelations, ...container.relation]),
-				result: updated
+				result: { ...containerResult, relation: container.relation, user: userResult }
 			};
 		});
 
@@ -949,7 +935,7 @@ export function getContainerByGuid(guid: string) {
 			relation: relationResult.map((r) => r),
 			user: userResult.map(({ predicate, subject }) => ({ predicate, subject }))
 		};
-		const [withComputed] = await enrichContainers(connection, [container]);
+		const [withComputed] = await applyComputedManagedBy(connection, [container]);
 		return withComputed;
 	};
 }
@@ -1055,7 +1041,7 @@ export function getContainerCopyGraph(rootGuid: string) {
 
 		return {
 			rootGuid,
-			containers: await enrichContainers(
+			containers: await applyComputedManagedBy(
 				connection,
 				await withUserAndRelation<Container<AnyPayload>>(connection, containerResult)
 			)
@@ -1095,7 +1081,7 @@ export function getAllContainerRevisionsByGuid(guid: string) {
 
 		// All revisions share the guid, so they uniformly receive the value computed
 		// from the current state.
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			containerResult.map((c) => ({
 				...c,
@@ -1450,7 +1436,7 @@ export function getManyContainers(
 			${options?.limit && Number.isInteger(options.limit) && options.limit >= 0 ? sql.fragment`LIMIT ${options.limit}` : sql.fragment``}
 			${options?.offset && Number.isInteger(options.offset) && options.offset > 0 ? sql.fragment`OFFSET ${options.offset}` : sql.fragment``}
 		`)) as Container<AnyPayload>[];
-		return enrichContainers(connection, containers);
+		return applyComputedManagedBy(connection, containers);
 	};
 }
 
@@ -1490,7 +1476,7 @@ export function getManyOrganizationContainers(
 			ORDER BY ${orderBy};
     `);
 
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			await withUserAndRelation<Container<OrganizationPayload>>(connection, containerResult)
 		);
@@ -1609,7 +1595,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name';
 		`)) as Container<OrganizationalUnitPayload>[];
-		return enrichContainers(connection, containerResult);
+		return applyComputedManagedBy(connection, containerResult);
 	};
 }
 
@@ -1668,7 +1654,7 @@ export function getAllRelatedOrganizationalUnitContainers(guid: string) {
 			JOIN container_user_result u ON c.guid = u.guid
 			ORDER BY payload->>'level', payload->>'name'
 		`)) as Container<OrganizationalUnitPayload>[];
-		return enrichContainers(connection, containerResult);
+		return applyComputedManagedBy(connection, containerResult);
 	};
 }
 
@@ -1803,7 +1789,7 @@ export function getAllRelatedContainers(
 		`)
 				: [];
 
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			await withUserAndRelation<Container>(connection, [
 				...containerResult,
@@ -1858,7 +1844,7 @@ export function getAllRelatedContainersByProgramType(
 				`)
 				: [];
 
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			await withUserAndRelation<Container>(connection, containerResult)
 		);
@@ -1948,7 +1934,7 @@ export function getAllContainersRelatedToIndicators(
 				)})
 		`);
 
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			await withUserAndRelation<Container>(connection, containerResult)
 		);
@@ -2080,7 +2066,7 @@ export function getAllContainersRelatedToProgram(
 			`)
 				: [];
 
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			await withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult])
 		);
@@ -2194,7 +2180,7 @@ export function getAllContainersRelatedToMeasure(
 			`)
 				: [];
 
-		return enrichContainers(
+		return applyComputedManagedBy(
 			connection,
 			await withUserAndRelation<Container>(connection, [...containerResult, ...indicatorResult])
 		);
@@ -2229,7 +2215,10 @@ export function getAllContainersRelatedToUser(guid: string) {
 				AND c.payload->'assignee' ? ${guid}
 			ORDER BY valid_from DESC
 		`);
-		return enrichContainers(connection, await withUserAndRelation(connection, containerResult));
+		return applyComputedManagedBy(
+			connection,
+			await withUserAndRelation(connection, containerResult)
+		);
 	};
 }
 

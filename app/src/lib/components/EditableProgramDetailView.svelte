@@ -6,6 +6,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import autoSave from '$lib/client/autoSave';
 	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
@@ -202,7 +203,10 @@
 
 		const chapter = containerOfType(
 			(event as CustomEvent).detail.selected as PayloadType,
-			container
+			container.organization,
+			container.organizational_unit,
+			container.managed_by,
+			env.PUBLIC_KC_REALM as string
 		) as NewContainer;
 
 		chapter.relation = [
@@ -307,7 +311,7 @@
 							/>
 						</form>
 					{:else}
-						{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, container)) )}
+						{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, page.data.currentOrganization.guid, page.data.currentOrganizationalUnit?.guid ?? null, container.managed_by, env.PUBLIC_KC_REALM)) )}
 							<div class="details-section">
 								<DropDownMenu
 									handleChange={createContainer}

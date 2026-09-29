@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
 	import saveContainer from '$lib/client/saveContainer';
 	import type {
 		EditableTableDataRow,
@@ -304,7 +305,7 @@
 			!customActualDataContainer &&
 			$mayCreateContainer(
 				payloadTypes.enum.actual_data,
-				page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+				(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid
 			)
 		) {
 			actualDataRows.push({
@@ -457,7 +458,10 @@
 
 		const newActualDataContainer = containerOfType(
 			payloadTypes.enum.actual_data,
-			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
+			page.data.currentOrganization.guid,
+			page.data.currentOrganizationalUnit?.guid ?? null,
+			page.data.currentOrganizationalUnit?.guid ?? page.data.currentOrganization.guid,
+			env.PUBLIC_KC_REALM as string
 		) as NewContainer<ActualDataPayload>;
 
 		newActualDataContainer.payload = {

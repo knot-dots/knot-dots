@@ -16,12 +16,7 @@ vi.mock('$lib/server/db', () => ({
 }));
 
 import { POST } from './+server';
-import {
-	composeUserGrants,
-	grantRecordsForRoleOn,
-	grantSetForRole,
-	memberRoles
-} from '$lib/models';
+import { grantRecordsForRoleOn, grantSetForRole, memberRoles } from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const measureGuid = '00000000-0000-4000-8000-000000000002';
@@ -42,19 +37,6 @@ const admin = {
 const administratorSet = grantSetForRole(memberRoles.enum.administrator);
 const headSet = grantSetForRole(memberRoles.enum.head);
 
-// the containers arrive at the endpoint enriched with the grants of the
-// request user — an administrator of the organization in these tests
-const userGrants = (guid: string) =>
-	composeUserGrants({
-		scopeSourced: true,
-		governsItself: guid === organizationGuid,
-		organizationSelf: administratorSet.self,
-		organizationalUnitSelf: [],
-		source: organizationGuid,
-		sourceSelf: administratorSet.self,
-		sourceSubordinates: administratorSet.subordinates
-	});
-
 function organization(adminSubjects: string[]) {
 	return {
 		guid: organizationGuid,
@@ -63,7 +45,6 @@ function organization(adminSubjects: string[]) {
 		organizational_unit: null,
 		payload: { name: 'Org', type: 'organization', visibility: 'public' },
 		relation: [],
-		user_grant: userGrants(organizationGuid),
 		user: [
 			...adminSubjects.map((subject) => ({ predicate: 'is-admin-of', subject })),
 			...adminSubjects.map((subject) => ({ predicate: 'is-member-of', subject })),
@@ -80,7 +61,6 @@ function measure() {
 		organizational_unit: null,
 		payload: { title: 'Measure', type: 'measure', visibility: 'organization' },
 		relation: [],
-		user_grant: userGrants(measureGuid),
 		user: [{ predicate: 'is-member-of', subject: memberGuid }]
 	};
 }
@@ -141,18 +121,14 @@ test('a subject granted every kind becomes an administrator', async () => {
 	expect(setContainerGrants).toHaveBeenCalledWith(organizationGuid, memberGuid, administratorSet);
 });
 
-test('a subject granted every kind on a measure becomes its administrator', async () => {
+test('rejects the full grant set on other container types', async () => {
 	getContainerByGuid.mockReturnValue(measure());
 
-	const response = await post(measureGuid, { subject: memberGuid, ...administratorSet });
-
-	expect(response.status).toBe(204);
-	expect(updateMemberRole).toHaveBeenCalledWith(
-		expect.objectContaining({ guid: measureGuid }),
-		memberGuid,
-		'administrator'
-	);
-	expect(setContainerGrants).toHaveBeenCalledWith(measureGuid, memberGuid, administratorSet);
+	await expect(
+		post(measureGuid, { subject: memberGuid, ...administratorSet })
+	).rejects.toMatchObject({ status: 422 });
+	expect(updateMemberRole).not.toHaveBeenCalled();
+	expect(setContainerGrants).not.toHaveBeenCalled();
 });
 
 test('rejects kinds that are not available for the target', async () => {
@@ -207,42 +183,4 @@ test('empty grant sets remove the subject', async () => {
 		self: [],
 		subordinates: []
 	});
-});
-
-test('assigning rows to an inheriting measure decouples it', async () => {
-	getContainerByGuid.mockReturnValue({
-		...measure(),
-		own_matrix: false,
-		payload: { title: 'Measure', type: 'measure', visibility: 'organization' }
-	});
-
-	const response = await post(measureGuid, {
-		subject: memberGuid,
-		self: ['read'],
-		subordinates: ['read', 'update']
-	});
-
-	expect(response.status).toBe(204);
-	expect(updateMemberRole).toHaveBeenCalledWith(
-		expect.objectContaining({ own_matrix: true }),
-		memberGuid,
-		'observer'
-	);
-});
-
-test('removing rows leaves the inheritance untouched', async () => {
-	getContainerByGuid.mockReturnValue({
-		...measure(),
-		own_matrix: false,
-		payload: { title: 'Measure', type: 'measure', visibility: 'organization' }
-	});
-
-	const response = await post(measureGuid, { subject: memberGuid, self: [], subordinates: [] });
-
-	expect(response.status).toBe(204);
-	expect(updateMemberRole).toHaveBeenCalledWith(
-		expect.objectContaining({ own_matrix: false }),
-		memberGuid,
-		null
-	);
 });
