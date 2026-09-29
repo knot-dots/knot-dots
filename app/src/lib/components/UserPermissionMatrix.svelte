@@ -242,17 +242,6 @@
 </div>
 
 <style>
-	.table-wrapper {
-		overflow: auto;
-		position: relative;
-	}
-
-	:global(.details-section) > .table-wrapper {
-		margin-left: calc(var(--details-section-padding-x) * -1);
-		margin-right: calc(var(--details-section-padding-x) * -1);
-		max-width: calc(100% + 2 * var(--details-section-padding-x));
-	}
-
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
