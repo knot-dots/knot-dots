@@ -12,14 +12,14 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	} = await parent();
 
 	return {
-		...fetchTemplates({
+		...(await fetchTemplates({
 			pool: locals.pool,
 			user: locals.user,
 			url,
 			rawCategoryContext,
 			currentOrganization,
 			currentOrganizationalUnit
-		}),
+		})),
 		title: unwrapFunctionStore(_)('workspace.templates.title')
 	};
 }) satisfies PageServerLoad;
