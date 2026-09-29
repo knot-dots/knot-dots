@@ -2940,8 +2940,7 @@ export function containerOfType(payloadType: PayloadType, scope: Container<AnyPa
 		: scope.organizational_unit;
 	return {
 		...(createNewContainerSchema(anyInitialPayload).parse({
-			managed_by:
-				payloadType == payloadTypes.enum.organizational_unit ? scope.organization : scope.guid,
+			managed_by: isArea ? scope.guid : scope.managed_by,
 			organization: scope.organization,
 			organizational_unit:
 				payloadType == payloadTypes.enum.organizational_unit ? null : organizationalUnit,

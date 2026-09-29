@@ -829,6 +829,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			predicates.enum['is-head-of'],
 			predicates.enum['is-member-of']
 		]);
+		testProgram.managed_by = [testProgram.guid];
 
 		await use(testProgram);
 
