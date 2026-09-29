@@ -14,6 +14,8 @@ export const mcpParentRelationPredicates = z.enum([
 	predicates.enum['is-part-of-measure']
 ]);
 
+export type McpParentRelationPredicate = z.infer<typeof mcpParentRelationPredicates>;
+
 const parentRelation = z.strictObject({
 	parentGuid: z
 		.uuid()
@@ -21,7 +23,7 @@ const parentRelation = z.strictObject({
 			'GUID of an existing parent container that is visible to you in the same organization.'
 		),
 	predicate: mcpParentRelationPredicates.describe(
-		'Structural relation from the new container to the parent.'
+		'Structural relation from the new container to the parent. is-part-of-program needs a program, is-part-of-measure a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, and knowledge below knowledge.'
 	)
 });
 

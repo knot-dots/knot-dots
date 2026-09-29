@@ -7,14 +7,17 @@ import {
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
 	isPageContainer,
+	isProgramContainer,
 	payloadTypes,
 	predicates,
+	type PayloadType,
 	type AnyPayload,
 	type Container,
 	type CustomCollectionPayload,
 	type NewContainer
 } from '$lib/models';
 import { organizationScopeAsFilter } from '$lib/organizationScope';
+import { isMeasureTemplateScope } from '$lib/templateScopes';
 import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
 import {
 	getAllDirectContainerRelations,
@@ -27,6 +30,7 @@ import { loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import {
 	addCustomCollectionSectionToolName,
 	createContainerToolName,
+	type McpParentRelationPredicate,
 	type AddCustomCollectionSectionInput,
 	type AddCustomCollectionSectionOutput,
 	type CreateContainerInput
@@ -109,6 +113,33 @@ function createAndRecordContainer({
 	};
 }
 
+// Parent types allowed for is-part-of, following the parents the web
+// application offers for each type.
+const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> = {
+	[payloadTypes.enum.goal]: [payloadTypes.enum.goal],
+	[payloadTypes.enum.knowledge]: [payloadTypes.enum.knowledge],
+	[payloadTypes.enum.measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
+	[payloadTypes.enum.simple_measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
+	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
+};
+
+// Structural relations drive hierarchy, grants and ownership, so the parent
+// must be of a type the relation is meant for.
+function isValidParent(
+	type: PayloadType,
+	predicate: McpParentRelationPredicate,
+	parent: Container<AnyPayload>
+) {
+	switch (predicate) {
+		case predicates.enum['is-part-of-program']:
+			return isProgramContainer(parent);
+		case predicates.enum['is-part-of-measure']:
+			return isMeasureTemplateScope(parent);
+		case predicates.enum['is-part-of']:
+			return isPartOfParentTypes[type]?.includes(parent.payload.type) ?? false;
+	}
+}
+
 export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
 		runAsRequestUser(input.userId, async () => {
@@ -143,6 +174,14 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				throw new McpCreationError('Parent container not found or inaccessible.');
 			}
 			const parentsByGuid = new Map(parents.map((parent) => [parent.guid, parent]));
+			for (const { parentGuid, predicate } of input.parentRelations) {
+				const parent = parentsByGuid.get(parentGuid);
+				if (parent && !isValidParent(input.payload.type, predicate, parent)) {
+					throw new McpCreationError(
+						`A ${parent.payload.type} cannot be the ${predicate} parent of a ${input.payload.type}.`
+					);
+				}
+			}
 
 			// Like a container created within its parents in the web application,
 			// the container belongs to the organizational unit of its parents,

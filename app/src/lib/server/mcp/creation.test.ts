@@ -217,6 +217,7 @@ test('uses the organizational unit as owner when creating in a unit', async () =
 });
 
 test('appends structural parent relations using server-assigned positions', async () => {
+	const parentGoalGuid = '00000000-0000-4000-8000-00000000000d';
 	mocks.containers.set(
 		parentGuid,
 		container(
@@ -224,18 +225,19 @@ test('appends structural parent relations using server-assigned positions', asyn
 			{ title: 'Climate program', type: 'program' },
 			{
 				relation: [
-					{
-						object: parentGuid,
-						position: 4,
-						predicate: 'is-part-of-program',
-						subject: pageGuid
-					},
-					{
-						object: parentGuid,
-						position: 2,
-						predicate: 'is-part-of',
-						subject: organizationGuid
-					}
+					{ object: parentGuid, position: 4, predicate: 'is-part-of-program', subject: pageGuid }
+				]
+			}
+		)
+	);
+	mocks.containers.set(
+		parentGoalGuid,
+		container(
+			parentGoalGuid,
+			{ title: 'Climate neutrality', type: 'goal' },
+			{
+				relation: [
+					{ object: parentGoalGuid, position: 2, predicate: 'is-part-of', subject: pageGuid }
 				]
 			}
 		)
@@ -244,7 +246,7 @@ test('appends structural parent relations using server-assigned positions', asyn
 		organizationGuid,
 		parentRelations: [
 			{ parentGuid, predicate: 'is-part-of-program' },
-			{ parentGuid, predicate: 'is-part-of' }
+			{ parentGuid: parentGoalGuid, predicate: 'is-part-of' }
 		],
 		payload: { title: 'New goal', type: 'goal' }
 	});
@@ -256,7 +258,7 @@ test('appends structural parent relations using server-assigned positions', asyn
 		data: expect.objectContaining({
 			relation: [
 				{ object: parentGuid, position: 5, predicate: 'is-part-of-program' },
-				{ object: parentGuid, position: 3, predicate: 'is-part-of' }
+				{ object: parentGoalGuid, position: 3, predicate: 'is-part-of' }
 			]
 		}),
 		features: [],
@@ -499,4 +501,42 @@ test('rejects parents of different units', async () => {
 	await expect(createGoalInProgram(null, [parentGuid, otherProgramGuid])).rejects.toThrow(
 		'All parents must belong to the same organizational unit.'
 	);
+});
+
+test.each([
+	['goal', 'is-part-of-program', 'task'],
+	['goal', 'is-part-of-measure', 'program'],
+	['goal', 'is-part-of', 'program'],
+	['task', 'is-part-of', 'task'],
+	['page', 'is-part-of', 'goal']
+] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
+	const input = createContainerInput.parse({
+		organizationGuid,
+		parentRelations: [{ parentGuid, predicate }],
+		payload: type === 'page' ? { body: '', title: 'Page', type } : { title: 'Child', type }
+	});
+
+	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(
+		`A ${parentType} cannot be the ${predicate} parent of a ${type}.`
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test.each([
+	['measure', 'is-part-of-measure', 'simple_measure'],
+	['task', 'is-part-of', 'measure'],
+	['knowledge', 'is-part-of', 'knowledge'],
+	['measure', 'is-part-of-program', 'program']
+] as const)('accepts a %s %s a %s', async (type, predicate, parentType) => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
+	const input = createContainerInput.parse({
+		organizationGuid,
+		parentRelations: [{ parentGuid, predicate }],
+		payload: { title: 'Child', type }
+	});
+
+	await createMcpContainer({ ...input, tokenId, userId })({} as never);
+
+	expect(mocks.createAuthorizedContainer).toHaveBeenCalledOnce();
 });
