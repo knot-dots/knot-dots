@@ -57,12 +57,10 @@
 	);
 
 	function createItem() {
-		const item = {
-			// items join the collection's manager; relations follow separately
-			...containerOfType(payloadTypes.enum.measure, container),
-			managed_by: container.managed_by,
-			relation: []
-		} as NewContainer<MeasurePayload>;
+		const item = containerOfType(
+			payloadTypes.enum.measure,
+			parentContainer
+		) as NewContainer<MeasurePayload>;
 
 		if (isMeasureContainer(parentContainer)) {
 			item.payload.category = parentContainer.payload.category;

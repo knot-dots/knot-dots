@@ -57,12 +57,7 @@
 			return;
 		}
 
-		const item = {
-			// items join the collection's manager; relations follow separately
-			...containerOfType(payloadTypes.enum.goal, container),
-			managed_by: container.managed_by,
-			relation: []
-		} as NewContainer;
+		const item = containerOfType(payloadTypes.enum.goal, parentContainer) as NewContainer;
 
 		item.relation = [
 			{ object: parentContainer.guid, position: 0, predicate: predicates.enum['is-part-of'] },

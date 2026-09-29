@@ -41,12 +41,7 @@
 	);
 
 	function addItem() {
-		$newContainer = {
-			// items join the collection's manager; relations follow separately
-			...containerOfType(payloadTypes.enum.program, container),
-			managed_by: container.managed_by,
-			relation: []
-		} as NewContainer;
+		$newContainer = containerOfType(payloadTypes.enum.program, parentContainer) as NewContainer;
 
 		createContainerDialog.getElement().showModal();
 	}
