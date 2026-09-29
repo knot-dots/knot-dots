@@ -303,10 +303,6 @@
 		);
 	}
 
-	input[type='checkbox'] {
-		accent-color: var(--color-primary-700);
-	}
-
 	td.locked input[type='checkbox'] {
 		accent-color: var(--color-gray-600);
 	}

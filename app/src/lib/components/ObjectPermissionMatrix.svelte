@@ -592,25 +592,6 @@
 		background-color: var(--color-green-700);
 	}
 
-	input[type='checkbox']:not(.toggle) {
-		appearance: none;
-		background-color: var(--color-gray-025);
-		border: 1px solid var(--color-gray-200);
-		border-radius: 4px;
-		height: 1rem;
-		margin: 0;
-		width: 1rem;
-	}
-
-	input[type='checkbox']:not(.toggle):checked {
-		background-color: var(--color-primary-700);
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2 6.5L4.5 9L10 3.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-		background-position: center;
-		background-repeat: no-repeat;
-		background-size: 0.625rem;
-		border-color: var(--color-primary-700);
-	}
-
 	td.locked input[type='checkbox'] {
 		cursor: not-allowed;
 	}
