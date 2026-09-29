@@ -110,13 +110,7 @@
 			!hasIndividualProfileRelation &&
 			$ability.can(
 				'create',
-				containerOfType(
-					payloadTypes.enum.organizational_unit,
-					container.organization,
-					null,
-					container.organization,
-					container.realm
-				)
+				containerOfType(payloadTypes.enum.organizational_unit, page.data.currentOrganization)
 			)
 	);
 

@@ -8,6 +8,7 @@
 	import { getToastContext } from '$lib/contexts/toast';
 	import {
 		type Container,
+		containerOfType,
 		paramsFromFragment,
 		payloadTypes,
 		type ProgramPayload
@@ -71,7 +72,7 @@
 	}
 </script>
 
-{#if container.payload.pdf.length > 0 && $ability.can('create', payloadTypes.enum.goal)}
+{#if container.payload.pdf.length > 0 && $ability.can('create', containerOfType(payloadTypes.enum.goal, container))}
 	<button
 		class="button-ai"
 		class:is-active={isThinking}

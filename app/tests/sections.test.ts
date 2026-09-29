@@ -295,10 +295,7 @@ test('computed progress appears on cards with a single request', async ({
 	for (const parent of [testGoal, testSubordinateGoal]) {
 		const newSection = containerOfType(
 			payloadTypes.enum.progress,
-			parent.organization,
-			null,
-			parent.managed_by,
-			'knot-dots'
+			parent
 		) as Container<ProgressPayload>;
 		sections.push(
 			await createContainer(adminContext, {

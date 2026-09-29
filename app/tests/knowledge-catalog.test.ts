@@ -15,16 +15,14 @@ test.describe('Knowledge catalog overlay', () => {
 		adminContext,
 		dotsBoard,
 		isMobile,
-		testGoal
+		testGoal,
+		testOrganization
 	}) => {
 		const suffix = test.info().project.name;
 		const makeKnowledge = (title: string) => {
 			const template = containerOfType(
 				payloadTypes.enum.knowledge,
-				testGoal.organization,
-				null,
-				testGoal.organization,
-				'knot-dots'
+				testOrganization
 			) as Container<KnowledgePayload>;
 			return createContainer(adminContext, {
 				...template,
@@ -58,8 +56,9 @@ test.describe('Knowledge catalog overlay', () => {
 		adminContext,
 		dotsBoard,
 		isMobile,
+		testCategoryWithTerms,
 		testGoal,
-		testCategoryWithTerms
+		testOrganization
 	}) => {
 		const { category, terms } = testCategoryWithTerms;
 		const categoryKey = category.payload.key as string;
@@ -71,10 +70,7 @@ test.describe('Knowledge catalog overlay', () => {
 		const makeKnowledge = (title: string, termValues: string[]) => {
 			const template = containerOfType(
 				payloadTypes.enum.knowledge,
-				testGoal.organization,
-				null,
-				testGoal.organization,
-				'knot-dots'
+				testOrganization
 			) as Container<KnowledgePayload>;
 			return createContainer(adminContext, {
 				...template,
@@ -128,8 +124,9 @@ test.describe('Knowledge catalog overlay', () => {
 		adminContext,
 		dotsBoard,
 		isMobile,
+		testCategoryWithTerms,
 		testGoal,
-		testCategoryWithTerms
+		testOrganization
 	}) => {
 		const { category, terms } = testCategoryWithTerms;
 		const categoryKey = category.payload.key as string;
@@ -149,10 +146,7 @@ test.describe('Knowledge catalog overlay', () => {
 		// Create a goal that has the first category term assigned
 		const goalTemplate = containerOfType(
 			payloadTypes.enum.goal,
-			testGoal.organization,
-			null,
-			testGoal.organization,
-			'knot-dots'
+			testOrganization
 		) as Container<GoalPayload>;
 		const goalWithCategory = await createContainer(adminContext, {
 			...goalTemplate,
@@ -166,10 +160,7 @@ test.describe('Knowledge catalog overlay', () => {
 		// Knowledge container whose categories match the goal — alphabetically second
 		const matchTemplate = containerOfType(
 			payloadTypes.enum.knowledge,
-			testGoal.organization,
-			null,
-			testGoal.organization,
-			'knot-dots'
+			testOrganization
 		) as Container<KnowledgePayload>;
 		const knowledgeMatch = (await createContainer(adminContext, {
 			...matchTemplate,
@@ -183,10 +174,7 @@ test.describe('Knowledge catalog overlay', () => {
 		// Knowledge container with no categories — alphabetically first
 		const noMatchTemplate = containerOfType(
 			payloadTypes.enum.knowledge,
-			testGoal.organization,
-			null,
-			testGoal.organization,
-			'knot-dots'
+			testOrganization
 		) as Container<KnowledgePayload>;
 		const knowledgeNoMatch = (await createContainer(adminContext, {
 			...noMatchTemplate,

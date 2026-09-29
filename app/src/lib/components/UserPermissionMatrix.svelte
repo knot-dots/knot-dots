@@ -20,8 +20,6 @@
 		grantTargets,
 		grantSetForRole,
 		grantSetForSubjectOn,
-		isOrganizationalUnitContainer,
-		isOrganizationContainer,
 		type MemberRole,
 		memberRoleMatchingGrantSet,
 		memberRoles,
@@ -49,17 +47,12 @@
 		}
 	];
 
-	// administrators exist on organizations and organizational units only
-	const selectableRoles = $derived(
-		isOrganizationContainer(container) || isOrganizationalUnitContainer(container)
-			? [
-					memberRoles.enum.administrator,
-					memberRoles.enum.head,
-					memberRoles.enum.collaborator,
-					memberRoles.enum.observer
-				]
-			: [memberRoles.enum.head, memberRoles.enum.collaborator, memberRoles.enum.observer]
-	);
+	const selectableRoles = [
+		memberRoles.enum.administrator,
+		memberRoles.enum.head,
+		memberRoles.enum.collaborator,
+		memberRoles.enum.observer
+	];
 
 	const roleColors: Record<MemberRole, string> = {
 		administrator: 'orange',

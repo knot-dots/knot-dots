@@ -54,10 +54,7 @@
 	function handleCreateOrgUnit(level: number, parentGuid?: string) {
 		const container = containerOfType(
 			payloadTypes.enum.organizational_unit,
-			page.data.currentOrganization.guid,
-			null,
-			page.data.currentOrganization.guid,
-			env.PUBLIC_KC_REALM as string
+			page.data.currentOrganization
 		) as NewContainer<OrganizationalUnitPayload>;
 
 		container.payload.level = level;
@@ -126,7 +123,7 @@
 	}
 
 	let canCreateOrgUnit = $derived(
-		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization.guid)
+		$mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization)
 	);
 
 	function filterTree(items: OrgUnitTreeItem[], query: string): OrgUnitTreeItem[] {

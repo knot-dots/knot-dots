@@ -25,7 +25,8 @@ const rolePredicates = [
  * Computes the `computed_managed_by` values for the given containers: all teams
  * along the hierarchy, derived at read time from the is-part-of chains and team
  * memberships. For each container the result contains
- *   - the container's own guid, if it has a team (a direct role membership), and
+ *   - the container's own guid, if it has a team (a direct role membership, or a
+ *     grant matrix of its own after opting out of inherited grants), and
  *   - the guid of every ancestor that has a team,
  * ordered nearest-first (the container's own team before its program's team). A
  * measure within a teamed program is thus editable by both teams; under a
@@ -74,11 +75,17 @@ export async function computeManagedBy(
 				SELECT 1
 				FROM container c
 				WHERE c.guid = a.guid AND c.valid_currently AND NOT c.deleted
-					AND EXISTS (
-						SELECT 1
-						FROM container_user cu
-						WHERE cu.object = c.revision
-							AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
+					AND (
+						EXISTS (
+							SELECT 1
+							FROM container_user cu
+							WHERE cu.object = c.revision
+								AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
+						)
+						-- a container with a grant matrix of its own manages itself even
+						-- while that matrix has no members yet; otherwise it would fall
+						-- back to the scope, whose subordinate grants it just opted out of
+						OR c.own_matrix
 					)
 				LIMIT 1
 			) t ON true

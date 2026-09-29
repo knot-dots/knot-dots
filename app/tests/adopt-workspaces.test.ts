@@ -48,10 +48,7 @@ test.describe('Adopted content in workspaces', () => {
 		// in the adopting context.
 		const newRule = containerOfType(
 			payloadTypes.enum.rule,
-			defaultOrganization.guid,
-			null,
-			defaultOrganization.guid,
-			'knot-dots'
+			defaultOrganization
 		) as Container<RulePayload>;
 		const publicRule = await createProgramContainerFromTemplate(
 			adminContext,

@@ -1,7 +1,7 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 import { env as privateEnv } from '$env/dynamic/private';
 import { anyContainer, type AnyPayload, type Container, type PayloadType } from '$lib/models';
-import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
+import { enrichContainers } from '$lib/server/computeUserGrants';
 import { type ContainerQueryOptions, getPool } from '$lib/server/db';
 
 const es = new Client({
@@ -397,7 +397,7 @@ export async function getManyContainersWithES(
 
 	// Analogous to the database query functions: behind the feature flag the
 	// computed value replaces managed_by before authorization and clients see it.
-	const containers = await applyComputedManagedBy(await getPool(), parsedContainers);
+	const containers = await enrichContainers(await getPool(), parsedContainers);
 	const facets: FacetCounts = {};
 	if (options?.includeFacets !== false && aggregations) {
 		type TermsBucket = { key: string | number; key_as_string?: string; doc_count?: number };

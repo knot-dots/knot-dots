@@ -4,15 +4,27 @@ import { locale } from 'svelte-i18n';
 const getMembers = vi.hoisted(() => vi.fn());
 const getAllGrantsByContainers = vi.hoisted(() => vi.fn());
 const getAllRelatedUsersByContainers = vi.hoisted(() => vi.fn());
+const getContainerByGuid = vi.hoisted(() => vi.fn());
 
 locale.set('en');
 
 vi.mock('$lib/server/keycloak', () => ({ getMembers }));
 
-vi.mock('$lib/server/db', () => ({ getAllGrantsByContainers, getAllRelatedUsersByContainers }));
+vi.mock('$lib/server/db', () => ({
+	getAllGrantsByContainers,
+	getAllRelatedUsersByContainers,
+	getContainerByGuid
+}));
 
 import { load } from './+page.server';
-import { emptyGrantRecords, grantRecordsForRoleOn, memberRoles } from '$lib/models';
+import {
+	composeUserGrants,
+	emptyGrantRecords,
+	grantKinds,
+	grantRecordsForRoleOn,
+	grantTargets,
+	memberRoles
+} from '$lib/models';
 
 const organizationGuid = '00000000-0000-4000-8000-000000000001';
 const organizationalUnitGuid = '00000000-0000-4000-8000-000000000002';
@@ -44,6 +56,34 @@ function user(grants: ReturnType<typeof emptyGrantRecords>) {
 	};
 }
 
+// the containers from the layout arrive enriched with the request user's
+// grants; this mirrors computeUserGrants for the plain fixtures
+function enriched(
+	container: typeof currentOrganization,
+	grants: ReturnType<typeof emptyGrantRecords>
+) {
+	const kindsAt = (object: string, target: 'self' | 'subordinates') =>
+		grantKinds.options.filter((kind) => grants[target][kind].includes(object));
+	const holdsRowsOn = (object: string) =>
+		grantTargets.options.some((target) => kindsAt(object, target).length > 0);
+	const source =
+		container.payload.type === 'organization' || holdsRowsOn(container.guid)
+			? container.guid
+			: container.organization;
+	return {
+		...container,
+		user_grant: composeUserGrants({
+			scopeSourced: true,
+			governsItself: source === container.guid,
+			organizationSelf: kindsAt(container.organization, 'self'),
+			organizationalUnitSelf: [],
+			source,
+			sourceSelf: kindsAt(source, 'self'),
+			sourceSubordinates: kindsAt(source, 'subordinates')
+		})
+	};
+}
+
 function event(grants = emptyGrantRecords()) {
 	return {
 		locals: {
@@ -51,9 +91,9 @@ function event(grants = emptyGrantRecords()) {
 			user: user(grants)
 		},
 		parent: vi.fn().mockResolvedValue({
-			currentOrganization,
-			currentOrganizationalUnit,
-			organizationalUnits: [currentOrganizationalUnit]
+			currentOrganization: enriched(currentOrganization, grants),
+			currentOrganizationalUnit: enriched(currentOrganizationalUnit, grants),
+			organizationalUnits: [enriched(currentOrganizationalUnit, grants)]
 		})
 	} as never;
 }

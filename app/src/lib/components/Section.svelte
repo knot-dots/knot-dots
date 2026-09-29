@@ -130,7 +130,7 @@
 		<!-- The add menu is offered to anyone who may create sections here — text
 			is its unconditional first option — while sorting requires the update
 			grant on the section itself. -->
-		{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer.managed_by))}
+		{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer))}
 			<DraggableActionBar {container} draggable={$ability.can('update', container)}>
 				{#snippet actions()}
 					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />

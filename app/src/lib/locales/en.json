@@ -563,6 +563,13 @@
 		"update": "Edit"
 	},
 	"permission_matrix": {
+		"create_objects": "Create objects",
+		"delete_objects": "Delete objects",
+		"edit_objects": "Edit objects",
+		"edit_this": "Edit {type}",
+		"inherit_toggle": "Permissions are inherited",
+		"inherited_from": "Inherited from {name}",
+		"manage_permissions": "Manage permissions",
 		"subordinate_objects": "Subordinate objects",
 		"this_object": "This object"
 	},
@@ -702,6 +709,7 @@
 	"role": {
 		"admin": "Admin",
 		"administrator": "Administrator",
+		"author": "Author",
 		"collaborator": "Collaborator",
 		"custom": "Custom",
 		"head": "Head",
