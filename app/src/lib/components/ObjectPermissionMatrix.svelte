@@ -243,7 +243,7 @@
 					<span class="section-header">
 						<button
 							aria-expanded={inheritedExpanded}
-							class="quiet section-toggle"
+							class="section-toggle"
 							type="button"
 							onclick={() => (inheritedExpanded = !inheritedExpanded)}
 						>
@@ -312,7 +312,7 @@
 					<span class="section-header">
 						<button
 							aria-expanded={ownExpanded}
-							class="quiet section-toggle"
+							class="section-toggle"
 							type="button"
 							onclick={() => (ownExpanded = !ownExpanded)}
 						>
@@ -364,7 +364,7 @@
 							{#if editable && !inherits}
 								<button
 									aria-label={$_('user.remove')}
-									class="quiet remove-button"
+									class="action-button"
 									type="button"
 									onclick={() => removeSubject(user)}
 								>
@@ -378,7 +378,7 @@
 					<tr class="add-row">
 						<td colspan={columnCount + 1}>
 							<button
-								class="quiet add-button"
+								class="button-alternate button-xs system-primary"
 								disabled={!editable || inherits}
 								type="button"
 								onclick={oninvite}
@@ -677,42 +677,5 @@
 	.col-actions {
 		min-width: 3.5rem;
 		text-align: center;
-	}
-
-	.remove-button,
-	.add-button {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.25rem;
-	}
-
-	.remove-button {
-		background: none;
-		border: none;
-		border-radius: 8px;
-		color: var(--color-gray-700);
-		height: 2rem;
-		padding: 0 0.5rem;
-	}
-
-	.remove-button :global(svg),
-	.add-button :global(svg) {
-		height: 1rem;
-		width: 1rem;
-	}
-
-	.add-button {
-		background: none;
-		border: none;
-		border-radius: 4px;
-		color: var(--color-primary-700);
-		font-weight: 500;
-		min-height: 1.75rem;
-		padding: 0.375rem 0.5rem;
-	}
-
-	.add-button:disabled {
-		color: var(--color-gray-300);
-		cursor: not-allowed;
 	}
 </style>

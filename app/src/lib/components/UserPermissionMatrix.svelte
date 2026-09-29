@@ -213,7 +213,7 @@
 						{#if editable}
 							<button
 								aria-label={$_('user.remove')}
-								class="quiet remove-button"
+								class="action-button"
 								type="button"
 								onclick={() => removeSubject(user)}
 							>
@@ -226,7 +226,11 @@
 			{#if oninvite}
 				<tr class="add-row">
 					<td colspan={10}>
-						<button class="quiet add-button" type="button" onclick={oninvite}>
+						<button
+							class="button-alternate button-xs system-primary"
+							type="button"
+							onclick={oninvite}
+						>
 							<PlusIcon />
 							<span>{$_('add_item')}</span>
 						</button>
@@ -366,18 +370,7 @@
 		text-align: center;
 	}
 
-	.remove-button,
-	.add-button {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.25rem;
-	}
-
 	.add-row td {
 		border-right: none;
-	}
-
-	.add-button {
-		color: var(--color-primary-700);
 	}
 </style>
