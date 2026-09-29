@@ -605,3 +605,9 @@ test('rejects nesting measures deeper than the deepest hierarchy level', async (
 		])
 	).rejects.toThrow('Measures can be nested at most 6 levels deep.');
 });
+
+test('marks created content as AI-generated whatever the payload says', async () => {
+	await createWith({ aiContribution: 0, title: 'Climate goal', type: 'goal' });
+
+	expect(createdPayload()).toMatchObject({ aiContribution: 1 });
+});

@@ -110,6 +110,13 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 				}
 				throw error;
 			}
+			// The shared update checks lower the AI contribution when a person edits
+			// AI-generated content. An edit through MCP is made by an AI agent, so the
+			// content is at least AI-assisted afterwards and AI-generated content
+			// stays AI-generated; the patch cannot change the contribution.
+			if ('aiContribution' in current.payload && 'aiContribution' in payload) {
+				payload.aiContribution = Math.max(current.payload.aiContribution, 0.5);
+			}
 
 			let updated: Container<AnyPayload>;
 			try {

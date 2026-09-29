@@ -100,6 +100,13 @@ function createAndRecordContainer({
 	tool: string;
 	user: User;
 }) {
+	// Content created through MCP is written by an AI agent, so it is marked as
+	// AI-generated like the containers extracted by the AI endpoints, whatever
+	// the payload says.
+	if ('aiContribution' in data.payload) {
+		data.payload.aiContribution = 1;
+	}
+
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		try {
 			return await createAuthorizedContainer({

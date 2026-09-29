@@ -262,3 +262,23 @@ test('does not load categories if no category value is added', async () => {
 
 	expect(mocks.loadMcpCategoryContext).not.toHaveBeenCalled();
 });
+
+test.each([
+	[0, 0.5],
+	[0.5, 0.5],
+	[1, 1]
+])(
+	'sets an AI contribution of %s to %s when content is changed through MCP',
+	async (aiContribution, expected) => {
+		mocks.containers.set(guid, container({ aiContribution, title: 'Climate goal', type: 'goal' }));
+
+		await update({ aiContribution: 0.5 - aiContribution / 2, title: 'Renamed goal' });
+
+		expect(mocks.updateContainer).toHaveBeenCalledWith(
+			expect.objectContaining({
+				payload: expect.objectContaining({ aiContribution: expected, title: 'Renamed goal' })
+			}),
+			expect.anything()
+		);
+	}
+);
