@@ -6,12 +6,13 @@ import {
 	getMcpTokensForUser,
 	revokeMcpToken
 } from '$lib/server/db';
+import { mcpScopes } from '$lib/server/mcp/scopes';
 import { generateMcpToken } from '$lib/server/mcp/tokens';
 import type { Actions, PageServerLoad } from './$types';
 
 const tokenName = z.string().trim().min(1).max(100);
 const tokenId = z.uuid();
-const scopes = ['organizations:read'];
+const scopes = [mcpScopes.containersRead, mcpScopes.organizationsRead];
 
 function requireAuthenticatedUser(locals: App.Locals) {
 	if (!locals.user.isAuthenticated) {

@@ -9,8 +9,12 @@ const storage = new AsyncLocalStorage<string>();
 // request (workers, scripts, tests) the read paths see no user and skip the
 // enrichment.
 export const withRequestUser: Handle = ({ event, resolve }) =>
-	storage.run(event.locals.user.isAuthenticated ? event.locals.user.guid : '', () =>
+	runAsRequestUser(event.locals.user.isAuthenticated ? event.locals.user.guid : '', () =>
 		resolve(event)
 	);
+
+// Runs fn with guid as the request user, for requests that authenticate
+// outside the session, such as MCP requests with a personal access token.
+export const runAsRequestUser = <T>(guid: string, fn: () => T): T => storage.run(guid, fn);
 
 export const getRequestUser = () => storage.getStore() ?? '';
