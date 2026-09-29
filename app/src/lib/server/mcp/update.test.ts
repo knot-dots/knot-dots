@@ -25,6 +25,7 @@ vi.mock('$lib/server/computeManagedBy', () => ({
 	applyComputedManagedBy: async (_connection: unknown, containers: unknown[]) => containers
 }));
 vi.mock('$lib/server/db', () => ({
+	ContainerRevisionConflictError: class ContainerRevisionConflictError extends Error {},
 	getContainerByGuid: (guid: string) => async () => {
 		const container = mocks.containers.get(guid);
 		if (!container) {
@@ -51,6 +52,7 @@ vi.mock('$lib/server/mcp/userContext', () => ({
 }));
 
 import { UniqueIntegrityConstraintViolationError } from 'slonik';
+import { ContainerRevisionConflictError } from '$lib/server/db';
 import { updateContainerInput } from '$lib/server/mcp/contracts/update';
 import { updateMcpContainer } from '$lib/server/mcp/update';
 
@@ -124,7 +126,7 @@ test('merges the patch, writes a revision as the editor and records the write', 
 			relation: [relation],
 			user: [{ predicate: 'is-creator-of', subject: userId }]
 		}),
-		{ afterUpdate: expect.any(Function) }
+		{ afterUpdate: expect.any(Function), expectedRevision: 2 }
 	);
 	expect(updated.payload).not.toHaveProperty('description');
 	expect(mocks.recordMcpWriteEvent).toHaveBeenCalledExactlyOnceWith(
@@ -156,12 +158,8 @@ test('rejects a stale expected revision before writing', async () => {
 	expect(mocks.updateContainer).not.toHaveBeenCalled();
 });
 
-test('reports a concurrent revision detected while writing as a conflict', async () => {
-	mocks.updateContainer.mockRejectedValue(
-		new UniqueIntegrityConstraintViolationError(
-			Object.assign(new Error('duplicate key'), { constraint: 'container_guid_key' })
-		)
-	);
+test('reports a revision replaced while writing as a conflict', async () => {
+	mocks.updateContainer.mockRejectedValue(new ContainerRevisionConflictError());
 
 	await expect(update({ title: 'Renamed' })).rejects.toThrow(
 		'The container changed since revision 2.'

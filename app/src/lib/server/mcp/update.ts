@@ -6,7 +6,11 @@ import {
 import { getPayloadSchema, predicates, type AnyPayload, type Container } from '$lib/models';
 import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
 import { authorizeContainerUpdate, ContainerUpdateError } from '$lib/server/containerUpdate';
-import { recordMcpWriteEvent, updateContainer } from '$lib/server/db';
+import {
+	ContainerRevisionConflictError,
+	recordMcpWriteEvent,
+	updateContainer
+} from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 import {
@@ -113,16 +117,12 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 								tokenId: input.tokenId,
 								tool: updateContainerToolName,
 								userId: input.userId
-							})(txConnection)
+							})(txConnection),
+						expectedRevision: input.expectedRevision
 					}
 				)(connection);
 			} catch (error) {
-				// A concurrent revision makes the insert violate the uniqueness of the
-				// current revision.
-				if (
-					error instanceof UniqueIntegrityConstraintViolationError &&
-					error.constraint === 'container_guid_key'
-				) {
+				if (error instanceof ContainerRevisionConflictError) {
 					throw conflict(input.expectedRevision);
 				}
 				if (

@@ -20,6 +20,7 @@ import {
 	visibility
 } from '$lib/models';
 import {
+	ContainerRevisionConflictError,
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
@@ -2072,4 +2073,26 @@ test('derives grants from the member roles, the strongest role per container', a
 	expect(setFor(headedMeasure.guid)).toEqual(grantSetForRole(memberRoles.enum.head));
 	expect(setFor(observedProgram.guid)).toEqual(grantSetForRole(memberRoles.enum.observer));
 	expect(grants.every(({ subject }) => subject === member)).toBe(true);
+});
+
+test('updates fail if the expected revision is no longer current', async ({
+	connection
+}: Fixtures) => {
+	const goal = await createContainer(
+		initializeNewContainer(simplePayload(payloadTypes.enum.goal), [])
+	)(connection);
+	const renamed = (title: string) =>
+		modifiedContainer.parse({ ...goal, payload: { ...goal.payload, title } });
+
+	const first = await updateContainer(renamed('First change'), {
+		expectedRevision: goal.revision
+	})(connection);
+	await expect(
+		updateContainer(renamed('Stale change'), { expectedRevision: goal.revision })(connection)
+	).rejects.toBeInstanceOf(ContainerRevisionConflictError);
+
+	await expect(getContainerByGuid(goal.guid)(connection)).resolves.toMatchObject({
+		payload: { title: 'First change' },
+		revision: first.revision
+	});
 });
