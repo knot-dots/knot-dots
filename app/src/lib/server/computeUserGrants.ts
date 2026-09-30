@@ -87,30 +87,42 @@ export async function computeUserGrants(
 			FROM container c
 			WHERE c.guid = ANY(${sql.array(guids, 'uuid')}) AND c.valid_currently AND NOT c.deleted
 		),
+		-- The nearest decoupled ancestor is resolved once per root over the ancestry
+		-- rows. A correlated subselect per base row would rescan the whole ancestry
+		-- CTE for every container and every place row, which is quadratic in the
+		-- number of containers (tens of seconds for a few thousand).
+		decoupled_ancestor AS (
+			SELECT DISTINCT ON (a.root) a.root, a.guid
+			FROM ancestry a
+			JOIN LATERAL (
+				SELECT 1
+				FROM container c
+				WHERE c.guid = a.guid AND c.valid_currently AND NOT c.deleted AND c.own_matrix
+				LIMIT 1
+			) t ON true
+			WHERE a.depth > 0
+			ORDER BY a.root, a.depth ASC, a.guid ASC
+		),
+		decoupled_unit AS (
+			SELECT b.root, u.guid
+			FROM base b
+			JOIN LATERAL (
+				SELECT u.guid
+				FROM container u
+				WHERE u.guid = b.organizational_unit AND u.valid_currently AND NOT u.deleted
+					AND (
+						u.own_matrix
+						OR EXISTS (SELECT 1 FROM container_grant g WHERE g.object = u.guid)
+					)
+				LIMIT 1
+			) u ON true
+		),
 		source AS (
 			SELECT b.root,
-				CASE WHEN b.decoupled THEN b.root ELSE coalesce(
-					(
-						SELECT a.guid
-						FROM ancestry a
-						JOIN container c ON c.guid = a.guid AND c.valid_currently AND NOT c.deleted
-						WHERE a.root = b.root AND a.depth > 0
-							AND c.own_matrix
-						ORDER BY a.depth ASC, a.guid ASC
-						LIMIT 1
-					),
-					(
-						SELECT u.guid
-						FROM container u
-						WHERE u.guid = b.organizational_unit AND u.valid_currently AND NOT u.deleted
-							AND (
-								u.own_matrix
-								OR EXISTS (SELECT 1 FROM container_grant g WHERE g.object = u.guid)
-							)
-					),
-					b.organization
-				) END AS source
+				CASE WHEN b.decoupled THEN b.root ELSE coalesce(da.guid, du.guid, b.organization) END AS source
 			FROM base b
+			LEFT JOIN decoupled_ancestor da ON da.root = b.root
+			LEFT JOIN decoupled_unit du ON du.root = b.root
 		)
 		SELECT b.root AS guid, s.source,
 			s.source = b.organization OR coalesce(s.source = b.organizational_unit, false) AS scope_sourced,
@@ -197,14 +209,23 @@ export async function computeUserGrantsFromRoles(
 			)) AS parent(object)
 			WHERE NOT a.is_cycle
 		),
+		-- The LATERAL probe keeps the team check on per-row index lookups. Written
+		-- as a plain join with EXISTS, the planner flattens it into a semi join that
+		-- scans every container and container_user row once the ancestry grows
+		-- beyond a few hundred rows (seconds for a few thousand containers).
 		teamed AS (
 			SELECT DISTINCT ON (a.root) a.root, a.guid
 			FROM ancestry a
-			JOIN container c ON c.guid = a.guid AND c.valid_currently AND NOT c.deleted
-			WHERE EXISTS (
-				SELECT 1 FROM container_user cu
-				WHERE cu.object = c.revision AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
-			)
+			JOIN LATERAL (
+				SELECT 1
+				FROM container c
+				WHERE c.guid = a.guid AND c.valid_currently AND NOT c.deleted
+					AND EXISTS (
+						SELECT 1 FROM container_user cu
+						WHERE cu.object = c.revision AND cu.predicate = ANY(${sql.array(rolePredicates, 'text')})
+					)
+				LIMIT 1
+			) t ON true
 			ORDER BY a.root, a.depth ASC, a.guid ASC
 		),
 		base AS (
