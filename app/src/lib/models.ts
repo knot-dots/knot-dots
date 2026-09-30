@@ -3013,15 +3013,16 @@ export function findAncestors<T extends Container<AnyPayload>>(
 }
 
 // The types whose grant inheritance may restart at the container itself;
-// organizations and organizational units govern by their nature instead.
+// organizations govern by their nature instead.
 export const typesWithOwnMatrix: PayloadType[] = [
 	payloadTypes.enum.measure,
+	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.program,
 	payloadTypes.enum.simple_measure
 ];
 
-// Assigning roles or rows to an inheriting measure or program gives it a
-// matrix of its own: the write paths decouple it so the assigned rights act
+// Assigning roles or rows to an inheriting container gives it a matrix of
+// its own: the write paths decouple it so the assigned rights act
 // immediately, exactly as the inheritance toggle would. Rows keep resting
 // (they are never deleted) when the container starts inheriting again.
 export function withOwnMatrix<
