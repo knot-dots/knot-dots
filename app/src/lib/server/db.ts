@@ -702,14 +702,40 @@ export type AfterContainerUpdated = (
 	connection: DatabaseTransactionConnection
 ) => Promise<void>;
 
+export class ContainerRevisionConflictError extends Error {
+	constructor() {
+		super('The container revision is no longer current.');
+		this.name = 'ContainerRevisionConflictError';
+	}
+}
+
 // afterUpdate runs inside the updating transaction, before indexing events
 // are enqueued, so additional writes commit or roll back with the revision.
+// With expectedRevision, the update fails with a ContainerRevisionConflictError
+// unless that revision is still current. The current revision is locked for
+// the check, so a concurrent update waits and then finds it replaced.
 export function updateContainer(
 	container: ModifiedContainer & Partial<Pick<Container<AnyPayload>, 'own_matrix'>>,
-	{ afterUpdate }: { afterUpdate?: AfterContainerUpdated } = {}
+	{
+		afterUpdate,
+		expectedRevision
+	}: { afterUpdate?: AfterContainerUpdated; expectedRevision?: number } = {}
 ) {
 	return async (connection: DatabaseConnection) => {
 		const { affectedGuids, result } = await connection.transaction(async (txConnection) => {
+			if (expectedRevision !== undefined) {
+				const current = await txConnection.maybeOne(sql.typeAlias('revision')`
+					SELECT revision
+					FROM container
+					WHERE guid = ${container.guid}
+						AND valid_currently
+						AND NOT deleted
+					FOR UPDATE
+				`);
+				if (current?.revision !== expectedRevision) {
+					throw new ContainerRevisionConflictError();
+				}
+			}
 			const previousRevision = await getContainerByGuid(container.guid)(txConnection);
 
 			await txConnection.query(sql.typeAlias('void')`
