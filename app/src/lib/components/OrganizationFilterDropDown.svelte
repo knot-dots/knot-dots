@@ -1,20 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import ChevronDown from '~icons/flowbite/chevron-down-outline';
-	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import Dropdown from '$lib/components/Dropdown.svelte';
-
-	type Option = {
-		count: number;
-		value: string;
-		label: string;
-		subOptions: Option[];
-	};
+	import MultipleChoiceTree, {
+		type MultipleChoiceTreeOption
+	} from '$lib/components/MultipleChoiceTree.svelte';
 
 	interface Props {
 		mode: 'select' | 'apply_rule';
-		options: Option[];
+		options: MultipleChoiceTreeOption[];
 		scope: 'current' | 'explicit';
 		includeSubordinateOrganizationalUnits: boolean;
 		organizationValue: string[];
@@ -32,45 +26,25 @@
 
 	let totalSelected = $derived(organizationValue.length + organizationalUnitValue.length);
 
-	let expandedOrgs = $state<Set<string>>(new Set());
-
-	function toggleOrg(orgGuid: string, checked: boolean) {
-		if (checked) {
-			organizationValue = organizationValue.includes(orgGuid)
-				? organizationValue
-				: [...organizationValue, orgGuid];
-		} else {
-			organizationValue = organizationValue.filter((v) => v !== orgGuid);
-			// Remove organizational units belonging to this org
-			const orgOption = options.find((o) => o.value === orgGuid);
-			if (orgOption) {
-				const organizationalUnitGuids = orgOption.subOptions.map(
-					(organizationalUnit) => organizationalUnit.value
-				);
-				organizationalUnitValue = organizationalUnitValue.filter(
-					(v) => !organizationalUnitGuids.includes(v)
-				);
-			}
-		}
-	}
-
-	function toggleOrganizationalUnit(organizationalUnitGuid: string, checked: boolean) {
-		if (checked) {
-			organizationalUnitValue = organizationalUnitValue.includes(organizationalUnitGuid)
-				? organizationalUnitValue
-				: [...organizationalUnitValue, organizationalUnitGuid];
-		} else {
-			organizationalUnitValue = organizationalUnitValue.filter((v) => v !== organizationalUnitGuid);
-		}
-	}
-
-	function toggleExpanded(orgGuid: string) {
-		if (expandedOrgs.has(orgGuid)) {
-			expandedOrgs.delete(orgGuid);
-		} else {
-			expandedOrgs.add(orgGuid);
-		}
-		expandedOrgs = new Set(expandedOrgs);
+	// The tree works on one flat selection; it is split back into
+	// organizations and organizational units, and unchecking an organization
+	// takes its units along.
+	function setSelection(selected: string[]) {
+		const organizations = options
+			.filter(({ value }) => selected.includes(value))
+			.map(({ value }) => value);
+		const droppedOrganizations = organizationValue.filter(
+			(value) => !organizations.includes(value)
+		);
+		const droppedUnits = options
+			.filter(({ value }) => droppedOrganizations.includes(value))
+			.flatMap(({ subOptions }) => subOptions ?? [])
+			.map(({ value }) => value);
+		organizationValue = organizations;
+		organizationalUnitValue = options
+			.flatMap(({ subOptions }) => subOptions ?? [])
+			.map(({ value }) => value)
+			.filter((value) => selected.includes(value) && !droppedUnits.includes(value));
 	}
 
 	function resetAll() {
@@ -129,78 +103,18 @@
 			</label>
 		</div>
 
-		<div class="listbox option-list" class:option-list--disabled={disabled}>
+		<div class="option-list" class:option-list--disabled={disabled}>
 			<div class="list-section-title">
 				<span class="section-label">{$_('organization_filter.select')}</span>
 				<button type="button" class="text-button text-button--reset" onclick={resetAll}>
 					{$_('organization_filter.reset')}
 				</button>
 			</div>
-			{#each options as org (org.value)}
-				<div class="option" role="presentation">
-					<label>
-						<input
-							type="checkbox"
-							value={org.value}
-							{disabled}
-							checked={organizationValue.includes(org.value)}
-							onchange={(event) =>
-								toggleOrg(org.value, (event.currentTarget as HTMLInputElement).checked)}
-						/>
-						<span class="option-label">
-							<span class="truncated">{org.label}</span>
-							{#if org.count !== undefined}
-								<span class="counter">({org.count})</span>
-							{/if}
-						</span>
-					</label>
-					{#if org.subOptions.length > 0}
-						<button
-							type="button"
-							class="action-button action-button--size-l suboption-button"
-							onclick={() => toggleExpanded(org.value)}
-						>
-							<span
-								class="suboption-dot"
-								class:suboption-dot--active={org.subOptions.some((organizationalUnit) =>
-									organizationalUnitValue.includes(organizationalUnit.value)
-								)}
-								aria-hidden="true"
-							></span>
-							{#if expandedOrgs.has(org.value)}
-								<ChevronUp />
-							{:else}
-								<ChevronDown />
-							{/if}
-						</button>
-					{/if}
-				</div>
-				{#if org.subOptions.length > 0 && expandedOrgs.has(org.value)}
-					<div class="suboptions-list" role="presentation">
-						{#each org.subOptions as organizationalUnit (organizationalUnit.value)}
-							<label class="option option--suboption">
-								<input
-									type="checkbox"
-									value={organizationalUnit.value}
-									{disabled}
-									checked={organizationalUnitValue.includes(organizationalUnit.value)}
-									onchange={(event) =>
-										toggleOrganizationalUnit(
-											organizationalUnit.value,
-											(event.currentTarget as HTMLInputElement).checked
-										)}
-								/>
-								<span class="option-label">
-									<span class="truncated">{organizationalUnit.label}</span>
-									{#if organizationalUnit.count !== undefined}
-										<span class="counter">({organizationalUnit.count})</span>
-									{/if}
-								</span>
-							</label>
-						{/each}
-					</div>
-				{/if}
-			{/each}
+			<MultipleChoiceTree
+				{disabled}
+				{options}
+				bind:selected={() => [...organizationValue, ...organizationalUnitValue], setSelection}
+			/>
 		</div>
 	{/snippet}
 </Dropdown>
@@ -280,61 +194,5 @@
 
 	.text-button--reset:hover {
 		background-color: var(--color-red-050);
-	}
-
-	.counter {
-		color: var(--color-gray-500);
-	}
-
-	.suboption-button {
-		align-items: center;
-		display: inline-flex;
-		margin-left: auto;
-		position: relative;
-	}
-
-	.suboption-dot {
-		background-color: transparent;
-		border-radius: 50%;
-		height: 0.5rem;
-		position: absolute;
-		right: 0;
-		top: 0;
-		width: 0.5rem;
-	}
-
-	.suboption-dot--active {
-		background-color: var(--color-primary-700);
-	}
-
-	.option {
-		display: flex;
-		align-items: center;
-	}
-
-	.option > label {
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
-		flex: 1;
-		min-width: 0;
-		overflow: hidden;
-	}
-
-	.option-label {
-		display: flex;
-		align-items: baseline;
-		gap: 0.25rem;
-		min-width: 0;
-	}
-
-	.option--suboption {
-		opacity: 0.85;
-	}
-
-	.suboptions-list {
-		display: flex;
-		flex-direction: column;
-		padding: 0.25rem 0 0.5rem 1.5rem;
 	}
 </style>
