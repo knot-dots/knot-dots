@@ -49,7 +49,15 @@ test.describe('Adopt programs', () => {
 		});
 		const adoptedButton = dotsBoard.overlay.locator.getByRole('button', { name: 'Adopted' });
 		const popover = dotsBoard.page.getByRole('form', { name: 'Adopt program for' });
-		const unitCheckbox = popover.getByLabel(testOrganizationalUnit.payload.name);
+		const organizationCheckbox = popover.getByLabel(testOrganization.payload.name, {
+			exact: true
+		});
+		const unitCheckbox = popover.getByLabel(testOrganizationalUnit.payload.name, {
+			exact: true
+		});
+		const groupToggle = popover.getByRole('button', {
+			name: `Show sub-options ${testOrganization.payload.name}`
+		});
 		const confirmButton = popover.getByRole('button', { name: 'Confirm selection' });
 
 		async function openProgramOverlay() {
@@ -58,11 +66,20 @@ test.describe('Adopt programs', () => {
 			await expect(dotsBoard.overlay.title).toHaveText(testPublicProgram.payload.title);
 		}
 
-		// Adopt the program for the organizational unit.
+		// The units of an organization are folded away unless one is selected.
+		async function expandGroup() {
+			if ((await groupToggle.getAttribute('aria-expanded')) !== 'true') {
+				await groupToggle.click();
+			}
+		}
+
+		// Adopt the program for the organization and for the organizational unit.
 		await openProgramOverlay();
 		await adoptButton.click();
 		await expect(popover).toBeVisible();
-		await expect(unitCheckbox).toBeVisible();
+		await expect(organizationCheckbox).toBeVisible();
+		await organizationCheckbox.check();
+		await expandGroup();
 		await unitCheckbox.check();
 		await confirmButton.click();
 
@@ -70,16 +87,21 @@ test.describe('Adopt programs', () => {
 		await expect(popover).not.toBeVisible();
 		await expect(adoptedButton).toBeVisible();
 
-		// … and reopening the popover shows the adopting unit checked.
+		// … and reopening the popover shows both adopters checked.
 		await adoptedButton.click();
+		await expect(organizationCheckbox).toBeChecked();
+		await expandGroup();
 		await expect(unitCheckbox).toBeChecked();
 
 		// The adoption also survives a fresh page load.
 		await openProgramOverlay();
 		await expect(adoptedButton).toBeVisible();
 
-		// Un-adopt by unchecking the organizational unit.
+		// Un-adopt by unchecking both.
 		await adoptedButton.click();
+		await expect(organizationCheckbox).toBeChecked();
+		await organizationCheckbox.uncheck();
+		await expandGroup();
 		await expect(unitCheckbox).toBeChecked();
 		await unitCheckbox.uncheck();
 		await confirmButton.click();
@@ -89,9 +111,10 @@ test.describe('Adopt programs', () => {
 		await openProgramOverlay();
 		await expect(adoptButton).toBeVisible();
 
-		// Re-adopt to make sure an adoption can be restored after removal.
+		// Re-adopt for the organization only to make sure an adoption can be
+		// restored after removal.
 		await adoptButton.click();
-		await unitCheckbox.check();
+		await organizationCheckbox.check();
 		await confirmButton.click();
 		await expect(adoptedButton).toBeVisible();
 

@@ -161,4 +161,71 @@ test.describe('Adopted content in workspaces', () => {
 			await deleteContainer(adminContext, internalRule);
 		}
 	});
+
+	test('a program adopted by the organization appears in the organization context only', async ({
+		page,
+		adminContext,
+		testOrganization,
+		testOrganizationalUnit,
+		testPublicProgram,
+		isMobile
+	}) => {
+		test.skip(isMobile, 'Workspace layout differs on mobile');
+
+		// Make Bob an administrator of the organization so he may adopt for it.
+		const orgResponse = await adminContext.request.get(`/container/${testOrganization.guid}`);
+		const orgData = await orgResponse.json();
+		const bobRelation = orgData.user.find(
+			(u: { predicate: string }) => u.predicate === predicates.enum['is-member-of']
+		);
+		const adminResponse = await adminContext.request.post(
+			`/container/${testOrganization.guid}/user`,
+			{
+				data: [
+					...orgData.user.filter(
+						(u: { predicate: string }) => u.predicate !== predicates.enum['is-creator-of']
+					),
+					{
+						object: testOrganization.guid,
+						predicate: predicates.enum['is-admin-of'],
+						subject: bobRelation.subject
+					}
+				]
+			}
+		);
+		expect(adminResponse.ok()).toBeTruthy();
+
+		const programCard = page.getByTitle(testPublicProgram.payload.title);
+		const filterButton = page.getByRole('button', { name: 'Filter' });
+		const relation = {
+			object: testOrganization.guid,
+			position: 0,
+			predicate: predicates.enum['is-adopted-by'],
+			subject: testPublicProgram.guid
+		};
+
+		const adoptResponse = await page.request.post(`/container/${testPublicProgram.guid}/relation`, {
+			data: [relation]
+		});
+		expect(adoptResponse.ok()).toBeTruthy();
+
+		// The organization sees its adoption …
+		await page.goto(`/${testOrganization.guid}/set-of-rules/catalog`);
+		await expect(programCard).toBeVisible();
+
+		// … while a unit sees only its own adoptions.
+		await page.goto(`/${testOrganizationalUnit.guid}/set-of-rules/catalog`);
+		await expect(filterButton).toBeVisible();
+		await expect(programCard).toHaveCount(0);
+
+		const unAdoptResponse = await page.request.post(
+			`/container/${testPublicProgram.guid}/relation`,
+			{ data: [{ ...relation, deleted: true }] }
+		);
+		expect(unAdoptResponse.ok()).toBeTruthy();
+
+		await page.goto(`/${testOrganization.guid}/set-of-rules/catalog`);
+		await expect(filterButton).toBeVisible();
+		await expect(programCard).toHaveCount(0);
+	});
 });
