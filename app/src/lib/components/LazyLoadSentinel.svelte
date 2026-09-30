@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { _ } from 'svelte-i18n';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	interface Props {
 		as?: 'div' | 'li';
@@ -53,7 +53,7 @@
 			{#if loadingContent}
 				{@render loadingContent()}
 			{:else}
-				<span class="loading-indicator">{$_('loading')}</span>
+				<Spinner size="m" />
 			{/if}
 		{/if}
 	</svelte:element>
@@ -65,10 +65,5 @@
 		justify-content: center;
 		min-height: 2rem;
 		padding: 1rem 0;
-	}
-
-	.loading-indicator {
-		color: var(--color-gray-600);
-		font-size: 0.875rem;
 	}
 </style>

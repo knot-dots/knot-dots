@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
+	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
@@ -7,22 +8,29 @@
 	import MeasureMonitoringOverlay from '$lib/components/MeasureMonitoringOverlay.svelte';
 	import MeasuresOverlay from '$lib/components/MeasuresOverlay.svelte';
 	import MembersOverlay from '$lib/components/MembersOverlay.svelte';
+	import OverlayCloseButton from '$lib/components/OverlayCloseButton.svelte';
 	import OverlayLayout from '$lib/components/OverlayLayout.svelte';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import RelationOverlay from '$lib/components/RelationOverlay.svelte';
 	import ResourcesOverlay from '$lib/components/ResourcesOverlay.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TemplatesOverlay from '$lib/components/TemplatesOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, isProgramContainer, overlayKey } from '$lib/models';
-	import { type OverlayData, overlayWidth } from '$lib/stores';
+	import { type OverlayData, overlayLoading, overlaySwitching, overlayWidth } from '$lib/stores';
 	import { isTemplateScope } from '$lib/templateScopes';
 
 	interface Props {
-		data: OverlayData;
+		// Undefined while the data for an overlay that is opened for the first time is loading
+		data?: OverlayData;
 	}
 
 	let { data }: Props = $props();
 
 	setContext('overlay', true);
+
+	// The previous object is replaced by a skeleton unless the next one loads quickly
+	const switching = createDelayedFlag(() => $overlaySwitching);
 
 	let fullScreen = $state({ enabled: false });
 
@@ -60,7 +68,17 @@
 <section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
-	{#if data.key === overlayKey.enum['members']}
+	<ProgressBar active={$overlayLoading} position="overlay" />
+	{#if !data || switching.current}
+		<header class="overlay-skeleton-header">
+			<OverlayCloseButton />
+			<div class="overlay-skeleton-title"><Skeleton count={1} /></div>
+		</header>
+		<div class="overlay-skeleton-main">
+			<Skeleton count={4} />
+			<Skeleton count={3} variant="card" />
+		</div>
+	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay
 			container={data.container}
 			grants={data.grants}
@@ -128,6 +146,26 @@
 		.overlay {
 			flex: 0 0 calc(100vw * var(--overlay-width-factor));
 		}
+	}
+
+	.overlay-skeleton-header {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
+		height: var(--header-height);
+		padding: 0.375rem 0.75rem;
+	}
+
+	.overlay-skeleton-title {
+		max-width: 16rem;
+		width: 50%;
+	}
+
+	.overlay-skeleton-main {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		padding: 1.5rem;
 	}
 
 	.resize-handle {

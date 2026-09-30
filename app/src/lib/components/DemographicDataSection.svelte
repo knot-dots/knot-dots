@@ -3,6 +3,7 @@
 	import { env } from '$env/dynamic/public';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -58,6 +59,8 @@
 		{ lazy: true }
 	);
 
+	const loading = $derived(actualData.current === undefined && !actualData.error);
+
 	const population = $derived.by(() => {
 		const populationDataContainer = actualData.current?.find(
 			({ payload }) => payload.indicator == env.PUBLIC_PNK_POPULATION_INDICATOR
@@ -97,12 +100,14 @@
 	{/if}
 </header>
 
-<ul class="carousel">
+<ul aria-busy={loading} class="carousel">
 	<li class="stat-card">
 		<span class="label">{$_('demographic_data.population')}</span>
 		<span class="value">
 			{#if population}
 				{$number(population)}
+			{:else if loading}
+				<Skeleton count={1} />
 			{:else}
 				-
 			{/if}
@@ -115,6 +120,8 @@
 			{#if area}
 				{$number(area, { maximumFractionDigits: 0 })}
 				<span class="unit">ha</span>
+			{:else if loading}
+				<Skeleton count={1} />
 			{:else}
 				-
 			{/if}
@@ -127,6 +134,8 @@
 			{#if populationDensity}
 				{$number(populationDensity)}
 				<span class="unit">/ ha</span>
+			{:else if loading}
+				<Skeleton count={1} />
 			{:else}
 				-
 			{/if}

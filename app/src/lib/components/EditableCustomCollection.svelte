@@ -9,6 +9,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import createComparisonData from '$lib/client/createComparisonData.svelte';
+	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import AddItemMenu from '$lib/components/AddItemMenu.svelte';
@@ -21,6 +22,7 @@
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
 	import NewIndicatorCard from '$lib/components/NewIndicatorCard.svelte';
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
@@ -188,6 +190,22 @@
 			};
 		},
 		{ lazy: true }
+	);
+
+	// The first page has not arrived yet, e.g. because the section is not in the viewport yet
+	const savedInitialLoading = $derived(savedResource.current === undefined && !savedResource.error);
+
+	// A search or sort within the section dims the previous results
+	const savedReloading = createDelayedFlag(
+		() => savedResource.loading && savedResource.current !== undefined
+	);
+
+	const skeletonVariant = $derived(
+		Array.isArray(container.payload.filter.type) &&
+			container.payload.filter.type.length === 1 &&
+			container.payload.filter.type[0] === payloadTypes.enum.indicator_template
+			? 'chart'
+			: 'card'
 	);
 
 	$effect(() => {
@@ -464,7 +482,13 @@
 {/if}
 
 {#if hasConfiguredContent}
-	{#if container.payload.listType === 'carousel'}
+	{#if savedInitialLoading}
+		<Skeleton
+			class={container.payload.listType === 'carousel' ? undefined : 'wide'}
+			rows={1}
+			variant={skeletonVariant}
+		/>
+	{:else if container.payload.listType === 'carousel'}
 		<Carousel
 			addItem={addItems}
 			{items}
@@ -505,7 +529,7 @@
 			{/snippet}
 		</Carousel>
 	{:else}
-		<ul class="catalog wide">
+		<ul aria-busy={savedReloading.current} class="catalog wide loading-area">
 			{#each items as item (item.guid)}
 				<li>
 					{#if isIndicatorTemplateContainer(item)}

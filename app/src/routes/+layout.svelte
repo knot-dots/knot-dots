@@ -2,9 +2,11 @@
 	import { onMount } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import { asset } from '$app/paths';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import createComputedProgressLoader from '$lib/client/createComputedProgressLoader';
+	import navigationKind from '$lib/client/navigationKind';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
@@ -133,6 +135,9 @@
 </script>`}
 	{/if}
 </svelte:head>
+
+<!-- Changes of the query or hash only have their own loading indicators. -->
+<ProgressBar active={navigationKind(navigating) === 'page'} />
 
 {@render children()}
 

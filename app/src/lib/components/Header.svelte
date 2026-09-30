@@ -11,8 +11,10 @@
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
+	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
+	import navigationKind from '$lib/client/navigationKind';
 	import saveContainer from '$lib/client/saveContainer';
 	import AssigneeFilterDropDown from '$lib/components/AssigneeFilterDropDown.svelte';
 	import BackToOverlayButton from '$lib/components/BackToOverlayButton.svelte';
@@ -35,6 +37,7 @@
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 	import UserFavoriteToggle from '$lib/components/UserFavoriteToggle.svelte';
 	import ViewSelect from '$lib/components/ViewSelect.svelte';
 	import Workspaces from '$lib/components/Workspaces.svelte';
@@ -147,6 +150,12 @@
 	);
 
 	let facetLabels = $derived(page.data.categoryContext.labels);
+
+	// Filters, search and sort change the query of a page. In an overlay they change
+	// the hash instead, which the progress bar of the overlay already indicates.
+	const resultsLoading = createDelayedFlag(
+		() => !overlay && navigationKind(navigating) === 'query'
+	);
 
 	let categoryOptions = $derived(page.data.categoryContext.options);
 
@@ -305,6 +314,10 @@
 
 		{#if createFeatureDecisions(page.data.features).useBulkActions() && $applicationState.containerDetailView.editable}
 			<BulkActions />
+		{/if}
+
+		{#if resultsLoading.current}
+			<span class="commands-loading"><Spinner /></span>
 		{/if}
 	</div>
 
@@ -498,6 +511,11 @@
 		display: flex;
 		gap: inherit;
 		margin-right: auto;
+	}
+
+	.commands-loading {
+		align-items: center;
+		display: flex;
 	}
 
 	.dropdown-button.dropdown-button--command {

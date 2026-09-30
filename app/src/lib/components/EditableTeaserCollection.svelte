@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
 	import Accordion from '$lib/components/Accordion.svelte';
@@ -215,4 +216,14 @@
 			{/snippet}
 		</Carousel>
 	{/if}
+{:else if !teasers.error}
+	<Skeleton
+		count={container.payload.listType === 'list' || container.payload.listType === 'accordion'
+			? 3
+			: undefined}
+		rows={1}
+		variant={container.payload.listType === 'list' || container.payload.listType === 'accordion'
+			? 'text'
+			: 'card'}
+	/>
 {/if}

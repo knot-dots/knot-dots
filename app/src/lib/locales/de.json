@@ -831,6 +831,8 @@
 	"toast.bulk_actions.delete_success": "Ausgewählte Objekte entfernt",
 	"toast.bulk_actions.error": "Aktualisierung fehlgeschlagen",
 	"toast.bulk_actions.update_success": "{count, plural, one {Ein Objekt} other {# Objekte}} aktualisiert",
+	"toast.overlay_load_error.heading": "Inhalt konnte nicht geladen werden",
+	"toast.overlay_load_error.message": "Bitte versuchen Sie es erneut.",
 	"toast.template_created.heading": "Vorlage erstellt",
 	"topic": "Themenfeld",
 	"topic.citizen_participation": "Bürgerbeteiligung und Bürgernähe",
