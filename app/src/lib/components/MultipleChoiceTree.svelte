@@ -27,15 +27,13 @@
 		selected = $bindable([] as string[])
 	}: Props = $props();
 
-	// Groups start expanded when they hold a selection or when there is
-	// nothing else to see; afterwards the user is in charge.
+	// Groups start collapsed unless they hold a selection; afterwards the user
+	// is in charge.
 	const expanded = new SvelteSet(
 		untrack(() =>
 			options
-				.filter(
-					(option) =>
-						options.length === 1 ||
-						option.subOptions?.some((subOption) => selected.includes(subOption.value))
+				.filter((option) =>
+					option.subOptions?.some((subOption) => selected.includes(subOption.value))
 				)
 				.map(({ value }) => value)
 		)
