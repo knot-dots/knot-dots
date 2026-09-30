@@ -16,6 +16,8 @@ export const mcpAuthExtra = z.strictObject({
 	userId: z.uuid()
 });
 
+export type McpAuth = z.infer<typeof mcpAuthExtra>;
+
 function invalidToken(): OAuthError {
 	return new OAuthError(OAuthErrorCode.InvalidToken, 'Invalid access token');
 }

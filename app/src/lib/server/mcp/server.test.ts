@@ -4,6 +4,7 @@ import {
 	PROTOCOL_VERSION_META_KEY
 } from '@modelcontextprotocol/server';
 import { beforeEach, expect, test, vi } from 'vitest';
+import type { AnyPayload, Container } from '$lib/models';
 import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
 import { payloadSchemaCatalogUri } from '$lib/server/mcp/resources/payloadSchemas';
 import { createKnotDotsMcpHandler, mcpHandler } from './server';
@@ -26,19 +27,35 @@ const containerScopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['containers:read']
 };
+const writeScopedAuthInfo = {
+	...authInfo,
+	extra: { tokenId, userId },
+	scopes: ['containers:write']
+};
+const userScopedAuthInfo = {
+	...authInfo,
+	extra: { tokenId, userId },
+	scopes: ['users:read']
+};
+const addCustomCollectionSection = vi.fn();
+const createContainer = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
 const listContainerCategoryValues = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
+const searchOrganizationUsers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
+	addCustomCollectionSection,
+	createContainer,
 	getContainer,
 	listContainerCategories,
 	listContainerCategoryValues,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
-	searchContainers
+	searchContainers,
+	searchOrganizationUsers
 });
 
 const modernProtocolVersion = '2026-07-28';
@@ -88,12 +105,15 @@ async function legacyResponseJson(response: Response) {
 }
 
 beforeEach(() => {
+	addCustomCollectionSection.mockReset();
+	createContainer.mockReset();
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	searchContainers.mockReset();
+	searchOrganizationUsers.mockReset();
 });
 
 test('serves a modern MCP discovery request', async () => {
@@ -246,17 +266,51 @@ test('advertises tools without requiring their scopes', async () => {
 			expect.objectContaining({
 				name: 'list_container_category_values',
 				title: 'List container category values'
+			}),
+			expect.objectContaining({
+				name: 'search_organization_users',
+				title: 'Search organization users'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'create_container',
+				title: 'Create container'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: false,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'add_custom_collection_section',
+				title: 'Add custom collection section'
 			})
 		])
 	);
 	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
+		'add_custom_collection_section',
+		'create_container',
 		'get_container',
 		'list_container_categories',
 		'list_container_category_values',
 		'list_my_organizations',
 		'list_organizational_units',
-		'search_containers'
+		'search_containers',
+		'search_organization_users'
 	]);
+	expect(
+		body.result.tools.find(({ name }: { name: string }) => name === 'search_containers')
+	).toMatchObject({
+		inputSchema: {
+			properties: {
+				assigneeGuids: { items: { type: 'string' }, type: 'array' }
+			}
+		}
+	});
 });
 
 test('lists container categories using the read scope', async () => {
@@ -325,6 +379,51 @@ test('lists a bounded page of category values using the read scope', async () =>
 	});
 });
 
+test('searches organization users with the dedicated scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		nextOffset: null,
+		users: [{ guid: userId, name: 'Niels Example' }]
+	};
+	searchOrganizationUsers.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid, terms: 'Niels' },
+			name: 'search_organization_users'
+		}),
+		{ authInfo: userScopedAuthInfo }
+	);
+
+	expect(searchOrganizationUsers).toHaveBeenCalledExactlyOnceWith(userId, {
+		limit: 50,
+		offset: 0,
+		organizationGuid,
+		terms: 'Niels'
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('denies user lookup without its dedicated scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid: '00000000-0000-4000-8000-000000000003' },
+			name: 'search_organization_users'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(searchOrganizationUsers).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: users:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
 test('denies the category tool without the container read scope', async () => {
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
@@ -340,6 +439,122 @@ test('denies the category tool without the container read scope', async () => {
 	await expect(response.json()).resolves.toMatchObject({
 		result: {
 			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('creates a container using the write scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const container = {
+		guid: '00000000-0000-4000-8000-000000000004',
+		managed_by: [organizationGuid],
+		organization: organizationGuid,
+		organizational_unit: null,
+		own_matrix: false,
+		payload: { body: '', title: 'Climate indicators', type: 'page', visibility: 'organization' },
+		realm: 'test',
+		relation: [],
+		revision: 1,
+		user: [],
+		valid_currently: true,
+		valid_from: new Date('2026-09-23T00:00:00.000Z')
+	} as Container<AnyPayload>;
+	createContainer.mockResolvedValue(container);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				organizationGuid,
+				payload: { body: '', title: 'Climate indicators', type: 'page' }
+			},
+			name: 'create_container'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(createContainer).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{
+			organizationGuid,
+			organizationalUnitGuid: null,
+			parentRelations: [],
+			payload: { body: '', title: 'Climate indicators', type: 'page' }
+		}
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			structuredContent: {
+				container: { ...container, valid_from: '2026-09-23T00:00:00.000Z' }
+			}
+		}
+	});
+});
+
+test('adds a custom collection section with categories using the write scope', async () => {
+	const pageGuid = '00000000-0000-4000-8000-000000000003';
+	const input = {
+		categories: { sdg: ['13'] },
+		includeSubordinateOrganizationalUnits: true,
+		pageGuid,
+		title: 'Objekte einbinden',
+		types: ['indicator_template']
+	};
+	const output = {
+		section: {
+			...input,
+			guid: '00000000-0000-4000-8000-000000000004'
+		}
+	};
+	addCustomCollectionSection.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				categories: { sdg: ['13'] },
+				pageGuid,
+				title: 'Objekte einbinden',
+				types: ['indicator_template']
+			},
+			name: 'add_custom_collection_section'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(addCustomCollectionSection).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, input);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test.each([
+	[
+		'create_container',
+		createContainer,
+		{
+			organizationGuid: '00000000-0000-4000-8000-000000000003',
+			payload: { body: '', title: 'Climate indicators', type: 'page' }
+		}
+	],
+	[
+		'add_custom_collection_section',
+		addCustomCollectionSection,
+		{
+			pageGuid: '00000000-0000-4000-8000-000000000003',
+			title: 'Objekte einbinden',
+			types: ['indicator_template']
+		}
+	]
+])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: arguments_, name }),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(dependency).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:write', type: 'text' }],
 			isError: true
 		}
 	});
@@ -482,6 +697,8 @@ test('searches visible containers with defaults for the authenticated token owne
 	const output = {
 		containers: [
 			{
+				assigneeGuids: [],
+				creatorGuids: [],
 				guid: '00000000-0000-4000-8000-000000000004',
 				label: 'Climate plan',
 				organizationGuid,

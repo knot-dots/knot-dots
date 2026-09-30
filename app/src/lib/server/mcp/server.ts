@@ -5,9 +5,19 @@ import {
 	listMcpContainerCategoryValues
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
+import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { searchMcpOrganizationUsers } from '$lib/server/mcp/users';
+import {
+	registerAddCustomCollectionSectionTool,
+	type AddCustomCollectionSectionDependencies
+} from '$lib/server/mcp/tools/addCustomCollectionSection';
+import {
+	registerCreateContainerTool,
+	type CreateContainerDependencies
+} from '$lib/server/mcp/tools/createContainer';
 import {
 	registerGetContainerTool,
 	type GetContainerDependencies
@@ -32,16 +42,29 @@ import {
 	registerSearchContainersTool,
 	type SearchContainersDependencies
 } from '$lib/server/mcp/tools/searchContainers';
+import {
+	registerSearchOrganizationUsersTool,
+	type SearchOrganizationUsersDependencies
+} from '$lib/server/mcp/tools/searchOrganizationUsers';
 import packageMetadata from '../../../../package.json';
 
-type McpServerDependencies = GetContainerDependencies &
+type McpServerDependencies = AddCustomCollectionSectionDependencies &
+	CreateContainerDependencies &
+	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
 	ListContainerCategoryValuesDependencies &
 	ListMyOrganizationsDependencies &
 	ListOrganizationalUnitsDependencies &
-	SearchContainersDependencies;
+	SearchContainersDependencies &
+	SearchOrganizationUsersDependencies;
 
 const defaultDependencies: McpServerDependencies = {
+	async addCustomCollectionSection(auth, input) {
+		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, ...auth }));
+	},
+	async createContainer(auth, input) {
+		return (await getPool()).connect(createMcpContainer({ ...input, ...auth }));
+	},
 	async getContainer(userId, guid) {
 		return (await getPool()).connect(getMcpContainer({ guid, userId }));
 	},
@@ -61,6 +84,9 @@ const defaultDependencies: McpServerDependencies = {
 		const pool = await getPool();
 		const user = await pool.connect((connection) => loadMcpUserContext(connection, userId));
 		return searchMcpContainers({ ...input, user });
+	},
+	async searchOrganizationUsers(userId, input) {
+		return (await getPool()).connect(searchMcpOrganizationUsers({ ...input, userId }));
 	}
 };
 
@@ -74,18 +100,21 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and its linked payload schema resources when you need canonical payload field information. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
 			registerPayloadSchemaResources(server);
 
+			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
+			registerCreateContainerTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);
 			registerListContainerCategoryValuesTool(server, authInfo, dependencies);
 			registerListOrganizationalUnitsTool(server, authInfo, dependencies);
 			registerListMyOrganizationsTool(server, authInfo, dependencies);
 			registerSearchContainersTool(server, authInfo, dependencies);
+			registerSearchOrganizationUsersTool(server, authInfo, dependencies);
 
 			return server;
 		},
