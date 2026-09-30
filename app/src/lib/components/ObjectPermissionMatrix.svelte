@@ -318,7 +318,11 @@
 						>
 							{#if ownExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
 							<span class="section-title">
-								{'title' in container.payload ? container.payload.title : ''}
+								{'name' in container.payload
+									? container.payload.name
+									: 'title' in container.payload
+										? container.payload.title
+										: ''}
 							</span>
 						</button>
 					</span>
