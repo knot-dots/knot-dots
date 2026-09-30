@@ -4,6 +4,8 @@ import {
 	PROTOCOL_VERSION_META_KEY
 } from '@modelcontextprotocol/server';
 import { beforeEach, expect, test, vi } from 'vitest';
+import { mcpPayloadTypeValues } from '$lib/server/mcp/contracts/payloads';
+import { payloadSchemaCatalogUri } from '$lib/server/mcp/resources/payloadSchemas';
 import { createKnotDotsMcpHandler, mcpHandler } from './server';
 
 const userId = '00000000-0000-4000-8000-000000000002';
@@ -25,11 +27,15 @@ const containerScopedAuthInfo = {
 	scopes: ['containers:read']
 };
 const getContainer = vi.fn();
+const listContainerCategories = vi.fn();
+const listContainerCategoryValues = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const searchContainers = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	getContainer,
+	listContainerCategories,
+	listContainerCategoryValues,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	searchContainers
@@ -52,6 +58,9 @@ function modernRequest(method: string, params: Record<string, unknown> = {}) {
 	};
 	if (typeof params.name === 'string') {
 		headers['Mcp-Name'] = params.name;
+	}
+	if (typeof params.uri === 'string') {
+		headers['Mcp-Name'] = params.uri;
 	}
 
 	return request(
@@ -80,6 +89,8 @@ async function legacyResponseJson(response: Response) {
 
 beforeEach(() => {
 	getContainer.mockReset();
+	listContainerCategories.mockReset();
+	listContainerCategoryValues.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	searchContainers.mockReset();
@@ -227,9 +238,243 @@ test('advertises tools without requiring their scopes', async () => {
 				},
 				name: 'search_containers',
 				title: 'Search containers'
+			}),
+			expect.objectContaining({
+				name: 'list_container_categories',
+				title: 'List container categories'
+			}),
+			expect.objectContaining({
+				name: 'list_container_category_values',
+				title: 'List container category values'
 			})
 		])
 	);
+	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
+		'get_container',
+		'list_container_categories',
+		'list_container_category_values',
+		'list_my_organizations',
+		'list_organizational_units',
+		'search_containers'
+	]);
+});
+
+test('lists container categories using the read scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		categories: [
+			{
+				applicableTypes: ['indicator_template'],
+				key: 'sdg',
+				label: 'Sustainable Development Goal',
+				valueCount: 186
+			}
+		]
+	};
+	listContainerCategories.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { organizationGuid, types: ['indicator_template'] },
+			name: 'list_container_categories'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerCategories).toHaveBeenCalledExactlyOnceWith(userId, {
+		organizationGuid,
+		types: ['indicator_template']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('lists a bounded page of category values using the read scope', async () => {
+	const organizationGuid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		category: { key: 'sdg', label: 'Sustainable Development Goal' },
+		nextOffset: null,
+		values: [{ label: 'Climate action', parentValue: null, value: '13' }]
+	};
+	listContainerCategoryValues.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				categoryKey: 'sdg',
+				organizationGuid,
+				terms: 'climate',
+				types: ['indicator_template']
+			},
+			name: 'list_container_category_values'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerCategoryValues).toHaveBeenCalledExactlyOnceWith(userId, {
+		categoryKey: 'sdg',
+		limit: 50,
+		offset: 0,
+		organizationGuid,
+		terms: 'climate',
+		types: ['indicator_template']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('denies the category tool without the container read scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: {
+				organizationGuid: '00000000-0000-4000-8000-000000000003'
+			},
+			name: 'list_container_categories'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(listContainerCategories).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
+test('advertises the payload schema catalog and template', async () => {
+	const resourcesResponse = await toolHandler.fetch(modernRequest('resources/list'), { authInfo });
+	const templatesResponse = await toolHandler.fetch(modernRequest('resources/templates/list'), {
+		authInfo
+	});
+
+	expect(resourcesResponse.status).toBe(200);
+	await expect(resourcesResponse.json()).resolves.toMatchObject({
+		result: {
+			resources: [
+				expect.objectContaining({
+					mimeType: 'application/json',
+					name: 'payload-schema-catalog',
+					uri: payloadSchemaCatalogUri
+				})
+			]
+		}
+	});
+
+	expect(templatesResponse.status).toBe(200);
+	await expect(templatesResponse.json()).resolves.toMatchObject({
+		result: {
+			resourceTemplates: [
+				expect.objectContaining({
+					mimeType: 'application/schema+json',
+					name: 'payload-schema',
+					uriTemplate: `${payloadSchemaCatalogUri}/{type}`
+				})
+			]
+		}
+	});
+});
+
+test('serves a catalog containing exactly the curated payload schemas', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('resources/read', { uri: payloadSchemaCatalogUri }),
+		{ authInfo }
+	);
+
+	expect(response.status).toBe(200);
+	const body = await response.json();
+	const content = body.result.contents[0];
+	expect(content).toMatchObject({ mimeType: 'application/json', uri: payloadSchemaCatalogUri });
+	expect(JSON.parse(content.text)).toEqual({
+		description:
+			'Canonical payload validation schemas exposed through MCP. Schema availability does not imply that an MCP creation tool is available.',
+		payloads: mcpPayloadTypeValues.map((type) => ({
+			type,
+			uri: `${payloadSchemaCatalogUri}/${type}`
+		})),
+		schemaVersion: 1
+	});
+});
+
+test('serves each curated payload as a direct JSON Schema', async () => {
+	for (const payloadType of mcpPayloadTypeValues) {
+		const uri = `${payloadSchemaCatalogUri}/${payloadType}`;
+		const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), {
+			authInfo
+		});
+
+		expect(response.status).toBe(200);
+		const body = await response.json();
+		const content = body.result.contents[0];
+		expect(content).toMatchObject({ mimeType: 'application/schema+json', uri });
+		const schema = JSON.parse(content.text);
+		expect(schema).toMatchObject({
+			$id: uri,
+			$schema: 'https://json-schema.org/draft/2020-12/schema',
+			properties: { type: { const: payloadType, type: 'string' } },
+			type: 'object'
+		});
+		expect(schema).not.toHaveProperty('anyOf');
+		expect(schema).not.toHaveProperty('oneOf');
+	}
+});
+
+test.each(['effect', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
+	const uri = `${payloadSchemaCatalogUri}/${type}`;
+	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });
+
+	expect(response.status).toBe(200);
+	await expect(response.json()).resolves.toMatchObject({
+		error: { code: -32602, data: { uri } },
+		id: 1,
+		jsonrpc: '2.0'
+	});
+});
+
+test('completes only curated payload schema types', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('completion/complete', {
+			argument: { name: 'type', value: 's' },
+			ref: { type: 'ref/resource', uri: `${payloadSchemaCatalogUri}/{type}` }
+		}),
+		{ authInfo }
+	);
+
+	expect(response.status).toBe(200);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { completion: { values: ['simple_measure'] } }
+	});
+});
+
+test('serves payload schema resources to legacy clients', async () => {
+	const uri = `${payloadSchemaCatalogUri}/task`;
+	const response = await toolHandler.fetch(
+		request(
+			{
+				jsonrpc: '2.0',
+				id: 1,
+				method: 'resources/read',
+				params: { uri }
+			},
+			{
+				Accept: 'application/json, text/event-stream',
+				'Mcp-Protocol-Version': '2025-11-25'
+			}
+		),
+		{ authInfo }
+	);
+
+	expect(response.status).toBe(200);
+	const body = await legacyResponseJson(response);
+	const content = body.result.contents[0];
+	expect(content).toMatchObject({ mimeType: 'application/schema+json', uri });
+	expect(JSON.parse(content.text)).toMatchObject({
+		$id: uri,
+		properties: { type: { const: 'task' } }
+	});
 });
 
 test('searches visible containers with defaults for the authenticated token owner', async () => {
