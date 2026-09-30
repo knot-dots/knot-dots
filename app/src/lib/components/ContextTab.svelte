@@ -12,6 +12,7 @@
 	import tooltip from '$lib/attachments/tooltip';
 	import Card from '$lib/components/Card.svelte';
 	import EditableGenericDetailView from '$lib/components/EditableGenericDetailView.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import { type Container, isContainerWithName, isContainerWithTitle } from '$lib/models';
 
 	interface Props {
@@ -65,7 +66,9 @@
 		<EditableGenericDetailView bind:container={selected} />
 	</div>
 {:else if containers.loading}
-	<div class="loading-state"></div>
+	<div class="loading-state">
+		<Skeleton count={4} variant="card" />
+	</div>
 {:else if containers.current?.length}
 	<ul class="catalog">
 		{#each containers.current as container (container.guid)}
@@ -123,7 +126,8 @@
 		overflow-y: auto;
 	}
 
-	.empty-state {
+	.empty-state,
+	.loading-state {
 		padding: 0.5rem 1rem;
 	}
 

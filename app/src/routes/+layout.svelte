@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { setContext } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
+	import { navigating } from '$app/state';
+	import navigationKind from '$lib/client/navigationKind';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
 
@@ -22,5 +25,8 @@
 		}
 	});
 </script>
+
+<!-- Changes of the query or hash only have their own loading indicators. -->
+<ProgressBar active={navigationKind(navigating) === 'page'} />
 
 {@render children()}

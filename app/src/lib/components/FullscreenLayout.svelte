@@ -2,7 +2,9 @@
 	import { type Snippet } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
+	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
+	import navigationKind from '$lib/client/navigationKind';
 	import Header from '$lib/components/Header.svelte';
 
 	interface Props {
@@ -18,6 +20,9 @@
 
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
+
+	// Results stay visible but dimmed while a filter, search or sort is applied.
+	const queryLoading = createDelayedFlag(() => navigationKind(navigating) === 'query');
 </script>
 
 <div class="main-with-header-wrapper">
@@ -27,7 +32,12 @@
 		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
 	{/if}
 
-	<main in:fly={transitionIn} out:fly={transitionOut}>
+	<main
+		aria-busy={queryLoading.current}
+		class="loading-area"
+		in:fly={transitionIn}
+		out:fly={transitionOut}
+	>
 		{@render main()}
 	</main>
 </div>

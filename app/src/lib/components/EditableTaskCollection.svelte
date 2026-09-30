@@ -6,6 +6,7 @@
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
 	import {
 		type AnyPayload,
@@ -117,7 +118,9 @@
 	{/if}
 </header>
 
-{#await tasksRequest then items}
+{#await tasksRequest}
+	<Skeleton rows={1} variant="card" />
+{:then items}
 	{@const ancestors = parentContainer
 		? findAncestors(parentContainer, items, [predicates.enum['is-part-of']])
 		: []}

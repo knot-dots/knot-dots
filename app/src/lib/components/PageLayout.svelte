@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, setContext, type Snippet } from 'svelte';
+	import { getContext, setContext, type Snippet, untrack } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import Overlay from '$lib/components/Overlay.svelte';
@@ -7,8 +7,9 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
+	import { getToastContext } from '$lib/contexts/toast';
 	import { createFeatureDecisions } from '$lib/features';
-	import { overlay, overlayWidth } from '$lib/stores';
+	import { overlay, overlayLoadFailed, overlayLoading, overlayWidth } from '$lib/stores';
 
 	interface Props {
 		children: Snippet;
@@ -26,6 +27,21 @@
 	let createEffectDialog: HTMLDialogElement;
 
 	let sidebarExpanded = $derived(getContext<{ expanded: boolean }>('sidebar').expanded);
+
+	const addToast = getToastContext();
+
+	$effect(() => {
+		if ($overlayLoadFailed) {
+			// Adding a toast reads the list of toasts which must not rerun this effect
+			untrack(() =>
+				addToast({
+					heading: $_('toast.overlay_load_error.heading'),
+					message: $_('toast.overlay_load_error.message'),
+					status: 'error'
+				})
+			);
+		}
+	});
 </script>
 
 <div class="app-wrapper" style="--overlay-width-factor: {$overlayWidth}">
@@ -42,7 +58,7 @@
 
 	{@render children()}
 
-	{#if $overlay}
+	{#if $overlay || $overlayLoading}
 		<Overlay data={$overlay} />
 	{/if}
 </div>
