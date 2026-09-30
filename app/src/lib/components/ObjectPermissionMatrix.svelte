@@ -223,7 +223,7 @@
 						{$_(`permission_matrix.${group.label}`)}
 					</th>
 				{/each}
-				<th class="col-actions" rowspan="2"></th>
+				<th class="col-actions"></th>
 			</tr>
 			<tr>
 				{#each columnGroups as group (group.target)}
@@ -235,6 +235,7 @@
 						</th>
 					{/each}
 				{/each}
+				<th class="col-actions"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -454,6 +455,11 @@
 	th.col-role,
 	.col-group-start {
 		border-left: 1px solid var(--color-gray-100);
+	}
+
+	/* the empty actions header reads as part of the preceding cell */
+	thead th:has(+ .col-actions) {
+		border-right: none;
 	}
 
 	th {
