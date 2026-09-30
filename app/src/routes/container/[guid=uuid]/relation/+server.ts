@@ -257,10 +257,11 @@ export const POST = (async ({ locals, params, request }) => {
 				// allowed to create programs within the adopting organization or
 				// organizational unit (the same create-inside rule the client
 				// applies when listing the adopters, inherited grants included),
-				// the program must be adoptable, and the owning organizational
-				// unit may not adopt its own program. Removal is exempt from the
-				// latter rules: taking away a relation that should not exist must
-				// always be possible for those responsible for the adopting unit.
+				// the program must be adoptable, and neither the owning
+				// organization nor the owning organizational unit may adopt their
+				// own program. Removal is exempt from the latter rules: taking away
+				// a relation that should not exist must always be possible for
+				// those responsible for the adopting scope.
 				if (predicate == predicates.enum['is-adopted-by']) {
 					return (
 						createFeatureDecisions(locals.features).useAdoptions() &&
@@ -270,7 +271,8 @@ export const POST = (async ({ locals, params, request }) => {
 							(isAdoptableProgram(subjectContainer) &&
 								(isOrganizationContainer(objectContainer) ||
 									isOrganizationalUnitContainer(objectContainer)) &&
-								objectContainer.guid != subjectContainer.organizational_unit))
+								objectContainer.guid != subjectContainer.organizational_unit &&
+								objectContainer.guid != subjectContainer.organization))
 					);
 				}
 				return ability.can(

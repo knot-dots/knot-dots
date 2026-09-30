@@ -142,10 +142,31 @@ function decoupledUnit(organizationSet: { self: string[]; subordinates: string[]
 	};
 }
 
-function adoption(deleted = false) {
-	return [
-		{ deleted, object: unit, position: 0, predicate: 'is-adopted-by', subject: containerGuid }
-	];
+// the adopting organization itself, governed by its own matrix
+function adoptingOrganization(organizationSet: { self: string[]; subordinates: string[] }) {
+	return {
+		guid: organization,
+		managed_by: [organization],
+		organization,
+		organizational_unit: null,
+		payload: { name: 'Organization', type: 'organization', visibility: 'public' },
+		realm: 'test',
+		relation: [],
+		user: [],
+		user_grant: composeUserGrants({
+			scopeSourced: true,
+			governsItself: true,
+			organizationSelf: organizationSet.self as never,
+			organizationalUnitSelf: [],
+			source: organization,
+			sourceSelf: organizationSet.self as never,
+			sourceSubordinates: organizationSet.subordinates as never
+		})
+	};
+}
+
+function adoption(deleted = false, object = unit) {
+	return [{ deleted, object, position: 0, predicate: 'is-adopted-by', subject: containerGuid }];
 }
 
 function postRelation(
@@ -339,6 +360,54 @@ test('an adoption is removed by those who may create within the unit', async () 
 	expect(deleteManyContainerRelations).toHaveBeenCalledWith([
 		{ deleted: true, object: unit, position: 0, predicate: 'is-adopted-by', subject: containerGuid }
 	]);
+	expect(updateManyContainerRelations).not.toHaveBeenCalled();
+});
+
+test('an organization administrator adopts a program for the organization itself', async () => {
+	getManyContainers.mockReturnValue(async () => [
+		ruleSet(containerGuid),
+		adoptingOrganization(grantSetForRole(memberRoles.enum.administrator))
+	]);
+
+	const response = await postRelation(
+		{
+			...user,
+			roles: [],
+			grants: grantRecordsForRoleOn(memberRoles.enum.administrator, organization)
+		},
+		adoption(false, organization),
+		['Adoptions']
+	);
+
+	expect(response.status).toBe(204);
+	expect(updateManyContainerRelations).toHaveBeenCalledWith([
+		{
+			deleted: false,
+			object: organization,
+			position: 0,
+			predicate: 'is-adopted-by',
+			subject: containerGuid
+		}
+	]);
+});
+
+test('the owning organization may not adopt its own program', async () => {
+	getManyContainers.mockReturnValue(async () => [
+		{ ...ruleSet(containerGuid), organization },
+		adoptingOrganization(grantSetForRole(memberRoles.enum.administrator))
+	]);
+
+	const response = await postRelation(
+		{
+			...user,
+			roles: [],
+			grants: grantRecordsForRoleOn(memberRoles.enum.administrator, organization)
+		},
+		adoption(false, organization),
+		['Adoptions']
+	);
+
+	expect(response.status).toBe(204);
 	expect(updateManyContainerRelations).not.toHaveBeenCalled();
 });
 
