@@ -11,7 +11,6 @@
 	import Close from '~icons/flowbite/close-outline';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import Plus from '~icons/knotdots/plus';
-	import Relation from '~icons/knotdots/relation';
 	import SearchInput from '$lib/components/SearchInput.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -38,12 +37,11 @@
 	}
 
 	interface Props {
-		defaultOrganization?: Container<OrganizationPayload>;
 		organizationalUnits: Container<OrganizationalUnitPayload>[];
 		currentOrganizationalUnit?: Container<OrganizationalUnitPayload>;
 	}
 
-	let { defaultOrganization, organizationalUnits, currentOrganizationalUnit }: Props = $props();
+	let { organizationalUnits, currentOrganizationalUnit }: Props = $props();
 
 	const title = $_('organizational_units');
 
@@ -250,18 +248,6 @@
 		<ul class="tree-root" {...tree.root}>
 			{@render renderChildren(tree.children, 0)}
 		</ul>
-		{#if defaultOrganization}
-			<a
-				class="dropdown-button dropdown-button--footer"
-				data-sveltekit-preload-code="tap"
-				data-sveltekit-preload-data="tap"
-				href={optionURL(defaultOrganization)}
-			>
-				<Relation />
-				<span>{defaultOrganization.payload.name}</span>
-				<ChevronRight />
-			</a>
-		{/if}
 	{/snippet}
 </Dropdown>
 

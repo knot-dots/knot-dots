@@ -1,7 +1,10 @@
 import { z } from 'zod';
-import { payloadTypes, relation, status, userRelation } from '$lib/models';
+import { createContainerSchema, payloadTypes, status } from '$lib/models';
+import { nextOffset, paginationInput } from '$lib/server/mcp/contracts/pagination';
 
 export const containerSummary = z.strictObject({
+	assigneeGuids: z.array(z.uuid()),
+	creatorGuids: z.array(z.uuid()),
 	guid: z.uuid(),
 	label: z.string().nullable(),
 	organizationGuid: z.uuid(),
@@ -17,18 +20,11 @@ export const getContainerInput = z.strictObject({
 	guid: z.uuid().describe('GUID of the container to retrieve.')
 });
 
-const serializedContainer = z.looseObject({
-	computed_managed_by: z.array(z.uuid()).optional(),
-	guid: z.uuid(),
+// The payload stays loose: its schema is published per type as a resource, and
+// the payload schemas' transforms cannot be represented as output JSON Schema.
+// managed_by and valid_from are overridden for the same reason.
+const serializedContainer = createContainerSchema(z.looseObject({ type: payloadTypes })).extend({
 	managed_by: z.array(z.uuid()).nonempty(),
-	organization: z.uuid(),
-	organizational_unit: z.uuid().nullable(),
-	payload: z.looseObject({ type: payloadTypes }),
-	realm: z.string(),
-	relation: z.array(relation),
-	revision: z.number().int().positive(),
-	user: z.array(userRelation),
-	valid_currently: z.boolean(),
 	valid_from: z.iso.datetime()
 });
 
@@ -41,13 +37,7 @@ export const searchContainersInput = z.strictObject({
 		.array(z.uuid())
 		.default([])
 		.describe('Allowed assignee user GUIDs; empty matches every assignee.'),
-	limit: z.number().int().min(1).max(100).default(50).describe('Maximum number of results.'),
-	offset: z
-		.number()
-		.int()
-		.nonnegative()
-		.default(0)
-		.describe('Offset within the visible result set.'),
+	...paginationInput('containers'),
 	organizationGuid: z.uuid().describe('Organization whose containers should be searched.'),
 	organizationalUnitGuid: z
 		.uuid()
@@ -74,7 +64,7 @@ export type SearchContainersInput = z.infer<typeof searchContainersInput>;
 
 export const searchContainersOutput = z.strictObject({
 	containers: z.array(containerSummary),
-	nextOffset: z.number().int().nonnegative().nullable()
+	nextOffset
 });
 
 export type SearchContainersOutput = z.infer<typeof searchContainersOutput>;

@@ -161,17 +161,14 @@
 
 <style>
 	.dropdown {
-		background:
-			linear-gradient(205deg, rgba(255, 255, 255, 0.75) 1.32%, rgba(255, 255, 255, 0) 97.79%),
-			var(--color-background-accent-muted);
-		border: solid 1px var(--color-border-accent-subtle);
-		border-radius: 12px;
+		--action-button-background: var(--color-surface-container);
+
 		margin: 0.25rem;
-		padding: 0.25rem;
-		position: absolute;
-		right: -3.125rem;
-		top: 5rem;
-		z-index: 2;
+		padding: 0.375rem;
+		position: fixed;
+		right: 0;
+		top: 8rem;
+		z-index: 1;
 	}
 
 	.dropdown-panel {

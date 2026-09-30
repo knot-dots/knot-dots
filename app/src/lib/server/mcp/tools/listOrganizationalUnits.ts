@@ -1,28 +1,20 @@
 import type { AuthInfo, McpServer } from '@modelcontextprotocol/server';
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
-import { z } from 'zod';
-import { organizationalUnitSummary } from '$lib/organizationalUnitSummary';
-import type { ListMcpOrganizationalUnitsResult } from '$lib/server/mcp/organizationalUnits';
+import {
+	listOrganizationalUnitsInput,
+	listOrganizationalUnitsOutput,
+	type ListOrganizationalUnitsInput,
+	type ListOrganizationalUnitsOutput
+} from '$lib/server/mcp/contracts/organizationalUnits';
 import { mcpScopes } from '$lib/server/mcp/scopes';
 import { authorizeMcpTool, toolError } from '$lib/server/mcp/toolAuthorization';
-
-const listOrganizationalUnitsInput = z.strictObject({
-	limit: z.number().int().min(1).max(100).default(50),
-	offset: z.number().int().nonnegative().default(0),
-	organizationGuid: z.uuid()
-});
-
-export const listOrganizationalUnitsOutput = z.strictObject({
-	nextOffset: z.number().int().nonnegative().nullable(),
-	organizationalUnits: z.array(organizationalUnitSummary)
-});
 
 export interface ListOrganizationalUnitsDependencies {
 	listOrganizationalUnits(
 		userId: string,
-		input: z.infer<typeof listOrganizationalUnitsInput>
-	): Promise<ListMcpOrganizationalUnitsResult>;
+		input: ListOrganizationalUnitsInput
+	): Promise<ListOrganizationalUnitsOutput>;
 }
 
 export function registerListOrganizationalUnitsTool(

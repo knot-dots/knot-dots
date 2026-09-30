@@ -9,7 +9,6 @@
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import Plus from '~icons/knotdots/plus';
-	import Relation from '~icons/knotdots/relation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import { createFeatureDecisions } from '$lib/features';
@@ -23,6 +22,7 @@
 		payloadTypes
 	} from '$lib/models';
 	import { ability, mayCreateContainer, newContainer } from '$lib/stores';
+	import transformFileURL from '$lib/transformFileURL';
 	import { getVisibleWorkspaces } from '$lib/workspaces';
 
 	interface Props {
@@ -146,7 +146,13 @@
 					data-sveltekit-preload-data="tap"
 					href={optionURL(defaultOrganization)}
 				>
-					<Relation />
+					{#if defaultOrganization.payload.customFavicon}
+						<img
+							alt=""
+							class="favorite-icon"
+							src={transformFileURL(defaultOrganization.payload.customFavicon.url)}
+						/>
+					{/if}
 					<span>{defaultOrganization.payload.name}</span>
 					<ChevronRight />
 				</a>
@@ -193,5 +199,10 @@
 
 	.menu-item.menu-item--active > a {
 		background-color: var(--color-gray-100);
+	}
+
+	.favorite-icon {
+		height: 1rem;
+		width: 1rem;
 	}
 </style>

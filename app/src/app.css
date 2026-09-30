@@ -836,6 +836,9 @@ button.button-xs svg,
 }
 
 .action-button {
+	--action-button-background: transparent;
+
+	background: var(--action-button-background);
 	border: none;
 	border-radius: 8px;
 	color: var(--color-text-accent-default);

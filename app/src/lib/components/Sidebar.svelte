@@ -13,7 +13,6 @@
 	import Home from '~icons/flowbite/home-solid';
 	import StarSolid from '~icons/flowbite/star-solid';
 	import DragHandle from '~icons/knotdots/draghandle';
-	import Favicon from '~icons/knotdots/favicon';
 	import OrganizationalUnitIcon from '~icons/knotdots/organizational-unit';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
@@ -357,7 +356,6 @@
 	>
 		<div class="sidebar-panel-header">
 			<OrganizationalUnitMenu
-				{defaultOrganization}
 				{organizationalUnits}
 				currentOrganizationalUnit={page.data.currentOrganizationalUnit}
 			/>
@@ -522,8 +520,11 @@
 
 <div class="sidebar-panel sidebar-panel--footer">
 	<a class="sidebar-menu-item sidebar-menu-item--footer" href={env.PUBLIC_BASE_URL} rel="external">
-		<Favicon />
-		<span class="truncated">knot dots</span>
+		{const icon = defaultOrganization?.payload.customFavicon}
+		{#if icon}
+			<img alt="" class="favorite-icon" src={transformFileURL(icon.url)} />
+		{/if}
+		<span class="truncated">{defaultOrganization?.payload.name ?? 'knotdots.net'}</span>
 		<ChevronRight />
 	</a>
 </div>

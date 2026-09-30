@@ -237,7 +237,8 @@
 			border: 1px solid var(--color-border-accent-subtle);
 			border-radius: 12px;
 			flex-direction: column;
-			margin: auto 0;
+			height: fit-content;
+			margin: 12rem 0 0;
 		}
 
 		.tablist:has(+ .tabpanel) {

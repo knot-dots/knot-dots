@@ -27,7 +27,7 @@ beforeEach(() => {
 	});
 });
 
-test('creates new tokens with organization and container read scopes', async () => {
+test('creates read-only tokens by default', async () => {
 	const connect = vi.fn().mockResolvedValue(undefined);
 	const request = new Request('http://localhost/me/settings/tokens?/create', {
 		body: new URLSearchParams({ name: 'Claude' }),
@@ -51,4 +51,52 @@ test('creates new tokens with organization and container read scopes', async () 
 	});
 	expect(connect).toHaveBeenCalledExactlyOnceWith(databaseOperation);
 	expect(result).toEqual({ action: 'create', createdToken: `mcp_pat_${'a'.repeat(43)}` });
+});
+
+test('adds the container write scope when explicitly selected', async () => {
+	const connect = vi.fn().mockResolvedValue(undefined);
+	const request = new Request('http://localhost/me/settings/tokens?/create', {
+		body: new URLSearchParams({ containersWrite: 'true', name: 'Claude write access' }),
+		method: 'POST'
+	});
+
+	await actions.create({
+		locals: {
+			pool: { connect },
+			user: { guid: userId, isAuthenticated: true }
+		},
+		request
+	} as never);
+
+	expect(insertMcpToken).toHaveBeenCalledExactlyOnceWith({
+		name: 'Claude write access',
+		prefix: 'mcp_pat_example',
+		scopes: ['containers:read', 'organizations:read', 'containers:write'],
+		secretHash: Buffer.from('hash'),
+		userId
+	});
+});
+
+test('adds the user read scope when explicitly selected', async () => {
+	const connect = vi.fn().mockResolvedValue(undefined);
+	const request = new Request('http://localhost/me/settings/tokens?/create', {
+		body: new URLSearchParams({ name: 'Claude user lookup', usersRead: 'true' }),
+		method: 'POST'
+	});
+
+	await actions.create({
+		locals: {
+			pool: { connect },
+			user: { guid: userId, isAuthenticated: true }
+		},
+		request
+	} as never);
+
+	expect(insertMcpToken).toHaveBeenCalledExactlyOnceWith({
+		name: 'Claude user lookup',
+		prefix: 'mcp_pat_example',
+		scopes: ['containers:read', 'organizations:read', 'users:read'],
+		secretHash: Buffer.from('hash'),
+		userId
+	});
 });
