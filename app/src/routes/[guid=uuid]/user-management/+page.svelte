@@ -324,32 +324,30 @@
 
 		{#snippet main()}
 			{#if permissionView}
-				<div class="matrix-wrapper">
-					{#if data.inheritedGrants && data.inheritedUsers && data.scope}
-						<ObjectPermissionMatrix
-							container={data.container}
-							editable={isEditMode && $ability.can('manage-users', data.container)}
-							grants={data.grants}
-							inheritedGrants={data.inheritedGrants}
-							inheritedUsers={data.inheritedUsers}
-							oninvite={$ability.can('manage-users', data.container)
-								? () => inviteDialog.showModal()
-								: undefined}
-							scope={data.scope}
-							{users}
-						/>
-					{:else}
-						<UserPermissionMatrix
-							container={data.container}
-							editable={isEditMode && $ability.can('manage-users', data.container)}
-							grants={data.grants}
-							oninvite={$ability.can('manage-users', data.container)
-								? () => inviteDialog.showModal()
-								: undefined}
-							{users}
-						/>
-					{/if}
-				</div>
+				{#if data.inheritedGrants && data.inheritedUsers && data.scope}
+					<ObjectPermissionMatrix
+						container={data.container}
+						editable={isEditMode && $ability.can('manage-users', data.container)}
+						grants={data.grants}
+						inheritedGrants={data.inheritedGrants}
+						inheritedUsers={data.inheritedUsers}
+						oninvite={$ability.can('manage-users', data.container)
+							? () => inviteDialog.showModal()
+							: undefined}
+						scope={data.scope}
+						{users}
+					/>
+				{:else}
+					<UserPermissionMatrix
+						container={data.container}
+						editable={isEditMode && $ability.can('manage-users', data.container)}
+						grants={data.grants}
+						oninvite={$ability.can('manage-users', data.container)
+							? () => inviteDialog.showModal()
+							: undefined}
+						{users}
+					/>
+				{/if}
 				<ContextTabs slug="user-management" />
 			{:else}
 				<div class="table-wrapper table-wrapper--with-end-padding">
@@ -441,10 +439,6 @@
 		background-color: var(--segmented-button-selected-background-color);
 		border-color: var(--segmented-button-selected-border-color);
 		color: var(--segmented-button-selected-color);
-	}
-
-	.matrix-wrapper {
-		margin: 1rem 0 0;
 	}
 
 	.table-wrapper {

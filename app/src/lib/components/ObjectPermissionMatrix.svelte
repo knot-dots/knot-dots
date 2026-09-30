@@ -7,6 +7,7 @@
 	import PlusIcon from '~icons/flowbite/plus-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
+	import RoleIcon from '~icons/knotdots/arrow-circle-down-outline';
 	import saveGrantInheritance from '$lib/client/saveGrantInheritance';
 	import saveGrants from '$lib/client/saveGrants';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
@@ -201,7 +202,7 @@
 	}
 </script>
 
-<div class="table-wrapper table-wrapper--with-end-padding">
+<div class="table-wrapper wide">
 	<table>
 		<thead>
 			<tr>
@@ -213,6 +214,7 @@
 				</th>
 				<th class="col-role" rowspan="2">
 					<span class="header-content">
+						<RoleIcon />
 						<span class="header-label">{$_('user.role')}</span>
 					</span>
 				</th>
@@ -226,7 +228,7 @@
 			<tr>
 				{#each columnGroups as group (group.target)}
 					{#each group.kinds as kind (kind)}
-						<th class="col-grant">
+						<th class="col-grant" class:col-group-start={kind === group.kinds[0]}>
 							<span class="header-content">
 								<span class="header-label">{$_(`permission.${kind}`)}</span>
 							</span>
@@ -236,12 +238,12 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr class="section-row" class:inactive={!inherits}>
+			<tr class="section-row section-row--inherited" class:inactive={!inherits}>
 				<td colspan={columnCount + 1}>
 					<span class="section-header">
 						<button
 							aria-expanded={inheritedExpanded}
-							class="quiet section-toggle"
+							class="section-toggle"
 							type="button"
 							onclick={() => (inheritedExpanded = !inheritedExpanded)}
 						>
@@ -275,12 +277,12 @@
 			{#if inheritedExpanded}
 				{#each inheritedRows as { set, user } (user.guid)}
 					<tr class:inactive={!inherits}>
-						<td class="col-name" class:locked={inherits}>
+						<td class="col-name locked">
 							<span class="user-cell">
 								<span class="user-name">{displayName(user)}</span>
 							</span>
 						</td>
-						<td class="col-role" class:locked={inherits}>
+						<td class="col-role locked">
 							<BadgeDropdown
 								allowEmpty={false}
 								value={memberRoleMatchingGrantSet(set) ?? undefined}
@@ -291,7 +293,7 @@
 						</td>
 						{#each columnGroups as group (group.target)}
 							{#each group.kinds as kind (kind)}
-								<td class="col-grant" class:locked={inherits}>
+								<td class="col-grant locked" class:col-group-start={kind === group.kinds[0]}>
 									<input
 										type="checkbox"
 										aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
@@ -301,16 +303,16 @@
 								</td>
 							{/each}
 						{/each}
-						<td class="col-actions" class:locked={inherits}></td>
+						<td class="col-actions locked"></td>
 					</tr>
 				{/each}
 			{/if}
-			<tr class="section-row">
+			<tr class="section-row section-row--own">
 				<td colspan={columnCount + 1}>
 					<span class="section-header">
 						<button
 							aria-expanded={ownExpanded}
-							class="quiet section-toggle"
+							class="section-toggle"
 							type="button"
 							onclick={() => (ownExpanded = !ownExpanded)}
 						>
@@ -330,7 +332,7 @@
 							<span class="user-cell">
 								<span class="user-name">{displayName(user)}</span>
 								{#if creators.includes(user.guid)}
-									<span class="badge badge--yellow">{$_('role.author')}</span>
+									<span class="badge badge--large badge--yellow">{$_('role.author')}</span>
 								{/if}
 							</span>
 						</td>
@@ -346,7 +348,7 @@
 						</td>
 						{#each columnGroups as group (group.target)}
 							{#each group.kinds as kind (kind)}
-								<td class="col-grant">
+								<td class="col-grant" class:col-group-start={kind === group.kinds[0]}>
 									<input
 										type="checkbox"
 										aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
@@ -362,7 +364,7 @@
 							{#if editable && !inherits}
 								<button
 									aria-label={$_('user.remove')}
-									class="quiet remove-button"
+									class="action-button"
 									type="button"
 									onclick={() => removeSubject(user)}
 								>
@@ -376,7 +378,7 @@
 					<tr class="add-row">
 						<td colspan={columnCount + 1}>
 							<button
-								class="quiet add-button"
+								class="button-alternate button-xs system-primary"
 								disabled={!editable || inherits}
 								type="button"
 								onclick={oninvite}
@@ -393,27 +395,26 @@
 </div>
 
 <style>
-	.table-wrapper {
-		overflow: auto;
-		position: relative;
-	}
-
-	:global(.details-section) > .table-wrapper {
-		margin-left: calc(var(--details-section-padding-x) * -1);
-		margin-right: calc(var(--details-section-padding-x) * -1);
-		max-width: calc(100% + 2 * var(--details-section-padding-x));
-	}
-
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
+		border-radius: 4px;
+		font-size: 0.875rem;
 		min-width: 100%;
 		width: max-content;
 	}
 
 	thead th {
+		background-color: white;
 		position: sticky;
 		z-index: 1;
+	}
+
+	/* the matrix does not use the global row highlighting */
+	tbody tr,
+	tbody tr:hover,
+	tbody tr:has(input[type='checkbox']:checked) {
+		background-color: white;
 	}
 
 	thead tr:first-child th {
@@ -421,17 +422,19 @@
 	}
 
 	th.col-group {
-		font-weight: 600;
-		height: 2.25rem;
+		border-left: 1px solid var(--color-gray-100);
+		font-weight: 500;
+		height: 2.5rem;
 		text-align: left;
 	}
 
 	thead tr:nth-child(2) th {
-		top: 2.25rem;
+		top: 2.5rem;
 	}
 
 	th,
 	td {
+		border-bottom: 1px solid var(--color-gray-100);
 		border-right: 1px solid var(--color-gray-100);
 		padding: 0.5rem;
 		white-space: nowrap;
@@ -442,27 +445,37 @@
 		border-right: none;
 	}
 
+	/* stronger separators mark the start of each column group */
+	td.col-role,
+	th.col-role,
+	.col-group-start {
+		border-left: 1px solid var(--color-gray-100);
+	}
+
 	th {
 		color: var(--color-gray-600);
 		font-weight: 400;
+		height: 2.5rem;
 	}
 
 	td {
 		color: var(--color-gray-800);
 		font-weight: 500;
-		height: 3.25rem;
+		height: 3.125rem;
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* the hatched blue rows mark the inherited matrix as read-only */
+	/* the hatched rows mark the inherited matrix as read-only; the pattern of
+	   the Figma component (#fff5f5/#ffebeb), overlaid at 75% like in the design */
 	td.locked {
 		background: repeating-linear-gradient(
 			45deg,
-			var(--color-primary-025),
-			var(--color-primary-025) 2px,
-			var(--color-primary-050) 2px,
-			var(--color-primary-050) 4px
+			rgba(255, 245, 245, 0.75),
+			rgba(255, 245, 245, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 4px
 		);
+		cursor: not-allowed;
 	}
 
 	/* the inherited matrix no longer applies once inheritance is disabled */
@@ -476,7 +489,52 @@
 	}
 
 	tr.section-row td {
+		border-left: none;
 		border-right: none;
+		padding: 0.75rem 0.5rem;
+	}
+
+	tr.add-row td {
+		border: none;
+	}
+
+	tr.section-row--inherited td {
+		background-color: var(--color-green-025);
+		border-bottom: 1px solid var(--color-green-050);
+		border-top: 1px solid var(--color-green-050);
+		height: 2.5rem;
+	}
+
+	tr.section-row--inherited .section-toggle {
+		color: var(--color-green-700);
+	}
+
+	tr.section-row--inherited .inherit-toggle {
+		background-color: var(--color-green-025);
+		color: var(--color-green-900);
+	}
+
+	tr.section-row--inherited.inactive td {
+		background-color: var(--color-gray-025);
+		border-bottom: 1px solid var(--color-gray-050);
+		border-top: 1px solid var(--color-gray-050);
+		opacity: 1;
+	}
+
+	tr.section-row--inherited.inactive .section-toggle {
+		color: var(--color-gray-700);
+	}
+
+	tr.section-row--inherited.inactive .inherit-toggle {
+		background-color: var(--color-gray-025);
+		color: var(--color-gray-900);
+	}
+
+	tr.section-row--own td {
+		border-bottom: 1px solid var(--color-gray-050);
+		border-top: 1px solid var(--color-gray-050);
+		height: 3rem;
+		padding: 0.5rem;
 	}
 
 	.section-header {
@@ -488,10 +546,18 @@
 
 	.section-toggle {
 		align-items: center;
-		color: var(--color-gray-800);
+		background: none;
+		border: none;
+		color: var(--color-gray-700);
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.375rem;
+		padding: 0;
+	}
+
+	.section-toggle :global(svg) {
+		height: 1rem;
+		width: 1rem;
 	}
 
 	.inherit-toggle {
@@ -499,14 +565,38 @@
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.5rem;
+		padding-left: 0.5rem;
+		position: sticky;
+		right: calc(0.5rem);
 	}
 
-	input[type='checkbox']:not(.toggle) {
-		accent-color: var(--color-primary-700);
+	.inherit-toggle .toggle {
+		--height: 1.2rem;
+		--padding: 0.15rem;
+		--width: 2.7rem;
+
+		background-color: var(--color-gray-300);
+	}
+
+	.inherit-toggle .toggle:checked {
+		background-color: var(--color-green-700);
+	}
+
+	.inherit-toggle .toggle:disabled {
+		background-color: var(--color-gray-300);
+	}
+
+	.inherit-toggle .toggle:checked:disabled {
+		background-color: var(--color-green-700);
 	}
 
 	td.locked input[type='checkbox'] {
-		accent-color: var(--color-gray-600);
+		cursor: not-allowed;
+	}
+
+	tr.inactive input[type='checkbox']:not(.toggle):checked {
+		background-color: var(--color-gray-400);
+		border-color: var(--color-gray-400);
 	}
 
 	.header-content {
@@ -544,7 +634,7 @@
 	}
 
 	.col-role {
-		min-width: 9rem;
+		min-width: 9.125rem;
 	}
 
 	.col-grant {
@@ -555,21 +645,5 @@
 	.col-actions {
 		min-width: 3.5rem;
 		text-align: center;
-	}
-
-	.remove-button,
-	.add-button {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.25rem;
-	}
-
-	.add-button {
-		color: var(--color-primary-700);
-	}
-
-	.add-button:disabled {
-		color: var(--color-gray-400);
-		cursor: not-allowed;
 	}
 </style>

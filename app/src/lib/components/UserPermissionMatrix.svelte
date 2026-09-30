@@ -141,7 +141,7 @@
 	}
 </script>
 
-<div class="table-wrapper table-wrapper--with-end-padding">
+<div class="table-wrapper">
 	<table>
 		<thead>
 			<tr>
@@ -213,7 +213,7 @@
 						{#if editable}
 							<button
 								aria-label={$_('user.remove')}
-								class="quiet remove-button"
+								class="action-button"
 								type="button"
 								onclick={() => removeSubject(user)}
 							>
@@ -226,7 +226,11 @@
 			{#if oninvite}
 				<tr class="add-row">
 					<td colspan={10}>
-						<button class="quiet add-button" type="button" onclick={oninvite}>
+						<button
+							class="button-alternate button-xs system-primary"
+							type="button"
+							onclick={oninvite}
+						>
 							<PlusIcon />
 							<span>{$_('add_item')}</span>
 						</button>
@@ -238,17 +242,6 @@
 </div>
 
 <style>
-	.table-wrapper {
-		overflow: auto;
-		position: relative;
-	}
-
-	:global(.details-section) > .table-wrapper {
-		margin-left: calc(var(--details-section-padding-x) * -1);
-		margin-right: calc(var(--details-section-padding-x) * -1);
-		max-width: calc(100% + 2 * var(--details-section-padding-x));
-	}
-
 	table {
 		border-collapse: separate;
 		border-spacing: 0;
@@ -310,10 +303,6 @@
 		);
 	}
 
-	input[type='checkbox'] {
-		accent-color: var(--color-primary-700);
-	}
-
 	td.locked input[type='checkbox'] {
 		accent-color: var(--color-gray-600);
 	}
@@ -366,18 +355,7 @@
 		text-align: center;
 	}
 
-	.remove-button,
-	.add-button {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.25rem;
-	}
-
 	.add-row td {
 		border-right: none;
-	}
-
-	.add-button {
-		color: var(--color-primary-700);
 	}
 </style>
