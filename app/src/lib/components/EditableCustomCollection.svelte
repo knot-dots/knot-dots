@@ -23,7 +23,9 @@
 	import OrganizationCard from '$lib/components/OrganizationCard.svelte';
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
+	import TimelineView from '$lib/components/TimelineView.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		actualDataPayload,
 		type AnyPayload,
@@ -87,6 +89,14 @@
 		payloadTypes.enum.rule,
 		payloadTypes.enum.task
 	]);
+
+	// The timeline shows all items at once, but more make it hard to use.
+	const timelineLimit = 200;
+
+	let isTimeline = $derived(
+		container.payload.listType === 'timeline' &&
+			createFeatureDecisions(page.data.features).useTimeline()
+	);
 
 	let localTerms = $state('');
 
@@ -164,10 +174,12 @@
 			() => $state.snapshot(container.payload.filter),
 			() => container.payload.terms,
 			() => (container.payload.allowSearch ? localTerms.trim() : ''),
-			() => (container.payload.allowSort ? localSort : container.payload.sort),
-			() => inViewportOnce
+			() =>
+				isTimeline ? 'date' : container.payload.allowSort ? localSort : container.payload.sort,
+			() => inViewportOnce,
+			() => isTimeline
 		],
-		async ([item, filter, terms, searchTerms, sort, inViewportOnce], _, { signal }) => {
+		async ([item, filter, terms, searchTerms, sort, inViewportOnce, isTimeline], _, { signal }) => {
 			if (!inViewportOnce) return { containers: [], hasMore: false, nextOffset: null, total: 0 };
 
 			const query = buildSavedQuery(item, filter, terms, searchTerms, sort);
@@ -175,7 +187,7 @@
 
 			const result = await fetchContainerPage({
 				fetch,
-				limit: DEFAULT_PAGE_SIZE,
+				limit: isTimeline ? timelineLimit : DEFAULT_PAGE_SIZE,
 				offset: 0,
 				query,
 				signal
@@ -417,7 +429,7 @@
 
 {#if (hasConfiguredContent && (container.payload.allowSort || isRuleBasedCollection || container.payload.allowSearch)) || (editable && $ability.can('update', container))}
 	<div class="carousel-toolbar">
-		{#if hasConfiguredContent && container.payload.allowSort}
+		{#if hasConfiguredContent && container.payload.allowSort && !isTimeline}
 			<SortDropdown options={sortOptions} bind:value={localSort} />
 		{/if}
 
@@ -464,7 +476,18 @@
 {/if}
 
 {#if hasConfiguredContent}
-	{#if container.payload.listType === 'carousel'}
+	{#if isTimeline}
+		<TimelineView
+			{editable}
+			{heading}
+			{items}
+			label={container.payload.title || $_('list_type.timeline')}
+			limit={timelineLimit}
+			loading={savedResource.loading}
+			showPreview={container.payload.showPreview}
+			total={savedTotal ?? 0}
+		/>
+	{:else if container.payload.listType === 'carousel'}
 		<Carousel
 			addItem={addItems}
 			{items}
