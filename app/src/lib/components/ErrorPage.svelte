@@ -30,15 +30,28 @@
 	// available. Then the platform's home page is the way out.
 	const organization = $derived(page.data.currentOrganization);
 
-	const homeURL = $derived(
-		organization ? getOrganizationURL(organization, '', env).toString() : env.PUBLIC_BASE_URL || '/'
+	const platformHomeURL = $derived(env.PUBLIC_BASE_URL || '/');
+
+	const organizationHomeURL = $derived(
+		organization ? getOrganizationURL(organization, '', env) : undefined
 	);
 
-	const homeLabel = $derived(
-		organization
-			? $_('error.page.home')
-			: $_('error.page.go_to', { values: { name: $_('page_title') } })
-	);
+	// Linking to the page that just failed would lead nowhere.
+	const isOrganizationHome = $derived(organizationHomeURL?.pathname === page.url.pathname);
+
+	const home = $derived.by(() => {
+		if (organizationHomeURL && !isOrganizationHome) {
+			return { href: organizationHomeURL.toString(), label: $_('error.page.home') };
+		} else if (organization?.payload.default) {
+			// The platform's home page is the default organization's home page.
+			return undefined;
+		} else {
+			return {
+				href: platformHomeURL,
+				label: $_('error.page.go_to', { values: { name: $_('page_title') } })
+			};
+		}
+	});
 
 	const title = $derived(
 		`${$_('error.page.title')} – ${organization?.payload.name ?? $_('page_title')}`
@@ -60,6 +73,12 @@
 	<a class="button button-alternate" href={helpCenterURL}>{$_('error.page.help_center')}</a>
 {/snippet}
 
+{#snippet homeLink(className: string)}
+	{#if home}
+		<a class={['button', className]} href={home.href}>{home.label}</a>
+	{/if}
+{/snippet}
+
 {#snippet errorState()}
 	<div class="error-page">
 		<ErrorState
@@ -77,9 +96,9 @@
 					>
 						{$_('login')}
 					</button>
-					<a class="button button-alternate-outline" href={homeURL}>{homeLabel}</a>
+					{@render homeLink('button-alternate-outline')}
 				{:else if variant === 'not_available' || variant === 'no_access'}
-					<a class="button button-primary" href={homeURL}>{homeLabel}</a>
+					{@render homeLink('button-primary')}
 					{#if canGoBack}
 						<button class="button-alternate-outline" onclick={() => history.back()} type="button">
 							{$_('error.page.back')}
@@ -89,7 +108,7 @@
 					<button class="button-primary" onclick={() => location.reload()} type="button">
 						{$_('error.page.reload')}
 					</button>
-					<a class="button button-alternate-outline" href={homeURL}>{homeLabel}</a>
+					{@render homeLink('button-alternate-outline')}
 				{/if}
 			{/snippet}
 		</ErrorState>
@@ -107,7 +126,7 @@
 {:else}
 	<div class="error-page-standalone">
 		<header>
-			<a href={homeURL}><img alt={$_('page_title')} height="24" src={logo} width="24" /></a>
+			<a href={platformHomeURL}><img alt={$_('page_title')} height="24" src={logo} width="24" /></a>
 		</header>
 		<main>
 			{@render errorState()}
