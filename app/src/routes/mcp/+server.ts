@@ -4,6 +4,7 @@ import {
 	requireBearerAuth
 } from '@modelcontextprotocol/server';
 import { env } from '$env/dynamic/public';
+import { createFeatureDecisions } from '$lib/features';
 import { createMcpTokenVerifier } from '$lib/server/mcp/auth';
 import { mcpHandler } from '$lib/server/mcp/server';
 import type { RequestHandler } from './$types';
@@ -11,6 +12,10 @@ import type { RequestHandler } from './$types';
 const allowedHostname = new URL(env.PUBLIC_BASE_URL).hostname;
 
 const handle: RequestHandler = async ({ locals, request }) => {
+	if (!createFeatureDecisions(locals.features).useMcpServer()) {
+		return new Response(null, { status: 404 });
+	}
+
 	const rejected =
 		hostHeaderValidationResponse(request, [allowedHostname]) ??
 		originValidationResponse(request, [allowedHostname]);
