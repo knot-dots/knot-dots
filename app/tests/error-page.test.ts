@@ -47,9 +47,14 @@ test.describe('Error page for anonymous users', () => {
 	});
 
 	test('logging in from the error page returns to the requested page', async ({
+		browserName,
 		page,
 		testPrivateProgram
 	}) => {
+		test.skip(
+			browserName === 'webkit',
+			'WebKit does not keep the Auth.js session cookie on http://localhost, not even when logging in from the header'
+		);
 		const errorPage = new ErrorPage(page);
 
 		await new ProgramPage(page).goto(testPrivateProgram);
@@ -113,15 +118,22 @@ test.describe('Error page for authenticated users', () => {
 		page
 	}) => {
 		const errorPage = new ErrorPage(page);
-		const missingContentURL = `/${defaultOrganization.guid}/${crypto.randomUUID()}`;
+		const homeURL = `/${defaultOrganization.guid}`;
+		const missingContentURL = `${homeURL}/${crypto.randomUUID()}`;
 
-		await page.goto(missingContentURL);
-		await errorPage.main.getByRole('link', { name: 'Go to home page' }).click();
-		await expect(page).not.toHaveURL(missingContentURL);
-		await page.goBack();
+		await page.goto(homeURL);
+		// Wait for hydration so that SvelteKit handles the link instead of the browser.
+		await page.waitForLoadState('networkidle');
+		// Follow a link within the app, as if the content had been deleted in the meantime.
+		await page.evaluate((href) => {
+			const link = document.createElement('a');
+			link.href = href;
+			document.body.append(link);
+			link.click();
+		}, missingContentURL);
 
 		await expect(errorPage.title).toHaveText('This page is not available');
 		await errorPage.main.getByRole('button', { name: 'Back' }).click();
-		await expect(page).not.toHaveURL(missingContentURL);
+		await expect(page).toHaveURL(homeURL);
 	});
 });
