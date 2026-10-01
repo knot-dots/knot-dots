@@ -37,24 +37,30 @@ const userScopedAuthInfo = {
 	extra: { tokenId, userId },
 	scopes: ['users:read']
 };
+const addContainerRelation = vi.fn();
 const addCustomCollectionSection = vi.fn();
 const createContainer = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
 const listContainerCategoryValues = vi.fn();
+const listContainerRelations = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
+const removeContainerRelation = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const updateContainer = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
+	addContainerRelation,
 	addCustomCollectionSection,
 	createContainer,
 	getContainer,
 	listContainerCategories,
 	listContainerCategoryValues,
+	listContainerRelations,
 	listOrganizationalUnits,
 	listOrganizationMemberships,
+	removeContainerRelation,
 	searchContainers,
 	searchOrganizationUsers,
 	updateContainer
@@ -107,14 +113,17 @@ async function legacyResponseJson(response: Response) {
 }
 
 beforeEach(() => {
+	addContainerRelation.mockReset();
 	addCustomCollectionSection.mockReset();
 	createContainer.mockReset();
 	updateContainer.mockReset();
 	getContainer.mockReset();
 	listContainerCategories.mockReset();
 	listContainerCategoryValues.mockReset();
+	listContainerRelations.mockReset();
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
+	removeContainerRelation.mockReset();
 	searchContainers.mockReset();
 	searchOrganizationUsers.mockReset();
 });
@@ -271,6 +280,15 @@ test('advertises tools without requiring their scopes', async () => {
 				title: 'List container category values'
 			}),
 			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: true
+				},
+				name: 'list_container_relations',
+				title: 'List container relations'
+			}),
+			expect.objectContaining({
 				name: 'search_organization_users',
 				title: 'Search organization users'
 			}),
@@ -294,6 +312,24 @@ test('advertises tools without requiring their scopes', async () => {
 			}),
 			expect.objectContaining({
 				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'add_container_relation',
+				title: 'Add container relation'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
+				name: 'remove_container_relation',
+				title: 'Remove container relation'
+			}),
+			expect.objectContaining({
+				annotations: {
 					idempotentHint: false,
 					openWorldHint: false,
 					readOnlyHint: false
@@ -304,13 +340,16 @@ test('advertises tools without requiring their scopes', async () => {
 		])
 	);
 	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
+		'add_container_relation',
 		'add_custom_collection_section',
 		'create_container',
 		'get_container',
 		'list_container_categories',
 		'list_container_category_values',
+		'list_container_relations',
 		'list_my_organizations',
 		'list_organizational_units',
+		'remove_container_relation',
 		'search_containers',
 		'search_organization_users',
 		'update_container'
@@ -457,6 +496,68 @@ test('denies the category tool without the container read scope', async () => {
 	});
 });
 
+test('lists container relations using the read scope', async () => {
+	const guid = '00000000-0000-4000-8000-000000000003';
+	const output = {
+		nextOffset: null,
+		relations: [
+			{
+				container: {
+					assigneeGuids: [],
+					creatorGuids: [],
+					guid: '00000000-0000-4000-8000-000000000004',
+					label: 'Climate goal',
+					organizationGuid: '00000000-0000-4000-8000-000000000005',
+					organizationalUnitGuid: null,
+					status: null,
+					summary: null,
+					type: 'goal'
+				},
+				direction: 'outgoing',
+				position: 0,
+				predicate: 'contributes-to'
+			}
+		]
+	};
+	listContainerRelations.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { guid, predicates: ['contributes-to'] },
+			name: 'list_container_relations'
+		}),
+		{ authInfo: containerScopedAuthInfo }
+	);
+
+	expect(listContainerRelations).toHaveBeenCalledExactlyOnceWith(userId, {
+		guid,
+		limit: 50,
+		offset: 0,
+		predicates: ['contributes-to']
+	});
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('denies listing container relations without the container read scope', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { guid: '00000000-0000-4000-8000-000000000003' },
+			name: 'list_container_relations'
+		}),
+		{ authInfo: scopedAuthInfo }
+	);
+
+	expect(listContainerRelations).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: {
+			content: [{ text: 'Missing required scope: containers:read', type: 'text' }],
+			isError: true
+		}
+	});
+});
+
 test('creates a container using the write scope', async () => {
 	const organizationGuid = '00000000-0000-4000-8000-000000000003';
 	const container = {
@@ -580,6 +681,48 @@ test('adds a custom collection section with categories using the write scope', a
 	});
 });
 
+const relationArguments = {
+	objectGuid: '00000000-0000-4000-8000-000000000004',
+	predicate: 'contributes-to',
+	subjectGuid: '00000000-0000-4000-8000-000000000003'
+};
+
+test.each([
+	['add_container_relation', addContainerRelation],
+	['remove_container_relation', removeContainerRelation]
+])('changes a relation with the %s tool using the write scope', async (name, dependency) => {
+	const output = {
+		changed: true,
+		relation: relationArguments
+	};
+	dependency.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: relationArguments, name }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(dependency).toHaveBeenCalledExactlyOnceWith({ tokenId, userId }, relationArguments);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
+test('rejects structural predicates in the relation tools', async () => {
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', {
+			arguments: { ...relationArguments, predicate: 'is-part-of' },
+			name: 'add_container_relation'
+		}),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(addContainerRelation).not.toHaveBeenCalled();
+	await expect(response.json()).resolves.toMatchObject({
+		result: { isError: true }
+	});
+});
+
 test.each([
 	[
 		'create_container',
@@ -606,7 +749,9 @@ test.each([
 			guid: '00000000-0000-4000-8000-000000000003',
 			payloadPatch: { title: 'Renamed' }
 		}
-	]
+	],
+	['add_container_relation', addContainerRelation, relationArguments],
+	['remove_container_relation', removeContainerRelation, relationArguments]
 ])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', { arguments: arguments_, name }),

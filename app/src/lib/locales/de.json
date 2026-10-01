@@ -489,7 +489,7 @@
 	"mcp_tokens.title": "MCP-Zugriffstokens",
 	"mcp_tokens.token": "Token",
 	"mcp_tokens.user_names_hint": "Nur aktivieren, wenn der verbundene MCP-Client Namen von Organisationsmitgliedern auflösen darf. E-Mail-Adressen und andere Benutzerinformationen werden nie ausgegeben.",
-	"mcp_tokens.write_hint": "Nur aktivieren, wenn der verbundene MCP-Client Inhalte erstellen und bestehende Inhalte ändern darf. Er kann nur tun, was Sie selbst dürfen.",
+	"mcp_tokens.write_hint": "Nur aktivieren, wenn der verbundene MCP-Client Inhalte erstellen und bestehende Inhalte samt ihrer Beziehungen ändern darf. Er kann nur tun, was Sie selbst dürfen.",
 	"measure": "Maßnahme",
 	"measure.hierarchy_level": "Umsetzungs-Ebene",
 	"measure_by_hierarchy_level": "Umsetzungs-Ebene {level}",

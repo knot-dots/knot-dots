@@ -276,14 +276,18 @@ export function createMcpToken({
 	};
 }
 
+// A relation change records the relation: containerGuid is its subject and
+// relation.relatedContainerGuid its object.
 export function recordMcpWriteEvent({
 	containerGuid,
+	relation,
 	revision,
 	tokenId,
 	tool,
 	userId
 }: {
 	containerGuid: string;
+	relation?: { predicate: string; relatedContainerGuid: string };
 	revision: number | null;
 	tokenId: string;
 	tool: string;
@@ -291,8 +295,18 @@ export function recordMcpWriteEvent({
 }) {
 	return async (connection: DatabaseConnection) => {
 		await connection.query(sql.typeAlias('void')`
-			INSERT INTO mcp_write_event (token_id, user_id, tool, container_guid, revision)
-			VALUES (${tokenId}, ${userId}, ${tool}, ${containerGuid}, ${revision})
+			INSERT INTO mcp_write_event (
+				token_id, user_id, tool, container_guid, revision, predicate, related_container_guid
+			)
+			VALUES (
+				${tokenId},
+				${userId},
+				${tool},
+				${containerGuid},
+				${revision},
+				${relation?.predicate ?? null},
+				${relation?.relatedContainerGuid ?? null}
+			)
 		`);
 	};
 }
@@ -2434,6 +2448,32 @@ export function deleteManyContainerRelations(relations: ReadonlyArray<Relation>)
 		);
 
 		await enqueueContainerUpserts(affectedContainerGuids(relations));
+	};
+}
+
+export type AfterContainerRelationsChanged = (
+	connection: DatabaseTransactionConnection
+) => Promise<void>;
+
+// Removes and upserts relations in one transaction. afterChange runs inside
+// the transaction, and indexing events are enqueued only after it committed,
+// so the worker never indexes a state that could still be rolled back.
+export function changeManyContainerRelations(
+	{ removed, upserted }: { removed: ReadonlyArray<Relation>; upserted: ReadonlyArray<Relation> },
+	{ afterChange }: { afterChange?: AfterContainerRelationsChanged } = {}
+) {
+	return async (connection: DatabaseConnection) => {
+		await connection.transaction(async (txConnection) => {
+			if (removed.length > 0) {
+				await deleteManyContainerRelationsInTransaction(removed, txConnection);
+			}
+			if (upserted.length > 0) {
+				await updateManyContainerRelationsInTransaction(upserted, txConnection);
+			}
+			await afterChange?.(txConnection);
+		});
+
+		await enqueueContainerUpserts(affectedContainerGuids([...removed, ...upserted]));
 	};
 }
 

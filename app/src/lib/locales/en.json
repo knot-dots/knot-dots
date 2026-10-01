@@ -489,7 +489,7 @@
 	"mcp_tokens.title": "MCP access tokens",
 	"mcp_tokens.token": "Token",
 	"mcp_tokens.user_names_hint": "Enable only when the connected MCP client should be allowed to resolve organization member names. Email addresses and other user information are never exposed.",
-	"mcp_tokens.write_hint": "Enable only when the connected MCP client should be allowed to create content and to change existing content. It can only do what you may do yourself.",
+	"mcp_tokens.write_hint": "Enable only when the connected MCP client should be allowed to create content and to change existing content, including the relations between them. It can only do what you may do yourself.",
 	"measure": "Measure",
 	"measure.hierarchy_level": "Hierarchy level",
 	"measure_by_hierarchy_level": "Measures {level}",
