@@ -30,14 +30,13 @@ test.describe('Loading states', () => {
 		await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toBeAttached();
 		// The filter stays usable while results are loading
 		await expect(statusOption).toBeEnabled();
-		// A change of the query does not count as a page change
-		await expect(page.getByRole('progressbar')).toHaveCount(0);
+		await expect(page.getByRole('progressbar', { name: 'Loading…' })).toBeVisible();
 
 		releaseData();
 
 		await expect(page).toHaveURL(/\?.+/);
 		await expect(results).toHaveAttribute('aria-busy', 'false');
-		await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toHaveCount(0);
+		await expect(page.getByRole('progressbar')).toHaveCount(0);
 	});
 
 	test('a progress bar is shown while another page is loading', async ({ page, testGoal }) => {

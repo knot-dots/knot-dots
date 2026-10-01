@@ -12,6 +12,7 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ContainerModeDropdown from '$lib/components/ContainerModeDropdown.svelte';
+	import { trackLoading } from '$lib/contexts/loadingTracker.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -66,6 +67,8 @@
 		},
 		{ lazy: true, once: true }
 	);
+
+	trackLoading(() => teasers.loading);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'

@@ -339,9 +339,10 @@
 	--progress-bar-color: var(--color-primary-600);
 	--progress-bar-height: 3px;
 	--progress-bar-track-color: var(--color-primary-100);
+	--skeleton-border-color: var(--color-border-subtle);
 	--skeleton-border-radius: 8px;
-	--skeleton-color: var(--color-gray-100);
-	--skeleton-highlight-color: var(--color-gray-050);
+	--skeleton-color: var(--color-surface-container-raised);
+	--skeleton-highlight-color: var(--color-surface-container);
 	--spinner-color: var(--color-primary-600);
 	--spinner-track-color: var(--color-gray-200);
 

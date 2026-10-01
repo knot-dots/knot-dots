@@ -26,6 +26,7 @@
 	import SortDropdown from '$lib/components/SortDropdown.svelte';
 	import TemplatePicker from '$lib/components/TemplatePicker.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import { trackLoading } from '$lib/contexts/loadingTracker.svelte';
 	import {
 		actualDataPayload,
 		type AnyPayload,
@@ -194,6 +195,8 @@
 
 	// The first page has not arrived yet, e.g. because the section is not in the viewport yet
 	const savedInitialLoading = $derived(savedResource.current === undefined && !savedResource.error);
+
+	trackLoading(() => savedResource.loading);
 
 	// A search or sort within the section dims the previous results
 	const savedReloading = createDelayedFlag(

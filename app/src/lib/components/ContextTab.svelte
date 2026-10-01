@@ -13,6 +13,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import EditableGenericDetailView from '$lib/components/EditableGenericDetailView.svelte';
 	import Skeleton from '$lib/components/Skeleton.svelte';
+	import { trackLoading } from '$lib/contexts/loadingTracker.svelte';
 	import { type Container, isContainerWithName, isContainerWithTitle } from '$lib/models';
 
 	interface Props {
@@ -28,6 +29,8 @@
 	let { containers, empty, tabItem }: Props = $props();
 
 	let selected = $state<Container<P>>();
+
+	trackLoading(() => containers.loading);
 </script>
 
 <header>

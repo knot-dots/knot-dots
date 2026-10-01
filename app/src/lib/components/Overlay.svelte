@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
 	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
+	import { LoadingTracker, setLoadingTrackerContext } from '$lib/contexts/loadingTracker.svelte';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
@@ -28,6 +29,11 @@
 	let { data }: Props = $props();
 
 	setContext('overlay', true);
+
+	// Sections within the overlay report to the progress bar of the overlay
+	const loadingTracker = new LoadingTracker();
+
+	setLoadingTrackerContext(loadingTracker);
 
 	// The previous object is replaced by a skeleton unless the next one loads quickly
 	const switching = createDelayedFlag(() => $overlaySwitching);
@@ -68,16 +74,28 @@
 <section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
-	<ProgressBar active={$overlayLoading} position="overlay" />
+	<ProgressBar active={$overlayLoading || loadingTracker.active} position="overlay" />
 	{#if !data || switching.current}
 		<header class="overlay-skeleton-header">
 			<OverlayCloseButton />
 			<div class="overlay-skeleton-title"><Skeleton count={1} /></div>
+			<div class="overlay-skeleton-actions">
+				<div class="overlay-skeleton-workspaces"><Skeleton variant="block" /></div>
+				<div class="overlay-skeleton-toggle"><Skeleton variant="block" /></div>
+				<div class="overlay-skeleton-menu"><Skeleton variant="block" /></div>
+			</div>
 		</header>
-		<div class="overlay-skeleton-main">
-			<Skeleton count={4} />
-			<Skeleton count={3} variant="card" />
-		</div>
+		<!-- Uses the layout of detail views so that the skeleton lines up with the sections -->
+		<article class="details">
+			<div class="details-scroll-wrapper">
+				<div class="details-section">
+					<Skeleton count={4} />
+				</div>
+				<div class="details-section">
+					<Skeleton count={3} variant="card" />
+				</div>
+			</div>
+		</article>
 	{:else if data.key === overlayKey.enum['members']}
 		<MembersOverlay
 			container={data.container}
@@ -161,11 +179,37 @@
 		width: 50%;
 	}
 
-	.overlay-skeleton-main {
+	/* Sizes follow the workspace menus, edit mode toggle and settings menu of the header */
+	.overlay-skeleton-actions {
+		align-items: center;
 		display: flex;
-		flex-direction: column;
-		gap: 2rem;
-		padding: 1.5rem;
+		gap: 0.75rem;
+		margin-left: auto;
+	}
+
+	.overlay-skeleton-workspaces {
+		height: 2rem;
+		width: 6.5rem;
+	}
+
+	.overlay-skeleton-toggle {
+		--skeleton-block-border-radius: 9999px;
+
+		height: 2.25rem;
+		width: 5.25rem;
+	}
+
+	.overlay-skeleton-menu {
+		--skeleton-block-border-radius: 50%;
+
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	@container overlay (max-width: 30rem) {
+		.overlay-skeleton-workspaces {
+			display: none;
+		}
 	}
 
 	.resize-handle {

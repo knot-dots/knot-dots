@@ -12,6 +12,7 @@
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
 	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { LoadingTracker, setLoadingTrackerContext } from '$lib/contexts/loadingTracker.svelte';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
@@ -65,6 +66,10 @@
 	setFavoriteListContext(favoriteList);
 
 	setComputedProgressContext(createComputedProgressLoader());
+
+	const loadingTracker = new LoadingTracker();
+
+	setLoadingTrackerContext(loadingTracker);
 
 	const title = $derived.by(() => {
 		let title = page.data.currentOrganization.payload.name;
@@ -136,8 +141,12 @@
 	{/if}
 </svelte:head>
 
-<!-- Changes of the query or hash only have their own loading indicators. -->
-<ProgressBar active={navigationKind(navigating) === 'page'} />
+<!-- Overlays, which are opened by changing the hash, have their own progress bar. -->
+<ProgressBar
+	active={loadingTracker.active ||
+		navigationKind(navigating) === 'page' ||
+		navigationKind(navigating) === 'query'}
+/>
 
 {@render children()}
 
