@@ -18,7 +18,7 @@ test.describe('Document titles and breadcrumb', () => {
 
 	test('404 page title is status', async ({ page }) => {
 		await page.goto('/__this_route_should_not_exist__');
-		await expect(page).toHaveTitle(404);
+		await expect(page).toHaveTitle('404');
 	});
 
 	test('title updates to show test organization name', async ({ page, testOrganization }) => {
