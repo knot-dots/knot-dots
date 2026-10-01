@@ -12,8 +12,9 @@
 	const visible = createDelayedFlag(() => active);
 </script>
 
-<!-- The live region has to exist before its content changes to be announced. -->
-<span class="is-visually-hidden" role="status">
+<!-- The live region has to exist before its content changes to be announced. It has no
+     status role, which is left to toasts. -->
+<span aria-live="polite" class="is-visually-hidden">
 	{#if visible.current}{$_('loading')}{/if}
 </span>
 

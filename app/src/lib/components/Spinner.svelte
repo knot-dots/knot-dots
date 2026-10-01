@@ -8,7 +8,7 @@
 	let { size = 'base' }: Props = $props();
 </script>
 
-<span class={['spinner', `spinner--${size}`]} role="status">
+<span class={['spinner', `spinner--${size}`]}>
 	<span class="is-visually-hidden">{$_('loading')}</span>
 </span>
 
