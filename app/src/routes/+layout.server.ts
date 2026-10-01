@@ -1,10 +1,10 @@
 import { Roarr as log } from 'roarr';
 import { isErrorLike, serializeError } from 'serialize-error';
-import { type KeycloakUser, payloadTypes } from '$lib/models';
+import { type KeycloakUser } from '$lib/models';
 import { findUserById } from '$lib/server/keycloak';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ depends, locals, url }) => {
+export const load: LayoutServerLoad = async ({ locals, url }) => {
 	let user: KeycloakUser | undefined = undefined;
 
 	if (url.searchParams.has('signup')) {
