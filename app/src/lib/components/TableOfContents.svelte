@@ -168,7 +168,7 @@
 		position: fixed;
 		right: 0;
 		top: 8rem;
-		z-index: 1;
+		z-index: 2;
 	}
 
 	.dropdown-panel {
