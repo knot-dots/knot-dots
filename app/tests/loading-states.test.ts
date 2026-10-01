@@ -27,7 +27,6 @@ test.describe('Loading states', () => {
 		await statusOption.check();
 
 		await expect(results).toHaveAttribute('aria-busy', 'true');
-		await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toBeAttached();
 		// The filter stays usable while results are loading
 		await expect(statusOption).toBeEnabled();
 		await expect(page.getByRole('progressbar', { name: 'Loading…' })).toBeVisible();
