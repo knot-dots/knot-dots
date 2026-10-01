@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import TeaserCard from '$lib/components/TeaserCard.svelte';
 	import Wall from '$lib/components/Wall.svelte';
 	import Accordion from '$lib/components/Accordion.svelte';
@@ -11,6 +12,7 @@
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ContainerModeDropdown from '$lib/components/ContainerModeDropdown.svelte';
+	import { trackLoading } from '$lib/contexts/loadingTracker.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -65,6 +67,8 @@
 		},
 		{ lazy: true, once: true }
 	);
+
+	trackLoading(() => teasers.loading);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -215,4 +219,14 @@
 			{/snippet}
 		</Carousel>
 	{/if}
+{:else if !teasers.error}
+	<Skeleton
+		count={container.payload.listType === 'list' || container.payload.listType === 'accordion'
+			? 3
+			: undefined}
+		rows={1}
+		variant={container.payload.listType === 'list' || container.payload.listType === 'accordion'
+			? 'text'
+			: 'card'}
+	/>
 {/if}

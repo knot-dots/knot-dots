@@ -835,6 +835,8 @@
 	"toast.bulk_actions.delete_success": "Selected objects removed",
 	"toast.bulk_actions.error": "Bulk update failed",
 	"toast.bulk_actions.update_success": "{count, plural, one {One object} other {# objects}} updated",
+	"toast.overlay_load_error.heading": "Could not load content",
+	"toast.overlay_load_error.message": "Please try again.",
 	"toast.template_created.heading": "Template created",
 	"topic": "Topic",
 	"topic.citizen_participation": "Citizen participation",

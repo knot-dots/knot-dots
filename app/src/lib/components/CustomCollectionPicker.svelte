@@ -8,6 +8,7 @@
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
+	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
@@ -17,6 +18,7 @@
 	import OrganizationFilterDropDown from '$lib/components/OrganizationFilterDropDown.svelte';
 	import PickerDialog from '$lib/components/PickerDialog.svelte';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -171,7 +173,13 @@
 		containers: Container<AnyPayload>[];
 		facets: Map<string, Map<string, number>>;
 		hasMore: boolean;
+		// Identifies the search the page belongs to
+		key: string;
 		nextOffset: number | null;
+	}
+
+	function searchKey(...values: unknown[]) {
+		return JSON.stringify(values);
 	}
 
 	const searchResource = resource(
@@ -183,9 +191,9 @@
 			() => inViewport.current,
 			() => mode
 		],
-		async ([, , , , inViewport], _, { signal }): Promise<SearchPage> => {
+		async ([filter, scope, sort, terms, inViewport, mode], _, { signal }): Promise<SearchPage> => {
 			if (!inViewport)
-				return { containers: [], facets: new Map(), hasMore: false, nextOffset: null };
+				return { containers: [], facets: new Map(), hasMore: false, key: '', nextOffset: null };
 
 			const query = buildSearchQuery();
 			const result = await fetchContainerPage({
@@ -199,6 +207,7 @@
 				containers: result.containers,
 				facets: result.facets,
 				hasMore: result.page.hasMore,
+				key: searchKey(filter, scope, sort, terms, mode),
 				nextOffset: result.page.nextOffset
 			};
 		},
@@ -207,6 +216,16 @@
 			lazy: true
 		}
 	);
+
+	// Comparing keys rather than using searchResource.loading covers the debounce time
+	// and is not reset by aborted requests.
+	const searchPending = $derived(
+		searchResource.current?.key !==
+			searchKey($state.snapshot(filter), $state.snapshot(scope), sort, terms, mode) &&
+			!searchResource.error
+	);
+
+	const searchReloading = createDelayedFlag(() => searchPending && searchItems.length > 0);
 
 	// The previously selected objects may lie outside the current catalog
 	// filters or beyond the loaded pages, so they are fetched separately to
@@ -484,8 +503,10 @@
 
 	{#snippet main()}
 		<div class="result">
-			{#if searchItems.length > 0 || searchResource.current !== undefined}
-				<ul class="catalog">
+			{#if searchPending && searchItems.length === 0}
+				<Skeleton variant="card" />
+			{:else}
+				<ul aria-busy={searchReloading.current} class="catalog loading-area">
 					{#each searchItems as item (item.guid)}
 						<li>
 							{#if mode === 'select'}
@@ -508,7 +529,11 @@
 						hasMore={searchHasMore}
 						loading={searchLoadingMore}
 						onLoadMore={loadMoreSearch}
-					/>
+					>
+						{#snippet loadingContent()}
+							<Skeleton rows={1} variant="card" />
+						{/snippet}
+					</LazyLoadSentinel>
 				</ul>
 			{/if}
 		</div>
@@ -723,8 +748,13 @@
 		color: var(--color-white);
 	}
 
-	.catalog {
+	.catalog,
+	.result > :global(.skeleton) {
 		margin-top: 1rem;
+	}
+
+	.catalog > :global(.load-more-sentinel) {
+		grid-column: 1 / -1;
 	}
 
 	.selection-panel {

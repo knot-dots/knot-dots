@@ -6,6 +6,8 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
+	import Skeleton from '$lib/components/Skeleton.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 	import type { TemplateCopyPreview } from '$lib/containerCopy';
 	import { createContainerDialogDraft } from '$lib/createContainerDialogState.svelte';
 	import {
@@ -290,7 +292,7 @@
 			{#if !enabled || (!scope.ready && !scope.error)}
 				<p>{$_('create_container_dialog.no_templates')}</p>
 			{:else if templatesResource.loading || pendingTemplateGuid !== undefined}
-				<p>{$_('loading')}</p>
+				<Spinner size="m" />
 			{:else if scope.error || templatesResource.error || selectionError}
 				<p>{$_('create_container_dialog.template_load_error')}</p>
 			{:else if templateRoots.length === 0}
@@ -326,8 +328,10 @@
 			/>
 		{/each}
 
-		{#if !required && (templatesResource.loading || pendingTemplateGuid !== undefined)}
-			<p aria-live="polite">{$_('loading')}</p>
+		{#if templatesResource.loading && templateRoots.length === 0}
+			<Skeleton count={3} variant="card" />
+		{:else if !required && (templatesResource.loading || pendingTemplateGuid !== undefined)}
+			<Spinner />
 		{:else if !required && (templatesResource.error || selectionError)}
 			<p class="error" aria-live="polite">
 				{$_('create_container_dialog.template_load_error')}

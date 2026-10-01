@@ -2,14 +2,17 @@
 	import { onMount } from 'svelte';
 	import { overrideItemIdKeyNameBeforeInitialisingDndZones } from 'svelte-dnd-action';
 	import { asset } from '$app/paths';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import createComputedProgressLoader from '$lib/client/createComputedProgressLoader';
+	import navigationKind from '$lib/client/navigationKind';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
 	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { LoadingTracker, setLoadingTrackerContext } from '$lib/contexts/loadingTracker.svelte';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
@@ -63,6 +66,10 @@
 	setFavoriteListContext(favoriteList);
 
 	setComputedProgressContext(createComputedProgressLoader());
+
+	const loadingTracker = new LoadingTracker();
+
+	setLoadingTrackerContext(loadingTracker);
 
 	const title = $derived.by(() => {
 		let title = page.data.currentOrganization.payload.name;
@@ -133,6 +140,13 @@
 </script>`}
 	{/if}
 </svelte:head>
+
+<!-- Overlays, which are opened by changing the hash, have their own progress bar. -->
+<ProgressBar
+	active={loadingTracker.active ||
+		navigationKind(navigating) === 'page' ||
+		navigationKind(navigating) === 'query'}
+/>
 
 {@render children()}
 
