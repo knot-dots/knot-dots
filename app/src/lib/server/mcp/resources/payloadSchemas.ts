@@ -24,29 +24,21 @@ const catalog = {
 	schemaVersion: 1
 };
 
-// Formats of text fields that clients cannot tell from their types.
-const fieldDescriptions: Record<string, string> = {
-	body: 'GitHub-flavored Markdown.',
-	description: 'GitHub-flavored Markdown.'
-};
-
-function payloadJsonSchema(type: McpPayloadType) {
-	const schema = z.toJSONSchema(getPayloadSchema(type), {
-		io: 'input',
-		target: 'draft-2020-12'
-	});
-	const properties = Object.fromEntries(
-		Object.entries(schema.properties ?? {}).map(([name, property]) => [
-			name,
-			name in fieldDescriptions && typeof property === 'object'
-				? { ...property, description: fieldDescriptions[name] }
-				: property
-		])
-	);
-	return { ...schema, $id: payloadSchemaUri(type), properties };
-}
-
-const jsonSchemas = new Map(mcpPayloadTypeValues.map((type) => [type, payloadJsonSchema(type)]));
+const jsonSchemas = new Map(
+	mcpPayloadTypeValues.map(
+		(type) =>
+			[
+				type,
+				{
+					...z.toJSONSchema(getPayloadSchema(type), {
+						io: 'input',
+						target: 'draft-2020-12'
+					}),
+					$id: payloadSchemaUri(type)
+				}
+			] as const
+	)
+);
 
 export function registerPayloadSchemaResources(server: McpServer) {
 	server.registerResource(
