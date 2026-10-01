@@ -25,14 +25,14 @@ const authInfo = {
 	token
 };
 
-function post(headers: HeadersInit = {}) {
+function post(headers: HeadersInit = {}, features = ['McpServer']) {
 	const request = new Request('http://localhost:5173/mcp', {
 		body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'server/discover' }),
 		headers: { 'Content-Type': 'application/json', Host: 'localhost:5173', ...headers },
 		method: 'POST'
 	});
 
-	return POST({ locals: { pool: {} }, request } as never);
+	return POST({ locals: { features, pool: {} }, request } as never);
 }
 
 beforeEach(() => {
@@ -82,4 +82,12 @@ test('rejects a disallowed browser origin', async () => {
 
 	expect(response.status).toBe(403);
 	expect(verifyAccessToken).not.toHaveBeenCalled();
+});
+
+test('does not answer unless the deployment enables the MCP server', async () => {
+	const response = await post({ Authorization: `Bearer ${token}` }, ['MCP']);
+
+	expect(response.status).toBe(404);
+	expect(verifyAccessToken).not.toHaveBeenCalled();
+	expect(fetchMcp).not.toHaveBeenCalled();
 });

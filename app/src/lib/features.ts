@@ -1,5 +1,5 @@
-// ComputedManagedBy, MultipleProgramAssignment and PermissionMatrix are
-// managed per deployment via pod annotations (see $lib/server/podFeatures)
+// ComputedManagedBy, McpServer, MultipleProgramAssignment and PermissionMatrix
+// are managed per deployment via pod annotations (see $lib/server/podFeatures)
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
 	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP'] as const],
@@ -78,8 +78,14 @@ export function createFeatureDecisions(features: string[]) {
 		useNewCreateContainerDialog() {
 			return features.includes('Templating');
 		},
+		// The MCP server answers only where the deployment enables it, so it can
+		// be switched off at runtime; who may create tokens is decided by the MCP
+		// flag on top.
+		useMcpServer() {
+			return features.includes('McpServer');
+		},
 		useMcpTokenMenu() {
-			return features.includes('MCP');
+			return features.includes('McpServer') && features.includes('MCP');
 		}
 	} satisfies Record<string, () => boolean>;
 }

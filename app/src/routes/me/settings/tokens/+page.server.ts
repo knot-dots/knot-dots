@@ -1,6 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	createMcpToken as insertMcpToken,
 	getMcpTokensForUser,
@@ -34,6 +35,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions = {
 	create: async ({ locals, request }) => {
 		const user = requireAuthenticatedUser(locals);
+		// Listing and revoking tokens keep working while MCP is switched off.
+		if (!createFeatureDecisions(locals.features).useMcpTokenMenu()) {
+			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+		}
 		const data = await request.formData();
 		const name = tokenName.safeParse(data.get('name'));
 
