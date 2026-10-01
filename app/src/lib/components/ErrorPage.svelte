@@ -4,11 +4,15 @@
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
+	import logo from '$lib/assets/logo-mark.svg';
 	import ErrorState from '$lib/components/ErrorState.svelte';
 	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import { getOrganizationURL } from '$lib/models';
 	import { user } from '$lib/stores';
+
+	const helpCenterURL =
+		'https://knotdots.net/c7648459-5738-44ba-96ae-e04b142ef0ec/dd9cd42a-b9c7-4aae-bd04-290360165408';
 
 	// Missing read permissions are answered with 404 as well, so the variant must not reveal
 	// whether the requested content exists.
@@ -52,11 +56,16 @@
 	<title>{title}</title>
 </svelte:head>
 
+{#snippet helpCenterLink()}
+	<a class="button button-alternate" href={helpCenterURL}>{$_('error.page.help_center')}</a>
+{/snippet}
+
 {#snippet errorState()}
 	<div class="error-page">
 		<ErrorState
 			code={page.status}
 			description={$_(`error.page.${variant}.description`)}
+			help={variant === 'not_available' || variant === 'unexpected' ? helpCenterLink : undefined}
 			title={$_(`error.page.${variant}.title`)}
 		>
 			{#snippet actions()}
@@ -96,9 +105,14 @@
 		</FullscreenLayout>
 	</PageLayout>
 {:else}
-	<main class="error-page-standalone">
-		{@render errorState()}
-	</main>
+	<div class="error-page-standalone">
+		<header>
+			<a href={homeURL}><img alt={$_('page_title')} height="24" src={logo} width="24" /></a>
+		</header>
+		<main>
+			{@render errorState()}
+		</main>
+	</div>
 {/if}
 
 <style>
@@ -110,6 +124,24 @@
 
 	.error-page-standalone {
 		display: flex;
+		flex-direction: column;
 		min-height: 100dvh;
+	}
+
+	.error-page-standalone header {
+		align-items: center;
+		display: flex;
+		flex-shrink: 0;
+		height: var(--header-height);
+		padding: 0 1rem;
+	}
+
+	.error-page-standalone header a {
+		display: flex;
+	}
+
+	.error-page-standalone main {
+		display: flex;
+		flex: 1;
 	}
 </style>

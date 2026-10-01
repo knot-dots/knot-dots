@@ -195,6 +195,7 @@
 			"back": "Back",
 			"code": "Error code {code}",
 			"go_to": "Go to {name}",
+			"help_center": "Go to help center",
 			"home": "Go to home page",
 			"login_required": {
 				"description": "This area is only visible after logging in.",
@@ -205,7 +206,7 @@
 				"title": "No access"
 			},
 			"not_available": {
-				"description": "Either it no longer exists or access is missing. The organization's administrators can help with questions.",
+				"description": "Either it no longer exists or access is missing. The help center can help with questions.",
 				"title": "This page is not available"
 			},
 			"not_public": {
@@ -215,7 +216,7 @@
 			"reload": "Reload page",
 			"title": "Page not available",
 			"unexpected": {
-				"description": "Reloading often helps. If the problem persists, please send the error code to support.",
+				"description": "Reloading often helps. If the problem persists, the help center can help – please mention the error code.",
 				"title": "Something went wrong"
 			}
 		},

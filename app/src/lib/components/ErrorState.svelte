@@ -7,11 +7,12 @@
 		actions: Snippet;
 		code?: number | string;
 		description: string;
+		help?: Snippet;
 		title: string;
 		visual?: Snippet;
 	}
 
-	let { actions, code, description, title, visual }: Props = $props();
+	let { actions, code, description, help, title, visual }: Props = $props();
 </script>
 
 <section class="error-state">
@@ -31,6 +32,10 @@
 	<h1 autofocus tabindex="-1">{title}</h1>
 
 	<p>{description}</p>
+
+	{#if help}
+		<div class="error-state-help system-primary">{@render help()}</div>
+	{/if}
 
 	<div class="error-state-actions system-primary">
 		{@render actions()}

@@ -87,6 +87,10 @@ test.describe('Error page for authenticated users', () => {
 		);
 		await expect(errorPage.main.getByRole('button', { name: 'Log in' })).toBeHidden();
 		await expect(errorPage.main.getByRole('button', { name: 'Back' })).toBeHidden();
+		await expect(errorPage.main.getByRole('link', { name: 'Go to help center' })).toHaveAttribute(
+			'href',
+			/^https:\/\/knotdots\.net\//
+		);
 	});
 
 	test('an unknown route offers to go to knotdots.net', async ({ page }) => {
@@ -95,6 +99,9 @@ test.describe('Error page for authenticated users', () => {
 		await page.goto('/__this_route_should_not_exist__');
 
 		await expect(errorPage.title).toHaveText('This page is not available');
+		await expect(
+			errorPage.header.locator.getByRole('link', { name: 'knotdots.net' })
+		).toHaveAttribute('href', platformHomeURL);
 		await expect(errorPage.main.getByRole('link', { name: 'Go to knotdots.net' })).toHaveAttribute(
 			'href',
 			platformHomeURL
