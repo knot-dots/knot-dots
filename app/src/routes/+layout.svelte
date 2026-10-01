@@ -4,6 +4,7 @@
 	import { navigating } from '$app/state';
 	import navigationKind from '$lib/client/navigationKind';
 	import ProgressBar from '$lib/components/ProgressBar.svelte';
+	import { LoadingTracker, setLoadingTrackerContext } from '$lib/contexts/loadingTracker.svelte';
 	import '../app.css';
 	import type { LayoutProps } from './$types';
 
@@ -24,9 +25,17 @@
 			sidebarExpanded = true;
 		}
 	});
+
+	const loadingTracker = new LoadingTracker();
+
+	setLoadingTrackerContext(loadingTracker);
 </script>
 
-<!-- Changes of the query or hash only have their own loading indicators. -->
-<ProgressBar active={navigationKind(navigating) === 'page'} />
+<!-- Overlays, which are opened by changing the hash, have their own progress bar. -->
+<ProgressBar
+	active={loadingTracker.active ||
+		navigationKind(navigating) === 'page' ||
+		navigationKind(navigating) === 'query'}
+/>
 
 {@render children()}

@@ -4,6 +4,7 @@
 	import fetchContainers from '$lib/client/fetchContainers';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Skeleton from '$lib/components/Skeleton.svelte';
+	import { trackLoading } from '$lib/contexts/loadingTracker.svelte';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -60,6 +61,8 @@
 	);
 
 	const loading = $derived(actualData.current === undefined && !actualData.error);
+
+	trackLoading(() => actualData.loading);
 
 	const population = $derived.by(() => {
 		const populationDataContainer = actualData.current?.find(

@@ -3,22 +3,24 @@
 
 	interface Props {
 		class?: string;
-		// Number of cards, text lines, table rows or chart tiles
+		// Number of cards, text lines, table rows or chart tiles; ignored for a block
 		count?: number;
 		// Limits a card grid to this many rows, whatever the number of columns
 		rows?: number;
-		variant?: 'card' | 'chart' | 'table' | 'text';
+		// A block is a single shape filling its parent, e.g. in place of a button
+		variant?: 'block' | 'card' | 'chart' | 'table' | 'text';
 	}
 
 	let { class: className, count, rows, variant = 'text' }: Props = $props();
 
-	const defaultCount = { card: 6, chart: 3, table: 5, text: 3 };
+	const defaultCount = { block: 1, card: 6, chart: 3, table: 5, text: 3 };
 
 	const items = $derived(Array.from({ length: count ?? defaultCount[variant] }, (_, i) => i));
 </script>
 
 <div
-	aria-busy="true"
+	aria-busy={variant === 'block' ? undefined : true}
+	aria-hidden={variant === 'block' ? true : undefined}
 	class={[
 		'skeleton',
 		`skeleton--${variant}`,
@@ -28,9 +30,13 @@
 	]}
 	style:--skeleton-rows={rows}
 >
-	<span class="is-visually-hidden">{$_('loading')}</span>
+	{#if variant !== 'block'}
+		<span class="is-visually-hidden">{$_('loading')}</span>
+	{/if}
 
-	{#if variant === 'card'}
+	{#if variant === 'block'}
+		<span class="skeleton-shape skeleton-shape--block"></span>
+	{:else if variant === 'card'}
 		{#each items as item (item)}
 			<div aria-hidden="true" class="skeleton-card">
 				<span class="skeleton-shape skeleton-shape--heading"></span>
@@ -94,7 +100,7 @@
 
 	.skeleton-card,
 	.skeleton-chart {
-		border: 1px solid var(--color-gray-200);
+		border: 1px solid var(--skeleton-border-color);
 		border-radius: var(--skeleton-border-radius);
 		display: flex;
 		flex-direction: column;
@@ -152,6 +158,15 @@
 	.skeleton-shape--plot {
 		flex: 1;
 		height: auto;
+	}
+
+	.skeleton--block {
+		height: 100%;
+	}
+
+	.skeleton-shape--block {
+		border-radius: var(--skeleton-block-border-radius, var(--skeleton-border-radius));
+		height: 100%;
 	}
 
 	.skeleton-shape--table-head {

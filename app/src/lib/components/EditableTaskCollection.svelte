@@ -8,6 +8,7 @@
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import Skeleton from '$lib/components/Skeleton.svelte';
 	import TaskCard from '$lib/components/TaskCard.svelte';
+	import { trackLoading } from '$lib/contexts/loadingTracker.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -52,6 +53,25 @@
 					})
 				: new Promise(() => [])
 	) as Promise<Container<TaskPayload>[]>;
+
+	// Without a parent container there is nothing to load and the request never settles
+	const tasksWillLoad = $derived(fetchDisabled || parentContainer !== undefined);
+
+	let tasksPending = $state(true);
+
+	$effect(() => {
+		let current = true;
+		const settle = () => {
+			if (current) tasksPending = false;
+		};
+		tasksPending = true;
+		tasksRequest.then(settle, settle);
+		return () => {
+			current = false;
+		};
+	});
+
+	trackLoading(() => tasksWillLoad && tasksPending);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -119,7 +139,9 @@
 </header>
 
 {#await tasksRequest}
-	<Skeleton rows={1} variant="card" />
+	{#if tasksWillLoad}
+		<Skeleton rows={1} variant="card" />
+	{/if}
 {:then items}
 	{@const ancestors = parentContainer
 		? findAncestors(parentContainer, items, [predicates.enum['is-part-of']])

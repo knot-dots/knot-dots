@@ -52,9 +52,10 @@
 		z-index: 1001;
 	}
 
-	/* Keep clear of the rounded corner of the overlay. */
+	/* Fade in along the rounded corner of the overlay instead of starting with a hard edge. */
 	.progress-bar--overlay {
-		left: 1.5rem;
+		left: 0.75rem;
+		mask-image: linear-gradient(to right, transparent, black 2.5rem);
 		position: absolute;
 		z-index: 4;
 	}
