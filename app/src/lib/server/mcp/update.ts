@@ -12,6 +12,7 @@ import {
 	updateContainer
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
+import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
 import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
 import {
 	updateContainerToolName,
@@ -75,6 +76,22 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 			if (!payloadResult.success) {
 				throw new McpUpdateError(payloadValidationMessage(payloadResult.error));
 			}
+			if ('category' in payloadResult.data) {
+				const unknownCategory = await findUnknownCategory({
+					category: payloadResult.data.category,
+					loadContext: () =>
+						loadMcpCategoryContext({
+							connection,
+							organizationGuid: current.organization,
+							types: [current.payload.type],
+							user
+						}),
+					previous: 'category' in current.payload ? current.payload.category : {}
+				});
+				if (unknownCategory) {
+					throw new McpUpdateError(unknownCategory);
+				}
+			}
 
 			let payload: AnyPayload;
 			try {
@@ -92,6 +109,13 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 					);
 				}
 				throw error;
+			}
+			// The shared update checks lower the AI contribution when a person edits
+			// AI-generated content. An edit through MCP is made by an AI agent, so the
+			// content is at least AI-assisted afterwards and AI-generated content
+			// stays AI-generated; the patch cannot change the contribution.
+			if ('aiContribution' in current.payload && 'aiContribution' in payload) {
+				payload.aiContribution = Math.max(current.payload.aiContribution, 0.5);
 			}
 
 			let updated: Container<AnyPayload>;

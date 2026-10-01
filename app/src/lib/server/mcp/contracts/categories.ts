@@ -16,8 +16,15 @@ export type ListContainerCategoriesInput = z.infer<typeof listContainerCategorie
 
 const categoryValue = z.strictObject({
 	label: z.string(),
-	parentValue: z.string().nullable(),
-	value: z.string()
+	parentValue: z
+		.string()
+		.nullable()
+		.describe(
+			'Value this one is a sub-value of, or null. Sub-values are chosen on their own and do not imply their parent value.'
+		),
+	value: z
+		.string()
+		.describe('Value to store in the payload category; the label is only for display.')
 });
 
 const containerCategory = z.strictObject({

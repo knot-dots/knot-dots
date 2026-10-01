@@ -6,6 +6,7 @@ import {
 	getPayloadSchema,
 	isOrganizationContainer,
 	isOrganizationalUnitContainer,
+	isMeasureContainer,
 	isPageContainer,
 	isProgramContainer,
 	payloadTypes,
@@ -14,6 +15,7 @@ import {
 	type AnyPayload,
 	type Container,
 	type CustomCollectionPayload,
+	type MeasurePayload,
 	type NewContainer
 } from '$lib/models';
 import { organizationScopeAsFilter } from '$lib/organizationScope';
@@ -26,7 +28,11 @@ import {
 	recordMcpWriteEvent
 } from '$lib/server/db';
 import type { McpAuth } from '$lib/server/mcp/auth';
-import { loadMcpCategoryContext } from '$lib/server/mcp/categories';
+import {
+	categoryValuesByKey,
+	findUnknownCategory,
+	loadMcpCategoryContext
+} from '$lib/server/mcp/categories';
 import {
 	addCustomCollectionSectionToolName,
 	createContainerToolName,
@@ -38,6 +44,8 @@ import {
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { runAsRequestUser } from '$lib/server/requestUser';
 import type { User } from '$lib/stores';
+
+const maxHierarchyLevel = 6;
 
 export class McpCreationError extends Error {
 	constructor(message: string) {
@@ -92,6 +100,13 @@ function createAndRecordContainer({
 	tool: string;
 	user: User;
 }) {
+	// Content created through MCP is written by an AI agent, so it is marked as
+	// AI-generated like the containers extracted by the AI endpoints, whatever
+	// the payload says.
+	if ('aiContribution' in data.payload) {
+		data.payload.aiContribution = 1;
+	}
+
 	return async (connection: DatabaseConnection): Promise<Container<AnyPayload>> => {
 		try {
 			return await createAuthorizedContainer({
@@ -216,6 +231,22 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				}
 			}
 
+			if ('category' in payloadResult.data) {
+				const unknownCategory = await findUnknownCategory({
+					category: payloadResult.data.category,
+					loadContext: () =>
+						loadMcpCategoryContext({
+							connection,
+							organizationGuid: organization.guid,
+							types: [input.payload.type],
+							user
+						})
+				});
+				if (unknownCategory) {
+					throw new McpCreationError(unknownCategory);
+				}
+			}
+
 			const candidate = containerOfType(
 				input.payload.type,
 				organizationalUnit ?? organization
@@ -236,6 +267,25 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				return { object: parentGuid, position, predicate };
 			});
 
+			// As in the web application, a measure below a measure is one level
+			// deeper; the level is derived rather than taken from the payload.
+			const parentMeasure = input.parentRelations
+				.filter(({ predicate }) => predicate === predicates.enum['is-part-of-measure'])
+				.map(({ parentGuid }) => parentsByGuid.get(parentGuid))
+				.find(
+					(parent): parent is Container<MeasurePayload> =>
+						parent !== undefined && isMeasureContainer(parent)
+				);
+			if (parentMeasure && isMeasureContainer(candidate)) {
+				const hierarchyLevel = parentMeasure.payload.hierarchyLevel + 1;
+				if (hierarchyLevel > maxHierarchyLevel) {
+					throw new McpCreationError(
+						`Measures can be nested at most ${maxHierarchyLevel} levels deep.`
+					);
+				}
+				candidate.payload.hierarchyLevel = hierarchyLevel;
+			}
+
 			return createAndRecordContainer({
 				auth: input,
 				data: candidate,
@@ -243,22 +293,6 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				user
 			})(connection);
 		});
-}
-
-function categoryValues(context: Awaited<ReturnType<typeof loadMcpCategoryContext>>) {
-	return new Map(
-		context.keys.map((key) => {
-			const values = new Set<string>();
-			const collect = (options: (typeof context.options)[string]) => {
-				for (const option of options ?? []) {
-					values.add(option.value);
-					collect(option.subOptions ?? []);
-				}
-			};
-			collect(context.options[key]);
-			return [key, values] as const;
-		})
-	);
 }
 
 export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionInput & McpAuth) {
@@ -277,7 +311,7 @@ export function addMcpCustomCollectionSection(input: AddCustomCollectionSectionI
 				types: input.types,
 				user
 			});
-			const allowedCategories = categoryValues(categoryContext);
+			const allowedCategories = categoryValuesByKey(categoryContext);
 			for (const [key, values] of Object.entries(input.categories)) {
 				const allowedValues = allowedCategories.get(key);
 				if (!allowedValues || values.some((value) => !allowedValues.has(value))) {

@@ -21,7 +21,13 @@ const containerRelation = z.strictObject({
 		.describe(
 			'outgoing: the listed container is the subject ("listed predicate container"); incoming: it is the object ("container predicate listed").'
 		),
-	position: z.number().int().nonnegative(),
+	position: z
+		.number()
+		.int()
+		.nonnegative()
+		.describe(
+			'Sort order among the children of the object for structural relations such as is-part-of-program; always 0 for semantic relations.'
+		),
 	predicate: z.string()
 });
 
