@@ -1,5 +1,6 @@
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
+import 'zod/compile';
 
 export type ApplicationState = {
 	containerDetailView: {
