@@ -2,38 +2,17 @@
 	import { _ } from 'svelte-i18n';
 	import ArrowLongRight from '~icons/heroicons/arrow-long-right';
 	import { page } from '$app/state';
-	import FullscreenLayout from '$lib/components/FullscreenLayout.svelte';
-	import PageLayout from '$lib/components/PageLayout.svelte';
-
-	const title = $derived.by(() => {
-		let title = page.data?.currentOrganization?.payload?.name ?? $_('page_title');
-
-		// Add organizational unit if present
-		if (page.data?.currentOrganizationalUnit) {
-			title += ' > ' + page.data.currentOrganizationalUnit.payload.name;
-		}
-
-		// Add status code
-		title += ' / ' + page.status;
-		return title;
-	});
 </script>
 
 <svelte:head>
-	<title>{title}</title>
+	<title>{page.status}</title>
 </svelte:head>
 
-<PageLayout>
-	<FullscreenLayout>
-		{#snippet main()}
-			<div>
-				<h2>{page.status}</h2>
-				<p>{page.status === 404 ? $_('error.not_found') : page.error?.message}</p>
-				<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
-			</div>
-		{/snippet}
-	</FullscreenLayout>
-</PageLayout>
+<div>
+	<h2>{page.status}</h2>
+	<p>{page.status === 404 ? $_('error.not_found') : page.error?.message}</p>
+	<p><a href="/"><ArrowLongRight />{$_('home')}</a></p>
+</div>
 
 <style>
 	div {

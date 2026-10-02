@@ -1011,7 +1011,7 @@ const basePayload = z.object({
 	category: z
 		.record(z.string(), z.array(z.string().trim().min(1)).transform(deduplicate))
 		.default({}),
-	description: z.string().trim().optional(),
+	description: z.string().trim().describe('GitHub-flavored Markdown.').optional(),
 	editorialState: editorialState.optional(),
 	summary: z.string().trim().max(200).optional(),
 	template: z.boolean().default(false),
@@ -1020,7 +1020,7 @@ const basePayload = z.object({
 });
 
 const measureMonitoringBasePayload = z.object({
-	description: z.string().trim().optional(),
+	description: z.string().trim().describe('GitHub-flavored Markdown.').optional(),
 	title: z.string(),
 	visibility: visibility.default(visibility.enum['organization'])
 });
@@ -1753,7 +1753,7 @@ export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizatio
 
 const pagePayload = z.strictObject({
 	...detailViewStyle.shape,
-	body: z.string().trim(),
+	body: z.string().trim().describe('GitHub-flavored Markdown.'),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.page),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -3023,15 +3023,16 @@ export function findAncestors<T extends Container<AnyPayload>>(
 }
 
 // The types whose grant inheritance may restart at the container itself;
-// organizations and organizational units govern by their nature instead.
+// organizations govern by their nature instead.
 export const typesWithOwnMatrix: PayloadType[] = [
 	payloadTypes.enum.measure,
+	payloadTypes.enum.organizational_unit,
 	payloadTypes.enum.program,
 	payloadTypes.enum.simple_measure
 ];
 
-// Assigning roles or rows to an inheriting measure or program gives it a
-// matrix of its own: the write paths decouple it so the assigned rights act
+// Assigning roles or rows to an inheriting container gives it a matrix of
+// its own: the write paths decouple it so the assigned rights act
 // immediately, exactly as the inheritance toggle would. Rows keep resting
 // (they are never deleted) when the container starts inheriting again.
 export function withOwnMatrix<

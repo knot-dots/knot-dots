@@ -1,0 +1,167 @@
+import {
+	NotFoundError,
+	UniqueIntegrityConstraintViolationError,
+	type DatabaseConnection
+} from 'slonik';
+import { getPayloadSchema, predicates, type AnyPayload, type Container } from '$lib/models';
+import { applyComputedManagedBy } from '$lib/server/computeManagedBy';
+import { authorizeContainerUpdate, ContainerUpdateError } from '$lib/server/containerUpdate';
+import {
+	ContainerRevisionConflictError,
+	recordMcpWriteEvent,
+	updateContainer
+} from '$lib/server/db';
+import type { McpAuth } from '$lib/server/mcp/auth';
+import { findUnknownCategory, loadMcpCategoryContext } from '$lib/server/mcp/categories';
+import { mcpPayloadTypes } from '$lib/server/mcp/contracts/payloads';
+import {
+	updateContainerToolName,
+	type UpdateContainerInput
+} from '$lib/server/mcp/contracts/update';
+import { findVisibleContainer, payloadValidationMessage } from '$lib/server/mcp/creation';
+import { loadMcpUserContext } from '$lib/server/mcp/userContext';
+import { runAsRequestUser } from '$lib/server/requestUser';
+
+export class McpUpdateError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'McpUpdateError';
+	}
+}
+
+const notFound = 'Container not found or inaccessible.';
+
+function conflict(revision: number) {
+	return new McpUpdateError(
+		`The container changed since revision ${revision}. Read it again with get_container and retry.`
+	);
+}
+
+function isTemplate(payload: Record<string, unknown>) {
+	return payload.template === true;
+}
+
+function mergePayloadPatch(payload: AnyPayload, patch: Record<string, unknown>) {
+	const merged: Record<string, unknown> = { ...payload };
+	for (const [key, value] of Object.entries(patch)) {
+		if (value === null) {
+			delete merged[key];
+		} else {
+			merged[key] = value;
+		}
+	}
+	return merged;
+}
+
+export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
+	return (connection: DatabaseConnection): Promise<Container<AnyPayload>> =>
+		runAsRequestUser(input.userId, async () => {
+			const user = await loadMcpUserContext(connection, input.userId);
+			const current = await findVisibleContainer(connection, user, input.guid);
+			if (!current || !mcpPayloadTypes.safeParse(current.payload.type).success) {
+				throw new McpUpdateError(notFound);
+			}
+			if ('type' in input.payloadPatch && input.payloadPatch.type !== current.payload.type) {
+				throw new McpUpdateError('The payload type cannot be changed.');
+			}
+			if (current.revision !== input.expectedRevision) {
+				throw conflict(input.expectedRevision);
+			}
+
+			const merged = mergePayloadPatch(current.payload, input.payloadPatch);
+			if (isTemplate(current.payload) || isTemplate(merged)) {
+				throw new McpUpdateError('Templates cannot be updated by this tool.');
+			}
+			const payloadResult = getPayloadSchema(current.payload.type).safeParse(merged);
+			if (!payloadResult.success) {
+				throw new McpUpdateError(payloadValidationMessage(payloadResult.error));
+			}
+			if ('category' in payloadResult.data) {
+				const unknownCategory = await findUnknownCategory({
+					category: payloadResult.data.category,
+					loadContext: () =>
+						loadMcpCategoryContext({
+							connection,
+							organizationGuid: current.organization,
+							types: [current.payload.type],
+							user
+						}),
+					previous: 'category' in current.payload ? current.payload.category : {}
+				});
+				if (unknownCategory) {
+					throw new McpUpdateError(unknownCategory);
+				}
+			}
+
+			let payload: AnyPayload;
+			try {
+				payload = authorizeContainerUpdate({
+					current,
+					next: { ...current, payload: payloadResult.data },
+					user
+				});
+			} catch (error) {
+				if (error instanceof ContainerUpdateError) {
+					throw new McpUpdateError(
+						error.kind === 'forbidden'
+							? 'You are not allowed to update this container.'
+							: 'This change is not allowed for this container.'
+					);
+				}
+				throw error;
+			}
+			// The shared update checks lower the AI contribution when a person edits
+			// AI-generated content. An edit through MCP is made by an AI agent, so the
+			// content is at least AI-assisted afterwards and AI-generated content
+			// stays AI-generated; the patch cannot change the contribution.
+			if ('aiContribution' in current.payload && 'aiContribution' in payload) {
+				payload.aiContribution = Math.max(current.payload.aiContribution, 0.5);
+			}
+
+			let updated: Container<AnyPayload>;
+			try {
+				// Like a web revision: everything but the payload is carried over as
+				// loaded, and the editor becomes the creator of the new revision.
+				updated = await updateContainer(
+					{
+						...current,
+						payload,
+						user: [
+							...current.user.filter(
+								({ predicate }) => predicate !== predicates.enum['is-creator-of']
+							),
+							{ predicate: predicates.enum['is-creator-of'], subject: user.guid }
+						]
+					},
+					{
+						afterUpdate: (container, txConnection) =>
+							recordMcpWriteEvent({
+								containerGuid: container.guid,
+								revision: container.revision,
+								tokenId: input.tokenId,
+								tool: updateContainerToolName,
+								userId: input.userId
+							})(txConnection),
+						expectedRevision: input.expectedRevision
+					}
+				)(connection);
+			} catch (error) {
+				if (error instanceof ContainerRevisionConflictError) {
+					throw conflict(input.expectedRevision);
+				}
+				if (
+					error instanceof UniqueIntegrityConstraintViolationError &&
+					(error.constraint === 'container_payload_organization_slug_key' ||
+						error.constraint === 'container_payload_organizational_unit_slug_key')
+				) {
+					throw new McpUpdateError('The slug is already used by another container.');
+				}
+				if (error instanceof NotFoundError) throw new McpUpdateError(notFound);
+				throw error;
+			}
+
+			// Match the view get_container returns.
+			const [withComputed] = await applyComputedManagedBy(connection, [updated]);
+			return withComputed;
+		});
+}

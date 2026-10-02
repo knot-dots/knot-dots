@@ -1,0 +1,162 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { asset } from '$app/paths';
+	import { page } from '$app/state';
+	import { env } from '$env/dynamic/public';
+	import createComputedProgressLoader from '$lib/client/createComputedProgressLoader';
+	import SignupDialog from '$lib/components/SignupDialog.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
+	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
+	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
+	import { getContextIdentifier } from '$lib/models';
+	import { user } from '$lib/stores';
+	import transformFileURL from '$lib/transformFileURL';
+	import '../../app.css';
+	import type { LayoutProps } from './$types';
+
+	let { children, data }: LayoutProps = $props();
+
+	// svelte-ignore non_reactive_update
+	let dialog: HTMLDialogElement;
+
+	onMount(() => {
+		if (data.user) {
+			dialog.showModal();
+		}
+	});
+
+	let lastOverlay = $state({
+		url: undefined
+	});
+
+	setLastOverlayContext(lastOverlay);
+
+	let toasts = $state([] as ToastProps[]);
+
+	function addToast(toast: ToastProps) {
+		toasts = [...toasts, toast];
+	}
+
+	function removeToast(index: number) {
+		toasts = toasts.filter((_, i) => i !== index);
+	}
+
+	setToastContext(addToast);
+
+	let favoriteList = $state({
+		organization: page.data.currentOrganization.payload.favorite,
+		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? [],
+		user: [...($user.settings.favorite ?? [])]
+	});
+
+	$effect(() => {
+		favoriteList.organization = page.data.currentOrganization.payload.favorite;
+		favoriteList.organizationalUnit = page.data.currentOrganizationalUnit?.payload.favorite ?? [];
+	});
+
+	setFavoriteListContext(favoriteList);
+
+	setComputedProgressContext(createComputedProgressLoader());
+
+	const title = $derived.by(() => {
+		if (!page.data.currentOrganization) {
+			return '';
+		}
+
+		let title = page.data.currentOrganization.payload.name;
+
+		// Add organizational unit if present
+		if (page.data.currentOrganizationalUnit) {
+			title += ' / ' + page.data.currentOrganizationalUnit.payload.name;
+		}
+
+		// Add title from page.data if present
+		if (page.data.title) {
+			title += ' / ' + page.data.title;
+		}
+
+		return title;
+	});
+
+	const canonicalURL = $derived.by(() => {
+		const context = page.data.currentOrganizationalUnit ?? page.data.currentOrganization;
+		if (!context) {
+			return undefined;
+		}
+
+		const identifier = getContextIdentifier(context);
+
+		// Only set a canonical URL when a slug is actually configured for the context.
+		if (identifier === context.guid) {
+			return undefined;
+		}
+
+		const segments = page.url.pathname.split('/');
+		if (segments.length > 1 && (segments[1] === context.guid || segments[1] === identifier)) {
+			segments[1] = identifier;
+			return new URL(`${segments.join('/')}${page.url.search}`, page.url.origin).toString();
+		}
+
+		return undefined;
+	});
+</script>
+
+<svelte:head>
+	{#if title}
+		<title>{title}</title>
+	{/if}
+
+	{#if canonicalURL}
+		<link rel="canonical" href={canonicalURL} />
+	{/if}
+
+	{#if data.currentOrganization?.payload.customFavicon}
+		<link
+			rel="icon"
+			href={transformFileURL(data.currentOrganization.payload.customFavicon.url)}
+			type={data.currentOrganization.payload.customFavicon.type}
+		/>
+	{:else}
+		<link rel="icon" href={asset('/favicon.svg')} sizes="any" type="image/svg+xml" />
+	{/if}
+
+	{#if env.PUBLIC_MATOMO_CONTAINER_ID && data.currentOrganization?.payload.useAnalytics}
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+		{@html `<script>
+	// eslint-disable-next-line no-useless-assignment
+  var _mtm = window._mtm = window._mtm || [];
+  _mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
+  (function() {
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src='https://cdn.matomo.cloud/knotdots.matomo.cloud/container_${env.PUBLIC_MATOMO_CONTAINER_ID}.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>`}
+	{/if}
+</svelte:head>
+
+{@render children()}
+
+<div class="toasts">
+	{#each toasts as toast, index (index)}
+		<Toast {...toast} onclose={() => removeToast(index)} />
+	{/each}
+</div>
+
+<SignupDialog bind:dialog />
+<UppyDashboardService />
+
+<style>
+	.toasts {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		position: fixed;
+		right: 3rem;
+		top: 6rem;
+		width: min(20rem, 80%);
+		z-index: 1000;
+	}
+</style>

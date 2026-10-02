@@ -2,17 +2,11 @@ import { error, json } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { isAdoptableProgram } from '$lib/adoptions';
-import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { createFeatureDecisions } from '$lib/features';
+import { filterVisible } from '$lib/authorization';
 import {
-	type AnyPayload,
 	type Container,
-	containerOfType,
 	isContainerWithEffect,
 	isIndicatorTemplateContainer,
-	isOrganizationalUnitContainer,
-	isOrganizationContainer,
 	isProgramContainer,
 	type OrganizationalUnitPayload,
 	payloadTypes,
@@ -23,6 +17,7 @@ import {
 } from '$lib/models';
 import { isProtectedContainerRelationPredicate } from '$lib/relations';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
+import { authorizeContainerRelationChanges } from '$lib/server/containerRelations';
 import {
 	deleteManyContainerRelations,
 	getAllContainersRelatedToIndicators,
@@ -220,14 +215,13 @@ export const POST = (async ({ locals, params, request }) => {
 		error(422, { message: unwrapFunctionStore(_)('error.unprocessable_entity') });
 	}
 
-	const ability = defineAbilityFor(locals.user);
-
 	await locals.pool.transaction(async (tx) => {
 		// This route only allows updating relations if the container
 		// represented by the guid parameter of the route is either the subject or
 		// the object. To ensure consistency with the front-end, the permission to
 		// update the container represented by the guid parameter of the route and
-		// the permission to read the other are required.
+		// the permission to read the other are required. Unauthorized changes
+		// are ignored.
 		const guid = parseResult.data
 			.filter(({ object, subject }) => object == params.guid || subject == params.guid)
 			.flatMap(({ object, subject }) => [object, subject]);
@@ -242,46 +236,13 @@ export const POST = (async ({ locals, params, request }) => {
 						'alpha'
 					)(tx)
 				: [];
-		const authorized = parseResult.data
-			.filter(({ object, subject }) => object == params.guid || subject == params.guid)
-			.filter(({ deleted, object, predicate, subject }) => {
-				const objectContainer = containers.find((c) => ability.can('read', c) && c.guid === object);
-				const subjectContainer = containers.find(
-					(c) => ability.can('read', c) && c.guid === subject
-				);
-				if (!objectContainer || !subjectContainer) {
-					return false;
-				}
-				// Adopting a public rule-set program deliberately does not require
-				// permission on the (foreign) program itself: the user must be
-				// allowed to create programs within the adopting organization or
-				// organizational unit (the same create-inside rule the client
-				// applies when listing the adopters, inherited grants included),
-				// the program must be adoptable, and neither the owning
-				// organization nor the owning organizational unit may adopt their
-				// own program. Removal is exempt from the latter rules: taking away
-				// a relation that should not exist must always be possible for
-				// those responsible for the adopting scope.
-				if (predicate == predicates.enum['is-adopted-by']) {
-					return (
-						createFeatureDecisions(locals.features).useAdoptions() &&
-						subject == params.guid &&
-						ability.can('create', containerOfType(payloadTypes.enum.program, objectContainer)) &&
-						(deleted ||
-							(isAdoptableProgram(subjectContainer) &&
-								(isOrganizationContainer(objectContainer) ||
-									isOrganizationalUnitContainer(objectContainer)) &&
-								objectContainer.guid != subjectContainer.organizational_unit &&
-								objectContainer.guid != subjectContainer.organization))
-					);
-				}
-				return ability.can(
-					'update',
-					[subjectContainer, objectContainer].find(
-						(c) => c.guid == params.guid
-					) as Container<AnyPayload>
-				);
-			});
+		const { authorized } = authorizeContainerRelationChanges({
+			changes: parseResult.data,
+			containers,
+			features: locals.features,
+			guid: params.guid,
+			user: locals.user
+		});
 
 		const removed = authorized.filter(({ deleted }) => deleted);
 		if (removed.length > 0) {

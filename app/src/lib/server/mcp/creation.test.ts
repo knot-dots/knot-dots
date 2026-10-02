@@ -53,7 +53,8 @@ vi.mock('$lib/server/db', () => ({
 		mocks.recordMcpWriteEvent(event, connection)
 }));
 vi.mock('$lib/server/features', () => ({ getFeatures: () => [] }));
-vi.mock('$lib/server/mcp/categories', () => ({
+vi.mock('$lib/server/mcp/categories', async (importOriginal) => ({
+	...(await importOriginal<typeof import('$lib/server/mcp/categories')>()),
 	loadMcpCategoryContext: async () => mocks.categoryContext
 }));
 vi.mock('$lib/server/mcp/userContext', () => ({
@@ -539,4 +540,74 @@ test.each([
 	await createMcpContainer({ ...input, tokenId, userId })({} as never);
 
 	expect(mocks.createAuthorizedContainer).toHaveBeenCalledOnce();
+});
+
+function createWith(payload: Record<string, unknown>, parentRelations: unknown[] = []) {
+	return createMcpContainer({
+		...createContainerInput.parse({ organizationGuid, parentRelations, payload }),
+		tokenId,
+		userId
+	})({} as never);
+}
+
+function createdPayload() {
+	return mocks.createAuthorizedContainer.mock.calls[0][0].data.payload;
+}
+
+test('accepts category values the organization offers', async () => {
+	await createWith({ category: { sdg: ['13'] }, title: 'Climate indicator', type: 'goal' });
+
+	expect(createdPayload()).toMatchObject({ category: { sdg: ['13'] } });
+});
+
+test.each([
+	[{ policyField: ['mobility'] }, 'Unknown category: policyField.'],
+	[{ sdg: ['Climate action'] }, 'Unknown value of category sdg: Climate action.']
+])('rejects unknown categories and category values', async (category, message) => {
+	await expect(createWith({ category, title: 'Climate goal', type: 'goal' })).rejects.toThrow(
+		message
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});
+
+test('derives the hierarchy level of a measure below a measure', async () => {
+	mocks.containers.set(
+		parentGuid,
+		container(parentGuid, { hierarchyLevel: 2, title: 'Mobility', type: 'measure' })
+	);
+
+	await createWith({ hierarchyLevel: 1, title: 'Bike lanes', type: 'measure' }, [
+		{ parentGuid, predicate: 'is-part-of-measure' }
+	]);
+
+	expect(createdPayload()).toMatchObject({ hierarchyLevel: 3 });
+});
+
+test('keeps the hierarchy level of a measure that is not below a measure', async () => {
+	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Plan', type: 'program' }));
+
+	await createWith({ hierarchyLevel: 2, title: 'Bike lanes', type: 'measure' }, [
+		{ parentGuid, predicate: 'is-part-of-program' }
+	]);
+
+	expect(createdPayload()).toMatchObject({ hierarchyLevel: 2 });
+});
+
+test('rejects nesting measures deeper than the deepest hierarchy level', async () => {
+	mocks.containers.set(
+		parentGuid,
+		container(parentGuid, { hierarchyLevel: 6, title: 'Detail', type: 'measure' })
+	);
+
+	await expect(
+		createWith({ title: 'Too deep', type: 'measure' }, [
+			{ parentGuid, predicate: 'is-part-of-measure' }
+		])
+	).rejects.toThrow('Measures can be nested at most 6 levels deep.');
+});
+
+test('marks created content as AI-generated whatever the payload says', async () => {
+	await createWith({ aiContribution: 0, title: 'Climate goal', type: 'goal' });
+
+	expect(createdPayload()).toMatchObject({ aiContribution: 1 });
 });
