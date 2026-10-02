@@ -16,9 +16,9 @@ test.describe('Document titles and breadcrumb', () => {
 		).toHaveAttribute('href', new RegExp(`\\/${defaultOrganization.guid}$`));
 	});
 
-	test('404 page title is status', async ({ page }) => {
+	test('404 page title says the page is not available', async ({ page }) => {
 		await page.goto('/__this_route_should_not_exist__');
-		await expect(page).toHaveTitle('404');
+		await expect(page).toHaveTitle('Page not available – knotdots.net');
 	});
 
 	test('title updates to show test organization name', async ({ page, testOrganization }) => {

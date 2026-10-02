@@ -186,11 +186,40 @@
 		"copy_invalid": "Die ausgewählten Inhalte können nicht kopiert werden.",
 		"copy_too_large": "Die ausgewählten Inhalte sind zu umfangreich zum Kopieren.",
 		"copy_unsupported_source": "Dieser Inhalt kann nicht an das ausgewählte Ziel kopiert werden.",
-		"forbidden": "Leider ist das nicht erlaubt.",
+		"forbidden": "Dafür fehlen die nötigen Rechte.",
 		"individual_profile_exists": "Für diese Organisationseinheit gibt es bereits ein individuelles Profil.",
-		"unauthorized": "Leider ist das nicht erlaubt.",
+		"unauthorized": "Dafür ist eine Anmeldung erforderlich.",
 		"not_found": "Leider geht es hier nicht weiter.",
 		"unprocessable_entity": "Die Anfrage konnte nicht verarbeitet werden.",
+		"page": {
+			"back": "Zurück",
+			"code": "Fehlercode {code}",
+			"go_to": "Zu {name}",
+			"help_center": "Zum Help Center",
+			"home": "Zur Startseite",
+			"login_required": {
+				"description": "Dieser Bereich ist nur nach der Anmeldung sichtbar.",
+				"title": "Anmeldung erforderlich"
+			},
+			"no_access": {
+				"description": "Für diesen Bereich fehlen die nötigen Rechte.",
+				"title": "Kein Zugriff"
+			},
+			"not_available": {
+				"description": "Entweder gibt es sie nicht mehr oder der Zugriff fehlt. Bei Fragen hilft das Help Center weiter.",
+				"title": "Diese Seite ist nicht verfügbar"
+			},
+			"not_public": {
+				"description": "Nach der Anmeldung ist sie eventuell sichtbar. Möglicherweise gibt es die Seite auch nicht mehr.",
+				"title": "Diese Seite ist nicht öffentlich"
+			},
+			"reload": "Seite neu laden",
+			"title": "Seite nicht verfügbar",
+			"unexpected": {
+				"description": "Neu laden hilft oft. Falls das Problem bleibt, hilft das Help Center weiter – dabei bitte den Fehlercode angeben.",
+				"title": "Da ist etwas schiefgelaufen"
+			}
+		},
 		"precondition_failed": "Die Ressource wurde verändert.",
 		"precondition_required": "Bedingung benötigt; versuche es mit \"If-Match\".",
 		"program_template_required": "Objekte in einem Programm müssen aus einer in diesem Programm verfügbaren Vorlage erstellt werden.",
