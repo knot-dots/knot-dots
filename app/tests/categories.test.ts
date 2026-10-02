@@ -161,14 +161,14 @@ test.describe('Categories', () => {
 		await expect(goalsBoard.overlay.locator).not.toBeVisible();
 
 		await goalsBoard.page.reload();
+		await expect(goalsBoard.card(testGoal.payload.title)).toBeVisible();
+
+		await openSharedCategoryFilter();
+		await goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[1] }).check();
+		await expect(goalsBoard.card(testGoal.payload.title)).not.toBeVisible();
 
 		await openSharedCategoryFilter();
 		await goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] }).check();
 		await expect(goalsBoard.card(testGoal.payload.title)).toBeVisible();
-
-		await openSharedCategoryFilter();
-		await goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] }).uncheck();
-		await goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[1] }).check();
-		await expect(goalsBoard.card(testGoal.payload.title)).not.toBeVisible();
 	});
 });
