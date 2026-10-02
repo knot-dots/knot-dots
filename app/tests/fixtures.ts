@@ -386,6 +386,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			void suiteId; // declares dependency to force a new worker per test file
 			const adminContext = await browser.newContext({
 				baseURL: workerInfo.project.use.baseURL,
+				extraHTTPHeaders: { 'Accept-Language': 'en-US' },
 				storageState: 'tests/.auth/admin.json'
 			});
 
