@@ -77,13 +77,7 @@ export async function computeUserGrants(
 		),
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
-				c.own_matrix
-					-- an organizational unit is a scope of its own: its rows act as soon as
-					-- they exist, matching the units-override of the old rules
-					OR (
-						c.payload->>'type' = 'organizational_unit'
-						AND EXISTS (SELECT 1 FROM container_grant g WHERE g.object = c.guid)
-					) AS decoupled
+				c.own_matrix AS decoupled
 			FROM container c
 			WHERE c.guid = ANY(${sql.array(guids, 'uuid')}) AND c.valid_currently AND NOT c.deleted
 		),
@@ -110,10 +104,7 @@ export async function computeUserGrants(
 				SELECT u.guid
 				FROM container u
 				WHERE u.guid = b.organizational_unit AND u.valid_currently AND NOT u.deleted
-					AND (
-						u.own_matrix
-						OR EXISTS (SELECT 1 FROM container_grant g WHERE g.object = u.guid)
-					)
+					AND u.own_matrix
 				LIMIT 1
 			) u ON true
 		),
