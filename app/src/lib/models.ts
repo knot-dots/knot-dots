@@ -1192,9 +1192,13 @@ export const customCollectionPayload = z.strictObject({
 	description: z.string().trim().optional(),
 	filter: z.record(z.string(), z.array(z.string()).transform(deduplicate)).default({}),
 	item: z.array(z.uuid()).default([]),
-	listType: z.enum([listTypes.enum.wall, listTypes.enum.carousel]).default(listTypes.enum.wall),
+	listType: z
+		.enum([listTypes.enum.wall, listTypes.enum.carousel, 'timeline'])
+		.default(listTypes.enum.wall),
 	newItemTemplate: z.array(z.uuid()).default([]),
 	showDescription: z.boolean().default(false),
+	// Only for listType timeline
+	showPreview: z.boolean().default(false),
 	sort: z.enum(['alpha', 'date', 'modified', 'relevance']).default('alpha'),
 	terms: z.string().default(''),
 	title: z.string(),

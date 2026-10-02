@@ -9,10 +9,14 @@
 	import CarouselIcon from '~icons/knotdots/carousel';
 	import Grid from '~icons/knotdots/grid';
 	import Search from '~icons/knotdots/search';
+	import Summary from '~icons/knotdots/summary';
 	import Text from '~icons/knotdots/text';
+	import TimelineIcon from '~icons/knotdots/timeline';
+	import { page } from '$app/state';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		backgroundColor,
@@ -40,6 +44,12 @@
 	}: Props = $props();
 
 	let confirmDeleteDialog: HTMLDialogElement = $state(undefined!);
+
+	let viewSummary = $derived(
+		container.payload.listType === 'timeline' && container.payload.showPreview
+			? `${$_('list_type.timeline')}, ${$_('custom_collection.settings.with_preview')}`
+			: $_(`list_type.${container.payload.listType}`)
+	);
 
 	let interactionsSummary = $derived.by(() => {
 		const interactions: string[] = [];
@@ -89,12 +99,14 @@
 			>
 				{#if container.payload.listType === 'carousel'}
 					<CarouselIcon />
+				{:else if container.payload.listType === 'timeline'}
+					<TimelineIcon />
 				{:else}
 					<Grid />
 				{/if}
 				<span>
 					<strong>{$_('custom_collection.settings.view')}</strong>
-					<small>{$_(`list_type.${container.payload.listType}`)}</small>
+					<small>{viewSummary}</small>
 				</span>
 				<ChevronRight />
 			</button>
@@ -214,7 +226,37 @@
 					<CarouselIcon />
 					<span>{$_('list_type.carousel')}</span>
 				</label>
+				{#if createFeatureDecisions(page.data.features).useTimeline()}
+					<label>
+						<input
+							type="radio"
+							name="listType"
+							value="timeline"
+							checked={container.payload.listType === 'timeline'}
+							onchange={() => (container.payload.listType = 'timeline')}
+						/>
+						<TimelineIcon />
+						<span>{$_('list_type.timeline')}</span>
+					</label>
+				{/if}
 			</fieldset>
+
+			<!-- Options of the selected view -->
+			{#if container.payload.listType === 'timeline' && createFeatureDecisions(page.data.features).useTimeline()}
+				<div class="cascading-menu-divider" role="presentation"></div>
+				<label class="button cascading-menu-item">
+					<Summary />
+					<span>
+						{$_('custom_collection.settings.show_preview')}
+					</span>
+					<input
+						class="toggle"
+						name="previewToggle"
+						type="checkbox"
+						bind:checked={container.payload.showPreview}
+					/>
+				</label>
+			{/if}
 		{:else if openSubMenuTitle == $_('container_settings_dropdown.highlight.title')}
 			<fieldset class="listbox">
 				{#each backgroundColor.options.map( (o) => ({ label: $_(o), value: o }) ) as option (option.value)}

@@ -631,11 +631,11 @@ button.button-primary,
 	--button-background: var(--color-background-accent-strong);
 	--button-active-background:
 		linear-gradient(var(--color-background-accent-active), var(--color-background-accent-active)),
-		linear-gradient(var(--button-background), var(--button-background));
+		linear-gradient(var(--button-background, transparent), var(--button-background, transparent));
 	--button-disabled-background: var(--color-background-accent-disabled);
 	--button-hover-background:
 		linear-gradient(var(--color-background-accent-hover), var(--color-background-accent-hover)),
-		linear-gradient(var(--button-background), var(--button-background));
+		linear-gradient(var(--button-background, transparent), var(--button-background, transparent));
 
 	--button-end-icon-color: var(--color-accent-on-cta);
 	--button-start-icon-color: var(--color-accent-on-cta);
@@ -666,11 +666,11 @@ button.button-alternate,
 .button.button-alternate {
 	--button-active-background:
 		linear-gradient(var(--color-background-accent-active), var(--color-background-accent-active)),
-		linear-gradient(var(--button-background), var(--button-background));
+		linear-gradient(var(--button-background, transparent), var(--button-background, transparent));
 	--button-disabled-background: var(--color-background-accent-disabled);
 	--button-hover-background:
 		linear-gradient(var(--color-background-accent-hover), var(--color-background-accent-hover)),
-		linear-gradient(var(--button-background), var(--button-background));
+		linear-gradient(var(--button-background, transparent), var(--button-background, transparent));
 
 	--button-end-icon-color: var(--color-icon-muted);
 	--button-start-icon-color: var(--color-icon-accent-default);
@@ -685,11 +685,11 @@ button.button-alternate-outline,
 .button.button-alternate-outline {
 	--button-active-background:
 		linear-gradient(var(--color-background-accent-active), var(--color-background-accent-active)),
-		linear-gradient(var(--button-background), var(--button-background));
+		linear-gradient(var(--button-background, transparent), var(--button-background, transparent));
 	--button-disabled-background: var(--color-background-accent-disabled);
 	--button-hover-background:
 		linear-gradient(var(--color-background-accent-hover), var(--color-background-accent-hover)),
-		linear-gradient(var(--button-background), var(--button-background));
+		linear-gradient(var(--button-background, transparent), var(--button-background, transparent));
 
 	--button-border-color: var(--color-border-subtle);
 	--button-hover-border-color: var(--color-border-subtle);
