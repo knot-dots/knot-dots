@@ -1006,7 +1006,7 @@ export function deleteOrganizationContainer(container: Container<OrganizationPay
 
 			const organizationalUnitContainers = await getManyOrganizationalUnitContainers({
 				include: {
-					organization: container.guid
+					organization: [container.guid]
 				}
 			})(txConnection);
 
@@ -1620,7 +1620,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 		federalState?: string[];
 		guid?: string[];
 		level?: number;
-		organization: string;
+		organization: string[];
 		terms?: string;
 	};
 	exclude?: {
@@ -1666,7 +1666,7 @@ export function getManyOrganizationalUnitContainers(filters: {
 			conditions.push(sql.fragment`(c.payload->'level')::int = ${filters.include.level}`);
 		}
 		if (filters.include?.organization?.length) {
-			const scopeCondition = sql.fragment`c.organization = ${filters.include.organization}`;
+			const scopeCondition = sql.fragment`c.organization = ANY (${sql.array(filters.include.organization, 'uuid')})`;
 			conditions.push(
 				filters.include.guid?.length
 					? sql.fragment`(${scopeCondition} OR c.guid = ANY (${sql.array(filters.include.guid, 'uuid')}))`

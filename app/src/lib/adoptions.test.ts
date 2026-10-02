@@ -1,13 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import { z } from 'zod';
 import {
-	organizationalUnitsManagedByUser,
 	adopters,
 	adopterScope,
 	adoptionDiff,
 	adoptionRelations,
 	groupedByOrganization,
-	isAdoptableProgram
+	isAdoptableProgram,
+	organizationalUnitsManagedByUser,
+	organizationsManagedByUser
 } from '$lib/adoptions';
 import {
 	anyContainer,
@@ -107,6 +108,30 @@ function enrichedUnits(...governed: string[]) {
 	}));
 }
 
+const organizations = [
+	makeOrganization(organization, { name: 'City A' }),
+	makeOrganization(otherOrganization, { name: 'City B' })
+];
+
+// Organizations govern themselves; `governed` names those whose matrix
+// grants the user the create kind.
+function enrichedOrganizations(...governed: string[]) {
+	return organizations.map((container) => ({
+		...container,
+		user_grant: composeUserGrants({
+			scopeSourced: true,
+			governsItself: true,
+			organizationSelf: [],
+			organizationalUnitSelf: [],
+			source: container.guid,
+			sourceSelf: [],
+			sourceSubordinates: governed.includes(container.guid)
+				? grantSetForRole(memberRoles.enum.head).subordinates
+				: []
+		})
+	}));
+}
+
 function guids(result: Array<{ guid: string }>) {
 	return result.map(({ guid }) => guid);
 }
@@ -174,8 +199,32 @@ describe('adoptableOrganizationalUnits', () => {
 	});
 });
 
+describe('organizationsManagedByUser', () => {
+	test('organizations without a create grant are not adoptable', () => {
+		expect(organizationsManagedByUser(makeProgram(), organizations)).toEqual([]);
+		expect(organizationsManagedByUser(makeProgram(), enrichedOrganizations())).toEqual([]);
+	});
+
+	test('organizations the user may create in are adoptable', () => {
+		expect(
+			guids(organizationsManagedByUser(makeProgram(), enrichedOrganizations(otherOrganization)))
+		).toEqual([otherOrganization]);
+	});
+
+	test('the owning organization is excluded', () => {
+		expect(
+			guids(
+				organizationsManagedByUser(
+					makeProgram(),
+					enrichedOrganizations(organization, otherOrganization)
+				)
+			)
+		).toEqual([otherOrganization]);
+	});
+});
+
 describe('adopterScope', () => {
-	const currentOrganization = makeOrganization(organization, { name: 'City A' });
+	const currentOrganization = organizations[0];
 
 	test('an organizational unit context covers only that unit', () => {
 		expect(
@@ -264,18 +313,24 @@ describe('adoptionRelations', () => {
 });
 
 describe('groupedByOrganization', () => {
-	const organizations = [
-		makeOrganization(organization, { name: 'City A' }),
-		makeOrganization(otherOrganization, { name: 'City B' })
-	];
-
 	const organizationalUnit = makeOrganizationalUnit(foreignUnit, otherOrganization);
 
 	test('groups units by organization and drops empty groups', () => {
-		expect(groupedByOrganization([organizationalUnit], organizations)).toEqual([
+		expect(groupedByOrganization([organizationalUnit], organizations, [])).toEqual([
 			{
 				organization: organizations[1],
+				adoptable: false,
 				units: [organizationalUnit]
+			}
+		]);
+	});
+
+	test('keeps an adoptable organization without units', () => {
+		expect(groupedByOrganization([], organizations, [organizations[0]])).toEqual([
+			{
+				organization: organizations[0],
+				adoptable: true,
+				units: []
 			}
 		]);
 	});
@@ -287,7 +342,8 @@ describe('groupedByOrganization', () => {
 					makeOrganizationalUnit(foreignUnit, otherOrganization),
 					makeOrganizationalUnit(siblingUnit, organization)
 				],
-				organizations
+				organizations,
+				[]
 			).map(({ organization: { guid } }) => guid)
 		).toEqual([organization, otherOrganization]);
 	});

@@ -6,17 +6,22 @@
 	import ChevronDown from '~icons/flowbite/chevron-down-outline';
 	import ChevronUp from '~icons/flowbite/chevron-up-outline';
 	import Adopt from '~icons/knotdots/adopt';
+	import Close from '~icons/knotdots/close';
 	import Search from '~icons/knotdots/search';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
-		organizationalUnitsManagedByUser,
 		adopters,
 		adoptionDiff,
 		adoptionRelations,
 		groupedByOrganization,
-		isAdoptableProgram
+		isAdoptableProgram,
+		organizationalUnitsManagedByUser,
+		organizationsManagedByUser
 	} from '$lib/adoptions';
+	import MultipleChoiceTree, {
+		type MultipleChoiceTreeOption
+	} from '$lib/components/MultipleChoiceTree.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import type { Container, ProgramPayload } from '$lib/models';
 
@@ -37,23 +42,29 @@
 		modifiers: [{ name: 'offset', options: { offset: [0, 4] } }]
 	};
 
-	const potentialAdopters = $derived(
+	const adoptableOrganizations = $derived(
+		organizationsManagedByUser(container, page.data.organizations)
+	);
+
+	const adoptableUnits = $derived(
 		organizationalUnitsManagedByUser(container, page.data.organizationalUnits)
+	);
+
+	const adoptableGuids = $derived(
+		[...adoptableOrganizations, ...adoptableUnits].map(({ guid }) => guid)
 	);
 
 	const mayAdopt = $derived(
 		createFeatureDecisions(page.data.features).useAdoptions() &&
 			isAdoptableProgram(container) &&
-			potentialAdopters.length > 0
+			adoptableGuids.length > 0
 	);
 
 	// Overrides the value derived from the container after a confirmed change,
 	// because the container in the overlay is not refreshed by invalidateAll.
 	let currentAdopters = $derived(adopters(container));
 
-	const before = $derived(
-		potentialAdopters.filter(({ guid }) => currentAdopters.includes(guid)).map(({ guid }) => guid)
-	);
+	const before = $derived(adoptableGuids.filter((guid) => currentAdopters.includes(guid)));
 
 	const isAdopted = $derived(before.length > 0);
 
@@ -68,17 +79,30 @@
 		}
 	});
 
-	const groups = $derived(
+	function matchesSearch({ payload }: { payload: { name: string } }) {
+		return payload.name.toLowerCase().includes(search.toLowerCase().trim());
+	}
+
+	// A search keeps the groups whose organization or units match it.
+	const options: MultipleChoiceTreeOption[] = $derived(
 		groupedByOrganization(
-			potentialAdopters.filter(({ payload }) =>
-				payload.name.toLowerCase().includes(search.toLowerCase().trim())
-			),
-			page.data.organizations
+			adoptableUnits.filter(matchesSearch),
+			page.data.organizations,
+			adoptableOrganizations
 		)
+			.filter(({ organization, units }) => units.length > 0 || matchesSearch(organization))
+			.map(({ organization, adoptable, units }) => ({
+				disabled: !adoptable,
+				label: organization.payload.name,
+				subOptions: units.map(({ guid, payload }) => ({ label: payload.name, value: guid })),
+				value: organization.guid
+			}))
 	);
 
+	const allSelected = $derived(adoptableGuids.every((guid) => selected.includes(guid)));
+
 	function selectAll() {
-		selected = potentialAdopters.map(({ guid }) => guid);
+		selected = [...adoptableGuids];
 	}
 
 	async function handleSubmit(event: SubmitEvent) {
@@ -127,7 +151,13 @@
 				use:popperContent={extraOpts}
 				use:popover.panel
 			>
-				<h3>{$_('adopt.popover.heading')}</h3>
+				<p class="dropdown-panel-title">
+					<span>{$_('adopt.popover.heading')}</span>
+					<button class="action-button" onclick={popover.close} type="button">
+						<Close />
+						<span class="is-visually-hidden">{$_('close')}</span>
+					</button>
+				</p>
 
 				<label class="search focus-indicator">
 					<Search />
@@ -135,69 +165,67 @@
 					<input type="search" placeholder={$_('search')} bind:value={search} />
 				</label>
 
-				<p class="selection-summary">
-					<button class="quiet" onclick={() => (selected = [])} type="button">
+				<p class="selection-actions">
+					<button class="pill-button" onclick={() => (selected = [])} type="button">
 						{$_('selection_counter', { values: { count: selected.length } })}
 					</button>
-					<button class="quiet" onclick={selectAll} type="button">{$_('select_all')}</button>
+					<button class="nav-button" disabled={allSelected} onclick={selectAll} type="button">
+						{$_('select_all')}
+					</button>
 				</p>
 
-				<div class="groups">
-					{#each groups as group (group.organization.guid)}
-						{#if groups.length > 1}
-							<h4>{group.organization.payload.name}</h4>
-						{/if}
-						<ul>
-							{#each group.units as unit (unit.guid)}
-								<li>
-									<label>
-										<input bind:group={selected} type="checkbox" value={unit.guid} />
-										<span class="truncated">{unit.payload.name}</span>
-									</label>
-								</li>
-							{/each}
-						</ul>
-					{/each}
-				</div>
+				<MultipleChoiceTree {options} bind:selected expandAll={search.trim() !== ''} />
 
-				<button class="button-primary button-xs system-primary" type="submit">
-					{$_('adopt.popover.confirm')}
-				</button>
+				<footer>
+					<button class="button-primary button-xs system-primary" type="submit">
+						{$_('adopt.popover.confirm')}
+					</button>
+				</footer>
 			</form>
 		{/if}
 	</div>
 {/if}
 
 <style>
-	.dropdown-button {
+	.dropdown {
 		--dropdown-button-default-background: var(--color-surface-accent-default);
 		--dropdown-button-default-color: var(--color-accent-on-default);
 		--dropdown-button-icon-default-color: var(--color-accent-on-default);
+		--dropdown-panel-background: var(--color-surface-container);
+		--dropdown-panel-border-color: var(--color-border-raised);
+		--dropdown-panel-border-radius: 16px;
+		--dropdown-panel-gap: 0;
+		--dropdown-panel-max-height: 30rem;
+		--dropdown-panel-width: 20rem;
 	}
 
-	.dropdown-panel {
-		border: solid 1px var(--color-border-raised);
-		border-radius: 16px;
+	.dropdown-panel-title {
+		align-items: center;
 		background-color: var(--color-surface-container);
-		min-width: 16.125rem;
-	}
-
-	h3 {
 		color: var(--color-text-strong);
+		display: flex;
 		font-size: 0.75rem;
 		font-weight: 600;
 		margin: 0;
-		padding: 0.25rem 0.5rem;
+		position: sticky;
+		top: -0.5rem;
+		z-index: 1;
+	}
+
+	.dropdown-panel-title > span {
+		margin-right: auto;
+		padding-left: 0.5rem;
 	}
 
 	.search {
 		align-items: center;
 		background-color: var(--color-background-accent-muted);
 		border: 1px solid var(--color-border-accent-subtle);
-		border-radius: 6px;
+		border-radius: 8px;
 		display: flex;
+		gap: 0.5rem;
 		margin: 0.25rem;
-		padding-left: 0.25rem;
+		padding: 0 0.5rem;
 	}
 
 	.search > :global(svg) {
@@ -210,66 +238,71 @@
 	.search input {
 		background-color: transparent;
 		border: none;
-		display: inline-block;
-		flex-grow: 0;
+		flex-grow: 1;
 		font-size: 0.75rem;
 		min-height: 1.75rem;
-		padding: 0 0.5rem;
+		min-width: 0;
+		padding: 0;
+	}
+
+	.search input::placeholder {
+		color: var(--color-text-muted);
 	}
 
 	.search input:focus {
 		outline: none;
 	}
 
-	.selection-summary {
+	.selection-actions {
 		align-items: center;
+		background-color: var(--color-surface-container);
 		display: flex;
 		justify-content: space-between;
 		margin: 0;
+		position: sticky;
+		top: 1.5rem;
+		z-index: 1;
 	}
 
-	.selection-summary button {
+	.pill-button,
+	.nav-button {
+		background: none;
 		border: none;
-		color: var(--color-gray-600);
+		color: var(--color-text-accent-default);
 		font-size: 0.75rem;
 		font-weight: 500;
 		height: 1.75rem;
+	}
+
+	.pill-button {
+		border-radius: 9999px;
 		padding: 0 0.75rem;
 	}
 
-	.groups {
-		max-height: 16rem;
-		overflow-y: auto;
+	.nav-button {
+		border-radius: 8px;
+		padding: 0 0.5rem;
 	}
 
-	.groups h4 {
-		color: var(--color-gray-500);
-		font-size: 0.75rem;
-		font-weight: 600;
-		margin: 0.25rem 0 0;
-		padding: 0.25rem 0.5rem;
+	.nav-button:disabled {
+		background: none;
+		color: var(--color-text-disabled);
 	}
 
-	.groups ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.groups label {
-		align-items: center;
-		color: var(--color-gray-600);
-		display: flex;
-		font-size: 0.875rem;
-		font-weight: 500;
-		gap: 0.5rem;
+	footer {
+		background-color: var(--color-surface-accent-container-raised);
+		border-radius: 0 0 16px 16px;
+		border-top: 1px solid var(--color-border-raised);
+		bottom: -0.5rem;
+		margin: 0.5rem -0.5rem -0.5rem;
 		padding: 0.5rem;
+		position: sticky;
+		z-index: 1;
 	}
 
-	.button-primary[type='submit'] {
+	footer > button {
 		display: block;
 		font-size: 0.75rem;
-		margin-top: 0.5rem;
 		min-height: 1.75rem;
 		width: 100%;
 	}

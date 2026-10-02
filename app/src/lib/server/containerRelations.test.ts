@@ -186,3 +186,45 @@ test('rejects adoptions made through the adopting unit', () => {
 		).rejected
 	).toHaveLength(1);
 });
+
+const organization = (guid = otherGuid) =>
+	container(guid, guid, { name: 'Organization', type: 'organization' });
+
+test('authorizes an organization adopting a program', () => {
+	expect(
+		authorize([adoption()], [adoptableProgram(), organization()], {
+			features: ['Adoptions'],
+			user: sysadmin
+		}).authorized
+	).toHaveLength(1);
+});
+
+test('rejects an organization adopting its own program', () => {
+	const program = { ...adoptableProgram(), organization: otherGuid };
+
+	expect(
+		authorize([adoption()], [program, organization()], {
+			features: ['Adoptions'],
+			user: sysadmin
+		}).rejected
+	).toHaveLength(1);
+});
+
+test('requires the right to create within the adopting scope', () => {
+	// the collaborator holds a create grant within what `team` manages only
+	const unitWithinTeam = container(otherGuid, team, {
+		level: 1,
+		name: 'Unit',
+		type: 'organizational_unit'
+	});
+
+	expect(
+		authorize([adoption()], [adoptableProgram(), unitWithinTeam], { features: ['Adoptions'] })
+			.authorized
+	).toHaveLength(1);
+	expect(
+		authorize([adoption()], [adoptableProgram(), organizationalUnit()], {
+			features: ['Adoptions']
+		}).rejected
+	).toHaveLength(1);
+});

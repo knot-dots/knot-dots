@@ -19,6 +19,10 @@ export function isAdoptableProgram(container: Container<AnyPayload>): boolean {
 	);
 }
 
+// The units the user may create objects in: a create grant on the
+// subordinates of a unit is what the create rule reads for a program placed
+// within it (containerOfType), and the relation route applies that very rule
+// when the adoption is stored. Inheritance is already folded into user_grant.
 export function organizationalUnitsManagedByUser(
 	program: { organizational_unit: string | null },
 	organizationalUnits: Array<Container<OrganizationalUnitPayload>>
@@ -29,19 +33,39 @@ export function organizationalUnitsManagedByUser(
 	);
 }
 
+// The organizations the user may create objects in, by the same rule as for
+// units; an organization never adopts its own program.
+export function organizationsManagedByUser(
+	program: { organization: string },
+	organizations: Array<Container<OrganizationPayload>>
+): Array<Container<OrganizationPayload>> {
+	return organizations.filter(
+		(organization) =>
+			organization.guid !== program.organization &&
+			organization.user_grant?.subordinates.includes('create')
+	);
+}
+
+export type AdopterGroup = {
+	organization: Container<OrganizationPayload>;
+	adoptable: boolean;
+	units: Array<Container<OrganizationalUnitPayload>>;
+};
+
+// One group per organization that is adoptable itself or has adoptable
+// units, in the order of the organizations.
 export function groupedByOrganization(
 	units: Array<Container<OrganizationalUnitPayload>>,
-	organizations: Array<Container<OrganizationPayload>>
-): Array<{
-	organization: Container<OrganizationPayload>;
-	units: Array<Container<OrganizationalUnitPayload>>;
-}> {
+	organizations: Array<Container<OrganizationPayload>>,
+	adoptableOrganizations: Array<Container<OrganizationPayload>>
+): AdopterGroup[] {
 	return organizations
 		.map((organization) => ({
 			organization,
+			adoptable: adoptableOrganizations.some(({ guid }) => guid === organization.guid),
 			units: units.filter(({ organization: guid }) => guid === organization.guid)
 		}))
-		.filter(({ units }) => units.length > 0);
+		.filter(({ adoptable, units }) => adoptable || units.length > 0);
 }
 
 // The scope whose adoptions are visible in a given context: an organizational

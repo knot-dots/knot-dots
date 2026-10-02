@@ -2,8 +2,10 @@ import { isAdoptableProgram } from '$lib/adoptions';
 import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
+	containerOfType,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
+	payloadTypes,
 	predicates,
 	type AnyPayload,
 	type Container,
@@ -43,22 +45,25 @@ export function authorizeContainerRelationChanges<T extends ContainerRelationCha
 		}
 		// Adopting a public rule-set program deliberately does not require
 		// permission on the (foreign) program itself: the user must be
-		// allowed to update the adopting organization or organizational
-		// unit, the program must be adoptable, and the owning
-		// organizational unit may not adopt its own program. Removal is
-		// exempt from the latter rules: taking away a relation that should
-		// not exist must always be possible for those responsible for the
-		// adopting unit.
+		// allowed to create programs within the adopting organization or
+		// organizational unit (the same create-inside rule the client
+		// applies when listing the adopters, inherited grants included),
+		// the program must be adoptable, and neither the owning
+		// organization nor the owning organizational unit may adopt their
+		// own program. Removal is exempt from the latter rules: taking away
+		// a relation that should not exist must always be possible for
+		// those responsible for the adopting scope.
 		if (predicate == predicates.enum['is-adopted-by']) {
 			return (
 				createFeatureDecisions(features).useAdoptions() &&
 				subject == guid &&
-				ability.can('update', objectContainer) &&
+				ability.can('create', containerOfType(payloadTypes.enum.program, objectContainer)) &&
 				(deleted ||
 					(isAdoptableProgram(subjectContainer) &&
 						(isOrganizationContainer(objectContainer) ||
 							isOrganizationalUnitContainer(objectContainer)) &&
-						objectContainer.guid != subjectContainer.organizational_unit))
+						objectContainer.guid != subjectContainer.organizational_unit &&
+						objectContainer.guid != subjectContainer.organization))
 			);
 		}
 		return ability.can(
