@@ -12,7 +12,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 const tokenName = z.string().trim().min(1).max(100);
 const tokenId = z.uuid();
-const scopes = [mcpScopes.containersRead, mcpScopes.organizationsRead];
+const readScopes = [mcpScopes.containersRead, mcpScopes.organizationsRead];
 
 function requireAuthenticatedUser(locals: App.Locals) {
 	if (!locals.user.isAuthenticated) {
@@ -42,6 +42,11 @@ export const actions = {
 		}
 
 		const generatedToken = generateMcpToken();
+		const scopes = [
+			...readScopes,
+			...(data.get('containersWrite') === 'true' ? [mcpScopes.containersWrite] : []),
+			...(data.get('usersRead') === 'true' ? [mcpScopes.usersRead] : [])
+		];
 		await locals.pool.connect(
 			insertMcpToken({
 				name: name.data,

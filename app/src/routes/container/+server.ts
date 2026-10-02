@@ -1,29 +1,20 @@
 import { error, json } from '@sveltejs/kit';
-import { NotFoundError, UniqueIntegrityConstraintViolationError } from 'slonik';
+import { UniqueIntegrityConstraintViolationError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
-import { createFeatureDecisions } from '$lib/features';
+import { filterVisible } from '$lib/authorization';
 import {
 	administrativeTypes,
-	grantForNewContainer,
 	indicatorCategories,
 	indicatorTypes,
-	newContainer,
 	payloadTypes,
 	predicates,
 	programTypes,
 	taskCategories
 } from '$lib/models';
-import { isTemplateScope, requiresScopedTemplate } from '$lib/templateScopes';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
-import {
-	createContainer,
-	getContainerByGuid,
-	getManyContainers,
-	getManyOrganizationContainers
-} from '$lib/server/db';
+import { ContainerCreationError, createAuthorizedContainer } from '$lib/server/containerCreation';
+import { getManyContainers, getManyOrganizationContainers } from '$lib/server/db';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
 import type { RequestHandler } from './$types';
 
@@ -134,107 +125,26 @@ export const POST = (async ({ locals, request }) => {
 	const data = await request.json().catch(() => {
 		error(400, { message: unwrapFunctionStore(_)('error.bad_request') });
 	});
-	const parseResult = newContainer.safeParse(data);
-
-	if (!parseResult.success) {
-		error(422, parseResult.error);
-	}
-	if (
-		parseResult.data.relation.some(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
-	) {
-		error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
-	}
-	if (createFeatureDecisions(locals.features ?? []).useTemplateWorkspaces()) {
-		if (requiresScopedTemplate(parseResult.data)) {
-			error(422, { message: unwrapFunctionStore(_)('error.scoped_template_required') });
-		}
-	}
-
-	const ability = defineAbilityFor(locals.user);
-
-	const availableInRelations = parseResult.data.relation.filter(
-		({ predicate }) => predicate === predicates.enum['is-available-in']
-	);
-	if (availableInRelations.length > 0) {
-		const [availability] = availableInRelations;
-		if (
-			availableInRelations.length !== 1 ||
-			availability.subject !== undefined ||
-			availability.object === undefined ||
-			!('template' in parseResult.data.payload) ||
-			parseResult.data.payload.template !== true
-		) {
-			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
-		}
-
-		const program = await locals.pool
-			.connect(getContainerByGuid(availability.object))
-			.catch((caught: unknown) => {
-				if (caught instanceof NotFoundError) {
-					error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
-				}
-				throw caught;
-			});
-		if (!isTemplateScope(program) || program.organization !== parseResult.data.organization) {
-			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
-		}
-		if (ability.cannot('read', program) || ability.cannot('update', program)) {
-			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-		}
-	}
-
-	// Creating happens within a parent, whose computed grants decide: the
-	// container the new one is part of, otherwise its area. Only sysadmins
-	// create containers without a parent, such as organizations.
-	const hierarchyPredicates: string[] = [
-		predicates.enum['is-part-of'],
-		predicates.enum['is-part-of-program'],
-		predicates.enum['is-part-of-measure'],
-		predicates.enum['is-section-of']
-	];
-	const parentGuid =
-		parseResult.data.relation.find(
-			({ object, predicate }) => object !== undefined && hierarchyPredicates.includes(predicate)
-		)?.object ??
-		parseResult.data.organizational_unit ??
-		parseResult.data.organization;
-	const parent = await locals.pool
-		.connect(getContainerByGuid(parentGuid))
-		.catch((caught: unknown) => {
-			if (caught instanceof NotFoundError) {
-				return undefined;
-			}
-			throw caught;
-		});
-	// The submitted container is tested with the grants derived from its
-	// parent. Without a resolvable parent there are no grants, so only the
-	// unconditional sysadmin rule passes; the persisted scope must be the one
-	// the parent was authorized for.
-	if (
-		(parent && parseResult.data.organization !== parent.organization) ||
-		ability.cannot('create', {
-			...parseResult.data,
-			...(parent ? { user_grant: grantForNewContainer(parent) } : {})
-		})
-	) {
-		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
-	}
-
 	try {
 		const result = await locals.pool.connect(
-			createContainer({
-				...parseResult.data,
-				user: [
-					{
-						predicate: predicates.enum['is-creator-of'],
-						subject: locals.user.guid
-					}
-				]
-			})
+			createAuthorizedContainer({ data, features: locals.features ?? [], user: locals.user })
 		);
 
 		return json(result, { status: 201, headers: { location: `/container/${result.guid}` } });
 	} catch (caught: unknown) {
+		if (caught instanceof ContainerCreationError) {
+			if (caught.kind === 'invalid_container') error(422, caught.validationError!);
+			if (caught.kind === 'copy_invalid') {
+				error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+			}
+			if (caught.kind === 'scoped_template_required') {
+				error(422, { message: unwrapFunctionStore(_)('error.scoped_template_required') });
+			}
+			if (caught.kind === 'forbidden') {
+				error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+			}
+			error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+		}
 		if (
 			caught instanceof UniqueIntegrityConstraintViolationError &&
 			(caught.constraint === 'container_payload_organization_slug_key' ||

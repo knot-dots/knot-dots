@@ -1,10 +1,11 @@
 import { NotFoundError, type DatabaseConnection } from 'slonik';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import type { AnyPayload, Container } from '$lib/models';
+import { predicates, type AnyPayload, type Container } from '$lib/models';
 import { getContainerByGuid } from '$lib/server/db';
 import { getManyContainersWithES } from '$lib/server/elasticsearch';
 import type {
 	ContainerSummary,
+	GetContainerOutput,
 	SearchContainersInput,
 	SearchContainersOutput
 } from '$lib/server/mcp/contracts/containers';
@@ -14,15 +15,25 @@ import type { User } from '$lib/stores';
 
 const searchBatchSize = 250;
 
+export function serializeMcpContainer(container: Container<AnyPayload>): GetContainerOutput {
+	return {
+		container: { ...container, valid_from: container.valid_from.toISOString() }
+	};
+}
+
 export interface SearchMcpContainersOptions extends SearchContainersInput {
 	user: User;
 }
 
-function summarizeContainer(container: Container<AnyPayload>): ContainerSummary {
+export function summarizeContainer(container: Container<AnyPayload>): ContainerSummary {
 	const { payload } = container;
 	const label = 'title' in payload ? payload.title : 'name' in payload ? payload.name : null;
 
 	return {
+		assigneeGuids: 'assignee' in payload && Array.isArray(payload.assignee) ? payload.assignee : [],
+		creatorGuids: container.user
+			.filter(({ predicate }) => predicate === predicates.enum['is-creator-of'])
+			.map(({ subject }) => subject),
 		guid: container.guid,
 		label: typeof label === 'string' ? label : null,
 		organizationGuid: container.organization,

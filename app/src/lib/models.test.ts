@@ -7,6 +7,7 @@ import {
 	type EffectPayload,
 	findDescendants,
 	getAvailableInScopeGuids,
+	getPayloadSchema,
 	grantSetForRole,
 	memberRoleFromGrantSet,
 	memberRoleMatchingGrantSet,
@@ -26,6 +27,12 @@ import {
 	userRelationsForMemberRole
 } from '$lib/models';
 import { addRelation } from '$lib/relations';
+
+test('resolves the canonical schema for every payload type', () => {
+	for (const payloadType of payloadTypes.options) {
+		expect(getPayloadSchema(payloadType).shape.type.value).toBe(payloadType);
+	}
+});
 
 const organizationOne = '1d048b81-780a-41ad-813e-5111a23099fb';
 
