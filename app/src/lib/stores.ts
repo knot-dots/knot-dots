@@ -20,6 +20,7 @@ import {
 	type GrantRecords,
 	type IooiType,
 	type MeasurePayload,
+	type ObjectCollectionPayload,
 	type OrganizationalUnitPayload,
 	overlayKey,
 	paramsFromFragment,
@@ -130,7 +131,7 @@ type AddObjectiveState = {
 export const addObjectiveState = writable<AddObjectiveState>({});
 
 type AddItemState = {
-	target?: Container<CustomCollectionPayload>;
+	target?: Container<CustomCollectionPayload | ObjectCollectionPayload>;
 };
 
 export const addItemState = writable<AddItemState>({});

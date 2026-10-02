@@ -70,6 +70,8 @@ function requiredPayloadFields(type: PayloadType) {
 			return { number: '1' };
 		case payloadTypes.enum.indicator_template:
 			return { unit: 'unit.percent' };
+		case payloadTypes.enum.object_collection:
+			return { objectType: payloadTypes.enum.goal };
 		case payloadTypes.enum.organization:
 		case payloadTypes.enum.organizational_unit:
 			return { name: 'Context' };
