@@ -1,4 +1,5 @@
 import { error, json } from '@sveltejs/kit';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor from '$lib/authorization';
 import {
@@ -38,6 +39,10 @@ const schema = z.object({
 });
 
 export const POST = (async ({ locals, request }) => {
+	if (request.headers.get('content-type')?.split(';', 1)[0].trim() !== 'application/json') {
+		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
+	}
+
 	const data = await request.json().catch((reason: SyntaxError) => {
 		error(400, { message: reason.message });
 	});
