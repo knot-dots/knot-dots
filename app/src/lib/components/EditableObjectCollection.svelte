@@ -309,12 +309,6 @@
 				/>
 			</form>
 		{/each}
-		{#if mayAddItem}
-			<button class="button button-xs" onclick={addItem} type="button">
-				<Plus />
-				{$_('add_item')}
-			</button>
-		{/if}
 	</div>
 {:else if container.payload.listType === listTypes.enum.wall}
 	<ul class="catalog wide">
