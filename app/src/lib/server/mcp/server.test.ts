@@ -48,6 +48,7 @@ const listContainerRelations = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const removeContainerRelation = vi.fn();
+const setActualData = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const updateContainer = vi.fn();
@@ -63,6 +64,7 @@ const toolHandler = createKnotDotsMcpHandler({
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	removeContainerRelation,
+	setActualData,
 	searchContainers,
 	searchOrganizationUsers,
 	updateContainer
@@ -127,6 +129,7 @@ beforeEach(() => {
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	removeContainerRelation.mockReset();
+	setActualData.mockReset();
 	searchContainers.mockReset();
 	searchOrganizationUsers.mockReset();
 });
@@ -365,6 +368,7 @@ test('advertises tools without requiring their scopes', async () => {
 		'remove_container_relation',
 		'search_containers',
 		'search_organization_users',
+		'set_actual_data',
 		'update_container'
 	]);
 	expect(
@@ -740,6 +744,41 @@ test.each([
 	expect(body.result.content[0].text).toContain(hint);
 });
 
+const setActualDataArguments = {
+	indicatorGuid: '00000000-0000-4000-8000-000000000004',
+	organizationGuid: '00000000-0000-4000-8000-000000000003',
+	values: [{ value: 412, year: 2024 }]
+};
+
+test('sets actual data using the write scope', async () => {
+	const output = {
+		actualData: {
+			booleanValue: false,
+			guid: '00000000-0000-4000-8000-000000000005',
+			indicatorGuid: setActualDataArguments.indicatorGuid,
+			organizationGuid: setActualDataArguments.organizationGuid,
+			organizationalUnitGuid: null,
+			source: null,
+			values: setActualDataArguments.values
+		},
+		created: true
+	};
+	setActualData.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: setActualDataArguments, name: 'set_actual_data' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(setActualData).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{ ...setActualDataArguments, organizationalUnitGuid: null }
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
 const attachIndicatorArguments = {
 	indicatorGuid: '00000000-0000-4000-8000-000000000004',
 	targetGuid: '00000000-0000-4000-8000-000000000003'
@@ -800,6 +839,7 @@ test.each([
 	],
 	['add_container_relation', addContainerRelation, relationArguments],
 	['attach_indicator', attachIndicator, attachIndicatorArguments],
+	['set_actual_data', setActualData, setActualDataArguments],
 	['remove_container_relation', removeContainerRelation, relationArguments]
 ])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
 	const response = await toolHandler.fetch(
