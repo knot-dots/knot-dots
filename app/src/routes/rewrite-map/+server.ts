@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
+import { organizationalUnitType } from '$lib/models';
 import { getManyOrganizationContainers, getManyOrganizationalUnitContainers } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
@@ -10,7 +11,15 @@ const baseURL = new URL(env.PUBLIC_BASE_URL);
 export const GET: RequestHandler = async ({ locals }) => {
 	const [organizations, organizationalUnits] = await Promise.all([
 		locals.pool.connect(getManyOrganizationContainers({}, 'alpha')),
-		locals.pool.connect(getManyOrganizationalUnitContainers({}))
+		locals.pool.connect(
+			getManyOrganizationalUnitContainers({
+				exclude: {
+					organizationalUnitType: [
+						organizationalUnitType.enum['organizational_unit_type.administrative_area']
+					]
+				}
+			})
+		)
 	]);
 
 	const rewriteMap: RewriteMap = {};
