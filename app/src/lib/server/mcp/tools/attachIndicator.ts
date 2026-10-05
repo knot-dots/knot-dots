@@ -32,7 +32,7 @@ export function registerAttachIndicatorTool(
 				readOnlyHint: false
 			},
 			description:
-				'Measure the progress of a measure, simple measure or goal with an indicator, as in the web application. Indicators are never related to measures or goals directly: this creates an effect (for measures) or an objective (for goals) that is part of the target and points to the indicator; planned, achieved or wanted values are kept on that effect or objective. Any indicator visible to you can be used, including public templates of other organizations. Attaching an indicator that is already attached changes nothing.',
+				'Measure the progress of a measure, simple measure or goal with an indicator, as in the web application. Indicators are never related to measures or goals directly: this creates an effect (for measures) or an objective (for goals) that is part of the target and points to the indicator; planned, achieved or wanted values are kept on that effect or objective. Any indicator visible to you can be used, including public indicator templates of other organizations. Containers marked as templates (template: true) cannot be used as target or indicator. Attaching an indicator that is already attached changes nothing.',
 			inputSchema: attachIndicatorInput,
 			outputSchema: attachIndicatorOutput,
 			title: 'Attach indicator'

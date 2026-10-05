@@ -100,11 +100,15 @@ export function setMcpActualData(input: SetActualDataInput & McpAuth) {
 			const indicator = await findVisibleContainer(connection, user, input.indicatorGuid);
 			if (
 				!indicator ||
-				!(isIndicatorTemplateContainer(indicator) || isBinaryIndicatorContainer(indicator)) ||
-				('template' in indicator.payload && indicator.payload.template === true)
+				!(isIndicatorTemplateContainer(indicator) || isBinaryIndicatorContainer(indicator))
 			) {
 				throw new McpActualDataError(
 					'Indicator not found or inaccessible; it must be an indicator template or a binary indicator.'
+				);
+			}
+			if ('template' in indicator.payload && indicator.payload.template === true) {
+				throw new McpActualDataError(
+					'The indicator is marked as a template (template: true); actual values cannot be recorded for it.'
 				);
 			}
 			if (isIndicatorTemplateContainer(indicator) && input.booleanValue !== undefined) {

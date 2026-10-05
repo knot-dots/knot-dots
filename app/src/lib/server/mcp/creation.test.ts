@@ -287,7 +287,9 @@ test('rejects invalid payloads and templates', async () => {
 	).rejects.toThrow('payload.title');
 	await expect(
 		createMcpContainer({ ...templateInput, tokenId, userId })({} as never)
-	).rejects.toThrow('Template creation is not supported');
+	).rejects.toThrow(
+		'Containers marked as templates (template: true) cannot be created by this tool.'
+	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
 });

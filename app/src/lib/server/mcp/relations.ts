@@ -100,7 +100,9 @@ async function findRelatableContainer(
 		throw new McpRelationError(`${role} container not found or inaccessible.`);
 	}
 	if ('template' in container.payload && container.payload.template === true) {
-		throw new McpRelationError('Templates cannot be related by this tool.');
+		throw new McpRelationError(
+			'Containers marked as templates (template: true) cannot be related by this tool.'
+		);
 	}
 	return container;
 }

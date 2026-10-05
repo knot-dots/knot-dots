@@ -7,7 +7,7 @@ export const attachIndicatorInput = z.strictObject({
 	indicatorGuid: z
 		.uuid()
 		.describe(
-			'Indicator template or binary indicator to measure the target with; it may belong to another organization if it is visible to you, such as a public template.'
+			'Indicator template or binary indicator to measure the target with; it may belong to another organization if it is visible to you, such as a public indicator template.'
 		),
 	iooiType: iooiTypes
 		.optional()

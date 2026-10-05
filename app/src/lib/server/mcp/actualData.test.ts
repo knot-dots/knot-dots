@@ -360,3 +360,20 @@ test('reports missing permission and concurrent changes of stored values', async
 		'The actual values were changed at the same time; call set_actual_data again.'
 	);
 });
+
+test('rejects an indicator marked as a template', async () => {
+	mocks.containers.set(
+		indicatorGuid,
+		container(indicatorGuid, {
+			template: true,
+			title: 'CO2 emissions',
+			type: 'indicator_template',
+			unit: 't'
+		})
+	);
+
+	await expect(setActualData({ values: [{ value: 1, year: 2024 }] })).rejects.toThrow(
+		'The indicator is marked as a template (template: true); actual values cannot be recorded for it.'
+	);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
+});

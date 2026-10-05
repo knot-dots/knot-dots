@@ -52,20 +52,29 @@ export function attachMcpIndicator(input: AttachIndicatorInput & McpAuth) {
 		runAsRequestUser(input.userId, async () => {
 			const user = await loadMcpUserContext(connection, input.userId);
 			const target = await findVisibleContainer(connection, user, input.targetGuid);
-			const link = target && !isTemplate(target) ? linkFor(target) : undefined;
+			const link = target ? linkFor(target) : undefined;
 			if (!target || !link) {
 				throw new McpIndicatorError(
 					'Target not found or inaccessible; it must be a measure, simple measure or goal.'
 				);
 			}
+			if (isTemplate(target)) {
+				throw new McpIndicatorError(
+					'The target is marked as a template (template: true); indicators cannot be attached to it.'
+				);
+			}
 			const indicator = await findVisibleContainer(connection, user, input.indicatorGuid);
 			if (
 				!indicator ||
-				!(isIndicatorTemplateContainer(indicator) || isBinaryIndicatorContainer(indicator)) ||
-				isTemplate(indicator)
+				!(isIndicatorTemplateContainer(indicator) || isBinaryIndicatorContainer(indicator))
 			) {
 				throw new McpIndicatorError(
 					'Indicator not found or inaccessible; it must be an indicator template or a binary indicator.'
+				);
+			}
+			if (isTemplate(indicator)) {
+				throw new McpIndicatorError(
+					'The indicator is marked as a template (template: true) and cannot be attached.'
 				);
 			}
 

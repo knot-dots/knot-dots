@@ -209,14 +209,6 @@ test.each([
 		'a program as target',
 		() =>
 			mocks.containers.set(targetGuid, container(targetGuid, { title: 'Plan', type: 'program' }))
-	],
-	[
-		'a template as target',
-		() =>
-			mocks.containers.set(
-				targetGuid,
-				container(targetGuid, { template: true, title: 'Template', type: 'measure' })
-			)
 	]
 ])('rejects %s', async (_, arrange) => {
 	arrange();
@@ -234,19 +226,6 @@ test.each([
 		'a goal as indicator',
 		() =>
 			mocks.containers.set(indicatorGuid, container(indicatorGuid, { title: 'Goal', type: 'goal' }))
-	],
-	[
-		'an indicator template marked as template',
-		() =>
-			mocks.containers.set(
-				indicatorGuid,
-				container(indicatorGuid, {
-					template: true,
-					title: 'CO2',
-					type: 'indicator_template',
-					unit: 't'
-				})
-			)
 	]
 ])('rejects %s', async (_, arrange) => {
 	arrange();
@@ -263,4 +242,35 @@ test('reports a missing permission to create below the target', async () => {
 	});
 
 	await expect(attach()).rejects.toThrow('You are not allowed to create content in this context.');
+});
+
+test.each([
+	[
+		'target',
+		() =>
+			mocks.containers.set(
+				targetGuid,
+				container(targetGuid, { template: true, title: 'Template', type: 'measure' })
+			),
+		'The target is marked as a template (template: true); indicators cannot be attached to it.'
+	],
+	[
+		'indicator',
+		() =>
+			mocks.containers.set(
+				indicatorGuid,
+				container(indicatorGuid, {
+					template: true,
+					title: 'CO2',
+					type: 'indicator_template',
+					unit: 't'
+				})
+			),
+		'The indicator is marked as a template (template: true) and cannot be attached.'
+	]
+])('rejects a %s marked as a template', async (_, arrange, message) => {
+	arrange();
+
+	await expect(attach()).rejects.toThrow(message);
+	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 });
