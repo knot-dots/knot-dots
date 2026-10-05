@@ -213,62 +213,68 @@
 	}
 </script>
 
-{#if editable || container.payload.title}
+{#snippet actions()}
+	{#if !showTitle && $ability.can('update', container)}
+		<li>
+			<button
+				class="action-button action-button--size-l"
+				onclick={() => (titleRequested = true)}
+				type="button"
+				{@attach tooltip($_('add_title'))}
+			>
+				<Text />
+			</button>
+		</li>
+	{/if}
+	{#if mayAddItem}
+		<li>
+			<button
+				class="action-button action-button--size-l"
+				onclick={addItem}
+				type="button"
+				{@attach tooltip($_('add_item'))}
+			>
+				<Plus />
+			</button>
+		</li>
+	{/if}
+	<li>
+		<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+	</li>
+{/snippet}
+
+{#if showTitle}
 	<header>
-		{#if showTitle}
-			<svelte:element this={heading} class="details-heading">
-				{#if editable && $ability.can('update', container)}
-					<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
-					<AutoresizingTextarea
-						bind:value={container.payload.title}
-						id={idForTitle}
-						onkeydown={(e) => {
-							if (e.key === 'Enter') {
-								e.preventDefault();
-							}
-						}}
-						placeholder={$_('title')}
-						rows={1}
-					/>
-				{:else}
-					{container.payload.title}
-				{/if}
-			</svelte:element>
-		{/if}
+		<svelte:element this={heading} class="details-heading">
+			{#if editable && $ability.can('update', container)}
+				<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
+				<AutoresizingTextarea
+					bind:value={container.payload.title}
+					id={idForTitle}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+						}
+					}}
+					placeholder={$_('title')}
+					rows={1}
+				/>
+			{:else}
+				{container.payload.title}
+			{/if}
+		</svelte:element>
 
 		{#if editable}
 			<ul class="inline-actions is-visible-on-hover">
-				{#if !showTitle && $ability.can('update', container)}
-					<li>
-						<button
-							class="action-button action-button--size-l"
-							onclick={() => (titleRequested = true)}
-							type="button"
-							{@attach tooltip($_('add_title'))}
-						>
-							<Text />
-						</button>
-					</li>
-				{/if}
-				{#if mayAddItem}
-					<li>
-						<button
-							class="action-button action-button--size-l"
-							onclick={addItem}
-							type="button"
-							{@attach tooltip($_('add_item'))}
-						>
-							<Plus />
-						</button>
-					</li>
-				{/if}
-
-				<li>
-					<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
-				</li>
+				{@render actions()}
 			</ul>
 		{/if}
 	</header>
+{:else if editable}
+	<!-- Untitled sections keep their objects at the top; the actions float in the corner. -->
+	<ul class="absolute-actions is-visible-on-hover">
+		{@render actions()}
+	</ul>
 {/if}
 
 {#snippet card(item: Container<AnyPayload>, height?: string)}
