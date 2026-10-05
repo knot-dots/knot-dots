@@ -150,7 +150,11 @@ const payloadCases = [
 		'indicator_template',
 		{ title: 'Created indicator', type: 'indicator_template', unit: 't CO2e' }
 	],
-	['resource_v2', { title: 'Created resource', type: 'resource_v2' }]
+	['resource_v2', { title: 'Created resource', type: 'resource_v2' }],
+	['binary_indicator', { title: 'Created binary indicator', type: 'binary_indicator' }],
+	['effect', { title: 'Created effect', type: 'effect' }],
+	['objective', { title: 'Created objective', type: 'objective' }],
+	['rule', { title: 'Created rule', type: 'rule' }]
 ] as const;
 
 test('covers every resource-backed payload type with a creation fixture', () => {
@@ -509,7 +513,10 @@ test.each([
 	['goal', 'is-part-of-measure', 'program'],
 	['goal', 'is-part-of', 'program'],
 	['task', 'is-part-of', 'task'],
-	['page', 'is-part-of', 'goal']
+	['page', 'is-part-of', 'goal'],
+	['effect', 'is-part-of', 'goal'],
+	['objective', 'is-part-of', 'measure'],
+	['binary_indicator', 'is-part-of', 'goal']
 ] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
 	const input = createContainerInput.parse({
@@ -528,7 +535,10 @@ test.each([
 	['measure', 'is-part-of-measure', 'simple_measure'],
 	['task', 'is-part-of', 'measure'],
 	['knowledge', 'is-part-of', 'knowledge'],
-	['measure', 'is-part-of-program', 'program']
+	['measure', 'is-part-of-program', 'program'],
+	['rule', 'is-part-of-program', 'program'],
+	['effect', 'is-part-of', 'simple_measure'],
+	['objective', 'is-part-of', 'goal']
 ] as const)('accepts a %s %s a %s', async (type, predicate, parentType) => {
 	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
 	const input = createContainerInput.parse({

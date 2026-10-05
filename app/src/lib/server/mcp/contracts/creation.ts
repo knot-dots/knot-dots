@@ -23,7 +23,7 @@ const parentRelation = z.strictObject({
 			'GUID of an existing parent container that is visible to you in the same organization.'
 		),
 	predicate: mcpParentRelationPredicates.describe(
-		'Structural relation from the new container to the parent. is-part-of-program needs a program, is-part-of-measure a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, and knowledge below knowledge. The server assigns the position, which is the sort order among the children of the parent.'
+		'Structural relation from the new container to the parent. is-part-of-program needs a program, is-part-of-measure a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. The server assigns the position, which is the sort order among the children of the parent.'
 	)
 });
 

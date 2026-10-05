@@ -131,8 +131,10 @@ export function createAndRecordContainer({
 // Parent types allowed for is-part-of, following the parents the web
 // application offers for each type.
 const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> = {
+	[payloadTypes.enum.effect]: [payloadTypes.enum.measure, payloadTypes.enum.simple_measure],
 	[payloadTypes.enum.goal]: [payloadTypes.enum.goal],
 	[payloadTypes.enum.knowledge]: [payloadTypes.enum.knowledge],
+	[payloadTypes.enum.objective]: [payloadTypes.enum.goal],
 	[payloadTypes.enum.measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
 	[payloadTypes.enum.simple_measure]: [payloadTypes.enum.goal, payloadTypes.enum.measure],
 	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
