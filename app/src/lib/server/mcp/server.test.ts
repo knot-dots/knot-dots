@@ -721,19 +721,23 @@ test.each([
 	});
 });
 
-test('rejects structural predicates in the relation tools', async () => {
+test.each([
+	['is-part-of', 'Set it with parentRelations of create_container.'],
+	['is-measured-by', 'Use attach_indicator.'],
+	['is-objective-for', 'Use attach_indicator.']
+])('points from %s in the relation tools to the right tool', async (predicate, hint) => {
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
-			arguments: { ...relationArguments, predicate: 'is-part-of' },
+			arguments: { ...relationArguments, predicate },
 			name: 'add_container_relation'
 		}),
 		{ authInfo: writeScopedAuthInfo }
 	);
 
 	expect(addContainerRelation).not.toHaveBeenCalled();
-	await expect(response.json()).resolves.toMatchObject({
-		result: { isError: true }
-	});
+	const body = await response.json();
+	expect(body).toMatchObject({ result: { isError: true } });
+	expect(body.result.content[0].text).toContain(hint);
 });
 
 const attachIndicatorArguments = {
