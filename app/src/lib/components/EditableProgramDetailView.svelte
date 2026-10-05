@@ -42,8 +42,7 @@
 		ability,
 		applicationState,
 		lastCreatedContainers,
-		lastDeletedContainers,
-		lastUpdatedContainers
+		lastDeletedContainers
 	} from '$lib/stores';
 
 	interface Props {
@@ -68,6 +67,8 @@
 	let categoryContext = $derived(page.data.categoryContext);
 
 	// Everything related to the program is loaded once; the filters below work on the client.
+	// Updates are not merged optimistically: sections and chapters edit their containers in
+	// place, and replacing the objects would leave their autosave handlers with stale revisions.
 	let relatedContainersQuery = resource([() => guid], async ([guid], _, { signal }) =>
 		fetchRelatedContainers(guid, {}, 'alpha', { signal })
 	);
@@ -77,7 +78,7 @@
 			relatedContainersQuery.current ?? [],
 			$lastCreatedContainers,
 			$lastDeletedContainers,
-			$lastUpdatedContainers,
+			new Map(),
 			(created) =>
 				created.relation.some(
 					({ object, predicate }) =>

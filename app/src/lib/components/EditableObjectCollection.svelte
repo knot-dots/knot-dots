@@ -7,7 +7,7 @@
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
@@ -38,6 +38,7 @@
 		openContainerCopyDialog
 	} from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
+	import { isScopedTemplateRoot } from '$lib/templateScopes';
 
 	interface Props {
 		container: Container<ObjectCollectionPayload>;
@@ -86,21 +87,24 @@
 		'createContainerDialog'
 	);
 
+	// The bound template is read from the database, not the search index, so a
+	// template created moments ago is available right away.
 	const templateResource = resource(
 		[
 			() => (useTemplates ? container.payload.newItemTemplate : undefined),
-			() => parentContainer.guid
+			() => parentContainer.guid,
+			() => parentContainer.organization
 		],
-		async ([templateGuid, scopeGuid], _, { signal }) => {
+		async ([templateGuid, scopeGuid, organizationGuid]) => {
 			if (!templateGuid) {
 				return undefined;
 			}
-			const containers = await fetchContainers(
-				{ availableIn: scopeGuid, guid: [templateGuid], template: 'true' },
-				'alpha',
-				{ signal }
-			);
-			return containers.find(isTemplateContainer);
+			const template = (await fetchContainerRevisions(templateGuid)).at(-1);
+			return template &&
+				isTemplateContainer(template) &&
+				isScopedTemplateRoot(template, { organizationGuid, scopeGuid })
+				? template
+				: undefined;
 		}
 	);
 

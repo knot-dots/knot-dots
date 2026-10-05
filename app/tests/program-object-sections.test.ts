@@ -43,7 +43,9 @@ test('a template-bound goal section only lists goals created from it', async ({
 	// Layout sections are available on programs as well
 	await section.hover();
 	await section.getByRole('button', { name: 'Add section' }).click();
-	await expect(page.getByRole('menuitem', { name: 'Text', exact: true })).toBeVisible();
+	await expect(
+		page.getByRole('menuitem', { name: 'Supplementary text', exact: true })
+	).toBeVisible();
 	await page.keyboard.press('Escape');
 
 	// The title can be renamed and the view switched to a wall
@@ -148,6 +150,7 @@ test('the list view shows objects as chapters and the section filter hides other
 	await programPage.header.editModeToggle.check();
 
 	const goalSection = await programPage.addSection(testProgramGoalTemplate.payload.title);
+	await goalSection.hover();
 	await goalSection.getByRole('button', { name: 'Add item', exact: true }).first().click();
 	const dialog = page.getByRole('dialog');
 	await dialog.getByRole('textbox', { name: 'Title', exact: true }).fill('Listed goal');
@@ -173,7 +176,7 @@ test('the list view shows objects as chapters and the section filter hides other
 
 		// A text section counts as "other" and is hidden by the goals filter
 		await programPage.header.editModeToggle.check();
-		const textSection = await programPage.addSection('Text');
+		const textSection = await programPage.addSection('Supplementary text');
 		await expect(textSection).toBeVisible();
 		await expect(programPage.sections).toHaveCount(2);
 
