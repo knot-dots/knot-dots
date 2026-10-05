@@ -289,13 +289,16 @@
 			if (!enabled || !requested) {
 				return [];
 			}
+			// Asking for the templates related to the program reads from the database,
+			// so a template created moments ago is offered right away.
 			const containers = await fetchContainers(
 				{
 					availableIn: scopeGuid,
 					organization: [organizationGuid],
 					payloadType: typesKey.split('\u0000'),
-					template: 'true',
-					templateRoot: true
+					relatedTo: [scopeGuid],
+					relationType: [predicates.enum['is-available-in']],
+					template: 'true'
 				},
 				'alpha',
 				{ signal }
