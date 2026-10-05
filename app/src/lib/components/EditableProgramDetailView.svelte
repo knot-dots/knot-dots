@@ -1,25 +1,17 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { getContext, type Snippet } from 'svelte';
-	import { flip } from 'svelte/animate';
-	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
-	import { _ } from 'svelte-i18n';
-	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
-	import autoSave from '$lib/client/autoSave';
 	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import requestSubmit from '$lib/client/requestSubmit';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import AdoptButton from '$lib/components/AdoptButton.svelte';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
 	import CreateCopyButton from '$lib/components/CreateCopyButton.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
-	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
-	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
-	import EditableRow from '$lib/components/EditableRow.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import KnowledgeAIButton from '$lib/components/KnowledgeAIButton.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
@@ -31,20 +23,28 @@
 		type AnyPayload,
 		computeFacetCount,
 		type Container,
-		containerOfType,
 		isObjectCollectionContainer,
-		type NewContainer,
 		paramsFromFragment,
-		type PayloadType,
-		payloadTypes,
 		predicates,
 		type ProgramPayload,
 		programTypes,
 		status
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
-	import { ability, applicationState, newContainer } from '$lib/stores';
-	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
+	import {
+		hasActiveItemFilters,
+		itemFiltersFromParams,
+		matchesItemFilters,
+		sectionGroupOf,
+		sectionGroups
+	} from '$lib/sectionFilters';
+	import {
+		ability,
+		applicationState,
+		lastCreatedContainers,
+		lastDeletedContainers,
+		lastUpdatedContainers
+	} from '$lib/stores';
 
 	interface Props {
 		container: Container<ProgramPayload>;
@@ -60,219 +60,101 @@
 		organizationGuid: () => container.organization,
 		scopeGuid: () => container.guid
 	});
-	let availableChapterTypes = $derived(
-		container.payload.chapterType.filter(
-			(type) => type === payloadTypes.enum.text || templateAvailability.has(type)
-		)
-	);
 
 	let guid = $derived(container.guid);
 
-	let isGuide = $derived(container.payload.programType === programTypes.enum['program_type.guide']);
-
-	let categoryContext = $derived(page.data.categoryContext);
-	let relatedContainersQuery = resource(
-		[() => guid, () => paramsFromFragment(page.url).toString()],
-		async ([guid, urlHash], _, { signal }) => {
-			const hashParams = new URLSearchParams(urlHash);
-			const terms = hashParams.get('terms') ?? '';
-			const statuses = hashParams.getAll('status');
-			const customCategories = extractCustomCategoryFiltersFromParams(
-				hashParams,
-				categoryContext.keys
-			);
-			return fetchRelatedContainers(guid, { terms, statuses, ...customCategories }, 'alpha', {
-				signal
-			});
-		}
-	);
-
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
-
-	let parts = $state([]) as Container[];
-
-	let filteredParts = $derived(
-		parts.filter(({ payload }) => byPayloadType(payload.type, page.url))
-	);
-
-	// Objects created inside an object section are listed there, not among the chapters.
-	let sectionItemGuids = $derived(
-		new Set(
-			hasSection(container, relatedContainers)
-				.filter(isObjectCollectionContainer)
-				.flatMap(({ payload }) => payload.item)
-		)
-	);
-
-	let previewParts = $derived(filteredParts.filter(({ guid }) => !sectionItemGuids.has(guid)));
-
-	let relatedParts = $derived(
-		relatedContainersQuery.current?.filter(({ guid, relation }) =>
-			relation.some(
-				({ object, predicate }) =>
-					predicate === predicates.enum['is-part-of-program'] &&
-					object === container.guid &&
-					guid !== container.guid
-			)
-		) ?? []
-	);
-
-	let facets = $derived(
-		computeFacetCount(
-			new Map([
-				['status', new Map(status.options.map((s) => [s, 0]))],
-				...buildCategoryFacetsWithCounts(categoryContext.options),
-				['type', new Map(container.payload.chapterType.map((v) => [v as string, 0]))]
-			]),
-			relatedParts
-		)
-	);
-
-	let customCategoryColumn = $derived(categoryContext.keys.filter((key) => facets.has(key)));
-
-	let viewMode = $derived(
-		paramsFromFragment(page.url).has('table') ? 'view_mode.table' : 'view_mode.preview'
-	);
-
 	let overlay = getContext('overlay');
 
-	$effect(() => {
-		const containers = relatedContainersQuery.current;
-		if (containers) {
-			const filtered = containers.filter(({ guid, relation }) =>
-				relation.some(
-					({ object, predicate }) =>
-						predicate === predicates.enum['is-part-of-program'] &&
-						object === container.guid &&
-						guid != container.guid
-				)
-			);
+	let categoryContext = $derived(page.data.categoryContext);
 
-			for (const part of filtered) {
-				if ('category' in part.payload) {
-					for (const key of categoryContext.keys) {
-						if (!part.payload.category[key]) {
-							part.payload.category[key] = [];
-						}
-					}
-				}
-			}
-
-			parts = filtered;
-		}
-	});
-
-	function byPayloadType(payloadType: PayloadType, url: URL) {
-		const params = overlay ? paramsFromFragment(url) : page.url.searchParams;
-		return !params.has('type') || params.getAll('type').includes(payloadType);
-	}
-
-	function handleDndConsider(event: CustomEvent<DndEvent<Container>>) {
-		parts = event.detail.items;
-	}
-
-	async function handleDndFinalize(event: CustomEvent<DndEvent<Container>>) {
-		parts = event.detail.items;
-		container.relation = [
-			...parts.map(({ guid }, index) => ({
-				object: container.guid,
-				position: index,
-				predicate: predicates.enum['is-part-of-program'],
-				subject: guid
-			})),
-			// Keep is-part-of-program edges pointing at other programs, e.g. the
-			// members' memberships in their further programs.
-			...container.relation.filter(
-				({ object, predicate }) =>
-					predicate !== predicates.enum['is-part-of-program'] || object !== container.guid
-			)
-		];
-
-		const url = `/container/${container.guid}/relation`;
-		await fetch(url, {
-			method: 'POST',
-			body: JSON.stringify(
-				container.relation.filter(
-					({ predicate }) => predicate === predicates.enum['is-part-of-program']
-				)
-			),
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		});
-
-		await relatedContainersQuery.refetch();
-	}
-
-	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
-		'createContainerDialog'
+	// Everything related to the program is loaded once; the filters below work on the client.
+	let relatedContainersQuery = resource([() => guid], async ([guid], _, { signal }) =>
+		fetchRelatedContainers(guid, {}, 'alpha', { signal })
 	);
 
-	function createContainer(event: Event) {
-		if (!(event as CustomEvent).detail.selected) {
-			return;
+	let relatedContainers = $derived(
+		withOptimistic(
+			relatedContainersQuery.current ?? [],
+			$lastCreatedContainers,
+			$lastDeletedContainers,
+			$lastUpdatedContainers,
+			(created) =>
+				created.relation.some(
+					({ object, predicate }) =>
+						object === guid &&
+						(predicate === predicates.enum['is-section-of'] ||
+							predicate === predicates.enum['is-part-of-program'])
+				)
+		)
+	);
+
+	let sections = $derived(hasSection(container, relatedContainers));
+
+	let objectSections = $derived(sections.filter(isObjectCollectionContainer));
+
+	let sectionItems = $derived(
+		objectSections
+			.flatMap(({ payload }) => payload.item)
+			.map((itemGuid) => relatedContainers.find((c) => c.guid === itemGuid))
+			.filter((c): c is Container => c !== undefined)
+	);
+
+	let params = $derived(overlay ? paramsFromFragment(page.url) : page.url.searchParams);
+
+	let selectedGroups = $derived(params.getAll('section'));
+
+	let itemFilters = $derived(itemFiltersFromParams(params, categoryContext.keys));
+
+	let itemFilterActive = $derived(hasActiveItemFilters(itemFilters));
+
+	let itemFilter = $derived(
+		itemFilterActive
+			? (item: Container<AnyPayload>) => matchesItemFilters(item, itemFilters)
+			: undefined
+	);
+
+	// Object sections are filtered by the kind and content of their objects, every
+	// other section only by the "other" group.
+	let sectionFilter = $derived(
+		itemFilterActive || selectedGroups.length > 0
+			? (section: Container) => {
+					if (isObjectCollectionContainer(section)) {
+						if (
+							selectedGroups.length > 0 &&
+							!selectedGroups.includes(sectionGroupOf(section.payload.objectType))
+						) {
+							return false;
+						}
+						return (
+							!itemFilterActive ||
+							section.payload.item.some((itemGuid) => {
+								const item = relatedContainers.find((c) => c.guid === itemGuid);
+								return item !== undefined && matchesItemFilters(item, itemFilters);
+							})
+						);
+					}
+					return selectedGroups.length === 0 || selectedGroups.includes(sectionGroups.enum.other);
+				}
+			: undefined
+	);
+
+	let facets = $derived.by(() => {
+		const sectionCounts = new Map<string, number>(sectionGroups.options.map((g) => [g, 0]));
+		for (const section of objectSections) {
+			const group = sectionGroupOf(section.payload.objectType);
+			sectionCounts.set(group, (sectionCounts.get(group) ?? 0) + section.payload.item.length);
 		}
-
-		const chapter = containerOfType(
-			(event as CustomEvent).detail.selected as PayloadType,
-			container
-		) as NewContainer;
-
-		chapter.relation = [
-			{ object: container.guid, predicate: predicates.enum['is-part-of-program'], position: 0 }
-		];
-
-		$newContainer = chapter;
-
-		createContainerDialog.getElement().showModal();
-	}
-
-	function stopPropagation(fn: (event: Event) => void) {
-		return function (this: Event, event: Event) {
-			event.stopPropagation();
-			fn.call(this, event);
-		};
-	}
+		sectionCounts.set(sectionGroups.enum.other, sections.length - objectSections.length);
+		return computeFacetCount(
+			new Map([
+				['section', sectionCounts],
+				['status', new Map(status.options.map((s) => [s, 0]))],
+				...buildCategoryFacetsWithCounts(categoryContext.options)
+			]),
+			sectionItems
+		);
+	});
 </script>
-
-{#snippet row(parts: Container[], dragEnabled: boolean)}
-	{#each parts as part, i (part.guid)}
-		<form
-			animate:flip={{ duration: 100 }}
-			class="row"
-			oninput={requestSubmit}
-			onsubmit={autoSave(part, 2000)}
-			novalidate
-			role="row"
-		>
-			<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
-			<!-- svelte-ignore binding_property_non_reactive -->
-			<EditableRow
-				columns={[
-					'action',
-					'title',
-					'type',
-					'aiContribution',
-					...(isGuide ? ['aiSuggestionPageReference'] : []),
-					'description',
-					'visibility',
-					'status',
-					...customCategoryColumn,
-					'fulfillmentDate',
-					'duration',
-					'editorialState',
-					'organizationalUnit',
-					'hierarchyLevel',
-					'objectType'
-				]}
-				bind:container={parts[i]}
-				{dragEnabled}
-				editable={$applicationState.containerDetailView.editable}
-			/>
-		</form>
-	{/each}
-{/snippet}
 
 {#snippet footer()}
 	<footer class="footer-action-bar">
@@ -298,133 +180,21 @@
 {/snippet}
 
 {#snippet main()}
-	{#if viewMode === 'view_mode.preview'}
-		<EditableContainerDetailView bind:container {footer}>
-			{#snippet data()}
-				<div class="chapters">
-					{#each previewParts as part, i (part.guid)}
-						<form
-							class="details-section"
-							oninput={stopPropagation(requestSubmit)}
-							onsubmit={autoSave(part, 2000)}
-							novalidate
-						>
-							<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
-							<!-- svelte-ignore binding_property_non_reactive -->
-							<EditableChapter
-								{availableChapterTypes}
-								bind:container={previewParts[i]}
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', part)}
-								isPartOf={container}
-								{relatedContainers}
-							/>
-						</form>
-					{:else}
-						{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, container)) )}
-							<div class="details-section">
-								<DropDownMenu
-									handleChange={createContainer}
-									label={$_('chapter')}
-									options={availableChapterTypes.map((t) => ({ label: $_(t), value: t }))}
-								>
-									{#snippet icon()}<Plus />{/snippet}
-								</DropDownMenu>
-							</div>
-						{/if}
-					{/each}
-				</div>
+	<EditableContainerDetailView bind:container {footer}>
+		{#snippet data()}
+			<Sections bind:container {itemFilter} {relatedContainers} {sectionFilter} />
+		{/snippet}
 
-				<Sections bind:container {relatedContainers} />
-			{/snippet}
-
-			{#snippet properties()}
-				<ProgramProperties
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					{relatedContainers}
-					{revisions}
-				/>
-			{/snippet}
-		</EditableContainerDetailView>
-	{:else if viewMode === 'view_mode.table'}
-		<div class="table-wrapper table-wrapper--with-end-padding">
-			<div class="table" role="table">
-				<div class="table-head" role="rowgroup">
-					<div class="row">
-						<div class="cell cell--action" role="columnheader"></div>
-						<div class="cell" role="columnheader">{$_('title')}</div>
-						<div class="cell" role="columnheader">{$_('object')}</div>
-						<div class="cell" role="columnheader">{$_('ai_contribution')}</div>
-						{#if isGuide}
-							<div class="cell" role="columnheader">{$_('page')}</div>
-						{/if}
-						<div class="cell" role="columnheader">{$_('description')}</div>
-						<div class="cell" role="columnheader">{$_('visibility.label')}</div>
-						<div class="cell" role="columnheader">{$_('status')}</div>
-						{#each customCategoryColumn as key (key)}
-							<div class="cell" role="columnheader">{categoryContext.labels.get(key) ?? key}</div>
-						{/each}
-						<div class="cell" role="columnheader">{$_('fulfillment_date')}</div>
-						<div class="cell" role="columnheader">{$_('planned_duration')}</div>
-						<div class="cell" role="columnheader">{$_('editorial_state')}</div>
-						<div class="cell" role="columnheader">{$_('organizational_unit')}</div>
-						<div class="cell" role="columnheader">{$_('goal.hierarchy_level')}</div>
-						<div class="cell" role="columnheader">{$_('goal_type')}</div>
-					</div>
-				</div>
-				{#if $ability.cannot('update', container) || paramsFromFragment(page.url).has('type')}
-					<div class="table-body" role="rowgroup">
-						{@render row(filteredParts, false)}
-					</div>
-				{:else}
-					<div
-						class="table-body"
-						onconsider={handleDndConsider}
-						onfinalize={handleDndFinalize}
-						role="rowgroup"
-						use:dragHandleZone={{
-							autoAriaDisabled: true,
-							dropTargetStyle: {},
-							items: filteredParts,
-							flipDurationMs: 100,
-							useCursorForDetection: true
-						}}
-					>
-						{@render row(filteredParts, true)}
-					</div>
-				{/if}
-			</div>
-		</div>
-
-		{@render footer()}
-	{/if}
+		{#snippet properties()}
+			<ProgramProperties
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+				{relatedContainers}
+				{revisions}
+			/>
+		{/snippet}
+	</EditableContainerDetailView>
 {/snippet}
 
 {@render layout(header, main)}
-
-<style>
-	.chapters :global(.dropdown-button.dropdown-button--menu) {
-		--dropdown-button-border-radius: 8px;
-		--dropdown-button-border-width: 1px;
-		--dropdown-button-icon-size: 1rem;
-	}
-
-	.details-section {
-		--details-section-padding-y: 1.5rem;
-	}
-
-	.table-wrapper {
-		container-type: inline-size;
-		height: 100%;
-	}
-
-	.table {
-		width: fit-content;
-	}
-
-	.table-head .cell {
-		white-space: nowrap;
-	}
-</style>
