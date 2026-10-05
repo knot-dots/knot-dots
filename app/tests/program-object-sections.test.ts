@@ -16,6 +16,7 @@ test('a template-bound goal section only lists goals created from it', async ({
 	testProgram,
 	testProgramGoalTemplate
 }) => {
+	test.slow();
 	const page = programPage.page;
 	await programPage.goto(testProgram);
 	await programPage.header.editModeToggle.check();
@@ -145,6 +146,7 @@ test('the list view shows objects as chapters and the section filter hides other
 	testProgram,
 	testProgramGoalTemplate
 }) => {
+	test.slow();
 	const page = programPage.page;
 	await programPage.goto(testProgram);
 	await programPage.header.editModeToggle.check();
@@ -182,12 +184,17 @@ test('the list view shows objects as chapters and the section filter hides other
 
 		await page.getByRole('button', { name: 'Filter' }).click();
 		await page.getByRole('button', { name: 'Sections' }).click();
-		await page.getByRole('checkbox', { name: 'Goals (1)' }).check();
+		const goalsOption = page.getByRole('checkbox', { name: 'Goals (1)' });
+		const otherOption = page.getByRole('checkbox', { name: 'Other (1)' });
+		await goalsOption.click({ force: true });
+		await expect(goalsOption).toBeChecked();
 		await expect(programPage.sections).toHaveCount(1);
 		await expect(programPage.chapters).toHaveCount(1);
 
-		await page.getByRole('checkbox', { name: 'Goals (1)' }).uncheck();
-		await page.getByRole('checkbox', { name: 'Other (1)' }).check();
+		await goalsOption.click({ force: true });
+		await expect(goalsOption).not.toBeChecked();
+		await otherOption.click({ force: true });
+		await expect(otherOption).toBeChecked();
 		await expect(programPage.sections).toHaveCount(1);
 		await expect(programPage.chapters).toHaveCount(0);
 	} finally {

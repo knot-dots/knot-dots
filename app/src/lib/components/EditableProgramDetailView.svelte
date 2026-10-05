@@ -22,6 +22,7 @@
 		type AnyPayload,
 		computeFacetCount,
 		type Container,
+		isContainer,
 		isObjectCollectionContainer,
 		paramsFromFragment,
 		type ProgramPayload,
@@ -67,9 +68,19 @@
 		async ([guid], _, { signal }) => fetchRelatedContainers(guid, {}, 'alpha', { signal })
 	);
 
-	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
+	// Owned as state so that sections can add and remove containers while editing.
+	let relatedContainers = $state<Container<AnyPayload>[]>([]);
+
+	$effect(() => {
+		const containers = relatedContainersQuery.current;
+		if (containers) {
+			relatedContainers = containers;
+		}
+	});
 
 	let sections = $derived(hasSection(container, relatedContainers));
+
+	let programRelatedContainers = $derived(relatedContainers.filter(isContainer));
 
 	let objectSections = $derived(sections.filter(isObjectCollectionContainer));
 
@@ -166,7 +177,7 @@
 			<Sections
 				bind:container
 				{itemFilter}
-				{relatedContainers}
+				bind:relatedContainers
 				{sectionFilter}
 				{templateAvailability}
 			/>
@@ -177,7 +188,7 @@
 				bind:container
 				editable={$applicationState.containerDetailView.editable &&
 					$ability.can('update', container)}
-				{relatedContainers}
+				relatedContainers={programRelatedContainers}
 				{revisions}
 			/>
 		{/snippet}

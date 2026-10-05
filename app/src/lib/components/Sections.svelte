@@ -43,7 +43,7 @@
 		editable: editableOverride,
 		itemFilter,
 		preview = false,
-		relatedContainers,
+		relatedContainers = $bindable(),
 		sectionFilter,
 		templateAvailability
 	}: Props = $props();
