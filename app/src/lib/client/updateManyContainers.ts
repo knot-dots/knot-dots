@@ -10,8 +10,11 @@ export async function updateManyContainers(data: {
 	payload?: Partial<AnyPayload>;
 }) {
 	const response = await fetch(`/container/bulk-action`, {
-		method: 'POST',
-		body: JSON.stringify(data)
+		body: JSON.stringify(data),
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		method: 'POST'
 	});
 
 	if (!response.ok) {
