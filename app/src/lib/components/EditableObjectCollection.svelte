@@ -5,18 +5,22 @@
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
+	import autoSave from '$lib/client/autoSave';
 	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
 	import fetchContainers from '$lib/client/fetchContainers';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
 		containerOfType,
 		createTemplateInstanceOf,
+		isContainer,
 		isProgramContainer,
 		isTemplateContainer,
 		listTypes,
@@ -39,6 +43,7 @@
 		container: Container<ObjectCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
 	}
@@ -47,21 +52,35 @@
 		container = $bindable(),
 		editable = false,
 		heading,
+		itemFilter,
 		parentContainer = $bindable(),
 		relatedContainers = $bindable()
 	}: Props = $props();
 
 	const idForTitle = crypto.randomUUID();
 
-	// Only objects created from this section belong to it.
+	// Only objects created from this section belong to it. Items are wrapped in
+	// state so inline edits in the list view stay reactive.
 	let items = $derived(
 		container.payload.item
 			.map((guid) => relatedContainers.find((c) => c.guid === guid))
 			.filter((c): c is Container<AnyPayload> => c !== undefined)
+			.filter(isContainer)
+			.map((c) => {
+				let _: Container = $state(c); // $state() can only be used in an assignment
+				return _;
+			})
 	);
+
+	let visibleItems = $derived(itemFilter ? items.filter(itemFilter) : items);
 
 	let useTemplates = $derived(createFeatureDecisions(page.data.features).useTemplateWorkspaces());
 	let bound = $derived(container.payload.newItemTemplate !== undefined);
+
+	// The list view renders items like program chapters; it needs the program as context.
+	let program = $derived(isProgramContainer(parentContainer) ? parentContainer : undefined);
+	let listView = $derived(container.payload.listType === listTypes.enum.list && program);
+	let chapterRelatedContainers = $derived(relatedContainers.filter(isContainer));
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
@@ -172,49 +191,58 @@
 		$addItemState = { target: container };
 		createContainerDialog.getElement().showModal();
 	}
+
+	function stopPropagation(fn: (event: Event) => void) {
+		return function (this: Event, event: Event) {
+			event.stopPropagation();
+			fn.call(this, event);
+		};
+	}
 </script>
 
-<header>
-	<svelte:element this={heading} class="details-heading">
-		{#if editable && $ability.can('update', container)}
-			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
-			<AutoresizingTextarea
-				bind:value={container.payload.title}
-				id={idForTitle}
-				onkeydown={(e) => {
-					if (e.key === 'Enter') {
-						e.preventDefault();
-					}
-				}}
-				placeholder={$_('title')}
-				rows={1}
-			/>
-		{:else}
-			{container.payload.title}
-		{/if}
-	</svelte:element>
-
-	{#if editable}
-		<ul class="inline-actions is-visible-on-hover">
-			{#if mayAddItem}
-				<li>
-					<button
-						class="action-button action-button--size-l"
-						onclick={addItem}
-						type="button"
-						{@attach tooltip($_('add_item'))}
-					>
-						<Plus />
-					</button>
-				</li>
+{#if editable || container.payload.title}
+	<header>
+		<svelte:element this={heading} class="details-heading">
+			{#if editable && $ability.can('update', container)}
+				<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
+				<AutoresizingTextarea
+					bind:value={container.payload.title}
+					id={idForTitle}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+						}
+					}}
+					placeholder={$_('title')}
+					rows={1}
+				/>
+			{:else}
+				{container.payload.title}
 			{/if}
+		</svelte:element>
 
-			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
-			</li>
-		</ul>
-	{/if}
-</header>
+		{#if editable}
+			<ul class="inline-actions is-visible-on-hover">
+				{#if mayAddItem}
+					<li>
+						<button
+							class="action-button action-button--size-l"
+							onclick={addItem}
+							type="button"
+							{@attach tooltip($_('add_item'))}
+						>
+							<Plus />
+						</button>
+					</li>
+				{/if}
+
+				<li>
+					<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+				</li>
+			</ul>
+		{/if}
+	</header>
+{/if}
 
 {#snippet card(item: Container<AnyPayload>, height?: string)}
 	<Card
@@ -229,15 +257,35 @@
 	/>
 {/snippet}
 
-{#if container.payload.listType === listTypes.enum.carousel}
-	<Carousel {addItem} {items} {mayAddItem}>
-		{#snippet itemSnippet(item)}
-			{@render card(item)}
-		{/snippet}
-	</Carousel>
-{:else}
+{#if listView && program}
+	<div class="chapters">
+		{#each visibleItems as item, i (item.guid)}
+			<form
+				class="chapter"
+				oninput={stopPropagation(requestSubmit)}
+				onsubmit={autoSave(item, 2000)}
+				novalidate
+			>
+				<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
+				<!-- svelte-ignore binding_property_non_reactive -->
+				<EditableChapter
+					bind:container={visibleItems[i]}
+					editable={editable && $ability.can('update', item)}
+					isPartOf={program}
+					relatedContainers={chapterRelatedContainers}
+				/>
+			</form>
+		{/each}
+		{#if mayAddItem}
+			<button class="button button-xs" onclick={addItem} type="button">
+				<Plus />
+				{$_('add_item')}
+			</button>
+		{/if}
+	</div>
+{:else if container.payload.listType === listTypes.enum.wall}
 	<ul class="catalog wide">
-		{#each items as item (item.guid)}
+		{#each visibleItems as item (item.guid)}
 			<li>
 				{@render card(item, '100%')}
 			</li>
@@ -250,6 +298,12 @@
 			</li>
 		{/if}
 	</ul>
+{:else}
+	<Carousel {addItem} items={visibleItems} {mayAddItem}>
+		{#snippet itemSnippet(item)}
+			{@render card(item)}
+		{/snippet}
+	</Carousel>
 {/if}
 
 <style>
@@ -270,5 +324,17 @@
 	.card :global(svg) {
 		height: 2.25rem;
 		width: 2.25rem;
+	}
+
+	.chapters {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.chapters :global(.dropdown-button.dropdown-button--menu) {
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-icon-size: 1rem;
 	}
 </style>

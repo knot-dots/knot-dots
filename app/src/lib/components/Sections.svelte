@@ -16,7 +16,9 @@
 		isContainerWithColor,
 		isContainerWithTitle,
 		isObjectCollectionContainer,
+		isProgramContainer,
 		isTextContainer,
+		listTypes,
 		type NewContainer,
 		payloadTypes,
 		predicates
@@ -27,15 +29,20 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		// Only pass a filter while one is active: it hides sections and disables sorting.
+		sectionFilter?: (section: Container) => boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
+		itemFilter,
 		preview = false,
-		relatedContainers
+		relatedContainers,
+		sectionFilter
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -67,6 +74,8 @@
 			});
 	});
 
+	let visibleSections = $derived(sectionFilter ? sections.filter(sectionFilter) : sections);
+
 	const type = crypto.randomUUID();
 
 	async function handleSort(orderedSections: Container[]) {
@@ -77,8 +86,12 @@
 				predicate: predicates.enum['is-section-of'],
 				subject: guid
 			})),
+			// Keep the edges of sections that are not part of this ordering, e.g.
+			// sections hidden by a filter; the program's next save would drop them.
 			...container.relation.filter(
-				({ predicate }) => predicate !== predicates.enum['is-section-of']
+				({ predicate, subject }) =>
+					predicate !== predicates.enum['is-section-of'] ||
+					!orderedSections.some(({ guid }) => guid === subject)
 			)
 		];
 		relatedContainers = [
@@ -138,6 +151,10 @@
 				newContainer.payload.newItemTemplate = newItemTemplate;
 				newContainer.payload.objectType = objectType;
 				newContainer.payload.title = title;
+				if (isProgramContainer(container)) {
+					// Programs show their objects like chapters.
+					newContainer.payload.listType = listTypes.enum.list;
+				}
 			}
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
@@ -231,11 +248,18 @@
 {/if}
 
 <ul
-	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
+	use:dragHandleZone={{
+		dragDisabled: sectionFilter !== undefined,
+		dropTargetStyle: {},
+		flipDurationMs: 100,
+		items: visibleSections,
+		type
+	}}
 	onconsider={handleDndConsider}
 	onfinalize={handleDndFinalize}
 >
-	{#each sections as section, i (section.guid)}
+	{#each visibleSections as section (section.guid)}
+		{@const i = sections.indexOf(section)}
 		<li
 			animate:flip={{ duration: 100 }}
 			class={isContainerWithColor(section) && section.payload.color
@@ -252,6 +276,7 @@
 				{editable}
 				handleAddSection={createAddSectionHandler(i + 1)}
 				heading={heading(i)}
+				{itemFilter}
 				{preview}
 			/>
 		</li>

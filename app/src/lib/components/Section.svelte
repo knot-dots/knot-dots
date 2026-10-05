@@ -74,6 +74,7 @@
 		container: Container<AnyPayload> & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
 		editable?: boolean;
 		handleAddSection: (event: Event) => void;
+		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
 		preview?: boolean;
@@ -84,6 +85,7 @@
 		container = $bindable(),
 		editable: editableOverride,
 		handleAddSection,
+		itemFilter,
 		heading = 'h2',
 		parentContainer = $bindable(),
 		preview = false,
@@ -228,6 +230,7 @@
 				bind:relatedContainers
 				{editable}
 				{heading}
+				{itemFilter}
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection
