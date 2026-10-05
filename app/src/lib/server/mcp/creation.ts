@@ -140,6 +140,25 @@ const isPartOfParentTypes: Partial<Record<PayloadType, readonly PayloadType[]>> 
 	[payloadTypes.enum.task]: [payloadTypes.enum.goal, payloadTypes.enum.measure]
 };
 
+// Section types MCP can create, and the containers whose detail view in the
+// web application shows sections. Programs show their parts instead of
+// sections, so text joins a program through is-part-of-program.
+const sectionTypes: readonly PayloadType[] = [payloadTypes.enum.text];
+const sectionParentTypes: readonly PayloadType[] = [
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.goal,
+	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.page,
+	payloadTypes.enum.resource_v2,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure,
+	payloadTypes.enum.task
+];
+
 // Structural relations drive hierarchy, grants and ownership, so the parent
 // must be of a type the relation is meant for.
 function isValidParent(
@@ -154,6 +173,8 @@ function isValidParent(
 			return isMeasureTemplateScope(parent);
 		case predicates.enum['is-part-of']:
 			return isPartOfParentTypes[type]?.includes(parent.payload.type) ?? false;
+		case predicates.enum['is-section-of']:
+			return sectionTypes.includes(type) && sectionParentTypes.includes(parent.payload.type);
 	}
 }
 
