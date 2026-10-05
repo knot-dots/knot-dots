@@ -194,7 +194,9 @@ export function createMcpContainer(input: CreateContainerInput & McpAuth) {
 				throw new McpCreationError(payloadValidationMessage(payloadResult.error));
 			}
 			if ('template' in payloadResult.data && payloadResult.data.template === true) {
-				throw new McpCreationError('Template creation is not supported by this tool.');
+				throw new McpCreationError(
+					'Containers marked as templates (template: true) cannot be created by this tool.'
+				);
 			}
 
 			const parentGuids = [...new Set(input.parentRelations.map(({ parentGuid }) => parentGuid))];

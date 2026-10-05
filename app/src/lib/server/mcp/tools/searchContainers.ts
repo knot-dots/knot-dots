@@ -28,7 +28,7 @@ export function registerSearchContainersTool(
 				readOnlyHint: true
 			},
 			description:
-				'Search non-template containers visible to the authenticated user within an organization.',
+				'Search containers visible to the authenticated user within an organization; containers marked as templates (template: true) are left out.',
 			inputSchema: searchContainersInput,
 			outputSchema: searchContainersOutput,
 			title: 'Search containers'

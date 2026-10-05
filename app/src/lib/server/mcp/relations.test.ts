@@ -279,7 +279,9 @@ test('rejects templates', async () => {
 		container(measureGuid, { template: true, title: 'Template', type: 'measure' })
 	);
 
-	await expect(change('add')).rejects.toThrow('Templates cannot be related by this tool.');
+	await expect(change('add')).rejects.toThrow(
+		'Containers marked as templates (template: true) cannot be related by this tool.'
+	);
 });
 
 test('rejects containers of different organizations', async () => {
