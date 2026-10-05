@@ -15,26 +15,37 @@
 		isContainer,
 		isContainerWithColor,
 		isContainerWithTitle,
+		isObjectCollectionContainer,
+		isProgramContainer,
 		isTextContainer,
+		listTypes,
 		type NewContainer,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import type { TemplateAvailability } from '$lib/templateScopes';
 	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		// Only pass a filter while one is active: it hides sections and disables sorting.
+		sectionFilter?: (section: Container) => boolean;
+		templateAvailability?: TemplateAvailability;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
+		itemFilter,
 		preview = false,
-		relatedContainers
+		relatedContainers = $bindable(),
+		sectionFilter,
+		templateAvailability
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -66,6 +77,8 @@
 			});
 	});
 
+	let visibleSections = $derived(sectionFilter ? sections.filter(sectionFilter) : sections);
+
 	const type = crypto.randomUUID();
 
 	async function handleSort(orderedSections: Container[]) {
@@ -76,8 +89,12 @@
 				predicate: predicates.enum['is-section-of'],
 				subject: guid
 			})),
+			// Keep the edges of sections that are not part of this ordering, e.g.
+			// sections hidden by a filter; the program's next save would drop them.
 			...container.relation.filter(
-				({ predicate }) => predicate !== predicates.enum['is-section-of']
+				({ predicate, subject }) =>
+					predicate !== predicates.enum['is-section-of'] ||
+					!orderedSections.some(({ guid }) => guid === subject)
 			)
 		];
 		relatedContainers = [
@@ -130,6 +147,17 @@
 
 			if (isTextContainer(newContainer) && (event as CustomEvent).detail.selected.textType) {
 				newContainer.payload.textType = (event as CustomEvent).detail.selected.textType;
+			}
+
+			if (isObjectCollectionContainer(newContainer)) {
+				const { newItemTemplate, objectType, title } = (event as CustomEvent).detail.selected;
+				newContainer.payload.newItemTemplate = newItemTemplate;
+				newContainer.payload.objectType = objectType;
+				newContainer.payload.title = title;
+				if (isProgramContainer(container)) {
+					// Programs show their objects like chapters.
+					newContainer.payload.listType = listTypes.enum.list;
+				}
 			}
 
 			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
@@ -219,15 +247,27 @@
 {/if}
 
 {#if !preview}
-	<TableOfContents {container} {editable} {handleSort} {sections} />
+	<TableOfContents
+		{container}
+		editable={editable && sectionFilter === undefined}
+		{handleSort}
+		{sections}
+	/>
 {/if}
 
 <ul
-	use:dragHandleZone={{ dropTargetStyle: {}, flipDurationMs: 100, items: sections, type }}
+	use:dragHandleZone={{
+		dragDisabled: sectionFilter !== undefined,
+		dropTargetStyle: {},
+		flipDurationMs: 100,
+		items: visibleSections,
+		type
+	}}
 	onconsider={handleDndConsider}
 	onfinalize={handleDndFinalize}
 >
-	{#each sections as section, i (section.guid)}
+	{#each visibleSections as section (section.guid)}
+		{@const i = sections.indexOf(section)}
 		<li
 			animate:flip={{ duration: 100 }}
 			class={isContainerWithColor(section) && section.payload.color
@@ -244,7 +284,9 @@
 				{editable}
 				handleAddSection={createAddSectionHandler(i + 1)}
 				heading={heading(i)}
+				{itemFilter}
 				{preview}
+				{templateAvailability}
 			/>
 		</li>
 	{/each}

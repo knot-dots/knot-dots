@@ -16,8 +16,10 @@ import {
 	type GoalPayload,
 	type GoalCollectionPayload,
 	type IndicatorTemplatePayload,
+	listTypes,
 	type MeasurePayload,
 	type NewContainer,
+	type ObjectCollectionObjectType,
 	type ObjectivePayload,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
@@ -260,6 +262,27 @@ export async function createContainer<P extends AnyPayload>(
 	return container;
 }
 
+// Programs show their objects through object sections; this wraps existing parts.
+export async function createObjectSection(
+	context: BrowserContext,
+	program: Container<ProgramPayload>,
+	objectType: ObjectCollectionObjectType,
+	items: Container<AnyPayload>[]
+) {
+	const section = containerOfType(payloadTypes.enum.object_collection, program) as NewContainer;
+	return createContainer(context, {
+		...section,
+		payload: {
+			...section.payload,
+			item: items.map(({ guid }) => guid),
+			listType: listTypes.enum.list,
+			objectType,
+			title: ''
+		},
+		relation: [{ object: program.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
+	} as NewContainer);
+}
+
 export async function deleteContainer(context: BrowserContext, container: Container<AnyPayload>) {
 	const response = await context.request.get(`/container/${container.guid}`);
 
@@ -420,9 +443,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			},
 			testProgram
 		);
+		const section = await createObjectSection(adminContext, testProgram, payloadTypes.enum.goal, [
+			testGoal
+		]);
 
 		await use(testGoal);
 
+		await deleteContainer(adminContext, section);
 		await deleteContainer(adminContext, testGoal);
 	},
 	allTable: async ({ page }, use) => {

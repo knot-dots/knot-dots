@@ -87,10 +87,10 @@
 		if (overlay) {
 			const params = paramsFromFragment(page.url);
 
-			if (params.has('chapters')) {
-				return ['all', 'level'];
-			} else if (params.has('view') && params.has('table')) {
+			if (params.has('chapters') && params.has('table')) {
 				return ['all', 'table'];
+			} else if (params.has('chapters')) {
+				return ['all', 'level'];
 			} else if (params.has('indicators')) {
 				return ['indicators', 'catalog'];
 			} else if (params.has('resources')) {
@@ -110,7 +110,7 @@
 			if (pathnameWithoutContextSegments.length == 2) {
 				return pathnameWithoutContextSegments;
 			} else {
-				return ['all', paramsFromFragment(page.url).has('table') ? 'table' : 'page'];
+				return ['all', 'page'];
 			}
 		}
 	});
@@ -210,10 +210,10 @@
 		const params = paramsFromFragment(url);
 
 		if (overlay) {
-			if (params.has('chapters')) {
-				return '/all/level';
-			} else if (params.has('view') && params.has('table')) {
+			if (params.has('chapters') && params.has('table')) {
 				return '/all/table';
+			} else if (params.has('chapters')) {
+				return '/all/level';
 			} else if (params.has('indicators')) {
 				return '/indicators/catalog';
 			} else if (params.has('resources')) {
@@ -227,15 +227,6 @@
 			} else {
 				return '/';
 			}
-		} else if (
-			url.pathname ==
-				resolve('/[guid=uuid]/[contentGuid=uuid]', {
-					guid: selectedContext.guid,
-					contentGuid: container.guid
-				}) &&
-			params.has('table')
-		) {
-			return '/all/table';
 		} else {
 			return '/' + (url.pathname.split('/').slice(3).join('/') ?? '');
 		}
@@ -248,6 +239,16 @@
 	const rightMenu = createMenu({
 		selected: currentPath(page.url)
 	});
+
+	// The table variant of the chapters overlay lives in a plain fragment param that
+	// overlayURL would carry over to any other view.
+	function withoutTable(url: URL) {
+		const params = paramsFromFragment(url);
+		params.delete('table');
+		const target = new URL(url);
+		target.hash = params.toString();
+		return target;
+	}
 
 	function handleChange(url: URL, container: Container<AnyPayload>) {
 		return (event: Event) => {
@@ -266,7 +267,7 @@
 
 			if (selected[0] == 'all' && selected[1] == 'page') {
 				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.view, container.guid));
+					goto(overlayURL(withoutTable(url), overlayKey.enum.view, container.guid));
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]', {
@@ -277,7 +278,7 @@
 				}
 			} else if (selected[0] == 'all' && selected[1] == 'level') {
 				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.chapters, container.guid));
+					goto(overlayURL(withoutTable(url), overlayKey.enum.chapters, container.guid));
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', {
@@ -288,13 +289,13 @@
 				}
 			} else if (selected[0] == 'all' && selected[1] == 'table') {
 				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.view, container.guid, [['table', '']]));
+					goto(overlayURL(url, overlayKey.enum.chapters, container.guid, [['table', '']]));
 				} else {
 					goto(
-						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+						resolve('/[guid=uuid]/[contentGuid=uuid]/all/table', {
 							guid: selectedContext.guid,
 							contentGuid: container.guid
-						}) + '#table'
+						})
 					);
 				}
 			} else if (selected[0] == 'indicators' && selected[1] == 'catalog') {

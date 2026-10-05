@@ -7,6 +7,7 @@ import { type AnyPayload, type Container, isProgramContainer } from '$lib/models
 import { getAllContainerRevisionsByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
+// The table is an alternative view of the levels board and shows the same objects.
 export const load = (async ({ depends, locals, params, parent, url }) => {
 	depends('containers');
 
@@ -38,7 +39,7 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 			container,
 			containers,
 			revisions: filterVisible(revisions, locals.user),
-			title: t('workspace.view.level')
+			title: t('workspace.view.table')
 		};
 	} catch (e: unknown) {
 		if (e instanceof NotFoundError) {

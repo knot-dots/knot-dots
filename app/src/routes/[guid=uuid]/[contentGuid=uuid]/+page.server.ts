@@ -6,7 +6,12 @@ import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/se
 import type { PageServerLoad } from './$types';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 
-export const load = (async ({ locals, params }) => {
+export const load = (async ({ locals, params, url }) => {
+	// Detail views filter on the client and navigate with search params. Reading
+	// them here reruns this load, so the container handed to the view reflects
+	// relations created since the page was opened.
+	void url.search;
+
 	try {
 		const [revisions, sections] = await Promise.all([
 			locals.pool.connect(getAllContainerRevisionsByGuid(params.contentGuid)),

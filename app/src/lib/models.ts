@@ -80,6 +80,7 @@ const payloadTypeValues = [
 	'map',
 	'measure',
 	'measure_collection',
+	'object_collection',
 	'objective',
 	'objective_collection',
 	'organization',
@@ -1217,6 +1218,42 @@ export function isCustomCollectionContainer(
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
+export const objectCollectionObjectTypes = z.enum([
+	payloadTypes.enum.goal,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure
+]);
+
+export type ObjectCollectionObjectType = z.infer<typeof objectCollectionObjectTypes>;
+
+export const objectCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
+	item: z.array(z.uuid()).default([]),
+	listType: z
+		.enum([listTypes.enum.carousel, listTypes.enum.list, listTypes.enum.wall])
+		.default(listTypes.enum.carousel),
+	newItemTemplate: z.uuid().optional(),
+	objectType: objectCollectionObjectTypes,
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.object_collection),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type ObjectCollectionPayload = z.infer<typeof objectCollectionPayload>;
+
+export function isObjectCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<ObjectCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.object_collection;
+}
+
+const initialObjectCollectionPayload = objectCollectionPayload.partial({
+	objectType: true,
+	title: true
+});
+
 export const demographicDataPayload = z.strictObject({
 	...sectionStyle.shape,
 	title: z
@@ -2322,6 +2359,7 @@ const payload = z.discriminatedUnion('type', [
 	mapPayload,
 	measureCollectionPayload,
 	measurePayload,
+	objectCollectionPayload,
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
@@ -2402,6 +2440,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialMapPayload,
 	initialMeasureCollectionPayload,
 	initialMeasurePayload,
+	initialObjectCollectionPayload,
 	initialObjectiveCollectionPayload,
 	initialObjectivePayload,
 	initialOrganizationPayload,

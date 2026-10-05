@@ -18,6 +18,7 @@
 	import EditableInlineHelpSection from '$lib/components/EditableInlineHelpSection.svelte';
 	import EditableMapSection from '$lib/components/EditableMapSection.svelte';
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
+	import EditableObjectCollection from '$lib/components/EditableObjectCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
@@ -51,6 +52,7 @@
 		isInlineHelpTextContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
+		isObjectCollectionContainer,
 		isMeasureContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
@@ -66,26 +68,31 @@
 		isTextContainer,
 		payloadTypes
 	} from '$lib/models';
+	import type { TemplateAvailability } from '$lib/templateScopes';
 	import { ability, applicationState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload> & { [SHADOW_ITEM_MARKER_PROPERTY_NAME]?: string };
 		editable?: boolean;
 		handleAddSection: (event: Event) => void;
+		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		heading?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		templateAvailability?: TemplateAvailability;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
 		handleAddSection,
+		itemFilter,
 		heading = 'h2',
 		parentContainer = $bindable(),
 		preview = false,
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		templateAvailability
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -218,6 +225,16 @@
 				bind:relatedContainers
 				{editable}
 				{heading}
+			/>
+		{:else if isObjectCollectionContainer(container)}
+			<EditableObjectCollection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				{editable}
+				{heading}
+				{itemFilter}
+				{templateAvailability}
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection
