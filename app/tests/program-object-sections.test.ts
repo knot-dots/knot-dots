@@ -30,6 +30,7 @@ test('a template-bound goal section only lists goals created from it', async ({
 	expect(sectionResponse.status()).toBe(201);
 	const sectionContainer = await sectionResponse.json();
 	expect(sectionContainer.payload).toMatchObject({
+		listType: 'list',
 		newItemTemplate: testProgramGoalTemplate.guid,
 		objectType: payloadTypes.enum.goal,
 		title: testProgramGoalTemplate.payload.title,
@@ -38,6 +39,12 @@ test('a template-bound goal section only lists goals created from it', async ({
 	await expect(section.getByRole('textbox', { name: 'Title' })).toHaveValue(
 		testProgramGoalTemplate.payload.title
 	);
+
+	// Layout sections are available on programs as well
+	await section.hover();
+	await section.getByRole('button', { name: 'Add section' }).click();
+	await expect(page.getByRole('menuitem', { name: 'Text', exact: true })).toBeVisible();
+	await page.keyboard.press('Escape');
 
 	// The title can be renamed and the view switched to a wall
 	const revisionSaved = () =>
@@ -58,16 +65,6 @@ test('a template-bound goal section only lists goals created from it', async ({
 	await settingsPanel.getByRole('radio', { name: 'Wall' }).check();
 	await viewSaved;
 	await expect(section.locator('ul.catalog')).toBeVisible();
-	await page.keyboard.press('Escape');
-
-	// The same template is not offered a second time
-	const templatesLoaded = page.waitForResponse((response) =>
-		response.url().includes(`availableIn=${testProgram.guid}`)
-	);
-	await section.hover();
-	await section.getByRole('button', { name: 'Add section' }).click();
-	await templatesLoaded;
-	await expect(page.getByRole('menuitem')).toHaveCount(0);
 	await page.keyboard.press('Escape');
 
 	// Adding an item skips the template picker and instantiates the bound template
@@ -91,7 +88,7 @@ test('a template-bound goal section only lists goals created from it', async ({
 	const response = await saved;
 	expect(response.status()).toBe(201);
 	const instance = await response.json();
-	let chapterGoal: Container<GoalPayload> | undefined;
+	let otherGoal: Container<GoalPayload> | undefined;
 	try {
 		expect(instance.payload.template).toBe(false);
 		expect(instance.relation).toEqual(
@@ -103,16 +100,16 @@ test('a template-bound goal section only lists goals created from it', async ({
 		expect(updatedSection.payload.item).toEqual([instance.guid]);
 		await expect(dialog).not.toBeVisible();
 
-		// A goal created outside the section from the same template stays a chapter
+		// A goal added outside the section does not appear on the page
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
 			testOrganization
 		) as Container<GoalPayload>;
-		chapterGoal = await createProgramContainerFromTemplate(
+		otherGoal = await createProgramContainerFromTemplate(
 			adminContext,
 			{
 				...newGoal,
-				payload: { ...newGoal.payload, title: 'Chapter goal' },
+				payload: { ...newGoal.payload, title: 'Goal outside sections' },
 				relation: [
 					{
 						object: testProgram.guid,
@@ -130,14 +127,67 @@ test('a template-bound goal section only lists goals created from it', async ({
 			await expect(savedSection.getByRole('heading', { name: 'Strategic goals' })).toBeVisible();
 			await expect(savedSection.locator('ul.catalog')).toBeVisible();
 			await expect(savedSection.getByTitle('Section goal', { exact: true })).toBeVisible();
-			await expect(savedSection.getByTitle('Chapter goal', { exact: true })).toHaveCount(0);
-			await expect(programPage.chapters.filter({ hasText: 'Chapter goal' })).toHaveCount(1);
-			await expect(programPage.chapters.filter({ hasText: 'Section goal' })).toHaveCount(0);
+			await expect(page.getByRole('main').getByText('Goal outside sections')).toHaveCount(0);
 		}).toPass({ timeout: 20000 });
 	} finally {
 		await deleteContainer(adminContext, instance);
-		if (chapterGoal) {
-			await deleteContainer(adminContext, chapterGoal);
+		if (otherGoal) {
+			await deleteContainer(adminContext, otherGoal);
 		}
+	}
+});
+
+test('the list view shows objects as chapters and the section filter hides other sections', async ({
+	adminContext,
+	programPage,
+	testProgram,
+	testProgramGoalTemplate
+}) => {
+	const page = programPage.page;
+	await programPage.goto(testProgram);
+	await programPage.header.editModeToggle.check();
+
+	const goalSection = await programPage.addSection(testProgramGoalTemplate.payload.title);
+	await goalSection.getByRole('button', { name: 'Add item', exact: true }).first().click();
+	const dialog = page.getByRole('dialog');
+	await dialog.getByRole('textbox', { name: 'Title', exact: true }).fill('Listed goal');
+	const saved = page.waitForResponse(
+		(response) =>
+			new URL(response.url()).pathname === '/container/copy' &&
+			response.request().method() === 'POST'
+	);
+	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	const instance = await (await saved).json();
+	try {
+		await expect(dialog).not.toBeVisible();
+
+		// The object is rendered like a chapter inside its section
+		await expect(async () => {
+			await programPage.goto(testProgram);
+			await expect(
+				programPage.chapters.filter({
+					has: page.getByRole('heading', { level: 2, name: 'Listed goal' })
+				})
+			).toHaveCount(1);
+		}).toPass({ timeout: 20000 });
+
+		// A text section counts as "other" and is hidden by the goals filter
+		await programPage.header.editModeToggle.check();
+		const textSection = await programPage.addSection('Text');
+		await expect(textSection).toBeVisible();
+		await expect(programPage.sections).toHaveCount(2);
+
+		await page.getByRole('button', { name: 'Filter' }).click();
+		await page.getByRole('button', { name: 'Sections' }).click();
+		await page.getByRole('checkbox', { name: 'Goals (1)' }).check();
+		await expect(programPage.sections).toHaveCount(1);
+		await expect(programPage.chapters).toHaveCount(1);
+
+		await page.getByRole('checkbox', { name: 'Goals (1)' }).uncheck();
+		await page.getByRole('checkbox', { name: 'Other (1)' }).check();
+		await expect(programPage.sections).toHaveCount(1);
+		await expect(programPage.chapters).toHaveCount(0);
+	} finally {
+		await deleteContainer(adminContext, instance);
 	}
 });
