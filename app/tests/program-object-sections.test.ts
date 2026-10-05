@@ -186,14 +186,18 @@ test('the list view shows objects as chapters and the section filter hides other
 		await page.getByRole('button', { name: 'Sections' }).click();
 		const goalsOption = page.getByRole('checkbox', { name: 'Goals (1)' });
 		const otherOption = page.getByRole('checkbox', { name: 'Other (1)' });
+		// The filter state lives in the URL, so wait for each navigation before the next click.
 		await goalsOption.click({ force: true });
+		await expect(page).toHaveURL(/section=goals/);
 		await expect(goalsOption).toBeChecked();
 		await expect(programPage.sections).toHaveCount(1);
 		await expect(programPage.chapters).toHaveCount(1);
 
 		await goalsOption.click({ force: true });
+		await expect(page).not.toHaveURL(/section=/);
 		await expect(goalsOption).not.toBeChecked();
 		await otherOption.click({ force: true });
+		await expect(page).toHaveURL(/section=other/);
 		await expect(otherOption).toBeChecked();
 		await expect(programPage.sections).toHaveCount(1);
 		await expect(programPage.chapters).toHaveCount(0);
