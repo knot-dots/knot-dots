@@ -31,13 +31,14 @@ test('the table is an alternative view of the levels board', async ({
 			.filter({ hasText: aiGoal.payload.title })
 	).toHaveCount(1);
 
-	// Overlay: the table is a variant of the chapters overlay
+	// Overlay: the table is a variant of the chapters overlay and switches back to the board
 	await page.goto(`/${testProgram.organization}#chapters=${testProgram.guid}&table=`);
+	const overlay = page.locator('.overlay');
 	await expect(
-		page
-			.locator('.overlay')
-			.getByRole('table')
-			.getByRole('row')
-			.filter({ hasText: aiGoal.payload.title })
+		overlay.getByRole('table').getByRole('row').filter({ hasText: aiGoal.payload.title })
 	).toHaveCount(1);
+	await overlay.getByRole('button', { name: 'Table', exact: true }).click();
+	await overlay.getByRole('menuitem', { name: 'Level board', exact: true }).click();
+	await expect(page).toHaveURL(new RegExp(`#chapters=${testProgram.guid}$`));
+	await expect(overlay.getByRole('table')).toHaveCount(0);
 });

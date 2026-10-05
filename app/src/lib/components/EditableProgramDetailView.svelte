@@ -5,7 +5,6 @@
 	import { buildCategoryFacetsWithCounts } from '$lib/categoryOptions';
 	import createScopedTemplateAvailability from '$lib/client/createScopedTemplateAvailability.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import withOptimistic from '$lib/client/withOptimistic';
 	import AdoptButton from '$lib/components/AdoptButton.svelte';
 	import AskAIButton from '$lib/components/AskAIButton.svelte';
 	import CreateAnotherButton from '$lib/components/CreateAnotherButton.svelte';
@@ -25,7 +24,6 @@
 		type Container,
 		isObjectCollectionContainer,
 		paramsFromFragment,
-		predicates,
 		type ProgramPayload,
 		programTypes,
 		status
@@ -38,12 +36,7 @@
 		sectionGroupOf,
 		sectionGroups
 	} from '$lib/sectionFilters';
-	import {
-		ability,
-		applicationState,
-		lastCreatedContainers,
-		lastDeletedContainers
-	} from '$lib/stores';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: Container<ProgramPayload>;
@@ -66,28 +59,15 @@
 
 	let categoryContext = $derived(page.data.categoryContext);
 
-	// Everything related to the program is loaded once; the filters below work on the client.
-	// Updates are not merged optimistically: sections and chapters edit their containers in
-	// place, and replacing the objects would leave their autosave handlers with stale revisions.
-	let relatedContainersQuery = resource([() => guid], async ([guid], _, { signal }) =>
-		fetchRelatedContainers(guid, {}, 'alpha', { signal })
+	// Everything related to the program is loaded without server filters; the filters
+	// below work on the client. The query follows the overlay parameters so that a
+	// navigation, e.g. to a freshly created object, reloads the sections.
+	let relatedContainersQuery = resource(
+		[() => guid, () => paramsFromFragment(page.url).toString()],
+		async ([guid], _, { signal }) => fetchRelatedContainers(guid, {}, 'alpha', { signal })
 	);
 
-	let relatedContainers = $derived(
-		withOptimistic(
-			relatedContainersQuery.current ?? [],
-			$lastCreatedContainers,
-			$lastDeletedContainers,
-			new Map(),
-			(created) =>
-				created.relation.some(
-					({ object, predicate }) =>
-						object === guid &&
-						(predicate === predicates.enum['is-section-of'] ||
-							predicate === predicates.enum['is-part-of-program'])
-				)
-		)
-	);
+	let relatedContainers = $derived(relatedContainersQuery.current ?? []);
 
 	let sections = $derived(hasSection(container, relatedContainers));
 
@@ -183,7 +163,13 @@
 {#snippet main()}
 	<EditableContainerDetailView bind:container {footer}>
 		{#snippet data()}
-			<Sections bind:container {itemFilter} {relatedContainers} {sectionFilter} />
+			<Sections
+				bind:container
+				{itemFilter}
+				{relatedContainers}
+				{sectionFilter}
+				{templateAvailability}
+			/>
 		{/snippet}
 
 		{#snippet properties()}

@@ -240,6 +240,16 @@
 		selected: currentPath(page.url)
 	});
 
+	// The table variant of the chapters overlay lives in a plain fragment param that
+	// overlayURL would carry over to any other view.
+	function withoutTable(url: URL) {
+		const params = paramsFromFragment(url);
+		params.delete('table');
+		const target = new URL(url);
+		target.hash = params.toString();
+		return target;
+	}
+
 	function handleChange(url: URL, container: Container<AnyPayload>) {
 		return (event: Event) => {
 			const detail = (event as CustomEvent).detail;
@@ -257,7 +267,7 @@
 
 			if (selected[0] == 'all' && selected[1] == 'page') {
 				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.view, container.guid));
+					goto(overlayURL(withoutTable(url), overlayKey.enum.view, container.guid));
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]', {
@@ -268,7 +278,7 @@
 				}
 			} else if (selected[0] == 'all' && selected[1] == 'level') {
 				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.chapters, container.guid));
+					goto(overlayURL(withoutTable(url), overlayKey.enum.chapters, container.guid));
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', {

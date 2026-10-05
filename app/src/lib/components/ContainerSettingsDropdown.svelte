@@ -7,6 +7,7 @@
 	import Background from '~icons/knotdots/background';
 	import CarouselIcon from '~icons/knotdots/carousel';
 	import Grid from '~icons/knotdots/grid';
+	import ListIcon from '~icons/knotdots/text';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
@@ -16,6 +17,7 @@
 		type Container,
 		isContainerWithColor,
 		isObjectCollectionContainer,
+		isProgramContainer,
 		isTeaserLikeContainer,
 		listTypes
 	} from '$lib/models';
@@ -74,6 +76,8 @@
 					>
 						{#if container.payload.listType === listTypes.enum.carousel}
 							<CarouselIcon />
+						{:else if container.payload.listType === listTypes.enum.list}
+							<ListIcon />
 						{:else}
 							<Grid />
 						{/if}
@@ -147,6 +151,19 @@
 				{/if}
 			{:else if openSubMenuTitle == $_('custom_collection.settings.view') && isObjectCollectionContainer(container)}
 				<fieldset class="listbox">
+					{#if isProgramContainer(parentContainer)}
+						<label>
+							<input
+								type="radio"
+								name="listType"
+								value={listTypes.enum.list}
+								checked={container.payload.listType === listTypes.enum.list}
+								onchange={() => (container.payload.listType = listTypes.enum.list)}
+							/>
+							<ListIcon />
+							<span>{$_('list_type.list')}</span>
+						</label>
+					{/if}
 					<label>
 						<input
 							type="radio"

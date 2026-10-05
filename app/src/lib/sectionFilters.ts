@@ -69,7 +69,10 @@ export function matchesItemFilters(
 	}
 
 	if (terms !== '') {
-		const needle = terms.toLowerCase();
+		const needles = terms
+			.toLowerCase()
+			.split(/\s+/)
+			.filter((needle) => needle !== '');
 		const haystack = [
 			'title' in payload ? payload.title : '',
 			'name' in payload ? payload.name : '',
@@ -78,7 +81,7 @@ export function matchesItemFilters(
 		]
 			.join('\n')
 			.toLowerCase();
-		if (!haystack.includes(needle)) {
+		if (!needles.every((needle) => haystack.includes(needle))) {
 			return false;
 		}
 	}

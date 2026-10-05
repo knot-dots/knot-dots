@@ -57,8 +57,9 @@
 		);
 
 		if (isProgramContainer(container)) {
+			// Texts are sections of a program now, not parts.
 			options = [...container.payload.chapterType]
-				.filter((type) => type === payloadTypes.enum.text || templateAvailability.has(type))
+				.filter((type) => type !== payloadTypes.enum.text && templateAvailability.has(type))
 				.map((p) => ({ label: $_(p), value: p }));
 		} else if (isPartOfProgramRelation) {
 			options = [...(program?.payload.chapterType ?? [])]

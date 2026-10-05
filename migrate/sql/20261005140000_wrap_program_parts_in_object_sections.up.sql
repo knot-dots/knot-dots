@@ -28,6 +28,15 @@ WHERE r.predicate = 'is-part-of-program'
   AND p.payload->>'type' = 'program'
   AND c.payload->>'type' IN ('goal', 'knowledge', 'measure', 'rule', 'simple_measure', 'text');
 
+-- Sections a program already had stay behind the parts, as they were displayed before.
+UPDATE container_relation r
+SET position = r.position + counts.parts
+FROM (SELECT program, count(*) AS parts FROM program_part_sections GROUP BY program) counts
+WHERE r.object = counts.program
+  AND r.predicate = 'is-section-of'
+  AND r.valid_currently
+  AND NOT r.deleted;
+
 INSERT INTO container (guid, payload, realm, organization, organizational_unit, managed_by)
 SELECT section,
        jsonb_build_object(

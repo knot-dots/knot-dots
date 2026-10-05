@@ -68,6 +68,7 @@
 		isTextContainer,
 		payloadTypes
 	} from '$lib/models';
+	import type { TemplateAvailability } from '$lib/templateScopes';
 	import { ability, applicationState, mayCreateContainer } from '$lib/stores';
 
 	interface Props {
@@ -79,6 +80,7 @@
 		parentContainer: Container<AnyPayload>;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		templateAvailability?: TemplateAvailability;
 	}
 
 	let {
@@ -89,7 +91,8 @@
 		heading = 'h2',
 		parentContainer = $bindable(),
 		preview = false,
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		templateAvailability
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -231,6 +234,7 @@
 				{editable}
 				{heading}
 				{itemFilter}
+				{templateAvailability}
 			/>
 		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
 			<EditableObjectiveCollection

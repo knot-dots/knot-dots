@@ -70,4 +70,7 @@ test('items match on status, categories and terms', () => {
 	).toBe(false);
 	expect(matchesItemFilters(item, { categories: {}, statuses: [], terms: 'radwege' })).toBe(true);
 	expect(matchesItemFilters(item, { categories: {}, statuses: [], terms: 'Schule' })).toBe(false);
+	expect(matchesItemFilters(item, { categories: {}, statuses: [], terms: 'bauen Goal' })).toBe(
+		true
+	);
 });

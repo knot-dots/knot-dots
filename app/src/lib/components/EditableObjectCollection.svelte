@@ -38,7 +38,7 @@
 		openContainerCopyDialog
 	} from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
-	import { isScopedTemplateRoot } from '$lib/templateScopes';
+	import { isScopedTemplateRoot, type TemplateAvailability } from '$lib/templateScopes';
 
 	interface Props {
 		container: Container<ObjectCollectionPayload>;
@@ -47,6 +47,7 @@
 		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
+		templateAvailability?: TemplateAvailability;
 	}
 
 	let {
@@ -55,7 +56,8 @@
 		heading,
 		itemFilter,
 		parentContainer = $bindable(),
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		templateAvailability: sharedAvailability
 	}: Props = $props();
 
 	const idForTitle = crypto.randomUUID();
@@ -108,9 +110,11 @@
 		}
 	);
 
-	const templateAvailability = createCreationTemplateAvailability(() =>
-		editable && !bound ? createItem() : undefined
+	// A shared availability, e.g. the program's, saves one probe request per section.
+	const ownAvailability = createCreationTemplateAvailability(() =>
+		editable && !bound && !sharedAvailability ? createItem() : undefined
 	);
+	let templateAvailability = $derived(sharedAvailability ?? ownAvailability);
 
 	function applicableCategories(objectType: ObjectCollectionObjectType) {
 		if (!('category' in parentContainer.payload)) {
@@ -196,8 +200,8 @@
 		createContainerDialog.getElement().showModal();
 	}
 
-	function stopPropagation(fn: (event: Event) => void) {
-		return function (this: Event, event: Event) {
+	function stopPropagation<E extends Event>(fn: (event: E) => void) {
+		return function (this: unknown, event: E) {
 			event.stopPropagation();
 			fn.call(this, event);
 		};
@@ -267,7 +271,7 @@
 			<form
 				class="chapter"
 				oninput={stopPropagation(requestSubmit)}
-				onsubmit={autoSave(item, 2000)}
+				onsubmit={stopPropagation(autoSave(item, 2000))}
 				novalidate
 			>
 				<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->

@@ -5,6 +5,7 @@
 	import {
 		type Container,
 		isGoalContainer,
+		isKnowledgeContainer,
 		isMeasureContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
@@ -20,11 +21,11 @@
 
 	let { containers, program }: Props = $props();
 
-	// The table lists the same objects as the levels board.
+	// The table lists the objects of the levels board plus the program's knowledge parts.
 	let rows = $derived(
 		containers.filter(
 			(container) =>
-				(isGoalContainer(container) &&
+				((isGoalContainer(container) || isKnowledgeContainer(container)) &&
 					container.relation.some(
 						({ object, predicate }) =>
 							predicate === predicates.enum['is-part-of-program'] && object === program.guid

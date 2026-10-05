@@ -24,6 +24,7 @@
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
+	import type { TemplateAvailability } from '$lib/templateScopes';
 	import { backgroundColors } from '$lib/theme/models';
 
 	interface Props {
@@ -34,6 +35,7 @@
 		relatedContainers: Container<AnyPayload>[];
 		// Only pass a filter while one is active: it hides sections and disables sorting.
 		sectionFilter?: (section: Container) => boolean;
+		templateAvailability?: TemplateAvailability;
 	}
 
 	let {
@@ -42,7 +44,8 @@
 		itemFilter,
 		preview = false,
 		relatedContainers,
-		sectionFilter
+		sectionFilter,
+		templateAvailability
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -244,7 +247,12 @@
 {/if}
 
 {#if !preview}
-	<TableOfContents {container} {editable} {handleSort} {sections} />
+	<TableOfContents
+		{container}
+		editable={editable && sectionFilter === undefined}
+		{handleSort}
+		{sections}
+	/>
 {/if}
 
 <ul
@@ -278,6 +286,7 @@
 				heading={heading(i)}
 				{itemFilter}
 				{preview}
+				{templateAvailability}
 			/>
 		</li>
 	{/each}

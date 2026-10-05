@@ -19,6 +19,10 @@ import {
 
 const templatableTypes = new Set<string>(templatablePayloadTypes);
 
+// What creation buttons ask before offering a type: either templates are optional
+// for it or at least one scoped template exists.
+export type TemplateAvailability = { has(type: PayloadType): boolean };
+
 export function isTemplateScope(
 	container: Container<AnyPayload>
 ): container is Container<ProgramPayload | MeasurePayload | SimpleMeasurePayload> {
