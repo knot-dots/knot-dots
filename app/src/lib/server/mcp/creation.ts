@@ -89,7 +89,7 @@ export function payloadValidationMessage(error: {
 		.join('; ');
 }
 
-function createAndRecordContainer({
+export function createAndRecordContainer({
 	auth: { tokenId, userId },
 	data,
 	tool,

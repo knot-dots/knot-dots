@@ -39,6 +39,7 @@ const userScopedAuthInfo = {
 };
 const addContainerRelation = vi.fn();
 const addCustomCollectionSection = vi.fn();
+const attachIndicator = vi.fn();
 const createContainer = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
@@ -53,6 +54,7 @@ const updateContainer = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	addContainerRelation,
 	addCustomCollectionSection,
+	attachIndicator,
 	createContainer,
 	getContainer,
 	listContainerCategories,
@@ -115,6 +117,7 @@ async function legacyResponseJson(response: Response) {
 beforeEach(() => {
 	addContainerRelation.mockReset();
 	addCustomCollectionSection.mockReset();
+	attachIndicator.mockReset();
 	createContainer.mockReset();
 	updateContainer.mockReset();
 	getContainer.mockReset();
@@ -325,6 +328,15 @@ test('advertises tools without requiring their scopes', async () => {
 					openWorldHint: false,
 					readOnlyHint: false
 				},
+				name: 'attach_indicator',
+				title: 'Attach indicator'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
 				name: 'remove_container_relation',
 				title: 'Remove container relation'
 			}),
@@ -342,6 +354,7 @@ test('advertises tools without requiring their scopes', async () => {
 	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
 		'add_container_relation',
 		'add_custom_collection_section',
+		'attach_indicator',
 		'create_container',
 		'get_container',
 		'list_container_categories',
@@ -723,6 +736,37 @@ test('rejects structural predicates in the relation tools', async () => {
 	});
 });
 
+const attachIndicatorArguments = {
+	indicatorGuid: '00000000-0000-4000-8000-000000000004',
+	targetGuid: '00000000-0000-4000-8000-000000000003'
+};
+
+test('attaches an indicator using the write scope', async () => {
+	const output = {
+		attachment: {
+			guid: '00000000-0000-4000-8000-000000000005',
+			indicatorGuid: attachIndicatorArguments.indicatorGuid,
+			targetGuid: attachIndicatorArguments.targetGuid,
+			type: 'effect'
+		},
+		changed: true
+	};
+	attachIndicator.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: attachIndicatorArguments, name: 'attach_indicator' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(attachIndicator).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		attachIndicatorArguments
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
+	});
+});
+
 test.each([
 	[
 		'create_container',
@@ -751,6 +795,7 @@ test.each([
 		}
 	],
 	['add_container_relation', addContainerRelation, relationArguments],
+	['attach_indicator', attachIndicator, attachIndicatorArguments],
 	['remove_container_relation', removeContainerRelation, relationArguments]
 ])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
 	const response = await toolHandler.fetch(
