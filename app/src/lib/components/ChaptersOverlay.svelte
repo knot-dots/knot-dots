@@ -5,8 +5,15 @@
 	import Chapters from '$lib/components/Chapters.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ProgramTable from '$lib/components/ProgramTable.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
-	import { computeFacetCount, type Container, type ProgramPayload, status } from '$lib/models';
+	import {
+		computeFacetCount,
+		type Container,
+		paramsFromFragment,
+		type ProgramPayload,
+		status
+	} from '$lib/models';
 
 	interface Props {
 		container: Container<ProgramPayload>;
@@ -36,7 +43,11 @@
 <Header {facets} search />
 
 <div class="content">
-	<Chapters program={container} {containers} />
+	{#if paramsFromFragment(page.url).has('table')}
+		<ProgramTable program={container} {containers} />
+	{:else}
+		<Chapters program={container} {containers} />
+	{/if}
 
 	<ContextTabs slug="all-level" />
 </div>
