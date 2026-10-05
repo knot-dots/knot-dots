@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
 	import Plus from '~icons/knotdots/plus';
+	import Text from '~icons/knotdots/text';
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
 	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
@@ -61,6 +62,10 @@
 	}: Props = $props();
 
 	const idForTitle = crypto.randomUUID();
+
+	// Migrated sections carry no title; the field only appears once asked for.
+	let titleRequested = $state(false);
+	let showTitle = $derived(container.payload.title !== '' || titleRequested);
 
 	// Only objects created from this section belong to it. Items are wrapped in
 	// state so inline edits in the list view stay reactive.
@@ -210,27 +215,41 @@
 
 {#if editable || container.payload.title}
 	<header>
-		<svelte:element this={heading} class="details-heading">
-			{#if editable && $ability.can('update', container)}
-				<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
-				<AutoresizingTextarea
-					bind:value={container.payload.title}
-					id={idForTitle}
-					onkeydown={(e) => {
-						if (e.key === 'Enter') {
-							e.preventDefault();
-						}
-					}}
-					placeholder={$_('title')}
-					rows={1}
-				/>
-			{:else}
-				{container.payload.title}
-			{/if}
-		</svelte:element>
+		{#if showTitle}
+			<svelte:element this={heading} class="details-heading">
+				{#if editable && $ability.can('update', container)}
+					<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
+					<AutoresizingTextarea
+						bind:value={container.payload.title}
+						id={idForTitle}
+						onkeydown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault();
+							}
+						}}
+						placeholder={$_('title')}
+						rows={1}
+					/>
+				{:else}
+					{container.payload.title}
+				{/if}
+			</svelte:element>
+		{/if}
 
 		{#if editable}
 			<ul class="inline-actions is-visible-on-hover">
+				{#if !showTitle && $ability.can('update', container)}
+					<li>
+						<button
+							class="action-button action-button--size-l"
+							onclick={() => (titleRequested = true)}
+							type="button"
+							{@attach tooltip($_('add_title'))}
+						>
+							<Text />
+						</button>
+					</li>
+				{/if}
 				{#if mayAddItem}
 					<li>
 						<button
