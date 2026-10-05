@@ -43,8 +43,7 @@ async function createTestAuth(connection: Fixtures['connection']): Promise<McpAu
 
 async function createOrganization(
 	connection: Fixtures['connection'],
-	member: string,
-	role: Predicate
+	member?: { guid: string; role: Predicate }
 ) {
 	const guid = uuid();
 	const { revision } = await connection.one(sql.typeAlias('revision')`
@@ -59,13 +58,15 @@ async function createOrganization(
 		RETURNING revision
 	`);
 
-	await connection.query(sql.typeAlias('void')`
-		INSERT INTO container_user (object, predicate, subject)
-		VALUES
-			(${revision}, ${predicates.enum['is-member-of']}, ${member}),
-			(${revision}, ${role}, ${member})
-		ON CONFLICT DO NOTHING
-	`);
+	if (member) {
+		await connection.query(sql.typeAlias('void')`
+			INSERT INTO container_user (object, predicate, subject)
+			VALUES
+				(${revision}, ${predicates.enum['is-member-of']}, ${member.guid}),
+				(${revision}, ${member.role}, ${member.guid})
+			ON CONFLICT DO NOTHING
+		`);
+	}
 
 	return guid;
 }
@@ -90,13 +91,9 @@ function create(
 
 async function setUp(connection: Fixtures['connection'], role: Predicate) {
 	const auth = await createTestAuth(connection);
-	const organization = await createOrganization(connection, auth.userId, role);
+	const organization = await createOrganization(connection, { guid: auth.userId, role });
 	// a public template of another organization, such as the default one
-	const templateOwner = await createOrganization(
-		connection,
-		uuid(),
-		predicates.enum['is-collaborator-of']
-	);
+	const templateOwner = await createOrganization(connection);
 	const indicator = await create(connection, templateOwner, {
 		title: 'CO2 emissions',
 		type: payloadTypes.enum.indicator_template,
