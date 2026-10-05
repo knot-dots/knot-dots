@@ -6,6 +6,7 @@ import {
 } from '$lib/server/mcp/categories';
 import { getMcpContainer, searchMcpContainers } from '$lib/server/mcp/containers';
 import { addMcpCustomCollectionSection, createMcpContainer } from '$lib/server/mcp/creation';
+import { attachMcpIndicator } from '$lib/server/mcp/indicators';
 import { listMcpOrganizationalUnits } from '$lib/server/mcp/organizationalUnits';
 import {
 	addMcpContainerRelation,
@@ -16,6 +17,10 @@ import { updateMcpContainer } from '$lib/server/mcp/update';
 import { registerPayloadSchemaResources } from '$lib/server/mcp/resources/payloadSchemas';
 import { loadMcpUserContext } from '$lib/server/mcp/userContext';
 import { searchMcpOrganizationUsers } from '$lib/server/mcp/users';
+import {
+	registerAttachIndicatorTool,
+	type AttachIndicatorDependencies
+} from '$lib/server/mcp/tools/attachIndicator';
 import {
 	registerAddContainerRelationTool,
 	type AddContainerRelationDependencies
@@ -72,6 +77,7 @@ import packageMetadata from '../../../../package.json';
 
 type McpServerDependencies = AddContainerRelationDependencies &
 	AddCustomCollectionSectionDependencies &
+	AttachIndicatorDependencies &
 	CreateContainerDependencies &
 	GetContainerDependencies &
 	ListContainerCategoriesDependencies &
@@ -90,6 +96,9 @@ const defaultDependencies: McpServerDependencies = {
 	},
 	async addCustomCollectionSection(auth, input) {
 		return (await getPool()).connect(addMcpCustomCollectionSection({ ...input, ...auth }));
+	},
+	async attachIndicator(auth, input) {
+		return (await getPool()).connect(attachMcpIndicator({ ...input, ...auth }));
 	},
 	async createContainer(auth, input) {
 		return (await getPool()).connect(createMcpContainer({ ...input, ...auth }));
@@ -138,7 +147,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 				},
 				{
 					instructions:
-						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Pass update_container the revision from the latest get_container, create_container or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them. The description and body fields are GitHub-flavored Markdown. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Resource availability does not imply that a creation tool is available.'
+						'Read knotdots://schemas/payloads and the matching linked payload schema before calling create_container or update_container. Pass update_container the revision from the latest get_container, create_container or update_container response for that container; there is no need to read it again after your own writes. Look up category keys and values with list_container_categories and list_container_category_values instead of guessing them. The description and body fields are GitHub-flavored Markdown. Call list_container_relations before add_container_relation or remove_container_relation; relations read as subject, predicate, object. Attach indicators to measures and goals with attach_indicator, which creates the effect or objective that links them. Resource availability does not imply that a creation tool is available.'
 				}
 			);
 
@@ -146,6 +155,7 @@ export function createKnotDotsMcpHandler(dependencies: McpServerDependencies) {
 
 			registerAddContainerRelationTool(server, authInfo, dependencies);
 			registerAddCustomCollectionSectionTool(server, authInfo, dependencies);
+			registerAttachIndicatorTool(server, authInfo, dependencies);
 			registerCreateContainerTool(server, authInfo, dependencies);
 			registerGetContainerTool(server, authInfo, dependencies);
 			registerListContainerCategoriesTool(server, authInfo, dependencies);
