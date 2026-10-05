@@ -39,6 +39,10 @@ const schema = z.object({
 });
 
 export const POST = (async ({ locals, request }) => {
+	if (!locals.user.isAuthenticated) {
+		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
+	}
+
 	if (request.headers.get('content-type')?.split(';', 1)[0].trim() !== 'application/json') {
 		error(415, { message: unwrapFunctionStore(_)('error.unsupported_media_type') });
 	}
