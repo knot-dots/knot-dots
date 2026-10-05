@@ -156,7 +156,7 @@ test.each([
 	['hidden', () => mocks.unreadableGuids.add(guid)],
 	[
 		'not exposed through MCP',
-		() => mocks.containers.set(guid, container({ title: 'Text', type: 'text' }))
+		() => mocks.containers.set(guid, container({ title: 'HTML', type: 'html' }))
 	]
 ])('rejects a %s container', async (_, arrange) => {
 	arrange();

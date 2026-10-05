@@ -901,7 +901,7 @@ test('serves each curated payload as a direct JSON Schema', async () => {
 	}
 });
 
-test.each(['text', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
+test.each(['html', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
 	const uri = `${payloadSchemaCatalogUri}/${type}`;
 	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });
 

@@ -268,7 +268,7 @@ test.each([
 });
 
 test('rejects containers that are not exposed through MCP', async () => {
-	mocks.containers.set(measureGuid, container(measureGuid, { title: 'Text', type: 'text' }));
+	mocks.containers.set(measureGuid, container(measureGuid, { title: 'HTML', type: 'html' }));
 
 	await expect(change('add')).rejects.toThrow('Object container not found or inaccessible.');
 });
