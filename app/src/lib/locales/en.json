@@ -405,6 +405,7 @@
 	"indicator_template": "Indicator template",
 	"indicator_type": "Type of indicator",
 	"indicator_type.impact": "Impact indicator",
+	"other": "Other",
 	"picker_dialog.clear": "Clear",
 	"picker_dialog.confirm": "Apply ({count})",
 	"indicator_type.key": "Key indicator",
@@ -750,6 +751,7 @@
 		"17": "Partnerships for the goals"
 	},
 	"search": "Search",
+	"sections": "Sections",
 	"select_all": "Select all",
 	"selection_counter": "{count} selected",
 	"show_links": "Show links",

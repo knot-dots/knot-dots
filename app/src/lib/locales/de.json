@@ -405,6 +405,7 @@
 	"indicator_template": "Indikator-Vorlage",
 	"indicator_type": "Art des Indikators",
 	"indicator_type.impact": "Wirkungsindikator",
+	"other": "Sonstiges",
 	"picker_dialog.clear": "Aufheben",
 	"picker_dialog.confirm": "Übernehmen ({count})",
 	"indicator_type.key": "Schlüsselindikator",
@@ -750,6 +751,7 @@
 		"17": "17 - Partnerschaften zur Erreichung der Ziele"
 	},
 	"search": "Suchen",
+	"sections": "Abschnitte",
 	"select_all": "Alle auswählen",
 	"selection_counter": "{count} ausgewählt",
 	"show_links": "Links anzeigen",

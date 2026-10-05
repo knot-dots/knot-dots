@@ -1217,14 +1217,22 @@ export function isCustomCollectionContainer(
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
-export const objectCollectionObjectTypes = z.enum([payloadTypes.enum.goal]);
+export const objectCollectionObjectTypes = z.enum([
+	payloadTypes.enum.goal,
+	payloadTypes.enum.knowledge,
+	payloadTypes.enum.measure,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.simple_measure
+]);
 
 export type ObjectCollectionObjectType = z.infer<typeof objectCollectionObjectTypes>;
 
 export const objectCollectionPayload = z.strictObject({
 	...sectionStyle.shape,
 	item: z.array(z.uuid()).default([]),
-	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
+	listType: z
+		.enum([listTypes.enum.carousel, listTypes.enum.list, listTypes.enum.wall])
+		.default(listTypes.enum.carousel),
 	newItemTemplate: z.uuid().optional(),
 	objectType: objectCollectionObjectTypes,
 	title: z.string(),

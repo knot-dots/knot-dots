@@ -633,8 +633,8 @@ test('object collection payload keeps its bound template and items', () => {
 
 test('object collection payload rejects unsupported object types', () => {
 	const result = objectCollectionPayload.safeParse({
-		objectType: payloadTypes.enum.measure,
-		title: 'Measures',
+		objectType: payloadTypes.enum.task,
+		title: 'Tasks',
 		type: payloadTypes.enum.object_collection
 	});
 
