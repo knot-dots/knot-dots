@@ -8,6 +8,7 @@
 	import File from '~icons/flowbite/file-solid';
 	import Quote from '~icons/flowbite/quote-solid';
 	import BasicData from '~icons/knotdots/basic-data';
+	import Book from '~icons/knotdots/book-open-outline';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
@@ -21,10 +22,12 @@
 	import Link from '~icons/knotdots/link';
 	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
+	import Measure from '~icons/knotdots/measure';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Progress from '~icons/knotdots/progress';
+	import Rule from '~icons/knotdots/rule-database';
 	import Star from '~icons/knotdots/star';
 	import Summary from '~icons/knotdots/summary';
 	import Text from '~icons/knotdots/text';
@@ -49,7 +52,6 @@
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
-		isObjectCollectionContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -67,6 +69,7 @@
 		isTaskContainer,
 		isTemplateContainer,
 		type ObjectCollectionObjectType,
+		objectCollectionObjectTypes,
 		type PayloadType,
 		payloadTypes,
 		predicates,
@@ -232,7 +235,9 @@
 			!hasSection(parentContainer, relatedContainers).some(isProgressContainer)
 	);
 
-	let mayAddChapter = $derived(isReportContainer(parentContainer));
+	let mayAddChapter = $derived(
+		isReportContainer(parentContainer) || isProgramContainer(parentContainer)
+	);
 
 	let mayAddIgniteVideo = $derived(
 		isHelpContainer(parentContainer) ||
@@ -245,9 +250,10 @@
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
-	// Programs offer one object section per scoped goal template. The templates are
-	// requested once the menu has been opened; the menu store itself must not be a
-	// dependency because item registration updates it while the menu is open.
+	// Programs offer one object section per part type they allow, bound to each
+	// scoped template of that type. The templates are requested once the menu has
+	// been opened; the menu store itself must not be a dependency because item
+	// registration updates it while the menu is open.
 	let templatesRequested = $state(false);
 
 	$effect(() => {
@@ -256,17 +262,27 @@
 		}
 	});
 
-	const goalTemplatesResource = resource(
+	let objectTypes: ObjectCollectionObjectType[] = $derived(
+		isProgramContainer(parentContainer)
+			? parentContainer.payload.chapterType.flatMap((type) => {
+					const parsed = objectCollectionObjectTypes.safeParse(type);
+					return parsed.success ? [parsed.data] : [];
+				})
+			: []
+	);
+
+	const objectTemplatesResource = resource(
 		[
 			() => templatesRequested,
 			() =>
-				isProgramContainer(parentContainer) &&
+				objectTypes.length > 0 &&
 				createFeatureDecisions(page.data.features).useTemplateWorkspaces(),
 			() => parentContainer.guid,
-			() => parentContainer.organization
+			() => parentContainer.organization,
+			() => objectTypes.join('\u0000')
 		],
 		async (
-			[requested, enabled, scopeGuid, organizationGuid],
+			[requested, enabled, scopeGuid, organizationGuid, typesKey],
 			_,
 			{ signal }
 		): Promise<Container<TemplatePayload>[]> => {
@@ -277,55 +293,64 @@
 				{
 					availableIn: scopeGuid,
 					organization: [organizationGuid],
-					payloadType: [payloadTypes.enum.goal],
+					payloadType: typesKey.split('\u0000'),
 					template: 'true',
 					templateRoot: true
 				},
 				'alpha',
 				{ signal }
 			);
-			return containers.filter(isTemplateContainer).filter((container) =>
-				isScopedTemplateRoot(container, {
-					organizationGuid,
-					payloadType: payloadTypes.enum.goal,
-					scopeGuid
-				})
-			);
+			return containers
+				.filter(isTemplateContainer)
+				.filter((container) => isScopedTemplateRoot(container, { organizationGuid, scopeGuid }));
 		}
 	);
 
-	let objectCollections = $derived(
-		hasSection(parentContainer, relatedContainers).filter(isObjectCollectionContainer)
-	);
+	const objectTypeIcons: Record<ObjectCollectionObjectType, typeof Plus> = {
+		[payloadTypes.enum.goal]: Goal,
+		[payloadTypes.enum.knowledge]: Book,
+		[payloadTypes.enum.measure]: Measure,
+		[payloadTypes.enum.rule]: Rule,
+		[payloadTypes.enum.simple_measure]: Measure
+	};
 
-	let programOptions: SectionOption[] = $derived.by(() => {
-		if (goalTemplatesResource.loading) {
+	const objectTypeLabels: Record<ObjectCollectionObjectType, string> = {
+		[payloadTypes.enum.goal]: 'goals',
+		[payloadTypes.enum.knowledge]: 'knowledge',
+		[payloadTypes.enum.measure]: 'measures',
+		[payloadTypes.enum.rule]: 'rules',
+		[payloadTypes.enum.simple_measure]: 'simple_measure'
+	};
+
+	let objectOptions: SectionOption[] = $derived.by(() => {
+		if (objectTemplatesResource.loading) {
 			return [];
 		}
-		const templates = goalTemplatesResource.current ?? [];
-		if (templates.length > 0) {
-			return templates
-				.filter((t) => !objectCollections.some((s) => s.payload.newItemTemplate === t.guid))
-				.map((t) => ({
-					icon: Goal,
-					label: t.payload.title,
-					newItemTemplate: t.guid,
-					objectType: payloadTypes.enum.goal,
+		const templates = objectTemplatesResource.current ?? [];
+		const templatesRequired = createFeatureDecisions(page.data.features).useTemplateWorkspaces();
+		return objectTypes.flatMap((objectType) => {
+			const templatesOfType = templates.filter(({ payload }) => payload.type === objectType);
+			if (templatesOfType.length > 0) {
+				return templatesOfType.map((template) => ({
+					icon: objectTypeIcons[objectType],
+					label: template.payload.title,
+					newItemTemplate: template.guid,
+					objectType,
 					value: payloadTypes.enum.object_collection
 				}));
-		}
-		return objectCollections.some(
-			(s) => s.payload.objectType === payloadTypes.enum.goal && !s.payload.newItemTemplate
-		)
-			? []
-			: [
-					{
-						icon: Goal,
-						label: $_('goals'),
-						objectType: payloadTypes.enum.goal,
-						value: payloadTypes.enum.object_collection
-					}
-				];
+			}
+			// Without templates an object can only be created when templates are optional.
+			return templatesRequired
+				? []
+				: [
+						{
+							icon: objectTypeIcons[objectType],
+							label: $_(objectTypeLabels[objectType]),
+							objectType,
+							value: payloadTypes.enum.object_collection
+						}
+					];
+		});
 	});
 
 	let sectionOptions: SectionOption[] = $derived(
@@ -523,7 +548,11 @@
 		].toSorted((a, b) => a.label.localeCompare(b.label))
 	);
 
-	let options = $derived(isProgramContainer(parentContainer) ? programOptions : sectionOptions);
+	let options = $derived(
+		isProgramContainer(parentContainer)
+			? [...sectionOptions, ...objectOptions].toSorted((a, b) => a.label.localeCompare(b.label))
+			: sectionOptions
+	);
 </script>
 
 <div class="dropdown" class:dropdown--compact={compact} use:popperRef>
@@ -542,7 +571,7 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.objectType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer)}
 						<li class="menu-item">
 							<button
