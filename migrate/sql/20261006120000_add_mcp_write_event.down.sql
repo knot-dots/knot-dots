@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP TABLE IF EXISTS mcp_write_event;
+
+COMMIT;
