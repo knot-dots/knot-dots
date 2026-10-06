@@ -11,6 +11,7 @@
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import PropertiesPanel from '$lib/components/PropertiesPanel.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
@@ -138,7 +139,11 @@
 
 		{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				{@render properties?.()}
+				<PropertiesPanel
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
 			</form>
 		{/if}
 	</article>

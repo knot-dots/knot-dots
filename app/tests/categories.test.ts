@@ -123,21 +123,14 @@ test.describe('Categories', () => {
 		}
 	});
 
-	test('custom categories can be used as filter', async ({
-		goalsBoard,
-		testGoal,
-		testCategoryWithTerms
-	}) => {
-		const sharedCategoryTitle = testCategoryWithTerms.category.payload.title;
-		const sharedTermNames = testCategoryWithTerms.termNames;
-
+	test('custom categories can be used as filter', async ({ goalsBoard, testGoal }) => {
 		const openSharedCategoryFilter = async () => {
-			const termCheckbox = goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] });
+			const termCheckbox = goalsBoard.page.getByRole('checkbox', { name: 'Keine Armut' });
 			if (await termCheckbox.isVisible()) {
 				return;
 			}
 
-			const categoryButton = goalsBoard.page.getByRole('button', { name: sharedCategoryTitle });
+			const categoryButton = goalsBoard.page.getByRole('button', { name: 'SDG' });
 			if (!(await categoryButton.isVisible())) {
 				await goalsBoard.page.getByRole('button', { name: 'Filter' }).click();
 			}
@@ -153,9 +146,9 @@ test.describe('Categories', () => {
 
 		await goalsBoard.overlay.editModeToggle.check();
 		await goalsBoard.overlay.disclosePropertiesButton.click();
-		await goalsBoard.overlay.locator.getByLabel(sharedCategoryTitle).click();
+		await goalsBoard.overlay.locator.getByLabel('SDG').click();
 		const saveResponse = goalsBoard.page.waitForResponse((r) => r.url().includes('/revision'));
-		await goalsBoard.overlay.locator.getByRole('checkbox', { name: sharedTermNames[0] }).check();
+		await goalsBoard.overlay.locator.getByRole('checkbox', { name: 'Keine Armut' }).check();
 		await saveResponse;
 		await goalsBoard.overlay.closeButton.click();
 		await expect(goalsBoard.overlay.locator).not.toBeVisible();
@@ -164,11 +157,11 @@ test.describe('Categories', () => {
 		await expect(goalsBoard.card(testGoal.payload.title)).toBeVisible();
 
 		await openSharedCategoryFilter();
-		await goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[1] }).check();
+		await goalsBoard.page.getByRole('checkbox', { name: 'Kein Hunger' }).check();
 		await expect(goalsBoard.card(testGoal.payload.title)).not.toBeVisible();
 
 		await openSharedCategoryFilter();
-		await goalsBoard.page.getByRole('checkbox', { name: sharedTermNames[0] }).check();
+		await goalsBoard.page.getByRole('checkbox', { name: 'Keine Armut' }).check();
 		await expect(goalsBoard.card(testGoal.payload.title)).toBeVisible();
 	});
 });

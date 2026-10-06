@@ -3131,6 +3131,14 @@ export function isContainerWithHierarchyLevel(
 	return hasProperty(container.payload, 'hierarchyLevel');
 }
 
+export type ContainerWithImage = Container<AnyPayload & { image: string | undefined }>;
+
+export function isContainerWithImage(
+	container: Container<AnyPayload> | NewContainer
+): container is ContainerWithImage {
+	return hasProperty(container.payload, 'image');
+}
+
 export type ContainerWithName = Container<AnyPayload & { name: string | undefined }>;
 
 export function isContainerWithName(

@@ -16,6 +16,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import PageProperties from '$lib/components/PageProperties.svelte';
 	import PropertiesDialog from '$lib/components/PropertiesDialog.svelte';
+	import PropertiesPanel from '$lib/components/PropertiesPanel.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
@@ -173,12 +174,10 @@
 
 			{#if useNewPropertyPanel}
 				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<PageProperties
+					<PropertiesPanel
 						bind:container
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
-						{relatedContainers}
-						{revisions}
 					/>
 				</form>
 			{:else}
