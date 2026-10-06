@@ -715,6 +715,7 @@
 	"resource_table.no_subordinate_goals": "No subordinate goals",
 	"resource_table.subordinate_measures": "Subordinate measures",
 	"resource_table.no_subordinate_measures": "No subordinate measures",
+	"review_dialog_title": "Select programs",
 	"role": {
 		"admin": "Admin",
 		"administrator": "Administrator",

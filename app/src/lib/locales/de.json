@@ -715,6 +715,7 @@
 	"resource_table.no_subordinate_goals": "Keine nachgeordneten Ziele",
 	"resource_table.subordinate_measures": "Nachgeordnete Maßnahmen",
 	"resource_table.no_subordinate_measures": "Keine nachgeordneten Maßnahmen",
+	"review_dialog_title": "Programme auswählen",
 	"role": {
 		"admin": "Admin",
 		"administrator": "Administration",
