@@ -10,6 +10,7 @@
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
+	import TrafficLight from '~icons/knotdots/traffic-light';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -32,6 +33,7 @@
 	import OverlayFullscreenToggle from '$lib/components/OverlayFullscreenToggle.svelte';
 	import OverlayTitle from '$lib/components/OverlayTitle.svelte';
 	import ProgramWorkspaces from '$lib/components/ProgramWorkspaces.svelte';
+	import ReviewBar from '$lib/components/ReviewBar.svelte';
 	import RelationTypeFilterDropDown from '$lib/components/RelationTypeFilterDropDown.svelte';
 	import RoleFilterDropDown from '$lib/components/RoleFilterDropDown.svelte';
 	import Search from '$lib/components/Search.svelte';
@@ -40,6 +42,7 @@
 	import Workspaces from '$lib/components/Workspaces.svelte';
 	import WorkspacesMegaMenu from '$lib/components/WorkspacesMegaMenu.svelte';
 	import { getFavoriteListContext } from '$lib/contexts/favoriteList';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isGoalContainer,
@@ -92,6 +95,8 @@
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
 
+	const review = getReviewContext();
+
 	let container = $derived.by(() => {
 		const base = overlay ? $overlayStore?.container : page.data.container;
 		const optimistic = base && $lastUpdatedContainers.get(base.guid);
@@ -109,6 +114,18 @@
 			label: $_('compare_data'),
 			expanded:
 				untrack(() => $compareState.selectedMunicipalities.length > 0) &&
+				(compare || isReportContainer(container))
+		})
+	);
+
+	let reviewBar = $derived(
+		createDisclosure({
+			label: $_('review'),
+			expanded:
+				untrack(
+					() =>
+						review.selectedPrograms.length > 0 && $compareState.selectedMunicipalities.length === 0
+				) &&
 				(compare || isReportContainer(container))
 		})
 	);
@@ -315,7 +332,10 @@
 	{#if facets.size > 0}
 		<button
 			class="dropdown-button dropdown-button--command"
-			onclick={() => sortBar.close()}
+			onclick={() => {
+				sortBar.close();
+				reviewBar.close();
+			}}
 			type="button"
 			{@attach tooltip($_('filter'))}
 			use:filterBar.button
@@ -331,7 +351,10 @@
 	{#if sortOptions.length > 1 && (facets.size > 0 || search)}
 		<button
 			class="dropdown-button dropdown-button--command"
-			onclick={() => filterBar.close()}
+			onclick={() => {
+				filterBar.close();
+				reviewBar.close();
+			}}
 			type="button"
 			{@attach tooltip($_('sort'))}
 			use:sortBar.button
@@ -343,12 +366,27 @@
 
 	{#if compare || (container && isReportContainer(container))}
 		<button
+			class="button button-xs button-alternate system-primary traffic-light-button"
+			type="button"
+			use:reviewBar.button
+			onclick={() => {
+				filterBar.close();
+				sortBar.close();
+				compareBar.close();
+			}}
+		>
+			<TrafficLight />
+			<span>{$_('review')}</span>
+		</button>
+
+		<button
 			class="button button-xs button-primary system-primary"
 			type="button"
 			use:compareBar.button
 			onclick={() => {
 				filterBar.close();
 				sortBar.close();
+				reviewBar.close();
 			}}
 		>
 			<Compare />
@@ -357,7 +395,7 @@
 	{/if}
 </div>
 
-{#if $filterBar.expanded || $sortBar.expanded || $compareBar.expanded}
+{#if $filterBar.expanded || $sortBar.expanded || $compareBar.expanded || $reviewBar.expanded}
 	<div class="filter-and-sort" data-sveltekit-keepfocus>
 		{#if $filterBar.expanded}
 			<fieldset use:filterBar.panel>
@@ -422,8 +460,10 @@
 					</label>
 				{/each}
 			</fieldset>
-		{:else}
+		{:else if $compareBar.expanded}
 			<CompareBar disclosure={compareBar} />
+		{:else}
+			<ReviewBar disclosure={reviewBar} />
 		{/if}
 	</div>
 {/if}
@@ -462,7 +502,7 @@
 	}
 
 	.sidebar-toggle {
-		color: var(--color-text-muted);
+		color: var(--color-text-default);
 	}
 
 	.actions {
@@ -508,6 +548,12 @@
 
 		height: 2rem;
 		position: relative;
+	}
+
+	.button.traffic-light-button {
+		--button-start-icon-color: var(--color-icon-default);
+
+		color: var(--color-text-default);
 	}
 
 	.filter-and-sort {

@@ -715,7 +715,11 @@
 	"resource_table.no_subordinate_goals": "Keine nachgeordneten Ziele",
 	"resource_table.subordinate_measures": "Nachgeordnete Maßnahmen",
 	"resource_table.no_subordinate_measures": "Keine nachgeordneten Maßnahmen",
+	"review": "Überprüfen",
+	"review_add_program": "Programm hinzufügen",
+	"review_clear_all": "Alle entfernen",
 	"review_dialog_title": "Programme auswählen",
+	"review_with": "Überprüfen anhand",
 	"role": {
 		"admin": "Admin",
 		"administrator": "Administration",
