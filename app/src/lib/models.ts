@@ -3634,3 +3634,33 @@ export function sortIndicatorsByRelevanceForGoalOrMeasure(
 		.toSorted((a, b) => b.score - a.score)
 		.map(({ indicator }) => indicator);
 }
+
+// Slope of the least-squares regression line through [year, value] points,
+// e.g. wanted values of objectives or values of actual data, in value units
+// per year. Undefined if there are fewer than two distinct years.
+export function linearRegressionSlope(points: Array<[number, number]>): number | undefined {
+	if (points.length < 2) {
+		return undefined;
+	}
+
+	const meanX = points.reduce((sum, [x]) => sum + x, 0) / points.length;
+	const meanY = points.reduce((sum, [, y]) => sum + y, 0) / points.length;
+
+	let numerator = 0;
+	let denominator = 0;
+	for (const [x, y] of points) {
+		numerator += (x - meanX) * (y - meanY);
+		denominator += (x - meanX) ** 2;
+	}
+
+	return denominator === 0 ? undefined : numerator / denominator;
+}
+
+export type TrendDirection = -1 | 0 | 1;
+
+// Direction of the regression line through [year, value] points. Undefined
+// if no trend can be determined, which is different from a flat trend.
+export function trendDirection(points: Array<[number, number]>): TrendDirection | undefined {
+	const slope = linearRegressionSlope(points);
+	return slope === undefined ? undefined : (Math.sign(slope) as TrendDirection);
+}
