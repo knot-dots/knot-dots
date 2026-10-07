@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
+	import ArrowLeft from '~icons/flowbite/arrow-left-outline';
+	import Edit from '~icons/flowbite/edit-outline';
 	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import fetchMembers from '$lib/client/fetchMembers';
@@ -22,6 +24,7 @@
 	import EditableRuleStatus from '$lib/components/EditableRuleStatus.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
+	import PropertiesConfiguration from '$lib/components/PropertiesConfiguration.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		anyPayload,
@@ -42,6 +45,7 @@
 		predicates,
 		propertyRegistry
 	} from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -50,15 +54,17 @@
 
 	let { container = $bindable(), editable = false }: Props = $props();
 
-	const organization = $derived(
-		page.data.organizations.find((o) => o.guid === container.organization)
-	);
+	const organization = $derived(page.data.currentOrganization);
 
 	const payloadSchema = $derived(z.getDiscriminatedOption(anyPayload, container.payload.type));
 
 	const configuration = $derived(
-		organization?.payload.propertiesConfiguration[container.payload.type] ??
-			payloadRegistry.get(payloadSchema)?.layout?.detail ?? { headerAndPanel: [], onlyPanel: [] }
+		organization.payload.propertiesConfiguration[container.payload.type] ??
+			payloadRegistry.get(payloadSchema)?.layout?.detail ?? {
+				headerAndPanel: [],
+				onlyPanel: [],
+				unused: []
+			}
 	);
 
 	const isPartOfMeasure = $derived(
@@ -66,93 +72,123 @@
 	);
 
 	const detailView = getDetailViewContext();
+
+	let configure = $state(false);
 </script>
 
 {#if configuration && detailView && detailView.properties.open}
 	<div {...detailView.properties.content} class="details-properties">
 		<h2>
-			{$_('properties')}
-			<button class="action-button" onclick={detailView.properties.trigger.onclick} type="button">
-				<Close />
-				<span class="is-visually-hidden">{$_('close')}</span>
-			</button>
+			{#if configure}
+				<button class="action-button" onclick={() => (configure = false)} type="button">
+					<ArrowLeft />
+					<span class="is-visually-hidden">{$_('back')}</span>
+				</button>
+				{$_('configure_properties')}
+			{:else}
+				{$_('properties')}
+
+				{#if $ability.can('update', organization)}
+					<button
+						class="action-button action-button--configure"
+						onclick={() => (configure = true)}
+						type="button"
+					>
+						<Edit />
+						<span class="is-visually-hidden">{$_('configure')}</span>
+					</button>
+				{/if}
+
+				<button class="action-button" onclick={detailView.properties.trigger.onclick} type="button">
+					<Close />
+					<span class="is-visually-hidden">{$_('close')}</span>
+				</button>
+			{/if}
 		</h2>
 
-		{#each [...configuration.headerAndPanel, ...configuration.onlyPanel] as item (item)}
-			{#if item == 'assignee' && isTaskContainer(container)}
-				{const managedBy = $derived(container.managed_by[0])}
-				{const candidatesPromise = $derived(fetchMembers(managedBy))}
-				<EditableAssignee bind:value={container.payload.assignee} {candidatesPromise} {editable} />
-			{:else if item == 'cardStyle' && isTeaserContainer(container)}
-				<EditableCardStyle
-					bind:value={container.payload.cardStyle}
-					{editable}
-					label={$_('card_style')}
-				/>
-			{:else if item.startsWith('category.') && 'category' in payloadSchema.shape && isContainerWithCategory(container)}
-				{const key = item.split('.')[1]}
-				{const id = crypto.randomUUID()}
-				<div class="label" {id}>{page.data.categoryContext.labels.get(key)}</div>
-				<CustomCategoryDropdown
-					bind:value={
-						() => (container as ContainerWithCategory).payload['category'][key] ?? [],
-						(v) => ((container as ContainerWithCategory).payload.category[key] = v)
-					}
-					{editable}
-					labelledBy={id}
-					options={page.data.categoryContext.options[key] ?? []}
-				/>
-			{:else if item == 'image' && isContainerWithImage(container)}
-				{const key = item as keyof typeof payloadSchema.shape}
-				{const schema = payloadSchema.shape[key]}
-				{const meta = propertyRegistry.get(schema)}
-				<EditableImage
-					bind:value={container.payload.image}
-					{editable}
-					label={$_(meta?.label ?? 'image')}
-				/>
-			{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
-				<EditableMeasure bind:container {editable} />
-			{:else if item == 'organization'}
-				<EditableOrganization bind:value={container.organization} {editable} />
-			{:else if item == 'organizational_unit'}
-				<EditableOrganizationalUnit
-					bind:value={container.organizational_unit}
-					{editable}
-					organization={container.organization}
-				/>
-			{:else if item == 'parent'}
-				<EditableParent bind:container {editable} />
-			{:else if item == 'pdf' && isProgramContainer(container)}
-				<EditablePDF bind:value={container.payload.pdf} {editable} />
-			{:else if item == 'program' && !isPartOfMeasure}
-				<EditableProgram bind:container {editable} />
-			{:else if item == 'status'}
-				{#if isGoalContainer(container)}
-					<EditableGoalStatus bind:value={container.payload.status} {editable} />
-				{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
-					<EditableStatus bind:value={container.payload.status} {editable} />
-				{:else if isProgramContainer(container)}
-					<EditableProgramStatus bind:value={container.payload.status} {editable} />
-				{:else if isRuleContainer(container)}
-					<EditableRuleStatus bind:value={container.payload.status} {editable} />
-				{:else if isTaskContainer(container)}
-					<EditableTaskStatus bind:value={container.payload.status} {editable} />
+		{#if configure && $ability.can('update', organization)}
+			<PropertiesConfiguration {configuration} {container} {payloadSchema} />
+		{:else}
+			{#each [...configuration.headerAndPanel, ...configuration.onlyPanel] as item (item)}
+				{#if item == 'assignee' && isTaskContainer(container)}
+					{const managedBy = $derived(container.managed_by[0])}
+					{const candidatesPromise = $derived(fetchMembers(managedBy))}
+					<EditableAssignee
+						bind:value={container.payload.assignee}
+						{candidatesPromise}
+						{editable}
+					/>
+				{:else if item == 'cardStyle' && isTeaserContainer(container)}
+					<EditableCardStyle
+						bind:value={container.payload.cardStyle}
+						{editable}
+						label={$_('card_style')}
+					/>
+				{:else if item.startsWith('category.') && 'category' in payloadSchema.shape && isContainerWithCategory(container)}
+					{const key = item.split('.')[1]}
+					{const id = crypto.randomUUID()}
+					<div class="label" {id}>{page.data.categoryContext.labels.get(key)}</div>
+					<CustomCategoryDropdown
+						bind:value={
+							() => (container as ContainerWithCategory).payload['category'][key] ?? [],
+							(v) => ((container as ContainerWithCategory).payload.category[key] = v)
+						}
+						{editable}
+						labelledBy={id}
+						options={page.data.categoryContext.options[key] ?? []}
+					/>
+				{:else if item == 'image' && isContainerWithImage(container)}
+					{const key = item as keyof typeof payloadSchema.shape}
+					{const schema = payloadSchema.shape[key]}
+					{const meta = propertyRegistry.get(schema)}
+					<EditableImage
+						bind:value={container.payload.image}
+						{editable}
+						label={$_(meta?.label ?? 'image')}
+					/>
+				{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
+					<EditableMeasure bind:container {editable} />
+				{:else if item == 'organization'}
+					<EditableOrganization bind:value={container.organization} {editable} />
+				{:else if item == 'organizational_unit'}
+					<EditableOrganizationalUnit
+						bind:value={container.organizational_unit}
+						{editable}
+						organization={container.organization}
+					/>
+				{:else if item == 'parent'}
+					<EditableParent bind:container {editable} />
+				{:else if item == 'pdf' && isProgramContainer(container)}
+					<EditablePDF bind:value={container.payload.pdf} {editable} />
+				{:else if item == 'program' && !isPartOfMeasure}
+					<EditableProgram bind:container {editable} />
+				{:else if item == 'status'}
+					{#if isGoalContainer(container)}
+						<EditableGoalStatus bind:value={container.payload.status} {editable} />
+					{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+						<EditableStatus bind:value={container.payload.status} {editable} />
+					{:else if isProgramContainer(container)}
+						<EditableProgramStatus bind:value={container.payload.status} {editable} />
+					{:else if isRuleContainer(container)}
+						<EditableRuleStatus bind:value={container.payload.status} {editable} />
+					{:else if isTaskContainer(container)}
+						<EditableTaskStatus bind:value={container.payload.status} {editable} />
+					{/if}
+				{:else if item == 'style' && isTeaserContainer(container)}
+					<EditableLinkStyle
+						bind:value={container.payload.style}
+						{editable}
+						label={$_('teaser_link_style')}
+					/>
+				{:else if item == 'unit' && isIndicatorContainer(container)}
+					<EditableIndicatorUnit bind:value={container.payload.unit} {editable} />
+				{:else if item in payloadSchema.shape}
+					{const key = item as keyof typeof payloadSchema.shape}
+					{const schema = payloadSchema.shape[key]}
+					<DefaultEditableProperty bind:value={container.payload[key]} {editable} {schema} />
 				{/if}
-			{:else if item == 'style' && isTeaserContainer(container)}
-				<EditableLinkStyle
-					bind:value={container.payload.style}
-					{editable}
-					label={$_('teaser_link_style')}
-				/>
-			{:else if item == 'unit' && isIndicatorContainer(container)}
-				<EditableIndicatorUnit bind:value={container.payload.unit} {editable} />
-			{:else if item in payloadSchema.shape}
-				{const key = item as keyof typeof payloadSchema.shape}
-				{const schema = payloadSchema.shape[key]}
-				<DefaultEditableProperty bind:value={container.payload[key]} {editable} {schema} />
-			{/if}
-		{/each}
+			{/each}
+		{/if}
 	</div>
 {/if}
 
@@ -187,8 +223,12 @@
 		display: flex;
 		font-size: 1rem;
 		font-weight: 500;
-		justify-content: space-between;
+		gap: 0.375rem;
 		line-height: 1.25;
 		margin-bottom: 2.5rem;
+	}
+
+	.action-button.action-button--configure {
+		margin-left: auto;
 	}
 </style>
