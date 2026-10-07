@@ -1,8 +1,11 @@
 <script lang="ts" generics="T">
+	import type { Snippet } from 'svelte';
+	import { createPopover } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	interface Props {
+		button?: Snippet<[ReturnType<typeof createPopover>]>;
 		compact?: boolean;
 		labelledBy?: string;
 		offset?: [number, number];
@@ -11,6 +14,7 @@
 	}
 
 	let {
+		button,
 		compact = false,
 		labelledBy,
 		offset = [0, 4],
@@ -19,24 +23,24 @@
 	}: Props = $props();
 </script>
 
-<Dropdown {offset}>
-	{#snippet button(popover)}
-		<button
-			aria-labelledby={labelledBy}
-			class="dropdown-button dropdown-button--select"
-			type="button"
-			use:popover.button
-		>
-			<span class="selected" class:truncated={compact}>
-				{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
-					<span class="value truncated" class:value--compact={compact}>{selectedOption.label}</span>
-				{:else}
-					{$_('empty')}
-				{/each}
-			</span>
-		</button>
-	{/snippet}
+{#snippet defaultButton(popover: ReturnType<typeof createPopover>)}
+	<button
+		aria-labelledby={labelledBy}
+		class="dropdown-button dropdown-button--select"
+		type="button"
+		use:popover.button
+	>
+		<span class="selected" class:truncated={compact}>
+			{#each options.filter( (o) => value.includes(o.value) ) as selectedOption (selectedOption.value)}
+				<span class="value truncated" class:value--compact={compact}>{selectedOption.label}</span>
+			{:else}
+				{$_('empty')}
+			{/each}
+		</span>
+	</button>
+{/snippet}
 
+<Dropdown button={button ?? defaultButton} {offset}>
 	{#snippet panel()}
 		<fieldset aria-labelledby={labelledBy} class="listbox">
 			{#each options as option (option.value)}
