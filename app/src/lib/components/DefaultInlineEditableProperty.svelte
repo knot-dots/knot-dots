@@ -131,6 +131,11 @@
 			{...schemaInfo.constraints}
 			type="number"
 		/>
+	{:else if schemaInfo.baseSchema instanceof z.ZodLiteral}
+		<span
+			{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
+			class="badge badge--large">{$_(String(value))}</span
+		>
 	{/if}
 {:else}
 	{#if value === undefined}
@@ -174,6 +179,13 @@
 		>
 			<CalendarMonth />
 			{$date(new Date(value), { dateStyle: 'medium', timeStyle: 'short' })}
+		</span>
+	{:else if schemaInfo.baseSchema instanceof z.ZodLiteral}
+		<span
+			{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
+			class="badge badge--large"
+		>
+			{$_(String(value))}
 		</span>
 	{:else}
 		<span

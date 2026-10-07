@@ -75,6 +75,8 @@
 		<input aria-labelledby={id} bind:value {...schemaInfo.constraints} type="text" />
 	{:else if schemaInfo.baseSchema instanceof z.ZodNumber}
 		<input aria-labelledby={id} bind:value {...schemaInfo.constraints} type="number" />
+	{:else if schemaInfo.baseSchema instanceof z.ZodLiteral}
+		<div class="value">{$_(String(value))}</div>
 	{/if}
 {:else}
 	{#if value === undefined}
@@ -93,6 +95,8 @@
 		<div class="value">{$date(new Date(value), { dateStyle: 'medium' })}</div>
 	{:else if schemaInfo.baseSchema instanceof z.ZodStringFormat && schemaInfo.baseSchema.def.format == 'datetime'}
 		<div class="value">{$date(new Date(value), { dateStyle: 'medium', timeStyle: 'short' })}</div>
+	{:else if schemaInfo.baseSchema instanceof z.ZodLiteral}
+		<div class="value">{$_(String(value))}</div>
 	{:else}
 		<div class="value">{value}</div>
 	{/if}

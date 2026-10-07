@@ -13,7 +13,13 @@ describe('inspectSchema', () => {
 	test.for(registeredProperties)(
 		`determines an unwrapped baseSchema for %s.%s`,
 		([, , propertySchema]) => {
-			const expectedBaseSchemaTypes = [z.ZodEnum, z.ZodNumber, z.ZodString, z.ZodStringFormat];
+			const expectedBaseSchemaTypes = [
+				z.ZodEnum,
+				z.ZodLiteral,
+				z.ZodNumber,
+				z.ZodString,
+				z.ZodStringFormat
+			];
 
 			const schemaInfo = inspectSchema(propertySchema);
 
