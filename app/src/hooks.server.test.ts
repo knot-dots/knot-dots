@@ -2,7 +2,7 @@ import { encode } from '@auth/core/jwt';
 import type { RequestEvent } from '@sveltejs/kit';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { withFeatures } from '$lib/server/features';
-import { withAuthentication } from './hooks.server';
+import { withAuthentication, withCacheControl } from './hooks.server';
 
 const mocks = vi.hoisted(() => ({
 	createOrUpdateUser: vi.fn(),
@@ -125,4 +125,30 @@ test('derives the grants from member roles while the matrix is off', async () =>
 	expect(session?.user?.grants?.self?.read).toEqual(['org-1']);
 	expect(session?.user?.grants?.subordinates?.create).toEqual(['org-1']);
 	expect(mocks.getAllGrantsOfUser).not.toHaveBeenCalled();
+});
+
+function resolveWithCacheControl(response: Response) {
+	return withCacheControl({ event: {} as never, resolve: async () => response });
+}
+
+test('forbids caching of responses without Cache-Control', async () => {
+	const response = await resolveWithCacheControl(new Response('<html></html>', { status: 200 }));
+
+	expect(response.headers.get('cache-control')).toBe('private, no-store');
+});
+
+test('keeps Cache-Control set by the route', async () => {
+	const response = await resolveWithCacheControl(
+		new Response('{}', { headers: { 'Cache-Control': 'public, max-age=60' } })
+	);
+
+	expect(response.headers.get('cache-control')).toBe('public, max-age=60');
+});
+
+test('forbids caching of responses with immutable headers', async () => {
+	const response = await resolveWithCacheControl(Response.redirect('https://example.org/', 302));
+
+	expect(response.status).toBe(302);
+	expect(response.headers.get('location')).toBe('https://example.org/');
+	expect(response.headers.get('cache-control')).toBe('private, no-store');
 });
