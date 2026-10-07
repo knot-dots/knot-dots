@@ -49,11 +49,11 @@
 			checked={value.includes(option.value)}
 			onchange={(event) => toggleSelection(option.value, event.currentTarget.checked)}
 		/>
-		<span class="option-label">
+		<span class="badge badge--gray">
 			{#if iconSrc}
 				<img alt="" class="option-icon" src={iconSrc} />
 			{/if}
-			<span class="badge badge--gray truncated">{option.label}</span>
+			<span class="truncated">{option.label}</span>
 			{#if option.count !== undefined}
 				<span class="option-count">({option.count})</span>
 			{/if}
@@ -89,11 +89,11 @@
 					checked={value.includes(sub.value)}
 					onchange={(event) => toggleSelection(sub.value, event.currentTarget.checked)}
 				/>
-				<span class="option-label">
+				<span class="badge badge--gray">
 					{#if subIcon}
 						<img alt="" class="option-icon" src={subIcon} />
 					{/if}
-					<span class="badge badge--gray truncated">{sub.label}</span>
+					<span class="truncated">{sub.label}</span>
 					{#if sub.count !== undefined}
 						<span class="option-count">({sub.count})</span>
 					{/if}
@@ -104,14 +104,6 @@
 {/if}
 
 <style>
-	.option-label {
-		align-items: center;
-		display: inline-flex;
-		gap: 0.25rem;
-		min-width: 0;
-		overflow: hidden;
-	}
-
 	.option {
 		display: flex;
 		gap: 0.35rem;
@@ -188,6 +180,6 @@
 	}
 
 	.badge {
-		display: inline;
+		min-width: 0;
 	}
 </style>

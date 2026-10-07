@@ -336,6 +336,7 @@
 	/* Icons */
 	--icon--flowbite--chevron-down-outline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m8 10l4 4l4-4'/%3E%3C/svg%3E");
 	--icon--flowbite--chevron-up-outline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m16 14l-4-4l-4 4'/%3E%3C/svg%3E");
+	--icon--flowbite--chevron-sort-outline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' stroke='black' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m8 15l4 4l4-4m0-6l-4-4l-4 4'/%3E%3C/svg%3E");
 }
 
 /* Box sizing rules */
@@ -1891,7 +1892,7 @@ h4.details-heading {
 	color: var(--dropdown-button-default-color, var(--color-text-strong));
 	display: flex;
 	font-weight: 500;
-	gap: 0.25rem;
+	gap: var(--dropdown-button-gap, 0.25rem);
 	justify-content: space-between;
 	min-height: var(--dropdown-button-min-height, auto);
 	padding: var(
@@ -1983,7 +1984,10 @@ h4.details-heading {
 }
 
 .dropdown-button.dropdown-button--select[aria-expanded='true'] {
-	--dropdown-button-chevron-icon: var(--icon--flowbite--chevron-up-outline);
+	--dropdown-button-chevron-icon: var(
+		--dropdown-button-expanded-chevron-icon,
+		var(--icon--flowbite--chevron-up-outline)
+	);
 }
 
 .dropdown-panel {

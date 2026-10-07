@@ -1,0 +1,171 @@
+<script lang="ts">
+	import type { createPopover } from 'svelte-headlessui';
+	import { _ } from 'svelte-i18n';
+	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
+	import { createIsPartOfOptionsRequest } from '$lib/client/isPartOfOptions';
+	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
+	import {
+		type AnyInitialPayload,
+		type Container,
+		findDescendants,
+		type NewContainer,
+		overlayKey,
+		overlayURL,
+		payloadTypes,
+		predicates
+	} from '$lib/models';
+
+	interface Props {
+		container: Container | NewContainer<AnyInitialPayload>;
+		editable?: boolean;
+		labelledBy?: string;
+		offset?: [number, number];
+	}
+
+	let { container = $bindable(), editable = false, labelledBy, offset }: Props = $props();
+
+	let programGuids = $derived(
+		container.relation
+			.filter(({ predicate }) => predicate === predicates.enum['is-part-of-program'])
+			.map(({ object }) => object)
+			.filter((object): object is string => object != undefined)
+	);
+	let measureGuid = $derived(
+		container.relation.find(
+			({ object, predicate }) =>
+				predicate === predicates.enum['is-part-of-measure'] &&
+				(!('guid' in container) || object !== container.guid)
+		)?.object
+	);
+	let payloadType = $derived(container.payload.type);
+
+	let isPartOfOptionsRequest = $derived(
+		createIsPartOfOptionsRequest(payloadType, container.organization, measureGuid, programGuids[0])
+	);
+
+	let isPartOfObject = $derived(
+		(options: Array<{ value: string }>) =>
+			container.relation.find(
+				(r) =>
+					r.predicate === predicates.enum['is-part-of'] &&
+					options.some(({ value }) => value === r.object)
+			)?.object ?? ''
+	);
+
+	function set(value: string) {
+		const idx = container.relation.findIndex(
+			({ predicate, subject }) =>
+				predicate === predicates.enum['is-part-of'] &&
+				('guid' in container ? subject === container.guid : true)
+		);
+		const next = [
+			...container.relation.slice(0, idx),
+			...(value
+				? [
+						{
+							object: value,
+							position: 0,
+							predicate: predicates.enum['is-part-of'],
+							...('guid' in container ? { subject: container.guid } : {})
+						}
+					]
+				: []),
+			...container.relation.slice(idx + 1)
+		];
+		// Avoid pointless reassignment
+		if (
+			next.length === container.relation.length &&
+			next.every((r, i) => r === container.relation[i])
+		)
+			return;
+		container.relation = next;
+	}
+</script>
+
+{#await isPartOfOptionsRequest}
+	{#if editable}
+		<SingleChoiceDropdown {labelledBy} options={[]} bind:value={() => isPartOfObject([]), set} />
+	{:else}
+		<span class="badge badge--large">{$_('empty')}</span>
+	{/if}
+{:then isPartOfOptions}
+	{@const options = [
+		{ href: '', label: $_('empty'), value: '' },
+		...isPartOfOptions
+			.filter(({ guid }) => !('guid' in container) || guid !== container.guid)
+			.filter(
+				({ guid }) =>
+					!('revision' in container) ||
+					!findDescendants(container, isPartOfOptions, [predicates.enum['is-part-of']])
+						.map((c) => c.guid)
+						.includes(guid)
+			)
+			.filter(
+				({ organizational_unit }) =>
+					!container.organizational_unit || organizational_unit === container.organizational_unit
+			)
+			.filter(({ payload, relation }) =>
+				programGuids.length > 0
+					? relation.some(
+							({ object, predicate }) =>
+								predicate === predicates.enum['is-part-of-program'] &&
+								object != undefined &&
+								programGuids.includes(object)
+						)
+					: measureGuid
+						? relation.some(
+								({ object, predicate }) =>
+									predicate === predicates.enum['is-part-of-measure'] && object === measureGuid
+							) || payload.type === payloadTypes.enum.measure
+						: true
+			)
+			.map(({ guid, payload }) => ({
+				href: overlayURL(page.url, overlayKey.enum.view, guid),
+				label: payload.title,
+				value: guid
+			}))
+	]}
+	{@const selected = options.find((o) => o.value === isPartOfObject(options))}
+	{#if editable}
+		<SingleChoiceDropdown
+			{labelledBy}
+			{offset}
+			{options}
+			bind:value={() => isPartOfObject(options), set}
+		>
+			{#snippet button(popover: ReturnType<typeof createPopover>)}
+				<button
+					{@attach tooltip($_('superordinate_element'))}
+					class="dropdown-button"
+					type="button"
+					use:popover.button
+				>
+					<span class="badge badge--large">
+						<span class="truncated">
+							{#if selected}{selected.label}{:else}{$_('empty')}{/if}
+						</span>
+					</span>
+				</button>
+			{/snippet}
+		</SingleChoiceDropdown>
+	{:else}
+		<span {@attach tooltip($_('superordinate_element'))} class="badge badge--large">
+			{#if selected}
+				{#if selected.href}
+					<a class="truncated" href={selected.href}>{selected.label}</a>
+				{:else}
+					<span class="truncated">{selected.label}</span>
+				{/if}
+			{:else}
+				{$_('empty')}
+			{/if}
+		</span>
+	{/if}
+{/await}
+
+<style>
+	.badge {
+		max-width: 100%;
+	}
+</style>

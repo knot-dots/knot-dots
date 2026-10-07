@@ -37,7 +37,7 @@ test.describe(() => {
 
 		await dotsBoard.overlay.editModeToggle.check();
 
-		const badgeList = dotsBoard.overlay.locator.locator('ul.badges');
+		const badgeList = dotsBoard.overlay.locator.locator('ul.details-properties');
 		const badgeButtons = badgeList.getByRole('button', { name: 'Status' });
 
 		if ((await badgeButtons.count()) > 0) {
@@ -69,7 +69,7 @@ test.describe(() => {
 		const badges = dotsBoard.overlay.locator
 			.locator('.details-section')
 			.filter({ hasText: testTask.payload.title })
-			.locator('.badges');
+			.locator('.details-properties');
 		await expect(badges).toHaveText(/Design/);
 	});
 });
