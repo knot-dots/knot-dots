@@ -1,17 +1,56 @@
+<script module lang="ts">
+	import type { TrendDirection } from '$lib/models';
+
+	export type ReviewStatus =
+		| 'review_status.in_target_direction'
+		| 'review_status.against_target_direction'
+		| 'review_status.no_clear_trend'
+		| 'review_status.diverging_targets';
+
+	// Compares the trend of an indicator's actual data with the target trends of
+	// the objectives under review. Undefined if there is nothing to compare.
+	export function computeReviewStatus(
+		actualTrend: TrendDirection | undefined,
+		targetTrends: TrendDirection[]
+	): ReviewStatus | undefined {
+		if (actualTrend === undefined || targetTrends.length === 0) {
+			return undefined;
+		}
+		if (new Set(targetTrends).size > 1) {
+			return 'review_status.diverging_targets';
+		}
+		if (actualTrend === targetTrends[0]) {
+			return 'review_status.in_target_direction';
+		}
+		if (actualTrend === 0) {
+			return 'review_status.no_clear_trend';
+		}
+		return 'review_status.against_target_direction';
+	}
+</script>
+
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
+	import type { Component } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
+	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { _, number } from 'svelte-i18n';
+	import CheckCircleSolid from '~icons/flowbite/check-circle-solid';
+	import CircleMinusSolid from '~icons/flowbite/circle-minus-solid';
+	import CloseCircleSolid from '~icons/flowbite/close-circle-solid';
+	import ExclamationCircleSolid from '~icons/flowbite/exclamation-circle-solid';
+	import { page } from '$app/state';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import {
 		type ActualDataPayload,
 		administrativeTypes,
 		type AnyPayload,
 		type Container,
 		type IndicatorTemplatePayload,
-		isActualDataContainer
+		isActualDataContainer,
+		trendDirection
 	} from '$lib/models';
 	import { compareState } from '$lib/stores';
-	import { page } from '$app/state';
 
 	interface Props {
 		container: Container<IndicatorTemplatePayload>;
@@ -41,6 +80,37 @@
 			value: actualDataContainer[1]?.payload.values.find(([k]) => k == key)?.at(1) ?? value
 		})) ?? []
 	);
+
+	const review = getReviewContext();
+
+	const reviewObjectives = $derived(review.objectivesByIndicator.get(container.guid) ?? []);
+
+	// The trend of the values shown in the chart
+	const actualTrend = $derived(
+		trendDirection(actualValues.map(({ date, value }) => [date.getFullYear(), value]))
+	);
+
+	// Concrete wanted values take precedence over a stored trend direction
+	const targetTrends = $derived(
+		reviewObjectives
+			.map(
+				({ objective }) =>
+					trendDirection(objective.payload.wantedValues) ?? objective.payload.trendValue
+			)
+			.filter((trend) => trend !== undefined)
+	);
+
+	const reviewStatus = $derived(computeReviewStatus(actualTrend, targetTrends));
+
+	const reviewBadges: Record<
+		ReviewStatus,
+		{ color: string; icon: Component<SvelteHTMLElements['svg']> }
+	> = {
+		'review_status.in_target_direction': { color: 'green', icon: CheckCircleSolid },
+		'review_status.against_target_direction': { color: 'red', icon: CloseCircleSolid },
+		'review_status.no_clear_trend': { color: 'yellow', icon: CircleMinusSolid },
+		'review_status.diverging_targets': { color: 'gray', icon: ExclamationCircleSolid }
+	};
 
 	// Prepare comparison data with assigned colors
 	let comparisonValues = $derived(
@@ -192,6 +262,16 @@
 </script>
 
 {#if actualDataContainer[0] || hasComparisonData}
+	{#if reviewStatus}
+		{@const { color, icon: Icon } = reviewBadges[reviewStatus]}
+		<div class="badges">
+			<span class="badge badge--large badge--{color} badge--review">
+				<Icon />
+				{$_(reviewStatus)}
+			</span>
+		</div>
+	{/if}
+
 	<figure>
 		<div role="img" {@attach chart}></div>
 		<ul class="chart-legend">
@@ -231,6 +311,38 @@
 {/if}
 
 <style>
+	.badges {
+		margin-bottom: 0.5rem;
+	}
+
+	.badge.badge--review {
+		--badge-border-radius: 9999px;
+
+		padding: 0 0.625rem 0 0.125rem;
+	}
+
+	/* Flowbite icons leave 2px around the circle, which is meant to be 20px */
+	.badge.badge--review > :global(svg) {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	.badge.badge--green > :global(svg) {
+		color: var(--color-green-600);
+	}
+
+	.badge.badge--red > :global(svg) {
+		color: var(--color-red-600);
+	}
+
+	.badge.badge--yellow > :global(svg) {
+		color: var(--color-yellow-600);
+	}
+
+	.badge.badge--gray > :global(svg) {
+		color: var(--color-gray-600);
+	}
+
 	figure {
 		flex-grow: 1;
 	}

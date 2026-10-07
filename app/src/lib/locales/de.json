@@ -719,6 +719,10 @@
 	"review_add_program": "Programm hinzufügen",
 	"review_clear_all": "Alle entfernen",
 	"review_dialog_title": "Programme auswählen",
+	"review_status.against_target_direction": "Gegen Zielrichtung",
+	"review_status.diverging_targets": "Abweichende Ziele",
+	"review_status.in_target_direction": "In Zielrichtung",
+	"review_status.no_clear_trend": "Kein klarer Trend",
 	"review_with": "Überprüfen anhand",
 	"role": {
 		"admin": "Admin",

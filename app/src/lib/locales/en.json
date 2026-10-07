@@ -719,6 +719,10 @@
 	"review_add_program": "Add program",
 	"review_clear_all": "Clear all",
 	"review_dialog_title": "Select programs",
+	"review_status.against_target_direction": "Against target direction",
+	"review_status.diverging_targets": "Diverging targets",
+	"review_status.in_target_direction": "In target direction",
+	"review_status.no_clear_trend": "No clear trend",
 	"review_with": "Review against",
 	"role": {
 		"admin": "Admin",
