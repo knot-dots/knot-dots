@@ -495,7 +495,7 @@ async function createOrUpdateActualDataContainers(
 			const indicatorTemplate = (await getContainer({
 				organization: ouContainer.organization,
 				organizationalUnit: null,
-				payload: { externalReference, type: 'indicator_template' }
+				payload: { externalReference, type: 'indicator' }
 			})(tx)) as Container<IndicatorTemplatePayload>;
 
 			if (!indicatorTemplate) {

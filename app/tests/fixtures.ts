@@ -925,7 +925,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	testIndicatorTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
 		const newIndicatorTemplate = containerOfType(
-			payloadTypes.enum.indicator_template,
+			payloadTypes.enum.indicator,
 			testOrganization
 		) as Container<IndicatorTemplatePayload>;
 		const testIndicatorTemplate = await createContainer(adminContext, {

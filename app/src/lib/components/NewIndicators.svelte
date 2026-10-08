@@ -104,7 +104,7 @@
 
 	function createCustomIndicatorTemplate() {
 		const container = containerOfType(
-			payloadTypes.enum.indicator_template,
+			payloadTypes.enum.indicator,
 			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 		) as NewContainer<IndicatorTemplatePayload>;
 
@@ -178,7 +178,7 @@
 </script>
 
 <div class="indicators">
-	{#if ($mayCreateContainer(payloadTypes.enum.indicator_template, parent) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
+	{#if ($mayCreateContainer(payloadTypes.enum.indicator, parent) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
 		<p>
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 				<button
@@ -190,7 +190,7 @@
 				</button>
 			{/if}
 
-			{#if $mayCreateContainer(payloadTypes.enum.indicator_template, parent)}
+			{#if $mayCreateContainer(payloadTypes.enum.indicator, parent)}
 				<button class="button button-xs" type="button" onclick={createCustomIndicatorTemplate}>
 					<Plus />
 					{$_('indicators.create_custom')}

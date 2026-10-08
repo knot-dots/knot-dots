@@ -78,7 +78,7 @@
 		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
-		payloadTypes.enum.indicator_template,
+		payloadTypes.enum.indicator,
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,

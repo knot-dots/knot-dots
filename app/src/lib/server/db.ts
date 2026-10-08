@@ -70,7 +70,7 @@ const INDEXABLE_TYPES = new Set<string>([
 	'event',
 	'goal',
 	'help',
-	'indicator_template',
+	'indicator',
 	'knowledge',
 	'measure',
 	'objective',
@@ -1885,7 +1885,7 @@ export function getAllRelatedContainers(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator_template);
+			filters.type.includes(payloadTypes.enum.indicator);
 
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
@@ -2178,7 +2178,7 @@ export function getAllContainersRelatedToProgram(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator_template);
+			filters.type.includes(payloadTypes.enum.indicator);
 
 		const indicatorResult =
 			objectivesAndEffects.length > 0 && includeIndicators
@@ -2292,7 +2292,7 @@ export function getAllContainersRelatedToMeasure(
 		const includeIndicators =
 			filters.type == undefined ||
 			filters.type.length == 0 ||
-			filters.type.includes(payloadTypes.enum.indicator_template);
+			filters.type.includes(payloadTypes.enum.indicator);
 
 		const indicatorResult =
 			effects.length > 0 && includeIndicators
@@ -2776,7 +2776,7 @@ export function getManyIndicatorDataWegweiserKommune(spatialReference: string) {
 			FROM indicator_data_wegweiser_kommune d
 			JOIN indicator_wegweiser_kommune i ON i.id = d.indicator_id
 			JOIN container c ON split_part(c.payload->>'externalReference', '/', -1) = i.friendly_url
-				AND c.payload->>'type' = ${payloadTypes.enum.indicator_template}
+				AND c.payload->>'type' = ${payloadTypes.enum.indicator}
 				AND c.valid_currently
 			WHERE d.spatial_reference = ${spatialReference}
 			ORDER BY d.indicator_id, d.valid_from DESC

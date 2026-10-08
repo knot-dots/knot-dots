@@ -58,7 +58,7 @@
 			$ability.can(
 				'create',
 				containerOfType(
-					payloadTypes.enum.indicator_template,
+					payloadTypes.enum.indicator,
 					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 				)
 			)

@@ -73,8 +73,8 @@ const payloadTypeValues = [
 	'html',
 	'ignite_video',
 	'image',
+	'indicator',
 	'indicator_collection',
-	'indicator_template',
 	'info_box',
 	'knowledge',
 	'map',
@@ -135,7 +135,7 @@ const helpSlugValues = [
 	'help-view',
 	'import',
 	'indicator-catalog',
-	'indicator-template-view',
+	'indicator-view',
 	'indicators',
 	'indicators-table',
 	'iooi',
@@ -207,7 +207,7 @@ const detailViewHelpSlugByPayloadType = {
 	[payloadTypes.enum.effect]: helpSlug.enum['effect-view'],
 	[payloadTypes.enum.goal]: helpSlug.enum['goal-view'],
 	[payloadTypes.enum.help]: helpSlug.enum['help-view'],
-	[payloadTypes.enum.indicator_template]: helpSlug.enum['indicator-template-view'],
+	[payloadTypes.enum.indicator]: helpSlug.enum['indicator-view'],
 	[payloadTypes.enum.knowledge]: helpSlug.enum['knowledge-view'],
 	[payloadTypes.enum.measure]: helpSlug.enum['measure-view'],
 	[payloadTypes.enum.objective]: helpSlug.enum['objective-view'],
@@ -238,7 +238,7 @@ const categoryObjectTypeValues = [
 	payloadTypes.enum.event,
 	payloadTypes.enum.goal,
 	payloadTypes.enum.help,
-	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.indicator,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
 	payloadTypes.enum.objective,
@@ -1484,7 +1484,7 @@ export const indicatorTemplatePayload = z.strictObject({
 	externalReference: z.url().optional(),
 	indicatorCategory: z.array(indicatorCategories).transform(deduplicate).default([]),
 	indicatorType: z.array(indicatorTypes).transform(deduplicate).default([]),
-	type: z.literal(payloadTypes.enum.indicator_template),
+	type: z.literal(payloadTypes.enum.indicator),
 	unit: z.string()
 });
 
@@ -1493,7 +1493,7 @@ export type IndicatorTemplatePayload = z.infer<typeof indicatorTemplatePayload>;
 export function isIndicatorTemplateContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
 ): container is Container<IndicatorTemplatePayload> {
-	return container.payload.type === payloadTypes.enum.indicator_template;
+	return container.payload.type === payloadTypes.enum.indicator;
 }
 
 const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({

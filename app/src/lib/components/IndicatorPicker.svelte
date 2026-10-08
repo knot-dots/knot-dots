@@ -36,7 +36,7 @@
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [
 			payloadTypes.enum.binary_indicator,
-			payloadTypes.enum.indicator_template
+			payloadTypes.enum.indicator
 		])
 	);
 
@@ -69,7 +69,7 @@
 				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
 				...filter.indicatorType.map((v) => ['indicatorType', v]),
 				['payloadType', payloadTypes.enum.binary_indicator],
-				['payloadType', payloadTypes.enum.indicator_template],
+				['payloadType', payloadTypes.enum.indicator],
 				['sort', sort],
 				['terms', terms],
 				...categoryContext.keys.flatMap((k) => (k in filter ? filter[k].map((v) => [k, v]) : []))

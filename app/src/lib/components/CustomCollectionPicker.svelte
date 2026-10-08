@@ -104,7 +104,7 @@
 		payloadTypes.enum.event,
 		payloadTypes.enum.goal,
 		payloadTypes.enum.help,
-		payloadTypes.enum.indicator_template,
+		payloadTypes.enum.indicator,
 		payloadTypes.enum.knowledge,
 		payloadTypes.enum.measure,
 		payloadTypes.enum.organizational_unit,
@@ -242,7 +242,7 @@
 					...((filter.type?.length == 1 && filter.type[0] == 'program'
 						? [['programType', searchResource.current.facets.get('programType')!]]
 						: []) as Array<[string, Map<string, number>]>),
-					...((filter.type?.length == 1 && filter.type[0] == 'indicator_template'
+					...((filter.type?.length == 1 && filter.type[0] == 'indicator'
 						? [['indicatorCategory', searchResource.current.facets.get('indicatorCategory')!]]
 						: []) as Array<[string, Map<string, number>]>),
 					['organization', searchResource.current.facets.get('organization') ?? new Map()],

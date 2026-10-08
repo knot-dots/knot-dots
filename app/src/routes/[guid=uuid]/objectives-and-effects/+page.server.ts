@@ -26,7 +26,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	const categoryContext = filterCategoryContext(rawCategoryContext, [
 		payloadTypes.enum.objective,
 		payloadTypes.enum.effect,
-		payloadTypes.enum.indicator_template
+		payloadTypes.enum.indicator
 	]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
@@ -37,7 +37,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 			indicatorTypes: url.searchParams.getAll('indicatorType'),
 			template: false,
-			type: [payloadTypes.enum.indicator_template]
+			type: [payloadTypes.enum.indicator]
 		},
 		'',
 		{ customCategoryKeys: categoryContext.keys, includeFacets: true }

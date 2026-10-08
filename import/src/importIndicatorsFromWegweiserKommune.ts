@@ -139,7 +139,7 @@ function isSame<T>(a: T, b: T) {
 							organization: organization,
 							organizational_unit: null,
 							payload: {
-								type: 'indicator_template',
+								type: 'indicator',
 								description: indicator.explanation,
 								externalReference,
 								indicatorCategory: [
@@ -159,7 +159,7 @@ function isSame<T>(a: T, b: T) {
 							const foundIndicatorTemplateContainer = await getContainer({
 								organization,
 								organizationalUnit: null,
-								payload: { externalReference, type: 'indicator_template' }
+								payload: { externalReference, type: 'indicator' }
 							})(tx);
 
 							if (foundIndicatorTemplateContainer) {

@@ -68,7 +68,7 @@ function requiredPayloadFields(type: PayloadType) {
 			return { indicator: relatedGuid };
 		case payloadTypes.enum.chapter:
 			return { number: '1' };
-		case payloadTypes.enum.indicator_template:
+		case payloadTypes.enum.indicator:
 			return { unit: 'unit.percent' };
 		case payloadTypes.enum.organization:
 		case payloadTypes.enum.organizational_unit:

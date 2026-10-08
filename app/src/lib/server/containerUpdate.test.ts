@@ -136,7 +136,7 @@ test.each([
 	],
 	[
 		'indicatorCategory',
-		{ indicatorCategory: [], title: 'Indicator', type: 'indicator_template', unit: 't' },
+		{ indicatorCategory: [], title: 'Indicator', type: 'indicator', unit: 't' },
 		{ indicatorCategory: ['indicator_category.kpi'] }
 	],
 	[

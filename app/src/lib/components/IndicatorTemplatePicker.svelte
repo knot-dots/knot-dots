@@ -35,7 +35,7 @@
 	let { onSelect, target, value }: Props = $props();
 
 	const categoryContext = $derived(
-		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
 	);
 
 	let filter = $state<Record<string, string[]>>({

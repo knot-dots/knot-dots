@@ -86,9 +86,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		}
 	}
 
-	if (
-		!ability.can('create', containerOfType(payloadTypes.enum.indicator_template, scopeContainer))
-	) {
+	if (!ability.can('create', containerOfType(payloadTypes.enum.indicator, scopeContainer))) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
@@ -101,7 +99,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			{
 				indicatorCategories: ['indicator_category.custom'],
 				template: false,
-				type: [payloadTypes.enum.indicator_template]
+				type: [payloadTypes.enum.indicator]
 			},
 			'alpha'
 		)
@@ -247,7 +245,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 							unit,
 							visibility,
 							editorialState: editorialStateValue,
-							type: payloadTypes.enum.indicator_template
+							type: payloadTypes.enum.indicator
 						},
 						realm: env.PUBLIC_KC_REALM,
 						user: [
@@ -293,7 +291,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				}
 				indicatorGuid = existingContainer.guid;
 			} else if (
-				ability.can('create', containerOfType(payloadTypes.enum.indicator_template, scopeContainer))
+				ability.can('create', containerOfType(payloadTypes.enum.indicator, scopeContainer))
 			) {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);

@@ -28,7 +28,7 @@
 	);
 
 	let categoryContext = $derived(
-		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
 	);
 
 	let facets = $derived(

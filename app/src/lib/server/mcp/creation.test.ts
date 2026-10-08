@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
 	categoryContext: {
 		keys: ['sdg'],
 		labels: new Map([['sdg', 'Sustainable Development Goal']]),
-		objectTypesPerKey: { sdg: ['indicator_template'] },
+		objectTypesPerKey: { sdg: ['indicator'] },
 		options: {
 			sdg: [
 				{
@@ -146,10 +146,7 @@ const payloadCases = [
 	['simple_measure', { title: 'Created simple measure', type: 'simple_measure' }],
 	['task', { title: 'Created task', type: 'task' }],
 	['knowledge', { title: 'Created knowledge', type: 'knowledge' }],
-	[
-		'indicator_template',
-		{ title: 'Created indicator', type: 'indicator_template', unit: 't CO2e' }
-	],
+	['indicator', { title: 'Created indicator', type: 'indicator', unit: 't CO2e' }],
 	['resource_v2', { title: 'Created resource', type: 'resource_v2' }]
 ] as const;
 
@@ -385,7 +382,7 @@ test('maps categories to the persisted collection filter and appends the section
 		includeSubordinateOrganizationalUnits: true,
 		pageGuid,
 		title: 'Objekte einbinden',
-		types: ['indicator_template'],
+		types: ['indicator'],
 		tokenId,
 		userId
 	})({} as never);
@@ -398,7 +395,7 @@ test('maps categories to the persisted collection filter and appends the section
 					organization: ['current'],
 					organizationalUnit: [],
 					sdg: ['13'],
-					type: ['indicator_template']
+					type: ['indicator']
 				},
 				title: 'Objekte einbinden',
 				type: 'custom_collection'
@@ -427,7 +424,7 @@ test('rejects category values that are not available for the selected types', as
 			includeSubordinateOrganizationalUnits: false,
 			pageGuid,
 			title: 'Objekte einbinden',
-			types: ['indicator_template'],
+			types: ['indicator'],
 			tokenId,
 			userId
 		})({} as never)

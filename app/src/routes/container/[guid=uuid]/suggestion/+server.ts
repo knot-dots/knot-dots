@@ -71,7 +71,7 @@ export const GET = (async ({ locals, params, url }) => {
 					indicatorTypes: parseResult.data.indicatorType,
 					template: false,
 					terms: parseResult.data.terms[0],
-					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
+					type: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
 			)(connection) as Promise<Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>>

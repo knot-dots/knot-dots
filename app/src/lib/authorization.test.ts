@@ -489,7 +489,7 @@ describe('field-level rules', () => {
 
 	test('the indicator category follows the update grant', () => {
 		const ability = abilityOn({ adminOf: [organization] });
-		const template = makeContainer(payloadTypes.enum.indicator_template, {}, { unit: '%' });
+		const template = makeContainer(payloadTypes.enum.indicator, {}, { unit: '%' });
 		expect(ability.can('update', template, 'indicatorCategory')).toBe(true);
 	});
 });
@@ -532,7 +532,7 @@ function userWithRoleOn(role: MemberRole, scope: Scope) {
 const requiredPayloadFields: Partial<Record<PayloadType, Record<string, unknown>>> = {
 	[payloadTypes.enum.actual_data]: { indicator: crypto.randomUUID() },
 	[payloadTypes.enum.chapter]: { number: '1' },
-	[payloadTypes.enum.indicator_template]: { unit: 'unit.euro' },
+	[payloadTypes.enum.indicator]: { unit: 'unit.euro' },
 	[payloadTypes.enum.organization]: { name: 'Lorem ipsum' },
 	[payloadTypes.enum.organizational_unit]: { name: 'Lorem ipsum' },
 	[payloadTypes.enum.page]: { body: 'Lorem ipsum' },

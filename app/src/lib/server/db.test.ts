@@ -501,13 +501,13 @@ test.skipIf(!process.env.ELASTICSEARCH_INDEX_ALIAS).for([
 	},
 	{
 		name: 'indicator',
-		filters: { type: [payloadTypes.enum.indicator_template] },
+		filters: { type: [payloadTypes.enum.indicator] },
 		sort: 'modified'
 	},
 	{
 		name: 'indicator with topics',
 		filters: {
-			type: [payloadTypes.enum.indicator_template],
+			type: [payloadTypes.enum.indicator],
 			customCategories: { topics: ['topic.health'] }
 		},
 		sort: 'alpha'
@@ -985,7 +985,7 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 		initializeNewContainer(
 			{
 				title: 'Private indicator',
-				type: payloadTypes.enum.indicator_template,
+				type: payloadTypes.enum.indicator,
 				unit: 'unit.percent',
 				visibility: visibility.enum.organization
 			},
@@ -996,7 +996,7 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 		initializeNewContainer(
 			{
 				title: 'Payload-only indicator',
-				type: payloadTypes.enum.indicator_template,
+				type: payloadTypes.enum.indicator,
 				unit: 'unit.percent',
 				visibility: visibility.enum.organization
 			},
@@ -1034,7 +1034,7 @@ test('getContainerCopyGraph follows current downward copy edges once and stops a
 		initializeNewContainer(
 			{
 				title: 'Public indicator',
-				type: payloadTypes.enum.indicator_template,
+				type: payloadTypes.enum.indicator,
 				unit: 'unit.percent',
 				visibility: visibility.enum.public
 			},
@@ -1261,7 +1261,7 @@ test('getContainerCopyGraph ignores actual data references and follows resource 
 		initializeNewContainer(
 			{
 				title: 'Indicator',
-				type: payloadTypes.enum.indicator_template,
+				type: payloadTypes.enum.indicator,
 				unit: 'unit.percent',
 				visibility: visibility.enum.organization
 			},

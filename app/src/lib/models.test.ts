@@ -55,7 +55,7 @@ const indicatorTemplateOne = testContainer.parse({
 	payload: {
 		category: {},
 		title: 'Water Consumption',
-		type: payloadTypes.enum.indicator_template,
+		type: payloadTypes.enum.indicator,
 		unit: units.enum['unit.cubic_meter']
 	}
 }) as Container<IndicatorTemplatePayload>;
@@ -67,7 +67,7 @@ const indicatorTemplateTwo = testContainer.parse({
 	payload: {
 		category: {},
 		title: 'Waste',
-		type: payloadTypes.enum.indicator_template,
+		type: payloadTypes.enum.indicator,
 		unit: units.enum['unit.kilogram_per_capita']
 	}
 }) as Container<IndicatorTemplatePayload>;
@@ -82,7 +82,7 @@ const indicatorTemplateThree = testContainer.parse({
 			topic: ['topic.resilience']
 		},
 		title: 'Resilience Index',
-		type: payloadTypes.enum.indicator_template,
+		type: payloadTypes.enum.indicator,
 		unit: units.enum['unit.percent']
 	}
 }) as Container<IndicatorTemplatePayload>;

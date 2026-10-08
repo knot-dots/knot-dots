@@ -79,7 +79,7 @@ export async function getIndicatorsData(params: {
 			indicatorTypes: filters.indicatorTypes,
 			template: false,
 			terms: filters.terms,
-			type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
+			type: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
 		},
 		'alpha',
 		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
@@ -138,7 +138,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const categoryContext = filterCategoryContext(rawCategoryContext, [
-		payloadTypes.enum.indicator_template,
+		payloadTypes.enum.indicator,
 		payloadTypes.enum.binary_indicator
 	]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);

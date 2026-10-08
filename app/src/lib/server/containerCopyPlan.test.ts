@@ -429,7 +429,7 @@ test('retains indicator targets and excludes actual data and dependency descenda
 		}),
 		makeContainer(guids.dependency, {
 			title: 'Private indicator',
-			type: payloadTypes.enum.indicator_template,
+			type: payloadTypes.enum.indicator,
 			unit: 'unit.percent',
 			visibility: visibility.enum.organization
 		}),
@@ -439,7 +439,7 @@ test('retains indicator targets and excludes actual data and dependency descenda
 		}),
 		makeContainer(guids.publicDependency, {
 			title: 'Public indicator',
-			type: payloadTypes.enum.indicator_template,
+			type: payloadTypes.enum.indicator,
 			unit: 'unit.percent',
 			visibility: visibility.enum.public
 		}),
@@ -981,7 +981,7 @@ test('uses opaque failures for unreadable roots but retains unreadable reference
 	});
 	const dependency = makeContainer(guids.dependency, {
 		title: 'Secret dependency',
-		type: payloadTypes.enum.indicator_template,
+		type: payloadTypes.enum.indicator,
 		unit: 'unit.percent'
 	});
 	const snapshot = graph(
@@ -1339,7 +1339,7 @@ test('remaps a reference target that is independently included through a structu
 	});
 	const dependency = makeContainer(guids.dependency, {
 		title: 'Shared indicator',
-		type: payloadTypes.enum.indicator_template,
+		type: payloadTypes.enum.indicator,
 		unit: 'unit.percent'
 	});
 

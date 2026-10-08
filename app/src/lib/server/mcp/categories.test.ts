@@ -39,7 +39,7 @@ beforeEach(() => {
 		]),
 		objectTypesPerKey: {
 			programKind: ['program'],
-			sdg: ['indicator_template']
+			sdg: ['indicator']
 		},
 		options: {
 			__categoryLabels__: {
@@ -69,13 +69,13 @@ test('lists category metadata using union semantics for requested types', async 
 	await expect(
 		listMcpContainerCategories({
 			organizationGuid,
-			types: ['indicator_template', 'binary_indicator'],
+			types: ['indicator', 'binary_indicator'],
 			userId
 		})({} as never)
 	).resolves.toEqual({
 		categories: [
 			{
-				applicableTypes: ['indicator_template'],
+				applicableTypes: ['indicator'],
 				key: 'sdg',
 				label: 'Sustainable Development Goal',
 				valueCount: 2
@@ -97,7 +97,7 @@ test('searches and paginates values for one category', async () => {
 			offset: 0,
 			organizationGuid,
 			terms: undefined,
-			types: ['indicator_template'],
+			types: ['indicator'],
 			userId
 		})({} as never)
 	).resolves.toEqual({
@@ -113,7 +113,7 @@ test('searches and paginates values for one category', async () => {
 			offset: 0,
 			organizationGuid,
 			terms: 'climate',
-			types: ['indicator_template'],
+			types: ['indicator'],
 			userId
 		})({} as never)
 	).resolves.toEqual({
