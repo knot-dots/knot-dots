@@ -109,12 +109,17 @@
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
+	// A boolean, so the disclosures below are not recreated whenever the
+	// container changes, e.g. on every save of a section.
+	let showCompareAndReview = $derived(
+		compare || (container !== undefined && isReportContainer(container))
+	);
+
 	let compareBar = $derived(
 		createDisclosure({
 			label: $_('compare_data'),
 			expanded:
-				untrack(() => $compareState.selectedMunicipalities.length > 0) &&
-				(compare || isReportContainer(container))
+				untrack(() => $compareState.selectedMunicipalities.length > 0) && showCompareAndReview
 		})
 	);
 
@@ -125,8 +130,7 @@
 				untrack(
 					() =>
 						review.selectedPrograms.length > 0 && $compareState.selectedMunicipalities.length === 0
-				) &&
-				(compare || isReportContainer(container))
+				) && showCompareAndReview
 		})
 	);
 
@@ -364,7 +368,7 @@
 		</button>
 	{/if}
 
-	{#if compare || (container && isReportContainer(container))}
+	{#if showCompareAndReview}
 		<button
 			class="button button-xs button-alternate system-primary traffic-light-button"
 			type="button"
