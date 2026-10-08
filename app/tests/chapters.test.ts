@@ -11,6 +11,8 @@ test.describe('Chapters', () => {
 		testReport
 	}) => {
 		test.skip(isMobile, 'Feature cannot be enabled on mobile');
+		// Adding ten sections one by one takes close to 30 seconds in Firefox
+		test.slow();
 
 		await dotsBoard.goto(`/${testReport.organization}`);
 		await dotsBoard.card(testReport.payload.title).click();
