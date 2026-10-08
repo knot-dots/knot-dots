@@ -34,7 +34,7 @@
 		isContainerWithEditorialState,
 		isContainerWithFulfillmentDate,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isProgramContainer,
@@ -227,7 +227,7 @@
 			class:cell--locked={editable && $ability.cannot('update', container)}
 			role="cell"
 		>
-			{#if isIndicatorTemplateContainer(container)}
+			{#if isIndicatorContainer(container)}
 				<IndicatorUnitDropdown
 					editable={editable && $ability.can('update', container)}
 					offset={[40, -39]}

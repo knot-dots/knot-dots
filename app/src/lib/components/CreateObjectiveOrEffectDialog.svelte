@@ -19,11 +19,11 @@
 		type BinaryIndicatorPayload,
 		type Container,
 		type EffectPayload,
-		type IndicatorTemplatePayload,
+		type IndicatorPayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isEffectContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isObjectiveContainer,
 		type ObjectivePayload
 	} from '$lib/models';
@@ -37,7 +37,7 @@
 
 	let target = $derived($addEffectState.target ?? $addObjectiveState.target);
 
-	let selected = $state<Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>>();
+	let selected = $state<Container<BinaryIndicatorPayload> | Container<IndicatorPayload>>();
 
 	const actualDataResource = resource([() => selected?.guid], async ([guid], _, { signal }) => {
 		if (!guid) {
@@ -57,9 +57,7 @@
 		);
 	});
 
-	function handleSelect(
-		value: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>
-	) {
+	function handleSelect(value: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) {
 		selected = value;
 		pushState('', { createObjectiveOrEffect: { step: 2 } });
 	}
@@ -156,7 +154,7 @@
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
 						<div class="step-3-layout-left">
-							{#if isIndicatorTemplateContainer(selected)}
+							{#if isIndicatorContainer(selected)}
 								<NewIndicatorChart
 									container={selected}
 									relatedContainers={actualDataResource.current}

@@ -1,6 +1,6 @@
 import {
 	type Container,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	type OrganizationalUnitPayload,
 	visibility
 } from '@knot-dots/app/src/lib/models.ts';
@@ -492,13 +492,13 @@ async function createOrUpdateActualDataContainers(
 	for (const data of statistics) {
 		try {
 			const externalReference = `https://www.wegweiser-kommune.de/data-api/rest/indicator/get/${data.friendly_url}`;
-			const indicatorTemplate = (await getContainer({
+			const indicator = (await getContainer({
 				organization: ouContainer.organization,
 				organizationalUnit: null,
 				payload: { externalReference, type: 'indicator' }
-			})(tx)) as Container<IndicatorTemplatePayload>;
+			})(tx)) as Container<IndicatorPayload>;
 
-			if (!indicatorTemplate) {
+			if (!indicator) {
 				continue;
 			}
 
@@ -512,9 +512,9 @@ async function createOrUpdateActualDataContainers(
 				organizational_unit: ouContainer.guid,
 				payload: {
 					type: 'actual_data',
-					indicator: indicatorTemplate.guid,
+					indicator: indicator.guid,
 					source: 'Wegweiser Kommune',
-					title: indicatorTemplate.payload.title,
+					title: indicator.payload.title,
 					values: data.actual_values.filter(([, value]) => value !== null),
 					visibility: visibility.enum.public
 				},
@@ -525,13 +525,13 @@ async function createOrUpdateActualDataContainers(
 			const foundActualDataContainer = await getContainer({
 				organization: ouContainer.organization,
 				organizationalUnit: ouContainer.guid,
-				payload: { indicator: indicatorTemplate.guid, type: 'actual_data' }
+				payload: { indicator: indicator.guid, type: 'actual_data' }
 			})(tx);
 
 			if (foundActualDataContainer) {
 				if (isSame(foundActualDataContainer.payload, newActualDataContainer.payload)) {
 					console.log(
-						`Ignored actual data for "${indicatorTemplate.payload.title}" in ${ouContainer.payload.name} (${foundActualDataContainer.guid})`
+						`Ignored actual data for "${indicator.payload.title}" in ${ouContainer.payload.name} (${foundActualDataContainer.guid})`
 					);
 				} else {
 					const updatedActualDataContainer = await updateContainer({
@@ -540,14 +540,14 @@ async function createOrUpdateActualDataContainers(
 					})(tx);
 
 					console.log(
-						`Updated actual data for "${indicatorTemplate.payload.title}" in ${ouContainer.payload.name}} (${updatedActualDataContainer.guid})`
+						`Updated actual data for "${indicator.payload.title}" in ${ouContainer.payload.name}} (${updatedActualDataContainer.guid})`
 					);
 				}
 			} else {
 				const savedActualDataContainer = await createContainer(newActualDataContainer)(tx);
 
 				console.log(
-					`Created actual data for "${indicatorTemplate.payload.title}" in ${ouContainer.payload.name} (${savedActualDataContainer.guid})`
+					`Created actual data for "${indicator.payload.title}" in ${ouContainer.payload.name} (${savedActualDataContainer.guid})`
 				);
 			}
 		} catch (error) {

@@ -40,7 +40,7 @@
 		isEffectContainer,
 		isEventContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
@@ -268,7 +268,7 @@
 						relatedContainers={[]}
 						revisions={[]}
 					/>
-				{:else if isIndicatorTemplateContainer($createContainerDialogState.container)}
+				{:else if isIndicatorContainer($createContainerDialogState.container)}
 					<IndicatorProperties
 						bind:container={$createContainerDialogState.container}
 						editable

@@ -29,7 +29,7 @@
 		type Container,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		type ObjectivePayload,
 		predicates
 	} from '$lib/models';
@@ -84,7 +84,7 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(

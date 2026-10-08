@@ -6,7 +6,7 @@ import { filterVisible } from '$lib/authorization';
 import {
 	type Container,
 	isContainerWithEffect,
-	isIndicatorTemplateContainer,
+	isIndicatorContainer,
 	isProgramContainer,
 	type OrganizationalUnitPayload,
 	payloadTypes,
@@ -78,7 +78,7 @@ export const GET = (async ({ locals, params, url }) => {
 
 		let containers;
 
-		if (isIndicatorTemplateContainer(container)) {
+		if (isIndicatorContainer(container)) {
 			if (parseResult.data.program.length > 0) {
 				const [containersRelatedToProgram, containersRelatedToIndicator] = await Promise.all([
 					locals.pool.connect(getAllContainersRelatedToProgram(parseResult.data.program[0], {})),

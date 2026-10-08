@@ -14,7 +14,7 @@
 		isActualDataContainer,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
 		type NewContainer,
@@ -47,7 +47,7 @@
 
 	let items = $derived(
 		relatedContainers
-			.filter(isIndicatorTemplateContainer)
+			.filter(isIndicatorContainer)
 			.filter((item) =>
 				[
 					actualDataContainers.some(({ payload }) => payload.indicator === item.guid),

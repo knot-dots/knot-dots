@@ -21,7 +21,7 @@
 		iooiTypes,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
 		isResourceDataCollectionContainer,
@@ -301,7 +301,7 @@
 					{#snippet itemSnippet(container)}
 						<Card
 							{container}
-							relatedContainers={containers.filter(isIndicatorTemplateContainer)}
+							relatedContainers={containers.filter(isIndicatorContainer)}
 							showRelationFilter
 						/>
 					{/snippet}
@@ -316,7 +316,7 @@
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
 						<Card
 							container={item}
-							relatedContainers={containers.filter(isIndicatorTemplateContainer)}
+							relatedContainers={containers.filter(isIndicatorContainer)}
 							showRelationFilter
 						/>
 					{/each}
@@ -326,7 +326,7 @@
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
 						<Card
 							container={item}
-							relatedContainers={containers.filter(isIndicatorTemplateContainer)}
+							relatedContainers={containers.filter(isIndicatorContainer)}
 							showRelationFilter
 						/>
 					{/each}

@@ -54,7 +54,7 @@ test.describe('Goal IOOI Board', () => {
 			dotsBoard,
 			isMobile,
 			testGoal,
-			testIndicatorTemplate
+			testIndicator
 		}) => {
 			test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
@@ -79,10 +79,7 @@ test.describe('Goal IOOI Board', () => {
 			);
 
 			// Select an indicator template from the dialog
-			await dotsBoard.page
-				.getByRole('dialog')
-				.getByText(testIndicatorTemplate.payload.title)
-				.click();
+			await dotsBoard.page.getByRole('dialog').getByText(testIndicator.payload.title).click();
 
 			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
 
@@ -90,7 +87,7 @@ test.describe('Goal IOOI Board', () => {
 			await expect(
 				dotsBoard.page
 					.getByRole('article')
-					.getByRole('heading', { level: 1, name: testIndicatorTemplate.payload.title })
+					.getByRole('heading', { level: 1, name: testIndicator.payload.title })
 			).toBeVisible();
 			await expect(dotsBoard.page.getByRole('article')).toContainText('Objective');
 			await expect(
@@ -100,11 +97,11 @@ test.describe('Goal IOOI Board', () => {
 			// Close dialog and verify objective is in Output column
 			await dotsBoard.page.getByRole('button', { name: 'Confirm' }).click();
 			await expect(dotsBoard.page.getByRole('dialog')).not.toBeVisible();
-			await expect(column.card(testIndicatorTemplate.payload.title)).toBeVisible();
+			await expect(column.card(testIndicator.payload.title)).toBeVisible();
 
 			// Delete the created objective
-			await column.card(testIndicatorTemplate.payload.title).click();
-			await expect(dotsBoard.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
+			await column.card(testIndicator.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});
@@ -294,7 +291,7 @@ test.describe('Measure IOOI Board', () => {
 			dotsBoard,
 			isMobile,
 			testMeasure,
-			testIndicatorTemplate
+			testIndicator
 		}) => {
 			test.skip(isMobile, 'Workspace menu is not visible on mobile');
 
@@ -319,10 +316,7 @@ test.describe('Measure IOOI Board', () => {
 			);
 
 			// Select an indicator template from the dialog
-			await dotsBoard.page
-				.getByRole('dialog')
-				.getByText(testIndicatorTemplate.payload.title)
-				.click();
+			await dotsBoard.page.getByRole('dialog').getByText(testIndicator.payload.title).click();
 
 			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
 
@@ -330,7 +324,7 @@ test.describe('Measure IOOI Board', () => {
 			await expect(
 				dotsBoard.page
 					.getByRole('article')
-					.getByRole('heading', { level: 1, name: testIndicatorTemplate.payload.title })
+					.getByRole('heading', { level: 1, name: testIndicator.payload.title })
 			).toBeVisible();
 			await expect(dotsBoard.page.getByRole('article')).toContainText('Effect');
 			await expect(
@@ -340,11 +334,11 @@ test.describe('Measure IOOI Board', () => {
 			// Close dialog and verify effect is in Output column
 			await dotsBoard.page.getByRole('button', { name: 'Confirm' }).click();
 			await expect(dotsBoard.page.getByRole('dialog')).not.toBeVisible();
-			await expect(column.card(testIndicatorTemplate.payload.title)).toBeVisible();
+			await expect(column.card(testIndicator.payload.title)).toBeVisible();
 
 			// Delete the created effect
-			await column.card(testIndicatorTemplate.payload.title).click();
-			await expect(dotsBoard.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
+			await column.card(testIndicator.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testIndicator.payload.title);
 			await dotsBoard.overlay.editModeToggle.check();
 			await dotsBoard.overlay.delete();
 		});

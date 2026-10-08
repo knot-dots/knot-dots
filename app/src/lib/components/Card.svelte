@@ -33,7 +33,7 @@
 		isContainerWithSummary,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isObjectiveContainer,
 		isPartOf,
 		isProgressContainer,
@@ -395,7 +395,7 @@
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
 		{:else if isEffectContainer(container)}
-			{#if relatedContainers.find(isIndicatorTemplateContainer) && container.payload.plannedValues.length > 0}
+			{#if relatedContainers.find(isIndicatorContainer) && container.payload.plannedValues.length > 0}
 				<EffectChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />
@@ -406,7 +406,7 @@
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
 			{@const indicator = relatedContainers
-				.filter(isIndicatorTemplateContainer)
+				.filter(isIndicatorContainer)
 				.find(
 					({ guid }) =>
 						(effect?.relation.findIndex(
@@ -420,7 +420,7 @@
 				<Summary {container} maxLength={maxSummaryLength} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
-			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorTemplateContainer)}
+			{#if container.payload.wantedValues.length > 0 && relatedContainers.find(isIndicatorContainer)}
 				<ObjectiveChart {container} {relatedContainers} />
 			{:else if container.payload.booleanValue !== undefined}
 				<Summary {container} />

@@ -24,7 +24,7 @@ import {
 	grantSetForRole,
 	grantTargets,
 	type HelpSlug,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	isProgramContainer,
 	mcpToken,
 	type MemberRole,
@@ -1981,7 +1981,7 @@ export function getAllRelatedContainersByProgramType(
 }
 
 export function getAllContainersRelatedToIndicators(
-	containers: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>,
+	containers: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>,
 	filters: { organizations?: string[]; organizationalUnits?: string[] },
 	actualDataFilters: { organizations?: string[]; organizationalUnits?: string[] | null }
 ) {

@@ -24,7 +24,7 @@
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isObjectiveContainer,
 		isRelatedTo,
 		predicates
@@ -57,14 +57,14 @@
 			);
 
 			if (selectedContainer) {
-				if (isIndicatorTemplateContainer(selectedContainer)) {
+				if (isIndicatorContainer(selectedContainer)) {
 					containers = findConnected(selectedContainer, allContainers, [
 						predicates.enum['is-measured-by'],
 						predicates.enum['is-objective-for']
 					]);
 				} else if (isObjectiveContainer(selectedContainer)) {
 					const indicator = allContainers
-						.filter(isIndicatorTemplateContainer)
+						.filter(isIndicatorContainer)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
 						selectedContainer,
@@ -87,7 +87,7 @@
 						.filter(isObjectiveContainer)
 						.find(isRelatedTo(selectedContainer));
 					const indicator = allContainers
-						.filter(isIndicatorTemplateContainer)
+						.filter(isIndicatorContainer)
 						.find(isRelatedTo(selectedContainer));
 					containers = new Set([
 						selectedContainer,
@@ -143,7 +143,7 @@
 						<BoardColumn title={$_('indicators')}>
 							<div class="vertical-scroll-wrapper">
 								{#each allContainers
-									.filter(isIndicatorTemplateContainer)
+									.filter(isIndicatorContainer)
 									.filter((c) => containers.has(c)) as container (container.guid)}
 									{@const dataContainers = [
 										...allContainers

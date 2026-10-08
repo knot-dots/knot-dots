@@ -17,8 +17,8 @@
 		type BinaryIndicatorPayload,
 		type Container,
 		createContainerSchema,
-		indicatorTemplatePayload,
-		type IndicatorTemplatePayload,
+		indicatorPayload,
+		type IndicatorPayload,
 		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
@@ -53,7 +53,7 @@
 	let selected = $state([]) as string[];
 	let knownIndicators = new SvelteMap<
 		string,
-		Container<BinaryIndicatorPayload | IndicatorTemplatePayload>
+		Container<BinaryIndicatorPayload | IndicatorPayload>
 	>();
 
 	let activeFilters = $derived(
@@ -86,7 +86,7 @@
 				containers: z
 					.array(
 						createContainerSchema(
-							z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorTemplatePayload])
+							z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorPayload])
 						)
 					)
 					.parse(result.containers),

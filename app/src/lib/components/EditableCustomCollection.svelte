@@ -33,7 +33,7 @@
 		createContainerSchema,
 		createTemplateInstanceOf,
 		type CustomCollectionPayload,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isOrganizationalUnitContainer,
 		isProgramContainer,
 		isTemplateContainer,
@@ -345,7 +345,7 @@
 
 	const comparisonData = createComparisonData({
 		enabled: () => inViewportOnce,
-		indicatorGuids: () => items.filter(isIndicatorTemplateContainer).map((item) => item.guid)
+		indicatorGuids: () => items.filter(isIndicatorContainer).map((item) => item.guid)
 	});
 
 	let comparisonDataMap = $derived(comparisonData.comparisonDataMap);
@@ -495,7 +495,7 @@
 			onLoadMore={savedHasMore ? loadMoreSaved : undefined}
 		>
 			{#snippet itemSnippet(item)}
-				{#if isIndicatorTemplateContainer(item)}
+				{#if isIndicatorContainer(item)}
 					{@const relatedContainers =
 						actualDataResource.current?.filter(({ payload }) => payload.indicator === item.guid) ??
 						[]}
@@ -531,7 +531,7 @@
 		<ul class="catalog wide">
 			{#each items as item (item.guid)}
 				<li>
-					{#if isIndicatorTemplateContainer(item)}
+					{#if isIndicatorContainer(item)}
 						{@const relatedContainers =
 							actualDataResource.current?.filter(
 								({ payload }) => payload.indicator === item.guid

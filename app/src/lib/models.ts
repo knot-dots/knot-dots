@@ -1478,7 +1478,7 @@ export function isIndicatorCollectionContainer(
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
-export const indicatorTemplatePayload = z.strictObject({
+export const indicatorPayload = z.strictObject({
 	...basePayload.shape,
 	...detailViewStyle.shape,
 	externalReference: z.url().optional(),
@@ -1488,15 +1488,15 @@ export const indicatorTemplatePayload = z.strictObject({
 	unit: z.string()
 });
 
-export type IndicatorTemplatePayload = z.infer<typeof indicatorTemplatePayload>;
+export type IndicatorPayload = z.infer<typeof indicatorPayload>;
 
-export function isIndicatorTemplateContainer(
+export function isIndicatorContainer(
 	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<IndicatorTemplatePayload> {
+): container is Container<IndicatorPayload> {
 	return container.payload.type === payloadTypes.enum.indicator;
 }
 
-const initialIndicatorTemplatePayload = indicatorTemplatePayload.partial({
+const initialIndicatorPayload = indicatorPayload.partial({
 	title: true,
 	unit: true
 });
@@ -2316,7 +2316,7 @@ const payload = z.discriminatedUnion('type', [
 	igniteVideoPayload,
 	imagePayload,
 	indicatorCollectionPayload,
-	indicatorTemplatePayload,
+	indicatorPayload,
 	infoBoxPayload,
 	knowledgePayload,
 	mapPayload,
@@ -2396,7 +2396,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialIgniteVideoPayload,
 	initialImagePayload,
 	initialIndicatorCollectionPayload,
-	initialIndicatorTemplatePayload,
+	initialIndicatorPayload,
 	initialInfoBoxPayload,
 	initialKnowledgePayload,
 	initialMapPayload,
@@ -3171,7 +3171,7 @@ export function findLeafObjectives(
 }
 
 export function findOverallObjective(
-	container: Container<IndicatorTemplatePayload>,
+	container: Container<IndicatorPayload>,
 	containers: Container[]
 ) {
 	return containers
@@ -3566,7 +3566,7 @@ export function getOrganizationURL(
 }
 
 function computeRelevanceScore(
-	indicator: Container<BinaryIndicatorPayload | IndicatorTemplatePayload>,
+	indicator: Container<BinaryIndicatorPayload | IndicatorPayload>,
 	containersRelatedToIndicator: Container[],
 	container: Container<GoalPayload | MeasurePayload>
 ): number {
@@ -3612,10 +3612,10 @@ function computeRelevanceScore(
 }
 
 export function sortIndicatorsByRelevanceForGoalOrMeasure(
-	indicators: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>,
+	indicators: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>,
 	containersRelatedToIndicators: Container[],
 	container: Container<GoalPayload | MeasurePayload>
-): Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>> {
+): Array<Container<BinaryIndicatorPayload | IndicatorPayload>> {
 	return indicators
 		.map((i) => ({
 			indicator: i,

@@ -6,7 +6,7 @@
 		type Container,
 		findAncestors,
 		findLeafObjectives,
-		type IndicatorTemplatePayload,
+		type IndicatorPayload,
 		isActualDataContainer,
 		isContainerWithEffect,
 		isEffectContainer,
@@ -16,7 +16,7 @@
 	} from '$lib/models';
 
 	interface Props {
-		container: Container<IndicatorTemplatePayload>;
+		container: Container<IndicatorPayload>;
 		relatedContainers?: Container[];
 		showLegend?: boolean;
 	}

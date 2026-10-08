@@ -61,13 +61,13 @@ test.describe(() => {
 	test('collaborator may add custom actual data', async ({
 		indicatorCatalog,
 		organizationalUnitWithActualData,
-		testIndicatorTemplate
+		testIndicator
 	}) => {
 		await indicatorCatalog.goto(`/${organizationalUnitWithActualData.guid}`);
-		await expect(indicatorCatalog.card(testIndicatorTemplate.payload.title)).toBeVisible();
+		await expect(indicatorCatalog.card(testIndicator.payload.title)).toBeVisible();
 
-		await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();
-		await expect(indicatorCatalog.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
+		await indicatorCatalog.card(testIndicator.payload.title).click();
+		await expect(indicatorCatalog.overlay.title).toHaveText(testIndicator.payload.title);
 		await indicatorCatalog.overlay.locator.getByText('Table').click();
 		await expect(indicatorCatalog.overlay.locator.getByRole('table')).toBeVisible();
 		await expect(
@@ -126,8 +126,8 @@ test('add section to indicator', async ({ indicatorCatalog, testOrganization }) 
 	await expect(section).toContainText('Lorem ipsum dolor sit amet, consectetur adipiscing elit.');
 });
 
-test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTemplate }) => {
-	await indicatorCatalog.goto(`/${testIndicatorTemplate.organization}`);
+test('activate selected indicators', async ({ indicatorCatalog, testIndicator }) => {
+	await indicatorCatalog.goto(`/${testIndicator.organization}`);
 	await indicatorCatalog.header.editModeToggle.check();
 
 	// Open the indicator catalog and select the indicator template
@@ -138,7 +138,7 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTem
 	await indicatorCatalog.page
 		.getByRole('dialog')
 		.getByRole('article')
-		.filter({ hasText: testIndicatorTemplate.payload.title })
+		.filter({ hasText: testIndicator.payload.title })
 		.click();
 	await indicatorCatalog.page
 		.getByRole('dialog')
@@ -146,8 +146,8 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicatorTem
 		.click();
 
 	// Verify the indicator is activated and has custom actual data
-	await indicatorCatalog.card(testIndicatorTemplate.payload.title).click();
-	await expect(indicatorCatalog.overlay.title).toHaveText(testIndicatorTemplate.payload.title);
+	await indicatorCatalog.card(testIndicator.payload.title).click();
+	await expect(indicatorCatalog.overlay.title).toHaveText(testIndicator.payload.title);
 	await indicatorCatalog.overlay.locator.getByText('Table').click();
 	await expect(
 		indicatorCatalog.overlay.locator.getByRole('row', { name: 'Custom actual data' })

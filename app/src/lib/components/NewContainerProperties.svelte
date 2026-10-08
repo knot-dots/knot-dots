@@ -5,7 +5,7 @@
 		isEffectContainer,
 		isEventContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isKnowledgeContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
@@ -63,7 +63,7 @@
 	<EventProperties bind:container editable relatedContainers={[]} revisions={[]} />
 {:else if isGoalContainer(container)}
 	<GoalProperties bind:container editable relatedContainers={[]} revisions={[]} />
-{:else if isIndicatorTemplateContainer(container)}
+{:else if isIndicatorContainer(container)}
 	<IndicatorProperties bind:container editable relatedContainers={[]} revisions={[]} />
 {:else if isKnowledgeContainer(container)}
 	<KnowledgeProperties bind:container editable relatedContainers={[]} revisions={[]} />

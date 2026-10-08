@@ -38,7 +38,7 @@
 		isEventContainer,
 		isGoalContainer,
 		isHelpContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isKnowledgeContainer,
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
@@ -89,7 +89,7 @@
 	<EditableHelpDetailView bind:container {layout} {revisions} {sections} />
 {:else if isCategoryContainer(container)}
 	<EditableCategoryDetailView bind:container {layout} {revisions} />
-{:else if isIndicatorTemplateContainer(container)}
+{:else if isIndicatorContainer(container)}
 	<EditableIndicatorTemplateDetailView bind:container {layout} {revisions} {sections} />
 {:else if isKnowledgeContainer(container)}
 	<EditableKnowledgeDetailView bind:container {layout} {revisions} {sections} />

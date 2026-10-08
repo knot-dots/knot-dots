@@ -24,7 +24,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		type IndicatorTemplatePayload,
+		type IndicatorPayload,
 		isContainerWithEffect,
 		isContainerWithObjective,
 		isEffectContainer,
@@ -36,7 +36,7 @@
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
-		container: Container<IndicatorTemplatePayload>;
+		container: Container<IndicatorPayload>;
 		layout: Snippet<[Snippet, Snippet]>;
 		revisions: Container<AnyPayload>[];
 		sections: Container[];

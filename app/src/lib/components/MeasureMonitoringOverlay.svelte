@@ -7,7 +7,7 @@
 	import {
 		type AnyPayload,
 		type Container,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer,
 		isSimpleMeasureContainer
@@ -41,7 +41,7 @@
 			: undefined}
 		{measures}
 		containers={containers.filter(isMeasureMonitoringContainer)}
-		indicators={containers.filter(isIndicatorTemplateContainer)}
+		indicators={containers.filter(isIndicatorContainer)}
 		showMeasures={!isMeasureContainer(container) && !isSimpleMeasureContainer(container)}
 	/>
 

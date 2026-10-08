@@ -6,7 +6,7 @@ import {
 	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	indicatorTypes,
 	payloadTypes
 } from '$lib/models';
@@ -42,7 +42,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 		'',
 		{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 	);
-	const containers = esResult.containers as Container<IndicatorTemplatePayload>[];
+	const containers = esResult.containers as Container<IndicatorPayload>[];
 	const data = esResult.facets;
 
 	const relatedContainers = await locals.pool.connect(

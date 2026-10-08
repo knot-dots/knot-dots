@@ -13,7 +13,7 @@ import {
 	containerOfType,
 	createNewContainerSchema,
 	editorialState,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	isActualDataContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
@@ -103,7 +103,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			},
 			'alpha'
 		)
-	)) as Array<Container<IndicatorTemplatePayload>>;
+	)) as Array<Container<IndicatorPayload>>;
 
 	const existingByTitle = new Map(existingIndicators.map((c) => [c.payload.title, c]));
 
@@ -161,7 +161,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	);
 
 	const containers: {
-		indicator: NewContainer<IndicatorTemplatePayload>;
+		indicator: NewContainer<IndicatorPayload>;
 		yearValues: [number, number][];
 	}[] = [];
 	const errors: string[] = [];
@@ -254,7 +254,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as NewContainer<IndicatorTemplatePayload>,
+					}) as NewContainer<IndicatorPayload>,
 					yearValues
 				});
 			} catch (e) {
@@ -273,7 +273,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		return json({ errors }, { status: 422 });
 	}
 
-	const createdIndicators: Container<IndicatorTemplatePayload>[] = [];
+	const createdIndicators: Container<IndicatorPayload>[] = [];
 
 	await locals.pool.transaction(async (connection) => {
 		for (const { indicator, yearValues } of containers) {
@@ -296,7 +296,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);
 				indicatorGuid = created.guid;
-				createdIndicators.push(created as Container<IndicatorTemplatePayload>);
+				createdIndicators.push(created as Container<IndicatorPayload>);
 			} else {
 				indicatorGuid = '';
 			}
