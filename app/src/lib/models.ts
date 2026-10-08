@@ -253,7 +253,7 @@ const categoryObjectTypeValues = [
 
 export const categoryObjectTypes = z.enum(categoryObjectTypeValues);
 
-export const chapterTypeOptions = [
+const chapterTypeValues = [
 	payloadTypes.enum.goal,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.measure,
@@ -261,6 +261,8 @@ export const chapterTypeOptions = [
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.text
 ];
+
+export const chapterTypes = z.enum(chapterTypeValues);
 
 const levelValues = [
 	'level.global',
@@ -2108,9 +2110,9 @@ const programPayload = z
 		}).shape,
 		...detailViewStyle.shape,
 		chapterType: z
-			.array(payloadTypes)
+			.array(chapterTypes)
 			.transform(deduplicate)
-			.default(chapterTypeOptions)
+			.default(chapterTypes.options)
 			.register(propertyRegistry, { label: 'chapter_type' }),
 		image: z.url().optional().register(propertyRegistry, { label: 'cover' }),
 		level: levels
