@@ -78,7 +78,7 @@ test.describe('Goal IOOI Board', () => {
 				'Select indicator'
 			);
 
-			// Select an indicator template from the dialog
+			// Select an indicator from the dialog
 			await dotsBoard.page.getByRole('dialog').getByText(testIndicator.payload.title).click();
 
 			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
@@ -315,7 +315,7 @@ test.describe('Measure IOOI Board', () => {
 				'Select indicator'
 			);
 
-			// Select an indicator template from the dialog
+			// Select an indicator from the dialog
 			await dotsBoard.page.getByRole('dialog').getByText(testIndicator.payload.title).click();
 
 			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();

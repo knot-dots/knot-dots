@@ -142,9 +142,9 @@ test('indicator suggested for sub-measure', () => {
 	addRelation(subMeasure, predicates.enum['is-part-of-program'], program);
 
 	// The expected order of suggestions is:
-	// 1. indicatorOne due to the parent of the measure using the same indicator template (score: 2)
-	// 2. indicatorThree due to the indicator template and the measure having 2 out of 4 categories in common (score: 0.5)
-	// 3. indicatorTwo due to the indicator template having nothing in common with the measure (score: 0)
+	// 1. indicatorOne due to the parent of the measure using the same indicator (score: 2)
+	// 2. indicatorThree due to the indicator and the measure having 2 out of 4 categories in common (score: 0.5)
+	// 3. indicatorTwo due to the indicator having nothing in common with the measure (score: 0)
 	const expectedSuggestions = [indicatorOne, indicatorThree, indicatorTwo];
 
 	const actualSuggestions = sortIndicatorsByRelevanceForGoalOrMeasure(
@@ -176,9 +176,9 @@ test('indicator suggested for measure in program using indicator', () => {
 	addRelation(anotherMeasure, predicates.enum['is-part-of-program'], program);
 
 	// The expected order of suggestions is:
-	// 1. indicatorOne due to the program of the measure using the same indicator template (score: 0.5)
-	// 2. indicatorThree due to the indicator template and the measure having 2 out of 5 categories in common (score: 0.4)
-	// 3. indicatorTwo due to the indicator template having nothing in common with the measure (score: 0)
+	// 1. indicatorOne due to the program of the measure using the same indicator (score: 0.5)
+	// 2. indicatorThree due to the indicator and the measure having 2 out of 5 categories in common (score: 0.4)
+	// 3. indicatorTwo due to the indicator having nothing in common with the measure (score: 0)
 	const expectedSuggestions = [indicatorOne, indicatorThree, indicatorTwo];
 
 	const actualSuggestions = sortIndicatorsByRelevanceForGoalOrMeasure(

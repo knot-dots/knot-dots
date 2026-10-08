@@ -932,7 +932,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			...newIndicator,
 			payload: {
 				...newIndicator.payload,
-				title: `Test Indicator Template ${workerInfo.workerIndex}`,
+				title: `Test Indicator ${workerInfo.workerIndex}`,
 				indicatorCategory: ['indicator_category.wegweiser_kommune'],
 				unit: 'unit.km'
 			}

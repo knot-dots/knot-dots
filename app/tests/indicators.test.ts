@@ -130,7 +130,7 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicator })
 	await indicatorCatalog.goto(`/${testIndicator.organization}`);
 	await indicatorCatalog.header.editModeToggle.check();
 
-	// Open the indicator catalog and select the indicator template
+	// Open the indicator catalog and select the indicator
 	await indicatorCatalog.activateSelectedIndicatorsButton.click();
 	await expect(indicatorCatalog.page.getByRole('dialog')).toContainText(
 		'Select indicators to activate'

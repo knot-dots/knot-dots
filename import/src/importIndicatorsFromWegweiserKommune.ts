@@ -174,14 +174,14 @@ function isSame<T>(a: T, b: T) {
 									})(tx);
 
 									console.log(
-										`Updated indicator template "${indicator.name}" (${updatedIndicatorContainer.guid})`
+										`Updated indicator "${indicator.name}" (${updatedIndicatorContainer.guid})`
 									);
 								}
 							} else {
 								const savedIndicatorContainer = await createContainer(newIndicatorContainer)(tx);
 
 								console.log(
-									`Created indicator template "${indicator.name}" (${savedIndicatorContainer.guid})`
+									`Created indicator "${indicator.name}" (${savedIndicatorContainer.guid})`
 								);
 							}
 						});
