@@ -317,30 +317,26 @@
 
 	.badge.badge--review {
 		--badge-border-radius: 9999px;
+		/* Flowbite icons leave 2px around the circle, which is meant to be 20px */
+		--badge-icon-size: 1.5rem;
 
 		padding: 0 0.625rem 0 0.125rem;
 	}
 
-	/* Flowbite icons leave 2px around the circle, which is meant to be 20px */
-	.badge.badge--review > :global(svg) {
-		height: 1.5rem;
-		width: 1.5rem;
+	.badge--review.badge--green {
+		--badge-icon-color: var(--color-green-600);
 	}
 
-	.badge.badge--green > :global(svg) {
-		color: var(--color-green-600);
+	.badge--review.badge--red {
+		--badge-icon-color: var(--color-red-600);
 	}
 
-	.badge.badge--red > :global(svg) {
-		color: var(--color-red-600);
+	.badge--review.badge--yellow {
+		--badge-icon-color: var(--color-yellow-600);
 	}
 
-	.badge.badge--yellow > :global(svg) {
-		color: var(--color-yellow-600);
-	}
-
-	.badge.badge--gray > :global(svg) {
-		color: var(--color-gray-600);
+	.badge--review.badge--gray {
+		--badge-icon-color: var(--color-gray-600);
 	}
 
 	figure {
