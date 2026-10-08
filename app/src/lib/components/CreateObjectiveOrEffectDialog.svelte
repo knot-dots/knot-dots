@@ -12,8 +12,8 @@
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
 	import EditableObjectiveDetailView from '$lib/components/EditableObjectiveDetailView.svelte';
-	import IndicatorTemplatePicker from '$lib/components/IndicatorTemplatePicker.svelte';
-	import IndicatorTemplatePreview from '$lib/components/IndicatorTemplatePreview.svelte';
+	import IndicatorSuggestionPicker from '$lib/components/IndicatorSuggestionPicker.svelte';
+	import IndicatorPreview from '$lib/components/IndicatorPreview.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import {
 		type BinaryIndicatorPayload,
@@ -147,9 +147,9 @@
 			</nav>
 
 			{#if page.state.createObjectiveOrEffect.step === 1 && target}
-				<IndicatorTemplatePicker onSelect={handleSelect} {target} value={selected} />
+				<IndicatorSuggestionPicker onSelect={handleSelect} {target} value={selected} />
 			{:else if page.state.createObjectiveOrEffect.step === 2 && selected}
-				<IndicatorTemplatePreview container={selected} />
+				<IndicatorPreview container={selected} />
 			{:else if page.state.createObjectiveOrEffect.step === 3 && newObjectiveOrEffect}
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
