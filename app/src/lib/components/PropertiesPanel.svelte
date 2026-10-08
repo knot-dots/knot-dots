@@ -6,6 +6,7 @@
 	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
 	import fetchMembers from '$lib/client/fetchMembers';
+	import CreatedBy from '$lib/components/CreatedBy.svelte';
 	import CustomCategoryDropdown from '$lib/components/CustomCategoryDropdown.svelte';
 	import DefaultEditableProperty from '$lib/components/DefaultEditableProperty.svelte';
 	import EditableAssignee from '$lib/components/EditableAssignee.svelte';
@@ -24,6 +25,8 @@
 	import EditableRuleStatus from '$lib/components/EditableRuleStatus.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
+	import ManagedBy from '$lib/components/ManagedBy.svelte';
+	import ModifiedBy from '$lib/components/ModifiedBy.svelte';
 	import PropertiesConfiguration from '$lib/components/PropertiesConfiguration.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
@@ -50,9 +53,11 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		relatedContainers: Array<Container<AnyPayload>>;
+		revisions: Array<Container<AnyPayload>>;
 	}
 
-	let { container = $bindable(), editable = false }: Props = $props();
+	let { container = $bindable(), editable = false, relatedContainers, revisions }: Props = $props();
 
 	const organization = $derived(page.data.currentOrganization);
 
@@ -124,6 +129,8 @@
 						{editable}
 						label={$_('card_style')}
 					/>
+				{:else if item == 'created'}
+					<CreatedBy {container} {revisions} />
 				{:else if item.startsWith('category.') && 'category' in payloadSchema.shape && isContainerWithCategory(container)}
 					{const key = item.split('.')[1]}
 					{const id = crypto.randomUUID()}
@@ -148,6 +155,8 @@
 					/>
 				{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
 					<EditableMeasure bind:container {editable} />
+				{:else if item == 'modified'}
+					<ModifiedBy {container} />
 				{:else if item == 'organization'}
 					<EditableOrganization bind:value={container.organization} {editable} />
 				{:else if item == 'organizational_unit'}
@@ -188,6 +197,8 @@
 					<DefaultEditableProperty bind:value={container.payload[key]} {editable} {schema} />
 				{/if}
 			{/each}
+
+			<ManagedBy {container} {relatedContainers} />
 		{/if}
 	</div>
 {/if}

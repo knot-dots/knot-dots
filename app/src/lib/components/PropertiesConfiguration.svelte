@@ -57,12 +57,18 @@
 	});
 
 	function getItemLabel(item: string): string {
+		if (item == 'created') {
+			return $_('created_date');
+		}
 		if (item.startsWith('category.')) {
 			const key = item.slice(9);
 			return page.data.categoryContext?.labels?.get(key) ?? key;
 		}
 		if (item === 'measure') {
 			return $_('measure');
+		}
+		if (item === 'modified') {
+			return $_('modified_date');
 		}
 		if (item === 'organization') {
 			return $_('organization');

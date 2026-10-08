@@ -1158,7 +1158,9 @@ export const binaryIndicatorPayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -1194,7 +1196,7 @@ const unrefinedCategoryPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['objectTypes', 'organization', 'organizational_unit'],
+				onlyPanel: ['objectTypes', 'organization', 'organizational_unit', 'created', 'modified'],
 				unused: ['visibility']
 			}
 		}
@@ -1327,7 +1329,14 @@ const effectPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['iooiType', 'visibility', 'organization', 'organizational_unit'],
+				onlyPanel: [
+					'iooiType',
+					'visibility',
+					'organization',
+					'organizational_unit',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}
@@ -1381,7 +1390,9 @@ const eventPayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -1529,7 +1540,15 @@ export const helpPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['image', 'slug', 'visibility', 'organization', 'organizational_unit'],
+				onlyPanel: [
+					'image',
+					'slug',
+					'visibility',
+					'organization',
+					'organizational_unit',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}
@@ -1656,7 +1675,9 @@ export const indicatorPayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -1717,7 +1738,9 @@ export const knowledgePayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -1794,7 +1817,9 @@ const measurePayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: ['type']
 			}
@@ -1848,7 +1873,14 @@ const objectivePayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['iooiType', 'visibility', 'organization', 'organizational_unit'],
+				onlyPanel: [
+					'iooiType',
+					'visibility',
+					'organization',
+					'organizational_unit',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}
@@ -2007,7 +2039,14 @@ const pagePayload = z
 		layout: {
 			detail: {
 				headerAndPanel: [],
-				onlyPanel: ['type', 'visibility', 'organization', 'organizational_unit'],
+				onlyPanel: [
+					'type',
+					'visibility',
+					'organization',
+					'organizational_unit',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}
@@ -2042,7 +2081,9 @@ const postPayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -2100,7 +2141,9 @@ const programPayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: ['type']
 			}
@@ -2208,7 +2251,15 @@ const reportPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['image', 'editorialState', 'visibility', 'organization', 'organizational_unit'],
+				onlyPanel: [
+					'image',
+					'editorialState',
+					'visibility',
+					'organization',
+					'organizational_unit',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}
@@ -2245,7 +2296,9 @@ const resourcePayload = z
 					'fulfillmentDate',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -2310,7 +2363,7 @@ const resourceDataPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['visibility', 'organization', 'organizational_unit'],
+				onlyPanel: ['visibility', 'organization', 'organizational_unit', 'created', 'modified'],
 				unused: []
 			}
 		}
@@ -2425,7 +2478,9 @@ const resourceV2Payload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -2464,7 +2519,9 @@ export const rulePayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: []
 			}
@@ -2512,7 +2569,9 @@ const simpleMeasurePayload = z
 					'editorialState',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: ['type']
 			}
@@ -2588,7 +2647,9 @@ const taskPayload = z
 					'parent',
 					'visibility',
 					'organization',
-					'organizational_unit'
+					'organizational_unit',
+					'created',
+					'modified'
 				],
 				unused: ['type']
 			}
@@ -2634,7 +2695,16 @@ const teaserPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['link', 'linkCaption', 'style', 'cardStyle', 'image', 'visibility'],
+				onlyPanel: [
+					'link',
+					'linkCaption',
+					'style',
+					'cardStyle',
+					'image',
+					'visibility',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}
@@ -2716,7 +2786,7 @@ const unrefinedTermPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['filterLabel', 'organization', 'organizational_unit'],
+				onlyPanel: ['filterLabel', 'organization', 'organizational_unit', 'created', 'modified'],
 				unused: ['visibility']
 			}
 		}
@@ -2755,7 +2825,14 @@ const textPayload = z
 		layout: {
 			detail: {
 				headerAndPanel: ['type'],
-				onlyPanel: ['textType', 'visibility', 'organization', 'organizational_unit'],
+				onlyPanel: [
+					'textType',
+					'visibility',
+					'organization',
+					'organizational_unit',
+					'created',
+					'modified'
+				],
 				unused: []
 			}
 		}

@@ -16,6 +16,7 @@
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type AnyPayload,
 		type Container,
 		helpSlugForDetailView,
 		isContainerWithColor,
@@ -31,9 +32,18 @@
 		data?: Snippet;
 		footer?: Snippet;
 		properties?: Snippet;
+		relatedContainers: Array<Container<AnyPayload>>;
+		revisions: Array<Container<AnyPayload>>;
 	}
 
-	let { container = $bindable(), data, footer, properties }: Props = $props();
+	let {
+		container = $bindable(),
+		data,
+		footer,
+		properties,
+		relatedContainers,
+		revisions
+	}: Props = $props();
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
@@ -119,6 +129,7 @@
 							bind:container
 							editable={$applicationState.containerDetailView.editable &&
 								$ability.can('update', container)}
+							{revisions}
 							showPropertiesTrigger
 						/>
 					{:else}
@@ -152,6 +163,8 @@
 					bind:container
 					editable={$applicationState.containerDetailView.editable &&
 						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
 				/>
 			</form>
 		{/if}

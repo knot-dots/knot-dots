@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import fetchMembers from '$lib/client/fetchMembers';
 	import DefaultInlineEditableProperty from '$lib/components/DefaultInlineEditableProperty.svelte';
+	import InlineCreatedBy from '$lib/components/InlineCreatedBy.svelte';
 	import InlineEditableAssignee from '$lib/components/InlineEditableAssignee.svelte';
 	import InlineEditableCardStyle from '$lib/components/InlineEditableCardStyle.svelte';
 	import InlineEditableCategory from '$lib/components/InlineEditableCategory.svelte';
@@ -16,6 +17,7 @@
 	import InlineEditableOrganization from '$lib/components/InlineEditableOrganization.svelte';
 	import InlineEditableParent from '$lib/components/InlineEditableParent.svelte';
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
+	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
@@ -39,12 +41,14 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		revisions: Array<Container<AnyPayload>>;
 		showPropertiesTrigger?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
+		revisions,
 		showPropertiesTrigger = false
 	}: Props = $props();
 
@@ -89,6 +93,8 @@
 					/>
 				{:else if item == 'cardStyle' && isTeaserContainer(container)}
 					<InlineEditableCardStyle bind:value={container.payload.cardStyle} {editable} />
+				{:else if item == 'created'}
+					<InlineCreatedBy {container} {revisions} />
 				{:else if item.startsWith('category.') && 'category' in payloadSchema.shape && isContainerWithCategory(container)}
 					{const key = item.split('.')[1]}
 					<InlineEditableCategory
@@ -102,6 +108,8 @@
 					/>
 				{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
 					<InlineEditableMeasure bind:container {editable} />
+				{:else if item == 'modified'}
+					<InlineModifiedBy {container} />
 				{:else if item == 'organization'}
 					<InlineEditableOrganization bind:value={container.organization} {editable} />
 				{:else if item == 'organizational_unit'}

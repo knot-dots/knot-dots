@@ -98,7 +98,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container>
+	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
 			<div class="details-section">
 				<div class="segmented-button">
