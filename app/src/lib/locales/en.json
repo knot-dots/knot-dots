@@ -188,11 +188,40 @@
 		"copy_invalid": "The selected content cannot be copied.",
 		"copy_too_large": "The selected content is too large to copy.",
 		"copy_unsupported_source": "This content cannot be copied to the selected destination.",
-		"forbidden": "Sorry, you are not allowed to do this.",
+		"forbidden": "You don't have permission to do this.",
 		"individual_profile_exists": "An individual profile already exists for this organizational unit.",
-		"unauthorized": "Sorry, you are not allowed to do this.",
+		"unauthorized": "You need to log in to do this.",
 		"not_found": "Sorry, there is nothing to show here.",
 		"unprocessable_entity": "The request could not be processed.",
+		"page": {
+			"back": "Back",
+			"code": "Error code {code}",
+			"go_to": "Go to {name}",
+			"help_center": "Go to help center",
+			"home": "Go to home page",
+			"login_required": {
+				"description": "This area is only visible after logging in.",
+				"title": "Login required"
+			},
+			"no_access": {
+				"description": "The permissions needed for this area are missing.",
+				"title": "No access"
+			},
+			"not_available": {
+				"description": "Either it no longer exists or access is missing. The help center can help with questions.",
+				"title": "This page is not available"
+			},
+			"not_public": {
+				"description": "It may be visible after logging in. The page may also no longer exist.",
+				"title": "This page is not public"
+			},
+			"reload": "Reload page",
+			"title": "Page not available",
+			"unexpected": {
+				"description": "Reloading often helps. If the problem persists, the help center can help – please mention the error code.",
+				"title": "Something went wrong"
+			}
+		},
 		"precondition_failed": "The resource has been modified.",
 		"precondition_required": "This request is required to be conditional; try using \"If-Match\".",
 		"program_template_required": "Objects in a program must be created from a template available in that program.",

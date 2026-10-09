@@ -82,6 +82,7 @@ type MyFixtures = {
 	testOrganizationalUnitGoal: Container<GoalPayload>;
 	testProgram: Container<ProgramPayload>;
 	testProgramGoalTemplate: Container<GoalPayload>;
+	testPrivateProgram: Container<ProgramPayload>;
 	testPublicProgram: Container<ProgramPayload>;
 	testPublicReport: Container<ReportPayload>;
 	testReport: Container<ReportPayload>;
@@ -1338,6 +1339,24 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testPublicReport);
 
 		await deleteContainer(adminContext, testPublicReport);
+	},
+	testPrivateProgram: async ({ adminContext, defaultOrganization }, use, workerInfo) => {
+		const newProgram = containerOfType(
+			payloadTypes.enum.program,
+			defaultOrganization
+		) as Container<ProgramPayload>;
+		const testPrivateProgram = await createContainer(adminContext, {
+			...newProgram,
+			payload: {
+				...newProgram.payload,
+				title: `Test Private Program ${workerInfo.workerIndex}`,
+				visibility: 'organization'
+			}
+		});
+
+		await use(testPrivateProgram);
+
+		await deleteContainer(adminContext, testPrivateProgram);
 	},
 	testPublicProgram: async ({ adminContext, defaultOrganization }, use, workerInfo) => {
 		const newProgram = containerOfType(

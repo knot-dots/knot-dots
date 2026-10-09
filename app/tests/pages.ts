@@ -72,3 +72,18 @@ export class ProgramPage extends BasePage {
 		);
 	}
 }
+
+export class ErrorPage extends BasePage {
+	// Filtered because the previous page's main element remains during its outro transition.
+	get main() {
+		return this.page.getByRole('main').filter({ hasText: /Error code \d+/ });
+	}
+
+	get code() {
+		return this.main.getByText(/^Error code \d+$/);
+	}
+
+	get title() {
+		return this.main.getByRole('heading', { level: 1 });
+	}
+}
