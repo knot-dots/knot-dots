@@ -11,7 +11,8 @@ const title = z.string().trim().min(1).describe('Non-empty title of the new cont
 export const mcpParentRelationPredicates = z.enum([
 	predicates.enum['is-part-of'],
 	predicates.enum['is-part-of-program'],
-	predicates.enum['is-part-of-measure']
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-section-of']
 ]);
 
 export type McpParentRelationPredicate = z.infer<typeof mcpParentRelationPredicates>;
@@ -23,7 +24,7 @@ const parentRelation = z.strictObject({
 			'GUID of an existing parent container that is visible to you in the same organization.'
 		),
 	predicate: mcpParentRelationPredicates.describe(
-		'Structural relation from the new container to the parent. is-part-of-program needs a program, is-part-of-measure a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, and knowledge below knowledge. The server assigns the position, which is the sort order among the children of the parent.'
+		'Structural relation from the new container to the parent. is-part-of-program needs a program, is-part-of-measure a measure or simple measure. is-part-of places a goal below a goal, a measure, simple measure or task below a goal or measure, knowledge below knowledge, an effect below a measure or simple measure, and an objective below a goal. is-section-of adds a text section to a page, goal, measure, simple measure, task, knowledge, rule, effect, objective, indicator template, binary indicator or resource; programs take text as a part through is-part-of-program instead. The server assigns the position, which is the sort order among the children of the parent.'
 	)
 });
 

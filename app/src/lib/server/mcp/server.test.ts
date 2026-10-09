@@ -39,6 +39,7 @@ const userScopedAuthInfo = {
 };
 const addContainerRelation = vi.fn();
 const addCustomCollectionSection = vi.fn();
+const attachIndicator = vi.fn();
 const createContainer = vi.fn();
 const getContainer = vi.fn();
 const listContainerCategories = vi.fn();
@@ -47,12 +48,14 @@ const listContainerRelations = vi.fn();
 const listOrganizationalUnits = vi.fn();
 const listOrganizationMemberships = vi.fn();
 const removeContainerRelation = vi.fn();
+const setActualData = vi.fn();
 const searchContainers = vi.fn();
 const searchOrganizationUsers = vi.fn();
 const updateContainer = vi.fn();
 const toolHandler = createKnotDotsMcpHandler({
 	addContainerRelation,
 	addCustomCollectionSection,
+	attachIndicator,
 	createContainer,
 	getContainer,
 	listContainerCategories,
@@ -61,6 +64,7 @@ const toolHandler = createKnotDotsMcpHandler({
 	listOrganizationalUnits,
 	listOrganizationMemberships,
 	removeContainerRelation,
+	setActualData,
 	searchContainers,
 	searchOrganizationUsers,
 	updateContainer
@@ -115,6 +119,7 @@ async function legacyResponseJson(response: Response) {
 beforeEach(() => {
 	addContainerRelation.mockReset();
 	addCustomCollectionSection.mockReset();
+	attachIndicator.mockReset();
 	createContainer.mockReset();
 	updateContainer.mockReset();
 	getContainer.mockReset();
@@ -124,6 +129,7 @@ beforeEach(() => {
 	listOrganizationalUnits.mockReset();
 	listOrganizationMemberships.mockReset();
 	removeContainerRelation.mockReset();
+	setActualData.mockReset();
 	searchContainers.mockReset();
 	searchOrganizationUsers.mockReset();
 });
@@ -325,6 +331,15 @@ test('advertises tools without requiring their scopes', async () => {
 					openWorldHint: false,
 					readOnlyHint: false
 				},
+				name: 'attach_indicator',
+				title: 'Attach indicator'
+			}),
+			expect.objectContaining({
+				annotations: {
+					idempotentHint: true,
+					openWorldHint: false,
+					readOnlyHint: false
+				},
 				name: 'remove_container_relation',
 				title: 'Remove container relation'
 			}),
@@ -342,6 +357,7 @@ test('advertises tools without requiring their scopes', async () => {
 	expect(body.result.tools.map(({ name }: { name: string }) => name).toSorted()).toEqual([
 		'add_container_relation',
 		'add_custom_collection_section',
+		'attach_indicator',
 		'create_container',
 		'get_container',
 		'list_container_categories',
@@ -352,6 +368,7 @@ test('advertises tools without requiring their scopes', async () => {
 		'remove_container_relation',
 		'search_containers',
 		'search_organization_users',
+		'set_actual_data',
 		'update_container'
 	]);
 	expect(
@@ -708,18 +725,88 @@ test.each([
 	});
 });
 
-test('rejects structural predicates in the relation tools', async () => {
+test.each([
+	['is-part-of', 'Set it with parentRelations of create_container.'],
+	['is-measured-by', 'Use attach_indicator.'],
+	['is-objective-for', 'Use attach_indicator.']
+])('points from %s in the relation tools to the right tool', async (predicate, hint) => {
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
-			arguments: { ...relationArguments, predicate: 'is-part-of' },
+			arguments: { ...relationArguments, predicate },
 			name: 'add_container_relation'
 		}),
 		{ authInfo: writeScopedAuthInfo }
 	);
 
 	expect(addContainerRelation).not.toHaveBeenCalled();
+	const body = await response.json();
+	expect(body).toMatchObject({ result: { isError: true } });
+	expect(body.result.content[0].text).toContain(hint);
+});
+
+const setActualDataArguments = {
+	indicatorGuid: '00000000-0000-4000-8000-000000000004',
+	organizationGuid: '00000000-0000-4000-8000-000000000003',
+	values: [{ value: 412, year: 2024 }]
+};
+
+test('sets actual data using the write scope', async () => {
+	const output = {
+		actualData: {
+			booleanValue: false,
+			guid: '00000000-0000-4000-8000-000000000005',
+			indicatorGuid: setActualDataArguments.indicatorGuid,
+			organizationGuid: setActualDataArguments.organizationGuid,
+			organizationalUnitGuid: null,
+			source: null,
+			values: setActualDataArguments.values
+		},
+		created: true
+	};
+	setActualData.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: setActualDataArguments, name: 'set_actual_data' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(setActualData).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		{ ...setActualDataArguments, organizationalUnitGuid: null }
+	);
 	await expect(response.json()).resolves.toMatchObject({
-		result: { isError: true }
+		result: { structuredContent: output }
+	});
+});
+
+const attachIndicatorArguments = {
+	indicatorGuid: '00000000-0000-4000-8000-000000000004',
+	targetGuid: '00000000-0000-4000-8000-000000000003'
+};
+
+test('attaches an indicator using the write scope', async () => {
+	const output = {
+		attachment: {
+			guid: '00000000-0000-4000-8000-000000000005',
+			indicatorGuid: attachIndicatorArguments.indicatorGuid,
+			targetGuid: attachIndicatorArguments.targetGuid,
+			type: 'effect'
+		},
+		changed: true
+	};
+	attachIndicator.mockResolvedValue(output);
+
+	const response = await toolHandler.fetch(
+		modernRequest('tools/call', { arguments: attachIndicatorArguments, name: 'attach_indicator' }),
+		{ authInfo: writeScopedAuthInfo }
+	);
+
+	expect(attachIndicator).toHaveBeenCalledExactlyOnceWith(
+		{ tokenId, userId },
+		attachIndicatorArguments
+	);
+	await expect(response.json()).resolves.toMatchObject({
+		result: { structuredContent: output }
 	});
 });
 
@@ -751,6 +838,8 @@ test.each([
 		}
 	],
 	['add_container_relation', addContainerRelation, relationArguments],
+	['attach_indicator', attachIndicator, attachIndicatorArguments],
+	['set_actual_data', setActualData, setActualDataArguments],
 	['remove_container_relation', removeContainerRelation, relationArguments]
 ])('denies the %s tool without the write scope', async (name, dependency, arguments_) => {
 	const response = await toolHandler.fetch(
@@ -852,7 +941,7 @@ test('serves each curated payload as a direct JSON Schema', async () => {
 	}
 });
 
-test.each(['effect', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
+test.each(['html', 'not_a_payload'])('does not expose the %s payload schema', async (type) => {
 	const uri = `${payloadSchemaCatalogUri}/${type}`;
 	const response = await toolHandler.fetch(modernRequest('resources/read', { uri }), { authInfo });
 

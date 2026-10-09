@@ -70,7 +70,9 @@ export function updateMcpContainer(input: UpdateContainerInput & McpAuth) {
 
 			const merged = mergePayloadPatch(current.payload, input.payloadPatch);
 			if (isTemplate(current.payload) || isTemplate(merged)) {
-				throw new McpUpdateError('Templates cannot be updated by this tool.');
+				throw new McpUpdateError(
+					'Containers marked as templates (template: true) cannot be updated by this tool.'
+				);
 			}
 			const payloadResult = getPayloadSchema(current.payload.type).safeParse(merged);
 			if (!payloadResult.success) {

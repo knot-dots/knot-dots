@@ -150,7 +150,12 @@ const payloadCases = [
 		'indicator_template',
 		{ title: 'Created indicator', type: 'indicator_template', unit: 't CO2e' }
 	],
-	['resource_v2', { title: 'Created resource', type: 'resource_v2' }]
+	['resource_v2', { title: 'Created resource', type: 'resource_v2' }],
+	['binary_indicator', { title: 'Created binary indicator', type: 'binary_indicator' }],
+	['effect', { title: 'Created effect', type: 'effect' }],
+	['objective', { title: 'Created objective', type: 'objective' }],
+	['rule', { title: 'Created rule', type: 'rule' }],
+	['text', { body: 'Created text', title: 'Created text', type: 'text' }]
 ] as const;
 
 test('covers every resource-backed payload type with a creation fixture', () => {
@@ -282,7 +287,9 @@ test('rejects invalid payloads and templates', async () => {
 	).rejects.toThrow('payload.title');
 	await expect(
 		createMcpContainer({ ...templateInput, tokenId, userId })({} as never)
-	).rejects.toThrow('Template creation is not supported');
+	).rejects.toThrow(
+		'Containers marked as templates (template: true) cannot be created by this tool.'
+	);
 	expect(mocks.createAuthorizedContainer).not.toHaveBeenCalled();
 	expect(mocks.recordMcpWriteEvent).not.toHaveBeenCalled();
 });
@@ -509,9 +516,22 @@ test.each([
 	['goal', 'is-part-of-measure', 'program'],
 	['goal', 'is-part-of', 'program'],
 	['task', 'is-part-of', 'task'],
-	['page', 'is-part-of', 'goal']
+	['page', 'is-part-of', 'goal'],
+	['effect', 'is-part-of', 'goal'],
+	['objective', 'is-part-of', 'measure'],
+	['binary_indicator', 'is-part-of', 'goal'],
+	['text', 'is-section-of', 'program'],
+	['goal', 'is-section-of', 'page'],
+	['text', 'is-part-of', 'goal']
 ] as const)('rejects a %s %s a %s', async (type, predicate, parentType) => {
-	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
+	mocks.containers.set(
+		parentGuid,
+		container(parentGuid, {
+			...(parentType === 'page' ? { body: '' } : {}),
+			title: 'Parent',
+			type: parentType
+		})
+	);
 	const input = createContainerInput.parse({
 		organizationGuid,
 		parentRelations: [{ parentGuid, predicate }],
@@ -528,9 +548,22 @@ test.each([
 	['measure', 'is-part-of-measure', 'simple_measure'],
 	['task', 'is-part-of', 'measure'],
 	['knowledge', 'is-part-of', 'knowledge'],
-	['measure', 'is-part-of-program', 'program']
+	['measure', 'is-part-of-program', 'program'],
+	['rule', 'is-part-of-program', 'program'],
+	['effect', 'is-part-of', 'simple_measure'],
+	['objective', 'is-part-of', 'goal'],
+	['text', 'is-section-of', 'measure'],
+	['text', 'is-section-of', 'page'],
+	['text', 'is-part-of-program', 'program']
 ] as const)('accepts a %s %s a %s', async (type, predicate, parentType) => {
-	mocks.containers.set(parentGuid, container(parentGuid, { title: 'Parent', type: parentType }));
+	mocks.containers.set(
+		parentGuid,
+		container(parentGuid, {
+			...(parentType === 'page' ? { body: '' } : {}),
+			title: 'Parent',
+			type: parentType
+		})
+	);
 	const input = createContainerInput.parse({
 		organizationGuid,
 		parentRelations: [{ parentGuid, predicate }],
@@ -610,4 +643,29 @@ test('marks created content as AI-generated whatever the payload says', async ()
 	await createWith({ aiContribution: 0, title: 'Climate goal', type: 'goal' });
 
 	expect(createdPayload()).toMatchObject({ aiContribution: 1 });
+});
+
+test('appends a text section after the existing sections', async () => {
+	const sectionGuid = '00000000-0000-4000-8000-00000000000e';
+	mocks.containers.set(
+		parentGuid,
+		container(
+			parentGuid,
+			{ title: 'Bike lanes', type: 'measure' },
+			{
+				relation: [
+					{ object: parentGuid, position: 1, predicate: 'is-section-of', subject: sectionGuid },
+					{ object: parentGuid, position: 4, predicate: 'is-part-of', subject: pageGuid }
+				]
+			}
+		)
+	);
+
+	await createWith({ body: 'Background', title: 'Background', type: 'text' }, [
+		{ parentGuid, predicate: 'is-section-of' }
+	]);
+
+	expect(mocks.createAuthorizedContainer.mock.calls[0][0].data.relation).toEqual([
+		{ object: parentGuid, position: 2, predicate: 'is-section-of' }
+	]);
 });

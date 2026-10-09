@@ -2273,7 +2273,7 @@ const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: tr
 
 const textPayload = z.strictObject({
 	...sectionStyle.shape,
-	body: z.string().trim().optional(),
+	body: z.string().trim().describe('GitHub-flavored Markdown.').optional(),
 	title: z.string().trim(),
 	type: z.literal(payloadTypes.enum.text),
 	textType: textType.default(textType.enum.default),

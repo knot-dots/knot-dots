@@ -10,7 +10,12 @@ export const mcpPayloadTypeValues = [
 	payloadTypes.enum.task,
 	payloadTypes.enum.knowledge,
 	payloadTypes.enum.indicator_template,
-	payloadTypes.enum.resource_v2
+	payloadTypes.enum.resource_v2,
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.effect,
+	payloadTypes.enum.objective,
+	payloadTypes.enum.rule,
+	payloadTypes.enum.text
 ] as const satisfies readonly PayloadType[];
 
 export const mcpPayloadTypes = z.enum(mcpPayloadTypeValues);
