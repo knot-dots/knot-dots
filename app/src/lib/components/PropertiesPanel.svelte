@@ -158,11 +158,14 @@
 				{:else if item == 'modified'}
 					<ModifiedBy {container} />
 				{:else if item == 'organization'}
-					<EditableOrganization bind:value={container.organization} {editable} />
+					<EditableOrganization
+						bind:value={container.organization}
+						editable={editable && $ability.can('update', container, 'organizational')}
+					/>
 				{:else if item == 'organizational_unit'}
 					<EditableOrganizationalUnit
 						bind:value={container.organizational_unit}
-						{editable}
+						editable={editable && $ability.can('update', container, 'organizational_unit')}
 						organization={container.organization}
 					/>
 				{:else if item == 'parent'}

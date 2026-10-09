@@ -37,6 +37,7 @@
 		type Status
 	} from '$lib/models';
 	import { moduleByType } from '$lib/modules';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -111,11 +112,14 @@
 				{:else if item == 'modified'}
 					<InlineModifiedBy {container} />
 				{:else if item == 'organization'}
-					<InlineEditableOrganization bind:value={container.organization} {editable} />
+					<InlineEditableOrganization
+						bind:value={container.organization}
+						editable={editable && $ability.can('update', container, 'organization')}
+					/>
 				{:else if item == 'organizational_unit'}
 					<InlineEditableOrganizationalUnit
 						bind:value={container.organizational_unit}
-						{editable}
+						editable={editable && $ability.can('update', container, 'organizational_unit')}
 						organization={container.organization}
 					/>
 				{:else if item == 'parent'}
