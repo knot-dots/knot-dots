@@ -3,11 +3,11 @@
 	import { _ } from 'svelte-i18n';
 	import Card from '$lib/components/Card.svelte';
 	import Summary from '$lib/components/Summary.svelte';
-	import type { Container, IndicatorTemplatePayload } from '$lib/models';
+	import type { Container, IndicatorPayload } from '$lib/models';
 
 	interface Props {
 		button?: Snippet;
-		container: Container<IndicatorTemplatePayload>;
+		container: Container<IndicatorPayload>;
 	}
 
 	let { button, container }: Props = $props();

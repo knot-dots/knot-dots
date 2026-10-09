@@ -16,8 +16,8 @@
 		createContainerSchema,
 		type GoalPayload,
 		indicatorCategories,
-		indicatorTemplatePayload,
-		type IndicatorTemplatePayload,
+		indicatorPayload,
+		type IndicatorPayload,
 		indicatorTypes,
 		isEffectContainer,
 		type MeasurePayload,
@@ -25,17 +25,15 @@
 	} from '$lib/models';
 
 	interface Props {
-		onSelect: (
-			container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>
-		) => void;
+		onSelect: (container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) => void;
 		target: Container<GoalPayload | MeasurePayload>;
-		value?: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
+		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
 	let { onSelect, target, value }: Props = $props();
 
 	const categoryContext = $derived(
-		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
 	);
 
 	let filter = $state<Record<string, string[]>>({
@@ -53,7 +51,7 @@
 				return z
 					.array(
 						z.union([
-							createContainerSchema(indicatorTemplatePayload),
+							createContainerSchema(indicatorPayload),
 							createContainerSchema(binaryIndicatorPayload)
 						])
 					)

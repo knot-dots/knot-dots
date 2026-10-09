@@ -5,7 +5,7 @@ import {
 	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	indicatorTypes,
 	isActualDataContainer,
 	type OrganizationalUnitPayload,
@@ -31,7 +31,7 @@ export interface IndicatorFilters {
 }
 
 export interface IndicatorLoadResult {
-	containers: Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>;
+	containers: Array<Container<BinaryIndicatorPayload | IndicatorPayload>>;
 	related: Container[];
 	combined: Container[]; // visible + related merged after filtering
 	facetData?: Record<string, Record<string, number>>;
@@ -79,13 +79,13 @@ export async function getIndicatorsData(params: {
 			indicatorTypes: filters.indicatorTypes,
 			template: false,
 			terms: filters.terms,
-			type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
+			type: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
 		},
 		'alpha',
 		{ customCategoryKeys: customCategoryKeys, includeFacets: true }
 	);
 	const indicators = esResult.containers as Array<
-		Container<BinaryIndicatorPayload | IndicatorTemplatePayload>
+		Container<BinaryIndicatorPayload | IndicatorPayload>
 	>;
 	const facetData = esResult.facets;
 
@@ -138,7 +138,7 @@ export default (async function load({ depends, locals, parent, url }) {
 		currentOrganizationalUnit
 	} = await parent();
 	const categoryContext = filterCategoryContext(rawCategoryContext, [
-		payloadTypes.enum.indicator_template,
+		payloadTypes.enum.indicator,
 		payloadTypes.enum.binary_indicator
 	]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);

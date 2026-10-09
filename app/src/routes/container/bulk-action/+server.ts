@@ -7,7 +7,7 @@ import {
 	type Container,
 	isActualDataContainer,
 	isBinaryIndicatorContainer,
-	isIndicatorTemplateContainer,
+	isIndicatorContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	modifiedContainer,
@@ -66,7 +66,7 @@ export const POST = (async ({ locals, request }) => {
 		)(txConnection);
 
 		const relatedContainers = await getAllContainersRelatedToIndicators(
-			containers.filter((c) => isBinaryIndicatorContainer(c) || isIndicatorTemplateContainer(c)),
+			containers.filter((c) => isBinaryIndicatorContainer(c) || isIndicatorContainer(c)),
 			{},
 			{
 				organizations: [parseResult.data.organization],
@@ -87,7 +87,7 @@ export const POST = (async ({ locals, request }) => {
 		// Therefore, the indicators belonging to other organizational contexts
 		// need to be excluded from the bulk action targets.
 		const isNotForeignIndicator = (container: Container<AnyPayload>) =>
-			!(isBinaryIndicatorContainer(container) || isIndicatorTemplateContainer(container)) ||
+			!(isBinaryIndicatorContainer(container) || isIndicatorContainer(container)) ||
 			(container.organization == parseResult.data.organization &&
 				container.organizational_unit == parseResult.data.organizational_unit);
 

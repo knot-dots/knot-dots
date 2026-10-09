@@ -10,7 +10,7 @@
 		computeFacetCount,
 		indicatorCategories,
 		indicatorTypes,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		payloadTypes
 	} from '$lib/models';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
@@ -28,7 +28,7 @@
 	);
 
 	let categoryContext = $derived(
-		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
+		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
 	);
 
 	let facets = $derived(
@@ -38,7 +38,7 @@
 				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
 				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]
 			]),
-			containers.filter(isIndicatorTemplateContainer)
+			containers.filter(isIndicatorContainer)
 		)
 	);
 </script>

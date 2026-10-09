@@ -116,7 +116,7 @@
 			ignoreBulkActionContext
 			relatedContainers={relatedContainers.filter(
 				({ payload, relation }) =>
-					payload.type === payloadTypes.enum.indicator_template ||
+					payload.type === payloadTypes.enum.indicator ||
 					relation.some(({ object, subject }) => [object, subject].includes(item.guid))
 			)}
 		/>

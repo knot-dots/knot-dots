@@ -6,7 +6,7 @@ import {
 	type Container,
 	fromCounts,
 	indicatorCategories,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	indicatorTypes,
 	payloadTypes
 } from '$lib/models';
@@ -26,7 +26,7 @@ export const load = (async ({ depends, locals, parent, url }) => {
 	const categoryContext = filterCategoryContext(rawCategoryContext, [
 		payloadTypes.enum.objective,
 		payloadTypes.enum.effect,
-		payloadTypes.enum.indicator_template
+		payloadTypes.enum.indicator
 	]);
 	const customCategories = extractCustomCategoryFilters(url, categoryContext.keys);
 
@@ -37,12 +37,12 @@ export const load = (async ({ depends, locals, parent, url }) => {
 			indicatorCategories: url.searchParams.getAll('indicatorCategory'),
 			indicatorTypes: url.searchParams.getAll('indicatorType'),
 			template: false,
-			type: [payloadTypes.enum.indicator_template]
+			type: [payloadTypes.enum.indicator]
 		},
 		'',
 		{ customCategoryKeys: categoryContext.keys, includeFacets: true }
 	);
-	const containers = esResult.containers as Container<IndicatorTemplatePayload>[];
+	const containers = esResult.containers as Container<IndicatorPayload>[];
 	const data = esResult.facets;
 
 	const relatedContainers = await locals.pool.connect(

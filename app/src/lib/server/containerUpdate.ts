@@ -3,7 +3,7 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	getAvailableInScopeGuids,
 	isContainerWithEditorialState,
-	isIndicatorTemplateContainer,
+	isIndicatorContainer,
 	isOrganizationContainer,
 	type AnyPayload,
 	type Container,
@@ -62,8 +62,8 @@ export function authorizeContainerUpdate({
 		throw new ContainerUpdateError('forbidden');
 	}
 	if (
-		isIndicatorTemplateContainer(current) &&
-		isIndicatorTemplateContainer(next) &&
+		isIndicatorContainer(current) &&
+		isIndicatorContainer(next) &&
 		JSON.stringify(next.payload.indicatorCategory) !==
 			JSON.stringify(current.payload.indicatorCategory) &&
 		ability.cannot('update', current, 'indicatorCategory')

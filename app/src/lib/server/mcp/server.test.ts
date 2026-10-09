@@ -370,7 +370,7 @@ test('lists container categories using the read scope', async () => {
 	const output = {
 		categories: [
 			{
-				applicableTypes: ['indicator_template'],
+				applicableTypes: ['indicator'],
 				key: 'sdg',
 				label: 'Sustainable Development Goal',
 				valueCount: 186
@@ -381,7 +381,7 @@ test('lists container categories using the read scope', async () => {
 
 	const response = await toolHandler.fetch(
 		modernRequest('tools/call', {
-			arguments: { organizationGuid, types: ['indicator_template'] },
+			arguments: { organizationGuid, types: ['indicator'] },
 			name: 'list_container_categories'
 		}),
 		{ authInfo: containerScopedAuthInfo }
@@ -389,7 +389,7 @@ test('lists container categories using the read scope', async () => {
 
 	expect(listContainerCategories).toHaveBeenCalledExactlyOnceWith(userId, {
 		organizationGuid,
-		types: ['indicator_template']
+		types: ['indicator']
 	});
 	await expect(response.json()).resolves.toMatchObject({
 		result: { structuredContent: output }
@@ -411,7 +411,7 @@ test('lists a bounded page of category values using the read scope', async () =>
 				categoryKey: 'sdg',
 				organizationGuid,
 				terms: 'climate',
-				types: ['indicator_template']
+				types: ['indicator']
 			},
 			name: 'list_container_category_values'
 		}),
@@ -424,7 +424,7 @@ test('lists a bounded page of category values using the read scope', async () =>
 		offset: 0,
 		organizationGuid,
 		terms: 'climate',
-		types: ['indicator_template']
+		types: ['indicator']
 	});
 	await expect(response.json()).resolves.toMatchObject({
 		result: { structuredContent: output }
@@ -652,7 +652,7 @@ test('adds a custom collection section with categories using the write scope', a
 		includeSubordinateOrganizationalUnits: true,
 		pageGuid,
 		title: 'Objekte einbinden',
-		types: ['indicator_template']
+		types: ['indicator']
 	};
 	const output = {
 		section: {
@@ -668,7 +668,7 @@ test('adds a custom collection section with categories using the write scope', a
 				categories: { sdg: ['13'] },
 				pageGuid,
 				title: 'Objekte einbinden',
-				types: ['indicator_template']
+				types: ['indicator']
 			},
 			name: 'add_custom_collection_section'
 		}),
@@ -738,7 +738,7 @@ test.each([
 		{
 			pageGuid: '00000000-0000-4000-8000-000000000003',
 			title: 'Objekte einbinden',
-			types: ['indicator_template']
+			types: ['indicator']
 		}
 	],
 	[

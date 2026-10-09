@@ -10,7 +10,7 @@ import {
 	createNewContainerSchema,
 	customCollectionPayload,
 	demographicDataPayload,
-	indicatorTemplatePayload,
+	indicatorPayload,
 	mapPayload,
 	NewContainer,
 	organizationalUnitPayload,
@@ -194,7 +194,7 @@ export const demographicDataContainer = createNewContainerSchema(demographicData
 
 export const organizationalUnitContainer = createNewContainerSchema(organizationalUnitPayload);
 
-export const indicatorTemplateContainer = createNewContainerSchema(indicatorTemplatePayload);
+export const indicatorContainer = createNewContainerSchema(indicatorPayload);
 
 export const actualDataContainer = createNewContainerSchema(actualDataPayload);
 

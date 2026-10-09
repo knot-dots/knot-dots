@@ -2,7 +2,7 @@ import {
 	createContainer,
 	getContainer,
 	getPool,
-	indicatorTemplateContainer,
+	indicatorContainer,
 	indicatorWegweiserKommune,
 	insertIntoIndicatorWegweiserKommune,
 	updateContainer
@@ -134,12 +134,12 @@ function isSame<T>(a: T, b: T) {
 				for (const indicator of indicators) {
 					try {
 						const externalReference = `https://www.wegweiser-kommune.de/data-api/rest/indicator/get/${indicator.friendly_url}`;
-						const newIndicatorTemplateContainer = indicatorTemplateContainer.parse({
+						const newIndicatorContainer = indicatorContainer.parse({
 							managed_by: organization,
 							organization: organization,
 							organizational_unit: null,
 							payload: {
-								type: 'indicator_template',
+								type: 'indicator',
 								description: indicator.explanation,
 								externalReference,
 								indicatorCategory: [
@@ -156,39 +156,32 @@ function isSame<T>(a: T, b: T) {
 						});
 
 						await pool.transaction(async (tx) => {
-							const foundIndicatorTemplateContainer = await getContainer({
+							const foundIndicatorContainer = await getContainer({
 								organization,
 								organizationalUnit: null,
-								payload: { externalReference, type: 'indicator_template' }
+								payload: { externalReference, type: 'indicator' }
 							})(tx);
 
-							if (foundIndicatorTemplateContainer) {
-								if (
-									isSame(
-										foundIndicatorTemplateContainer.payload,
-										newIndicatorTemplateContainer.payload
-									)
-								) {
+							if (foundIndicatorContainer) {
+								if (isSame(foundIndicatorContainer.payload, newIndicatorContainer.payload)) {
 									console.log(
-										`Ignored indicator "${indicator.name}" (${foundIndicatorTemplateContainer.guid})`
+										`Ignored indicator "${indicator.name}" (${foundIndicatorContainer.guid})`
 									);
 								} else {
-									const updatedIndicatorTemplateContainer = await updateContainer({
-										...foundIndicatorTemplateContainer,
-										payload: newIndicatorTemplateContainer.payload
+									const updatedIndicatorContainer = await updateContainer({
+										...foundIndicatorContainer,
+										payload: newIndicatorContainer.payload
 									})(tx);
 
 									console.log(
-										`Updated indicator template "${indicator.name}" (${updatedIndicatorTemplateContainer.guid})`
+										`Updated indicator "${indicator.name}" (${updatedIndicatorContainer.guid})`
 									);
 								}
 							} else {
-								const savedIndicatorTemplateContainer = await createContainer(
-									newIndicatorTemplateContainer
-								)(tx);
+								const savedIndicatorContainer = await createContainer(newIndicatorContainer)(tx);
 
 								console.log(
-									`Created indicator template "${indicator.name}" (${savedIndicatorTemplateContainer.guid})`
+									`Created indicator "${indicator.name}" (${savedIndicatorContainer.guid})`
 								);
 							}
 						});

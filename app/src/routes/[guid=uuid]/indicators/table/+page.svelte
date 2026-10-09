@@ -24,7 +24,7 @@
 		containerOfType,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		payloadTypes
 	} from '$lib/models';
 	import {
@@ -58,7 +58,7 @@
 			$ability.can(
 				'create',
 				containerOfType(
-					payloadTypes.enum.indicator_template,
+					payloadTypes.enum.indicator,
 					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 				)
 			)
@@ -73,7 +73,7 @@
 	let actualDataContainers = $derived(containers.filter(isActualDataContainer));
 
 	let rows = $derived(
-		containers.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+		containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 	);
 
 	let allYears = $derived(

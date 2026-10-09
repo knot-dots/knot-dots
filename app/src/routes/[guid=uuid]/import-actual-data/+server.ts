@@ -8,7 +8,7 @@ import {
 	type ActualDataPayload,
 	containerOfType,
 	isBinaryIndicatorContainer,
-	isIndicatorTemplateContainer,
+	isIndicatorContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
@@ -120,7 +120,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			} else {
 				try {
 					const indicator = await getContainerByGuid(currentIndicator)(tx);
-					if (!(isIndicatorTemplateContainer(indicator) || isBinaryIndicatorContainer(indicator))) {
+					if (!(isIndicatorContainer(indicator) || isBinaryIndicatorContainer(indicator))) {
 						continue;
 					}
 

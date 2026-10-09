@@ -8,7 +8,7 @@ export const moduleByType = new Map<PayloadType, string>([
 	[payloadTypes.enum.effect, 'impact-measurement'],
 	[payloadTypes.enum.goal, 'goal-setting'],
 	[payloadTypes.enum.help, 'knowledge-transfer'],
-	[payloadTypes.enum.indicator_template, 'impact-measurement'],
+	[payloadTypes.enum.indicator, 'impact-measurement'],
 	[payloadTypes.enum.knowledge, 'knowledge-transfer'],
 	[payloadTypes.enum.measure, 'implementation-planning'],
 	[payloadTypes.enum.objective, 'impact-measurement'],

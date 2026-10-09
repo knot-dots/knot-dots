@@ -15,7 +15,7 @@ import {
 	etag,
 	type GoalPayload,
 	type GoalCollectionPayload,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	type MeasurePayload,
 	type NewContainer,
 	type ObjectivePayload,
@@ -72,7 +72,7 @@ type MyFixtures = {
 	testEffect: Container<EffectPayload>;
 	testGoal: Container<GoalPayload>;
 	testGoalBudget: Container<ResourceDataPayload>;
-	testIndicatorTemplate: Container<IndicatorTemplatePayload>;
+	testIndicator: Container<IndicatorPayload>;
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testMeasure: Container<MeasurePayload>;
 	testSimpleMeasure: Container<SimpleMeasurePayload>;
@@ -500,7 +500,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await deleteContainer(adminContext, template);
 	},
 	organizationalUnitWithActualData: async (
-		{ adminContext, testIndicatorTemplate, testOrganization },
+		{ adminContext, testIndicator, testOrganization },
 		use
 	) => {
 		const newOrganizationalUnit = containerOfType(
@@ -523,9 +523,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			...newActualData,
 			payload: {
 				...newActualData.payload,
-				indicator: testIndicatorTemplate.guid,
+				indicator: testIndicator.guid,
 				source: 'Wegweiser Kommune',
-				title: testIndicatorTemplate.payload.title
+				title: testIndicator.payload.title
 			}
 		});
 
@@ -923,27 +923,27 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 
 		await deleteContainer(adminContext, testSubordinateGoal);
 	},
-	testIndicatorTemplate: async ({ adminContext, testOrganization }, use, workerInfo) => {
-		const newIndicatorTemplate = containerOfType(
-			payloadTypes.enum.indicator_template,
+	testIndicator: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newIndicator = containerOfType(
+			payloadTypes.enum.indicator,
 			testOrganization
-		) as Container<IndicatorTemplatePayload>;
-		const testIndicatorTemplate = await createContainer(adminContext, {
-			...newIndicatorTemplate,
+		) as Container<IndicatorPayload>;
+		const testIndicator = await createContainer(adminContext, {
+			...newIndicator,
 			payload: {
-				...newIndicatorTemplate.payload,
-				title: `Test Indicator Template ${workerInfo.workerIndex}`,
+				...newIndicator.payload,
+				title: `Test Indicator ${workerInfo.workerIndex}`,
 				indicatorCategory: ['indicator_category.wegweiser_kommune'],
 				unit: 'unit.km'
 			}
 		});
 
-		await use(testIndicatorTemplate);
+		await use(testIndicator);
 
-		await deleteContainer(adminContext, testIndicatorTemplate);
+		await deleteContainer(adminContext, testIndicator);
 	},
 	testObjective: async (
-		{ adminContext, testOrganization, testGoal, testIndicatorTemplate },
+		{ adminContext, testOrganization, testGoal, testIndicator },
 		use,
 		workerInfo
 	) => {
@@ -967,7 +967,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				{
 					position: 1,
 					predicate: predicates.enum['is-objective-for'],
-					object: testIndicatorTemplate.guid
+					object: testIndicator.guid
 				}
 			]
 		});
@@ -1042,7 +1042,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await deleteContainer(adminContext, testSubordinateMeasure);
 	},
 	testEffect: async (
-		{ adminContext, testOrganization, testMeasure, testIndicatorTemplate },
+		{ adminContext, testOrganization, testMeasure, testIndicator },
 		use,
 		workerInfo
 	) => {
@@ -1066,7 +1066,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 				{
 					position: 1,
 					predicate: predicates.enum['is-measured-by'],
-					object: testIndicatorTemplate.guid
+					object: testIndicator.guid
 				}
 			]
 		});

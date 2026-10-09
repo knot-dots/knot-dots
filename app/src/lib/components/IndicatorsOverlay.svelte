@@ -29,8 +29,7 @@
 		computeFacetCount(
 			new Map([
 				...buildCategoryFacetsWithCounts(
-					filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator_template])
-						.options
+					filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator]).options
 				),
 				['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))],
 				['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))]

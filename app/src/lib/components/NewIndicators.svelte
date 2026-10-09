@@ -21,12 +21,12 @@
 		containerOfType,
 		findConnected,
 		indicatorCategories,
-		type IndicatorTemplatePayload,
+		type IndicatorPayload,
 		isActualDataContainer,
 		isBinaryIndicatorContainer,
 		isContainerWithEffect,
 		isContainerWithObjective,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		type NewContainer,
 		overlayKey,
 		payloadTypes,
@@ -52,7 +52,7 @@
 	let selectedContainer = $derived.by(() => {
 		if (page.url.searchParams.has('related-to')) {
 			return containers
-				.filter(isIndicatorTemplateContainer)
+				.filter(isIndicatorContainer)
 				.find(({ guid }) => guid === page.url.searchParams.get('related-to'));
 		} else {
 			return undefined;
@@ -63,16 +63,16 @@
 		if (selectedContainer) {
 			const connectedContainers = findConnected(
 				selectedContainer,
-				containers.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c)),
+				containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c)),
 				[predicates.enum['is-affected-by']]
 			);
 			return containers
-				.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 				.filter((c) => connectedContainers.has(c))
 				.map((container) => ({ guid: container.guid, container }));
 		} else {
 			return containers
-				.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+				.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 				.map((container) => ({ guid: container.guid, container }));
 		}
 	});
@@ -82,7 +82,7 @@
 		indicatorGuids: () =>
 			items
 				.map(({ container }) => container)
-				.filter(isIndicatorTemplateContainer)
+				.filter(isIndicatorContainer)
 				.map(({ guid }) => guid)
 	});
 
@@ -102,11 +102,11 @@
 		'createContainerDialog'
 	);
 
-	function createCustomIndicatorTemplate() {
+	function createCustomIndicator() {
 		const container = containerOfType(
-			payloadTypes.enum.indicator_template,
+			payloadTypes.enum.indicator,
 			page.data.currentOrganizationalUnit ?? page.data.currentOrganization
-		) as NewContainer<IndicatorTemplatePayload>;
+		) as NewContainer<IndicatorPayload>;
 
 		container.payload.title = '';
 		container.payload.unit = units.enum['unit.cubic_meter'];
@@ -137,7 +137,7 @@
 		event: CustomEvent<
 			DndEvent<{
 				guid: string;
-				container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 			}>
 		>
 	) {
@@ -164,7 +164,7 @@
 		event: CustomEvent<
 			DndEvent<{
 				guid: string;
-				container: Container<BinaryIndicatorPayload> | Container<IndicatorTemplatePayload>;
+				container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 			}>
 		>
 	) {
@@ -178,7 +178,7 @@
 </script>
 
 <div class="indicators">
-	{#if ($mayCreateContainer(payloadTypes.enum.indicator_template, parent) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
+	{#if ($mayCreateContainer(payloadTypes.enum.indicator, parent) || mayCreateBinaryIndicator) && $applicationState.containerDetailView.editable}
 		<p>
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 				<button
@@ -190,8 +190,8 @@
 				</button>
 			{/if}
 
-			{#if $mayCreateContainer(payloadTypes.enum.indicator_template, parent)}
-				<button class="button button-xs" type="button" onclick={createCustomIndicatorTemplate}>
+			{#if $mayCreateContainer(payloadTypes.enum.indicator, parent)}
+				<button class="button button-xs" type="button" onclick={createCustomIndicator}>
 					<Plus />
 					{$_('indicators.create_custom')}
 				</button>

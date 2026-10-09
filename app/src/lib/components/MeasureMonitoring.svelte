@@ -8,7 +8,7 @@
 		containersByHierarchyLevel,
 		type EffectPayload,
 		type GoalPayload,
-		type IndicatorTemplatePayload,
+		type IndicatorPayload,
 		isEffectContainer,
 		isGoalContainer,
 		isPartOf,
@@ -26,7 +26,7 @@
 		measure?: Container<MeasurePayload | SimpleMeasurePayload>;
 		measures: Array<Container<MeasurePayload | SimpleMeasurePayload>>;
 		containers: Container<EffectPayload | GoalPayload | TaskPayload>[];
-		indicators: Container<IndicatorTemplatePayload>[];
+		indicators: Container<IndicatorPayload>[];
 		showMeasures?: boolean;
 	}
 

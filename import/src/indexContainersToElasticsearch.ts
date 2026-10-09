@@ -53,7 +53,7 @@ async function* fetchContainers(batchSize = 500) {
 					'event',
 					'goal',
 					'help',
-					'indicator_template',
+					'indicator',
 					'knowledge',
 					'measure',
 					'objective',

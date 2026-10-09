@@ -6,7 +6,7 @@
 	import MeasureMonitoring from '$lib/components/MeasureMonitoring.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import {
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isMeasureContainer,
 		isMeasureMonitoringContainer
 	} from '$lib/models';
@@ -36,7 +36,7 @@
 			<MeasureMonitoring
 				{measures}
 				containers={containers.filter(isMeasureMonitoringContainer)}
-				indicators={containers.filter(isIndicatorTemplateContainer)}
+				indicators={containers.filter(isIndicatorContainer)}
 				showMeasures
 			/>
 

@@ -17,7 +17,7 @@
 		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isObjectiveContainer,
 		isOrganizationalUnitContainer,
 		isPartOf,
@@ -161,7 +161,7 @@
 	</header>
 
 	<div class="body">
-		{#if isIndicatorTemplateContainer(container)}
+		{#if isIndicatorContainer(container)}
 			<Summary {container} />
 			<p class="badges">
 				{#each container.payload.indicatorCategory as indicatorCategory (indicatorCategory)}
@@ -169,14 +169,14 @@
 				{/each}
 			</p>
 		{:else if isEffectContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorTemplateContainer)}
+			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
 				<EffectChart {container} {relatedContainers} />
 			{/if}
 		{:else if isGoalContainer(container)}
 			{@const effect = relatedContainers.filter(isEffectContainer).find(isPartOf(container))}
 			{@const indicator = relatedContainers
-				.filter(isIndicatorTemplateContainer)
+				.filter(isIndicatorContainer)
 				.find(
 					({ guid }) =>
 						(effect?.relation.findIndex(
@@ -190,7 +190,7 @@
 				<Summary {container} />
 			{/if}
 		{:else if isObjectiveContainer(container)}
-			{@const indicator = relatedContainers.find(isIndicatorTemplateContainer)}
+			{@const indicator = relatedContainers.find(isIndicatorContainer)}
 			{#if indicator}
 				<ObjectiveChart {container} {relatedContainers} />
 			{/if}

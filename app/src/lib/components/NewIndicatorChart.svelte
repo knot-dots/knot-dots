@@ -46,14 +46,14 @@
 		administrativeTypes,
 		type AnyPayload,
 		type Container,
-		type IndicatorTemplatePayload,
+		type IndicatorPayload,
 		isActualDataContainer,
 		trendDirection
 	} from '$lib/models';
 	import { compareState } from '$lib/stores';
 
 	interface Props {
-		container: Container<IndicatorTemplatePayload>;
+		container: Container<IndicatorPayload>;
 		relatedContainers?: Container<AnyPayload>[];
 		comparisonContainers?: Container<ActualDataPayload>[];
 	}

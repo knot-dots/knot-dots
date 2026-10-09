@@ -7,7 +7,7 @@ test('Selected objects can be displayed in a section', async ({
 	isMobile,
 	landingPage,
 	testGoal,
-	testIndicatorTemplate,
+	testIndicator,
 	testMeasure,
 	testOrganization,
 	testOrganizationalUnit,
@@ -31,7 +31,7 @@ test('Selected objects can be displayed in a section', async ({
 	const dialog = landingPage.page.getByRole('dialog');
 	const expectedObjects = [
 		testGoal,
-		testIndicatorTemplate,
+		testIndicator,
 		testMeasure,
 		testOrganizationalUnit,
 		testProgram,
@@ -103,7 +103,7 @@ test('Rule-based collections can be displayed in a section', async ({
 	isMobile,
 	landingPage,
 	testGoal,
-	testIndicatorTemplate,
+	testIndicator,
 	testMeasure,
 	testOrganization,
 	testProgram,
@@ -125,7 +125,7 @@ test('Rule-based collections can be displayed in a section', async ({
 	// Assert catalog of available objects is displayed
 	const dialog = landingPage.page.getByRole('dialog');
 	await expect(dialog.getByText('Choose objects')).toBeVisible();
-	const expectedObjects = [testGoal, testIndicatorTemplate, testMeasure, testProgram, testReport];
+	const expectedObjects = [testGoal, testIndicator, testMeasure, testProgram, testReport];
 	for (const object of expectedObjects) {
 		await expect(
 			dialog

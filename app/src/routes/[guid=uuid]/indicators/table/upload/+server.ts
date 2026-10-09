@@ -13,7 +13,7 @@ import {
 	containerOfType,
 	createNewContainerSchema,
 	editorialState,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	isActualDataContainer,
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
@@ -86,9 +86,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		}
 	}
 
-	if (
-		!ability.can('create', containerOfType(payloadTypes.enum.indicator_template, scopeContainer))
-	) {
+	if (!ability.can('create', containerOfType(payloadTypes.enum.indicator, scopeContainer))) {
 		error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 	}
 
@@ -101,11 +99,11 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			{
 				indicatorCategories: ['indicator_category.custom'],
 				template: false,
-				type: [payloadTypes.enum.indicator_template]
+				type: [payloadTypes.enum.indicator]
 			},
 			'alpha'
 		)
-	)) as Array<Container<IndicatorTemplatePayload>>;
+	)) as Array<Container<IndicatorPayload>>;
 
 	const existingByTitle = new Map(existingIndicators.map((c) => [c.payload.title, c]));
 
@@ -163,7 +161,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	);
 
 	const containers: {
-		indicator: NewContainer<IndicatorTemplatePayload>;
+		indicator: NewContainer<IndicatorPayload>;
 		yearValues: [number, number][];
 	}[] = [];
 	const errors: string[] = [];
@@ -247,7 +245,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 							unit,
 							visibility,
 							editorialState: editorialStateValue,
-							type: payloadTypes.enum.indicator_template
+							type: payloadTypes.enum.indicator
 						},
 						realm: env.PUBLIC_KC_REALM,
 						user: [
@@ -256,7 +254,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 								subject: locals.user.guid
 							}
 						]
-					}) as NewContainer<IndicatorTemplatePayload>,
+					}) as NewContainer<IndicatorPayload>,
 					yearValues
 				});
 			} catch (e) {
@@ -275,7 +273,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		return json({ errors }, { status: 422 });
 	}
 
-	const createdIndicators: Container<IndicatorTemplatePayload>[] = [];
+	const createdIndicators: Container<IndicatorPayload>[] = [];
 
 	await locals.pool.transaction(async (connection) => {
 		for (const { indicator, yearValues } of containers) {
@@ -293,12 +291,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 				}
 				indicatorGuid = existingContainer.guid;
 			} else if (
-				ability.can('create', containerOfType(payloadTypes.enum.indicator_template, scopeContainer))
+				ability.can('create', containerOfType(payloadTypes.enum.indicator, scopeContainer))
 			) {
 				// Create new indicator
 				const created = await createContainer(indicator)(connection);
 				indicatorGuid = created.guid;
-				createdIndicators.push(created as Container<IndicatorTemplatePayload>);
+				createdIndicators.push(created as Container<IndicatorPayload>);
 			} else {
 				indicatorGuid = '';
 			}

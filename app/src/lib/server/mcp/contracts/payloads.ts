@@ -9,7 +9,7 @@ export const mcpPayloadTypeValues = [
 	payloadTypes.enum.simple_measure,
 	payloadTypes.enum.task,
 	payloadTypes.enum.knowledge,
-	payloadTypes.enum.indicator_template,
+	payloadTypes.enum.indicator,
 	payloadTypes.enum.resource_v2
 ] as const satisfies readonly PayloadType[];
 

@@ -6,7 +6,7 @@
 		type AnyPayload,
 		type Container,
 		type EffectPayload,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isRelatedTo
 	} from '$lib/models';
 
@@ -19,7 +19,7 @@
 	let { container, relatedContainers = [], showLegend = false }: Props = $props();
 
 	const indicator = $derived(
-		relatedContainers.filter(isIndicatorTemplateContainer).find(isRelatedTo(container))
+		relatedContainers.filter(isIndicatorContainer).find(isRelatedTo(container))
 	);
 
 	const unit = $derived($_(indicator?.payload.unit ?? ''));

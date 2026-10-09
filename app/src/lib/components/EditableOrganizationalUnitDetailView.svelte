@@ -79,7 +79,7 @@
 						payloadTypes.enum.actual_data,
 						payloadTypes.enum.effect,
 						payloadTypes.enum.goal,
-						payloadTypes.enum.indicator_template,
+						payloadTypes.enum.indicator,
 						payloadTypes.enum.measure,
 						payloadTypes.enum.objective,
 						payloadTypes.enum.program,

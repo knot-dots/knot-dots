@@ -6,7 +6,7 @@ import {
 	type BinaryIndicatorPayload,
 	type Container,
 	indicatorCategories,
-	type IndicatorTemplatePayload,
+	type IndicatorPayload,
 	indicatorTypes,
 	isGoalContainer,
 	isMeasureContainer,
@@ -71,10 +71,10 @@ export const GET = (async ({ locals, params, url }) => {
 					indicatorTypes: parseResult.data.indicatorType,
 					template: false,
 					terms: parseResult.data.terms[0],
-					type: [payloadTypes.enum.indicator_template, payloadTypes.enum.binary_indicator]
+					type: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
-			)(connection) as Promise<Array<Container<BinaryIndicatorPayload | IndicatorTemplatePayload>>>
+			)(connection) as Promise<Array<Container<BinaryIndicatorPayload | IndicatorPayload>>>
 		]);
 
 		if (!isGoalContainer(container) && !isMeasureContainer(container)) {

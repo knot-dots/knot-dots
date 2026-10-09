@@ -45,7 +45,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 							type: [
 								payloadTypes.enum.effect,
 								payloadTypes.enum.goal,
-								payloadTypes.enum.indicator_template,
+								payloadTypes.enum.indicator,
 								payloadTypes.enum.task
 							]
 						},
@@ -58,7 +58,7 @@ export const load = (async ({ depends, locals, params, url }) => {
 							type: [
 								payloadTypes.enum.effect,
 								payloadTypes.enum.goal,
-								payloadTypes.enum.indicator_template,
+								payloadTypes.enum.indicator,
 								payloadTypes.enum.task
 							]
 						},

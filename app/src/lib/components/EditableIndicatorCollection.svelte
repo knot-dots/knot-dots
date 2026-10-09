@@ -14,7 +14,7 @@
 		isActualDataContainer,
 		isEffectContainer,
 		isGoalContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		isMeasureContainer,
 		isObjectiveContainer,
 		type NewContainer,
@@ -47,7 +47,7 @@
 
 	let items = $derived(
 		relatedContainers
-			.filter(isIndicatorTemplateContainer)
+			.filter(isIndicatorContainer)
 			.filter((item) =>
 				[
 					actualDataContainers.some(({ payload }) => payload.indicator === item.guid),
@@ -72,10 +72,7 @@
 	);
 
 	function addItem() {
-		$newContainer = containerOfType(
-			payloadTypes.enum.indicator_template,
-			parentContainer
-		) as NewContainer;
+		$newContainer = containerOfType(payloadTypes.enum.indicator, parentContainer) as NewContainer;
 
 		createContainerDialog.getElement().showModal();
 	}
@@ -109,7 +106,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator_template, container) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator, container) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<NewIndicatorCard

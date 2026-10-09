@@ -758,7 +758,7 @@ test('does not expose unreadable descendants or reference-only containers', asyn
 	);
 	const reference = container(
 		referenceGuid,
-		{ type: 'indicator_template', title: 'Private reference', unit: '%', visibility: 'creator' },
+		{ type: 'indicator', title: 'Private reference', unit: '%', visibility: 'creator' },
 		relations
 	);
 	mocks.graph = { rootGuid: sourceGuid, containers: [source, hidden, reference] };

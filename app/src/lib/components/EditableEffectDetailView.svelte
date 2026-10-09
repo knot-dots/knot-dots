@@ -28,7 +28,7 @@
 		type Container,
 		type EffectPayload,
 		isBinaryIndicatorContainer,
-		isIndicatorTemplateContainer,
+		isIndicatorContainer,
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
@@ -82,7 +82,7 @@
 
 	let indicator = $derived(
 		relatedContainers
-			.filter((c) => isIndicatorTemplateContainer(c) || isBinaryIndicatorContainer(c))
+			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
 			.find(
 				({ guid }) =>
 					container.relation.findIndex(
