@@ -65,11 +65,17 @@ if (!defineAbilityFor(locals.user).can("create", container)) {
 
 ### 7. Global State Management
 
-- **`$applicationState`**: UI state (edit mode, detail view settings, overlay states)
-- **`$ability`**: Current user's permissions (CASL ability instance)
-- **`$overlay`**, **`$dragged`**: UI interaction state for drag-and-drop and overlays
-- **Principle**: Avoid creating custom stores - use runes in components when possible
-- Only use stores for truly global, cross-component shared state
+The project is migrating from Svelte stores to runes-based state provided through contexts.
+
+- **Prefer local state**: Keep state in components (`$state`, `$derived`) unless it is truly shared across components.
+- **Share state through contexts**: Put a context in `app/src/lib/contexts/` using `createContext` from `svelte`. If it needs runes, name the file `*.svelte.ts` and add a `create…Context()` function that builds the state (see `review.svelte.ts`). Provide it in the layout that encloses all consumers, usually `app/src/routes/[guid=uuid]/+layout.svelte`, and read it with the getter at the top level of a component's script.
+- **Fetch reactively inside the context**: The context is created during component initialization, so `$effect` and `resource()` from runed work there. Expose state through getters and setters, so components can bind to it directly (e.g. `bind:selected={review.selectedPrograms}`).
+- **Avoid module-level state**: It is shared by all requests on the server. Contexts are created per component tree instead.
+- **Do not add new stores to `app/src/lib/stores.ts`.** Migrate an existing store when you touch its feature. Existing stores still in use:
+  - **`$applicationState`**: UI state (edit mode, detail view settings, overlay states)
+  - **`$ability`**: Current user's permissions (CASL ability instance)
+  - **`$overlay`**, **`$dragged`**: UI interaction state for drag-and-drop and overlays
+  - **`$compareState`**: Municipalities selected for comparing indicator data
 
 ### 9. Modern Svelte 5 Component Patterns
 
@@ -121,7 +127,8 @@ if (!defineAbilityFor(locals.user).can("create", container)) {
 
 - `app/src/lib/models.ts`: Core Zod schemas and types (SOURCE OF TRUTH).
 - `app/src/lib/server/db.ts`: All database access logic and query functions.
-- `app/src/lib/stores.ts`: Global application state and reactive stores.
+- `app/src/lib/contexts/`: Contexts for shared state; the place for new global state.
+- `app/src/lib/stores.ts`: Legacy global stores, being migrated to contexts.
 - `app/src/lib/authorization.ts`: CASL permission definitions and ability builder.
 - `app/src/routes/`: Application pages and API endpoints.
 - `app/tests/`: E2E test specs, page objects, and fixtures.

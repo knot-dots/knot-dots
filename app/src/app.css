@@ -1663,9 +1663,10 @@ h4.details-heading {
 }
 
 .badge > svg {
-	height: 0.75rem;
+	color: var(--badge-icon-color, currentColor);
+	height: var(--badge-icon-size, 0.75rem);
 	max-width: initial;
-	width: 0.75rem;
+	width: var(--badge-icon-size, 0.75rem);
 }
 
 /* Stage */

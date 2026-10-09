@@ -7,15 +7,17 @@
 	} from '$lib/components/MultipleChoiceTree.svelte';
 
 	interface Props {
+		allowAll?: boolean;
 		mode: 'select' | 'apply_rule';
 		options: MultipleChoiceTreeOption[];
-		scope: 'current' | 'explicit';
+		scope: 'current' | 'all' | 'explicit';
 		includeSubordinateOrganizationalUnits: boolean;
 		organizationValue: string[];
 		organizationalUnitValue: string[];
 	}
 
 	let {
+		allowAll = false,
 		mode,
 		options,
 		scope = $bindable(),
@@ -52,7 +54,7 @@
 		organizationalUnitValue = [];
 	}
 
-	const disabled = $derived(scope === 'current');
+	const disabled = $derived(scope !== 'explicit');
 </script>
 
 <Dropdown
@@ -97,6 +99,12 @@
 					}
 				/>
 			</label>
+			{#if allowAll}
+				<label class="scope-option">
+					<input type="radio" value="all" bind:group={scope} />
+					<span>{$_('organization_filter.all')}</span>
+				</label>
+			{/if}
 			<label class="scope-option">
 				<input type="radio" value="explicit" bind:group={scope} />
 				<span>{$_('organization_filter.explicit')}</span>

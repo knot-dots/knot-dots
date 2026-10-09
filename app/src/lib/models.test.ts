@@ -13,6 +13,7 @@ import {
 	memberRoleMatchingGrantSet,
 	type IndicatorTemplatePayload,
 	isTemplateRoot,
+	linearRegressionSlope,
 	type MeasurePayload,
 	memberRoleFromPredicates,
 	memberRoleOf,
@@ -23,6 +24,7 @@ import {
 	type ProgramPayload,
 	type Relation,
 	sortIndicatorsByRelevanceForGoalOrMeasure,
+	trendDirection,
 	units,
 	userRelationsForMemberRole
 } from '$lib/models';
@@ -594,3 +596,106 @@ test('cyclic relations do not trap the traversal when ignoring multi-parent node
 		)
 	).toEqual([firstGuid, secondGuid].sort());
 });
+
+test.each([
+	[
+		'a rising line',
+		[
+			[2020, 10],
+			[2021, 12],
+			[2022, 14]
+		],
+		2
+	],
+	[
+		'a falling line',
+		[
+			[2020, 100],
+			[2025, 50]
+		],
+		-10
+	],
+	[
+		'a flat line',
+		[
+			[2020, 5],
+			[2021, 5],
+			[2022, 5]
+		],
+		0
+	],
+	[
+		'unsorted, unevenly spaced years',
+		[
+			[2030, 40],
+			[2020, 20],
+			[2022, 24]
+		],
+		2
+	],
+	[
+		'scattered points',
+		[
+			[2020, 1],
+			[2021, 3],
+			[2022, 2],
+			[2023, 4]
+		],
+		0.8
+	]
+] as Array<[string, Array<[number, number]>, number]>)(
+	'linearRegressionSlope computes the slope of %s',
+	(_, points, slope) => {
+		expect(linearRegressionSlope(points)).toBeCloseTo(slope);
+	}
+);
+
+test.each([
+	['no points', []],
+	['a single point', [[2020, 10]]],
+	[
+		'points within the same year',
+		[
+			[2020, 10],
+			[2020, 20]
+		]
+	]
+] as Array<[string, Array<[number, number]>]>)(
+	'linearRegressionSlope is undefined for %s',
+	(_, points) => {
+		expect(linearRegressionSlope(points)).toBeUndefined();
+	}
+);
+
+test.each([
+	[
+		'rising',
+		[
+			[2020, 1],
+			[2021, 2]
+		],
+		1
+	],
+	[
+		'falling',
+		[
+			[2020, 2],
+			[2021, 1]
+		],
+		-1
+	],
+	[
+		'flat',
+		[
+			[2020, 1],
+			[2021, 1]
+		],
+		0
+	],
+	['undetermined', [[2020, 1]], undefined]
+] as Array<[string, Array<[number, number]>, number | undefined]>)(
+	'trendDirection of %s points',
+	(_, points, direction) => {
+		expect(trendDirection(points)).toBe(direction);
+	}
+);

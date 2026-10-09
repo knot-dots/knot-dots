@@ -542,6 +542,7 @@
 		"non_profit": "Non-profit",
 		"political": "Political"
 	},
+	"organization_filter.all": "All organizations",
 	"organization_filter.current": "Current organization",
 	"organization_filter.exclude_subordinate": "Without organizational units",
 	"organization_filter.explicit": "Explicit selection",
@@ -714,6 +715,15 @@
 	"resource_table.no_subordinate_goals": "No subordinate goals",
 	"resource_table.subordinate_measures": "Subordinate measures",
 	"resource_table.no_subordinate_measures": "No subordinate measures",
+	"review": "Review",
+	"review_add_program": "Add program",
+	"review_clear_all": "Clear all",
+	"review_dialog_title": "Select programs",
+	"review_status.against_target_direction": "Against target direction",
+	"review_status.diverging_targets": "Diverging targets",
+	"review_status.in_target_direction": "In target direction",
+	"review_status.no_clear_trend": "No clear trend",
+	"review_with": "Review against",
 	"role": {
 		"admin": "Admin",
 		"administrator": "Administrator",
