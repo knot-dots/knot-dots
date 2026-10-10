@@ -50,6 +50,7 @@
 							value={option.value}
 						/>
 						<span class="badge badge--{statusColors.get(option.value)}">
+							{const StatusIcon = statusIcons.get(option.value)}
 							<StatusIcon />
 							{option.label}
 						</span>

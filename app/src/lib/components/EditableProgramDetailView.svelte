@@ -285,7 +285,7 @@
 
 {#snippet main()}
 	{#if viewMode === 'view_mode.preview'}
-		<EditableContainerDetailView bind:container {footer}>
+		<EditableContainerDetailView bind:container {footer} {relatedContainers} {revisions}>
 			{#snippet data()}
 				<div class="chapters">
 					{#each filteredParts as part, i (part.guid)}

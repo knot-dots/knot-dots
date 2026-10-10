@@ -2796,6 +2796,7 @@ export function setUp(name: string, realm: string) {
 				favorite: [],
 				imageReplacesName: false,
 				name,
+				propertiesConfiguration: {},
 				type: payloadTypes.enum.organization,
 				useAnalytics: true,
 				visibility: visibility.enum.public,

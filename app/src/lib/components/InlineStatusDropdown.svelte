@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import tooltip from '$lib/attachments/tooltip';
 	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { type Status, status } from '$lib/models';
 	import { statusColors, statusIcons } from '$lib/theme/models';
@@ -32,8 +33,8 @@
 {#if editable}
 	<Dropdown {offset}>
 		{#snippet button(popover)}
-			<button class="dropdown-button" use:popover.button>
-				<span class="badge badge--{statusColors.get(value)}">
+			<button {@attach tooltip($_('status'))} class="dropdown-button" use:popover.button>
+				<span class="badge badge--large badge--{statusColors.get(value)}">
 					<StatusIcon />{label(value)}
 				</span>
 			</button>
@@ -50,7 +51,7 @@
 							type="radio"
 							value={option.value}
 						/>
-						<span class="badge badge--{statusColors.get(option.value)}">
+						<span class="badge badge--large badge--{statusColors.get(option.value)}">
 							<StatusIcon />
 							{option.label}
 						</span>
@@ -60,7 +61,7 @@
 		{/snippet}
 	</Dropdown>
 {:else}
-	<span class="badge badge--{statusColors.get(value)}">
+	<span {@attach tooltip($_('status'))} class="badge badge--large badge--{statusColors.get(value)}">
 		<StatusIcon />
 		{label(value)}
 	</span>

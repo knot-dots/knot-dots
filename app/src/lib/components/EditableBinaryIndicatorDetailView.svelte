@@ -146,7 +146,7 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container>
+	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
 			{#key container.guid}
 				<EditableFormattedText

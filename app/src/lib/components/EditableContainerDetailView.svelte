@@ -11,9 +11,12 @@
 	import EditableCoverSection from '$lib/components/EditableCoverSection.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
+	import PropertiesPanel from '$lib/components/PropertiesPanel.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
+		type AnyPayload,
 		type Container,
 		helpSlugForDetailView,
 		isContainerWithColor,
@@ -29,9 +32,18 @@
 		data?: Snippet;
 		footer?: Snippet;
 		properties?: Snippet;
+		relatedContainers: Array<Container<AnyPayload>>;
+		revisions: Array<Container<AnyPayload>>;
 	}
 
-	let { container = $bindable(), data, footer, properties }: Props = $props();
+	let {
+		container = $bindable(),
+		data,
+		footer,
+		properties,
+		relatedContainers,
+		revisions
+	}: Props = $props();
 
 	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
@@ -112,12 +124,21 @@
 						{/if}
 					</div>
 
-					<Badges
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						showPropertiesTrigger
-					/>
+					{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+						<PropertiesBar
+							bind:container
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							{revisions}
+							showPropertiesTrigger
+						/>
+					{:else}
+						<Badges
+							bind:container
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
+					{/if}
 
 					{#if isSimpleMeasureContainer(container)}
 						<EditableProgress
@@ -138,7 +159,13 @@
 
 		{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
 			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				{@render properties?.()}
+				<PropertiesPanel
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
+				/>
 			</form>
 		{/if}
 	</article>
