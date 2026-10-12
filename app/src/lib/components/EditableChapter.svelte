@@ -26,7 +26,7 @@
 		type ProgramPayload
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
-	import { ability, newContainer } from '$lib/stores';
+	import { ability, applicationState, newContainer } from '$lib/stores';
 
 	interface Props {
 		availableChapterTypes?: PayloadType[];
@@ -151,7 +151,7 @@
 			{$_('read_more')}
 		</a>
 
-		{#if availableChapterTypes.some((t) => $ability.can('create', containerOfType(t, isPartOf)))}
+		{#if $applicationState.containerDetailView.editable && availableChapterTypes.some( (t) => $ability.can('create', containerOfType(t, isPartOf)) )}
 			<DropDownMenu
 				handleChange={createContainerAt(currentIndex + 1)}
 				label={$_('chapter')}

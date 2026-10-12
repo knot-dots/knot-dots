@@ -1,4 +1,11 @@
-import { expect, test } from './fixtures';
+import {
+	type Container,
+	containerOfType,
+	payloadTypes,
+	predicates,
+	type TextPayload
+} from '$lib/models';
+import { createContainer, deleteContainer, expect, test } from './fixtures';
 
 test.use({ suiteId: 'programs' });
 
@@ -57,6 +64,53 @@ test.describe('Level board', () => {
 			// Delete the item
 			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.overlay.delete();
+		}
+	});
+});
+
+test.describe('Program detail view', () => {
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+	test('offers adding a chapter only in edit mode', async ({
+		adminContext,
+		dotsBoard,
+		testProgram,
+		testProgramGoalTemplate
+	}, workerInfo) => {
+		void testProgramGoalTemplate;
+
+		const newText = containerOfType(payloadTypes.enum.text, testProgram) as Container<TextPayload>;
+		const chapter = await createContainer(adminContext, {
+			...newText,
+			payload: { ...newText.payload, title: `Chapter of program ${workerInfo.workerIndex}` },
+			relation: [
+				{
+					object: testProgram.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				}
+			]
+		});
+
+		try {
+			await dotsBoard.goto(`/${testProgram.organization}`);
+			await dotsBoard.card(testProgram.payload.title).click();
+			await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+			await expect(
+				dotsBoard.overlay.locator.getByRole('heading', { name: chapter.payload.title })
+			).toBeVisible();
+
+			const addChapterButton = dotsBoard.overlay.locator.getByRole('button', {
+				name: 'Chapter',
+				exact: true
+			});
+
+			await expect(addChapterButton).toHaveCount(0);
+
+			await dotsBoard.overlay.editModeToggle.check();
+			await expect(addChapterButton).toBeVisible();
+		} finally {
+			await deleteContainer(adminContext, chapter);
 		}
 	});
 });
