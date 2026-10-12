@@ -2,13 +2,16 @@
 	import { resource } from 'runed';
 	import { page } from '$app/state';
 	import autoSave from '$lib/client/autoSave';
+	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Badges from '$lib/components/Badges.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
+	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import Sections from '$lib/components/Sections.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
@@ -22,7 +25,6 @@
 		predicates
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
-	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 
 	interface Props {
 		container: Container<AnyPayload>;
@@ -83,11 +85,20 @@
 				</div>
 
 				{#if isContainer(container)}
-					<Badges
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
+					{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+						<PropertiesBar
+							bind:container
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							revisions={[]}
+						/>
+					{:else}
+						<Badges
+							bind:container
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
+					{/if}
 				{/if}
 
 				{#if isSimpleMeasureContainer(container)}
