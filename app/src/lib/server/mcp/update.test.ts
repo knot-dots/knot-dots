@@ -156,7 +156,7 @@ test.each([
 	['hidden', () => mocks.unreadableGuids.add(guid)],
 	[
 		'not exposed through MCP',
-		() => mocks.containers.set(guid, container({ title: 'Text', type: 'text' }))
+		() => mocks.containers.set(guid, container({ title: 'HTML', type: 'html' }))
 	]
 ])('rejects a %s container', async (_, arrange) => {
 	arrange();
@@ -198,7 +198,11 @@ test('reports a slug taken by another container', async () => {
 
 test.each([
 	['a type change', { type: 'task' }, 'The payload type cannot be changed.'],
-	['a template flag', { template: true }, 'Templates cannot be updated by this tool.'],
+	[
+		'a template flag',
+		{ template: true },
+		'Containers marked as templates (template: true) cannot be updated by this tool.'
+	],
 	['an invalid field', { title: 42 }, 'payload.title']
 ])('rejects %s', async (_, patch, message) => {
 	await expect(update(patch)).rejects.toThrow(message);
@@ -210,7 +214,7 @@ test('rejects updating a template', async () => {
 	mocks.containers.set(guid, container({ template: true, title: 'Template', type: 'goal' }));
 
 	await expect(update({ title: 'Renamed' })).rejects.toThrow(
-		'Templates cannot be updated by this tool.'
+		'Containers marked as templates (template: true) cannot be updated by this tool.'
 	);
 });
 

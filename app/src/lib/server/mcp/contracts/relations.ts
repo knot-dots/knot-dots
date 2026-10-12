@@ -55,7 +55,31 @@ export const mcpRelationPredicateValues = [
 	predicates.enum['is-superordinate-of']
 ] as const satisfies readonly Predicate[];
 
-export const mcpRelationPredicates = z.enum(mcpRelationPredicateValues);
+const indicatorPredicates: ReadonlySet<string> = new Set<Predicate>([
+	predicates.enum['is-measured-by'],
+	predicates.enum['is-objective-for']
+]);
+
+const structuralPredicates: ReadonlySet<string> = new Set<Predicate>([
+	predicates.enum['is-part-of'],
+	predicates.enum['is-part-of-measure'],
+	predicates.enum['is-part-of-program'],
+	predicates.enum['is-section-of']
+]);
+
+// A rejected predicate is the moment an agent has the wrong idea of the data
+// model, so the error points to the tool that does what it is after.
+export const mcpRelationPredicates = z.enum(mcpRelationPredicateValues, {
+	error: ({ input }) => {
+		if (typeof input === 'string' && indicatorPredicates.has(input)) {
+			return `${input} cannot be added or removed directly: indicators measure measures and goals through an effect or objective. Use attach_indicator.`;
+		}
+		if (typeof input === 'string' && structuralPredicates.has(input)) {
+			return `${input} is a structural relation, which these tools do not change. Set it with parentRelations of create_container.`;
+		}
+		return `Only these semantic relations can be changed here: ${mcpRelationPredicateValues.join(', ')}.`;
+	}
+});
 
 export type McpRelationPredicate = z.infer<typeof mcpRelationPredicates>;
 

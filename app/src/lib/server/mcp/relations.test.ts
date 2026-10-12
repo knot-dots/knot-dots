@@ -268,7 +268,7 @@ test.each([
 });
 
 test('rejects containers that are not exposed through MCP', async () => {
-	mocks.containers.set(measureGuid, container(measureGuid, { title: 'Text', type: 'text' }));
+	mocks.containers.set(measureGuid, container(measureGuid, { title: 'HTML', type: 'html' }));
 
 	await expect(change('add')).rejects.toThrow('Object container not found or inaccessible.');
 });
@@ -279,7 +279,9 @@ test('rejects templates', async () => {
 		container(measureGuid, { template: true, title: 'Template', type: 'measure' })
 	);
 
-	await expect(change('add')).rejects.toThrow('Templates cannot be related by this tool.');
+	await expect(change('add')).rejects.toThrow(
+		'Containers marked as templates (template: true) cannot be related by this tool.'
+	);
 });
 
 test('rejects containers of different organizations', async () => {
