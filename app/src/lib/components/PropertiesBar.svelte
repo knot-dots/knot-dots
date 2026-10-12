@@ -63,7 +63,10 @@
 	);
 
 	const isPartOfMeasure = $derived(
-		container.relation.some(({ predicate }) => predicate == predicates.enum['is-part-of-measure'])
+		container.relation.some(
+			({ object, predicate }) =>
+				predicate == predicates.enum['is-part-of-measure'] && object != container.guid
+		)
 	);
 
 	const detailView = getDetailViewContext();
