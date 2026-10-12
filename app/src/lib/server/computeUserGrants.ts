@@ -132,8 +132,9 @@ export async function computeUserGrants(
 
 	const result = new Map<string, UserGrants>();
 
-	for (const guid of new Set(rows.map((r) => r.guid))) {
-		const forGuid = rows.filter((r) => r.guid === guid);
+	// Grouping once keeps this linear; filtering the rows per container is
+	// quadratic in the number of containers (seconds for a few thousand).
+	for (const [guid, forGuid] of Map.groupBy(rows, (r) => r.guid)) {
 		const { source, scope_sourced } = forGuid[0];
 		const kindsAt = (place: string, target: string) =>
 			forGuid
@@ -239,9 +240,10 @@ export async function computeUserGrantsFromRoles(
 	`);
 
 	const result = new Map<string, UserGrants>();
+	const rowsByGuid = Map.groupBy(rows, (r) => r.guid);
 
 	for (const guid of guids) {
-		const forGuid = rows.filter((r) => r.guid === guid);
+		const forGuid = rowsByGuid.get(guid) ?? [];
 		const setAt = (place: string) => {
 			const role = memberRoleFromPredicates(
 				forGuid.filter((r) => r.place === place).map(({ predicate }) => predicate as Predicate)
