@@ -27,7 +27,9 @@
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import ModifiedBy from '$lib/components/ModifiedBy.svelte';
-	import PropertiesConfiguration from '$lib/components/PropertiesConfiguration.svelte';
+	import PropertiesConfiguration, {
+		getDefaultLayout
+	} from '$lib/components/PropertiesConfiguration.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		anyPayload,
@@ -44,7 +46,6 @@
 		isSimpleMeasureContainer,
 		isTaskContainer,
 		isTeaserContainer,
-		payloadRegistry,
 		predicates,
 		propertyRegistry
 	} from '$lib/models';
@@ -65,11 +66,7 @@
 
 	const configuration = $derived(
 		organization.payload.propertiesConfiguration[container.payload.type] ??
-			payloadRegistry.get(payloadSchema)?.layout?.detail ?? {
-				headerAndPanel: [],
-				onlyPanel: [],
-				unused: []
-			}
+			getDefaultLayout(container, payloadSchema)
 	);
 
 	const isPartOfMeasure = $derived(

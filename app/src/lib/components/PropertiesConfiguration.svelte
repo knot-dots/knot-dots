@@ -1,3 +1,38 @@
+<script lang="ts" module>
+	import type { ZodType } from 'zod';
+	import { page } from '$app/state';
+	import { payloadRegistry } from '$lib/models';
+
+	export function getDefaultLayout(container: Container<AnyPayload>, payloadSchema: ZodType) {
+		if (payloadRegistry.get(payloadSchema)?.layout?.detail) {
+			const applicableCategories = (page.data.categoryContext?.keys ?? [])
+				.filter((key: string) =>
+					page.data.categoryContext?.objectTypesPerKey?.[key]?.includes(container.payload.type)
+				)
+				.map((key: string) => `category.${key}`);
+			const expandCategories = (v: string) => (v == 'category.*' ? applicableCategories : [v]);
+
+			return {
+				headerAndPanel:
+					payloadRegistry
+						.get(payloadSchema)
+						?.layout?.detail.headerAndPanel.flatMap(expandCategories) ?? [],
+				onlyPanel:
+					payloadRegistry.get(payloadSchema)?.layout?.detail.onlyPanel.flatMap(expandCategories) ??
+					[],
+				unused:
+					payloadRegistry.get(payloadSchema)?.layout?.detail.unused.flatMap(expandCategories) ?? []
+			};
+		}
+
+		return {
+			headerAndPanel: [],
+			onlyPanel: [],
+			unused: []
+		};
+	}
+</script>
+
 <script lang="ts">
 	import { flip } from 'svelte/animate';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
@@ -5,9 +40,8 @@
 	import type { ZodObject } from 'zod';
 	import DragHandle from '~icons/knotdots/draghandle';
 	import { invalidate } from '$app/navigation';
-	import { page } from '$app/state';
 	import saveContainer from '$lib/client/saveContainer';
-	import { type AnyPayload, type Container, payloadRegistry, propertyRegistry } from '$lib/models';
+	import { type AnyPayload, type Container, propertyRegistry } from '$lib/models';
 
 	interface Props {
 		configuration: { headerAndPanel: string[]; onlyPanel: string[]; unused: string[] };
@@ -19,13 +53,7 @@
 
 	let organization = $derived(page.data.currentOrganization);
 
-	const defaultLayout = $derived(
-		payloadRegistry.get(payloadSchema)?.layout?.detail ?? {
-			headerAndPanel: [],
-			onlyPanel: [],
-			unused: []
-		}
-	);
+	const defaultLayout = $derived(getDefaultLayout(container, payloadSchema));
 
 	let headerAndPanelItems = $derived(configuration.headerAndPanel.map((key) => ({ guid: key })));
 
@@ -44,14 +72,7 @@
 			...defaultLayout.unused
 		].filter((key) => !knownKeys.has(key));
 
-		const applicableCategories = (page.data.categoryContext?.keys ?? [])
-			.filter((key: string) =>
-				page.data.categoryContext?.objectTypesPerKey?.[key]?.includes(container.payload.type)
-			)
-			.map((key: string) => `category.${key}`)
-			.filter((key: string) => !knownKeys.has(key) && !missingDefaultKeys.includes(key));
-
-		const allUnusedKeys = [...configuration.unused, ...missingDefaultKeys, ...applicableCategories];
+		const allUnusedKeys = [...configuration.unused, ...missingDefaultKeys];
 
 		return allUnusedKeys.map((key) => ({ guid: key }));
 	});

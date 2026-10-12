@@ -19,6 +19,7 @@
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
 	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
+	import { getDefaultLayout } from '$lib/components/PropertiesConfiguration.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
 	import {
 		anyPayload,
@@ -32,7 +33,6 @@
 		isRuleContainer,
 		isTaskContainer,
 		isTeaserContainer,
-		payloadRegistry,
 		predicates,
 		type Status
 	} from '$lib/models';
@@ -58,8 +58,8 @@
 	const payloadSchema = $derived(z.getDiscriminatedOption(anyPayload, container.payload.type));
 
 	const configuration = $derived(
-		organization?.payload.propertiesConfiguration[container.payload.type] ??
-			payloadRegistry.get(payloadSchema)?.layout?.detail ?? { headerAndPanel: [], onlyPanel: [] }
+		organization.payload.propertiesConfiguration[container.payload.type] ??
+			getDefaultLayout(container, payloadSchema)
 	);
 
 	const isPartOfMeasure = $derived(
