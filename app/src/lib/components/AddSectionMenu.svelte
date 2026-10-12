@@ -575,7 +575,7 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.payloadType ?? 'none'}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer)}
 						<li class="menu-item">
 							<button
