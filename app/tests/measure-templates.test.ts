@@ -49,8 +49,9 @@ test('measure creation requires its own template and preserves program managemen
 	await measurePage.goto(testMeasure);
 	const dialog = await measurePage.createGoal();
 	await expect(dialog).toBeVisible();
-	await expect(dialog.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
-	await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
+	// TEMPORARY: requiresScopedTemplate is disabled, so creating without a template is allowed.
+	// await expect(dialog.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+	// await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
 	await expect(
 		dialog.getByRole('article').filter({ hasText: testProgramGoalTemplate.payload.title })
 	).toHaveCount(0);
@@ -131,7 +132,8 @@ test('an existing measure can be assigned to a program without a template', asyn
 	);
 });
 
-test('measure with no scoped templates hides goal creation', async ({
+// TEMPORARY: requiresScopedTemplate is disabled, so goal creation is shown.
+test.skip('measure with no scoped templates hides goal creation', async ({
 	dotsBoard,
 	testMeasure,
 	measureGoalCollection
@@ -156,5 +158,6 @@ test('simple measures use their scoped templates for creation', async ({
 	await expect(
 		dialog.getByRole('article').filter({ hasText: simpleMeasureGoalTemplate.payload.title })
 	).toBeVisible();
-	await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
+	// TEMPORARY: requiresScopedTemplate is disabled, so creating without a template is allowed.
+	// await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
 });

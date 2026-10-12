@@ -3,8 +3,8 @@ import { fromStore } from 'svelte/store';
 import { page } from '$app/state';
 import fetchContainerPage from '$lib/client/fetchContainerPage';
 import { createFeatureDecisions } from '$lib/features';
-import { type PayloadType, templatablePayloadTypes } from '$lib/models';
-import { isScopedTemplateRoot } from '$lib/templateScopes';
+import { type PayloadType } from '$lib/models';
+import { isScopedTemplateRoot, payloadTypeRequiresScopedTemplate } from '$lib/templateScopes';
 import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 
 interface Options {
@@ -13,8 +13,6 @@ interface Options {
 	organizationGuid: () => string;
 	scopeGuid: () => string | undefined;
 }
-
-const templatableTypes = new Set<string>(templatablePayloadTypes);
 
 export default function createScopedTemplateAvailability({
 	active = () => true,
@@ -31,9 +29,7 @@ export default function createScopedTemplateAvailability({
 	const scope = $derived(scopeGuid());
 
 	const candidateKey = $derived(
-		[...new Set(candidateTypes().filter((type) => templatableTypes.has(type)))]
-			.sort()
-			.join('\u0000')
+		[...new Set(candidateTypes().filter(payloadTypeRequiresScopedTemplate))].sort().join('\u0000')
 	);
 
 	const availabilityResource = resource(
@@ -95,7 +91,10 @@ export default function createScopedTemplateAvailability({
 	return {
 		has(payloadType: PayloadType) {
 			return (
-				!enabled || !scope || !templatableTypes.has(payloadType) || availableTypes.has(payloadType)
+				!enabled ||
+				!scope ||
+				!payloadTypeRequiresScopedTemplate(payloadType) ||
+				availableTypes.has(payloadType)
 			);
 		},
 		get error() {
