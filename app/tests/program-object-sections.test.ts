@@ -92,14 +92,17 @@ test('a template-bound goal section only lists goals created from it', async ({
 	await expect(section.locator('ul.catalog')).toBeVisible();
 	await page.keyboard.press('Escape');
 
-	// The same template is not offered a second time
+	// The same template is not offered a second time, the other part types remain
 	const templatesLoaded = page.waitForResponse((response) =>
 		response.url().includes(`availableIn=${testProgram.guid}`)
 	);
 	await section.hover();
 	await section.getByRole('button', { name: 'Add section' }).click();
 	await templatesLoaded;
-	await expect(page.getByRole('menuitem')).toHaveCount(0);
+	await expect(page.getByRole('menuitem', { name: 'Measures', exact: true })).toBeVisible();
+	await expect(
+		page.getByRole('menuitem', { name: testProgramGoalTemplate.payload.title })
+	).toHaveCount(0);
 	await page.keyboard.press('Escape');
 
 	// Adding an item skips the template picker and instantiates the bound template
