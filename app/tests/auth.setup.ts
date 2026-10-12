@@ -92,6 +92,7 @@ persons.forEach((person) => {
 		await page.getByRole('dialog').getByLabel('Templating').check();
 		await page.getByRole('dialog').getByLabel('MCP').check();
 		await page.getByRole('dialog').getByLabel('Timeline').check();
+		await page.getByRole('dialog').getByLabel('Rag Indicator').check();
 		await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
 
 		// Save the authenticated state to a file
