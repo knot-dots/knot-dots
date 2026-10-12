@@ -15,7 +15,7 @@
 		backgroundColor,
 		type Container,
 		isContainerWithColor,
-		isObjectCollectionContainer,
+		isRelationCollectionContainer,
 		isTeaserLikeContainer,
 		listTypes
 	} from '$lib/models';
@@ -58,7 +58,7 @@
 	}
 </script>
 
-{#if $ability.can('update', container, 'payload.visibility') || ($ability.can('update', container) && isContainerWithColor(container)) || ($ability.can('update', container) && isTeaserLikeContainer(container)) || ($ability.can('update', container) && isObjectCollectionContainer(container)) || $ability.can('delete', container)}
+{#if $ability.can('update', container, 'payload.visibility') || ($ability.can('update', container) && isContainerWithColor(container)) || ($ability.can('update', container) && isTeaserLikeContainer(container)) || ($ability.can('update', container) && isRelationCollectionContainer(container)) || $ability.can('delete', container)}
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(
 			openSubMenuTitle: string,
@@ -66,7 +66,7 @@
 			closeMenu: () => void
 		)}
 			{#if openSubMenuTitle == ''}
-				{#if isObjectCollectionContainer(container) && $ability.can('update', container)}
+				{#if isRelationCollectionContainer(container) && $ability.can('update', container)}
 					<button
 						class="cascading-menu-item"
 						onclick={() => openSubMenu($_('custom_collection.settings.view'))}
@@ -145,7 +145,7 @@
 						</span>
 					</button>
 				{/if}
-			{:else if openSubMenuTitle == $_('custom_collection.settings.view') && isObjectCollectionContainer(container)}
+			{:else if openSubMenuTitle == $_('custom_collection.settings.view') && isRelationCollectionContainer(container)}
 				<fieldset class="listbox">
 					<label>
 						<input

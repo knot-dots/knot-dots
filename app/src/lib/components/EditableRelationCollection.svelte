@@ -21,8 +21,8 @@
 		isTemplateContainer,
 		listTypes,
 		type NewContainer,
-		type ObjectCollectionObjectType,
-		type ObjectCollectionPayload,
+		type PayloadType,
+		type RelationCollectionPayload,
 		payloadTypes,
 		predicates
 	} from '$lib/models';
@@ -36,7 +36,7 @@
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
-		container: Container<ObjectCollectionPayload>;
+		container: Container<RelationCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 		parentContainer: Container<AnyPayload>;
@@ -89,22 +89,22 @@
 		editable && !bound ? createItem() : undefined
 	);
 
-	function applicableCategories(objectType: ObjectCollectionObjectType) {
+	function applicableCategories(payloadType: PayloadType) {
 		if (!('category' in parentContainer.payload)) {
 			return {};
 		}
 		return Object.fromEntries(
 			Object.entries(parentContainer.payload.category).filter(([key]) =>
-				page.data.categoryContext.objectTypesPerKey[key]?.some((t) => t === objectType)
+				page.data.categoryContext.objectTypesPerKey[key]?.some((t) => t === payloadType)
 			)
 		);
 	}
 
 	function createItem() {
-		const objectType = container.payload.objectType;
+		const payloadType = container.payload.payloadType;
 		const item = {
 			// items join the section's manager; relations follow separately
-			...containerOfType(objectType, container),
+			...containerOfType(payloadType, container),
 			managed_by: container.managed_by,
 			relation: []
 		} as NewContainer;
@@ -123,7 +123,7 @@
 		}
 
 		if ('category' in item.payload) {
-			item.payload.category = applicableCategories(objectType);
+			item.payload.category = applicableCategories(payloadType);
 		}
 
 		return item;
@@ -131,10 +131,10 @@
 
 	let mayAddItem = $derived(
 		editable &&
-			$mayCreateContainer(container.payload.objectType, container) &&
+			$mayCreateContainer(container.payload.payloadType, container) &&
 			(bound
 				? useTemplates && templateResource.current !== undefined
-				: templateAvailability.has(container.payload.objectType))
+				: templateAvailability.has(container.payload.payloadType))
 	);
 
 	function addItem() {
@@ -223,7 +223,7 @@
 		ignoreBulkActionContext
 		relatedContainers={relatedContainers.filter(
 			({ payload, relation }) =>
-				payload.type === payloadTypes.enum.indicator_template ||
+				payload.type === payloadTypes.enum.indicator ||
 				relation.some(({ object, subject }) => [object, subject].includes(item.guid))
 		)}
 	/>

@@ -1,4 +1,9 @@
-import { expect, test, createProgramContainerFromTemplate, deleteContainer } from './fixtures';
+import {
+	expect,
+	test as base,
+	createProgramContainerFromTemplate,
+	deleteContainer
+} from './fixtures';
 import {
 	type Container,
 	containerOfType,
@@ -7,12 +12,39 @@ import {
 	predicates
 } from '$lib/models';
 
+// A goal created outside the section from the same template stays a chapter.
+const test = base.extend<{ chapterGoal: Container<GoalPayload> }>({
+	chapterGoal: async ({ adminContext, testOrganization, testProgram }, use) => {
+		const newGoal = containerOfType(
+			payloadTypes.enum.goal,
+			testOrganization
+		) as Container<GoalPayload>;
+		const chapterGoal = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newGoal,
+				payload: { ...newGoal.payload, title: 'Chapter goal' },
+				relation: [
+					{
+						object: testProgram.guid,
+						position: 0,
+						predicate: predicates.enum['is-part-of-program']
+					}
+				]
+			},
+			testProgram
+		);
+		await use(chapterGoal);
+		await deleteContainer(adminContext, chapterGoal);
+	}
+});
+
 test.use({ suiteId: 'program-object-sections', storageState: 'tests/.auth/orgadmin.json' });
 
 test('a template-bound goal section only lists goals created from it', async ({
 	adminContext,
+	chapterGoal,
 	programPage,
-	testOrganization,
 	testProgram,
 	testProgramGoalTemplate
 }) => {
@@ -31,9 +63,9 @@ test('a template-bound goal section only lists goals created from it', async ({
 	const sectionContainer = await sectionResponse.json();
 	expect(sectionContainer.payload).toMatchObject({
 		newItemTemplate: testProgramGoalTemplate.guid,
-		objectType: payloadTypes.enum.goal,
+		payloadType: payloadTypes.enum.goal,
 		title: testProgramGoalTemplate.payload.title,
-		type: payloadTypes.enum.object_collection
+		type: payloadTypes.enum.relation_collection
 	});
 	await expect(section.getByRole('textbox', { name: 'Title' })).toHaveValue(
 		testProgramGoalTemplate.payload.title
@@ -91,53 +123,30 @@ test('a template-bound goal section only lists goals created from it', async ({
 	const response = await saved;
 	expect(response.status()).toBe(201);
 	const instance = await response.json();
-	let chapterGoal: Container<GoalPayload> | undefined;
-	try {
-		expect(instance.payload.template).toBe(false);
-		expect(instance.relation).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({ object: testProgram.guid, predicate: 'is-part-of-program' })
-			])
-		);
-		const updatedSection = await (await sectionUpdated).json();
-		expect(updatedSection.payload.item).toEqual([instance.guid]);
-		await expect(dialog).not.toBeVisible();
+	expect(instance.payload.template).toBe(false);
+	expect(instance.relation).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({ object: testProgram.guid, predicate: 'is-part-of-program' })
+		])
+	);
+	const updatedSection = await (await sectionUpdated).json();
+	expect(updatedSection.payload.item).toEqual([instance.guid]);
+	await expect(dialog).not.toBeVisible();
 
-		// A goal created outside the section from the same template stays a chapter
-		const newGoal = containerOfType(
-			payloadTypes.enum.goal,
-			testOrganization
-		) as Container<GoalPayload>;
-		chapterGoal = await createProgramContainerFromTemplate(
-			adminContext,
-			{
-				...newGoal,
-				payload: { ...newGoal.payload, title: 'Chapter goal' },
-				relation: [
-					{
-						object: testProgram.guid,
-						position: 1,
-						predicate: predicates.enum['is-part-of-program']
-					}
-				]
-			},
-			testProgram
+	await expect(async () => {
+		await programPage.goto(testProgram);
+		const savedSection = page.locator(`#section-${sectionContainer.guid}`);
+		await expect(savedSection.getByRole('heading', { name: 'Strategic goals' })).toBeVisible();
+		await expect(savedSection.locator('ul.catalog')).toBeVisible();
+		await expect(savedSection.getByTitle('Section goal', { exact: true })).toBeVisible();
+		await expect(savedSection.getByTitle(chapterGoal.payload.title, { exact: true })).toHaveCount(
+			0
 		);
+		await expect(programPage.chapters.filter({ hasText: chapterGoal.payload.title })).toHaveCount(
+			1
+		);
+		await expect(programPage.chapters.filter({ hasText: 'Section goal' })).toHaveCount(0);
+	}).toPass({ timeout: 20000 });
 
-		await expect(async () => {
-			await programPage.goto(testProgram);
-			const savedSection = page.locator(`#section-${sectionContainer.guid}`);
-			await expect(savedSection.getByRole('heading', { name: 'Strategic goals' })).toBeVisible();
-			await expect(savedSection.locator('ul.catalog')).toBeVisible();
-			await expect(savedSection.getByTitle('Section goal', { exact: true })).toBeVisible();
-			await expect(savedSection.getByTitle('Chapter goal', { exact: true })).toHaveCount(0);
-			await expect(programPage.chapters.filter({ hasText: 'Chapter goal' })).toHaveCount(1);
-			await expect(programPage.chapters.filter({ hasText: 'Section goal' })).toHaveCount(0);
-		}).toPass({ timeout: 20000 });
-	} finally {
-		await deleteContainer(adminContext, instance);
-		if (chapterGoal) {
-			await deleteContainer(adminContext, chapterGoal);
-		}
-	}
+	await deleteContainer(adminContext, instance);
 });

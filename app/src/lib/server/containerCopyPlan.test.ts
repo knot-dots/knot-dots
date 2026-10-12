@@ -1427,9 +1427,9 @@ test('remaps object section items and bound templates when instantiating a progr
 	const section = makeContainer(guids.parent, {
 		item: [guids.child, guids.missing],
 		newItemTemplate: guids.scopedTemplate,
-		objectType: payloadTypes.enum.goal,
+		payloadType: payloadTypes.enum.goal,
 		title: 'Strategic goals',
-		type: payloadTypes.enum.object_collection
+		type: payloadTypes.enum.relation_collection
 	});
 	const goal = makeContainer(guids.child, {
 		title: 'Strategic goal',
@@ -1469,9 +1469,9 @@ test('drops a bound template outside the copy set unless the target may use it',
 	const section = makeContainer(guids.root, {
 		item: [],
 		newItemTemplate: guids.usableTemplate,
-		objectType: payloadTypes.enum.goal,
+		payloadType: payloadTypes.enum.goal,
 		title: 'Goals',
-		type: payloadTypes.enum.object_collection
+		type: payloadTypes.enum.relation_collection
 	});
 	const template = makeContainer(guids.usableTemplate, {
 		template: true,

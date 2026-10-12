@@ -504,7 +504,7 @@ export function createContainerCopyPlan({
 				});
 				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter(canUseNewItemTemplate);
 				break;
-			case payloadTypes.enum.object_collection:
+			case payloadTypes.enum.relation_collection:
 				copy.payload.item = copy.payload.item.flatMap((itemGuid) => {
 					const copiedItemGuid = guidMap.get(itemGuid);
 					if (copiedItemGuid) {

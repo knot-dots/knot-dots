@@ -32,7 +32,7 @@
 		computeFacetCount,
 		type Container,
 		containerOfType,
-		isObjectCollectionContainer,
+		isRelationCollectionContainer,
 		type NewContainer,
 		paramsFromFragment,
 		type PayloadType,
@@ -99,7 +99,7 @@
 	let sectionItemGuids = $derived(
 		new Set(
 			hasSection(container, relatedContainers)
-				.filter(isObjectCollectionContainer)
+				.filter(isRelationCollectionContainer)
 				.flatMap(({ payload }) => payload.item)
 		)
 	);

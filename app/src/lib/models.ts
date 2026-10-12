@@ -80,7 +80,6 @@ const payloadTypeValues = [
 	'map',
 	'measure',
 	'measure_collection',
-	'object_collection',
 	'objective',
 	'objective_collection',
 	'organization',
@@ -92,6 +91,7 @@ const payloadTypeValues = [
 	'progress',
 	'report',
 	'quote',
+	'relation_collection',
 	'resource',
 	'resource_collection',
 	'resource_v2', // New payload type for resources with temporary v2 suffix
@@ -1294,34 +1294,6 @@ export function isCustomCollectionContainer(
 
 const initialCustomCollectionPayload = customCollectionPayload.partial({ title: true });
 
-export const objectCollectionObjectTypes = z.enum([payloadTypes.enum.goal]);
-
-export type ObjectCollectionObjectType = z.infer<typeof objectCollectionObjectTypes>;
-
-export const objectCollectionPayload = z.strictObject({
-	...sectionStyle.shape,
-	item: z.array(z.uuid()).default([]),
-	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
-	newItemTemplate: z.uuid().optional(),
-	objectType: objectCollectionObjectTypes,
-	title: z.string(),
-	type: z.literal(payloadTypes.enum.object_collection),
-	visibility: visibility.default(visibility.enum['organization'])
-});
-
-export type ObjectCollectionPayload = z.infer<typeof objectCollectionPayload>;
-
-export function isObjectCollectionContainer(
-	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
-): container is Container<ObjectCollectionPayload> {
-	return container.payload.type === payloadTypes.enum.object_collection;
-}
-
-const initialObjectCollectionPayload = objectCollectionPayload.partial({
-	objectType: true,
-	title: true
-});
-
 export const demographicDataPayload = z.strictObject({
 	...sectionStyle.shape,
 	title: z
@@ -2351,6 +2323,30 @@ const initialResourcePayload = resourcePayload.partial({
 	unit: true
 });
 
+export const relationCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
+	item: z.array(z.uuid()).default([]),
+	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
+	newItemTemplate: z.uuid().optional(),
+	payloadType: payloadTypes,
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.relation_collection),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type RelationCollectionPayload = z.infer<typeof relationCollectionPayload>;
+
+export function isRelationCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<RelationCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.relation_collection;
+}
+
+const initialRelationCollectionPayload = relationCollectionPayload.partial({
+	payloadType: true,
+	title: true
+});
+
 const resourceCollectionPayload = z.strictObject({
 	...sectionStyle.shape,
 	title: z
@@ -2911,7 +2907,6 @@ const payload = z.discriminatedUnion('type', [
 	mapPayload,
 	measureCollectionPayload,
 	measurePayload,
-	objectCollectionPayload,
 	objectiveCollectionPayload,
 	objectivePayload,
 	pagePayload,
@@ -2920,6 +2915,7 @@ const payload = z.discriminatedUnion('type', [
 	programPayload,
 	progressPayload,
 	quotePayload,
+	relationCollectionPayload,
 	reportPayload,
 	resourceCollectionPayload,
 	resourceDataCollectionPayload,
@@ -2992,7 +2988,6 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialMapPayload,
 	initialMeasureCollectionPayload,
 	initialMeasurePayload,
-	initialObjectCollectionPayload,
 	initialObjectiveCollectionPayload,
 	initialObjectivePayload,
 	initialOrganizationPayload,
@@ -3003,6 +2998,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialProgramPayload,
 	initialProgressPayload,
 	initialQuotePayload,
+	initialRelationCollectionPayload,
 	initialReportPayload,
 	initialResourceCollectionPayload,
 	initialResourceDataCollectionPayload,

@@ -21,12 +21,14 @@
 	import Link from '~icons/knotdots/link';
 	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
+	import Measure from '~icons/knotdots/measure';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Progress from '~icons/knotdots/progress';
 	import Star from '~icons/knotdots/star';
 	import Summary from '~icons/knotdots/summary';
+	import Task from '~icons/knotdots/tasks';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
 	import { page } from '$app/state';
@@ -49,7 +51,7 @@
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
-		isObjectCollectionContainer,
+		isRelationCollectionContainer,
 		isObjectiveCollectionContainer,
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
@@ -66,7 +68,6 @@
 		isTaskCollectionContainer,
 		isTaskContainer,
 		isTemplateContainer,
-		type ObjectCollectionObjectType,
 		type PayloadType,
 		payloadTypes,
 		predicates,
@@ -97,7 +98,7 @@
 		icon: typeof Plus;
 		label: string;
 		newItemTemplate?: string;
-		objectType?: ObjectCollectionObjectType;
+		payloadType?: PayloadType;
 		resourceDataType?: string;
 		textType?: string;
 		value: PayloadType;
@@ -245,9 +246,41 @@
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
-	// Programs offer one object section per scoped goal template. The templates are
-	// requested once the menu has been opened; the menu store itself must not be a
-	// dependency because item registration updates it while the menu is open.
+	// Relation collections are offered for goals, measures and tasks only. A program
+	// gets one section per scoped template of a type it allows as a part; without
+	// templates the plain type is offered once. The templates are requested once
+	// the menu has been opened; the menu store itself must not be a dependency
+	// because item registration updates it while the menu is open.
+	const relationCollectionPayloadTypes = [
+		payloadTypes.enum.goal,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.task
+	] as const;
+
+	const relationCollectionIcons: Record<
+		(typeof relationCollectionPayloadTypes)[number],
+		typeof Plus
+	> = {
+		[payloadTypes.enum.goal]: Goal,
+		[payloadTypes.enum.measure]: Measure,
+		[payloadTypes.enum.task]: Task
+	};
+
+	const relationCollectionLabels: Record<(typeof relationCollectionPayloadTypes)[number], string> =
+		{
+			[payloadTypes.enum.goal]: 'goals',
+			[payloadTypes.enum.measure]: 'measures',
+			[payloadTypes.enum.task]: 'tasks'
+		};
+
+	let candidateTypes = $derived(
+		isProgramContainer(parentContainer)
+			? relationCollectionPayloadTypes.filter((type) =>
+					parentContainer.payload.chapterType.some((chapterType) => chapterType === type)
+				)
+			: []
+	);
+
 	let templatesRequested = $state(false);
 
 	$effect(() => {
@@ -256,17 +289,18 @@
 		}
 	});
 
-	const goalTemplatesResource = resource(
+	const templatesResource = resource(
 		[
 			() => templatesRequested,
 			() =>
-				isProgramContainer(parentContainer) &&
+				candidateTypes.length > 0 &&
 				createFeatureDecisions(page.data.features).useTemplateWorkspaces(),
 			() => parentContainer.guid,
-			() => parentContainer.organization
+			() => parentContainer.organization,
+			() => candidateTypes.join(',')
 		],
 		async (
-			[requested, enabled, scopeGuid, organizationGuid],
+			[requested, enabled, scopeGuid, organizationGuid, typesKey],
 			_,
 			{ signal }
 		): Promise<Container<TemplatePayload>[]> => {
@@ -277,55 +311,54 @@
 				{
 					availableIn: scopeGuid,
 					organization: [organizationGuid],
-					payloadType: [payloadTypes.enum.goal],
+					payloadType: typesKey.split(','),
 					template: 'true',
 					templateRoot: true
 				},
 				'alpha',
 				{ signal }
 			);
-			return containers.filter(isTemplateContainer).filter((container) =>
-				isScopedTemplateRoot(container, {
-					organizationGuid,
-					payloadType: payloadTypes.enum.goal,
-					scopeGuid
-				})
-			);
+			return containers
+				.filter(isTemplateContainer)
+				.filter((container) => isScopedTemplateRoot(container, { organizationGuid, scopeGuid }));
 		}
 	);
 
-	let objectCollections = $derived(
-		hasSection(parentContainer, relatedContainers).filter(isObjectCollectionContainer)
+	let relationCollections = $derived(
+		hasSection(parentContainer, relatedContainers).filter(isRelationCollectionContainer)
 	);
 
 	let programOptions: SectionOption[] = $derived.by(() => {
-		if (goalTemplatesResource.loading) {
+		if (templatesResource.loading) {
 			return [];
 		}
-		const templates = goalTemplatesResource.current ?? [];
-		if (templates.length > 0) {
-			return templates
-				.filter((t) => !objectCollections.some((s) => s.payload.newItemTemplate === t.guid))
-				.map((t) => ({
-					icon: Goal,
-					label: t.payload.title,
-					newItemTemplate: t.guid,
-					objectType: payloadTypes.enum.goal,
-					value: payloadTypes.enum.object_collection
-				}));
-		}
-		return objectCollections.some(
-			(s) => s.payload.objectType === payloadTypes.enum.goal && !s.payload.newItemTemplate
-		)
-			? []
-			: [
-					{
-						icon: Goal,
-						label: $_('goals'),
-						objectType: payloadTypes.enum.goal,
-						value: payloadTypes.enum.object_collection
-					}
-				];
+		const templates = templatesResource.current ?? [];
+		return candidateTypes.flatMap((type) => {
+			const templatesOfType = templates.filter(({ payload }) => payload.type === type);
+			if (templatesOfType.length > 0) {
+				return templatesOfType
+					.filter((t) => !relationCollections.some((s) => s.payload.newItemTemplate === t.guid))
+					.map((t) => ({
+						icon: relationCollectionIcons[type],
+						label: t.payload.title,
+						newItemTemplate: t.guid,
+						payloadType: type,
+						value: payloadTypes.enum.relation_collection
+					}));
+			}
+			return relationCollections.some(
+				(s) => s.payload.payloadType === type && !s.payload.newItemTemplate
+			)
+				? []
+				: [
+						{
+							icon: relationCollectionIcons[type],
+							label: $_(relationCollectionLabels[type]),
+							payloadType: type,
+							value: payloadTypes.enum.relation_collection
+						}
+					];
+		});
 	});
 
 	let sectionOptions: SectionOption[] = $derived(
@@ -550,7 +583,7 @@
 									value: {
 										type: option.value,
 										newItemTemplate: option.newItemTemplate,
-										objectType: option.objectType,
+										payloadType: option.payloadType,
 										resourceDataType: option.resourceDataType,
 										textType: option.textType,
 										title: option.label
