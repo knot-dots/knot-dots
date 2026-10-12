@@ -1,4 +1,15 @@
-import { expect, test } from './fixtures';
+import { createContainer, deleteContainer, expect, test } from './fixtures';
+import {
+	type CategoryPayload,
+	type Container,
+	containerOfType,
+	etag,
+	type KnowledgePayload,
+	type NewContainer,
+	payloadTypes,
+	predicates,
+	type TermPayload
+} from '$lib/models';
 
 test.use({ suiteId: 'categories' });
 
@@ -163,5 +174,114 @@ test.describe('Categories', () => {
 		await openSharedCategoryFilter();
 		await goalsBoard.page.getByRole('checkbox', { name: 'Keine Armut' }).check();
 		await expect(goalsBoard.card(testGoal.payload.title)).toBeVisible();
+	});
+
+	test('properties open when a term is also a sub-term of another term', async ({
+		adminContext,
+		page,
+		testOrganization
+	}) => {
+		const suffix = test.info().project.name;
+		const key = `twice-assigned-${suffix}`;
+		const created: Container[] = [];
+
+		const newCategory = containerOfType(
+			payloadTypes.enum.category,
+			testOrganization
+		) as Container<CategoryPayload>;
+		const category = await createContainer(adminContext, {
+			...newCategory,
+			payload: { ...newCategory.payload, key, title: `Twice assigned ${suffix}` }
+		});
+		created.unshift(category);
+
+		async function createTerm(title: string, relation: NewContainer['relation']) {
+			const newTerm = containerOfType(
+				payloadTypes.enum.term,
+				testOrganization
+			) as Container<TermPayload>;
+			const term = await createContainer(adminContext, {
+				...newTerm,
+				payload: { ...newTerm.payload, title, value: title.toLowerCase() },
+				relation
+			});
+			created.unshift(term);
+			return term;
+		}
+
+		const partOfCategory = (position: number) => ({
+			object: category.guid,
+			position,
+			predicate: predicates.enum['is-part-of-category']
+		});
+
+		// Beta is a term of the category and a sub-term of Alpha at the same time.
+		const alpha = await createTerm('Alpha', [partOfCategory(0)]);
+		await createTerm('Beta', [
+			partOfCategory(1),
+			{ object: alpha.guid, position: 0, predicate: predicates.enum['is-part-of'] }
+		]);
+		await createTerm('Gamma', [partOfCategory(2)]);
+
+		const newKnowledge = containerOfType(
+			payloadTypes.enum.knowledge,
+			testOrganization
+		) as Container<KnowledgePayload>;
+		const knowledge = await createContainer(adminContext, {
+			...newKnowledge,
+			payload: {
+				...newKnowledge.payload,
+				category: { [key]: ['alpha', 'beta', 'gamma'] },
+				title: `Knowledge with twice assigned term ${suffix}`
+			}
+		});
+		created.unshift(knowledge);
+
+		const organization = await (
+			await adminContext.request.get(`/container/${testOrganization.guid}`)
+		).json();
+		const previousConfiguration = organization.payload.propertiesConfiguration;
+
+		async function configureProperties(propertiesConfiguration: unknown) {
+			const current = await (
+				await adminContext.request.get(`/container/${testOrganization.guid}`)
+			).json();
+			const response = await adminContext.request.post(
+				`/container/${testOrganization.guid}/revision`,
+				{
+					data: { ...current, payload: { ...current.payload, propertiesConfiguration } },
+					headers: { 'Content-Type': 'application/json', 'If-Match': etag(current) }
+				}
+			);
+			expect(response.ok()).toBeTruthy();
+		}
+
+		const errors: string[] = [];
+		page.on('pageerror', (error) => errors.push(error.message));
+
+		try {
+			await configureProperties({
+				...previousConfiguration,
+				knowledge: { headerAndPanel: ['type'], onlyPanel: [`category.${key}`], unused: [] }
+			});
+
+			await page.goto(`/${testOrganization.guid}/knowledge/catalog#view=${knowledge.guid}`);
+
+			const overlay = page.locator('.overlay');
+			await expect(overlay.getByRole('heading', { level: 1 })).toHaveText(knowledge.payload.title);
+			await overlay.getByRole('button', { name: 'Show all properties' }).click();
+
+			await expect(overlay.getByRole('heading', { level: 2, name: 'Properties' })).toBeVisible();
+			const value = overlay.getByText(category.payload.title).locator('+ *');
+			await expect(value.getByText('Alpha')).toBeVisible();
+			await expect(value.getByText('Beta')).toHaveCount(1);
+			await expect(value.getByText('Gamma')).toBeVisible();
+			expect(errors).toEqual([]);
+		} finally {
+			await configureProperties(previousConfiguration);
+			for (const container of created) {
+				await deleteContainer(adminContext, container);
+			}
+		}
 	});
 });

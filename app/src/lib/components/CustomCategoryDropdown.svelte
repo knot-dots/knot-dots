@@ -33,22 +33,25 @@
 			option: Option | SubOption;
 			isChild: boolean;
 		}> = [];
-		const groupedSubValues = new SvelteSet<string>();
+		// A term can occur more than once in the options, e.g. as a term and as a sub-term.
+		const addedValues = new SvelteSet<string>();
 
 		for (const option of options) {
-			if (!value.includes(option.value)) continue;
+			if (!value.includes(option.value) || addedValues.has(option.value)) continue;
 			entries.push({ option, isChild: false });
+			addedValues.add(option.value);
 			for (const sub of option.subOptions ?? []) {
-				if (!value.includes(sub.value)) continue;
+				if (!value.includes(sub.value) || addedValues.has(sub.value)) continue;
 				entries.push({ option: sub, isChild: true });
-				groupedSubValues.add(sub.value);
+				addedValues.add(sub.value);
 			}
 		}
 
 		for (const option of options) {
 			for (const sub of option.subOptions ?? []) {
-				if (!value.includes(sub.value) || groupedSubValues.has(sub.value)) continue;
+				if (!value.includes(sub.value) || addedValues.has(sub.value)) continue;
 				entries.push({ option: sub, isChild: true });
+				addedValues.add(sub.value);
 			}
 		}
 
