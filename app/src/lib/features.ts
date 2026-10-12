@@ -2,7 +2,7 @@
 // managed per deployment via pod annotations (see $lib/server/podFeatures)
 // and deliberately absent from these user-facing rings.
 export const featureFlags = new Map([
-	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP', 'Timeline'] as const],
+	['alpha', ['OpenAI', 'Adoptions', 'Templating', 'MCP', 'Timeline', 'TrafficLight'] as const],
 	[
 		'beta',
 		[
@@ -83,6 +83,9 @@ export function createFeatureDecisions(features: string[]) {
 		},
 		useTimeline() {
 			return features.includes('Timeline');
+		},
+		useTrafficLight() {
+			return features.includes('TrafficLight');
 		}
 	} satisfies Record<string, () => boolean>;
 }

@@ -369,19 +369,21 @@
 	{/if}
 
 	{#if showCompareAndReview}
-		<button
-			class="button button-xs button-alternate system-primary traffic-light-button"
-			type="button"
-			use:reviewBar.button
-			onclick={() => {
-				filterBar.close();
-				sortBar.close();
-				compareBar.close();
-			}}
-		>
-			<TrafficLight />
-			<span>{$_('review')}</span>
-		</button>
+		{#if createFeatureDecisions(page.data.features).useTrafficLight()}
+			<button
+				class="button button-xs button-alternate system-primary traffic-light-button"
+				type="button"
+				use:reviewBar.button
+				onclick={() => {
+					filterBar.close();
+					sortBar.close();
+					compareBar.close();
+				}}
+			>
+				<TrafficLight />
+				<span>{$_('review')}</span>
+			</button>
+		{/if}
 
 		<button
 			class="button button-xs button-primary system-primary"
