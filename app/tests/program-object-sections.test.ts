@@ -11,6 +11,7 @@ import {
 	payloadTypes,
 	predicates
 } from '$lib/models';
+import { relationCollectionsEnabled } from '$lib/relationCollections';
 
 // A goal created outside the section from the same template stays a chapter.
 const test = base.extend<{ chapterGoal: Container<GoalPayload> }>({
@@ -40,6 +41,11 @@ const test = base.extend<{ chapterGoal: Container<GoalPayload> }>({
 });
 
 test.use({ suiteId: 'program-object-sections', storageState: 'tests/.auth/orgadmin.json' });
+
+test.skip(
+	!relationCollectionsEnabled,
+	'Relation collections are switched off until program sections land'
+);
 
 test('a template-bound goal section only lists goals created from it', async ({
 	adminContext,

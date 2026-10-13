@@ -43,6 +43,7 @@
 		status
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
+	import { relationCollectionsEnabled } from '$lib/relationCollections';
 	import { ability, applicationState, newContainer } from '$lib/stores';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
@@ -335,7 +336,9 @@
 					{/each}
 				</div>
 
-				<Sections bind:container {relatedContainers} />
+				{#if relationCollectionsEnabled}
+					<Sections bind:container {relatedContainers} />
+				{/if}
 			{/snippet}
 
 			{#snippet properties()}
