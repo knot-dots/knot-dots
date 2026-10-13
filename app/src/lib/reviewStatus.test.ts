@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
-import { computeReviewStatus } from '$lib/components/NewIndicatorChart.svelte';
+import type { ObjectivePayload } from '$lib/models';
+import { computeReviewStatus, targetTrend } from '$lib/reviewStatus';
 
 test.each([
 	['matches the target trend', 1, [1, 1], 'review_status.in_target_direction'],
@@ -13,4 +14,24 @@ test.each([
 	['has no targets', 1, [], undefined]
 ] as const)('computeReviewStatus when the actual trend %s', (_, actual, targets, status) => {
 	expect(computeReviewStatus(actual, [...targets])).toBe(status);
+});
+
+function objective(payload: Pick<ObjectivePayload, 'wantedValues' | 'trendValue'>) {
+	return payload as ObjectivePayload;
+}
+
+test('targetTrend prefers wanted values over the stored trend', () => {
+	const wantedValues: ObjectivePayload['wantedValues'] = [
+		[2020, 10],
+		[2030, 5]
+	];
+	expect(targetTrend(objective({ wantedValues, trendValue: 1 }))).toBe(-1);
+});
+
+test('targetTrend falls back to the stored trend', () => {
+	expect(targetTrend(objective({ wantedValues: [], trendValue: 1 }))).toBe(1);
+});
+
+test('targetTrend is undetermined without wanted values or stored trend', () => {
+	expect(targetTrend(objective({ wantedValues: [] }))).toBeUndefined();
 });

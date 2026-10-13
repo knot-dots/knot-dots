@@ -1,34 +1,3 @@
-<script module lang="ts">
-	import type { TrendDirection } from '$lib/models';
-
-	export type ReviewStatus =
-		| 'review_status.in_target_direction'
-		| 'review_status.against_target_direction'
-		| 'review_status.no_clear_trend'
-		| 'review_status.diverging_targets';
-
-	// Compares the trend of an indicator's actual data with the target trends of
-	// the objectives under review. Undefined if there is nothing to compare.
-	export function computeReviewStatus(
-		actualTrend: TrendDirection | undefined,
-		targetTrends: TrendDirection[]
-	): ReviewStatus | undefined {
-		if (actualTrend === undefined || targetTrends.length === 0) {
-			return undefined;
-		}
-		if (new Set(targetTrends).size > 1) {
-			return 'review_status.diverging_targets';
-		}
-		if (actualTrend === targetTrends[0]) {
-			return 'review_status.in_target_direction';
-		}
-		if (actualTrend === 0) {
-			return 'review_status.no_clear_trend';
-		}
-		return 'review_status.against_target_direction';
-	}
-</script>
-
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
 	import type { Component } from 'svelte';
@@ -50,6 +19,7 @@
 		isActualDataContainer,
 		trendDirection
 	} from '$lib/models';
+	import { computeReviewStatus, type ReviewStatus, targetTrend } from '$lib/reviewStatus';
 	import { compareState } from '$lib/stores';
 
 	interface Props {
@@ -90,13 +60,9 @@
 		trendDirection(actualValues.map(({ date, value }) => [date.getFullYear(), value]))
 	);
 
-	// Concrete wanted values take precedence over a stored trend direction
 	const targetTrends = $derived(
 		reviewObjectives
-			.map(
-				({ objective }) =>
-					trendDirection(objective.payload.wantedValues) ?? objective.payload.trendValue
-			)
+			.map(({ objective }) => targetTrend(objective.payload))
 			.filter((trend) => trend !== undefined)
 	);
 
