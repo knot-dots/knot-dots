@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import {
 	expect,
 	test as base,
@@ -14,7 +15,7 @@ import {
 import { relationCollectionsEnabled } from '$lib/relationCollections';
 
 // A goal created outside the section from the same template stays a chapter.
-const test = base.extend<{ chapterGoal: Container<GoalPayload> }>({
+const test = base.extend<{ chapterGoal: Container<GoalPayload>; templatingDisabled: void }>({
 	chapterGoal: async ({ adminContext, testOrganization, testProgram }, use) => {
 		const newGoal = containerOfType(
 			payloadTypes.enum.goal,
@@ -37,8 +38,29 @@ const test = base.extend<{ chapterGoal: Container<GoalPayload> }>({
 		);
 		await use(chapterGoal);
 		await deleteContainer(adminContext, chapterGoal);
+	},
+	// Switches templates off for the signed-in user; the legacy create dialog is
+	// used then. The flag is restored afterwards because the auth state is shared.
+	templatingDisabled: async ({ page }, use) => {
+		await setTemplating(page, false);
+		await use();
+		await setTemplating(page, true);
 	}
 });
+
+async function setTemplating(page: Page, enabled: boolean) {
+	await page.goto('/');
+	await page.getByRole('navigation').getByRole('button', { name: 'User menu' }).click();
+	await page.getByRole('navigation').getByRole('button', { name: 'Settings' }).click();
+	const checkbox = page.getByRole('dialog').getByLabel('Templating');
+	if (enabled) {
+		await checkbox.check();
+	} else {
+		await checkbox.uncheck();
+	}
+	await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+	await expect(page.getByRole('dialog')).toBeHidden();
+}
 
 test.use({ suiteId: 'program-object-sections', storageState: 'tests/.auth/orgadmin.json' });
 
@@ -156,4 +178,62 @@ test('a template-bound goal section only lists goals created from it', async ({
 	}).toPass({ timeout: 20000 });
 
 	await deleteContainer(adminContext, instance);
+});
+
+test('without templates a plain goal section adds goals through the legacy dialog', async ({
+	adminContext,
+	programPage,
+	templatingDisabled,
+	testProgram
+}) => {
+	void templatingDisabled;
+	const page = programPage.page;
+	await programPage.goto(testProgram);
+	await programPage.header.editModeToggle.check();
+
+	// Without templates the menu offers the plain type
+	const sectionCreated = page.waitForResponse(
+		(response) =>
+			new URL(response.url()).pathname === '/container' && response.request().method() === 'POST'
+	);
+	const section = await programPage.addSection('Goals');
+	const sectionContainer = await (await sectionCreated).json();
+	expect(sectionContainer.payload).toMatchObject({
+		payloadType: payloadTypes.enum.goal,
+		type: payloadTypes.enum.relation_collection
+	});
+	expect(sectionContainer.payload).not.toHaveProperty('newItemTemplate');
+
+	// The legacy dialog creates the goal and the section records it
+	await section.hover();
+	await section.getByRole('button', { name: 'Add item', exact: true }).first().click();
+	const dialog = page.getByRole('dialog');
+	await dialog.getByRole('textbox', { name: 'Title' }).fill('Plain goal');
+	const saved = page.waitForResponse(
+		(response) =>
+			new URL(response.url()).pathname === '/container' && response.request().method() === 'POST'
+	);
+	const sectionUpdated = page.waitForResponse(
+		(response) =>
+			new URL(response.url()).pathname === `/container/${sectionContainer.guid}/revision` &&
+			response.request().method() === 'POST'
+	);
+	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	const goal = await (await saved).json();
+	expect(goal.relation).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({ object: testProgram.guid, predicate: 'is-part-of-program' })
+		])
+	);
+	const updatedSection = await (await sectionUpdated).json();
+	expect(updatedSection.payload.item).toEqual([goal.guid]);
+
+	await expect(async () => {
+		await programPage.goto(testProgram);
+		const savedSection = page.locator(`#section-${sectionContainer.guid}`);
+		await expect(savedSection.getByTitle('Plain goal', { exact: true })).toBeVisible();
+		await expect(programPage.chapters.filter({ hasText: 'Plain goal' })).toHaveCount(0);
+	}).toPass({ timeout: 20000 });
+
+	await deleteContainer(adminContext, goal);
 });
