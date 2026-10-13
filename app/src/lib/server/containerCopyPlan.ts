@@ -505,28 +505,17 @@ export function createContainerCopyPlan({
 				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter(canUseNewItemTemplate);
 				break;
 			case payloadTypes.enum.relation_collection:
+				// Items and the bound template are copied along with the program, so the
+				// copy only keeps references that resolve to copies of its own.
 				copy.payload.item = copy.payload.item.flatMap((itemGuid) => {
 					const copiedItemGuid = guidMap.get(itemGuid);
-					if (copiedItemGuid) {
-						return [copiedItemGuid];
-					}
-					const item = containersByGuid.get(itemGuid);
-					if (!item) {
-						return [];
-					}
-					if (
-						item.payload.visibility === visibility.enum.public ||
-						(readPolicy.canReadSource(item) && readPolicy.canRetainCollectionItem(item, target))
-					) {
-						return [itemGuid];
-					}
-					return [];
+					return copiedItemGuid ? [copiedItemGuid] : [];
 				});
 				if (copy.payload.newItemTemplate !== undefined) {
 					const copiedTemplateGuid = guidMap.get(copy.payload.newItemTemplate);
 					if (copiedTemplateGuid) {
 						copy.payload.newItemTemplate = copiedTemplateGuid;
-					} else if (!canUseNewItemTemplate(copy.payload.newItemTemplate)) {
+					} else {
 						delete copy.payload.newItemTemplate;
 					}
 				}

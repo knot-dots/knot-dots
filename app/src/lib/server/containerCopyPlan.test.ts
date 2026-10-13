@@ -1465,7 +1465,7 @@ test('remaps object section items and bound templates when instantiating a progr
 	expect(copyFor(plan, guids.scopedTemplate)?.payload).toMatchObject({ template: true });
 });
 
-test('drops a bound template outside the copy set unless the target may use it', () => {
+test('drops a bound template outside the copy set', () => {
 	const section = makeContainer(guids.root, {
 		item: [],
 		newItemTemplate: guids.usableTemplate,
@@ -1480,22 +1480,12 @@ test('drops a bound template outside the copy set unless the target may use it',
 	});
 	const snapshot = graph(guids.root, [section, template], []);
 
-	const usable = createContainerCopyPlan({
+	const plan = createContainerCopyPlan({
 		graph: snapshot,
 		target,
 		readPolicy: policy({ usableTemplates: [guids.usableTemplate] }),
 		allocateGuid: allocator()
 	});
-	expect(copyFor(usable, guids.root)?.payload).toMatchObject({
-		newItemTemplate: guids.usableTemplate
-	});
-	expect(usable.has(guids.usableTemplate)).toBe(false);
-
-	const unusable = createContainerCopyPlan({
-		graph: snapshot,
-		target,
-		readPolicy: policy(),
-		allocateGuid: allocator()
-	});
-	expect(copyFor(unusable, guids.root)?.payload).not.toHaveProperty('newItemTemplate');
+	expect(copyFor(plan, guids.root)?.payload).not.toHaveProperty('newItemTemplate');
+	expect(plan.has(guids.usableTemplate)).toBe(false);
 });
