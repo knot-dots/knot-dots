@@ -1,0 +1,11 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.51435 0.371004C9.80107 0.151969 10.1989 0.151968 10.4856 0.371003L19.5566 7.30056C19.823 7.50409 19.9342 7.85215 19.8352 8.17248L16.3546 19.4362C16.251 19.7714 15.9411 20 15.5902 20H4.40977C4.05893 20 3.74902 19.7714 3.64543 19.4362L0.164754 8.17248C0.0657689 7.85215 0.17702 7.50409 0.443443 7.30056L9.51435 0.371004Z" fill="#536279"/>
+<path d="M9.51435 0.371004C9.80107 0.151969 10.1989 0.151968 10.4856 0.371003L19.5566 7.30056C19.823 7.50409 19.9342 7.85215 19.8352 8.17248L16.3546 19.4362C16.251 19.7714 15.9411 20 15.5902 20H4.40977C4.05893 20 3.74902 19.7714 3.64543 19.4362L0.164754 8.17248C0.0657689 7.85215 0.17702 7.50409 0.443443 7.30056L9.51435 0.371004Z" fill="url(#target-check-no-target-gloss)" fill-opacity="0.35" style="mix-blend-mode:overlay"/>
+<path d="M8 13.4999L12 8.49994" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<radialGradient id="target-check-no-target-gloss" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10 1.5) rotate(90) scale(11.5)">
+<stop stop-color="white"/>
+<stop offset="1"/>
+</radialGradient>
+</defs>
+</svg>
