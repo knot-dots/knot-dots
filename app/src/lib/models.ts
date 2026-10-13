@@ -1156,7 +1156,7 @@ export const binaryIndicatorPayload = z
 				onlyPanel: [
 					'indicatorCategory',
 					'indicatorType',
-					'category.sdg',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -1472,7 +1472,7 @@ const goalPayload = z
 				onlyPanel: [
 					'hierarchyLevel',
 					'fulfillmentDate',
-					'category.sdg',
+					'category.*',
 					'measure',
 					'program',
 					'parent',
@@ -1673,7 +1673,7 @@ export const indicatorPayload = z
 					'indicatorType',
 					'unit',
 					'indicatorCategory',
-					'category.sdg',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -1734,7 +1734,7 @@ export const knowledgePayload = z
 			detail: {
 				headerAndPanel: ['type'],
 				onlyPanel: [
-					'category.sdg',
+					'category.*',
 					'program',
 					'parent',
 					'editorialState',
@@ -1813,7 +1813,7 @@ const measurePayload = z
 					'startDate',
 					'endDate',
 					'hierarchyLevel',
-					'category.sdg',
+					'category.*',
 					'program',
 					'parent',
 					'editorialState',
@@ -2139,7 +2139,7 @@ const programPayload = z
 					'pdf',
 					'chapterType',
 					'level',
-					'category.sdg',
+					'category.*',
 					'editorialState',
 					'visibility',
 					'organization',
@@ -2515,7 +2515,7 @@ export const rulePayload = z
 			detail: {
 				headerAndPanel: ['type', 'status', 'validFrom', 'validUntil'],
 				onlyPanel: [
-					'category.sdg',
+					'category.*',
 					'program',
 					'parent',
 					'editorialState',

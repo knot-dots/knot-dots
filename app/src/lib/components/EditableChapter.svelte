@@ -7,8 +7,10 @@
 	import DropDownMenu from '$lib/components/DropDownMenu.svelte';
 	import EditableProgress from '$lib/components/EditableProgress.svelte';
 	import Editor from '$lib/components/Editor.svelte';
+	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import Subsection from '$lib/components/Subsection.svelte';
 	import Viewer from '$lib/components/Viewer.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type Container,
 		containerOfType,
@@ -114,7 +116,11 @@
 	{/if}
 </header>
 
-<Badges bind:container {editable} />
+{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+	<PropertiesBar bind:container {editable} revisions={[]} />
+{:else}
+	<Badges bind:container {editable} />
+{/if}
 
 {#if isSimpleMeasureContainer(container)}
 	<EditableProgress {editable} bind:value={container.payload.progress} />

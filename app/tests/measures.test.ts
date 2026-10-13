@@ -99,7 +99,11 @@ test.describe('Measures section', () => {
 			.fill(subMeasureTitle);
 		await dotsBoard.page.getByRole('dialog').getByLabel('Measure type').first().click();
 		await dotsBoard.page.getByRole('dialog').getByRole('radio', { name: 'Module' }).click();
+		const saveResponse = dotsBoard.page.waitForResponse(
+			(r) => r.url().includes('/copy') && r.request().method() === 'POST'
+		);
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+		await saveResponse;
 
 		await dotsBoard.overlay.backButton.click();
 		await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
