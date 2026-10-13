@@ -7,6 +7,9 @@
 	import ImpactMonitoringChart from '$lib/components/ImpactMonitoringChart.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import TargetCheck from '$lib/components/TargetCheck.svelte';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
+	import { indicatorActualData } from '$lib/indicatorActualData';
 	import {
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
@@ -17,6 +20,8 @@
 		isEffectContainer,
 		isObjectiveContainer
 	} from '$lib/models';
+	import { reviewStatusFor } from '$lib/reviewStatus';
+	import { reviewStatusColors } from '$lib/theme/models';
 
 	interface Props {
 		button?: Snippet;
@@ -44,9 +49,38 @@
 	let hasComparisonData = $derived(
 		comparisonContainers?.some(({ payload }) => payload.values.length > 0) ?? false
 	);
+
+	const review = getReviewContext();
+
+	const reviewStatus = $derived(
+		reviewStatusFor(
+			indicatorActualData(container.guid, relatedContainers),
+			(review.objectivesByIndicator.get(container.guid) ?? []).map(
+				({ objective }) => objective.payload
+			)
+		)
+	);
+
+	const auraColor = $derived(
+		reviewStatus &&
+			`color-mix(in srgb, var(--color-${reviewStatusColors.get(reviewStatus)}-600) 22%, transparent)`
+	);
 </script>
 
-<Card {button} {container} {ignoreBulkActionContext} {relatedContainers} {showRelationFilter}>
+<Card
+	{auraColor}
+	{button}
+	{container}
+	{ignoreBulkActionContext}
+	{relatedContainers}
+	{showRelationFilter}
+>
+	{#snippet titleAside()}
+		{#if reviewStatus}
+			<TargetCheck status={reviewStatus} />
+		{/if}
+	{/snippet}
+
 	{#snippet body()}
 		{#if isBinaryIndicatorContainer(container)}
 			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}

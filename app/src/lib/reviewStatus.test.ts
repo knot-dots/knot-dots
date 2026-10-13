@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import type { ObjectivePayload } from '$lib/models';
-import { computeReviewStatus, targetTrend } from '$lib/reviewStatus';
+import { computeReviewStatus, reviewStatusFor, targetTrend } from '$lib/reviewStatus';
 
 test.each([
 	['matches the target trend', 1, [1, 1], 'review_status.in_target_direction'],
@@ -34,4 +34,14 @@ test('targetTrend falls back to the stored trend', () => {
 
 test('targetTrend is undetermined without wanted values or stored trend', () => {
 	expect(targetTrend(objective({ wantedValues: [] }))).toBeUndefined();
+});
+
+test('reviewStatusFor compares the actual trend with the target trends', () => {
+	const actualData: Array<[number, number]> = [
+		[2020, 1],
+		[2021, 2]
+	];
+	expect(reviewStatusFor(actualData, [objective({ wantedValues: [], trendValue: 1 })])).toBe(
+		'review_status.in_target_direction'
+	);
 });

@@ -17,6 +17,10 @@ import Minus from '~icons/heroicons/minus-solid';
 import Square2Stack from '~icons/heroicons/square-2-stack';
 import Cog from '~icons/knotdots/cog';
 import Plus from '~icons/knotdots/plus';
+import TargetCheckConflictingTargets from '~icons/knotdots/target-check-conflicting-targets';
+import TargetCheckNoTrend from '~icons/knotdots/target-check-no-trend';
+import TargetCheckOffTrack from '~icons/knotdots/target-check-off-track';
+import TargetCheckOnTrack from '~icons/knotdots/target-check-on-track';
 import {
 	type Status,
 	status,
@@ -24,6 +28,7 @@ import {
 	type BackgroundColor,
 	backgroundColor
 } from '$lib/models';
+import type { ReviewStatus } from '$lib/reviewStatus';
 
 export const predicateIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
 	[predicates.enum['contributes-to'], ChartPie],
@@ -52,6 +57,20 @@ export const statusColors = new Map<Status, string>([
 	[status.enum['status.in_operation'], 'teal'],
 	[status.enum['status.done'], 'green'],
 	[status.enum['status.rejected'], 'indigo']
+]);
+
+export const reviewStatusColors = new Map<ReviewStatus, string>([
+	['review_status.in_target_direction', 'green'],
+	['review_status.against_target_direction', 'red'],
+	['review_status.no_clear_trend', 'yellow'],
+	['review_status.diverging_targets', 'purple']
+]);
+
+export const reviewStatusIcons = new Map<ReviewStatus, Component<SVGAttributes<SVGSVGElement>>>([
+	['review_status.in_target_direction', TargetCheckOnTrack],
+	['review_status.against_target_direction', TargetCheckOffTrack],
+	['review_status.no_clear_trend', TargetCheckNoTrend],
+	['review_status.diverging_targets', TargetCheckConflictingTargets]
 ]);
 
 export const backgroundColors = new Map<BackgroundColor, string>([

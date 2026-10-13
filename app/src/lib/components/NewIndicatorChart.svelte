@@ -1,25 +1,16 @@
 <script lang="ts">
 	import * as Plot from '@observablehq/plot';
-	import type { Component } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
-	import type { SvelteHTMLElements } from 'svelte/elements';
 	import { _, number } from 'svelte-i18n';
-	import CheckCircleSolid from '~icons/flowbite/check-circle-solid';
-	import CircleMinusSolid from '~icons/flowbite/circle-minus-solid';
-	import CloseCircleSolid from '~icons/flowbite/close-circle-solid';
-	import ExclamationCircleSolid from '~icons/flowbite/exclamation-circle-solid';
 	import { page } from '$app/state';
-	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
 	import {
 		type ActualDataPayload,
 		administrativeTypes,
 		type AnyPayload,
 		type Container,
-		type IndicatorPayload,
-		trendDirection
+		type IndicatorPayload
 	} from '$lib/models';
-	import { computeReviewStatus, type ReviewStatus, targetTrend } from '$lib/reviewStatus';
 	import { compareState } from '$lib/stores';
 
 	interface Props {
@@ -47,33 +38,6 @@
 			value
 		}))
 	);
-
-	const review = getReviewContext();
-
-	const reviewObjectives = $derived(review.objectivesByIndicator.get(container.guid) ?? []);
-
-	// The trend of the values shown in the chart
-	const actualTrend = $derived(
-		trendDirection(actualValues.map(({ date, value }) => [date.getFullYear(), value]))
-	);
-
-	const targetTrends = $derived(
-		reviewObjectives
-			.map(({ objective }) => targetTrend(objective.payload))
-			.filter((trend) => trend !== undefined)
-	);
-
-	const reviewStatus = $derived(computeReviewStatus(actualTrend, targetTrends));
-
-	const reviewBadges: Record<
-		ReviewStatus,
-		{ color: string; icon: Component<SvelteHTMLElements['svg']> }
-	> = {
-		'review_status.in_target_direction': { color: 'green', icon: CheckCircleSolid },
-		'review_status.against_target_direction': { color: 'red', icon: CloseCircleSolid },
-		'review_status.no_clear_trend': { color: 'yellow', icon: CircleMinusSolid },
-		'review_status.diverging_targets': { color: 'gray', icon: ExclamationCircleSolid }
-	};
 
 	// Prepare comparison data with assigned colors
 	let comparisonValues = $derived(
@@ -225,16 +189,6 @@
 </script>
 
 {#if actualDataContainer[0] || hasComparisonData}
-	{#if reviewStatus}
-		{@const { color, icon: Icon } = reviewBadges[reviewStatus]}
-		<div class="badges">
-			<span class="badge badge--large badge--{color} badge--review">
-				<Icon />
-				{$_(reviewStatus)}
-			</span>
-		</div>
-	{/if}
-
 	<figure>
 		<div role="img" {@attach chart}></div>
 		<ul class="chart-legend">
@@ -274,34 +228,6 @@
 {/if}
 
 <style>
-	.badges {
-		margin-bottom: 0.5rem;
-	}
-
-	.badge.badge--review {
-		--badge-border-radius: 9999px;
-		/* Flowbite icons leave 2px around the circle, which is meant to be 20px */
-		--badge-icon-size: 1.5rem;
-
-		padding: 0 0.625rem 0 0.125rem;
-	}
-
-	.badge--review.badge--green {
-		--badge-icon-color: var(--color-green-600);
-	}
-
-	.badge--review.badge--red {
-		--badge-icon-color: var(--color-red-600);
-	}
-
-	.badge--review.badge--yellow {
-		--badge-icon-color: var(--color-yellow-600);
-	}
-
-	.badge--review.badge--gray {
-		--badge-icon-color: var(--color-gray-600);
-	}
-
 	figure {
 		flex-grow: 1;
 	}

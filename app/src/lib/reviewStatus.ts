@@ -32,3 +32,15 @@ export function computeReviewStatus(
 	}
 	return 'review_status.against_target_direction';
 }
+
+// Compares an indicator's actual data, as [year, value] pairs, with the
+// objectives under review.
+export function reviewStatusFor(
+	actualData: Array<[number, number]>,
+	objectives: ObjectivePayload[]
+): ReviewStatus | undefined {
+	return computeReviewStatus(
+		trendDirection(actualData),
+		objectives.map(targetTrend).filter((trend) => trend !== undefined)
+	);
+}
