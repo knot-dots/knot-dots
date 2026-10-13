@@ -10,13 +10,13 @@
 	import ExclamationCircleSolid from '~icons/flowbite/exclamation-circle-solid';
 	import { page } from '$app/state';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
+	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
 	import {
 		type ActualDataPayload,
 		administrativeTypes,
 		type AnyPayload,
 		type Container,
 		type IndicatorPayload,
-		isActualDataContainer,
 		trendDirection
 	} from '$lib/models';
 	import { computeReviewStatus, type ReviewStatus, targetTrend } from '$lib/reviewStatus';
@@ -38,17 +38,14 @@
 
 	// Current organizational unit's actual data
 	let actualDataContainer = $derived(
-		relatedContainers
-			.filter(isActualDataContainer)
-			.filter(({ payload }) => payload.indicator === container.guid)
-			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
+		indicatorActualDataContainers(container.guid, relatedContainers)
 	);
 
 	let actualValues = $derived(
-		actualDataContainer[0]?.payload.values.map(([key, value]) => ({
-			date: new Date(key, 0),
-			value: actualDataContainer[1]?.payload.values.find(([k]) => k == key)?.at(1) ?? value
-		})) ?? []
+		indicatorActualData(container.guid, relatedContainers).map(([year, value]) => ({
+			date: new Date(year, 0),
+			value
+		}))
 	);
 
 	const review = getReviewContext();
