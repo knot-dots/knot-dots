@@ -130,12 +130,21 @@
 
 	function handleFinalize(section: 'headerAndPanel' | 'onlyPanel' | 'unused') {
 		return async (e: CustomEvent<DndEvent<{ guid: string }>>) => {
+			const updatedItems = e.detail.items;
+			const incomingKeys = new Set(updatedItems.map((item) => item.guid));
+
 			if (section === 'headerAndPanel') {
-				headerAndPanelItems = e.detail.items;
+				headerAndPanelItems = updatedItems;
+				onlyPanelItems = onlyPanelItems.filter((item) => !incomingKeys.has(item.guid));
+				unusedItems = unusedItems.filter((item) => !incomingKeys.has(item.guid));
 			} else if (section === 'onlyPanel') {
-				onlyPanelItems = e.detail.items;
+				onlyPanelItems = updatedItems;
+				headerAndPanelItems = headerAndPanelItems.filter((item) => !incomingKeys.has(item.guid));
+				unusedItems = unusedItems.filter((item) => !incomingKeys.has(item.guid));
 			} else if (section === 'unused') {
-				unusedItems = e.detail.items;
+				unusedItems = updatedItems;
+				headerAndPanelItems = headerAndPanelItems.filter((item) => !incomingKeys.has(item.guid));
+				onlyPanelItems = onlyPanelItems.filter((item) => !incomingKeys.has(item.guid));
 			}
 
 			scheduleSaveConfiguration();
