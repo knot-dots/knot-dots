@@ -105,12 +105,10 @@ test('a template-bound goal section only lists goals created from it', async ({
 	).toHaveCount(0);
 	await page.keyboard.press('Escape');
 
-	// Adding an item skips the template picker and instantiates the bound template
+	// Adding an item opens the dialog with the bound template preset
 	await section.getByRole('button', { name: 'Add item', exact: true }).first().click();
 	const dialog = page.getByRole('dialog');
 	await expect(dialog).toBeVisible();
-	await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
-	await expect(dialog.getByRole('complementary', { name: 'Templates' })).toHaveCount(0);
 	await expect(dialog.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
 	await expect(dialog.getByRole('textbox', { name: 'Title', exact: true })).toHaveValue(
 		testProgramGoalTemplate.payload.title

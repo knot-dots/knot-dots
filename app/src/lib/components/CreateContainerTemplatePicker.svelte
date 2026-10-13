@@ -284,8 +284,7 @@
 	);
 </script>
 
-<!-- A dialog opened with a preset template never started as an empty draft; there is nothing to pick. -->
-{#if initialState && (enabled || required)}
+{#if enabled || required}
 	{#if required && (!templateSelected || pendingTemplateGuid !== undefined)}
 		<article class="template-prompt" aria-live="polite">
 			{#if !enabled || (!scope.ready && !scope.error)}
