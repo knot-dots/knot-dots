@@ -417,10 +417,10 @@
 				{@const options =
 					categoryContext.options[key]?.map((option) => ({
 						...option,
-						count: foci.get(option.value) ?? foci.get(option.guid) ?? 0,
+						count: foci.get(option.value) ?? 0,
 						subOptions: option.subOptions?.map((sub) => ({
 							...sub,
-							count: foci.get(sub.value) ?? foci.get(sub.guid) ?? 0
+							count: foci.get(sub.value) ?? 0
 						}))
 					})) ??
 					[...foci.entries()]

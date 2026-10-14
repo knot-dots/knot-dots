@@ -972,14 +972,6 @@ export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'i
 
 export type IooiType = z.infer<typeof iooiTypes>;
 
-export function slugify(source: string) {
-	return source
-		.trim()
-		.replace(/[^a-zA-Z0-9_.-]+/g, '-')
-		.replace(/^-+|-+$/g, '')
-		.substring(0, 128);
-}
-
 export function isReservedContextSlug(slug: string) {
 	return new Set([
 		'ask-ai',
@@ -1179,7 +1171,7 @@ export function isBinaryIndicatorContainer(
 
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
-const unrefinedCategoryPayload = z
+export const categoryPayload = z
 	.strictObject({
 		description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
 		key: z.string().trim().optional(),
@@ -1204,12 +1196,6 @@ const unrefinedCategoryPayload = z
 		}
 	});
 
-export const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
-	if (payload.title && !payload.key) {
-		payload.key = slugify(payload.title);
-	}
-});
-
 export type CategoryPayload = z.infer<typeof categoryPayload>;
 
 export function isCategoryContainer(
@@ -1218,7 +1204,7 @@ export function isCategoryContainer(
 	return container.payload.type === payloadTypes.enum.category;
 }
 
-const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
+const initialCategoryPayload = categoryPayload.partial({ title: true });
 
 const chapterPayload = z.strictObject({
 	...basePayload.omit({ description: true, summary: true, template: true }).shape,
@@ -2767,7 +2753,7 @@ export function isTeaserHighlightContainer(
 
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
-const unrefinedTermPayload = z
+export const termPayload = z
 	.strictObject({
 		description: z.string().trim().optional(),
 		filterLabel: z
@@ -2777,9 +2763,9 @@ const unrefinedTermPayload = z
 			.optional()
 			.register(propertyRegistry, { label: 'filter_label' }),
 		title: z.string().trim().min(1),
-		value: z.string().trim().optional(),
 		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term).register(propertyRegistry, { label: 'type' }),
+		value: z.string().trim().optional(),
 		visibility: visibility
 			.default(visibility.enum['public'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -2794,12 +2780,6 @@ const unrefinedTermPayload = z
 		}
 	});
 
-export const termPayload = unrefinedTermPayload.superRefine((payload) => {
-	if (payload.title && !payload.value) {
-		payload.value = slugify(payload.title);
-	}
-});
-
 export type TermPayload = z.infer<typeof termPayload>;
 
 export function isTermContainer(
@@ -2808,7 +2788,7 @@ export function isTermContainer(
 	return container.payload.type === payloadTypes.enum.term;
 }
 
-const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
+const initialTermPayload = termPayload.partial({ title: true });
 
 const textPayload = z
 	.strictObject({
@@ -3873,15 +3853,6 @@ export function createRootCopyOf(
 	rootVisibility: Visibility
 ): NewContainer<AnyPayload> {
 	const copy = createCopyOf(container, organization, organizationalUnit);
-
-	if (copy.payload.type === payloadTypes.enum.category) {
-		const { key, ...payload } = copy.payload;
-		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
-	} else if (copy.payload.type === payloadTypes.enum.term) {
-		const { value, ...payload } = copy.payload;
-		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
-	}
-
 	return { ...copy, payload: { ...copy.payload, visibility: rootVisibility } };
 }
 

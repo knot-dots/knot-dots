@@ -1,4 +1,5 @@
 import de from '$lib/locales/de.json';
+import { type CategoryContext, findCategoryGuid } from '$lib/categoryOptions';
 import { payloadTypes, status } from '$lib/models';
 
 export const reverseTranslationMap = new Map<string, string>(
@@ -68,14 +69,27 @@ export const indicatorColumnAliases = new Map<string, string>([
 ]);
 
 /**
- * Resolves a CSV column header to a canonical key.
- * First checks the alias map, then checks if the header is a number (year column).
- * Returns the canonical key, the year number, or undefined if unrecognized.
+ * Resolves a CSV column header to a canonical key or category GUID.
+ * First checks the category context (if provided), then checks the alias map,
+ * then checks if the header is a number (year column).
+ * Returns the canonical field key, category GUID, year number, or undefined if unrecognized.
  */
 export function resolveColumnHeader(
-	header: string
-): { type: 'field'; key: string } | { type: 'year'; year: number } | undefined {
+	header: string,
+	categoryContext?: CategoryContext
+):
+	| { type: 'field'; key: string }
+	| { type: 'category'; categoryGuid: string }
+	| { type: 'year'; year: number }
+	| undefined {
 	const trimmed = header.trim();
+
+	if (categoryContext) {
+		const categoryGuid = findCategoryGuid(trimmed, categoryContext);
+		if (categoryGuid) {
+			return { type: 'category', categoryGuid };
+		}
+	}
 
 	// Check alias map
 	const alias = indicatorColumnAliases.get(trimmed);

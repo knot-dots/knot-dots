@@ -419,11 +419,10 @@
 					{@const options = categoryOptionList
 						? categoryOptionList.map((option) => ({
 								...option,
-								count:
-									foci.get(option.value) ?? (option.guid ? foci.get(option.guid) : undefined) ?? 0,
+								count: foci.get(option.value) ?? 0,
 								subOptions: option.subOptions?.map((sub) => ({
 									...sub,
-									count: foci.get(sub.value) ?? (sub.guid ? foci.get(sub.guid) : undefined) ?? 0
+									count: foci.get(sub.value) ?? 0
 								}))
 							}))
 						: [...foci.entries()]

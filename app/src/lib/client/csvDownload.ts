@@ -1,4 +1,5 @@
 import { _, unwrapFunctionStore } from 'svelte-i18n';
+import { type CategoryContext, findTermLabel } from '$lib/categoryOptions';
 import { type Container, type IndicatorPayload, isActualDataContainer } from '$lib/models';
 
 const $_ = unwrapFunctionStore(_);
@@ -29,7 +30,8 @@ export function generateIndicatorCsv(
 	rows: Container[],
 	allYears: number[],
 	organizationalUnits: Map<string, string>,
-	actualDataContainers: Container[]
+	actualDataContainers: Container[],
+	categoryContext: CategoryContext
 ): string {
 	const BOM = '\uFEFF';
 
@@ -38,18 +40,17 @@ export function generateIndicatorCsv(
 		$_('description'),
 		$_('visibility.label'),
 		$_('indicator_category'),
-		$_('indicator_type'),
-		$_('topic'),
-		$_('category'),
-		$_('policy_field_bnk'),
-		$_('audience'),
-		$_('editorial_state'),
-		$_('organizational_unit'),
-		$_('label.unit')
+		$_('indicator_type')
 	];
 
+	const categoryHeaders = categoryContext
+		? categoryContext.keys.map((key) => categoryContext.labels.get(key) ?? key)
+		: [];
+
+	const trailingHeaders = [$_('editorial_state'), $_('organizational_unit'), $_('label.unit')];
+
 	const yearHeaders = allYears.map(String);
-	const headers = [...fixedHeaders, ...yearHeaders];
+	const headers = [...fixedHeaders, ...categoryHeaders, ...trailingHeaders, ...yearHeaders];
 
 	const csvRows = [headers.map(escapeCsvField).join(';')];
 
@@ -61,16 +62,25 @@ export function generateIndicatorCsv(
 			.find(({ payload }) => payload.indicator === row.guid);
 		const valuesMap = new Map<number, number>(actualData?.payload.values ?? []);
 
+		const categoryFields: string[] = [];
+		if (categoryContext) {
+			for (const catKey of categoryContext.keys) {
+				const termGuids = p.category?.[catKey] ?? [];
+				const termOptions = categoryContext.options[catKey] ?? [];
+				const termTitles = termGuids
+					.map((guid) => findTermLabel(termOptions, guid) ?? guid)
+					.filter(Boolean);
+				categoryFields.push(termTitles.join(', '));
+			}
+		}
+
 		const fields: string[] = [
 			p.title ?? '',
 			p.description ?? '',
 			p.visibility ? ($_(`visibility.${p.visibility}`) as string) : '',
 			'indicatorCategory' in p ? translateValues(p.indicatorCategory ?? []) : '',
 			'indicatorType' in p ? translateValues(p.indicatorType ?? []) : '',
-			'topic' in p.category ? p.category.topic.join(', ') : '',
-			'sdg' in p.category ? p.category.sdg.join(', ') : '',
-			'policyFieldBNK' in p.category ? p.category.policyFieldBNK.join(', ') : '',
-			'audience' in p.category ? p.category.audience.join(', ') : '',
+			...categoryFields,
 			'editorialState' in p ? ($_(`${p.editorialState}`) as string) : '',
 			row.organizational_unit ? (organizationalUnits.get(row.organizational_unit) ?? '') : '',
 			p.unit ? ($_(`${p.unit}`) as string) : ''

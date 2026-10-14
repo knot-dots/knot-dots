@@ -1,3 +1,4 @@
+import de from '$lib/locales/de.json';
 import {
 	type CategoryPayload,
 	type Container,
@@ -9,7 +10,6 @@ import {
 export type CategoryOption = {
 	label: string;
 	value: string;
-	guid: string;
 	icon?: string;
 	subOptions?: CategoryOption[];
 };
@@ -22,6 +22,190 @@ export type CategoryContext = {
 	keys: string[];
 	objectTypesPerKey: Record<string, string[]>;
 };
+
+export function findTermLabel(options: CategoryOption[], termGuid: string): string | undefined {
+	for (const opt of options) {
+		if (opt.value === termGuid) {
+			return opt.label;
+		}
+		if (opt.subOptions) {
+			const found = findTermLabel(opt.subOptions, termGuid);
+			if (found) {
+				return found;
+			}
+		}
+	}
+	return undefined;
+}
+
+export function findCategoryGuid(
+	nameOrAlias: string,
+	categoryContext: CategoryContext
+): string | undefined {
+	const trimmed = nameOrAlias.trim();
+	if (!trimmed) return undefined;
+	const lower = trimmed.toLowerCase();
+
+	if (categoryContext.keys.includes(trimmed)) {
+		return trimmed;
+	}
+
+	for (const key of categoryContext.keys) {
+		const label = categoryContext.labels.get(key);
+		if (label && label.trim().toLowerCase() === lower) {
+			return key;
+		}
+	}
+
+	const aliasMap: Record<string, string[]> = {
+		sdg: ['sdg', 'category', 'nr. des sdgs', 'sdgs', 'sustainable development goals'],
+		topic: ['topic', 'topicarea', 'themenfeld', 'themenfelder', 'topics'],
+		policyFieldBNK: [
+			'policyfieldbnk',
+			'handlungsfeld bnk',
+			'handlungsfeld (bnk 2.0)',
+			'handlungsfeld',
+			'policy field bnk'
+		],
+		audience: ['audience', 'wirkungsbereich', 'zielgruppe', 'audiences']
+	};
+
+	let targetDefaultKey: string | undefined;
+	for (const [defKey, aliases] of Object.entries(aliasMap)) {
+		if (aliases.includes(lower)) {
+			targetDefaultKey = defKey;
+			break;
+		}
+	}
+
+	if (targetDefaultKey) {
+		const defaultTitles: Record<string, string[]> = {
+			sdg: [de.category, 'SDG', 'sdg'].map((s) => s.toLowerCase()),
+			topic: [de.topic, 'Themenfeld', 'Topic Area', 'Topic'].map((s) => s.toLowerCase()),
+			policyFieldBNK: [
+				de.policy_field_bnk,
+				'Handlungsfeld (BNK 2.0)',
+				'Handlungsfeld BNK',
+				'Policy Field BNK'
+			].map((s) => s.toLowerCase()),
+			audience: [de.audience, 'Wirkungsbereich', 'Audience', 'Zielgruppe'].map((s) =>
+				s.toLowerCase()
+			)
+		};
+
+		const candidateTitles = defaultTitles[targetDefaultKey] ?? [];
+		for (const key of categoryContext.keys) {
+			const label = categoryContext.labels.get(key)?.trim().toLowerCase();
+			if (label && candidateTitles.includes(label)) {
+				return key;
+			}
+		}
+	}
+
+	return;
+}
+
+export function resolveCategoryTerms(
+	value: string | string[],
+	categoryGuid: string,
+	categoryContext: CategoryContext
+): string[] {
+	if (!value) {
+		return [];
+	}
+
+	const options = categoryContext.options[categoryGuid] ?? [];
+	const flatOptions: CategoryOption[] = [];
+	const collect = (opts: CategoryOption[]) => {
+		for (const opt of opts) {
+			flatOptions.push(opt);
+			if (opt.subOptions) {
+				collect(opt.subOptions);
+			}
+		}
+	};
+	collect(options);
+
+	if (flatOptions.length === 0) {
+		return [];
+	}
+
+	const translations = de as Record<string, unknown>;
+
+	const resolveSingle = (item: string): string | undefined => {
+		const trimmed = item.trim();
+		if (!trimmed) {
+			return;
+		}
+		const lower = trimmed.toLowerCase();
+
+		const exactValueMatch = flatOptions.find((opt) => opt.value === trimmed);
+		if (exactValueMatch) {
+			return exactValueMatch.value;
+		}
+
+		const exactLabelMatch = flatOptions.find((opt) => opt.label.trim().toLowerCase() === lower);
+		if (exactLabelMatch) {
+			return exactLabelMatch.value;
+		}
+
+		const sdgMatch = trimmed.match(/^(?:sdg\.?|sdg\s+)?0*([1-9]|1[0-7])$/i);
+		if (sdgMatch) {
+			const num = parseInt(sdgMatch[1], 10);
+			const numPrefixPattern = new RegExp(`^0*${num}\\s*[-.]`);
+			const numMatch = flatOptions.find((opt) => numPrefixPattern.test(opt.label.trim()));
+			if (numMatch) {
+				return numMatch.value;
+			}
+		}
+
+		const translated = translations[trimmed];
+		if (typeof translated === 'string') {
+			const transMatch = flatOptions.find(
+				(opt) => opt.label.trim().toLowerCase() === translated.trim().toLowerCase()
+			);
+			if (transMatch) {
+				return transMatch.value;
+			}
+		}
+
+		return;
+	};
+
+	const rawItems = Array.isArray(value) ? value : [value];
+	const resultGuids: string[] = [];
+
+	for (const raw of rawItems) {
+		if (typeof raw !== 'string') {
+			continue;
+		}
+
+		const trimmed = raw.trim();
+		if (!trimmed) {
+			continue;
+		}
+
+		const directMatch = resolveSingle(trimmed);
+		if (directMatch) {
+			resultGuids.push(directMatch);
+			continue;
+		}
+
+		const splitParts = trimmed
+			.split(',')
+			.map((p) => p.trim())
+			.filter(Boolean);
+
+		for (const part of splitParts) {
+			const partMatch = resolveSingle(part);
+			if (partMatch) {
+				resultGuids.push(partMatch);
+			}
+		}
+	}
+
+	return deduplicate(resultGuids);
+}
 
 function sortOptions(options: CategoryOption[]) {
 	return options.toSorted((a, b) =>
@@ -42,13 +226,12 @@ function findTermsForCategory(
 }
 
 function toOption(term: Container<TermPayload>): CategoryOption {
-	const value = term.payload.value ?? term.payload.title ?? term.guid;
+	const value = term.guid;
 	const filterLabel = term.payload.filterLabel?.trim();
 	const label = filterLabel ? filterLabel : (term.payload.title ?? value);
 	return {
 		label,
 		value,
-		guid: term.guid,
 		icon: term.payload.icon
 	};
 }
@@ -71,9 +254,6 @@ export function buildCategoryOptionsFromContainers(
 	}
 
 	for (const category of categories) {
-		const key = category.payload.key;
-		if (!key) continue;
-
 		const options = findTermsForCategory(category, terms).map((term) => {
 			const option = toOption(term);
 			const subterms = (subtermsByParent.get(term.guid) ?? []).filter(
@@ -85,22 +265,14 @@ export function buildCategoryOptionsFromContainers(
 			return option;
 		});
 
-		result[key] = sortOptions(options);
-	}
-
-	for (const key of Object.keys(result)) {
-		if (!result[key]) {
-			result[key] = [];
-		}
+		result[category.guid] = sortOptions(options);
 	}
 
 	return result;
 }
 
 export function getCategoryKeys(categories: Container<CategoryPayload>[]): string[] {
-	return deduplicate(
-		categories.map((category) => category.payload.key).filter((key) => key !== undefined)
-	);
+	return deduplicate(categories.map((category) => category.guid));
 }
 
 export function buildCategoryFacetsWithCounts(
@@ -116,12 +288,10 @@ export function buildCategoryFacetsWithCounts(
 	) => {
 		if (!option) return;
 		const fallbackCount = facetMap.get(option.value) ?? 0;
-		const resolvedCount =
-			countsForFacet[option.value] ?? (option.guid ? countsForFacet[option.guid] : undefined);
+		const resolvedCount = countsForFacet[option.value] ?? countsForFacet[option.value];
 		const count = resolvedCount ?? fallbackCount;
 
 		facetMap.set(option.value, count);
-		if (option.guid) facetMap.set(option.guid, count);
 		option.subOptions?.forEach((sub) => applyCounts(sub, countsForFacet, facetMap));
 	};
 
@@ -139,12 +309,7 @@ export function buildCategoryFacetsWithCounts(
 
 export function buildCategoryLabels(categories: Container<CategoryPayload>[]) {
 	return new Map(
-		categories
-			.filter(
-				(category): category is Container<CategoryPayload & { key: string }> =>
-					category.payload.key !== undefined
-			)
-			.map((category): [string, string] => [category.payload.key, category.payload.title])
+		categories.map((category): [string, string] => [category.guid, category.payload.title])
 	);
 }
 

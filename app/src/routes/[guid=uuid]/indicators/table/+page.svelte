@@ -1,16 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { _ } from 'svelte-i18n';
 	import prettierBytes from '@transloadit/prettier-bytes';
 	import Uppy from '@uppy/core';
 	import XHRUpload from '@uppy/xhr-upload';
 	import { UppyContextProvider } from '@uppy/svelte';
+	import { onMount } from 'svelte';
+	import { _ } from 'svelte-i18n';
 	import DownloadIcon from '~icons/flowbite/download-outline';
 	import UploadIcon from '~icons/flowbite/upload-outline';
 	import FileIcon from '~icons/flowbite/file-solid';
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { filterCategoryContext } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
@@ -114,7 +115,13 @@
 				(ou: { guid: string; payload: { name: string } }) => [ou.guid, ou.payload.name]
 			)
 		);
-		const csv = generateIndicatorCsv(rows, allYears, orgUnits, actualDataContainers);
+		const csv = generateIndicatorCsv(
+			rows,
+			allYears,
+			orgUnits,
+			actualDataContainers,
+			filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
+		);
 		downloadCsv(csv, 'indicators.csv');
 	}
 
