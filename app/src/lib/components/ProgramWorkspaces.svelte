@@ -87,9 +87,7 @@
 		if (overlay) {
 			const params = paramsFromFragment(page.url);
 
-			if (params.has('chapters') && params.has('table')) {
-				return ['all', 'table'];
-			} else if (params.has('chapters')) {
+			if (params.has('chapters')) {
 				return ['all', 'level'];
 			} else if (params.has('indicators')) {
 				return ['indicators', 'catalog'];
@@ -210,9 +208,7 @@
 		const params = paramsFromFragment(url);
 
 		if (overlay) {
-			if (params.has('chapters') && params.has('table')) {
-				return '/all/table';
-			} else if (params.has('chapters')) {
+			if (params.has('chapters')) {
 				return '/all/level';
 			} else if (params.has('indicators')) {
 				return '/indicators/catalog';
@@ -240,16 +236,6 @@
 		selected: currentPath(page.url)
 	});
 
-	// The table variant of the chapters overlay lives in a plain fragment param that
-	// overlayURL would carry over to any other view.
-	function withoutTable(url: URL) {
-		const params = paramsFromFragment(url);
-		params.delete('table');
-		const target = new URL(url);
-		target.hash = params.toString();
-		return target;
-	}
-
 	function handleChange(url: URL, container: Container<AnyPayload>) {
 		return (event: Event) => {
 			const detail = (event as CustomEvent).detail;
@@ -267,7 +253,7 @@
 
 			if (selected[0] == 'all' && selected[1] == 'page') {
 				if (overlay) {
-					goto(overlayURL(withoutTable(url), overlayKey.enum.view, container.guid));
+					goto(overlayURL(url, overlayKey.enum.view, container.guid));
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]', {
@@ -278,7 +264,7 @@
 				}
 			} else if (selected[0] == 'all' && selected[1] == 'level') {
 				if (overlay) {
-					goto(overlayURL(withoutTable(url), overlayKey.enum.chapters, container.guid));
+					goto(overlayURL(url, overlayKey.enum.chapters, container.guid));
 				} else {
 					goto(
 						resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', {
@@ -288,16 +274,13 @@
 					);
 				}
 			} else if (selected[0] == 'all' && selected[1] == 'table') {
-				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.chapters, container.guid, [['table', '']]));
-				} else {
-					goto(
-						resolve('/[guid=uuid]/[contentGuid=uuid]/all/table', {
-							guid: selectedContext.guid,
-							contentGuid: container.guid
-						})
-					);
-				}
+				// The table has no overlay variant; it is a route like the levels board.
+				goto(
+					resolve('/[guid=uuid]/[contentGuid=uuid]/all/table', {
+						guid: selectedContext.guid,
+						contentGuid: container.guid
+					})
+				);
 			} else if (selected[0] == 'indicators' && selected[1] == 'catalog') {
 				if (overlay) {
 					goto(overlayURL(url, overlayKey.enum.indicators, container.guid));
