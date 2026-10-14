@@ -1,19 +1,14 @@
 import { z } from 'zod';
-import {
-	type AnyPayload,
-	type Container,
-	type ObjectCollectionObjectType,
-	payloadTypes
-} from '$lib/models';
+import { type AnyPayload, type Container, type PayloadType, payloadTypes } from '$lib/models';
 
-// The section filter of a program groups object sections by the kind of object
+// The section filter of a program groups relation sections by the kind of object
 // they hold; every other section counts as "other".
 export const sectionGroups = z.enum(['goals', 'measures', 'rules', 'knowledge', 'other']);
 
 export type SectionGroup = z.infer<typeof sectionGroups>;
 
-export function sectionGroupOf(objectType: ObjectCollectionObjectType): SectionGroup {
-	switch (objectType) {
+export function sectionGroupOf(payloadType: PayloadType): SectionGroup {
+	switch (payloadType) {
 		case payloadTypes.enum.goal:
 			return sectionGroups.enum.goals;
 		case payloadTypes.enum.measure:
@@ -23,6 +18,8 @@ export function sectionGroupOf(objectType: ObjectCollectionObjectType): SectionG
 			return sectionGroups.enum.rules;
 		case payloadTypes.enum.knowledge:
 			return sectionGroups.enum.knowledge;
+		default:
+			return sectionGroups.enum.other;
 	}
 }
 

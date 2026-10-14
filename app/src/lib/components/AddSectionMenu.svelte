@@ -22,7 +22,7 @@
 	import Link from '~icons/knotdots/link';
 	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
-	import Measure from '~icons/knotdots/measure';
+	import Measure from '~icons/knotdots/measure-24';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
@@ -30,6 +30,7 @@
 	import Rule from '~icons/knotdots/rule-database';
 	import Star from '~icons/knotdots/star';
 	import Summary from '~icons/knotdots/summary';
+	import Task from '~icons/knotdots/tasks-24';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
 	import { page } from '$app/state';
@@ -68,8 +69,6 @@
 		isTaskCollectionContainer,
 		isTaskContainer,
 		isTemplateContainer,
-		type ObjectCollectionObjectType,
-		objectCollectionObjectTypes,
 		type PayloadType,
 		payloadTypes,
 		predicates,
@@ -100,7 +99,7 @@
 		icon: typeof Plus;
 		label: string;
 		newItemTemplate?: string;
-		objectType?: ObjectCollectionObjectType;
+		payloadType?: PayloadType;
 		resourceDataType?: string;
 		textType?: string;
 		value: PayloadType;
@@ -250,7 +249,7 @@
 			!hasSection(parentContainer, relatedContainers).some(isSummaryContainer)
 	);
 
-	// Programs offer one object section per part type they allow, bound to each
+	// Programs offer one relation section per part type they allow, bound to each
 	// scoped template of that type. The templates are requested once the menu has
 	// been opened; the menu store itself must not be a dependency because item
 	// registration updates it while the menu is open.
@@ -262,12 +261,25 @@
 		}
 	});
 
-	let objectTypes: ObjectCollectionObjectType[] = $derived(
+	// Relation collections are offered for these part types. A program gets one
+	// section per scoped template of a type it allows as a part; without
+	// templates the plain type is offered once while templates are optional.
+	const relationCollectionPayloadTypes = [
+		payloadTypes.enum.goal,
+		payloadTypes.enum.knowledge,
+		payloadTypes.enum.measure,
+		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure,
+		payloadTypes.enum.task
+	] as const;
+
+	type RelationCollectionPayloadType = (typeof relationCollectionPayloadTypes)[number];
+
+	let candidateTypes: RelationCollectionPayloadType[] = $derived(
 		isProgramContainer(parentContainer)
-			? parentContainer.payload.chapterType.flatMap((type) => {
-					const parsed = objectCollectionObjectTypes.safeParse(type);
-					return parsed.success ? [parsed.data] : [];
-				})
+			? relationCollectionPayloadTypes.filter((type) =>
+					parentContainer.payload.chapterType.some((chapterType) => chapterType === type)
+				)
 			: []
 	);
 
@@ -275,11 +287,11 @@
 		[
 			() => templatesRequested,
 			() =>
-				objectTypes.length > 0 &&
+				candidateTypes.length > 0 &&
 				createFeatureDecisions(page.data.features).useTemplateWorkspaces(),
 			() => parentContainer.guid,
 			() => parentContainer.organization,
-			() => objectTypes.join('\u0000')
+			() => candidateTypes.join('\u0000')
 		],
 		async (
 			[requested, enabled, scopeGuid, organizationGuid, typesKey],
@@ -309,20 +321,22 @@
 		}
 	);
 
-	const objectTypeIcons: Record<ObjectCollectionObjectType, typeof Plus> = {
+	const payloadTypeIcons: Record<RelationCollectionPayloadType, typeof Plus> = {
 		[payloadTypes.enum.goal]: Goal,
 		[payloadTypes.enum.knowledge]: Book,
 		[payloadTypes.enum.measure]: Measure,
 		[payloadTypes.enum.rule]: Rule,
-		[payloadTypes.enum.simple_measure]: Measure
+		[payloadTypes.enum.simple_measure]: Measure,
+		[payloadTypes.enum.task]: Task
 	};
 
-	const objectTypeLabels: Record<ObjectCollectionObjectType, string> = {
+	const payloadTypeLabels: Record<RelationCollectionPayloadType, string> = {
 		[payloadTypes.enum.goal]: 'goals',
 		[payloadTypes.enum.knowledge]: 'knowledge',
 		[payloadTypes.enum.measure]: 'measures',
 		[payloadTypes.enum.rule]: 'rules',
-		[payloadTypes.enum.simple_measure]: 'simple_measure'
+		[payloadTypes.enum.simple_measure]: 'simple_measure',
+		[payloadTypes.enum.task]: 'tasks'
 	};
 
 	let objectOptions: SectionOption[] = $derived.by(() => {
@@ -331,15 +345,15 @@
 		}
 		const templates = objectTemplatesResource.current ?? [];
 		const templatesRequired = createFeatureDecisions(page.data.features).useTemplateWorkspaces();
-		return objectTypes.flatMap((objectType) => {
-			const templatesOfType = templates.filter(({ payload }) => payload.type === objectType);
+		return candidateTypes.flatMap((payloadType) => {
+			const templatesOfType = templates.filter(({ payload }) => payload.type === payloadType);
 			if (templatesOfType.length > 0) {
 				return templatesOfType.map((template) => ({
-					icon: objectTypeIcons[objectType],
+					icon: payloadTypeIcons[payloadType],
 					label: template.payload.title,
 					newItemTemplate: template.guid,
-					objectType,
-					value: payloadTypes.enum.object_collection
+					payloadType,
+					value: payloadTypes.enum.relation_collection
 				}));
 			}
 			// Without templates an object can only be created when templates are optional.
@@ -347,10 +361,10 @@
 				? []
 				: [
 						{
-							icon: objectTypeIcons[objectType],
-							label: $_(objectTypeLabels[objectType]),
-							objectType,
-							value: payloadTypes.enum.object_collection
+							icon: payloadTypeIcons[payloadType],
+							label: $_(payloadTypeLabels[payloadType]),
+							payloadType,
+							value: payloadTypes.enum.relation_collection
 						}
 					];
 		});
@@ -574,7 +588,7 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.objectType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.payloadType ?? 'none'}-${option.newItemTemplate ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer)}
 						<li class="menu-item">
 							<button
@@ -582,7 +596,7 @@
 									value: {
 										type: option.value,
 										newItemTemplate: option.newItemTemplate,
-										objectType: option.objectType,
+										payloadType: option.payloadType,
 										resourceDataType: option.resourceDataType,
 										textType: option.textType,
 										title: option.label

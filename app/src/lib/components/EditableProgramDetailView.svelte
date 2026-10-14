@@ -23,7 +23,7 @@
 		computeFacetCount,
 		type Container,
 		isContainer,
-		isObjectCollectionContainer,
+		isRelationCollectionContainer,
 		paramsFromFragment,
 		type ProgramPayload,
 		programTypes,
@@ -82,10 +82,10 @@
 
 	let programRelatedContainers = $derived(relatedContainers.filter(isContainer));
 
-	let objectSections = $derived(sections.filter(isObjectCollectionContainer));
+	let relationSections = $derived(sections.filter(isRelationCollectionContainer));
 
 	let sectionItems = $derived(
-		objectSections
+		relationSections
 			.flatMap(({ payload }) => payload.item)
 			.map((itemGuid) => relatedContainers.find((c) => c.guid === itemGuid))
 			.filter((c): c is Container => c !== undefined)
@@ -105,15 +105,15 @@
 			: undefined
 	);
 
-	// Object sections are filtered by the kind and content of their objects, every
+	// Relation sections are filtered by the kind and content of their objects, every
 	// other section only by the "other" group.
 	let sectionFilter = $derived(
 		itemFilterActive || selectedGroups.length > 0
 			? (section: Container) => {
-					if (isObjectCollectionContainer(section)) {
+					if (isRelationCollectionContainer(section)) {
 						if (
 							selectedGroups.length > 0 &&
-							!selectedGroups.includes(sectionGroupOf(section.payload.objectType))
+							!selectedGroups.includes(sectionGroupOf(section.payload.payloadType))
 						) {
 							return false;
 						}
@@ -132,11 +132,11 @@
 
 	let facets = $derived.by(() => {
 		const sectionCounts = new Map<string, number>(sectionGroups.options.map((g) => [g, 0]));
-		for (const section of objectSections) {
-			const group = sectionGroupOf(section.payload.objectType);
+		for (const section of relationSections) {
+			const group = sectionGroupOf(section.payload.payloadType);
 			sectionCounts.set(group, (sectionCounts.get(group) ?? 0) + section.payload.item.length);
 		}
-		sectionCounts.set(sectionGroups.enum.other, sections.length - objectSections.length);
+		sectionCounts.set(sectionGroups.enum.other, sections.length - relationSections.length);
 		return computeFacetCount(
 			new Map([
 				['section', sectionCounts],
@@ -172,7 +172,12 @@
 {/snippet}
 
 {#snippet main()}
-	<EditableContainerDetailView bind:container {footer}>
+	<EditableContainerDetailView
+		bind:container
+		{footer}
+		relatedContainers={programRelatedContainers}
+		{revisions}
+	>
 		{#snippet data()}
 			<Sections
 				bind:container
