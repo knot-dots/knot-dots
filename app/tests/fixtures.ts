@@ -11,6 +11,7 @@ import {
 	type CategoryPayload,
 	type Container,
 	containerOfType,
+	listTypes,
 	type EffectPayload,
 	etag,
 	type GoalPayload,
@@ -18,6 +19,7 @@ import {
 	type IndicatorPayload,
 	type MeasurePayload,
 	type NewContainer,
+	type PayloadType,
 	type ObjectivePayload,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
@@ -379,6 +381,27 @@ async function inviteUser(
 	}
 }
 
+// Programs show their objects through relation sections; this wraps existing parts.
+export async function createRelationSection(
+	context: BrowserContext,
+	program: Container<ProgramPayload>,
+	payloadType: PayloadType,
+	items: Container<AnyPayload>[]
+) {
+	const section = containerOfType(payloadTypes.enum.relation_collection, program) as NewContainer;
+	return createContainer(context, {
+		...section,
+		payload: {
+			...section.payload,
+			item: items.map(({ guid }) => guid),
+			listType: listTypes.enum.list,
+			payloadType,
+			title: ''
+		},
+		relation: [{ object: program.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
+	} as NewContainer);
+}
+
 export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	suiteId: ['not-specified', { scope: 'worker', option: true }],
 	adminContext: [
@@ -420,9 +443,13 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			},
 			testProgram
 		);
+		const section = await createRelationSection(adminContext, testProgram, payloadTypes.enum.goal, [
+			testGoal
+		]);
 
 		await use(testGoal);
 
+		await deleteContainer(adminContext, section);
 		await deleteContainer(adminContext, testGoal);
 	},
 	allTable: async ({ page }, use) => {
