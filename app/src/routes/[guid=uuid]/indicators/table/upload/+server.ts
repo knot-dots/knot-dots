@@ -5,6 +5,7 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
+import { resolveCategoryTerms } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	type ActualDataPayload,
@@ -18,19 +19,17 @@ import {
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
+	type OrganizationPayload,
 	payloadTypes,
 	predicates
 } from '$lib/models';
-import {
-	detectDelimiter,
-	parseSdgValues,
-	resolveColumnHeader,
-	reverseTranslationMap
-} from '$lib/server/csv';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
+import { detectDelimiter, resolveColumnHeader, reverseTranslationMap } from '$lib/server/csv';
 import {
 	createContainer,
 	getContainerByGuid,
 	getManyContainers,
+	getManyOrganizationContainers,
 	updateContainer
 } from '$lib/server/db';
 import type { RequestHandler } from './$types';
@@ -130,6 +129,18 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		existingActualData.filter(isActualDataContainer).map((c) => [c.payload.indicator, c])
 	);
 
+	const defaultOrganizations = (await locals.pool.connect(
+		getManyOrganizationContainers({ default: true }, '')
+	)) as Container<OrganizationPayload>[];
+	const scope = [currentOrganizationGuid, ...defaultOrganizations.map(({ guid }) => guid)].filter(
+		(guid, index, values) => values.indexOf(guid) === index
+	);
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope,
+		user: locals.user
+	});
+
 	const data = await request.formData();
 	const csv = data.get('csv');
 
@@ -172,17 +183,27 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 			lineNumber++;
 			try {
 				const fields: Record<string, string> = {};
+				const categoryValues: Record<string, string[]> = {};
 				const yearValues: [number, number][] = [];
 
 				for (const [header, value] of Object.entries(record)) {
 					const trimmedValue = (value as string).trim();
 					if (!trimmedValue) continue;
 
-					const resolved = resolveColumnHeader(header);
+					const resolved = resolveColumnHeader(header, categoryContext);
 					if (!resolved) continue;
 
 					if (resolved.type === 'field') {
 						fields[resolved.key] = trimmedValue;
+					} else if (resolved.type === 'category') {
+						const termGuids = resolveCategoryTerms(
+							trimmedValue,
+							resolved.categoryGuid,
+							categoryContext
+						);
+						if (termGuids.length > 0) {
+							categoryValues[resolved.categoryGuid] = termGuids;
+						}
 					} else if (resolved.type === 'year') {
 						const num = parseFloat(trimmedValue.replace(',', '.'));
 						if (!isNaN(num)) {
@@ -221,11 +242,6 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 
 				yearValues.sort((a, b) => a[0] - b[0]);
 
-				const topic = reverseTranslateList(fields.topic);
-				const sdg = fields.sdg ? parseSdgValues(fields.sdg) : [];
-				const policyFieldBNK = reverseTranslateList(fields.policyFieldBNK);
-				const audience = reverseTranslateList(fields.audience);
-
 				containers.push({
 					indicator: createNewContainerSchema(anyInitialPayload).parse({
 						managed_by: currentOrganizationalUnitGuid ?? currentOrganizationGuid,
@@ -236,12 +252,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 							...(fields.description ? { description: fields.description } : {}),
 							indicatorCategory,
 							indicatorType: reverseTranslateList(fields.indicatorType),
-							category: {
-								...(audience.length > 0 ? { audience } : {}),
-								...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
-								...(sdg.length > 0 ? { sdg } : {}),
-								...(topic.length > 0 ? { topic } : {})
-							},
+							category: categoryValues,
 							unit,
 							visibility,
 							editorialState: editorialStateValue,

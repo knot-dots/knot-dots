@@ -1,7 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
 import { parse } from 'csv-parse';
 import stream from 'node:stream';
-import type { ReadableStream } from 'node:stream/web';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { env } from '$env/dynamic/public';
@@ -9,6 +8,7 @@ import defineAbilityFor from '$lib/authorization';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	anyInitialPayload,
+	type AnyPayload,
 	type Container,
 	containerOfType,
 	createNewContainerSchema,
@@ -16,12 +16,14 @@ import {
 	isOrganizationalUnitContainer,
 	isOrganizationContainer,
 	type NewContainer,
+	type OrganizationPayload,
 	payloadTypes,
 	predicates,
 	type ProgramPayload
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
-	reverseTranslationMap,
+	detectDelimiter,
 	reverseTranslationMapForPayloadType,
 	reverseTranslationMapForStatus
 } from '$lib/server/csv';
@@ -30,9 +32,24 @@ import {
 	getAllRelatedUsers,
 	getContainerByGuid,
 	getManyContainers,
+	getManyOrganizationContainers,
 	getManyOrganizationalUnitContainers
 } from '$lib/server/db';
 import type { Actions, PageServerLoad } from './$types';
+import { findCategoryGuid, resolveCategoryTerms } from '$lib/categoryOptions';
+
+const importFieldAliases: Record<string, string> = {
+	['inhalt']: 'description',
+	['titel']: 'title',
+	['laufzeit ende']: 'endDate',
+	['kurze projektbeschreibung']: 'summary',
+	['zuständige organisation']: 'organizationalUnit',
+	['objekt']: 'type',
+	['nummer']: 'position',
+	['programm']: 'program',
+	['laufzeit beginn']: 'startDate',
+	['status']: 'status'
+};
 
 export const actions = {
 	default: async ({ locals, params, request }) => {
@@ -49,7 +66,7 @@ export const actions = {
 		let currentOrganizationGuid: string;
 
 		// the scope the import creates into; its computed grants authorize creating
-		let scopeContainer!: Awaited<ReturnType<ReturnType<typeof getContainerByGuid>>>;
+		let scopeContainer: Container<AnyPayload>;
 		try {
 			const containerFromParams = await locals.pool.connect(getContainerByGuid(params.guid));
 			scopeContainer = containerFromParams;
@@ -83,6 +100,18 @@ export const actions = {
 			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
 		}
 
+		const defaultOrganizations = (await locals.pool.connect(
+			getManyOrganizationContainers({ default: true }, '')
+		)) as Container<OrganizationPayload>[];
+		const scope = [currentOrganizationGuid, ...defaultOrganizations.map(({ guid }) => guid)].filter(
+			(guid, index, values) => values.indexOf(guid) === index
+		);
+		const categoryContext = await loadCategoryContext({
+			connect: locals.pool.connect,
+			scope,
+			user: locals.user
+		});
+
 		const organizationalUnits = await locals.pool.connect(
 			getManyOrganizationalUnitContainers({
 				include: {
@@ -110,96 +139,79 @@ export const actions = {
 			return fail(400, { errors: [unwrapFunctionStore(_)('import.error.unsupported_media_type')] });
 		}
 
-		const parser = stream.Readable.fromWeb(csv.stream() as ReadableStream).pipe(
+		const csvText = await csv.text();
+		const firstLine = csvText.split('\n')[0] ?? '';
+		const delimiter = detectDelimiter(firstLine);
+
+		const parser = stream.Readable.from(csvText).pipe(
 			parse({
-				columns: [
-					'position',
-					'type',
-					'title',
-					'summary',
-					'description',
-					'status',
-					'organizationalUnit',
-					'program',
-					'topic',
-					'sdg',
-					'startDate',
-					'endDate',
-					'audience'
-				],
-				delimiter: ';',
-				from: 2,
+				bom: true,
+				columns: true,
+				delimiter,
+				relax_column_count: true,
+				skip_empty_lines: true,
 				skipRecordsWithError: false
 			})
 		);
 
 		const containers: NewContainer[] = [];
 		const errors = [];
+		let lineNumber = 1;
 
 		try {
 			for await (const record of parser) {
+				lineNumber++;
 				try {
+					const fields: Record<string, string> = {};
+					const categoryValues: Record<string, string[]> = {};
+
+					for (const [header, value] of Object.entries(record)) {
+						const trimmedHeader = header.trim();
+						const trimmedValue = (value as string).trim();
+						if (!trimmedValue) continue;
+
+						const fieldKey = importFieldAliases[trimmedHeader.toLowerCase()];
+						if (fieldKey) {
+							fields[fieldKey] = trimmedValue;
+						} else {
+							const categoryGuid = findCategoryGuid(trimmedHeader, categoryContext);
+							if (categoryGuid) {
+								const terms = resolveCategoryTerms(trimmedValue, categoryGuid, categoryContext);
+								if (terms.length > 0) {
+									categoryValues[categoryGuid] = terms;
+								}
+							}
+						}
+					}
+
 					const organizationalUnit = organizationalUnits.find(
-						({ payload }) => payload.name == record.organizationalUnit
+						({ payload }) => payload.name == fields.organizationalUnit
 					);
 
-					const audience = record.audience?.trim()
-						? record.audience
-								.split(',')
-								.map((v: string) => v.trim())
-								.map((v: string) => reverseTranslationMap.get(v))
-								.filter((v: string | undefined): v is string => v !== undefined)
-						: [];
-					const policyFieldBNK = record.policyFieldBNK?.trim()
-						? record.policyFieldBNK
-								.split(',')
-								.map((v: string) => v.trim())
-								.map((v: string) => reverseTranslationMap.get(v))
-								.filter((v: string | undefined): v is string => v !== undefined)
-						: [];
-					const sdg = record.sdg?.trim()
-						? record.sdg
-								.split(',')
-								.map((v: string) => v.trim().toLowerCase())
-								.filter(Boolean)
-						: [];
-					const topic = record.topic?.trim()
-						? record.topic
-								.split(',')
-								.map((v: string) => v.trim())
-								.map((v: string) => reverseTranslationMap.get(v))
-								.filter((v: string | undefined): v is string => v !== undefined)
-						: [];
-
-					const program = programs.find(({ payload }) => payload.title == record.program);
+					const program = programs.find(({ payload }) => payload.title == fields.program);
 					const container = createNewContainerSchema(anyInitialPayload).parse({
 						managed_by: organizationalUnit?.guid ?? currentOrganizationGuid,
 						organization: currentOrganizationGuid,
 						organizational_unit: organizationalUnit?.guid ?? null,
 						payload: {
-							category: {
-								...(audience.length > 0 ? { audience } : {}),
-								...(policyFieldBNK.length > 0 ? { policyFieldBNK } : {}),
-								...(sdg.length > 0 ? { sdg } : {}),
-								...(topic.length > 0 ? { topic } : {})
-							},
-							description: record.description,
-							...(record.endDate ? { endDate: record.endDate } : {}),
-							...(record.status
-								? { status: reverseTranslationMapForStatus.get(record.status) ?? record.status }
+							category: categoryValues,
+							description: fields.description,
+							...(fields.endDate ? { endDate: fields.endDate } : {}),
+							...(fields.status
+								? { status: reverseTranslationMapForStatus.get(fields.status) ?? fields.status }
 								: {}),
-							...(record.startDate ? { startDate: record.startDate } : {}),
-							...(record.summary ? { summary: record.summary } : {}),
+							...(fields.startDate ? { startDate: fields.startDate } : {}),
+							...(fields.summary ? { summary: fields.summary } : {}),
 							editorialState: editorialState.enum['editorial_state.draft'],
-							title: record.title,
-							type: reverseTranslationMapForPayloadType.get(record.type)
+							title: fields.title,
+							type: reverseTranslationMapForPayloadType.get(fields.type) ?? fields.type
 						},
 						realm: env.PUBLIC_KC_REALM,
 						relation: program
 							? [
 									{
 										object: program.guid,
-										position: parseInt(record.position),
+										position: parseInt(fields.position || '0'),
 										predicate: predicates.enum['is-part-of-program']
 									}
 								]
@@ -215,7 +227,7 @@ export const actions = {
 				} catch (error) {
 					errors.push(
 						unwrapFunctionStore(_)('import.error.invalid_record', {
-							values: { line: record.position, errors: String(error) }
+							values: { line: lineNumber, errors: String(error) }
 						})
 					);
 				}
