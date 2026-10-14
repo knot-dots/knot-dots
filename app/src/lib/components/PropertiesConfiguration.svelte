@@ -239,6 +239,10 @@
 </div>
 
 <style>
+	div {
+		overflow-y: auto;
+	}
+
 	h3 {
 		color: var(--color-text-accent-subtle);
 		font-size: 0.875rem;

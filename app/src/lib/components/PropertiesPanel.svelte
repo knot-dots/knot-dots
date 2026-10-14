@@ -110,94 +110,96 @@
 		{#if configure && $ability.can('update', organization)}
 			<PropertiesConfiguration {configuration} {container} {payloadSchema} />
 		{:else}
-			{#each [...configuration.headerAndPanel, ...configuration.onlyPanel] as item (item)}
-				{#if item == 'assignee' && isTaskContainer(container)}
-					{const managedBy = $derived(container.managed_by[0])}
-					{const candidatesPromise = $derived(fetchMembers(managedBy))}
-					<EditableAssignee
-						bind:value={container.payload.assignee}
-						{candidatesPromise}
-						{editable}
-					/>
-				{:else if item == 'cardStyle' && isTeaserContainer(container)}
-					<EditableCardStyle
-						bind:value={container.payload.cardStyle}
-						{editable}
-						label={$_('card_style')}
-					/>
-				{:else if item == 'created'}
-					<CreatedBy {container} {revisions} />
-				{:else if item.startsWith('category.') && 'category' in payloadSchema.shape && isContainerWithCategory(container)}
-					{const key = item.split('.')[1]}
-					{const id = crypto.randomUUID()}
-					<div class="label" {id}>{page.data.categoryContext.labels.get(key)}</div>
-					<CustomCategoryDropdown
-						bind:value={
-							() => (container as ContainerWithCategory).payload['category'][key] ?? [],
-							(v) => ((container as ContainerWithCategory).payload.category[key] = v)
-						}
-						{editable}
-						labelledBy={id}
-						options={page.data.categoryContext.options[key] ?? []}
-					/>
-				{:else if item == 'image' && isContainerWithImage(container)}
-					{const key = item as keyof typeof payloadSchema.shape}
-					{const schema = payloadSchema.shape[key]}
-					{const meta = propertyRegistry.get(schema)}
-					<EditableImage
-						bind:value={container.payload.image}
-						{editable}
-						label={$_(meta?.label ?? 'image')}
-					/>
-				{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
-					<EditableMeasure bind:container {editable} />
-				{:else if item == 'modified'}
-					<ModifiedBy {container} />
-				{:else if item == 'organization'}
-					<EditableOrganization
-						bind:value={container.organization}
-						editable={editable && $ability.can('update', container, 'organizational')}
-					/>
-				{:else if item == 'organizational_unit'}
-					<EditableOrganizationalUnit
-						bind:value={container.organizational_unit}
-						editable={editable && $ability.can('update', container, 'organizational_unit')}
-						organization={container.organization}
-					/>
-				{:else if item == 'parent'}
-					<EditableParent bind:container {editable} />
-				{:else if item == 'pdf' && isProgramContainer(container)}
-					<EditablePDF bind:value={container.payload.pdf} {editable} />
-				{:else if item == 'program' && !isPartOfMeasure}
-					<EditableProgram bind:container {editable} />
-				{:else if item == 'status'}
-					{#if isGoalContainer(container)}
-						<EditableGoalStatus bind:value={container.payload.status} {editable} />
-					{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
-						<EditableStatus bind:value={container.payload.status} {editable} />
-					{:else if isProgramContainer(container)}
-						<EditableProgramStatus bind:value={container.payload.status} {editable} />
-					{:else if isRuleContainer(container)}
-						<EditableRuleStatus bind:value={container.payload.status} {editable} />
-					{:else if isTaskContainer(container)}
-						<EditableTaskStatus bind:value={container.payload.status} {editable} />
+			<div>
+				{#each [...configuration.headerAndPanel, ...configuration.onlyPanel] as item (item)}
+					{#if item == 'assignee' && isTaskContainer(container)}
+						{const managedBy = $derived(container.managed_by[0])}
+						{const candidatesPromise = $derived(fetchMembers(managedBy))}
+						<EditableAssignee
+							bind:value={container.payload.assignee}
+							{candidatesPromise}
+							{editable}
+						/>
+					{:else if item == 'cardStyle' && isTeaserContainer(container)}
+						<EditableCardStyle
+							bind:value={container.payload.cardStyle}
+							{editable}
+							label={$_('card_style')}
+						/>
+					{:else if item == 'created'}
+						<CreatedBy {container} {revisions} />
+					{:else if item.startsWith('category.') && 'category' in payloadSchema.shape && isContainerWithCategory(container)}
+						{const key = item.split('.')[1]}
+						{const id = crypto.randomUUID()}
+						<div class="label" {id}>{page.data.categoryContext.labels.get(key)}</div>
+						<CustomCategoryDropdown
+							bind:value={
+								() => (container as ContainerWithCategory).payload['category'][key] ?? [],
+								(v) => ((container as ContainerWithCategory).payload.category[key] = v)
+							}
+							{editable}
+							labelledBy={id}
+							options={page.data.categoryContext.options[key] ?? []}
+						/>
+					{:else if item == 'image' && isContainerWithImage(container)}
+						{const key = item as keyof typeof payloadSchema.shape}
+						{const schema = payloadSchema.shape[key]}
+						{const meta = propertyRegistry.get(schema)}
+						<EditableImage
+							bind:value={container.payload.image}
+							{editable}
+							label={$_(meta?.label ?? 'image')}
+						/>
+					{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
+						<EditableMeasure bind:container {editable} />
+					{:else if item == 'modified'}
+						<ModifiedBy {container} />
+					{:else if item == 'organization'}
+						<EditableOrganization
+							bind:value={container.organization}
+							editable={editable && $ability.can('update', container, 'organizational')}
+						/>
+					{:else if item == 'organizational_unit'}
+						<EditableOrganizationalUnit
+							bind:value={container.organizational_unit}
+							editable={editable && $ability.can('update', container, 'organizational_unit')}
+							organization={container.organization}
+						/>
+					{:else if item == 'parent'}
+						<EditableParent bind:container {editable} />
+					{:else if item == 'pdf' && isProgramContainer(container)}
+						<EditablePDF bind:value={container.payload.pdf} {editable} />
+					{:else if item == 'program' && !isPartOfMeasure}
+						<EditableProgram bind:container {editable} />
+					{:else if item == 'status'}
+						{#if isGoalContainer(container)}
+							<EditableGoalStatus bind:value={container.payload.status} {editable} />
+						{:else if isMeasureContainer(container) || isSimpleMeasureContainer(container)}
+							<EditableStatus bind:value={container.payload.status} {editable} />
+						{:else if isProgramContainer(container)}
+							<EditableProgramStatus bind:value={container.payload.status} {editable} />
+						{:else if isRuleContainer(container)}
+							<EditableRuleStatus bind:value={container.payload.status} {editable} />
+						{:else if isTaskContainer(container)}
+							<EditableTaskStatus bind:value={container.payload.status} {editable} />
+						{/if}
+					{:else if item == 'style' && isTeaserContainer(container)}
+						<EditableLinkStyle
+							bind:value={container.payload.style}
+							{editable}
+							label={$_('teaser_link_style')}
+						/>
+					{:else if item == 'unit' && isIndicatorContainer(container)}
+						<EditableIndicatorUnit bind:value={container.payload.unit} {editable} />
+					{:else if item in payloadSchema.shape}
+						{const key = item as keyof typeof payloadSchema.shape}
+						{const schema = payloadSchema.shape[key]}
+						<DefaultEditableProperty bind:value={container.payload[key]} {editable} {schema} />
 					{/if}
-				{:else if item == 'style' && isTeaserContainer(container)}
-					<EditableLinkStyle
-						bind:value={container.payload.style}
-						{editable}
-						label={$_('teaser_link_style')}
-					/>
-				{:else if item == 'unit' && isIndicatorContainer(container)}
-					<EditableIndicatorUnit bind:value={container.payload.unit} {editable} />
-				{:else if item in payloadSchema.shape}
-					{const key = item as keyof typeof payloadSchema.shape}
-					{const schema = payloadSchema.shape[key]}
-					<DefaultEditableProperty bind:value={container.payload[key]} {editable} {schema} />
-				{/if}
-			{/each}
+				{/each}
 
-			<ManagedBy {container} {relatedContainers} />
+				<ManagedBy {container} {relatedContainers} />
+			</div>
 		{/if}
 	</div>
 {/if}
@@ -216,10 +218,11 @@
 		border-radius: 8px 12px 12px 8px;
 		border: 1px solid var(--color-border-subtle);
 		background: var(--color-surface-container);
+		display: flex;
+		flex-direction: column;
 		height: calc(100% - 0.5rem);
 		max-width: min(23.75rem, 100%);
 		width: 23.75rem;
-		overflow-y: auto;
 		padding: 0.5rem 1rem;
 		position: absolute;
 		right: 0;
@@ -240,5 +243,33 @@
 
 	.details-properties h2 > span {
 		margin-right: auto;
+	}
+
+	.details-properties h2 + div {
+		overflow-y: auto;
+	}
+
+	:where(.details-properties > div) > :global(.label) {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 400;
+		margin-bottom: 0.5rem;
+		margin-top: 1.5rem;
+		min-height: 1.5rem;
+	}
+
+	:where(.details-properties > div) > :global(.value) {
+		align-items: center;
+		background-color: var(--form-control-background);
+		border: var(--form-control-border);
+		border-radius: var(--form-control-border-radius);
+		font-weight: 500;
+		min-height: var(--form-control-min-height);
+		padding: var(--form-control-padding-y) var(--form-control-padding-x);
+	}
+
+	:where(.details-properties > div) > :global(.value.value--read-only) {
+		background-color: var(--form-control-background);
+		color: var(--color-gray-400);
 	}
 </style>
