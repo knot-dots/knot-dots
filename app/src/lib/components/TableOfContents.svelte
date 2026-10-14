@@ -53,6 +53,10 @@
 		const stack: { node: TableOfContentsNode; level: number }[] = [];
 
 		sections.forEach((section, position) => {
+			// Untitled sections, e.g. migrated program parts, have nothing to list.
+			if ('title' in section.payload && section.payload.title === '') {
+				return;
+			}
 			const currentLevel = level(section, position);
 			const node: TableOfContentsNode = $state(
 				$state.snapshot({ guid: section.guid, level: currentLevel, section, children: [] })
@@ -129,7 +133,7 @@
 						<Chapter />
 					{/if}
 					<a
-						href={`javascript:document.getElementById('section-${node.section.guid}').scrollIntoView({behavior: 'smooth'});`}
+						href={`javascript:document.getElementById('section-${node.section.guid}')?.scrollIntoView({behavior: 'smooth'});`}
 						class="truncated"
 					>
 						{node.section.payload.title}

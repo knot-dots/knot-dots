@@ -4,6 +4,7 @@
 	"add_cover": "Cover hinzufügen",
 	"add_item": "Hinzufügen",
 	"add_section": "Abschnitt hinzufügen",
+	"add_title": "Titel hinzufügen",
 	"administration": "Administration",
 	"add_to_sidebar": "In Seitenleiste anzeigen",
 	"administrative_area": "Verwaltungsgebiet",
@@ -406,6 +407,7 @@
 	"indicator_picker.title": "Indikatoren einbinden",
 	"indicator_type": "Art des Indikators",
 	"indicator_type.impact": "Wirkungsindikator",
+	"other": "Sonstiges",
 	"picker_dialog.clear": "Aufheben",
 	"picker_dialog.confirm": "Übernehmen ({count})",
 	"indicator_type.key": "Schlüsselindikator",
@@ -761,6 +763,7 @@
 		"17": "17 - Partnerschaften zur Erreichung der Ziele"
 	},
 	"search": "Suchen",
+	"sections": "Abschnitte",
 	"select_all": "Alle auswählen",
 	"selection_counter": "{count} ausgewählt",
 	"show_links": "Links anzeigen",

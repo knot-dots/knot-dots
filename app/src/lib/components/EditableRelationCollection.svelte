@@ -4,19 +4,24 @@
 	import { _ } from 'svelte-i18n';
 	import CirclePlus from '~icons/flowbite/circle-plus-solid';
 	import Plus from '~icons/knotdots/plus';
+	import Text from '~icons/knotdots/text';
 	import { page } from '$app/state';
+	import autoSave from '$lib/client/autoSave';
 	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
-	import fetchContainers from '$lib/client/fetchContainers';
+	import fetchContainerRevisions from '$lib/client/fetchContainerRevisions';
+	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import EditableChapter from '$lib/components/EditableChapter.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
 		type Container,
 		containerOfType,
 		createTemplateInstanceOf,
+		isContainer,
 		isProgramContainer,
 		isTemplateContainer,
 		listTypes,
@@ -34,60 +39,87 @@
 		openContainerCopyDialog
 	} from '$lib/stores';
 	import tooltip from '$lib/attachments/tooltip';
+	import { isScopedTemplateRoot, type TemplateAvailability } from '$lib/templateScopes';
 
 	interface Props {
 		container: Container<RelationCollectionPayload>;
 		editable?: boolean;
 		heading: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+		itemFilter?: (item: Container<AnyPayload>) => boolean;
 		parentContainer: Container<AnyPayload>;
 		relatedContainers: Container<AnyPayload>[];
+		templateAvailability?: TemplateAvailability;
 	}
 
 	let {
 		container = $bindable(),
 		editable = false,
 		heading,
+		itemFilter,
 		parentContainer = $bindable(),
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		templateAvailability: sharedAvailability
 	}: Props = $props();
 
 	const idForTitle = crypto.randomUUID();
 
-	// Only objects created from this section belong to it.
+	// Migrated sections carry no title; the field only appears once asked for.
+	let titleRequested = $state(false);
+	let showTitle = $derived(container.payload.title !== '' || titleRequested);
+
+	// Only objects created from this section belong to it. Items are wrapped in
+	// state so inline edits in the list view stay reactive.
 	let items = $derived(
 		container.payload.item
 			.map((guid) => relatedContainers.find((c) => c.guid === guid))
 			.filter((c): c is Container<AnyPayload> => c !== undefined)
+			.filter(isContainer)
+			.map((c) => {
+				let _: Container = $state(c); // $state() can only be used in an assignment
+				return _;
+			})
 	);
+
+	let visibleItems = $derived(itemFilter ? items.filter(itemFilter) : items);
 
 	let useTemplates = $derived(createFeatureDecisions(page.data.features).useTemplateWorkspaces());
 	let bound = $derived(container.payload.newItemTemplate !== undefined);
+
+	// The list view renders items like program chapters; it needs the program as context.
+	let program = $derived(isProgramContainer(parentContainer) ? parentContainer : undefined);
+	let listView = $derived(container.payload.listType === listTypes.enum.list && program);
+	let chapterRelatedContainers = $derived(relatedContainers.filter(isContainer));
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
 	);
 
+	// The bound template is read from the database, not the search index, so a
+	// template created moments ago is available right away.
 	const templateResource = resource(
 		[
 			() => (useTemplates ? container.payload.newItemTemplate : undefined),
-			() => parentContainer.guid
+			() => parentContainer.guid,
+			() => parentContainer.organization
 		],
-		async ([templateGuid, scopeGuid], _, { signal }) => {
+		async ([templateGuid, scopeGuid, organizationGuid]) => {
 			if (!templateGuid) {
 				return undefined;
 			}
-			const containers = await fetchContainers(
-				{ availableIn: scopeGuid, guid: [templateGuid], template: 'true' },
-				'alpha',
-				{ signal }
-			);
-			return containers.find(isTemplateContainer);
+			const template = (await fetchContainerRevisions(templateGuid)).at(-1);
+			return template &&
+				isTemplateContainer(template) &&
+				isScopedTemplateRoot(template, { organizationGuid, scopeGuid })
+				? template
+				: undefined;
 		}
 	);
 
-	const templateAvailability = createCreationTemplateAvailability(() =>
-		editable && !bound ? createItem() : undefined
+	// A shared availability, e.g. the program's, saves one probe request per section.
+	const ownAvailability = createCreationTemplateAvailability(() =>
+		editable && !bound && !sharedAvailability ? createItem() : undefined
 	);
+	let templateAvailability = $derived(sharedAvailability ?? ownAvailability);
 
 	function applicableCategories(payloadType: PayloadType) {
 		if (!('category' in parentContainer.payload)) {
@@ -172,49 +204,78 @@
 		$addItemState = { target: container };
 		createContainerDialog.getElement().showModal();
 	}
+
+	function stopPropagation<E extends Event>(fn: (event: E) => void) {
+		return function (this: unknown, event: E) {
+			event.stopPropagation();
+			fn.call(this, event);
+		};
+	}
 </script>
 
-<header>
-	<svelte:element this={heading} class="details-heading">
-		{#if editable && $ability.can('update', container)}
-			<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
-			<AutoresizingTextarea
-				bind:value={container.payload.title}
-				id={idForTitle}
-				onkeydown={(e) => {
-					if (e.key === 'Enter') {
-						e.preventDefault();
-					}
-				}}
-				placeholder={$_('title')}
-				rows={1}
-			/>
-		{:else}
-			{container.payload.title}
-		{/if}
-	</svelte:element>
-
-	{#if editable}
-		<ul class="inline-actions is-visible-on-hover">
-			{#if mayAddItem}
-				<li>
-					<button
-						class="action-button action-button--size-l"
-						onclick={addItem}
-						type="button"
-						{@attach tooltip($_('add_item'))}
-					>
-						<Plus />
-					</button>
-				</li>
-			{/if}
-
-			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
-			</li>
-		</ul>
+{#snippet actions()}
+	{#if !showTitle && $ability.can('update', container)}
+		<li>
+			<button
+				class="action-button action-button--size-l"
+				onclick={() => (titleRequested = true)}
+				type="button"
+				{@attach tooltip($_('add_title'))}
+			>
+				<Text />
+			</button>
+		</li>
 	{/if}
-</header>
+	{#if mayAddItem}
+		<li>
+			<button
+				class="action-button action-button--size-l"
+				onclick={addItem}
+				type="button"
+				{@attach tooltip($_('add_item'))}
+			>
+				<Plus />
+			</button>
+		</li>
+	{/if}
+	<li>
+		<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+	</li>
+{/snippet}
+
+{#if showTitle}
+	<header>
+		<svelte:element this={heading} class="details-heading">
+			{#if editable && $ability.can('update', container)}
+				<label class="is-visually-hidden" for={idForTitle}>{$_('title')}</label>
+				<AutoresizingTextarea
+					bind:value={container.payload.title}
+					id={idForTitle}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+						}
+					}}
+					placeholder={$_('title')}
+					rows={1}
+				/>
+			{:else}
+				{container.payload.title}
+			{/if}
+		</svelte:element>
+
+		{#if editable}
+			<ul class="inline-actions is-visible-on-hover">
+				{@render actions()}
+			</ul>
+		{/if}
+	</header>
+{:else if editable}
+	<!-- Untitled sections keep their objects at the top; the actions float in the corner. -->
+	<ul class="absolute-actions is-visible-on-hover">
+		{@render actions()}
+	</ul>
+{/if}
 
 {#snippet card(item: Container<AnyPayload>, height?: string)}
 	<Card
@@ -229,15 +290,29 @@
 	/>
 {/snippet}
 
-{#if container.payload.listType === listTypes.enum.carousel}
-	<Carousel {addItem} {items} {mayAddItem}>
-		{#snippet itemSnippet(item)}
-			{@render card(item)}
-		{/snippet}
-	</Carousel>
-{:else}
+{#if listView && program}
+	<div class="chapters">
+		{#each visibleItems as item, i (item.guid)}
+			<form
+				class="chapter"
+				oninput={stopPropagation(requestSubmit)}
+				onsubmit={stopPropagation(autoSave(item, 2000))}
+				novalidate
+			>
+				<!-- eslint-disable-next-line svelte/no-unused-svelte-ignore -->
+				<!-- svelte-ignore binding_property_non_reactive -->
+				<EditableChapter
+					bind:container={visibleItems[i]}
+					editable={editable && $ability.can('update', item)}
+					isPartOf={program}
+					relatedContainers={chapterRelatedContainers}
+				/>
+			</form>
+		{/each}
+	</div>
+{:else if container.payload.listType === listTypes.enum.wall}
 	<ul class="catalog wide">
-		{#each items as item (item.guid)}
+		{#each visibleItems as item (item.guid)}
 			<li>
 				{@render card(item, '100%')}
 			</li>
@@ -250,6 +325,12 @@
 			</li>
 		{/if}
 	</ul>
+{:else}
+	<Carousel {addItem} items={visibleItems} {mayAddItem}>
+		{#snippet itemSnippet(item)}
+			{@render card(item)}
+		{/snippet}
+	</Carousel>
 {/if}
 
 <style>
@@ -270,5 +351,17 @@
 	.card :global(svg) {
 		height: 2.25rem;
 		width: 2.25rem;
+	}
+
+	.chapters {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.chapters :global(.dropdown-button.dropdown-button--menu) {
+		--dropdown-button-border-radius: 8px;
+		--dropdown-button-border-width: 1px;
+		--dropdown-button-icon-size: 1rem;
 	}
 </style>
