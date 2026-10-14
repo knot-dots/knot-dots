@@ -21,14 +21,14 @@
 	import Link from '~icons/knotdots/link';
 	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
-	import Measure from '~icons/knotdots/measure';
+	import Measure from '~icons/knotdots/measure-24';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
 	import Progress from '~icons/knotdots/progress';
 	import Star from '~icons/knotdots/star';
 	import Summary from '~icons/knotdots/summary';
-	import Task from '~icons/knotdots/tasks';
+	import Task from '~icons/knotdots/tasks-24';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
 	import { page } from '$app/state';
