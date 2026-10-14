@@ -89,26 +89,22 @@
 					<ArrowLeft />
 					<span class="is-visually-hidden">{$_('back')}</span>
 				</button>
-				{$_('configure_properties')}
+				<span>{$_('configure_properties')}</span>
 			{:else}
-				{$_('properties')}
+				<span>{$_('properties')}</span>
 
 				{#if $ability.can('update', organization)}
-					<button
-						class="action-button action-button--configure"
-						onclick={() => (configure = true)}
-						type="button"
-					>
+					<button class="action-button" onclick={() => (configure = true)} type="button">
 						<Edit />
 						<span class="is-visually-hidden">{$_('configure')}</span>
 					</button>
 				{/if}
-
-				<button class="action-button" onclick={detailView.properties.trigger.onclick} type="button">
-					<Close />
-					<span class="is-visually-hidden">{$_('close')}</span>
-				</button>
 			{/if}
+
+			<button class="action-button" onclick={detailView.properties.trigger.onclick} type="button">
+				<Close />
+				<span class="is-visually-hidden">{$_('close')}</span>
+			</button>
 		</h2>
 
 		{#if configure && $ability.can('update', organization)}
@@ -242,7 +238,7 @@
 		margin-bottom: 2.5rem;
 	}
 
-	.action-button.action-button--configure {
-		margin-left: auto;
+	.details-properties h2 > span {
+		margin-right: auto;
 	}
 </style>
