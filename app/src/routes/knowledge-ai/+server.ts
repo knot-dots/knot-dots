@@ -6,21 +6,25 @@ import { produce } from 'sveltekit-sse';
 import { z } from 'zod';
 import { env } from '$env/dynamic/public';
 import defineAbilityFor from '$lib/authorization';
+import { findCategoryGuid, resolveCategoryTerms } from '$lib/categoryOptions';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	anyInitialPayload,
 	audience,
+	type Container,
 	containerOfType,
 	createNewContainerSchema,
 	editorialState,
 	isProgramContainer,
 	type NewContainer,
+	type OrganizationPayload,
 	payloadTypes,
 	predicates,
 	visibility
 } from '$lib/models';
+import { loadCategoryContext } from '$lib/server/categoryOptions';
+import { createContainer, getContainerByGuid, getManyOrganizationContainers } from '$lib/server/db';
 import { pollJobStatus, startJob } from '$lib/server/knowledge-ai';
-import { createContainer, getContainerByGuid } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 function delay(milliseconds: number) {
@@ -70,6 +74,18 @@ export const POST = (async ({ locals, request }) => {
 		error(422, { message: startJobResponse.error.message });
 	}
 
+	const defaultOrganizations = (await locals.pool.connect(
+		getManyOrganizationContainers({ default: true }, '')
+	)) as Container<OrganizationPayload>[];
+	const scope = [container.organization, ...defaultOrganizations.map(({ guid }) => guid)].filter(
+		(guid, index, values) => values.indexOf(guid) === index
+	);
+	const categoryContext = await loadCategoryContext({
+		connect: locals.pool.connect,
+		scope,
+		user: locals.user
+	});
+
 	const job = startJobResponse.data.job_id;
 
 	return produce(
@@ -101,6 +117,42 @@ export const POST = (async ({ locals, request }) => {
 				if (status === 'completed') {
 					for (const object of parsedPollResponse.data.data!.knowledge_objects) {
 						try {
+							const categoryValues: Record<string, string[]> = {};
+							if (object.sdg?.length) {
+								const sdgCatGuid = findCategoryGuid('sdg', categoryContext);
+								if (sdgCatGuid) {
+									const terms = resolveCategoryTerms(object.sdg, sdgCatGuid, categoryContext);
+									if (terms.length) categoryValues[sdgCatGuid] = terms;
+								}
+							}
+							if (object.topic?.length) {
+								const topicCatGuid = findCategoryGuid('topic', categoryContext);
+								if (topicCatGuid) {
+									const terms = resolveCategoryTerms(object.topic, topicCatGuid, categoryContext);
+									if (terms.length) categoryValues[topicCatGuid] = terms;
+								}
+							}
+							if (object.policyFieldBNK?.length) {
+								const policyCatGuid = findCategoryGuid('policyFieldBNK', categoryContext);
+								if (policyCatGuid) {
+									const terms = resolveCategoryTerms(
+										object.policyFieldBNK,
+										policyCatGuid,
+										categoryContext
+									);
+									if (terms.length) categoryValues[policyCatGuid] = terms;
+								}
+							}
+							const audienceCatGuid = findCategoryGuid('audience', categoryContext);
+							if (audienceCatGuid) {
+								const audienceList =
+									object.audience?.length > 0
+										? object.audience
+										: [audience.enum['audience.citizens']];
+								const terms = resolveCategoryTerms(audienceList, audienceCatGuid, categoryContext);
+								if (terms.length) categoryValues[audienceCatGuid] = terms;
+							}
+
 							const newContainer = createNewContainerSchema(anyInitialPayload).parse({
 								managed_by: container.managed_by,
 								organization: container.organization,
@@ -108,12 +160,7 @@ export const POST = (async ({ locals, request }) => {
 								payload: {
 									aiContribution: 1,
 									aiSuggestion: true,
-									category: {
-										sdg: object.sdg,
-										policyFieldBNK: object.policyFieldBNK,
-										topic: object.topic,
-										audience: [audience.enum['audience.citizens']]
-									},
+									category: categoryValues,
 									description: object.description,
 									editorialState: editorialState.enum['editorial_state.draft'],
 									...(object.source_pages?.length > 0 && {
