@@ -62,11 +62,11 @@
 	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
 	{#if data.key === overlayKey.enum['members']}
 		<MembersOverlay
+			admins={data.admins}
 			container={data.container}
 			grants={data.grants}
-			inheritedGrants={data.inheritedGrants}
-			inheritedUsers={data.inheritedUsers}
-			scope={data.scope}
+			inheritedSections={data.inheritedSections}
+			mayManageOrganizationUsers={data.mayManageOrganizationUsers}
 			users={data.users}
 		/>
 	{:else if data.key === overlayKey.enum['chapters'] && isProgramContainer(data.container)}

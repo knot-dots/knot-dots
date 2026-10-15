@@ -746,6 +746,14 @@ export const userGrants = z.object({
 
 export type UserGrants = z.infer<typeof userGrants>;
 
+// One inherited section of a permission matrix: the governing container with
+// the subjects' effective sets materialized as rows on it.
+export type InheritedMatrixSection = {
+	scope: Container<AnyPayload>;
+	grants: Grant[];
+	users: User[];
+};
+
 const fullSelfSet: GrantKind[] = [
 	grantKinds.enum.read,
 	grantKinds.enum.update,

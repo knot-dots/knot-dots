@@ -18,6 +18,7 @@ import {
 	type GoalPayload,
 	type Grant,
 	type GrantRecords,
+	type InheritedMatrixSection,
 	type IooiType,
 	type MeasurePayload,
 	type OrganizationalUnitPayload,
@@ -171,11 +172,11 @@ export type OverlayData =
 	  }
 	| {
 			key: 'members';
+			admins?: UserRecord[];
 			container: Container<AnyPayload>;
 			grants: Grant[];
-			inheritedGrants?: Grant[];
-			inheritedUsers?: UserRecord[];
-			scope?: Container<AnyPayload>;
+			inheritedSections?: InheritedMatrixSection[];
+			mayManageOrganizationUsers?: boolean;
 			users: UserRecord[];
 	  }
 	| {
@@ -285,11 +286,11 @@ if (browser) {
 			}
 			setOverlayIfLatest({
 				key: overlayKey.enum.members,
+				admins: result.data.admins,
 				container: result.data.container,
 				grants: result.data.grants,
-				inheritedGrants: result.data.inheritedGrants,
-				inheritedUsers: result.data.inheritedUsers,
-				scope: result.data.scope,
+				inheritedSections: result.data.inheritedSections,
+				mayManageOrganizationUsers: result.data.mayManageOrganizationUsers,
 				users: result.data.users
 			});
 		} else if (hashParams.has(overlayKey.enum.relations)) {

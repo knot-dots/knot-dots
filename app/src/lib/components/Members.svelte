@@ -23,19 +23,20 @@
 		isOrganizationContainer,
 		predicates
 	} from '$lib/models';
-	import type { User } from '$lib/models';
+	import type { InheritedMatrixSection, User } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
+		admins?: Readonly<Array<User>>;
 		container: Container<AnyPayload>;
 		grants: Readonly<Array<Grant>>;
-		inheritedGrants?: Readonly<Array<Grant>>;
-		inheritedUsers?: Readonly<Array<User>>;
-		scope?: Container<AnyPayload>;
+		inheritedSections?: ReadonlyArray<InheritedMatrixSection>;
+		mayManageOrganizationUsers?: boolean;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, grants, inheritedGrants, inheritedUsers, scope, users }: Props = $props();
+	let { admins, container, grants, inheritedSections, mayManageOrganizationUsers, users }: Props =
+		$props();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
@@ -135,15 +136,15 @@
 {/if}
 
 {#if view === 'matrix'}
-	{#if inheritedGrants && inheritedUsers && scope}
+	{#if inheritedSections && admins}
 		<ObjectPermissionMatrix
+			{admins}
 			{container}
 			editable={$ability.can('manage-users', container)}
 			{grants}
-			{inheritedGrants}
-			{inheritedUsers}
+			{inheritedSections}
+			{mayManageOrganizationUsers}
 			oninvite={() => dialog.showModal()}
-			{scope}
 			{users}
 		/>
 	{:else}

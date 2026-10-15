@@ -143,11 +143,6 @@ export const load = (async ({ locals, parent }) => {
 			? {
 					admins,
 					inheritedSections,
-					// transitional aliases of the first section until the matrix
-					// component renders the sections and the admins block itself
-					inheritedGrants: inheritedSections[0]?.grants ?? [],
-					inheritedUsers: inheritedSections[0]?.users ?? [],
-					scope: inheritedSections[0]?.scope ?? selectedContext,
 					mayManageOrganizationUsers:
 						locals.user.isAuthenticated &&
 						locals.user.grants.self['manage-users'].includes(selectedContext.organization)
