@@ -150,7 +150,7 @@
 
 	{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
 		<li>
-			<span class="badge badge--yellow">
+			<span class="badge badge--large badge--yellow">
 				<AskAI />
 				{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
 			</span>

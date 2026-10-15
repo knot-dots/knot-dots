@@ -21,7 +21,7 @@
 	<Dropdown label={$_('task_category')} {offset}>
 		{#snippet button(popover)}
 			<button class="dropdown-button" type="button" use:popover.button>
-				<span class="badge">
+				<span class="badge badge--large">
 					{value ? $_(String(value)) : $_('task')}
 				</span>
 			</button>
@@ -46,7 +46,7 @@
 		{/snippet}
 	</Dropdown>
 {:else}
-	<span class="badge">
+	<span class="badge badge--large">
 		{value ? $_(String(value)) : $_('task')}
 	</span>
 {/if}
