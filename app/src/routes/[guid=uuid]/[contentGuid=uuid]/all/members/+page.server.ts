@@ -6,6 +6,7 @@ import {
 	grantSetForRole,
 	grantSetForSubjectOn,
 	grantSourceOf,
+	matrixSectionScope,
 	isMeasureContainer,
 	isProgramContainer,
 	isSimpleMeasureContainer,
@@ -48,18 +49,11 @@ export const load = (async ({ locals, params }) => {
 		// manage-users kind); anonymous visitors of public containers get no
 		// roster of the surrounding areas.
 		if (!locals.user.isAuthenticated) {
-			const [members, grants] = await Promise.all([
-				getMembers(container.organization),
-				locals.pool.connect(getAllGrantsByContainers([container.guid]))
-			]);
 			return {
 				container,
-				grants,
+				grants: [],
 				title: t('members'),
-				users: users.map((u) => ({
-					...u,
-					email: members.find(({ id }) => id == u.guid)?.username ?? u.guid
-				}))
+				users: []
 			};
 		}
 
@@ -140,7 +134,7 @@ export const load = (async ({ locals, params }) => {
 					];
 				});
 			return {
-				scope,
+				scope: matrixSectionScope(scope),
 				grants: sectionGrants,
 				users: matrixUsers.filter(({ guid }) =>
 					sectionGrants.some(({ subject }) => subject === guid)

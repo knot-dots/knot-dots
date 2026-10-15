@@ -41,6 +41,9 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
+	// readers without the manage-users kind see the members view-only
+	const mayManageMembers = $derived($ability.can('manage-users', container));
+
 	const showViewSwitch = $derived(createFeatureDecisions(page.data.features).usePermissionMatrix());
 
 	let view: 'list' | 'matrix' = $state('list');
@@ -140,7 +143,7 @@
 		<ObjectPermissionMatrix
 			{admins}
 			{container}
-			editable={$ability.can('manage-users', container)}
+			editable={mayManageMembers}
 			{grants}
 			{inheritedSections}
 			{mayManageOrganizationUsers}
@@ -150,7 +153,7 @@
 	{:else}
 		<UserPermissionMatrix
 			{container}
-			editable={$ability.can('manage-users', container)}
+			editable={mayManageMembers}
 			{grants}
 			oninvite={() => dialog.showModal()}
 			{users}
@@ -170,41 +173,55 @@
 				<tr>
 					<td>{displayName(u)}</td>
 					<td>
-						{#key container.user}
-							<select name="role" onchange={handleChangeRole(u, container)}>
-								<option value="role.observer" selected={isObserverOf(u, container)}>
-									{$_('role.observer')}
-								</option>
-								<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
-									{$_('role.collaborator')}
-								</option>
-								<option value="role.head" selected={isHeadOf(u, container)}>
-									{$_('role.head')}
-								</option>
-								{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
-									<option value="role.administrator" selected={isAdminOf(u, container)}>
-										{$_('role.administrator')}
+						{#if !mayManageMembers}
+							{$_(
+								isAdminOf(u, container)
+									? 'role.administrator'
+									: isHeadOf(u, container)
+										? 'role.head'
+										: isCollaboratorOf(u, container)
+											? 'role.collaborator'
+											: 'role.observer'
+							)}
+						{:else}
+							{#key container.user}
+								<select name="role" onchange={handleChangeRole(u, container)}>
+									<option value="role.observer" selected={isObserverOf(u, container)}>
+										{$_('role.observer')}
 									</option>
-								{/if}
-							</select>
-						{/key}
+									<option value="role.collaborator" selected={isCollaboratorOf(u, container)}>
+										{$_('role.collaborator')}
+									</option>
+									<option value="role.head" selected={isHeadOf(u, container)}>
+										{$_('role.head')}
+									</option>
+									{#if isOrganizationContainer(container) || isOrganizationalUnitContainer(container)}
+										<option value="role.administrator" selected={isAdminOf(u, container)}>
+											{$_('role.administrator')}
+										</option>
+									{/if}
+								</select>
+							{/key}
+						{/if}
 					</td>
 					<td>
-						<button
-							class="action-button"
-							type="button"
-							{@attach tooltip($_('user.remove_relations'))}
-							onclick={() => handleRemoveRelations(u, container)}
-						>
-							<TrashBin />
-						</button>
+						{#if mayManageMembers}
+							<button
+								class="action-button"
+								type="button"
+								{@attach tooltip($_('user.remove_relations'))}
+								onclick={() => handleRemoveRelations(u, container)}
+							>
+								<TrashBin />
+							</button>
+						{/if}
 					</td>
 				</tr>
 			{/each}
 		</tbody>
 	</table>
 {/if}
-{#if view === 'list'}
+{#if view === 'list' && mayManageMembers}
 	<div class="content-actions">
 		<button class="button-primary system-primary" type="button" onclick={() => dialog.showModal()}>
 			<UserAdd />
