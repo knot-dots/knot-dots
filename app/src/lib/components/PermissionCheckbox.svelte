@@ -30,7 +30,7 @@
 		class:permission-checkbox--granted={checked}
 		class:permission-checkbox--not-granted={!checked}
 		role="img"
-		{@attach tooltip(tooltipText ?? '', { describe: true, visibility: !!tooltipText })}
+		{@attach tooltipText ? tooltip(tooltipText, { describe: true }) : undefined}
 	>
 		{#if checked}<CheckIcon />{:else}<MinusIcon />{/if}
 	</span>
@@ -40,7 +40,7 @@
 		aria-label={ariaLabel}
 		class="permission-checkbox permission-checkbox--dormant"
 		role="img"
-		{@attach tooltip(tooltipText ?? '', { describe: true, visibility: !!tooltipText })}
+		{@attach tooltipText ? tooltip(tooltipText, { describe: true }) : undefined}
 	>
 		<CheckIcon />
 	</span>
