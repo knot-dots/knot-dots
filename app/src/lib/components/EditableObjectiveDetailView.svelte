@@ -12,7 +12,6 @@
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import CreateTemplateButton from '$lib/components/CreateTemplateButton.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
@@ -115,12 +114,11 @@
 	}
 
 	function remove(index: number) {
-		return (event: Event) => {
+		return () => {
 			container.payload.wantedValues = [
 				...container.payload.wantedValues.slice(0, index),
 				...container.payload.wantedValues.slice(index + 1)
 			];
-			requestSubmit(event);
 		};
 	}
 
@@ -129,7 +127,6 @@
 			container.payload.wantedValues[index][1] = parseFloat(
 				(event.currentTarget as HTMLInputElement).value
 			);
-			requestSubmit(event);
 		};
 	}
 

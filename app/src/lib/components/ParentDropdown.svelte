@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createIsPartOfOptionsRequest } from '$lib/client/isPartOfOptions';
+	import saveContainer from '$lib/client/saveContainer';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import {
 		type AnyInitialPayload,
@@ -51,7 +53,7 @@
 			)?.object ?? ''
 	);
 
-	function set(value: string) {
+	async function set(value: string) {
 		const idx = container.relation.findIndex(
 			({ predicate, subject }) =>
 				predicate === predicates.enum['is-part-of'] &&
@@ -75,9 +77,22 @@
 		if (
 			next.length === container.relation.length &&
 			next.every((r, i) => r === container.relation[i])
-		)
+		) {
 			return;
+		}
 		container.relation = next;
+
+		if ('revision' in container) {
+			const response = await saveContainer(container);
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.revision = updatedContainer.revision;
+				await invalidate('containers');
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		}
 	}
 </script>
 

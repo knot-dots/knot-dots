@@ -11,6 +11,7 @@
 	import Close from '~icons/knotdots/close';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import withOptimistic from '$lib/client/withOptimistic';
 	import { downloadCsv, generateIndicatorCsv } from '$lib/client/csvDownload';
@@ -71,7 +72,9 @@
 	let uploadFiles: { id: string; name: string; size: number }[] = $state([]);
 	let uppy: Uppy | undefined = $state();
 
-	let actualDataContainers = $derived(containers.filter(isActualDataContainer));
+	let actualDataContainers = $derived(
+		data.containers.filter(isActualDataContainer).map((c) => autoSaveContainer(c, 2000))
+	);
 
 	let rows = $derived(
 		containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))

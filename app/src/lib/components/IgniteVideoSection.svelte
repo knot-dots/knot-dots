@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Video from '~icons/knotdots/video';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import IgniteVideoSettingsDropdown from '$lib/components/IgniteVideoSettingsDropdown.svelte';
 	import type { AnyPayload, Container, IgniteVideoPayload } from '$lib/models';
@@ -34,16 +33,13 @@
 	const mayEdit = $derived(editable && $ability.can('update', container));
 
 	function handleInputIframeUrl(event: Event & { currentTarget: HTMLInputElement }) {
-		event.stopPropagation();
-
 		if (event.currentTarget.validity.valid) {
 			iframeUrl = event.currentTarget.value;
 		}
 	}
 
-	function handleEmbed(event: Event) {
+	function handleEmbed() {
 		container.payload.iframeUrl = iframeUrl;
-		requestSubmit(event);
 	}
 </script>
 

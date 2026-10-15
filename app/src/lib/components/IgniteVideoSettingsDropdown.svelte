@@ -5,7 +5,6 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Background from '~icons/knotdots/background';
 	import Video from '~icons/knotdots/video';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import deleteContainer from '$lib/client/deleteContainer';
 	import CascadingMenu from '$lib/components/CascadingMenu.svelte';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
@@ -49,9 +48,8 @@
 		}
 	}
 
-	function handleEmbed(event: MouseEvent, closeMenu: () => void) {
+	function handleEmbed(closeMenu: () => void) {
 		container.payload.iframeUrl = iframeUrl;
-		requestSubmit(event);
 		closeMenu();
 	}
 
@@ -184,7 +182,7 @@
 						class="button-primary system-primary"
 						disabled={!iframeUrl || iframeUrl === container.payload.iframeUrl}
 						type="button"
-						onclick={(event) => handleEmbed(event, closeMenu)}
+						onclick={() => handleEmbed(closeMenu)}
 					>
 						{$_('ignite_video.embed')}
 					</button>

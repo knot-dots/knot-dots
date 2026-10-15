@@ -17,7 +17,7 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import logo from '$lib/assets/logo.svg';
-	import saveContainer from '$lib/client/saveContainer';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import saveUser from '$lib/client/saveUser';
 	import AdministrationMenu from '$lib/components/AdministrationMenu.svelte';
 	import EditableFavorite from '$lib/components/EditableFavorite.svelte';
@@ -43,10 +43,18 @@
 
 	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
 
+	let currentOrganization = $derived(autoSaveContainer(page.data.currentOrganization, 2000));
+
+	let currentOrganizationalUnit = $derived(
+		page.data.currentOrganizationalUnit
+			? autoSaveContainer(page.data.currentOrganizationalUnit, 2000)
+			: undefined
+	);
+
 	function landingPageURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return getOrganizationURL(container, '', env, {
-			organizationSlug: page.data.currentOrganization.payload.slug,
-			organizationCustomDomain: page.data.currentOrganization.payload.customDomain
+			organizationSlug: currentOrganization.payload.slug,
+			organizationCustomDomain: currentOrganization.payload.customDomain
 		}).toString();
 	}
 
@@ -60,38 +68,16 @@
 	let organizations = $derived(
 		page.data.organizations.filter(
 			(c: Container<OrganizationPayload>) =>
-				!c.payload.default && c.guid !== page.data.currentOrganization.guid
+				!c.payload.default && c.guid !== currentOrganization.guid
 		)
 	);
 
 	let organizationalUnits = $derived(
 		page.data.organizationalUnits.filter(
 			(c: Container<OrganizationalUnitPayload>) =>
-				c.organization === page.data.currentOrganization.organization
+				c.organization === currentOrganization.organization
 		)
 	);
-
-	function updateFavorite(
-		container: Container<OrganizationPayload | OrganizationalUnitPayload>,
-		favorite: Favorite[]
-	) {
-		return async () => {
-			const response = await saveContainer({
-				...container,
-				payload: {
-					...container.payload,
-					favorite
-				}
-			});
-			if (response.ok) {
-				const updatedContainer = await response.json();
-				container.revision = updatedContainer.revision;
-			} else {
-				const error = await response.json();
-				alert(error.message);
-			}
-		};
-	}
 
 	function updateUserFavorite(user: User, favorite: Favorite[]) {
 		return async () => {
@@ -142,7 +128,7 @@
 
 		const organizationalUnit = page.data.organizationalUnits.find(
 			({ guid, organization }) =>
-				guid === contextSegment && organization === page.data.currentOrganization.guid
+				guid === contextSegment && organization === currentOrganization.guid
 		);
 		if (organizationalUnit) {
 			const identifier = getContextIdentifier(organizationalUnit);
@@ -192,7 +178,7 @@
 			icon,
 			title
 		}));
-		updateFavorite(page.data.currentOrganization, favoriteList.organization)();
+		currentOrganization.payload.favorite = favoriteList.organization;
 	}
 
 	function handleDndConsiderOrganizationalUnit(
@@ -212,7 +198,7 @@
 				title
 			})
 		);
-		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
+		currentOrganizationalUnit!.payload.favorite = favoriteList.organizationalUnit;
 	}
 
 	function handleDndConsiderUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
@@ -231,13 +217,13 @@
 </script>
 
 <header>
-	<a href={landingPageURL(page.data.currentOrganization)}>
+	<a href={landingPageURL(currentOrganization)}>
 		<img
 			class="logo"
-			src={page.data.currentOrganization.payload.image
-				? transformFileURL(page.data.currentOrganization.payload.image)
+			src={currentOrganization.payload.image
+				? transformFileURL(currentOrganization.payload.image)
 				: logo}
-			alt={page.data.currentOrganization.payload.name}
+			alt={currentOrganization.payload.name}
 		/>
 	</a>
 
@@ -247,17 +233,12 @@
 	</button>
 </header>
 
-<div
-	class={[
-		'sidebar-panel',
-		...(page.data.currentOrganizationalUnit ? [] : ['sidebar-panel--active'])
-	]}
->
+<div class={['sidebar-panel', ...(currentOrganizationalUnit ? [] : ['sidebar-panel--active'])]}>
 	<div class="sidebar-panel-header">
 		<OrganizationMenu
 			{defaultOrganization}
 			options={organizations}
-			selected={page.data.currentOrganization}
+			selected={currentOrganization}
 		/>
 	</div>
 
@@ -281,9 +262,9 @@
 				<li>
 					<a
 						class="sidebar-menu-item"
-						class:sidebar-menu-item--active={landingPageURL(page.data.currentOrganization) ===
+						class:sidebar-menu-item--active={landingPageURL(currentOrganization) ===
 							page.url.toString()}
-						href={landingPageURL(page.data.currentOrganization)}
+						href={landingPageURL(currentOrganization)}
 					>
 						<Home />
 						<span>{$_('landing_page')}</span>
@@ -307,7 +288,7 @@
 								? `${page.url.pathname}?${page.url.searchParams.toString()}`
 								: page.url.pathname}
 							<li animate:flip={{ duration: 100 }}>
-								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
+								{#if $applicationState.containerDetailView.editable && $ability.can('update', currentOrganization)}
 									<span
 										class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
 										use:dragHandle
@@ -329,10 +310,8 @@
 								</a>
 								<EditableFavorite
 									bind:favorite={favoriteList.organization[index]}
-									onchange={updateFavorite(
-										page.data.currentOrganization,
-										favoriteList.organization
-									)}
+									onchange={() =>
+										(currentOrganization.payload.favorite = favoriteList.organization)}
 								/>
 							</li>
 						{/each}
@@ -342,26 +321,18 @@
 		{/if}
 	</div>
 
-	{#if $ability.can('update', page.data.currentOrganization)}
-		<AdministrationMenu container={page.data.currentOrganization} />
+	{#if $ability.can('update', currentOrganization)}
+		<AdministrationMenu bind:container={currentOrganization} />
 	{/if}
 </div>
 
-{#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, page.data.currentOrganization)}
-	<div
-		class={[
-			'sidebar-panel',
-			...(page.data.currentOrganizationalUnit ? ['sidebar-panel--active'] : [])
-		]}
-	>
+{#if organizationalUnits.length > 0 || $mayCreateContainer(payloadTypes.enum.organizational_unit, currentOrganization)}
+	<div class={['sidebar-panel', ...(currentOrganizationalUnit ? ['sidebar-panel--active'] : [])]}>
 		<div class="sidebar-panel-header">
-			<OrganizationalUnitMenu
-				{organizationalUnits}
-				currentOrganizationalUnit={page.data.currentOrganizationalUnit}
-			/>
+			<OrganizationalUnitMenu {organizationalUnits} {currentOrganizationalUnit} />
 		</div>
 
-		{#if page.data.currentOrganizationalUnit}
+		{#if currentOrganizationalUnit}
 			<div class="sidebar-panel-links">
 				<button class="sidebar-panel-links-toggle" type="button" use:organizationalUnitLinks.button>
 					{#if $organizationalUnitLinks.expanded}
@@ -382,10 +353,9 @@
 						<li>
 							<a
 								class="sidebar-menu-item"
-								class:sidebar-menu-item--active={landingPageURL(
-									page.data.currentOrganizationalUnit
-								) === page.url.toString()}
-								href={landingPageURL(page.data.currentOrganizationalUnit)}
+								class:sidebar-menu-item--active={landingPageURL(currentOrganizationalUnit) ===
+									page.url.toString()}
+								href={landingPageURL(currentOrganizationalUnit)}
 							>
 								<OrganizationalUnitIcon />
 								<span>{$_('overview')}</span>
@@ -409,7 +379,7 @@
 										? `${page.url.pathname}?${page.url.searchParams.toString()}`
 										: page.url.pathname}
 									<li>
-										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
+										{#if $applicationState.containerDetailView.editable && $ability.can('update', currentOrganizationalUnit)}
 											<span
 												class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
 												use:dragHandle
@@ -431,10 +401,9 @@
 										</a>
 										<EditableFavorite
 											bind:favorite={favoriteList.organizationalUnit[index]}
-											onchange={updateFavorite(
-												page.data.currentOrganizationalUnit,
-												favoriteList.organizationalUnit
-											)}
+											onchange={() =>
+												(currentOrganizationalUnit!.payload.favorite =
+													favoriteList.organizationalUnit)}
 										/>
 									</li>
 								{/each}
@@ -444,8 +413,8 @@
 				{/if}
 			</div>
 
-			{#if $ability.can('update', page.data.currentOrganizationalUnit)}
-				<AdministrationMenu container={page.data.currentOrganizationalUnit} />
+			{#if $ability.can('update', currentOrganizationalUnit)}
+				<AdministrationMenu bind:container={currentOrganizationalUnit} />
 			{/if}
 		{/if}
 	</div>

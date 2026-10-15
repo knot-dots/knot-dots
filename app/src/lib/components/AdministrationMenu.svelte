@@ -13,10 +13,9 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import autoSave from '$lib/client/autoSave';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import copyContainer from '$lib/client/copyContainer';
 	import deleteContainer from '$lib/client/deleteContainer';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import OrganizationalUnitProperties from '$lib/components/OrganizationalUnitProperties.svelte';
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
@@ -39,12 +38,7 @@
 		container: Container<OrganizationPayload | OrganizationalUnitPayload>;
 	}
 
-	let { container: originalContainer }: Props = $props();
-
-	let container = $derived.by(() => {
-		let _ = $state(originalContainer);
-		return _;
-	});
+	let { container = $bindable() }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let propertiesDialog: HTMLDialogElement;
@@ -62,8 +56,6 @@
 	const extraOpts = $derived({
 		modifiers: [{ name: 'offset', options: { offset: [0, -4] } }]
 	});
-
-	const handleSubmit = $derived(autoSave(container, 2000));
 
 	function onchange(event: Event) {
 		const selected = (event as CustomEvent).detail.selected;
@@ -262,13 +254,11 @@
 	bind:dialog={propertiesDialog}
 	title={$_('configuration_name', { values: { name: container.payload.name } })}
 >
-	<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-		{#if isOrganizationContainer(container)}
-			<OrganizationProperties bind:container editable={$ability.can('update', container)} />
-		{:else if isOrganizationalUnitContainer(container)}
-			<OrganizationalUnitProperties bind:container editable={$ability.can('update', container)} />
-		{/if}
-	</form>
+	{#if isOrganizationContainer(container)}
+		<OrganizationProperties bind:container editable={$ability.can('update', container)} />
+	{:else if isOrganizationalUnitContainer(container)}
+		<OrganizationalUnitProperties bind:container editable={$ability.can('update', container)} />
+	{/if}
 </PropertiesDialog>
 
 <ConfirmDeleteDialog
@@ -279,10 +269,6 @@
 />
 
 <style>
-	form {
-		display: contents;
-	}
-
 	.dropdown {
 		--dropdown-button-border-radius: 8px;
 		--dropdown-button-default-color: var(--color-text-default);

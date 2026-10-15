@@ -5,9 +5,7 @@
 	import { _ } from 'svelte-i18n';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { page } from '$app/state';
-	import autoSave from '$lib/client/autoSave';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import CoverUpload from '$lib/components/CoverUpload.svelte';
@@ -79,8 +77,6 @@
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;
 
-	const handleSubmit = $derived(autoSave(container, 2000));
-
 	const detailView = getDetailViewContext();
 
 	const useNewPropertyPanel = $derived(
@@ -100,88 +96,84 @@
 	<div class="content-details">
 		<article class="details">
 			<div class="details-scroll-wrapper">
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<EditableCoverSection
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
-					<div
-						class="details-section stage stage--{container.payload.color
-							? backgroundColors.get(container.payload.color)
-							: 'white'}"
-					>
-						<div class="stage-buttons wide">
-							<CoverUpload
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								label={$_('add_cover')}
-								bind:value={container.payload.cover}
-							/>
-							<ColorDropdown
-								buttonStyle="button"
-								bind:value={container.payload.color}
-								label={$_('highlight')}
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-							/>
-						</div>
-					</div>
-
-					<header
-						class="details-section stage stage--{container.payload.color
-							? backgroundColors.get(container.payload.color)
-							: 'white'}"
-					>
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class="details-title"
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.title}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-							<button
-								class="action-button"
-								onclick={useNewPropertyPanel
-									? detailView.properties.trigger.onclick
-									: () => dialog.showModal()}
-								type="button"
-							>
-								<Ellipsis />
-								<span class="is-visually-hidden">{$_('properties.show_all')}</span>
-							</button>
-						{:else}
-							<h1 class="details-title" contenteditable="false">
-								{container.payload.title}
-							</h1>
-						{/if}
-					</header>
-
-					{#key container.guid}
-						<EditableFormattedText
-							color={container.payload.color
-								? backgroundColors.get(container.payload.color)
-								: 'white'}
+				<EditableCoverSection
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
+				<div
+					class="details-section stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
+					<div class="stage-buttons wide">
+						<CoverUpload
 							editable={$applicationState.containerDetailView.editable &&
 								$ability.can('update', container)}
-							bind:value={container.payload.body}
+							label={$_('add_cover')}
+							bind:value={container.payload.cover}
 						/>
-					{/key}
-				</form>
+						<ColorDropdown
+							buttonStyle="button"
+							bind:value={container.payload.color}
+							label={$_('highlight')}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
+					</div>
+				</div>
+
+				<header
+					class="details-section stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<h1
+							class="details-title"
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.title}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+						<button
+							class="action-button"
+							onclick={useNewPropertyPanel
+								? detailView.properties.trigger.onclick
+								: () => dialog.showModal()}
+							type="button"
+						>
+							<Ellipsis />
+							<span class="is-visually-hidden">{$_('properties.show_all')}</span>
+						</button>
+					{:else}
+						<h1 class="details-title" contenteditable="false">
+							{container.payload.title}
+						</h1>
+					{/if}
+				</header>
+
+				{#key container.guid}
+					<EditableFormattedText
+						color={container.payload.color
+							? backgroundColors.get(container.payload.color)
+							: 'white'}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						bind:value={container.payload.body}
+					/>
+				{/key}
 
 				<Sections bind:container {relatedContainers} />
 			</div>
 
 			{#if useNewPropertyPanel}
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<PropertiesPanel
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-						{relatedContainers}
-						{revisions}
-					/>
-				</form>
+				<PropertiesPanel
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					{revisions}
+				/>
 			{:else}
 				<PropertiesDialog bind:dialog title={$_('organization.properties.title')}>
 					<PageProperties
@@ -201,10 +193,6 @@
 {@render layout(header, main)}
 
 <style>
-	form {
-		display: contents;
-	}
-
 	header {
 		align-items: center;
 		display: flex;

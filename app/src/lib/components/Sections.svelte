@@ -2,6 +2,7 @@
 	import { flip } from 'svelte/animate';
 	import { _ } from 'svelte-i18n';
 	import { type DndEvent, dragHandleZone } from 'svelte-dnd-action';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import Section from '$lib/components/Section.svelte';
@@ -60,10 +61,7 @@
 							object == guid && predicate == predicates.enum['is-section-of']
 					)!.position
 			)
-			.map((c) => {
-				let _: Container = $state(c); // $state() can only be used in an assignment
-				return _;
-			});
+			.map((c) => (editable ? autoSaveContainer(c, 2000) : c));
 	});
 
 	const type = crypto.randomUUID();

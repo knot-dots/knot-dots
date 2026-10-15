@@ -6,6 +6,7 @@
 	import ChevronDoubleRight from '~icons/flowbite/chevron-double-right-outline';
 	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import createEffect from '$lib/client/createEffect';
 	import createObjective from '$lib/client/createObjective';
@@ -63,6 +64,12 @@
 	}
 
 	let newObjectiveOrEffect = $state<Container<EffectPayload | ObjectivePayload>>();
+
+	let autoSaveObjectiveOrEffect = $derived.by(() => {
+		if (newObjectiveOrEffect) {
+			return autoSaveContainer(newObjectiveOrEffect, 2000);
+		}
+	});
 
 	async function handleConfirm() {
 		if (selected) {
@@ -150,7 +157,7 @@
 				<IndicatorSuggestionPicker onSelect={handleSelect} {target} value={selected} />
 			{:else if page.state.createObjectiveOrEffect.step === 2 && selected}
 				<IndicatorPreview container={selected} />
-			{:else if page.state.createObjectiveOrEffect.step === 3 && newObjectiveOrEffect}
+			{:else if page.state.createObjectiveOrEffect.step === 3 && autoSaveObjectiveOrEffect}
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
 						<div class="step-3-layout-left">
@@ -170,11 +177,11 @@
 					{/if}
 
 					<div class="step-3-layout-right">
-						{#if isEffectContainer(newObjectiveOrEffect)}
+						{#if isEffectContainer(autoSaveObjectiveOrEffect)}
 							<EditableEffectDetailView
-								bind:container={newObjectiveOrEffect}
+								bind:container={autoSaveObjectiveOrEffect}
 								hideProperties
-								revisions={[newObjectiveOrEffect]}
+								revisions={[autoSaveObjectiveOrEffect]}
 								sections={[]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
@@ -182,11 +189,11 @@
 									{@render main()}
 								{/snippet}
 							</EditableEffectDetailView>
-						{:else if isObjectiveContainer(newObjectiveOrEffect)}
+						{:else if isObjectiveContainer(autoSaveObjectiveOrEffect)}
 							<EditableObjectiveDetailView
-								bind:container={newObjectiveOrEffect}
+								bind:container={autoSaveObjectiveOrEffect}
 								hideProperties
-								revisions={[newObjectiveOrEffect]}
+								revisions={[autoSaveObjectiveOrEffect]}
 								sections={[]}
 							>
 								<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->

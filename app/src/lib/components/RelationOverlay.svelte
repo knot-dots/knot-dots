@@ -446,9 +446,7 @@
 		predicate: Predicate,
 		object: Container<AnyPayload>
 	) {
-		return async (event: Event) => {
-			event.stopPropagation();
-
+		return async () => {
 			object.relation = object.relation.filter(
 				(r) => r.object != object.guid || r.predicate != predicate || r.subject != subject.guid
 			);

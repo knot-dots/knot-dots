@@ -1,6 +1,4 @@
 <script lang="ts">
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import EditableGoalCollection from '$lib/components/EditableGoalCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
@@ -29,53 +27,35 @@
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
-	const handleSubmit = autoSave(container, 2000);
-
-	function stopPropagation(fn: (event: Event) => void) {
-		return function (this: Event, event: Event) {
-			event.stopPropagation();
-			fn.call(this, event);
-		};
-	}
 </script>
 
-{#snippet content()}
-	<section class="details-subsection">
-		{#if isGoalCollectionContainer(container)}
-			<EditableGoalCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				heading="h3"
-			/>
-		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
-			<EditableObjectiveCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				heading="h3"
-			/>
-		{:else if isResourceCollectionContainer(container)}
-			<EditableResourceCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				heading="h3"
-			/>
-		{/if}
-	</section>
-{/snippet}
-
-<form
-	oninput={editable ? stopPropagation(requestSubmit) : undefined}
-	onsubmit={editable ? handleSubmit : undefined}
-	novalidate
->
-	{@render content()}
-</form>
+<section class="details-subsection">
+	{#if isGoalCollectionContainer(container)}
+		<EditableGoalCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			heading="h3"
+		/>
+	{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
+		<EditableObjectiveCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			heading="h3"
+		/>
+	{:else if isResourceCollectionContainer(container)}
+		<EditableResourceCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			heading="h3"
+		/>
+	{/if}
+</section>
 
 <style>
 	@media (hover: hover) {

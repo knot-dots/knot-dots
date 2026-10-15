@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n';
 	import Upload from '~icons/flowbite/upload-outline';
 	import Close from '~icons/knotdots/close';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import transformFileURL from '$lib/transformFileURL';
 	import tooltip from '$lib/attachments/tooltip';
@@ -19,14 +18,12 @@
 	const id = crypto.randomUUID();
 
 	function remove(index: number) {
-		return (event: Event) => {
+		return () => {
 			value = [...value.slice(0, index), ...value.slice(index + 1)];
-			requestSubmit(event);
 		};
 	}
 
 	async function upload(event: Event) {
-		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
@@ -38,7 +35,6 @@
 							.map(async (f) => [await uploadAsFormData(f), f.name])
 					)
 				);
-				input.form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {

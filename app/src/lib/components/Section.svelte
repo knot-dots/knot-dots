@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
-	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
-	import requestSubmit from '$lib/client/requestSubmit';
-	import saveContainer from '$lib/client/saveContainer';
 	import AddSectionMenu from '$lib/components/AddSectionMenu.svelte';
 	import DemographicDataSection from '$lib/components/DemographicDataSection.svelte';
 	import DraggableActionBar from '$lib/components/DraggableActionBar.svelte';
@@ -91,249 +88,200 @@
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
 	let isShadowItem = $derived(SHADOW_ITEM_MARKER_PROPERTY_NAME in container);
 	let isInlineHelpSection = $derived(isInlineHelpTextContainer(container));
-
-	const handleSubmit = autoSave(2000);
-
-	function stopPropagation(fn: (event: Event) => void) {
-		return function (this: Event, event: Event) {
-			event.stopPropagation();
-			fn.call(this, event);
-		};
-	}
-
-	function autoSave(delay: number) {
-		let timer: ReturnType<typeof setTimeout>;
-
-		return (container: Container<AnyPayload>) => (event: SubmitEvent) => {
-			event.preventDefault();
-			clearTimeout(timer);
-			timer = setTimeout(async () => {
-				const response = await saveContainer(container);
-				if (response.ok) {
-					const updatedContainer = await response.json();
-					container.revision = updatedContainer.revision;
-					await invalidate('containers');
-				} else {
-					const error = await response.json();
-					alert(error.message);
-				}
-			}, delay);
-		};
-	}
 </script>
 
-{#snippet content()}
-	<section
-		class="details-section"
-		class:details-section--inline-help={isInlineHelpSection && editable}
-	>
-		<!-- The add menu is offered to anyone who may create sections here — text
+<section
+	class="details-section"
+	class:details-section--inline-help={isInlineHelpSection && editable}
+>
+	<!-- The add menu is offered to anyone who may create sections here — text
 			is its unconditional first option — while sorting requires the update
 			grant on the section itself. -->
-		{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer))}
-			<DraggableActionBar {container} draggable={$ability.can('update', container)}>
-				{#snippet actions()}
-					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
-				{/snippet}
-			</DraggableActionBar>
-		{/if}
+	{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer))}
+		<DraggableActionBar {container} draggable={$ability.can('update', container)}>
+			{#snippet actions()}
+				<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
+			{/snippet}
+		</DraggableActionBar>
+	{/if}
 
-		{#if isAdministrativeAreaBasicDataContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
-			<ReadonlyAdministrativeAreaBasicDataSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isChapterContainer(container)}
-			<EditableChapterSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-			/>
-		{:else if isCustomCollectionContainer(container)}
-			<EditableCustomCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isDemographicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
-			<DemographicDataSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
-			<EditableEffectCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isFileCollectionContainer(container)}
-			<EditableFileCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isGoalCollectionContainer(container)}
-			<EditableGoalCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isHtmlContainer(container)}
-			<EditableHtmlSection bind:container bind:parentContainer bind:relatedContainers {editable} />
-		{:else if isIndicatorCollectionContainer(container)}
-			<EditableIndicatorCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isMapContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
-			<EditableMapSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isMeasureCollectionContainer(container)}
-			<EditableMeasureCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
-			<EditableObjectiveCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isProgramCollectionContainer(container)}
-			<EditableProgramCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
-			<EditableProgressSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
-			<EditableResourceDataCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isResourceCollectionContainer(container)}
-			<EditableResourceCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
-			<EditableSummarySection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-			/>
-		{:else if isTaskCollectionContainer(container)}
-			<EditableTaskCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				fetchDisabled={preview}
-				{heading}
-			/>
-		{:else if isInlineHelpTextContainer(container) && editable}
-			<EditableInlineHelpSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={!isShadowItem}
-			/>
-		{:else if isTextContainer(container) && !isInlineHelpSection}
-			<EditableTextSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				editable={editable && !isShadowItem}
-				{heading}
-			/>
-		{:else if isTeaserLikeContainer(container)}
-			<EditableTeaserSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isImageContainer(container)}
-			<EditableImageSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isIgniteVideoContainer(container)}
-			<IgniteVideoSection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				{heading}
-			/>
-		{:else if isTeaserCollectionContainer(container)}
-			<EditableTeaserCollection
-				bind:container
-				bind:parentContainer
-				bind:relatedContainers
-				{editable}
-				fetchDisabled={isShadowItem || preview}
-				{heading}
-			/>
-		{/if}
-	</section>
-{/snippet}
-
-<form
-	oninput={editable ? stopPropagation(requestSubmit) : undefined}
-	onsubmit={editable ? handleSubmit(container) : undefined}
-	novalidate
->
-	{@render content()}
-</form>
+	{#if isAdministrativeAreaBasicDataContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
+		<ReadonlyAdministrativeAreaBasicDataSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isChapterContainer(container)}
+		<EditableChapterSection bind:container bind:parentContainer bind:relatedContainers {editable} />
+	{:else if isCustomCollectionContainer(container)}
+		<EditableCustomCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isDemographicDataContainer(container) && isOrganizationalUnitContainer(parentContainer)}
+		<DemographicDataSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isEffectCollectionContainer(container) && (isGoalContainer(parentContainer) || isMeasureContainer(parentContainer))}
+		<EditableEffectCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isFileCollectionContainer(container)}
+		<EditableFileCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isGoalCollectionContainer(container)}
+		<EditableGoalCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isHtmlContainer(container)}
+		<EditableHtmlSection bind:container bind:parentContainer bind:relatedContainers {editable} />
+	{:else if isIndicatorCollectionContainer(container)}
+		<EditableIndicatorCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isMapContainer(container) && (isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer))}
+		<EditableMapSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isMeasureCollectionContainer(container)}
+		<EditableMeasureCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isObjectiveCollectionContainer(container) && isGoalContainer(parentContainer)}
+		<EditableObjectiveCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isProgramCollectionContainer(container)}
+		<EditableProgramCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isProgressContainer(container) && isContainerWithProgress(parentContainer)}
+		<EditableProgressSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isResourceDataCollectionContainer(container) && createFeatureDecisions(page.data.features).useResourcePlanning()}
+		<EditableResourceDataCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isResourceCollectionContainer(container)}
+		<EditableResourceCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isSummaryContainer(container) && isContainerWithSummary(parentContainer)}
+		<EditableSummarySection bind:container bind:parentContainer bind:relatedContainers {editable} />
+	{:else if isTaskCollectionContainer(container)}
+		<EditableTaskCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			fetchDisabled={preview}
+			{heading}
+		/>
+	{:else if isInlineHelpTextContainer(container) && editable}
+		<EditableInlineHelpSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			editable={!isShadowItem}
+		/>
+	{:else if isTextContainer(container) && !isInlineHelpSection}
+		<EditableTextSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			editable={editable && !isShadowItem}
+			{heading}
+		/>
+	{:else if isTeaserLikeContainer(container)}
+		<EditableTeaserSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isImageContainer(container)}
+		<EditableImageSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isIgniteVideoContainer(container)}
+		<IgniteVideoSection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			{heading}
+		/>
+	{:else if isTeaserCollectionContainer(container)}
+		<EditableTeaserCollection
+			bind:container
+			bind:parentContainer
+			bind:relatedContainers
+			{editable}
+			fetchDisabled={isShadowItem || preview}
+			{heading}
+		/>
+	{/if}
+</section>
 
 <style>
 	.details-section {

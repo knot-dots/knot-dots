@@ -5,7 +5,6 @@
 	import ChevronSort from '~icons/flowbite/chevron-sort-outline';
 	import CloseCircle from '~icons/flowbite/close-circle-solid';
 	import Close from '~icons/flowbite/close-outline';
-	import requestSubmit from '$lib/client/requestSubmit';
 
 	interface Props {
 		editable?: boolean;
@@ -99,17 +98,13 @@
 		value = checked ? [...value, toggledValue] : value.filter((v) => v !== toggledValue);
 	}
 
-	// Button clicks emit no input event, so the surrounding form's oninput-based
-	// auto-save must be triggered explicitly.
-	function remove(removedValue: string, event: Event) {
+	function remove(removedValue: string) {
 		value = value.filter((v) => v !== removedValue);
-		requestSubmit(event);
 	}
 
-	function removeAll(event: Event) {
+	function removeAll() {
 		value = [];
 		query = '';
-		requestSubmit(event);
 	}
 </script>
 
@@ -125,7 +120,7 @@
 						<span class="truncated">{selectedOption.label}</span>
 						<button
 							aria-label={$_('remove')}
-							onclick={(event) => remove(selectedOption.value, event)}
+							onclick={() => remove(selectedOption.value)}
 							type="button"
 						>
 							<Close />
@@ -139,7 +134,6 @@
 						autocomplete="off"
 						bind:this={searchInput}
 						bind:value={query}
-						oninput={(event) => event.stopPropagation()}
 						role="combobox"
 						type="text"
 					/>

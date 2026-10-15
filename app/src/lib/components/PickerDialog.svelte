@@ -41,7 +41,7 @@
 	}: Props = $props();
 </script>
 
-<dialog bind:this={dialog} oninput={(e) => e.stopPropagation()}>
+<dialog bind:this={dialog}>
 	<div>
 		<div class="header">
 			<div class="title">

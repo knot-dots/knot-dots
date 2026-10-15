@@ -12,7 +12,6 @@
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
@@ -113,7 +112,7 @@
 	}
 
 	function removeYear(index: number) {
-		return (event: Event) => {
+		return () => {
 			container.payload.plannedValues = [
 				...container.payload.plannedValues.slice(0, index),
 				...container.payload.plannedValues.slice(index + 1)
@@ -122,7 +121,6 @@
 				...container.payload.achievedValues.slice(0, index),
 				...container.payload.achievedValues.slice(index + 1)
 			];
-			requestSubmit(event);
 		};
 	}
 
@@ -131,7 +129,6 @@
 			container.payload.achievedValues[index][1] = parseFloat(
 				(event.currentTarget as HTMLInputElement).value
 			);
-			requestSubmit(event);
 		};
 	}
 
@@ -140,7 +137,6 @@
 			container.payload.plannedValues[index][1] = parseFloat(
 				(event.currentTarget as HTMLInputElement).value
 			);
-			requestSubmit(event);
 		};
 	}
 

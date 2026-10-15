@@ -3,10 +3,9 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Plus from '~icons/knotdots/plus';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
 	import Dropdown from '$lib/components/Dropdown.svelte';
-	import transformFileURL from '$lib/transformFileURL.js';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		editable?: boolean;
@@ -24,20 +23,16 @@
 
 	const id = crypto.randomUUID();
 
-	function remove(event: Event) {
+	function remove() {
 		value = undefined;
-		requestSubmit(event);
 	}
 
 	async function upload(event: Event) {
-		event.stopPropagation();
 		const input = event.currentTarget as HTMLInputElement;
-		const form = input.form;
 		if (input.files instanceof FileList && input.files.length > 0) {
 			try {
 				uploadInProgress = true;
 				value = await uploadAsFormData(input.files[0]);
-				form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {

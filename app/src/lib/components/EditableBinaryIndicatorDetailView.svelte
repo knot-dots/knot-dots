@@ -4,6 +4,7 @@
 	import { _ } from 'svelte-i18n';
 	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import saveContainer from '$lib/client/saveContainer';
@@ -85,18 +86,14 @@
 		relatedContainers
 			.filter(isActualDataContainer)
 			.filter(({ payload }) => payload.indicator === container.guid)
-			.map((c) => {
-				let _ = $state(c);
-				return _;
-			})
+			.map((c) => autoSaveContainer(c, 2000))
 			.at(0)
 	);
 
 	let addingActualData = $state(false);
 
 	function addActualData(container: NewContainer) {
-		return async (event: Event) => {
-			event.stopPropagation();
+		return async () => {
 			addingActualData = true;
 
 			try {
@@ -119,20 +116,6 @@
 	function updateActualData(container: Container<ActualDataPayload>) {
 		return async (value: boolean) => {
 			container.payload.booleanValue = value;
-
-			try {
-				const response = await saveContainer(container);
-				if (response.ok) {
-					const updatedContainer = await response.json();
-					container.revision = updatedContainer.revision;
-					await invalidate('containers');
-				} else {
-					const error = await response.json();
-					alert(error.message);
-				}
-			} catch (error: unknown) {
-				console.error(error);
-			}
 		};
 	}
 </script>
@@ -157,7 +140,7 @@
 				/>
 			{/key}
 
-			<div class="details-section" oninput={(e) => e.stopPropagation()}>
+			<div class="details-section">
 				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', containerOfType(payloadTypes.enum.actual_data, container))}
 					{#if addingActualData}
 						<span class="loader"></span>

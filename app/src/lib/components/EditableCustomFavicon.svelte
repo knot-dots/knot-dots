@@ -3,9 +3,8 @@
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Upload from '~icons/flowbite/arrow-up-from-bracket-outline';
 	import tooltip from '$lib/attachments/tooltip';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import { uploadAsFormData } from '$lib/client/upload';
-	import transformFileURL from '$lib/transformFileURL.js';
+	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
 		editable?: boolean;
@@ -20,9 +19,8 @@
 
 	const id = crypto.randomUUID();
 
-	function remove(event: Event) {
+	function remove() {
 		value = undefined;
-		requestSubmit(event);
 	}
 
 	async function upload(event: Event) {
@@ -35,7 +33,6 @@
 					type: input.files[0].type,
 					url: await uploadAsFormData(input.files[0])
 				};
-				input.form?.requestSubmit();
 			} catch (e) {
 				console.log(e);
 			} finally {

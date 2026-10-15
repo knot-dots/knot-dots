@@ -2,8 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import Badges from '$lib/components/Badges.svelte';
 	import ContextTabs from '$lib/components/ContextTabs.svelte';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
@@ -45,7 +43,6 @@
 		revisions
 	}: Props = $props();
 
-	const handleSubmit = $derived(autoSave(container, 2000));
 	const detailViewHelpSlug = $derived(helpSlugForDetailView(container.payload.type));
 
 	const useBulkActions =
@@ -55,118 +52,113 @@
 <div class="content-details">
 	<article style:--details-padding-x={useBulkActions ? '6rem' : undefined} class="details">
 		<div class="details-scroll-wrapper">
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				{#if isContainerWithCover(container)}
-					<EditableCoverSection
+			{#if isContainerWithCover(container)}
+				<EditableCoverSection
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
+			{/if}
+
+			{#if isContainerWithColor(container)}
+				<div
+					class="details-section stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
+					<div class="stage-buttons wide">
+						{#if isContainerWithCover(container)}
+							<CoverUpload
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								label={$_('add_cover')}
+								bind:value={container.payload.cover}
+							/>
+						{/if}
+						<ColorDropdown
+							buttonStyle="button"
+							bind:value={container.payload.color}
+							label={$_('highlight')}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
+					</div>
+				</div>
+			{/if}
+
+			<header
+				class="details-section stage stage--{'color' in container.payload && container.payload.color
+					? backgroundColors.get(container.payload.color)
+					: 'white'}"
+			>
+				<div class="details-header">
+					{#if container.payload.type === payloadTypes.enum.term}
+						{#if $applicationState.containerDetailView.editable || container.payload.icon}
+							<EditableLogo
+								editable={$applicationState.containerDetailView.editable &&
+									$ability.can('update', container)}
+								allowedFileTypes={['image/svg+xml']}
+								bind:value={container.payload.icon}
+							/>
+						{/if}
+					{/if}
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<h1
+							class="details-title"
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.title}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+					{:else}
+						<h1 class="details-title" contenteditable="false">
+							{container.payload.title.replace(
+								/@current_organizational_unit_name/g,
+								page.data.currentOrganizationalUnit?.payload.name ?? ''
+							)}
+						</h1>
+					{/if}
+				</div>
+
+				{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+					<PropertiesBar
+						bind:container
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						{revisions}
+						showPropertiesTrigger
+					/>
+				{:else}
+					<Badges
 						bind:container
 						editable={$applicationState.containerDetailView.editable &&
 							$ability.can('update', container)}
 					/>
 				{/if}
 
-				{#if isContainerWithColor(container)}
-					<div
-						class="details-section stage stage--{container.payload.color
-							? backgroundColors.get(container.payload.color)
-							: 'white'}"
-					>
-						<div class="stage-buttons wide">
-							{#if isContainerWithCover(container)}
-								<CoverUpload
-									editable={$applicationState.containerDetailView.editable &&
-										$ability.can('update', container)}
-									label={$_('add_cover')}
-									bind:value={container.payload.cover}
-								/>
-							{/if}
-							<ColorDropdown
-								buttonStyle="button"
-								bind:value={container.payload.color}
-								label={$_('highlight')}
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-							/>
-						</div>
-					</div>
+				{#if isSimpleMeasureContainer(container)}
+					<EditableProgress
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						bind:value={container.payload.progress}
+					/>
 				{/if}
+			</header>
 
-				<header
-					class="details-section stage stage--{'color' in container.payload &&
-					container.payload.color
-						? backgroundColors.get(container.payload.color)
-						: 'white'}"
-				>
-					<div class="details-header">
-						{#if container.payload.type === payloadTypes.enum.term}
-							{#if $applicationState.containerDetailView.editable || container.payload.icon}
-								<EditableLogo
-									editable={$applicationState.containerDetailView.editable &&
-										$ability.can('update', container)}
-									allowedFileTypes={['image/svg+xml']}
-									bind:value={container.payload.icon}
-								/>
-							{/if}
-						{/if}
-						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class="details-title"
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.title}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-						{:else}
-							<h1 class="details-title" contenteditable="false">
-								{container.payload.title.replace(
-									/@current_organizational_unit_name/g,
-									page.data.currentOrganizationalUnit?.payload.name ?? ''
-								)}
-							</h1>
-						{/if}
-					</div>
+			{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+				{@render properties?.()}
+			{/if}
 
-					{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-						<PropertiesBar
-							bind:container
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							{revisions}
-							showPropertiesTrigger
-						/>
-					{:else}
-						<Badges
-							bind:container
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-						/>
-					{/if}
-
-					{#if isSimpleMeasureContainer(container)}
-						<EditableProgress
-							editable={$applicationState.containerDetailView.editable &&
-								$ability.can('update', container)}
-							bind:value={container.payload.progress}
-						/>
-					{/if}
-				</header>
-
-				{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-					{@render properties?.()}
-				{/if}
-
-				{@render data?.()}
-			</form>
+			{@render data?.()}
 		</div>
 
 		{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-			<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-				<PropertiesPanel
-					bind:container
-					editable={$applicationState.containerDetailView.editable &&
-						$ability.can('update', container)}
-					{relatedContainers}
-					{revisions}
-				/>
-			</form>
+			<PropertiesPanel
+				bind:container
+				editable={$applicationState.containerDetailView.editable &&
+					$ability.can('update', container)}
+				{relatedContainers}
+				{revisions}
+			/>
 		{/if}
 	</article>
 
@@ -178,10 +170,6 @@
 {@render footer?.()}
 
 <style>
-	form {
-		display: contents;
-	}
-
 	.details-header {
 		align-items: center;
 		display: flex;

@@ -5,8 +5,6 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
-	import autoSave from '$lib/client/autoSave';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import fetchContainers from '$lib/client/fetchContainers';
 	import fetchRelatedContainers from '$lib/client/fetchRelatedContainers';
 	import ColorDropdown from '$lib/components/ColorDropdown.svelte';
@@ -109,8 +107,6 @@
 
 	let relatedContainers = $derived([...(containersQuery.current ?? sections), container]);
 
-	const handleSubmit = $derived(autoSave(container, 2000));
-
 	let linkedProfile = $derived(
 		relatedContainers
 			.filter(isOrganizationalUnitContainer)
@@ -147,111 +143,103 @@
 	<div class="content-details">
 		<article class="details">
 			<div class="details-scroll-wrapper">
-				<form oninput={requestSubmit} onsubmit={handleSubmit} novalidate>
-					<EditableCoverSection
-						bind:container
-						editable={$applicationState.containerDetailView.editable &&
-							$ability.can('update', container)}
-					/>
+				<EditableCoverSection
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+				/>
 
-					<div
-						class="details-section stage stage--{container.payload.color
-							? backgroundColors.get(container.payload.color)
-							: 'white'}"
-					>
-						<div class="stage-buttons wide">
-							<CoverUpload
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								label={$_('add_cover')}
-								bind:value={container.payload.cover}
-							/>
-							<ColorDropdown
-								buttonStyle="button"
-								bind:value={container.payload.color}
-								label={$_('highlight')}
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-							/>
-							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
-							{/if}
-
-							{#if linkedProfile}
-								<div class="profile-switch">
-									{#if isIndividualProfile}
-										<a class="profile-switch-item" href={linkedProfileURL}>
-											{$_('standard_profile.title')}
-										</a>
-										<span
-											aria-current="page"
-											class="profile-switch-item profile-switch-item--active"
-										>
-											{$_('individual_profile.title')}
-										</span>
-									{:else}
-										<span
-											aria-current="page"
-											class="profile-switch-item profile-switch-item--active"
-										>
-											{$_('standard_profile.title')}
-										</span>
-										<a class="profile-switch-item" href={linkedProfileURL}>
-											{$_('individual_profile.title')}
-										</a>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-
-					<header
-						class="details-section stage stage--{container.payload.color
-							? backgroundColors.get(container.payload.color)
-							: 'white'}"
-					>
-						<EditableLogo
+				<div
+					class="details-section stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
+					<div class="stage-buttons wide">
+						<CoverUpload
 							editable={$applicationState.containerDetailView.editable &&
 								$ability.can('update', container)}
-							bind:value={container.payload.image}
+							label={$_('add_cover')}
+							bind:value={container.payload.cover}
 						/>
-
+						<ColorDropdown
+							buttonStyle="button"
+							bind:value={container.payload.color}
+							label={$_('highlight')}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+						/>
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
-							<h1
-								class={{
-									'details-title': true,
-									'is-visually-hidden': container.payload.imageReplacesName
-								}}
-								contenteditable="plaintext-only"
-								bind:textContent={container.payload.name}
-								onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
-							></h1>
-						{:else}
-							<h1
-								class={{
-									'details-title': true,
-									'is-visually-hidden': container.payload.imageReplacesName
-								}}
-								contenteditable="false"
-							>
-								{container.payload.name}
-							</h1>
+							<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
 						{/if}
-					</header>
 
-					{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
-						{#key container.guid}
-							<EditableFormattedText
-								color={container.payload.color
-									? backgroundColors.get(container.payload.color)
-									: 'white'}
-								editable={$applicationState.containerDetailView.editable &&
-									$ability.can('update', container)}
-								bind:value={container.payload.description}
-							/>
-						{/key}
+						{#if linkedProfile}
+							<div class="profile-switch">
+								{#if isIndividualProfile}
+									<a class="profile-switch-item" href={linkedProfileURL}>
+										{$_('standard_profile.title')}
+									</a>
+									<span aria-current="page" class="profile-switch-item profile-switch-item--active">
+										{$_('individual_profile.title')}
+									</span>
+								{:else}
+									<span aria-current="page" class="profile-switch-item profile-switch-item--active">
+										{$_('standard_profile.title')}
+									</span>
+									<a class="profile-switch-item" href={linkedProfileURL}>
+										{$_('individual_profile.title')}
+									</a>
+								{/if}
+							</div>
+						{/if}
+					</div>
+				</div>
+
+				<header
+					class="details-section stage stage--{container.payload.color
+						? backgroundColors.get(container.payload.color)
+						: 'white'}"
+				>
+					<EditableLogo
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', container)}
+						bind:value={container.payload.image}
+					/>
+
+					{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
+						<h1
+							class={{
+								'details-title': true,
+								'is-visually-hidden': container.payload.imageReplacesName
+							}}
+							contenteditable="plaintext-only"
+							bind:textContent={container.payload.name}
+							onkeydown={(e) => (e.key === 'Enter' ? e.preventDefault() : null)}
+						></h1>
+					{:else}
+						<h1
+							class={{
+								'details-title': true,
+								'is-visually-hidden': container.payload.imageReplacesName
+							}}
+							contenteditable="false"
+						>
+							{container.payload.name}
+						</h1>
 					{/if}
-				</form>
+				</header>
+
+				{#if container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+					{#key container.guid}
+						<EditableFormattedText
+							color={container.payload.color
+								? backgroundColors.get(container.payload.color)
+								: 'white'}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', container)}
+							bind:value={container.payload.description}
+						/>
+					{/key}
+				{/if}
 
 				<Sections bind:container {relatedContainers} />
 			</div>
@@ -264,10 +252,6 @@
 {@render layout(header, main)}
 
 <style>
-	form {
-		display: contents;
-	}
-
 	header {
 		align-items: center;
 		display: flex;

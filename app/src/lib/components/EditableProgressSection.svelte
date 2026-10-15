@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import { invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { createFeatureDecisions } from '$lib/features';
-	import saveContainer from '$lib/client/saveContainer';
 	import ProgressSettingsDropdown from '$lib/components/ProgressSettingsDropdown.svelte';
 	import SingleChoiceDropdown from '$lib/components/SingleChoiceDropdown.svelte';
 	import StackedProgress from '$lib/components/StackedProgress.svelte';
@@ -53,30 +51,8 @@
 		)
 	);
 
-	async function handleChange() {
-		const response = await saveContainer(parentContainer);
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
-	}
-
 	async function handleDelete() {
 		parentContainer.payload.progress = undefined;
-
-		const response = await saveContainer(parentContainer);
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			parentContainer.revision = updatedContainer.revision;
-			await invalidate('containers');
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
 	}
 
 	async function handleMeasurementChange() {
@@ -134,8 +110,6 @@
 				list="steps"
 				max="1"
 				min="0"
-				onchange={handleChange}
-				oninput={(e) => e.stopPropagation()}
 				step="0.1"
 				type="range"
 			/>

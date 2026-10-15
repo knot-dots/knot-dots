@@ -9,7 +9,6 @@
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
-	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
 	import LazyLoadSentinel from '$lib/components/LazyLoadSentinel.svelte';
@@ -364,24 +363,13 @@
 	}
 
 	async function confirm() {
-		const response = await saveContainer({
-			...container,
-			payload: {
-				...container.payload,
-				filter: { ...filter, ...organizationScopeAsFilter(scope) },
-				item: mode == 'select' ? selected : [],
-				sort,
-				terms
-			}
-		});
-		if (response.ok) {
-			const updatedContainer = await response.json();
-			container.payload = updatedContainer.payload;
-			container.revision = updatedContainer.revision;
-		} else {
-			const error = await response.json();
-			alert(error.message);
-		}
+		container.payload = {
+			...container.payload,
+			filter: { ...filter, ...organizationScopeAsFilter(scope) },
+			item: mode == 'select' ? selected : [],
+			sort,
+			terms
+		};
 		dialog?.close();
 	}
 

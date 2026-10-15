@@ -2,6 +2,7 @@
 	import { Collapsible } from 'melt/builders';
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
+	import { autoSaveContainer } from '$lib/autoSaveContainer.svelte';
 	import EditableBinaryIndicatorDetailView from '$lib/components/EditableBinaryIndicatorDetailView.svelte';
 	import EditableCategoryDetailView from '$lib/components/EditableCategoryDetailView.svelte';
 	import EditableEffectDetailView from '$lib/components/EditableEffectDetailView.svelte';
@@ -66,10 +67,7 @@
 
 	let { container: originalContainer, layout, revisions = [], sections }: Props = $props();
 
-	let container = $derived.by(() => {
-		let _ = $state(originalContainer);
-		return _;
-	});
+	let container = $derived(autoSaveContainer(originalContainer, 2000));
 
 	if (createFeatureDecisions(page.data.features).useNewPropertyPanel()) {
 		let detailView = $state({ properties: new Collapsible() });

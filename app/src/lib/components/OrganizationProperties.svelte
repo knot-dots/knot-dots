@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
-	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
 	import EditableCustomFavicon from '$lib/components/EditableCustomFavicon.svelte';
@@ -100,8 +99,6 @@
 			container.payload.officialMunicipalityKey = selected.officialMunicipalityKey ?? undefined;
 			container.payload.officialRegionalCode = selected.officialRegionalCode ?? undefined;
 		}
-
-		requestSubmit(event);
 	}
 </script>
 
