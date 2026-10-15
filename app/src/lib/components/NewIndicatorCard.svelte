@@ -50,15 +50,24 @@
 		comparisonContainers?.some(({ payload }) => payload.values.length > 0) ?? false
 	);
 
+	// Objectives and effects of the current organization for this indicator
+	let hasOwnTargets = $derived(
+		relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))
+	);
+
 	const review = getReviewContext();
 
+	// The review compares the indicator with programs of others, so it is left
+	// out when the organization has set its own targets for the indicator.
 	const reviewStatus = $derived(
-		reviewStatusFor(
-			indicatorActualData(container.guid, relatedContainers),
-			(review.objectivesByIndicator.get(container.guid) ?? []).map(
-				({ objective }) => objective.payload
-			)
-		)
+		hasOwnTargets
+			? undefined
+			: reviewStatusFor(
+					indicatorActualData(container.guid, relatedContainers),
+					(review.objectivesByIndicator.get(container.guid) ?? []).map(
+						({ objective }) => objective.payload
+					)
+				)
 	);
 
 	const auraColor = $derived(
@@ -88,7 +97,7 @@
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
-		{:else if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !(compare && hasComparisonData)}
+		{:else if hasOwnTargets && !(compare && hasComparisonData)}
 			<ImpactMonitoringChart {container} {relatedContainers} />
 		{:else}
 			<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />
