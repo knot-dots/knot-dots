@@ -6,7 +6,10 @@ import {
 	type Container,
 	findDescendants,
 	type Grant,
+	grantSetForRole,
 	grantSetForSubjectOn,
+	grantSourceOf,
+	memberRoles,
 	predicates,
 	type User
 } from '$lib/models';
@@ -62,46 +65,93 @@ export const load = (async ({ locals, parent }) => {
 		email: members.find(({ id }) => id === user.guid)?.username ?? user.guid
 	});
 
-	// an organizational unit inherits its matrix from the organization, shown
-	// with the same toggle as measures and programs
-	let inheritedGrants: Grant[] | undefined;
-	let inheritedUsers: User[] | undefined;
-	let scope: Container<AnyPayload> | undefined;
+	// an organizational unit inherits its matrices from the computed sources
+	// (a decoupled parent unit or the organization), shown with the same
+	// sections and toggle as measures and programs
+	let inheritedSections:
+		Array<{ scope: Container<AnyPayload>; grants: Grant[]; users: User[] }> | undefined;
+	let admins: User[] | undefined;
 	if (currentOrganizationalUnit) {
-		const [organizationContainer, sourceGrants, sourceUsers] = await Promise.all([
-			locals.pool.connect(getContainerByGuid(selectedContext.organization)),
-			locals.pool.connect(getAllGrantsByContainers([selectedContext.organization])),
-			locals.pool.connect(
-				getAllRelatedUsersByContainers([selectedContext.organization], userPredicates)
-			)
+		const inherits = !selectedContext.own_matrix;
+		const sourceGuids = inherits
+			? (selectedContext.user_grant?.sources ?? [selectedContext.organization])
+			: [grantSourceOf(selectedContext)];
+		const scopeGuids = [selectedContext.organization].filter(
+			(guid) => guid !== selectedContext.guid
+		);
+		const matrixGuids = [...new Set([...sourceGuids, ...scopeGuids])];
+
+		const [sourceContainers, matrixGrants, matrixUsers] = await Promise.all([
+			Promise.all(
+				sourceGuids.map((sourceGuid) => locals.pool.connect(getContainerByGuid(sourceGuid)))
+			),
+			locals.pool.connect(getAllGrantsByContainers(matrixGuids)),
+			locals.pool.connect(getAllRelatedUsersByContainers(matrixGuids, userPredicates))
 		]);
-		scope = organizationContainer;
-		inheritedGrants = sourceUsers.flatMap(({ guid: subject }) => {
-			const set = grantSetForSubjectOn(sourceGrants, selectedContext.organization, subject);
-			return [
-				...set.self.map((kind) => ({
-					kind,
-					object: organizationContainer.guid,
-					subject,
-					target: 'self' as const
-				})),
-				...set.subordinates.map((kind) => ({
-					kind,
-					object: organizationContainer.guid,
-					subject,
-					target: 'subordinates' as const
-				}))
-			];
+
+		// organization administrators keep every kind regardless of the sources;
+		// they form a block of their own, so the sections leave them out
+		const administratorSet = grantSetForRole(memberRoles.enum.administrator);
+		const isScopeAdmin = (subject: string) =>
+			scopeGuids.some((area) =>
+				administratorSet.self.every((kind) =>
+					matrixGrants.some(
+						(grant) =>
+							grant.object === area &&
+							grant.subject === subject &&
+							grant.target === 'self' &&
+							grant.kind === kind
+					)
+				)
+			);
+		admins = matrixUsers.filter(({ guid }) => isScopeAdmin(guid));
+
+		inheritedSections = sourceContainers.map((scope) => {
+			const sectionGrants = matrixUsers
+				.filter(({ guid }) => !isScopeAdmin(guid))
+				.flatMap(({ guid: subject }) => {
+					const set = grantSetForSubjectOn(matrixGrants, scope.guid, subject);
+					return [
+						...set.self.map((kind) => ({
+							kind,
+							object: scope.guid,
+							subject,
+							target: 'self' as const
+						})),
+						...set.subordinates.map((kind) => ({
+							kind,
+							object: scope.guid,
+							subject,
+							target: 'subordinates' as const
+						}))
+					];
+				});
+			return {
+				scope,
+				grants: sectionGrants,
+				users: matrixUsers.filter(({ guid }) =>
+					sectionGrants.some(({ subject }) => subject === guid)
+				)
+			};
 		});
-		const rows = inheritedGrants;
-		inheritedUsers = sourceUsers.filter(({ guid }) => rows.some(({ subject }) => subject === guid));
 	}
 
 	return {
 		container: selectedContext,
 		grants,
-		...(inheritedGrants && inheritedUsers && scope
-			? { inheritedGrants, inheritedUsers, scope }
+		...(inheritedSections && admins
+			? {
+					admins,
+					inheritedSections,
+					// transitional aliases of the first section until the matrix
+					// component renders the sections and the admins block itself
+					inheritedGrants: inheritedSections[0]?.grants ?? [],
+					inheritedUsers: inheritedSections[0]?.users ?? [],
+					scope: inheritedSections[0]?.scope ?? selectedContext,
+					mayManageOrganizationUsers:
+						locals.user.isAuthenticated &&
+						locals.user.grants.self['manage-users'].includes(selectedContext.organization)
+				}
 			: {}),
 		managedOrganizationalUnits,
 		title: unwrapFunctionStore(_)('workspace.users.title'),
