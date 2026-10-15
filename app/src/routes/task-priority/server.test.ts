@@ -39,9 +39,13 @@ function task(guid: string, managedBy: string) {
 			governsItself: false,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
-			source: managedBy,
-			sourceSelf: managedBy === team ? collaboratorSet.self : [],
-			sourceSubordinates: managedBy === team ? collaboratorSet.subordinates : []
+			sources: [
+				{
+					guid: managedBy,
+					self: managedBy === team ? collaboratorSet.self : [],
+					subordinates: managedBy === team ? collaboratorSet.subordinates : []
+				}
+			]
 		})
 	};
 }

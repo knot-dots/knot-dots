@@ -47,9 +47,13 @@ function container(guid: string, managedBy: string, payload: Record<string, unkn
 			governsItself: false,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
-			source: managedBy,
-			sourceSelf: managedBy === team ? collaboratorSet.self : [],
-			sourceSubordinates: managedBy === team ? collaboratorSet.subordinates : []
+			sources: [
+				{
+					guid: managedBy,
+					self: managedBy === team ? collaboratorSet.self : [],
+					subordinates: managedBy === team ? collaboratorSet.subordinates : []
+				}
+			]
 		}),
 		valid_currently: true,
 		valid_from: new Date('2026-09-28T00:00:00.000Z')

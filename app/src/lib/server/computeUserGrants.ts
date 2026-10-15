@@ -27,8 +27,8 @@ const hierarchyPredicates = [
 
 const row = z.object({
 	guid: z.uuid(),
-	source: z.uuid(),
-	scope_sourced: z.boolean(),
+	object: z.uuid(),
+	ord: z.number().int().nullable(),
 	place: z.enum(['source', 'organization', 'organizational_unit']),
 	kind: grantKinds.nullable(),
 	target: z.enum(['self', 'subordinates']).nullable()
@@ -36,15 +36,16 @@ const row = z.object({
 
 /**
  * Computes the effective grants of one subject on the given containers: for
- * each container the matrix that governs it (its grant source) and the kinds
- * the subject holds there. The source is the container itself while its
- * matrix is decoupled (own_matrix), otherwise the nearest
- * decoupled ancestor along the is-part-of chains, the container's
- * organizational unit if that has decoupled its matrix, and the organization
- * as the last resort — rows on inheriting containers lie dormant. Subjects
- * holding every self kind on the organization or on the container's
- * organizational unit act as administrators of that scope and keep every kind
- * regardless of the source.
+ * each container the matrices that govern it (its grant sources) and the
+ * kinds the subject holds there. The only source is the container itself
+ * while its matrix is decoupled (own_matrix); otherwise every hierarchy
+ * chain contributes its nearest decoupled ancestor, and chains reaching the
+ * top without one fall back to the container's organizational unit if that
+ * has decoupled its matrix, or the organization as the last resort. The
+ * sources' rows apply side by side; rows on inheriting containers in
+ * between lie dormant. Subjects holding every self kind on the organization
+ * or on the container's organizational unit act as administrators of that
+ * scope and keep every kind regardless of the sources.
  */
 export async function computeUserGrants(
 	connection: DatabaseConnection,
@@ -57,13 +58,24 @@ export async function computeUserGrants(
 
 	// The correlated ARRAY subselect keeps the recursive part on cheap per-row
 	// index probes; see computeManagedBy for the reasoning and why the pool
-	// disables JIT.
+	// disables JIT. The walk stops at decoupled ancestors (per-row EXISTS
+	// probe): every decoupled row it emits is therefore the nearest one on its
+	// path, and the subtree above never gets visited at all.
 	const rows = await connection.any(sql.type(row)`
-		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle) AS (
-			SELECT g::uuid, g::uuid, 0, ARRAY[g::uuid], false
+		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle, decoupled) AS (
+			SELECT g::uuid, g::uuid, 0, ARRAY[g::uuid], false,
+				EXISTS (
+					SELECT 1 FROM container c
+					WHERE c.guid = g::uuid AND c.valid_currently AND NOT c.deleted AND c.own_matrix
+				)
 			FROM unnest(${sql.array(guids, 'uuid')}) AS g
 			UNION ALL
-			SELECT a.root, parent.object, a.depth + 1, array_append(a.path, parent.object), parent.object = ANY(a.path)
+			SELECT a.root, parent.object, a.depth + 1, array_append(a.path, parent.object),
+				parent.object = ANY(a.path),
+				EXISTS (
+					SELECT 1 FROM container c
+					WHERE c.guid = parent.object AND c.valid_currently AND NOT c.deleted AND c.own_matrix
+				)
 			FROM ancestry a
 			CROSS JOIN LATERAL unnest(ARRAY(
 				SELECT cr.object
@@ -73,7 +85,7 @@ export async function computeUserGrants(
 					AND cr.valid_currently
 					AND NOT cr.deleted
 			)) AS parent(object)
-			WHERE NOT a.is_cycle
+			WHERE NOT a.is_cycle AND NOT a.decoupled
 		),
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
@@ -81,21 +93,13 @@ export async function computeUserGrants(
 			FROM container c
 			WHERE c.guid = ANY(${sql.array(guids, 'uuid')}) AND c.valid_currently AND NOT c.deleted
 		),
-		-- The nearest decoupled ancestor is resolved once per root over the ancestry
-		-- rows. A correlated subselect per base row would rescan the whole ancestry
-		-- CTE for every container and every place row, which is quadratic in the
-		-- number of containers (tens of seconds for a few thousand).
-		decoupled_ancestor AS (
-			SELECT DISTINCT ON (a.root) a.root, a.guid
+		-- One source per chain: grouping deduplicates DAG multi-paths meeting at
+		-- the same ancestor, min(depth) keeps the nearest-first ordering stable.
+		decoupled_ancestors AS (
+			SELECT a.root, a.guid, min(a.depth) AS depth
 			FROM ancestry a
-			JOIN LATERAL (
-				SELECT 1
-				FROM container c
-				WHERE c.guid = a.guid AND c.valid_currently AND NOT c.deleted AND c.own_matrix
-				LIMIT 1
-			) t ON true
-			WHERE a.depth > 0
-			ORDER BY a.root, a.depth ASC, a.guid ASC
+			WHERE a.depth > 0 AND a.decoupled
+			GROUP BY a.root, a.guid
 		),
 		decoupled_unit AS (
 			SELECT b.root, u.guid
@@ -108,26 +112,61 @@ export async function computeUserGrants(
 				LIMIT 1
 			) u ON true
 		),
-		source AS (
-			SELECT b.root,
-				CASE WHEN b.decoupled THEN b.root ELSE coalesce(da.guid, du.guid, b.organization) END AS source
+		-- A chain counts as open when it tops out (or cycles) without meeting a
+		-- decoupled ancestor; such chains activate the scope fallback once per
+		-- root. The LATERAL probe keeps this on per-row index lookups.
+		open_chain AS (
+			SELECT DISTINCT a.root
+			FROM ancestry a
+			CROSS JOIN LATERAL (
+				SELECT NOT EXISTS (
+					SELECT 1
+					FROM container_relation cr
+					WHERE cr.subject = a.guid
+						AND cr.predicate = ANY(${sql.array(hierarchyPredicates, 'text')})
+						AND cr.valid_currently
+						AND NOT cr.deleted
+				) AS no_parents
+			) t
+			WHERE NOT a.decoupled AND (t.no_parents OR a.is_cycle)
+		),
+		-- A decoupled container is its own and only source (ord -1 keeps it
+		-- primary); otherwise the chains' nearest decoupled ancestors apply side
+		-- by side with the area sources ordered last: an organizational unit
+		-- with a matrix of its own always governs the inheriting contents of its
+		-- area, and chains topping out without any of that fall back to the
+		-- organization.
+		sources AS (
+			SELECT b.root, b.root AS source, -1 AS ord FROM base b WHERE b.decoupled
+			UNION ALL
+			SELECT da.root, da.guid, da.depth FROM decoupled_ancestors da
+			UNION ALL
+			SELECT du.root, du.guid, 2147483646
+			FROM decoupled_unit du
+			JOIN base b ON b.root = du.root
+			WHERE NOT b.decoupled
+			UNION ALL
+			SELECT b.root, b.organization, 2147483647
 			FROM base b
-			LEFT JOIN decoupled_ancestor da ON da.root = b.root
+			JOIN open_chain oc ON oc.root = b.root
 			LEFT JOIN decoupled_unit du ON du.root = b.root
+			WHERE NOT b.decoupled AND du.guid IS NULL
 		)
-		SELECT b.root AS guid, s.source,
-			s.source = b.organization OR coalesce(s.source = b.organizational_unit, false) AS scope_sourced,
-			p.place, g.kind, g.target
-		FROM base b
-		JOIN source s ON s.root = b.root
-		CROSS JOIN LATERAL (
-			VALUES
-				('source', s.source),
-				('organization', b.organization),
-				('organizational_unit', b.organizational_unit)
-		) AS p(place, object)
-		LEFT JOIN container_grant g ON g.object = p.object AND g.subject = ${subject}
-		WHERE p.object IS NOT NULL
+		-- no join back onto base: the planner grossly underestimates the CTE rows
+		-- and nests such a join into a loop over materialized rows, which is
+		-- quadratic in the number of containers (tens of seconds for a few
+		-- thousand); every place row already carries all that is needed
+		SELECT m.root AS guid, m.place, m.object, m.ord, g.kind, g.target
+		FROM (
+			SELECT s.root, 'source' AS place, s.source AS object, s.ord FROM sources s
+			UNION ALL
+			SELECT b.root, 'organization', b.organization, NULL FROM base b
+			UNION ALL
+			SELECT b.root, 'organizational_unit', b.organizational_unit, NULL
+			FROM base b
+			WHERE b.organizational_unit IS NOT NULL
+		) m
+		LEFT JOIN container_grant g ON g.object = m.object AND g.subject = ${subject}
 	`);
 
 	const result = new Map<string, UserGrants>();
@@ -135,22 +174,52 @@ export async function computeUserGrants(
 	// Grouping once keeps this linear; filtering the rows per container is
 	// quadratic in the number of containers (seconds for a few thousand).
 	for (const [guid, forGuid] of Map.groupBy(rows, (r) => r.guid)) {
-		const { source, scope_sourced } = forGuid[0];
-		const kindsAt = (place: string, target: string) =>
+		const kindsAt = (place: string, target: string, object?: string) =>
 			forGuid
-				.filter((r) => r.place === place && r.target === target && r.kind !== null)
+				.filter(
+					(r) =>
+						r.place === place &&
+						r.target === target &&
+						r.kind !== null &&
+						(object === undefined || r.object === object)
+				)
 				.map((r) => r.kind as GrantKind);
+
+		// the sources in nearest-first order; a guid reachable both through a
+		// chain and as the scope fallback keeps its lowest rank
+		const rankByObject = new Map<string, number>();
+		for (const r of forGuid) {
+			if (r.place !== 'source') continue;
+			const ord = r.ord ?? 0;
+			const previous = rankByObject.get(r.object);
+			if (previous === undefined || ord < previous) {
+				rankByObject.set(r.object, ord);
+			}
+		}
+		const ordered = [...rankByObject.entries()]
+			.sort(([a, ordA], [b, ordB]) => ordA - ordB || a.localeCompare(b))
+			.map(([object]) => object);
+
+		// governed by nothing beyond the organization scopes; a decoupled
+		// container names itself as the source, which reads as false here
+		const organization = forGuid.find((r) => r.place === 'organization')?.object;
+		const organizationalUnit = forGuid.find((r) => r.place === 'organizational_unit')?.object;
+		const scopeSourced = ordered.every(
+			(source) => source === organization || source === organizationalUnit
+		);
 
 		result.set(
 			guid,
 			composeUserGrants({
-				scopeSourced: scope_sourced,
-				governsItself: source === guid,
+				scopeSourced,
+				governsItself: ordered[0] === guid,
 				organizationSelf: kindsAt('organization', 'self'),
 				organizationalUnitSelf: kindsAt('organizational_unit', 'self'),
-				source,
-				sourceSelf: kindsAt('source', 'self'),
-				sourceSubordinates: kindsAt('source', 'subordinates')
+				sources: ordered.map((object) => ({
+					guid: object,
+					self: kindsAt('source', 'self', object),
+					subordinates: kindsAt('source', 'subordinates', object)
+				}))
 			})
 		);
 	}
@@ -282,6 +351,7 @@ export async function computeUserGrantsFromRoles(
 			own: governsItself ? teamSet.self : [],
 			self: subordinates.filter((kind) => kind !== grantKinds.enum.create),
 			source: team?.object ?? forGuid[0]?.object ?? guid,
+			sources: [team?.object ?? forGuid[0]?.object ?? guid],
 			subordinates
 		});
 	}
