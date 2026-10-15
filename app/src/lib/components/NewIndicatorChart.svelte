@@ -229,6 +229,8 @@
 
 <style>
 	figure {
+		background-color: white;
+		border-radius: 8px;
 		flex-grow: 1;
 	}
 
