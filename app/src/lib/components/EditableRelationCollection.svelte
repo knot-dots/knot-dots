@@ -9,6 +9,7 @@
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import EditablePreview from '$lib/components/EditablePreview.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -78,25 +79,27 @@
 </script>
 
 <header>
-	<svelte:element this={heading} class="details-heading">
-		{#if editable && $ability.can('update', container)}
-			{const id = crypto.randomUUID()}
-			<label class="is-visually-hidden" for={id}>{$_('title')}</label>
-			<AutoresizingTextarea
-				bind:value={container.payload.title}
-				{id}
-				onkeydown={(e) => {
-					if (e.key === 'Enter') {
-						e.preventDefault();
-					}
-				}}
-				placeholder={$_('title')}
-				rows={1}
-			/>
-		{:else}
-			{container.payload.title}
-		{/if}
-	</svelte:element>
+	{#if container.payload.listType != listTypes.enum.list}
+		<svelte:element this={heading} class="details-heading">
+			{#if editable && $ability.can('update', container)}
+				{const id = crypto.randomUUID()}
+				<label class="is-visually-hidden" for={id}>{$_('title')}</label>
+				<AutoresizingTextarea
+					bind:value={container.payload.title}
+					{id}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+						}
+					}}
+					placeholder={$_('title')}
+					rows={1}
+				/>
+			{:else}
+				{container.payload.title}
+			{/if}
+		</svelte:element>
+	{/if}
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
@@ -133,7 +136,16 @@
 	/>
 {/snippet}
 
-{#if container.payload.listType === listTypes.enum.carousel}
+{#if container.payload.listType === listTypes.enum.list}
+	{#each items as item, i (item.guid)}
+		<EditablePreview
+			bind:container={items[i] as Container}
+			editable={editable && $ability.can('update', item)}
+			{heading}
+			{relatedContainers}
+		/>
+	{/each}
+{:else if container.payload.listType === listTypes.enum.carousel}
 	<Carousel {addItem} {items} {mayAddItem}>
 		{#snippet itemSnippet(item)}
 			{@render card(item)}
@@ -157,6 +169,15 @@
 {/if}
 
 <style>
+	header:not(:has(.details-heading)) {
+		height: 0;
+		margin-bottom: 0;
+	}
+
+	header:not(:has(.details-heading)) .inline-actions {
+		position: relative;
+	}
+
 	.card {
 		align-items: center;
 		background: #ffffff;

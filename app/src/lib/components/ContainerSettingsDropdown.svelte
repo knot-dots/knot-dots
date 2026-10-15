@@ -2,6 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import ChevronRight from '~icons/flowbite/chevron-right-outline';
 	import Eye from '~icons/flowbite/eye-outline';
+	import List from '~icons/flowbite/list-outline';
 	import DoubleWidth from '~icons/flowbite/merge-or-split-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Background from '~icons/knotdots/background';
@@ -72,7 +73,9 @@
 						onclick={() => openSubMenu($_('custom_collection.settings.view'))}
 						type="button"
 					>
-						{#if container.payload.listType === listTypes.enum.carousel}
+						{#if container.payload.listType === listTypes.enum.list}
+							<List />
+						{:else if container.payload.listType === listTypes.enum.carousel}
 							<CarouselIcon />
 						{:else}
 							<Grid />
@@ -147,6 +150,17 @@
 				{/if}
 			{:else if openSubMenuTitle == $_('custom_collection.settings.view') && isRelationCollectionContainer(container)}
 				<fieldset class="listbox">
+					<label>
+						<input
+							checked={container.payload.listType === listTypes.enum.list}
+							name="listType"
+							onchange={() => (container.payload.listType = listTypes.enum.list)}
+							type="radio"
+							value={listTypes.enum.list}
+						/>
+						<List />
+						<span>{$_('list_type.list')}</span>
+					</label>
 					<label>
 						<input
 							checked={container.payload.listType === listTypes.enum.wall}

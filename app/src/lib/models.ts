@@ -2232,7 +2232,9 @@ const initialQuotePayload = quotePayload.partial({ title: true });
 export const relationCollectionPayload = z.strictObject({
 	...sectionStyle.shape,
 	item: z.array(z.uuid()).default([]),
-	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
+	listType: z
+		.enum([listTypes.enum.carousel, listTypes.enum.wall, listTypes.enum.list])
+		.default(listTypes.enum.carousel),
 	payloadType: payloadTypes,
 	predicate: predicates,
 	title: z.string(),
