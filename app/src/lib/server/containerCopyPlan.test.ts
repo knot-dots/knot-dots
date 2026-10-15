@@ -763,7 +763,7 @@ test('remaps collection members without instantiating template references', () =
 	const collection = copyFor(plan, guids.root);
 
 	expect(collection?.payload).toMatchObject({
-		item: [plan.get(guids.child)?.guid, guids.publicItem, guids.privateItem],
+		item: [plan.get(guids.child)?.guid, guids.publicItem, guids.privateItem, guids.missing],
 		newItemTemplate: [guids.child, guids.usableTemplate]
 	});
 	expect(plan.has(guids.privateItem)).toBe(false);
@@ -781,6 +781,29 @@ test('remaps collection members without instantiating template references', () =
 	}
 	collection.payload.item.push(guids.external);
 	expect(snapshot).toEqual(originalSnapshot);
+});
+
+test('keeps a selection of deleted items from turning into a rule', () => {
+	const containers = [
+		makeContainer(guids.root, { title: 'Report', type: payloadTypes.enum.report }),
+		makeContainer(guids.child, {
+			filter: { indicatorCategory: ['indicator_category.custom'] },
+			item: [guids.missing],
+			title: 'Recommended indicator',
+			type: payloadTypes.enum.custom_collection
+		})
+	];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, containers, [
+			relation(guids.child, predicates.enum['is-section-of'], guids.root)
+		]),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ item: [guids.missing] });
 });
 
 test('uses the copied organizational unit as the ownership target for descendants', () => {

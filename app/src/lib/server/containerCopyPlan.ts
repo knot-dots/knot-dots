@@ -485,7 +485,9 @@ export function createContainerCopyPlan({
 					}
 					const item = containersByGuid.get(itemGuid);
 					if (!item) {
-						return [];
+						// Deleted items are missing from the graph. Keep their reference like the
+						// original does: an empty selection would run the collection's filter as a rule.
+						return [itemGuid];
 					}
 					if (
 						item.payload.visibility === visibility.enum.public ||
