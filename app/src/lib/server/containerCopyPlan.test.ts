@@ -1331,8 +1331,9 @@ test('applies only the explicit individual-profile root policy and provenance', 
 	expect(root.payload).toHaveProperty('slug', 'municipality');
 });
 
-test('remaps a reference target that is independently included through a structural path', () => {
-	const root = makeContainer(guids.root, {
+test('keeps referencing an indicator that a structural relation places inside the source', () => {
+	const root = makeContainer(guids.root, { title: 'Measure', type: payloadTypes.enum.measure });
+	const effect = makeContainer(guids.child, {
 		achievedValues: [],
 		title: 'Effect',
 		type: payloadTypes.enum.effect
@@ -1342,14 +1343,20 @@ test('remaps a reference target that is independently included through a structu
 		type: payloadTypes.enum.indicator,
 		unit: 'unit.percent'
 	});
+	const dependencyChild = makeContainer(guids.dependencyChild, {
+		title: 'Indicator section',
+		type: payloadTypes.enum.text
+	});
 
 	const plan = createContainerCopyPlan({
 		graph: graph(
 			guids.root,
-			[root, dependency],
+			[root, effect, dependency, dependencyChild],
 			[
-				relation(guids.root, predicates.enum['is-measured-by'], guids.dependency),
-				relation(guids.dependency, predicates.enum['is-section-of'], guids.root)
+				relation(guids.child, predicates.enum['is-part-of'], guids.root),
+				relation(guids.child, predicates.enum['is-measured-by'], guids.dependency),
+				relation(guids.dependency, predicates.enum['is-part-of'], guids.root, 1),
+				relation(guids.dependencyChild, predicates.enum['is-section-of'], guids.dependency)
 			]
 		),
 		target,
@@ -1357,12 +1364,13 @@ test('remaps a reference target that is independently included through a structu
 		allocateGuid: allocator()
 	});
 
-	expect(plan.has(guids.dependency)).toBe(true);
-	expect(copyFor(plan, guids.root)?.relation).toContainEqual({
-		object: plan.get(guids.dependency)?.guid,
+	expect(plan.has(guids.dependency)).toBe(false);
+	expect(plan.has(guids.dependencyChild)).toBe(false);
+	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
+		object: guids.dependency,
 		position: 0,
 		predicate: predicates.enum['is-measured-by'],
-		subject: plan.get(guids.root)?.guid
+		subject: plan.get(guids.child)?.guid
 	});
 });
 
