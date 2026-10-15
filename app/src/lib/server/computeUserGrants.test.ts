@@ -373,3 +373,228 @@ test('rows on an inheriting organizational unit lie dormant', async ({ connectio
 	expect(grants.get(measure.guid)?.source).toBe(organization);
 	expect(grants.get(measure.guid)?.self).toEqual([]);
 });
+
+test('two decoupled programs act side by side', async ({ connection }: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const programA = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const programB = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			relation: [
+				{ object: programA.guid, predicate: predicates.enum['is-part-of-program'] },
+				{ object: programB.guid, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	await setContainerGrants(programA.guid, subject, {
+		self: [],
+		subordinates: ['read', 'update']
+	})(connection);
+	await setContainerGrants(programB.guid, subject, {
+		self: [],
+		subordinates: ['read', 'create']
+	})(connection);
+	// dormant: both chains end at the decoupled programs
+	await setContainerGrants(organization, subject, {
+		self: [],
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	const sources = [programA.guid, programB.guid].sort();
+	expect(grants.get(measure.guid)).toEqual({
+		admin: false,
+		scope_sourced: false,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update'],
+		source: sources[0],
+		sources,
+		subordinates: ['read', 'update', 'create']
+	});
+});
+
+test('a chain without a decoupled ancestor adds the organization', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const programA = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const programB = await createContainer(newTestContainer(organization, payloadTypes.enum.program))(
+		connection
+	);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			relation: [
+				{ object: programA.guid, predicate: predicates.enum['is-part-of-program'] },
+				{ object: programB.guid, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	await setContainerGrants(programA.guid, subject, {
+		self: [],
+		subordinates: ['update']
+	})(connection);
+	await setContainerGrants(organization, subject, { self: [], subordinates: ['read'] })(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)).toEqual({
+		admin: false,
+		scope_sourced: false,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update'],
+		source: programA.guid,
+		sources: [programA.guid, organization],
+		subordinates: ['read', 'update']
+	});
+});
+
+test('a decoupled organizational unit governs beside a decoupled program', async ({
+	connection
+}: Fixtures) => {
+	// the Figma reference case: contents of an area stay governed by the
+	// area's own matrix even when a decoupled program governs them too
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.organizational_unit, { ownMatrix: true })
+	)(connection);
+	const program = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, {
+			ownMatrix: true,
+			organizationalUnit: unit.guid
+		})
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			organizationalUnit: unit.guid,
+			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
+		})
+	)(connection);
+	await setContainerGrants(program.guid, subject, {
+		self: [],
+		subordinates: ['update']
+	})(connection);
+	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['read'] })(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)).toEqual({
+		admin: false,
+		scope_sourced: false,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update'],
+		source: program.guid,
+		sources: [program.guid, unit.guid],
+		subordinates: ['read', 'update']
+	});
+});
+
+test('a decoupled ancestor shadows the decoupled ancestors above it', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const grandparent = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const parent = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, {
+			ownMatrix: true,
+			relation: [{ object: grandparent.guid, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			relation: [{ object: parent.guid, predicate: predicates.enum['is-part-of-program'] }]
+		})
+	)(connection);
+	await setContainerGrants(parent.guid, subject, { self: [], subordinates: ['read'] })(connection);
+	await setContainerGrants(grandparent.guid, subject, {
+		self: [],
+		subordinates: ['read', 'update', 'create', 'delete']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)?.sources).toEqual([parent.guid]);
+	expect(grants.get(measure.guid)?.subordinates).toEqual(['read']);
+});
+
+test('paths meeting at the same decoupled ancestor yield one source', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const program = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const chapter = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.goal, {
+			relation: [{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }]
+		})
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			relation: [
+				{ object: chapter.guid, predicate: predicates.enum['is-part-of'] },
+				{ object: program.guid, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	await setContainerGrants(program.guid, subject, { self: [], subordinates: ['read'] })(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)?.sources).toEqual([program.guid]);
+});
+
+test('a full self set on one of several sources makes an administrator', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const programA = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const programB = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			relation: [
+				{ object: programA.guid, predicate: predicates.enum['is-part-of-program'] },
+				{ object: programB.guid, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	await setContainerGrants(programA.guid, subject, {
+		self: ['read', 'update', 'manage-users'],
+		subordinates: []
+	})(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)?.admin).toBe(true);
+	expect(grants.get(measure.guid)?.subordinates).toEqual([
+		'read',
+		'update',
+		'create',
+		'delete',
+		'manage-users'
+	]);
+});
