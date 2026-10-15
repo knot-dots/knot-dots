@@ -80,22 +80,24 @@ export const load = (async ({ locals, params }) => {
 		].filter((guid) => guid !== container.guid);
 		const matrixGuids = [...new Set([...sourceGuids, ...scopeGuids])];
 
-		const [members, grants, sourceContainers, matrixGrants, matrixUsers] = await Promise.all([
-			getMembers(container.organization),
-			locals.pool.connect(getAllGrantsByContainers([container.guid])),
-			Promise.all(
-				sourceGuids.map((sourceGuid) => locals.pool.connect(getContainerByGuid(sourceGuid)))
-			),
-			locals.pool.connect(getAllGrantsByContainers(matrixGuids)),
-			locals.pool.connect(
-				getAllRelatedUsersByContainers(matrixGuids, [
-					predicates.enum['is-admin-of'],
-					predicates.enum['is-collaborator-of'],
-					predicates.enum['is-head-of'],
-					predicates.enum['is-member-of']
-				])
-			)
-		]);
+		const [members, grants, sourceContainers, matrixGrants, matrixUsers, organization] =
+			await Promise.all([
+				getMembers(container.organization),
+				locals.pool.connect(getAllGrantsByContainers([container.guid])),
+				Promise.all(
+					sourceGuids.map((sourceGuid) => locals.pool.connect(getContainerByGuid(sourceGuid)))
+				),
+				locals.pool.connect(getAllGrantsByContainers(matrixGuids)),
+				locals.pool.connect(
+					getAllRelatedUsersByContainers(matrixGuids, [
+						predicates.enum['is-admin-of'],
+						predicates.enum['is-collaborator-of'],
+						predicates.enum['is-head-of'],
+						predicates.enum['is-member-of']
+					])
+				),
+				locals.pool.connect(getContainerByGuid(container.organization))
+			]);
 
 		// Administrators of the surrounding areas keep every kind regardless of
 		// the sources — the same hold the enforcement applies. They form a block
@@ -151,9 +153,7 @@ export const load = (async ({ locals, params }) => {
 			container,
 			grants,
 			inheritedSections,
-			mayManageOrganizationUsers:
-				locals.user.isAuthenticated &&
-				locals.user.grants.self['manage-users'].includes(container.organization),
+			mayManageOrganizationUsers: ability.can('manage-users', organization),
 			title: t('members'),
 			users: users.map((u) => ({
 				...u,

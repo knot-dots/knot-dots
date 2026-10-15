@@ -143,9 +143,10 @@ export const load = (async ({ locals, parent }) => {
 			? {
 					admins,
 					inheritedSections,
-					mayManageOrganizationUsers:
-						locals.user.isAuthenticated &&
-						locals.user.grants.self['manage-users'].includes(selectedContext.organization)
+					mayManageOrganizationUsers: defineAbilityFor(locals.user).can(
+						'manage-users',
+						currentOrganization
+					)
 				}
 			: {}),
 		managedOrganizationalUnits,
