@@ -252,9 +252,13 @@ function organization() {
 			governsItself: true,
 			organizationSelf: headSet.self,
 			organizationalUnitSelf: [],
-			source: organizationGuid,
-			sourceSelf: headSet.self,
-			sourceSubordinates: headSet.subordinates
+			sources: [
+				{
+					guid: organizationGuid,
+					self: headSet.self,
+					subordinates: headSet.subordinates
+				}
+			]
 		}),
 		user: []
 	};

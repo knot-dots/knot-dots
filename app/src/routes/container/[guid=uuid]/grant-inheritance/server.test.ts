@@ -77,9 +77,13 @@ function measure(inheritsGrants: boolean, managedBy = measureGuid) {
 			governsItself: !inheritsGrants,
 			organizationSelf: adminSet.self,
 			organizationalUnitSelf: [],
-			source: inheritsGrants ? organizationGuid : measureGuid,
-			sourceSelf: inheritsGrants ? adminSet.self : [],
-			sourceSubordinates: inheritsGrants ? adminSet.subordinates : []
+			sources: [
+				{
+					guid: inheritsGrants ? organizationGuid : measureGuid,
+					self: inheritsGrants ? adminSet.self : [],
+					subordinates: inheritsGrants ? adminSet.subordinates : []
+				}
+			]
 		})
 	};
 }

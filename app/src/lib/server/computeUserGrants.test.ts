@@ -75,6 +75,7 @@ test('contents inherit from the organization by default', async ({ connection }:
 		own: [],
 		self: ['read', 'update'],
 		source: organization,
+		sources: [organization],
 		subordinates: ['read', 'update', 'create']
 	});
 });
@@ -100,6 +101,7 @@ test('rows on an inheriting container lie dormant', async ({ connection }: Fixtu
 		own: [],
 		self: [],
 		source: organization,
+		sources: [organization],
 		subordinates: []
 	});
 });
@@ -132,6 +134,7 @@ test('a decoupled container is governed by its own matrix alone', async ({
 		own: ['read', 'update'],
 		self: ['delete'],
 		source: measure.guid,
+		sources: [measure.guid],
 		subordinates: ['delete']
 	});
 });
@@ -167,6 +170,7 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 		own: [],
 		self: ['read', 'update'],
 		source: program.guid,
+		sources: [program.guid],
 		subordinates: ['read', 'update']
 	});
 	expect(grants.get(program.guid)).toEqual({
@@ -177,6 +181,7 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 		own: ['read'],
 		self: ['read', 'update'],
 		source: program.guid,
+		sources: [program.guid],
 		subordinates: ['read', 'update']
 	});
 });
@@ -210,6 +215,7 @@ test('a decoupled organizational unit cuts the organization off its contents', a
 		own: [],
 		self: ['read'],
 		source: unit.guid,
+		sources: [unit.guid],
 		subordinates: ['read']
 	});
 });
@@ -237,6 +243,7 @@ test('organization administrators keep every kind regardless of decoupling', asy
 		own: [],
 		self: ['read', 'update', 'delete', 'manage-users'],
 		source: measure.guid,
+		sources: [measure.guid],
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
 	});
 });
@@ -293,6 +300,7 @@ test('the read paths enrich containers with the grants of the request user', asy
 		own: [],
 		self: ['read', 'update'],
 		source: organization,
+		sources: [organization],
 		subordinates: ['read', 'update']
 	});
 
@@ -332,6 +340,7 @@ test('member roles govern while the permission matrix is off', async ({ connecti
 		own: [],
 		self: ['read', 'update', 'delete', 'manage-users'],
 		source: program.guid,
+		sources: [program.guid],
 		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
 	});
 

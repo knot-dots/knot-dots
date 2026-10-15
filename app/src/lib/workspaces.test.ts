@@ -77,9 +77,13 @@ function enriched<T extends Container<OrganizationPayload> | Container<Organizat
 			governsItself: source === container.guid,
 			organizationSelf: kindsAt(container.organization, 'self'),
 			organizationalUnitSelf: [],
-			source,
-			sourceSelf: kindsAt(source, 'self'),
-			sourceSubordinates: kindsAt(source, 'subordinates')
+			sources: [
+				{
+					guid: source,
+					self: kindsAt(source, 'self'),
+					subordinates: kindsAt(source, 'subordinates')
+				}
+			]
 		})
 	};
 }

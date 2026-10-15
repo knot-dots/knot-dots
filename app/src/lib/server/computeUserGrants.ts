@@ -148,9 +148,13 @@ export async function computeUserGrants(
 				governsItself: source === guid,
 				organizationSelf: kindsAt('organization', 'self'),
 				organizationalUnitSelf: kindsAt('organizational_unit', 'self'),
-				source,
-				sourceSelf: kindsAt('source', 'self'),
-				sourceSubordinates: kindsAt('source', 'subordinates')
+				sources: [
+					{
+						guid: source,
+						self: kindsAt('source', 'self'),
+						subordinates: kindsAt('source', 'subordinates')
+					}
+				]
 			})
 		);
 	}
@@ -282,6 +286,7 @@ export async function computeUserGrantsFromRoles(
 			own: governsItself ? teamSet.self : [],
 			self: subordinates.filter((kind) => kind !== grantKinds.enum.create),
 			source: team?.object ?? forGuid[0]?.object ?? guid,
+			sources: [team?.object ?? forGuid[0]?.object ?? guid],
 			subordinates
 		});
 	}
