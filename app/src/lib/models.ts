@@ -365,6 +365,17 @@ export function isStructuralCopyPredicate(predicate: string): predicate is Struc
 	return structuralPredicateSet.has(predicate);
 }
 
+// Indicators are shared: goals and measures reach them through objectives and
+// effects, so they never belong to a hierarchy themselves.
+const payloadTypesWithoutStructuralParent = new Set<string>([
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.indicator
+]);
+
+export function mayHaveStructuralParent(payloadType: PayloadType) {
+	return !payloadTypesWithoutStructuralParent.has(payloadType);
+}
+
 const backgroundColorValues = [
 	'color.white',
 	'color.blue',

@@ -763,7 +763,7 @@ test('remaps collection members without instantiating template references', () =
 	const collection = copyFor(plan, guids.root);
 
 	expect(collection?.payload).toMatchObject({
-		item: [plan.get(guids.child)?.guid, guids.publicItem, guids.privateItem],
+		item: [plan.get(guids.child)?.guid, guids.publicItem, guids.privateItem, guids.missing],
 		newItemTemplate: [guids.child, guids.usableTemplate]
 	});
 	expect(plan.has(guids.privateItem)).toBe(false);
@@ -781,6 +781,29 @@ test('remaps collection members without instantiating template references', () =
 	}
 	collection.payload.item.push(guids.external);
 	expect(snapshot).toEqual(originalSnapshot);
+});
+
+test('keeps a selection of deleted items from turning into a rule', () => {
+	const containers = [
+		makeContainer(guids.root, { title: 'Report', type: payloadTypes.enum.report }),
+		makeContainer(guids.child, {
+			filter: { indicatorCategory: ['indicator_category.custom'] },
+			item: [guids.missing],
+			title: 'Recommended indicator',
+			type: payloadTypes.enum.custom_collection
+		})
+	];
+
+	const plan = createContainerCopyPlan({
+		graph: graph(guids.root, containers, [
+			relation(guids.child, predicates.enum['is-section-of'], guids.root)
+		]),
+		target,
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.child)?.payload).toMatchObject({ item: [guids.missing] });
 });
 
 test('uses the copied organizational unit as the ownership target for descendants', () => {
@@ -1331,8 +1354,9 @@ test('applies only the explicit individual-profile root policy and provenance', 
 	expect(root.payload).toHaveProperty('slug', 'municipality');
 });
 
-test('remaps a reference target that is independently included through a structural path', () => {
-	const root = makeContainer(guids.root, {
+test('keeps referencing an indicator that a structural relation places inside the source', () => {
+	const root = makeContainer(guids.root, { title: 'Measure', type: payloadTypes.enum.measure });
+	const effect = makeContainer(guids.child, {
 		achievedValues: [],
 		title: 'Effect',
 		type: payloadTypes.enum.effect
@@ -1342,14 +1366,20 @@ test('remaps a reference target that is independently included through a structu
 		type: payloadTypes.enum.indicator,
 		unit: 'unit.percent'
 	});
+	const dependencyChild = makeContainer(guids.dependencyChild, {
+		title: 'Indicator section',
+		type: payloadTypes.enum.text
+	});
 
 	const plan = createContainerCopyPlan({
 		graph: graph(
 			guids.root,
-			[root, dependency],
+			[root, effect, dependency, dependencyChild],
 			[
-				relation(guids.root, predicates.enum['is-measured-by'], guids.dependency),
-				relation(guids.dependency, predicates.enum['is-section-of'], guids.root)
+				relation(guids.child, predicates.enum['is-part-of'], guids.root),
+				relation(guids.child, predicates.enum['is-measured-by'], guids.dependency),
+				relation(guids.dependency, predicates.enum['is-part-of'], guids.root, 1),
+				relation(guids.dependencyChild, predicates.enum['is-section-of'], guids.dependency)
 			]
 		),
 		target,
@@ -1357,12 +1387,13 @@ test('remaps a reference target that is independently included through a structu
 		allocateGuid: allocator()
 	});
 
-	expect(plan.has(guids.dependency)).toBe(true);
-	expect(copyFor(plan, guids.root)?.relation).toContainEqual({
-		object: plan.get(guids.dependency)?.guid,
+	expect(plan.has(guids.dependency)).toBe(false);
+	expect(plan.has(guids.dependencyChild)).toBe(false);
+	expect(copyFor(plan, guids.child)?.relation).toContainEqual({
+		object: guids.dependency,
 		position: 0,
 		predicate: predicates.enum['is-measured-by'],
-		subject: plan.get(guids.root)?.guid
+		subject: plan.get(guids.child)?.guid
 	});
 });
 

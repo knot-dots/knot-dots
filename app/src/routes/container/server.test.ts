@@ -165,6 +165,35 @@ test.each(['is-copy-of', 'is-individual-profile-of'] as const)(
 	}
 );
 
+test.each([
+	[payloadTypes.enum.indicator, predicates.enum['is-part-of']],
+	[payloadTypes.enum.indicator, predicates.enum['is-part-of-program']],
+	[payloadTypes.enum.binary_indicator, predicates.enum['is-part-of-measure']]
+] as const)('ordinary creation rejects a %s that %s another container', async (type, predicate) => {
+	const body = newContainer.parse({
+		managed_by: organizationGuid,
+		organization: organizationGuid,
+		organizational_unit: null,
+		payload: {
+			title: 'Indicator',
+			type,
+			...(type === payloadTypes.enum.indicator ? { unit: 'unit.percent' } : {})
+		},
+		realm: 'realm',
+		relation: [{ object: sourceGuid, position: 0, predicate }]
+	});
+	const request = new Request('http://localhost/container', {
+		method: 'POST',
+		body: JSON.stringify(body),
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	await expect(POST({ locals: { pool: {}, user }, request } as never)).rejects.toMatchObject({
+		status: 422
+	});
+	expect(mocks.create).not.toHaveBeenCalled();
+});
+
 test('ordinary creation rejects is-available-in relations on non-templates', async () => {
 	const body = newContainer.parse({
 		managed_by: organizationGuid,
