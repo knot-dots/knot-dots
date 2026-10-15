@@ -473,7 +473,7 @@
 									{#if expanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
 									<span class="section-title">
 										{$_('permission_matrix.inherited_from', {
-											values: { name: titleOf(section.scope) }
+											values: { name: section.scope.title }
 										})}
 									</span>
 								</button>
@@ -519,7 +519,7 @@
 												: viewOnly
 													? $_('permission_matrix.tooltip_readonly')
 													: $_('permission_matrix.tooltip_inherited', {
-															values: { name: titleOf(section.scope) }
+															values: { name: section.scope.title }
 														})}
 										/>
 									</td>

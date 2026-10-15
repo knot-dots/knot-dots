@@ -746,13 +746,26 @@ export const userGrants = z.object({
 
 export type UserGrants = z.infer<typeof userGrants>;
 
-// One inherited section of a permission matrix: the governing container with
+// One inherited section of a permission matrix: the governing container,
+// reduced to what names it since readers of the child may not read it, with
 // the subjects' effective sets materialized as rows on it.
 export type InheritedMatrixSection = {
-	scope: Container<AnyPayload>;
+	scope: { guid: string; title: string };
 	grants: Grant[];
 	users: User[];
 };
+
+export function matrixSectionScope(container: Container<AnyPayload>) {
+	return {
+		guid: container.guid,
+		title:
+			'name' in container.payload
+				? container.payload.name
+				: 'title' in container.payload
+					? container.payload.title
+					: ''
+	};
+}
 
 const fullSelfSet: GrantKind[] = [
 	grantKinds.enum.read,

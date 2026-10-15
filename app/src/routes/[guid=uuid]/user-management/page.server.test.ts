@@ -37,6 +37,8 @@ const currentOrganization = {
 	relation: []
 };
 
+const containerQuery = Symbol('getContainerByGuid');
+
 const currentOrganizationalUnit = {
 	guid: organizationalUnitGuid,
 	organization: organizationGuid,
@@ -91,7 +93,9 @@ function enriched(
 function event(grants = emptyGrantRecords()) {
 	return {
 		locals: {
-			pool: { connect: vi.fn().mockResolvedValue([]) },
+			pool: {
+				connect: vi.fn(async (query) => (query === containerQuery ? currentOrganization : []))
+			},
 			user: user(grants)
 		},
 		parent: vi.fn().mockResolvedValue({
@@ -106,6 +110,8 @@ beforeEach(() => {
 	getMembers.mockReset().mockResolvedValue([]);
 	getAllGrantsByContainers.mockReset().mockReturnValue(vi.fn());
 	getAllRelatedUsersByContainers.mockReset().mockReturnValue(vi.fn());
+	// the inherited sections name their source containers
+	getContainerByGuid.mockReset().mockReturnValue(containerQuery);
 });
 
 test('grants organization admins access to the user management of an organizational unit', async () => {

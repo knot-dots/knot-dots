@@ -2,13 +2,12 @@ import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
 import {
-	type AnyPayload,
-	type Container,
 	findDescendants,
-	type Grant,
 	grantSetForRole,
 	grantSetForSubjectOn,
 	grantSourceOf,
+	type InheritedMatrixSection,
+	matrixSectionScope,
 	memberRoles,
 	predicates,
 	type User
@@ -68,8 +67,7 @@ export const load = (async ({ locals, parent }) => {
 	// an organizational unit inherits its matrices from the computed sources
 	// (a decoupled parent unit or the organization), shown with the same
 	// sections and toggle as measures and programs
-	let inheritedSections:
-		Array<{ scope: Container<AnyPayload>; grants: Grant[]; users: User[] }> | undefined;
+	let inheritedSections: InheritedMatrixSection[] | undefined;
 	let admins: User[] | undefined;
 	if (currentOrganizationalUnit) {
 		const inherits = !selectedContext.own_matrix;
@@ -127,7 +125,7 @@ export const load = (async ({ locals, parent }) => {
 					];
 				});
 			return {
-				scope,
+				scope: matrixSectionScope(scope),
 				grants: sectionGrants,
 				users: matrixUsers.filter(({ guid }) =>
 					sectionGrants.some(({ subject }) => subject === guid)
