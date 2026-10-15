@@ -242,7 +242,7 @@
 	.card {
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
+		border-radius: var(--card-border-radius);
 		box-shadow: var(--shadow-sm);
 		display: flex;
 		flex-direction: column;
