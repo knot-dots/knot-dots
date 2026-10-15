@@ -44,6 +44,25 @@ export const load = (async ({ locals, params }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
+		// Signed-in readers see the whole matrix (view-only without the
+		// manage-users kind); anonymous visitors of public containers get no
+		// roster of the surrounding areas.
+		if (!locals.user.isAuthenticated) {
+			const [members, grants] = await Promise.all([
+				getMembers(container.organization),
+				locals.pool.connect(getAllGrantsByContainers([container.guid]))
+			]);
+			return {
+				container,
+				grants,
+				title: t('members'),
+				users: users.map((u) => ({
+					...u,
+					email: members.find(({ id }) => id == u.guid)?.username ?? u.guid
+				}))
+			};
+		}
+
 		// The matrices governing this container name themselves: the read-time
 		// enrichment resolved the sources — decoupled managers, the
 		// organizational unit or the organization. A decoupled container is its
