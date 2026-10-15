@@ -193,6 +193,7 @@
 		--form-control-padding-x: 0.5rem;
 		--form-control-padding-y: 0rem;
 
+		align-items: center;
 		display: flex;
 		flex-wrap: wrap;
 		padding: 0.375rem 0 0.75rem;
