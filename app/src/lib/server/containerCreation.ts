@@ -5,6 +5,8 @@ import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
 import { createFeatureDecisions } from '$lib/features';
 import {
 	grantForNewContainer,
+	isStructuralCopyPredicate,
+	mayHaveStructuralParent,
 	newContainer,
 	predicates,
 	type Container,
@@ -47,6 +49,13 @@ export function createAuthorizedContainer({
 		parseResult.data.relation.some(({ predicate }) => isServerOwnedCopyRelationPredicate(predicate))
 	) {
 		throw new ContainerCreationError('copy_invalid');
+	}
+
+	if (
+		!mayHaveStructuralParent(parseResult.data.payload.type) &&
+		parseResult.data.relation.some(({ predicate }) => isStructuralCopyPredicate(predicate))
+	) {
+		throw new ContainerCreationError('bad_request');
 	}
 
 	if (
