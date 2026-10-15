@@ -292,14 +292,15 @@
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* hatched rows mark the matrix as read-only */
+	/* hatched rows mark the matrix as read-only; the pattern of the Figma
+	   component (#fff5f5/#ffebeb), overlaid at 75% like in the design */
 	td.locked {
 		background: repeating-linear-gradient(
 			45deg,
-			var(--color-primary-025),
-			var(--color-primary-025) 2px,
-			var(--color-primary-050) 2px,
-			var(--color-primary-050) 4px
+			rgba(255, 245, 245, 0.75),
+			rgba(255, 245, 245, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 2px,
+			rgba(255, 235, 235, 0.75) 4px
 		);
 	}
 
