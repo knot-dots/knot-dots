@@ -16,7 +16,7 @@
 	<Dropdown label={$_('program_type')} {offset}>
 		{#snippet button(popover)}
 			<button class="dropdown-button" type="button" use:popover.button>
-				<span class="badge">
+				<span class="badge badge--large">
 					{value == programTypes.enum['program_type.misc'] ? $_('program') : $_(String(value))}
 				</span>
 			</button>
@@ -43,7 +43,7 @@
 		{/snippet}
 	</Dropdown>
 {:else}
-	<span class="badge">
+	<span class="badge badge--large">
 		{value == programTypes.enum['program_type.misc'] ? $_('program') : $_(String(value))}
 	</span>
 {/if}
