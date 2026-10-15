@@ -1578,7 +1578,7 @@ h4.details-heading {
 	font-size: 0.75rem;
 	font-weight: 500;
 	gap: 0.25rem;
-	line-height: 1.2;
+	line-height: 1.5;
 	min-height: var(--badge-min-height, 1.5rem);
 	padding: var(--badge-padding-y, 0.125rem) var(--badge-padding-x, 0.625rem);
 	text-align: center;
