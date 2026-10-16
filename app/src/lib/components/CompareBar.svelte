@@ -159,7 +159,7 @@
 
 	.badge.badge--municipality {
 		border: 1px solid var(--color-primary-100);
-		background: var(--cololr-primary-025);
+		background: var(--color-primary-025);
 	}
 
 	.municipality-color {
