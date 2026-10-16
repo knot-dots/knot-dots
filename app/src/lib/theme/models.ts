@@ -66,6 +66,11 @@ export const reviewStatusColors = new Map<ReviewStatus, string>([
 	['review_status.diverging_targets', 'purple']
 ]);
 
+// The background glow of an item under review, in the color of its status
+export function reviewStatusAuraColor(status: ReviewStatus) {
+	return `color-mix(in srgb, var(--color-${reviewStatusColors.get(status)}-600) 22%, transparent)`;
+}
+
 export const reviewStatusIcons = new Map<ReviewStatus, Component<SVGAttributes<SVGSVGElement>>>([
 	['review_status.in_target_direction', TargetCheckOnTrack],
 	['review_status.against_target_direction', TargetCheckOffTrack],

@@ -21,7 +21,7 @@
 		isObjectiveContainer
 	} from '$lib/models';
 	import { reviewStatusFor } from '$lib/reviewStatus';
-	import { reviewStatusColors } from '$lib/theme/models';
+	import { reviewStatusAuraColor } from '$lib/theme/models';
 
 	interface Props {
 		button?: Snippet;
@@ -70,10 +70,7 @@
 				)
 	);
 
-	const auraColor = $derived(
-		reviewStatus &&
-			`color-mix(in srgb, var(--color-${reviewStatusColors.get(reviewStatus)}-600) 22%, transparent)`
-	);
+	const auraColor = $derived(reviewStatus && reviewStatusAuraColor(reviewStatus));
 </script>
 
 <Card
