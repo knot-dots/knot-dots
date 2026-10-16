@@ -7,6 +7,8 @@
 	import ImpactMonitoringChart from '$lib/components/ImpactMonitoringChart.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import Summary from '$lib/components/Summary.svelte';
+	import TargetCheck from '$lib/components/TargetCheck.svelte';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import {
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
@@ -17,6 +19,8 @@
 		isEffectContainer,
 		isObjectiveContainer
 	} from '$lib/models';
+	import { reviewIndicator } from '$lib/reviewStatus';
+	import { reviewStatusAuraColor } from '$lib/theme/models';
 
 	interface Props {
 		button?: Snippet;
@@ -44,9 +48,39 @@
 	let hasComparisonData = $derived(
 		comparisonContainers?.some(({ payload }) => payload.values.length > 0) ?? false
 	);
+
+	// Objectives and effects of the current organization for this indicator
+	let hasOwnTargets = $derived(
+		relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))
+	);
+
+	const review = getReviewContext();
+
+	const reviewStatus = $derived(
+		reviewIndicator(
+			container,
+			relatedContainers,
+			review.objectivesByIndicator.get(container.guid) ?? []
+		)?.status
+	);
+
+	const auraColor = $derived(reviewStatus && reviewStatusAuraColor(reviewStatus));
 </script>
 
-<Card {button} {container} {ignoreBulkActionContext} {relatedContainers} {showRelationFilter}>
+<Card
+	{auraColor}
+	{button}
+	{container}
+	{ignoreBulkActionContext}
+	{relatedContainers}
+	{showRelationFilter}
+>
+	{#snippet titleAside()}
+		{#if reviewStatus}
+			<TargetCheck status={reviewStatus} />
+		{/if}
+	{/snippet}
+
 	{#snippet body()}
 		{#if isBinaryIndicatorContainer(container)}
 			{@const actualDataContainer = relatedContainers.find(isActualDataContainer)}
@@ -54,7 +88,7 @@
 			{#if actualDataContainer}
 				<BooleanValueToggle checked={actualDataContainer.payload.booleanValue} disabled />
 			{/if}
-		{:else if relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c)) && !(compare && hasComparisonData)}
+		{:else if hasOwnTargets && !(compare && hasComparisonData)}
 			<ImpactMonitoringChart {container} {relatedContainers} />
 		{:else}
 			<NewIndicatorChart {container} {relatedContainers} {comparisonContainers} />

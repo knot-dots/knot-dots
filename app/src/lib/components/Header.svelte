@@ -134,6 +134,26 @@
 		})
 	);
 
+	// Comparing municipalities and reviewing programs exclude each other:
+	// selecting one clears the other. Each effect only tracks its own selection.
+	$effect(() => {
+		if (
+			$compareState.selectedMunicipalities.length > 0 &&
+			untrack(() => review.selectedPrograms.length > 0)
+		) {
+			review.selectedPrograms = [];
+		}
+	});
+
+	$effect(() => {
+		if (
+			review.selectedPrograms.length > 0 &&
+			untrack(() => $compareState.selectedMunicipalities.length > 0)
+		) {
+			compareState.set({ selectedMunicipalities: [], colorAssignments: {} });
+		}
+	});
+
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);

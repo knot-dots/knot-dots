@@ -14,7 +14,9 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ReviewBanner from '$lib/components/ReviewBanner.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -26,6 +28,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
+	import { reviewIndicator } from '$lib/reviewStatus';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -68,9 +71,17 @@
 					'alpha',
 					{ signal }
 				),
+				// Objectives and effects tell whether the organization has set its own targets
 				fetchRelatedContainers(
 					guid,
-					{ organization: [organization], relationType: [predicates.enum['is-section-of']] },
+					{
+						organization: [organization],
+						relationType: [
+							predicates.enum['is-section-of'],
+							predicates.enum['is-objective-for'],
+							predicates.enum['is-measured-by']
+						]
+					},
 					'alpha',
 					{ signal }
 				)
@@ -80,6 +91,12 @@
 	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? sections);
+
+	const review = getReviewContext();
+
+	let indicatorReview = $derived(
+		reviewIndicator(container, relatedContainers, review.objectivesByIndicator.get(guid) ?? [])
+	);
 
 	let actualDataContainer = $derived(
 		relatedContainers
@@ -158,6 +175,9 @@
 			{/key}
 
 			<div class="details-section" oninput={(e) => e.stopPropagation()}>
+				{#if indicatorReview}
+					<ReviewBanner {...indicatorReview} />
+				{/if}
 				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', containerOfType(payloadTypes.enum.actual_data, container))}
 					{#if addingActualData}
 						<span class="loader"></span>

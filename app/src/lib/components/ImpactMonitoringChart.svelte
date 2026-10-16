@@ -2,12 +2,12 @@
 	import * as Plot from '@observablehq/plot';
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
+	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
 	import {
 		type Container,
 		findAncestors,
 		findLeafObjectives,
 		type IndicatorPayload,
-		isActualDataContainer,
 		isContainerWithEffect,
 		isEffectContainer,
 		isObjectiveContainer,
@@ -26,17 +26,14 @@
 	let unit = $derived($_(container.payload.unit));
 
 	let actualDataContainer = $derived(
-		relatedContainers
-			.filter(isActualDataContainer)
-			.filter(({ payload }) => payload.indicator === container.guid)
-			.toSorted((a, b) => (a.payload.source ? (b.payload.source ? 0 : -1) : 1))
+		indicatorActualDataContainers(container.guid, relatedContainers)
 	);
 
 	let actualValues = $derived(
-		actualDataContainer[0]?.payload.values.map(([key, value]) => ({
-			date: new Date(key, 0),
-			value: actualDataContainer[1]?.payload.values.find(([k]) => k == key)?.at(1) ?? value
-		})) ?? []
+		indicatorActualData(container.guid, relatedContainers).map(([year, value]) => ({
+			date: new Date(year, 0),
+			value
+		}))
 	);
 
 	let actualValuesByYear = $derived(
