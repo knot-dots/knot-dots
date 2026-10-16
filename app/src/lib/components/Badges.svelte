@@ -19,12 +19,13 @@
 		isResourceDataContainer,
 		isSimpleMeasureContainer,
 		isMeasureContainer,
-		isProgramContainer
+		isProgramContainer,
+		type AnyPayload
 	} from '$lib/models';
 	import { moduleByType } from '$lib/modules';
 
 	interface Props {
-		container: Container;
+		container: Container<AnyPayload>;
 		editable?: boolean;
 		showPropertiesTrigger?: boolean;
 	}

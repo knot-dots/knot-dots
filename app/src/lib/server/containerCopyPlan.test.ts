@@ -1448,3 +1448,43 @@ test('plans mixed-depth program, measure, goal, task, effect, category, report, 
 		subject: plan.get(sectionGuid)?.guid
 	});
 });
+
+test('remaps relation collection items when instantiating a program', () => {
+	const program = makeContainer(guids.root, {
+		template: true,
+		title: 'Program template',
+		type: payloadTypes.enum.program
+	});
+	const section = makeContainer(guids.parent, {
+		item: [guids.child, guids.missing],
+		payloadType: payloadTypes.enum.goal,
+		predicate: predicates.enum['is-part-of-program'],
+		title: 'Strategic goals',
+		type: payloadTypes.enum.relation_collection
+	});
+	const goal = makeContainer(guids.child, {
+		title: 'Strategic goal',
+		type: payloadTypes.enum.goal
+	});
+
+	const snapshot = graph(
+		guids.root,
+		[program, section, goal],
+		[
+			relation(guids.parent, predicates.enum['is-section-of'], guids.root),
+			relation(guids.child, predicates.enum['is-part-of-program'], guids.root)
+		]
+	);
+
+	const plan = createContainerCopyPlan({
+		graph: snapshot,
+		target,
+		operation: { kind: 'template-instance', rootPayload: program.payload },
+		readPolicy: policy(),
+		allocateGuid: allocator()
+	});
+
+	expect(copyFor(plan, guids.parent)?.payload).toMatchObject({
+		item: [copyFor(plan, guids.child)?.guid]
+	});
+});

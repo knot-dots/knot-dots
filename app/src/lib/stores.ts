@@ -26,6 +26,7 @@ import {
 	type PayloadType,
 	payloadTypes,
 	predicates,
+	type RelationCollectionPayload,
 	type User as UserRecord
 } from '$lib/models';
 import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
@@ -130,7 +131,7 @@ type AddObjectiveState = {
 export const addObjectiveState = writable<AddObjectiveState>({});
 
 type AddItemState = {
-	target?: Container<CustomCollectionPayload>;
+	target?: Container<CustomCollectionPayload | RelationCollectionPayload>;
 };
 
 export const addItemState = writable<AddItemState>({});

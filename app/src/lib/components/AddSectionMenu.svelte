@@ -14,11 +14,12 @@
 	import Clipboard from '~icons/knotdots/clipboard-simple';
 	import ClipboardCheck from '~icons/knotdots/clipboard-check';
 	import Collection from '~icons/knotdots/collection';
+	import Book from '~icons/knotdots/book-open-outline';
 	import ExclamationCircle from '~icons/knotdots/exclamation-circle';
+	import Gavel from '~icons/knotdots/gavel';
 	import Goal from '~icons/knotdots/goal';
 	import Grid from '~icons/knotdots/grid';
 	import Link from '~icons/knotdots/link';
-	import Video from '~icons/knotdots/video';
 	import Map from '~icons/knotdots/map';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
@@ -28,7 +29,9 @@
 	import Summary from '~icons/knotdots/summary';
 	import Text from '~icons/knotdots/text';
 	import TwoCol from '~icons/knotdots/two-column';
+	import Video from '~icons/knotdots/video';
 	import { page } from '$app/state';
+	import tooltip from '$lib/attachments/tooltip';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -53,6 +56,7 @@
 		isPageContainer,
 		isPostContainer,
 		isProgramCollectionContainer,
+		isProgramContainer,
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
@@ -68,7 +72,6 @@
 	} from '$lib/models';
 	import { hasSection } from '$lib/relations';
 	import { mayCreateContainer } from '$lib/stores';
-	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		compact?: boolean;
@@ -364,6 +367,54 @@
 						}
 					]
 				: []),
+			...(isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.goal)
+				? [
+						{
+							icon: Goal,
+							label: $_('goals'),
+							payloadType: payloadTypes.enum.goal,
+							predicate: predicates.enum['is-part-of-program'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
+			...(isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.measure)
+				? [
+						{
+							icon: Clipboard,
+							label: $_('measures'),
+							payloadType: payloadTypes.enum.measure,
+							predicate: predicates.enum['is-part-of-program'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
+			...(isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.knowledge)
+				? [
+						{
+							icon: Book,
+							label: $_('knowledge'),
+							payloadType: payloadTypes.enum.knowledge,
+							predicate: predicates.enum['is-part-of-program'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
+			...(isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.rule)
+				? [
+						{
+							icon: Gavel,
+							label: $_('rules'),
+							payloadType: payloadTypes.enum.rule,
+							predicate: predicates.enum['is-part-of-program'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
 			...(mayAddProgress
 				? [
 						{
@@ -438,15 +489,18 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}-${option.payloadType ?? 'none'}-${option.predicate ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer)}
 						<li class="menu-item">
 							<button
 								use:menu.item={{
 									value: {
-										type: option.value,
+										payloadType: option.payloadType,
+										predicate: option.predicate,
 										resourceDataType: option.resourceDataType,
-										textType: option.textType
+										textType: option.textType,
+										title: option.label,
+										type: option.value
 									}
 								}}
 								type="button"
