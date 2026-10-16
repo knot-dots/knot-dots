@@ -204,6 +204,11 @@ export type OverlayData =
 			containers: Container[];
 	  }
 	| {
+			key: 'table';
+			container: Container<AnyPayload>;
+			containers: Container[];
+	  }
+	| {
 			key: 'templates';
 			container: Container<AnyPayload>;
 			containers: Container[];
@@ -331,6 +336,23 @@ if (browser) {
 			}
 			setOverlayIfLatest({
 				key: overlayKey.enum.chapters,
+				container: result.data.container,
+				containers: result.data.containers
+			});
+		} else if (hashParams.has(overlayKey.enum.table)) {
+			const result = await preloadData(
+				resolve('/[guid=uuid]/[contentGuid=uuid]/all/table', {
+					guid: (values.data.currentOrganizationalUnit ?? values.data.currentOrganization).guid,
+					contentGuid: hashParams.get(overlayKey.enum.table) as string
+				}) +
+					'?' +
+					hashParams.toString()
+			);
+			if (result.type !== 'loaded' || result.status !== 200) {
+				return;
+			}
+			setOverlayIfLatest({
+				key: overlayKey.enum.table,
 				container: result.data.container,
 				containers: result.data.containers
 			});
