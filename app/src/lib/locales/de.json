@@ -718,6 +718,7 @@
 	"resource_table.no_subordinate_measures": "Keine nachgeordneten Maßnahmen",
 	"review": "Überprüfen",
 	"review_add_program": "Programm hinzufügen",
+	"review_banner.no_wanted_trend": "keine gewünschte Entwicklung hinterlegt",
 	"review_banner.title": "Ampel-Check",
 	"review_banner.wanted_trend": "{trend, select, up {gewünscht: steigen} down {gewünscht: sinken} other {gewünscht: gleichbleibend}}",
 	"review_clear_all": "Alle entfernen",
@@ -725,7 +726,9 @@
 	"review_status.against_target_direction": "Gegen Zielrichtung",
 	"review_status.diverging_targets": "Abweichende Ziele",
 	"review_status.in_target_direction": "In Zielrichtung",
+	"review_status.insufficient_data": "Zu wenige Daten",
 	"review_status.no_clear_trend": "Kein klarer Trend",
+	"review_status.no_target": "Keine Zielsetzung",
 	"review_with": "Überprüfen anhand",
 	"role": {
 		"admin": "Admin",

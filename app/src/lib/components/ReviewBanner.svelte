@@ -9,13 +9,13 @@
 		type ProgramPayload,
 		type TrendDirection
 	} from '$lib/models';
-	import type { ReviewStatus } from '$lib/reviewStatus';
+	import { isAssessed, type ReviewStatus } from '$lib/reviewStatus';
 	import { reviewStatusAuraColor, reviewStatusColors, reviewStatusIcons } from '$lib/theme/models';
 
 	interface Props {
 		programs: Array<{
 			container: Container<ProgramPayload>;
-			status: ReviewStatus | undefined;
+			status: ReviewStatus;
 			targetTrend: TrendDirection | undefined;
 		}>;
 		status: ReviewStatus;
@@ -50,14 +50,16 @@
 	<ul>
 		{#each programs as { container, status, targetTrend } (container.guid)}
 			<li>
-				{#if status}
+				{#if isAssessed(status)}
 					<TargetCheck {status} />
 				{/if}
 				<div>
 					<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
 						{container.payload.title}
 					</a>
-					{#if targetTrend !== undefined}
+					{#if status === 'review_status.no_target'}
+						<span>{$_('review_banner.no_wanted_trend')}</span>
+					{:else if targetTrend !== undefined}
 						<span>
 							{$_('review_banner.wanted_trend', { values: { trend: trendNames.get(targetTrend) } })}
 						</span>
@@ -73,7 +75,7 @@
 		/* Decorative glow near the top right corner, see target-check-aura in Figma */
 		background: radial-gradient(
 				circle at calc(100% - 20px) 20px,
-				var(--aura-color) 30px,
+				var(--aura-color, transparent) 30px,
 				transparent 170px
 			)
 			#ffffff;
