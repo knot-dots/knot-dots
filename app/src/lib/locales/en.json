@@ -718,6 +718,8 @@
 	"resource_table.no_subordinate_measures": "No subordinate measures",
 	"review": "Review",
 	"review_add_program": "Add program",
+	"review_banner.title": "Target check",
+	"review_banner.wanted_trend": "{trend, select, up {wanted: rising} down {wanted: falling} other {wanted: stable}}",
 	"review_clear_all": "Clear all",
 	"review_dialog_title": "Select programs",
 	"review_status.against_target_direction": "Against target direction",

@@ -20,7 +20,10 @@
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
+	import ReviewBanner from '$lib/components/ReviewBanner.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
+	import { indicatorActualData } from '$lib/indicatorActualData';
 	import {
 		type AnyPayload,
 		type Container,
@@ -33,6 +36,7 @@
 		isRelatedTo,
 		titleForProgramCollection
 	} from '$lib/models';
+	import { reviewStatusByProgram, reviewStatusFor } from '$lib/reviewStatus';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
@@ -67,6 +71,8 @@
 	// Fetch comparison data for selected municipalities
 	const comparisonData = createComparisonData({ indicatorGuids: () => [guid] });
 
+	const review = getReviewContext();
+
 	setBulkActionContext({
 		actions: ['visibility', 'delete'],
 		onSuccess: relatedContainersQuery.refetch,
@@ -78,6 +84,33 @@
 			({ organizational_unit }) =>
 				!organizational_unit || !selectedMunicipalityGuids.includes(organizational_unit)
 		) ?? sections
+	);
+
+	// Objectives and effects of the current organization for this indicator
+	let hasOwnTargets = $derived(
+		relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))
+	);
+
+	let actualData = $derived(indicatorActualData(guid, relatedContainers));
+
+	let reviewObjectives = $derived(review.objectivesByIndicator.get(guid) ?? []);
+
+	// The review compares the indicator with programs of others, so it is left
+	// out when the organization has set its own targets for the indicator.
+	const reviewStatus = $derived(
+		hasOwnTargets
+			? undefined
+			: reviewStatusFor(
+					actualData,
+					reviewObjectives.map(({ objective }) => objective.payload)
+				)
+	);
+
+	let programReviews = $derived(
+		reviewStatusByProgram(actualData, reviewObjectives).flatMap(({ program, ...rest }) => {
+			const container = review.selectedPrograms.find(({ guid }) => guid === program);
+			return container ? [{ container, ...rest }] : [];
+		})
 	);
 
 	let comparisonContainers = $derived(comparisonData.comparisonDataMap.get(guid));
@@ -101,6 +134,9 @@
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
 			<div class="details-section">
+				{#if reviewStatus}
+					<ReviewBanner programs={programReviews} status={reviewStatus} />
+				{/if}
 				<div class="segmented-button">
 					<label class="button">
 						<ChartLineIcon />

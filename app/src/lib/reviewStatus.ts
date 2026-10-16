@@ -1,3 +1,4 @@
+import type { ReviewObjective } from '$lib/client/fetchProgramObjectives';
 import { type ObjectivePayload, type TrendDirection, trendDirection } from '$lib/models';
 
 export type ReviewStatus =
@@ -42,5 +43,34 @@ export function reviewStatusFor(
 	return computeReviewStatus(
 		trendDirection(actualData),
 		objectives.map(targetTrend).filter((trend) => trend !== undefined)
+	);
+}
+
+export type ProgramReview = {
+	program: string;
+	status: ReviewStatus | undefined;
+	targetTrend: TrendDirection | undefined;
+};
+
+// Compares an indicator's actual data with the objectives of each program
+// under review on its own. The target trend is undefined when a program has
+// no target trend or diverging ones.
+export function reviewStatusByProgram(
+	actualData: Array<[number, number]>,
+	objectives: ReviewObjective[]
+): ProgramReview[] {
+	const actualTrend = trendDirection(actualData);
+	return Array.from(
+		Map.groupBy(objectives, ({ program }) => program),
+		([program, programObjectives]) => {
+			const targetTrends = programObjectives
+				.map(({ objective }) => targetTrend(objective.payload))
+				.filter((trend) => trend !== undefined);
+			return {
+				program,
+				status: computeReviewStatus(actualTrend, targetTrends),
+				targetTrend: new Set(targetTrends).size === 1 ? targetTrends[0] : undefined
+			};
+		}
 	);
 }
