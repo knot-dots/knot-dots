@@ -7,7 +7,7 @@
 	import Close from '~icons/knotdots/close';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
-	import { filterCategoryContext } from '$lib/categoryOptions';
+	import { filterCategoryContext, findTermLabel } from '$lib/categoryOptions';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
@@ -360,7 +360,7 @@
 				)?.payload.name ?? value
 			);
 		}
-		return page.data.categoryContext.labels.get(value) ?? $_(value);
+		return findTermLabel(page.data.categoryContext.options[key] ?? [], value) ?? $_(value);
 	}
 
 	async function confirm() {
