@@ -590,7 +590,7 @@
 								<LightningBolt />
 								<span>{filterValueLabel('organization', value)}</span>
 								<button
-									class="button button-remove"
+									class="action-button"
 									type="button"
 									onclick={() =>
 										(checkedOrganizations = checkedOrganizations.filter((v) => v !== value))}
@@ -605,7 +605,7 @@
 								<LightningBolt />
 								<span>{filterValueLabel('organizationalUnit', value)}</span>
 								<button
-									class="button button-remove"
+									class="action-button"
 									type="button"
 									onclick={() =>
 										(checkedOrganizationalUnits = checkedOrganizationalUnits.filter(
