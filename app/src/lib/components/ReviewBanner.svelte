@@ -2,33 +2,40 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import TargetCheck from '$lib/components/TargetCheck.svelte';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
+	import { overlayKey, overlayURL } from '$lib/models';
 	import {
-		type Container,
-		overlayKey,
-		overlayURL,
-		type ProgramPayload,
-		type TrendDirection
-	} from '$lib/models';
-	import { isAssessed, type ReviewStatus } from '$lib/reviewStatus';
+		isAssessed,
+		type ProgramReview,
+		type ReviewStatus,
+		type Target
+	} from '$lib/reviewStatus';
 	import { reviewStatusAuraColor, reviewStatusColors, reviewStatusIcons } from '$lib/theme/models';
 
 	interface Props {
-		programs: Array<{
-			container: Container<ProgramPayload>;
-			status: ReviewStatus;
-			targetTrend: TrendDirection | undefined;
-		}>;
+		programs: ProgramReview[];
 		status: ReviewStatus;
 	}
 
 	let { programs, status }: Props = $props();
 
+	const review = getReviewContext();
+
+	let programRows = $derived(
+		programs.flatMap((programReview) => {
+			const container = review.selectedPrograms.find(({ guid }) => guid === programReview.program);
+			return container ? [{ ...programReview, container }] : [];
+		})
+	);
+
 	const Icon = $derived(reviewStatusIcons.get(status));
 
-	const trendNames = new Map<TrendDirection, string>([
+	const targetNames = new Map<Target, string>([
 		[1, 'up'],
 		[0, 'stable'],
-		[-1, 'down']
+		[-1, 'down'],
+		[true, 'fulfilled'],
+		[false, 'unfulfilled']
 	]);
 </script>
 
@@ -48,7 +55,7 @@
 	</header>
 
 	<ul>
-		{#each programs as { container, status, targetTrend } (container.guid)}
+		{#each programRows as { container, status, target } (container.guid)}
 			<li>
 				{#if isAssessed(status)}
 					<TargetCheck {status} />
@@ -58,10 +65,10 @@
 						{container.payload.title}
 					</a>
 					{#if status === 'review_status.no_target'}
-						<span>{$_('review_banner.no_wanted_trend')}</span>
-					{:else if targetTrend !== undefined}
+						<span>{$_('review_banner.no_target')}</span>
+					{:else if target !== undefined}
 						<span>
-							{$_('review_banner.wanted_trend', { values: { trend: trendNames.get(targetTrend) } })}
+							{$_('review_banner.target', { values: { target: targetNames.get(target) } })}
 						</span>
 					{/if}
 				</div>

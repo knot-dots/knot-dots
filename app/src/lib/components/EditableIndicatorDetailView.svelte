@@ -23,7 +23,6 @@
 	import ReviewBanner from '$lib/components/ReviewBanner.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
-	import { indicatorActualData } from '$lib/indicatorActualData';
 	import {
 		type AnyPayload,
 		type Container,
@@ -36,7 +35,7 @@
 		isRelatedTo,
 		titleForProgramCollection
 	} from '$lib/models';
-	import { reviewStatusByProgram, reviewStatusFor } from '$lib/reviewStatus';
+	import { reviewIndicator } from '$lib/reviewStatus';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
@@ -86,31 +85,8 @@
 		) ?? sections
 	);
 
-	// Objectives and effects of the current organization for this indicator
-	let hasOwnTargets = $derived(
-		relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))
-	);
-
-	let actualData = $derived(indicatorActualData(guid, relatedContainers));
-
-	let reviewObjectives = $derived(review.objectivesByIndicator.get(guid) ?? []);
-
-	// The review compares the indicator with programs of others, so it is left
-	// out when the organization has set its own targets for the indicator.
-	const reviewStatus = $derived(
-		hasOwnTargets
-			? undefined
-			: reviewStatusFor(
-					actualData,
-					reviewObjectives.map(({ objective }) => objective.payload)
-				)
-	);
-
-	let programReviews = $derived(
-		reviewStatusByProgram(actualData, reviewObjectives).flatMap(({ program, ...rest }) => {
-			const container = review.selectedPrograms.find(({ guid }) => guid === program);
-			return container ? [{ container, ...rest }] : [];
-		})
+	let indicatorReview = $derived(
+		reviewIndicator(container, relatedContainers, review.objectivesByIndicator.get(guid) ?? [])
 	);
 
 	let comparisonContainers = $derived(comparisonData.comparisonDataMap.get(guid));
@@ -134,8 +110,8 @@
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
 			<div class="details-section">
-				{#if reviewStatus}
-					<ReviewBanner programs={programReviews} status={reviewStatus} />
+				{#if indicatorReview}
+					<ReviewBanner {...indicatorReview} />
 				{/if}
 				<div class="segmented-button">
 					<label class="button">

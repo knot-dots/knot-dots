@@ -9,7 +9,6 @@
 	import Summary from '$lib/components/Summary.svelte';
 	import TargetCheck from '$lib/components/TargetCheck.svelte';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
-	import { indicatorActualData } from '$lib/indicatorActualData';
 	import {
 		type ActualDataPayload,
 		type BinaryIndicatorPayload,
@@ -20,7 +19,7 @@
 		isEffectContainer,
 		isObjectiveContainer
 	} from '$lib/models';
-	import { reviewStatusFor } from '$lib/reviewStatus';
+	import { reviewIndicator } from '$lib/reviewStatus';
 	import { reviewStatusAuraColor } from '$lib/theme/models';
 
 	interface Props {
@@ -57,17 +56,12 @@
 
 	const review = getReviewContext();
 
-	// The review compares the indicator with programs of others, so it is left
-	// out when the organization has set its own targets for the indicator.
 	const reviewStatus = $derived(
-		hasOwnTargets
-			? undefined
-			: reviewStatusFor(
-					indicatorActualData(container.guid, relatedContainers),
-					(review.objectivesByIndicator.get(container.guid) ?? []).map(
-						({ objective }) => objective.payload
-					)
-				)
+		reviewIndicator(
+			container,
+			relatedContainers,
+			review.objectivesByIndicator.get(container.guid) ?? []
+		)?.status
 	);
 
 	const auraColor = $derived(reviewStatus && reviewStatusAuraColor(reviewStatus));
