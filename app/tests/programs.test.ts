@@ -60,3 +60,48 @@ test.describe('Level board', () => {
 		}
 	});
 });
+
+test.describe('Table', () => {
+	test.use({ storageState: 'tests/.auth/orgadmin.json' });
+
+	test('program content can be viewed as table in overlay and full-screen', async ({
+		testMeasure,
+		dotsBoard,
+		isMobile,
+		testProgram
+	}) => {
+		test.skip(isMobile, 'Workspace menu is not visible on mobile');
+
+		await dotsBoard.goto(`/${testProgram.organization}`);
+		await dotsBoard.card(testProgram.payload.title).click();
+		await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+
+		await dotsBoard.overlay.locator.getByRole('button', { name: 'Page', exact: true }).click();
+		await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Table', exact: true }).click();
+		await expect(
+			dotsBoard.overlay.locator
+				.getByRole('table')
+				.getByRole('row')
+				.filter({ hasText: testMeasure.payload.title })
+		).toHaveCount(1);
+
+		await dotsBoard.overlay.fullScreenButton.click();
+		await expect(
+			dotsBoard.page
+				.getByRole('navigation', { name: 'Breadcrumb' })
+				.getByRole('listitem')
+				.nth(1)
+				.getByRole('link')
+		).toHaveText(testProgram.payload.title);
+
+		await expect(
+			dotsBoard.page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('listitem').nth(2)
+		).toHaveText('Table');
+		await expect(
+			dotsBoard.page
+				.getByRole('table')
+				.getByRole('row')
+				.filter({ hasText: testMeasure.payload.title })
+		).toHaveCount(1);
+	});
+});
