@@ -54,9 +54,15 @@ test.describe('Level board', () => {
 				dotsBoard.overlay.locator.locator(':has-text("Managed by") + .value')
 			).toHaveText(`Team ${testProgram.payload.title}`);
 
-			// Delete the item
-			await dotsBoard.overlay.disclosePropertiesButton.click();
-			await dotsBoard.overlay.delete();
+			// Verify the created item appears in the sections of the program detail view
+			await dotsBoard.overlay.editModeToggle.uncheck();
+			await dotsBoard.overlay.locator
+				.getByRole('link', { exact: true, name: testProgram.payload.title })
+				.click();
+			await expect(dotsBoard.overlay.title).toHaveText(testProgram.payload.title);
+			await expect(
+				dotsBoard.overlay.sections.getByRole('heading', { name: title, level: 2 })
+			).toBeVisible();
 		}
 	});
 });

@@ -61,11 +61,7 @@ export class LandingPage extends DetailPage {
 	}
 }
 
-export class ProgramPage extends BasePage {
-	get chapters() {
-		return this.page.locator('.chapters .details-section');
-	}
-
+export class ProgramPage extends DetailPage {
 	async goto(container: Container<ProgramPayload>) {
 		await this.page.goto(
 			`${container.organizational_unit ?? container.organization}/${container.guid}`

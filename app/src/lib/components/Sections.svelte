@@ -35,13 +35,15 @@
 		editable?: boolean;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		sortable?: boolean;
 	}
 
 	let {
 		container = $bindable(),
 		editable: editableOverride,
 		preview = false,
-		relatedContainers
+		relatedContainers,
+		sortable = true
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -249,7 +251,7 @@
 {/if}
 
 {#if !preview}
-	<TableOfContents {container} {editable} {handleSort} {sections} />
+	<TableOfContents {container} {editable} {handleSort} {sections} {sortable} />
 {/if}
 
 <ul
@@ -275,6 +277,7 @@
 				handleAddSection={createAddSectionHandler(i + 1)}
 				heading={heading(i)}
 				{preview}
+				{sortable}
 			/>
 		</li>
 	{/each}

@@ -694,20 +694,6 @@ export function createContainer(
 			}));
 			const relationResult = await insertManyContainerRelations(relations, txConnection);
 
-			// Shift the sibling positions within every program the new container
-			// became part of; each program keeps its own ordering.
-			for (const isPartOfProgramRelation of relationResult.filter(
-				({ predicate }) => predicate == predicates.enum['is-part-of-program']
-			)) {
-				await txConnection.any(sql.typeAlias(`void`)`
-					UPDATE container_relation SET position = position + 1
-					WHERE predicate = ${predicates.enum['is-part-of-program']}
-						AND object = ${isPartOfProgramRelation.object}
-						AND subject != ${containerResult.guid}
-						AND position >= ${isPartOfProgramRelation.position}
-				`);
-			}
-
 			// the caller hands the created container straight back to the client,
 			// so it carries the request user's grants like any read result
 			const [created] = await enrichContainers(txConnection, [

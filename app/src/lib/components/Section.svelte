@@ -83,6 +83,7 @@
 		parentContainer: Container<AnyPayload>;
 		preview?: boolean;
 		relatedContainers: Container<AnyPayload>[];
+		sortable?: boolean;
 	}
 
 	let {
@@ -92,7 +93,8 @@
 		heading = 'h2',
 		parentContainer = $bindable(),
 		preview = false,
-		relatedContainers = $bindable()
+		relatedContainers = $bindable(),
+		sortable = true
 	}: Props = $props();
 
 	let editable = $derived(editableOverride ?? $applicationState.containerDetailView.editable);
@@ -138,7 +140,7 @@
 			is its unconditional first option — while sorting requires the update
 			grant on the section itself. -->
 		{#if editable && ($ability.can('update', container) || $mayCreateContainer(payloadTypes.enum.text, parentContainer))}
-			<DraggableActionBar {container} draggable={$ability.can('update', container)}>
+			<DraggableActionBar {container} draggable={sortable && $ability.can('update', container)}>
 				{#snippet actions()}
 					<AddSectionMenu bind:relatedContainers bind:parentContainer compact {handleAddSection} />
 				{/snippet}
