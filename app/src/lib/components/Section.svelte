@@ -20,6 +20,7 @@
 	import EditableMeasureCollection from '$lib/components/EditableMeasureCollection.svelte';
 	import EditableObjectiveCollection from '$lib/components/EditableObjectiveCollection.svelte';
 	import EditableProgramCollection from '$lib/components/EditableProgramCollection.svelte';
+	import EditableProgramPartSection from '$lib/components/EditableProgramPartSection.svelte';
 	import EditableProgressSection from '$lib/components/EditableProgressSection.svelte';
 	import EditableRelationCollection from '$lib/components/EditableRelationCollection.svelte';
 	import EditableResourceCollection from '$lib/components/EditableResourceCollection.svelte';
@@ -50,6 +51,7 @@
 		isImageContainer,
 		isIndicatorCollectionContainer,
 		isInlineHelpTextContainer,
+		isKnowledgeContainer,
 		isMapContainer,
 		isMeasureCollectionContainer,
 		isMeasureContainer,
@@ -57,10 +59,13 @@
 		isOrganizationalUnitContainer,
 		isOrganizationContainer,
 		isProgramCollectionContainer,
+		isProgramContainer,
 		isProgressContainer,
 		isRelationCollectionContainer,
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
+		isRuleContainer,
+		isSimpleMeasureContainer,
 		isSummaryContainer,
 		isTaskCollectionContainer,
 		isTeaserCollectionContainer,
@@ -147,6 +152,51 @@
 				bind:relatedContainers
 				{editable}
 				{heading}
+			/>
+		{:else if isGoalContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isKnowledgeContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isMeasureContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isRuleContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
+			/>
+		{:else if isSimpleMeasureContainer(container) && isProgramContainer(parentContainer)}
+			<EditableProgramPartSection
+				bind:container
+				bind:parentContainer
+				bind:relatedContainers
+				editable={editable && !isShadowItem}
+				{heading}
+				{preview}
 			/>
 		{:else if isChapterContainer(container)}
 			<EditableChapterSection

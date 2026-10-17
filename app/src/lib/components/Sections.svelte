@@ -15,7 +15,12 @@
 		isContainer,
 		isContainerWithColor,
 		isContainerWithTitle,
+		isGoalContainer,
+		isKnowledgeContainer,
+		isMeasureContainer,
 		isRelationCollectionContainer,
+		isRuleContainer,
+		isSimpleMeasureContainer,
 		isTaskCollectionContainer,
 		isTextContainer,
 		type NewContainer,
@@ -119,6 +124,22 @@
 					predicate: predicates.enum['is-section-of']
 				}
 			];
+
+			if (
+				[
+					isGoalContainer,
+					isKnowledgeContainer,
+					isMeasureContainer,
+					isRuleContainer,
+					isSimpleMeasureContainer
+				].some((typePredicate) => typePredicate(newContainer))
+			) {
+				newContainer.relation.push({
+					object: container.guid,
+					position: 0,
+					predicate: predicates.enum['is-part-of-program']
+				});
+			}
 
 			// Handle resource data collections with resourceDataType
 			if (

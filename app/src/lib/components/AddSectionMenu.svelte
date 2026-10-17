@@ -7,6 +7,7 @@
 	import File from '~icons/flowbite/file-solid';
 	import Quote from '~icons/flowbite/quote-solid';
 	import BasicData from '~icons/knotdots/basic-data';
+	import BookOpen from '~icons/knotdots/book-open-outline';
 	import Chapter from '~icons/knotdots/chapter';
 	import ChartBar from '~icons/knotdots/chart-bar';
 	import ChartLine from '~icons/knotdots/chart-line';
@@ -19,6 +20,7 @@
 	import Grid from '~icons/knotdots/grid';
 	import Link from '~icons/knotdots/link';
 	import Map from '~icons/knotdots/map';
+	import Gavel from '~icons/knotdots/gavel';
 	import Image from '~icons/knotdots/placeholder-image';
 	import Plus from '~icons/knotdots/plus';
 	import Program from '~icons/knotdots/program';
@@ -54,6 +56,7 @@
 		isPageContainer,
 		isPostContainer,
 		isProgramCollectionContainer,
+		isProgramContainer,
 		isProgressContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
@@ -215,6 +218,31 @@
 
 	let mayAddChapter = $derived(isReportContainer(parentContainer));
 
+	let mayAddGoal = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.goal)
+	);
+
+	let mayAddKnowledge = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.knowledge)
+	);
+
+	let mayAddMeasure = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.measure)
+	);
+
+	let mayAddRule = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.rule)
+	);
+
+	let mayAddSimpleMeasure = $derived(
+		isProgramContainer(parentContainer) &&
+			parentContainer.payload.chapterType.includes(payloadTypes.enum.simple_measure)
+	);
+
 	let mayAddIgniteVideo = $derived(
 		isHelpContainer(parentContainer) ||
 			isEventContainer(parentContainer) ||
@@ -250,6 +278,23 @@
 							icon: Chapter,
 							label: $_('chapter'),
 							value: payloadTypes.enum.chapter
+						}
+					]
+				: []),
+			...(mayAddGoal ? [{ icon: Goal, label: $_('goal'), value: payloadTypes.enum.goal }] : []),
+			...(mayAddKnowledge
+				? [{ icon: BookOpen, label: $_('knowledge'), value: payloadTypes.enum.knowledge }]
+				: []),
+			...(mayAddMeasure
+				? [{ icon: Clipboard, label: $_('measure'), value: payloadTypes.enum.measure }]
+				: []),
+			...(mayAddRule ? [{ icon: Gavel, label: $_('rule'), value: payloadTypes.enum.rule }] : []),
+			...(mayAddSimpleMeasure
+				? [
+						{
+							icon: Clipboard,
+							label: $_('simple_measure'),
+							value: payloadTypes.enum.simple_measure
 						}
 					]
 				: []),
