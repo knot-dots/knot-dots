@@ -83,3 +83,15 @@ test('rejects a disallowed browser origin', async () => {
 	expect(response.status).toBe(403);
 	expect(verifyAccessToken).not.toHaveBeenCalled();
 });
+
+test('forbids caching of authorized and rejected responses', async () => {
+	fetchMcp.mockResolvedValue(
+		new Response('{}', { headers: { 'Cache-Control': 'no-cache, no-transform' }, status: 200 })
+	);
+
+	const authorized = await post({ Authorization: `Bearer ${token}` });
+	const rejected = await post();
+
+	expect(authorized.headers.get('cache-control')).toBe('no-store, no-transform');
+	expect(rejected.headers.get('cache-control')).toBe('no-store, no-transform');
+});

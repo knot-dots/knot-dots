@@ -10,7 +10,19 @@ import type { RequestHandler } from './$types';
 
 const allowedHostname = new URL(env.PUBLIC_BASE_URL).hostname;
 
-const handle: RequestHandler = async ({ locals, request }) => {
+// Responses depend on the bearer token and must never be stored by shared
+// caches such as the edge pipeline in front of the load balancer.
+function withoutCaching(response: Response): Response {
+	const headers = new Headers(response.headers);
+	headers.set('Cache-Control', 'no-store, no-transform');
+	return new Response(response.body, {
+		headers,
+		status: response.status,
+		statusText: response.statusText
+	});
+}
+
+const respond: RequestHandler = async ({ locals, request }) => {
 	const rejected =
 		hostHeaderValidationResponse(request, [allowedHostname]) ??
 		originValidationResponse(request, [allowedHostname]);
@@ -28,5 +40,7 @@ const handle: RequestHandler = async ({ locals, request }) => {
 
 	return mcpHandler.fetch(request, { authInfo });
 };
+
+const handle: RequestHandler = async (event) => withoutCaching(await respond(event));
 
 export { handle as DELETE, handle as GET, handle as POST };

@@ -128,7 +128,29 @@ export const withAuthentication: Handle = ({ event, resolve }) => {
 	return handle({ event, resolve });
 };
 
+// Keeps responses out of shared caches such as the edge pipeline in front of
+// the load balancer unless a route opts in by setting Cache-Control itself.
+// Immutable build assets are served before the hooks run and keep their
+// long-lived caching headers. The response is rebuilt because the headers of
+// responses passed through from fetch or created by Response.redirect are
+// immutable.
+export const withCacheControl: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+	if (response.headers.has('cache-control')) {
+		return response;
+	}
+
+	const headers = new Headers(response.headers);
+	headers.set('cache-control', 'private, no-store');
+	return new Response(response.body, {
+		headers,
+		status: response.status,
+		statusText: response.statusText
+	});
+};
+
 export const handle = sequence(
+	withCacheControl,
 	withLogger,
 	// ahead of authentication so that the session callback sees the
 	// deployment-governed flags via getFeatures()
