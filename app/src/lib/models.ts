@@ -1566,6 +1566,7 @@ const initialHelpPayload = helpPayload.partial({ title: true });
 const htmlPayload = z.strictObject({
 	...sectionStyle.shape,
 	body: z.string().trim().default(''),
+	doubleWidth: z.boolean().default(false),
 	title: z.string().trim().default(''),
 	type: z.literal(payloadTypes.enum.html),
 	visibility: visibility.default(visibility.enum['organization'])
@@ -3097,6 +3098,19 @@ export function isTeaserLikeContainer(
 			payloadTypes.enum.col_content
 		] as PayloadType[]
 	).includes(container.payload.type);
+}
+
+export function isContainerWithDoubleWidth(
+	container: Container<AnyPayload>
+): container is Container<
+	| ColContentPayload
+	| HtmlPayload
+	| InfoBoxPayload
+	| QuotePayload
+	| TeaserHighlightPayload
+	| TeaserPayload
+> {
+	return isTeaserLikeContainer(container) || isHtmlContainer(container);
 }
 
 export function isContainer(

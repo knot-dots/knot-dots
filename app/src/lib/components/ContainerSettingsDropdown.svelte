@@ -13,7 +13,7 @@
 		backgroundColor,
 		type Container,
 		isContainerWithColor,
-		isTeaserLikeContainer
+		isContainerWithDoubleWidth
 	} from '$lib/models';
 	import { ability } from '$lib/stores';
 	import visibilityOptions from '$lib/visibilityOptions.svelte';
@@ -54,7 +54,7 @@
 	}
 </script>
 
-{#if $ability.can('update', container, 'payload.visibility') || ($ability.can('update', container) && isContainerWithColor(container)) || ($ability.can('update', container) && isTeaserLikeContainer(container)) || $ability.can('delete', container)}
+{#if $ability.can('update', container, 'payload.visibility') || ($ability.can('update', container) && isContainerWithColor(container)) || ($ability.can('update', container) && isContainerWithDoubleWidth(container)) || $ability.can('delete', container)}
 	<CascadingMenu title={$_('container_settings_dropdown.title')}>
 		{#snippet children(
 			openSubMenuTitle: string,
@@ -76,7 +76,7 @@
 					</button>
 				{/if}
 
-				{#if isTeaserLikeContainer(container) && $ability.can('update', container)}
+				{#if isContainerWithDoubleWidth(container) && $ability.can('update', container)}
 					<label class="cascading-menu-item">
 						<DoubleWidth />
 						<span>

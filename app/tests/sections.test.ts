@@ -5,6 +5,7 @@ import {
 	predicates,
 	type ProgressPayload
 } from '$lib/models';
+import { DotsBoard } from './boards';
 import { createContainer, deleteContainer, expect, test } from './fixtures';
 
 test.use({ suiteId: 'sections' });
@@ -339,4 +340,65 @@ test('computed progress appears on cards with a single request', async ({
 	for (const section of sections) {
 		await deleteContainer(adminContext, section);
 	}
+});
+
+test.describe('HTML section', () => {
+	test.use({ storageState: 'tests/.auth/admin.json' });
+
+	test('can be shown in double width', async ({ browser, dotsBoard, testReport }) => {
+		await dotsBoard.goto(`/${testReport.organization}`);
+		await dotsBoard.card(testReport.payload.title).click();
+		await dotsBoard.overlay.editModeToggle.check();
+
+		const section = await dotsBoard.overlay.addSection('HTML');
+		const saveResponseForBody = dotsBoard.page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
+		await section.getByRole('textbox').fill('<p>Embedded content</p>');
+		await saveResponseForBody;
+
+		await section.hover();
+		await section.getByRole('button', { name: 'Settings' }).click();
+		const doubleWidthToggle = section.getByRole('checkbox', { name: 'Double width' });
+		await expect(doubleWidthToggle).not.toBeChecked();
+		const saveResponseForDoubleWidth = dotsBoard.page.waitForResponse(
+			(r) => r.url().includes('/revision') && r.request().method() === 'POST'
+		);
+		await doubleWidthToggle.check();
+		await saveResponseForDoubleWidth;
+
+		// The setting persists and applies in the read view
+		await dotsBoard.page.reload();
+		await dotsBoard.overlay.editModeToggle.uncheck();
+		const content = dotsBoard.overlay.locator.getByText('Embedded content');
+		await expect(content).toBeVisible();
+		await expect(dotsBoard.overlay.locator.locator('.double-width')).toContainText(
+			'Embedded content'
+		);
+
+		// The section never gets wider than the available space
+		await dotsBoard.page.setViewportSize({ width: 375, height: 812 });
+		const contentBox = await content.boundingBox();
+		expect(contentBox!.x + contentBox!.width).toBeLessThanOrEqual(375);
+
+		// Only those who may edit the section see the toggle
+		const orgadminContext = await browser.newContext({
+			storageState: 'tests/.auth/orgadmin.json'
+		});
+		const orgadminBoard = new DotsBoard(await orgadminContext.newPage());
+		await orgadminBoard.goto(`/${testReport.organization}`);
+		await orgadminBoard.card(testReport.payload.title).click();
+		await orgadminBoard.overlay.editModeToggle.check();
+		const sectionForOrgadmin = orgadminBoard.overlay.sections.filter({
+			has: orgadminBoard.page.locator('.double-width')
+		});
+		await expect(sectionForOrgadmin).toContainText('Embedded content');
+		await sectionForOrgadmin.hover();
+		await expect(sectionForOrgadmin.getByRole('checkbox', { name: 'Double width' })).toHaveCount(0);
+		await orgadminContext.close();
+
+		await dotsBoard.page.setViewportSize({ width: 1280, height: 720 });
+		await dotsBoard.overlay.editModeToggle.check();
+		await dotsBoard.overlay.deleteSection(dotsBoard.overlay.sections.last());
+	});
 });

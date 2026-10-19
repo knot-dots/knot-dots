@@ -36,21 +36,23 @@
 	}
 </script>
 
-<header>
-	{#if editable}
-		<ul class="inline-actions is-visible-on-hover">
-			<li>
-				<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
-			</li>
-		</ul>
-	{/if}
-</header>
+<div class={{ 'double-width': container.payload.doubleWidth }}>
+	<header>
+		{#if editable}
+			<ul class="inline-actions is-visible-on-hover">
+				<li>
+					<ContainerSettingsDropdown bind:container bind:parentContainer bind:relatedContainers />
+				</li>
+			</ul>
+		{/if}
+	</header>
 
-{#if editable && $ability.can('update', container)}
-	<textarea bind:value={container.payload.body} />
-{:else}
-	<div {@attach appendHTML(container.payload.body)}></div>
-{/if}
+	{#if editable && $ability.can('update', container)}
+		<textarea bind:value={container.payload.body} />
+	{:else}
+		<div {@attach appendHTML(container.payload.body)}></div>
+	{/if}
+</div>
 
 <style>
 	textarea {
