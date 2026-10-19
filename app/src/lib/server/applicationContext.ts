@@ -100,13 +100,13 @@ export async function loadApplicationContext({
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 
-		const defaultOrganizationGuid =
-			organizations.find(({ payload }) => payload.default)?.guid ?? currentOrganization.guid;
+		const defaultOrganization =
+			organizations.find(({ payload }) => payload.default) ?? currentOrganization;
 
 		const [categoryContext, organizationalUnits] = await Promise.all([
 			loadCategoryContext({
 				connect,
-				scope: [currentOrganization.guid, defaultOrganizationGuid],
+				scope: [currentOrganization.guid, defaultOrganization.guid],
 				user: locals.user
 			}),
 			filterVisibleAsync(
@@ -134,7 +134,7 @@ export async function loadApplicationContext({
 			categoryContext,
 			currentOrganization,
 			currentOrganizationalUnit,
-			defaultOrganizationGuid,
+			defaultOrganization,
 			features: locals.features,
 			organizations,
 			organizationalUnits
