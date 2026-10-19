@@ -50,6 +50,7 @@
 	let favoriteList = $state({
 		organization: page.data.currentOrganization.payload.favorite,
 		organizationalUnit: page.data.currentOrganizationalUnit?.payload.favorite ?? [],
+		platform: page.data.defaultOrganization.payload.platformFavorite ?? [],
 		user: [...($user.settings.favorite ?? [])]
 	});
 

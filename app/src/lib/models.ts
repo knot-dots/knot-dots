@@ -1960,6 +1960,15 @@ export const organizationPayload = z.strictObject({
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
+	platformFavorite: z
+		.array(
+			z.object({
+				href: z.string(),
+				icon: z.url().optional(),
+				title: z.string().trim()
+			})
+		)
+		.optional(),
 	propertiesConfiguration: propertiesConfiguration.default({}),
 	slug: z
 		.string()

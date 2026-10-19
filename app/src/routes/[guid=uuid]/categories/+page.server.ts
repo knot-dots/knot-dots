@@ -10,11 +10,11 @@ export const load: PageServerLoad = async ({ locals, parent, url }) => {
 		error(401, { message: unwrapFunctionStore(_)('error.unauthorized') });
 	}
 
-	const { currentOrganization, defaultOrganizationGuid } = await parent();
+	const { currentOrganization, defaultOrganization } = await parent();
 
 	const containers = (await locals.pool.connect(
 		getManyContainers(
-			[currentOrganization.guid, defaultOrganizationGuid],
+			[currentOrganization.guid, defaultOrganization.guid],
 			{
 				terms: url.searchParams.get('terms') ?? '',
 				type: [payloadTypes.enum.category, payloadTypes.enum.term]

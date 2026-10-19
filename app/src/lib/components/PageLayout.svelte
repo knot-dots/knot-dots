@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setContext, type Snippet } from 'svelte';
+	import { getContext, setContext, type Snippet } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import Overlay from '$lib/components/Overlay.svelte';
@@ -25,19 +25,7 @@
 	// svelte-ignore non_reactive_update
 	let createEffectDialog: HTMLDialogElement;
 
-	let sidebarExpanded: boolean | undefined = $state(undefined);
-
-	setContext('sidebar', {
-		get expanded() {
-			return sidebarExpanded;
-		},
-		collapse() {
-			sidebarExpanded = false;
-		},
-		expand() {
-			sidebarExpanded = true;
-		}
-	});
+	let sidebarExpanded = $derived(getContext<{ expanded: boolean }>('sidebar').expanded);
 </script>
 
 <div class="app-wrapper" style="--overlay-width-factor: {$overlayWidth}">
