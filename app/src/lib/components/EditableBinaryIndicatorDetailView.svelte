@@ -60,7 +60,7 @@
 	let relatedContainersQuery = resource(
 		[() => guid, () => organization, () => organizationalUnit],
 		async ([guid, organization, organizationalUnit], _, { signal }) => {
-			const [actualData, sections] = await Promise.all([
+			const [actualData, sections, objectivesAndEffects] = await Promise.all([
 				fetchContainers(
 					{
 						organization: [organization],
@@ -71,22 +71,27 @@
 					'alpha',
 					{ signal }
 				),
-				// Objectives and effects tell whether the organization has set its own targets
+				fetchRelatedContainers(
+					guid,
+					{ organization: [organization], relationType: [predicates.enum['is-section-of']] },
+					'alpha',
+					{ signal }
+				),
+				// Tell whether the organization has set its own targets. Restricting the
+				// payload types keeps out the actual data of other organizational units,
+				// which the relations would otherwise bring along.
 				fetchRelatedContainers(
 					guid,
 					{
 						organization: [organization],
-						relationType: [
-							predicates.enum['is-section-of'],
-							predicates.enum['is-objective-for'],
-							predicates.enum['is-measured-by']
-						]
+						payloadType: [payloadTypes.enum.objective, payloadTypes.enum.effect],
+						relationType: [predicates.enum['is-objective-for'], predicates.enum['is-measured-by']]
 					},
 					'alpha',
 					{ signal }
 				)
 			]);
-			return [...actualData, ...sections];
+			return [...actualData, ...sections, ...objectivesAndEffects];
 		}
 	);
 
