@@ -4,20 +4,10 @@
 	import TargetCheck from '$lib/components/TargetCheck.svelte';
 	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import { overlayKey, overlayURL } from '$lib/models';
-	import {
-		isAssessed,
-		type ProgramReview,
-		type ReviewStatus,
-		type Target
-	} from '$lib/reviewStatus';
+	import { type IndicatorReview, isAssessed, type Target } from '$lib/reviewStatus';
 	import { reviewStatusAuraColor, reviewStatusColors, reviewStatusIcons } from '$lib/theme/models';
 
-	interface Props {
-		programs: ProgramReview[];
-		status: ReviewStatus;
-	}
-
-	let { programs, status }: Props = $props();
+	let { programs, status }: IndicatorReview = $props();
 
 	const review = getReviewContext();
 

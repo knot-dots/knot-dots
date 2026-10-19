@@ -129,6 +129,11 @@ export function reviewStatusByProgram(
 	);
 }
 
+export type IndicatorReview = {
+	status: ReviewStatus;
+	programs: ProgramReview[];
+};
+
 // Reviews an indicator against the objectives of the programs under review,
 // as a whole and per program. The review compares the indicator with programs
 // of others, so it is left out when the organization has set its own targets
@@ -137,7 +142,7 @@ export function reviewIndicator(
 	indicator: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>,
 	relatedContainers: Container<AnyPayload>[],
 	objectives: ReviewObjective[]
-): { status: ReviewStatus; programs: ProgramReview[] } | undefined {
+): IndicatorReview | undefined {
 	if (relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))) {
 		return undefined;
 	}
