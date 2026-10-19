@@ -14,7 +14,9 @@
 	import EditableContainerDetailView from '$lib/components/EditableContainerDetailView.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ReviewBanner from '$lib/components/ReviewBanner.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import {
 		type ActualDataPayload,
 		type AnyPayload,
@@ -26,6 +28,7 @@
 		payloadTypes,
 		predicates
 	} from '$lib/models';
+	import { reviewIndicator } from '$lib/reviewStatus';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -57,7 +60,7 @@
 	let relatedContainersQuery = resource(
 		[() => guid, () => organization, () => organizationalUnit],
 		async ([guid, organization, organizationalUnit], _, { signal }) => {
-			const [actualData, sections] = await Promise.all([
+			const [actualData, sections, objectivesAndEffects] = await Promise.all([
 				fetchContainers(
 					{
 						organization: [organization],
@@ -73,13 +76,32 @@
 					{ organization: [organization], relationType: [predicates.enum['is-section-of']] },
 					'alpha',
 					{ signal }
+				),
+				// Tell whether the organization has set its own targets. Restricting the
+				// payload types keeps out the actual data of other organizational units,
+				// which the relations would otherwise bring along.
+				fetchRelatedContainers(
+					guid,
+					{
+						organization: [organization],
+						payloadType: [payloadTypes.enum.objective, payloadTypes.enum.effect],
+						relationType: [predicates.enum['is-objective-for'], predicates.enum['is-measured-by']]
+					},
+					'alpha',
+					{ signal }
 				)
 			]);
-			return [...actualData, ...sections];
+			return [...actualData, ...sections, ...objectivesAndEffects];
 		}
 	);
 
 	let relatedContainers = $derived(relatedContainersQuery.current ?? sections);
+
+	const review = getReviewContext();
+
+	let indicatorReview = $derived(
+		reviewIndicator(container, relatedContainers, review.objectivesByIndicator.get(guid) ?? [])
+	);
 
 	let actualDataContainer = $derived(
 		relatedContainers
@@ -158,6 +180,9 @@
 			{/key}
 
 			<div class="details-section" oninput={(e) => e.stopPropagation()}>
+				{#if indicatorReview}
+					<ReviewBanner {...indicatorReview} />
+				{/if}
 				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', containerOfType(payloadTypes.enum.actual_data, container))}
 					{#if addingActualData}
 						<span class="loader"></span>

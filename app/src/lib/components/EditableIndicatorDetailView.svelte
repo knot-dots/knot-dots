@@ -20,7 +20,9 @@
 	import NewIndicatorTable from '$lib/components/NewIndicatorTable.svelte';
 	import Sections from '$lib/components/Sections.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
+	import ReviewBanner from '$lib/components/ReviewBanner.svelte';
 	import { setBulkActionContext } from '$lib/contexts/bulkAction';
+	import { getReviewContext } from '$lib/contexts/review.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -33,6 +35,7 @@
 		isRelatedTo,
 		titleForProgramCollection
 	} from '$lib/models';
+	import { reviewIndicator } from '$lib/reviewStatus';
 	import { ability, applicationState, compareState } from '$lib/stores';
 
 	interface Props {
@@ -67,6 +70,8 @@
 	// Fetch comparison data for selected municipalities
 	const comparisonData = createComparisonData({ indicatorGuids: () => [guid] });
 
+	const review = getReviewContext();
+
 	setBulkActionContext({
 		actions: ['visibility', 'delete'],
 		onSuccess: relatedContainersQuery.refetch,
@@ -78,6 +83,10 @@
 			({ organizational_unit }) =>
 				!organizational_unit || !selectedMunicipalityGuids.includes(organizational_unit)
 		) ?? sections
+	);
+
+	let indicatorReview = $derived(
+		reviewIndicator(container, relatedContainers, review.objectivesByIndicator.get(guid) ?? [])
 	);
 
 	let comparisonContainers = $derived(comparisonData.comparisonDataMap.get(guid));
@@ -101,6 +110,9 @@
 	<EditableContainerDetailView bind:container {relatedContainers} {revisions}>
 		{#snippet data()}
 			<div class="details-section">
+				{#if indicatorReview}
+					<ReviewBanner {...indicatorReview} />
+				{/if}
 				<div class="segmented-button">
 					<label class="button">
 						<ChartLineIcon />
