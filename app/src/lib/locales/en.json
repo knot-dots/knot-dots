@@ -771,6 +771,7 @@
 	"select_all": "Select all",
 	"selection_counter": "{count} selected",
 	"show_links": "Show links",
+	"show_platform_favorite": "Show platform links",
 	"show_relations": "Show relations",
 	"show_title": "Show title",
 	"signup_dialog.family_name": "Family name",

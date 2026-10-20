@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import requestSubmit from '$lib/client/requestSubmit';
 	import AdministrativeAreaCombobox from '$lib/components/AdministrativeAreaCombobox.svelte';
+	import EditableBoolean from '$lib/components/EditableBoolean.svelte';
 	import EditableCustomDomain from '$lib/components/EditableCustomDomain.svelte';
 	import EditableCustomFavicon from '$lib/components/EditableCustomFavicon.svelte';
 	import EditableOrganizationCategory from '$lib/components/EditableOrganizationCategory.svelte';
@@ -52,6 +53,10 @@
 
 		if (container.payload.visibleWorkspaces.length === 0) {
 			container.payload.visibleWorkspaces = [...selectableWorkspaceKeys];
+		}
+
+		if (!container.payload.customDomain) {
+			container.payload.showPlatformFavorite = true;
 		}
 	});
 
@@ -130,6 +135,14 @@
 
 	{#if $ability.can('update', container, 'payload.customDomain')}
 		<EditableCustomDomain {editable} bind:value={container.payload.customDomain} />
+	{/if}
+
+	{#if container.payload.customDomain && $ability.can('update', container, 'payload.showPlatformFavorite')}
+		<EditableBoolean
+			{editable}
+			label={$_('show_platform_favorite')}
+			bind:value={container.payload.showPlatformFavorite}
+		/>
 	{/if}
 
 	{#if features.useUrlSlug() && $ability.can('update', container, 'payload.slug')}
