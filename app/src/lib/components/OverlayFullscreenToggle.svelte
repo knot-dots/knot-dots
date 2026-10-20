@@ -11,8 +11,7 @@
 		isMeasureContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
-		overlayKey,
-		paramsFromFragment
+		overlayKey
 	} from '$lib/models';
 	import { overlay } from '$lib/stores';
 
@@ -33,11 +32,10 @@
 		switch ($overlay?.key) {
 			case overlayKey.enum['chapters']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', routeParams);
+			case overlayKey.enum['table']:
+				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/table', routeParams);
 			case overlayKey.enum['view']:
-				return (
-					resolve('/[guid=uuid]/[contentGuid=uuid]', routeParams) +
-					(paramsFromFragment(page.url).has('table') ? '#table' : '')
-				);
+				return resolve('/[guid=uuid]/[contentGuid=uuid]', routeParams);
 			case overlayKey.enum['goal-iooi']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/iooi/board', routeParams);
 			case overlayKey.enum['measure-iooi']:

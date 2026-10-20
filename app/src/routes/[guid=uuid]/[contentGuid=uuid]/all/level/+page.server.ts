@@ -2,9 +2,9 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
-import { type AnyPayload, type Container, isProgramContainer, predicates } from '$lib/models';
-import { getAllContainerRevisionsByGuid, getAllRelatedContainers } from '$lib/server/db';
-import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
+import { fetchProgramParts } from '$lib/load/programParts';
+import { type AnyPayload, type Container, isProgramContainer } from '$lib/models';
+import { getAllContainerRevisionsByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ depends, locals, params, parent, url }) => {
@@ -26,23 +26,17 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 
 		const { categoryContext } = await parent();
 
-		const containers = await locals.pool.connect(
-			getAllRelatedContainers(
-				[container.organization],
-				url.searchParams.get('related-to') ?? container.guid,
-				[predicates.enum['is-part-of']],
-				{
-					customCategories: extractCustomCategoryFilters(url, categoryContext.keys),
-					statuses: url.searchParams.getAll('status'),
-					terms: url.searchParams.get('terms') ?? ''
-				},
-				url.searchParams.get('sort') ?? ''
-			)
-		);
+		const containers = await fetchProgramParts({
+			categoryContext,
+			pool: locals.pool,
+			program: container,
+			url,
+			user: locals.user
+		});
 
 		return {
 			container,
-			containers: filterVisible(containers, locals.user),
+			containers,
 			revisions: filterVisible(revisions, locals.user),
 			title: t('workspace.view.level')
 		};

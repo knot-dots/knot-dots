@@ -21,6 +21,7 @@ export const overlayKey = z.enum([
 	'program',
 	'relations',
 	'resources',
+	'table',
 	'tasks',
 	'templates',
 	'view'
