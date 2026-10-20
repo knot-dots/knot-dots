@@ -9,8 +9,8 @@
 	import saveContainer from '$lib/client/saveContainer';
 	import Board from '$lib/components/Board.svelte';
 	import BoardColumn from '$lib/components/BoardColumn.svelte';
-	import Card from '$lib/components/Card.svelte';
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
+	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
 	import {
 		type Container,
@@ -19,6 +19,7 @@
 		type GoalPayload,
 		type IooiType,
 		iooiTypes,
+		isBinaryIndicatorContainer,
 		isEffectContainer,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -185,6 +186,13 @@
 	type IooiItem = Container<EffectPayload | ObjectivePayload>;
 
 	let items = $derived((containers ?? []).filter(itemFilterFn) as IooiItem[]);
+
+	// Cards of objectives and effects need their indicators for charts and the
+	// review, which covers binary indicators as well.
+	let indicators = $derived(
+		containers.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+	);
+
 	let resourceData = $derived(
 		(containers ?? [])
 			.filter(isResourceDataContainer)
@@ -299,11 +307,7 @@
 			{#if paramsFromFragment(page.url).has('relations')}
 				<MaybeDragZone containers={itemsByIooiType.get(iooiType) ?? []}>
 					{#snippet itemSnippet(container)}
-						<Card
-							{container}
-							relatedContainers={containers.filter(isIndicatorContainer)}
-							showRelationFilter
-						/>
+						<ObjectiveOrEffectCard {container} relatedContainers={indicators} showRelationFilter />
 					{/snippet}
 				</MaybeDragZone>
 			{:else if browser && !matchMedia('(pointer: coarse)').matches && $ability.can('update', container)}
@@ -314,9 +318,9 @@
 					onfinalize={handleDndFinalize(iooiType)}
 				>
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
-						<Card
+						<ObjectiveOrEffectCard
 							container={item}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={indicators}
 							showRelationFilter
 						/>
 					{/each}
@@ -324,9 +328,9 @@
 			{:else}
 				<div class="vertical-scroll-wrapper">
 					{#each itemsByIooiType.get(iooiType) ?? [] as item (item.guid)}
-						<Card
+						<ObjectiveOrEffectCard
 							container={item}
-							relatedContainers={containers.filter(isIndicatorContainer)}
+							relatedContainers={indicators}
 							showRelationFilter
 						/>
 					{/each}

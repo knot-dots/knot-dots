@@ -67,7 +67,8 @@ export const reviewStatusColors = new Map<ReviewStatus, string>([
 	['review_status.no_clear_trend', 'yellow'],
 	['review_status.diverging_targets', 'purple'],
 	['review_status.no_target', 'gray'],
-	['review_status.insufficient_data', 'gray']
+	['review_status.insufficient_data', 'gray'],
+	['review_status.no_expectation', 'gray']
 ]);
 
 // The background glow of an assessed item under review, in the color of its status
@@ -84,7 +85,8 @@ export const reviewStatusIcons = new Map<ReviewStatus, Component<SVGAttributes<S
 	['review_status.no_clear_trend', TargetCheckNoTrend],
 	['review_status.diverging_targets', TargetCheckConflictingTargets],
 	['review_status.no_target', TargetCheckNoTarget],
-	['review_status.insufficient_data', TargetCheckInsufficientData]
+	['review_status.insufficient_data', TargetCheckInsufficientData],
+	['review_status.no_expectation', TargetCheckInsufficientData]
 ]);
 
 export const backgroundColors = new Map<BackgroundColor, string>([

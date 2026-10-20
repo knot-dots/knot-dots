@@ -20,6 +20,7 @@
 	import EffectChart from '$lib/components/EffectChart.svelte';
 	import EffectProperties from '$lib/components/EffectProperties.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import ObjectiveOrEffectReviewBanner from '$lib/components/ObjectiveOrEffectReviewBanner.svelte';
 	import RelationButton from '$lib/components/RelationButton.svelte';
 	import SettingsDropdown from '$lib/components/SettingsDropdown.svelte';
 	import { createFeatureDecisions } from '$lib/features';
@@ -28,9 +29,9 @@
 		type Container,
 		type EffectPayload,
 		isBinaryIndicatorContainer,
-		isIndicatorContainer,
 		predicates
 	} from '$lib/models';
+	import { indicatorOf } from '$lib/reviewStatus';
 	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
@@ -80,17 +81,7 @@
 
 	const disclosure = createDisclosure({});
 
-	let indicator = $derived(
-		relatedContainers
-			.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
-			.find(
-				({ guid }) =>
-					container.relation.findIndex(
-						({ object, predicate }) =>
-							predicate == predicates.enum['is-measured-by'] && object == guid
-					) > -1
-			)
-	);
+	let indicator = $derived(indicatorOf(container, relatedContainers));
 
 	let newRowKey = $state(0);
 
@@ -171,6 +162,8 @@
 					bind:value={container.payload.description}
 				/>
 			{/key}
+
+			<ObjectiveOrEffectReviewBanner {container} {relatedContainers} />
 
 			{#if indicator}
 				{#if createFeatureDecisions(page.data.features).useBinaryIndicators() && isBinaryIndicatorContainer(indicator)}

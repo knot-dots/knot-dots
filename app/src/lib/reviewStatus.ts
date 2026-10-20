@@ -4,11 +4,14 @@ import {
 	type AnyPayload,
 	type BinaryIndicatorPayload,
 	type Container,
+	type EffectPayload,
 	type IndicatorPayload,
 	isBinaryIndicatorContainer,
 	isEffectContainer,
+	isIndicatorContainer,
 	isObjectiveContainer,
 	type ObjectivePayload,
+	predicates,
 	type TrendDirection,
 	trendDirection
 } from '$lib/models';
@@ -19,11 +22,16 @@ export type ReviewStatus =
 	| 'review_status.no_clear_trend'
 	| 'review_status.diverging_targets'
 	| 'review_status.no_target'
-	| 'review_status.insufficient_data';
+	| 'review_status.insufficient_data'
+	| 'review_status.no_expectation';
 
 // Statuses that tell why an indicator could not be assessed
 export function isAssessed(status: ReviewStatus) {
-	return status !== 'review_status.no_target' && status !== 'review_status.insufficient_data';
+	return (
+		status !== 'review_status.no_target' &&
+		status !== 'review_status.insufficient_data' &&
+		status !== 'review_status.no_expectation'
+	);
 }
 
 // What an objective aims for: a trend for indicators, whether it is fulfilled
@@ -31,9 +39,11 @@ export function isAssessed(status: ReviewStatus) {
 export type Target = TrendDirection | boolean;
 
 // The actual state of an indicator and how to read the target of an objective
-// for it, so that both can be compared.
+// for it, so that both can be compared. The status for a missing actual state
+// tells why it is missing.
 export type ReviewBasis = {
 	actual: Target | undefined;
+	missingActual?: ReviewStatus;
 	target: (payload: ObjectivePayload) => Target | undefined;
 };
 
@@ -65,6 +75,12 @@ export function targetTrend(payload: ObjectivePayload): TrendDirection | undefin
 	return directionOf(payload.wantedValues, payload.trendValue);
 }
 
+// The trend a measure is expected to cause, from the planned values of an
+// effect or its stored trend direction.
+export function expectedTrend(payload: EffectPayload): TrendDirection | undefined {
+	return directionOf(payload.plannedValues, payload.trendValue);
+}
+
 // Compares the trend of the actual data of an indicator with the target
 // trends of objectives, or whether a binary indicator is fulfilled with the
 // fulfilment they aim for.
@@ -88,7 +104,11 @@ export function reviewBasis(
 // Compares the actual state of an indicator with the targets of the objectives
 // under review. Diverging targets cannot be met at once, so they are reported
 // even without actual data.
-export function computeReviewStatus(actual: Target | undefined, targets: Target[]): ReviewStatus {
+export function computeReviewStatus(
+	actual: Target | undefined,
+	targets: Target[],
+	missingActual: ReviewStatus = 'review_status.insufficient_data'
+): ReviewStatus {
 	if (targets.length === 0) {
 		return 'review_status.no_target';
 	}
@@ -96,7 +116,7 @@ export function computeReviewStatus(actual: Target | undefined, targets: Target[
 		return 'review_status.diverging_targets';
 	}
 	if (actual === undefined) {
-		return 'review_status.insufficient_data';
+		return missingActual;
 	}
 	if (actual === targets[0]) {
 		return 'review_status.in_target_direction';
@@ -120,7 +140,7 @@ export function reviewStatusFor(
 	if (objectives.length === 0) {
 		return undefined;
 	}
-	return computeReviewStatus(basis.actual, targetsOf(basis, objectives));
+	return computeReviewStatus(basis.actual, targetsOf(basis, objectives), basis.missingActual);
 }
 
 export type ProgramReview = {
@@ -144,7 +164,7 @@ export function reviewStatusByProgram(
 			);
 			return {
 				program,
-				status: computeReviewStatus(basis.actual, targets),
+				status: computeReviewStatus(basis.actual, targets, basis.missingActual),
 				target: new Set(targets).size === 1 ? targets[0] : undefined
 			};
 		}
@@ -168,7 +188,76 @@ export function reviewIndicator(
 	if (relatedContainers.some((c) => isEffectContainer(c) || isObjectiveContainer(c))) {
 		return undefined;
 	}
-	const basis = reviewBasis(indicator, relatedContainers);
+	return review(reviewBasis(indicator, relatedContainers), objectives);
+}
+
+// The indicator an objective or effect is about: objectives are objectives
+// for it, effects are measured by it.
+function indicatorGuidOf(container: Container<EffectPayload> | Container<ObjectivePayload>) {
+	const predicate = isEffectContainer(container)
+		? predicates.enum['is-measured-by']
+		: predicates.enum['is-objective-for'];
+	return container.relation.find((r) => r.subject === container.guid && r.predicate === predicate)
+		?.object;
+}
+
+// The indicator of an objective or effect among the related containers.
+export function indicatorOf(
+	container: Container<EffectPayload> | Container<ObjectivePayload>,
+	relatedContainers: Container<AnyPayload>[]
+): Container<BinaryIndicatorPayload> | Container<IndicatorPayload> | undefined {
+	const indicatorGuid = indicatorGuidOf(container);
+	if (indicatorGuid === undefined) {
+		return undefined;
+	}
+	return relatedContainers
+		.filter((c) => isIndicatorContainer(c) || isBinaryIndicatorContainer(c))
+		.find(({ guid }) => guid === indicatorGuid);
+}
+
+// Reviews an objective or effect against the objectives of the programs under
+// review: whether the direction it expects matches the one they want for the
+// same indicator. The objective or effect itself is left out, so reviewing
+// the program it belongs to does not compare it with itself. Undefined if its
+// indicator is not among the related containers or there is nothing to review.
+// The related containers are only searched when there is something to review,
+// as boards pass all of theirs to every card.
+export function reviewObjectiveOrEffect(
+	container: Container<EffectPayload> | Container<ObjectivePayload>,
+	relatedContainers: Container<AnyPayload>[],
+	objectivesByIndicator: Map<string, ReviewObjective[]>
+): IndicatorReview | undefined {
+	const indicatorGuid = indicatorGuidOf(container);
+	const objectives = (
+		indicatorGuid === undefined ? [] : (objectivesByIndicator.get(indicatorGuid) ?? [])
+	).filter(({ objective }) => objective.guid !== container.guid);
+	if (objectives.length === 0) {
+		return undefined;
+	}
+	const indicator = indicatorOf(container, relatedContainers);
+	if (!indicator) {
+		return undefined;
+	}
+
+	const missingActual = 'review_status.no_expectation';
+	const basis: ReviewBasis = isBinaryIndicatorContainer(indicator)
+		? {
+				actual: container.payload.booleanValue,
+				missingActual,
+				target: ({ booleanValue }) => booleanValue
+			}
+		: {
+				actual: isEffectContainer(container)
+					? expectedTrend(container.payload)
+					: targetTrend(container.payload),
+				missingActual,
+				target: targetTrend
+			};
+
+	return review(basis, objectives);
+}
+
+function review(basis: ReviewBasis, objectives: ReviewObjective[]): IndicatorReview | undefined {
 	const status = reviewStatusFor(
 		basis,
 		objectives.map(({ objective }) => objective.payload)

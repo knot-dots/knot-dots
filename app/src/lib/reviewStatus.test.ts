@@ -1,18 +1,23 @@
 import { expect, test } from 'vitest';
 import type { ReviewObjective } from '$lib/client/fetchProgramObjectives';
-import type {
-	ActualDataPayload,
-	BinaryIndicatorPayload,
-	Container,
-	IndicatorPayload,
-	ObjectivePayload
+import {
+	type ActualDataPayload,
+	type BinaryIndicatorPayload,
+	type Container,
+	type EffectPayload,
+	type IndicatorPayload,
+	type ObjectivePayload,
+	predicates
 } from '$lib/models';
 import {
 	computeReviewStatus,
+	expectedTrend,
 	offsetDirection,
 	reviewBasis,
 	reviewIndicator,
+	reviewObjectiveOrEffect,
 	reviewStatusByProgram,
+	type ReviewStatus,
 	reviewStatusFor,
 	targetTrend
 } from '$lib/reviewStatus';
@@ -110,6 +115,10 @@ test('targetTrend falls back to the stored trend when wanted values cancel out',
 
 test('targetTrend falls back to the stored trend when wanted values are not numbers', () => {
 	expect(targetTrend(objective({ wantedValues: [[2030, NaN]], trendValue: -1 }))).toBe(-1);
+});
+
+test('expectedTrend falls back to the stored trend when planned values cancel out', () => {
+	expect(expectedTrend({ plannedValues: [[2030, 0]], trendValue: 1 } as EffectPayload)).toBe(1);
 });
 
 test('targetTrend is undetermined without wanted values or stored trend', () => {
@@ -223,6 +232,115 @@ test('reviewIndicator leaves out indicators with own targets', () => {
 			binaryIndicator,
 			[ownObjective],
 			[reviewObjective('a', { wantedValues: [], booleanValue: true })]
+		)
+	).toBeUndefined();
+});
+
+test('expectedTrend prefers planned values over the stored trend', () => {
+	const effect = { plannedValues: [[2030, -2]], trendValue: 1 } as EffectPayload;
+	expect(expectedTrend(effect)).toBe(-1);
+	expect(expectedTrend({ ...effect, plannedValues: [] })).toBe(1);
+});
+
+function measured(
+	type: 'effect' | 'objective',
+	indicatorGuid: string,
+	payload: Partial<EffectPayload> | Partial<ObjectivePayload>,
+	guid = 'own'
+): Container<EffectPayload> | Container<ObjectivePayload> {
+	const predicate =
+		type === 'effect' ? predicates.enum['is-measured-by'] : predicates.enum['is-objective-for'];
+	const relation = [{ object: indicatorGuid, position: 0, predicate, subject: guid }];
+	return type === 'effect'
+		? ({
+				guid,
+				payload: { plannedValues: [], ...payload, type: 'effect' },
+				relation
+			} as Container<EffectPayload>)
+		: ({
+				guid,
+				payload: { wantedValues: [], ...payload, type: 'objective' },
+				relation
+			} as Container<ObjectivePayload>);
+}
+
+function programObjectives(...payloads: Array<[string, Record<string, unknown>]>) {
+	return new Map([
+		[
+			'i',
+			payloads.map(([program, payload]) => ({
+				program,
+				objective: {
+					guid: `${program}-objective`,
+					payload: objective({ wantedValues: [], ...payload })
+				}
+			})) as ReviewObjective[]
+		]
+	]);
+}
+
+test.each<
+	[string, 'effect' | 'objective', Partial<EffectPayload> | Partial<ObjectivePayload>, ReviewStatus]
+>([
+	[
+		'objective wants the same',
+		'objective',
+		{ wantedValues: [[2030, -2]] },
+		'review_status.in_target_direction'
+	],
+	[
+		'objective wants the opposite',
+		'objective',
+		{ trendValue: 1 },
+		'review_status.against_target_direction'
+	],
+	[
+		'objective wants no change',
+		'objective',
+		{ wantedValues: [[2030, 0]] },
+		'review_status.no_clear_trend'
+	],
+	[
+		'effect is expected to lower it',
+		'effect',
+		{ plannedValues: [[2030, -5]] },
+		'review_status.in_target_direction'
+	],
+	['effect has no expectation', 'effect', {}, 'review_status.no_expectation']
+])('reviewObjectiveOrEffect when the %s', (_, type, payload, status) => {
+	expect(
+		reviewObjectiveOrEffect(
+			measured(type, 'i', payload),
+			[indicator],
+			programObjectives(['a', { trendValue: -1 }])
+		)?.status
+	).toBe(status);
+});
+
+test('reviewObjectiveOrEffect compares binary objectives and effects by wanted fulfilment', () => {
+	const binary = { ...binaryIndicator, guid: 'i' } as Container<BinaryIndicatorPayload>;
+	expect(
+		reviewObjectiveOrEffect(
+			measured('objective', 'i', { booleanValue: false }),
+			[binary],
+			programObjectives(['a', { booleanValue: true }])
+		)?.status
+	).toBe('review_status.against_target_direction');
+});
+
+test('reviewObjectiveOrEffect leaves out the objective or effect itself', () => {
+	const own = measured('objective', 'i', { trendValue: -1 }, 'a-objective');
+	expect(
+		reviewObjectiveOrEffect(own, [indicator], programObjectives(['a', { trendValue: -1 }]))
+	).toBeUndefined();
+});
+
+test('reviewObjectiveOrEffect needs the indicator among the related containers', () => {
+	expect(
+		reviewObjectiveOrEffect(
+			measured('objective', 'i', { trendValue: -1 }),
+			[],
+			programObjectives(['a', { trendValue: -1 }])
 		)
 	).toBeUndefined();
 });
