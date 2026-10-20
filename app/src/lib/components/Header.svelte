@@ -250,6 +250,7 @@
 	}
 
 	async function togglePlatformFavorite() {
+		const href = page.url.toString();
 		const index = favoritesList.platform.findIndex((f) => f.href === href);
 
 		favoritesList.platform =
