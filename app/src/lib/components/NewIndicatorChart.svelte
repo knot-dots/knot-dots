@@ -189,7 +189,7 @@
 </script>
 
 {#if actualDataContainer[0] || hasComparisonData}
-	<figure>
+	<figure class="chart">
 		<div role="img" {@attach chart}></div>
 		<ul class="chart-legend">
 			{#each colorDomain as guid (guid)}
@@ -229,8 +229,6 @@
 
 <style>
 	figure {
-		background-color: white;
-		border-radius: 8px;
 		flex-grow: 1;
 	}
 
