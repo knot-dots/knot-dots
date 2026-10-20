@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { overlayKey, overlayURL, payloadTypes } from '$lib/models';
-	import { overlay } from '$lib/stores';
+
+	const overlay = getOverlayContext();
 </script>
 
-{#if $overlay?.container}
+{#if overlay.data?.container}
 	<a
-		class={['truncated', $overlay?.key === overlayKey.enum.view ? 'is-active' : '']}
-		href={overlayURL(page.url, overlayKey.enum.view, $overlay.container.guid)}
+		class={['truncated', overlay.data?.key === overlayKey.enum.view ? 'is-active' : '']}
+		href={overlayURL(page.url, overlayKey.enum.view, overlay.data.container.guid)}
 	>
-		{#if $overlay.container.payload.type === payloadTypes.enum.organization || $overlay.container.payload.type === payloadTypes.enum.organizational_unit}
-			{$overlay.container.payload.name}
+		{#if overlay.data.container.payload.type === payloadTypes.enum.organization || overlay.data.container.payload.type === payloadTypes.enum.organizational_unit}
+			{overlay.data.container.payload.name}
 		{:else}
-			{$overlay.container.payload.title}
+			{overlay.data.container.payload.title}
 		{/if}
 	</a>
 {/if}

@@ -17,6 +17,7 @@
 	import Tendency from '$lib/components/Tendency.svelte';
 	import { getBulkActionContext } from '$lib/contexts/bulkAction';
 	import { getComputedProgressContext } from '$lib/contexts/computedProgress';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type AnyPayload,
@@ -50,7 +51,7 @@
 		progressMeasurement,
 		type Status
 	} from '$lib/models';
-	import { applicationState, overlay, overlayHistory } from '$lib/stores';
+	import { applicationState, overlayHistory } from '$lib/stores';
 	import { predicateIcons, statusColors, statusIcons } from '$lib/theme/models';
 	import transformFileURL from '$lib/transformFileURL';
 
@@ -89,6 +90,8 @@
 	}: Props = $props();
 
 	const overlayContext = getContext('overlay');
+
+	const overlay = getOverlayContext();
 
 	const bulkActionContext = getBulkActionContext();
 
@@ -194,8 +197,8 @@
 	);
 
 	let selected = $derived.by(() => {
-		if ($overlay?.key === overlayKey.enum.relations) {
-			return $overlay.container;
+		if (overlay.data?.key === overlayKey.enum.relations) {
+			return overlay.data.container;
 		} else if (!overlayContext && relatedTo && page.data.containers) {
 			return page.data.containers.find(({ guid }: Container) => guid == relatedTo);
 		} else if (!overlayContext && page.data.container) {

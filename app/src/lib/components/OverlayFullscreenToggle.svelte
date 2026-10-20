@@ -7,29 +7,31 @@
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import { getLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import {
 		isMeasureContainer,
 		isProgramContainer,
 		isSimpleMeasureContainer,
 		overlayKey
 	} from '$lib/models';
-	import { overlay } from '$lib/stores';
+
+	const overlay = getOverlayContext();
 
 	let fullScreen = getContext<{ enabled: boolean }>('overlayFullScreen');
 
 	let lastOverlay = getLastOverlayContext();
 
 	let href = $derived.by(() => {
-		if (!$overlay?.container) {
+		if (!overlay.data?.container) {
 			return '';
 		}
 
 		const routeParams = {
 			guid: (page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid,
-			contentGuid: $overlay.container.guid
+			contentGuid: overlay.data.container.guid
 		};
 
-		switch ($overlay?.key) {
+		switch (overlay.data?.key) {
 			case overlayKey.enum['chapters']:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/all/level', routeParams);
 			case overlayKey.enum['table']:
@@ -47,11 +49,11 @@
 			case overlayKey.enum.templates:
 				return resolve('/[guid=uuid]/[contentGuid=uuid]/templates/catalog', routeParams);
 			case overlayKey.enum['measure-monitoring']:
-				if (isProgramContainer($overlay.container)) {
+				if (isProgramContainer(overlay.data.container)) {
 					return resolve('/[guid=uuid]/[contentGuid=uuid]/measures/monitoring', routeParams);
 				} else if (
-					isMeasureContainer($overlay.container) ||
-					isSimpleMeasureContainer($overlay.container)
+					isMeasureContainer(overlay.data.container) ||
+					isSimpleMeasureContainer(overlay.data.container)
 				) {
 					return resolve('/[guid=uuid]/[contentGuid=uuid]/all/monitoring', routeParams);
 				} else {

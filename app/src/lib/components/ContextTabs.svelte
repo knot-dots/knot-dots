@@ -14,8 +14,8 @@
 	import ContextKnowledge from '$lib/components/ContextKnowledge.svelte';
 	import ContextRules from '$lib/components/ContextRules.svelte';
 	import ContextTab from '$lib/components/ContextTab.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { type HelpSlug } from '$lib/models';
-	import { overlay as overlayStore } from '$lib/stores';
 
 	interface Props {
 		slug: HelpSlug;
@@ -32,6 +32,8 @@
 	];
 
 	const overlay = getContext('overlay');
+
+	const loadedOverlay = getOverlayContext();
 
 	let initialWidth = $state(0);
 
@@ -55,7 +57,7 @@
 
 <svelte:window onmouseup={stopResize} />
 
-{#if overlay || !$overlayStore}
+{#if overlay || !loadedOverlay.data}
 	<aside class="module-context">
 		<div {...tabs.root} class="tablist">
 			{#each tabItems as item (item.id)}

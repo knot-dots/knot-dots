@@ -11,7 +11,7 @@
 		type RulePayload,
 		rulePayload
 	} from '$lib/models';
-	import { overlay as overlayStore } from '$lib/stores';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { extractCustomCategoryFiltersFromParams } from '$lib/utils/customCategoryFilters';
 
 	interface Props {
@@ -20,9 +20,11 @@
 
 	let { children }: Props = $props();
 
+	const loadedOverlay = getOverlayContext();
+
 	const overlay = getContext('overlay');
 
-	let container = $derived(overlay ? $overlayStore?.container : page.data.container);
+	let container = $derived(overlay ? loadedOverlay.data?.container : page.data.container);
 
 	let categories = $derived(
 		container && isContainerWithCategory(container)

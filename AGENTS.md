@@ -74,7 +74,7 @@ The project is migrating from Svelte stores to runes-based state provided throug
 - **Do not add new stores to `app/src/lib/stores.ts`.** Migrate an existing store when you touch its feature. Existing stores still in use:
   - **`$applicationState`**: UI state (edit mode, detail view settings, overlay states)
   - **`$ability`**: Current user's permissions (CASL ability instance)
-  - **`$overlay`**, **`$dragged`**: UI interaction state for drag-and-drop and overlays
+  - **`$dragged`**: UI interaction state for drag-and-drop
   - **`$compareState`**: Municipalities selected for comparing indicator data
 
 ### 9. Modern Svelte 5 Component Patterns

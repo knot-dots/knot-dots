@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte';
 	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
+	import type { OverlayData } from '$lib/client/loadOverlay';
 	import { LoadingTracker, setLoadingTrackerContext } from '$lib/contexts/loadingTracker.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import ChaptersOverlay from '$lib/components/ChaptersOverlay.svelte';
 	import EditableDetailView from '$lib/components/EditableDetailView.svelte';
 	import IndicatorsOverlay from '$lib/components/IndicatorsOverlay.svelte';
@@ -19,7 +21,7 @@
 	import TasksOverlay from '$lib/components/TasksOverlay.svelte';
 	import TemplatesOverlay from '$lib/components/TemplatesOverlay.svelte';
 	import { isGoalContainer, isMeasureContainer, isProgramContainer, overlayKey } from '$lib/models';
-	import { type OverlayData, overlayLoading, overlaySwitching, overlayWidth } from '$lib/stores';
+	import { overlayWidth } from '$lib/stores';
 	import { isTemplateScope } from '$lib/templateScopes';
 
 	interface Props {
@@ -36,8 +38,10 @@
 
 	setLoadingTrackerContext(loadingTracker);
 
+	const overlay = getOverlayContext();
+
 	// The previous object is replaced by a skeleton unless the next one loads quickly
-	const switching = createDelayedFlag(() => $overlaySwitching);
+	const switching = createDelayedFlag(() => overlay.switching);
 
 	let fullScreen = $state({ enabled: false });
 
@@ -75,7 +79,7 @@
 <section class="overlay" class:overlay-fullscreen={fullScreen.enabled}>
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div class="resize-handle" onmousedown={startExpand} role="separator"></div>
-	<ProgressBar active={$overlayLoading || loadingTracker.active} position="overlay" />
+	<ProgressBar active={overlay.loading || loadingTracker.active} position="overlay" />
 	{#if !data || switching.current}
 		<header class="overlay-skeleton-header">
 			<OverlayCloseButton />
