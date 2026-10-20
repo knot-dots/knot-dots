@@ -656,6 +656,7 @@
 	"quote": "Quote",
 	"read_more": "Read more",
 	"register": "Register",
+	"relation_collection": "Sub-objects",
 	"relation_filter.label": "Relations",
 	"relation_filter.option.contributes_to": "contributes to",
 	"relation_filter.option.is_consistent_with": "consistent with",

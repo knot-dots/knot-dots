@@ -536,6 +536,10 @@ const requiredPayloadFields: Partial<Record<PayloadType, Record<string, unknown>
 	[payloadTypes.enum.organization]: { name: 'Lorem ipsum' },
 	[payloadTypes.enum.organizational_unit]: { name: 'Lorem ipsum' },
 	[payloadTypes.enum.page]: { body: 'Lorem ipsum' },
+	[payloadTypes.enum.relation_collection]: {
+		payloadType: payloadTypes.enum.goal,
+		predicate: predicates.enum['is-part-of-program']
+	},
 	[payloadTypes.enum.resource_data]: {
 		resource: crypto.randomUUID(),
 		resourceDataType: 'resource_data_type.budget'

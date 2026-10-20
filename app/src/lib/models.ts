@@ -89,8 +89,9 @@ const payloadTypeValues = [
 	'program',
 	'program_collection',
 	'progress',
-	'report',
 	'quote',
+	'relation_collection',
+	'report',
 	'resource',
 	'resource_collection',
 	'resource_v2', // New payload type for resources with temporary v2 suffix
@@ -2262,6 +2263,31 @@ export function isQuoteContainer(
 
 const initialQuotePayload = quotePayload.partial({ title: true });
 
+export const relationCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
+	item: z.array(z.uuid()).default([]),
+	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
+	payloadType: payloadTypes,
+	predicate: predicates,
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.relation_collection),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type RelationCollectionPayload = z.infer<typeof relationCollectionPayload>;
+
+export function isRelationCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<RelationCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.relation_collection;
+}
+
+const initialRelationCollectionPayload = relationCollectionPayload.partial({
+	payloadType: true,
+	predicate: true,
+	title: true
+});
+
 const reportPayload = z
 	.strictObject({
 		...basePayload.shape,
@@ -2910,6 +2936,7 @@ const payload = z.discriminatedUnion('type', [
 	programPayload,
 	progressPayload,
 	quotePayload,
+	relationCollectionPayload,
 	reportPayload,
 	resourceCollectionPayload,
 	resourceDataCollectionPayload,
@@ -2992,6 +3019,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialProgramPayload,
 	initialProgressPayload,
 	initialQuotePayload,
+	initialRelationCollectionPayload,
 	initialReportPayload,
 	initialResourceCollectionPayload,
 	initialResourceDataCollectionPayload,
