@@ -37,10 +37,32 @@ export type ReviewBasis = {
 	target: (payload: ObjectivePayload) => Target | undefined;
 };
 
-// The trend an objective aims for. Concrete wanted values take precedence over
-// a stored trend direction.
+// Direction of offsets from the projection of an indicator, such as wanted
+// values of objectives: their sum tells whether the indicator should end up
+// above or below it. Offsets that are not numbers, e.g. of a cleared input,
+// are left out. Undefined without offsets.
+export function offsetDirection(offsets: Array<[number, number]>): TrendDirection | undefined {
+	const numbers = offsets.filter(([, offset]) => Number.isFinite(offset));
+	if (numbers.length === 0) {
+		return undefined;
+	}
+	return Math.sign(numbers.reduce((sum, [, offset]) => sum + offset, 0)) as TrendDirection;
+}
+
+// Offsets that point somewhere take precedence over a stored trend direction.
+// Offsets that cancel out defer to it, as rows are added with an offset of 0.
+function directionOf(
+	offsets: Array<[number, number]>,
+	trendValue: TrendDirection | undefined
+): TrendDirection | undefined {
+	const direction = offsetDirection(offsets);
+	return direction === undefined || direction === 0 ? (trendValue ?? direction) : direction;
+}
+
+// The trend an objective aims for, from its wanted values or its stored trend
+// direction.
 export function targetTrend(payload: ObjectivePayload): TrendDirection | undefined {
-	return trendDirection(payload.wantedValues) ?? payload.trendValue;
+	return directionOf(payload.wantedValues, payload.trendValue);
 }
 
 // Compares the trend of the actual data of an indicator with the target

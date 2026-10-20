@@ -9,6 +9,7 @@ import type {
 } from '$lib/models';
 import {
 	computeReviewStatus,
+	offsetDirection,
 	reviewBasis,
 	reviewIndicator,
 	reviewStatusByProgram,
@@ -43,16 +44,72 @@ function objective(
 	return payload as ObjectivePayload;
 }
 
+test.each([
+	['a single offset', [[2030, -2]], -1],
+	[
+		'a constant offset',
+		[
+			[2025, -1],
+			[2030, -1]
+		],
+		-1
+	],
+	[
+		'a shrinking reduction',
+		[
+			[2025, -2],
+			[2030, -1]
+		],
+		-1
+	],
+	[
+		'offsets summing up to an increase',
+		[
+			[2025, -1],
+			[2030, 2]
+		],
+		1
+	],
+	[
+		'offsets summing up to zero',
+		[
+			[2025, -1],
+			[2030, 1]
+		],
+		0
+	]
+] as const)('offsetDirection follows the sum of %s', (_, offsets, direction) => {
+	expect(offsetDirection(offsets.map(([year, offset]) => [year, offset]))).toBe(direction);
+});
+
+test('offsetDirection is undetermined without offsets', () => {
+	expect(offsetDirection([])).toBeUndefined();
+});
+
+test('offsetDirection leaves out offsets that are not numbers', () => {
+	expect(
+		offsetDirection([
+			[2025, NaN],
+			[2030, -2]
+		])
+	).toBe(-1);
+	expect(offsetDirection([[2030, NaN]])).toBeUndefined();
+});
+
 test('targetTrend prefers wanted values over the stored trend', () => {
-	const wantedValues: ObjectivePayload['wantedValues'] = [
-		[2020, 10],
-		[2030, 5]
-	];
-	expect(targetTrend(objective({ wantedValues, trendValue: 1 }))).toBe(-1);
+	expect(targetTrend(objective({ wantedValues: [[2030, -2]], trendValue: 1 }))).toBe(-1);
 });
 
 test('targetTrend falls back to the stored trend', () => {
 	expect(targetTrend(objective({ wantedValues: [], trendValue: 1 }))).toBe(1);
+});
+
+test('targetTrend falls back to the stored trend when wanted values cancel out', () => {
+	expect(targetTrend(objective({ wantedValues: [[2030, 0]], trendValue: -1 }))).toBe(-1);
+});
+
+test('targetTrend falls back to the stored trend when wanted values are not numbers', () => {
+	expect(targetTrend(objective({ wantedValues: [[2030, NaN]], trendValue: -1 }))).toBe(-1);
 });
 
 test('targetTrend is undetermined without wanted values or stored trend', () => {
