@@ -1948,20 +1948,25 @@ h4.details-heading {
 	);
 }
 
-.dropdown-button.dropdown-button--select::after {
-	align-self: flex-start;
+.dropdown-button.dropdown-button--select::after,
+.dropdown-button:not(.dropdown-button--select) .badge::after {
 	background-color: var(--dropdown-button-chevron-default-color, var(--color-icon-accent-subtle));
 	content: '';
 	display: block;
 	flex-shrink: 0;
 	height: var(--dropdown-button-chevron-icon-size, 1rem);
-	margin-top: calc((1lh - var(--dropdown-button-chevron-icon-size, 1rem)) / 2);
 	mask-image: var(--dropdown-button-chevron-icon, var(--icon--flowbite--chevron-down-outline));
 	mask-repeat: no-repeat;
 	mask-size: 100% 100%;
 	width: var(--dropdown-button-chevron-icon-size, 1rem);
 }
 
+.dropdown-button.dropdown-button--select::after {
+	align-self: flex-start;
+	margin-top: calc((1lh - var(--dropdown-button-chevron-icon-size, 1rem)) / 2);
+}
+
+.dropdown-button[aria-expanded='true'] .badge,
 .dropdown-button.dropdown-button--select[aria-expanded='true'] {
 	--dropdown-button-chevron-icon: var(
 		--dropdown-button-expanded-chevron-icon,

@@ -178,10 +178,8 @@
 		--badge-padding-x: 0.5rem;
 		--dropdown-button-active-background: transparent;
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-expanded-background: transparent;
-		--dropdown-button-expanded-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
 		--dropdown-button-hover-background: transparent;
 		--dropdown-button-gap: 0.125rem;
 		--dropdown-button-padding-x: 0;
@@ -197,6 +195,11 @@
 		display: flex;
 		flex-wrap: wrap;
 		padding: 0.375rem 0 0.75rem;
+	}
+
+	.details-properties :global(.dropdown-button--select) {
+		--dropdown-button-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
+		--dropdown-button-expanded-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
 	}
 
 	li {
