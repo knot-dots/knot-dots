@@ -371,7 +371,8 @@
 								</a>
 								<EditableFavorite
 									bind:favorite={favoriteList.organization[index]}
-									editable={$applicationState.containerDetailView.editable}
+									editable={$applicationState.containerDetailView.editable &&
+										$ability.can('update', page.data.currentOrganization)}
 									onchange={updateFavorite(
 										page.data.currentOrganization,
 										favoriteList.organization
@@ -474,7 +475,8 @@
 										</a>
 										<EditableFavorite
 											bind:favorite={favoriteList.organizationalUnit[index]}
-											editable={$applicationState.containerDetailView.editable}
+											editable={$applicationState.containerDetailView.editable &&
+												$ability.can('update', page.data.currentOrganizationalUnit)}
 											onchange={updateFavorite(
 												page.data.currentOrganizationalUnit,
 												favoriteList.organizationalUnit
@@ -614,7 +616,8 @@
 					</a>
 					<EditableFavorite
 						bind:favorite={favoriteList.platform[index]}
-						editable={$applicationState.containerDetailView.editable}
+						editable={$applicationState.containerDetailView.editable &&
+							$ability.can('update', defaultOrganization)}
 						onchange={updatePlatformFavorite(defaultOrganization, favoriteList.platform)}
 					/>
 				</li>
