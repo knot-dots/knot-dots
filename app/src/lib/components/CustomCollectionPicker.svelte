@@ -113,6 +113,7 @@
 		payloadTypes.enum.program,
 		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure,
 		payloadTypes.enum.task
 	] as string[]);
 
