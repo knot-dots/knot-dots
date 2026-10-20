@@ -70,6 +70,8 @@
 		compare?: boolean;
 		facets?: Map<string, Map<string, number>>;
 		filterBarInitiallyOpen?: boolean;
+		// Offers the review without comparing municipalities
+		review?: boolean;
 		search?: boolean;
 		settings?: Snippet;
 		sortOptions?: [string, string][];
@@ -81,6 +83,7 @@
 		compare = false,
 		facets = new Map(),
 		filterBarInitiallyOpen = false,
+		review: offerReview = false,
 		search = false,
 		settings,
 		sortOptions = [
@@ -111,18 +114,20 @@
 
 	// A boolean, so the disclosures below are not recreated whenever the
 	// container changes, e.g. on every save of a section.
-	let showCompareAndReview = $derived(
-		compare || (container !== undefined && isReportContainer(container))
+	let showCompare = $derived(compare || (container !== undefined && isReportContainer(container)));
+
+	let showReview = $derived(
+		(showCompare || offerReview) && createFeatureDecisions(page.data.features).useTrafficLight()
 	);
 
 	let compareBar = $derived(
 		createDisclosure({
 			label: $_('compare_data'),
-			expanded:
-				untrack(() => $compareState.selectedMunicipalities.length > 0) && showCompareAndReview
+			expanded: untrack(() => $compareState.selectedMunicipalities.length > 0) && showCompare
 		})
 	);
 
+	// An ongoing review is shown right away, wherever the review is offered.
 	let reviewBar = $derived(
 		createDisclosure({
 			label: $_('review'),
@@ -130,7 +135,7 @@
 				untrack(
 					() =>
 						review.selectedPrograms.length > 0 && $compareState.selectedMunicipalities.length === 0
-				) && showCompareAndReview
+				) && showReview
 		})
 	);
 
@@ -432,23 +437,23 @@
 		</button>
 	{/if}
 
-	{#if showCompareAndReview}
-		{#if createFeatureDecisions(page.data.features).useTrafficLight()}
-			<button
-				class="button button-xs button-alternate system-primary traffic-light-button"
-				type="button"
-				use:reviewBar.button
-				onclick={() => {
-					filterBar.close();
-					sortBar.close();
-					compareBar.close();
-				}}
-			>
-				<TrafficLight />
-				<span>{$_('review')}</span>
-			</button>
-		{/if}
+	{#if showReview}
+		<button
+			class="button button-xs button-alternate system-primary traffic-light-button"
+			type="button"
+			use:reviewBar.button
+			onclick={() => {
+				filterBar.close();
+				sortBar.close();
+				compareBar.close();
+			}}
+		>
+			<TrafficLight />
+			<span>{$_('review')}</span>
+		</button>
+	{/if}
 
+	{#if showCompare}
 		<button
 			class="button button-xs button-primary system-primary"
 			type="button"

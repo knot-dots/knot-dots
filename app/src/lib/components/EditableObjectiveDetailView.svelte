@@ -133,7 +133,7 @@
 </script>
 
 {#snippet header()}
-	<Header sortOptions={[]} workspaceOptions={[]}>
+	<Header review sortOptions={[]} workspaceOptions={[]}>
 		{#snippet settings()}
 			<SettingsDropdown {container} {relatedContainers} />
 		{/snippet}

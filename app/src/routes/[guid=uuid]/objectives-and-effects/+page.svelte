@@ -134,7 +134,7 @@
 	<BulkActionContextProvider actions={['visibility', 'delete']}>
 		<FullscreenLayout>
 			{#snippet header()}
-				<Header {facets} search />
+				<Header {facets} review search />
 			{/snippet}
 
 			{#snippet main()}
