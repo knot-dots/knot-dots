@@ -1,4 +1,4 @@
-import { getContext, setContext } from 'svelte';
+import { getContext, setContext, untrack } from 'svelte';
 
 const key = {};
 
@@ -29,7 +29,8 @@ export function trackLoading(loading: () => boolean) {
 
 	$effect(() => {
 		if (tracker && loading()) {
-			return tracker.add();
+			// Adding reads the count, which must not rerun this effect
+			return untrack(() => tracker.add());
 		}
 	});
 }
