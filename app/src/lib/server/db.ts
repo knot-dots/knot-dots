@@ -1449,7 +1449,7 @@ function prepareOrderByExpression(sort: string) {
 	} else if (sort == 'priority') {
 		order_by = sql.fragment`priority, c.guid`;
 	} else if (sort == 'date') {
-		order_by = sql.fragment`coalesce(c.payload->'fulfillmentDate', c.payload->'publicationDate',  c.payload->'startDate') DESC NULLS LAST, c.guid`;
+		order_by = sql.fragment`coalesce(c.payload->'fulfillmentDate', c.payload->'publicationDate',  c.payload->'startDate') ASC NULLS LAST, c.guid`;
 	}
 	return order_by;
 }
