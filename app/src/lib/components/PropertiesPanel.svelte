@@ -238,7 +238,7 @@
 		font-weight: 500;
 		gap: 0.375rem;
 		line-height: 1.25;
-		margin-bottom: 2.5rem;
+		margin-bottom: 0.5rem;
 	}
 
 	.details-properties h2 > span {

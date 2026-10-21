@@ -240,6 +240,7 @@
 
 <style>
 	div {
+		margin-top: 1rem;
 		overflow-y: auto;
 	}
 
