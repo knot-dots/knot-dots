@@ -409,6 +409,7 @@
 	"indicator_type.impact": "Impact indicator",
 	"picker_dialog.clear": "Clear",
 	"picker_dialog.confirm": "Apply ({count})",
+	"picker_dialog.unavailable": "Unavailable object",
 	"indicator_type.key": "Key indicator",
 	"indicator_type.performance": "Performance indicator",
 	"indicators": "Indicators",

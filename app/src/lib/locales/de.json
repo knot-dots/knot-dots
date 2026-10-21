@@ -409,6 +409,7 @@
 	"indicator_type.impact": "Wirkungsindikator",
 	"picker_dialog.clear": "Aufheben",
 	"picker_dialog.confirm": "Übernehmen ({count})",
+	"picker_dialog.unavailable": "Nicht verfügbares Objekt",
 	"indicator_type.key": "Schlüsselindikator",
 	"indicator_type.performance": "Leistungsindikator",
 	"indicators": "Indikatoren",
