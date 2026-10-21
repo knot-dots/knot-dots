@@ -1397,6 +1397,37 @@ test('getContainerCopyGraph fetches collection references without traversing the
 	expect(resultGuids).not.toContain(itemChild.guid);
 });
 
+test('getContainerCopyGraph fetches the indicators of an indicator dashboard', async ({
+	connection
+}: Fixtures) => {
+	const indicator = await createContainer(
+		initializeNewContainer(
+			{
+				title: 'Indicator',
+				type: payloadTypes.enum.indicator,
+				unit: 'unit.percent'
+			},
+			[]
+		)
+	)(connection);
+	const dashboard = await createContainer(
+		initializeNewContainer(
+			{
+				item: [indicator.guid],
+				title: 'Dashboard',
+				type: payloadTypes.enum.indicator_dashboard
+			},
+			[]
+		)
+	)(connection);
+
+	const result = await getContainerCopyGraph(dashboard.guid)(connection);
+
+	expect(result.containers.map(({ guid }) => guid)).toEqual(
+		expect.arrayContaining([dashboard.guid, indicator.guid])
+	);
+});
+
 test('computeManagedBy: program managed by the organization', async ({ connection }: Fixtures) => {
 	const program = await createContainer(newManagedByContainer(payloadTypes.enum.program))(
 		connection
