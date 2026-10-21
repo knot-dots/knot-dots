@@ -205,10 +205,51 @@ test('reviewStatusByProgram compares the actual state with each program on its o
 			reviewObjective('d', { wantedValues: [] })
 		])
 	).toEqual([
-		{ program: 'a', status: 'review_status.in_target_direction', target: 1 },
-		{ program: 'b', status: 'review_status.against_target_direction', target: -1 },
-		{ program: 'c', status: 'review_status.diverging_targets', target: undefined },
-		{ program: 'd', status: 'review_status.no_target', target: undefined }
+		{ program: 'a', status: 'review_status.in_target_direction', target: 1, goals: [] },
+		{ program: 'b', status: 'review_status.against_target_direction', target: -1, goals: [] },
+		{ program: 'c', status: 'review_status.diverging_targets', target: undefined, goals: [] },
+		{ program: 'd', status: 'review_status.no_target', target: undefined, goals: [] }
+	]);
+});
+
+function goalObjective(
+	goal: string,
+	payload: Pick<ObjectivePayload, 'wantedValues' | 'trendValue' | 'booleanValue'>
+) {
+	return {
+		program: 'a',
+		goal: { guid: goal, payload: { title: goal, type: 'goal' } },
+		objective: { payload: objective(payload) }
+	} as ReviewObjective;
+}
+
+test('reviewStatusByProgram compares the actual state with each goal of a program', () => {
+	const [{ status, goals }] = reviewStatusByProgram(rising, [
+		goalObjective('g1', { wantedValues: [], trendValue: 1 }),
+		goalObjective('g2', { wantedValues: [[2030, -2]] }),
+		goalObjective('g3', { wantedValues: [] })
+	]);
+	expect(status).toBe('review_status.diverging_targets');
+	expect(goals.map(({ goal, status, target }) => [goal.guid, status, target])).toEqual([
+		['g1', 'review_status.in_target_direction', 1],
+		['g2', 'review_status.against_target_direction', -1]
+	]);
+});
+
+test('reviewStatusByProgram leaves out goals that are not visible', () => {
+	const [{ goals }] = reviewStatusByProgram(rising, [
+		reviewObjective('a', { wantedValues: [], trendValue: 1 }),
+		goalObjective('g1', { wantedValues: [], trendValue: -1 })
+	]);
+	expect(goals.map(({ goal }) => goal.guid)).toEqual(['g1']);
+});
+
+test('reviewStatusByProgram reviews goals without actual data', () => {
+	const [{ goals }] = reviewStatusByProgram({ actual: undefined, target: targetTrend }, [
+		goalObjective('g1', { wantedValues: [], trendValue: 1 })
+	]);
+	expect(goals.map(({ status, target }) => [status, target])).toEqual([
+		['review_status.insufficient_data', 1]
 	]);
 });
 
@@ -221,7 +262,9 @@ test('reviewIndicator reviews a binary indicator', () => {
 		)
 	).toEqual({
 		status: 'review_status.against_target_direction',
-		programs: [{ program: 'a', status: 'review_status.against_target_direction', target: true }]
+		programs: [
+			{ program: 'a', status: 'review_status.against_target_direction', target: true, goals: [] }
+		]
 	});
 });
 

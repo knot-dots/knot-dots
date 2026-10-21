@@ -5,6 +5,7 @@ import {
 	type BinaryIndicatorPayload,
 	type Container,
 	type EffectPayload,
+	type GoalPayload,
 	type IndicatorPayload,
 	isBinaryIndicatorContainer,
 	isEffectContainer,
@@ -143,14 +144,45 @@ export function reviewStatusFor(
 	return computeReviewStatus(basis.actual, targetsOf(basis, objectives), basis.missingActual);
 }
 
-export type ProgramReview = {
-	program: string;
+export type GoalReview = {
+	goal: Container<GoalPayload>;
 	status: ReviewStatus;
 	target: Target | undefined;
 };
 
+export type ProgramReview = {
+	program: string;
+	status: ReviewStatus;
+	target: Target | undefined;
+	goals: GoalReview[];
+};
+
+// The one target that all targets agree on, undefined if there is none
+function soleTarget(targets: Target[]) {
+	return new Set(targets).size === 1 ? targets[0] : undefined;
+}
+
+// Compares an indicator with the objectives of each goal on its own, so the
+// goals behind the review of a program can be told apart. Goals without a
+// target are left out.
+function reviewStatusByGoal(basis: ReviewBasis, objectives: ReviewObjective[]): GoalReview[] {
+	const withGoal = objectives.flatMap(({ goal, objective }) => (goal ? [{ goal, objective }] : []));
+	return Array.from(Map.groupBy(withGoal, ({ goal }) => goal.guid).values(), (goalObjectives) => {
+		const targets = targetsOf(
+			basis,
+			goalObjectives.map(({ objective }) => objective.payload)
+		);
+		return {
+			goal: goalObjectives[0].goal,
+			status: computeReviewStatus(basis.actual, targets, basis.missingActual),
+			target: soleTarget(targets)
+		};
+	}).filter(({ status }) => status !== 'review_status.no_target');
+}
+
 // Compares an indicator with the objectives of each program under review on
-// its own. The target is undefined when a program has none or diverging ones.
+// its own, and with the objectives of each of its goals. The target is
+// undefined when a program has none or diverging ones.
 export function reviewStatusByProgram(
 	basis: ReviewBasis,
 	objectives: ReviewObjective[]
@@ -165,7 +197,8 @@ export function reviewStatusByProgram(
 			return {
 				program,
 				status: computeReviewStatus(basis.actual, targets, basis.missingActual),
-				target: new Set(targets).size === 1 ? targets[0] : undefined
+				target: soleTarget(targets),
+				goals: reviewStatusByGoal(basis, programObjectives)
 			};
 		}
 	);
