@@ -10,6 +10,7 @@
 	import InlineEditableAssignee from '$lib/components/InlineEditableAssignee.svelte';
 	import InlineEditableCardStyle from '$lib/components/InlineEditableCardStyle.svelte';
 	import InlineEditableCategory from '$lib/components/InlineEditableCategory.svelte';
+	import InlineEditableImage from '$lib/components/InlineEditableImage.svelte';
 	import InlineEditableIndicatorUnit from '$lib/components/InlineEditableIndicatorUnit.svelte';
 	import InlineEditableLinkStyle from '$lib/components/InlineEditableLinkStyle.svelte';
 	import InlineEditableMeasure from '$lib/components/InlineEditableMeasure.svelte';
@@ -27,6 +28,7 @@
 		type Container,
 		type ContainerWithCategory,
 		isContainerWithCategory,
+		isContainerWithImage,
 		isContainerWithStatus,
 		isGoalContainer,
 		isIndicatorContainer,
@@ -34,6 +36,7 @@
 		isTaskContainer,
 		isTeaserContainer,
 		predicates,
+		propertyRegistry,
 		type Status
 	} from '$lib/models';
 	import { moduleByType } from '$lib/modules';
@@ -109,6 +112,15 @@
 						{editable}
 						label={page.data.categoryContext.labels.get(key) ?? ''}
 						options={page.data.categoryContext.options[key] ?? []}
+					/>
+				{:else if item == 'image' && isContainerWithImage(container)}
+					{const key = item as keyof typeof payloadSchema.shape}
+					{const schema = payloadSchema.shape[key]}
+					{const meta = propertyRegistry.get(schema)}
+					<InlineEditableImage
+						bind:value={container.payload.image}
+						{editable}
+						label={$_(meta?.label ?? 'image')}
 					/>
 				{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
 					<InlineEditableMeasure bind:container {editable} />
