@@ -1158,6 +1158,7 @@ export const binaryIndicatorPayload = z
 			.transform(deduplicate)
 			.default([])
 			.register(propertyRegistry, { label: 'indicator_type' }),
+		icon: z.url().optional(),
 		type: z
 			.literal(payloadTypes.enum.binary_indicator)
 			.register(propertyRegistry, { label: 'type' })
@@ -1665,6 +1666,7 @@ export const indicatorPayload = z
 		...basePayload.shape,
 		...detailViewStyle.shape,
 		externalReference: z.url().optional(),
+		icon: z.url().optional(),
 		indicatorCategory: z
 			.array(indicatorCategories)
 			.transform(deduplicate)
@@ -3268,6 +3270,18 @@ export function isContainerWithImage(
 	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithImage {
 	return hasProperty(container.payload, 'image');
+}
+
+export type ContainerWithIcon = Container<AnyPayload & { icon: string | undefined }>;
+
+const payloadTypesWithIcon = new Set<string>(
+	anyPayload.options.filter((o) => 'icon' in o.shape).map((o) => o.shape.type.value)
+);
+
+export function isContainerWithIcon(
+	container: Container<AnyPayload> | NewContainer
+): container is ContainerWithIcon {
+	return payloadTypesWithIcon.has(container.payload.type);
 }
 
 export type ContainerWithName = Container<AnyPayload & { name: string | undefined }>;

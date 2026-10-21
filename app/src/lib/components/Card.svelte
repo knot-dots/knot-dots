@@ -28,6 +28,7 @@
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithEffect,
+		isContainerWithIcon,
 		isContainerWithObjective,
 		isContainerWithProgress,
 		isContainerWithSummary,
@@ -346,6 +347,10 @@
 					</label>
 				{/if}
 
+				{#if isContainerWithIcon(container) && container.payload.icon}
+					<img alt="" class="card-icon" src={transformFileURL(container.payload.icon)} />
+				{/if}
+
 				<a
 					href={href ? href() : computeHref(page.url)}
 					bind:this={previewLink}
@@ -592,6 +597,12 @@
 	}
 
 	header :global(svg) {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	.card-icon {
+		flex-shrink: 0;
 		height: 1.5rem;
 		width: 1.5rem;
 	}
