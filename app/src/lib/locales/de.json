@@ -937,6 +937,7 @@
 	"upload.image.choose": "Bild wählen",
 	"upload.image.help": "JPG, PNG, SVG, WEBP, AVIF-Dateien, maximal 100 MB",
 	"upload.image.remove": "Bild löschen",
+	"upload.image.replace": "Bild ersetzen",
 	"upload.file.choose": "Datei wählen",
 	"upload.file.help": "PDF-, Word-, Excel-Dateien, maximal 100 MB",
 	"upload.file.remove": "Datei löschen",
