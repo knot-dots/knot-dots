@@ -96,8 +96,7 @@
 			$mayCreateContainer(payloadTypes.enum.binary_indicator, parent)
 	);
 
-	// svelte-ignore non_reactive_update
-	let dialog: HTMLDialogElement;
+	let dialog = $state<HTMLDialogElement>();
 
 	async function performImport(selected: string[]) {
 		const response = await fetch(
@@ -110,7 +109,7 @@
 		);
 		if (response.ok) {
 			await invalidate('containers');
-			dialog.close();
+			dialog?.close();
 		} else {
 			alert($_('indicator_picker.import_failed'));
 			console.log(await response.json());
@@ -202,7 +201,7 @@
 			{#if $mayCreateContainer(payloadTypes.enum.actual_data, parent)}
 				<button
 					class="button button-xs button-primary system-primary"
-					onclick={() => dialog.showModal()}
+					onclick={() => dialog?.showModal()}
 					type="button"
 				>
 					{$_('indicators.activate_selected')}
