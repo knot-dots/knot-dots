@@ -10,7 +10,7 @@
 	import Close from '~icons/knotdots/close';
 	import Compare from '~icons/knotdots/compare';
 	import Filter from '~icons/knotdots/filter';
-	import TrafficLight from '~icons/knotdots/traffic-light';
+	import IndicatorReview from '~icons/knotdots/indicator-review';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
@@ -117,7 +117,7 @@
 	let showCompare = $derived(compare || (container !== undefined && isReportContainer(container)));
 
 	let showReview = $derived(
-		(showCompare || offerReview) && createFeatureDecisions(page.data.features).useTrafficLight()
+		(showCompare || offerReview) && createFeatureDecisions(page.data.features).useIndicatorReview()
 	);
 
 	let compareBar = $derived(
@@ -439,7 +439,7 @@
 
 	{#if showReview}
 		<button
-			class="button button-xs button-alternate system-primary traffic-light-button"
+			class="button button-xs button-alternate system-primary indicator-review-button"
 			type="button"
 			use:reviewBar.button
 			onclick={() => {
@@ -448,7 +448,7 @@
 				compareBar.close();
 			}}
 		>
-			<TrafficLight />
+			<IndicatorReview />
 			<span>{$_('review')}</span>
 		</button>
 	{/if}
@@ -624,10 +624,19 @@
 		position: relative;
 	}
 
-	.button.traffic-light-button {
+	.button.indicator-review-button {
 		--button-start-icon-color: var(--color-icon-default);
 
 		color: var(--color-text-default);
+	}
+
+	/* Shows the open review bar like the filter and sort buttons do */
+	.button.indicator-review-button:global([aria-expanded='true']) {
+		--button-background: var(--dropdown-button-expanded-background);
+		--button-hover-background: var(--dropdown-button-expanded-background);
+		--button-start-icon-color: var(--color-accent-on-default);
+
+		color: var(--color-accent-on-default);
 	}
 
 	.filter-and-sort {
