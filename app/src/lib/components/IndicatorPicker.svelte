@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resource } from 'runed';
+	import { IsInViewport, resource } from 'runed';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
@@ -23,7 +23,7 @@
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
-		dialog: HTMLDialogElement;
+		dialog?: HTMLDialogElement;
 		onconfirm: (selected: string[]) => Promise<void>;
 		title: string;
 	}
@@ -63,9 +63,13 @@
 
 	const mode = 'select';
 
+	const inViewport = new IsInViewport(() => dialog);
+
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms],
-		async ([filter, sort, terms], _, { signal }) => {
+		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current],
+		async ([filter, sort, terms, inViewport], _, { signal }) => {
+			if (!inViewport) return undefined;
+
 			const query = new URLSearchParams([
 				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
 				...filter.indicatorType.map((v) => ['indicatorType', v]),
@@ -97,7 +101,8 @@
 			};
 		},
 		{
-			debounce: 300
+			debounce: 300,
+			lazy: true
 		}
 	);
 
