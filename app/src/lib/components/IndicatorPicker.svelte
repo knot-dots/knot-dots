@@ -6,7 +6,6 @@
 	import { z } from 'zod';
 	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
-	import { invalidate } from '$app/navigation';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
@@ -25,9 +24,11 @@
 
 	interface Props {
 		dialog: HTMLDialogElement;
+		onconfirm: (selected: string[]) => Promise<void>;
+		title: string;
 	}
 
-	let { dialog = $bindable() }: Props = $props();
+	let { dialog = $bindable(), onconfirm, title }: Props = $props();
 
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 
@@ -136,24 +137,6 @@
 		selected = [];
 	}
 
-	async function performImport() {
-		const response = await fetch(
-			`/${(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid}/import-actual-data`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams(selected.map((guid) => ['indicator', guid]))
-			}
-		);
-		if (response.ok) {
-			await invalidate('containers');
-			dialog.close();
-		} else {
-			alert($_('indicator_picker.import_failed'));
-			console.log(await response.json());
-		}
-	}
-
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
 		selected = event.currentTarget.checked
 			? [...selected, event.currentTarget.value]
@@ -168,7 +151,7 @@
 	{filterBar}
 	{sortBar}
 	onResetFilters={resetFilters}
-	title={$_('indicator_picker.title')}
+	{title}
 >
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
@@ -267,7 +250,7 @@
 				<button
 					class="button-primary system-primary selection-apply"
 					disabled={selected.length === 0}
-					onclick={performImport}
+					onclick={() => onconfirm(selected)}
 					type="button"
 				>
 					{$_('picker_dialog.confirm', { values: { count: selected.length } })}
