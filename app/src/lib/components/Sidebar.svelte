@@ -345,9 +345,7 @@
 						}}
 					>
 						{#each favoriteItemsOrganization as item, index (item.guid)}
-							{@const href = page.url.searchParams.size
-								? `${page.url.pathname}?${page.url.searchParams.toString()}`
-								: page.url.pathname}
+							{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 							<li animate:flip={{ duration: 100 }}>
 								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
 									<span
@@ -449,9 +447,7 @@
 								}}
 							>
 								{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
-									{@const href = page.url.searchParams.size
-										? `${page.url.pathname}?${page.url.searchParams.toString()}`
-										: page.url.pathname}
+									{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 									<li>
 										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
 											<span
@@ -528,9 +524,7 @@
 					}}
 				>
 					{#each favoriteItemsUser as item, index (item.guid)}
-						{@const href = page.url.searchParams.size
-							? `${page.url.pathname}?${page.url.searchParams.toString()}`
-							: page.url.pathname}
+						{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 						<li>
 							{#if $applicationState.containerDetailView.editable}
 								<span
@@ -591,9 +585,7 @@
 				use:platformLinks.panel
 			>
 				{#each favoriteItemsPlatform as item, index (item.guid)}
-					{@const href = page.url.searchParams.size
-						? `${page.url.pathname}?${page.url.searchParams.toString()}`
-						: page.url.pathname}
+					{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 					<li animate:flip={{ duration: 100 }}>
 						{#if $applicationState.containerDetailView.editable && $ability.can('update', defaultOrganization)}
 							<span
