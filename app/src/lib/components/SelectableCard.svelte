@@ -14,6 +14,7 @@
 		type AnyPayload,
 		computeProgressSegments,
 		type Container,
+		isContainerWithIcon,
 		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
@@ -145,6 +146,10 @@
 					type="radio"
 					value={container.guid}
 				/>
+			{/if}
+
+			{#if isContainerWithIcon(container) && container.payload.icon}
+				<img alt="" class="card-icon" src={transformFileURL(container.payload.icon)} />
 			{/if}
 
 			<label bind:this={label} for={id}>
@@ -288,6 +293,12 @@
 	}
 
 	header :global(svg) {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	.card-icon {
+		flex-shrink: 0;
 		height: 1.5rem;
 		width: 1.5rem;
 	}
