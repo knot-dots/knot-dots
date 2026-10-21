@@ -187,7 +187,9 @@
 		) > -1
 	);
 
-	let isPlatformFavorite = $derived(favoritesList.platform.findIndex((f) => f.href === href) > -1);
+	let isPlatformFavorite = $derived(
+		favoritesList.platform.findIndex((f) => f.href === page.url.toString().split('#')[0]) > -1
+	);
 
 	let facetLabels = $derived(page.data.categoryContext.labels);
 
@@ -250,7 +252,7 @@
 	}
 
 	async function togglePlatformFavorite() {
-		const href = page.url.toString();
+		const href = page.url.toString().split('#')[0];
 		const index = favoritesList.platform.findIndex((f) => f.href === href);
 
 		favoritesList.platform =

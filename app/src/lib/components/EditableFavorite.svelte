@@ -6,15 +6,15 @@
 	import Close from '~icons/knotdots/close';
 	import Ellipsis from '~icons/knotdots/ellipsis';
 	import { uploadAsFormData } from '$lib/client/upload';
-	import { applicationState } from '$lib/stores';
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
+		editable?: boolean;
 		favorite: { title: string; icon?: string };
 		onchange: () => void;
 	}
 
-	let { favorite = $bindable(), onchange }: Props = $props();
+	let { editable = false, favorite = $bindable(), onchange }: Props = $props();
 
 	const popover = createPopover({ label: $_('favorite.edit') });
 
@@ -46,7 +46,7 @@
 	let timer: ReturnType<typeof setTimeout>;
 </script>
 
-{#if $applicationState.containerDetailView.editable}
+{#if editable}
 	<div class="dropdown is-visible-on-hover" use:popperRef>
 		<button class="dropdown-button" use:popover.button>
 			<Ellipsis />

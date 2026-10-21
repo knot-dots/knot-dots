@@ -345,9 +345,7 @@
 						}}
 					>
 						{#each favoriteItemsOrganization as item, index (item.guid)}
-							{@const href = page.url.searchParams.size
-								? `${page.url.pathname}?${page.url.searchParams.toString()}`
-								: page.url.pathname}
+							{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 							<li animate:flip={{ duration: 100 }}>
 								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
 									<span
@@ -371,6 +369,8 @@
 								</a>
 								<EditableFavorite
 									bind:favorite={favoriteList.organization[index]}
+									editable={$applicationState.containerDetailView.editable &&
+										$ability.can('update', page.data.currentOrganization)}
 									onchange={updateFavorite(
 										page.data.currentOrganization,
 										favoriteList.organization
@@ -447,9 +447,7 @@
 								}}
 							>
 								{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
-									{@const href = page.url.searchParams.size
-										? `${page.url.pathname}?${page.url.searchParams.toString()}`
-										: page.url.pathname}
+									{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 									<li>
 										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
 											<span
@@ -473,6 +471,8 @@
 										</a>
 										<EditableFavorite
 											bind:favorite={favoriteList.organizationalUnit[index]}
+											editable={$applicationState.containerDetailView.editable &&
+												$ability.can('update', page.data.currentOrganizationalUnit)}
 											onchange={updateFavorite(
 												page.data.currentOrganizationalUnit,
 												favoriteList.organizationalUnit
@@ -524,9 +524,7 @@
 					}}
 				>
 					{#each favoriteItemsUser as item, index (item.guid)}
-						{@const href = page.url.searchParams.size
-							? `${page.url.pathname}?${page.url.searchParams.toString()}`
-							: page.url.pathname}
+						{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 						<li>
 							{#if $applicationState.containerDetailView.editable}
 								<span
@@ -550,6 +548,7 @@
 							</a>
 							<EditableFavorite
 								bind:favorite={favoriteList.user[index]}
+								editable={$applicationState.containerDetailView.editable}
 								onchange={updateUserFavorite($user, favoriteList.user)}
 							/>
 						</li>
@@ -560,64 +559,66 @@
 	</div>
 {/if}
 
-<div class="sidebar-panel sidebar-panel--footer">
-	{const icon = defaultOrganization.payload.customFavicon}
-	<button
-		class="sidebar-panel-links-toggle sidebar-panel-links-toggle--platform"
-		style:--icon={icon ? `url(${transformFileURL(icon.url)})` : undefined}
-		type="button"
-		use:platformLinks.button
-	>
-		<span class="truncated">{defaultOrganization.payload.name}</span>
-	</button>
-
-	{#if $platformLinks.expanded}
-		<ul
-			class="sidebar-menu drag-zone"
-			onconsider={handleDndConsiderPlatform}
-			onfinalize={handleDndFinalizePlatform}
-			use:dragHandleZone={{
-				dropTargetStyle: {},
-				flipDurationMs: 100,
-				items: favoriteItemsPlatform,
-				type: 'platform'
-			}}
-			use:platformLinks.panel
+{#if page.data.currentOrganization.payload.showPlatformFavorite}
+	<div class="sidebar-panel sidebar-panel--footer">
+		{const icon = defaultOrganization.payload.customFavicon}
+		<button
+			class="sidebar-panel-links-toggle sidebar-panel-links-toggle--platform"
+			style:--icon={icon ? `url(${transformFileURL(icon.url)})` : undefined}
+			type="button"
+			use:platformLinks.button
 		>
-			{#each favoriteItemsPlatform as item, index (item.guid)}
-				{@const href = page.url.searchParams.size
-					? `${page.url.pathname}?${page.url.searchParams.toString()}`
-					: page.url.pathname}
-				<li animate:flip={{ duration: 100 }}>
-					{#if $applicationState.containerDetailView.editable && $ability.can('update', defaultOrganization)}
-						<span
-							class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
-							use:dragHandle
-						>
-							<DragHandle />
-						</span>
-					{/if}
-					<a
-						class="sidebar-menu-item"
-						class:sidebar-menu-item--active={item.href === href}
-						href={item.href}
-					>
-						{#if item.icon}
-							<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
-						{:else}
-							<StarSolid />
+			<span class="truncated">{defaultOrganization.payload.name}</span>
+		</button>
+
+		{#if $platformLinks.expanded}
+			<ul
+				class="sidebar-menu drag-zone"
+				onconsider={handleDndConsiderPlatform}
+				onfinalize={handleDndFinalizePlatform}
+				use:dragHandleZone={{
+					dropTargetStyle: {},
+					flipDurationMs: 100,
+					items: favoriteItemsPlatform,
+					type: 'platform'
+				}}
+				use:platformLinks.panel
+			>
+				{#each favoriteItemsPlatform as item, index (item.guid)}
+					{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
+					<li animate:flip={{ duration: 100 }}>
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', defaultOrganization)}
+							<span
+								class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+								use:dragHandle
+							>
+								<DragHandle />
+							</span>
 						{/if}
-						<span>{item.title}</span>
-					</a>
-					<EditableFavorite
-						bind:favorite={favoriteList.platform[index]}
-						onchange={updatePlatformFavorite(defaultOrganization, favoriteList.platform)}
-					/>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</div>
+						<a
+							class="sidebar-menu-item"
+							class:sidebar-menu-item--active={item.href === href}
+							href={item.href}
+						>
+							{#if item.icon}
+								<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+							{:else}
+								<StarSolid />
+							{/if}
+							<span>{item.title}</span>
+						</a>
+						<EditableFavorite
+							bind:favorite={favoriteList.platform[index]}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', defaultOrganization)}
+							onchange={updatePlatformFavorite(defaultOrganization, favoriteList.platform)}
+						/>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
+{/if}
 
 <style>
 	header {

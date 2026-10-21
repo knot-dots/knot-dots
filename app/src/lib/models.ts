@@ -1972,6 +1972,7 @@ export const organizationPayload = z.strictObject({
 		)
 		.optional(),
 	propertiesConfiguration: propertiesConfiguration.default({}),
+	showPlatformFavorite: z.boolean().default(true),
 	slug: z
 		.string()
 		.slugify()
