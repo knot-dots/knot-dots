@@ -257,9 +257,9 @@
 		font-size: 0.875rem;
 		font-weight: 400;
 		gap: 0.5rem;
-		margin-bottom: 1rem;
+		margin-bottom: 0.5rem;
 		min-height: 2.5rem;
-		padding: 0;
+		padding: 0 0 1rem;
 	}
 
 	ul:empty {
