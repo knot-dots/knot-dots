@@ -77,6 +77,7 @@ const payloadTypeValues = [
 	'image',
 	'indicator',
 	'indicator_collection',
+	'indicator_dashboard',
 	'info_box',
 	'knowledge',
 	'map',
@@ -1716,6 +1717,24 @@ export function isIndicatorCollectionContainer(
 
 const initialIndicatorCollectionPayload = indicatorCollectionPayload;
 
+const indicatorDashboardPayload = z.strictObject({
+	...sectionStyle.shape,
+	item: z.array(z.uuid()).default([]),
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.indicator_dashboard),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type IndicatorDashboardPayload = z.infer<typeof indicatorDashboardPayload>;
+
+export function isIndicatorDashboardContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<IndicatorDashboardPayload> {
+	return container.payload.type === payloadTypes.enum.indicator_dashboard;
+}
+
+const initialIndicatorDashboardPayload = indicatorDashboardPayload.partial({ title: true });
+
 export const indicatorPayload = z
 	.strictObject({
 		...basePayload.shape,
@@ -3020,6 +3039,7 @@ const payload = z.discriminatedUnion('type', [
 	igniteVideoPayload,
 	imagePayload,
 	indicatorCollectionPayload,
+	indicatorDashboardPayload,
 	indicatorPayload,
 	infoBoxPayload,
 	knowledgePayload,
@@ -3101,6 +3121,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialIgniteVideoPayload,
 	initialImagePayload,
 	initialIndicatorCollectionPayload,
+	initialIndicatorDashboardPayload,
 	initialIndicatorPayload,
 	initialInfoBoxPayload,
 	initialKnowledgePayload,
