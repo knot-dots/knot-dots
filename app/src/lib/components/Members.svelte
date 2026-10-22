@@ -147,7 +147,7 @@
 			{grants}
 			{inheritedSections}
 			{mayManageOrganizationUsers}
-			oninvite={() => dialog.showModal()}
+			oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
 			{users}
 		/>
 	{:else}
@@ -155,7 +155,7 @@
 			{container}
 			editable={mayManageMembers}
 			{grants}
-			oninvite={() => dialog.showModal()}
+			oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
 			{users}
 		/>
 	{/if}
