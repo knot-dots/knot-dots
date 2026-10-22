@@ -732,10 +732,10 @@ export type GrantSet = z.infer<typeof grantSet>;
 
 // The effective grants of the request user on one container, computed at read
 // time from the matrices that govern the container (see computeUserGrants).
-// `sources` names the containers whose matrices govern, primary first — the
-// container itself while decoupled, otherwise the nearest decoupled ancestor
-// of each hierarchy chain, with the organizational unit or organization
-// standing in for chains without one; their rows apply side by side. `source`
+// `sources` names the containers whose matrices govern, nearest first — the
+// container itself while decoupled, then every decoupled ancestor along the
+// hierarchy chains, with the organizational unit or organization standing in
+// only for chains without any; their rows apply side by side. `source`
 // is the primary entry of `sources`. `subordinates` holds the kinds applying
 // within the container and `self` those applying to it (the union of the
 // sources' subordinate kinds), while `own` carries the kinds granted on the
@@ -761,8 +761,11 @@ export type UserGrants = z.infer<typeof userGrants>;
 
 // One inherited section of a permission matrix: the governing container,
 // reduced to what names it since readers of the child may not read it, with
-// the subjects' effective sets materialized as rows on it.
+// the subjects' effective sets materialized as rows on it. A dormant section
+// (active false) shows the area that applies again once the container
+// inherits.
 export type InheritedMatrixSection = {
+	active: boolean;
 	scope: { guid: string; title: string };
 	grants: Grant[];
 	users: User[];

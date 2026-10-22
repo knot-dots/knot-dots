@@ -3,32 +3,21 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
 import {
-	grantSetForRole,
-	grantSetForSubjectOn,
-	matrixSectionScope,
 	isMeasureContainer,
 	isProgramContainer,
 	isSimpleMeasureContainer,
-	memberRoles,
 	predicates
 } from '$lib/models';
-import {
-	getAllGrantsByContainers,
-	getAllRelatedUsers,
-	getAllRelatedUsersByContainers,
-	getContainerByGuid
-} from '$lib/server/db';
+import { getAllGrantsByContainers, getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
+import { loadMatrixSections } from '$lib/server/matrixSections';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params }) => {
 	const t = unwrapFunctionStore(_);
 
 	try {
-		const [container, users] = await Promise.all([
-			locals.pool.connect(getContainerByGuid(params.contentGuid)),
-			locals.pool.connect(getAllRelatedUsers(params.contentGuid, [predicates.enum['is-member-of']]))
-		]);
+		const container = await locals.pool.connect(getContainerByGuid(params.contentGuid));
 
 		const ability = defineAbilityFor(locals.user);
 
@@ -56,88 +45,17 @@ export const load = (async ({ locals, params }) => {
 			};
 		}
 
-		// The matrices governing this container name themselves: the read-time
-		// enrichment resolved the sources — the decoupled ancestors, the
-		// organizational unit or the organization. They apply beside the
-		// container's own rows, so only the container itself is left out.
-		const sourceGuids = (
-			container.user_grant?.sources ?? [container.organizational_unit ?? container.organization]
-		).filter((guid) => guid !== container.guid);
-		const scopeGuids = [
-			...new Set([
-				container.organization,
-				...(container.organizational_unit ? [container.organizational_unit] : [])
-			])
-		].filter((guid) => guid !== container.guid);
-		const matrixGuids = [...new Set([...sourceGuids, ...scopeGuids])];
-
-		const [members, grants, sourceContainers, matrixGrants, matrixUsers, organization] =
-			await Promise.all([
-				getMembers(container.organization),
-				locals.pool.connect(getAllGrantsByContainers([container.guid])),
-				Promise.all(
-					sourceGuids.map((sourceGuid) => locals.pool.connect(getContainerByGuid(sourceGuid)))
+		const members = await getMembers(container.organization);
+		const { admins, grants, inheritedSections, organization, users } = await locals.pool.connect(
+			async (connection) => ({
+				grants: await getAllGrantsByContainers([container.guid])(connection),
+				organization: await getContainerByGuid(container.organization)(connection),
+				users: await getAllRelatedUsers(container.guid, [predicates.enum['is-member-of']])(
+					connection
 				),
-				locals.pool.connect(getAllGrantsByContainers(matrixGuids)),
-				locals.pool.connect(
-					getAllRelatedUsersByContainers(matrixGuids, [
-						predicates.enum['is-admin-of'],
-						predicates.enum['is-collaborator-of'],
-						predicates.enum['is-head-of'],
-						predicates.enum['is-member-of']
-					])
-				),
-				locals.pool.connect(getContainerByGuid(container.organization))
-			]);
-
-		// Administrators of the surrounding areas keep every kind regardless of
-		// the sources — the same hold the enforcement applies. They form a block
-		// of their own, so the inherited sections leave them out.
-		const administratorSet = grantSetForRole(memberRoles.enum.administrator);
-		const isScopeAdmin = (subject: string) =>
-			scopeGuids.some((area) =>
-				administratorSet.self.every((kind) =>
-					matrixGrants.some(
-						(grant) =>
-							grant.object === area &&
-							grant.subject === subject &&
-							grant.target === 'self' &&
-							grant.kind === kind
-					)
-				)
-			);
-		const admins = matrixUsers.filter(({ guid }) => isScopeAdmin(guid));
-
-		// One section per source, in the order of the computed sources, with the
-		// effective sets materialized as rows on that source's matrix.
-		const inheritedSections = sourceContainers.map((scope) => {
-			const sectionGrants = matrixUsers
-				.filter(({ guid }) => !isScopeAdmin(guid))
-				.flatMap(({ guid: subject }) => {
-					const set = grantSetForSubjectOn(matrixGrants, scope.guid, subject);
-					return [
-						...set.self.map((kind) => ({
-							kind,
-							object: scope.guid,
-							subject,
-							target: 'self' as const
-						})),
-						...set.subordinates.map((kind) => ({
-							kind,
-							object: scope.guid,
-							subject,
-							target: 'subordinates' as const
-						}))
-					];
-				});
-			return {
-				scope: matrixSectionScope(scope),
-				grants: sectionGrants,
-				users: matrixUsers.filter(({ guid }) =>
-					sectionGrants.some(({ subject }) => subject === guid)
-				)
-			};
-		});
+				...(await loadMatrixSections(connection, container))
+			})
+		);
 
 		return {
 			admins,
