@@ -137,6 +137,14 @@ export const predicateIcons = new Map<string, Component<SVGAttributes<SVGSVGElem
 	[predicates.enum['is-superordinate-of'], ChevronDoubleUp]
 ]);
 
+export const propertyIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
+	['date', CalendarMonth],
+	['goal', Goal],
+	['measure', ClipboardSimple],
+	['program', Program],
+	['task', ClipboardCheck]
+]);
+
 export const sortIcons = new Map<string, Component<SVGAttributes<SVGSVGElement>>>([
 	['alpha', ArrowSortLetters],
 	['date', CalendarMonth],

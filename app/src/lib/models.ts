@@ -1017,8 +1017,9 @@ export const payloadRegistry = z.registry<{
 }>();
 
 export const propertyRegistry = z.registry<{
-	label: string;
 	emptyLabel?: string;
+	icon?: string;
+	label: string;
 }>();
 
 const propertiesConfiguration = z.partialRecord(
@@ -1470,7 +1471,7 @@ const goalPayload = z
 			.register(propertyRegistry, { label: 'status' }),
 		goalType: goalType
 			.optional()
-			.register(propertyRegistry, { label: 'goal_type', emptyLabel: 'goal' }),
+			.register(propertyRegistry, { emptyLabel: 'goal', icon: 'goal', label: 'goal_type' }),
 		hierarchyLevel: z
 			.number()
 			.int()
@@ -1814,9 +1815,11 @@ const measurePayload = z
 			.lte(6)
 			.default(1)
 			.register(propertyRegistry, { label: 'measure.hierarchy_level' }),
-		measureType: measureTypes
-			.optional()
-			.register(propertyRegistry, { label: 'measure_type', emptyLabel: 'measure' }),
+		measureType: measureTypes.optional().register(propertyRegistry, {
+			emptyLabel: 'measure',
+			icon: 'measure',
+			label: 'measure_type'
+		}),
 		progress: z.number().nonnegative().optional(),
 		result: z.string().trim().optional(),
 		startDate: z.iso.date().optional().register(propertyRegistry, { label: 'start_date' }),
@@ -2159,7 +2162,11 @@ const programPayload = z
 			.register(propertyRegistry, { label: 'status' }),
 		programType: programTypes
 			.default(programTypes.enum['program_type.misc'])
-			.register(propertyRegistry, { label: 'program_type', emptyLabel: 'program' }),
+			.register(propertyRegistry, {
+				emptyLabel: 'program',
+				icon: 'program',
+				label: 'program_type'
+			}),
 		type: z.literal(payloadTypes.enum.program).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
@@ -2612,9 +2619,11 @@ const simpleMeasurePayload = z
 		annotation: z.string().trim().optional(),
 		endDate: z.iso.date().optional().register(propertyRegistry, { label: 'end_date' }),
 		file: z.array(z.tuple([z.url(), z.string()])).default([]),
-		measureType: measureTypes
-			.optional()
-			.register(propertyRegistry, { label: 'measure_type', emptyLabel: 'simple_measure' }),
+		measureType: measureTypes.optional().register(propertyRegistry, {
+			emptyLabel: 'simple_measure',
+			icon: 'measure',
+			label: 'measure_type'
+		}),
 		progress: z.number().nonnegative().default(0),
 		startDate: z.iso.date().optional().register(propertyRegistry, { label: 'start_date' }),
 		status: status
@@ -2695,7 +2704,7 @@ const taskPayload = z
 			.register(propertyRegistry, { label: 'fulfillment_date' }),
 		taskCategory: taskCategories
 			.default(taskCategories.enum['task_category.default'])
-			.register(propertyRegistry, { label: 'task_category.label' }),
+			.register(propertyRegistry, { icon: 'task', label: 'task_category.label' }),
 		status: status
 			.default(status.enum['status.idea'])
 			.register(propertyRegistry, { label: 'status' }),
