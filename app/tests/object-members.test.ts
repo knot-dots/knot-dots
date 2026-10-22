@@ -34,8 +34,14 @@ test.describe('Object members matrix', () => {
 
 		// While inheriting, the effective matrix shows read-only and the own
 		// section offers no way to add members. Bob heads the program, so his
-		// row carries every subordinate kind.
-		const inheritedBob = overlay.getByRole('row', { name: 'Bob Bow' });
+		// row carries every subordinate kind. Inherited rows show icons, own
+		// rows checkboxes; that tells the two Bob rows apart below.
+		const inheritedBob = overlay
+			.getByRole('row', { name: 'Bob Bow' })
+			.filter({ has: page.getByRole('img', { name: 'Read (This object): granted' }) });
+		const ownBob = overlay
+			.getByRole('row', { name: 'Bob Bow' })
+			.filter({ has: page.getByRole('checkbox', { name: 'Read (This object)' }) });
 		await expect(inheritedBob).toHaveCount(1);
 		await expect(
 			inheritedBob.getByRole('img', { name: 'Read (This object): granted' })
@@ -47,7 +53,7 @@ test.describe('Object members matrix', () => {
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);
 
 		// Turning on individual rights copies nothing: the own matrix starts
-		// empty, the inherited section stops applying and folds away.
+		// empty while the inherited section keeps applying beside it.
 		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 		const decoupleResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant-inheritance') && r.request().method() === 'POST'
@@ -55,7 +61,8 @@ test.describe('Object members matrix', () => {
 		await overlay.getByRole('checkbox', { name: 'Individual rights' }).check();
 		await decoupleResponse;
 
-		await expect(overlay.getByRole('row', { name: 'Bob Bow' })).toHaveCount(0);
+		await expect(ownBob).toHaveCount(0);
+		await expect(inheritedBob).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toBeEnabled();
 
 		await overlay.getByRole('button', { name: 'Add item' }).click();
@@ -69,7 +76,6 @@ test.describe('Object members matrix', () => {
 		await dialog.getByRole('button', { name: 'Send invitation' }).click();
 		await reloadResponse;
 
-		const ownBob = overlay.getByRole('row', { name: 'Bob Bow' });
 		await expect(ownBob).toHaveCount(1);
 		await expect(ownBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
 		await expect(ownBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeEnabled();
@@ -101,19 +107,16 @@ test.describe('Object members matrix', () => {
 		);
 		await ownBob.getByRole('button', { name: 'Remove' }).click();
 		await removeResponse;
-		await expect(overlay.getByRole('row', { name: 'Bob Bow' })).toHaveCount(0);
+		await expect(ownBob).toHaveCount(0);
+		await expect(inheritedBob).toHaveCount(1);
 
-		// Turning individual rights off lets the inherited matrix apply again.
+		// Turning individual rights off leaves only the inherited matrix.
 		const inheritResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant-inheritance') && r.request().method() === 'POST'
 		);
 		await overlay.getByRole('checkbox', { name: 'Individual rights' }).uncheck();
 		await inheritResponse;
-		await expect(
-			overlay
-				.getByRole('row', { name: 'Bob Bow' })
-				.getByRole('img', { name: 'Read (This object): granted' })
-		).toBeVisible();
+		await expect(inheritedBob).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);
 	});
 });
