@@ -37,12 +37,13 @@ const row = z.object({
 /**
  * Computes the effective grants of one subject on the given containers: for
  * each container the matrices that govern it (its grant sources) and the
- * kinds the subject holds there. The only source is the container itself
- * while its matrix is decoupled (own_matrix); otherwise every hierarchy
- * chain contributes its nearest decoupled ancestor, and only chains reaching
- * the top without one fall back to the container's organizational unit if
- * that has decoupled its matrix, or the organization as the last resort: a
- * decoupled ancestor replaces the area matrices. The sources' rows apply
+ * kinds the subject holds there. The matrices accumulate up the hierarchy,
+ * nearest first: the container's own matrix while decoupled (own_matrix),
+ * then every decoupled ancestor along every chain. Only an inheriting
+ * container whose chains reach the top without any decoupled ancestor falls
+ * back to its organizational unit if that has decoupled its matrix, or to
+ * the organization as the last resort: a decoupled ancestor replaces the area
+ * matrices, never the matrices below or above it. The sources' rows apply
  * side by side; rows on inheriting containers in between lie dormant. Subjects holding every self kind on the organization
  * or on the container's organizational unit act as administrators of that
  * scope and keep every kind regardless of the sources.
@@ -58,24 +59,21 @@ export async function computeUserGrants(
 
 	// The correlated ARRAY subselect keeps the recursive part on cheap per-row
 	// index probes; see computeManagedBy for the reasoning and why the pool
-	// disables JIT. The walk stops at decoupled ancestors (per-row EXISTS
-	// probe): every decoupled row it emits is therefore the nearest one on its
-	// path, and the subtree above never gets visited at all.
+	// disables JIT. The walk visits the whole ancestry (per-row EXISTS probe
+	// for decoupling) and remembers per path whether a decoupled ancestor
+	// has been passed (shielded), which decides the scope fallback.
 	const rows = await connection.any(sql.type(row)`
-		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle, decoupled) AS (
+		WITH RECURSIVE ancestry(root, guid, depth, path, is_cycle, decoupled, shielded) AS (
 			SELECT g::uuid, g::uuid, 0, ARRAY[g::uuid], false,
 				EXISTS (
 					SELECT 1 FROM container c
 					WHERE c.guid = g::uuid AND c.valid_currently AND NOT c.deleted AND c.own_matrix
-				)
+				),
+				false
 			FROM unnest(${sql.array(guids, 'uuid')}) AS g
 			UNION ALL
 			SELECT a.root, parent.object, a.depth + 1, array_append(a.path, parent.object),
-				parent.object = ANY(a.path),
-				EXISTS (
-					SELECT 1 FROM container c
-					WHERE c.guid = parent.object AND c.valid_currently AND NOT c.deleted AND c.own_matrix
-				)
+				parent.object = ANY(a.path), d.decoupled, a.shielded OR d.decoupled
 			FROM ancestry a
 			CROSS JOIN LATERAL unnest(ARRAY(
 				SELECT cr.object
@@ -85,7 +83,13 @@ export async function computeUserGrants(
 					AND cr.valid_currently
 					AND NOT cr.deleted
 			)) AS parent(object)
-			WHERE NOT a.is_cycle AND NOT a.decoupled
+			CROSS JOIN LATERAL (
+				SELECT EXISTS (
+					SELECT 1 FROM container c
+					WHERE c.guid = parent.object AND c.valid_currently AND NOT c.deleted AND c.own_matrix
+				) AS decoupled
+			) d
+			WHERE NOT a.is_cycle
 		),
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
@@ -93,8 +97,9 @@ export async function computeUserGrants(
 			FROM container c
 			WHERE c.guid = ANY(${sql.array(guids, 'uuid')}) AND c.valid_currently AND NOT c.deleted
 		),
-		-- One source per chain: grouping deduplicates DAG multi-paths meeting at
-		-- the same ancestor, min(depth) keeps the nearest-first ordering stable.
+		-- Every decoupled ancestor is a source: grouping deduplicates DAG
+		-- multi-paths meeting at the same ancestor, min(depth) keeps the
+		-- nearest-first ordering stable.
 		decoupled_ancestors AS (
 			SELECT a.root, a.guid, min(a.depth) AS depth
 			FROM ancestry a
@@ -112,9 +117,9 @@ export async function computeUserGrants(
 				LIMIT 1
 			) u ON true
 		),
-		-- A chain counts as open when it tops out (or cycles) without meeting a
-		-- decoupled ancestor; such chains activate the scope fallback once per
-		-- root. The LATERAL probe keeps this on per-row index lookups.
+		-- A chain counts as open when it tops out (or cycles) without having
+		-- passed a decoupled ancestor; such chains activate the scope fallback
+		-- once per root. The LATERAL probe keeps this on per-row index lookups.
 		open_chain AS (
 			SELECT DISTINCT a.root
 			FROM ancestry a
@@ -128,14 +133,14 @@ export async function computeUserGrants(
 						AND NOT cr.deleted
 				) AS no_parents
 			) t
-			WHERE NOT a.decoupled AND (t.no_parents OR a.is_cycle)
+			WHERE NOT a.shielded AND NOT a.decoupled AND (t.no_parents OR a.is_cycle)
 		),
-		-- A decoupled container is its own and only source (ord -1 keeps it
-		-- primary); otherwise the chains' nearest decoupled ancestors apply side
-		-- by side, and only chains topping out without one fall back to the
-		-- area, ordered last: the organizational unit if it has a matrix of its
-		-- own, else the organization. A decoupled ancestor thus replaces the
-		-- area matrices for the contents it governs.
+		-- A decoupled container is its own primary source (ord -1); the
+		-- decoupled ancestors of every chain apply side by side, nearest first,
+		-- and only an inheriting container with a chain topping out without one
+		-- falls back to the area, ordered last: the organizational unit if it
+		-- has a matrix of its own, else the organization. A decoupled ancestor
+		-- thus replaces the area matrices for the contents it governs.
 		sources AS (
 			SELECT b.root, b.root AS source, -1 AS ord FROM base b WHERE b.decoupled
 			UNION ALL
