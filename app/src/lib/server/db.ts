@@ -421,10 +421,24 @@ export function setContainerGrants(object: string, subject: string, set: GrantSe
 	};
 }
 
+// The rows of a user and of the teams the user is listed on: a team's rows
+// reach its members, so the session carries them as if they were the user's
+// own (distinct because a kind may come through both).
 export function getAllGrantsOfUser(subject: string) {
 	return async (connection: DatabaseConnection): Promise<readonly Grant[]> => {
 		return connection.any(sql.typeAlias('grant')`
-			SELECT kind, object, subject, target FROM container_grant WHERE subject = ${subject}
+			SELECT DISTINCT kind, object, subject, target
+			FROM container_grant
+			WHERE subject = ${subject}
+				OR subject IN (
+					SELECT t.guid
+					FROM container_user cu
+					JOIN container t ON t.revision = cu.object
+						AND t.valid_currently AND NOT t.deleted
+						AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+						AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+					WHERE cu.subject = ${subject} AND cu.predicate = ${predicates.enum['is-member-of']}
+				)
 		`);
 	};
 }

@@ -9,6 +9,7 @@ import {
 	grantForNewContainer,
 	modifiedContainer,
 	newContainer,
+	organizationalUnitType,
 	payloadTypes,
 	predicates
 } from '$lib/models';
@@ -17,6 +18,7 @@ import {
 	createContainer,
 	createOrUpdateUser,
 	deleteContainer,
+	getAllGrantsOfUser,
 	getContainerByGuid,
 	setContainerGrants,
 	updateContainer
@@ -32,6 +34,7 @@ function newTestContainer(
 	options: {
 		ownMatrix?: boolean;
 		organizationalUnit?: string;
+		payload?: Record<string, unknown>;
 		relation?: { object: string; predicate: string }[];
 		user?: { predicate: string; subject: string }[];
 	} = {}
@@ -43,7 +46,7 @@ function newTestContainer(
 			organizational_unit: options.organizationalUnit ?? null,
 			payload: {
 				...(type === payloadTypes.enum.organizational_unit
-					? { name: 'Lorem ipsum' }
+					? { name: 'Lorem ipsum', ...options.payload }
 					: { title: 'Lorem ipsum' }),
 				type
 			},
@@ -1131,4 +1134,133 @@ test('creating within a unit is judged by what governs its contents', async ({
 	expect(stub?.subordinates).toEqual(['read', 'update', 'create']);
 	expect(created?.subordinates).toEqual(stub?.subordinates);
 	expect(created?.self).toEqual(stub?.self);
+});
+
+// A team is a unit marked as such; it holds rows like a user does and the
+// subjects on its own matrix hold whatever the team holds.
+async function newTestTeam(
+	connection: Fixtures['connection'],
+	organization: string,
+	members: string[]
+) {
+	return createContainer(
+		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
+			payload: {
+				organizationalUnitType: organizationalUnitType.enum['organizational_unit_type.team']
+			},
+			user: members.map((subject) => ({ predicate: predicates.enum['is-member-of'], subject }))
+		})
+	)(connection);
+}
+
+test('members hold the rows of their team', async ({ connection }: Fixtures) => {
+	const organization = uuid();
+	const member = await newTestUser(connection);
+	const other = await newTestUser(connection);
+	const team = await newTestTeam(connection, organization, [member]);
+	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
+		connection
+	);
+	await setContainerGrants(organization, team.guid, {
+		self: [],
+		subordinates: ['read', 'update', 'create']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, member, [measure.guid]);
+	expect(grants.get(measure.guid)).toEqual({
+		admin: false,
+		scope_sourced: true,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update'],
+		source: organization,
+		sources: [organization],
+		subordinates: ['read', 'update', 'create']
+	});
+
+	const otherGrants = await computeUserGrants(connection, other, [measure.guid]);
+	expect(otherGrants.get(measure.guid)?.subordinates).toEqual([]);
+});
+
+test('a team row on a decoupled container acts for its members', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const member = await newTestUser(connection);
+	const team = await newTestTeam(connection, organization, [member]);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
+	)(connection);
+	await setContainerGrants(measure.guid, team.guid, {
+		self: ['read', 'update'],
+		subordinates: ['read']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, member, [measure.guid]);
+	expect(grants.get(measure.guid)).toEqual({
+		admin: false,
+		scope_sourced: false,
+		member: true,
+		organization_manager: false,
+		own: ['read', 'update'],
+		self: ['read'],
+		source: measure.guid,
+		sources: [measure.guid],
+		subordinates: ['read'],
+		dormant: organization
+	});
+});
+
+test('rows held directly and through a team add up', async ({ connection }: Fixtures) => {
+	const organization = uuid();
+	const member = await newTestUser(connection);
+	const team = await newTestTeam(connection, organization, [member]);
+	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
+		connection
+	);
+	await setContainerGrants(organization, member, { self: [], subordinates: ['read'] })(connection);
+	await setContainerGrants(organization, team.guid, {
+		self: [],
+		subordinates: ['read', 'update']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, member, [measure.guid]);
+	expect(grants.get(measure.guid)?.subordinates).toEqual(['read', 'update']);
+	expect(grants.get(measure.guid)?.self).toEqual(['read', 'update']);
+});
+
+test('the rows of a deleted team no longer reach its members', async ({ connection }: Fixtures) => {
+	const organization = uuid();
+	const member = await newTestUser(connection);
+	const team = await newTestTeam(connection, organization, [member]);
+	const measure = await createContainer(newTestContainer(organization, payloadTypes.enum.measure))(
+		connection
+	);
+	await setContainerGrants(organization, team.guid, { self: [], subordinates: ['read'] })(
+		connection
+	);
+	await deleteContainer(team)(connection);
+
+	const grants = await computeUserGrants(connection, member, [measure.guid]);
+	expect(grants.get(measure.guid)?.subordinates).toEqual([]);
+	expect(await getAllGrantsOfUser(member)(connection)).toEqual([]);
+});
+
+test('the session carries the rows of the teams of a user', async ({ connection }: Fixtures) => {
+	const organization = uuid();
+	const member = await newTestUser(connection);
+	const team = await newTestTeam(connection, organization, [member]);
+	await setContainerGrants(organization, member, { self: [], subordinates: ['read'] })(connection);
+	await setContainerGrants(organization, team.guid, { self: [], subordinates: ['read', 'update'] })(
+		connection
+	);
+
+	const grants = await getAllGrantsOfUser(member)(connection);
+	expect(
+		grants
+			.filter(({ object }) => object === organization)
+			.map(({ kind, subject }) => `${subject}:${kind}`)
+			.sort()
+	).toEqual([`${member}:read`, `${team.guid}:read`, `${team.guid}:update`].sort());
 });

@@ -7,6 +7,8 @@ import {
 	grantKinds,
 	grantSetForRole,
 	memberRoleFromPredicates,
+	organizationalUnitType,
+	payloadTypes,
 	type Predicate,
 	predicates,
 	type UserGrants
@@ -96,6 +98,21 @@ export async function computeUserGrants(
 				) AS decoupled
 			) d
 			WHERE NOT a.is_cycle
+		),
+		-- The subject holds the rows of its teams (units marked as such) as
+		-- well; materialized once,
+		-- the semi-join below hashes a handful of rows rather than probing per
+		-- place row.
+		subjects AS MATERIALIZED (
+			SELECT ${subject}::uuid AS subject
+			UNION
+			SELECT t.guid
+			FROM container_user cu
+			JOIN container t ON t.revision = cu.object
+				AND t.valid_currently AND NOT t.deleted
+				AND t.payload->>'type' = ${payloadTypes.enum.organizational_unit}
+				AND t.payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+			WHERE cu.subject = ${subject} AND cu.predicate = ${predicates.enum['is-member-of']}
 		),
 		base AS (
 			SELECT c.guid AS root, c.organization, c.organizational_unit,
@@ -206,7 +223,8 @@ export async function computeUserGrants(
 			FROM base b
 			JOIN unit_chain uc ON uc.unit = b.organizational_unit
 		) m
-		LEFT JOIN container_grant g ON g.object = m.object AND g.subject = ${subject}
+		LEFT JOIN container_grant g ON g.object = m.object
+			AND g.subject IN (SELECT s.subject FROM subjects s)
 	`);
 
 	const result = new Map<string, UserGrants>();
