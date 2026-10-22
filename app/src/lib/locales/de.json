@@ -591,6 +591,7 @@
 		"not_granted": "nicht erteilt",
 		"subordinate_objects": "Unterobjekte",
 		"this_object": "Dieses Objekt",
+		"tooltip_dormant": "Gilt derzeit nicht – Individuelle Rechte sind aktiv",
 		"tooltip_dormant_own": "Gilt derzeit nicht – Rechte werden vererbt",
 		"tooltip_inherited": "Vererbt von {name} – hier nicht änderbar",
 		"tooltip_readonly": "Keine Berechtigung zum Bearbeiten",

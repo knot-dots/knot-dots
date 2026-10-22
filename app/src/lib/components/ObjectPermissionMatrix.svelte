@@ -104,13 +104,13 @@
 	const inherits = $derived(inheritsOverride ?? storedInherits);
 	const viewOnly = $derived(!editable);
 
-	// expanded states follow the active sections until toggled by hand; the
-	// inherited sections always apply, so they start expanded
+	// expanded states follow the active sections until toggled by hand
 	let adminsExpanded = $state(true);
 	let ownExpandedOverride = $state<boolean | undefined>();
 	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
 	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
-	const sectionExpanded = (guid: string) => sectionExpandedOverrides.get(guid) ?? true;
+	const sectionExpanded = (section: (typeof inheritedSections)[number]) =>
+		sectionExpandedOverrides.get(section.scope.guid) ?? section.active;
 
 	const creators = $derived(
 		container.user
@@ -454,11 +454,14 @@
 				{/if}
 			{/if}
 
-			<!-- the governing matrices, one section each; they apply whether the
-			     container adds rows of its own or not -->
+			<!-- the governing matrices, one section each; they apply beside the
+			     container's own rows, a dormant area section once it inherits -->
 			{#each inheritedSections as section (section.scope.guid)}
-				{@const expanded = sectionExpanded(section.scope.guid)}
-				<tr class="section-row section-row--inherited system-success active">
+				{@const expanded = sectionExpanded(section)}
+				<tr
+					class="section-row section-row--inherited {section.active ? 'system-success' : ''}"
+					class:active={section.active}
+				>
 					<td colspan={columnCount + 1}>
 						<span class="section-header">
 							<span class="section-start">
@@ -475,13 +478,16 @@
 										})}
 									</span>
 								</button>
-								<span class="badge section-badge">{$_('permission_matrix.active')}</span>
+								<span class="badge section-badge">
+									{$_(section.active ? 'permission_matrix.active' : 'permission_matrix.inactive')}
+								</span>
 							</span>
 						</span>
 					</td>
 				</tr>
 				{#if expanded}
 					{#each sectionRows(section) as { set, user } (user.guid)}
+						{@const cellState = section.active ? 'readonly' : 'inactive'}
 						<tr>
 							<td class="col-name" class:locked={!viewOnly}>
 								<span class="user-cell">
@@ -508,12 +514,14 @@
 										<PermissionCheckbox
 											ariaLabel={cellLabel(kind, group.label, checked)}
 											{checked}
-											state="readonly"
-											tooltip={viewOnly
-												? $_('permission_matrix.tooltip_readonly')
-												: $_('permission_matrix.tooltip_inherited', {
-														values: { name: section.scope.title }
-													})}
+											state={cellState}
+											tooltip={cellState === 'inactive'
+												? $_('permission_matrix.tooltip_dormant')
+												: viewOnly
+													? $_('permission_matrix.tooltip_readonly')
+													: $_('permission_matrix.tooltip_inherited', {
+															values: { name: section.scope.title }
+														})}
 										/>
 									</td>
 								{/each}
