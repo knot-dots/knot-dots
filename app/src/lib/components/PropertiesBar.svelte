@@ -18,6 +18,7 @@
 	import InlineEditableOrganization from '$lib/components/InlineEditableOrganization.svelte';
 	import InlineEditableParent from '$lib/components/InlineEditableParent.svelte';
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
+	import InlineEditableResourceV2 from '$lib/components/InlineEditableResourceV2.svelte';
 	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
 	import { getDefaultLayout } from '$lib/components/PropertiesConfiguration.svelte';
@@ -32,6 +33,7 @@
 		isContainerWithStatus,
 		isGoalContainer,
 		isIndicatorContainer,
+		isResourceDataContainer,
 		isRuleContainer,
 		isTaskContainer,
 		isTeaserContainer,
@@ -141,6 +143,8 @@
 					<InlineEditableParent bind:container {editable} />
 				{:else if item == 'program' && !isPartOfMeasure}
 					<InlineEditableProgram bind:container {editable} />
+				{:else if item == 'resource' && isResourceDataContainer(container)}
+					<InlineEditableResourceV2 bind:value={container.payload.resource} {editable} />
 				{:else if item == 'status' && isContainerWithStatus(container)}
 					<InlineStatusDropdown
 						bind:value={container.payload.status}

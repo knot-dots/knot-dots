@@ -22,6 +22,7 @@
 	import EditablePDF from '$lib/components/EditablePDF.svelte';
 	import EditableProgram from '$lib/components/EditableProgram.svelte';
 	import EditableProgramStatus from '$lib/components/EditableProgramStatus.svelte';
+	import EditableResourceV2 from '$lib/components/EditableResourceV2.svelte';
 	import EditableRuleStatus from '$lib/components/EditableRuleStatus.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
@@ -42,6 +43,7 @@
 		isIndicatorContainer,
 		isMeasureContainer,
 		isProgramContainer,
+		isResourceDataContainer,
 		isRuleContainer,
 		isSimpleMeasureContainer,
 		isTaskContainer,
@@ -183,6 +185,8 @@
 						{:else if isTaskContainer(container)}
 							<EditableTaskStatus bind:value={container.payload.status} {editable} />
 						{/if}
+					{:else if item == 'resource' && isResourceDataContainer(container)}
+						<EditableResourceV2 bind:value={container.payload.resource} {editable} required />
 					{:else if item == 'style' && isTeaserContainer(container)}
 						<EditableLinkStyle
 							bind:value={container.payload.style}
