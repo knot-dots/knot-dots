@@ -2403,7 +2403,7 @@ const resourceDataPayload = z
 				})
 			)
 			.default([]),
-		resource: z.uuid(),
+		resource: z.uuid().register(propertyRegistry, { label: 'resource' }),
 		resourceDataType: resourceDataTypes,
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.resource_data).register(propertyRegistry, { label: 'type' }),
@@ -2414,7 +2414,7 @@ const resourceDataPayload = z
 	.register(payloadRegistry, {
 		layout: {
 			detail: {
-				headerAndPanel: ['type'],
+				headerAndPanel: ['type', 'resource'],
 				onlyPanel: ['visibility', 'organization', 'organizational_unit', 'created', 'modified'],
 				unused: []
 			}
