@@ -49,12 +49,12 @@ test.describe('Resource Data Collections', () => {
 		const resourceDataTitle = `Resource Data ${Date.now()}`;
 		await section.getByRole('button', { name: 'Add item' }).first().click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
-			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })
-			.check();
+			.getByRole('radio', { name: testResourceV2.payload.title })
+			.click();
 
 		// Fill in the title
 		await dotsBoard.page
@@ -102,8 +102,8 @@ test.describe('Resource Data Collections', () => {
 		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
-			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })
-			.check();
+			.getByRole('radio', { name: testResourceV2.payload.title })
+			.click();
 
 		// Fill in the title
 		await dotsBoard.page
@@ -190,12 +190,12 @@ test.describe('Resource Data Collections in Goals', () => {
 		const resourceDataTitle = `Budget Item ${Date.now()}`;
 		await section.getByRole('button', { name: 'Add item' }).first().click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
-			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })
-			.check();
+			.getByRole('radio', { name: testResourceV2.payload.title })
+			.click();
 
 		// Fill in the title
 		await dotsBoard.page
@@ -239,12 +239,12 @@ test.describe('Resource Data Collections in Goals', () => {
 		const resourceDataTitle = `Budget Item ${Date.now()}`;
 		await section.getByRole('button', { name: 'Add item' }).first().click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
-			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })
-			.check();
+			.getByRole('radio', { name: testResourceV2.payload.title })
+			.click();
 
 		// Fill in the title
 		await dotsBoard.page

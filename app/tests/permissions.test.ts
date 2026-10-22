@@ -156,21 +156,21 @@ test.describe('Permissions', () => {
 				.filter({ hasText: measureGoalTemplate.payload.title })
 				.click();
 
-			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
-				testMeasure.payload.title
-			);
 			await dialog.getByRole('textbox', { name: 'Title' }).fill(titleOfFirstGoal);
 			await dialog.getByRole('button', { name: 'Save' }).click();
 			await expect(
 				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })
 			).toBeVisible();
+			await dotsBoard.overlay.disclosePropertiesButton.click();
+			await expect(dotsBoard.overlay.locator.getByRole('button', { name: 'Measure' })).toHaveText(
+				testMeasure.payload.title
+			);
 
 			// Change the organizational unit of the measure
 			await dotsBoard.overlay.backButton.click();
 			await expect(
 				dotsBoard.overlay.locator.getByRole('heading', { name: testMeasure.payload.title })
 			).toBeVisible();
-			await dotsBoard.overlay.disclosePropertiesButton.click();
 			await dotsBoard.overlay.locator.getByLabel('Organizational unit').click();
 			const saveResponse = dotsBoard.page.waitForResponse(
 				(r) => r.url().includes('/revision') && r.request().method() === 'POST'
@@ -197,9 +197,10 @@ test.describe('Permissions', () => {
 			).toHaveText('Empty');
 
 			// Assert newly added goals inherit the organizational unit of the measure
-			await dotsBoard.overlay.disclosePropertiesButton.click();
+			const titleOfSecondGoal = 'Second goal';
 			await dotsBoard.card(testMeasure.payload.title).click();
 			await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
+			await dotsBoard.overlay.locator.getByRole('button', { name: 'Close' }).click();
 			await expect(async () => {
 				await section.getByRole('button', { name: 'Add item' }).click();
 				await expect(dialog).toBeVisible();
@@ -208,12 +209,19 @@ test.describe('Permissions', () => {
 				.getByRole('article')
 				.filter({ hasText: measureGoalTemplate.payload.title })
 				.click();
-			await expect(dialog.getByRole('button', { name: 'Measure' })).toHaveText(
+			await dialog.getByRole('textbox', { name: 'Title' }).fill(titleOfSecondGoal);
+			await dialog.getByRole('button', { name: 'Save' }).click();
+
+			await expect(
+				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfSecondGoal })
+			).toBeVisible();
+			await dotsBoard.overlay.disclosePropertiesButton.click();
+			await expect(dotsBoard.overlay.locator.getByRole('button', { name: 'Measure' })).toHaveText(
 				testMeasure.payload.title
 			);
-			await expect(dialog.getByRole('button', { name: 'Organizational unit' })).toHaveText(
-				testOrganizationalUnit.payload.name
-			);
+			await expect(
+				dotsBoard.overlay.locator.getByRole('button', { name: 'Organizational unit' })
+			).toHaveText(testOrganizationalUnit.payload.name);
 		});
 	});
 });
