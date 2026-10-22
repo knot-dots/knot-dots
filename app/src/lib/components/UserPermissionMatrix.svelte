@@ -8,6 +8,7 @@
 	import UserIcon from '~icons/flowbite/user-outline';
 	import saveGrants from '$lib/client/saveGrants';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
+	import TeamChip from '$lib/components/TeamChip.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -23,18 +24,35 @@
 		type MemberRole,
 		memberRoleMatchingGrantSet,
 		memberRoles,
+		type TeamWithMembers,
 		type User
 	} from '$lib/models';
+	import { ability } from '$lib/stores';
 
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
 		grants: Readonly<Array<Grant>>;
 		oninvite?: () => void;
+		teams: ReadonlyArray<TeamWithMembers>;
 		users: Readonly<Array<User>>;
 	}
 
-	let { container, editable = false, grants, oninvite, users }: Props = $props();
+	let { container, editable = false, grants, oninvite, teams, users }: Props = $props();
+
+	// a row names a user or a team; grants and overrides are keyed by the
+	// subject guid either way
+	type Subject =
+		| { guid: string; team?: undefined; user: User }
+		| { guid: string; team: TeamWithMembers; user?: undefined };
+	const userSubject = (user: User): Subject => ({ guid: user.guid, user });
+	const teamSubject = (team: TeamWithMembers): Subject => ({ guid: team.container.guid, team });
+	// the roster of a team is its own user management, open to those who
+	// manage the users there
+	const manageHrefFor = (team: TeamWithMembers) =>
+		$ability.can('manage-users', team.container)
+			? `/${team.container.guid}/user-management`
+			: undefined;
 
 	// every stored grant is editable individually: the rights on the object
 	// itself and the rights on subordinate objects form separate column groups
@@ -71,8 +89,21 @@
 
 	let setOverrides = new SvelteMap<string, GrantSet>();
 
-	function storedSetFor(user: User) {
-		return grantSetForSubjectOn(grants, container.guid, user.guid);
+	// every user with a role on the organization and the teams holding rows on
+	// it (or about to, while an assignment is in flight)
+	const rows = $derived([
+		...users.map(userSubject),
+		...teams
+			.filter(
+				({ container: team }) =>
+					setOverrides.has(team.guid) ||
+					grants.some((g) => g.object === container.guid && g.subject === team.guid)
+			)
+			.map(teamSubject)
+	]);
+
+	function storedSetFor(subject: string) {
+		return grantSetForSubjectOn(grants, container.guid, subject);
 	}
 
 	function sameSet(a: GrantSet, b: GrantSet) {
@@ -89,31 +120,32 @@
 	// a render cycle until the fresh props arrive
 	$effect(() => {
 		for (const [guid, set] of setOverrides) {
-			const user = users.find((u) => u.guid === guid);
-			if (!user || sameSet(storedSetFor(user), set)) {
+			const known =
+				users.some((u) => u.guid === guid) || teams.some((t) => t.container.guid === guid);
+			if (!known || sameSet(storedSetFor(guid), set)) {
 				setOverrides.delete(guid);
 			}
 		}
 	});
 
-	function visibleSetFor(user: User): GrantSet {
-		return setOverrides.get(user.guid) ?? storedSetFor(user);
+	function visibleSetFor(subject: string): GrantSet {
+		return setOverrides.get(subject) ?? storedSetFor(subject);
 	}
 
 	function isSelectableRole(value: BadgeDropdownValue): value is MemberRole {
 		return typeof value === 'string' && (selectableRoles as string[]).includes(value);
 	}
 
-	async function save(user: User, set: GrantSet) {
-		const hadPrevious = setOverrides.has(user.guid);
-		const previous = setOverrides.get(user.guid);
-		setOverrides.set(user.guid, set);
+	async function save(subject: string, set: GrantSet) {
+		const hadPrevious = setOverrides.has(subject);
+		const previous = setOverrides.get(subject);
+		setOverrides.set(subject, set);
 
-		const response = await saveGrants(container, { subject: user.guid, ...set });
+		const response = await saveGrants(container, { subject, ...set });
 
 		if (!response.ok) {
-			if (hadPrevious && previous) setOverrides.set(user.guid, previous);
-			else setOverrides.delete(user.guid);
+			if (hadPrevious && previous) setOverrides.set(subject, previous);
+			else setOverrides.delete(subject);
 			console.log(await response.json());
 			return;
 		}
@@ -121,23 +153,28 @@
 		await invalidateAll();
 	}
 
-	async function changeRole(user: User, value: BadgeDropdownValue) {
+	async function changeRole(subject: string, value: BadgeDropdownValue) {
 		if (!isSelectableRole(value)) {
 			return;
 		}
-		await save(user, grantSetForRole(value));
+		await save(subject, grantSetForRole(value));
 	}
 
-	async function toggleKind(user: User, target: GrantTarget, kind: GrantKind, checked: boolean) {
-		const current = visibleSetFor(user);
+	async function toggleKind(
+		subject: string,
+		target: GrantTarget,
+		kind: GrantKind,
+		checked: boolean
+	) {
+		const current = visibleSetFor(subject);
 		const kinds = checked
 			? [...current[target].filter((k) => k !== kind), kind]
 			: current[target].filter((k) => k !== kind);
-		await save(user, { ...current, [target]: kinds });
+		await save(subject, { ...current, [target]: kinds });
 	}
 
-	async function removeSubject(user: User) {
-		await save(user, { self: [], subordinates: [] });
+	async function removeSubject(subject: string) {
+		await save(subject, { self: [], subordinates: [] });
 	}
 </script>
 
@@ -177,12 +214,16 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each users as user (user.guid)}
-				{@const set = visibleSetFor(user)}
+			{#each rows as subject (subject.guid)}
+				{@const set = visibleSetFor(subject.guid)}
 				<tr>
 					<td class="col-name" class:locked={!editable}>
 						<span class="user-cell">
-							<span class="user-name">{displayName(user)}</span>
+							{#if subject.team}
+								<TeamChip manageHref={manageHrefFor(subject.team)} team={subject.team} />
+							{:else}
+								<span class="user-name">{displayName(subject.user)}</span>
+							{/if}
 						</span>
 					</td>
 					<td class="col-role" class:locked={!editable}>
@@ -192,7 +233,7 @@
 							options={roleOptions}
 							{editable}
 							emptyLabel={$_('role.custom')}
-							onchange={(value) => changeRole(user, value)}
+							onchange={(value) => changeRole(subject.guid, value)}
 						/>
 					</td>
 					{#each columnGroups as group (group.target)}
@@ -204,7 +245,7 @@
 									checked={set[group.target].includes(kind)}
 									disabled={!editable}
 									onchange={(event) =>
-										toggleKind(user, group.target, kind, event.currentTarget.checked)}
+										toggleKind(subject.guid, group.target, kind, event.currentTarget.checked)}
 								/>
 							</td>
 						{/each}
@@ -215,7 +256,7 @@
 								aria-label={$_('user.remove')}
 								class="action-button"
 								type="button"
-								onclick={() => removeSubject(user)}
+								onclick={() => removeSubject(subject.guid)}
 							>
 								<TrashBinIcon />
 							</button>

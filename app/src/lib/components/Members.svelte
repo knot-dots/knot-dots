@@ -152,12 +152,14 @@
 	{#if inheritedSections && admins}
 		<ObjectPermissionMatrix
 			{admins}
+			{adminTeams}
 			{container}
 			editable={mayManageMembers}
 			{grants}
 			{inheritedSections}
 			{mayManageOrganizationUsers}
 			oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
+			{teams}
 			{users}
 		/>
 	{:else}
@@ -166,6 +168,7 @@
 			editable={mayManageMembers}
 			{grants}
 			oninvite={mayManageMembers ? () => dialog.showModal() : undefined}
+			{teams}
 			{users}
 		/>
 	{/if}

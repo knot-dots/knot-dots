@@ -327,6 +327,7 @@
 				{#if data.inheritedSections && data.admins}
 					<ObjectPermissionMatrix
 						admins={data.admins}
+						adminTeams={data.adminTeams}
 						container={data.container}
 						editable={isEditMode && $ability.can('manage-users', data.container)}
 						grants={data.grants}
@@ -336,6 +337,7 @@
 						oninvite={$ability.can('manage-users', data.container)
 							? () => inviteDialog.showModal()
 							: undefined}
+						teams={data.teams}
 						{users}
 					/>
 				{:else}
@@ -346,6 +348,7 @@
 						oninvite={$ability.can('manage-users', data.container)
 							? () => inviteDialog.showModal()
 							: undefined}
+						teams={data.teams}
 						{users}
 					/>
 				{/if}

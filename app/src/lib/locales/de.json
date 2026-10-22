@@ -842,6 +842,12 @@
 	"task_status.label": "Status",
 	"tasks": "Aufgaben",
 	"team": "Team",
+	"teams": {
+		"manage": "In der Nutzerverwaltung bearbeiten",
+		"members": "Mitglieder",
+		"no_members": "Noch keine Mitglieder",
+		"show_members": "Mitglieder von {name} anzeigen"
+	},
 	"teaser": "Teaser",
 	"teaser_highlight": "Spotlight Teaser",
 	"teaser_image_alt_text": "Alt-Text eingeben",

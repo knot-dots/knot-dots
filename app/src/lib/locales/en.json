@@ -842,6 +842,12 @@
 	"task_status.label": "Status",
 	"tasks": "Tasks",
 	"team": "Team",
+	"teams": {
+		"manage": "Edit in the user management",
+		"members": "Members",
+		"no_members": "No members yet",
+		"show_members": "Show the members of {name}"
+	},
 	"teaser": "Teaser",
 	"teaser_highlight": "Spotlight teaser",
 	"teaser_image_alt_text": "Enter alt text",
