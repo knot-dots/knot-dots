@@ -35,6 +35,7 @@ import {
 	type NewContainer,
 	organizationalUnitPayload,
 	type OrganizationalUnitPayload,
+	organizationalUnitType,
 	organizationPayload,
 	type OrganizationPayload,
 	type PayloadType,
@@ -174,6 +175,10 @@ const typeAliases = {
 	}),
 	organizationalUnitContainer: createContainerSchema(organizationalUnitPayload),
 	relation,
+	teamContainer: createContainerSchema(organizationalUnitPayload).omit({
+		relation: true,
+		user: true
+	}),
 	relationPath: z.object({}).catchall(z.string().uuid()),
 	revision: z.object({ revision: z.number().int().positive() }),
 	spatialFeature: z.object({
@@ -941,6 +946,10 @@ export function deleteContainer(container: Container<AnyPayload>, visited = new 
       `);
 
 			await syncContainerGrants(container.guid, [])(txConnection);
+			// a team holds rows as a subject on other matrices
+			await txConnection.query(sql.typeAlias('void')`
+				DELETE FROM container_grant WHERE subject = ${container.guid}
+			`);
 
 			return affectedContainerGuids(relationResult);
 		});
@@ -1609,6 +1618,56 @@ export function getManyOrganizationContainers(
 			connection,
 			await withUserAndRelation<Container<OrganizationPayload>>(connection, containerResult)
 		);
+	};
+}
+
+// The teams of an organization: the units marked as such, with their rows
+// and relations so the matrices can show them and the rules can judge them.
+export function getManyTeamContainers(filters: { organization: string }) {
+	return async (
+		connection: DatabaseConnection
+	): Promise<Container<OrganizationalUnitPayload>[]> => {
+		const containerResult = await connection.any(sql.typeAlias('teamContainer')`
+			SELECT *
+			FROM container
+			WHERE valid_currently
+				AND NOT deleted
+				AND organization = ${filters.organization}
+				AND payload->>'type' = ${payloadTypes.enum.organizational_unit}
+				AND payload->>'organizationalUnitType' = ${organizationalUnitType.enum['organizational_unit_type.team']}
+			ORDER BY payload->>'name'
+		`);
+
+		return enrichContainers(
+			connection,
+			await withUserAndRelation<Container<OrganizationalUnitPayload>>(connection, containerResult)
+		);
+	};
+}
+
+// The members of the given teams, keyed by team guid (teams without members
+// are absent): everyone with a role on the team's matrix.
+export function getTeamMembersByTeams(guids: string[]) {
+	return async (connection: DatabaseConnection): Promise<Map<string, User[]>> => {
+		if (guids.length === 0) {
+			return new Map();
+		}
+		const rows = await connection.any(sql.type(user.extend({ team: z.uuid() }))`
+			SELECT c.guid AS team, u.*
+			FROM container c
+			JOIN container_user cu ON cu.object = c.revision
+				AND cu.predicate = ${predicates.enum['is-member-of']}
+			JOIN "user" u ON u.guid = cu.subject
+			WHERE c.guid = ANY (${sql.array(guids, 'uuid')})
+				AND c.valid_currently
+				AND NOT c.deleted
+			ORDER BY u.family_name, u.given_name
+		`);
+		const members = new Map<string, User[]>();
+		for (const { team, ...member } of rows) {
+			members.set(team, [...(members.get(team) ?? []), member]);
+		}
+		return members;
 	};
 }
 
