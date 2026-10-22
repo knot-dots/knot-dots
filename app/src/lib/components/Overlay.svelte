@@ -64,10 +64,12 @@
 	{#if data.key === overlayKey.enum['members']}
 		<MembersOverlay
 			admins={data.admins}
+			adminTeams={data.adminTeams}
 			container={data.container}
 			grants={data.grants}
 			inheritedSections={data.inheritedSections}
 			mayManageOrganizationUsers={data.mayManageOrganizationUsers}
+			teams={data.teams}
 			users={data.users}
 		/>
 	{:else if data.key === overlayKey.enum['chapters'] && isProgramContainer(data.container)}

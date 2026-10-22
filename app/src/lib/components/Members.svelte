@@ -23,20 +23,30 @@
 		isOrganizationContainer,
 		predicates
 	} from '$lib/models';
-	import type { InheritedMatrixSection, User } from '$lib/models';
+	import type { InheritedMatrixSection, TeamWithMembers, User } from '$lib/models';
 	import tooltip from '$lib/attachments/tooltip';
 
 	interface Props {
 		admins?: Readonly<Array<User>>;
+		adminTeams?: ReadonlyArray<TeamWithMembers>;
 		container: Container<AnyPayload>;
 		grants: Readonly<Array<Grant>>;
 		inheritedSections?: ReadonlyArray<InheritedMatrixSection>;
 		mayManageOrganizationUsers?: boolean;
+		teams: ReadonlyArray<TeamWithMembers>;
 		users: Readonly<Array<User>>;
 	}
 
-	let { admins, container, grants, inheritedSections, mayManageOrganizationUsers, users }: Props =
-		$props();
+	let {
+		admins,
+		adminTeams,
+		container,
+		grants,
+		inheritedSections,
+		mayManageOrganizationUsers,
+		teams,
+		users
+	}: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let dialog: HTMLDialogElement;

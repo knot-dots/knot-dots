@@ -777,6 +777,7 @@ export type InheritedMatrixSection = {
 	active: boolean;
 	scope: { guid: string; title: string };
 	grants: Grant[];
+	teams: TeamWithMembers[];
 	users: User[];
 };
 

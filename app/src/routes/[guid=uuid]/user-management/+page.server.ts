@@ -5,7 +5,7 @@ import { createFeatureDecisions } from '$lib/features';
 import { findDescendants, predicates, type User } from '$lib/models';
 import { getAllGrantsByContainers, getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
-import { loadMatrixSections } from '$lib/server/matrixSections';
+import { loadMatrixSections, loadTeams } from '$lib/server/matrixSections';
 import type { PageServerLoad } from './$types';
 
 const userPredicates = [
@@ -42,19 +42,26 @@ export const load = (async ({ locals, parent }) => {
 	// an organizational unit inherits its matrices from the computed sources
 	// (a decoupled parent unit or the organization), shown with the same
 	// sections and toggle as measures and programs
-	const [members, { grants, relatedUsers, sections }] = await Promise.all([
+	const [members, { grants, relatedUsers, sections, teams }] = await Promise.all([
 		getMembers(selectedContext.organization),
-		locals.pool.connect(async (connection) => ({
-			grants: await getAllGrantsByContainers([selectedContext.guid])(connection),
-			relatedUsers: await getAllRelatedUsersByContainers(
-				displayedContainerGuids,
-				userPredicates
-			)(connection),
-			sections:
-				currentOrganizationalUnit && createFeatureDecisions(locals.features).usePermissionMatrix()
+		locals.pool.connect(async (connection) => {
+			const matrixEnabled = createFeatureDecisions(locals.features).usePermissionMatrix();
+			const sections =
+				currentOrganizationalUnit && matrixEnabled
 					? await loadMatrixSections(connection, currentOrganizationalUnit)
-					: undefined
-		}))
+					: undefined;
+			return {
+				grants: await getAllGrantsByContainers([selectedContext.guid])(connection),
+				relatedUsers: await getAllRelatedUsersByContainers(
+					displayedContainerGuids,
+					userPredicates
+				)(connection),
+				sections,
+				teams:
+					sections?.teams ??
+					(matrixEnabled ? await loadTeams(connection, selectedContext.organization) : [])
+			};
+		})
 	]);
 
 	const usersByGuid = new Map(relatedUsers.map((user) => [user.guid, user]));
@@ -67,6 +74,7 @@ export const load = (async ({ locals, parent }) => {
 	return {
 		container: selectedContext,
 		grants,
+		teams,
 		...(sections
 			? {
 					...sections,

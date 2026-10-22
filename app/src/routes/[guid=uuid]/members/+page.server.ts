@@ -5,7 +5,7 @@ import { createFeatureDecisions } from '$lib/features';
 import { isOrganizationalUnitContainer, isOrganizationContainer, predicates } from '$lib/models';
 import { getAllGrantsByContainers, getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
-import { loadMatrixSections } from '$lib/server/matrixSections';
+import { loadMatrixSections, loadTeams } from '$lib/server/matrixSections';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, parent }) => {
@@ -25,22 +25,29 @@ export const load = (async ({ locals, parent }) => {
 	// an organizational unit inherits its matrices from the computed sources (a
 	// decoupled parent unit or the organization), shown with the same sections
 	// and toggle as measures and programs
-	const [members, { grants, sections, users }] = await Promise.all([
+	const [members, { grants, sections, teams, users }] = await Promise.all([
 		getMembers(container.organization),
-		locals.pool.connect(async (connection) => ({
-			grants: await getAllGrantsByContainers([guid])(connection),
-			users: await getAllRelatedUsers(guid, [predicates.enum['is-member-of']])(connection),
-			sections:
-				isOrganizationalUnitContainer(container) &&
-				createFeatureDecisions(locals.features).usePermissionMatrix()
+		locals.pool.connect(async (connection) => {
+			const matrixEnabled = createFeatureDecisions(locals.features).usePermissionMatrix();
+			const sections =
+				isOrganizationalUnitContainer(container) && matrixEnabled
 					? await loadMatrixSections(connection, container)
-					: undefined
-		}))
+					: undefined;
+			return {
+				grants: await getAllGrantsByContainers([guid])(connection),
+				users: await getAllRelatedUsers(guid, [predicates.enum['is-member-of']])(connection),
+				sections,
+				teams:
+					sections?.teams ??
+					(matrixEnabled ? await loadTeams(connection, container.organization) : [])
+			};
+		})
 	]);
 
 	return {
 		container,
 		grants,
+		teams,
 		...(sections
 			? {
 					...sections,
