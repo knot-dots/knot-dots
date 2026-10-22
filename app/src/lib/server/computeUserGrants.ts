@@ -39,11 +39,11 @@ const row = z.object({
  * each container the matrices that govern it (its grant sources) and the
  * kinds the subject holds there. The only source is the container itself
  * while its matrix is decoupled (own_matrix); otherwise every hierarchy
- * chain contributes its nearest decoupled ancestor, and chains reaching the
- * top without one fall back to the container's organizational unit if that
- * has decoupled its matrix, or the organization as the last resort. The
- * sources' rows apply side by side; rows on inheriting containers in
- * between lie dormant. Subjects holding every self kind on the organization
+ * chain contributes its nearest decoupled ancestor, and only chains reaching
+ * the top without one fall back to the container's organizational unit if
+ * that has decoupled its matrix, or the organization as the last resort: a
+ * decoupled ancestor replaces the area matrices. The sources' rows apply
+ * side by side; rows on inheriting containers in between lie dormant. Subjects holding every self kind on the organization
  * or on the container's organizational unit act as administrators of that
  * scope and keep every kind regardless of the sources.
  */
@@ -132,10 +132,10 @@ export async function computeUserGrants(
 		),
 		-- A decoupled container is its own and only source (ord -1 keeps it
 		-- primary); otherwise the chains' nearest decoupled ancestors apply side
-		-- by side with the area sources ordered last: an organizational unit
-		-- with a matrix of its own always governs the inheriting contents of its
-		-- area, and chains topping out without any of that fall back to the
-		-- organization.
+		-- by side, and only chains topping out without one fall back to the
+		-- area, ordered last: the organizational unit if it has a matrix of its
+		-- own, else the organization. A decoupled ancestor thus replaces the
+		-- area matrices for the contents it governs.
 		sources AS (
 			SELECT b.root, b.root AS source, -1 AS ord FROM base b WHERE b.decoupled
 			UNION ALL
@@ -143,6 +143,7 @@ export async function computeUserGrants(
 			UNION ALL
 			SELECT du.root, du.guid, 2147483646
 			FROM decoupled_unit du
+			JOIN open_chain oc ON oc.root = du.root
 			JOIN base b ON b.root = du.root
 			WHERE NOT b.decoupled
 			UNION ALL

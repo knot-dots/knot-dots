@@ -461,11 +461,11 @@ test('a chain without a decoupled ancestor adds the organization', async ({
 	});
 });
 
-test('a decoupled organizational unit governs beside a decoupled program', async ({
+test('a decoupled program cuts a decoupled organizational unit off its contents', async ({
 	connection
 }: Fixtures) => {
-	// the Figma reference case: contents of an area stay governed by the
-	// area's own matrix even when a decoupled program governs them too
+	// a program defining its own rights replaces the inherited ones, whether
+	// they come from the organization or from the organizational unit
 	const organization = uuid();
 	const subject = await newTestUser(connection);
 	const unit = await createContainer(
@@ -494,13 +494,13 @@ test('a decoupled organizational unit governs beside a decoupled program', async
 	expect(grants.get(measure.guid)).toEqual({
 		admin: false,
 		scope_sourced: false,
-		member: true,
+		member: false,
 		organization_manager: false,
 		own: [],
-		self: ['read', 'update'],
+		self: ['update'],
 		source: program.guid,
-		sources: [program.guid, unit.guid],
-		subordinates: ['read', 'update']
+		sources: [program.guid],
+		subordinates: ['update']
 	});
 });
 
