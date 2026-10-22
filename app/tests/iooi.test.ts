@@ -149,10 +149,10 @@ test.describe('Goal IOOI Board', () => {
 		const inputColumn = dotsBoard.overlay.locator.locator('section', { hasText: 'Input' });
 		await inputColumn.getByRole('button', { name: 'Add item' }).first().click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		const dialog = dotsBoard.page.getByRole('dialog');
 		await dialog.getByLabel('Resource').click();
-		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+		await dialog.getByRole('radio', { name: testResourceV2.payload.title }).click();
 
 		// Fill in the title
 		const resourceDataTitle = `Budget Item ${Date.now()}`;
@@ -210,7 +210,7 @@ test.describe('Goal IOOI Board', () => {
 		// Select the resource from the grouped dropdown
 		const dialog = dotsBoard.page.getByRole('dialog');
 		await dialog.getByLabel('Resource').click();
-		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+		await dialog.getByRole('radio', { name: testResourceV2.payload.title }).click();
 
 		// Fill in the title
 		const resourceDataTitle = `Budget Item ${Date.now()}`;
@@ -404,10 +404,10 @@ test.describe('Measure IOOI Board', () => {
 		// Select "Planned resource allocation" from dropdown
 		await dotsBoard.page.getByRole('menuitem', { name: 'Planned resource allocation' }).click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		const dialog = dotsBoard.page.getByRole('dialog');
 		await dialog.getByLabel('Resource').click();
-		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+		await dialog.getByRole('radio', { name: testResourceV2.payload.title }).click();
 
 		// Fill in the title
 		const resourceDataTitle = `Planned Resource ${Date.now()}`;
@@ -456,10 +456,10 @@ test.describe('Measure IOOI Board', () => {
 		// Select "Actual resource allocation" from dropdown
 		await dotsBoard.page.getByRole('menuitem', { name: 'Actual resource allocation' }).click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		const dialog = dotsBoard.page.getByRole('dialog');
 		await dialog.getByLabel('Resource').click();
-		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+		await dialog.getByRole('radio', { name: testResourceV2.payload.title }).click();
 
 		// Fill in the title
 		const resourceDataTitle = `Actual Resource ${Date.now()}`;
@@ -521,10 +521,10 @@ test.describe('Measure IOOI Board', () => {
 		// Select "Planned resource allocation" from dropdown
 		await dotsBoard.page.getByRole('menuitem', { name: 'Planned resource allocation' }).click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		const dialog = dotsBoard.page.getByRole('dialog');
 		await dialog.getByLabel('Resource').click();
-		await dialog.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) }).check();
+		await dialog.getByRole('radio', { name: testResourceV2.payload.title }).click();
 
 		// Fill in the title
 		const resourceDataTitle = `Planned Resource ${Date.now()}`;
@@ -582,12 +582,12 @@ test.describe('Measure IOOI Board', () => {
 		const resourceDataTitle = `Resource Data ${Date.now()}`;
 		await section.getByRole('button', { name: 'Add item' }).first().click();
 
-		// Select the resource from the grouped dropdown
+		// Select the resource from the dropdown
 		await dotsBoard.page.getByRole('dialog').getByLabel('Resource').click();
 		await dotsBoard.page
 			.getByRole('dialog')
-			.getByRole('radio', { name: new RegExp(testResourceV2.payload.title) })
-			.check();
+			.getByRole('radio', { name: testResourceV2.payload.title })
+			.click();
 
 		// Fill in the title
 		await dotsBoard.page

@@ -21,6 +21,7 @@
 	import OrganizationProperties from '$lib/components/OrganizationProperties.svelte';
 	import PostProperties from '$lib/components/PostProperties.svelte';
 	import ProgramProperties from '$lib/components/ProgramProperties.svelte';
+	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
 	import ReportProperties from '$lib/components/ReportProperties.svelte';
 	import ResourceProperties from '$lib/components/ResourceProperties.svelte';
 	import ResourceV2Properties from '$lib/components/ResourceV2Properties.svelte';
@@ -29,6 +30,8 @@
 	import TaskProperties from '$lib/components/TaskProperties.svelte';
 	import TeaserProperties from '$lib/components/TeaserProperties.svelte';
 	import TextProperties from '$lib/components/TextProperties.svelte';
+	import { getToastContext } from '$lib/contexts/toast';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		isCategoryContainer,
 		isBinaryIndicatorContainer,
@@ -61,7 +64,6 @@
 		overlayKey,
 		overlayURL
 	} from '$lib/models';
-	import { getToastContext } from '$lib/contexts/toast';
 	import { addItemState, createContainerDialogState } from '$lib/stores';
 
 	interface Props {
@@ -222,7 +224,15 @@
 					{/if}
 
 					{#if isContainer($createContainerDialogState.container)}
-						<Badges bind:container={$createContainerDialogState.container} editable />
+						{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+							<PropertiesBar
+								bind:container={$createContainerDialogState.container}
+								editable
+								revisions={[]}
+							/>
+						{:else}
+							<Badges bind:container={$createContainerDialogState.container} editable />
+						{/if}
 					{/if}
 
 					{#if isSimpleMeasureContainer($createContainerDialogState.container)}
@@ -233,153 +243,158 @@
 					{/if}
 				</header>
 
-				{#if isBinaryIndicatorContainer($createContainerDialogState.container)}
-					<BinaryIndicatorProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isCategoryContainer($createContainerDialogState.container)}
-					<CategoryProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isEffectContainer($createContainerDialogState.container)}
-					<EffectProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isEventContainer($createContainerDialogState.container)}
-					<EventProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isGoalContainer($createContainerDialogState.container)}
-					<GoalProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isIndicatorContainer($createContainerDialogState.container)}
-					<IndicatorProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isKnowledgeContainer($createContainerDialogState.container)}
-					<KnowledgeProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isMeasureContainer($createContainerDialogState.container)}
-					<MeasureProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isObjectiveContainer($createContainerDialogState.container)}
-					<ObjectiveProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isOrganizationContainer($createContainerDialogState.container)}
-					<OrganizationProperties bind:container={$createContainerDialogState.container} editable />
-				{:else if isOrganizationalUnitContainer($createContainerDialogState.container)}
-					<OrganizationalUnitProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-					/>
-				{:else if isPostContainer($createContainerDialogState.container)}
-					<PostProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isProgramContainer($createContainerDialogState.container)}
-					<ProgramProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isReportContainer($createContainerDialogState.container)}
-					<ReportProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isResourceContainer($createContainerDialogState.container)}
-					<ResourceProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isResourceV2Container($createContainerDialogState.container)}
-					<ResourceV2Properties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isResourceDataContainer($createContainerDialogState.container)}
-					<ResourceDataProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isRuleContainer($createContainerDialogState.container)}
-					<RuleProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isSimpleMeasureContainer($createContainerDialogState.container)}
-					<MeasureProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isTaskContainer($createContainerDialogState.container)}
-					<TaskProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isTeaserContainer($createContainerDialogState.container)}
-					<TeaserProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
-				{:else if isTextContainer($createContainerDialogState.container)}
-					<TextProperties
-						bind:container={$createContainerDialogState.container}
-						editable
-						relatedContainers={[]}
-						revisions={[]}
-					/>
+				{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+					{#if isBinaryIndicatorContainer($createContainerDialogState.container)}
+						<BinaryIndicatorProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isCategoryContainer($createContainerDialogState.container)}
+						<CategoryProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isEffectContainer($createContainerDialogState.container)}
+						<EffectProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isEventContainer($createContainerDialogState.container)}
+						<EventProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isGoalContainer($createContainerDialogState.container)}
+						<GoalProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isIndicatorContainer($createContainerDialogState.container)}
+						<IndicatorProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isKnowledgeContainer($createContainerDialogState.container)}
+						<KnowledgeProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isMeasureContainer($createContainerDialogState.container)}
+						<MeasureProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isObjectiveContainer($createContainerDialogState.container)}
+						<ObjectiveProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isOrganizationContainer($createContainerDialogState.container)}
+						<OrganizationProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+						/>
+					{:else if isOrganizationalUnitContainer($createContainerDialogState.container)}
+						<OrganizationalUnitProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+						/>
+					{:else if isPostContainer($createContainerDialogState.container)}
+						<PostProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isProgramContainer($createContainerDialogState.container)}
+						<ProgramProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isReportContainer($createContainerDialogState.container)}
+						<ReportProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isResourceContainer($createContainerDialogState.container)}
+						<ResourceProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isResourceV2Container($createContainerDialogState.container)}
+						<ResourceV2Properties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isResourceDataContainer($createContainerDialogState.container)}
+						<ResourceDataProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isRuleContainer($createContainerDialogState.container)}
+						<RuleProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isSimpleMeasureContainer($createContainerDialogState.container)}
+						<MeasureProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isTaskContainer($createContainerDialogState.container)}
+						<TaskProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isTeaserContainer($createContainerDialogState.container)}
+						<TeaserProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{:else if isTextContainer($createContainerDialogState.container)}
+						<TextProperties
+							bind:container={$createContainerDialogState.container}
+							editable
+							relatedContainers={[]}
+							revisions={[]}
+						/>
+					{/if}
 				{/if}
 
 				{#if isContainerWithDescription($createContainerDialogState.container)}
@@ -402,6 +417,7 @@
 
 <style>
 	dialog {
+		height: min(47.5rem, calc(100vh));
 		width: calc(min(54rem, 100vw));
 	}
 

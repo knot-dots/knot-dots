@@ -1683,10 +1683,9 @@ export const indicatorPayload = z
 	.register(payloadRegistry, {
 		layout: {
 			detail: {
-				headerAndPanel: ['type'],
+				headerAndPanel: ['type', 'unit'],
 				onlyPanel: [
 					'indicatorType',
-					'unit',
 					'indicatorCategory',
 					'category.*',
 					'editorialState',

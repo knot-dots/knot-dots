@@ -8,6 +8,8 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
+	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
@@ -48,14 +50,20 @@
 		</div>
 
 		<div class="details-meta">
-			<Badges {container} />
+			{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+				<PropertiesBar {container} revisions={[]} />
+			{:else}
+				<Badges {container} />
+			{/if}
 		</div>
 	</header>
 
-	{#if isBinaryIndicatorContainer(container)}
-		<BinaryIndicatorProperties {container} {relatedContainers} revisions={[]} />
-	{:else}
-		<IndicatorProperties {container} {relatedContainers} revisions={[]} />
+	{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+		{#if isBinaryIndicatorContainer(container)}
+			<BinaryIndicatorProperties {container} {relatedContainers} revisions={[]} />
+		{:else}
+			<IndicatorProperties {container} {relatedContainers} revisions={[]} />
+		{/if}
 	{/if}
 
 	<EditableFormattedText label={$_('description')} value={container.payload.description} />
