@@ -3,11 +3,13 @@
 	import { invalidateAll } from '$app/navigation';
 	import { _ } from 'svelte-i18n';
 	import CheckCircleIcon from '~icons/flowbite/check-circle-outline';
-	import PlusIcon from '~icons/flowbite/plus-outline';
+	import EnvelopeIcon from '~icons/flowbite/envelope-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import saveGrants from '$lib/client/saveGrants';
+	import saveUser from '$lib/client/saveUser';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
+	import SubjectCombobox, { type SubjectSuggestion } from '$lib/components/SubjectCombobox.svelte';
 	import TeamChip from '$lib/components/TeamChip.svelte';
 	import {
 		type AnyPayload,
@@ -176,6 +178,25 @@
 	async function removeSubject(subject: string) {
 		await save(subject, { self: [], subordinates: [] });
 	}
+
+	// adding a row starts with the observer set; registered users who are no
+	// member yet get invited into the container on the way
+	async function addSubject(suggestion: SubjectSuggestion) {
+		if (suggestion.kind === 'team') {
+			await save(suggestion.guid, grantSetForRole(memberRoles.enum.observer));
+			return;
+		}
+		const response = await saveUser({
+			container,
+			email: suggestion.email,
+			role: memberRoles.enum.observer
+		});
+		if (!response.ok) {
+			console.log(await response.json());
+			return;
+		}
+		await invalidateAll();
+	}
 </script>
 
 <div class="table-wrapper">
@@ -264,17 +285,23 @@
 					</td>
 				</tr>
 			{/each}
-			{#if oninvite}
+			{#if editable}
 				<tr class="add-row">
 					<td colspan={10}>
-						<button
-							class="button-alternate button-xs system-primary"
-							type="button"
-							onclick={oninvite}
-						>
-							<PlusIcon />
-							<span>{$_('add_item')}</span>
-						</button>
+						<span class="add-controls">
+							<SubjectCombobox
+								excluded={rows.map(({ guid }) => guid)}
+								onselect={addSubject}
+								organization={container.organization}
+								{teams}
+							/>
+							{#if oninvite}
+								<button class="button-alternate button-xs" type="button" onclick={oninvite}>
+									<EnvelopeIcon />
+									<span>{$_('invite.heading')}</span>
+								</button>
+							{/if}
+						</span>
 					</td>
 				</tr>
 			{/if}
@@ -365,6 +392,12 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.add-controls {
+		align-items: center;
+		display: flex;
+		gap: 0.5rem;
 	}
 
 	.user-cell {

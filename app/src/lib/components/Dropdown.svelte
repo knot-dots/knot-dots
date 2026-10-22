@@ -8,9 +8,11 @@
 		panel?: Snippet<[ReturnType<typeof createPopover>]>;
 		label?: string;
 		offset?: [number, number];
+		// fixed keeps the panel out of scrolling (clipping) containers
+		strategy?: 'absolute' | 'fixed';
 	}
 
-	let { button, panel, label, offset = [0, 4] }: Props = $props();
+	let { button, panel, label, offset = [0, 4], strategy = 'absolute' }: Props = $props();
 
 	const popover = createPopover({
 		get label() {
@@ -20,7 +22,7 @@
 
 	const [popperRef, popperContent] = createPopperActions({
 		placement: 'bottom-start',
-		strategy: 'absolute'
+		strategy
 	});
 
 	const extraOptions = $derived({
