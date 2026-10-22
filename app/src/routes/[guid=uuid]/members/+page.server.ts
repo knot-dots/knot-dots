@@ -4,7 +4,6 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	grantSetForRole,
 	grantSetForSubjectOn,
-	grantSourceOf,
 	type InheritedMatrixSection,
 	matrixSectionScope,
 	isOrganizationalUnitContainer,
@@ -62,10 +61,9 @@ export const load = (async ({ locals, parent }) => {
 	let inheritedSections: InheritedMatrixSection[] | undefined;
 	let admins: User[] | undefined;
 	if (isOrganizationalUnitContainer(container)) {
-		const inherits = !container.own_matrix;
-		const sourceGuids = inherits
-			? (container.user_grant?.sources ?? [container.organization])
-			: [grantSourceOf(container)];
+		const sourceGuids = (container.user_grant?.sources ?? [container.organization]).filter(
+			(guid) => guid !== container.guid
+		);
 		const scopeGuids = [container.organization].filter((guid) => guid !== container.guid);
 		const matrixGuids = [...new Set([...sourceGuids, ...scopeGuids])];
 

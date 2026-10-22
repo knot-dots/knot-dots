@@ -105,12 +105,12 @@
 	const viewOnly = $derived(!editable);
 
 	// expanded states follow the active sections until toggled by hand; the
-	// overrides reset whenever the inheritance flips so the defaults apply
+	// inherited sections always apply, so they start expanded
 	let adminsExpanded = $state(true);
 	let ownExpandedOverride = $state<boolean | undefined>();
 	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
 	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
-	const sectionExpanded = (guid: string) => sectionExpandedOverrides.get(guid) ?? inherits;
+	const sectionExpanded = (guid: string) => sectionExpandedOverrides.get(guid) ?? true;
 
 	const creators = $derived(
 		container.user
@@ -454,13 +454,11 @@
 				{/if}
 			{/if}
 
-			<!-- one section per governing matrix -->
+			<!-- the governing matrices, one section each; they apply whether the
+			     container adds rows of its own or not -->
 			{#each inheritedSections as section (section.scope.guid)}
 				{@const expanded = sectionExpanded(section.scope.guid)}
-				<tr
-					class="section-row section-row--inherited {inherits ? 'system-success' : ''}"
-					class:active={inherits}
-				>
+				<tr class="section-row section-row--inherited system-success active">
 					<td colspan={columnCount + 1}>
 						<span class="section-header">
 							<span class="section-start">
@@ -477,16 +475,13 @@
 										})}
 									</span>
 								</button>
-								<span class="badge section-badge">
-									{$_(inherits ? 'permission_matrix.active' : 'permission_matrix.inactive')}
-								</span>
+								<span class="badge section-badge">{$_('permission_matrix.active')}</span>
 							</span>
 						</span>
 					</td>
 				</tr>
 				{#if expanded}
 					{#each sectionRows(section) as { set, user } (user.guid)}
-						{@const cellState = inherits ? 'readonly' : 'inactive'}
 						<tr>
 							<td class="col-name" class:locked={!viewOnly}>
 								<span class="user-cell">
@@ -513,14 +508,12 @@
 										<PermissionCheckbox
 											ariaLabel={cellLabel(kind, group.label, checked)}
 											{checked}
-											state={cellState}
-											tooltip={cellState === 'inactive'
-												? $_('permission_matrix.tooltip_dormant')
-												: viewOnly
-													? $_('permission_matrix.tooltip_readonly')
-													: $_('permission_matrix.tooltip_inherited', {
-															values: { name: section.scope.title }
-														})}
+											state="readonly"
+											tooltip={viewOnly
+												? $_('permission_matrix.tooltip_readonly')
+												: $_('permission_matrix.tooltip_inherited', {
+														values: { name: section.scope.title }
+													})}
 										/>
 									</td>
 								{/each}

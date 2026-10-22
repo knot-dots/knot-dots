@@ -5,7 +5,6 @@ import defineAbilityFor from '$lib/authorization';
 import {
 	grantSetForRole,
 	grantSetForSubjectOn,
-	grantSourceOf,
 	matrixSectionScope,
 	isMeasureContainer,
 	isProgramContainer,
@@ -58,14 +57,12 @@ export const load = (async ({ locals, params }) => {
 		}
 
 		// The matrices governing this container name themselves: the read-time
-		// enrichment resolved the sources — decoupled managers, the
-		// organizational unit or the organization. A decoupled container is its
-		// own and only source; the inherited sections then show what would apply
-		// again after re-inheriting, so they fall back to the nearest manager.
-		const inherits = !container.own_matrix;
-		const sourceGuids = inherits
-			? (container.user_grant?.sources ?? [container.organizational_unit ?? container.organization])
-			: [grantSourceOf(container)];
+		// enrichment resolved the sources — the decoupled ancestors, the
+		// organizational unit or the organization. They apply beside the
+		// container's own rows, so only the container itself is left out.
+		const sourceGuids = (
+			container.user_grant?.sources ?? [container.organizational_unit ?? container.organization]
+		).filter((guid) => guid !== container.guid);
 		const scopeGuids = [
 			...new Set([
 				container.organization,

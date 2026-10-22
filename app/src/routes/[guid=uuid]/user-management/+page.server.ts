@@ -5,7 +5,6 @@ import {
 	findDescendants,
 	grantSetForRole,
 	grantSetForSubjectOn,
-	grantSourceOf,
 	type InheritedMatrixSection,
 	matrixSectionScope,
 	memberRoles,
@@ -70,10 +69,9 @@ export const load = (async ({ locals, parent }) => {
 	let inheritedSections: InheritedMatrixSection[] | undefined;
 	let admins: User[] | undefined;
 	if (currentOrganizationalUnit) {
-		const inherits = !selectedContext.own_matrix;
-		const sourceGuids = inherits
-			? (selectedContext.user_grant?.sources ?? [selectedContext.organization])
-			: [grantSourceOf(selectedContext)];
+		const sourceGuids = (
+			selectedContext.user_grant?.sources ?? [selectedContext.organization]
+		).filter((guid) => guid !== selectedContext.guid);
 		const scopeGuids = [selectedContext.organization].filter(
 			(guid) => guid !== selectedContext.guid
 		);
