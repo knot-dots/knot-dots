@@ -29,6 +29,7 @@
 		type Container,
 		getContextIdentifier,
 		getOrganizationURL,
+		isTeamContainer,
 		type OrganizationalUnitPayload,
 		type OrganizationPayload,
 		payloadTypes,
@@ -66,9 +67,10 @@
 		)
 	);
 
+	// teams are units too, but they live in the matrices, not in the sidebar
 	let organizationalUnits = $derived(
 		page.data.organizationalUnits.filter(
-			(c) => c.organization === page.data.currentOrganization.organization
+			(c) => c.organization === page.data.currentOrganization.organization && !isTeamContainer(c)
 		)
 	);
 

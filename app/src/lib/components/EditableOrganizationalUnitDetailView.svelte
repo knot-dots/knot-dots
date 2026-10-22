@@ -27,6 +27,7 @@
 		helpSlug,
 		isOrganizationalUnitContainer,
 		type OrganizationalUnitPayload,
+		isTeamContainer,
 		organizationalUnitType,
 		payloadTypes,
 		predicates
@@ -176,6 +177,23 @@
 							{#if $applicationState.containerDetailView.editable && $ability.can('update', container)}
 								<ImageReplacesNameToggle bind:value={container.payload.imageReplacesName} />
 							{/if}
+							{#if $applicationState.containerDetailView.editable && $ability.can('update', container) && container.payload.organizationalUnitType !== organizationalUnitType.enum['organizational_unit_type.administrative_area']}
+								<!-- a team leaves the sidebar and becomes a subject of other matrices -->
+								<label class="team-toggle">
+									<span>{$_('team')}</span>
+									<input
+										bind:checked={
+											() => isTeamContainer(container),
+											(checked) =>
+												(container.payload.organizationalUnitType = checked
+													? organizationalUnitType.enum['organizational_unit_type.team']
+													: undefined)
+										}
+										class="toggle"
+										type="checkbox"
+									/>
+								</label>
+							{/if}
 
 							{#if linkedProfile}
 								<div class="profile-switch">
@@ -308,5 +326,11 @@
 	.profile-switch-item--active {
 		background: var(--color-indigo-800);
 		color: white;
+	}
+	.team-toggle {
+		align-items: center;
+		display: inline-flex;
+		font-size: 0.875rem;
+		gap: 0.5rem;
 	}
 </style>
