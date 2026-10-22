@@ -21,6 +21,7 @@
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
 	import InlineEditableResourceV2 from '$lib/components/InlineEditableResourceV2.svelte';
 	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
+	import InlineReadonlyType from '$lib/components/InlineReadonlyType.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
 	import { getDefaultLayout } from '$lib/components/PropertiesConfiguration.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
@@ -157,6 +158,8 @@
 					/>
 				{:else if item == 'style' && isTeaserContainer(container)}
 					<InlineEditableLinkStyle bind:value={container.payload.style} {editable} />
+				{:else if item == 'type'}
+					<InlineReadonlyType value={container.payload.type} />
 				{:else if item == 'unit' && isIndicatorContainer(container)}
 					<InlineEditableIndicatorUnit bind:value={container.payload.unit} {editable} />
 				{:else if item in payloadSchema.shape}
