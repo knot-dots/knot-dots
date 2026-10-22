@@ -33,10 +33,14 @@ export const load = (async ({ locals, params }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		// Signed-in readers see the whole matrix (view-only without the
-		// manage-users kind); anonymous visitors of public containers get no
-		// roster of the surrounding areas.
-		if (!locals.user.isAuthenticated) {
+		// Members of the organization see the whole matrix (view-only without
+		// the manage-users kind); anonymous visitors and readers from other
+		// organizations get no roster of the surrounding areas.
+		const members = locals.user.isAuthenticated ? await getMembers(container.organization) : [];
+		if (
+			!locals.user.roles.includes('sysadmin') &&
+			!members.some(({ id }) => id === locals.user.guid)
+		) {
 			return {
 				container,
 				grants: [],
@@ -45,7 +49,6 @@ export const load = (async ({ locals, params }) => {
 			};
 		}
 
-		const members = await getMembers(container.organization);
 		const { admins, grants, inheritedSections, organization, users } = await locals.pool.connect(
 			async (connection) => ({
 				grants: await getAllGrantsByContainers([container.guid])(connection),
