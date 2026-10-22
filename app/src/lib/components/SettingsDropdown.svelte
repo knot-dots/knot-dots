@@ -131,6 +131,8 @@
 		) > -1
 	);
 
+	let isPlatformFavorite = $derived(favoritesList.platform.findIndex((f) => f.href === href) > -1);
+
 	async function toggleFavorite() {
 		const key = page.data.currentOrganizationalUnit ? 'organizationalUnit' : 'organization';
 		const index = favoritesList[key].findIndex((f) => f.href === href);
@@ -155,6 +157,30 @@
 		}
 	}
 
+	async function togglePlatformFavorite() {
+		const index = favoritesList.platform.findIndex((f) => f.href === href);
+
+		favoritesList.platform =
+			index > -1
+				? favoritesList.platform.filter((_, i) => i !== index)
+				: [...favoritesList.platform, { href, title: page.data.title ?? $_('new_favorite') }];
+
+		const response = await saveContainer({
+			...page.data.defaultOrganization,
+			payload: {
+				...page.data.defaultOrganization.payload,
+				platformFavorite: favoritesList.platform
+			}
+		});
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			page.data.defaultOrganization.revision = updatedContainer.revision;
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
+
 	const items = $derived([
 		{
 			condition:
@@ -172,6 +198,11 @@
 					page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 				),
 			snippet: toggleFavoriteButton
+		},
+		{
+			condition:
+				!overlay && page.data.title && $ability.can('update', page.data.defaultOrganization),
+			snippet: togglePlatformFavoriteButton
 		},
 		{
 			condition: container?.payload.visibility === visibility.enum.public,
@@ -213,6 +244,24 @@
 				<StarOutline />
 				<span>
 					<strong>{$_('add_to_sidebar')}</strong>
+				</span>
+			{/if}
+		</button>
+	{/if}
+{/snippet}
+
+{#snippet togglePlatformFavoriteButton(openSubMenuTitle: string)}
+	{#if openSubMenuTitle === ''}
+		<button class="cascading-menu-item" onclick={togglePlatformFavorite} type="button">
+			{#if isPlatformFavorite}
+				<StarSolid />
+				<span>
+					<strong>{$_('remove_from_platform_favorite')}</strong>
+				</span>
+			{:else}
+				<StarOutline />
+				<span>
+					<strong>{$_('add_to_platform_favorite')}</strong>
 				</span>
 			{/if}
 		</button>

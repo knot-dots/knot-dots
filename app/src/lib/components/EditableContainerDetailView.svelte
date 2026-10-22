@@ -21,8 +21,8 @@
 		helpSlugForDetailView,
 		isContainerWithColor,
 		isContainerWithCover,
-		isSimpleMeasureContainer,
-		payloadTypes
+		isContainerWithIcon,
+		isSimpleMeasureContainer
 	} from '$lib/models';
 	import { ability, applicationState } from '$lib/stores';
 	import { backgroundColors } from '$lib/theme/models';
@@ -97,7 +97,7 @@
 						: 'white'}"
 				>
 					<div class="details-header">
-						{#if container.payload.type === payloadTypes.enum.term}
+						{#if isContainerWithIcon(container)}
 							{#if $applicationState.containerDetailView.editable || container.payload.icon}
 								<EditableLogo
 									editable={$applicationState.containerDetailView.editable &&

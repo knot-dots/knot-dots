@@ -28,6 +28,7 @@
 		isContainerWithBody,
 		isContainerWithDescription,
 		isContainerWithEffect,
+		isContainerWithIcon,
 		isContainerWithObjective,
 		isContainerWithProgress,
 		isContainerWithSummary,
@@ -54,6 +55,8 @@
 	import transformFileURL from '$lib/transformFileURL';
 
 	interface Props {
+		// Color of the decorative glow near the top right corner
+		auraColor?: string;
 		body?: Snippet;
 		button?: Snippet;
 		container: Container<AnyPayload>;
@@ -64,10 +67,13 @@
 		onclick?: (event: Event) => void;
 		relatedContainers?: Container<AnyPayload>[];
 		showRelationFilter?: boolean;
+		// Rendered next to the title, e.g. a status icon
+		titleAside?: Snippet;
 		titleOverride?: boolean;
 	}
 
 	let {
+		auraColor,
 		body,
 		button,
 		container,
@@ -78,6 +84,7 @@
 		maxSummaryLength,
 		relatedContainers = [],
 		showRelationFilter = false,
+		titleAside,
 		titleOverride = false
 	}: Props = $props();
 
@@ -314,6 +321,7 @@
 	class:is-active={paramsFromFragment(page.url).get(overlayKey.enum.view) === container.guid}
 	class:is-highlighted={selected && highlightColor(container, selected)}
 	style:--highlight-color={selected && highlightColor(container, selected)}
+	style:--aura-color={auraColor}
 	onclick={handleClick}
 	onkeyup={handleKeyUp}
 >
@@ -337,6 +345,10 @@
 						/>
 						<span class="is-visually-hidden">{$_('bulk_actions_select')}</span>
 					</label>
+				{/if}
+
+				{#if isContainerWithIcon(container) && container.payload.icon}
+					<img alt="" class="card-icon" src={transformFileURL(container.payload.icon)} />
 				{/if}
 
 				<a
@@ -377,6 +389,11 @@
 					{/if}
 				</a>
 			</h3>
+			{#if titleAside}
+				<span>
+					{@render titleAside()}
+				</span>
+			{/if}
 			{#if selected && relationIcon(container, selected)}
 				{@const RelationIcon = relationIcon(container, selected)}
 				<span>
@@ -509,9 +526,15 @@
 
 <style>
 	.card {
-		background: #ffffff;
+		/* Decorative glow near the top right corner, see target-check-aura in Figma */
+		background: radial-gradient(
+				circle at calc(100% - 20px) 20px,
+				var(--aura-color, transparent) 30px,
+				transparent 170px
+			)
+			#ffffff;
 		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
+		border-radius: var(--card-border-radius);
 		box-shadow: var(--shadow-sm);
 		cursor: pointer;
 		display: flex;
@@ -574,6 +597,12 @@
 	}
 
 	header :global(svg) {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	.card-icon {
+		flex-shrink: 0;
 		height: 1.5rem;
 		width: 1.5rem;
 	}

@@ -1,0 +1,14 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="20" height="20" rx="1" fill="#D92D20"/>
+<rect width="20" height="20" rx="1" fill="url(#target-check-off-track-gloss)" fill-opacity="0.35" style="mix-blend-mode:overlay"/>
+<g transform="translate(2.5 2.5)">
+<path d="M4.375 4.375L10.625 10.625" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.625 4.375L4.375 10.625" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<radialGradient id="target-check-off-track-gloss" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10 1.5) rotate(90) scale(11.5)">
+<stop stop-color="white"/>
+<stop offset="1"/>
+</radialGradient>
+</defs>
+</svg>

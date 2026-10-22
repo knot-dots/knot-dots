@@ -21,6 +21,7 @@ export const overlayKey = z.enum([
 	'program',
 	'relations',
 	'resources',
+	'table',
 	'tasks',
 	'templates',
 	'view'
@@ -89,8 +90,9 @@ const payloadTypeValues = [
 	'program',
 	'program_collection',
 	'progress',
-	'report',
 	'quote',
+	'relation_collection',
+	'report',
 	'resource',
 	'resource_collection',
 	'resource_v2', // New payload type for resources with temporary v2 suffix
@@ -363,6 +365,17 @@ const structuralPredicateSet = new Set<string>(structuralCopyPredicates);
 
 export function isStructuralCopyPredicate(predicate: string): predicate is StructuralCopyPredicate {
 	return structuralPredicateSet.has(predicate);
+}
+
+// Indicators are shared: goals and measures reach them through objectives and
+// effects, so they never belong to a hierarchy themselves.
+const payloadTypesWithoutStructuralParent = new Set<string>([
+	payloadTypes.enum.binary_indicator,
+	payloadTypes.enum.indicator
+]);
+
+export function mayHaveStructuralParent(payloadType: PayloadType) {
+	return !payloadTypesWithoutStructuralParent.has(payloadType);
 }
 
 const backgroundColorValues = [
@@ -1000,6 +1013,14 @@ export const iooiTypes = z.enum(['iooi.input', 'iooi.output', 'iooi.outcome', 'i
 
 export type IooiType = z.infer<typeof iooiTypes>;
 
+export function slugify(source: string) {
+	return source
+		.trim()
+		.replace(/[^a-zA-Z0-9_.-]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.substring(0, 128);
+}
+
 export function isReservedContextSlug(slug: string) {
 	return new Set([
 		'ask-ai',
@@ -1165,6 +1186,7 @@ export const binaryIndicatorPayload = z
 			.transform(deduplicate)
 			.default([])
 			.register(propertyRegistry, { label: 'indicator_type' }),
+		icon: z.url().optional(),
 		type: z
 			.literal(payloadTypes.enum.binary_indicator)
 			.register(propertyRegistry, { label: 'type' })
@@ -1199,7 +1221,7 @@ export function isBinaryIndicatorContainer(
 
 const initialBinaryIndicatorPayload = binaryIndicatorPayload.partial({ title: true });
 
-export const categoryPayload = z
+const unrefinedCategoryPayload = z
 	.strictObject({
 		description: z.string().trim().optional().describe('GitHub-flavored Markdown.'),
 		key: z.string().trim().optional(),
@@ -1224,6 +1246,12 @@ export const categoryPayload = z
 		}
 	});
 
+export const categoryPayload = unrefinedCategoryPayload.superRefine((payload) => {
+	if (payload.title && !payload.key) {
+		payload.key = slugify(payload.title);
+	}
+});
+
 export type CategoryPayload = z.infer<typeof categoryPayload>;
 
 export function isCategoryContainer(
@@ -1232,7 +1260,7 @@ export function isCategoryContainer(
 	return container.payload.type === payloadTypes.enum.category;
 }
 
-const initialCategoryPayload = categoryPayload.partial({ title: true });
+const initialCategoryPayload = unrefinedCategoryPayload.partial({ title: true, key: true });
 
 const chapterPayload = z.strictObject({
 	...basePayload.omit({ description: true, summary: true, template: true }).shape,
@@ -1666,6 +1694,7 @@ export const indicatorPayload = z
 		...basePayload.shape,
 		...detailViewStyle.shape,
 		externalReference: z.url().optional(),
+		icon: z.url().optional(),
 		indicatorCategory: z
 			.array(indicatorCategories)
 			.transform(deduplicate)
@@ -1963,7 +1992,17 @@ export const organizationPayload = z.strictObject({
 	officialMunicipalityKey: z.string().length(8).optional(),
 	officialRegionalCode: z.string().length(12).optional(),
 	organizationCategory: organizationCategories.optional(),
+	platformFavorite: z
+		.array(
+			z.object({
+				href: z.string(),
+				icon: z.url().optional(),
+				title: z.string().trim()
+			})
+		)
+		.optional(),
 	propertiesConfiguration: propertiesConfiguration.default({}),
+	showPlatformFavorite: z.boolean().default(true),
 	slug: z
 		.string()
 		.slugify()
@@ -2255,6 +2294,31 @@ export function isQuoteContainer(
 }
 
 const initialQuotePayload = quotePayload.partial({ title: true });
+
+export const relationCollectionPayload = z.strictObject({
+	...sectionStyle.shape,
+	item: z.array(z.uuid()).default([]),
+	listType: z.enum([listTypes.enum.carousel, listTypes.enum.wall]).default(listTypes.enum.carousel),
+	payloadType: payloadTypes,
+	predicate: predicates,
+	title: z.string(),
+	type: z.literal(payloadTypes.enum.relation_collection),
+	visibility: visibility.default(visibility.enum['organization'])
+});
+
+export type RelationCollectionPayload = z.infer<typeof relationCollectionPayload>;
+
+export function isRelationCollectionContainer(
+	container: Container<AnyPayload> | NewContainer<AnyInitialPayload>
+): container is Container<RelationCollectionPayload> {
+	return container.payload.type === payloadTypes.enum.relation_collection;
+}
+
+const initialRelationCollectionPayload = relationCollectionPayload.partial({
+	payloadType: true,
+	predicate: true,
+	title: true
+});
 
 const reportPayload = z
 	.strictObject({
@@ -2781,7 +2845,7 @@ export function isTeaserHighlightContainer(
 
 const initialTeaserHighlightPayload = teaserHighlightPayload.partial({ title: true });
 
-export const termPayload = z
+const unrefinedTermPayload = z
 	.strictObject({
 		description: z.string().trim().optional(),
 		filterLabel: z
@@ -2791,9 +2855,9 @@ export const termPayload = z
 			.optional()
 			.register(propertyRegistry, { label: 'filter_label' }),
 		title: z.string().trim().min(1),
+		value: z.string().trim().optional(),
 		icon: z.string().trim().optional(),
 		type: z.literal(payloadTypes.enum.term).register(propertyRegistry, { label: 'type' }),
-		value: z.string().trim().optional(),
 		visibility: visibility
 			.default(visibility.enum['public'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -2808,6 +2872,12 @@ export const termPayload = z
 		}
 	});
 
+export const termPayload = unrefinedTermPayload.superRefine((payload) => {
+	if (payload.title && !payload.value) {
+		payload.value = slugify(payload.title);
+	}
+});
+
 export type TermPayload = z.infer<typeof termPayload>;
 
 export function isTermContainer(
@@ -2816,7 +2886,7 @@ export function isTermContainer(
 	return container.payload.type === payloadTypes.enum.term;
 }
 
-const initialTermPayload = termPayload.partial({ title: true });
+const initialTermPayload = unrefinedTermPayload.partial({ title: true, value: true });
 
 const textPayload = z
 	.strictObject({
@@ -2898,6 +2968,7 @@ const payload = z.discriminatedUnion('type', [
 	programPayload,
 	progressPayload,
 	quotePayload,
+	relationCollectionPayload,
 	reportPayload,
 	resourceCollectionPayload,
 	resourceDataCollectionPayload,
@@ -2980,6 +3051,7 @@ export const anyInitialPayload = z.discriminatedUnion('type', [
 	initialProgramPayload,
 	initialProgressPayload,
 	initialQuotePayload,
+	initialRelationCollectionPayload,
 	initialReportPayload,
 	initialResourceCollectionPayload,
 	initialResourceDataCollectionPayload,
@@ -3226,6 +3298,18 @@ export function isContainerWithImage(
 	container: Container<AnyPayload> | NewContainer
 ): container is ContainerWithImage {
 	return hasProperty(container.payload, 'image');
+}
+
+export type ContainerWithIcon = Container<AnyPayload & { icon: string | undefined }>;
+
+const payloadTypesWithIcon = new Set<string>(
+	anyPayload.options.filter((o) => 'icon' in o.shape).map((o) => o.shape.type.value)
+);
+
+export function isContainerWithIcon(
+	container: Container<AnyPayload> | NewContainer
+): container is ContainerWithIcon {
+	return payloadTypesWithIcon.has(container.payload.type);
 }
 
 export type ContainerWithName = Container<AnyPayload & { name: string | undefined }>;
@@ -3884,6 +3968,15 @@ export function createRootCopyOf(
 	rootVisibility: Visibility
 ): NewContainer<AnyPayload> {
 	const copy = createCopyOf(container, organization, organizationalUnit);
+
+	if (copy.payload.type === payloadTypes.enum.category) {
+		const { key, ...payload } = copy.payload;
+		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
+	} else if (copy.payload.type === payloadTypes.enum.term) {
+		const { value, ...payload } = copy.payload;
+		return { ...copy, payload: { ...payload, visibility: rootVisibility } };
+	}
+
 	return { ...copy, payload: { ...copy.payload, visibility: rootVisibility } };
 }
 

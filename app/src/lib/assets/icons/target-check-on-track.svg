@@ -1,0 +1,11 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="10" cy="10" r="10" fill="#039855"/>
+<circle cx="10" cy="10" r="10" fill="url(#target-check-on-track-gloss)" fill-opacity="0.35" style="mix-blend-mode:overlay"/>
+<path d="M5.625 10.625L8.75 13.75L14.375 6.875" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<radialGradient id="target-check-on-track-gloss" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10 1.5) rotate(90) scale(11.5)">
+<stop stop-color="white"/>
+<stop offset="1"/>
+</radialGradient>
+</defs>
+</svg>

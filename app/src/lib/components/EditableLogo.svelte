@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
+	import Refresh from '~icons/flowbite/refresh-outline';
 	import TrashBin from '~icons/flowbite/trash-bin-outline';
 	import Plus from '~icons/knotdots/plus';
 	import PlaceholderImage from '~icons/knotdots/placeholder-image';
@@ -24,6 +25,8 @@
 
 	const id = crypto.randomUUID();
 
+	let input: HTMLInputElement | undefined = $state();
+
 	function remove(event: Event) {
 		value = undefined;
 		requestSubmit(event);
@@ -42,6 +45,8 @@
 				console.log(e);
 			} finally {
 				uploadInProgress = false;
+				// Allows choosing the same file again after removing it
+				input.value = '';
 			}
 		}
 	}
@@ -56,8 +61,18 @@
 				</button>
 			{/snippet}
 
-			{#snippet panel()}
-				<button class="remove" onclick={remove} type="button">
+			{#snippet panel(popover)}
+				<button
+					class="panel-button"
+					onclick={() => {
+						popover.close();
+						input?.click();
+					}}
+					type="button"
+				>
+					<Refresh />{$_('upload.image.replace')}
+				</button>
+				<button class="panel-button" onclick={remove} type="button">
 					<TrashBin />{$_('upload.image.remove')}
 				</button>
 			{/snippet}
@@ -72,14 +87,15 @@
 			<PlaceholderImage />
 			<Plus />
 		</label>
-		<input
-			accept={allowedFileTypes.join(',')}
-			class="is-visually-hidden"
-			{id}
-			oninput={upload}
-			type="file"
-		/>
 	{/if}
+	<input
+		accept={allowedFileTypes.join(',')}
+		bind:this={input}
+		class="is-visually-hidden"
+		{id}
+		oninput={upload}
+		type="file"
+	/>
 {:else if value}
 	<img alt={$_('logo')} class="logo" src={transformFileURL(value)} />
 {/if}
@@ -135,7 +151,7 @@
 		background-color: transparent;
 	}
 
-	.remove {
+	.panel-button {
 		--button-active-background: var(--color-gray-100);
 		--button-hover-background: var(--color-gray-100);
 		--padding-y: 0.5rem;
@@ -145,7 +161,7 @@
 		white-space: nowrap;
 	}
 
-	.remove > :global(svg) {
+	.panel-button > :global(svg) {
 		color: var(--color-gray-800);
 		max-width: none;
 	}

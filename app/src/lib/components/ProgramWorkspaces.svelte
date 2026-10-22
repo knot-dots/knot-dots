@@ -89,7 +89,7 @@
 
 			if (params.has('chapters')) {
 				return ['all', 'level'];
-			} else if (params.has('view') && params.has('table')) {
+			} else if (params.has('table')) {
 				return ['all', 'table'];
 			} else if (params.has('indicators')) {
 				return ['indicators', 'catalog'];
@@ -110,7 +110,7 @@
 			if (pathnameWithoutContextSegments.length == 2) {
 				return pathnameWithoutContextSegments;
 			} else {
-				return ['all', paramsFromFragment(page.url).has('table') ? 'table' : 'page'];
+				return ['all', 'page'];
 			}
 		}
 	});
@@ -212,7 +212,7 @@
 		if (overlay) {
 			if (params.has('chapters')) {
 				return '/all/level';
-			} else if (params.has('view') && params.has('table')) {
+			} else if (params.has('table')) {
 				return '/all/table';
 			} else if (params.has('indicators')) {
 				return '/indicators/catalog';
@@ -227,15 +227,6 @@
 			} else {
 				return '/';
 			}
-		} else if (
-			url.pathname ==
-				resolve('/[guid=uuid]/[contentGuid=uuid]', {
-					guid: selectedContext.guid,
-					contentGuid: container.guid
-				}) &&
-			params.has('table')
-		) {
-			return '/all/table';
 		} else {
 			return '/' + (url.pathname.split('/').slice(3).join('/') ?? '');
 		}
@@ -288,13 +279,13 @@
 				}
 			} else if (selected[0] == 'all' && selected[1] == 'table') {
 				if (overlay) {
-					goto(overlayURL(url, overlayKey.enum.view, container.guid, [['table', '']]));
+					goto(overlayURL(url, overlayKey.enum.table, container.guid));
 				} else {
 					goto(
-						resolve('/[guid=uuid]/[contentGuid=uuid]', {
+						resolve('/[guid=uuid]/[contentGuid=uuid]/all/table', {
 							guid: selectedContext.guid,
 							contentGuid: container.guid
-						}) + '#table'
+						})
 					);
 				}
 			} else if (selected[0] == 'indicators' && selected[1] == 'catalog') {

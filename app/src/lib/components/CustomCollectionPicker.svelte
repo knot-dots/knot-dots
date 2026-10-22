@@ -7,7 +7,7 @@
 	import Close from '~icons/knotdots/close';
 	import LightningBolt from '~icons/knotdots/lightning-bolt';
 	import { page } from '$app/state';
-	import { filterCategoryContext } from '$lib/categoryOptions';
+	import { filterCategoryContext, findTermLabel } from '$lib/categoryOptions';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import saveContainer from '$lib/client/saveContainer';
 	import Card from '$lib/components/Card.svelte';
@@ -113,6 +113,7 @@
 		payloadTypes.enum.program,
 		payloadTypes.enum.report,
 		payloadTypes.enum.rule,
+		payloadTypes.enum.simple_measure,
 		payloadTypes.enum.task
 	] as string[]);
 
@@ -360,7 +361,7 @@
 				)?.payload.name ?? value
 			);
 		}
-		return page.data.categoryContext.labels.get(value) ?? $_(value);
+		return findTermLabel(page.data.categoryContext.options[key] ?? [], value) ?? $_(value);
 	}
 
 	async function confirm() {
@@ -590,7 +591,7 @@
 								<LightningBolt />
 								<span>{filterValueLabel('organization', value)}</span>
 								<button
-									class="button button-remove"
+									class="action-button"
 									type="button"
 									onclick={() =>
 										(checkedOrganizations = checkedOrganizations.filter((v) => v !== value))}
@@ -605,7 +606,7 @@
 								<LightningBolt />
 								<span>{filterValueLabel('organizationalUnit', value)}</span>
 								<button
-									class="button button-remove"
+									class="action-button"
 									type="button"
 									onclick={() =>
 										(checkedOrganizationalUnits = checkedOrganizationalUnits.filter(

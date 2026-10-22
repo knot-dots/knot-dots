@@ -134,6 +134,26 @@
 		})
 	);
 
+	// Comparing municipalities and reviewing programs exclude each other:
+	// selecting one clears the other. Each effect only tracks its own selection.
+	$effect(() => {
+		if (
+			$compareState.selectedMunicipalities.length > 0 &&
+			untrack(() => review.selectedPrograms.length > 0)
+		) {
+			review.selectedPrograms = [];
+		}
+	});
+
+	$effect(() => {
+		if (
+			review.selectedPrograms.length > 0 &&
+			untrack(() => $compareState.selectedMunicipalities.length > 0)
+		) {
+			compareState.set({ selectedMunicipalities: [], colorAssignments: {} });
+		}
+	});
+
 	let selectedContext = $derived(
 		page.data.currentOrganizationalUnit ?? page.data.currentOrganization
 	);
@@ -165,6 +185,10 @@
 		[...favoritesList.organization, ...favoritesList.organizationalUnit].findIndex(
 			(f) => f.href === href
 		) > -1
+	);
+
+	let isPlatformFavorite = $derived(
+		favoritesList.platform.findIndex((f) => f.href === page.url.toString().split('#')[0]) > -1
 	);
 
 	let facetLabels = $derived(page.data.categoryContext.labels);
@@ -221,6 +245,31 @@
 		if (response.ok) {
 			const updatedContainer = await response.json();
 			selectedContext.revision = updatedContainer.revision;
+		} else {
+			const error = await response.json();
+			alert(error.message);
+		}
+	}
+
+	async function togglePlatformFavorite() {
+		const href = page.url.toString().split('#')[0];
+		const index = favoritesList.platform.findIndex((f) => f.href === href);
+
+		favoritesList.platform =
+			index > -1
+				? favoritesList.platform.filter((_, i) => i !== index)
+				: [...favoritesList.platform, { href, title: page.data.title ?? $_('new_favorite') }];
+
+		const response = await saveContainer({
+			...page.data.defaultOrganization,
+			payload: {
+				...page.data.defaultOrganization.payload,
+				platformFavorite: favoritesList.platform
+			}
+		});
+		if (response.ok) {
+			const updatedContainer = await response.json();
+			page.data.defaultOrganization.revision = updatedContainer.revision;
 		} else {
 			const error = await response.json();
 			alert(error.message);
@@ -296,21 +345,38 @@
 
 		{#if settings}
 			{@render settings()}
-		{:else if !overlay && page.data.title && $ability.can('update', selectedContext)}
+		{:else if !overlay && page.data.title && ($ability.can('update', selectedContext) || $ability.can('update', page.data.defaultOrganization))}
 			<CascadingMenu title={$_('container_settings_dropdown.title')}>
-				<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
-					{#if isFavorite}
-						<StarSolid />
-						<span>
-							<strong>{$_('remove_from_sidebar')}</strong>
-						</span>
-					{:else}
-						<StarOutline />
-						<span>
-							<strong>{$_('add_to_sidebar')}</strong>
-						</span>
-					{/if}
-				</button>
+				{#if $ability.can('update', selectedContext)}
+					<button class="cascading-menu-item" onclick={toggleFavorite} type="button">
+						{#if isFavorite}
+							<StarSolid />
+							<span>
+								<strong>{$_('remove_from_sidebar')}</strong>
+							</span>
+						{:else}
+							<StarOutline />
+							<span>
+								<strong>{$_('add_to_sidebar')}</strong>
+							</span>
+						{/if}
+					</button>
+				{/if}
+				{#if $ability.can('update', page.data.defaultOrganization)}
+					<button class="cascading-menu-item" onclick={togglePlatformFavorite} type="button">
+						{#if isPlatformFavorite}
+							<StarSolid />
+							<span>
+								<strong>{$_('remove_from_platform_favorite')}</strong>
+							</span>
+						{:else}
+							<StarOutline />
+							<span>
+								<strong>{$_('add_to_platform_favorite')}</strong>
+							</span>
+						{/if}
+					</button>
+				{/if}
 			</CascadingMenu>
 		{/if}
 	</div>

@@ -517,6 +517,8 @@ test.each([
 	['effect', 'is-part-of', 'goal'],
 	['objective', 'is-part-of', 'measure'],
 	['binary_indicator', 'is-part-of', 'goal'],
+	['binary_indicator', 'is-part-of-program', 'program'],
+	['indicator', 'is-part-of-measure', 'measure'],
 	['text', 'is-section-of', 'program'],
 	['goal', 'is-section-of', 'page'],
 	['text', 'is-part-of', 'goal']
@@ -532,7 +534,12 @@ test.each([
 	const input = createContainerInput.parse({
 		organizationGuid,
 		parentRelations: [{ parentGuid, predicate }],
-		payload: type === 'page' ? { body: '', title: 'Page', type } : { title: 'Child', type }
+		payload:
+			type === 'page'
+				? { body: '', title: 'Page', type }
+				: type === 'indicator'
+					? { title: 'Child', type, unit: 'unit.percent' }
+					: { title: 'Child', type }
 	});
 
 	await expect(createMcpContainer({ ...input, tokenId, userId })({} as never)).rejects.toThrow(

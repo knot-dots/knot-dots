@@ -122,8 +122,8 @@ function buildFacetAggregations(params: {
 function buildElasticsearchSortClause(sort: string): estypes.Sort {
 	if (sort === 'date') {
 		return [
-			{ date: { order: 'desc', missing: '_last', mode: 'max', unmapped_type: 'date' } },
-			{ guid: { order: 'desc' } }
+			{ date: { order: 'asc', missing: '_last', mode: 'max', unmapped_type: 'date' } },
+			{ guid: { order: 'asc' } }
 		];
 	}
 	if (sort === 'modified') {

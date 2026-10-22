@@ -33,7 +33,7 @@
 <ProgramPicker bind:dialog bind:selected={review.selectedPrograms} />
 
 {#if $disclosure.expanded}
-	<fieldset class="review-bar" use:disclosure.panel>
+	<fieldset class="review-bar system-primary" use:disclosure.panel>
 		<span class="aria-hidden">{$_('review_with')}</span>
 
 		{#if review.selectedPrograms.length > 0}
@@ -48,7 +48,7 @@
 		{/if}
 
 		{#each review.selectedPrograms as program (program.guid)}
-			<div class="badge badge--large badge--program">
+			<div class="badge badge--large badge--program system-indigo">
 				<span class="program-title">{program.payload.title}</span>
 				<button
 					class="program-remove"
@@ -81,8 +81,8 @@
 		--indicator-background-color: var(--color-primary-700);
 
 		align-items: center;
-		background-color: var(--color-primary-050);
-		border: 1px solid var(--color-primary-200);
+		background-color: var(--color-surface-accent-container);
+		border: 1px solid var(--color-border-accent-subtle);
 		border-radius: 9999rem;
 		display: flex;
 		flex-direction: row;
@@ -99,7 +99,7 @@
 	}
 
 	.review-bar > span:first-child {
-		color: var(--color-primary-700);
+		color: var(--color-text-accent-default);
 		padding: 0 0.25rem 0 0.5rem;
 	}
 
@@ -108,11 +108,10 @@
 	}
 
 	.badge.badge--program {
-		border: 1px solid var(--color-primary-100);
+		--badge-border-width: 1px;
 	}
 
 	.program-title {
-		color: var(--color-gray-900);
 		font-size: 0.875rem;
 		font-weight: 500;
 		flex-shrink: 1;
@@ -139,22 +138,22 @@
 
 	.program-add {
 		--button-background: transparent;
-		--button-active-background: var(--color-primary-300);
+		--button-active-background: var(--color-background-accent-default);
 		--button-disabled-background: transparent;
-		--button-hover-background: var(--color-primary-100);
+		--button-hover-background: var(--color-background-accent-subtle);
 
 		border: none;
-		color: var(--color-gray-700);
+		color: var(--color-text-default);
 		padding: 0.5rem 0.625rem;
 		white-space: nowrap;
 	}
 
 	.program-add:active {
-		color: var(--color-primary-700);
+		color: var(--color-text-accent-default);
 	}
 
 	.program-add:disabled {
-		color: var(--color-gray-400);
+		color: var(--color-text-muted);
 	}
 
 	.program-add :global(svg) {

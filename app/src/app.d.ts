@@ -26,7 +26,7 @@ declare global {
 			categoryContext: CategoryContext;
 			currentOrganization: Container<OrganizationPayload>;
 			currentOrganizationalUnit?: Container<OrganizationalUnitPayload>;
-			defaultOrganizationGuid: string;
+			defaultOrganization: Container<OrganizationPayload>;
 			features: string[];
 			organizations: Container<OrganizationPayload>[];
 			organizationalUnits: Container<OrganizationalUnitPayload>[];

@@ -1,0 +1,11 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.2512 8.78857C20.2496 9.28771 20.2496 10.7123 19.2512 11.2114L1.96047 19.8553C1.05976 20.3055 -5.80892e-08 19.6507 0 18.6438L9.97397e-07 1.35616C1.05549e-06 0.349315 1.05976 -0.305539 1.96047 0.144737L19.2512 8.78857Z" fill="#CE6911"/>
+<path d="M19.2512 8.78857C20.2496 9.28771 20.2496 10.7123 19.2512 11.2114L1.96047 19.8553C1.05976 20.3055 -5.80892e-08 19.6507 0 18.6438L9.97397e-07 1.35616C1.05549e-06 0.349315 1.05976 -0.305539 1.96047 0.144737L19.2512 8.78857Z" fill="url(#target-check-no-trend-gloss)" fill-opacity="0.35" style="mix-blend-mode:overlay"/>
+<path d="M3.75 10H11.25" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<radialGradient id="target-check-no-trend-gloss" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10 1.5) rotate(90) scale(11.5)">
+<stop stop-color="white"/>
+<stop offset="1"/>
+</radialGradient>
+</defs>
+</svg>

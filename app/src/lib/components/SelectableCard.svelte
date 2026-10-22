@@ -14,6 +14,7 @@
 		type AnyPayload,
 		computeProgressSegments,
 		type Container,
+		isContainerWithIcon,
 		isContainerWithProgress,
 		isEffectContainer,
 		isGoalContainer,
@@ -147,6 +148,10 @@
 				/>
 			{/if}
 
+			{#if isContainerWithIcon(container) && container.payload.icon}
+				<img alt="" class="card-icon" src={transformFileURL(container.payload.icon)} />
+			{/if}
+
 			<label bind:this={label} for={id}>
 				{#if 'title' in container.payload}
 					{container.payload.title.replace(
@@ -242,7 +247,7 @@
 	.card {
 		background: #ffffff;
 		border: 1px solid var(--color-gray-200);
-		border-radius: 8px;
+		border-radius: var(--card-border-radius);
 		box-shadow: var(--shadow-sm);
 		display: flex;
 		flex-direction: column;
@@ -288,6 +293,12 @@
 	}
 
 	header :global(svg) {
+		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	.card-icon {
+		flex-shrink: 0;
 		height: 1.5rem;
 		width: 1.5rem;
 	}

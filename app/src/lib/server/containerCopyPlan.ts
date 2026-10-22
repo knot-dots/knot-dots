@@ -11,6 +11,7 @@ import {
 	isStructuralCopyPredicate,
 	isTemplateContainer,
 	isTemplateRoot,
+	mayHaveStructuralParent,
 	type NewContainer,
 	newContainer,
 	type Predicate,
@@ -272,9 +273,12 @@ export function selectContainerCopySources({
 	const isEligible = (container: Container<AnyPayload>, allowResourceRoot = false) => {
 		// Hidden, actual-data, descendant-resource, and unresolved-reference containers never enter the
 		// queue, so their descendants are pruned unless another valid structural path reaches them.
+		// Indicators are pruned as well, even when a stray structural relation reaches them: copies
+		// keep referencing the shared indicator instead of duplicating it.
 		return (
 			canReadSource(container) &&
 			container.payload.type !== payloadTypes.enum.actual_data &&
+			mayHaveStructuralParent(container.payload.type) &&
 			(allowResourceRoot || container.payload.type !== payloadTypes.enum.resource_v2) &&
 			hasResolvedReferences(container)
 		);
@@ -467,6 +471,17 @@ export function createContainerCopyPlan({
 			}
 		];
 
+		const canUseNewItemTemplate = (templateGuid: string) => {
+			const template = containersByGuid.get(templateGuid);
+			return Boolean(
+				template &&
+				'template' in template.payload &&
+				template.payload.template &&
+				readPolicy.canReadSource(template) &&
+				readPolicy.canUseNewItemTemplate(template, target)
+			);
+		};
+
 		// Apply only field-specific container-reference policy here. Geometry UUIDs and ordinary payload
 		// data are already handled by the base copy and intentionally remain untouched.
 		switch (copy.payload.type) {
@@ -481,7 +496,9 @@ export function createContainerCopyPlan({
 					}
 					const item = containersByGuid.get(itemGuid);
 					if (!item) {
-						return [];
+						// Deleted items are missing from the graph. Keep their reference like the
+						// original does: an empty selection would run the collection's filter as a rule.
+						return [itemGuid];
 					}
 					if (
 						item.payload.visibility === visibility.enum.public ||
@@ -491,15 +508,12 @@ export function createContainerCopyPlan({
 					}
 					return [];
 				});
-				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter((templateGuid) => {
-					const template = containersByGuid.get(templateGuid);
-					return Boolean(
-						template &&
-						'template' in template.payload &&
-						template.payload.template &&
-						readPolicy.canReadSource(template) &&
-						readPolicy.canUseNewItemTemplate(template, target)
-					);
+				copy.payload.newItemTemplate = copy.payload.newItemTemplate.filter(canUseNewItemTemplate);
+				break;
+			case payloadTypes.enum.relation_collection:
+				copy.payload.item = copy.payload.item.flatMap((itemGuid) => {
+					const copiedItemGuid = guidMap.get(itemGuid);
+					return copiedItemGuid ? [copiedItemGuid] : [];
 				});
 				break;
 			default:

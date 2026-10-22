@@ -15,6 +15,8 @@
 		isContainer,
 		isContainerWithColor,
 		isContainerWithTitle,
+		isRelationCollectionContainer,
+		isTaskCollectionContainer,
 		isTextContainer,
 		type NewContainer,
 		payloadTypes,
@@ -132,10 +134,6 @@
 				newContainer.payload.textType = (event as CustomEvent).detail.selected.textType;
 			}
 
-			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
-				newContainer.payload.title = '';
-			}
-
 			if (isChapterContainer(newContainer)) {
 				newContainer.payload.number = String(
 					parseInt(
@@ -149,12 +147,23 @@
 				);
 			}
 
-			if (payloadType === payloadTypes.enum.task_collection && isContainerWithTitle(newContainer)) {
+			if (isTaskCollectionContainer(newContainer)) {
 				newContainer.payload.title =
 					container.payload.type === payloadTypes.enum.task ? $_('subtasks') : $_('tasks');
 			}
 
-			const response = await saveContainer(newContainer);
+			if (isRelationCollectionContainer(newContainer)) {
+				const { payloadType, predicate, title } = (event as CustomEvent).detail.selected;
+				newContainer.payload.payloadType = payloadType;
+				newContainer.payload.predicate = predicate;
+				newContainer.payload.title = title;
+			}
+
+			if (isContainerWithTitle(newContainer) && !newContainer.payload.title) {
+				newContainer.payload.title = '';
+			}
+
+			const response = await saveContainer(newContainer, false);
 			const result = containerSchema.safeParse(await response.json());
 			if (!result.success) {
 				return;

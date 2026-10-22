@@ -83,7 +83,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.goal, container)}
+			{#if $mayCreateContainer(payloadTypes.enum.indicator, parentContainer)}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -106,7 +106,7 @@
 <Carousel
 	{addItem}
 	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator, container) && editable}
+	mayAddItem={$mayCreateContainer(payloadTypes.enum.indicator, parentContainer) && editable}
 >
 	{#snippet itemSnippet(item)}
 		<NewIndicatorCard

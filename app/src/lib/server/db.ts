@@ -1150,7 +1150,7 @@ export function getContainerCopyGraph(rootGuid: string) {
 				FROM current_container source
 				JOIN copy_candidate candidate ON candidate.guid = source.guid
 				CROSS JOIN LATERAL jsonb_array_elements_text(source.payload->'item') item(value)
-				WHERE source.payload->>'type' = ${payloadTypes.enum.custom_collection}
+				WHERE source.payload->>'type' = ANY (${sql.array([payloadTypes.enum.custom_collection, payloadTypes.enum.relation_collection], 'text')})
 				UNION
 				SELECT template.value::uuid
 				FROM current_container source
@@ -1449,7 +1449,7 @@ function prepareOrderByExpression(sort: string) {
 	} else if (sort == 'priority') {
 		order_by = sql.fragment`priority, c.guid`;
 	} else if (sort == 'date') {
-		order_by = sql.fragment`coalesce(c.payload->'fulfillmentDate', c.payload->'publicationDate',  c.payload->'startDate') DESC NULLS LAST, c.guid`;
+		order_by = sql.fragment`coalesce(c.payload->'fulfillmentDate', c.payload->'publicationDate',  c.payload->'startDate') ASC NULLS LAST, c.guid`;
 	}
 	return order_by;
 }
@@ -2797,6 +2797,7 @@ export function setUp(name: string, realm: string) {
 				imageReplacesName: false,
 				name,
 				propertiesConfiguration: {},
+				showPlatformFavorite: true,
 				type: payloadTypes.enum.organization,
 				useAnalytics: true,
 				visibility: visibility.enum.public,

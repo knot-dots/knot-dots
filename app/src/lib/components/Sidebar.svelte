@@ -39,9 +39,14 @@
 
 	let favoriteList = getFavoriteListContext();
 
-	let organizationLinks = createDisclosure({ expanded: true, label: $_('main pages') });
+	let organizationLinks = createDisclosure({ expanded: true, label: $_('organization_links') });
 
-	let organizationalUnitLinks = createDisclosure({ expanded: true, label: $_('main pages') });
+	let organizationalUnitLinks = createDisclosure({
+		expanded: true,
+		label: $_('organizational_unit_links')
+	});
+
+	let platformLinks = createDisclosure({ expanded: false, label: $_('platform_links') });
 
 	function landingPageURL(container: Container<OrganizationPayload | OrganizationalUnitPayload>) {
 		return getOrganizationURL(container, '', env, {
@@ -53,21 +58,17 @@
 	const sidebar: { expanded: boolean; collapse: () => void; expand: () => void } =
 		getContext('sidebar');
 
-	let defaultOrganization = $derived(
-		page.data.organizations.find((c: Container<OrganizationPayload>) => c.payload.default)
-	);
+	let defaultOrganization = $derived(page.data.defaultOrganization);
 
 	let organizations = $derived(
 		page.data.organizations.filter(
-			(c: Container<OrganizationPayload>) =>
-				!c.payload.default && c.guid !== page.data.currentOrganization.guid
+			(c) => !c.payload.default && c.guid !== page.data.currentOrganization.guid
 		)
 	);
 
 	let organizationalUnits = $derived(
 		page.data.organizationalUnits.filter(
-			(c: Container<OrganizationalUnitPayload>) =>
-				c.organization === page.data.currentOrganization.organization
+			(c) => c.organization === page.data.currentOrganization.organization
 		)
 	);
 
@@ -81,6 +82,25 @@
 				payload: {
 					...container.payload,
 					favorite
+				}
+			});
+			if (response.ok) {
+				const updatedContainer = await response.json();
+				container.revision = updatedContainer.revision;
+			} else {
+				const error = await response.json();
+				alert(error.message);
+			}
+		};
+	}
+
+	function updatePlatformFavorite(container: Container<OrganizationPayload>, favorite: Favorite[]) {
+		return async () => {
+			const response = await saveContainer({
+				...container,
+				payload: {
+					...container.payload,
+					platformFavorite: favorite
 				}
 			});
 			if (response.ok) {
@@ -169,6 +189,14 @@
 		}))
 	);
 
+	let favoriteItemsPlatform = $derived(
+		favoriteList.platform.map((favorite) => ({
+			...favorite,
+			guid: favorite.href,
+			href: visibleFavoriteHref(favorite.href)
+		}))
+	);
+
 	let favoriteItemsUser = $derived(
 		favoriteList.user.map((favorite) => ({
 			...favorite,
@@ -213,6 +241,20 @@
 			})
 		);
 		updateFavorite(page.data.currentOrganizationalUnit!, favoriteList.organizationalUnit)();
+	}
+
+	function handleDndConsiderPlatform(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
+		favoriteItemsPlatform = event.detail.items;
+	}
+
+	function handleDndFinalizePlatform(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
+		favoriteItemsPlatform = event.detail.items;
+		favoriteList.platform = favoriteItemsPlatform.map(({ href, icon, title }) => ({
+			href,
+			icon,
+			title
+		}));
+		updatePlatformFavorite(defaultOrganization, favoriteList.platform)();
 	}
 
 	function handleDndConsiderUser(event: CustomEvent<DndEvent<Favorite & { guid: string }>>) {
@@ -303,9 +345,7 @@
 						}}
 					>
 						{#each favoriteItemsOrganization as item, index (item.guid)}
-							{@const href = page.url.searchParams.size
-								? `${page.url.pathname}?${page.url.searchParams.toString()}`
-								: page.url.pathname}
+							{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 							<li animate:flip={{ duration: 100 }}>
 								{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganization)}
 									<span
@@ -329,6 +369,8 @@
 								</a>
 								<EditableFavorite
 									bind:favorite={favoriteList.organization[index]}
+									editable={$applicationState.containerDetailView.editable &&
+										$ability.can('update', page.data.currentOrganization)}
 									onchange={updateFavorite(
 										page.data.currentOrganization,
 										favoriteList.organization
@@ -405,9 +447,7 @@
 								}}
 							>
 								{#each favoriteItemsOrganizationalUnit as item, index (item.guid)}
-									{@const href = page.url.searchParams.size
-										? `${page.url.pathname}?${page.url.searchParams.toString()}`
-										: page.url.pathname}
+									{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 									<li>
 										{#if $applicationState.containerDetailView.editable && $ability.can('update', page.data.currentOrganizationalUnit)}
 											<span
@@ -431,6 +471,8 @@
 										</a>
 										<EditableFavorite
 											bind:favorite={favoriteList.organizationalUnit[index]}
+											editable={$applicationState.containerDetailView.editable &&
+												$ability.can('update', page.data.currentOrganizationalUnit)}
 											onchange={updateFavorite(
 												page.data.currentOrganizationalUnit,
 												favoriteList.organizationalUnit
@@ -482,9 +524,7 @@
 					}}
 				>
 					{#each favoriteItemsUser as item, index (item.guid)}
-						{@const href = page.url.searchParams.size
-							? `${page.url.pathname}?${page.url.searchParams.toString()}`
-							: page.url.pathname}
+						{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
 						<li>
 							{#if $applicationState.containerDetailView.editable}
 								<span
@@ -508,6 +548,7 @@
 							</a>
 							<EditableFavorite
 								bind:favorite={favoriteList.user[index]}
+								editable={$applicationState.containerDetailView.editable}
 								onchange={updateUserFavorite($user, favoriteList.user)}
 							/>
 						</li>
@@ -518,16 +559,66 @@
 	</div>
 {/if}
 
-<div class="sidebar-panel sidebar-panel--footer">
-	<a class="sidebar-menu-item sidebar-menu-item--footer" href={env.PUBLIC_BASE_URL} rel="external">
-		{const icon = defaultOrganization?.payload.customFavicon}
-		{#if icon}
-			<img alt="" class="favorite-icon" src={transformFileURL(icon.url)} />
+{#if page.data.currentOrganization.payload.showPlatformFavorite}
+	<div class="sidebar-panel sidebar-panel--footer">
+		{const icon = defaultOrganization.payload.customFavicon}
+		<button
+			class="sidebar-panel-links-toggle sidebar-panel-links-toggle--platform"
+			style:--icon={icon ? `url(${transformFileURL(icon.url)})` : undefined}
+			type="button"
+			use:platformLinks.button
+		>
+			<span class="truncated">{defaultOrganization.payload.name}</span>
+		</button>
+
+		{#if $platformLinks.expanded}
+			<ul
+				class="sidebar-menu drag-zone"
+				onconsider={handleDndConsiderPlatform}
+				onfinalize={handleDndFinalizePlatform}
+				use:dragHandleZone={{
+					dropTargetStyle: {},
+					flipDurationMs: 100,
+					items: favoriteItemsPlatform,
+					type: 'platform'
+				}}
+				use:platformLinks.panel
+			>
+				{#each favoriteItemsPlatform as item, index (item.guid)}
+					{@const href = visibleFavoriteHref(page.url.toString().split('#')[0])}
+					<li animate:flip={{ duration: 100 }}>
+						{#if $applicationState.containerDetailView.editable && $ability.can('update', defaultOrganization)}
+							<span
+								class="drag-handle action-button action-button--padding-tight is-visible-on-hover"
+								use:dragHandle
+							>
+								<DragHandle />
+							</span>
+						{/if}
+						<a
+							class="sidebar-menu-item"
+							class:sidebar-menu-item--active={item.href === href}
+							href={item.href}
+						>
+							{#if item.icon}
+								<img alt="" class="favorite-icon" src={transformFileURL(item.icon)} />
+							{:else}
+								<StarSolid />
+							{/if}
+							<span>{item.title}</span>
+						</a>
+						<EditableFavorite
+							bind:favorite={favoriteList.platform[index]}
+							editable={$applicationState.containerDetailView.editable &&
+								$ability.can('update', defaultOrganization)}
+							onchange={updatePlatformFavorite(defaultOrganization, favoriteList.platform)}
+						/>
+					</li>
+				{/each}
+			</ul>
 		{/if}
-		<span class="truncated">{defaultOrganization?.payload.name ?? 'knotdots.net'}</span>
-		<ChevronRight />
-	</a>
-</div>
+	</div>
+{/if}
 
 <style>
 	header {
@@ -599,6 +690,43 @@
 		flex-shrink: 0;
 		height: 1rem;
 		width: 1rem;
+	}
+
+	.sidebar-panel-links-toggle.sidebar-panel-links-toggle--platform::before {
+		background-color: transparent;
+		content: '';
+		display: block;
+		flex-shrink: 0;
+		height: var(--dropdown-button-chevron-icon-size, 1rem);
+		mask-image: var(--icon--flowbite--chevron-right-outline);
+		mask-repeat: no-repeat;
+		mask-size: 100% 100%;
+		width: var(--dropdown-button-chevron-icon-size, 1rem);
+	}
+
+	.sidebar-panel-links-toggle.sidebar-panel-links-toggle--platform:where(
+			[style^='--icon:']
+		)::before {
+		background-image: var(--icon);
+		background-repeat: no-repeat;
+		background-size: 100% 100%;
+		mask-image: none;
+	}
+
+	:global(
+		.sidebar-panel-links-toggle.sidebar-panel-links-toggle--platform[aria-expanded='false']:hover::before
+	) {
+		background-color: var(--color-icon-accent-subtle);
+		background-image: none;
+		mask-image: var(--icon--flowbite--chevron-right-outline);
+	}
+
+	:global(
+		.sidebar-panel-links-toggle.sidebar-panel-links-toggle--platform[aria-expanded='true']::before
+	) {
+		background-color: var(--color-icon-accent-subtle);
+		background-image: none;
+		mask-image: var(--icon--flowbite--chevron-down-outline);
 	}
 
 	.sidebar-panel-links {

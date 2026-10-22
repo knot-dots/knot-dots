@@ -9,5 +9,6 @@ export interface Favorite {
 export const [getFavoriteListContext, setFavoriteListContext] = createContext<{
 	organization: Favorite[];
 	organizationalUnit: Favorite[];
+	platform: Favorite[];
 	user: Favorite[];
 }>();

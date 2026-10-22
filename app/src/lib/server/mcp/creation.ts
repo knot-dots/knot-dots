@@ -9,6 +9,7 @@ import {
 	isMeasureContainer,
 	isPageContainer,
 	isProgramContainer,
+	mayHaveStructuralParent,
 	payloadTypes,
 	predicates,
 	type PayloadType,
@@ -166,6 +167,9 @@ function isValidParent(
 	predicate: McpParentRelationPredicate,
 	parent: Container<AnyPayload>
 ) {
+	if (!mayHaveStructuralParent(type)) {
+		return false;
+	}
 	switch (predicate) {
 		case predicates.enum['is-part-of-program']:
 			return isProgramContainer(parent);

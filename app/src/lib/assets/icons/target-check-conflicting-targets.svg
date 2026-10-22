@@ -1,0 +1,12 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.58579 1.41421C9.36684 0.633163 10.6332 0.633165 11.4142 1.41421L18.5858 8.58579C19.3668 9.36684 19.3668 10.6332 18.5858 11.4142L11.4142 18.5858C10.6332 19.3668 9.36684 19.3668 8.58579 18.5858L1.41421 11.4142C0.633163 10.6332 0.633165 9.36684 1.41421 8.58579L8.58579 1.41421Z" fill="#824EDA"/>
+<path d="M8.58579 1.41421C9.36684 0.633163 10.6332 0.633165 11.4142 1.41421L18.5858 8.58579C19.3668 9.36684 19.3668 10.6332 18.5858 11.4142L11.4142 18.5858C10.6332 19.3668 9.36684 19.3668 8.58579 18.5858L1.41421 11.4142C0.633163 10.6332 0.633165 9.36684 1.41421 8.58579L8.58579 1.41421Z" fill="url(#target-check-conflicting-targets-gloss)" fill-opacity="0.35" style="mix-blend-mode:overlay"/>
+<path d="M10.0001 6.50006V10.5001" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="10.0001" cy="14.0001" r="1" fill="white"/>
+<defs>
+<radialGradient id="target-check-conflicting-targets-gloss" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(10 1.5) rotate(90) scale(11.5)">
+<stop stop-color="white"/>
+<stop offset="1"/>
+</radialGradient>
+</defs>
+</svg>

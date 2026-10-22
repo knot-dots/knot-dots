@@ -75,6 +75,11 @@ function requiredPayloadFields(type: PayloadType) {
 			return { name: 'Context' };
 		case payloadTypes.enum.page:
 			return { body: 'Body' };
+		case payloadTypes.enum.relation_collection:
+			return {
+				payloadType: payloadTypes.enum.goal,
+				predicate: predicates.enum['is-part-of-program']
+			};
 		case payloadTypes.enum.resource_data:
 			return {
 				resource: relatedGuid,
@@ -162,16 +167,25 @@ test('returns a valid isolated NewContainer for every active payload', () => {
 	}
 });
 
-test('applies selected root visibility', () => {
-	const source = sourceFor(payloadTypes.enum.measure, {
-		visibility: visibility.enum.public
-	});
-	const sourceBeforeCopy = structuredClone(source);
-	const rootCopy = createRootCopyOf(source, targetOrganization, null, visibility.enum.members);
+test('applies root-only identifiers and selected root visibility', () => {
+	for (const [type, identifier] of [
+		[payloadTypes.enum.category, 'key'],
+		[payloadTypes.enum.term, 'value']
+	] as const) {
+		const source = sourceFor(type, {
+			[identifier]: 'stable-value',
+			visibility: visibility.enum.public
+		});
+		const sourceBeforeCopy = structuredClone(source);
+		const neutralCopy = createCopyOf(source, targetOrganization, null);
+		const rootCopy = createRootCopyOf(source, targetOrganization, null, visibility.enum.members);
 
-	expect(source).toEqual(sourceBeforeCopy);
-	expect(rootCopy.payload.visibility).toBe(visibility.enum.members);
-	expect(newContainer.safeParse(rootCopy).success).toBe(true);
+		expect(source).toEqual(sourceBeforeCopy);
+		expect(neutralCopy.payload).toHaveProperty(identifier, 'stable-value');
+		expect(rootCopy.payload).not.toHaveProperty(identifier);
+		expect(rootCopy.payload.visibility).toBe(visibility.enum.members);
+		expect(newContainer.safeParse(rootCopy).success).toBe(true);
+	}
 });
 
 test('uses the more restrictive visibility for descendants and preserves term values', () => {

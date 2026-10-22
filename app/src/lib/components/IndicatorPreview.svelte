@@ -5,6 +5,7 @@
 	import BinaryIndicatorProperties from '$lib/components/BinaryIndicatorProperties.svelte';
 	import BooleanValueToggle from '$lib/components/BooleanValueToggle.svelte';
 	import EditableFormattedText from '$lib/components/EditableFormattedText.svelte';
+	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
 	import {
@@ -42,6 +43,7 @@
 <article class="details">
 	<header class="details-section">
 		<div class="details-header">
+			<EditableLogo value={container.payload.icon} />
 			<h1 class="details-title">{container.payload.title}</h1>
 		</div>
 
@@ -76,5 +78,16 @@
 		overflow-y: auto;
 		padding-bottom: 0;
 		padding-top: 0;
+	}
+
+	.details-header {
+		align-items: center;
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.details-header :global(.logo) {
+		--logo-height: 2.5rem;
+		flex-shrink: 0;
 	}
 </style>
