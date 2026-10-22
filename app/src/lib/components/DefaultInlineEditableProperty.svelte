@@ -7,6 +7,7 @@
 	import MultipleChoiceDropdown from '$lib/components/MultipleChoiceDropdown.svelte';
 	import { inspectSchema } from '$lib/inspectSchema';
 	import { propertyRegistry } from '$lib/models';
+	import { propertyIcons } from '$lib/theme/models';
 
 	interface Props {
 		editable?: boolean;
@@ -17,6 +18,10 @@
 	let { editable = false, schema, value = $bindable() }: Props = $props();
 
 	const schemaInfo = $derived(inspectSchema(schema));
+
+	const meta = $derived(propertyRegistry.get(schema));
+
+	const Icon = $derived(meta?.icon ? propertyIcons.get(meta?.icon) : undefined);
 
 	function handleDateInput(event: Event & { currentTarget: HTMLInputElement }) {
 		if (event.currentTarget.value == '') {
@@ -62,10 +67,14 @@
 					>
 						{#each selected as selectedOption (selectedOption.value)}
 							<span class="badge badge--large">
+								<Icon />
 								<span class="truncated">{selectedOption.label}</span>
 							</span>
 						{:else}
-							<span class="badge badge--large">{$_('empty')}</span>
+							<span class="badge badge--large">
+								<Icon />
+								{$_('empty')}
+							</span>
 						{/each}
 					</button>
 				{/snippet}
@@ -87,6 +96,7 @@
 						use:popover.button
 					>
 						<span class="badge badge--large">
+							<Icon />
 							<span class="truncated">
 								{#if selected}{selected.label}{:else}{$_('empty')}{/if}
 							</span>
@@ -144,6 +154,7 @@
 				{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
 				class="badge badge--large"
 			>
+				<Icon />
 				{$_(propertyRegistry.get(schema)?.emptyLabel as string)}
 			</span>
 		{/if}
@@ -162,6 +173,7 @@
 			{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
 			class="badge badge--large"
 		>
+			<Icon />
 			{$_(String(value))}
 		</span>
 	{:else if schemaInfo.baseSchema instanceof z.ZodStringFormat && schemaInfo.baseSchema.def.format == 'date'}
@@ -185,6 +197,7 @@
 			{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
 			class="badge badge--large"
 		>
+			<Icon />
 			{$_(String(value))}
 		</span>
 	{:else}
@@ -192,6 +205,7 @@
 			{@attach tooltip($_(propertyRegistry.get(schema)?.label ?? ''))}
 			class="badge badge--large"
 		>
+			<Icon />
 			{value}
 		</span>
 	{/if}
