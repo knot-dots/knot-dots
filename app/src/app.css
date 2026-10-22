@@ -1,4 +1,5 @@
 @import './lib/styles/fonts.css';
+@import 'layerchart/core.css';
 
 :root {
 	--color-black: #000000;
@@ -205,6 +206,7 @@
 	--color-text-muted: var(--color-gray-400);
 	--color-text-disabled: var(--color-gray-300);
 	--color-text-link: var(--color-primary-600);
+	--color-text-on-inverse: var(--color-white);
 
 	--color-icon-strong: var(--color-gray-900);
 	--color-icon-default: var(--color-gray-700);
@@ -221,6 +223,7 @@
 	--color-surface-container: var(--color-gray-025);
 	--color-surface-container-raised: var(--color-gray-050);
 	--color-surface-overlay-backdrop: rgba(17, 25, 40, 0.5);
+	--color-surface-inverse: var(--color-gray-800);
 	--color-surface-selected: var(--color-background-accent-muted);
 
 	--color-contributes-to: #7ad0ff;
@@ -2773,4 +2776,18 @@ h4.details-heading {
 
 	--color-surface-accent-container: var(--color-purple-025);
 	--color-surface-accent-container-raised: var(--color-purple-050);
+}
+
+/* LayerChart */
+.lc-root-container :where(.lc-axis-label, .lc-axis-tick-label) {
+	/* Text in charts is never smaller than 12px */
+	font-size: 0.75rem;
+}
+
+.lc-root-container {
+	--color-primary: var(--indicator-color-own-base);
+	--color-surface-100: var(--color-surface-default);
+	--color-surface-200: var(--color-surface-container);
+	--color-surface-300: var(--color-border-default);
+	--color-surface-content: var(--color-text-default);
 }

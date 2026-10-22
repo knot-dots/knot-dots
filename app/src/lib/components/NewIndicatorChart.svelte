@@ -3,6 +3,8 @@
 	import type { Attachment } from 'svelte/attachments';
 	import { _, number } from 'svelte-i18n';
 	import { page } from '$app/state';
+	import IndicatorChartLegend from '$lib/components/IndicatorChartLegend.svelte';
+	import IndicatorColumnChart from '$lib/components/IndicatorColumnChart.svelte';
 	import { indicatorActualData, indicatorActualDataContainers } from '$lib/indicatorActualData';
 	import {
 		type ActualDataPayload,
@@ -14,12 +16,20 @@
 	import { compareState } from '$lib/stores';
 
 	interface Props {
+		chartType?: 'line' | 'column';
 		container: Container<IndicatorPayload>;
 		relatedContainers?: Container<AnyPayload>[];
 		comparisonContainers?: Container<ActualDataPayload>[];
 	}
 
-	let { container, relatedContainers = [], comparisonContainers }: Props = $props();
+	let {
+		chartType = 'line',
+		container,
+		relatedContainers = [],
+		comparisonContainers
+	}: Props = $props();
+
+	let isColumnChart = $derived(chartType === 'column');
 
 	const currentOrgUnitName = $derived(
 		page.data.currentOrganizationalUnit?.payload.name ?? page.data.currentOrganization?.payload.name
@@ -39,20 +49,31 @@
 		}))
 	);
 
-	// Prepare comparison data with assigned colors
+	// Position of a municipality in the compare bar
+	function selectionIndex(municipalityGuid: string) {
+		return $compareState.selectedMunicipalities.findIndex(({ guid }) => guid === municipalityGuid);
+	}
+
+	// Prepare comparison data with assigned colors, one series per municipality in the order of the
+	// compare bar. Several actual data of a municipality are merged as for the current context.
 	let comparisonValues = $derived(
-		comparisonContainers?.map((container) => ({
-			values: container.payload.values
-				.map(([key, value]) => ({
-					date: new Date(key, 0),
-					value
-				}))
-				.toSorted((a, b) => a.date.getTime() - b.date.getTime()),
-			municipalityGuid: container.organizational_unit ?? container.organization,
-			color:
-				$compareState.colorAssignments[container.organizational_unit ?? container.organization] ||
-				'--color-gray-600'
-		})) ?? []
+		[
+			...Map.groupBy(
+				comparisonContainers ?? [],
+				({ organization, organizational_unit }) => organizational_unit ?? organization
+			)
+		]
+			.toSorted(([a], [b]) => selectionIndex(a) - selectionIndex(b))
+			.map(([municipalityGuid, containers]) => ({
+				values: indicatorActualData(container.guid, containers)
+					.map(([year, value]) => ({
+						date: new Date(year, 0),
+						value
+					}))
+					.toSorted((a, b) => a.date.getTime() - b.date.getTime()),
+				municipalityGuid,
+				color: $compareState.colorAssignments[municipalityGuid] || '--color-gray-600'
+			}))
 	);
 
 	// Combine all data for Plot's color scale
@@ -88,6 +109,26 @@
 				.filter((m) => m.payload.administrativeType?.some((t) => stateTypes.has(t)))
 				.map((m) => m.guid)
 		)
+	);
+
+	let municipalityLabels = $derived(
+		new Map(
+			colorDomain.map((guid) => [
+				guid,
+				guid === 'current'
+					? (currentOrgUnitName ?? '')
+					: ($compareState.selectedMunicipalities.find((m) => m.guid === guid)?.payload.name ??
+						guid)
+			])
+		)
+	);
+
+	let columnData = $derived(
+		allData.map(({ date, municipality, value }) => ({
+			key: municipality,
+			value,
+			year: date.getFullYear()
+		}))
 	);
 
 	// Create a reactive state for the container's width
@@ -190,32 +231,28 @@
 
 {#if actualDataContainer[0] || hasComparisonData}
 	<figure>
-		<div role="img" {@attach chart}></div>
-		<ul class="chart-legend">
-			{#each colorDomain as guid (guid)}
-				{@const i = colorDomain.indexOf(guid)}
-				{@const isState = guid !== 'current' && stateMunicipalityGuids.has(guid)}
-				{@const label =
-					guid === 'current'
-						? currentOrgUnitName
-						: ($compareState.selectedMunicipalities.find((m) => m.guid === guid)?.payload.name ??
-							guid)}
-				<li>
-					<svg width="24" height="10" aria-hidden="true">
-						<line
-							x1="2"
-							y1="5"
-							x2="22"
-							y2="5"
-							style="stroke: {colorRange[i]}; stroke-width: 3; stroke-linecap: round;{isState
-								? ' stroke-dasharray: 4;'
-								: ''}"
-						/>
-					</svg>
-					<span>{label}</span>
-				</li>
-			{/each}
-		</ul>
+		{#if isColumnChart}
+			<IndicatorColumnChart
+				{colorDomain}
+				{colorRange}
+				data={columnData}
+				emphasized={hasComparisonData && actualValues.length > 0 ? 'current' : undefined}
+				labels={municipalityLabels}
+				layout="group"
+				{unit}
+			/>
+		{:else}
+			<div role="img" {@attach chart}></div>
+		{/if}
+		<IndicatorChartLegend
+			items={colorDomain.map((guid, i) => ({
+				color: colorRange[i],
+				// Columns have no outlines, so only lines of federal states and countries are dashed
+				dashed: !isColumnChart && guid !== 'current' && stateMunicipalityGuids.has(guid),
+				label: municipalityLabels.get(guid) ?? guid,
+				shape: isColumnChart ? 'rect' : 'line'
+			}))}
+		/>
 
 		{#if actualDataContainer[0]?.payload.source}
 			<figcaption>{$_('indicator.source')}: {actualDataContainer[0].payload.source}</figcaption>
@@ -232,22 +269,6 @@
 		background-color: white;
 		border-radius: 8px;
 		flex-grow: 1;
-	}
-
-	.chart-legend {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem 0.75rem;
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		font-size: 0.75rem;
-	}
-
-	.chart-legend li {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
 	}
 
 	.no-data {
