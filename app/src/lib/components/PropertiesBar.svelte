@@ -17,6 +17,7 @@
 	import InlineEditableOrganizationalUnit from '$lib/components/InlineEditableOrganizationalUnit.svelte';
 	import InlineEditableOrganization from '$lib/components/InlineEditableOrganization.svelte';
 	import InlineEditableParent from '$lib/components/InlineEditableParent.svelte';
+	import InlineEditablePDF from '$lib/components/InlineEditablePDF.svelte';
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
 	import InlineEditableResourceV2 from '$lib/components/InlineEditableResourceV2.svelte';
 	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
@@ -33,6 +34,7 @@
 		isContainerWithStatus,
 		isGoalContainer,
 		isIndicatorContainer,
+		isProgramContainer,
 		isResourceDataContainer,
 		isRuleContainer,
 		isTaskContainer,
@@ -141,6 +143,8 @@
 					/>
 				{:else if item == 'parent'}
 					<InlineEditableParent bind:container {editable} />
+				{:else if item == 'pdf' && isProgramContainer(container)}
+					<InlineEditablePDF bind:value={container.payload.pdf} {editable} />
 				{:else if item == 'program' && !isPartOfMeasure}
 					<InlineEditableProgram bind:container {editable} />
 				{:else if item == 'resource' && isResourceDataContainer(container)}
