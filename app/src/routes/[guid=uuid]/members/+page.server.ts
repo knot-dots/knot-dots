@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import { isOrganizationalUnitContainer, isOrganizationContainer, predicates } from '$lib/models';
 import { getAllGrantsByContainers, getAllRelatedUsers, getContainerByGuid } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
@@ -29,9 +30,11 @@ export const load = (async ({ locals, parent }) => {
 		locals.pool.connect(async (connection) => ({
 			grants: await getAllGrantsByContainers([guid])(connection),
 			users: await getAllRelatedUsers(guid, [predicates.enum['is-member-of']])(connection),
-			sections: isOrganizationalUnitContainer(container)
-				? await loadMatrixSections(connection, container)
-				: undefined
+			sections:
+				isOrganizationalUnitContainer(container) &&
+				createFeatureDecisions(locals.features).usePermissionMatrix()
+					? await loadMatrixSections(connection, container)
+					: undefined
 		}))
 	]);
 

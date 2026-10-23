@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import {
 	isMeasureContainer,
 	isProgramContainer,
@@ -51,23 +52,26 @@ export const load = (async ({ locals, params }) => {
 			};
 		}
 
-		const { admins, grants, inheritedSections, organization, users } = await locals.pool.connect(
+		// the sections exist for the permission matrix only; the member roles
+		// govern while it is off
+		const matrixEnabled = createFeatureDecisions(locals.features).usePermissionMatrix();
+		const { grants, organization, sections, users } = await locals.pool.connect(
 			async (connection) => ({
 				grants: await getAllGrantsByContainers([container.guid])(connection),
 				organization: await getContainerByGuid(container.organization)(connection),
 				users: await getAllRelatedUsers(container.guid, [predicates.enum['is-member-of']])(
 					connection
 				),
-				...(await loadMatrixSections(connection, container))
+				sections: matrixEnabled ? await loadMatrixSections(connection, container) : undefined
 			})
 		);
 
 		return {
-			admins,
 			container,
 			grants,
-			inheritedSections,
-			mayManageOrganizationUsers: ability.can('manage-users', organization),
+			...(sections
+				? { ...sections, mayManageOrganizationUsers: ability.can('manage-users', organization) }
+				: {}),
 			title: t('members'),
 			users: users.map((u) => ({
 				...u,

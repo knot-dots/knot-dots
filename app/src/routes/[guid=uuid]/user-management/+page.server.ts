@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor from '$lib/authorization';
+import { createFeatureDecisions } from '$lib/features';
 import { findDescendants, predicates, type User } from '$lib/models';
 import { getAllGrantsByContainers, getAllRelatedUsersByContainers } from '$lib/server/db';
 import { getMembers } from '$lib/server/keycloak';
@@ -49,9 +50,10 @@ export const load = (async ({ locals, parent }) => {
 				displayedContainerGuids,
 				userPredicates
 			)(connection),
-			sections: currentOrganizationalUnit
-				? await loadMatrixSections(connection, currentOrganizationalUnit)
-				: undefined
+			sections:
+				currentOrganizationalUnit && createFeatureDecisions(locals.features).usePermissionMatrix()
+					? await loadMatrixSections(connection, currentOrganizationalUnit)
+					: undefined
 		}))
 	]);
 

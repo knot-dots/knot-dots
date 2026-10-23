@@ -91,6 +91,7 @@ function enriched(
 function event(grants = emptyGrantRecords()) {
 	return {
 		locals: {
+			features: [],
 			pool: {
 				// the loader runs its queries on one connection; the mocked query
 				// functions resolve as the database would
