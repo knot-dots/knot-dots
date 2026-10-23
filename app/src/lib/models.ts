@@ -2900,7 +2900,7 @@ const textPayload = z
 	.register(payloadRegistry, {
 		layout: {
 			detail: {
-				headerAndPanel: ['type'],
+				headerAndPanel: [],
 				onlyPanel: [
 					'textType',
 					'visibility',
@@ -2909,7 +2909,7 @@ const textPayload = z
 					'created',
 					'modified'
 				],
-				unused: []
+				unused: ['type']
 			}
 		}
 	});
