@@ -41,7 +41,6 @@
 		isEffectCollectionContainer,
 		isEventContainer,
 		isFileCollectionContainer,
-		isGoalCollectionContainer,
 		isGoalContainer,
 		isHelpContainer,
 		isIndicatorCollectionContainer,
@@ -55,6 +54,7 @@
 		isPostContainer,
 		isProgramCollectionContainer,
 		isProgressContainer,
+		isRelationCollectionContainer,
 		isReportContainer,
 		isResourceCollectionContainer,
 		isResourceDataCollectionContainer,
@@ -62,6 +62,7 @@
 		isSummaryContainer,
 		isTaskCollectionContainer,
 		isTaskContainer,
+		type PayloadType,
 		payloadTypes,
 		predicates,
 		resourceDataTypes,
@@ -95,11 +96,35 @@
 		modifiers: [{ name: 'offset', options: { offset: compact ? [-4, 8] : [0, 4] } }]
 	});
 
+	// Sub-objects of goals and measures live in relation sections, one per type.
+	function hasRelationSection(payloadType: PayloadType) {
+		return hasSection(parentContainer, relatedContainers).some(
+			(section) =>
+				isRelationCollectionContainer(section) && section.payload.payloadType === payloadType
+		);
+	}
+
+	let mayAddGoalSection = $derived(
+		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
+			!hasRelationSection(payloadTypes.enum.goal)
+	);
+
+	let mayAddTaskSection = $derived(
+		(isGoalContainer(parentContainer) ||
+			isMeasureContainer(parentContainer) ||
+			isSimpleMeasureContainer(parentContainer)) &&
+			!hasRelationSection(payloadTypes.enum.task)
+	);
+
+	let mayAddSubMeasureSection = $derived(
+		isMeasureContainer(parentContainer) &&
+			createFeatureDecisions(page.data.features).useSubMeasures() &&
+			!hasRelationSection(payloadTypes.enum.measure)
+	);
+
 	let mayAddTaskCollection = $derived(
-		!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer) &&
-			(isGoalContainer(parentContainer) ||
-				isMeasureContainer(parentContainer) ||
-				isTaskContainer(parentContainer))
+		isTaskContainer(parentContainer) &&
+			!hasSection(parentContainer, relatedContainers).some(isTaskCollectionContainer)
 	);
 
 	let mayAddObjectiveCollection = $derived(
@@ -119,11 +144,6 @@
 			!hasSection(parentContainer, relatedContainers).some(isEffectCollectionContainer)
 	);
 
-	let mayAddGoalCollection = $derived(
-		(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
-			!hasSection(parentContainer, relatedContainers).some(isGoalCollectionContainer)
-	);
-
 	let mayAddResourceCollection = $derived(
 		!createFeatureDecisions(page.data.features).useResourcePlanning() &&
 			(isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)) &&
@@ -141,10 +161,7 @@
 	);
 
 	let mayAddMeasureCollection = $derived(
-		(isOrganizationContainer(parentContainer) ||
-			isOrganizationalUnitContainer(parentContainer) ||
-			(isMeasureContainer(parentContainer) &&
-				createFeatureDecisions(page.data.features).useSubMeasures())) &&
+		(isOrganizationContainer(parentContainer) || isOrganizationalUnitContainer(parentContainer)) &&
 			!hasSection(parentContainer, relatedContainers).some(isMeasureCollectionContainer)
 	);
 
@@ -271,6 +288,39 @@
 						}
 					]
 				: []),
+			...(mayAddGoalSection
+				? [
+						{
+							icon: Goal,
+							label: $_('goals'),
+							payloadType: payloadTypes.enum.goal,
+							predicate: predicates.enum['is-part-of'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
+			...(mayAddTaskSection
+				? [
+						{
+							icon: ClipboardCheck,
+							label: $_('tasks'),
+							payloadType: payloadTypes.enum.task,
+							predicate: predicates.enum['is-part-of'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
+			...(mayAddSubMeasureSection
+				? [
+						{
+							icon: Clipboard,
+							label: $_('measures'),
+							payloadType: payloadTypes.enum.measure,
+							predicate: predicates.enum['is-part-of'],
+							value: payloadTypes.enum.relation_collection
+						}
+					]
+				: []),
 			...(mayAddEffectCollection
 				? [
 						{
@@ -286,15 +336,6 @@
 							icon: ChartLine,
 							label: $_('objectives'),
 							value: payloadTypes.enum.objective_collection
-						}
-					]
-				: []),
-			...(mayAddGoalCollection
-				? [
-						{
-							icon: Goal,
-							label: $_('goals'),
-							value: payloadTypes.enum.goal_collection
 						}
 					]
 				: []),
@@ -438,12 +479,14 @@
 		<div class="dropdown-panel" use:menu.items use:popperContent={extraOpts}>
 			<p class="dropdown-panel-title">{$_('add_section')}</p>
 			<ul class="menu">
-				{#each options as option (`${option.value}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
+				{#each options as option (`${option.value}-${option.payloadType ?? 'none'}-${option.resourceDataType ?? 'none'}-${option.textType ?? 'none'}`)}
 					{#if $mayCreateContainer(option.value, parentContainer)}
 						<li class="menu-item">
 							<button
 								use:menu.item={{
 									value: {
+										payloadType: option.payloadType,
+										predicate: option.predicate,
 										resourceDataType: option.resourceDataType,
 										textType: option.textType,
 										title: option.label,
