@@ -153,3 +153,34 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicator })
 		indicatorCatalog.overlay.locator.getByRole('row', { name: 'Custom actual data' })
 	).toBeVisible();
 });
+
+test('switch to columns for viewing and show a tooltip', async ({
+	indicatorCatalog,
+	testIndicatorWithActualData
+}) => {
+	const { overlay } = indicatorCatalog;
+	const columnChart = overlay.locator.locator('.lc-root-container');
+	await indicatorCatalog.goto(`/${testIndicatorWithActualData.organization}`);
+	await indicatorCatalog.card(testIndicatorWithActualData.payload.title).click();
+	await expect(overlay.title).toHaveText(testIndicatorWithActualData.payload.title);
+
+	await expect(overlay.locator.getByRole('radio', { name: 'Line/area' })).toBeChecked();
+	await expect(columnChart).toBeHidden();
+	await overlay.locator.getByText('Columns').click();
+	await expect(columnChart).toBeVisible();
+
+	// The pointer layer of the chart covers the columns, so move the mouse to the last one
+	const lastColumn = await columnChart.locator('.lc-bar').last().boundingBox();
+	await indicatorCatalog.page.mouse.move(
+		lastColumn!.x + lastColumn!.width / 2,
+		lastColumn!.y + lastColumn!.height / 2
+	);
+	await expect(indicatorCatalog.page.locator('.lc-tooltip-root')).toContainText('2025');
+	await expect(indicatorCatalog.page.locator('.lc-tooltip-root')).toContainText('6 t');
+
+	// The chart for viewing is not saved
+	await indicatorCatalog.page.reload();
+	await expect(overlay.title).toHaveText(testIndicatorWithActualData.payload.title);
+	await expect(overlay.locator.getByRole('radio', { name: 'Line/area' })).toBeChecked();
+	await expect(columnChart).toBeHidden();
+});

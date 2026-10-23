@@ -73,6 +73,7 @@ type MyFixtures = {
 	testGoal: Container<GoalPayload>;
 	testGoalBudget: Container<ResourceDataPayload>;
 	testIndicator: Container<IndicatorPayload>;
+	testIndicatorWithActualData: Container<IndicatorPayload>;
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testMeasure: Container<MeasurePayload>;
 	testSimpleMeasure: Container<SimpleMeasurePayload>;
@@ -940,6 +941,43 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testIndicator);
 
 		await deleteContainer(adminContext, testIndicator);
+	},
+	testIndicatorWithActualData: async ({ adminContext, testOrganization }, use, workerInfo) => {
+		const newIndicator = containerOfType(
+			payloadTypes.enum.indicator,
+			testOrganization
+		) as Container<IndicatorPayload>;
+		const testIndicatorWithActualData = await createContainer(adminContext, {
+			...newIndicator,
+			payload: {
+				...newIndicator.payload,
+				title: `Test Indicator With Actual Data ${workerInfo.workerIndex}`,
+				unit: 'unit.ton'
+			}
+		});
+
+		const newActualData = containerOfType(
+			payloadTypes.enum.actual_data,
+			testOrganization
+		) as Container<ActualDataPayload>;
+		const actualData = await createContainer(adminContext, {
+			...newActualData,
+			payload: {
+				...newActualData.payload,
+				indicator: testIndicatorWithActualData.guid,
+				title: testIndicatorWithActualData.payload.title,
+				values: [
+					[2023, 3],
+					[2024, 4],
+					[2025, 6]
+				]
+			}
+		});
+
+		await use(testIndicatorWithActualData);
+
+		await deleteContainer(adminContext, actualData);
+		await deleteContainer(adminContext, testIndicatorWithActualData);
 	},
 	testObjective: async (
 		{ adminContext, testOrganization, testGoal, testIndicator },
