@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -23,7 +24,15 @@
 		predicates,
 		type RelationCollectionPayload
 	} from '$lib/models';
-	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
+	import {
+		ability,
+		addItemState,
+		lastCreatedContainers,
+		lastDeletedContainers,
+		lastUpdatedContainers,
+		mayCreateContainer,
+		newContainer
+	} from '$lib/stores';
 	import { getDirectMeasureGuids } from '$lib/templateScopes';
 
 	interface Props {
@@ -42,8 +51,14 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
+	// Items created from this section show up before the parent refetches its relations.
 	let items = $derived(
-		relatedContainers.filter(({ guid }) => container.payload.item.includes(guid))
+		withOptimistic(
+			relatedContainers,
+			$lastCreatedContainers,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		).filter(({ guid }) => container.payload.item.includes(guid))
 	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
