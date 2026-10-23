@@ -8,6 +8,8 @@
 	import EditableLogo from '$lib/components/EditableLogo.svelte';
 	import IndicatorProperties from '$lib/components/IndicatorProperties.svelte';
 	import NewIndicatorChart from '$lib/components/NewIndicatorChart.svelte';
+	import PropertiesBar from '$lib/components/PropertiesBar.svelte';
+	import { createFeatureDecisions } from '$lib/features';
 	import {
 		type BinaryIndicatorPayload,
 		type Container,
@@ -16,6 +18,7 @@
 		isBinaryIndicatorContainer
 	} from '$lib/models';
 	import { fetchContainersRelatedToIndicators } from '$lib/remote/data.remote';
+	import { ability, applicationState } from '$lib/stores';
 
 	interface Props {
 		container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
@@ -48,14 +51,26 @@
 		</div>
 
 		<div class="details-meta">
-			<Badges {container} />
+			{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+				<PropertiesBar
+					bind:container
+					editable={$applicationState.containerDetailView.editable &&
+						$ability.can('update', container)}
+					{relatedContainers}
+					revisions={[]}
+				/>
+			{:else}
+				<Badges {container} />
+			{/if}
 		</div>
 	</header>
 
-	{#if isBinaryIndicatorContainer(container)}
-		<BinaryIndicatorProperties {container} {relatedContainers} revisions={[]} />
-	{:else}
-		<IndicatorProperties {container} {relatedContainers} revisions={[]} />
+	{#if !createFeatureDecisions(page.data.features).useNewPropertyPanel()}
+		{#if isBinaryIndicatorContainer(container)}
+			<BinaryIndicatorProperties {container} {relatedContainers} revisions={[]} />
+		{:else}
+			<IndicatorProperties {container} {relatedContainers} revisions={[]} />
+		{/if}
 	{/if}
 
 	<EditableFormattedText label={$_('description')} value={container.payload.description} />

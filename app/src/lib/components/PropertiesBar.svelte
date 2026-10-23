@@ -10,14 +10,19 @@
 	import InlineEditableAssignee from '$lib/components/InlineEditableAssignee.svelte';
 	import InlineEditableCardStyle from '$lib/components/InlineEditableCardStyle.svelte';
 	import InlineEditableCategory from '$lib/components/InlineEditableCategory.svelte';
+	import InlineEditableImage from '$lib/components/InlineEditableImage.svelte';
 	import InlineEditableIndicatorUnit from '$lib/components/InlineEditableIndicatorUnit.svelte';
 	import InlineEditableLinkStyle from '$lib/components/InlineEditableLinkStyle.svelte';
 	import InlineEditableMeasure from '$lib/components/InlineEditableMeasure.svelte';
 	import InlineEditableOrganizationalUnit from '$lib/components/InlineEditableOrganizationalUnit.svelte';
 	import InlineEditableOrganization from '$lib/components/InlineEditableOrganization.svelte';
 	import InlineEditableParent from '$lib/components/InlineEditableParent.svelte';
+	import InlineEditablePDF from '$lib/components/InlineEditablePDF.svelte';
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
+	import InlineEditableResourceV2 from '$lib/components/InlineEditableResourceV2.svelte';
+	import InlineEditableVisibility from '$lib/components/InlineEditableVisibility.svelte';
 	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
+	import InlineReadonlyType from '$lib/components/InlineReadonlyType.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
 	import { getDefaultLayout } from '$lib/components/PropertiesConfiguration.svelte';
 	import { getDetailViewContext } from '$lib/contexts/detailView';
@@ -27,13 +32,17 @@
 		type Container,
 		type ContainerWithCategory,
 		isContainerWithCategory,
+		isContainerWithImage,
 		isContainerWithStatus,
 		isGoalContainer,
 		isIndicatorContainer,
+		isProgramContainer,
+		isResourceDataContainer,
 		isRuleContainer,
 		isTaskContainer,
 		isTeaserContainer,
 		predicates,
+		propertyRegistry,
 		type Status
 	} from '$lib/models';
 	import { moduleByType } from '$lib/modules';
@@ -42,6 +51,7 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		relatedContainers: Array<Container<AnyPayload>>;
 		revisions: Array<Container<AnyPayload>>;
 		showPropertiesTrigger?: boolean;
 	}
@@ -49,6 +59,7 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		relatedContainers,
 		revisions,
 		showPropertiesTrigger = false
 	}: Props = $props();
@@ -110,6 +121,15 @@
 						label={page.data.categoryContext.labels.get(key) ?? ''}
 						options={page.data.categoryContext.options[key] ?? []}
 					/>
+				{:else if item == 'image' && isContainerWithImage(container)}
+					{const key = item as keyof typeof payloadSchema.shape}
+					{const schema = payloadSchema.shape[key]}
+					{const meta = propertyRegistry.get(schema)}
+					<InlineEditableImage
+						bind:value={container.payload.image}
+						{editable}
+						label={$_(meta?.label ?? 'image')}
+					/>
 				{:else if item == 'measure' && (!isGoalContainer(container) || isPartOfMeasure)}
 					<InlineEditableMeasure bind:container {editable} />
 				{:else if item == 'modified'}
@@ -127,8 +147,12 @@
 					/>
 				{:else if item == 'parent'}
 					<InlineEditableParent bind:container {editable} />
+				{:else if item == 'pdf' && isProgramContainer(container)}
+					<InlineEditablePDF bind:value={container.payload.pdf} {editable} />
 				{:else if item == 'program' && !isPartOfMeasure}
 					<InlineEditableProgram bind:container {editable} />
+				{:else if item == 'resource' && isResourceDataContainer(container)}
+					<InlineEditableResourceV2 bind:value={container.payload.resource} {editable} />
 				{:else if item == 'status' && isContainerWithStatus(container)}
 					<InlineStatusDropdown
 						bind:value={container.payload.status}
@@ -137,8 +161,12 @@
 					/>
 				{:else if item == 'style' && isTeaserContainer(container)}
 					<InlineEditableLinkStyle bind:value={container.payload.style} {editable} />
+				{:else if item == 'type'}
+					<InlineReadonlyType value={container.payload.type} />
 				{:else if item == 'unit' && isIndicatorContainer(container)}
 					<InlineEditableIndicatorUnit bind:value={container.payload.unit} {editable} />
+				{:else if item == 'visibility'}
+					<InlineEditableVisibility bind:container {editable} {relatedContainers} />
 				{:else if item in payloadSchema.shape}
 					{const key = item as keyof typeof payloadSchema.shape}
 					{const schema = payloadSchema.shape[key]}
@@ -150,7 +178,7 @@
 
 	{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
 		<li>
-			<span class="badge badge--yellow">
+			<span class="badge badge--large badge--yellow">
 				<AskAI />
 				{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
 			</span>
@@ -178,10 +206,8 @@
 		--badge-padding-x: 0.5rem;
 		--dropdown-button-active-background: transparent;
 		--dropdown-button-border-radius: 8px;
-		--dropdown-button-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
 		--dropdown-button-default-background: transparent;
 		--dropdown-button-expanded-background: transparent;
-		--dropdown-button-expanded-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
 		--dropdown-button-hover-background: transparent;
 		--dropdown-button-gap: 0.125rem;
 		--dropdown-button-padding-x: 0;
@@ -193,9 +219,15 @@
 		--form-control-padding-x: 0.5rem;
 		--form-control-padding-y: 0rem;
 
+		align-items: center;
 		display: flex;
 		flex-wrap: wrap;
 		padding: 0.375rem 0 0.75rem;
+	}
+
+	.details-properties :global(.dropdown-button--select) {
+		--dropdown-button-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
+		--dropdown-button-expanded-chevron-icon: var(--icon--flowbite--chevron-sort-outline);
 	}
 
 	li {
