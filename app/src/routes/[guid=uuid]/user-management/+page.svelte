@@ -331,6 +331,7 @@
 						editable={isEditMode && $ability.can('manage-users', data.container)}
 						grants={data.grants}
 						inheritedSections={data.inheritedSections}
+						mayEdit={$ability.can('manage-users', data.container)}
 						mayManageOrganizationUsers={data.mayManageOrganizationUsers}
 						oninvite={$ability.can('manage-users', data.container)
 							? () => inviteDialog.showModal()

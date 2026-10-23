@@ -40,6 +40,8 @@
 		editable?: boolean;
 		grants: Readonly<Array<Grant>>;
 		inheritedSections: ReadonlyArray<InheritedMatrixSection>;
+		// may the user edit at all (as opposed to editable: in edit mode now)
+		mayEdit?: boolean;
 		mayManageOrganizationUsers?: boolean;
 		oninvite?: () => void;
 		users: Readonly<Array<User>>;
@@ -51,6 +53,7 @@
 		editable = false,
 		grants,
 		inheritedSections,
+		mayEdit = editable,
 		mayManageOrganizationUsers = false,
 		oninvite,
 		users
@@ -102,7 +105,7 @@
 	});
 
 	const inherits = $derived(inheritsOverride ?? storedInherits);
-	const viewOnly = $derived(!editable);
+	const viewOnly = $derived(!mayEdit);
 
 	// expanded states follow the active sections until toggled by hand
 	let adminsExpanded = $state(true);
@@ -363,7 +366,7 @@
 								{$_(inherits ? 'permission_matrix.inactive' : 'permission_matrix.active')}
 							</span>
 						</span>
-						{#if !viewOnly}
+						{#if editable}
 							<label class="inherit-toggle">
 								<span>{$_('permission_matrix.individual_rights')}</span>
 								<input
@@ -380,7 +383,7 @@
 			{#if ownExpanded}
 				{#each users as user (user.guid)}
 					{@const set = visibleSetFor(user)}
-					{@const cellState = inherits ? 'inactive' : viewOnly ? 'readonly' : 'editable'}
+					{@const cellState = inherits ? 'inactive' : editable ? 'editable' : 'readonly'}
 					<tr>
 						<td class="col-name" class:locked={!viewOnly && inherits}>
 							<span class="user-cell">
@@ -416,7 +419,7 @@
 										state={cellState}
 										tooltip={cellState === 'inactive'
 											? $_('permission_matrix.tooltip_dormant_own')
-											: cellState === 'readonly'
+											: cellState === 'readonly' && viewOnly
 												? $_('permission_matrix.tooltip_readonly')
 												: undefined}
 										onchange={(value) => toggleKind(user, group.target, kind, value)}
