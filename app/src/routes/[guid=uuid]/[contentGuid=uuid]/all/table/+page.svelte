@@ -24,10 +24,15 @@
 		)
 	);
 
+	const allowedTypes = $derived(
+		new Set<PayloadType>(containers.map(({ payload }) => payload.type))
+	);
+
 	let facets = $derived(
 		computeFacetCount(
 			new Map([
 				['status', new Map(status.options.map((s) => [s, 0]))],
+				['type', new Map(allowedTypes.values().map((t) => [t, 0]))],
 				...buildCategoryFacetsWithCounts(page.data.categoryContext.options)
 			]),
 			containers

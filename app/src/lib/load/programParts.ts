@@ -1,7 +1,7 @@
 import type { DatabasePool } from 'slonik';
 import { filterVisible } from '$lib/authorization';
 import type { CategoryContext } from '$lib/categoryOptions';
-import { type Container, predicates, type ProgramPayload } from '$lib/models';
+import { type Container, type PayloadType, predicates, type ProgramPayload } from '$lib/models';
 import { getAllRelatedContainers } from '$lib/server/db';
 import type { User } from '$lib/stores';
 import { extractCustomCategoryFilters } from '$lib/utils/customCategoryFilters';
@@ -27,6 +27,7 @@ export async function fetchProgramParts({
 			[predicates.enum['is-part-of']],
 			{
 				customCategories: extractCustomCategoryFilters(url, categoryContext.keys),
+				type: url.searchParams.getAll('type') as PayloadType[],
 				statuses: url.searchParams.getAll('status'),
 				terms: url.searchParams.get('terms') ?? ''
 			},
