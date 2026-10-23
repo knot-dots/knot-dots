@@ -2,17 +2,7 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/state';
 	import Table from '$lib/components/Table.svelte';
-	import {
-		type Container,
-		isGoalContainer,
-		isKnowledgeContainer,
-		isMeasureContainer,
-		isRuleContainer,
-		isSimpleMeasureContainer,
-		predicates,
-		type ProgramPayload,
-		programTypes
-	} from '$lib/models';
+	import { type Container, type ProgramPayload, programTypes } from '$lib/models';
 
 	interface Props {
 		containers: Container[];
@@ -20,22 +10,6 @@
 	}
 
 	let { containers, program }: Props = $props();
-
-	// The table lists the objects of the levels board plus the program's knowledge parts.
-	let rows = $derived(
-		containers.filter(
-			(container) =>
-				(isGoalContainer(container) &&
-					container.relation.some(
-						({ object, predicate }) =>
-							predicate === predicates.enum['is-part-of-program'] && object === program.guid
-					)) ||
-				isKnowledgeContainer(container) ||
-				isMeasureContainer(container) ||
-				isSimpleMeasureContainer(container) ||
-				isRuleContainer(container)
-		)
-	);
 
 	let isGuide = $derived(program.payload.programType === programTypes.enum['program_type.guide']);
 
@@ -64,4 +38,4 @@
 	]);
 </script>
 
-<Table {columns} {rows} />
+<Table {columns} rows={containers} />

@@ -3,7 +3,17 @@ import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import { fetchProgramParts } from '$lib/load/programParts';
-import { type AnyPayload, type Container, isProgramContainer } from '$lib/models';
+import {
+	type AnyPayload,
+	type Container,
+	isGoalContainer,
+	isKnowledgeContainer,
+	isMeasureContainer,
+	isProgramContainer,
+	isRuleContainer,
+	isSimpleMeasureContainer,
+	predicates
+} from '$lib/models';
 import { getAllContainerRevisionsByGuid } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -36,8 +46,19 @@ export const load = (async ({ depends, locals, params, parent, url }) => {
 		});
 
 		return {
-			container,
-			containers,
+			container: container,
+			containers: containers.filter(
+				(c) =>
+					(isGoalContainer(c) &&
+						c.relation.some(
+							({ object, predicate }) =>
+								predicate === predicates.enum['is-part-of-program'] && object === container.guid
+						)) ||
+					isKnowledgeContainer(c) ||
+					isMeasureContainer(c) ||
+					isSimpleMeasureContainer(c) ||
+					isRuleContainer(c)
+			),
 			revisions: filterVisible(revisions, locals.user),
 			title: t('workspace.view.table')
 		};

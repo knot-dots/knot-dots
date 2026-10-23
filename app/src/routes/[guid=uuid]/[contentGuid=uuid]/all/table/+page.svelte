@@ -7,7 +7,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import PageLayout from '$lib/components/PageLayout.svelte';
 	import ProgramTable from '$lib/components/ProgramTable.svelte';
-	import { computeFacetCount, status } from '$lib/models';
+	import { computeFacetCount, type PayloadType, status } from '$lib/models';
 	import { lastCreatedContainers, lastDeletedContainers, lastUpdatedContainers } from '$lib/stores';
 	import type { PageProps } from './$types';
 
