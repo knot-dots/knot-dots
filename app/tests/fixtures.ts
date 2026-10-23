@@ -301,6 +301,27 @@ export async function createRelationSection(
 	});
 }
 
+// Lists the item in the section, as the create dialog does after saving.
+export async function addSectionItem(
+	context: BrowserContext,
+	section: Container<RelationCollectionPayload>,
+	item: Container<AnyPayload>
+) {
+	const response = await context.request.post(`/container/${section.guid}/revision`, {
+		data: {
+			...section,
+			payload: { ...section.payload, item: [...section.payload.item, item.guid] }
+		},
+		headers: { 'If-Match': etag(section) }
+	});
+
+	if (!response.ok()) {
+		throw new Error(`Failed to add ${item.guid} to section: ${await response.text()}`);
+	}
+
+	Object.assign(section, (await response.json()) as Container<RelationCollectionPayload>);
+}
+
 export async function createProgramContainerFromTemplate<P extends AnyPayload>(
 	context: BrowserContext,
 	newContainer: NewContainer<P>,
@@ -1289,20 +1310,19 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testSubordinateMeasureResourceDataOtherResource);
 		await deleteContainer(adminContext, testSubordinateMeasureResourceDataOtherResource);
 	},
-	testTaskCollection: async ({ adminContext, testGoal, testTask }, use) => {
+	testTaskCollection: async ({ adminContext, testGoal }, use) => {
 		const testTaskCollection = await createRelationSection(
 			adminContext,
 			testGoal,
 			payloadTypes.enum.task,
-			'Tasks',
-			[testTask]
+			'Tasks'
 		);
 
 		await use(testTaskCollection);
 
 		await deleteContainer(adminContext, testTaskCollection);
 	},
-	testTask: async ({ adminContext, testGoal }, use, workerInfo) => {
+	testTask: async ({ adminContext, testGoal, testTaskCollection }, use, workerInfo) => {
 		const newTask = containerOfType(payloadTypes.enum.task, testGoal) as Container<TaskPayload>;
 		const testTask = await createContainer(adminContext, {
 			...newTask,
@@ -1313,6 +1333,7 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 			},
 			relation: [{ position: 0, predicate: predicates.enum['is-part-of'], object: testGoal.guid }]
 		});
+		await addSectionItem(adminContext, testTaskCollection, testTask);
 
 		await use(testTask);
 
