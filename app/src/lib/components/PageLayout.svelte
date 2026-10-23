@@ -7,8 +7,9 @@
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { createFeatureDecisions } from '$lib/features';
-	import { overlay, overlayWidth } from '$lib/stores';
+	import { overlayWidth } from '$lib/stores';
 
 	interface Props {
 		children: Snippet;
@@ -26,6 +27,8 @@
 	let createEffectDialog: HTMLDialogElement;
 
 	let sidebarExpanded = $derived(getContext<{ expanded: boolean }>('sidebar').expanded);
+
+	const overlay = getOverlayContext();
 </script>
 
 <div class="app-wrapper" style="--overlay-width-factor: {$overlayWidth}">
@@ -42,8 +45,8 @@
 
 	{@render children()}
 
-	{#if $overlay}
-		<Overlay data={$overlay} />
+	{#if overlay.data || overlay.loading}
+		<Overlay data={overlay.data} />
 	{/if}
 </div>
 

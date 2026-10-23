@@ -9,8 +9,9 @@
 	} from 'svelte-dnd-action';
 	import { browser } from '$app/environment';
 	import Card from '$lib/components/Card.svelte';
+	import { getOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { type AnyPayload, type Container, overlayKey } from '$lib/models';
-	import { ability, dragged, overlay } from '$lib/stores';
+	import { ability, dragged } from '$lib/stores';
 
 	interface Props {
 		containers: Container<AnyPayload>[];
@@ -19,6 +20,8 @@
 	}
 
 	let { containers, footer, itemSnippet }: Props = $props();
+
+	const overlay = getOverlayContext();
 
 	let items = $derived(containers.map((container) => ({ guid: container.guid, container })));
 
@@ -58,7 +61,7 @@
 	}
 </script>
 
-{#if browser && !matchMedia('(pointer: coarse)').matches && $overlay?.key === overlayKey.enum.relations && $ability.can('update', $overlay.container)}
+{#if browser && !matchMedia('(pointer: coarse)').matches && overlay.data?.key === overlayKey.enum.relations && $ability.can('update', overlay.data.container)}
 	<div class="vertical-scroll-wrapper">
 		<ul
 			use:dndzone={{ items, dropFromOthersDisabled: true, centreDraggedOnCursor: true }}

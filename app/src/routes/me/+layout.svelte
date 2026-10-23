@@ -10,6 +10,7 @@
 	import { setComputedProgressContext } from '$lib/contexts/computedProgress';
 	import { setFavoriteListContext } from '$lib/contexts/favoriteList';
 	import { setLastOverlayContext } from '$lib/contexts/lastOverlay';
+	import { createOverlayContext, setOverlayContext } from '$lib/contexts/overlay.svelte';
 	import { createReviewContext, setReviewContext } from '$lib/contexts/review.svelte';
 	import { setToastContext, type ToastProps } from '$lib/contexts/toast';
 	import { getContextIdentifier } from '$lib/models';
@@ -46,6 +47,8 @@
 	}
 
 	setToastContext(addToast);
+
+	setOverlayContext(createOverlayContext(addToast));
 
 	let favoriteList = $state({
 		organization: page.data.currentOrganization.payload.favorite,
