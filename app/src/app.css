@@ -1987,7 +1987,7 @@ h4.details-heading {
 	max-width: var(--dropdown-panel-max-width, none);
 	overflow-x: hidden;
 	overflow-y: auto;
-	padding: var(--dropdown-panel-padding, 0.5rem);
+	padding: var(--dropdown-panel-padding, 0.25rem);
 	position: absolute;
 	width: var(--dropdown-panel-width, auto);
 	z-index: 2;
