@@ -161,9 +161,8 @@ test.describe('Permissions', () => {
 			);
 			await dialog.getByRole('textbox', { name: 'Title' }).fill(titleOfFirstGoal);
 			await dialog.getByRole('button', { name: 'Save' }).click();
-			await expect(
-				dotsBoard.overlay.locator.getByRole('heading', { name: titleOfFirstGoal })
-			).toBeVisible();
+			// The section shows the goal right away; wait for its own overlay to open
+			await expect(dotsBoard.overlay.title).toHaveText(titleOfFirstGoal);
 
 			// Change the organizational unit of the measure
 			await dotsBoard.overlay.backButton.click();
