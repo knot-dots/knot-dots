@@ -51,7 +51,7 @@
 
 		<div class="details-meta">
 			{#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-				<PropertiesBar {container} revisions={[]} />
+				<PropertiesBar {container} {relatedContainers} revisions={[]} />
 			{:else}
 				<Badges {container} />
 			{/if}

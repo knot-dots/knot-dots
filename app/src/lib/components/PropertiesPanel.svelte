@@ -26,6 +26,7 @@
 	import EditableRuleStatus from '$lib/components/EditableRuleStatus.svelte';
 	import EditableStatus from '$lib/components/EditableStatus.svelte';
 	import EditableTaskStatus from '$lib/components/EditableTaskStatus.svelte';
+	import EditableVisibility from '$lib/components/EditableVisibility.svelte';
 	import ManagedBy from '$lib/components/ManagedBy.svelte';
 	import ModifiedBy from '$lib/components/ModifiedBy.svelte';
 	import PropertiesConfiguration, {
@@ -195,6 +196,8 @@
 						/>
 					{:else if item == 'unit' && isIndicatorContainer(container)}
 						<EditableIndicatorUnit bind:value={container.payload.unit} {editable} />
+					{:else if item == 'visibility'}
+						<EditableVisibility bind:container {editable} {relatedContainers} />
 					{:else if item in payloadSchema.shape}
 						{const key = item as keyof typeof payloadSchema.shape}
 						{const schema = payloadSchema.shape[key]}

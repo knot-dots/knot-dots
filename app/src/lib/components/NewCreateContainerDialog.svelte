@@ -233,6 +233,7 @@
 									<PropertiesBar
 										bind:container={$createContainerDialogState.container}
 										editable
+										relatedContainers={[]}
 										revisions={[]}
 									/>
 								{:else}

@@ -20,6 +20,7 @@
 	import InlineEditablePDF from '$lib/components/InlineEditablePDF.svelte';
 	import InlineEditableProgram from '$lib/components/InlineEditableProgram.svelte';
 	import InlineEditableResourceV2 from '$lib/components/InlineEditableResourceV2.svelte';
+	import InlineEditableVisibility from '$lib/components/InlineEditableVisibility.svelte';
 	import InlineModifiedBy from '$lib/components/InlineModifiedBy.svelte';
 	import InlineReadonlyType from '$lib/components/InlineReadonlyType.svelte';
 	import InlineStatusDropdown from '$lib/components/InlineStatusDropdown.svelte';
@@ -50,6 +51,7 @@
 	interface Props {
 		container: Container<AnyPayload>;
 		editable?: boolean;
+		relatedContainers: Array<Container<AnyPayload>>;
 		revisions: Array<Container<AnyPayload>>;
 		showPropertiesTrigger?: boolean;
 	}
@@ -57,6 +59,7 @@
 	let {
 		container = $bindable(),
 		editable = false,
+		relatedContainers,
 		revisions,
 		showPropertiesTrigger = false
 	}: Props = $props();
@@ -162,6 +165,8 @@
 					<InlineReadonlyType value={container.payload.type} />
 				{:else if item == 'unit' && isIndicatorContainer(container)}
 					<InlineEditableIndicatorUnit bind:value={container.payload.unit} {editable} />
+				{:else if item == 'visibility'}
+					<InlineEditableVisibility bind:container {editable} {relatedContainers} />
 				{:else if item in payloadSchema.shape}
 					{const key = item as keyof typeof payloadSchema.shape}
 					{const schema = payloadSchema.shape[key]}
