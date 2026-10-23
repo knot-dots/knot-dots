@@ -33,12 +33,14 @@ export const load = (async ({ locals, params }) => {
 			error(404, { message: t('error.not_found') });
 		}
 
-		// Members of the organization see the whole matrix (view-only without
-		// the manage-users kind); anonymous visitors and readers from other
-		// organizations get no roster of the surrounding areas.
+		// Those managing the members and the members of the organization see the
+		// whole matrix (view-only without the manage-users kind); anonymous
+		// visitors and readers from other organizations get no roster of the
+		// surrounding areas.
 		const members = locals.user.isAuthenticated ? await getMembers(container.organization) : [];
 		if (
 			!locals.user.roles.includes('sysadmin') &&
+			!ability.can('manage-users', container) &&
 			!members.some(({ id }) => id === locals.user.guid)
 		) {
 			return {
