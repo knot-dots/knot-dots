@@ -143,7 +143,8 @@ test('a decoupled container is governed by its own matrix alone', async ({
 		self: ['delete'],
 		source: measure.guid,
 		sources: [measure.guid],
-		subordinates: ['delete']
+		subordinates: ['delete'],
+		dormant: organization
 	});
 });
 
@@ -190,7 +191,8 @@ test('contents inherit from the nearest decoupled ancestor', async ({ connection
 		self: ['read', 'update'],
 		source: program.guid,
 		sources: [program.guid],
-		subordinates: ['read', 'update']
+		subordinates: ['read', 'update'],
+		dormant: organization
 	});
 });
 
@@ -252,7 +254,8 @@ test('organization administrators keep every kind regardless of decoupling', asy
 		self: ['read', 'update', 'delete', 'manage-users'],
 		source: measure.guid,
 		sources: [measure.guid],
-		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users'],
+		dormant: organization
 	});
 });
 
@@ -953,4 +956,60 @@ test('managed_by parity: section governed by the matrix of its measure', async (
 		})
 	)(connection);
 	expect(await sourcesOf(connection, section.guid)).toEqual([measure.guid]);
+});
+
+test('a decoupled container names the area it would fall back to', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, { ownMatrix: true })
+	)(connection);
+	const subject = await newTestUser(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)?.sources).toEqual([measure.guid]);
+	expect(grants.get(measure.guid)?.dormant).toBe(organization);
+});
+
+test('the area lies dormant only while a chain stays open', async ({ connection }: Fixtures) => {
+	// a decoupled program on one chain, an inheriting program topping out on
+	// the other: the organization applies while the measure inherits and lies
+	// dormant once it decouples; a decoupled unit takes the organization's place
+	const organization = uuid();
+	const unit = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.organizational_unit, { ownMatrix: true })
+	)(connection);
+	const decoupledProgram = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program, { ownMatrix: true })
+	)(connection);
+	const inheritingProgram = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.program)
+	)(connection);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			ownMatrix: true,
+			organizationalUnit: unit.guid,
+			relation: [
+				{ object: decoupledProgram.guid, predicate: predicates.enum['is-part-of-program'] },
+				{ object: inheritingProgram.guid, predicate: predicates.enum['is-part-of-program'] }
+			]
+		})
+	)(connection);
+	const subject = await newTestUser(connection);
+
+	const decoupled = (await computeUserGrants(connection, subject, [measure.guid])).get(
+		measure.guid
+	);
+	expect(decoupled?.sources).toEqual([measure.guid, decoupledProgram.guid]);
+	expect(decoupled?.dormant).toBe(unit.guid);
+
+	const persisted = await getContainerByGuid(measure.guid)(connection);
+	await updateContainer(modifiedContainer.parse({ ...persisted, own_matrix: false }))(connection);
+	const inheriting = (await computeUserGrants(connection, subject, [measure.guid])).get(
+		measure.guid
+	);
+	expect(inheriting?.sources).toEqual([decoupledProgram.guid, unit.guid]);
+	expect(inheriting?.dormant).toBeUndefined();
 });

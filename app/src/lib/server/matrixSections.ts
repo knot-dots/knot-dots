@@ -6,7 +6,6 @@ import {
 	grantSetForRole,
 	grantSetForSubjectOn,
 	type InheritedMatrixSection,
-	isOrganizationContainer,
 	matrixSectionScope,
 	memberRoles,
 	predicates,
@@ -31,10 +30,9 @@ const userPredicates = [
  * the sources and form a block of their own, and one section per governing
  * matrix (the read-time enrichment resolved the sources: the decoupled
  * ancestors, the organizational unit or the organization) with every other
- * subject's effective set materialized as rows on it. A decoupled container
- * without decoupled ancestors stands on its own; its area (the unit with a
- * matrix of its own, else the organization) then keeps a dormant section,
- * since it applies again as soon as the container inherits.
+ * subject's effective set materialized as rows on it. The area a decoupled
+ * container would fall back to once it inherits (user_grant.dormant) keeps a
+ * dormant section.
  */
 export async function loadMatrixSections(
 	connection: DatabaseConnection,
@@ -50,13 +48,7 @@ export async function loadMatrixSections(
 		])
 	].filter((guid) => guid !== container.guid);
 
-	const dormantGuids: string[] = [];
-	if (container.own_matrix && sourceGuids.length === 0 && !isOrganizationContainer(container)) {
-		const unit = container.organizational_unit
-			? await getContainerByGuid(container.organizational_unit)(connection)
-			: undefined;
-		dormantGuids.push(unit?.own_matrix ? unit.guid : container.organization);
-	}
+	const dormantGuids = container.user_grant?.dormant ? [container.user_grant.dormant] : [];
 
 	const sectionGuids = [...sourceGuids, ...dormantGuids];
 	const matrixGuids = [...new Set([...sectionGuids, ...scopeGuids])];

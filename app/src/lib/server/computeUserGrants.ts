@@ -29,7 +29,7 @@ const row = z.object({
 	guid: z.uuid(),
 	object: z.uuid(),
 	ord: z.number().int().nullable(),
-	place: z.enum(['source', 'organization', 'organizational_unit']),
+	place: z.enum(['source', 'dormant', 'organization', 'organizational_unit']),
 	kind: grantKinds.nullable(),
 	target: z.enum(['self', 'subordinates']).nullable()
 });
@@ -118,8 +118,9 @@ export async function computeUserGrants(
 			) u ON true
 		),
 		-- A chain counts as open when it tops out (or cycles) without having
-		-- passed a decoupled ancestor; such chains activate the scope fallback
-		-- once per root. The LATERAL probe keeps this on per-row index lookups.
+		-- passed a decoupled ancestor — the root itself may be decoupled; such
+		-- chains bring the area in, once per root. The LATERAL probe keeps this
+		-- on per-row index lookups.
 		open_chain AS (
 			SELECT DISTINCT a.root
 			FROM ancestry a
@@ -133,30 +134,29 @@ export async function computeUserGrants(
 						AND NOT cr.deleted
 				) AS no_parents
 			) t
-			WHERE NOT a.shielded AND NOT a.decoupled AND (t.no_parents OR a.is_cycle)
+			WHERE NOT a.shielded AND (a.depth = 0 OR NOT a.decoupled)
+				AND (t.no_parents OR a.is_cycle)
+		),
+		-- The area an open chain brings in: the organizational unit if it has a
+		-- matrix of its own, else the organization. It governs an inheriting
+		-- container and lies dormant beside a decoupled one.
+		area AS (
+			SELECT b.root, b.decoupled, coalesce(du.guid, b.organization) AS guid
+			FROM base b
+			JOIN open_chain oc ON oc.root = b.root
+			LEFT JOIN decoupled_unit du ON du.root = b.root
 		),
 		-- A decoupled container is its own primary source (ord -1); the
 		-- decoupled ancestors of every chain apply side by side, nearest first,
-		-- and only an inheriting container with a chain topping out without one
-		-- falls back to the area, ordered last: the organizational unit if it
-		-- has a matrix of its own, else the organization. A decoupled ancestor
-		-- thus replaces the area matrices for the contents it governs.
+		-- and only an inheriting container with an open chain falls back to the
+		-- area, ordered last. A decoupled ancestor thus replaces the area
+		-- matrices for the contents it governs.
 		sources AS (
 			SELECT b.root, b.root AS source, -1 AS ord FROM base b WHERE b.decoupled
 			UNION ALL
 			SELECT da.root, da.guid, da.depth FROM decoupled_ancestors da
 			UNION ALL
-			SELECT du.root, du.guid, 2147483646
-			FROM decoupled_unit du
-			JOIN open_chain oc ON oc.root = du.root
-			JOIN base b ON b.root = du.root
-			WHERE NOT b.decoupled
-			UNION ALL
-			SELECT b.root, b.organization, 2147483647
-			FROM base b
-			JOIN open_chain oc ON oc.root = b.root
-			LEFT JOIN decoupled_unit du ON du.root = b.root
-			WHERE NOT b.decoupled AND du.guid IS NULL
+			SELECT ar.root, ar.guid, 2147483647 FROM area ar WHERE NOT ar.decoupled
 		)
 		-- no join back onto base: the planner grossly underestimates the CTE rows
 		-- and nests such a join into a loop over materialized rows, which is
@@ -165,6 +165,8 @@ export async function computeUserGrants(
 		SELECT m.root AS guid, m.place, m.object, m.ord, g.kind, g.target
 		FROM (
 			SELECT s.root, 'source' AS place, s.source AS object, s.ord FROM sources s
+			UNION ALL
+			SELECT ar.root, 'dormant', ar.guid, NULL FROM area ar WHERE ar.decoupled
 			UNION ALL
 			SELECT b.root, 'organization', b.organization, NULL FROM base b
 			UNION ALL
@@ -217,6 +219,7 @@ export async function computeUserGrants(
 		result.set(
 			guid,
 			composeUserGrants({
+				dormant: forGuid.find((r) => r.place === 'dormant')?.object,
 				scopeSourced,
 				governsItself: ordered[0] === guid,
 				organizationSelf: kindsAt('organization', 'self'),

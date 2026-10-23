@@ -754,7 +754,12 @@ export const userGrants = z.object({
 	self: z.array(grantKinds),
 	source: z.uuid(),
 	sources: z.array(z.uuid()),
-	subordinates: z.array(grantKinds)
+	subordinates: z.array(grantKinds),
+	// the area whose matrix would apply again once a decoupled container
+	// inherits: the organizational unit with a matrix of its own, else the
+	// organization — present only where a chain reaches the top without any
+	// decoupled ancestor
+	dormant: z.uuid().optional()
 });
 
 export type UserGrants = z.infer<typeof userGrants>;
@@ -799,6 +804,7 @@ export function composeUserGrants(input: {
 	organizationSelf: GrantKind[];
 	organizationalUnitSelf: GrantKind[];
 	sources: Array<{ guid: string; self: GrantKind[]; subordinates: GrantKind[] }>;
+	dormant?: string;
 }): UserGrants {
 	const canonical = (kinds: Iterable<GrantKind>) =>
 		grantKinds.options.filter((kind) => new Set(kinds).has(kind));
@@ -833,7 +839,8 @@ export function composeUserGrants(input: {
 		self,
 		source: input.sources[0].guid,
 		sources: input.sources.map(({ guid }) => guid),
-		subordinates
+		subordinates,
+		...(input.dormant ? { dormant: input.dormant } : {})
 	};
 }
 
