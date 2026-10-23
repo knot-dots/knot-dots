@@ -98,12 +98,16 @@ function enrichedUnits(...governed: string[]) {
 			governsItself: false,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
-			source: unit.organization,
-			sourceSelf: [],
-			sourceSubordinates:
-				governed.includes(unit.guid) || governed.includes(unit.organization)
-					? grantSetForRole(memberRoles.enum.head).subordinates
-					: []
+			sources: [
+				{
+					guid: unit.organization,
+					self: [],
+					subordinates:
+						governed.includes(unit.guid) || governed.includes(unit.organization)
+							? grantSetForRole(memberRoles.enum.head).subordinates
+							: []
+				}
+			]
 		})
 	}));
 }
@@ -123,11 +127,15 @@ function enrichedOrganizations(...governed: string[]) {
 			governsItself: true,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
-			source: container.guid,
-			sourceSelf: [],
-			sourceSubordinates: governed.includes(container.guid)
-				? grantSetForRole(memberRoles.enum.head).subordinates
-				: []
+			sources: [
+				{
+					guid: container.guid,
+					self: [],
+					subordinates: governed.includes(container.guid)
+						? grantSetForRole(memberRoles.enum.head).subordinates
+						: []
+				}
+			]
 		})
 	}));
 }

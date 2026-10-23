@@ -50,9 +50,13 @@ const userGrants = (guid: string) =>
 		governsItself: guid === organizationGuid,
 		organizationSelf: administratorSet.self,
 		organizationalUnitSelf: [],
-		source: organizationGuid,
-		sourceSelf: administratorSet.self,
-		sourceSubordinates: administratorSet.subordinates
+		sources: [
+			{
+				guid: organizationGuid,
+				self: administratorSet.self,
+				subordinates: administratorSet.subordinates
+			}
+		]
 	});
 
 function organization(adminSubjects: string[]) {

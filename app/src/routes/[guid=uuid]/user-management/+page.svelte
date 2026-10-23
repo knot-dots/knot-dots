@@ -324,17 +324,18 @@
 
 		{#snippet main()}
 			{#if permissionView}
-				{#if data.inheritedGrants && data.inheritedUsers && data.scope}
+				{#if data.inheritedSections && data.admins}
 					<ObjectPermissionMatrix
+						admins={data.admins}
 						container={data.container}
 						editable={isEditMode && $ability.can('manage-users', data.container)}
 						grants={data.grants}
-						inheritedGrants={data.inheritedGrants}
-						inheritedUsers={data.inheritedUsers}
+						inheritedSections={data.inheritedSections}
+						mayEdit={$ability.can('manage-users', data.container)}
+						mayManageOrganizationUsers={data.mayManageOrganizationUsers}
 						oninvite={$ability.can('manage-users', data.container)
 							? () => inviteDialog.showModal()
 							: undefined}
-						scope={data.scope}
 						{users}
 					/>
 				{:else}

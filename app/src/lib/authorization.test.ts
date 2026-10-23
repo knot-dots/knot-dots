@@ -134,9 +134,13 @@ function enrich<T extends TestContainer>(container: T, user: User, source?: stri
 			organizationalUnitSelf: container.organizational_unit
 				? kindsAt(user, container.organizational_unit, 'self')
 				: [],
-			source: src,
-			sourceSelf: kindsAt(user, src, 'self'),
-			sourceSubordinates: kindsAt(user, src, 'subordinates')
+			sources: [
+				{
+					guid: src,
+					self: kindsAt(user, src, 'self'),
+					subordinates: kindsAt(user, src, 'subordinates')
+				}
+			]
 		})
 	};
 }

@@ -24,46 +24,59 @@ test.describe('Object members matrix', () => {
 		// assigning roles gave the managing program a matrix of its own, so the
 		// measure inherits from the program rather than from the organization
 		await expect(
-			overlay.getByText(`Inherited from ${testProgram.payload.title}`, { exact: false })
+			overlay.getByRole('button', { name: `Inherited from ${testProgram.payload.title}` })
 		).toBeVisible();
+
+		// Administrators of the organization form a block of their own that
+		// holds every kind regardless of the inheritance.
+		await expect(overlay.getByRole('button', { name: 'Admins' })).toBeVisible();
+		await expect(overlay.getByRole('row', { name: 'Orla Orchestra' })).toHaveCount(1);
 
 		// While inheriting, the effective matrix shows read-only and the own
 		// section offers no way to add members. Bob heads the program, so his
-		// row carries every subordinate kind.
-		const inheritedBob = overlay.getByRole('row', { name: 'Bob Bow' }).first();
-		await expect(inheritedBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
-		await expect(inheritedBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeDisabled();
+		// row carries every subordinate kind. Inherited rows show icons, own
+		// rows checkboxes; that tells the two Bob rows apart below.
+		const inheritedBob = overlay
+			.getByRole('row', { name: 'Bob Bow' })
+			.filter({ has: page.getByRole('img', { name: 'Read (This object): granted' }) });
+		const ownBob = overlay
+			.getByRole('row', { name: 'Bob Bow' })
+			.filter({ has: page.getByRole('checkbox', { name: 'Read (This object)' }) });
+		await expect(inheritedBob).toHaveCount(1);
 		await expect(
-			inheritedBob.getByRole('checkbox', { name: 'Edit (Subordinate objects)' })
-		).toBeChecked();
-		// members of the surrounding areas show with their effective sets
-		await expect(overlay.getByRole('row', { name: 'Orla Orchestra' })).toHaveCount(1);
-		await expect(overlay.getByRole('button', { name: 'Add item' })).toBeDisabled();
+			inheritedBob.getByRole('img', { name: 'Read (This object): granted' })
+		).toBeVisible();
+		await expect(
+			inheritedBob.getByRole('img', { name: 'Edit (Subordinate objects): granted' })
+		).toBeVisible();
+		await expect(inheritedBob.getByRole('checkbox')).toHaveCount(0);
+		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);
 
-		// Decoupling copies nothing: the own matrix starts empty and members are
-		// added by hand.
+		// Turning on individual rights copies nothing: the own matrix starts
+		// empty while the inherited section keeps applying beside it.
 		await page.getByRole('checkbox', { name: 'Edit mode' }).check();
 		const decoupleResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant-inheritance') && r.request().method() === 'POST'
 		);
-		await overlay.getByRole('checkbox', { name: 'Permissions are inherited' }).uncheck();
+		await overlay.getByRole('checkbox', { name: 'Individual rights' }).check();
 		await decoupleResponse;
 
-		await expect(overlay.getByRole('row', { name: 'Bob Bow' })).toHaveCount(1);
+		await expect(ownBob).toHaveCount(0);
+		await expect(inheritedBob).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toBeEnabled();
 
 		await overlay.getByRole('button', { name: 'Add item' }).click();
 		const dialog = page.getByRole('dialog');
 		await dialog.getByRole('combobox', { name: 'Email' }).fill('bob@example.org');
 		await dialog.getByLabel('Role').selectOption('collaborator');
-		const inviteResponse = page.waitForResponse(
-			(r) => r.url().endsWith('/user') && r.request().method() === 'POST'
+		// the overlay reloads its data once the invitation is through
+		const reloadResponse = page.waitForResponse((r) =>
+			r.url().includes(`/${testMeasure.guid}/all/members/__data.json`)
 		);
 		await dialog.getByRole('button', { name: 'Send invitation' }).click();
-		await inviteResponse;
+		await reloadResponse;
 
-		await expect(overlay.getByRole('row', { name: 'Bob Bow' })).toHaveCount(2);
-		const ownBob = overlay.getByRole('row', { name: 'Bob Bow' }).last();
+		await expect(ownBob).toHaveCount(1);
 		await expect(ownBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeChecked();
 		await expect(ownBob.getByRole('checkbox', { name: 'Read (This object)' })).toBeEnabled();
 		await expect(ownBob.getByRole('button', { name: 'Collaborator' })).toBeVisible();
@@ -94,20 +107,16 @@ test.describe('Object members matrix', () => {
 		);
 		await ownBob.getByRole('button', { name: 'Remove' }).click();
 		await removeResponse;
-		await expect(overlay.getByRole('row', { name: 'Bob Bow' })).toHaveCount(1);
+		await expect(ownBob).toHaveCount(0);
+		await expect(inheritedBob).toHaveCount(1);
 
-		// Re-enabling inheritance locks the inherited matrix again.
+		// Turning individual rights off leaves only the inherited matrix.
 		const inheritResponse = page.waitForResponse(
 			(r) => r.url().includes('/grant-inheritance') && r.request().method() === 'POST'
 		);
-		await overlay.getByRole('checkbox', { name: 'Permissions are inherited' }).check();
+		await overlay.getByRole('checkbox', { name: 'Individual rights' }).uncheck();
 		await inheritResponse;
-		await expect(
-			overlay
-				.getByRole('row', { name: 'Bob Bow' })
-				.first()
-				.getByRole('checkbox', { name: 'Read (This object)' })
-		).toBeDisabled();
-		await expect(overlay.getByRole('button', { name: 'Add item' })).toBeDisabled();
+		await expect(inheritedBob).toHaveCount(1);
+		await expect(overlay.getByRole('button', { name: 'Add item' })).toHaveCount(0);
 	});
 });

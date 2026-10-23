@@ -4,13 +4,16 @@
 	import { _ } from 'svelte-i18n';
 	import ChevronDownIcon from '~icons/flowbite/chevron-down-outline';
 	import ChevronRightIcon from '~icons/flowbite/chevron-right-outline';
+	import InfoIcon from '~icons/flowbite/info-circle-outline';
 	import PlusIcon from '~icons/flowbite/plus-outline';
 	import TrashBinIcon from '~icons/flowbite/trash-bin-outline';
 	import UserIcon from '~icons/flowbite/user-outline';
 	import RoleIcon from '~icons/knotdots/arrow-circle-down-outline';
+	import tooltip from '$lib/attachments/tooltip';
 	import saveGrantInheritance from '$lib/client/saveGrantInheritance';
 	import saveGrants from '$lib/client/saveGrants';
 	import BadgeDropdown, { type BadgeDropdownValue } from '$lib/components/BadgeDropdown.svelte';
+	import PermissionCheckbox from '$lib/components/PermissionCheckbox.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -23,6 +26,7 @@
 		grantTargets,
 		grantSetForRole,
 		grantSetForSubjectOn,
+		type InheritedMatrixSection,
 		type MemberRole,
 		memberRoleMatchingGrantSet,
 		memberRoles,
@@ -31,24 +35,27 @@
 	} from '$lib/models';
 
 	interface Props {
+		admins: Readonly<Array<User>>;
 		container: Container<AnyPayload>;
 		editable?: boolean;
 		grants: Readonly<Array<Grant>>;
-		inheritedGrants: Readonly<Array<Grant>>;
-		inheritedUsers: Readonly<Array<User>>;
+		inheritedSections: ReadonlyArray<InheritedMatrixSection>;
+		// may the user edit at all (as opposed to editable: in edit mode now)
+		mayEdit?: boolean;
+		mayManageOrganizationUsers?: boolean;
 		oninvite?: () => void;
-		scope: Container<AnyPayload>;
 		users: Readonly<Array<User>>;
 	}
 
 	let {
+		admins,
 		container,
 		editable = false,
 		grants,
-		inheritedGrants,
-		inheritedUsers,
+		inheritedSections,
+		mayEdit = editable,
+		mayManageOrganizationUsers = false,
 		oninvite,
-		scope,
 		users
 	}: Props = $props();
 
@@ -98,9 +105,15 @@
 	});
 
 	const inherits = $derived(inheritsOverride ?? storedInherits);
+	const viewOnly = $derived(!mayEdit);
 
-	let inheritedExpanded = $state(true);
-	let ownExpanded = $state(true);
+	// expanded states follow the active sections until toggled by hand
+	let adminsExpanded = $state(true);
+	let ownExpandedOverride = $state<boolean | undefined>();
+	let sectionExpandedOverrides = new SvelteMap<string, boolean>();
+	const ownExpanded = $derived(ownExpandedOverride ?? !inherits);
+	const sectionExpanded = (section: (typeof inheritedSections)[number]) =>
+		sectionExpandedOverrides.get(section.scope.guid) ?? section.active;
 
 	const creators = $derived(
 		container.user
@@ -108,11 +121,18 @@
 			.map(({ subject }) => subject)
 	);
 
-	const inheritedRows = $derived(
-		inheritedUsers
-			.map((user) => ({ user, set: grantSetForSubjectOn(inheritedGrants, scope.guid, user.guid) }))
-			.filter(({ set }) => set.self.length > 0 || set.subordinates.length > 0)
-	);
+	function sectionRows(section: (typeof inheritedSections)[number]) {
+		return section.users
+			.map((user) => ({
+				user,
+				set: grantSetForSubjectOn(section.grants, section.scope.guid, user.guid)
+			}))
+			.filter(({ set }) => set.self.length > 0 || set.subordinates.length > 0);
+	}
+
+	function titleOf(c: Container<AnyPayload>) {
+		return 'name' in c.payload ? c.payload.name : 'title' in c.payload ? c.payload.title : '';
+	}
 
 	let setOverrides = new SvelteMap<string, GrantSet>();
 
@@ -187,10 +207,12 @@
 		await save(user, { self: [], subordinates: [] });
 	}
 
-	async function toggleInheritance(checked: boolean) {
-		inheritsOverride = checked;
+	async function toggleIndividualRights(checked: boolean) {
+		inheritsOverride = !checked;
+		ownExpandedOverride = undefined;
+		sectionExpandedOverrides.clear();
 
-		const response = await saveGrantInheritance(container, checked);
+		const response = await saveGrantInheritance(container, !checked);
 
 		if (!response.ok) {
 			inheritsOverride = undefined;
@@ -200,6 +222,12 @@
 
 		await invalidateAll();
 	}
+
+	function cellLabel(kind: GrantKind, groupLabel: string, checked: boolean) {
+		return `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${groupLabel}`)}): ${$_(
+			checked ? 'permission_matrix.granted' : 'permission_matrix.not_granted'
+		)}`;
+	}
 </script>
 
 <div class="table-wrapper wide">
@@ -208,6 +236,16 @@
 			<tr>
 				<th class="col-name" rowspan="2">
 					<span class="header-content">
+						{#if viewOnly}
+							<button
+								aria-label={$_('permission_matrix.view_only')}
+								class="action-button action-button--alternate"
+								type="button"
+								{@attach tooltip($_('permission_matrix.view_only'), { describe: true })}
+							>
+								<InfoIcon />
+							</button>
+						{/if}
 						<UserIcon />
 						<span class="header-label">{$_('user.display_name')}</span>
 					</span>
@@ -239,54 +277,42 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr class="section-row section-row--inherited" class:inactive={!inherits}>
+			<!-- administrators of the surrounding areas always hold every kind -->
+			<tr class="section-row section-row--admins">
 				<td colspan={columnCount + 1}>
 					<span class="section-header">
-						<button
-							aria-expanded={inheritedExpanded}
-							class="section-toggle"
-							type="button"
-							onclick={() => (inheritedExpanded = !inheritedExpanded)}
-						>
-							{#if inheritedExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
-							<span class="section-title">
-								{$_('permission_matrix.inherited_from', {
-									values: {
-										name:
-											'name' in scope.payload
-												? scope.payload.name
-												: 'title' in scope.payload
-													? scope.payload.title
-													: ''
-									}
-								})}
-							</span>
-						</button>
-						<label class="inherit-toggle">
-							<span>{$_('permission_matrix.inherit_toggle')}</span>
-							<input
-								checked={inherits}
-								class="toggle"
-								disabled={!editable}
-								type="checkbox"
-								onchange={(event) => toggleInheritance(event.currentTarget.checked)}
-							/>
-						</label>
+						<span class="section-start">
+							<button
+								aria-expanded={adminsExpanded}
+								class="section-toggle"
+								type="button"
+								onclick={() => (adminsExpanded = !adminsExpanded)}
+							>
+								{#if adminsExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
+								<span class="section-title">{$_('permission_matrix.admins')}</span>
+							</button>
+							<span class="badge section-badge">{$_('permission_matrix.always_all_rights')}</span>
+						</span>
+						{#if mayManageOrganizationUsers}
+							<a class="admins-link" href={`/${container.organization}/user-management`}>
+								{$_('permission_matrix.manage_in_organization')} →
+							</a>
+						{/if}
 					</span>
 				</td>
 			</tr>
-			{#if inheritedExpanded}
-				{#each inheritedRows as { set, user } (user.guid)}
-					<tr class:inactive={!inherits}>
-						<td class="col-name locked">
+			{#if adminsExpanded}
+				{#each admins as user (user.guid)}
+					<tr>
+						<td class="col-name" class:locked={!viewOnly}>
 							<span class="user-cell">
 								<span class="user-name">{displayName(user)}</span>
 							</span>
 						</td>
-						<td class="col-role locked">
+						<td class="col-role" class:locked={!viewOnly}>
 							<BadgeDropdown
 								allowEmpty={false}
-								value={memberRoleMatchingGrantSet(set) ?? undefined}
+								value={memberRoles.enum.administrator}
 								options={roleOptions}
 								editable={false}
 								emptyLabel={$_('role.custom')}
@@ -294,46 +320,72 @@
 						</td>
 						{#each columnGroups as group (group.target)}
 							{#each group.kinds as kind (kind)}
-								<td class="col-grant locked" class:col-group-start={kind === group.kinds[0]}>
-									<input
-										type="checkbox"
-										aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
-										checked={set[group.target].includes(kind)}
-										disabled
+								<td
+									class="col-grant"
+									class:locked={!viewOnly}
+									class:col-group-start={kind === group.kinds[0]}
+								>
+									<PermissionCheckbox
+										ariaLabel={cellLabel(kind, group.label, true)}
+										checked
+										state="readonly"
+										tooltip={viewOnly
+											? $_('permission_matrix.tooltip_readonly')
+											: $_('permission_matrix.always_all_rights')}
 									/>
 								</td>
 							{/each}
 						{/each}
-						<td class="col-actions locked"></td>
+						<td class="col-actions" class:locked={!viewOnly}></td>
 					</tr>
 				{/each}
 			{/if}
-			<tr class="section-row section-row--own">
+
+			<!-- the container's own matrix -->
+			<tr
+				class="section-row section-row--individual {inherits ? '' : 'system-success'}"
+				class:active={!inherits}
+			>
 				<td colspan={columnCount + 1}>
 					<span class="section-header">
-						<button
-							aria-expanded={ownExpanded}
-							class="section-toggle"
-							type="button"
-							onclick={() => (ownExpanded = !ownExpanded)}
-						>
-							{#if ownExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
-							<span class="section-title">
-								{'name' in container.payload
-									? container.payload.name
-									: 'title' in container.payload
-										? container.payload.title
-										: ''}
+						<span class="section-start">
+							<button
+								aria-expanded={ownExpanded}
+								class="section-toggle"
+								type="button"
+								onclick={() => (ownExpandedOverride = !ownExpanded)}
+							>
+								{#if ownExpanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
+								<span class="section-title">
+									{$_('permission_matrix.individual_rights_for', {
+										values: { name: titleOf(container) }
+									})}
+								</span>
+							</button>
+							<span class="badge section-badge">
+								{$_(inherits ? 'permission_matrix.inactive' : 'permission_matrix.active')}
 							</span>
-						</button>
+						</span>
+						{#if editable}
+							<label class="inherit-toggle">
+								<span>{$_('permission_matrix.individual_rights')}</span>
+								<input
+									checked={!inherits}
+									class="toggle"
+									type="checkbox"
+									onchange={(event) => toggleIndividualRights(event.currentTarget.checked)}
+								/>
+							</label>
+						{/if}
 					</span>
 				</td>
 			</tr>
 			{#if ownExpanded}
 				{#each users as user (user.guid)}
 					{@const set = visibleSetFor(user)}
+					{@const cellState = inherits ? 'inactive' : editable ? 'editable' : 'readonly'}
 					<tr>
-						<td class="col-name">
+						<td class="col-name" class:locked={!viewOnly && inherits}>
 							<span class="user-cell">
 								<span class="user-name">{displayName(user)}</span>
 								{#if creators.includes(user.guid)}
@@ -341,7 +393,7 @@
 								{/if}
 							</span>
 						</td>
-						<td class="col-role">
+						<td class="col-role" class:locked={!viewOnly && inherits}>
 							<BadgeDropdown
 								allowEmpty={false}
 								value={memberRoleMatchingGrantSet(set) ?? undefined}
@@ -353,19 +405,29 @@
 						</td>
 						{#each columnGroups as group (group.target)}
 							{#each group.kinds as kind (kind)}
-								<td class="col-grant" class:col-group-start={kind === group.kinds[0]}>
-									<input
-										type="checkbox"
-										aria-label={`${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`}
-										checked={set[group.target].includes(kind)}
-										disabled={!editable || inherits}
-										onchange={(event) =>
-											toggleKind(user, group.target, kind, event.currentTarget.checked)}
+								{@const checked = set[group.target].includes(kind)}
+								<td
+									class="col-grant"
+									class:locked={!viewOnly && inherits}
+									class:col-group-start={kind === group.kinds[0]}
+								>
+									<PermissionCheckbox
+										ariaLabel={cellState === 'editable'
+											? `${$_(`permission.${kind}`)} (${$_(`permission_matrix.${group.label}`)})`
+											: cellLabel(kind, group.label, checked)}
+										{checked}
+										state={cellState}
+										tooltip={cellState === 'inactive'
+											? $_('permission_matrix.tooltip_dormant_own')
+											: cellState === 'readonly' && viewOnly
+												? $_('permission_matrix.tooltip_readonly')
+												: undefined}
+										onchange={(value) => toggleKind(user, group.target, kind, value)}
 									/>
 								</td>
 							{/each}
 						{/each}
-						<td class="col-actions">
+						<td class="col-actions" class:locked={!viewOnly && inherits}>
 							{#if editable && !inherits}
 								<button
 									aria-label={$_('user.remove')}
@@ -379,12 +441,11 @@
 						</td>
 					</tr>
 				{/each}
-				{#if oninvite}
+				{#if oninvite && editable && !inherits}
 					<tr class="add-row">
 						<td colspan={columnCount + 1}>
 							<button
 								class="button-alternate button-xs system-primary"
-								disabled={!editable || inherits}
 								type="button"
 								onclick={oninvite}
 							>
@@ -395,6 +456,84 @@
 					</tr>
 				{/if}
 			{/if}
+
+			<!-- the governing matrices, one section each; they apply beside the
+			     container's own rows, a dormant area section once it inherits -->
+			{#each inheritedSections as section (section.scope.guid)}
+				{@const expanded = sectionExpanded(section)}
+				<tr
+					class="section-row section-row--inherited {section.active ? 'system-success' : ''}"
+					class:active={section.active}
+				>
+					<td colspan={columnCount + 1}>
+						<span class="section-header">
+							<span class="section-start">
+								<button
+									aria-expanded={expanded}
+									class="section-toggle"
+									type="button"
+									onclick={() => sectionExpandedOverrides.set(section.scope.guid, !expanded)}
+								>
+									{#if expanded}<ChevronDownIcon />{:else}<ChevronRightIcon />{/if}
+									<span class="section-title">
+										{$_('permission_matrix.inherited_from', {
+											values: { name: section.scope.title }
+										})}
+									</span>
+								</button>
+								<span class="badge section-badge">
+									{$_(section.active ? 'permission_matrix.active' : 'permission_matrix.inactive')}
+								</span>
+							</span>
+						</span>
+					</td>
+				</tr>
+				{#if expanded}
+					{#each sectionRows(section) as { set, user } (user.guid)}
+						{@const cellState = section.active ? 'readonly' : 'inactive'}
+						<tr>
+							<td class="col-name" class:locked={!viewOnly}>
+								<span class="user-cell">
+									<span class="user-name">{displayName(user)}</span>
+								</span>
+							</td>
+							<td class="col-role" class:locked={!viewOnly}>
+								<BadgeDropdown
+									allowEmpty={false}
+									value={memberRoleMatchingGrantSet(set) ?? undefined}
+									options={roleOptions}
+									editable={false}
+									emptyLabel={$_('role.custom')}
+								/>
+							</td>
+							{#each columnGroups as group (group.target)}
+								{#each group.kinds as kind (kind)}
+									{@const checked = set[group.target].includes(kind)}
+									<td
+										class="col-grant"
+										class:locked={!viewOnly}
+										class:col-group-start={kind === group.kinds[0]}
+									>
+										<PermissionCheckbox
+											ariaLabel={cellLabel(kind, group.label, checked)}
+											{checked}
+											state={cellState}
+											tooltip={cellState === 'inactive'
+												? $_('permission_matrix.tooltip_dormant')
+												: viewOnly
+													? $_('permission_matrix.tooltip_readonly')
+													: $_('permission_matrix.tooltip_inherited', {
+															values: { name: section.scope.title }
+														})}
+										/>
+									</td>
+								{/each}
+							{/each}
+							<td class="col-actions" class:locked={!viewOnly}></td>
+						</tr>
+					{/each}
+				{/if}
+			{/each}
 		</tbody>
 	</table>
 </div>
@@ -427,7 +566,7 @@
 	}
 
 	th.col-group {
-		border-left: 1px solid var(--color-gray-100);
+		border-left: 1px solid var(--color-border-subtle);
 		font-weight: 500;
 		height: 2.5rem;
 		text-align: left;
@@ -439,8 +578,8 @@
 
 	th,
 	td {
-		border-bottom: 1px solid var(--color-gray-100);
-		border-right: 1px solid var(--color-gray-100);
+		border-bottom: 1px solid var(--color-border-subtle);
+		border-right: 1px solid var(--color-border-subtle);
 		padding: 0.5rem;
 		white-space: nowrap;
 	}
@@ -454,7 +593,7 @@
 	td.col-role,
 	th.col-role,
 	.col-group-start {
-		border-left: 1px solid var(--color-gray-100);
+		border-left: 1px solid var(--color-border-subtle);
 	}
 
 	/* the empty actions header reads as part of the preceding cell */
@@ -463,20 +602,20 @@
 	}
 
 	th {
-		color: var(--color-gray-600);
+		color: var(--color-text-default);
 		font-weight: 400;
 		height: 2.5rem;
 	}
 
 	td {
-		color: var(--color-gray-800);
+		color: var(--color-text-strong);
 		font-weight: 500;
 		height: 3.125rem;
 		padding: 0.625rem 0.5rem;
 	}
 
-	/* the hatched rows mark the inherited matrix as read-only; the pattern of
-	   the Figma component (#fff5f5/#ffebeb), overlaid at 75% like in the design */
+	/* the hatched cells mark locked rows; the pattern of the Figma component
+	   (#fff5f5/#ffebeb), overlaid at 75% like in the design */
 	td.locked {
 		background: repeating-linear-gradient(
 			45deg,
@@ -488,19 +627,10 @@
 		cursor: not-allowed;
 	}
 
-	/* the inherited matrix no longer applies once inheritance is disabled */
-	tr.inactive td {
-		opacity: 0.5;
-	}
-
-	tr.inactive .user-name,
-	tr.inactive .section-title {
-		text-decoration: line-through;
-	}
-
 	tr.section-row td {
 		border-left: none;
 		border-right: none;
+		height: 3rem;
 		padding: 0.75rem 0.5rem;
 	}
 
@@ -508,43 +638,32 @@
 		border: none;
 	}
 
+	/* the group heads take their colors from the system mode of the row:
+	   .system-success while the group is active, the base mode otherwise */
+	tr.section-row--individual td,
 	tr.section-row--inherited td {
-		background-color: var(--color-green-025);
-		border-bottom: 1px solid var(--color-green-050);
-		border-top: 1px solid var(--color-green-050);
-		height: 2.5rem;
+		background-color: var(--color-surface-accent-container);
+		border-bottom: 1px solid var(--color-border-accent-muted);
+		border-top: 1px solid var(--color-border-accent-muted);
 	}
 
+	tr.section-row--individual .section-toggle,
 	tr.section-row--inherited .section-toggle {
-		color: var(--color-green-700);
+		color: var(--color-text-accent-default);
 	}
 
-	tr.section-row--inherited .inherit-toggle {
-		background-color: var(--color-green-025);
-		color: var(--color-green-900);
+	tr.section-row--admins td {
+		background-color: var(--color-surface-container-raised);
+		border-bottom: 1px solid var(--color-border-subtle);
 	}
 
-	tr.section-row--inherited.inactive td {
-		background-color: var(--color-gray-025);
-		border-bottom: 1px solid var(--color-gray-050);
-		border-top: 1px solid var(--color-gray-050);
-		opacity: 1;
+	tr.section-row--admins .section-toggle {
+		color: var(--color-text-strong);
+		font-weight: 600;
 	}
 
-	tr.section-row--inherited.inactive .section-toggle {
-		color: var(--color-gray-700);
-	}
-
-	tr.section-row--inherited.inactive .inherit-toggle {
-		background-color: var(--color-gray-025);
-		color: var(--color-gray-900);
-	}
-
-	tr.section-row--own td {
-		border-bottom: 1px solid var(--color-gray-050);
-		border-top: 1px solid var(--color-gray-050);
-		height: 3rem;
-		padding: 0.5rem;
+	tr.section-row--admins .section-toggle :global(svg) {
+		color: var(--color-icon-strong);
 	}
 
 	.section-header {
@@ -554,11 +673,22 @@
 		justify-content: space-between;
 	}
 
+	.section-start {
+		align-items: center;
+		display: inline-flex;
+		gap: 0.375rem;
+	}
+
+	.section-badge {
+		--badge-background-color: var(--color-background-accent-subtle);
+		--badge-color: var(--color-text-accent-default);
+	}
+
 	.section-toggle {
 		align-items: center;
 		background: none;
 		border: none;
-		color: var(--color-gray-700);
+		color: var(--color-text-default);
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.375rem;
@@ -566,47 +696,35 @@
 	}
 
 	.section-toggle :global(svg) {
+		color: var(--color-icon-accent-default);
 		height: 1rem;
 		width: 1rem;
 	}
 
+	.admins-link {
+		background-color: var(--color-surface-container-raised);
+		color: var(--color-text-link);
+		padding-left: 0.5rem;
+		position: sticky;
+		right: 0.5rem;
+	}
+
 	.inherit-toggle {
 		align-items: center;
+		background-color: var(--color-surface-accent-container);
+		color: var(--color-text-accent-strong);
 		display: inline-flex;
 		font-weight: 500;
 		gap: 0.5rem;
 		padding-left: 0.5rem;
 		position: sticky;
-		right: calc(0.5rem);
+		right: 0.5rem;
 	}
 
 	.inherit-toggle .toggle {
 		--height: 1.2rem;
 		--padding: 0.15rem;
 		--width: 2.7rem;
-
-		background-color: var(--color-gray-300);
-	}
-
-	.inherit-toggle .toggle:checked {
-		background-color: var(--color-green-700);
-	}
-
-	.inherit-toggle .toggle:disabled {
-		background-color: var(--color-gray-300);
-	}
-
-	.inherit-toggle .toggle:checked:disabled {
-		background-color: var(--color-green-700);
-	}
-
-	td.locked input[type='checkbox'] {
-		cursor: not-allowed;
-	}
-
-	tr.inactive input[type='checkbox']:not(.toggle):checked {
-		background-color: var(--color-gray-400);
-		border-color: var(--color-gray-400);
 	}
 
 	.header-content {
@@ -619,6 +737,11 @@
 		height: 1rem;
 		flex-shrink: 0;
 		width: 1rem;
+	}
+
+	.header-content .action-button {
+		height: 1.75rem;
+		padding: 0.375rem;
 	}
 
 	.header-label {
