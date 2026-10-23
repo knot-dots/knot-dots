@@ -5,6 +5,7 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
+	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -49,8 +50,15 @@
 		'createContainerDialog'
 	);
 
+	// Inside a measure, items need a template scoped to it once templating is on.
+	const templateAvailability = createCreationTemplateAvailability(() =>
+		editable ? createItem() : undefined
+	);
+
 	let mayAddItem = $derived(
-		editable && $mayCreateContainer(container.payload.payloadType, container)
+		editable &&
+			$mayCreateContainer(container.payload.payloadType, container) &&
+			templateAvailability.has(container.payload.payloadType)
 	);
 
 	function createItem() {
