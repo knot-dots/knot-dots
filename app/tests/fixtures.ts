@@ -14,24 +14,25 @@ import {
 	type EffectPayload,
 	etag,
 	type GoalPayload,
-	type GoalCollectionPayload,
 	type IndicatorPayload,
+	listTypes,
 	type MeasurePayload,
 	type NewContainer,
 	type ObjectivePayload,
 	type OrganizationalUnitPayload,
 	type OrganizationPayload,
+	type PayloadType,
 	payloadTypes,
 	type Predicate,
 	predicates,
 	type ProgramPayload,
 	programTypes,
+	type RelationCollectionPayload,
 	type ReportPayload,
 	type ResourceDataPayload,
 	resourceDataTypes,
 	type ResourceV2Payload,
 	type SimpleMeasurePayload,
-	type TaskCollectionPayload,
 	type TaskPayload,
 	type TermPayload,
 	type TextPayload
@@ -58,8 +59,8 @@ type MyFixtures = {
 	programReportTemplate: Container<ReportPayload>;
 	measureGoalTemplate: Container<GoalPayload>;
 	measureMeasureTemplate: Container<MeasurePayload>;
-	measureGoalCollection: Container<GoalCollectionPayload>;
-	simpleMeasureGoalCollection: Container<GoalCollectionPayload>;
+	measureGoalCollection: Container<RelationCollectionPayload>;
+	simpleMeasureGoalCollection: Container<RelationCollectionPayload>;
 	simpleMeasureGoalTemplate: Container<GoalPayload>;
 	reportTemplate: Container<ReportPayload>;
 	resourceCatalog: ResourceCatalog;
@@ -97,7 +98,7 @@ type MyFixtures = {
 	testSubordinateMeasureResourceData: Container<ResourceDataPayload>;
 	testSubordinateMeasureResourceDataOtherResource: Container<ResourceDataPayload>;
 	testTask: Container<TaskPayload>;
-	testTaskCollection: Container<TaskCollectionPayload>;
+	testTaskCollection: Container<RelationCollectionPayload>;
 };
 
 type MyWorkerFixtures = {
@@ -271,6 +272,32 @@ export async function deleteContainer(context: BrowserContext, container: Contai
 	const currentVersion = await response.json();
 	await context.request.delete(`/container/${container.guid}`, {
 		headers: { 'If-Match': etag(currentVersion) }
+	});
+}
+
+// A relation section of the parent that lists the given items.
+export async function createRelationSection(
+	context: BrowserContext,
+	parent: Container<AnyPayload>,
+	payloadType: PayloadType,
+	title: string,
+	items: Container<AnyPayload>[] = []
+) {
+	const draft = containerOfType(
+		payloadTypes.enum.relation_collection,
+		parent
+	) as NewContainer<RelationCollectionPayload>;
+	return createContainer(context, {
+		...draft,
+		payload: {
+			...draft.payload,
+			item: items.map(({ guid }) => guid),
+			listType: listTypes.enum.carousel,
+			payloadType,
+			predicate: predicates.enum['is-part-of'],
+			title
+		},
+		relation: [{ object: parent.guid, position: 0, predicate: predicates.enum['is-section-of'] }]
 	});
 }
 
@@ -539,16 +566,12 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(new ProgramPage(page));
 	},
 	measureGoalCollection: async ({ adminContext, testMeasure }, use) => {
-		const draft = containerOfType(
-			payloadTypes.enum.goal_collection,
-			testMeasure
-		) as NewContainer<GoalCollectionPayload>;
-		const section = await createContainer(adminContext, {
-			...draft,
-			relation: [
-				{ object: testMeasure.guid, predicate: predicates.enum['is-section-of'], position: 0 }
-			]
-		});
+		const section = await createRelationSection(
+			adminContext,
+			testMeasure,
+			payloadTypes.enum.goal,
+			'Goals'
+		);
 		await use(section);
 		await deleteContainer(adminContext, section);
 	},
@@ -607,16 +630,12 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await deleteContainer(adminContext, measure);
 	},
 	simpleMeasureGoalCollection: async ({ adminContext, testSimpleMeasure }, use) => {
-		const draft = containerOfType(
-			payloadTypes.enum.goal_collection,
-			testSimpleMeasure
-		) as NewContainer<GoalCollectionPayload>;
-		const section = await createContainer(adminContext, {
-			...draft,
-			relation: [
-				{ object: testSimpleMeasure.guid, predicate: predicates.enum['is-section-of'], position: 0 }
-			]
-		});
+		const section = await createRelationSection(
+			adminContext,
+			testSimpleMeasure,
+			payloadTypes.enum.goal,
+			'Goals'
+		);
 		await use(section);
 	},
 	simpleMeasureGoalTemplate: async (
@@ -1270,25 +1289,21 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testSubordinateMeasureResourceDataOtherResource);
 		await deleteContainer(adminContext, testSubordinateMeasureResourceDataOtherResource);
 	},
-	testTaskCollection: async ({ adminContext, testGoal }, use) => {
-		const newTaskCollection = containerOfType(
-			payloadTypes.enum.task_collection,
-			testGoal
-		) as Container<TaskCollectionPayload>;
-		const testTaskCollection = await createContainer(adminContext, {
-			...newTaskCollection,
-			relation: [
-				{ position: 0, predicate: predicates.enum['is-section-of'], object: testGoal.guid }
-			]
-		});
+	testTaskCollection: async ({ adminContext, testGoal, testTask }, use) => {
+		const testTaskCollection = await createRelationSection(
+			adminContext,
+			testGoal,
+			payloadTypes.enum.task,
+			'Tasks',
+			[testTask]
+		);
 
 		await use(testTaskCollection);
+
+		await deleteContainer(adminContext, testTaskCollection);
 	},
-	testTask: async ({ adminContext, testTaskCollection, testGoal }, use, workerInfo) => {
-		const newTask = containerOfType(
-			payloadTypes.enum.task,
-			testTaskCollection
-		) as Container<TaskPayload>;
+	testTask: async ({ adminContext, testGoal }, use, workerInfo) => {
+		const newTask = containerOfType(payloadTypes.enum.task, testGoal) as Container<TaskPayload>;
 		const testTask = await createContainer(adminContext, {
 			...newTask,
 			payload: {
