@@ -14,12 +14,16 @@
 		type Container,
 		containerOfType,
 		isContainerWithCategory,
+		isMeasureContainer,
+		isSimpleMeasureContainer,
 		listTypes,
 		type NewContainer,
 		payloadTypes,
+		predicates,
 		type RelationCollectionPayload
 	} from '$lib/models';
 	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
+	import { getDirectMeasureGuids } from '$lib/templateScopes';
 
 	interface Props {
 		container: Container<RelationCollectionPayload>;
@@ -49,20 +53,31 @@
 		editable && $mayCreateContainer(container.payload.payloadType, container)
 	);
 
-	function addItem() {
-		$newContainer = {
-			...containerOfType(container.payload.payloadType, parentContainer),
-			relation: [
-				{
-					object: parentContainer.guid,
-					position: 0,
-					predicate: container.payload.predicate
-				}
-			]
-		} as NewContainer;
+	function createItem() {
+		const item = containerOfType(container.payload.payloadType, parentContainer) as NewContainer;
 
-		if (isContainerWithCategory($newContainer) && isContainerWithCategory(parentContainer)) {
-			$newContainer.payload.category = Object.fromEntries(
+		// Items of a measure also belong to it as a measure part; items of a goal
+		// inherit the goal's measures, which scopes templates and workspaces.
+		const measureGuids =
+			isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)
+				? [parentContainer.guid]
+				: getDirectMeasureGuids(parentContainer);
+
+		item.relation = [
+			{
+				object: parentContainer.guid,
+				position: 0,
+				predicate: container.payload.predicate
+			},
+			...measureGuids.map((object) => ({
+				object,
+				position: 0,
+				predicate: predicates.enum['is-part-of-measure']
+			}))
+		];
+
+		if (isContainerWithCategory(item) && isContainerWithCategory(parentContainer)) {
+			item.payload.category = Object.fromEntries(
 				Object.entries(parentContainer.payload.category).filter(([key]) =>
 					page.data.categoryContext.objectTypesPerKey[key]?.some(
 						(t) => t === container.payload.payloadType
@@ -70,6 +85,18 @@
 				)
 			);
 		}
+
+		if (isMeasureContainer(item) && isMeasureContainer(parentContainer)) {
+			item.payload.hierarchyLevel = parentContainer.payload.hierarchyLevel + 1;
+			item.payload.status = parentContainer.payload.status;
+			item.payload.visibility = parentContainer.payload.visibility;
+		}
+
+		return item;
+	}
+
+	function addItem() {
+		$newContainer = createItem();
 
 		$addItemState = { target: container };
 
