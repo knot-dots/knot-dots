@@ -73,6 +73,7 @@ type MyFixtures = {
 	testGoal: Container<GoalPayload>;
 	testGoalBudget: Container<ResourceDataPayload>;
 	testIndicator: Container<IndicatorPayload>;
+	testProgramIndicator: Container<IndicatorPayload>;
 	testIndividualProfile: Container<OrganizationalUnitPayload>;
 	testMeasure: Container<MeasurePayload>;
 	testSimpleMeasure: Container<SimpleMeasurePayload>;
@@ -940,6 +941,103 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testIndicator);
 
 		await deleteContainer(adminContext, testIndicator);
+	},
+	// Indicator with actual data, an effect of a measure of the program and an objective of a goal
+	// of the program
+	testProgramIndicator: async (
+		{ adminContext, testMeasure, testOrganization, testProgram },
+		use
+	) => {
+		const newIndicator = containerOfType(
+			payloadTypes.enum.indicator,
+			testOrganization
+		) as Container<IndicatorPayload>;
+		const indicator = await createContainer(adminContext, {
+			...newIndicator,
+			payload: {
+				...newIndicator.payload,
+				title: 'Indicator Of Program',
+				unit: 'unit.ton'
+			}
+		});
+
+		const newActualData = containerOfType(
+			payloadTypes.enum.actual_data,
+			testOrganization
+		) as Container<ActualDataPayload>;
+		const actualData = await createContainer(adminContext, {
+			...newActualData,
+			payload: {
+				...newActualData.payload,
+				indicator: indicator.guid,
+				title: indicator.payload.title,
+				values: [
+					[2024, 100],
+					[2025, 90]
+				]
+			}
+		});
+
+		const newEffect = containerOfType(
+			payloadTypes.enum.effect,
+			testOrganization
+		) as Container<EffectPayload>;
+		const effect = await createContainer(adminContext, {
+			...newEffect,
+			payload: {
+				...newEffect.payload,
+				iooiType: 'iooi.output',
+				plannedValues: [[2025, -10]],
+				title: 'Effect Of Program'
+			},
+			relation: [
+				{ object: testMeasure.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+				{ object: indicator.guid, position: 1, predicate: predicates.enum['is-measured-by'] }
+			]
+		});
+
+		const newGoal = containerOfType(payloadTypes.enum.goal, testProgram) as Container<GoalPayload>;
+		const goal = await createProgramContainerFromTemplate(
+			adminContext,
+			{
+				...newGoal,
+				payload: { ...newGoal.payload, title: 'Goal Of Program' },
+				relation: [
+					{
+						object: testProgram.guid,
+						position: 0,
+						predicate: predicates.enum['is-part-of-program']
+					}
+				]
+			},
+			testProgram
+		);
+
+		const newObjective = containerOfType(
+			payloadTypes.enum.objective,
+			testOrganization
+		) as Container<ObjectivePayload>;
+		const objective = await createContainer(adminContext, {
+			...newObjective,
+			payload: {
+				...newObjective.payload,
+				iooiType: 'iooi.output',
+				title: 'Objective Of Program',
+				wantedValues: [[2025, -15]]
+			},
+			relation: [
+				{ object: goal.guid, position: 0, predicate: predicates.enum['is-part-of'] },
+				{ object: indicator.guid, position: 1, predicate: predicates.enum['is-objective-for'] }
+			]
+		});
+
+		await use(indicator);
+
+		await deleteContainer(adminContext, objective);
+		await deleteContainer(adminContext, goal);
+		await deleteContainer(adminContext, effect);
+		await deleteContainer(adminContext, actualData);
+		await deleteContainer(adminContext, indicator);
 	},
 	testObjective: async (
 		{ adminContext, testOrganization, testGoal, testIndicator },

@@ -153,3 +153,23 @@ test('activate selected indicators', async ({ indicatorCatalog, testIndicator })
 		indicatorCatalog.overlay.locator.getByRole('row', { name: 'Custom actual data' })
 	).toBeVisible();
 });
+
+test('show actual data in the indicator catalog of a program', async ({
+	indicatorCatalog,
+	testOrganization,
+	testProgram,
+	testProgramIndicator
+}) => {
+	await indicatorCatalog.page.goto(
+		`/${testOrganization.guid}/${testProgram.guid}/indicators/catalog`
+	);
+
+	// With the actual values of 100 and 90, the value axis reaches 100. The effect and the
+	// objective alone would stay around zero.
+	await expect(
+		indicatorCatalog
+			.card(testProgramIndicator.payload.title)
+			.locator('[aria-label="y-axis tick label"] text')
+			.filter({ hasText: /^100$/ })
+	).toBeVisible();
+});
