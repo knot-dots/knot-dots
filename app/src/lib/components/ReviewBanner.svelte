@@ -27,6 +27,10 @@
 		[true, 'fulfilled'],
 		[false, 'unfulfilled']
 	]);
+
+	function targetText(target: Target) {
+		return $_('review_banner.target', { values: { target: targetNames.get(target) } });
+	}
 </script>
 
 <section
@@ -44,22 +48,36 @@
 		</p>
 	</header>
 
-	<ul>
-		{#each programRows as { container, status, target } (container.guid)}
+	<ul class="programs">
+		{#each programRows as { container, goals, status, target } (container.guid)}
 			<li>
-				{#if isAssessed(status)}
+				{#if goals.length === 0 && isAssessed(status)}
 					<TargetCheck {status} />
 				{/if}
 				<div>
 					<a href={overlayURL(page.url, overlayKey.enum.view, container.guid)}>
 						{container.payload.title}
 					</a>
-					{#if status === 'review_status.no_target'}
+					{#if goals.length > 0}
+						<ul class="goals">
+							{#each goals as { goal, status, target } (goal.guid)}
+								<li>
+									<TargetCheck {status} />
+									<div>
+										<a href={overlayURL(page.url, overlayKey.enum.view, goal.guid)}>
+											{goal.payload.title}
+										</a>
+										{#if target !== undefined}
+											<span>{targetText(target)}</span>
+										{/if}
+									</div>
+								</li>
+							{/each}
+						</ul>
+					{:else if status === 'review_status.no_target'}
 						<span>{$_('review_banner.no_target')}</span>
 					{:else if target !== undefined}
-						<span>
-							{$_('review_banner.target', { values: { target: targetNames.get(target) } })}
-						</span>
+						<span>{targetText(target)}</span>
 					{/if}
 				</div>
 			</li>
@@ -116,10 +134,18 @@
 
 	ul {
 		display: flex;
-		flex: 1;
 		flex-direction: column;
-		gap: 0.75rem;
+	}
+
+	.programs {
+		flex: 1;
+		gap: 1rem;
 		min-width: 12rem;
+	}
+
+	.goals {
+		gap: 0.5rem;
+		padding-top: 0.25rem;
 	}
 
 	li {
@@ -128,11 +154,15 @@
 		gap: 0.5rem;
 	}
 
-	/* The program rows use the small icon size */
+	/* Program and goal rows use the small icon size */
 	li > :global(.target-check) {
 		flex-shrink: 0;
 		height: 1.3125rem;
 		width: 1rem;
+	}
+
+	.goals li > :global(.target-check) {
+		height: 1.125rem;
 	}
 
 	li > :global(.target-check svg) {
@@ -153,6 +183,10 @@
 		font-weight: 500;
 		line-height: 1.5;
 		text-decoration: underline;
+	}
+
+	.goals a {
+		font-size: 0.75rem;
 	}
 
 	span {

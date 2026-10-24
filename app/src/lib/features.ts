@@ -84,7 +84,8 @@ export function createFeatureDecisions(features: string[]) {
 		useTimeline() {
 			return features.includes('Timeline');
 		},
-		useTrafficLight() {
+		// The flag keeps its former name, as users have stored it in their settings
+		useIndicatorReview() {
 			return features.includes('TrafficLight');
 		}
 	} satisfies Record<string, () => boolean>;

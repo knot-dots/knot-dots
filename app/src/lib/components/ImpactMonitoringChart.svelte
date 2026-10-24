@@ -274,7 +274,7 @@
 </script>
 
 {#if actualDataContainer.length > 0 || effects.length > 0 || objectives.length > 0}
-	<figure>
+	<figure class="chart">
 		<div role="img" {@attach chart}></div>
 
 		{#if actualDataContainer[0]?.payload.source}

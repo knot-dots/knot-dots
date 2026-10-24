@@ -4,9 +4,9 @@
 	import { pushState } from '$app/navigation';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
-	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
+	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -83,7 +83,7 @@
 	mayAddItem={$mayCreateContainer(payloadTypes.enum.effect, container) && editable}
 >
 	{#snippet itemSnippet(item)}
-		<Card
+		<ObjectiveOrEffectCard
 			container={item}
 			ignoreBulkActionContext
 			relatedContainers={relatedContainers.filter(({ relation }) =>

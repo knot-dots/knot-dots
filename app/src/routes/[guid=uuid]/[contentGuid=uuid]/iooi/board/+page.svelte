@@ -30,7 +30,7 @@
 <PageLayout>
 	<FullscreenLayout>
 		{#snippet header()}
-			<Header />
+			<Header review />
 		{/snippet}
 
 		{#snippet main()}
