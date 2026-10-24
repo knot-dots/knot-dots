@@ -138,7 +138,15 @@ export const GET = (async ({ locals, params, url }) => {
 					)
 				);
 			}
-		} else if (isProgramContainer(container)) {
+		} else if (
+			isProgramContainer(container) &&
+			[
+				predicates.enum['is-part-of'],
+				predicates.enum['is-part-of-measure'],
+				predicates.enum['is-part-of-program'],
+				predicates.enum['is-section-of']
+			].some((p) => parseResult.data.relationType.includes(p))
+		) {
 			containers = await locals.pool.connect(
 				getAllContainersRelatedToProgram(container.guid, {
 					customCategories,
