@@ -5,6 +5,8 @@
 	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
+	import createCreationTemplateAvailability from '$lib/client/createCreationTemplateAvailability.svelte';
+	import withOptimistic from '$lib/client/withOptimistic';
 	import AutoresizingTextarea from '$lib/components/AutoresizingTextarea.svelte';
 	import Card from '$lib/components/Card.svelte';
 	import Carousel from '$lib/components/Carousel.svelte';
@@ -14,12 +16,24 @@
 		type Container,
 		containerOfType,
 		isContainerWithCategory,
+		isMeasureContainer,
+		isSimpleMeasureContainer,
 		listTypes,
 		type NewContainer,
 		payloadTypes,
+		predicates,
 		type RelationCollectionPayload
 	} from '$lib/models';
-	import { ability, addItemState, mayCreateContainer, newContainer } from '$lib/stores';
+	import {
+		ability,
+		addItemState,
+		lastCreatedContainers,
+		lastDeletedContainers,
+		lastUpdatedContainers,
+		mayCreateContainer,
+		newContainer
+	} from '$lib/stores';
+	import { getDirectMeasureGuids } from '$lib/templateScopes';
 
 	interface Props {
 		container: Container<RelationCollectionPayload>;
@@ -37,32 +51,56 @@
 		relatedContainers = $bindable()
 	}: Props = $props();
 
+	// Items created from this section show up before the parent refetches its relations.
 	let items = $derived(
-		relatedContainers.filter(({ guid }) => container.payload.item.includes(guid))
+		withOptimistic(
+			relatedContainers,
+			$lastCreatedContainers,
+			$lastDeletedContainers,
+			$lastUpdatedContainers
+		).filter(({ guid }) => container.payload.item.includes(guid))
 	);
 
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
 	);
 
-	let mayAddItem = $derived(
-		editable && $mayCreateContainer(container.payload.payloadType, container)
+	// Inside a measure, items need a template scoped to it once templating is on.
+	const templateAvailability = createCreationTemplateAvailability(() =>
+		editable ? createItem() : undefined
 	);
 
-	function addItem() {
-		$newContainer = {
-			...containerOfType(container.payload.payloadType, parentContainer),
-			relation: [
-				{
-					object: parentContainer.guid,
-					position: 0,
-					predicate: container.payload.predicate
-				}
-			]
-		} as NewContainer;
+	let mayAddItem = $derived(
+		editable &&
+			$mayCreateContainer(container.payload.payloadType, container) &&
+			templateAvailability.has(container.payload.payloadType)
+	);
 
-		if (isContainerWithCategory($newContainer) && isContainerWithCategory(parentContainer)) {
-			$newContainer.payload.category = Object.fromEntries(
+	function createItem() {
+		const item = containerOfType(container.payload.payloadType, parentContainer) as NewContainer;
+
+		// Items of a measure also belong to it as a measure part; items of a goal
+		// inherit the goal's measures, which scopes templates and workspaces.
+		const measureGuids =
+			isMeasureContainer(parentContainer) || isSimpleMeasureContainer(parentContainer)
+				? [parentContainer.guid]
+				: getDirectMeasureGuids(parentContainer);
+
+		item.relation = [
+			{
+				object: parentContainer.guid,
+				position: 0,
+				predicate: container.payload.predicate
+			},
+			...measureGuids.map((object) => ({
+				object,
+				position: 0,
+				predicate: predicates.enum['is-part-of-measure']
+			}))
+		];
+
+		if (isContainerWithCategory(item) && isContainerWithCategory(parentContainer)) {
+			item.payload.category = Object.fromEntries(
 				Object.entries(parentContainer.payload.category).filter(([key]) =>
 					page.data.categoryContext.objectTypesPerKey[key]?.some(
 						(t) => t === container.payload.payloadType
@@ -70,6 +108,18 @@
 				)
 			);
 		}
+
+		if (isMeasureContainer(item) && isMeasureContainer(parentContainer)) {
+			item.payload.hierarchyLevel = parentContainer.payload.hierarchyLevel + 1;
+			item.payload.status = parentContainer.payload.status;
+			item.payload.visibility = parentContainer.payload.visibility;
+		}
+
+		return item;
+	}
+
+	function addItem() {
+		$newContainer = createItem();
 
 		$addItemState = { target: container };
 

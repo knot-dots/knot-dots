@@ -44,10 +44,9 @@ test('measure creation requires its own template and preserves program managemen
 	measureGoalCollection,
 	testProgramGoalTemplate
 }) => {
-	void measureGoalCollection;
 	const measurePage = new MeasurePage(dotsBoard.page);
 	await measurePage.goto(testMeasure);
-	const dialog = await measurePage.createGoal();
+	const dialog = await measurePage.createItem(measureGoalCollection);
 	await expect(dialog).toBeVisible();
 	await expect(dialog.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
 	await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
@@ -79,7 +78,9 @@ test('measure creation requires its own template and preserves program managemen
 		await expect(async () => {
 			await dotsBoard.page.reload();
 			await expect(
-				measurePage.goals.getByTitle('Instantiated measure goal', { exact: true })
+				measurePage
+					.section(measureGoalCollection)
+					.getByTitle('Instantiated measure goal', { exact: true })
 			).toBeVisible();
 		}).toPass({ timeout: 20000 });
 	} finally {
@@ -136,11 +137,10 @@ test('measure with no scoped templates hides goal creation', async ({
 	testMeasure,
 	measureGoalCollection
 }) => {
-	void measureGoalCollection;
 	const measurePage = new MeasurePage(dotsBoard.page);
 	await measurePage.goto(testMeasure);
-	await expect(measurePage.goals).toBeVisible();
-	await expect(measurePage.addGoalButton).toHaveCount(0);
+	await expect(measurePage.section(measureGoalCollection)).toBeVisible();
+	await expect(measurePage.addItemButton(measureGoalCollection)).toHaveCount(0);
 });
 
 test('simple measures use their scoped templates for creation', async ({
@@ -149,10 +149,9 @@ test('simple measures use their scoped templates for creation', async ({
 	simpleMeasureGoalCollection,
 	simpleMeasureGoalTemplate
 }) => {
-	void simpleMeasureGoalCollection;
 	const measurePage = new MeasurePage(dotsBoard.page);
 	await measurePage.goto(testSimpleMeasure);
-	const dialog = await measurePage.createGoal();
+	const dialog = await measurePage.createItem(simpleMeasureGoalCollection);
 	await expect(
 		dialog.getByRole('article').filter({ hasText: simpleMeasureGoalTemplate.payload.title })
 	).toBeVisible();

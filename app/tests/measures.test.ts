@@ -103,11 +103,21 @@ test.describe('Measures section', () => {
 			(r) => r.url().includes('/copy') && r.request().method() === 'POST'
 		);
 		await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
-		await saveResponse;
+		const subMeasure = await (await saveResponse).json();
+
+		// The sub-measure belongs to the measure as a part
+		expect(subMeasure.relation).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ object: testMeasure.guid, predicate: 'is-part-of' }),
+				expect.objectContaining({ object: testMeasure.guid, predicate: 'is-part-of-measure' })
+			])
+		);
 
 		await dotsBoard.overlay.backButton.click();
 		await expect(dotsBoard.overlay.title).toHaveText(testMeasure.payload.title);
-		await expect(subMeasureSection.getByRole('heading', { level: 2 })).toHaveText('Modules');
+		await expect(
+			subMeasureSection.getByRole('heading', { level: 2 }).getByRole('textbox', { name: 'Title' })
+		).toHaveValue('Measures');
 		await expect(subMeasureSection.getByTitle(subMeasureTitle)).toBeVisible();
 		await expect(subMeasureSection.getByTitle(testMeasure.payload.title)).not.toBeVisible();
 

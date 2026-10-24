@@ -1,5 +1,10 @@
 import { expect, type Page } from '@playwright/test';
-import type { Container, MeasurePayload, SimpleMeasurePayload } from '$lib/models';
+import type {
+	Container,
+	MeasurePayload,
+	RelationCollectionPayload,
+	SimpleMeasurePayload
+} from '$lib/models';
 import Header from './header';
 
 export default class MeasurePage {
@@ -12,17 +17,14 @@ export default class MeasurePage {
 		await this.page.waitForLoadState('networkidle');
 		await this.header.editModeToggle.check();
 	}
-	get goals() {
-		return this.page
-			.getByRole('main')
-			.locator('section')
-			.filter({ has: this.page.getByRole('heading', { name: 'Goals', exact: true }) });
+	section(section: Container<RelationCollectionPayload>) {
+		return this.page.getByRole('main').locator(`#section-${section.guid}`);
 	}
-	get addGoalButton() {
-		return this.goals.getByRole('button', { name: 'Add item', exact: true }).first();
+	addItemButton(section: Container<RelationCollectionPayload>) {
+		return this.section(section).getByRole('button', { name: 'Add item', exact: true }).first();
 	}
-	async createGoal() {
-		await this.addGoalButton.click();
+	async createItem(section: Container<RelationCollectionPayload>) {
+		await this.addItemButton(section).click();
 		const dialog = this.page.getByRole('dialog');
 		await expect(dialog).toBeVisible();
 		return dialog;
