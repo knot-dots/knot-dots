@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { resource } from 'runed';
+	import { IsInViewport, resource } from 'runed';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { createDisclosure } from 'svelte-headlessui';
 	import { _ } from 'svelte-i18n';
 	import { z } from 'zod';
 	import Close from '~icons/knotdots/close';
 	import { page } from '$app/state';
-	import { invalidate } from '$app/navigation';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchContainerPage from '$lib/client/fetchContainerPage';
 	import InlineFilterDropDown from '$lib/components/InlineFilterDropDown.svelte';
@@ -19,26 +18,35 @@
 		createContainerSchema,
 		indicatorPayload,
 		type IndicatorPayload,
+		type PayloadType,
 		payloadTypes
 	} from '$lib/models';
 	import { sortIcons } from '$lib/theme/models';
 
 	interface Props {
-		dialog: HTMLDialogElement;
+		dialog?: HTMLDialogElement;
+		onconfirm: (selected: string[]) => Promise<void>;
+		payloadType?: PayloadType[];
+		title: string;
+		value?: string[];
 	}
 
-	let { dialog = $bindable() }: Props = $props();
+	let {
+		dialog = $bindable(),
+		onconfirm,
+		payloadType = [payloadTypes.enum.binary_indicator, payloadTypes.enum.indicator],
+		title,
+		value = []
+	}: Props = $props();
+
+	// Starts with the given value and is reset whenever the value changes
+	let selected = $derived(value);
 
 	let filterBar = createDisclosure({ label: $_('filters'), expanded: true });
 
 	let sortBar = createDisclosure({ label: $_('sort') });
 
-	const categoryContext = $derived(
-		filterCategoryContext(page.data.categoryContext, [
-			payloadTypes.enum.binary_indicator,
-			payloadTypes.enum.indicator
-		])
-	);
+	const categoryContext = $derived(filterCategoryContext(page.data.categoryContext, payloadType));
 
 	let filter = $state<Record<string, string[]>>({
 		...Object.fromEntries(categoryContext.keys.map((k) => [k, []])),
@@ -50,7 +58,6 @@
 
 	let terms = $state('');
 
-	let selected = $state([]) as string[];
 	let knownIndicators = new SvelteMap<
 		string,
 		Container<BinaryIndicatorPayload | IndicatorPayload>
@@ -62,14 +69,21 @@
 
 	const mode = 'select';
 
+	const inViewport = new IsInViewport(() => dialog);
+
+	const indicatorsSchema = z.array(
+		createContainerSchema(z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorPayload]))
+	);
+
 	const searchResource = resource(
-		[() => $state.snapshot(filter), () => sort, () => terms],
-		async ([filter, sort, terms], _, { signal }) => {
+		[() => $state.snapshot(filter), () => sort, () => terms, () => inViewport.current],
+		async ([filter, sort, terms, inViewport], _, { signal }) => {
+			if (!inViewport) return undefined;
+
 			const query = new URLSearchParams([
 				...filter.indicatorCategory.map((v) => ['indicatorCategory', v]),
 				...filter.indicatorType.map((v) => ['indicatorType', v]),
-				['payloadType', payloadTypes.enum.binary_indicator],
-				['payloadType', payloadTypes.enum.indicator],
+				...payloadType.map((t) => ['payloadType', t]),
 				['sort', sort],
 				['terms', terms],
 				...categoryContext.keys.flatMap((k) => (k in filter ? filter[k].map((v) => [k, v]) : []))
@@ -83,25 +97,46 @@
 				signal
 			});
 			return {
-				containers: z
-					.array(
-						createContainerSchema(
-							z.discriminatedUnion('type', [binaryIndicatorPayload, indicatorPayload])
-						)
-					)
-					.parse(result.containers),
+				containers: indicatorsSchema.parse(result.containers),
 				facets: result.facets,
 				hasMore: result.page.hasMore,
 				nextOffset: result.page.nextOffset
 			};
 		},
 		{
-			debounce: 300
+			debounce: 300,
+			lazy: true
 		}
 	);
 
+	// The given indicators may lie outside the current filters, so they are fetched separately
+	// to keep them visible in the selection panel.
+	const valueResource = resource(
+		[() => value, () => inViewport.current],
+		async ([value, inViewport], _, { signal }) => {
+			if (!inViewport) return undefined;
+			if (value.length === 0) return [];
+
+			const result = await fetchContainerPage({
+				fetch,
+				limit: value.length,
+				offset: 0,
+				query: new URLSearchParams([
+					...value.map((guid) => ['guid', guid]),
+					...payloadType.map((t) => ['payloadType', t])
+				]),
+				signal
+			});
+			return indicatorsSchema.parse(result.containers);
+		},
+		{ lazy: true }
+	);
+
 	$effect(() => {
-		for (const indicator of searchResource.current?.containers ?? []) {
+		for (const indicator of [
+			...(valueResource.current ?? []),
+			...(searchResource.current?.containers ?? [])
+		]) {
 			knownIndicators.set(indicator.guid, indicator);
 		}
 	});
@@ -129,29 +164,17 @@
 	}
 
 	function selectAll() {
-		selected = (searchResource.current?.containers ?? []).map(({ guid }) => guid);
+		selected = [
+			...new Set([
+				...selected,
+				...(searchResource.current?.containers ?? []).map(({ guid }) => guid)
+			])
+		];
 	}
 
 	function unselectAll() {
-		selected = [];
-	}
-
-	async function performImport() {
-		const response = await fetch(
-			`/${(page.data.currentOrganizationalUnit ?? page.data.currentOrganization).guid}/import-actual-data`,
-			{
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams(selected.map((guid) => ['indicator', guid]))
-			}
-		);
-		if (response.ok) {
-			await invalidate('containers');
-			dialog.close();
-		} else {
-			alert($_('indicator_picker.import_failed'));
-			console.log(await response.json());
-		}
+		const results = new Set((searchResource.current?.containers ?? []).map(({ guid }) => guid));
+		selected = selected.filter((guid) => !results.has(guid));
 	}
 
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
@@ -168,7 +191,7 @@
 	{filterBar}
 	{sortBar}
 	onResetFilters={resetFilters}
-	title={$_('indicator_picker.title')}
+	{title}
 >
 	{#snippet filterContent()}
 		{#each facets.entries() as [key, foci] (key)}
@@ -258,7 +281,7 @@
 				<button
 					class="selection-clear"
 					disabled={selected.length === 0}
-					onclick={unselectAll}
+					onclick={() => (selected = [])}
 					type="button"
 				>
 					<Close />
@@ -266,8 +289,8 @@
 				</button>
 				<button
 					class="button-primary system-primary selection-apply"
-					disabled={selected.length === 0}
-					onclick={performImport}
+					disabled={selected.length === 0 && value.length === 0}
+					onclick={() => onconfirm(selected)}
 					type="button"
 				>
 					{$_('picker_dialog.confirm', { values: { count: selected.length } })}
@@ -278,12 +301,12 @@
 				<ul class="selection-list">
 					{#each selected as guid (guid)}
 						{@const item = knownIndicators.get(guid)}
-						{#if item}
+						{#if item || valueResource.current}
 							{@const selectionId = `selected-${guid}`}
 							<li class="selection-item">
-								<input id={selectionId} type="checkbox" value={guid} bind:group={selected} />
+								<input id={selectionId} checked type="checkbox" value={guid} {onchange} />
 								<label for={selectionId}>
-									{item.payload.title}
+									{item ? item.payload.title : $_('picker_dialog.unavailable')}
 								</label>
 							</li>
 						{/if}
