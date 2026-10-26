@@ -73,7 +73,7 @@
 		const facets = new Map([
 			...buildCategoryFacetsWithCounts(categoryContext.options),
 			['indicatorCategory', new Map(indicatorCategories.options.map((v) => [v as string, 0]))],
-			['indicatorTypes', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
+			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
 		]);
 
 		return computeFacetCount(facets, searchResource.current ?? []);
