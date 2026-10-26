@@ -67,15 +67,15 @@
 		{:else if isTaskContainer(container)}
 			<InlineTaskCategoryDropdown bind:value={container.payload.taskCategory} {editable} />
 		{:else if isResourceDataContainer(container)}
-			<span class="badge">{$_(container.payload.resourceDataType)}</span>
+			<span class="badge badge--large">{$_(container.payload.resourceDataType)}</span>
 		{:else}
-			<span class="badge">{$_(container.payload.type)}</span>
+			<span class="badge badge--large">{$_(container.payload.type)}</span>
 		{/if}
 	</li>
 
 	{#if 'aiContribution' in container.payload && container.payload.aiContribution > 0}
 		<li>
-			<span class="badge badge--yellow">
+			<span class="badge badge--large badge--yellow">
 				<AskAI />
 				{container.payload.aiContribution == 1 ? $_('ai_generated') : $_('ai_assisted')}
 			</span>

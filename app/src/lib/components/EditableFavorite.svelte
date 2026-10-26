@@ -78,7 +78,7 @@
 
 					<label class="icon" for={id}>
 						{#if uploadInProgress}
-							<span class="loader" role="status"></span>
+							<span class="loader system-primary" role="status"></span>
 						{:else if favorite.icon}
 							<img alt="" class="logo" src={transformFileURL(favorite.icon)} />
 						{:else}

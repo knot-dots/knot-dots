@@ -117,7 +117,7 @@
 </header>
 
 {#if createFeatureDecisions(page.data.features).useNewPropertyPanel()}
-	<PropertiesBar bind:container {editable} revisions={[]} />
+	<PropertiesBar bind:container {editable} {relatedContainers} revisions={[]} />
 {:else}
 	<Badges bind:container {editable} />
 {/if}

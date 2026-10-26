@@ -185,7 +185,7 @@
 				{/if}
 				{#if $applicationState.containerDetailView.editable && !actualDataContainer && $ability.can('create', containerOfType(payloadTypes.enum.actual_data, container))}
 					{#if addingActualData}
-						<span class="loader"></span>
+						<span class="loader system-primary"></span>
 					{:else}
 						<button onclick={addActualData(newActualDataContainer)} type="button">
 							{$_('binary_indicator.add_actual_data')}

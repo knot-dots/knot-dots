@@ -1056,8 +1056,9 @@ export const payloadRegistry = z.registry<{
 }>();
 
 export const propertyRegistry = z.registry<{
-	label: string;
 	emptyLabel?: string;
+	icon?: string;
+	label: string;
 }>();
 
 const propertiesConfiguration = z.partialRecord(
@@ -1200,7 +1201,7 @@ export const binaryIndicatorPayload = z
 		icon: z.url().optional(),
 		type: z
 			.literal(payloadTypes.enum.binary_indicator)
-			.register(propertyRegistry, { label: 'type' })
+			.register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -1242,7 +1243,9 @@ const unrefinedCategoryPayload = z
 			.default(categoryObjectTypes.options)
 			.register(propertyRegistry, { label: 'payload_type' }),
 		title: z.string().trim().min(1),
-		type: z.literal(payloadTypes.enum.category).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.category)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility
 			.default(visibility.enum['public'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -1378,7 +1381,7 @@ const effectPayload = z
 			.register(propertyRegistry, { label: 'iooi_type' }),
 		plannedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
 		trendValue: z.enum({ 'effect.trend_value_up': 1, 'effect.trend_value_down': -1 }).optional(),
-		type: z.literal(payloadTypes.enum.effect).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.effect).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -1433,7 +1436,7 @@ const eventPayload = z
 		...basePayload.shape,
 		endDate: z.iso.datetime().optional().register(propertyRegistry, { label: 'end_date' }),
 		startDate: z.iso.datetime().optional().register(propertyRegistry, { label: 'start_date' }),
-		type: z.literal(payloadTypes.enum.event).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.event).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -1507,7 +1510,7 @@ const goalPayload = z
 			.register(propertyRegistry, { label: 'status' }),
 		goalType: goalType
 			.optional()
-			.register(propertyRegistry, { label: 'goal_type', emptyLabel: 'goal' }),
+			.register(propertyRegistry, { emptyLabel: 'goal', icon: 'goal', label: 'goal_type' }),
 		hierarchyLevel: z
 			.number()
 			.int()
@@ -1516,7 +1519,7 @@ const goalPayload = z
 			.default(1)
 			.register(propertyRegistry, { label: 'goal.hierarchy_level' }),
 		progress: z.number().nonnegative().optional(),
-		type: z.literal(payloadTypes.enum.goal).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.goal).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -1586,7 +1589,7 @@ export const helpPayload = z
 			.default([])
 			.register(propertyRegistry, { label: 'help_slug.label' }),
 		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.help).register(propertyRegistry, { label: 'type' }),
+		type: z.literal(payloadTypes.enum.help).register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility
 			.default(visibility.enum['public'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -1716,16 +1719,17 @@ export const indicatorPayload = z
 			.transform(deduplicate)
 			.default([])
 			.register(propertyRegistry, { label: 'indicator_type' }),
-		type: z.literal(payloadTypes.enum.indicator).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.indicator)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		unit: z.string().register(propertyRegistry, { label: 'unit' })
 	})
 	.register(payloadRegistry, {
 		layout: {
 			detail: {
-				headerAndPanel: ['type'],
+				headerAndPanel: ['type', 'unit'],
 				onlyPanel: [
 					'indicatorType',
-					'unit',
 					'indicatorCategory',
 					'category.*',
 					'editorialState',
@@ -1780,7 +1784,9 @@ const initialInfoBoxPayload = infoBoxPayload.partial({ title: true });
 export const knowledgePayload = z
 	.strictObject({
 		...basePayload.shape,
-		type: z.literal(payloadTypes.enum.knowledge).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.knowledge)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		aiSuggestionPageReference: z.number().int().positive().optional()
 	})
 	.register(payloadRegistry, {
@@ -1848,16 +1854,18 @@ const measurePayload = z
 			.lte(6)
 			.default(1)
 			.register(propertyRegistry, { label: 'measure.hierarchy_level' }),
-		measureType: measureTypes
-			.optional()
-			.register(propertyRegistry, { label: 'measure_type', emptyLabel: 'measure' }),
+		measureType: measureTypes.optional().register(propertyRegistry, {
+			emptyLabel: 'measure',
+			icon: 'measure',
+			label: 'measure_type'
+		}),
 		progress: z.number().nonnegative().optional(),
 		result: z.string().trim().optional(),
 		startDate: z.iso.date().optional().register(propertyRegistry, { label: 'start_date' }),
 		status: status
 			.default(status.enum['status.idea'])
 			.register(propertyRegistry, { label: 'status' }),
-		type: z.literal(payloadTypes.enum.measure).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.measure).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -1921,7 +1929,9 @@ const objectivePayload = z
 		trendValue: z
 			.enum({ 'objective.trend_value_up': 1, 'objective.trend_value_down': -1 })
 			.optional(),
-		type: z.literal(payloadTypes.enum.objective).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.objective)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		booleanValue: z.boolean().optional(),
 		wantedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([])
 	})
@@ -2096,7 +2106,7 @@ const pagePayload = z
 		...detailViewStyle.shape,
 		body: z.string().trim().describe('GitHub-flavored Markdown.'),
 		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.page).register(propertyRegistry, { label: 'type' }),
+		type: z.literal(payloadTypes.enum.page).register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility
 			.default(visibility.enum['organization'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -2136,7 +2146,7 @@ const postPayload = z
 			.datetime()
 			.optional()
 			.register(propertyRegistry, { label: 'publication_date' }),
-		type: z.literal(payloadTypes.enum.post).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.post).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -2191,8 +2201,12 @@ const programPayload = z
 			.register(propertyRegistry, { label: 'status' }),
 		programType: programTypes
 			.default(programTypes.enum['program_type.misc'])
-			.register(propertyRegistry, { label: 'program_type', emptyLabel: 'program' }),
-		type: z.literal(payloadTypes.enum.program).register(propertyRegistry, { label: 'type' })
+			.register(propertyRegistry, {
+				emptyLabel: 'program',
+				icon: 'program',
+				label: 'program_type'
+			}),
+		type: z.literal(payloadTypes.enum.program).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -2336,7 +2350,7 @@ const reportPayload = z
 		...basePayload.shape,
 		...detailViewStyle.shape,
 		image: z.url().optional().register(propertyRegistry, { label: 'image' }),
-		type: z.literal(payloadTypes.enum.report).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.report).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -2374,7 +2388,9 @@ const resourcePayload = z
 			.date()
 			.optional()
 			.register(propertyRegistry, { label: 'fulfillment_date' }),
-		type: z.literal(payloadTypes.enum.resource).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.resource)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		unit: z.string().optional().register(propertyRegistry, { label: 'unit' })
 	})
 	.register(payloadRegistry, {
@@ -2442,10 +2458,12 @@ const resourceDataPayload = z
 				})
 			)
 			.default([]),
-		resource: z.uuid(),
+		resource: z.uuid().register(propertyRegistry, { label: 'resource' }),
 		resourceDataType: resourceDataTypes,
 		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.resource_data).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.resource_data)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility
 			.default(visibility.enum['organization'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -2453,7 +2471,7 @@ const resourceDataPayload = z
 	.register(payloadRegistry, {
 		layout: {
 			detail: {
-				headerAndPanel: ['type'],
+				headerAndPanel: ['type', 'resource'],
 				onlyPanel: ['visibility', 'organization', 'organizational_unit', 'created', 'modified'],
 				unused: []
 			}
@@ -2548,7 +2566,9 @@ const initialResourceDataCollectionPayload = resourceDataCollectionPayload.parti
 const resourceV2Payload = z
 	.strictObject({
 		...basePayload.omit({ category: true, summary: true }).shape,
-		type: z.literal(payloadTypes.enum.resource_v2).register(propertyRegistry, { label: 'type' }),
+		type: z
+			.literal(payloadTypes.enum.resource_v2)
+			.register(propertyRegistry, { label: 'payload_type' }),
 		resourceCategory: resourceCategories
 			.default(resourceCategories.enum['resource_category.money'])
 			.register(propertyRegistry, { label: 'resource_category' }),
@@ -2595,7 +2615,7 @@ export const rulePayload = z
 		status: status
 			.default(status.enum['status.idea'])
 			.register(propertyRegistry, { label: 'status' }),
-		type: z.literal(payloadTypes.enum.rule).register(propertyRegistry, { label: 'type' }),
+		type: z.literal(payloadTypes.enum.rule).register(propertyRegistry, { label: 'payload_type' }),
 		validFrom: z.iso.date().optional().register(propertyRegistry, { label: 'valid_from' }),
 		validUntil: z.iso.date().optional().register(propertyRegistry, { label: 'valid_until' })
 	})
@@ -2638,15 +2658,19 @@ const simpleMeasurePayload = z
 		annotation: z.string().trim().optional(),
 		endDate: z.iso.date().optional().register(propertyRegistry, { label: 'end_date' }),
 		file: z.array(z.tuple([z.url(), z.string()])).default([]),
-		measureType: measureTypes
-			.optional()
-			.register(propertyRegistry, { label: 'measure_type', emptyLabel: 'simple_measure' }),
+		measureType: measureTypes.optional().register(propertyRegistry, {
+			emptyLabel: 'simple_measure',
+			icon: 'measure',
+			label: 'measure_type'
+		}),
 		progress: z.number().nonnegative().default(0),
 		startDate: z.iso.date().optional().register(propertyRegistry, { label: 'start_date' }),
 		status: status
 			.default(status.enum['status.idea'])
 			.register(propertyRegistry, { label: 'status' }),
-		type: z.literal(payloadTypes.enum.simple_measure).register(propertyRegistry, { label: 'type' })
+		type: z
+			.literal(payloadTypes.enum.simple_measure)
+			.register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -2719,11 +2743,11 @@ const taskPayload = z
 			.register(propertyRegistry, { label: 'fulfillment_date' }),
 		taskCategory: taskCategories
 			.default(taskCategories.enum['task_category.default'])
-			.register(propertyRegistry, { label: 'task_category.label' }),
+			.register(propertyRegistry, { icon: 'task', label: 'task_category.label' }),
 		status: status
 			.default(status.enum['status.idea'])
 			.register(propertyRegistry, { label: 'status' }),
-		type: z.literal(payloadTypes.enum.task).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.task).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -2780,7 +2804,7 @@ const initialTaskCollectionPayload = taskCollectionPayload;
 const teaserPayload = z
 	.strictObject({
 		...teaserBasePayload.shape,
-		type: z.literal(payloadTypes.enum.teaser).register(propertyRegistry, { label: 'type' })
+		type: z.literal(payloadTypes.enum.teaser).register(propertyRegistry, { label: 'payload_type' })
 	})
 	.register(payloadRegistry, {
 		layout: {
@@ -2868,7 +2892,7 @@ const unrefinedTermPayload = z
 		title: z.string().trim().min(1),
 		value: z.string().trim().optional(),
 		icon: z.string().trim().optional(),
-		type: z.literal(payloadTypes.enum.term).register(propertyRegistry, { label: 'type' }),
+		type: z.literal(payloadTypes.enum.term).register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility
 			.default(visibility.enum['public'])
 			.register(propertyRegistry, { label: 'visibility.label' })
@@ -2904,7 +2928,7 @@ const textPayload = z
 		...sectionStyle.shape,
 		body: z.string().trim().describe('GitHub-flavored Markdown.').optional(),
 		title: z.string().trim(),
-		type: z.literal(payloadTypes.enum.text).register(propertyRegistry, { label: 'type' }),
+		type: z.literal(payloadTypes.enum.text).register(propertyRegistry, { label: 'payload_type' }),
 		textType: textType
 			.default(textType.enum.default)
 			.register(propertyRegistry, { label: 'text_type' }),
@@ -2915,7 +2939,7 @@ const textPayload = z
 	.register(payloadRegistry, {
 		layout: {
 			detail: {
-				headerAndPanel: ['type'],
+				headerAndPanel: [],
 				onlyPanel: [
 					'textType',
 					'visibility',
@@ -2924,7 +2948,7 @@ const textPayload = z
 					'created',
 					'modified'
 				],
-				unused: []
+				unused: ['type']
 			}
 		}
 	});

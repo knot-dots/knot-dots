@@ -53,7 +53,7 @@
 	<div>
 		<span class="value value--is-editable">
 			{#if uploadInProgress}
-				<span class="loader"></span>
+				<span class="loader system-primary"></span>
 			{:else if value}
 				{#each value as pdf, i (pdf[0])}
 					<span class="badge badge--gray">

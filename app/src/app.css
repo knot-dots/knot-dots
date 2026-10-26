@@ -1423,30 +1423,6 @@ h4.details-heading {
 	outline: solid 1px var(--color-primary-700);
 }
 
-.details-properties > .label {
-	display: block;
-	font-size: 0.75rem;
-	font-weight: 400;
-	margin-bottom: 0.5rem;
-	margin-top: 1.5rem;
-	min-height: 1.5rem;
-}
-
-.details-properties > .value {
-	align-items: center;
-	background-color: var(--form-control-background);
-	border: var(--form-control-border);
-	border-radius: var(--form-control-border-radius);
-	font-weight: 500;
-	min-height: var(--form-control-min-height);
-	padding: var(--form-control-padding-y) var(--form-control-padding-x);
-}
-
-.details-properties > .value.value--read-only {
-	background-color: var(--form-control-background);
-	color: var(--color-gray-400);
-}
-
 .data-grid {
 	--dropdown-button-border-radius: var(--form-control-border-radius);
 	--dropdown-button-border-width: 1px;
@@ -1606,7 +1582,7 @@ h4.details-heading {
 	font-size: 0.75rem;
 	font-weight: 500;
 	gap: 0.25rem;
-	line-height: 1.2;
+	line-height: 1.5;
 	min-height: var(--badge-min-height, 1.5rem);
 	padding: var(--badge-padding-y, 0.125rem) var(--badge-padding-x, 0.625rem);
 	text-align: center;
@@ -1976,20 +1952,25 @@ h4.details-heading {
 	);
 }
 
-.dropdown-button.dropdown-button--select::after {
-	align-self: flex-start;
+.dropdown-button.dropdown-button--select::after,
+.dropdown-button:not(.dropdown-button--select) .badge::after {
 	background-color: var(--dropdown-button-chevron-default-color, var(--color-icon-accent-subtle));
 	content: '';
 	display: block;
 	flex-shrink: 0;
 	height: var(--dropdown-button-chevron-icon-size, 1rem);
-	margin-top: calc((1lh - var(--dropdown-button-chevron-icon-size, 1rem)) / 2);
 	mask-image: var(--dropdown-button-chevron-icon, var(--icon--flowbite--chevron-down-outline));
 	mask-repeat: no-repeat;
 	mask-size: 100% 100%;
 	width: var(--dropdown-button-chevron-icon-size, 1rem);
 }
 
+.dropdown-button.dropdown-button--select::after {
+	align-self: flex-start;
+	margin-top: calc((1lh - var(--dropdown-button-chevron-icon-size, 1rem)) / 2);
+}
+
+.dropdown-button[aria-expanded='true'] .badge,
 .dropdown-button.dropdown-button--select[aria-expanded='true'] {
 	--dropdown-button-chevron-icon: var(
 		--dropdown-button-expanded-chevron-icon,
@@ -2010,7 +1991,7 @@ h4.details-heading {
 	max-width: var(--dropdown-panel-max-width, none);
 	overflow-x: hidden;
 	overflow-y: auto;
-	padding: var(--dropdown-panel-padding, 0.5rem);
+	padding: var(--dropdown-panel-padding, 0.25rem);
 	position: absolute;
 	width: var(--dropdown-panel-width, auto);
 	z-index: 2;
@@ -2126,13 +2107,12 @@ h4.details-heading {
 .loader {
 	animation: rotation 1.5s linear infinite;
 	border-radius: 50%;
-	border-style: solid;
-	border-width: 4px;
-	border-color: var(--color-gray-200) var(--color-gray-200) var(--color-gray-200)
-		var(--color-primary-600);
+	border: solid 2px var(--color-background-accent-subtle);
+	border-bottom-color: var(--color-icon-accent-default);
 	box-sizing: border-box;
 	flex-shrink: 0;
 	height: 1rem;
+	mix-blend-mode: multiply;
 	position: relative;
 	width: 1rem;
 }
