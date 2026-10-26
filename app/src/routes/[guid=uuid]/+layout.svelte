@@ -66,7 +66,7 @@
 
 	setReviewContext(createReviewContext());
 
-	setOverlayContext(createOverlayContext());
+	setOverlayContext(createOverlayContext(addToast));
 
 	const title = $derived.by(() => {
 		if (!page.data.currentOrganization) {

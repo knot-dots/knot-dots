@@ -117,3 +117,99 @@ test.describe('Full-screen', () => {
 		await expect(dotsBoard.page.getByRole('link', { name: 'Back to overlay' })).not.toBeVisible();
 	});
 });
+
+test.describe('Load failures', () => {
+	// SvelteKit responds with a JSON error when a load function fails
+	const failure = {
+		contentType: 'application/json',
+		json: { type: 'error', error: { message: 'Internal Error' }, status: 500 },
+		status: 500
+	};
+
+	test('a failed overlay is reported and can be opened again', async ({ goalsBoard, testGoal }) => {
+		await goalsBoard.goto(`/${testGoal.organization}`);
+		await goalsBoard.page.route(`**/${testGoal.guid}/__data.json*`, (route) =>
+			route.fulfill(failure)
+		);
+
+		await goalsBoard.card(testGoal.payload.title).click();
+
+		await expect(
+			goalsBoard.page.getByRole('status').filter({ hasText: 'Could not load content' })
+		).toBeVisible();
+		await expect(goalsBoard.overlay.locator).not.toBeVisible();
+		await expect(goalsBoard.page).not.toHaveURL(/view=/);
+
+		await goalsBoard.page.unroute(`**/${testGoal.guid}/__data.json*`);
+		await goalsBoard.card(testGoal.payload.title).click();
+
+		await expect(goalsBoard.overlay.title).toHaveText(testGoal.payload.title);
+	});
+
+	test('the open overlay stays when switching to another one fails', async ({
+		goalsBoard,
+		testGoal,
+		testSubordinateGoal
+	}) => {
+		await goalsBoard.goto(`/${testGoal.organization}`);
+		await goalsBoard.card(testGoal.payload.title).click();
+		await expect(goalsBoard.overlay.title).toHaveText(testGoal.payload.title);
+
+		await goalsBoard.page.route(`**/${testSubordinateGoal.guid}/__data.json*`, (route) =>
+			route.fulfill(failure)
+		);
+		await goalsBoard.page.evaluate(
+			(guid) => (location.hash = `view=${guid}`),
+			testSubordinateGoal.guid
+		);
+
+		await expect(
+			goalsBoard.page.getByRole('status').filter({ hasText: 'Could not load content' })
+		).toBeVisible();
+		await expect(goalsBoard.overlay.title).toHaveText(testGoal.payload.title);
+		await expect(goalsBoard.page).toHaveURL(new RegExp(`view=${testGoal.guid}`));
+		await expect(goalsBoard.overlay.backButton).not.toBeVisible();
+	});
+
+	test('the open overlay stays when going back fails', async ({ goalsBoard, testGoal }) => {
+		await goalsBoard.goto(`/${testGoal.organization}`);
+		// The relations overlay loads without the preload cache of SvelteKit
+		await goalsBoard.page.evaluate((guid) => (location.hash = `relations=${guid}`), testGoal.guid);
+		await goalsBoard.overlay.locator
+			.getByRole('link', { name: testGoal.payload.title, exact: true })
+			.click();
+		await expect(goalsBoard.overlay.title).toHaveText(testGoal.payload.title);
+		await expect(goalsBoard.page).toHaveURL(new RegExp(`view=${testGoal.guid}`));
+		await expect(goalsBoard.overlay.backButton).toBeVisible();
+
+		await goalsBoard.page.route(`**/container/${testGoal.guid}/revision`, (route) =>
+			route.fulfill(failure)
+		);
+		await goalsBoard.overlay.backButton.click();
+
+		await expect(
+			goalsBoard.page.getByRole('status').filter({ hasText: 'Could not load content' })
+		).toBeVisible();
+		await expect(goalsBoard.page).toHaveURL(new RegExp(`view=${testGoal.guid}`));
+		await expect(goalsBoard.overlay.backButton).toBeVisible();
+	});
+
+	test('a failed overlay is reported on the page of another object', async ({
+		page,
+		testGoal,
+		testSubordinateGoal
+	}) => {
+		await page.goto(`/${testGoal.organization}/${testGoal.guid}`);
+		await page.waitForLoadState('networkidle');
+		await page.route(`**/${testSubordinateGoal.guid}/__data.json*`, (route) =>
+			route.fulfill(failure)
+		);
+
+		await page.evaluate((guid) => (location.hash = `view=${guid}`), testSubordinateGoal.guid);
+
+		await expect(
+			page.getByRole('status').filter({ hasText: 'Could not load content' })
+		).toBeVisible();
+		await expect(page.locator('.overlay')).not.toBeVisible();
+	});
+});

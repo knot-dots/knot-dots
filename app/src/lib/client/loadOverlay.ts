@@ -89,18 +89,22 @@ export type OverlayData =
 			sections: Container[];
 	  };
 
-export class OverlayLoadError extends Error {}
+class OverlayLoadError extends Error {}
 
-function assertLoaded<T extends { type: string; status?: number }>(
-	result: T
+// preloadData() resolves with the status and data of the current page when loading fails,
+// so the data is checked for the container that was requested.
+function assertLoaded<T extends { type: string; status?: number; data?: Record<string, unknown> }>(
+	result: T,
+	guid: string
 ): asserts result is Extract<T, { type: 'loaded' }> {
-	if (result.type !== 'loaded' || result.status !== 200) {
+	const container = result.data?.container as Container | undefined;
+	if (result.type !== 'loaded' || result.status !== 200 || container?.guid !== guid) {
 		throw new OverlayLoadError(`Loading overlay data failed with status ${result.status}`);
 	}
 }
 
 // Loads the data of the overlay requested by the hash parameters; resolves with undefined if the
-// hash requests no overlay and rejects with an OverlayLoadError if loading the data failed.
+// hash requests no overlay and rejects if loading the data failed.
 export default async function loadOverlay(
 	data: App.PageData,
 	hashParams: URLSearchParams
@@ -112,7 +116,7 @@ export default async function loadOverlay(
 				contentGuid: hashParams.get(overlayKey.enum.view) as string
 			})
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum.view) as string);
 		const { container, revisions, sections } = result.data;
 		return {
 			key: overlayKey.enum.view,
@@ -127,7 +131,7 @@ export default async function loadOverlay(
 				contentGuid: hashParams.get(overlayKey.enum.members) as string
 			})
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum.members) as string);
 		return {
 			key: overlayKey.enum.members,
 			admins: result.data.admins,
@@ -171,7 +175,7 @@ export default async function loadOverlay(
 				'?' +
 				hashParams.toString()
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum.chapters) as string);
 		return {
 			key: overlayKey.enum.chapters,
 			container: result.data.container,
@@ -186,7 +190,7 @@ export default async function loadOverlay(
 				'?' +
 				hashParams.toString()
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum.table) as string);
 		return {
 			key: overlayKey.enum.table,
 			container: result.data.container,
@@ -247,7 +251,7 @@ export default async function loadOverlay(
 				contentGuid: hashParams.get(overlayKey.enum['goal-iooi']) as string
 			})
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum['goal-iooi']) as string);
 		return {
 			key: overlayKey.enum['goal-iooi'],
 			container: result.data.container,
@@ -287,7 +291,7 @@ export default async function loadOverlay(
 				'?' +
 				hashParams.toString()
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum.tasks) as string);
 		return {
 			key: overlayKey.enum.tasks,
 			container: result.data.container,
@@ -302,7 +306,7 @@ export default async function loadOverlay(
 				'?' +
 				hashParams.toString()
 		);
-		assertLoaded(result);
+		assertLoaded(result, hashParams.get(overlayKey.enum.indicators) as string);
 		return {
 			key: overlayKey.enum.indicators,
 			container: result.data.container,
@@ -321,7 +325,7 @@ export default async function loadOverlay(
 				hashParams.toString()
 		);
 
-		assertLoaded(result);
+		assertLoaded(result, programGuid);
 
 		return {
 			key: overlayKey.enum.resources,
@@ -341,7 +345,7 @@ export default async function loadOverlay(
 				hashParams.toString()
 		);
 
-		assertLoaded(result);
+		assertLoaded(result, programGuid);
 
 		return {
 			key: overlayKey.enum.templates,
