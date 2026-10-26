@@ -9,6 +9,7 @@
 		getCreateEffectDialogContext,
 		hasCreateEffectDialogContext
 	} from '$lib/contexts/createEffectDialog.svelte';
+	import type { CreatedEffect } from '$lib/effectCreation';
 	import {
 		type AnyPayload,
 		type Container,
@@ -17,7 +18,8 @@
 		isEffectContainer,
 		isPartOf,
 		type MeasurePayload,
-		payloadTypes
+		payloadTypes,
+		predicates
 	} from '$lib/models';
 	import { mayCreateContainer } from '$lib/stores';
 
@@ -59,7 +61,39 @@
 			return;
 		}
 
-		createEffectDialog?.open({ target: parentContainer });
+		// This component may show another container once the effect is created.
+		const parent = parentContainer;
+
+		createEffectDialog?.open({
+			onCreated: (created) => onCreated(parent, created),
+			target: parent
+		});
+	}
+
+	// Items are found through the relations of the parent container, which are
+	// also sent along when it is saved; without the new relation saving it would
+	// detach the effect again.
+	function onCreated(
+		parent: Container<GoalPayload | MeasurePayload>,
+		{ effect, indicator }: CreatedEffect
+	) {
+		parent.relation = [
+			...parent.relation,
+			{
+				object: parent.guid,
+				position: 0,
+				predicate: predicates.enum['is-part-of'],
+				subject: effect.guid
+			}
+		];
+
+		if (parent === parentContainer) {
+			relatedContainers = [
+				...relatedContainers.filter(({ guid }) => guid !== effect.guid && guid !== indicator.guid),
+				effect,
+				indicator
+			];
+		}
 	}
 </script>
 
