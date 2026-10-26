@@ -6,6 +6,7 @@ import { expect } from 'vitest';
 import { type Fixtures, test } from '$lib/fixtures';
 import {
 	type AnyPayload,
+	grantForNewContainer,
 	modifiedContainer,
 	newContainer,
 	payloadTypes,
@@ -1012,4 +1013,122 @@ test('the area lies dormant only while a chain stays open', async ({ connection 
 	);
 	expect(inheriting?.sources).toEqual([decoupledProgram.guid, unit.guid]);
 	expect(inheriting?.dormant).toBeUndefined();
+});
+
+// The units above a container's unit: a unit's matrix governs the contents
+// of the units below it, so what governs a unit governs its contents too.
+async function newUnitBelow(
+	connection: Fixtures['connection'],
+	organization: string,
+	parent: string,
+	ownMatrix: boolean
+) {
+	return createContainer(
+		newTestContainer(organization, payloadTypes.enum.organizational_unit, {
+			ownMatrix,
+			relation: [{ object: parent, predicate: predicates.enum['is-part-of'] }]
+		})
+	)(connection);
+}
+
+test('a decoupled unit governs the contents of the units below it', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await newDecoupledUnit(connection, organization);
+	const subunit = await newUnitBelow(connection, organization, unit.guid, false);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: subunit.guid })
+	)(connection);
+	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['read', 'update'] })(
+		connection
+	);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)).toEqual({
+		admin: false,
+		scope_sourced: true,
+		member: true,
+		organization_manager: false,
+		own: [],
+		self: ['read', 'update'],
+		source: unit.guid,
+		sources: [unit.guid],
+		subordinates: ['read', 'update']
+	});
+});
+
+test('the units above accumulate for the contents, nearest first', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await newDecoupledUnit(connection, organization);
+	const subunit = await newUnitBelow(connection, organization, unit.guid, true);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: subunit.guid })
+	)(connection);
+	await setContainerGrants(unit.guid, subject, { self: [], subordinates: ['update'] })(connection);
+	await setContainerGrants(subunit.guid, subject, { self: [], subordinates: ['read'] })(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)?.sources).toEqual([subunit.guid, unit.guid]);
+	expect(grants.get(measure.guid)?.subordinates).toEqual(['read', 'update']);
+	expect(grants.get(measure.guid)?.scope_sourced).toBe(true);
+});
+
+test('administrators of a unit above administer the contents of the units below', async ({
+	connection
+}: Fixtures) => {
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await newDecoupledUnit(connection, organization);
+	const subunit = await newUnitBelow(connection, organization, unit.guid, true);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, {
+			ownMatrix: true,
+			organizationalUnit: subunit.guid
+		})
+	)(connection);
+	await setContainerGrants(unit.guid, subject, {
+		self: ['read', 'update', 'manage-users'],
+		subordinates: ['read', 'update', 'create', 'delete', 'manage-users']
+	})(connection);
+
+	const grants = await computeUserGrants(connection, subject, [measure.guid]);
+
+	expect(grants.get(measure.guid)?.admin).toBe(true);
+	expect(grants.get(measure.guid)?.sources).toEqual([measure.guid]);
+	expect(grants.get(measure.guid)?.dormant).toBe(subunit.guid);
+});
+
+test('creating within a unit is judged by what governs its contents', async ({
+	connection
+}: Fixtures) => {
+	// the stub of a new container takes the grants of its unit, which must be
+	// the ones its contents are governed by — Niels' finding on nested units
+	const organization = uuid();
+	const subject = await newTestUser(connection);
+	const unit = await newDecoupledUnit(connection, organization);
+	const subunit = await newUnitBelow(connection, organization, unit.guid, false);
+	const measure = await createContainer(
+		newTestContainer(organization, payloadTypes.enum.measure, { organizationalUnit: subunit.guid })
+	)(connection);
+	await setContainerGrants(unit.guid, subject, {
+		self: [],
+		subordinates: ['read', 'update', 'create']
+	})(connection);
+
+	const subunitGrant = (await computeUserGrants(connection, subject, [subunit.guid])).get(
+		subunit.guid
+	);
+	const stub = grantForNewContainer({ ...subunit, user_grant: subunitGrant });
+	const created = (await computeUserGrants(connection, subject, [measure.guid])).get(measure.guid);
+
+	expect(stub?.subordinates).toEqual(['read', 'update', 'create']);
+	expect(created?.subordinates).toEqual(stub?.subordinates);
+	expect(created?.self).toEqual(stub?.self);
 });

@@ -734,8 +734,9 @@ export type GrantSet = z.infer<typeof grantSet>;
 // time from the matrices that govern the container (see computeUserGrants).
 // `sources` names the containers whose matrices govern, nearest first — the
 // container itself while decoupled, then every decoupled ancestor along the
-// hierarchy chains, with the organizational unit or organization standing in
-// only for chains without any; their rows apply side by side. `source`
+// hierarchy chains, with the area (the organizational units above with
+// matrices of their own, else the organization) standing in only for chains
+// without any; their rows apply side by side. `source`
 // is the primary entry of `sources`. `subordinates` holds the kinds applying
 // within the container and `self` those applying to it (the union of the
 // sources' subordinate kinds), while `own` carries the kinds granted on the
@@ -755,8 +756,8 @@ export const userGrants = z.object({
 	source: z.uuid(),
 	sources: z.array(z.uuid()),
 	subordinates: z.array(grantKinds),
-	// the area whose matrix would apply again once a decoupled container
-	// inherits: the organizational unit with a matrix of its own, else the
+	// the nearest area whose matrix would apply again once a decoupled
+	// container inherits: a unit above with a matrix of its own, else the
 	// organization — present only where a chain reaches the top without any
 	// decoupled ancestor
 	dormant: z.uuid().optional()
