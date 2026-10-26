@@ -49,10 +49,19 @@ export function getTemplateScopeGuids(container: NewContainer) {
 	return [...new Set([...getDirectProgramGuids(container), ...getDirectMeasureGuids(container)])];
 }
 
+export function payloadTypeRequiresScopedTemplate(payloadType: PayloadType) {
+	// Temporarily disable the required template condition used in frontend and backend.
+	// Related tests are being skipped.
+	return false;
+
+	return templatableTypes.has(payloadType);
+}
+
 export function requiresScopedTemplate(container: NewContainer) {
 	// Section-only placement does not require a template, even inside a scoped hierarchy.
 	return (
-		templatableTypes.has(container.payload.type) && getTemplateScopeGuids(container).length > 0
+		payloadTypeRequiresScopedTemplate(container.payload.type) &&
+		getTemplateScopeGuids(container).length > 0
 	);
 }
 

@@ -55,18 +55,20 @@ test('shows subordinate template content as a read-only detail preview', async (
 	});
 	await expect(createAnother).toBeVisible();
 	await createAnother.click();
-	await expect(
-		dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Goal', exact: true })
-	).toHaveCount(0);
+	// TEMPORARY: requiresScopedTemplate is disabled, so goals without a template are offered.
+	// await expect(
+	// 	dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Goal', exact: true })
+	// ).toHaveCount(0);
 	await expect(
 		dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Supplementary text', exact: true })
 	).toBeVisible();
 	await dotsBoard.overlay.locator.getByRole('menuitem', { name: 'Measure', exact: true }).click();
 
 	const dialog = dotsBoard.page.getByRole('dialog');
-	await expect(dialog).toContainText('Select a template to create this object.');
-	await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
-	await expect(dialog.getByRole('button', { name: 'Save' })).toBeDisabled();
+	// TEMPORARY: requiresScopedTemplate is disabled, so creating without a template is allowed.
+	// await expect(dialog).toContainText('Select a template to create this object.');
+	// await expect(dialog.getByText('Without template', { exact: true })).toHaveCount(0);
+	// await expect(dialog.getByRole('button', { name: 'Save' })).toBeDisabled();
 	const previewResponsePromise = dotsBoard.page.waitForResponse((response) => {
 		const url = new URL(response.url());
 		return (
