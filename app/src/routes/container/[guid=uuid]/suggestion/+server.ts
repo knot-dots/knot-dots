@@ -37,6 +37,9 @@ export const GET = (async ({ locals, params, url }) => {
 		offset: z.array(z.coerce.number().int().nonnegative()).default([0]),
 		organization: z.array(z.uuid()).default([]),
 		organizationalUnit: z.array(z.uuid()).default([]),
+		payloadType: z
+			.array(z.enum([payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]))
+			.default([]),
 		terms: z.array(z.string()).default([])
 	});
 
@@ -84,7 +87,10 @@ export const GET = (async ({ locals, params, url }) => {
 					indicatorTypes: parseResult.data.indicatorType,
 					template: false,
 					terms: parseResult.data.terms[0],
-					type: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
+					type:
+						parseResult.data.payloadType.length > 0
+							? parseResult.data.payloadType
+							: [payloadTypes.enum.indicator, payloadTypes.enum.binary_indicator]
 				},
 				'alpha'
 			)(connection) as Promise<Array<Container<BinaryIndicatorPayload | IndicatorPayload>>>
