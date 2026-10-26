@@ -1,4 +1,10 @@
-import { NotFoundError, type DatabaseConnection } from 'slonik';
+import { error } from '@sveltejs/kit';
+import {
+	NotFoundError,
+	type DatabaseConnection,
+	UniqueIntegrityConstraintViolationError
+} from 'slonik';
+import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
 import defineAbilityFor from '$lib/authorization';
 import { isServerOwnedCopyRelationPredicate } from '$lib/containerCopy';
@@ -27,6 +33,32 @@ export class ContainerCreationError extends Error {
 		super(kind);
 		this.name = 'ContainerCreationError';
 	}
+}
+
+// Answers a failed creation with the matching HTTP error, or throws again
+// what is not a creation error.
+export function containerCreationHttpError(caught: unknown): never {
+	if (caught instanceof ContainerCreationError) {
+		if (caught.kind === 'invalid_container') error(422, caught.validationError!);
+		if (caught.kind === 'copy_invalid') {
+			error(422, { message: unwrapFunctionStore(_)('error.copy_invalid') });
+		}
+		if (caught.kind === 'scoped_template_required') {
+			error(422, { message: unwrapFunctionStore(_)('error.scoped_template_required') });
+		}
+		if (caught.kind === 'forbidden') {
+			error(403, { message: unwrapFunctionStore(_)('error.forbidden') });
+		}
+		error(422, { message: unwrapFunctionStore(_)('error.bad_request') });
+	}
+	if (
+		caught instanceof UniqueIntegrityConstraintViolationError &&
+		(caught.constraint === 'container_payload_organization_slug_key' ||
+			caught.constraint === 'container_payload_organizational_unit_slug_key')
+	) {
+		error(409, { message: unwrapFunctionStore(_)('error.slug_not_available') });
+	}
+	throw caught;
 }
 
 export function createAuthorizedContainer({
