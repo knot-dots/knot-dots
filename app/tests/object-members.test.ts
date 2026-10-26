@@ -65,7 +65,7 @@ test.describe('Object members matrix', () => {
 		await expect(inheritedBob).toHaveCount(1);
 		await expect(overlay.getByRole('button', { name: 'Add item' })).toBeEnabled();
 
-		await overlay.getByRole('button', { name: 'Add item' }).click();
+		await overlay.getByRole('button', { name: 'Invite member' }).click();
 		const dialog = page.getByRole('dialog');
 		await dialog.getByRole('combobox', { name: 'Email' }).fill('bob@example.org');
 		await dialog.getByLabel('Role').selectOption('collaborator');

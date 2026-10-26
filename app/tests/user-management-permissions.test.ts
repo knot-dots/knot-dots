@@ -153,8 +153,9 @@ test.describe('Permission matrix', () => {
 		await removeResponse;
 		await expect(page.getByRole('row', { name: 'Bob Bow' })).toBeHidden();
 
-		// the add row of the matrix opens the invite dialog
-		await page.getByRole('button', { name: 'Add item' }).click();
+		// the add row of the matrix searches teams and registered users inline;
+		// the invite button beside it opens the invite dialog
+		await page.getByRole('button', { name: 'Invite member' }).click();
 
 		const dialog = page.getByRole('dialog');
 		const emailInput = dialog.getByRole('combobox', { name: 'Email' });
