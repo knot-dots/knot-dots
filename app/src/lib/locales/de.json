@@ -132,6 +132,7 @@
 	"create_effect_dialog.button.confirm": "Bestätigen",
 	"create_effect_dialog.prompt_effect": "Indikator auswählen, auf den sich die Wirkung beziehen soll",
 	"create_effect_dialog.prompt_objective": "Indikator auswählen, auf den sich die Gewünschte Entwicklung beziehen soll",
+	"create_effect_dialog.relevance": "Relevanz",
 	"create_effect_dialog.step.confirm_selection": "Auswahl bestätigen",
 	"create_effect_dialog.step.define_effect": "Wirkung definieren",
 	"create_effect_dialog.step.define_objective": "Gewünschte Entwicklung definieren",

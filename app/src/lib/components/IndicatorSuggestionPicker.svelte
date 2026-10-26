@@ -1,22 +1,19 @@
 <script lang="ts">
 	import { resource } from 'runed';
 	import { _ } from 'svelte-i18n';
-	import { z } from 'zod';
 	import InfoCircle from '~icons/flowbite/info-circle-solid';
 	import { page } from '$app/state';
 	import { buildCategoryFacetsWithCounts, filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
+	import RelevanceBadge from '$lib/components/RelevanceBadge.svelte';
 	import SearchToolbar from '$lib/components/SearchToolbar.svelte';
 	import SingleChoiceSelectableCardSet from '$lib/components/SingleChoiceSelectableCardSet.svelte';
 	import {
-		binaryIndicatorPayload,
 		type BinaryIndicatorPayload,
 		computeFacetCount,
 		type Container,
-		createContainerSchema,
 		type GoalPayload,
 		indicatorCategories,
-		indicatorPayload,
 		type IndicatorPayload,
 		indicatorTypes,
 		isEffectContainer,
@@ -48,25 +45,24 @@
 		[() => $state.snapshot(filter), () => terms],
 		async ([filter, terms], _, { signal }) => {
 			if (target) {
-				return z
-					.array(
-						z.union([
-							createContainerSchema(indicatorPayload),
-							createContainerSchema(binaryIndicatorPayload)
-						])
-					)
-					.parse(
-						await fetchSuggestedContainers(
-							target.guid,
-							{ ...filter, organization: [page.data.currentOrganization.guid], terms },
-							{ signal }
-						)
-					);
+				return fetchSuggestedContainers(
+					target.guid,
+					{ ...filter, organization: [page.data.currentOrganization.guid], terms },
+					{ signal }
+				);
 			}
 		},
 		{
 			debounce: 300
 		}
+	);
+
+	let suggestions = $derived(searchResource.current ?? []);
+
+	let options = $derived(suggestions.map(({ indicator }) => indicator));
+
+	let relevanceByGuid = $derived(
+		new Map(suggestions.map(({ indicator, relevance }) => [indicator.guid, relevance]))
 	);
 
 	let facets = $derived.by(() => {
@@ -76,7 +72,7 @@
 			['indicatorType', new Map(indicatorTypes.options.map((v) => [v as string, 0]))]
 		]);
 
-		return computeFacetCount(facets, searchResource.current ?? []);
+		return computeFacetCount(facets, options);
 	});
 </script>
 
@@ -95,7 +91,11 @@
 
 <div class="search-result">
 	{#if searchResource.current}
-		<SingleChoiceSelectableCardSet {onSelect} options={searchResource.current ?? []} {value} />
+		<SingleChoiceSelectableCardSet {onSelect} {options} {value}>
+			{#snippet optionFooter(option)}
+				<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
+			{/snippet}
+		</SingleChoiceSelectableCardSet>
 	{/if}
 </div>
 

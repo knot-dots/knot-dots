@@ -1,7 +1,8 @@
 import { error, json } from '@sveltejs/kit';
+import { NotFoundError } from 'slonik';
 import { _, unwrapFunctionStore } from 'svelte-i18n';
 import { z } from 'zod';
-import { filterVisible } from '$lib/authorization';
+import defineAbilityFor, { filterVisible } from '$lib/authorization';
 import {
 	type BinaryIndicatorPayload,
 	type Container,
@@ -11,7 +12,7 @@ import {
 	isGoalContainer,
 	isMeasureContainer,
 	payloadTypes,
-	sortIndicatorsByRelevanceForGoalOrMeasure
+	scoreIndicatorsByRelevanceForGoalOrMeasure
 } from '$lib/models';
 import { loadCategoryContext } from '$lib/server/categoryOptions';
 import {
@@ -62,7 +63,12 @@ export const GET = (async ({ locals, params, url }) => {
 
 	const suggestion = await locals.pool.connect(async (connection) => {
 		const [container, indicatorContainers] = await Promise.all([
-			getContainerByGuid(params.guid)(connection),
+			getContainerByGuid(params.guid)(connection).catch((e: unknown) => {
+				if (e instanceof NotFoundError) {
+					error(404, { message: unwrapFunctionStore(_)('error.not_found') });
+				}
+				throw e;
+			}),
 			getManyContainers(
 				[],
 				{
@@ -77,7 +83,10 @@ export const GET = (async ({ locals, params, url }) => {
 			)(connection) as Promise<Array<Container<BinaryIndicatorPayload | IndicatorPayload>>>
 		]);
 
-		if (!isGoalContainer(container) && !isMeasureContainer(container)) {
+		if (
+			(!isGoalContainer(container) && !isMeasureContainer(container)) ||
+			defineAbilityFor(locals.user).cannot('read', container)
+		) {
 			error(404, { message: unwrapFunctionStore(_)('error.not_found') });
 		}
 
@@ -96,12 +105,12 @@ export const GET = (async ({ locals, params, url }) => {
 			}
 		)(connection);
 
-		return sortIndicatorsByRelevanceForGoalOrMeasure(
-			indicatorContainers,
+		return scoreIndicatorsByRelevanceForGoalOrMeasure(
+			filterVisible(indicatorContainers, locals.user),
 			containersRelatedToIndicators,
 			container
 		);
 	});
 
-	return json(filterVisible(suggestion, locals.user));
+	return json(suggestion);
 }) satisfies RequestHandler;

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { page } from '$app/state';
-import { container } from '$lib/models';
+import { binaryIndicatorPayload, createContainerSchema, indicatorPayload } from '$lib/models';
 
 export default async function fetchSuggestedContainers(
 	guid: string,
@@ -37,5 +37,15 @@ export default async function fetchSuggestedContainers(
 	}
 	const response = await fetch(`/container/${guid}/suggestion?${params}`, init);
 	const data = await response.json();
-	return z.array(container).parse(data);
+	return z
+		.array(
+			z.object({
+				indicator: z.union([
+					createContainerSchema(indicatorPayload),
+					createContainerSchema(binaryIndicatorPayload)
+				]),
+				relevance: z.number()
+			})
+		)
+		.parse(data);
 }
