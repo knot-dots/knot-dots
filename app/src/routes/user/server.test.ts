@@ -57,9 +57,13 @@ const container = {
 		governsItself: true,
 		organizationSelf: grantSetForRole(memberRoles.enum.administrator).self,
 		organizationalUnitSelf: [],
-		source: organizationGuid,
-		sourceSelf: grantSetForRole(memberRoles.enum.administrator).self,
-		sourceSubordinates: grantSetForRole(memberRoles.enum.administrator).subordinates
+		sources: [
+			{
+				guid: organizationGuid,
+				self: grantSetForRole(memberRoles.enum.administrator).self,
+				subordinates: grantSetForRole(memberRoles.enum.administrator).subordinates
+			}
+		]
 	}),
 	valid_currently: true,
 	valid_from: new Date().toISOString()

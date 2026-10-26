@@ -68,9 +68,13 @@ function measure(guid: string, managedBy: string) {
 			governsItself: false,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
-			source: managedBy,
-			sourceSelf: managedBy === team ? collaboratorSet.self : [],
-			sourceSubordinates: managedBy === team ? collaboratorSet.subordinates : []
+			sources: [
+				{
+					guid: managedBy,
+					self: managedBy === team ? collaboratorSet.self : [],
+					subordinates: managedBy === team ? collaboratorSet.subordinates : []
+				}
+			]
 		})
 	};
 }
@@ -117,9 +121,13 @@ function inheritingUnit(organizationSet: { self: string[]; subordinates: string[
 			governsItself: false,
 			organizationSelf: organizationSet.self as never,
 			organizationalUnitSelf: [],
-			source: organization,
-			sourceSelf: organizationSet.self as never,
-			sourceSubordinates: organizationSet.subordinates as never
+			sources: [
+				{
+					guid: organization,
+					self: organizationSet.self as never,
+					subordinates: organizationSet.subordinates as never
+				}
+			]
 		})
 	};
 }
@@ -135,9 +143,13 @@ function decoupledUnit(organizationSet: { self: string[]; subordinates: string[]
 			governsItself: true,
 			organizationSelf: organizationSet.self as never,
 			organizationalUnitSelf: [],
-			source: unit,
-			sourceSelf: [],
-			sourceSubordinates: []
+			sources: [
+				{
+					guid: unit,
+					self: [],
+					subordinates: []
+				}
+			]
 		})
 	};
 }
@@ -158,9 +170,13 @@ function adoptingOrganization(organizationSet: { self: string[]; subordinates: s
 			governsItself: true,
 			organizationSelf: organizationSet.self as never,
 			organizationalUnitSelf: [],
-			source: organization,
-			sourceSelf: organizationSet.self as never,
-			sourceSubordinates: organizationSet.subordinates as never
+			sources: [
+				{
+					guid: organization,
+					self: organizationSet.self as never,
+					subordinates: organizationSet.subordinates as never
+				}
+			]
 		})
 	};
 }

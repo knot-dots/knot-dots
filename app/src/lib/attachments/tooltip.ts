@@ -4,6 +4,9 @@ import type { Attachment } from 'svelte/attachments';
 let id = 0;
 
 interface Options {
+	// describe the node (aria-describedby) instead of labelling it, for nodes
+	// carrying a label of their own
+	describe?: boolean;
 	offset?: number;
 	placement?: Placement;
 	shiftPadding?: number;
@@ -114,7 +117,7 @@ export default function tooltip(content: string, options?: Options): Attachment 
 
 		createTooltip();
 
-		node.setAttribute('aria-labelledby', uid);
+		node.setAttribute(config.describe ? 'aria-describedby' : 'aria-labelledby', uid);
 
 		if (!Tooltip) {
 			throw new Error('tooltip has not been created.');

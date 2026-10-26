@@ -64,9 +64,13 @@ function organizationContainer(role: MemberRole) {
 			governsItself: true,
 			organizationSelf: set.self,
 			organizationalUnitSelf: [],
-			source: organizationGuid,
-			sourceSelf: set.self,
-			sourceSubordinates: set.subordinates
+			sources: [
+				{
+					guid: organizationGuid,
+					self: set.self,
+					subordinates: set.subordinates
+				}
+			]
 		})
 	};
 }
@@ -127,9 +131,13 @@ test('appointing administrators is reserved for administrators of the scope', as
 			governsItself: true,
 			organizationSelf: [],
 			organizationalUnitSelf: [],
-			source: measureGuid,
-			sourceSelf: grantSetForRole(memberRoles.enum.head).self,
-			sourceSubordinates: grantSetForRole(memberRoles.enum.head).subordinates
+			sources: [
+				{
+					guid: measureGuid,
+					self: grantSetForRole(memberRoles.enum.head).self,
+					subordinates: grantSetForRole(memberRoles.enum.head).subordinates
+				}
+			]
 		})
 	});
 

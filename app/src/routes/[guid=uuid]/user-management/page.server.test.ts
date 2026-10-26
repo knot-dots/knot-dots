@@ -77,9 +77,13 @@ function enriched(
 			governsItself: source === container.guid,
 			organizationSelf: kindsAt(container.organization, 'self'),
 			organizationalUnitSelf: [],
-			source,
-			sourceSelf: kindsAt(source, 'self'),
-			sourceSubordinates: kindsAt(source, 'subordinates')
+			sources: [
+				{
+					guid: source,
+					self: kindsAt(source, 'self'),
+					subordinates: kindsAt(source, 'subordinates')
+				}
+			]
 		})
 	};
 }
@@ -87,7 +91,12 @@ function enriched(
 function event(grants = emptyGrantRecords()) {
 	return {
 		locals: {
-			pool: { connect: vi.fn().mockResolvedValue([]) },
+			features: [],
+			pool: {
+				// the loader runs its queries on one connection; the mocked query
+				// functions resolve as the database would
+				connect: vi.fn(async (query) => query({}))
+			},
 			user: user(grants)
 		},
 		parent: vi.fn().mockResolvedValue({
@@ -100,8 +109,10 @@ function event(grants = emptyGrantRecords()) {
 
 beforeEach(() => {
 	getMembers.mockReset().mockResolvedValue([]);
-	getAllGrantsByContainers.mockReset().mockReturnValue(vi.fn());
-	getAllRelatedUsersByContainers.mockReset().mockReturnValue(vi.fn());
+	getAllGrantsByContainers.mockReset().mockReturnValue(async () => []);
+	getAllRelatedUsersByContainers.mockReset().mockReturnValue(async () => []);
+	// the inherited sections name their source containers
+	getContainerByGuid.mockReset().mockReturnValue(async () => currentOrganization);
 });
 
 test('grants organization admins access to the user management of an organizational unit', async () => {

@@ -31,11 +31,11 @@
 
 				<div class="details-section">
 					<Members
+						admins={data.admins}
 						container={data.container}
 						grants={data.grants}
-						inheritedGrants={data.inheritedGrants}
-						inheritedUsers={data.inheritedUsers}
-						scope={data.scope}
+						inheritedSections={data.inheritedSections}
+						mayManageOrganizationUsers={data.mayManageOrganizationUsers}
 						users={data.users}
 					/>
 				</div>
