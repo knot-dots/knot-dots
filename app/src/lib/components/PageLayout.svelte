@@ -6,7 +6,7 @@
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
 	import CreateEffectDialog from '$lib/components/CreateEffectDialog.svelte';
-	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
+	import CreateObjectiveDialog from '$lib/components/CreateObjectiveDialog.svelte';
 	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
 	import {
 		createCreateEffectDialogContext,
@@ -59,7 +59,7 @@
 {:else}
 	<CreateContainerDialog bind:dialog />
 {/if}
-<CreateObjectiveOrEffectDialog bind:dialog={createObjectiveDialog} />
+<CreateObjectiveDialog bind:dialog={createObjectiveDialog} />
 {#if createEffectDialog.request}
 	<CreateEffectDialog />
 {/if}

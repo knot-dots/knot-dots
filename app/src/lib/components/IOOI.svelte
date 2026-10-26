@@ -222,7 +222,7 @@
 			} else if (isGoalContainer(container)) {
 				$addObjectiveState = { target: container, iooiType };
 
-				pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
+				pushState(page.url, { createObjective: { step: 1 } });
 			}
 		};
 	}

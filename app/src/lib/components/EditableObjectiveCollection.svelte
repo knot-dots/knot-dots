@@ -47,7 +47,7 @@
 
 		$addObjectiveState = { target: parentContainer };
 
-		pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
+		pushState(page.url, { createObjective: { step: 1 } });
 	}
 </script>
 

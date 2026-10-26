@@ -34,7 +34,7 @@ declare global {
 			user?: KeycloakUser;
 		}
 		interface PageState {
-			createObjectiveOrEffect?: { step: 1 | 2 | 3 };
+			createObjective?: { step: 1 | 2 | 3 };
 		}
 		// interface Platform {}
 	}

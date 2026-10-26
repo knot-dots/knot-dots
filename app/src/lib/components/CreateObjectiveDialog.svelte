@@ -54,7 +54,7 @@
 
 	function handleSelect(value: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) {
 		selected = value;
-		pushState('', { createObjectiveOrEffect: { step: 2 } });
+		pushState('', { createObjective: { step: 2 } });
 	}
 
 	let newObjective = $state<Container<ObjectivePayload>>();
@@ -66,7 +66,7 @@
 				selected,
 				$addObjectiveState.iooiType
 			);
-			pushState(page.url, { createObjectiveOrEffect: { step: 3 } });
+			pushState(page.url, { createObjective: { step: 3 } });
 		}
 	}
 
@@ -82,20 +82,20 @@
 	}
 </script>
 
-{#if page.state.createObjectiveOrEffect}
+{#if page.state.createObjective}
 	<dialog {@attach initDialog} bind:this={dialog} {onclose} oninput={(e) => e.stopPropagation()}>
 		<form method="dialog">
 			<nav>
 				<ol class="step-navigation">
-					<li class:active={page.state.createObjectiveOrEffect.step === 1}>
+					<li class:active={page.state.createObjective.step === 1}>
 						{$_('create_effect_dialog.step.select_indicator')}
 						<ChevronDoubleRight />
 					</li>
-					<li class:active={page.state.createObjectiveOrEffect.step === 2}>
+					<li class:active={page.state.createObjective.step === 2}>
 						{$_('create_effect_dialog.step.confirm_selection')}
 						<ChevronDoubleRight />
 					</li>
-					<li class:active={page.state.createObjectiveOrEffect.step === 3}>
+					<li class:active={page.state.createObjective.step === 3}>
 						{$_('create_effect_dialog.step.define_objective')}
 					</li>
 				</ol>
@@ -108,7 +108,7 @@
 					{$_('cancel')}
 				</button>
 
-				{#if page.state.createObjectiveOrEffect.step === 2}
+				{#if page.state.createObjective.step === 2}
 					<button
 						class="button-primary button-xs system-primary"
 						onclick={() => handleConfirm()}
@@ -116,7 +116,7 @@
 					>
 						{$_('create_effect_dialog.button.confirm')}
 					</button>
-				{:else if page.state.createObjectiveOrEffect.step === 3}
+				{:else if page.state.createObjective.step === 3}
 					<button
 						class="button-primary button-xs system-primary"
 						onclick={() => dialog.close()}
@@ -127,16 +127,16 @@
 				{/if}
 			</nav>
 
-			{#if page.state.createObjectiveOrEffect.step === 1 && target}
+			{#if page.state.createObjective.step === 1 && target}
 				<IndicatorSuggestionPicker
 					onSelect={handleSelect}
 					purpose="objective"
 					{target}
 					value={selected}
 				/>
-			{:else if page.state.createObjectiveOrEffect.step === 2 && selected}
+			{:else if page.state.createObjective.step === 2 && selected}
 				<IndicatorPreview container={selected} />
-			{:else if page.state.createObjectiveOrEffect.step === 3 && newObjective}
+			{:else if page.state.createObjective.step === 3 && newObjective}
 				<div class="step-3-layout">
 					{#if selected && actualDataResource.current}
 						<div class="step-3-layout-left">
