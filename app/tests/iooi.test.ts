@@ -310,30 +310,28 @@ test.describe('Measure IOOI Board', () => {
 			const column = dotsBoard.column(iooiType);
 			await column.addItemButton.click();
 
-			// Verify the dialog for creating objectives and effects opens
-			await expect(dotsBoard.page.getByRole('dialog').getByRole('navigation')).toContainText(
-				'Select indicator'
-			);
+			// Verify the dialog for creating effects opens
+			const dialog = dotsBoard.page.getByRole('dialog', { name: 'Add effect' });
+			await expect(dialog.getByRole('navigation')).toContainText('Select indicator');
 
-			// Select an indicator from the dialog
-			await dotsBoard.page.getByRole('dialog').getByText(testIndicator.payload.title).click();
-
-			await dotsBoard.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
-
-			// Verify the effect can be edited
+			// Select an indicator and define the effect
+			await dialog.getByText(testIndicator.payload.title).click();
+			await expect(dialog.getByRole('navigation')).toContainText('Define effect');
+			await dialog.getByRole('textbox', { name: 'Description' }).fill(`Effect in ${iooiType}`);
+			await dialog.getByRole('button', { name: 'Type of effect' }).click();
+			await dialog.getByRole('radio', { name: 'Tendency', exact: true }).click();
+			await dialog
+				.getByText('This tends to have an increasing effect on the indicator', { exact: true })
+				.click();
 			await expect(
-				dotsBoard.page
-					.getByRole('article')
-					.getByRole('heading', { level: 1, name: testIndicator.payload.title })
-			).toBeVisible();
-			await expect(dotsBoard.page.getByRole('article')).toContainText('Effect');
-			await expect(
-				dotsBoard.page.getByRole('article').getByRole('textbox', { name: 'Description' })
-			).toBeEditable();
+				dialog.getByRole('radio', {
+					name: 'This tends to have an increasing effect on the indicator'
+				})
+			).toBeChecked();
+			await dialog.getByRole('button', { name: 'Confirm', exact: true }).click();
 
-			// Close dialog and verify effect is in Output column
-			await dotsBoard.page.getByRole('button', { name: 'Confirm' }).click();
-			await expect(dotsBoard.page.getByRole('dialog')).not.toBeVisible();
+			// Verify the dialog closes and the effect is in the column
+			await expect(dialog).toBeHidden();
 			await expect(column.card(testIndicator.payload.title)).toBeVisible();
 
 			// Delete the created effect

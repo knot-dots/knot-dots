@@ -2,6 +2,7 @@
 	import { resource } from 'runed';
 	import { _ } from 'svelte-i18n';
 	import InfoCircle from '~icons/flowbite/info-circle-solid';
+	import Plus from '~icons/knotdots/plus';
 	import { page } from '$app/state';
 	import { filterCategoryContext } from '$lib/categoryOptions';
 	import fetchSuggestedContainers from '$lib/client/fetchSuggestedContainers';
@@ -14,19 +15,28 @@
 		type Container,
 		type GoalPayload,
 		type IndicatorPayload,
-		isEffectContainer,
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
 	import { DEFAULT_PAGE_SIZE } from '$lib/pagination';
 
 	interface Props {
+		includeBinaryIndicators?: boolean;
+		onCreateNew?: () => void;
 		onSelect: (container: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>) => void;
+		purpose: 'effect' | 'objective';
 		target: Container<GoalPayload | MeasurePayload>;
 		value?: Container<BinaryIndicatorPayload> | Container<IndicatorPayload>;
 	}
 
-	let { onSelect, target, value }: Props = $props();
+	let {
+		includeBinaryIndicators = true,
+		onCreateNew,
+		onSelect,
+		purpose,
+		target,
+		value
+	}: Props = $props();
 
 	const categoryContext = $derived(
 		filterCategoryContext(page.data.categoryContext, [payloadTypes.enum.indicator])
@@ -56,6 +66,7 @@
 			const query = {
 				...$state.snapshot(filter),
 				organization: [page.data.currentOrganization.guid],
+				payloadType: includeBinaryIndicators ? [] : [payloadTypes.enum.indicator],
 				terms
 			};
 			return { ...(await fetchPage(query, 0, { signal })), query };
@@ -125,7 +136,7 @@
 	{#snippet extraPrimaryContent()}
 		<span class="prompt">
 			<InfoCircle />
-			{#if isEffectContainer(target)}
+			{#if purpose === 'effect'}
 				{$_('create_effect_dialog.prompt_effect')}
 			{:else}
 				{$_('create_effect_dialog.prompt_objective')}
@@ -135,15 +146,22 @@
 </SearchToolbar>
 
 <div class="search-result">
-	{#if searchResource.current}
-		<SingleChoiceSelectableCardSet {onSelect} {options} {value}>
-			{#snippet optionFooter(option)}
-				<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
-			{/snippet}
-		</SingleChoiceSelectableCardSet>
+	<SingleChoiceSelectableCardSet {onSelect} {options} {value}>
+		{#snippet leading()}
+			{#if onCreateNew}
+				<button class="create-new" onclick={onCreateNew} type="button">
+					<span>{$_('create_effect_dialog.create_new')}</span>
+					<Plus />
+				</button>
+			{/if}
+		{/snippet}
 
-		<LazyLoadSentinel hasMore={nextOffset !== null} loading={loadingMore} onLoadMore={loadMore} />
-	{/if}
+		{#snippet optionFooter(option)}
+			<RelevanceBadge score={relevanceByGuid.get(option.guid) ?? 0} />
+		{/snippet}
+	</SingleChoiceSelectableCardSet>
+
+	<LazyLoadSentinel hasMore={nextOffset !== null} loading={loadingMore} onLoadMore={loadMore} />
 </div>
 
 <style>
@@ -163,6 +181,30 @@
 	.prompt > :global(svg) {
 		color: var(--color-yellow-500);
 		height: 1.5rem;
+		width: 1.5rem;
+	}
+
+	.create-new {
+		align-items: flex-start;
+		background-color: var(--color-primary-050);
+		border: 1px solid var(--color-primary-200);
+		border-radius: var(--card-border-radius);
+		color: var(--color-primary-700);
+		display: flex;
+		flex-direction: column;
+		font-weight: 600;
+		min-height: 10rem;
+		padding: 1rem;
+	}
+
+	.create-new:hover {
+		background-color: var(--color-primary-100);
+	}
+
+	.create-new > :global(svg) {
+		align-self: center;
+		height: 1.5rem;
+		margin-block: auto;
 		width: 1.5rem;
 	}
 

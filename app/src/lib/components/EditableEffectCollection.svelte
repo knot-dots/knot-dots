@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Plus from '~icons/knotdots/plus';
-	import { pushState } from '$app/navigation';
-	import { page } from '$app/state';
 	import tooltip from '$lib/attachments/tooltip';
 	import Carousel from '$lib/components/Carousel.svelte';
 	import ContainerSettingsDropdown from '$lib/components/ContainerSettingsDropdown.svelte';
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
+	import {
+		getCreateEffectDialogContext,
+		hasCreateEffectDialogContext
+	} from '$lib/contexts/createEffectDialog.svelte';
 	import {
 		type AnyPayload,
 		type Container,
@@ -17,7 +19,7 @@
 		type MeasurePayload,
 		payloadTypes
 	} from '$lib/models';
-	import { addEffectState, mayCreateContainer } from '$lib/stores';
+	import { mayCreateContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<EffectCollectionPayload>;
@@ -41,14 +43,23 @@
 			: []
 	);
 
-	async function addItem() {
+	// The dialog is provided by the page layout, which embedded views lack.
+	const createEffectDialog = hasCreateEffectDialogContext()
+		? getCreateEffectDialogContext()
+		: undefined;
+
+	let mayAddItem = $derived(
+		editable &&
+			createEffectDialog !== undefined &&
+			$mayCreateContainer(payloadTypes.enum.effect, container)
+	);
+
+	function addItem() {
 		if (!parentContainer) {
 			return;
 		}
 
-		$addEffectState = { target: parentContainer };
-
-		pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
+		createEffectDialog?.open({ target: parentContainer });
 	}
 </script>
 
@@ -57,7 +68,7 @@
 
 	{#if editable}
 		<ul class="inline-actions is-visible-on-hover">
-			{#if $mayCreateContainer(payloadTypes.enum.effect, container)}
+			{#if mayAddItem}
 				<li>
 					<button
 						class="action-button action-button--size-l"
@@ -77,11 +88,7 @@
 	{/if}
 </header>
 
-<Carousel
-	{addItem}
-	{items}
-	mayAddItem={$mayCreateContainer(payloadTypes.enum.effect, container) && editable}
->
+<Carousel {addItem} {items} {mayAddItem}>
 	{#snippet itemSnippet(item)}
 		<ObjectiveOrEffectCard
 			container={item}

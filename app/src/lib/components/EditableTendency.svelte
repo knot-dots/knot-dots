@@ -4,25 +4,25 @@
 	import ArrowCircleDownSolid from '~icons/knotdots/arrow-circle-down-solid';
 	import ArrowCircleUpOutline from '~icons/knotdots/arrow-circle-up-outline';
 	import ArrowCircleUpSolid from '~icons/knotdots/arrow-circle-up-solid';
-	import {
-		type Container,
-		type EffectPayload,
-		isEffectContainer,
-		type ObjectivePayload
-	} from '$lib/models';
+	import { type EffectPayload, type ObjectivePayload, payloadTypes } from '$lib/models';
 
 	interface Props {
-		container: Container<EffectPayload | ObjectivePayload>;
+		// Also takes the draft of an effect that is not yet created.
+		container: {
+			payload:
+				Pick<EffectPayload, 'trendValue' | 'type'> | Pick<ObjectivePayload, 'trendValue' | 'type'>;
+		};
 		editable?: boolean;
 	}
 
 	let { container, editable = false }: Props = $props();
 
+	const isEffect = $derived(container.payload.type === payloadTypes.enum.effect);
 	const trendValueUpLabel = $derived(
-		isEffectContainer(container) ? $_('effect.trend_value_up') : $_('objective.trend_value_up')
+		isEffect ? $_('effect.trend_value_up') : $_('objective.trend_value_up')
 	);
 	const trendValueDownLabel = $derived(
-		isEffectContainer(container) ? $_('effect.trend_value_down') : $_('objective.trend_value_down')
+		isEffect ? $_('effect.trend_value_down') : $_('objective.trend_value_down')
 	);
 </script>
 

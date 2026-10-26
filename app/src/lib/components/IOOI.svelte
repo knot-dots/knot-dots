@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import type { Writable } from 'svelte/store';
 	import { type DndEvent, dndzone } from 'svelte-dnd-action';
 	import { _ } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -12,6 +11,10 @@
 	import MaybeDragZone from '$lib/components/MaybeDragZone.svelte';
 	import ObjectiveOrEffectCard from '$lib/components/ObjectiveOrEffectCard.svelte';
 	import ResourceDataCard from '$lib/components/ResourceDataCard.svelte';
+	import {
+		getCreateEffectDialogContext,
+		hasCreateEffectDialogContext
+	} from '$lib/contexts/createEffectDialog.svelte';
 	import {
 		type Container,
 		containerOfType,
@@ -35,13 +38,7 @@
 		predicates,
 		resourceDataTypes
 	} from '$lib/models';
-	import {
-		ability,
-		addEffectState,
-		addObjectiveState,
-		lastCreatedContainers,
-		newContainer
-	} from '$lib/stores';
+	import { ability, addObjectiveState, lastCreatedContainers, newContainer } from '$lib/stores';
 
 	interface Props {
 		container: Container<GoalPayload | MeasurePayload>;
@@ -53,6 +50,10 @@
 	const createContainerDialog = getContext<{ getElement: () => HTMLDialogElement }>(
 		'createContainerDialog'
 	);
+
+	const createEffectDialog = hasCreateEffectDialogContext()
+		? getCreateEffectDialogContext()
+		: undefined;
 
 	// Watch for successfully created resourceData containers and create collection if needed
 	const handledCreatedGuids = new Set<string>();
@@ -124,24 +125,21 @@
 		}
 	}
 
-	const { itemType, itemFilterFn, addItemState } = $derived.by(() => {
+	const { itemType, itemFilterFn } = $derived.by(() => {
 		if (isGoalContainer(container)) {
 			return {
 				itemType: 'objective' as const,
-				itemFilterFn: isObjectiveContainer,
-				addItemState: addObjectiveState
+				itemFilterFn: isObjectiveContainer
 			};
 		} else if (isMeasureContainer(container)) {
 			return {
 				itemType: 'effect' as const,
-				itemFilterFn: isEffectContainer,
-				addItemState: addEffectState
+				itemFilterFn: isEffectContainer
 			};
 		}
 	}) as {
 		itemType: 'objective' | 'effect';
 		itemFilterFn: (container: Container) => boolean;
-		addItemState: Writable<{ target?: Container; iooiType?: IooiType }>;
 	};
 
 	const iooiBackgrounds = new Map([
@@ -219,9 +217,13 @@
 				return;
 			}
 
-			addItemState.set({ target: container, iooiType });
+			if (isMeasureContainer(container)) {
+				createEffectDialog?.open({ iooiType, target: container });
+			} else if (isGoalContainer(container)) {
+				$addObjectiveState = { target: container, iooiType };
 
-			pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
+				pushState(page.url, { createObjectiveOrEffect: { step: 1 } });
+			}
 		};
 	}
 

@@ -7,6 +7,7 @@
 	import SelectableCard from '$lib/components/SelectableCard.svelte';
 
 	interface Props {
+		leading?: Snippet;
 		onSelect?: (value: T) => void;
 		optionFooter?: Snippet<[T]>;
 		options: T[];
@@ -14,7 +15,7 @@
 		value?: T;
 	}
 
-	let { onSelect, optionFooter, options, legend = '', value }: Props = $props();
+	let { leading, onSelect, optionFooter, options, legend = '', value }: Props = $props();
 
 	function onchange(event: Event & { currentTarget: HTMLInputElement }) {
 		onSelect?.(options.find((option) => option.guid === event.currentTarget.value)!);
@@ -23,6 +24,8 @@
 
 <fieldset class="catalog">
 	{#if legend}<legend>{legend}</legend>{/if}
+
+	{@render leading?.()}
 
 	{#each options as option (option.guid)}
 		{#snippet footer()}

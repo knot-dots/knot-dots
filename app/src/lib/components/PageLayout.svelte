@@ -5,8 +5,13 @@
 	import Overlay from '$lib/components/Overlay.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import CreateContainerDialog from '$lib/components/CreateContainerDialog.svelte';
+	import CreateEffectDialog from '$lib/components/CreateEffectDialog.svelte';
 	import CreateObjectiveOrEffectDialog from '$lib/components/CreateObjectiveOrEffectDialog.svelte';
 	import NewCreateContainerDialog from '$lib/components/NewCreateContainerDialog.svelte';
+	import {
+		createCreateEffectDialogContext,
+		setCreateEffectDialogContext
+	} from '$lib/contexts/createEffectDialog.svelte';
 	import { createFeatureDecisions } from '$lib/features';
 	import { overlay, overlayWidth } from '$lib/stores';
 
@@ -23,7 +28,9 @@
 	setContext('createContainerDialog', { getElement: () => dialog });
 
 	// svelte-ignore non_reactive_update
-	let createEffectDialog: HTMLDialogElement;
+	let createObjectiveDialog: HTMLDialogElement;
+
+	const createEffectDialog = setCreateEffectDialogContext(createCreateEffectDialogContext());
 
 	let sidebarExpanded = $derived(getContext<{ expanded: boolean }>('sidebar').expanded);
 </script>
@@ -52,7 +59,10 @@
 {:else}
 	<CreateContainerDialog bind:dialog />
 {/if}
-<CreateObjectiveOrEffectDialog bind:dialog={createEffectDialog} />
+<CreateObjectiveOrEffectDialog bind:dialog={createObjectiveDialog} />
+{#if createEffectDialog.request}
+	<CreateEffectDialog />
+{/if}
 
 <style>
 	.app-wrapper {
