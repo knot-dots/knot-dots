@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import Header from './header';
 import { expect, test } from './fixtures';
 
@@ -87,4 +88,49 @@ test('Organization menu links to workspace or landing page', async ({
 		'href',
 		new RegExp(`/${testOrganization.guid}`)
 	);
+});
+
+test.describe('Loading feedback', () => {
+	// Holds back the data of the next page until the returned function is called
+	async function holdPageData(page: Page) {
+		let release!: () => void;
+		const released = new Promise<void>((resolve) => (release = resolve));
+		await page.route('**/__data.json*', async (route) => {
+			await released;
+			await route.continue();
+		});
+		return release;
+	}
+
+	test('a progress bar runs while another page loads', async ({ page, testOrganization }) => {
+		const header = new Header(page);
+		await page.goto(`/${testOrganization.guid}/strategies/catalog`);
+		await page.waitForLoadState('networkidle');
+		const release = await holdPageData(page);
+
+		await header.selectWorkspace('Strategies', /^Goals\b/);
+
+		await expect(page.getByRole('progressbar', { name: 'Loading…' })).toBeVisible();
+		release();
+		await expect(page).toHaveURL(new RegExp(`/${testOrganization.guid}/goals(/|$)`));
+		await expect(page.getByRole('progressbar', { name: 'Loading…' })).toHaveCount(0);
+	});
+
+	test('results are dimmed while a filter is applied', async ({ page, testGoal }) => {
+		await page.goto(`/${testGoal.organization}/goals/catalog`);
+		await page.waitForLoadState('networkidle');
+		const release = await holdPageData(page);
+
+		await page.getByRole('button', { name: 'Status' }).click();
+		const option = page.getByRole('checkbox', { name: /^Idea/ });
+		await option.check();
+
+		await expect(page.getByRole('main')).toHaveAttribute('aria-busy', 'true');
+		await expect(page.getByRole('progressbar', { name: 'Loading…' })).toBeVisible();
+		await expect(option).toBeEnabled();
+		release();
+		await expect(page).toHaveURL(/status=status.idea/);
+		await expect(page.getByRole('main')).toHaveAttribute('aria-busy', 'false');
+		await expect(page.getByRole('progressbar', { name: 'Loading…' })).toHaveCount(0);
+	});
 });

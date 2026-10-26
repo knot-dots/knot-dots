@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { asset } from '$app/paths';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import createComputedProgressLoader from '$lib/client/createComputedProgressLoader';
+	import ProgressBar from '$lib/components/ProgressBar.svelte';
 	import SignupDialog from '$lib/components/SignupDialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import UppyDashboardService from '$lib/components/UppyDashboardService.svelte';
@@ -140,6 +141,8 @@
 </script>`}
 	{/if}
 </svelte:head>
+
+<ProgressBar active={navigating.to !== null} />
 
 {@render children()}
 

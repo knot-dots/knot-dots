@@ -2,7 +2,8 @@
 	import { type Snippet } from 'svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
+	import createDelayedFlag from '$lib/client/createDelayedFlag.svelte';
 	import Header from '$lib/components/Header.svelte';
 
 	interface Props {
@@ -18,6 +19,14 @@
 
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
+
+	// Filters, search, sort and the selection of related objects change the query
+	// only; until the new results arrive, the previous ones stay usable but dimmed.
+	const filtering = createDelayedFlag(
+		() =>
+			navigating.from?.url.pathname === navigating.to?.url.pathname &&
+			navigating.from?.url.search !== navigating.to?.url.search
+	);
 </script>
 
 <div class="main-with-header-wrapper">
@@ -27,7 +36,7 @@
 		<Header filterBarInitiallyOpen={page.data.filterBarInitiallyOpen} />
 	{/if}
 
-	<main in:fly={transitionIn} out:fly={transitionOut}>
+	<main aria-busy={filtering.current} in:fly={transitionIn} out:fly={transitionOut}>
 		{@render main()}
 	</main>
 </div>
@@ -55,6 +64,11 @@
 		min-width: 100vw;
 		overflow: hidden;
 		position: relative;
+		transition: opacity var(--loading-transition-duration) ease-out;
+	}
+
+	main[aria-busy='true'] {
+		opacity: var(--loading-dimmed-opacity);
 	}
 
 	@container (min-width: 48rem) {
