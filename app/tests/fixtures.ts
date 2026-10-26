@@ -37,12 +37,13 @@ import {
 	type TextPayload
 } from '$lib/models';
 import { CategoriesBoard, DotsBoard, GoalsBoard, TaskStatusBoard } from './boards';
-import { IndicatorCatalog, ResourceCatalog } from './catalogs';
+import { AllCatalog, IndicatorCatalog, ResourceCatalog } from './catalogs';
 import { LandingPage, ProgramPage } from './pages';
 import { AllTable } from './tables';
 
 type MyFixtures = {
 	aiGoal: Container<GoalPayload>;
+	allCatalog: AllCatalog;
 	allTable: AllTable;
 	categoriesBoard: CategoriesBoard;
 	dotsBoard: DotsBoard;
@@ -424,6 +425,9 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 		await use(testGoal);
 
 		await deleteContainer(adminContext, testGoal);
+	},
+	allCatalog: async ({ page }, use) => {
+		await use(new AllCatalog(page));
 	},
 	allTable: async ({ page }, use) => {
 		await use(new AllTable(page));

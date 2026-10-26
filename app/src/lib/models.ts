@@ -2106,7 +2106,7 @@ export type InitialOrganizationalUnitPayload = z.infer<typeof initialOrganizatio
 const pagePayload = z
 	.strictObject({
 		...detailViewStyle.shape,
-		body: z.string().trim().describe('GitHub-flavored Markdown.'),
+		body: z.string().trim().default('').describe('GitHub-flavored Markdown.'),
 		title: z.string().trim(),
 		type: z.literal(payloadTypes.enum.page).register(propertyRegistry, { label: 'payload_type' }),
 		visibility: visibility

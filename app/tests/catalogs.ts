@@ -19,6 +19,19 @@ export class Catalog {
 	}
 }
 
+export class AllCatalog extends Catalog {
+	async openAddItemMenu() {
+		const button = this.page.getByRole('button', { name: 'Object', exact: true });
+		await button.click();
+		const menuId = await button.getAttribute('aria-controls');
+		return this.page.locator(`[id="${menuId}"]`);
+	}
+
+	async goto(baseURL: string) {
+		await this.page.goto(`${baseURL}/all/catalog`);
+	}
+}
+
 export class IndicatorCatalog extends Catalog {
 	get addCustomIndicatorButton() {
 		return this.page.getByRole('button', { name: 'Create a custom indicator' });
