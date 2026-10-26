@@ -12,6 +12,7 @@ import {
 	type CategoryPayload,
 	type Container,
 	containerOfType,
+	type EffectCollectionPayload,
 	type EffectPayload,
 	etag,
 	type GoalPayload,
@@ -60,6 +61,7 @@ type MyFixtures = {
 	programReportTemplate: Container<ReportPayload>;
 	measureGoalTemplate: Container<GoalPayload>;
 	measureMeasureTemplate: Container<MeasurePayload>;
+	measureEffectCollection: Container<EffectCollectionPayload>;
 	measureGoalCollection: Container<GoalCollectionPayload>;
 	simpleMeasureGoalCollection: Container<GoalCollectionPayload>;
 	simpleMeasureGoalTemplate: Container<GoalPayload>;
@@ -563,6 +565,20 @@ export const test = base.extend<MyFixtures, MyWorkerFixtures>({
 	},
 	programPage: async ({ page }, use) => {
 		await use(new ProgramPage(page));
+	},
+	measureEffectCollection: async ({ adminContext, testMeasure }, use) => {
+		const draft = containerOfType(
+			payloadTypes.enum.effect_collection,
+			testMeasure
+		) as NewContainer<EffectCollectionPayload>;
+		const section = await createContainer(adminContext, {
+			...draft,
+			relation: [
+				{ object: testMeasure.guid, predicate: predicates.enum['is-section-of'], position: 0 }
+			]
+		});
+		await use(section);
+		await deleteContainer(adminContext, section);
 	},
 	measureGoalCollection: async ({ adminContext, testMeasure }, use) => {
 		const draft = containerOfType(

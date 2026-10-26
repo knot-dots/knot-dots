@@ -26,4 +26,19 @@ export default class MeasurePage {
 		await expect(dialog).toBeVisible();
 		return dialog;
 	}
+	get effects() {
+		return this.page
+			.getByRole('main')
+			.locator('section')
+			.filter({ has: this.page.getByRole('heading', { name: 'Effects', exact: true }) });
+	}
+	get addEffectButton() {
+		return this.effects.getByRole('button', { name: 'Add item', exact: true }).first();
+	}
+	async createEffect() {
+		await this.addEffectButton.click();
+		const dialog = this.page.getByRole('dialog', { name: 'Add effect' });
+		await expect(dialog).toBeVisible();
+		return dialog;
+	}
 }
