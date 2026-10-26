@@ -1381,7 +1381,7 @@ const initialDemographicDataPayload = demographicDataPayload.partial({
 	title: true
 });
 
-const effectPayload = z
+export const effectPayload = z
 	.strictObject({
 		...measureMonitoringBasePayload.shape,
 		achievedValues: z.array(z.tuple([z.number().int().positive(), z.number()])).default([]),
