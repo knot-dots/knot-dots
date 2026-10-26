@@ -2103,13 +2103,12 @@ h4.details-heading {
 .loader {
 	animation: rotation 1.5s linear infinite;
 	border-radius: 50%;
-	border-style: solid;
-	border-width: 4px;
-	border-color: var(--color-gray-200) var(--color-gray-200) var(--color-gray-200)
-		var(--color-primary-600);
+	border: solid 2px var(--color-background-accent-subtle);
+	border-bottom-color: var(--color-icon-accent-default);
 	box-sizing: border-box;
 	flex-shrink: 0;
 	height: 1rem;
+	mix-blend-mode: multiply;
 	position: relative;
 	width: 1rem;
 }

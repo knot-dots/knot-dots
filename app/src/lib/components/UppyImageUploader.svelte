@@ -165,7 +165,7 @@
 	{:else}
 		<button class={className || 'button button-upload'} onclick={triggerOpen} type="button">
 			{#if uploadInProgress}
-				<span class="loader"></span>
+				<span class="loader system-primary"></span>
 			{:else}
 				<PlaceholderImage />
 				{label || $_('upload.image.choose')}
@@ -175,7 +175,7 @@
 {:else if mode === 'placeholder'}
 	<div class="placeholder {className}" onclick={triggerOpen}>
 		{#if uploadInProgress}
-			<span class="loader"></span>
+			<span class="loader system-primary"></span>
 		{:else}
 			<div class="placeholder-content">
 				<PlaceholderImage />

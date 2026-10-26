@@ -57,7 +57,7 @@
 {#if editable}
 	{#if uploadInProgress}
 		<span class="badge badge--large badge--gray">
-			<span class="loader"></span>
+			<span class="loader system-primary"></span>
 			{label}
 		</span>
 	{:else if value}

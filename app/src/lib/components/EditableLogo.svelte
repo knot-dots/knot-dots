@@ -79,7 +79,7 @@
 		</Dropdown>
 	{:else if uploadInProgress}
 		<div class="logo-upload">
-			<span class="loader" role="status"></span>
+			<span class="loader system-primary" role="status"></span>
 		</div>
 	{:else}
 		<label class="logo-upload" for={id}>

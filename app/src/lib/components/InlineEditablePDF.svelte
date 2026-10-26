@@ -108,7 +108,7 @@
 
 						{#if uploadInProgress}
 							<span class="badge badge--large badge--gray">
-								<span class="loader"></span>
+								<span class="loader system-primary"></span>
 							</span>
 						{:else}
 							<label class="badge badge--large badge--unstyled" for={id}>
@@ -162,7 +162,7 @@
 
 	{#if uploadInProgress}
 		<span class="badge badge--large badge--gray">
-			<span class="loader"></span>
+			<span class="loader system-primary"></span>
 		</span>
 	{:else if editable}
 		<label class="badge badge--large badge--file-upload" for={id}>

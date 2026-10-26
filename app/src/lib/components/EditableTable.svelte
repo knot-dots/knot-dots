@@ -321,7 +321,7 @@
 								<td colspan={columnCount}>
 									<button type="button" disabled={row.disabled} onclick={row.onAction}>
 										{#if row.loading}
-											<span class="loader"></span>
+											<span class="loader system-primary"></span>
 										{:else}
 											<span class="plus">+</span>
 											{row.label}
